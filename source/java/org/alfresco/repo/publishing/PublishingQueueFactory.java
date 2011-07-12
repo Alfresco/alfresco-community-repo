@@ -28,7 +28,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public interface PublishingQueueFactory
 {
-    PublishingQueue createPublishingQueueObject(String siteId, String environmentName);
+    PublishingQueue createPublishingQueueObject(String siteId);
 
     PublishingQueue createPublishingQueueObject(NodeRef environmentNodeRef);
 }

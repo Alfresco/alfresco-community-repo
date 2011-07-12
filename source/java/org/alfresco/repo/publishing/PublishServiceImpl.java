@@ -19,11 +19,14 @@
 
 package org.alfresco.repo.publishing;
 
-import java.util.List;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.service.cmr.publishing.Environment;
+import org.alfresco.service.cmr.publishing.NodePublishStatus;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
+import org.alfresco.service.cmr.publishing.PublishingQueue;
 import org.alfresco.service.cmr.publishing.PublishingService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.ParameterCheck;
@@ -36,6 +39,7 @@ import org.alfresco.util.ParameterCheck;
 public class PublishServiceImpl implements PublishingService
 {
     public static final String NAME = "publishingService";
+
     private EnvironmentFactory environmentFactory;
     private PublishingEventHelper publishingEventHelper;
     
@@ -59,24 +63,6 @@ public class PublishServiceImpl implements PublishingService
      * 
     * {@inheritDoc}
      */
-    public Environment getEnvironment(String siteId, String environmentName)
-    {
-        return environmentFactory.createEnvironmentObject(siteId, environmentName);
-    }
-
-    /**
-     * 
-    * {@inheritDoc}
-     */
-    public List<Environment> getEnvironments(String siteId)
-    {
-        return environmentFactory.createEnvironmentObjects(siteId);
-    }
-
-    /**
-     * 
-    * {@inheritDoc}
-     */
     public Set<NodeRef> getPublishingDependencies(NodeRef node)
     {
         // TODO Auto-generated method stub
@@ -91,13 +77,58 @@ public class PublishServiceImpl implements PublishingService
          return publishingEventHelper.getPublishingEvent(id);
      }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.publishing.PublishingService#cancelPublishingEvent(java.lang.String)
-     */
-    @Override
+     /**
+      * {@inheritDoc}
+      */
     public void cancelPublishingEvent(String id)
     {
         ParameterCheck.mandatory("id", id);
         publishingEventHelper.cancelEvent(id);
     }
+
+    /**
+    * {@inheritDoc}
+    */
+    public PublishingQueue getPublishingQueue(String siteId)
+    {
+        EnvironmentImpl environment = getEnvironment(siteId);
+        if(environment!=null)
+        {
+            return environment.getPublishingQueue();
+        }
+        return null;
+    }
+
+    /**
+    * {@inheritDoc}
+    */
+    public Map<NodeRef, NodePublishStatus> checkPublishStatus(String siteId, String channelName,
+            Collection<NodeRef> nodes)
+    {
+        EnvironmentImpl environment = getEnvironment(siteId);
+        if(environment !=null )
+        {
+            return environment.checkPublishStatus(channelName, nodes);
+        }
+        return Collections.emptyMap();
+    }
+
+    /**
+    * {@inheritDoc}
+    */
+    public Map<NodeRef, NodePublishStatus> checkPublishStatus(String siteId, String channelName, NodeRef... nodes)
+    {
+        EnvironmentImpl environment = getEnvironment(siteId);
+        if(environment !=null )
+        {
+            return environment.checkPublishStatus(channelName, nodes);
+        }
+        return Collections.emptyMap();
+    }
+    
+    private EnvironmentImpl getEnvironment(String siteId)
+    {
+        return environmentFactory.createEnvironmentObject(siteId);
+    }
+
 }

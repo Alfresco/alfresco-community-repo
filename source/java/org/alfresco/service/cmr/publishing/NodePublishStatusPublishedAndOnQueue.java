@@ -38,10 +38,10 @@ public class NodePublishStatusPublishedAndOnQueue extends BaseNodePublishStatus
      * @param queuedPublishingEvent The next scheduled {@link PublishingEvent} on the {@link PublishingQueue}
      * @param latestPublishingEvent The last {@link PublishingEvent} to successfully publish the node.
      */
-    public NodePublishStatusPublishedAndOnQueue(NodeRef nodeRef, Environment environment,
-            String channelName, PublishingEvent queuedPublishingEvent, PublishingEvent latestPublishingEvent)
+    public NodePublishStatusPublishedAndOnQueue(NodeRef nodeRef, String channelName,
+            PublishingEvent queuedPublishingEvent, PublishingEvent latestPublishingEvent)
     {
-        super(nodeRef, environment, channelName);
+        super(nodeRef, channelName);
         this.queuedPublishingEvent = queuedPublishingEvent;
         this.latestPublishingEvent = latestPublishingEvent;
     }

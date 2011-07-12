@@ -19,9 +19,6 @@
 
 package org.alfresco.repo.publishing;
 
-import java.util.List;
-
-import org.alfresco.service.cmr.publishing.Environment;
 
 /**
  * @author Brian
@@ -29,7 +26,5 @@ import org.alfresco.service.cmr.publishing.Environment;
  */
 public interface EnvironmentFactory
 {
-    Environment createEnvironmentObject(String siteId, String environmentName);
-
-    List<Environment> createEnvironmentObjects(String siteId);
+    EnvironmentImpl createEnvironmentObject(String siteId);
 }

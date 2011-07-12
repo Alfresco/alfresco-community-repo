@@ -29,13 +29,11 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public abstract class BaseNodePublishStatus implements NodePublishStatus
 {
     private final NodeRef nodeRef;
-    private final Environment environment;
     private final String channelName;
     
-    public BaseNodePublishStatus(NodeRef nodeRef, Environment environment, String channelName)
+    public BaseNodePublishStatus(NodeRef nodeRef, String channelName)
     {
         this.nodeRef = nodeRef;
-        this.environment = environment;
         this.channelName = channelName;
     }
     
@@ -45,14 +43,6 @@ public abstract class BaseNodePublishStatus implements NodePublishStatus
     public NodeRef getNodeRef()
     {
         return nodeRef;
-    }
-
-    /**
-     * {@inheritDoc}
-      */
-    public Environment getEnvironment()
-    {
-        return environment;
     }
 
     /**

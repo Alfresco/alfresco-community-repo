@@ -30,9 +30,9 @@ public class NodePublishStatusPublished extends BaseNodePublishStatus
 
     private final PublishingEvent lastEvent;
 
-    public NodePublishStatusPublished(NodeRef node, Environment environment, String channelName, PublishingEvent lastEvent)
+    public NodePublishStatusPublished(NodeRef node, String channelName, PublishingEvent lastEvent)
     {
-        super(node, environment, channelName);
+        super(node, channelName);
         this.lastEvent = lastEvent;
     }
 

@@ -19,12 +19,7 @@
 
 package org.alfresco.repo.publishing;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import org.alfresco.repo.transfer.manifest.TransferManifestNodeFactory;
-import org.alfresco.service.cmr.publishing.Environment;
 import org.alfresco.service.cmr.publishing.PublishingQueue;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.VersionService;
@@ -77,10 +72,9 @@ public class PublishingObjectFactory implements EnvironmentFactory, PublishingQu
     /* (non-Javadoc)
      * @see org.alfresco.repo.publishing.EnvironmentFactory#createEnvironmentObject(java.lang.String, java.lang.String)
      */
-    @Override
-    public Environment createEnvironmentObject(String siteId, String environmentName)
+    public EnvironmentImpl createEnvironmentObject(String siteId)
     {
-        NodeRef node = environmentHelper.getEnvironment(siteId, environmentName);
+        NodeRef node = environmentHelper.getEnvironment(siteId);
         return createEnvironmentFromNode(node);
     }
 
@@ -88,45 +82,27 @@ public class PublishingObjectFactory implements EnvironmentFactory, PublishingQu
      * @param node
      * @return
      */
-    private Environment createEnvironmentFromNode(NodeRef node)
+    private EnvironmentImpl createEnvironmentFromNode(NodeRef node)
     {
         EnvironmentImpl environment = new EnvironmentImpl();
         environment.setNodeRef(node);
         environment.setPublishingQueueFactory(this);
         environment.setEnvironmentHelper(environmentHelper);
-        environment.setPublishingEventHelper(publishingEventHelper);
         return environment;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.publishing.EnvironmentFactory#createEnvironmentObjects(java.lang.String)
-     */
-    @Override
-    public List<Environment> createEnvironmentObjects(String siteId)
-    {
-        Map<String,NodeRef> environmentMap = environmentHelper.getEnvironments(siteId);
-        List<Environment> environments = new ArrayList<Environment>(environmentMap.size());
-        for (NodeRef node : environmentMap.values())
-        {
-            environments.add(createEnvironmentFromNode(node));
-        }
-        return environments;
     }
 
     /* (non-Javadoc)
      * @see org.alfresco.repo.publishing.PublishingQueueFactory#createPublishingQueueObject(java.lang.String, java.lang.String)
      */
-    @Override
-    public PublishingQueue createPublishingQueueObject(String siteId, String environmentName)
+    public PublishingQueue createPublishingQueueObject(String siteId)
     {
-        NodeRef environmentNode = environmentHelper.getEnvironment(siteId, environmentName);
+        NodeRef environmentNode = environmentHelper.getEnvironment(siteId);
         return createPublishingQueueObject(environmentNode);
     }
 
     /* (non-Javadoc)
      * @see org.alfresco.repo.publishing.PublishingQueueFactory#createPublishingQueueObject(org.alfresco.service.cmr.repository.NodeRef)
      */
-    @Override
     public PublishingQueue createPublishingQueueObject(NodeRef environmentNodeRef)
     {
         NodeRef queueNode = environmentHelper.getPublishingQueue(environmentNodeRef);

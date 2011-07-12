@@ -27,15 +27,14 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class NodePublishStatusNotPublished extends BaseNodePublishStatus
 {
-
     /**
      * @param node
      * @param environment
      * @param channelName TODO
      */
-    public NodePublishStatusNotPublished(NodeRef node, Environment environment, String channelName)
+    public NodePublishStatusNotPublished(NodeRef node, String channelName)
     {
-        super(node, environment, channelName);
+        super(node, channelName);
     }
 
     /**

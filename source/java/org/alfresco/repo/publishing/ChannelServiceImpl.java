@@ -165,15 +165,9 @@ public class ChannelServiceImpl implements ChannelService
         NodeRef channelNode = channelHelper.createChannelNode(channelContainer, channelType, name, actualProps);
         Channel channel = channelHelper.buildChannelObject(channelNode, this);
 
-        // Now create the corresponding channel nodes in each of the
-        // configured environments
-        // FIXME: BJR: 20110506: Should we provide a means for supplying
-        // separate properties for each environment?
-        Map<String, NodeRef> environments = environmentHelper.getEnvironments(siteId);
-        for (NodeRef environment : environments.values())
-        {
-            channelHelper.addChannelToEnvironment(environment, channel, actualProps);
-        }
+        // Now create the corresponding channel nodes in the environment
+        NodeRef environment = environmentHelper.getEnvironment(siteId);
+        channelHelper.addChannelToEnvironment(environment, channel, actualProps);
         return channel;
     }
 
@@ -313,8 +307,8 @@ public class ChannelServiceImpl implements ChannelService
     private Set<NodeRef> getAllChannelContainers(String siteId)
     {
         Set<NodeRef> containers = new HashSet<NodeRef>();
-        Map<String, NodeRef> environments = environmentHelper.getEnvironments(siteId);
-        containers.addAll(environments.values());
+        NodeRef environment = environmentHelper.getEnvironment(siteId);
+        containers.add(environment);
         NodeRef editorialContainer = getChannelContainer(siteId);
         if(editorialContainer!=null)
         {

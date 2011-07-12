@@ -19,8 +19,6 @@
 
 package org.alfresco.repo.publishing;
 
-import static junit.framework.Assert.assertEquals;
-
 import java.util.Calendar;
 import java.util.Map;
 
@@ -79,7 +77,6 @@ public class EnvironmentImplTest extends AbstractPublishingIntegrationTest
     private void checkNodeStatus(NodeRef node, Status expStatus, Map<NodeRef, NodePublishStatus> results)
     {
         NodePublishStatus nodeStatus = results.get(node);
-        assertEquals(environment, nodeStatus.getEnvironment());
         assertEquals(node, nodeStatus.getNodeRef());
         assertEquals(expStatus, nodeStatus.getStatus());
     }

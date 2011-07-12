@@ -91,5 +91,5 @@ public interface PublishingModel
     // Workflow Properties
     public static final QName PROP_WF_PUBLISHING_EVENT= QName.createQName(WF_NAMESPACE, "publishingEvent");
     public static final QName PROP_WF_SCHEDULED_PUBLISH_DATE= QName.createQName(WF_NAMESPACE, "scheduledPublishDate");
-    
+ 
 }

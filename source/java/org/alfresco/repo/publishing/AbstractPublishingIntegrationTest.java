@@ -34,7 +34,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.publishing.PublishingService;
 import org.alfresco.service.cmr.publishing.channels.ChannelType;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -90,7 +89,7 @@ public abstract class AbstractPublishingIntegrationTest extends BaseSpringTest
                 SiteVisibility.PUBLIC);
         this.docLib = siteService.createContainer(siteId, SiteService.DOCUMENT_LIBRARY, ContentModel.TYPE_FOLDER, null);
 
-        this.environment = (EnvironmentImpl) factory.createEnvironmentObject(siteId, PublishingService.LIVE_ENVIRONMENT_NAME);
+        this.environment = (EnvironmentImpl) factory.createEnvironmentObject(siteId);
         this.queue = (PublishingQueueImpl) environment.getPublishingQueue();
     }
     

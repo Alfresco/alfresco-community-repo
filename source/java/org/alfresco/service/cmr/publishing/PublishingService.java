@@ -18,35 +18,14 @@
  */
 package org.alfresco.service.cmr.publishing;
 
-import java.util.List;
+import java.util.Collection;
+import java.util.Map;
+
+import org.alfresco.service.cmr.repository.NodeRef;
+
 
 public interface PublishingService
 {
-    /**
-     * The name of the live environment. This environment is always available.
-     */
-    public static final String LIVE_ENVIRONMENT_NAME = "live";
-
-    /**
-     * Retrieve a list of all the target publishing environments defined on the
-     * specified Share site
-     * 
-     * @param siteId
-     *            The identifier of the Share site
-     * @return
-     */
-    List<Environment> getEnvironments(String siteId);
-
-    /**
-     * Retrieve the named publishing environment on the specified Share site
-     * 
-     * @param siteId
-     *            The identifier of the Share site
-     * @param environmentName
-     *            The name of the required publishing environment
-     * @return
-     */
-    Environment getEnvironment(String siteId, String environmentName);
 
     /**
      * Retrieve the publishing event that has the specified identifier
@@ -67,4 +46,20 @@ public interface PublishingService
      * @param id The identifier of the publishing event that is to be cancelled.
      */
     void cancelPublishingEvent(String id);
+    
+    /**
+     * Retrieve the publishing queue associated with this publishing environment
+     * @return A PublishingQueue object corresponding tho this environment's publishing queue
+     */
+    PublishingQueue getPublishingQueue(String siteId);
+    
+    /**
+     * Discover the publishing status of each of the specified nodes
+     * @param channelName TODO
+     * @param nodes The identifiers of the nodes whose publishing status is being sought
+     * @return A map associating a NodePublishStatus object with each of the supplied NodeRef objects
+     */
+    Map<NodeRef,NodePublishStatus> checkPublishStatus(String siteId, String channelName, Collection<NodeRef> nodes);
+
+    Map<NodeRef,NodePublishStatus> checkPublishStatus(String siteId, String channelName, NodeRef... nodes);
 }

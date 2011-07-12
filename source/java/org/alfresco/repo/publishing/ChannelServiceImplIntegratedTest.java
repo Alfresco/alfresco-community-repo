@@ -19,11 +19,6 @@
 
 package org.alfresco.repo.publishing;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertNull;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -92,12 +87,9 @@ public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrat
         assertEquals(channelName, channel.getName());
         assertTrue(nodeService.exists(channel.getNodeRef()));
         
-        Map<String, NodeRef> environments = environmentHelper.getEnvironments(siteId);
-        assertTrue(environments.size() > 0);
-        for (NodeRef envNodeRef : environments.values())
-        {
-            assertNotNull(nodeService.getChildByName(envNodeRef, ContentModel.ASSOC_CONTAINS, channelName));
-        }
+        NodeRef environmentNode = environmentHelper.getEnvironment(siteId);
+        assertNotNull(environmentNode);
+        assertNotNull(nodeService.getChildByName(environmentNode, ContentModel.ASSOC_CONTAINS, channelName));
     }
 
     @Test
@@ -110,12 +102,9 @@ public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrat
         List<Channel> channels = channelService.getChannels(siteId);
         assertTrue(channels.isEmpty());
 
-        Map<String, NodeRef> environments = environmentHelper.getEnvironments(siteId);
-        assertTrue(environments.size() > 0);
-        for (NodeRef envNodeRef : environments.values())
-        {
-            assertNull(nodeService.getChildByName(envNodeRef, ContentModel.ASSOC_CONTAINS, channelName));
-        }
+        NodeRef environmentNode = environmentHelper.getEnvironment(siteId);
+        assertNotNull(environmentNode);
+        assertNull(nodeService.getChildByName(environmentNode, ContentModel.ASSOC_CONTAINS, channelName));
     }
 
     @Test
@@ -131,13 +120,10 @@ public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrat
         assertEquals(1, channels.size());
         Channel channel = channels.get(0);
         assertEquals(newChannelName, channel.getName());
-        Map<String, NodeRef> environments = environmentHelper.getEnvironments(siteId);
-        assertTrue(environments.size() > 0);
-        for (NodeRef envNodeRef : environments.values())
-        {
-            assertNull(nodeService.getChildByName(envNodeRef, ContentModel.ASSOC_CONTAINS, channelName));
-            assertNotNull(nodeService.getChildByName(envNodeRef, ContentModel.ASSOC_CONTAINS, newChannelName));
-        }
+        NodeRef environmentNode = environmentHelper.getEnvironment(siteId);
+        assertNotNull(environmentNode);
+        assertNull(nodeService.getChildByName(environmentNode, ContentModel.ASSOC_CONTAINS, channelName));
+        assertNotNull(nodeService.getChildByName(environmentNode, ContentModel.ASSOC_CONTAINS, newChannelName));
     }
 
     @Test

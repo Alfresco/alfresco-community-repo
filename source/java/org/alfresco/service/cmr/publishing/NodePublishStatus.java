@@ -23,7 +23,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * @author Brian
- *
+ * @author Nick Smith
  */
 public interface NodePublishStatus
 {
@@ -34,12 +34,6 @@ public interface NodePublishStatus
     NodeRef getNodeRef();
     
     Status getStatus();
-    
-    /**
-     * Obtain the environment related to this status
-     * @return
-     */
-    Environment getEnvironment();
     
     String getChannelName();
 }

@@ -19,15 +19,8 @@
 
 package org.alfresco.repo.publishing;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
-
-import java.util.Map;
-
 import javax.annotation.Resource;
 
-import org.alfresco.service.cmr.publishing.PublishingService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.junit.Test;
 
@@ -48,20 +41,9 @@ public class EnvironmentHelperTest extends AbstractPublishingIntegrationTest
     }
 
     @Test
-    public void testGetEnvironments() throws Exception
-    {
-        Map<String, NodeRef> environments = environmentHelper.getEnvironments(siteId);
-        assertTrue(environments.size() == 1);
-        NodeRef liveEnvironment = environments.get(PublishingService.LIVE_ENVIRONMENT_NAME);
-        assertNotNull(liveEnvironment);
-        assertTrue(nodeService.exists(liveEnvironment));
-        assertEquals(PublishingModel.TYPE_ENVIRONMENT, nodeService.getType(liveEnvironment));
-    }
-
-    @Test
     public void testGetEnvironmentByName() throws Exception
     {
-        NodeRef liveEnvironment = environmentHelper.getEnvironment(siteId, PublishingService.LIVE_ENVIRONMENT_NAME);
+        NodeRef liveEnvironment = environmentHelper.getEnvironment(siteId);
         assertNotNull(liveEnvironment);
         assertTrue(nodeService.exists(liveEnvironment));
         assertEquals(PublishingModel.TYPE_ENVIRONMENT, nodeService.getType(liveEnvironment));
@@ -70,7 +52,7 @@ public class EnvironmentHelperTest extends AbstractPublishingIntegrationTest
     @Test
     public void testGetPublishingQueue() throws Exception
     {
-        NodeRef liveEnvironment = environmentHelper.getEnvironment(siteId, PublishingService.LIVE_ENVIRONMENT_NAME);
+        NodeRef liveEnvironment = environmentHelper.getEnvironment(siteId);
         NodeRef publishingQueue = environmentHelper.getPublishingQueue(liveEnvironment);
         assertNotNull(publishingQueue);
         assertTrue(nodeService.exists(publishingQueue));

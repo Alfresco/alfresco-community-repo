@@ -30,9 +30,9 @@ public class NodePublishStatusOnQueue extends BaseNodePublishStatus
 {
     private final PublishingEvent queuedEvent;
 
-    public NodePublishStatusOnQueue(NodeRef nodeRef, Environment environment, String channelName, PublishingEvent queuedEvent)
+    public NodePublishStatusOnQueue(NodeRef nodeRef, String channelName, PublishingEvent queuedEvent)
     {
-        super(nodeRef, environment, channelName);
+        super(nodeRef, channelName);
         this.queuedEvent =queuedEvent;
     }
 

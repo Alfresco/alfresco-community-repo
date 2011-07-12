@@ -22,13 +22,9 @@ package org.alfresco.repo.publishing;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import org.alfresco.service.cmr.publishing.Environment;
 import org.alfresco.service.cmr.publishing.NodePublishStatus;
-import org.alfresco.service.cmr.publishing.PublishingEvent;
-import org.alfresco.service.cmr.publishing.PublishingEventFilter;
 import org.alfresco.service.cmr.publishing.PublishingQueue;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -37,13 +33,12 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Nick Smith
  *
  */
-public class EnvironmentImpl implements Environment
+public class EnvironmentImpl
 {
     private PublishingQueueFactory publishingQueueFactory;
     private NodeRef nodeRef;
     private String id;
     private EnvironmentHelper environmentHelper;
-    private PublishingEventHelper publishingEventHelper;
     
     /**
      * {@inheritDoc}
@@ -81,27 +76,10 @@ public class EnvironmentImpl implements Environment
     /**
      * {@inheritDoc}
      */
-    public List<PublishingEvent> getPublishingEvents(PublishingEventFilter filter)
-    {
-        NodeRef queue = environmentHelper.getPublishingQueue(nodeRef);
-        return publishingEventHelper.findPublishingEvents(queue, filter);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public PublishingQueue getPublishingQueue()
     {
         return publishingQueueFactory.createPublishingQueueObject(nodeRef);
     }
-
-    /**
-     * {@inheritDoc}
-     */
-     public PublishingEventFilter createPublishingEventFilter()
-     {
-         return new PublishingEventFilterImpl();
-     }
 
      public NodeRef getNodeRef()
      {
@@ -131,14 +109,6 @@ public class EnvironmentImpl implements Environment
     public void setEnvironmentHelper(EnvironmentHelper environmentHelper)
     {
         this.environmentHelper = environmentHelper;
-    }
-    
-    /**
-     * @param publishingEventHelper the publishingEventHelper to set
-     */
-    public void setPublishingEventHelper(PublishingEventHelper publishingEventHelper)
-    {
-        this.publishingEventHelper = publishingEventHelper;
     }
 
 }

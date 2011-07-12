@@ -34,12 +34,10 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.publishing.Environment;
 import org.alfresco.service.cmr.publishing.MutablePublishingPackage;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
 import org.alfresco.service.cmr.publishing.PublishingPackageEntry;
 import org.alfresco.service.cmr.publishing.PublishingQueue;
-import org.alfresco.service.cmr.publishing.PublishingService;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelType;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -79,6 +77,7 @@ public class PublishingIntegratedTest extends BaseSpringTest
     /**
      * @throws java.lang.Exception
      */
+    @Override
     @Before
     public void onSetUp() throws Exception
     {
@@ -119,8 +118,7 @@ public class PublishingIntegratedTest extends BaseSpringTest
                     NamespaceService.CONTENT_MODEL_1_0_URI, Integer.toString(i)), ContentModel.TYPE_CONTENT).getChildRef());
         }
 
-        Environment liveEnvironment = publishingService.getEnvironment(siteId, PublishingService.LIVE_ENVIRONMENT_NAME);
-        PublishingQueue liveQueue = liveEnvironment.getPublishingQueue();
+        PublishingQueue liveQueue = publishingService.getPublishingQueue(siteId);
         MutablePublishingPackage publishingPackage = liveQueue.createPublishingPackage();
         publishingPackage.addNodesToPublish(nodes);
 
@@ -153,9 +151,7 @@ public class PublishingIntegratedTest extends BaseSpringTest
             nodes.add(nodeService.createNode(channel.getNodeRef(), ContentModel.ASSOC_CONTAINS, QName.createQName(
                     NamespaceService.CONTENT_MODEL_1_0_URI, Integer.toString(i)), ContentModel.TYPE_CONTENT).getChildRef());
         }
-
-        Environment liveEnvironment = publishingService.getEnvironment(siteId, PublishingService.LIVE_ENVIRONMENT_NAME);
-        PublishingQueue liveQueue = liveEnvironment.getPublishingQueue();
+        PublishingQueue liveQueue = publishingService.getPublishingQueue(siteId);
         MutablePublishingPackage publishingPackage = liveQueue.createPublishingPackage();
         publishingPackage.addNodesToPublish(nodes);
 

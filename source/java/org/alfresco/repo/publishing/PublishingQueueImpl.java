@@ -22,10 +22,13 @@ package org.alfresco.repo.publishing;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.transfer.manifest.TransferManifestNodeFactory;
 import org.alfresco.service.cmr.publishing.MutablePublishingPackage;
+import org.alfresco.service.cmr.publishing.PublishingEvent;
+import org.alfresco.service.cmr.publishing.PublishingEventFilter;
 import org.alfresco.service.cmr.publishing.PublishingPackage;
 import org.alfresco.service.cmr.publishing.PublishingQueue;
 import org.alfresco.service.cmr.publishing.StatusUpdate;
@@ -119,4 +122,20 @@ public class PublishingQueueImpl implements PublishingQueue
     {
         this.versionService = versionService;
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public List<PublishingEvent> getPublishingEvents(PublishingEventFilter filter)
+    {
+        return publishingEventHelper.findPublishingEvents(nodeRef, filter);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+     public PublishingEventFilter createPublishingEventFilter()
+     {
+         return new PublishingEventFilterImpl();
+     }
 }

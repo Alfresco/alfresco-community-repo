@@ -40,7 +40,6 @@ import org.alfresco.service.cmr.publishing.NodePublishStatusPublished;
 import org.alfresco.service.cmr.publishing.NodePublishStatusPublishedAndOnQueue;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
 import org.alfresco.service.cmr.publishing.PublishingEvent.Status;
-import org.alfresco.service.cmr.publishing.PublishingService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -59,6 +58,11 @@ import org.alfresco.util.ParameterCheck;
  */
 public class EnvironmentHelper
 {
+    /**
+     * The name of the live environment. This environment is always available.
+     */
+    private static final String LIVE_ENVIRONMENT_NAME = "live";
+
     private static final String ENVIRONMENT_CONTAINER_NAME = "environments";
     private static final Set<QName> PUBLISHING_QUEUE_TYPE = new HashSet<QName>();
     private Set<QName> environmentNodeTypes;
@@ -122,29 +126,11 @@ public class EnvironmentHelper
         this.channelHelper = channelHelper;
     }
     
-    public Map<String, NodeRef> getEnvironments(String siteId)
-    {
-        Map<String, NodeRef> results = new TreeMap<String, NodeRef>();
-        NodeRef environmentContainer = getEnvironmentContainer(siteId);
-        List<ChildAssociationRef> envAssocs = nodeService.getChildAssocs(environmentContainer,
-                getEnvironmentNodeTypes());
-        for (ChildAssociationRef envAssoc : envAssocs)
-        {
-            NodeRef environment = envAssoc.getChildRef();
-            String name = (String) nodeService.getProperty(environment, ContentModel.PROP_NAME);
-            results.put(name, environment);
-        }
-        return results;
-    }
-
-
-    public NodeRef getEnvironment(String siteId, String name)
+    public NodeRef getEnvironment(String siteId)
     {
         ParameterCheck.mandatory("siteId", siteId);
-        ParameterCheck.mandatory("name", name);
-
         NodeRef environmentContainer = getEnvironmentContainer(siteId);
-        return nodeService.getChildByName(environmentContainer, ContentModel.ASSOC_CONTAINS, name);
+        return nodeService.getChildByName(environmentContainer, ContentModel.ASSOC_CONTAINS, LIVE_ENVIRONMENT_NAME);
     }
 
     public NodeRef getPublishingQueue(NodeRef environment)
@@ -201,9 +187,9 @@ public class EnvironmentHelper
 
                     // Also create the default live environment
                     Map<QName, Serializable> props = new HashMap<QName, Serializable>();
-                    props.put(ContentModel.PROP_NAME, PublishingService.LIVE_ENVIRONMENT_NAME);
+                    props.put(ContentModel.PROP_NAME, LIVE_ENVIRONMENT_NAME);
                     nodeService.createNode(environmentContainer, ContentModel.ASSOC_CONTAINS, QName.createQName(
-                            NamespaceService.CONTENT_MODEL_1_0_URI, PublishingService.LIVE_ENVIRONMENT_NAME),
+                            NamespaceService.CONTENT_MODEL_1_0_URI, LIVE_ENVIRONMENT_NAME),
                             PublishingModel.TYPE_ENVIRONMENT, props);
                 }
                 return environmentContainer;
@@ -220,22 +206,22 @@ public class EnvironmentHelper
         {
             if(lastEvent != null)
             {
-                return new NodePublishStatusPublishedAndOnQueue(node, environment, channelName, queuedEvent, lastEvent);
+                return new NodePublishStatusPublishedAndOnQueue(node, channelName, queuedEvent, lastEvent);
             }
             else
             {
-                return  new NodePublishStatusOnQueue(node, environment, channelName, queuedEvent);
+                return  new NodePublishStatusOnQueue(node, channelName, queuedEvent);
             }
         }
         else
         {
             if(lastEvent != null)
             {
-                return new NodePublishStatusPublished(node, environment, channelName, lastEvent);
+                return new NodePublishStatusPublished(node, channelName, lastEvent);
             }
             else
             {
-                return new NodePublishStatusNotPublished(node, environment, channelName);
+                return new NodePublishStatusNotPublished(node, channelName);
             }
         }
     }

@@ -18,9 +18,9 @@
  */
 package org.alfresco.repo.web.scripts.blogs;
 
-import org.alfresco.repo.blog.BlogService;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.blog.BlogService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;

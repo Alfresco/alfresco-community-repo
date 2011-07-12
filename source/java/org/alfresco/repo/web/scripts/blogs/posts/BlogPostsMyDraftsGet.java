@@ -22,8 +22,8 @@ import java.util.Date;
 
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
-import org.alfresco.repo.blog.BlogService.BlogPostInfo;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.blog.BlogService.BlogPostInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**

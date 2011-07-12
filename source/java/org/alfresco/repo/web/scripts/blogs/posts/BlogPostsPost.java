@@ -25,11 +25,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.blog.BlogService.BlogPostInfo;
 import org.alfresco.repo.web.scripts.blogs.AbstractBlogWebScript;
 import org.alfresco.repo.web.scripts.blogs.BlogPostLibJs;
 import org.alfresco.repo.web.scripts.blogs.RequestUtilsLibJs;
 import org.alfresco.service.cmr.activities.ActivityService;
+import org.alfresco.service.cmr.blog.BlogService.BlogPostInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.apache.commons.logging.Log;

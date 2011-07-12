@@ -18,8 +18,8 @@
  */
 package org.alfresco.repo.web.scripts.blogs;
 
-import org.alfresco.repo.blog.BlogService;
 import org.alfresco.repo.blog.BlogServiceImplTest;
+import org.alfresco.service.cmr.blog.BlogService;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 

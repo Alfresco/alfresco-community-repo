@@ -100,7 +100,7 @@ public class SubscriptionServiceImplTest extends TestCase
         properties.put(ContentModel.PROP_USERNAME, userId);
         properties.put(ContentModel.PROP_FIRSTNAME, userId);
         properties.put(ContentModel.PROP_LASTNAME, "Test");
-        properties.put(ContentModel.PROP_EMAIL, userId + "@email.com");
+        properties.put(ContentModel.PROP_EMAIL, userId + "@test.demo.alfresco.com");
 
         return personService.createPerson(properties);
     }

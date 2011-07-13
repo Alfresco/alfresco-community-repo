@@ -407,16 +407,6 @@ public class BlogServiceImplTest
                     final RangedDateProperty publishedAfter1980 = new RangedDateProperty(_1980, null, ContentModel.PROP_PUBLISHED);
                     final RangedDateProperty publishedBetween1975And1985 = new RangedDateProperty(_1975, _1985, ContentModel.PROP_PUBLISHED);
                     
-                    List<ChildAssociationRef> children = NODE_SERVICE.getChildAssocs(BLOG_CONTAINER_NODE);
-                    for (ChildAssociationRef child : children)
-                    {
-                        Map<QName, Serializable> props = NODE_SERVICE.getProperties(child.getChildRef());
-                        System.out.println(props);
-                        System.out.println("cm:name " + props.get(ContentModel.PROP_NAME));
-                        System.out.println("cm:publ " + props.get(ContentModel.PROP_PUBLISHED));
-                        System.out.println();
-                    }
-                    
                     // Find all
                     PagingResults<BlogPostInfo> pagedResults = BLOG_SERVICE.findBlogPosts(BLOG_CONTAINER_NODE, null, null, pagingReq);
                     assertEquals("Wrong number of blog posts", 3, pagedResults.getPage().size());

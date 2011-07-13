@@ -301,6 +301,10 @@ public class BlogServiceImpl implements BlogService
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
         sp.setQuery(luceneQuery.toString());
         sp.addSort(ContentModel.PROP_PUBLISHED.toString(), false);
+        
+        sp.setMaxItems(pagingReq.getMaxItems());
+        sp.setSkipCount(pagingReq.getSkipCount());
+        
         ResultSet luceneResults = null;
         PagingResults<BlogPostInfo> results = null;
         try
@@ -332,9 +336,10 @@ public class BlogServiceImpl implements BlogService
                 @Override
                 public Pair<Integer, Integer> getTotalResultCount()
                 {
-                    int size = finalLuceneResults.getNodeRefs().size();
-                    //FIXME Impl
-                    return new Pair<Integer, Integer>(size, size);
+                    int skipCount = finalLuceneResults.getStart();
+                    int itemsRemainingAfterThisPage = finalLuceneResults.length();
+                    final int totalItemsInUnpagedResultSet = skipCount + itemsRemainingAfterThisPage;
+                    return new Pair<Integer, Integer>(totalItemsInUnpagedResultSet, totalItemsInUnpagedResultSet);
                 }
                 
                 @Override

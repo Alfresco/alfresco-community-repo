@@ -35,8 +35,12 @@ import org.alfresco.repo.blog.cannedqueries.DraftsAndPublishedBlogPostsCannedQue
 import org.alfresco.repo.blog.cannedqueries.GetBlogPostsCannedQuery;
 import org.alfresco.repo.blog.cannedqueries.GetBlogPostsCannedQueryFactory;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.search.impl.lucene.LuceneUtils;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.blog.BlogService;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -75,6 +79,8 @@ public class BlogServiceImpl implements BlogService
     private DraftsAndPublishedBlogPostsCannedQueryFactory draftsAndPublishedBlogPostsCannedQueryFactory;
     
     private ContentService contentService;
+    private DictionaryService dictionaryService;
+    private NamespaceService namespaceService;
     private NodeService nodeService;
     private PermissionService permissionService;
     private SearchService searchService;
@@ -107,6 +113,16 @@ public class BlogServiceImpl implements BlogService
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
+    }
+    
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
+    }
+    
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
     }
     
     public void setNodeService(NodeService nodeService)
@@ -266,13 +282,19 @@ public class BlogServiceImpl implements BlogService
     }
     
     @Override
-    public PagingResults<BlogPostInfo> findTaggedBlogPosts(
-            NodeRef blogContainerNode, String tag, PagingRequest pagingReq)
+    public PagingResults<BlogPostInfo> findBlogPosts(NodeRef blogContainerNode, RangedDateProperty dateRange, String tag, PagingRequest pagingReq)
     {
         StringBuilder luceneQuery = new StringBuilder();
         luceneQuery.append("+TYPE:\"").append(ContentModel.TYPE_CONTENT).append("\" ")
-                   .append("+PARENT:\"").append(blogContainerNode.toString()).append("\" ")
-                   .append("+PATH:\"/cm:taggable/cm:").append(ISO9075.encode(tag)).append("/member\"");
+                   .append("+PARENT:\"").append(blogContainerNode.toString()).append("\" ");
+        if (tag != null && !tag.trim().isEmpty())
+        {
+            luceneQuery.append("+PATH:\"/cm:taggable/cm:").append(ISO9075.encode(tag)).append("/member\"");
+        }
+        if (dateRange != null)
+        {
+            luceneQuery.append(createDateRangeQuery(dateRange.getFromDate(), dateRange.getToDate(), dateRange.getDateProperty()));
+        }
         
         SearchParameters sp = new SearchParameters();
         sp.addStore(blogContainerNode.getStoreRef());
@@ -329,5 +351,74 @@ public class BlogServiceImpl implements BlogService
         
         
         return results;
+    }
+
+    /**
+     * This method creates a Lucene query fragment which constrains the specified dateProperty to a range
+     * given by the fromDate and toDate parameters.
+     * 
+     * @param fromDate     the start of the date range (defaults to 1970-01-01 00:00:00 if null).
+     * @param toDate       the end of the date range (defaults to 3000-12-31 00:00:00 if null).
+     * @param dateProperty the Alfresco property value to check against the range (must be a valid Date or DateTime property).
+     * 
+     * @return the Lucene query fragment.
+     * 
+     * @throws NullPointerException if dateProperty is null or if the dateProperty is not recognised by the system.
+     * @throws IllegalArgumentException if dateProperty refers to a property that is not of type {@link DataTypeDefinition#DATE} or {@link DataTypeDefinition#DATETIME}.
+     */
+    private String createDateRangeQuery(Date fromDate, Date toDate, QName dateProperty)
+    {
+        // Some sanity checking of the date property.
+        if (dateProperty == null)
+        {
+            throw new NullPointerException("dateProperty cannot be null");
+        }
+        PropertyDefinition propDef = dictionaryService.getProperty(dateProperty);
+        if (propDef == null)
+        {
+            throw new NullPointerException("dateProperty '" + dateProperty + "' not recognised.");
+        }
+        else
+        {
+            final QName propDefType = propDef.getDataType().getName();
+            if ( !DataTypeDefinition.DATE.equals(propDefType) &&
+                    !DataTypeDefinition.DATETIME.equals(propDefType))
+            {
+                throw new IllegalArgumentException("Illegal property type '" + dateProperty + "' [" + propDefType + "]");
+            }
+        }
+        
+        QName propertyName = propDef.getName();
+        final String shortFormQName = propertyName.toPrefixString(namespaceService);
+        final String prefix = shortFormQName.substring(0, shortFormQName.indexOf(QName.NAMESPACE_PREFIX));
+        final String localName = propertyName.getLocalName();
+        
+        
+        // I can see potential issues with using 1970 and 3000 as default dates, but this is what the previous
+        // JavaScript controllers/libs did and I'll reproduce it here.
+        final String ZERO_DATE = "1970\\-01\\-01T00:00:00";
+        final String FUTURE_DATE = "3000\\-12\\-31T00:00:00";
+        
+        StringBuilder luceneQuery = new StringBuilder();
+        luceneQuery.append(" +@").append(prefix).append("\\:").append(localName).append(":[");
+        if (fromDate != null)
+        {
+            luceneQuery.append(LuceneUtils.getLuceneDateString(fromDate));
+        }
+        else
+        {
+            luceneQuery.append(ZERO_DATE);
+        }
+        luceneQuery.append(" TO ");
+        if (toDate != null)
+        {
+            luceneQuery.append(LuceneUtils.getLuceneDateString(toDate));
+        }
+        else
+        {
+            luceneQuery.append(FUTURE_DATE);
+        }
+        luceneQuery.append("] ");
+        return luceneQuery.toString();
     }
 }

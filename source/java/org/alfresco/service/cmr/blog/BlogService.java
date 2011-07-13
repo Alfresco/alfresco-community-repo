@@ -23,9 +23,12 @@ import java.util.Date;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.blog.BlogIntegrationService;
 import org.alfresco.repo.security.permissions.PermissionCheckValue;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.namespace.QName;
 
 /**
  * The Blog Service handles the management (CRUD) of Alfresco blog data, namely the blog posts which are
@@ -112,9 +115,12 @@ public interface BlogService
     PagingResults<BlogPostInfo> getMyDraftsAndAllPublished(NodeRef blogContainerNode, Date fromDate, Date toDate, PagingRequest pagingReq);
     
     /**
-     * Finds blog posts by the specified user tagged with the given tag string.
+     * Finds blog posts by the specified user tagged with the given tag string. This method allows date ranges to be applied to any valid
+     * {@link DataTypeDefinition#DATE} or {@link DataTypeDefinition#DATETIME} property. Examples include {@link ContentModel#PROP_CREATED} or
+     * {@link ContentModel#PROP_PUBLISHED}.
      * 
      * @param blogContainerNode the container node for blog posts (under the site).
+     * @param dateRange         a {@link RangedDateProperty} parameter object. Can be null.
      * @param tag               tag string.
      * @param pagingReq         an object defining the paging parameters for the result set.
      * 
@@ -122,7 +128,7 @@ public interface BlogService
      * 
      * @see SiteService#getContainer(String, String) to retrieve the blogContainerNode
      */
-    PagingResults<BlogPostInfo> findTaggedBlogPosts(NodeRef blogContainerNode, String tag, PagingRequest pagingReq);
+    PagingResults<BlogPostInfo> findBlogPosts(NodeRef blogContainerNode, RangedDateProperty dateRange, String tag, PagingRequest pagingReq);
     
     /**
      * Returns true if the specified blog-post node is a 'draft' blog post.
@@ -164,6 +170,44 @@ public interface BlogService
         public String getName()
         {
             return name;
+        }
+    }
+    
+    /**
+     * A simple data object for expressing a date range search parameter.
+     */
+    public class RangedDateProperty
+    {
+        private final Date fromDate;
+        private final Date toDate;
+        private final QName dateProperty;
+        
+        /**
+         * Constructs a ConstrainedDateProperty object.
+         * @param fromDate     the start date for the range (can be null for unbounded lower)
+         * @param toDate       the end date for the range (can be null for unbounded upper)
+         * @param dateProperty the Alfresco node property which is to be checked against the range. (must be a valid date or datetime property)
+         */
+        public RangedDateProperty(Date fromDate, Date toDate, QName dateProperty)
+        {
+            this.fromDate = fromDate;
+            this.toDate = toDate;
+            this.dateProperty = dateProperty;
+        }
+        
+        public Date getFromDate()
+        {
+            return fromDate;
+        }
+        
+        public Date getToDate()
+        {
+            return toDate;
+        }
+        
+        public QName getDateProperty()
+        {
+            return dateProperty;
         }
     }
 }

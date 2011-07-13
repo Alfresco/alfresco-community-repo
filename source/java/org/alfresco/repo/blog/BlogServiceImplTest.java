@@ -22,11 +22,16 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
@@ -37,9 +42,11 @@ import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.blog.BlogService;
 import org.alfresco.service.cmr.blog.BlogService.BlogPostInfo;
+import org.alfresco.service.cmr.blog.BlogService.RangedDateProperty;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
@@ -324,6 +331,131 @@ public class BlogServiceImplTest
                     
                     List<String> recoveredTags = TAGGING_SERVICE.getTags(blogNode);
                     assertEquals("Incorrect tags.", tags, recoveredTags);
+                    
+                    return null;
+                }
+            });
+    }
+    
+    /**
+     * This test method uses the eventually consistent find*() method and so may fail if Lucene is disabled.
+     */
+    @Test public void findBlogPostsByPublishedDate() throws Exception
+    {
+        final List<String> tags = Arrays.asList(new String[]{"hello", "goodbye"});
+        
+        // Going to set some specific published dates on these blog posts & query by date.
+        final Calendar cal = Calendar.getInstance();
+        cal.set(1971, 6, 15);
+        final Date _1971 = cal.getTime();
+        cal.set(1975, 0, 1);
+        final Date _1975 = cal.getTime();
+        cal.set(1980, 0, 1);
+        final Date _1980 = cal.getTime();
+        cal.set(1981, 0, 1);
+        final Date _1981 = cal.getTime();
+        cal.set(1985, 6, 15);
+        final Date _1985 = cal.getTime();
+        cal.set(1991, 6, 15);
+        final Date _1991 = cal.getTime();
+        
+        final Map<Integer, NodeRef> blogPosts = TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Map<Integer, NodeRef>>()
+            {
+                @Override
+                public Map<Integer, NodeRef> execute() throws Throwable
+                {
+                    Map<Integer, NodeRef> result = new HashMap<Integer, NodeRef>();
+                    
+                    // Create some blog posts. They'll all be published 'now' of course...
+                    final BlogPostInfo blogPost1971 = BLOG_SERVICE.createBlogPost(BLOG_CONTAINER_NODE, "publishedPostWithTags1971", "Hello world", true);
+                    final BlogPostInfo blogPost1981 = BLOG_SERVICE.createBlogPost(BLOG_CONTAINER_NODE, "publishedPostWithTags1981", "Hello world", true);
+                    final BlogPostInfo blogPost1991 = BLOG_SERVICE.createBlogPost(BLOG_CONTAINER_NODE, "publishedPostWithTags1991", "Hello world", true);
+                    
+                    TAGGING_SERVICE.addTags(blogPost1971.getNodeRef(), tags);
+                    TAGGING_SERVICE.addTags(blogPost1981.getNodeRef(), tags);
+                    TAGGING_SERVICE.addTags(blogPost1991.getNodeRef(), tags);
+                    
+                    testNodesToTidy.add(blogPost1971.getNodeRef());
+                    testNodesToTidy.add(blogPost1981.getNodeRef());
+                    testNodesToTidy.add(blogPost1991.getNodeRef());
+                    
+                    // We need to 'cheat' and set the nodes' cm:published dates to specific values.
+                    NODE_SERVICE.setProperty(blogPost1971.getNodeRef(), ContentModel.PROP_PUBLISHED, _1971);
+                    NODE_SERVICE.setProperty(blogPost1981.getNodeRef(), ContentModel.PROP_PUBLISHED, _1981);
+                    NODE_SERVICE.setProperty(blogPost1991.getNodeRef(), ContentModel.PROP_PUBLISHED, _1991);
+                    
+                    result.put(1971, blogPost1971.getNodeRef());
+                    result.put(1981, blogPost1981.getNodeRef());
+                    result.put(1991, blogPost1991.getNodeRef());
+                    
+                    return result;
+                }
+            });
+        
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+            {
+                @SuppressWarnings("deprecation")
+                @Override
+                public Void execute() throws Throwable
+                {
+                    // Quick sanity check: Did our cheating with the cm:created dates work?
+                    assertEquals("Incorrect published date", 71, ((Date)NODE_SERVICE.getProperty(blogPosts.get(1971), ContentModel.PROP_PUBLISHED)).getYear());
+                    
+                    PagingRequest pagingReq = new PagingRequest(0, 10, null);
+                    
+                    final RangedDateProperty publishedBefore1980 = new RangedDateProperty(null, _1980, ContentModel.PROP_PUBLISHED);
+                    final RangedDateProperty publishedAfter1980 = new RangedDateProperty(_1980, null, ContentModel.PROP_PUBLISHED);
+                    final RangedDateProperty publishedBetween1975And1985 = new RangedDateProperty(_1975, _1985, ContentModel.PROP_PUBLISHED);
+                    
+                    List<ChildAssociationRef> children = NODE_SERVICE.getChildAssocs(BLOG_CONTAINER_NODE);
+                    for (ChildAssociationRef child : children)
+                    {
+                        Map<QName, Serializable> props = NODE_SERVICE.getProperties(child.getChildRef());
+                        System.out.println(props);
+                        System.out.println("cm:name " + props.get(ContentModel.PROP_NAME));
+                        System.out.println("cm:publ " + props.get(ContentModel.PROP_PUBLISHED));
+                        System.out.println();
+                    }
+                    
+                    // Find all
+                    PagingResults<BlogPostInfo> pagedResults = BLOG_SERVICE.findBlogPosts(BLOG_CONTAINER_NODE, null, null, pagingReq);
+                    assertEquals("Wrong number of blog posts", 3, pagedResults.getPage().size());
+                    Set<NodeRef> recoveredBlogNodes = new HashSet<NodeRef>();
+                    for (BlogPostInfo bpi : pagedResults.getPage())
+                    {
+                        recoveredBlogNodes.add(bpi.getNodeRef());
+                    }
+                    
+                    assertTrue("Missing expected BlogPost NodeRef 71", recoveredBlogNodes.contains(blogPosts.get(1971)));
+                    assertTrue("Missing expected BlogPost NodeRef 81", recoveredBlogNodes.contains(blogPosts.get(1981)));
+                    assertTrue("Missing expected BlogPost NodeRef 91", recoveredBlogNodes.contains(blogPosts.get(1991)));
+                    
+                    
+                    // Find posts before date
+                    pagedResults = BLOG_SERVICE.findBlogPosts(BLOG_CONTAINER_NODE, publishedBefore1980, null, pagingReq);
+                    assertEquals("Wrong blog post count", 1, pagedResults.getPage().size());
+                    
+                    NodeRef blogNode = pagedResults.getPage().get(0).getNodeRef();
+                    assertEquals("Incorrect NodeRef.", blogNode, blogPosts.get(1971));
+                    
+                    List<String> recoveredTags = TAGGING_SERVICE.getTags(blogNode);
+                    assertEquals("Incorrect tags.", tags, recoveredTags);
+                    
+                    
+                    // Find posts after date
+                    pagedResults = BLOG_SERVICE.findBlogPosts(BLOG_CONTAINER_NODE, publishedAfter1980, "hello", pagingReq);
+                    assertEquals("Wrong blog post count", 2, pagedResults.getPage().size());
+                    
+                    blogNode = pagedResults.getPage().get(0).getNodeRef();
+                    assertEquals("Incorrect NodeRef.", blogNode, blogPosts.get(1991));
+                    
+                    
+                    // Find posts between dates
+                    pagedResults = BLOG_SERVICE.findBlogPosts(BLOG_CONTAINER_NODE, publishedBetween1975And1985, "hello", pagingReq);
+                    assertEquals("Wrong blog post count", 1, pagedResults.getPage().size());
+                    
+                    blogNode = pagedResults.getPage().get(0).getNodeRef();
+                    assertEquals("Incorrect NodeRef.", blogNode, blogPosts.get(1981));
                     
                     return null;
                 }

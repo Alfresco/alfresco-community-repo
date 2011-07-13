@@ -63,6 +63,8 @@
     <bean id="blogService" class="org.alfresco.repo.blog.BlogServiceImpl">
        <property name="cannedQueryRegistry" ref="cannedQueryRegistry"/>
        <property name="contentService" ref="ContentService"/>
+       <property name="dictionaryService" ref="DictionaryService"/>
+       <property name="namespaceService" ref="NamespaceService"/>
        <property name="nodeService" ref="NodeService"/>
        <property name="permissionService" ref="PermissionService"/>
        <property name="searchService" ref="SearchService"/>

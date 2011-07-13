@@ -52,11 +52,20 @@
        <property name="methodSecurity" ref="CalendarService_security_listCalendarEntries"/>
    </bean>
 
+   <!-- The multiple site, Date filtering GetChildren Canned Query Factory -->
+   <bean name="calendarGetCalendarEntriesCannedQueryFactory" class="org.alfresco.repo.calendar.cannedqueries.GetCalendarEntriesCannedQueryFactory">
+       <property name="registry" ref="calendarCannedQueryRegistry"/>
+       <property name="tenantService" ref="tenantService"/>
+       <property name="nodeDAO" ref="nodeDAO"/>
+       <property name="qnameDAO" ref="qnameDAO"/>
+       <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
+       <property name="methodSecurity" ref="CalendarService_security_listCalendarEntries"/>
+   </bean>
+
    <!-- Calendar Service base bean -->
 	<bean id="calendarService" class="org.alfresco.repo.calendar.CalendarServiceImpl">
         <property name="nodeService" ref="NodeService"/>
         <property name="siteService" ref="SiteService"/>
-        <property name="searchService" ref="SearchService" /> <!-- TODO Temp -->
         <property name="taggingService" ref="TaggingService"/>
         <property name="permissionService" ref="PermissionService"/>
         <property name="transactionService" ref="transactionService" />

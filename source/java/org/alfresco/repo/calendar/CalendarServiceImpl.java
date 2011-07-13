@@ -32,6 +32,8 @@ import org.alfresco.query.CannedQueryFactory;
 import org.alfresco.query.CannedQueryResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.calendar.cannedqueries.GetCalendarEntriesCannedQuery;
+import org.alfresco.repo.calendar.cannedqueries.GetCalendarEntriesCannedQueryFactory;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -67,6 +69,7 @@ public class CalendarServiceImpl implements CalendarService
     private static final int MAX_QUERY_ENTRY_COUNT = 10000;
 
     private static final String CANNED_QUERY_GET_CHILDREN = "calendarGetChildrenCannedQueryFactory";
+    private static final String CANNED_QUERY_GET_ENTRIES = "calendarGetCalendarEntriesCannedQueryFactory";
     
     /**
      * The logger
@@ -75,11 +78,10 @@ public class CalendarServiceImpl implements CalendarService
     
     private NodeService nodeService;
     private SiteService siteService;
-    private SearchService searchService; // TODO Temp only
     private TaggingService taggingService;
     private PermissionService permissionService;
     private TransactionService transactionService;
-    private NamedObjectRegistry<CannedQueryFactory<NodeRef>> cannedQueryRegistry;
+    private NamedObjectRegistry<CannedQueryFactory<? extends Object>> cannedQueryRegistry;
     
     public void setNodeService(NodeService nodeService)
     {
@@ -89,14 +91,6 @@ public class CalendarServiceImpl implements CalendarService
     public void setSiteService(SiteService siteService)
     {
         this.siteService = siteService;
-    }
-    
-    /**
-     * TODO Temp only
-     */
-    public void setSearchService(SearchService searchService)
-    {
-        this.searchService = searchService;
     }
     
     public void setTaggingService(TaggingService taggingService)
@@ -117,7 +111,7 @@ public class CalendarServiceImpl implements CalendarService
     /**
      * Set the registry of {@link CannedQueryFactory canned queries}
      */
-    public void setCannedQueryRegistry(NamedObjectRegistry<CannedQueryFactory<NodeRef>> cannedQueryRegistry)
+    public void setCannedQueryRegistry(NamedObjectRegistry<CannedQueryFactory<? extends Object>> cannedQueryRegistry)
     {
         this.cannedQueryRegistry = cannedQueryRegistry;
     }
@@ -360,9 +354,6 @@ public class CalendarServiceImpl implements CalendarService
        nodeService.deleteNode(entry.getNodeRef());
     }
 
-    /**
-     * TODO Switch to delegating 
-     */
     @Override
     public PagingResults<CalendarEntry> listCalendarEntries(
           String siteShortName, PagingRequest paging) 
@@ -402,17 +393,35 @@ public class CalendarServiceImpl implements CalendarService
        {
           return listCalendarEntries(siteShortNames[0], paging);
        }
-       
-       // TODO Use search for now
-       return null;
+
+       // Use the date one with no dates
+       return listCalendarEntries(siteShortNames, null, null, paging);
     }
     
     @Override
     public PagingResults<CalendarEntry> listCalendarEntries(
           String[] siteShortNames, Date from, Date to, PagingRequest paging) 
     {
-       // TODO Use search for now
-       return null;
+       // Get the containers
+       List<NodeRef> containersL = new ArrayList<NodeRef>();
+       for(String siteShortName : siteShortNames)
+       {
+          NodeRef container = getSiteCalendarContainer(siteShortName, false);
+          if(container != null)
+          {
+             containersL.add(container);
+          }
+       }
+       NodeRef[] containers = containersL.toArray(new NodeRef[containersL.size()]);
+       
+       // Run the canned query
+       GetCalendarEntriesCannedQueryFactory cqFactory = (GetCalendarEntriesCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_GET_ENTRIES);
+       GetCalendarEntriesCannedQuery cq = (GetCalendarEntriesCannedQuery)cqFactory.getCannedQuery(
+             containers, from, to, paging
+       );
+       
+       // Execute the canned query
+       return cq.execute();
     }
     
     /**

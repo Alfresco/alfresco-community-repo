@@ -175,7 +175,7 @@
 			<title>Can this resource be enabled/disabled.</title>
 			<properties>
 				<property name="trx:enabled">
-					<title>Is this enabled.</title>
+					<title>Enabled</title>
 					<type>d:boolean</type>
 					<mandatory>true</mandatory>
 				</property>

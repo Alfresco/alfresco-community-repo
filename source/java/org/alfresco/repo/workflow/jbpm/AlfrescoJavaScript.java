@@ -20,16 +20,17 @@ package org.alfresco.repo.workflow.jbpm;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.dom4j.Element;
@@ -65,16 +66,19 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
     
     private static JpdlXmlReader jpdlReader = new JpdlXmlReader((InputSource)null);
     private ServiceRegistry services;
+    private NodeRef companyHome;
     private Element script;
     private String runas;
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.jbpm.JBPMSpringActionHandler#initialiseHandler(org.springframework.beans.factory.BeanFactory)
+    /**
+     * {@inheritDoc}
      */
     @Override
     protected void initialiseHandler(BeanFactory factory)
     {
-        services = (ServiceRegistry)factory.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        this.services = (ServiceRegistry)factory.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        Repository repositoryHelper = (Repository)factory.getBean("repositoryHelper");
+        this.companyHome = repositoryHelper.getCompanyHome();
     }
 
     /* (non-Javadoc)
@@ -122,7 +126,7 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
 		String user = AuthenticationUtil.getFullyAuthenticatedUser();
 		if (runas == null && user !=null)
 		{
-             return executeScript(executionContext, services, expression, variableAccesses);
+             return executeScript(executionContext, services, expression, variableAccesses, companyHome);
 		}
 		else
         {
@@ -134,21 +138,20 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
     		{
     			validateRunAsUser();
     		}
-        	return executeScriptAs(runAsUser, expression, executionContext, services, variableAccesses);
+        	return executeScriptAs(runAsUser, expression, executionContext, variableAccesses);
         }
 	}
 
-	private static Object executeScriptAs(String runAsUser,
+	private Object executeScriptAs(String runAsUser,
 			final String expression,
 			final ExecutionContext executionContext,
-			final ServiceRegistry services,
 			final List<VariableAccess> variableAccesses) {
 		// execute as specified runAsUser
 		return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
 		{
 			public Object doWork() throws Exception
 			{
-				return executeScript(executionContext, services, expression, variableAccesses);
+				return executeScript(executionContext, services, expression, variableAccesses,companyHome);
 			}
 		}, runAsUser);
 	}
@@ -252,11 +255,12 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
      * @param services  Alfresco service registry
      * @param expression  script to execute
      * @param variableAccesses  (optional) list of jBPM variables to map into script (all, if not supplied)
+     * @param companyHome TODO
      * @return  script result
      */
-    public static Object executeScript(ExecutionContext context, ServiceRegistry services, String expression, List<VariableAccess> variableAccesses)
+    public static Object executeScript(ExecutionContext context, ServiceRegistry services, String expression, List<VariableAccess> variableAccesses, NodeRef companyHome)
     {
-        Map<String, Object> inputMap = createInputMap(context, services, variableAccesses);
+        Map<String, Object> inputMap = createInputMap(services, companyHome, context, variableAccesses);
         ScriptService scriptService = services.getScriptService();
         scriptService.buildCoreModel(inputMap);
         Object result = scriptService.executeScriptString(expression, inputMap);
@@ -329,26 +333,25 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
      * Construct map of arguments to pass to script
      * 
      * Based on the <variable> elements of the action configuration.
-     * 
+     * @param companyHome TODO
      * @param executionContext  the execution context
      * @param variableAccesses  the variable configuration
+     * 
      * @return  the map of script arguments
      */
-    private static Map<String, Object> createInputMap(ExecutionContext executionContext, ServiceRegistry services, List<VariableAccess> variableAccesses)
+    private static Map<String, Object> createInputMap(ServiceRegistry services, NodeRef companyHome, ExecutionContext executionContext, List<VariableAccess> variableAccesses)
     {
-        Map<String, Object> inputMap = new HashMap<String, Object>();
+        ScriptService scriptService = services.getScriptService();
 
         // initialise global script variables
-        JBPMNode personNode = getPersonNode(executionContext, services);
-        if (personNode != null)
+        NodeRef person = getPersonNode(services);
+        NodeRef userHome = null;
+        if (person != null)
         {
-            inputMap.put("person", personNode );
-            NodeRef homeSpace = (NodeRef)services.getNodeService().getProperty(personNode.getNodeRef(), ContentModel.PROP_HOMEFOLDER);
-            if (homeSpace != null)
-            {
-                inputMap.put("userhome", new JBPMNode(homeSpace, services));
-            }
+            NodeService nodeService = services.getNodeService();
+            userHome = (NodeRef)nodeService.getProperty(person, ContentModel.PROP_HOMEFOLDER);
         }
+        Map<String, Object> inputMap = scriptService.buildDefaultModel(person, companyHome, userHome, null, null, null);
         
         // initialise process variables
         Token token = executionContext.getToken();
@@ -405,15 +408,12 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
     }
 
 
-	private static JBPMNode getPersonNode(ExecutionContext executionContext, ServiceRegistry services) {
+	private static NodeRef getPersonNode(ServiceRegistry services) {
 		String userName = AuthenticationUtil.getFullyAuthenticatedUser();
 		if(userName != null)
 		{
 			NodeRef person = services.getPersonService().getPerson(userName);
-			if(person !=null)
-			{
-				return new JBPMNode(person, services);
-			}
+		    return person;
 		}
 		return null;
 	}

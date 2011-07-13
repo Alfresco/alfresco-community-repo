@@ -43,6 +43,7 @@ public class WCMTestSuite extends TestSuite
     {
         TestSuite suite = new TestSuite();
         
+        suite.addTestSuite(WCMAspectTest.class);
         suite.addTestSuite(WebProjectServiceImplTest.class);
         suite.addTestSuite(AssetServiceImplTest.class);
         suite.addTestSuite(SandboxServiceImplTest.class);

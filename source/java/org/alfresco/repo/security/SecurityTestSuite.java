@@ -18,9 +18,11 @@
  */
 package org.alfresco.repo.security;
 
+import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
+import org.alfresco.repo.audit.access.AccessAuditorTest;
 import org.alfresco.repo.ownable.impl.OwnableServiceTest;
 import org.alfresco.repo.security.authentication.AuthenticationBootstrapTest;
 import org.alfresco.repo.security.authentication.AuthenticationTest;
@@ -37,6 +39,7 @@ import org.alfresco.repo.security.permissions.impl.acegi.ACLEntryAfterInvocation
 import org.alfresco.repo.security.permissions.impl.acegi.ACLEntryVoterTest;
 import org.alfresco.repo.security.permissions.impl.acegi.FilteringResultSetTest;
 import org.alfresco.repo.security.permissions.impl.model.PermissionModelTest;
+import org.alfresco.repo.security.person.HomeFolderProviderSynchronizerTest;
 import org.alfresco.repo.security.person.PersonTest;
 
 /**
@@ -73,6 +76,8 @@ public class SecurityTestSuite extends TestSuite
         // suite.addTestSuite(ChainingUserRegistrySynchronizerTest.class);
         suite.addTestSuite(OwnableServiceTest.class);    
         suite.addTestSuite(ReadPermissionTest.class);    
+
+        suite.addTest(new JUnit4TestAdapter(HomeFolderProviderSynchronizerTest.class));
 
         return suite;
     }

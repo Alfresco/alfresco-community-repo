@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,17 +19,12 @@
 package org.alfresco.repo.security.person;
 
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.util.PropertyCheck;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.InitializingBean;
@@ -37,6 +32,9 @@ import org.springframework.beans.factory.InitializingBean;
 /**
  * Common support for creating home folders This is hooked into node creation events from Person type objects via the
  * homeFolderManager. Provider must all be wired up to the homeFolderManager.
+ * 
+ * @deprecated 
+ * Depreciated since 4.0. {@link AbstractHomeFolderProvider2} should now be used.
  * 
  * @author Andy Hind
  */
@@ -58,40 +56,34 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
     private StoreRef storeRef;
 
     /**
-     * Service registry to get hold of public services (so taht actions are audited)
+     * Service registry to get hold of public services (so that actions are audited)
      */
     private ServiceRegistry serviceRegistry;
 
-    /**
-     * Tenant service - required for MT-enabled environment, else optional
-     */
-    private TenantService tenantService;
-    
     /**
      * The path to a folder
      */
     private String path;
 
     /**
-     * Cache the result of the path look up.
-     */
-    private Map<String, NodeRef> pathNodeRefs; // MT-aware
-
-    /**
      * The owner to set on creation of a home folder (if unset this will be the uid).
      */
     private String ownerOnCreate;
 
+    /**
+     * PermissionsManager used on creating the home folder
+     */
     private PermissionsManager onCreatePermissionsManager;
 
+    /**
+     * PermissionsManager used on referencing the home folder
+     */
     private PermissionsManager onReferencePermissionsManager;
 
-    public AbstractHomeFolderProvider()
-    {
-        super();
-        
-        pathNodeRefs = new ConcurrentHashMap<String, NodeRef>();
-    }
+    /**
+     * Adaptor for this instance to be a HomeFolderProvider2
+     */
+    private V2Adaptor v2Adaptor = new V2Adaptor(this);
 
     /**
      * Register with the homeFolderManagewr
@@ -99,12 +91,8 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
     public void afterPropertiesSet() throws Exception
     {
         PropertyCheck.mandatory(this, "homeFolderManager", homeFolderManager);
-        homeFolderManager.addProvider(this);
+        homeFolderManager.addProvider(v2Adaptor);
     }
-
-    // === //
-    // IOC //
-    // === //
 
     /**
      * Get the home folder manager.
@@ -116,7 +104,6 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
 
     /**
      * Set the home folder manager.
-     * 
      * @param homeFolderManager
      */
     public void setHomeFolderManager(HomeFolderManager homeFolderManager)
@@ -127,6 +114,7 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
     /**
      * Get the provider name
      */
+    @Override
     public String getName()
     {
         return name;
@@ -135,6 +123,7 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
     /**
      * The provider name is taken from the bean name
      */
+    @Override
     public void setBeanName(String name)
     {
         this.name = name;
@@ -153,7 +142,14 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
      */
     public void setPath(String path)
     {
+        boolean reset = this.path != null;
         this.path = path;
+        
+        // If a reset need to clear caches
+        if (reset)
+        {
+            homeFolderManager.clearCaches(v2Adaptor);
+        }
     }
 
     /**
@@ -201,7 +197,7 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
      */
     public void setTenantService(TenantService tenantService)
     {
-        this.tenantService = tenantService;
+        // keep class signature but no longer use value
     }
 
     /**
@@ -212,9 +208,25 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
         this.onCreatePermissionsManager = onCreatePermissionsManager;
     }
 
+    /**
+     * Gets the PermissionsManager used on creating the home folder
+     */
+    public PermissionsManager getOnCreatePermissionsManager()
+    {
+        return onCreatePermissionsManager;
+    }
+
     public void setOnReferencePermissionsManager(PermissionsManager onReferencePermissionsManager)
     {
         this.onReferencePermissionsManager = onReferencePermissionsManager;
+    }
+
+    /**
+     * Gets the PermissionsManager used on referencing the home folder
+     */
+    public PermissionsManager getOnReferencePermissionsManager()
+    {
+        return onReferencePermissionsManager;
     }
 
     /**
@@ -226,33 +238,27 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
     }
 
     /**
+     * Get the authority to use as the owner of all home folder nodes.
+     */
+    public String getOwnerOnCreate()
+    {
+        return ownerOnCreate;
+    }
+    
+    /**
      * Cache path to node resolution
      */
     protected NodeRef getPathNodeRef()
     {
-        String tenantDomain = (tenantService != null ? tenantService.getCurrentUserDomain() : TenantService.DEFAULT_DOMAIN);
-        
-        NodeRef pathNodeRef = pathNodeRefs.get(tenantDomain);
-        if (pathNodeRef == null)
-        {
-            pathNodeRef = resolvePath(path);
-            pathNodeRefs.put(tenantDomain, pathNodeRef);
-        }
-        return pathNodeRef;
+        return homeFolderManager.getRootPathNodeRef(v2Adaptor);
     }
 
     /**
-     * Utility metho to resolve paths to nodes.
+     * Utility method to resolve paths to nodes.
      */
     protected NodeRef resolvePath(String pathToResolve)
     {
-        List<NodeRef> refs = serviceRegistry.getSearchService().selectNodes(serviceRegistry.getNodeService().getRootNode(storeRef), pathToResolve, null,
-                serviceRegistry.getNamespaceService(), false);
-        if (refs.size() != 1)
-        {
-            throw new IllegalStateException("Non-unique path: found : " + pathToResolve + " " + refs.size());
-        }
-        return refs.get(0);
+        return homeFolderManager.resolvePath(v2Adaptor, pathToResolve);
     }
 
     /**
@@ -260,69 +266,98 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
      */
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
-        AuthenticationUtil.RunAsWork<NodeRef> action = new OnCreateNode(childAssocRef);
-        AuthenticationUtil.runAs(action, AuthenticationUtil.getSystemUserName());
+        homeFolderManager.homeFolderCreateAndSetPermissions(v2Adaptor, childAssocRef.getChildRef());
     }
 
     /**
-     * Abstract implementation to find/create the approriate home space.
+     * Abstract implementation to find/create the appropriate home space.
      */
     protected abstract HomeSpaceNodeRef getHomeFolder(NodeRef person);
-
+    
     /**
-     * Helper class to encapsulate the createion settinhg permissions etc
-     * 
-     * @author Andy Hind
+     * Get adaptor for this instance to be a HomeFolderProvider2
      */
-    private class OnCreateNode implements AuthenticationUtil.RunAsWork<NodeRef>
+    protected V2Adaptor getV2Adaptor()
     {
-        ChildAssociationRef childAssocRef;
-
-        OnCreateNode(ChildAssociationRef childAssocRef)
+        return v2Adaptor;
+    }
+    
+    /**
+     * Adaptor to the HomeFolderProvider2 interface.
+     */
+    public class V2Adaptor implements HomeFolderProvider2
+    {
+        AbstractHomeFolderProvider abstractHomeFolderProvider;
+        
+        public V2Adaptor(AbstractHomeFolderProvider abstractHomeFolderProvider)
         {
-            this.childAssocRef = childAssocRef;
+            this.abstractHomeFolderProvider = abstractHomeFolderProvider;
+            abstractHomeFolderProvider.v2Adaptor = this;
         }
 
-        public NodeRef doWork() throws Exception
+        @Override
+        public String getName()
         {
+            return abstractHomeFolderProvider.getName();
+        }
 
-            // Find person
-            NodeRef personNodeRef = childAssocRef.getChildRef();
-            // Get home folder
-            HomeSpaceNodeRef homeFolder = getHomeFolder(personNodeRef);
-            // If it exists
-            if (homeFolder.getNodeRef() != null)
-            {
-                // Get uid and keep
-                String uid = DefaultTypeConverter.INSTANCE.convert(String.class, serviceRegistry.getNodeService().getProperty(personNodeRef, ContentModel.PROP_USERNAME));
+        @Override
+        public String getStoreUrl()
+        {
+            return abstractHomeFolderProvider.getStoreRef().toString();
+        }
 
-                // If created or found then set (other wise it was already set correctly)
-                if (homeFolder.getStatus() != HomeSpaceNodeRef.Status.VALID)
-                {
-                    serviceRegistry.getNodeService().setProperty(personNodeRef, ContentModel.PROP_HOMEFOLDER, homeFolder.getNodeRef());
-                }
+        @Override
+        public String getRootPath()
+        {
+            return abstractHomeFolderProvider.getPath();
+        }
 
-                String ownerToSet = ownerOnCreate == null ? uid : ownerOnCreate;
-                // If created..
-                if (homeFolder.getStatus() == HomeSpaceNodeRef.Status.CREATED)
-                {
-                    if (onCreatePermissionsManager != null)
-                    {
-                        onCreatePermissionsManager.setPermissions(homeFolder.getNodeRef(), ownerToSet, uid);
-                    }
-                }
-                else
-                {
-                    if (onReferencePermissionsManager != null)
-                    {
-                        onReferencePermissionsManager.setPermissions(homeFolder.getNodeRef(), ownerToSet, uid);
-                    }
-                }
+        @Override
+        public List<String> getHomeFolderPath(NodeRef person)
+        {
+            return (abstractHomeFolderProvider instanceof UIDBasedHomeFolderProvider)
+            ? ((UIDBasedHomeFolderProvider)abstractHomeFolderProvider).getHomeFolderPath(person)
+            : null;
+        }
 
-            }
-            return homeFolder.getNodeRef();
+        @Override
+        public NodeRef getTemplateNodeRef()
+        {
+            return (abstractHomeFolderProvider instanceof UIDBasedHomeFolderProvider)
+            ? ((UIDBasedHomeFolderProvider)abstractHomeFolderProvider).getTemplateNodeRef()
+            : null;
+        }
 
+        @Override
+        public String getOwner()
+        {
+            return abstractHomeFolderProvider.getOwnerOnCreate();
+        }
+
+        @Override
+        public PermissionsManager getOnCreatePermissionsManager()
+        {
+            return abstractHomeFolderProvider.getOnReferencePermissionsManager();
+        }
+
+        @Override
+        public PermissionsManager getOnReferencePermissionsManager()
+        {
+            return abstractHomeFolderProvider.getOnReferencePermissionsManager();
+        }
+
+        @Override
+        public HomeSpaceNodeRef getHomeFolder(NodeRef person)
+        {
+            return abstractHomeFolderProvider.getHomeFolder(person);
+        }
+
+        // The old way to create the home folder, so must still call it in case
+        // the method is overridden
+        public void onCreateNode(ChildAssociationRef childAssocRef)
+        {
+            abstractHomeFolderProvider.onCreateNode(childAssocRef);
         }
     }
-
 }

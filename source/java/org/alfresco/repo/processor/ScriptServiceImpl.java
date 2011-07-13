@@ -441,8 +441,14 @@ public class ScriptServiceImpl implements ScriptService
         
         // add the well known node wrapper objects
         model.put("companyhome", companyHome);
-        model.put("userhome", userHome);
-        model.put("person", person);
+        if (userHome!= null)
+        {
+            model.put("userhome", userHome);
+        }
+        if (person != null)
+        {
+            model.put("person", person);
+        }
         if (script != null)
         {
             model.put("script", script);

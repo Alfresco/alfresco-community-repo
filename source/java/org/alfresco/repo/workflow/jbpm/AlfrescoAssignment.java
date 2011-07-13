@@ -87,7 +87,7 @@ public class AlfrescoAssignment extends JBPMSpringAssignmentHandler
                 if (actorValStr.startsWith("#{"))
                 {
                     String expression = actorValStr.substring(2, actorValStr.length() -1);
-                    Object eval = AlfrescoJavaScript.executeScript(executionContext, services, expression, null);
+                    Object eval = AlfrescoJavaScript.executeScript(executionContext, services, expression, null, null);
                     if (eval == null)
                     {
                         throw new WorkflowException("actor expression '" + actorValStr + "' evaluates to null");
@@ -128,7 +128,7 @@ public class AlfrescoAssignment extends JBPMSpringAssignmentHandler
                 if (pooledactorValStr.startsWith("#{"))
                 {
                     String expression = pooledactorValStr.substring(2, pooledactorValStr.length() -1);
-                    Object eval = AlfrescoJavaScript.executeScript(executionContext, services, expression, null);
+                    Object eval = AlfrescoJavaScript.executeScript(executionContext, services, expression, null, null);
                     if (eval == null)
                     {
                         throw new WorkflowException("pooledactors expression '" + pooledactorValStr + "' evaluates to null");

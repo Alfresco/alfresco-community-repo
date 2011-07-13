@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,35 +18,20 @@
  */
 package org.alfresco.repo.security.person;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 
 /**
- * Set a home space from a simple path.
+ * HomeFolderProvider that simply uses the root path for the home folder.
+ *
+ * @deprecated 
+ * Depreciated since 4.0. {@link ExistingPathBasedHomeFolderProvider2} should now be used.
  * 
  * @author Andy Hind
  */
 public class ExistingPathBasedHomeFolderProvider extends AbstractHomeFolderProvider
 {
-
-    public ExistingPathBasedHomeFolderProvider()
-    {
-        super();
-    }
-
     protected HomeSpaceNodeRef getHomeFolder(NodeRef person)
     {
-        NodeRef existingHomeFolder = DefaultTypeConverter.INSTANCE.convert(NodeRef.class, getServiceRegistry().getNodeService().getProperty(
-                person, ContentModel.PROP_HOMEFOLDER));
-        if (existingHomeFolder == null)
-        {
-            return new HomeSpaceNodeRef(getPathNodeRef(), HomeSpaceNodeRef.Status.REFERENCED);
-        }
-        else
-        {
-            return new HomeSpaceNodeRef(existingHomeFolder, HomeSpaceNodeRef.Status.VALID);
-        }
+        return getHomeFolderManager().getHomeFolder(getV2Adaptor(), person, true);
     }
-
 }

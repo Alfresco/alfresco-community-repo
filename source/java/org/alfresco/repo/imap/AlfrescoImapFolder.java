@@ -480,7 +480,14 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
         {
             logger.debug("[getMessageInternal] " + this);
         }
-        AbstractMimeMessage mes = (AbstractMimeMessage) messages.get(uid).getMimeMessage();
+        SimpleStoredMessage storedMessage = messages.get(uid);
+        if (storedMessage == null)
+        {
+            messagesCache.remove(uid);
+            msnCache.remove(uid);
+            return null;
+        }
+        AbstractMimeMessage mes = (AbstractMimeMessage) storedMessage.getMimeMessage();
         FileInfo mesInfo = mes.getMessageInfo();
 
         Date modified = (Date) serviceRegistry.getNodeService().getProperty(mesInfo.getNodeRef(), ContentModel.PROP_MODIFIED);
@@ -1181,7 +1188,10 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
                 if (nodeService.hasAspect(folderNodeRef, ImapModel.ASPECT_IMAP_FOLDER))
                 {
                     modifDate = ((Long) nodeService.getProperty(folderNodeRef, ImapModel.PROP_UIDVALIDITY));
-                    return (modifDate - YEAR_2005) / 1000;
+                    // we need tens part of the second at least, because
+                    // we should avoid issues when several changes were completed within a second.
+                    // so, divide by 100 instead of 1000. see ImapServiceImplCacheTest#testRepoBehaviourWithFoldersCache()
+                    return (modifDate - YEAR_2005) / 100; 
                 }  
             }
             return new Long(0);

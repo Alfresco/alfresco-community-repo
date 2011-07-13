@@ -686,6 +686,18 @@
             <value>${system.usages.enabled}</value>
         </property>
     </bean>
+    
+    <!-- Synchronization of home folders locations to their HomeFolderProvider -->
+    <bean id="homeFolderProviderSynchronizer" class="org.alfresco.repo.security.person.HomeFolderProviderSynchronizer">
+        <constructor-arg ref="global-properties" />
+        <constructor-arg ref="transactionService" />
+        <constructor-arg ref="authorityService" />
+        <constructor-arg ref="personService" />
+        <constructor-arg ref="nodeService" />
+        <constructor-arg ref="fileFolderService" />
+        <constructor-arg ref="homeFolderManager" />
+        <constructor-arg ref="tenantAdminService" />
+    </bean>
 
     <!-- User registry synchronization jobs (e.g. LDAP) -->
     <bean id="Synchronization" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">

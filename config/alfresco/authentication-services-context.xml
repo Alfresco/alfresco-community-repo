@@ -375,13 +375,22 @@
             <ref bean="userHomesHomeFolderProvider" />
         </property>
         <property name="enableHomeFolderCreationAsPeopleAreCreated">
-           <!--<value>false</value> -->
             <value>${home.folder.creation.eager}</value>
+        </property>
+        <!-- Requests services via ServiceRegistry for audit -->
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry" />
+        </property>
+        <property name="tenantService">
+            <ref bean="tenantService" />
         </property>
     </bean>
 
-    <bean name="baseHomeFolderProvider" class="org.alfresco.repo.security.person.AbstractHomeFolderProvider" abstract="true">
-        <!-- Requests services via ServiceRegistry for auditability -->
+    <!-- deprecated use baseHomeFolderProvider2 -->
+    <bean name="baseHomeFolderProvider"
+        class="org.alfresco.repo.security.person.AbstractHomeFolderProvider"
+        abstract="true">
+        <!-- Requests services via ServiceRegistry for audit -->
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry" />
         </property>
@@ -393,8 +402,47 @@
         </property>
     </bean>
 
-    <bean name="companyHomeFolderProvider" class="org.alfresco.repo.security.person.ExistingPathBasedHomeFolderProvider" parent="baseHomeFolderProvider">
-        <property name="path">
+    <bean name="baseHomeFolderProvider2"
+        class="org.alfresco.repo.security.person.AbstractHomeFolderProvider2"
+        abstract="true">
+        <property name="homeFolderManager">
+            <ref bean="homeFolderManager" />
+        </property>
+    </bean>
+
+    <bean name="existingHomeFolderProvider"
+        class="org.alfresco.repo.security.person.ExistingPathBasedHomeFolderProvider2"
+        abstract="true"  parent="baseHomeFolderProvider2">
+    </bean>
+
+    <bean name="usernameHomeFolderProvider"
+        class="org.alfresco.repo.security.person.UsernameHomeFolderProvider"
+        abstract="true"  parent="baseHomeFolderProvider2">
+        <property name="onCreatePermissionsManager">
+            <ref bean="defaultOnCreatePermissionsManager" />
+        </property>
+        <property name="onReferencePermissionsManager">
+            <ref bean="defaultOnReferencePermissionsManager" />
+        </property>
+    </bean>
+
+    <bean name="regexHomeFolderProvider"
+        class="org.alfresco.repo.security.person.RegexHomeFolderProvider"
+        abstract="true" parent="usernameHomeFolderProvider">
+        <property name="propertyName">
+             <value>${spaces.user_homes.regex.key}</value>
+        </property>
+        <property name="pattern">
+           <value>${spaces.user_homes.regex.pattern}</value>
+        </property>
+        <property name="groupOrder">
+            <value>${spaces.user_homes.regex.group_order}</value>
+        </property>
+    </bean>
+
+
+    <bean name="companyHomeFolderProvider" parent="existingHomeFolderProvider">
+        <property name="rootPath">
            <value>/${spaces.company_home.childname}</value>
         </property>
         <property name="storeUrl">
@@ -402,7 +450,8 @@
         </property>
     </bean>
 
-    <bean name="guestHomeFolderProviderPermissionsManager" class="org.alfresco.repo.security.person.PermissionsManagerImpl">
+    <bean name="guestHomeFolderProviderPermissionsManager"
+        class="org.alfresco.repo.security.person.PermissionsManagerImpl">
         <property name="permissionService">
             <ref bean="permissionServiceImpl" />
         </property>
@@ -417,12 +466,8 @@
     </bean>
          
     
-    <bean name="guestHomeFolderProvider" class="org.alfresco.repo.security.person.ExistingPathBasedHomeFolderProvider" parent="baseHomeFolderProvider">
-        <!-- Requests services via ServiceRegistry for auditability -->
-        <property name="serviceRegistry">
-            <ref bean="ServiceRegistry" />
-        </property>
-        <property name="path">
+    <bean name="guestHomeFolderProvider" parent="existingHomeFolderProvider">
+        <property name="rootPath">
            <value>/${spaces.company_home.childname}/${spaces.guest_home.childname}</value>
         </property>
         <property name="storeUrl">
@@ -436,9 +481,12 @@
         </property>
     </bean>
 
-    <bean name="bootstrapHomeFolderProvider" class="org.alfresco.repo.security.person.BootstrapHomeFolderProvider" parent="baseHomeFolderProvider" />
+    <bean name="bootstrapHomeFolderProvider"
+        class="org.alfresco.repo.security.person.BootstrapHomeFolderProvider"
+        parent="baseHomeFolderProvider2" />
 
-    <bean name="defaultOnCreatePermissionsManager" class="org.alfresco.repo.security.person.PermissionsManagerImpl" >
+    <bean name="defaultOnCreatePermissionsManager"
+        class="org.alfresco.repo.security.person.PermissionsManagerImpl" >
         <property name="permissionService">
             <ref bean="permissionServiceImpl" />
         </property>
@@ -460,7 +508,8 @@
         </property>
     </bean>
     
-    <bean name="defaultOnReferencePermissionsManager" class="org.alfresco.repo.security.person.PermissionsManagerImpl" >
+    <bean name="defaultOnReferencePermissionsManager"
+        class="org.alfresco.repo.security.person.PermissionsManagerImpl" >
         <property name="permissionService">
             <ref bean="permissionServiceImpl" />
         </property>
@@ -474,42 +523,34 @@
         </property>
     </bean>
     
-    <bean name="personalHomeFolderProvider" class="org.alfresco.repo.security.person.UIDBasedHomeFolderProvider"  parent="baseHomeFolderProvider">
-        <!-- Requests services via ServiceRegistry for auditability -->
-        <property name="serviceRegistry">
-            <ref bean="ServiceRegistry" />
-        </property>
-        <property name="path">
+    <bean name="personalHomeFolderProvider" parent="usernameHomeFolderProvider">
+        <property name="rootPath">
            <value>/${spaces.company_home.childname}</value>
         </property>
         <property name="storeUrl">
            <value>${spaces.store}</value>
         </property>
-        <property name="onCreatePermissionsManager">
-            <ref bean="defaultOnCreatePermissionsManager" />
-        </property>
-        <property name="onReferencePermissionsManager">
-            <ref bean="defaultOnReferencePermissionsManager" />
-        </property>
     </bean>
 
-    <bean name="userHomesHomeFolderProvider" class="org.alfresco.repo.security.person.UIDBasedHomeFolderProvider" parent="baseHomeFolderProvider">
-        <property name="path">
+    <bean name="userHomesHomeFolderProvider" parent="usernameHomeFolderProvider">
+        <property name="rootPath">
            <value>/${spaces.company_home.childname}/${spaces.user_homes.childname}</value>
         </property>
         <property name="storeUrl">
            <value>${spaces.store}</value>
         </property>
-        <property name="onCreatePermissionsManager">
-            <ref bean="defaultOnCreatePermissionsManager" />
+    </bean>
+    
+    <bean name="largeHomeFolderProvider" parent="regexHomeFolderProvider">
+        <property name="rootPath">
+           <value>/${spaces.company_home.childname}/${spaces.user_homes.childname}</value>
         </property>
-        <property name="onReferencePermissionsManager">
-            <ref bean="defaultOnReferencePermissionsManager" />
+        <property name="storeUrl">
+           <value>${spaces.store}</value>
         </property>
     </bean>
     
     
-
     <!-- The ticket component.                                              -->
     <!-- Used for reauthentication                                          -->
     <bean id="ticketComponent" class="org.springframework.aop.framework.ProxyFactoryBean">

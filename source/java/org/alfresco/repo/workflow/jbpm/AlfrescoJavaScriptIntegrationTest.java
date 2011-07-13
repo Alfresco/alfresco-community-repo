@@ -1,12 +1,16 @@
 package org.alfresco.repo.workflow.jbpm;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.Serializable;
 import java.util.HashMap;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.scripts.ScriptException;
@@ -30,6 +34,8 @@ import org.jbpm.context.exe.ContextInstance;
 import org.jbpm.graph.exe.ExecutionContext;
 import org.jbpm.graph.exe.Token;
 import org.jbpm.taskmgmt.exe.TaskInstance;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 public class AlfrescoJavaScriptIntegrationTest extends BaseAlfrescoSpringTest
 {
@@ -193,6 +199,39 @@ public class AlfrescoJavaScriptIntegrationTest extends BaseAlfrescoSpringTest
 	    assertEquals(docLibB, nodeService.getPrimaryParent(doc).getParentRef());
 	}
 
+	public void testScopeVariables() throws Exception
+    {
+	    String admin = AuthenticationUtil.getAdminUserName();
+	    AuthenticationUtil.setFullyAuthenticatedUser(admin);
+        NodeRef person = personService.getPerson(admin);
+        Serializable userHome = nodeService.getProperty(person, ContentModel.PROP_HOMEFOLDER);
+        
+        AlfrescoJavaScript scriptHandler = new AlfrescoJavaScript();
+        String key = "result";
+        
+        // Check person node set.
+        Element script = buildScript("executionContext.setVariable('" + key + "', person)");
+        scriptHandler.setScript(script);
+        scriptHandler.execute(context);
+        ScriptNode value = (ScriptNode) variables.get(key);
+        assertEquals(person, value.getNodeRef());
+        
+        // Check user home set.
+        script = buildScript("executionContext.setVariable('" + key + "', userhome)");
+        scriptHandler.setScript(script);
+        scriptHandler.execute(context);
+        value = (ScriptNode) variables.get(key);
+        assertEquals(userHome, value.getNodeRef());
+        
+        // Check company home set.
+        NodeRef companyHome = repository.getCompanyHome();
+        script = buildScript("executionContext.setVariable('" + key + "', companyhome)");
+        scriptHandler.setScript(script);
+        scriptHandler.execute(context);
+        value = (ScriptNode) variables.get(key);
+        assertEquals(companyHome, value.getNodeRef());
+    }
+	
 	private Element buildScript(String expression) {
 		Element script = DocumentHelper.createElement("script");
 		script.setText(expression);
@@ -203,7 +242,8 @@ public class AlfrescoJavaScriptIntegrationTest extends BaseAlfrescoSpringTest
 	@SuppressWarnings("deprecation")
 	protected void onSetUp() throws Exception {
 		super.onSetUp();
-		services = (ServiceRegistry) applicationContext.getBean("ServiceRegistry");
+		
+		this.services = (ServiceRegistry) applicationContext.getBean("ServiceRegistry");
 		repository = (Repository) applicationContext.getBean("repositoryHelper");
 		personService = services.getPersonService();
 		createUser(BASIC_USER);
@@ -214,7 +254,25 @@ public class AlfrescoJavaScriptIntegrationTest extends BaseAlfrescoSpringTest
 		when(context.getContextInstance()).thenReturn(contextInstance);
 		variables = new HashMap<String, Object>();
 		when(contextInstance.getVariables()).thenReturn(variables);
-		when(contextInstance.getVariables((Token) any())).thenReturn(variables);
+		when(contextInstance.getVariables( any(Token.class))).thenReturn(variables);
+		when(context.getVariable(anyString())).thenAnswer(new Answer<Object>()
+        {
+            public Object answer(InvocationOnMock invocation) throws Throwable
+            {
+                String key = (String)invocation.getArguments()[0];
+                return variables.get(key);
+            }
+        });
+		doAnswer(new Answer<Void>()
+        {
+            public Void answer(InvocationOnMock invocation) throws Throwable
+            {
+                String key = (String)invocation.getArguments()[0];
+                Object value= invocation.getArguments()[1];
+                variables.put(key, value);
+                return null;
+            }
+        }).when(context).setVariable(anyString(), any());
 	}
 	
     private void createUser(String userName)
@@ -236,9 +294,9 @@ public class AlfrescoJavaScriptIntegrationTest extends BaseAlfrescoSpringTest
     public static class TestUserStore {
     	private String runAsUser;
     	private String fullUser;
-    	private JBPMNode person = null;
+    	private ScriptNode person = null;
     	
-		public void storeUsers(JBPMNode user)
+		public void storeUsers(ScriptNode user)
     	{
     		fullUser = AuthenticationUtil.getFullyAuthenticatedUser();
     		runAsUser = AuthenticationUtil.getRunAsUser();

@@ -148,7 +148,7 @@ public class ForEachFork extends JBPMSpringActionHandler
     private Collection<?> evaluateForEachExpression(final ExecutionContext executionContext, String forEachText)
     {
         String expression = forEachText.substring(2, forEachText.length() -1);
-        Object result = AlfrescoJavaScript.executeScript(executionContext, services, expression, null);
+        Object result = AlfrescoJavaScript.executeScript(executionContext, services, expression, null, null);
         if (result == null)
         {
             throw new WorkflowException("forEach expression '" + forEachText + "' evaluates to null");

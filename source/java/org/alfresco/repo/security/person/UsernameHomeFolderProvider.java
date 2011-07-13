@@ -28,12 +28,9 @@ import org.alfresco.util.FileNameValidator;
 /**
  * Creates home folders directly under the root path, based on the username of the user.
  * 
- * @deprecated 
- * Depreciated since 4.0. {@link UsernameHomeFolderProvider} should now be used.
- * 
- * @author Andy Hind
+ * @author Alan Davis (based on UIDBasedHomeFolderProvider)
  */
-public class UIDBasedHomeFolderProvider extends ExistingPathBasedHomeFolderProvider
+public class UsernameHomeFolderProvider extends AbstractHomeFolderProvider2
 {
     private String templatePath;
 
@@ -44,11 +41,11 @@ public class UIDBasedHomeFolderProvider extends ExistingPathBasedHomeFolderProvi
         this.templatePath = templatePath;
     }
 
-    protected synchronized NodeRef getTemplateNodeRef()
+    public synchronized NodeRef getTemplateNodeRef()
     {
         if (templateNodeRef == null && templatePath != null)
         {
-            templateNodeRef = resolvePath(templatePath);
+            templateNodeRef = getHomeFolderManager().resolvePath(this, templatePath);
         }
         return templateNodeRef;
     }
@@ -61,8 +58,8 @@ public class UIDBasedHomeFolderProvider extends ExistingPathBasedHomeFolderProvi
         return path;
     }
 
-    protected HomeSpaceNodeRef getHomeFolder(NodeRef person)
+    public HomeSpaceNodeRef getHomeFolder(NodeRef person)
     {
-        return getHomeFolderManager().getHomeFolder(getV2Adaptor(), person, false);
+        return getHomeFolderManager().getHomeFolder(this, person, false);
     }
 }

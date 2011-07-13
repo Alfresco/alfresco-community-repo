@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -22,6 +22,9 @@ import org.alfresco.repo.node.NodeServicePolicies;
 
 /**
  * Interface for home folder providers.
+ * 
+ * @deprecated 
+ * Depreciated since 4.0. {@link HomeFolderProvider2} should now be used.
  * 
  * @author Andy Hind
  */

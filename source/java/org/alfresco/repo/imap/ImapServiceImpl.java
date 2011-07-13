@@ -100,6 +100,8 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.util.FileCopyUtils;
 
+import com.icegreen.greenmail.imap.ImapConstants;
+
 /**
  * @author Dmitry Vaserin
  * @author Arseny Kovalchuk
@@ -214,6 +216,11 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
     public void setFoldersCache(SimpleCache<Serializable, Object> foldersCache)
     {
         this.foldersCache = foldersCache;
+    }
+
+    public SimpleCache<Serializable, Object> getFoldersCache()
+    {
+        return foldersCache;
     }
 
     public FileFolderService getFileFolderService()
@@ -792,11 +799,13 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
             /**
              * Check whether resultFolder is stale
              */
+            /*
             if(resultFolder.isStale())
             {
                 logger.debug("folder is stale");
                 resultFolder = null;
             }
+            */
         }
 
         if (resultFolder == null)
@@ -841,7 +850,7 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
 
                     NodeRef targetNode = fileFolderService.searchSimple(nodeRef, folderNames[i]);
 
-                    if (targetNode == null)
+                    if (i == 0 && targetNode == null)
                     {
                         resultFolder = new AlfrescoImapFolder(user.getQualifiedMailboxName(), serviceRegistry);
                         if (logger.isDebugEnabled())
@@ -1294,6 +1303,20 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
         
         logger.debug("listMailboxes returning size:" + result.size());
 
+        StringBuilder prefix = new StringBuilder(128);
+        prefix.append(ImapConstants.USER_NAMESPACE)
+              .append(AlfrescoImapConst.HIERARCHY_DELIMITER)
+              .append(user.getQualifiedMailboxName())
+              .append(AlfrescoImapConst.HIERARCHY_DELIMITER);
+        int prefixLength = prefix.length();
+        
+        for(AlfrescoImapFolder folder : result)
+        {
+            String cacheKey = folder.getFullName().substring(prefixLength + 1, folder.getFullName().length() - 1);
+            logger.debug("[listMailboxes] Adding the cache entry : " + cacheKey);
+            foldersCache.put(cacheKey, folder);
+        }
+        
         return result;
 
     }
@@ -2150,6 +2173,38 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
         }
     }
     
+
+    public void beforeDeleteNode(NodeRef nodeRef)
+    {
+        
+        NodeRef parentNodeRef = nodeService.getPrimaryParent(nodeRef).getParentRef();
+        if (ContentModel.TYPE_FOLDER.equals(nodeService.getType(nodeRef)))
+        {
+            // If a node is a folder, we need to remove its' cache with its' children cache as well
+            invalidateFolderCacheByNodeRef(nodeRef, true);
+        }
+        else if (ContentModel.TYPE_CONTENT.equals(nodeService.getType(nodeRef)))
+        {
+            // If a node is a content, it is simpler to remove its' parent cache
+            // to avoid of deal with folder messages cache
+            invalidateFolderCacheByNodeRef(parentNodeRef, false);
+        }
+        else
+        {
+            return;
+        }
+        // Add a listener once, when a lots of messsages were created/moved into the folder
+        if (AlfrescoTransactionSupport.getResource(UIDVALIDITY_LISTENER_ALREADY_BOUND) == null)
+        {
+            AlfrescoTransactionSupport.bindListener(new UidValidityTransactionListener(parentNodeRef, nodeService));
+            AlfrescoTransactionSupport.bindResource(UIDVALIDITY_LISTENER_ALREADY_BOUND, true);
+        }
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("[beforeDeleteNode] Node " + nodeRef + " going to be removed. UIDVALIDITY will be changed for " + parentNodeRef);
+        }
+    }
+    
     private class UidValidityTransactionListener extends TransactionListenerAdapter
     {
         
@@ -2202,7 +2257,7 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
                     }
                     if (logger.isDebugEnabled())
                     {
-                        logger.debug("UIDVALIDITY was modified");
+                        logger.debug("UIDVALIDITY was modified for " + folderNodeRef);
                     }
                     return modifDate;
                 }
@@ -2210,6 +2265,69 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
             }, false, true);
         }
         
+    }
+    
+
+    private void invalidateFolderCacheByNodeRef(NodeRef folderNodeRef, boolean invalidateChildren)
+    {
+        if (logger.isDebugEnabled())
+        {
+            if (invalidateChildren)
+            {
+                logger.debug("[invalidateFolderCacheByNodeRef] Invalidate cache entries for " + folderNodeRef);
+            }
+            else
+            {
+                logger.debug("[invalidateFolderCacheByNodeRef] Invalidate cache entries for " + folderNodeRef + " and children");
+            }
+        }
+
+        if (invalidateChildren)
+        {
+            SimpleCache<Serializable, Object> foldersCache = getFoldersCache();
+            List<Serializable> toRemove = new LinkedList<Serializable>();
+            for(Serializable name : foldersCache.getKeys())
+            {
+                AlfrescoImapFolder folder = (AlfrescoImapFolder) foldersCache.get(name);
+                if (folderNodeRef.equals(folder.getFolderInfo().getNodeRef()))
+                {
+                    toRemove.add(name);
+                    break;
+                }
+            }
+            if (toRemove.size() > 0)
+            {
+                String rootName = (String) toRemove.get(0);
+                for(Serializable name : foldersCache.getKeys())
+                {
+                    if (((String) name).startsWith(rootName))
+                    {
+                        toRemove.add(name);
+                    }
+                }
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Caches to invalidate: " + toRemove.toString());
+                 }
+                 for(Serializable name : toRemove)
+                 {
+                     foldersCache.remove(name);
+                 }
+            }
+        }
+        else
+        {
+            SimpleCache<Serializable, Object> foldersCache = getFoldersCache();
+            for(Serializable name : foldersCache.getKeys())
+            {
+                AlfrescoImapFolder folder = (AlfrescoImapFolder) foldersCache.get(name);
+                if (folderNodeRef.equals(folder.getFolderInfo().getNodeRef()))
+                {
+                    foldersCache.remove(name);
+                    break;
+                }
+            }
+        }
     }
     
     /**

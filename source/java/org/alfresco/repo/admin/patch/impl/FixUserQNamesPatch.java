@@ -33,6 +33,7 @@ import org.alfresco.repo.batch.BatchProcessor;
 import org.alfresco.repo.batch.BatchProcessor.BatchProcessWorker;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.importer.ImporterBootstrap;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.RuleService;
@@ -110,18 +111,22 @@ public class FixUserQNamesPatch extends AbstractPatch implements ApplicationEven
                 20,
                 this.applicationEventPublisher, logger, 1000);
 
+        final String runAsUser = AuthenticationUtil.getRunAsUser();
+        
         int updated = batchProcessor.process(new BatchProcessWorker<ChildAssociationRef>()
         {
             public void beforeProcess() throws Throwable
             {
                 // Disable rules
                 ruleService.disableRules();
+                AuthenticationUtil.setRunAsUser(runAsUser);
             }
 
             public void afterProcess() throws Throwable
             {
                 // Enable rules
                 ruleService.enableRules();
+                AuthenticationUtil.clearCurrentSecurityContext();
             }
 
             public String getIdentifier(ChildAssociationRef entry)

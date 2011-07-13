@@ -128,7 +128,13 @@ public class GetCalendarEntriesCannedQueryFactory extends AbstractCannedQueryFac
         
         //FIXME Need tenant service like for GetChildren?
         GetCalendarEntriesCannedQueryParams paramBean = new GetCalendarEntriesCannedQueryParams(
-              containerIds, getQNameId(ContentModel.PROP_NAME), fromDate, toDate
+              containerIds, 
+              getQNameId(ContentModel.PROP_NAME),
+              getQNameId(CalendarModel.TYPE_EVENT),
+              getQNameId(CalendarModel.PROP_FROM_DATE),
+              getQNameId(CalendarModel.PROP_TO_DATE),
+              fromDate, 
+              toDate
         );
         
         CannedQueryPageDetails cqpd = createCQPageDetails(pagingReq);

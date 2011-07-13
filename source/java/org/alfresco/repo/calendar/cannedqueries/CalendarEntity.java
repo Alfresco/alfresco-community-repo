@@ -43,6 +43,9 @@ public class CalendarEntity
     // Supplemental query-related parameters
     private Long parentNodeId;
     private Long nameQNameId;
+    private Long contentTypeQNameId;
+    private Long fromDateQNameId;
+    private Long toDateQNameId;
     
     /**
      * Default constructor
@@ -51,10 +54,14 @@ public class CalendarEntity
     {
     }
     
-    public CalendarEntity(Long parentNodeId, Long nameQNameId)
+    public CalendarEntity(Long parentNodeId, Long nameQNameId, Long contentTypeQNameId,
+                          Long fromDateQNameId, Long toDateQNameId)
     {
         this.parentNodeId = parentNodeId;
         this.nameQNameId = nameQNameId;
+        this.contentTypeQNameId = contentTypeQNameId;
+        this.fromDateQNameId = fromDateQNameId;
+        this.toDateQNameId = toDateQNameId;
     }
     
     public Long getId()
@@ -127,6 +134,7 @@ public class CalendarEntity
         this.toDate = toISO8061;
     }
     
+    
     // Supplemental query-related parameters
     
     public Long getParentNodeId()
@@ -137,5 +145,20 @@ public class CalendarEntity
     public Long getNameQNameId()
     {
         return nameQNameId;
+    }
+
+    public Long getContentTypeQNameId() 
+    {
+       return contentTypeQNameId;
+    }
+
+    public Long getFromDateQNameId() 
+    {
+       return fromDateQNameId;
+    }
+
+    public Long getToDateQNameId() 
+    {
+       return toDateQNameId;
     }
 }

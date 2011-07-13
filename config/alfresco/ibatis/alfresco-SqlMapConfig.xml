@@ -75,6 +75,9 @@ Inbound settings from iBatis
         <!-- Blog CQ -->
         <typeAlias alias="Blog" type="org.alfresco.repo.blog.cannedqueries.BlogEntity"/>
         
+        <!-- Calendar CQ -->
+        <typeAlias alias="Calendar" type="org.alfresco.repo.calendar.cannedqueries.CalendarEntity"/>
+        
         <!-- Copy CQ -->
         <typeAlias alias="CopyParameters" type="org.alfresco.repo.copy.query.CopyParametersEntity"/>
         
@@ -190,6 +193,7 @@ Inbound settings from iBatis
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-usages-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-authorities-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-blogs-common-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/query-calendar-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-copy-common-SqlMap.xml"/>
     </mappers>
     

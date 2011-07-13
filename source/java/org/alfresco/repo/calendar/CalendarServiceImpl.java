@@ -42,7 +42,6 @@ import org.alfresco.service.cmr.calendar.CalendarEntry;
 import org.alfresco.service.cmr.calendar.CalendarService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.tagging.TaggingService;
@@ -119,7 +118,7 @@ public class CalendarServiceImpl implements CalendarService
     /**
      * Fetches the Calendar Container on a site, creating as required if requested.
      */
-    private NodeRef getSiteCalendarContainer(final String siteShortName, boolean create)
+    protected NodeRef getSiteCalendarContainer(final String siteShortName, boolean create)
     {
        if(! siteService.hasContainer(siteShortName, CALENDAR_COMPONENT))
        {
@@ -406,6 +405,13 @@ public class CalendarServiceImpl implements CalendarService
        List<NodeRef> containersL = new ArrayList<NodeRef>();
        for(String siteShortName : siteShortNames)
        {
+          // Ensure the site exists, skip if not
+          if(siteService.getSite(siteShortName) == null)
+          {
+             continue;
+          }
+          
+          // Grab the container for this site
           NodeRef container = getSiteCalendarContainer(siteShortName, false);
           if(container != null)
           {

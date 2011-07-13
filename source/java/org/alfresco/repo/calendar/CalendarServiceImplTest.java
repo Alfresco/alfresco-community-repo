@@ -125,7 +125,11 @@ public class CalendarServiceImplTest
     {
        CalendarEntry entry;
        
-       // TODO List to check there aren't any yet
+       // Nothing to start with
+       PagingResults<CalendarEntry> results = 
+          CALENDAR_SERVICE.listCalendarEntries(CALENDAR_SITE.getShortName(), new PagingRequest(10));
+       assertEquals(0, results.getPage().size());
+
        
        // Get with an arbitrary name gives nothing
        entry = CALENDAR_SERVICE.getCalendarEntry(CALENDAR_SITE.getShortName(), "madeUp");
@@ -436,7 +440,7 @@ public class CalendarServiceImplTest
     {
        PagingRequest paging = new PagingRequest(10);
        
-       // Nothing to start
+       // Nothing to start with
        PagingResults<CalendarEntry> results = 
           CALENDAR_SERVICE.listCalendarEntries(CALENDAR_SITE.getShortName(), paging);
        assertEquals(0, results.getPage().size());
@@ -488,7 +492,43 @@ public class CalendarServiceImplTest
 
     @Test public void calendarMultiSiteListing() throws Exception
     {
-       // TODO
+       PagingRequest paging = new PagingRequest(10);
+       PagingResults<CalendarEntry> results;
+       
+       
+       // Nothing to start
+       results = CALENDAR_SERVICE.listCalendarEntries(CALENDAR_SITE.getShortName(), paging);
+       assertEquals(0, results.getPage().size());
+       results = CALENDAR_SERVICE.listCalendarEntries(ALTERNATE_CALENDAR_SITE.getShortName(), paging);
+       assertEquals(0, results.getPage().size());
+       
+       results = CALENDAR_SERVICE.listCalendarEntries(new String[] {
+             CALENDAR_SITE.getShortName(), ALTERNATE_CALENDAR_SITE.getShortName()}, paging);
+       assertEquals(0, results.getPage().size());
+       
+       
+       // You can pass invalid names in too, won't affect things
+       results = CALENDAR_SERVICE.listCalendarEntries(new String[] {
+             CALENDAR_SITE.getShortName(), ALTERNATE_CALENDAR_SITE.getShortName(),
+             "MadeUpNumber1", "MadeUpTwo", "MadeUp3"}, paging);
+       assertEquals(0, results.getPage().size());
+       
+       
+       // Now add some events to one site
+       
+       // Check
+       
+       // Add to the other site, won't show up due to permissions
+       
+       // Make a member of the site, show up
+       
+       // Filter by start date
+       
+       // Filter by end date
+       
+       // Filter by both
+       
+       // Filter on just one site, won't see from the other
     }
 
     /**
@@ -587,6 +627,8 @@ public class CalendarServiceImplTest
     
     private static void createTestSites() throws Exception
     {
+        final CalendarServiceImpl privateCalendarService = (CalendarServiceImpl)testContext.getBean("calendarService");
+        
         CALENDAR_SITE = TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<SiteInfo>()
            {
               @Override
@@ -598,6 +640,7 @@ public class CalendarServiceImplTest
                         "test site title", "test site description", 
                         SiteVisibility.PUBLIC
                   );
+                  privateCalendarService.getSiteCalendarContainer(site.getShortName(), true);
                   CLASS_TEST_NODES_TO_TIDY.add(site.getNodeRef());
                   return site;
               }
@@ -616,9 +659,7 @@ public class CalendarServiceImplTest
                         "alternate site title", "alternate site description", 
                         SiteVisibility.PRIVATE
                   );
-                  SITE_SERVICE.createContainer(
-                        site.getShortName(), CalendarServiceImpl.CALENDAR_COMPONENT, null, null 
-                  );
+                  privateCalendarService.getSiteCalendarContainer(site.getShortName(), true);
                   CLASS_TEST_NODES_TO_TIDY.add(site.getNodeRef());
                   return site;
                }

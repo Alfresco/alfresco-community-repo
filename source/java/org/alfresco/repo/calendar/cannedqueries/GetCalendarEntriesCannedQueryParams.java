@@ -28,25 +28,28 @@ import java.util.Date;
  */
 public class GetCalendarEntriesCannedQueryParams extends CalendarEntity
 {
-    private final Long[] siteContainerNodeIds;
+    private final Long[] sitesContainerNodeIds;
     private final Date entriesFromDate;
     private final Date entriesToDate;
     
-    public GetCalendarEntriesCannedQueryParams(Long[] siteContainerNodeIds,
+    public GetCalendarEntriesCannedQueryParams(Long[] sitesContainerNodeIds,
                                          Long nameQNameId,
+                                         Long contentTypeQNameId, 
+                                         Long fromDateQNameId, 
+                                         Long toDateQNameId, 
                                          Date entriesFromDate,
                                          Date entriesToDate)
     {
-        super(null, nameQNameId);
+        super(null, nameQNameId, contentTypeQNameId, fromDateQNameId, toDateQNameId);
         
-        this.siteContainerNodeIds = siteContainerNodeIds;
+        this.sitesContainerNodeIds = sitesContainerNodeIds;
         this.entriesFromDate = entriesFromDate;
         this.entriesToDate = entriesToDate;
     }
     
-    public Long[] getSiteContainerNodeIds()
+    public Long[] getSitesContainerNodeIds()
     {
-        return siteContainerNodeIds;
+        return sitesContainerNodeIds;
     }
     
     public Date getEntriesFromDate()

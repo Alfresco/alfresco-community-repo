@@ -10,18 +10,18 @@ function main ()
    var sortBy = args["sortBy"];
    var paging = utils.createPaging(args);
 	
-	if(shortNameFilter == null)
+	if (shortNameFilter == null)
 	{
 		shortNameFilter = "";
 	}
 
-   if(sortBy == null)
+   if (sortBy == null)
    {
-      sortBy = "authorityName";
+      sortBy = "displayName";
    }
 	
-	// Do the search
-	model.groups = groups.searchGroupsInZone(shortNameFilter, zone, paging, sortBy);
+	// Get the groups
+	model.groups = groups.getGroupsInZone(shortNameFilter, zone, paging, sortBy);
    model.paging = paging;
 }
 

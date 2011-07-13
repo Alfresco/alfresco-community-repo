@@ -28,14 +28,16 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.query.CannedQueryFactory;
+import org.alfresco.query.CannedQueryResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
+import org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.calendar.CalendarEntry;
 import org.alfresco.service.cmr.calendar.CalendarService;
-import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
@@ -45,6 +47,7 @@ import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.Pair;
+import org.alfresco.util.registry.NamedObjectRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -62,6 +65,8 @@ public class CalendarServiceImpl implements CalendarService
      *  is replaced by a database query.
      */
     private static final int MAX_QUERY_ENTRY_COUNT = 10000;
+
+    private static final String CANNED_QUERY_GET_CHILDREN = "calendarGetChildrenCannedQueryFactory";
     
     /**
      * The logger
@@ -72,9 +77,9 @@ public class CalendarServiceImpl implements CalendarService
     private SiteService siteService;
     private SearchService searchService; // TODO Temp only
     private TaggingService taggingService;
-    private FileFolderService fileFolderService; // TODO Temp only
     private PermissionService permissionService;
     private TransactionService transactionService;
+    private NamedObjectRegistry<CannedQueryFactory<NodeRef>> cannedQueryRegistry;
     
     public void setNodeService(NodeService nodeService)
     {
@@ -99,14 +104,6 @@ public class CalendarServiceImpl implements CalendarService
         this.taggingService = taggingService;
     }
     
-    /**
-     * TODO Temp only
-     */
-    public void setFileFolderService(FileFolderService fileFolderService)
-    {
-        this.fileFolderService = fileFolderService;
-    }
-    
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
@@ -115,6 +112,14 @@ public class CalendarServiceImpl implements CalendarService
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
+    }
+    
+    /**
+     * Set the registry of {@link CannedQueryFactory canned queries}
+     */
+    public void setCannedQueryRegistry(NamedObjectRegistry<CannedQueryFactory<NodeRef>> cannedQueryRegistry)
+    {
+        this.cannedQueryRegistry = cannedQueryRegistry;
     }
     
     /**
@@ -362,9 +367,6 @@ public class CalendarServiceImpl implements CalendarService
     public PagingResults<CalendarEntry> listCalendarEntries(
           String siteShortName, PagingRequest paging) 
     {
-       // TODO Switch to this
-       //return listCalendarEntries(new String[] { siteShortName }, paging);
-       
        NodeRef container = getSiteCalendarContainer(siteShortName, false);
        if(container == null)
        {
@@ -372,11 +374,22 @@ public class CalendarServiceImpl implements CalendarService
           return null;
        }
        
-       // Ask the file folder service
+       // Build our sorting, by date
        List<Pair<QName,Boolean>> sort = new ArrayList<Pair<QName, Boolean>>();
        sort.add(new Pair<QName, Boolean>(CalendarModel.PROP_FROM_DATE, true)); 
-       sort.add(new Pair<QName, Boolean>(CalendarModel.PROP_TO_DATE, true)); 
-       PagingResults<FileInfo> results = fileFolderService.list(container, true, false, null, sort, paging);
+       sort.add(new Pair<QName, Boolean>(CalendarModel.PROP_TO_DATE, true));
+       
+       // We only want calendar entries
+       Set<QName> types = new HashSet<QName>();
+       types.add(CalendarModel.TYPE_EVENT);
+       
+       // Run the canned query
+       GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_GET_CHILDREN);
+       GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(
+             container, types, null, sort, paging);
+       
+       // Execute the canned query
+       CannedQueryResults<NodeRef> results = cq.execute();
        return wrap(results);
     }
 
@@ -384,6 +397,12 @@ public class CalendarServiceImpl implements CalendarService
     public PagingResults<CalendarEntry> listCalendarEntries(
           String[] siteShortNames, PagingRequest paging) 
     {
+       // If we only have the one site, use the list above 
+       if(siteShortNames != null && siteShortNames.length == 1)
+       {
+          return listCalendarEntries(siteShortNames[0], paging);
+       }
+       
        // TODO Use search for now
        return null;
     }
@@ -397,9 +416,10 @@ public class CalendarServiceImpl implements CalendarService
     }
     
     /**
-     * TODO Temp hack!
+     * Our class to wrap up paged results of NodeRefs as
+     *  CalendarEntry instances
      */
-    private PagingResults<CalendarEntry> wrap(final PagingResults<FileInfo> results)
+    private PagingResults<CalendarEntry> wrap(final PagingResults<NodeRef> results)
     {
        return new PagingResults<CalendarEntry>()
        {
@@ -412,11 +432,13 @@ public class CalendarServiceImpl implements CalendarService
            public List<CalendarEntry> getPage()
            {
                List<CalendarEntry> entries = new ArrayList<CalendarEntry>();
-               for(FileInfo file : results.getPage())
+               for(NodeRef nodeRef : results.getPage())
                {
-                  CalendarEntryImpl entry = new CalendarEntryImpl(file.getNodeRef(), file.getName());
-                  entry.populate(nodeService.getProperties(file.getNodeRef()));
-                  entry.setTags(taggingService.getTags(file.getNodeRef()));
+                  String entryName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+                  
+                  CalendarEntryImpl entry = new CalendarEntryImpl(nodeRef, entryName);
+                  entry.populate(nodeService.getProperties(nodeRef));
+                  entry.setTags(taggingService.getTags(nodeRef));
                   entries.add(entry);
                }
                return entries;

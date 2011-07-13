@@ -16,7 +16,7 @@
             <idref local="CalendarService_transaction" />
             <idref bean="AuditMethodInterceptor" />
             <idref bean="exceptionTranslator" />
-            <idref local="CalendarService_security" />
+            <idref bean="CalendarService_security" />
          </list>
       </property>
    </bean>
@@ -34,9 +34,23 @@
       </property>
    </bean>
 
-   <!-- Calendar service security bean -->
-   <bean id="CalendarService_security"
-      class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+   <!-- List of Calendar Canned queries -->
+   <bean id="calendarCannedQueryRegistry" class="org.alfresco.util.registry.NamedObjectRegistry">
+       <property name="storageType" value="org.alfresco.query.CannedQueryFactory"/>
+   </bean>
+    
+   <!-- The regular GetChildren Canned Query Factory -->
+   <bean name="calendarGetChildrenCannedQueryFactory" class="org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory">
+       <property name="registry" ref="calendarCannedQueryRegistry"/>
+       <property name="dictionaryService" ref="dictionaryService"/>
+       <property name="tenantService" ref="tenantService"/>
+       <property name="nodeDAO" ref="nodeDAO"/>
+       <property name="qnameDAO" ref="qnameDAO"/>
+       <property name="localeDAO" ref="localeDAO"/>
+       <property name="contentDataDAO" ref="contentDataDAO"/>
+       <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
+       <property name="methodSecurity" ref="CalendarService_security_listCalendarEntries"/>
+   </bean>
 
    <!-- Calendar Service base bean -->
 	<bean id="calendarService" class="org.alfresco.repo.calendar.CalendarServiceImpl">
@@ -44,9 +58,9 @@
         <property name="siteService" ref="SiteService"/>
         <property name="searchService" ref="SearchService" /> <!-- TODO Temp -->
         <property name="taggingService" ref="TaggingService"/>
-        <property name="fileFolderService" ref="FileFolderService" /> <!-- TODO Temp -->
         <property name="permissionService" ref="PermissionService"/>
         <property name="transactionService" ref="transactionService" />
+        <property name="cannedQueryRegistry" ref="calendarCannedQueryRegistry" />
 	</bean>
 
 </beans>

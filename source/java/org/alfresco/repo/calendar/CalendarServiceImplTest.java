@@ -42,7 +42,9 @@ import org.alfresco.service.cmr.calendar.CalendarService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
@@ -75,8 +77,10 @@ public class CalendarServiceImplTest
     private static CalendarService              CALENDAR_SERVICE;
     private static DictionaryService            DICTIONARY_SERVICE;
     private static NodeService                  NODE_SERVICE;
+    private static NodeService                  PUBLIC_NODE_SERVICE;
     private static PersonService                PERSON_SERVICE;
     private static RetryingTransactionHelper    TRANSACTION_HELPER;
+    private static PermissionService            PERMISSION_SERVICE;
     private static SiteService                  SITE_SERVICE;
     private static TaggingService               TAGGING_SERVICE;
     
@@ -84,6 +88,7 @@ public class CalendarServiceImplTest
     private static final String ADMIN_USER = AuthenticationUtil.getAdminUserName();
 
     private static SiteInfo CALENDAR_SITE;
+    private static SiteInfo ALTERNATE_CALENDAR_SITE;
     
     /**
      * Temporary test nodes (created during a test method) that need deletion after the test method.
@@ -101,8 +106,10 @@ public class CalendarServiceImplTest
         CALENDAR_SERVICE       = (CalendarService)testContext.getBean("CalendarService");
         DICTIONARY_SERVICE     = (DictionaryService)testContext.getBean("dictionaryService");
         NODE_SERVICE           = (NodeService)testContext.getBean("nodeService");
+        PUBLIC_NODE_SERVICE    = (NodeService)testContext.getBean("NodeService");
         PERSON_SERVICE         = (PersonService)testContext.getBean("personService");
         TRANSACTION_HELPER     = (RetryingTransactionHelper)testContext.getBean("retryingTransactionHelper");
+        PERMISSION_SERVICE     = (PermissionService)testContext.getBean("permissionService");
         SITE_SERVICE           = (SiteService)testContext.getBean("siteService");
         TAGGING_SERVICE        = (TaggingService)testContext.getBean("TaggingService");
         
@@ -111,7 +118,7 @@ public class CalendarServiceImplTest
         
         // We need to create the test site as the test user so that they can contribute content to it in tests below.
         AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
-        createTestSite();
+        createTestSites();
     }
     
     @Test public void createNewEntry() throws Exception
@@ -468,6 +475,15 @@ public class CalendarServiceImplTest
        results = CALENDAR_SERVICE.listCalendarEntries(CALENDAR_SITE.getShortName(), paging);
        assertEquals(1, results.getPage().size());
        assertEquals("TitleC", results.getPage().get(0).getTitle());
+       
+       
+       // Tidy
+       paging = new PagingRequest(10);
+       results = CALENDAR_SERVICE.listCalendarEntries(CALENDAR_SITE.getShortName(), paging);
+       for(CalendarEntry entry : results.getPage())
+       {
+          testNodesToTidy.add(entry.getNodeRef());
+       }
     }
 
     @Test public void calendarMultiSiteListing() throws Exception
@@ -475,19 +491,139 @@ public class CalendarServiceImplTest
        // TODO
     }
 
-    private static void createTestSite() throws Exception
+    /**
+     * Checks that the correct permission checking occurs on fetching
+     *  calendar listings (which go through canned queries)
+     * TODO FIX
+     */
+    public void DISABLEDcalendarListingPermissionsChecking() throws Exception
+    {
+       PagingRequest paging = new PagingRequest(10);
+       PagingResults<CalendarEntry> results;
+     
+       // TODO This shouldn't be needed...
+       PERMISSION_SERVICE.clearPermission(ALTERNATE_CALENDAR_SITE.getNodeRef(), TEST_USER);
+       System.err.println(PERMISSION_SERVICE.getPermissions(ALTERNATE_CALENDAR_SITE.getNodeRef()));
+       System.err.println(PERMISSION_SERVICE.getAllSetPermissions(ALTERNATE_CALENDAR_SITE.getNodeRef()));
+       System.err.println(NODE_SERVICE.getChildAssocs(ALTERNATE_CALENDAR_SITE.getNodeRef()));
+       System.err.println(PUBLIC_NODE_SERVICE.getChildAssocs(ALTERNATE_CALENDAR_SITE.getNodeRef()));
+       
+       
+       // Nothing to start with in either site
+       results = CALENDAR_SERVICE.listCalendarEntries(CALENDAR_SITE.getShortName(), paging);
+//       assertEquals(0, results.getPage().size());
+       results = CALENDAR_SERVICE.listCalendarEntries(ALTERNATE_CALENDAR_SITE.getShortName(), paging);
+       assertEquals(0, results.getPage().size());
+
+       // Double check that we're only allowed to see the 1st site
+       assertEquals(true,  SITE_SERVICE.isMember(CALENDAR_SITE.getShortName(), TEST_USER));
+       assertEquals(false, SITE_SERVICE.isMember(ALTERNATE_CALENDAR_SITE.getShortName(), TEST_USER));
+       assertEquals(AccessStatus.ALLOWED, PERMISSION_SERVICE.hasReadPermission(CALENDAR_SITE.getNodeRef()));
+       assertEquals(AccessStatus.DENIED,  PERMISSION_SERVICE.hasReadPermission(ALTERNATE_CALENDAR_SITE.getNodeRef()));
+
+       
+       // Add two events to one site and three to the other
+       CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
+             "TitleA", "Description", "Location", new Date(1302431400), new Date(1302435000)
+       ));
+       CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
+             "TitleB", "Description", "Location", new Date(1302431400), new Date(1302442200)
+       ));
+       
+       CALENDAR_SERVICE.createCalendarEntry(ALTERNATE_CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
+             "PrivateTitleA", "Description", "Location", new Date(1302431400), new Date(1302435000)
+       ));
+       CALENDAR_SERVICE.createCalendarEntry(ALTERNATE_CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
+             "PrivateTitleB", "Description", "Location", new Date(1302431400), new Date(1302442200)
+       ));
+       NodeRef priv3 = CALENDAR_SERVICE.createCalendarEntry(ALTERNATE_CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
+             "PrivateTitleC", "Description", "Location", new Date(1302431400), new Date(1302442200)
+       )).getNodeRef();
+       
+       
+       // Check again, as we're not in the 2nd site won't see any there  
+       results = CALENDAR_SERVICE.listCalendarEntries(CALENDAR_SITE.getShortName(), paging);
+       assertEquals(2, results.getPage().size());
+       results = CALENDAR_SERVICE.listCalendarEntries(ALTERNATE_CALENDAR_SITE.getShortName(), paging);
+       assertEquals(0, results.getPage().size());
+       
+       
+       // Join the site, now we can see both
+       SITE_SERVICE.setMembership(ALTERNATE_CALENDAR_SITE.getShortName(), TEST_USER, SiteModel.SITE_CONTRIBUTOR);
+       
+       results = CALENDAR_SERVICE.listCalendarEntries(CALENDAR_SITE.getShortName(), paging);
+       assertEquals(2, results.getPage().size());
+       results = CALENDAR_SERVICE.listCalendarEntries(ALTERNATE_CALENDAR_SITE.getShortName(), paging);
+       assertEquals(3, results.getPage().size());
+       
+       
+       // Explicitly remove their permissions from one node, check it vanishes from the list
+       PERMISSION_SERVICE.setInheritParentPermissions(priv3, false);
+       PERMISSION_SERVICE.clearPermission(priv3, TEST_USER);
+       
+       results = CALENDAR_SERVICE.listCalendarEntries(CALENDAR_SITE.getShortName(), paging);
+       assertEquals(2, results.getPage().size());
+       results = CALENDAR_SERVICE.listCalendarEntries(ALTERNATE_CALENDAR_SITE.getShortName(), paging);
+       assertEquals(2, results.getPage().size());
+       
+       
+       // Leave, they go away again
+       SITE_SERVICE.removeMembership(ALTERNATE_CALENDAR_SITE.getShortName(), TEST_USER);
+       
+       results = CALENDAR_SERVICE.listCalendarEntries(CALENDAR_SITE.getShortName(), paging);
+       assertEquals(2, results.getPage().size());
+       results = CALENDAR_SERVICE.listCalendarEntries(ALTERNATE_CALENDAR_SITE.getShortName(), paging);
+       assertEquals(0, results.getPage().size());
+       
+       
+       // Tidy
+       paging = new PagingRequest(10);
+       results = CALENDAR_SERVICE.listCalendarEntries(CALENDAR_SITE.getShortName(), paging);
+       for(CalendarEntry entry : results.getPage())
+       {
+          testNodesToTidy.add(entry.getNodeRef());
+       }
+    }
+    
+    private static void createTestSites() throws Exception
     {
         CALENDAR_SITE = TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<SiteInfo>()
            {
               @Override
               public SiteInfo execute() throws Throwable
               {
-                  SiteInfo site = SITE_SERVICE.createSite(TEST_SITE_PREFIX, CalendarServiceImplTest.class.getSimpleName() + "_testSite" + System.currentTimeMillis(),
-                                          "test site title", "test site description", SiteVisibility.PUBLIC);
+                  SiteInfo site = SITE_SERVICE.createSite(
+                        TEST_SITE_PREFIX, 
+                        CalendarServiceImplTest.class.getSimpleName() + "_testSite" + System.currentTimeMillis(),
+                        "test site title", "test site description", 
+                        SiteVisibility.PUBLIC
+                  );
                   CLASS_TEST_NODES_TO_TIDY.add(site.getNodeRef());
                   return site;
               }
          });
+        
+         // Create the alternate site as admin
+         AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
+         ALTERNATE_CALENDAR_SITE = TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<SiteInfo>()
+            {
+               @Override
+               public SiteInfo execute() throws Throwable
+               {
+                  SiteInfo site = SITE_SERVICE.createSite(
+                        TEST_SITE_PREFIX, 
+                        CalendarServiceImplTest.class.getSimpleName() + "_testAltSite" + System.currentTimeMillis(),
+                        "alternate site title", "alternate site description", 
+                        SiteVisibility.PRIVATE
+                  );
+                  SITE_SERVICE.createContainer(
+                        site.getShortName(), CalendarServiceImpl.CALENDAR_COMPONENT, null, null 
+                  );
+                  CLASS_TEST_NODES_TO_TIDY.add(site.getNodeRef());
+                  return site;
+               }
+         });
+         AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
     }
     
     /**

@@ -382,6 +382,8 @@ public class ChannelServiceImpl implements ChannelService
     @Override
     public void updateChannel(Channel channel, Map<QName, Serializable> properties)
     {
+        HashMap<QName, Serializable> actualProps = new HashMap<QName, Serializable>(properties);
+        actualProps.remove(ContentModel.PROP_NODE_UUID);
         List<NodeRef> allChannelNodes = new ArrayList<NodeRef>();
         NodeRef editorialNode = channel.getNodeRef();
         allChannelNodes.add(editorialNode);
@@ -391,7 +393,7 @@ public class ChannelServiceImpl implements ChannelService
         }
         for (NodeRef channelNode : allChannelNodes)
         {
-            for (Map.Entry<QName, Serializable> entry : properties.entrySet())
+            for (Map.Entry<QName, Serializable> entry : actualProps.entrySet())
             {
                 nodeService.setProperty(channelNode, entry.getKey(), entry.getValue());
             }

@@ -24,12 +24,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.web.scripts.blogs.AbstractBlogWebScript;
 import org.alfresco.repo.web.scripts.blogs.BlogPostLibJs;
 import org.alfresco.repo.web.scripts.blogs.RequestUtilsLibJs;
 import org.alfresco.service.cmr.blog.BlogService.BlogPostInfo;
+import org.alfresco.service.cmr.blog.BlogService.RangedDateProperty;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
@@ -174,15 +176,9 @@ public abstract class AbstractGetBlogWebScript extends AbstractBlogWebScript
         {
             return getBlogResultsImpl(node, fromDate, toDate, pagingReq);
         }
-        // and tag-based Lucene searches with no other query params
-        else if (fromDate == null && toDate == null)
-        {
-            return blogService.findTaggedBlogPosts(node, tag, pagingReq);
-        }
-        // But we might change the below to use a Lucene query.
         else
         {
-            throw new UnsupportedOperationException("Cannot get BlogPosts with both tags and date limits.");
+            return blogService.findBlogPosts(node, new RangedDateProperty(fromDate, toDate, ContentModel.PROP_CREATED), tag, pagingReq);
         }
     }
     

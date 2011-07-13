@@ -64,7 +64,7 @@ public final class TaskCommandProcessor implements CommandProcessor
        {
            transition = urlElements[1];
        }
-       return WorkflowUtil.isTaskEditable(cmd, sc);
+       return WorkflowUtil.isTaskEditable(taskId, sc);
    }
    
    /**

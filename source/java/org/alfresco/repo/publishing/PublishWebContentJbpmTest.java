@@ -62,6 +62,9 @@ import org.alfresco.util.GUID;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 /**
  * @author Nick Smith
@@ -75,23 +78,14 @@ public class PublishWebContentJbpmTest extends BaseSpringTest
     private ServiceRegistry serviceRegistry;
     private Repository repositoryHelper;
     private ActionExecuter publishEventAction;
-    private ActionExecuter checkPublishingDependenciesAction;
     
     private NodeService nodeService;
     private WorkflowService workflowService;
     private RetryingTransactionHelper transactionHelper;
     private NodeRef event;
     private String instanceId;
-
-    @Override
-    protected String[] getConfigLocations()
-    {
-        return new String[]
-        {
-            ApplicationContextHelper.CONFIG_LOCATIONS[0], "classpath:test/alfresco/test-web-publishing--workflow-context.xml"
-        };
-    }
-
+    private long threadId;
+    
     @Test
     public void testProcessTimers() throws Exception
     {
@@ -106,41 +100,40 @@ public class PublishWebContentJbpmTest extends BaseSpringTest
         // Wait for scheduled time to elapse.
         Thread.sleep(10000);
         
-        // Check the Publish Event Action was called
-        verify(checkPublishingDependenciesAction).execute(any(Action.class), any(NodeRef.class));
-
-        // Should now be waiting to retry
-        checkNode("waitAndRetry");
-        
-        // Set Status to IN_PROGRESS
-        nodeService.setProperty(event, PROP_PUBLISHING_EVENT_STATUS, Status.IN_PROGRESS.name());
-        // Wait for retry
-        Thread.sleep(65000);
-        
         // Should have ended
-        WorkflowInstance instance = workflowService.getWorkflowById(instanceId);
-        assertFalse("Workflow should have ended!", instance.isActive());
-    }
-
-    @Test
-    public void testProcessPublishPath() throws Exception
-    {
-        // Set Status to IN_PROGRESS
-        nodeService.setProperty(event, PROP_PUBLISHING_EVENT_STATUS, Status.IN_PROGRESS.name());
-        
-        Calendar schedule = Calendar.getInstance();
-        schedule.add(Calendar.SECOND, 1);
-        
-        startWorkflowAndCommit(schedule);
-
-        Thread.sleep(2000);
-        
-        // Should have ended
-        WorkflowInstance instance = workflowService.getWorkflowById(instanceId);
-        assertFalse("Workflow should have ended!", instance.isActive());
+        checkEnded(instanceId);
         
         // Check the Publish Event Action was called
         verify(publishEventAction).execute(any(Action.class), any(NodeRef.class));
+        
+        assertFalse("The action should be run from a different Thread!", Thread.currentThread().getId()==threadId);
+    }
+    
+    public void testProcessNoSchedule() throws Exception
+    {
+        startWorkflowAndCommit(null);
+
+        // Wait for async action to execute
+        Thread.sleep(500);
+        
+        // Should have ended
+        checkEnded(instanceId);
+        
+        // Check the Publish Event Action was called
+        verify(publishEventAction).execute(any(Action.class), any(NodeRef.class));
+        
+        assertFalse("The action should be run from a different Thread!", Thread.currentThread().getId()==threadId);
+    }
+    
+    private void checkEnded(String instanceId2)
+    {
+        WorkflowInstance instance = workflowService.getWorkflowById(instanceId2);
+        if(instance.isActive())
+        {
+            List<WorkflowPath> paths = workflowService.getWorkflowPaths(instance.getId());
+            String nodeName = paths.get(0).getNode().getName();
+            fail("Workflow should have ended! At node: " +nodeName);
+        }
     }
 
     private void startWorkflowAndCommit(final Calendar scheduledTime)
@@ -152,10 +145,7 @@ public class PublishWebContentJbpmTest extends BaseSpringTest
                 WorkflowPath path = startWorkflow(scheduledTime);
                 
                 // End the Start task.
-                List<WorkflowTask> tasks = workflowService.getTasksForWorkflowPath(path.getId());
-                assertNotNull(tasks);
-                assertEquals(1, tasks.size());
-                WorkflowTask startTask = tasks.get(0);
+                WorkflowTask startTask = workflowService.getStartTask(path.getInstance().getId());
                 workflowService.endTask(startTask.getId(), null);
                 return null;
             }
@@ -196,14 +186,20 @@ public class PublishWebContentJbpmTest extends BaseSpringTest
         serviceRegistry = (ServiceRegistry)getApplicationContext().getBean("ServiceRegistry");
         repositoryHelper = (Repository) getApplicationContext().getBean("repositoryHelper");
         publishEventAction = (ActionExecuter) getApplicationContext().getBean("pub_publishEvent");
-        checkPublishingDependenciesAction = (ActionExecuter) getApplicationContext().getBean("pub_checkPublishingDependencies");
         
-        reset(checkPublishingDependenciesAction);
         reset(publishEventAction);
         ActionDefinition actionDef = mock(ActionDefinition.class);
         when(publishEventAction.getActionDefinition()).thenReturn(actionDef);
-        when(checkPublishingDependenciesAction.getActionDefinition()).thenReturn(actionDef);
-        
+        // Record thread action is run in.
+        Mockito.doAnswer(new Answer<Void>()
+        {
+            public Void answer(InvocationOnMock invocation) throws Throwable
+            {
+                threadId = Thread.currentThread().getId(); 
+                return null;
+            }
+        }).when(publishEventAction).execute(any(Action.class), any(NodeRef.class));
+
         this.workflowService = serviceRegistry.getWorkflowService();
         this.nodeService = serviceRegistry.getNodeService();
         this.transactionHelper = serviceRegistry.getRetryingTransactionHelper();
@@ -217,6 +213,15 @@ public class PublishWebContentJbpmTest extends BaseSpringTest
         QName assocName = QName.createQNameWithValidLocalName(PublishingModel.NAMESPACE, name);
         ChildAssociationRef eventAssoc = nodeService.createNode(companyHome, ASSOC_CONTAINS, assocName, TYPE_PUBLISHING_EVENT, props);
         this.event = eventAssoc.getChildRef();
+    }
+
+    @Override
+    protected String[] getConfigLocations()
+    {
+        return new String[]
+        {
+            ApplicationContextHelper.CONFIG_LOCATIONS[0], "classpath:test/alfresco/test-web-publishing--workflow-context.xml"
+        };
     }
     
     @After

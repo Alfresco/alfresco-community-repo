@@ -9,8 +9,8 @@
         <transition name="" to="checkForScheduledTime" />
     </start-state>
 
-    <decision name="checkForScheduledTime">
-        <transition name="toCheckDependencies" to="checkDependencies">
+    <decision name="checkForScheduledTime" >
+        <transition name="toPublish" to="publish">
              <condition>#{pubwf_scheduledPublishDate == null}</condition>
         </transition>
         <transition name="toWaitForScheduledTime" to="waitForScheduledTime" />
@@ -18,7 +18,7 @@
     
     <task-node name="waitForScheduledTime" end-tasks="true" >
         <task name="pubwf:wait" >
-            <timer duedate="#{pubwf_scheduledPublishDate}"  transition="toCheckDependencies" >
+            <timer duedate="#{pubwf_scheduledPublishDate}"  transition="toPublish" >
                 <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
                     <script>
                         logger.log("Checking dependencies for PUblishing  Event: "+ pubwf_publishingEvent);
@@ -26,50 +26,7 @@
                 </action>
             </timer>
         </task>
-        <transition name="toCheckDependencies" to="checkDependencies" />
-    </task-node>
-
-    <decision name="checkDependencies">
-         <event type="node-enter">
-             <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
-                 <script>
-                     <variable name="pubwf_eventStatus" access="write" />     
-                     <expression>
-                         var publishingDependenciesAction = actions.create("pub_checkPublishingDependencies");
-                         publishingDependenciesAction.execute(pubwf_publishingEvent);
-                         pubwf_publishingEvent.properties["pub:publishingEventStatus"];
-                     </expression>
-                 </script>
-             </action>
-        </event>
-        <transition name="retry" to="waitAndRetry" />
-        <transition name="publish" to="publish">
-             <condition>#{pubwf_eventStatus == "IN_PROGRESS"}</condition>
-        </transition>
-        <transition name="fail" to="end">
-            <condition>#{pubwf_eventStatus== "FAILED"}</condition>
-        </transition>
-        <transition name="alreadyCompleted" to="end">
-            <condition>#{pubwf_eventStatus== "COMPLETED"}</condition>
-            <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
-                <script>
-                    logger.log("PUblishing Event already completed! Event: "+ pubwf_publishingEvent);
-                </script>
-            </action>
-        </transition>
-    </decision>   
-
-    <task-node name="waitAndRetry" end-tasks="true" >
-        <task name="pubwf:wait" >
-            <timer duedate="1 minute"  transition="toCheckDependencies" >
-                <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
-                    <script>
-                        logger.log("Checking dependencies for PUblishing  Event: "+ pubwf_publishingEvent);
-                    </script>
-                </action>
-            </timer>
-        </task>
-        <transition name="toCheckDependencies" to="checkDependencies" />
+        <transition name="toPublish" to="publish" />
     </task-node>
 
     <node name="publish" >
@@ -77,7 +34,7 @@
              <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
                  <script>
                      var publishEventAction = actions.create("pub_publishEvent");
-                     publishEventAction.execute(pubwf_publishingEvent);
+                     publishEventAction.executeAsynchronously(pubwf_publishingEvent);
                  </script>
              </action>
         </event>

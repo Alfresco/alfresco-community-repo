@@ -72,12 +72,6 @@
       <property name="workflowService" ref="WorkflowService" />
       <property name="workflowEngineId" value="jbpm" />
    </bean>
-
-   <!--  Check Publishing Dependencies Action -->
-    <bean id="pub_checkPublishingDependencies" 
-        class="org.alfresco.repo.publishing.CheckPublishingDependenciesAction" >
-        <property name="nodeService" ref="NodeService" />
-   </bean>
         
 
    <!--  Publish Event Action -->

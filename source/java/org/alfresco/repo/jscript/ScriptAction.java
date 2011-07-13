@@ -141,10 +141,34 @@ public class ScriptAction implements Serializable, Scopeable
         // Reset the actioned upon node
         node.reset();
     }
+    
+    /**
+     * Execute action.  The existing transaction will be joined.
+     * 
+     * @param node
+     *            the node to execute action upon
+     */
+    @SuppressWarnings("synthetic-access")
+    public void executeAsynchronously(ScriptNode node)
+    {
+        performParamConversionForRepo();
+        executeAsynchronouslyImpl(node);
+        
+        // Parameters may have been updated by action execution, so reset cache
+        this.parameters = null;
+        
+        // Reset the actioned upon node
+        node.reset();
+    }
 
     protected void executeImpl(ScriptNode node)
     {
         actionService.executeAction(action, node.getNodeRef());
+    }
+    
+    protected void executeAsynchronouslyImpl(ScriptNode node)
+    {
+        actionService.executeAction(action, node.getNodeRef(), true, true);
     }
     
     /**

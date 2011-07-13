@@ -34,6 +34,17 @@
                 </property>
             </properties>
             <associations>
+                <association name="pub:editorialChannel">
+                    <source>
+                        <mandatory>false</mandatory>
+                        <many>false</many>
+                    </source>
+                    <target>
+                        <class>pub:DeliveryChannel</class>
+                        <mandatory>false</mandatory>
+                        <many>false</many>
+                    </target>
+                </association>
                 <child-association name="pub:deliveryServers">
                     <source>
                         <mandatory>false</mandatory>

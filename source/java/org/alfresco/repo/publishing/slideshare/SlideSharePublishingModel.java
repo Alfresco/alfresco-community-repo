@@ -27,8 +27,8 @@ import org.alfresco.service.namespace.QName;
  */
 public interface SlideSharePublishingModel
 {
-    public static final String NAMESPACE = "http://www.alfresco.org/model/publishing/youtube/1.0";
-    public static final String PREFIX = "youtube";
+    public static final String NAMESPACE = "http://www.alfresco.org/model/publishing/slideshare/1.0";
+    public static final String PREFIX = "slideshare";
     
     public static final QName TYPE_DELIVERY_CHANNEL = QName.createQName(NAMESPACE, "DeliveryChannel");
 
@@ -36,5 +36,5 @@ public interface SlideSharePublishingModel
     
     public static final QName ASPECT_ASSET = QName.createQName(NAMESPACE, "AssetAspect");
     public static final QName PROP_ASSET_ID = QName.createQName(NAMESPACE, "assetId");
-    public static final QName PROP_PLAYER_URL = QName.createQName(NAMESPACE, "assetUrl");
+    public static final QName PROP_ASSET_URL = QName.createQName(NAMESPACE, "assetUrl");
 }

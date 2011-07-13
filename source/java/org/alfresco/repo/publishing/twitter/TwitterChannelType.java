@@ -20,6 +20,7 @@ package org.alfresco.repo.publishing.twitter;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -154,14 +155,16 @@ public class TwitterChannelType extends AbstractChannelType
             OAuth1Operations oauthOperations = publishingHelper.getConnectionFactory().getOAuthOperations();
             NodeRef channelNodeRef = channel.getNodeRef();
 
-            Map<QName, Serializable> props = nodeService.getProperties(channelNodeRef);
-            String tokenValue = (String) props.get(PublishingModel.PROP_OAUTH1_TOKEN_VALUE);
-            String tokenSecret = (String) props.get(PublishingModel.PROP_OAUTH1_TOKEN_SECRET);
+            Map<QName, Serializable> currentProps = nodeService.getProperties(channelNodeRef);
+            String tokenValue = (String) currentProps.get(PublishingModel.PROP_OAUTH1_TOKEN_VALUE);
+            String tokenSecret = (String) currentProps.get(PublishingModel.PROP_OAUTH1_TOKEN_SECRET);
             OAuthToken token = new OAuthToken(tokenValue, tokenSecret);
             OAuthToken accessToken = oauthOperations.exchangeForAccessToken(new AuthorizedRequestToken(token, verifier[0]), null);
-            nodeService.setProperty(channelNodeRef, PublishingModel.PROP_OAUTH1_TOKEN_VALUE, accessToken.getValue());
-            nodeService.setProperty(channelNodeRef, PublishingModel.PROP_OAUTH1_TOKEN_SECRET, accessToken.getSecret());
             
+            Map<QName, Serializable> newProps = new HashMap<QName, Serializable>();
+            newProps.put(PublishingModel.PROP_OAUTH1_TOKEN_VALUE, accessToken.getValue());
+            newProps.put(PublishingModel.PROP_OAUTH1_TOKEN_SECRET, accessToken.getSecret());
+            getChannelService().updateChannel(channel, newProps);
             authorised = true;
         }
         return authorised;

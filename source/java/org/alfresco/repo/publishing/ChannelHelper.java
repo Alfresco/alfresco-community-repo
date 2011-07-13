@@ -109,7 +109,9 @@ public class ChannelHelper
     {
         ChannelType channelType = channel.getChannelType();
         String channelName = channel.getName();
-        return createChannelNode(environment, channelType, channelName, properties);
+        NodeRef envChannel = createChannelNode(environment, channelType, channelName, properties);
+        nodeService.createAssociation(envChannel, channel.getNodeRef(), PublishingModel.ASSOC_EDITORIAL_CHANNEL);
+        return envChannel;
     }
 
     public Channel getChannel(NodeRef environment, String channelName, ChannelService channelService)

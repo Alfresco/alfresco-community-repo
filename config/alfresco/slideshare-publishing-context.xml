@@ -12,6 +12,12 @@
 
     <bean id="slidesharePublishingHelper" class="org.alfresco.repo.publishing.slideshare.SlideSharePublishingHelper">
         <property name="nodeService" ref="NodeService" />
+        <property name="slideshareConnector" ref="slideshareApiConnector" />
+    </bean>
+
+    <bean id="slideshareApiConnector" class="com.benfante.jslideshare.SlideShareConnectorImpl">
+        <property name="apiKey" value="iXUZdaNl" />
+        <property name="sharedSecret" value="DLysO5tR" />
     </bean>
 
     <bean id="publish_slideshare" parent="action-executer" class="org.alfresco.repo.publishing.slideshare.SlideSharePublishAction">

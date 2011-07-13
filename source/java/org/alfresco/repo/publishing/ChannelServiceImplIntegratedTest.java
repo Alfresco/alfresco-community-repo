@@ -139,7 +139,7 @@ public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrat
         assertNull(props.get(ContentModel.PROP_TITLE));
         
         props.put(ContentModel.PROP_TITLE, newTitle);
-        channelService.updateChannel(siteId, channelName, props);
+        channelService.updateChannel(channel, props);
         
         channels = channelService.getChannels(siteId);
         assertEquals(1, channels.size());

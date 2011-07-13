@@ -73,12 +73,12 @@ public class SlideSharePublishAction extends ActionExecuterAbstractBase
     @Override
     protected void executeImpl(Action action, NodeRef nodeRef)
     {
-        SlideShareAPI api = slideShareHelper.getSlideShareApi();
         Pair<String,String> usernamePassword = slideShareHelper.getSlideShareCredentialsForNode(nodeRef);
-        if (api == null || usernamePassword == null)
+        if (usernamePassword == null)
         {
-            throw new AlfrescoRuntimeException("publish.failed.unable_to_connect_to_service_provider");
+            throw new AlfrescoRuntimeException("publish.failed.no_credentials_found");
         }
+        SlideShareAPI api = slideShareHelper.getSlideShareApi(usernamePassword.getFirst(), usernamePassword.getSecond());
         
         ContentReader reader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
         if (reader.exists())
@@ -121,7 +121,14 @@ public class SlideSharePublishAction extends ActionExecuterAbstractBase
 
             String assetId = api.uploadSlideshow(usernamePassword.getFirst(), usernamePassword.getSecond(), title, 
                     contentFile, description, tags.toString(), false, false, false, false, false);
+//          String url = api.getSlideshow(assetId).getPermalink();
+            String url = null;
+            if (log.isInfoEnabled())
+            {
+                log.info("File " + name + " has been published to SlideShare with id " + assetId + " at URL " + url);
+            }
             nodeService.setProperty(nodeRef, SlideSharePublishingModel.PROP_ASSET_ID, assetId);
+            nodeService.setProperty(nodeRef, SlideSharePublishingModel.PROP_ASSET_URL, url);
             
             if (deleteContentFileOnCompletion)
             {

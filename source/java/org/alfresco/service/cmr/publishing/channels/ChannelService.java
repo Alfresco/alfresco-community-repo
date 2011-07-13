@@ -80,11 +80,11 @@ public interface ChannelService
     
     /**
      * Update the properties of the specified channel.
-     * @param siteId The identifier of the Share site that contains the channel that is to be updated.
-     * @param channelName The name of the channel that is to be updated.
-     * @param properties The complete set of properties to set on the channel. 
+     * @param channel The channel that is to be updated.
+     * @param properties The properties to set on the channel. These are blended with the current properties
+     * on the channel. Any that aren't currently set will be added, others will be updated. 
      */
-    void updateChannel(String siteId, String channelName, Map<QName,Serializable> properties);
+    void updateChannel(Channel channel, Map<QName,Serializable> properties);
     
     /**
      * Retrieve all the channels contained by the specified Share site.
@@ -130,7 +130,7 @@ public interface ChannelService
     List<Channel> getStatusUpdateChannels(String siteId);
     
     /**
-     * Returns all {@link Channel}s cpaable of performing a status update for the Share Site in which the specified <code>nodeToPublish</code> exists.
+     * Returns all {@link Channel}s capable of performing a status update for the Share Site in which the specified <code>nodeToPublish</code> exists.
      * @param siteId
      * @return
      */

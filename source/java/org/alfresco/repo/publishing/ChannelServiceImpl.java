@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
 import org.alfresco.service.cmr.publishing.channels.ChannelType;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.site.SiteInfo;
@@ -379,15 +380,20 @@ public class ChannelServiceImpl implements ChannelService
      * (java.lang.String, java.lang.String, java.util.Map)
      */
     @Override
-    public void updateChannel(String siteId, String channelName, Map<QName, Serializable> properties)
+    public void updateChannel(Channel channel, Map<QName, Serializable> properties)
     {
-        Set<NodeRef> containers = getAllChannelContainers(siteId);
-        for (NodeRef channelContainer : containers)
+        List<NodeRef> allChannelNodes = new ArrayList<NodeRef>();
+        NodeRef editorialNode = channel.getNodeRef();
+        allChannelNodes.add(editorialNode);
+        for (AssociationRef assoc : nodeService.getSourceAssocs(editorialNode, PublishingModel.ASSOC_EDITORIAL_CHANNEL))
         {
-            NodeRef channel = nodeService.getChildByName(channelContainer, ContentModel.ASSOC_CONTAINS, channelName);
-            if (channel != null)
+            allChannelNodes.add(assoc.getSourceRef());
+        }
+        for (NodeRef channelNode : allChannelNodes)
+        {
+            for (Map.Entry<QName, Serializable> entry : properties.entrySet())
             {
-                nodeService.setProperties(channel, properties);
+                nodeService.setProperty(channelNode, entry.getKey(), entry.getValue());
             }
         }
     }

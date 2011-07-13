@@ -17,13 +17,14 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.alfresco.repo.publishing.youtube;
+package org.alfresco.repo.publishing.slideshare;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.publishing.EnvironmentImpl;
 import org.alfresco.repo.publishing.PublishingModel;
 import org.alfresco.repo.publishing.PublishingQueueImpl;
@@ -47,19 +48,14 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * @author Brian
  * 
  */
-public class YouTubeTest extends BaseSpringTest
+public class SlideShareTest extends BaseSpringTest
 {
     protected ServiceRegistry serviceRegistry;
     protected SiteService siteService;
@@ -89,6 +85,11 @@ public class YouTubeTest extends BaseSpringTest
                 SiteVisibility.PUBLIC);
         docLib = siteService.createContainer(siteId, SiteService.DOCUMENT_LIBRARY, ContentModel.TYPE_FOLDER, null);
     }
+    
+    public void onTearDown()
+    {
+        siteService.deleteSite(siteId);
+    }
 
     public void testBlank()
     {
@@ -98,29 +99,29 @@ public class YouTubeTest extends BaseSpringTest
     //Note that this test isn't normally run, as it requires valid YouTube credentials.
     //To run it, remove the initial 'x' from the method name and set the appropriate YouTube credentials where the
     //text "YOUR_USER_NAME" and "YOUR_PASSWORD" appear.
-    public void xtestYouTubePublishAndUnpublishActions() throws Exception
+    public void xtestSlideSharePublishAndUnpublishActions() throws Exception
     {
-        final NodeRef vidNode = transactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
+        final NodeRef node = transactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
         {
             public NodeRef execute() throws Throwable
             {
                 Map<QName, Serializable> props = new HashMap<QName, Serializable>();
                 props.put(PublishingModel.PROP_CHANNEL_USERNAME, "YOUR_USER_NAME");
                 props.put(PublishingModel.PROP_CHANNEL_PASSWORD, "YOUR_PASSWORD");
-                Channel channel = channelService.createChannel(siteId, YouTubeChannelType.ID, "YouTubeChannel", props);
+                Channel channel = channelService.createChannel(siteId, SlideShareChannelType.ID, "SlideShareChannel", props);
 
                 NodeRef channelNode = channel.getNodeRef();
-                Resource videoFile = new ClassPathResource("test/alfresco/TestVideoFile.MP4");
+                Resource file = new ClassPathResource("test/alfresco/TestPresentation.pptx");
                 Map<QName, Serializable> vidProps = new HashMap<QName, Serializable>();
-                vidProps.put(ContentModel.PROP_NAME, "Test Video");
-                NodeRef vidNode = nodeService.createNode(channelNode, ContentModel.ASSOC_CONTAINS,
-                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "testVideo"),
+                vidProps.put(ContentModel.PROP_NAME, "Test Presentation");
+                NodeRef node = nodeService.createNode(channelNode, ContentModel.ASSOC_CONTAINS,
+                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "testPresentation"),
                         ContentModel.TYPE_CONTENT, vidProps).getChildRef();
                 ContentService contentService = serviceRegistry.getContentService();
-                ContentWriter writer = contentService.getWriter(vidNode, ContentModel.PROP_CONTENT, true);
-                writer.setMimetype("video/mpg");
-                writer.putContent(videoFile.getFile());
-                return vidNode;
+                ContentWriter writer = contentService.getWriter(node, ContentModel.PROP_CONTENT, true);
+                writer.setMimetype(MimetypeMap.MIMETYPE_OPENXML_PRESENTATION);
+                writer.putContent(file.getFile());
+                return node;
             }
         });
 
@@ -129,21 +130,21 @@ public class YouTubeTest extends BaseSpringTest
             public NodeRef execute() throws Throwable
             {
                 ActionService actionService = serviceRegistry.getActionService();
-                Action publishAction = actionService.createAction(YouTubePublishAction.NAME);
-                actionService.executeAction(publishAction, vidNode);
-                Map<QName, Serializable> props = nodeService.getProperties(vidNode);
-                Assert.assertTrue(nodeService.hasAspect(vidNode, YouTubePublishingModel.ASPECT_ASSET));
-                Assert.assertNotNull(props.get(YouTubePublishingModel.PROP_ASSET_ID));
-                Assert.assertNotNull(props.get(YouTubePublishingModel.PROP_PLAYER_URL));
+                Action publishAction = actionService.createAction(SlideSharePublishAction.NAME);
+                actionService.executeAction(publishAction, node);
+                Map<QName, Serializable> props = nodeService.getProperties(node);
+                Assert.assertTrue(nodeService.hasAspect(node, SlideSharePublishingModel.ASPECT_ASSET));
+                Assert.assertNotNull(props.get(SlideSharePublishingModel.PROP_ASSET_ID));
+//                Assert.assertNotNull(props.get(SlideSharePublishingModel.PROP_ASSET_URL));
 
-                System.out.println("YouTube video: " + props.get(YouTubePublishingModel.PROP_ASSET_ID));
+                System.out.println("SlideShare id: " + props.get(SlideSharePublishingModel.PROP_ASSET_ID));
                 
-                Action unpublishAction = actionService.createAction(YouTubeUnpublishAction.NAME);
-                actionService.executeAction(unpublishAction, vidNode);
-                props = nodeService.getProperties(vidNode);
-                Assert.assertFalse(nodeService.hasAspect(vidNode, YouTubePublishingModel.ASPECT_ASSET));
-                Assert.assertNull(props.get(YouTubePublishingModel.PROP_ASSET_ID));
-                Assert.assertNull(props.get(YouTubePublishingModel.PROP_PLAYER_URL));
+//                Action unpublishAction = actionService.createAction(SlideShareUnpublishAction.NAME);
+//                actionService.executeAction(unpublishAction, node);
+//                props = nodeService.getProperties(node);
+//                Assert.assertFalse(nodeService.hasAspect(node, SlideSharePublishingModel.ASPECT_ASSET));
+//                Assert.assertNull(props.get(SlideSharePublishingModel.PROP_ASSET_ID));
+//                Assert.assertNull(props.get(SlideSharePublishingModel.PROP_ASSET_URL));
                 return null;
             }
         });
@@ -152,7 +153,7 @@ public class YouTubeTest extends BaseSpringTest
         {
             public NodeRef execute() throws Throwable
             {
-                nodeService.deleteNode(vidNode);
+                nodeService.deleteNode(node);
                 return null;
             }
         });

@@ -24,23 +24,32 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.util.Pair;
 
 import com.benfante.jslideshare.SlideShareAPI;
-import com.benfante.jslideshare.SlideShareAPIFactory;
+import com.benfante.jslideshare.SlideShareConnector;
 
 public class SlideSharePublishingHelper
 {
     private NodeService nodeService;
+    private SlideShareConnector slideshareConnector;
     
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-
+    
+    public void setSlideshareConnector(SlideShareConnector slideshareConnector)
+    {
+        this.slideshareConnector = slideshareConnector;
+    }
 
     public SlideShareAPI getSlideShareApi()
     {
-        return SlideShareAPIFactory.getSlideShareAPI("hhjh", "oijkl");
+        return createApiObject();
     }
     
+    private SlideShareApiImpl createApiObject()
+    {
+        return new SlideShareApiImpl(slideshareConnector);
+    }
     
     public Pair<String, String> getSlideShareCredentialsForNode(NodeRef publishNode)
     {
@@ -59,6 +68,14 @@ public class SlideSharePublishingHelper
             }
         }
         return result;
+    }
+
+    public SlideShareAPI getSlideShareApi(String username, String password)
+    {
+        SlideShareApiImpl api = createApiObject();
+        api.setUsername(username);
+        api.setPassword(password);
+        return api;
     }
 
 }

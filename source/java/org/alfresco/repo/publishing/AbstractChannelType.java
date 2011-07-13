@@ -19,9 +19,11 @@
 
 package org.alfresco.repo.publishing;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.repo.transfer.CompositeNodeFilter;
@@ -31,10 +33,9 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
 import org.alfresco.service.cmr.publishing.channels.ChannelType;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.transfer.NodeFilter;
 import org.alfresco.service.cmr.transfer.NodeFinder;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
 
@@ -48,10 +49,17 @@ public abstract class AbstractChannelType implements ChannelType, InitializingBe
     private ServiceRegistry serviceRegistry;
     protected NodeFinder nodeFinder;
     protected NodeFilter nodeFilter;
+    private ChannelService channelService;
 
     public void setChannelService(ChannelService channelService)
     {
+        this.channelService = channelService;
         channelService.register(this);
+    }
+
+    protected ChannelService getChannelService()
+    {
+        return channelService;
     }
 
     /**
@@ -154,15 +162,14 @@ public abstract class AbstractChannelType implements ChannelType, InitializingBe
                     + "; Received " + channel.getChannelType().getId());
         }
 
-        NodeRef channelNodeRef = channel.getNodeRef();
-        NodeService nodeService = serviceRegistry.getNodeService();
-        
         String[] username = callbackParams.get("username");
         String[] password = callbackParams.get("password");
         if (username != null && password != null)
         {
-            nodeService.setProperty(channelNodeRef, PublishingModel.PROP_CHANNEL_USERNAME, username[0]);
-            nodeService.setProperty(channelNodeRef, PublishingModel.PROP_CHANNEL_PASSWORD, password[0]);
+            Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+            props.put(PublishingModel.PROP_CHANNEL_USERNAME, username[0]);
+            props.put(PublishingModel.PROP_CHANNEL_PASSWORD, password[0]);
+            channelService.updateChannel(channel, props);
             //TODO: BJR: 20110707: Should test the connection here
             result = true;
         }

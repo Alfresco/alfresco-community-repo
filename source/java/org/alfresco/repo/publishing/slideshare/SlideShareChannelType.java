@@ -144,7 +144,7 @@ public class SlideShareChannelType extends AbstractChannelType
         String url = null;
         if (node != null && nodeService.exists(node) && nodeService.hasAspect(node, SlideSharePublishingModel.ASPECT_ASSET))
         {
-            url = (String)nodeService.getProperty(node, SlideSharePublishingModel.PROP_PLAYER_URL);
+            url = (String)nodeService.getProperty(node, SlideSharePublishingModel.PROP_ASSET_URL);
         }
         return url;
     }

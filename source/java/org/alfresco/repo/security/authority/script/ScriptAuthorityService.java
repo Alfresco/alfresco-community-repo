@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.security.PersonService.PersonInfo;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ScriptPagingDetails;
+import org.mozilla.javascript.Scriptable;
 
 /**
  * Script object representing the authority service.
@@ -221,6 +222,88 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
         }
 
         return makeScriptGroups(authorities, paging, sortBy, serviceRegistry, this.getScope());
+    }
+    
+    /**
+     * Retreives groups matching the given filter from all zones.
+     * 
+     * NOTE: If the filter is null, an empty string or * all groups found will be returned.
+     * If the filter starts with * or contains a ? character results returned could be inconsistent.
+     * 
+     * @param filter Pattern to filter groups by
+     * @param paging Paging details
+     * @return Array of mathcing groups
+     * @since 4.0
+     */
+    public ScriptGroup[] getGroups(String filter, ScriptPagingDetails paging)
+    {
+        return getGroupsInZone(filter, null, paging, null);
+    }
+    
+    /**
+     * Retreives groups matching the given filter from all zones.
+     * 
+     * NOTE: If the filter is null, an empty string or * all groups found will be returned.
+     * If the filter starts with * or contains a ? character results returned could be inconsistent.
+     * 
+     * @param filter Pattern to filter groups by
+     * @param paging Paging details
+     * @param sortBy Field to sort by, can be <code>shortName</code> or <code>displayName</code> otherwise 
+     *        the results are ordered by the authorityName
+     * @return Array of mathcing groups
+     * @since 4.0
+     */
+    public ScriptGroup[] getGroups(String filter, ScriptPagingDetails paging, String sortBy)
+    {
+        return getGroupsInZone(filter, null, paging, sortBy);
+    }
+    
+    /**
+     * Retreives groups matching the given filter from the given zone.
+     * 
+     * NOTE: If the filter is null, an empty string or * all groups found will be returned.
+     * If the filter starts with * or contains a ? character results returned could be inconsistent.
+     * 
+     * @param filter Pattern to filter groups by
+     * @param zone The zone in which to search for groups
+     * @param paging Paging details
+     * @param sortBy Field to sort by, can be <code>shortName</code>, <code>displayName</code> or
+     *        <code>authorityName</code>, the default is displayName
+     * @return Array of mathcing groups
+     * @since 4.0
+     */
+    public ScriptGroup[] getGroupsInZone(String filter, String zone, ScriptPagingDetails paging, String sortBy)
+    {
+        // reset filter if necessary
+        if (filter != null && (filter.length() == 0 || filter.equals("*")))
+        {
+            filter = null;
+        }
+        
+        if (filter != null && (filter.startsWith("*") || filter.indexOf("?") != -1))
+        {
+            // contains and ? wildcard queries are not supported by canned queries so use search
+            return searchGroupsInZone(filter, zone, paging, sortBy);
+        }
+        else
+        {
+            try
+            {
+                // for backwards compatibility request a total count of found items, once the UI can deal with
+                // results that do not specify the total number of results this can be removed
+                paging.setRequestTotalCountMax(10000);
+                
+                // get the paged results (NOTE: we can only sort by display name currently)
+                PagingResults<String> groups = authorityService.getAuthorities(AuthorityType.GROUP, zone, filter, true, true, paging);
+                
+                // create ScriptGroup array from paged results
+                return makeScriptGroups(groups, paging, serviceRegistry, this.getScope());
+            }
+            catch (UnknownAuthorityException e)
+            {
+                return new ScriptGroup[] {};
+            }
+        }
     }
     
 	/**

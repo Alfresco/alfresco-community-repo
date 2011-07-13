@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.alfresco.query.PagingResults;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -609,6 +610,34 @@ public class ScriptGroup implements Authority, Serializable
             }
             groups[i] = group;
         }
+        return groups;
+    }
+    
+    /**
+     * Returns an array of ScriptGroup objects representing the given paged results.
+     * 
+     * @param groups The paged results
+     * @param paging Object representing the paging details
+     * @param serviceRegistry
+     * @param scope
+     * @return Array of ScriptGroup objects
+     * 
+     * @since 4.0
+     */
+    public static ScriptGroup[] makeScriptGroups(PagingResults<String> pagedGroups, ScriptPagingDetails paging, 
+                ServiceRegistry serviceRegistry, Scriptable scope)
+    {
+        // set the total on the paging object
+        paging.setTotalItems(pagedGroups);
+        
+        // retrive the page of results and create a ScriptGroup for each one
+        List<String> groupNames = pagedGroups.getPage();
+        ScriptGroup[] groups = new ScriptGroup[groupNames.size()];
+        for (int i=0; i<groups.length; i++)
+        {
+            groups[i] = new ScriptGroup(groupNames.get(i), serviceRegistry, scope);
+        }
+        
         return groups;
     }
 }

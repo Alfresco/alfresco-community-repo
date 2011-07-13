@@ -225,6 +225,34 @@ public class ScriptAuthorityServiceTest extends TestCase
     {
     }
     
+    public void testGetGroups()
+    {
+        // find all the groups that start with "test"
+        ScriptGroup[] groups = service.getGroupsInZone("test", AuthorityService.ZONE_APP_DEFAULT, new ScriptPagingDetails(10,0), null);
+        assertEquals(3, groups.length);
+        
+        // find a certain group
+        groups = service.getGroupsInZone(GROUP_A, AuthorityService.ZONE_APP_DEFAULT, new ScriptPagingDetails(10,0), null);
+        assertEquals(1, groups.length);
+        
+        // make sure a contains query falls back to lucene
+        groups = service.getGroupsInZone("*Group", AuthorityService.ZONE_APP_DEFAULT, new ScriptPagingDetails(10,0), null);
+        assertEquals(3, groups.length);
+        
+        // make sure a ? wildcard query falls back to lucene
+        groups = service.getGroupsInZone("t?st", AuthorityService.ZONE_APP_DEFAULT, new ScriptPagingDetails(10,0), null);
+        assertEquals(3, groups.length);
+        
+        // make sure we support getting all results
+        groups = service.getGroupsInZone("*", AuthorityService.ZONE_APP_DEFAULT, new ScriptPagingDetails(10,0), null);
+        assertEquals(5, groups.length);
+        
+        // ensure paging works, query for all results but just return 1 per page
+        groups = service.getGroupsInZone("test", AuthorityService.ZONE_APP_DEFAULT, new ScriptPagingDetails(2,2), "displayName");
+        assertEquals(1, groups.length);
+        assertEquals(GROUP_C, groups[0].getShortName());
+    }
+    
     public void testFindGroups()
     {
        // Put one group inside another

@@ -167,6 +167,17 @@ public class AssocTargetMultiplicityIntegrityEvent extends AbstractIntegrityEven
         
         if ((mandatory && actualSize == 0) || (!allowMany && actualSize > 1))
         {
+            if (actualSize == 0)
+            {
+                // Double check that the association source is still present
+                ClassDefinition classDef = assocDef.getSourceClass(); 
+                if (classDef.isAspect() && !nodeService.hasAspect(sourceNodeRef, classDef.getName()))
+                {
+                    // The source is an aspect but the aspect is not present
+                    return;
+                }
+            }
+            
             String childOrTargetStr = (assocDef.isChild() ? "child" : "target");
             IntegrityRecord result = new IntegrityRecord(
                     "The association " + childOrTargetStr + " multiplicity has been violated: \n" +

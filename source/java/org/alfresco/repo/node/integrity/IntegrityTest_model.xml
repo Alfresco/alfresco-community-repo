@@ -91,6 +91,17 @@
                   <many>false</many>
                </target>
             </association>
+            <association name="test:assoc-1to1 - 0to*">
+               <source>
+                  <mandatory>true</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>test:typeWithoutAnything</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </association>
          </associations>
       </type>
       <!-- Type with child assocs -->

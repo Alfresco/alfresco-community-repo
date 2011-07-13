@@ -73,6 +73,7 @@ public class IntegrityTest extends TestCase
     public static final QName TEST_ASSOC_NODE_ZEROMANY_ZEROMANY = QName.createQName(NAMESPACE, "assoc-0to* - 0to*");
     public static final QName TEST_ASSOC_CHILD_ZEROMANY_ZEROMANY = QName.createQName(NAMESPACE, "child-0to* - 0to*");
     public static final QName TEST_ASSOC_NODE_ONE_ONE = QName.createQName(NAMESPACE, "assoc-1to1 - 1to1");
+    public static final QName TEST_ASSOC_NODE_ONE_MANY = QName.createQName(NAMESPACE, "assoc-1to1 - 0to*");
     public static final QName TEST_ASSOC_CHILD_ONE_ONE = QName.createQName(NAMESPACE, "child-1to1 - 1to1");
     public static final QName TEST_ASSOC_ASPECT_ONE_ONE = QName.createQName(NAMESPACE, "aspect-assoc-1to1 - 1to1");
     public static final QName TEST_ASSOC_CHILD_NON_ENFORCED = QName.createQName(NAMESPACE, "child-non-enforced");
@@ -435,5 +436,16 @@ public class IntegrityTest extends TestCase
         nodeService.createAssociation(aspectSource, aspectTarget2, TEST_ASSOC_ASPECT_ONE_ONE);
         
         checkIntegrityExpectFailure("Failed to detect excess target cardinality for one-to-one assocs", 3);
+    }
+
+    public void testExcessTargetsOfOneToManyAssocs() throws Exception
+    {
+        NodeRef source = createNode("abc", TEST_TYPE_WITH_ASSOCS, null);
+        NodeRef target1 = createNode("target1", TEST_TYPE_WITHOUT_ANYTHING, null);
+        NodeRef target2 = createNode("target2", TEST_TYPE_WITHOUT_ANYTHING, null);
+        nodeService.createAssociation(source, target1, TEST_ASSOC_NODE_ONE_MANY);
+        nodeService.createAssociation(source, target2, TEST_ASSOC_NODE_ONE_MANY);
+        
+        checkIntegrityExpectFailure("Failed to detect excess source cardinality for one-to-many assocs", 1);
     }
 }

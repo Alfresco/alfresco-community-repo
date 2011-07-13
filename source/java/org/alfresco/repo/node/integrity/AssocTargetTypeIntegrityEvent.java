@@ -29,6 +29,7 @@ import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -127,13 +128,34 @@ public class AssocTargetTypeIntegrityEvent extends AbstractIntegrityEvent
             }
             if (!found)
             {
-                IntegrityRecord result = new IntegrityRecord(
-                        "The association target is missing the aspect required for this association: \n" +
-                        "   Target Node: " + targetNodeRef + "\n" +
-                        "   Association: " + assocDef + "\n" +
-                        "   Required Target Aspect: " + targetDef.getName() + "\n" +
-                        "   Actual Target Aspects: " + targetAspects);
-                eventResults.add(result);
+                // Actually make sure that the association still exists
+                if (assocDef.isChild())
+                {
+                    if (nodeService.getParentAssocs(targetNodeRef, assocDef.getName(), RegexQNamePattern.MATCH_ALL).size() == 0)
+                    {
+                        // The association does not exist any more
+                        return;
+                    }
+                }
+                else
+                {
+                    if (nodeService.getSourceAssocs(targetNodeRef, assocDef.getName()).size() == 0)
+                    {
+                        // The association does not exist any more
+                        return;
+                    }
+                }
+                // The association is still present
+                if (nodeService.getSourceAssocs(targetNodeRef, assocDef.getName()).size() > 0)
+                {
+                    IntegrityRecord result = new IntegrityRecord(
+                            "The association target is missing the aspect required for this association: \n" +
+                            "   Target Node: " + targetNodeRef + "\n" +
+                            "   Association: " + assocDef + "\n" +
+                            "   Required Target Aspect: " + targetDef.getName() + "\n" +
+                            "   Actual Target Aspects: " + targetAspects);
+                    eventResults.add(result);
+                }
             }
         }
         else

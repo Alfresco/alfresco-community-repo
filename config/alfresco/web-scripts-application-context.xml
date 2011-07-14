@@ -1107,6 +1107,7 @@
           class="org.alfresco.repo.web.scripts.publishing.ChannelsGet"
           parent="webscript">
         <property name="channelService" ref="channelService" />
+        <property name="urlShortener" ref="urlShortener" />
     </bean>
 
     <!-- Get Channel Types web script -->

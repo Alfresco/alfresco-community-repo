@@ -34,6 +34,7 @@ import org.alfresco.repo.web.scripts.WebScriptUtil;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.urlshortening.UrlShortener;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
@@ -49,7 +50,8 @@ public class ChannelsGet extends DeclarativeWebScript
 {
     private final PublishingModelBuilder builder = new PublishingModelBuilder();
     private ChannelService channelService;
-
+    private UrlShortener urlShortener;
+    
     /**
     * {@inheritDoc}
     */
@@ -81,7 +83,7 @@ public class ChannelsGet extends DeclarativeWebScript
         Map<String, Object> model = new HashMap<String, Object>();
         
         //TODO Implement URL shortening.
-        model.put(URL_LENGTH, 20);
+        model.put(URL_LENGTH, urlShortener.getUrlLength());
         
         model.put(PUBLISHING_CHANNELS, builder.buildChannels(publishingChannels));
         model.put(STATUS_UPDATE_CHANNELS, builder.buildChannels(statusUpdateChannels));
@@ -94,5 +96,13 @@ public class ChannelsGet extends DeclarativeWebScript
     public void setChannelService(ChannelService channelService)
     {
         this.channelService = channelService;
+    }
+    
+    /**
+     * @param urlShortener the urlShortener to set
+     */
+    public void setUrlShortener(UrlShortener urlShortener)
+    {
+        this.urlShortener = urlShortener;
     }
 }

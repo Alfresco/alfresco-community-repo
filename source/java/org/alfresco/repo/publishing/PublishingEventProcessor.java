@@ -65,10 +65,12 @@ public class PublishingEventProcessor
     
      public void processEventNode(NodeRef eventNode)
      {
-        ParameterCheck.mandatory("actionedUponNodeRef", eventNode);
+        ParameterCheck.mandatory("eventNode", eventNode);
         try
         {
             behaviourFilter.disableAllBehaviours();
+            String inProgressStatus = PublishingEvent.Status.IN_PROGRESS.name();
+            nodeService.setProperty(eventNode, PublishingModel.PROP_PUBLISHING_EVENT_STATUS, inProgressStatus);
             PublishingEvent event = eventHelper.getPublishingEvent(eventNode);
             NodeRef environment = eventHelper.getEnvironmentNodeForPublishingEvent(eventNode);
             String channelName = event.getChannelName();
@@ -81,6 +83,8 @@ public class PublishingEventProcessor
             {
                 publishEvent(channel, event);
                 updateStatus(channel, environment, event.getStatusUpdate());
+                String completedStatus = PublishingEvent.Status.COMPLETE.name();
+                nodeService.setProperty(eventNode, PublishingModel.PROP_PUBLISHING_EVENT_STATUS, completedStatus);
             }
         }
         finally

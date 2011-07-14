@@ -32,10 +32,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeSet;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -52,11 +52,11 @@ import org.alfresco.opencmis.dictionary.PropertyDefintionWrapper;
 import org.alfresco.opencmis.dictionary.TypeDefinitionWrapper;
 import org.alfresco.opencmis.mapping.DirectProperty;
 import org.alfresco.opencmis.search.CMISQueryOptions;
+import org.alfresco.opencmis.search.CMISQueryOptions.CMISQueryMode;
 import org.alfresco.opencmis.search.CMISQueryService;
 import org.alfresco.opencmis.search.CMISResultSet;
 import org.alfresco.opencmis.search.CMISResultSetColumn;
 import org.alfresco.opencmis.search.CMISResultSetRow;
-import org.alfresco.opencmis.search.CMISQueryOptions.CMISQueryMode;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -90,8 +90,8 @@ import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.Path.ChildAssocElement;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessPermission;
@@ -751,6 +751,12 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 try
                 {
                     versionHistory.getVersion(versionString);
+
+                    if (versionString.equals(versionHistory.getHeadVersion().getVersionLabel()))
+                    {
+                        return ObjectVariantEnum.NODE;
+                    }
+
                     return ObjectVariantEnum.VERSION;
                 } catch (VersionDoesNotExistException e)
                 {
@@ -1020,7 +1026,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         QName typeQName = nodeService.getType(nodeRef);
         return getType(typeQName);
     }
-    
+
     private TypeDefinitionWrapper getType(QName typeQName)
     {
         return cmisDictionaryService.findNodeType(typeQName);
@@ -1160,13 +1166,13 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         {
             throw new CmisObjectNotFoundException("No corresponding type found! Not a CMIS object?");
         }
-        
+
         Properties nodeProps = getNodeProperties(node, filter, type);
-        
-        return createCMISObjectImpl(nodeRef, type, nodeProps, filter, includeAllowableActions,
-                includeRelationships, renditionFilter, includePolicyIds, includeAcl);
+
+        return createCMISObjectImpl(nodeRef, type, nodeProps, filter, includeAllowableActions, includeRelationships,
+                renditionFilter, includePolicyIds, includeAcl);
     }
-    
+
     public ObjectData createCMISObject(NodeRef nodeRef, String filter, boolean includeAllowableActions,
             IncludeRelationships includeRelationships, String renditionFilter, boolean includePolicyIds,
             boolean includeAcl)
@@ -1176,16 +1182,16 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         {
             throw new CmisObjectNotFoundException("No corresponding type found! Not a CMIS object?");
         }
-        
+
         Properties nodeProps = getNodeProperties(nodeRef, filter, type);
-        
-        return createCMISObjectImpl(nodeRef, type, nodeProps, filter, includeAllowableActions,
-                includeRelationships, renditionFilter, includePolicyIds, includeAcl);
+
+        return createCMISObjectImpl(nodeRef, type, nodeProps, filter, includeAllowableActions, includeRelationships,
+                renditionFilter, includePolicyIds, includeAcl);
     }
-    
-    private ObjectData createCMISObjectImpl(NodeRef nodeRef, TypeDefinitionWrapper type, Properties nodeProps, String filter, boolean includeAllowableActions,
-            IncludeRelationships includeRelationships, String renditionFilter, boolean includePolicyIds,
-            boolean includeAcl)
+
+    private ObjectData createCMISObjectImpl(NodeRef nodeRef, TypeDefinitionWrapper type, Properties nodeProps,
+            String filter, boolean includeAllowableActions, IncludeRelationships includeRelationships,
+            String renditionFilter, boolean includePolicyIds, boolean includeAcl)
     {
         // get the current version
         NodeRef currentVersionNodeRef = nodeRef;
@@ -1462,13 +1468,13 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
         return result;
     }
-    
+
     public Properties getNodeProperties(FileInfo node, String filter, TypeDefinitionWrapper type)
     {
         PropertiesImpl result = new PropertiesImpl();
 
         Set<String> filterSet = splitFilter(filter);
-        
+
         Map<QName, Serializable> nodeProps = node.getProperties();
 
         for (PropertyDefintionWrapper propDef : type.getProperties())
@@ -1482,19 +1488,18 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                     continue;
                 }
             }
-            
+
             Serializable value = null;
-            
+
             CMISPropertyAccessor accessor = propDef.getPropertyAccessor();
             if (accessor instanceof DirectProperty)
             {
                 value = nodeProps.get(accessor.getMappedProperty());
-            }
-            else
+            } else
             {
                 value = propDef.getPropertyAccessor().getValue(node.getNodeRef());
             }
-            
+
             result.addProperty(getProperty(propDef.getPropertyDefinition().getPropertyType(), propDef, value));
         }
 

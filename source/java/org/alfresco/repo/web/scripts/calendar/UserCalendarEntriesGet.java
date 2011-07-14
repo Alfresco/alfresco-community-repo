@@ -54,7 +54,7 @@ public class UserCalendarEntriesGet extends AbstractCalendarWebScript
       
       // Site is optional
       SiteInfo site = null;
-      String siteName = templateVars.get("siteid");
+      String siteName = templateVars.get("site");
       if(siteName != null)
       {
          site = siteService.getSite(siteName);

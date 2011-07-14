@@ -262,7 +262,12 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
        
        // Parse the JSON, if supplied
        JSONObject json = null;
-       if(MimetypeMap.MIMETYPE_JSON.equals( req.getContentType() ))
+       String contentType = req.getContentType();
+       if(contentType != null && contentType.indexOf(';') != -1)
+       {
+          contentType = contentType.substring(0, contentType.indexOf(';'));
+       }
+       if(MimetypeMap.MIMETYPE_JSON.equals(contentType))
        {
           try
           {

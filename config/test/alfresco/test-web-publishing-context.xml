@@ -3,6 +3,7 @@
 
 <beans>
 
+   <import resource="classpath:alfresco/extension/dev-context.xml" />
    <import resource="classpath:alfresco/web-publishing-context.xml" />
 
    <!-- Mock Channel Type -->

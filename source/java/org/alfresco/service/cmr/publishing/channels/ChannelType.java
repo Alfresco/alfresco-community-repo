@@ -48,10 +48,15 @@ public interface ChannelType
     
     Set<String> getSupportedMimetypes();
     Set<QName> getSupportedContentTypes();
+    
+    /**
+     * Returns the URL for a piece of content represented by the supplied <code>node</code>.
+     * @param node The published content node in the live environment.
+     * @return a URL for the published content.
+     */
     String getNodeUrl(NodeRef node);
     int getMaximumStatusLength();
     
     String getAuthorisationUrl(Channel channel, String callbackUrl);
-    public boolean acceptAuthorisationCallback(Channel channel, Map<String, String[]> callbackHeaders,
-            Map<String, String[]> callbackParams);
+    boolean acceptAuthorisationCallback(Channel channel, Map<String, String[]> callbackHeaders, Map<String, String[]> callbackParams);
 }

@@ -130,7 +130,7 @@ public class ChannelHelper
         List<ChildAssociationRef> channelAssocs = nodeService.getChildAssocs(environment, ASSOC_CONTAINS, channelQName);
         return getSingleValue(channelAssocs, true);
     }
-    
+
     /**
      * Given a noderef from the editorial space (e.g. the doclib), this returns the corresponding noderef in the specified channel and environment.
      * @param source
@@ -141,17 +141,26 @@ public class ChannelHelper
     public NodeRef mapSourceToEnvironment(NodeRef source, NodeRef environment, String channelName)
     {
         NodeRef channel = getChannelNodeForEnvironment(environment, channelName);
-        return mapSourceToEnvironment(source, channel);
+        return mapSourceToEnvironmentInternal(source, channel);
     }
-    
     /**
      * Given a noderef from the editorial space (e.g. the doclib), this returns the corresponding noderef in the specified channelt
      * @param source
-     * @param channel
+     * @param editorialChannel
      * @return
      */
-    public NodeRef mapSourceToEnvironment(NodeRef source, NodeRef channel)
+    public NodeRef mapSourceToEnvironment(NodeRef source, NodeRef editorialChannel)
     {
+//        NodeRef liveChannel = mapChannelNOde(editorialChannel);
+        return mapSourceToEnvironmentInternal(source, editorialChannel);
+    }   
+    
+    private NodeRef mapSourceToEnvironmentInternal(NodeRef source, NodeRef liveChannel)
+    {
+        if(source == null || liveChannel == null)
+        {
+            return null;
+        }
         List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(source, ASSOC_SOURCE, RegexQNamePattern.MATCH_ALL);
         if(parentAssocs != null)
         {
@@ -159,7 +168,7 @@ public class ChannelHelper
             {
                 NodeRef publishedNode = parentAssoc.getParentRef();
                 NodeRef parent = nodeService.getPrimaryParent(publishedNode).getParentRef();
-                if(channel.equals(parent))
+                if(liveChannel.equals(parent))
                 {
                     return publishedNode;
                 }
@@ -177,6 +186,25 @@ public class ChannelHelper
     {
         List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(publishedNode, ASSOC_SOURCE, RegexQNamePattern.MATCH_ALL);
         return getSingleValue(childAssocs, true);
+    }
+
+    /**
+     * Returns the {@link NodeRef} for the live channel given the {@link NodeRef} for the editorial channel.
+     * @param editorialChannel
+     * @return
+     */
+    public NodeRef mapChannelNOde(NodeRef editorialChannel)
+    {
+        List<ChildAssociationRef> assocs = nodeService.getParentAssocs(editorialChannel, PublishingModel.ASSOC_EDITORIAL_CHANNEL, RegexQNamePattern.MATCH_ALL);
+        if(assocs.isEmpty())
+        {
+            return null;
+        }
+        if(assocs.size()>1)
+        {
+            throw new IllegalStateException("There is more than one environment channel node!");
+        }
+        return assocs.get(0).getParentRef();
     }
     
     /**

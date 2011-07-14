@@ -27,7 +27,7 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * @author Brian
- *
+ * @author Nick Smith
  */
 public interface Channel
 {
@@ -51,4 +51,10 @@ public interface Channel
     void unPublish(NodeRef nodeToUnpublish);
     void updateStatus(String status);
     
+    /**
+     * Returns the URL for some published content given the content node in the editorial environment.
+     * @param publishedNode The node representing the published content in the editorial environment.
+     * @return a URL for the published content.
+     */
+    String getUrl(NodeRef publishedNode);
 }

@@ -114,4 +114,13 @@ public class ChannelImpl implements Channel
         channelType.updateStatus(this, status, getProperties());
     }
 
+    /**
+    * {@inheritDoc}
+    */
+    public String getUrl(NodeRef publishedNode)
+    {
+        NodeRef mappedChannel = channelHelper.mapChannelNOde(nodeRef);
+        NodeRef mappedNode = channelHelper.mapSourceToEnvironment(publishedNode, mappedChannel);
+        return channelType.getNodeUrl(mappedNode);
+    }
 }

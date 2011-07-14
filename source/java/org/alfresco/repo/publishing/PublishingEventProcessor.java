@@ -99,7 +99,7 @@ public class PublishingEventProcessor
         NodeRef node = update.getNodeToLinkTo();
         if(node!= null)
         {
-            String nodeUrl = publishChannel.getChannelType().getNodeUrl(node);
+            String nodeUrl = publishChannel.getUrl(node);
             if(nodeUrl != null)
             {
                 message += urlShortener.shortenUrl(nodeUrl);

@@ -127,7 +127,6 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     private static final String MSG_VISIBILITY_GROUP_MISSING = "site_service.visibility_group_missing";
     private static final String MSG_CAN_NOT_UPDATE = "site_service.can_not_update";
     private static final String MSG_CAN_NOT_DELETE = "site_service.can_not_delete";
-    private static final String MSG_SITE_NO_EXIST = "site_service.site_no_exist";
     private static final String MSG_CAN_NOT_REMOVE_MSHIP = "site_service.can_not_remove_membership";
     private static final String MSG_DO_NOT_CHANGE_MGR = "site_service.do_not_change_manager";
     private static final String MSG_CAN_NOT_CHANGE_MSHIP="site_service.can_not_change_membership";
@@ -1438,7 +1437,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         NodeRef siteNodeRef = getSiteNodeRef(shortName);
         if (siteNodeRef == null)
         {
-            throw new SiteServiceException(MSG_SITE_NO_EXIST, new Object[]{shortName});
+            throw new SiteDoesNotExistException(shortName);
         }
         
         // Build an array of name filter tokens pre lowercased to test against person properties
@@ -1651,7 +1650,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         NodeRef siteNodeRef = getSiteNodeRef(siteShortName);
         if (siteNodeRef == null) 
         { 
-            throw new SiteServiceException(MSG_SITE_NO_EXIST, new Object[] { siteShortName });
+           throw new SiteDoesNotExistException(siteShortName);
         }
         
         List<String> fullResult = new ArrayList<String>(5);
@@ -1709,7 +1708,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         NodeRef siteNodeRef = getSiteNodeRef(shortName);
         if (siteNodeRef == null) 
         { 
-            throw new SiteServiceException(MSG_SITE_NO_EXIST, new Object[] { shortName });
+           throw new SiteDoesNotExistException(shortName);
         }
         QName siteType = directNodeService.getType(siteNodeRef);
         return getSiteRoles(siteType);
@@ -1741,7 +1740,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         final NodeRef siteNodeRef = getSiteNodeRef(shortName);
         if (siteNodeRef == null)
         {
-            throw new SiteServiceException(MSG_SITE_NO_EXIST, new Object[]{shortName});
+           throw new SiteDoesNotExistException(shortName);
         }
 
         // TODO what do we do about the user if they are in a group that has
@@ -1818,7 +1817,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         final NodeRef siteNodeRef = getSiteNodeRef(shortName);
         if (siteNodeRef == null)
         {
-            throw new SiteServiceException(MSG_SITE_NO_EXIST, new Object[]{shortName});
+           throw new SiteDoesNotExistException(shortName);
         }
 
         // Get the user's current role
@@ -1931,7 +1930,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         NodeRef siteNodeRef = getSiteNodeRef(shortName);
         if (siteNodeRef == null)
         {
-            throw new SiteServiceException(MSG_SITE_NO_EXIST, new Object[]{shortName});
+           throw new SiteDoesNotExistException(shortName);
         }
         
         // Update the isPublic flag
@@ -2017,7 +2016,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         NodeRef siteNodeRef = getSiteNodeRef(shortName);
         if (siteNodeRef == null) 
         { 
-            throw new SiteServiceException(MSG_SITE_NO_EXIST, new Object[] { shortName });
+           throw new SiteDoesNotExistException(shortName);
         }
         
         QName siteType = directNodeService.getType(siteNodeRef);
@@ -2047,7 +2046,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         NodeRef siteNodeRef = getSiteNodeRef(shortName);
         if (siteNodeRef == null)
         {
-            throw new SiteServiceException(MSG_SITE_NO_EXIST, new Object[]{shortName});
+           throw new SiteDoesNotExistException(shortName);
         }
 
         // retrieve component folder within site
@@ -2076,7 +2075,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         final NodeRef siteNodeRef = getSiteNodeRef(shortName);
         if (siteNodeRef == null)
         {
-            throw new SiteServiceException(MSG_SITE_NO_EXIST, new Object[]{shortName});
+           throw new SiteDoesNotExistException(shortName);
         }
 
         // retrieve component folder within site

@@ -20,6 +20,7 @@ package org.alfresco.repo.calendar;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -30,6 +31,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQueryFactory;
 import org.alfresco.query.CannedQueryResults;
+import org.alfresco.query.EmptyPagingResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.calendar.cannedqueries.GetCalendarEntriesCannedQuery;
@@ -58,7 +60,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class CalendarServiceImpl implements CalendarService
 {
-    protected static final String CALENDAR_COMPONENT = "calendar";
+    public static final String CALENDAR_COMPONENT = "calendar";
    
     /**
      *  For backwards compatibility with pre-Swift, we are asking the query to give us an accurate total count of how many
@@ -284,7 +286,7 @@ public class CalendarServiceImpl implements CalendarService
        NodeRef event = nodeService.getChildByName(container, ContentModel.ASSOC_CONTAINS, entryName);
        if(event != null)
        {
-          CalendarEntryImpl entry = new CalendarEntryImpl(event, entryName);
+          CalendarEntryImpl entry = new CalendarEntryImpl(event, container, entryName);
           entry.populate(nodeService.getProperties(event));
           entry.setTags(taggingService.getTags(event));
           return entry;
@@ -326,11 +328,11 @@ public class CalendarServiceImpl implements CalendarService
        if(entry instanceof CalendarEntryImpl)
        {
           entryImpl = (CalendarEntryImpl)entry;
-          entryImpl.recordStorageDetails(nodeRef, name);
+          entryImpl.recordStorageDetails(nodeRef, container, name);
        }
        else
        {
-          entryImpl = new CalendarEntryImpl(nodeRef, name);
+          entryImpl = new CalendarEntryImpl(nodeRef, container, name);
           entryImpl.populate(properties);
           entryImpl.setTags(entry.getTags());
        }
@@ -379,7 +381,7 @@ public class CalendarServiceImpl implements CalendarService
        if(container == null)
        {
           // No events
-          return null;
+          return new EmptyPagingResults<CalendarEntry>();
        }
        
        // Build our sorting, by date
@@ -398,7 +400,7 @@ public class CalendarServiceImpl implements CalendarService
        
        // Execute the canned query
        CannedQueryResults<NodeRef> results = cq.execute();
-       return wrap(results);
+       return wrap(results, container);
     }
 
     @Override
@@ -432,6 +434,13 @@ public class CalendarServiceImpl implements CalendarService
        }
        NodeRef[] containers = containersL.toArray(new NodeRef[containersL.size()]);
        
+       // Check we have some sites to look for
+       if(containers.length == 0)
+       {
+          // No sites, so no events
+          return new EmptyPagingResults<CalendarEntry>();
+       }
+       
        // Run the canned query
        GetCalendarEntriesCannedQueryFactory cqFactory = (GetCalendarEntriesCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_GET_ENTRIES);
        GetCalendarEntriesCannedQuery cq = (GetCalendarEntriesCannedQuery)cqFactory.getCannedQuery(
@@ -446,7 +455,7 @@ public class CalendarServiceImpl implements CalendarService
      * Our class to wrap up paged results of NodeRefs as
      *  CalendarEntry instances
      */
-    private PagingResults<CalendarEntry> wrap(final PagingResults<NodeRef> results)
+    private PagingResults<CalendarEntry> wrap(final PagingResults<NodeRef> results, final NodeRef container)
     {
        return new PagingResults<CalendarEntry>()
        {
@@ -463,7 +472,7 @@ public class CalendarServiceImpl implements CalendarService
                {
                   String entryName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
                   
-                  CalendarEntryImpl entry = new CalendarEntryImpl(nodeRef, entryName);
+                  CalendarEntryImpl entry = new CalendarEntryImpl(nodeRef, container, entryName);
                   entry.populate(nodeService.getProperties(nodeRef));
                   entry.setTags(taggingService.getTags(nodeRef));
                   entries.add(entry);

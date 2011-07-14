@@ -38,6 +38,11 @@ public interface CalendarEntry extends Serializable, PermissionCheckValue {
    NodeRef getNodeRef();
    
    /**
+    * @return the NodeRef of the site container this belongs to
+    */
+   NodeRef getContainerNodeRef();
+   
+   /**
     * @return the System generated name for the event
     */
    String getSystemName();

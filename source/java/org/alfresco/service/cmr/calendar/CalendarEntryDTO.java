@@ -33,7 +33,10 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @since 4.0
  */
 public class CalendarEntryDTO implements CalendarEntry, Serializable {
+   private static final long serialVersionUID = -7997650453677545845L;
+   
    private NodeRef nodeRef;
+   private NodeRef containerNodeRef;
    private String systemName;
    
    private String title;
@@ -74,6 +77,14 @@ public class CalendarEntryDTO implements CalendarEntry, Serializable {
    public NodeRef getNodeRef() 
    {
       return nodeRef;
+   }
+   
+   /**
+    * @return the NodeRef of the calendar's container in the site
+    */
+   public NodeRef getContainerNodeRef() 
+   {
+      return containerNodeRef;
    }
    
    /**

@@ -536,7 +536,7 @@ public class CalendarServiceImplTest
        results = CALENDAR_SERVICE.listCalendarEntries(CALENDAR_SITE.getShortName(), paging);
        assertEquals(2, results.getPage().size());
        results = CALENDAR_SERVICE.listCalendarEntries(ALTERNATE_CALENDAR_SITE.getShortName(), paging);
-       assertEquals(null, results); // TODO is this the right answer?
+       assertEquals(0, results.getPage().size());
        
        
        // Join the site, now we can see both
@@ -584,7 +584,7 @@ public class CalendarServiceImplTest
        results = CALENDAR_SERVICE.listCalendarEntries(CALENDAR_SITE.getShortName(), paging);
        assertEquals(2, results.getPage().size());
        results = CALENDAR_SERVICE.listCalendarEntries(ALTERNATE_CALENDAR_SITE.getShortName(), paging);
-       assertEquals(null, results);
+       assertEquals(0, results.getPage().size());
        
        
        // Tidy

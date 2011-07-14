@@ -169,7 +169,12 @@ public class GetCalendarEntriesCannedQuery extends AbstractCannedQueryPermission
     {
        private CalendarEntryImpl(CalendarEntity entity)
        {
-          super(entity.getNodeRef(), entity.getName());
+          super(
+                entity.getNodeRef(), 
+                // TODO Fetch this from the database layer when querying
+                nodeService.getPrimaryParent(entity.getNodeRef()).getParentRef(), 
+                entity.getName()
+          );
           super.populate(nodeService.getProperties(entity.getNodeRef()));
           super.setTags(taggingService.getTags(entity.getNodeRef()));
        }

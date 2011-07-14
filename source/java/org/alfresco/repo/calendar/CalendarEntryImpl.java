@@ -36,27 +36,36 @@ import org.alfresco.service.namespace.QName;
 public class CalendarEntryImpl extends CalendarEntryDTO
 {
     private NodeRef nodeRef;
+    private NodeRef containerNodeRef;
     private String systemName;
     
     /**
      * Wraps an existing Calendar Entry node
      */
-    protected CalendarEntryImpl(NodeRef nodeRef, String systemName)
+    protected CalendarEntryImpl(NodeRef nodeRef, NodeRef containerNodeRef, String systemName)
     {
        this.nodeRef = nodeRef;
        this.systemName = systemName;
+       this.containerNodeRef = containerNodeRef;
     }
     
-    protected void recordStorageDetails(NodeRef nodeRef, String systemName)
+    protected void recordStorageDetails(NodeRef nodeRef, NodeRef containerNodeRef, String systemName)
     {
        this.nodeRef = nodeRef;
        this.systemName = systemName;
+       this.containerNodeRef = containerNodeRef;
     }
 
     @Override
     public NodeRef getNodeRef() 
     {
        return nodeRef;
+    }
+    
+    @Override
+    public NodeRef getContainerNodeRef() 
+    {
+       return containerNodeRef;
     }
     
     @Override

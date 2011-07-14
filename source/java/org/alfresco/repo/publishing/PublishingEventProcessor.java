@@ -43,6 +43,7 @@ import org.alfresco.service.cmr.publishing.channels.ChannelService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.urlshortening.UrlShortener;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
@@ -60,6 +61,7 @@ public class PublishingEventProcessor
     private ChannelService channelService;
     private NodeService nodeService;
     private BehaviourFilter behaviourFilter;
+    private UrlShortener urlShortener;
     
      public void processEventNode(NodeRef eventNode)
      {
@@ -100,7 +102,7 @@ public class PublishingEventProcessor
             String nodeUrl = publishChannel.getChannelType().getNodeUrl(node);
             if(nodeUrl != null)
             {
-                message += nodeUrl;
+                message += urlShortener.shortenUrl(nodeUrl);
             }
         }
         Set<String> channels = update.getChannelNames();
@@ -234,7 +236,6 @@ public class PublishingEventProcessor
         }
     }
 
-
      private void addAspects(NodeRef publishedNode, Collection<QName> aspects)
      {
          Set<QName> currentAspects = nodeService.getAspects(publishedNode);
@@ -309,5 +310,13 @@ public class PublishingEventProcessor
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
     {
         this.behaviourFilter = behaviourFilter;
+    }
+    
+    /**
+     * @param urlShortener the urlShortener to set
+     */
+    public void setUrlShortener(UrlShortener urlShortener)
+    {
+        this.urlShortener = urlShortener;
     }
 }

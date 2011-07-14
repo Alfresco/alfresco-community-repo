@@ -86,6 +86,7 @@
       <property name="publishingEventHelper" ref="publishingEventHelper" />
       <property name="nodeService" ref="NodeService" />
       <property name="behaviourFilter" ref="policyBehaviourFilter" />
+      <property name="urlShortener" ref="urlShortener" />
    </bean>
 
    <bean id="publishingObjectFactory" class="org.alfresco.repo.publishing.PublishingObjectFactory">
@@ -102,5 +103,11 @@
    </bean>
    
    <bean id="publishingPackageSerializer" class="org.alfresco.repo.publishing.StandardPublishingPackageSerializer" />
+
+   <bean id="urlShortener" class="org.alfresco.repo.urlshortening.BitlyUrlShortenerImpl"  >
+      <property name="username" value="${urlshortening.bitly.username}" />
+      <property name="apiKey" value="${urlshortening.bitly.api.key}" />
+      <property name="urlLength" value="${urlshortening.bitly.url.length}" />
+   </bean>
 
 </beans>

@@ -25,7 +25,7 @@
 		"start": "${event.start?string("HH:mm")}",
 		"end": "${event.end?string("HH:mm")}",
 
-		"site": "${event.site}",
+		"site": "${event.siteName}",
 		"siteTitle": "${event.siteTitle}",
 		"allday": "${event.allday?string}",
       "tags": [<#list event.tags as tag>"${tag}"<#if tag_has_next>,</#if></#list>],

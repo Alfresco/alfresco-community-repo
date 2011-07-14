@@ -544,12 +544,15 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        
        
        // Check getting all of them
-       result = getEntries("admin", "2000/01/01"); // TODO From date shouldn't be needed...
+       result = getEntries("admin", null);
        events = result.getJSONArray("events");
        assertEquals(3, events.length());
        assertEquals(EVENT_TITLE_THREE, events.getJSONObject(0).getString("title"));
        assertEquals(EVENT_TITLE_ONE, events.getJSONObject(1).getString("title"));
        assertEquals(EVENT_TITLE_TWO, events.getJSONObject(2).getString("title"));
+       assertEquals(SITE_SHORT_NAME_CALENDAR, events.getJSONObject(0).getString("site"));
+       assertEquals(SITE_SHORT_NAME_CALENDAR, events.getJSONObject(1).getString("site"));
+       assertEquals(SITE_SHORT_NAME_CALENDAR, events.getJSONObject(2).getString("site"));
        
 
        // Now set a date filter to constrain

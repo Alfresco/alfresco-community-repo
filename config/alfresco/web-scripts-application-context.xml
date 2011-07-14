@@ -1518,4 +1518,10 @@
          parent="abstractCalendarWebScript">
    </bean>
    
+   <!-- Lists the Calendar Events for a user -->
+   <bean id="webscript.org.alfresco.slingshot.calendar.userevents.get"
+         class="org.alfresco.repo.web.scripts.calendar.UserCalendarEntriesGet"
+         parent="abstractCalendarWebScript">
+   </bean>
+   
 </beans>

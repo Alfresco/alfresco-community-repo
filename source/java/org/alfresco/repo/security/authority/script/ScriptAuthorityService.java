@@ -39,7 +39,6 @@ import org.alfresco.service.cmr.security.PersonService.PersonInfo;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ScriptPagingDetails;
-import org.mozilla.javascript.Scriptable;
 
 /**
  * Script object representing the authority service.

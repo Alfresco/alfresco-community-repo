@@ -605,6 +605,37 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         }        
     }
     
+    /**
+     * This test method ensures that searches with wildcards work as they should
+     */
+    public void testfindSitesWithWildcardTitles() throws Exception
+    {
+        // How many sites are there already in the repo?
+        List<SiteInfo> preexistingSites = this.siteService.findSites(null, null, 0);
+        final int preexistingSitesCount = preexistingSites.size();
+
+        // Create some test sites
+        //
+        // Note that the shortName can't contain an asterisk but the title can.
+        this.siteService.createSite(TEST_SITE_PRESET, "siteAlpha", "asterix", TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+        this.siteService.createSite(TEST_SITE_PRESET, "siteBeta", "asterix*obelix", TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+        
+        // Get sites by matching title
+        List<SiteInfo> sites = this.siteService.findSites("asterix", null, 0);
+        assertNotNull(sites);
+        // As the name & description do not contain "asterix", this will become a search for sites whose titles match "asterix"
+        assertEquals("Matched wrong number of sites with title equal to 'asterix'", 2, sites.size());
+        
+        // This means 'find all'
+        sites = this.siteService.findSites("*", null, 0);
+        assertNotNull(sites);
+        assertEquals("Matched wrong number of sites using '*'", preexistingSitesCount + 2, sites.size());
+        
+        sites = this.siteService.findSites("as?erix", null, 0);
+        assertNotNull(sites);
+        assertEquals("Matched wrong number of sites using '?'", 2, sites.size());
+    }
+    
     public void testGetSite()
     {
         // Get a site that isn't there

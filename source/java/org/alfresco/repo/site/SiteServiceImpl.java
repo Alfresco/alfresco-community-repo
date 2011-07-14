@@ -750,13 +750,17 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
             StringBuilder query = new StringBuilder(128);
             query.append("+PARENT:\"").append(siteRoot.toString()).append('"');
             
-            final boolean nameFilterIsPresent = filter != null && filter.length() > 0;
+            final boolean filterIsPresent = filter != null && filter.length() > 0;
+            // The filter string is only used in the Lucene query if it restricts results.
+            // A search for name/title/description = "*" does not need to be put into the Lucene query.
+            // This allows users to search for "*" in the site-finder.
+            final boolean filterIsPresentAndNecessary = filterIsPresent && !filter.equals("*");
             final boolean sitePresetFilterIsPresent = sitePresetFilter != null && sitePresetFilter.length() > 0;
             
-            if (nameFilterIsPresent || sitePresetFilterIsPresent)
+            if (filterIsPresentAndNecessary || sitePresetFilterIsPresent)
             {
                 query.append(" +(");
-                if (nameFilterIsPresent)
+                if (filterIsPresentAndNecessary)
                 {
                     String escNameFilter = AbstractLuceneQueryParser.escape(filter.replace('"', ' '));
                     

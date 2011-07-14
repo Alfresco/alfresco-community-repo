@@ -4,7 +4,7 @@ function main()
    var siteShortName = url.templateArgs.shortname,
       site = siteService.getSite(siteShortName),
       filter = (args.filter != null) ? args.filter : (args.shortNameFilter != null) ? args.shortNameFilter : "",
-      maxResults = (args.maxResults == null) ? 0 : parseInt(args.maxResults, 10),
+      maxResults = (args.maxResults == null) ? 10 : parseInt(args.maxResults, 10),
       authorityType = args.authorityType,
       zone = args.zone;
 
@@ -20,7 +20,7 @@ function main()
    var peopleFound = [],
       groupsFound = [],
       notAllowed = [],
-      i, ii, name;
+      i, ii, name, paging;
 
    if (authorityType == null || authorityType == "USER")
    {
@@ -58,7 +58,8 @@ function main()
       // Get the collection of groups
       if (zone == null)
       {
-          groupsFound = groups.searchGroups(filter);
+          paging = utils.createPaging(maxResults, -1);
+          groupsFound = groups.getGroups(filter, paging);
       }
       else
       {

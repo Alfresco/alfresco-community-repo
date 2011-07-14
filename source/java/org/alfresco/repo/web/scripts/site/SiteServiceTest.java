@@ -259,8 +259,8 @@ public class SiteServiceTest extends BaseWebScriptTest
         
         // Create a site and get it
         String shortName  = GUID.generate();
-        JSONObject result = createSite("myPreset", shortName, "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
-        Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName), 200);
+        createSite("myPreset", shortName, "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
+        sendRequest(new GetRequest(URL_SITES + "/" + shortName), 200);
        
     }
     
@@ -293,20 +293,20 @@ public class SiteServiceTest extends BaseWebScriptTest
     public void testDeleteSite() throws Exception
     {
         // Delete non-existent site
-        Response response = sendRequest(new DeleteRequest(URL_SITES + "/" + "somerandomshortname"), 404);
+        sendRequest(new DeleteRequest(URL_SITES + "/" + "somerandomshortname"), 404);
         
         // Create a site
         String shortName  = GUID.generate();
-        JSONObject result = createSite("myPreset", shortName, "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
+        createSite("myPreset", shortName, "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
         
         // Get the site
-        response = sendRequest(new GetRequest(URL_SITES + "/" + shortName), 200);
+        sendRequest(new GetRequest(URL_SITES + "/" + shortName), 200);
         
         // Delete the site
-        response = sendRequest(new DeleteRequest(URL_SITES + "/" + shortName), 200);
+        sendRequest(new DeleteRequest(URL_SITES + "/" + shortName), 200);
         
         // Get the site
-        response = sendRequest(new GetRequest(URL_SITES + "/" + shortName), 404);
+        sendRequest(new GetRequest(URL_SITES + "/" + shortName), 404);
     }
     
     public void testGetMemberships() throws Exception
@@ -340,7 +340,6 @@ public class SiteServiceTest extends BaseWebScriptTest
         
         // Post the membership
         Response response = sendRequest(new PostRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS, membership.toString(), "application/json"), 200);
-        JSONObject result = new JSONObject(response.getContentAsString());
         
         // Check the result
         assertEquals(SiteModel.SITE_CONSUMER, membership.get("role"));
@@ -571,6 +570,33 @@ public class SiteServiceTest extends BaseWebScriptTest
         assertNotNull(result);
         assertEquals(2, result.length());
     }   
+    
+    /**
+     * @since 4.0
+     */
+    public void testGetPotentialMemberships() throws Exception
+    {
+        // Create a site
+        String shortName  = GUID.generate();
+        createSite("myPreset", shortName, "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
+        
+        // Check the memberships
+        String filter = "";
+        String authorityType = "GROUP";
+        String url = "/api/sites/" + shortName + "/potentialmembers?filter=" + filter + "&amp;maxResults=10&amp;authorityType=" + authorityType;
+        Response response = sendRequest(new GetRequest(url), 200);
+        final String contentAsString = response.getContentAsString();
+        JSONObject result = new JSONObject(contentAsString);
+        assertNotNull(result);
+        JSONArray people = result.getJSONArray("people");
+        assertNotNull("people array was null", people);
+        
+        JSONArray data = result.getJSONArray("data");
+        assertNotNull("data array was null", data);
+        
+        // Delete the site
+        sendRequest(new DeleteRequest(URL_SITES + "/" + shortName), 200);
+    }
     
     public void testSiteCustomProperties()
         throws Exception

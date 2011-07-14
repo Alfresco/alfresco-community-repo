@@ -34,7 +34,9 @@ import org.alfresco.repo.security.permissions.impl.acegi.AbstractCannedQueryPerm
 import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean;
 import org.alfresco.service.cmr.calendar.CalendarEntry;
 import org.alfresco.service.cmr.calendar.CalendarService;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
@@ -55,14 +57,20 @@ public class GetCalendarEntriesCannedQuery extends AbstractCannedQueryPermission
     private static final String QUERY_SELECT_GET_BLOGS = "select_GetCalendarEntriesCannedQuery";
     
     private final CannedQueryDAO cannedQueryDAO;
+    private final TaggingService taggingService;
+    private final NodeService nodeService;
     
     public GetCalendarEntriesCannedQuery(
             CannedQueryDAO cannedQueryDAO,
+            NodeService nodeService,
+            TaggingService taggingService,
             MethodSecurityBean<CalendarEntry> methodSecurity,
             CannedQueryParameters params)
     {
         super(params, methodSecurity);
         this.cannedQueryDAO = cannedQueryDAO;
+        this.taggingService = taggingService;
+        this.nodeService = nodeService;
     }
     
     @Override
@@ -119,7 +127,7 @@ public class GetCalendarEntriesCannedQuery extends AbstractCannedQueryPermission
         
         List<Pair<? extends Object, SortOrder>> sortPairs = parameters.getSortDetails().getSortPairs();
         
-        // For now, the BlogService only sorts by a single property.
+        // For now, the CalendarService only sorts by a single property.
         if (sortPairs != null && !sortPairs.isEmpty())
         {
             List<Pair<Comparator<CalendarEntity>, SortOrder>> comparators =
@@ -162,6 +170,8 @@ public class GetCalendarEntriesCannedQuery extends AbstractCannedQueryPermission
        private CalendarEntryImpl(CalendarEntity entity)
        {
           super(entity.getNodeRef(), entity.getName());
+          super.populate(nodeService.getProperties(entity.getNodeRef()));
+          super.setTags(taggingService.getTags(entity.getNodeRef()));
        }
     }
     

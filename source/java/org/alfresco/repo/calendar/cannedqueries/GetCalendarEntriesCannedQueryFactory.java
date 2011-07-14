@@ -41,6 +41,8 @@ import org.alfresco.service.cmr.calendar.CalendarEntry;
 import org.alfresco.service.cmr.calendar.CalendarService;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
@@ -65,8 +67,10 @@ public class GetCalendarEntriesCannedQueryFactory extends AbstractCannedQueryFac
     protected MethodSecurityBean<CalendarEntry> methodSecurity;
     protected NodeDAO nodeDAO;
     protected QNameDAO qnameDAO;
-    protected CannedQueryDAO cannedQueryDAO;
+    protected NodeService nodeService;
     protected TenantService tenantService;
+    protected TaggingService taggingService;
+    protected CannedQueryDAO cannedQueryDAO;
 
     public void setNodeDAO(NodeDAO nodeDAO)
     {
@@ -83,9 +87,19 @@ public class GetCalendarEntriesCannedQueryFactory extends AbstractCannedQueryFac
        this.cannedQueryDAO = cannedQueryDAO;
     }
 
+    public void setNodeService(NodeService nodeService)
+    {
+       this.nodeService = nodeService;
+    }
+
     public void setTenantService(TenantService tenantService)
     {
        this.tenantService = tenantService;
+    }
+
+    public void setTaggingService(TaggingService taggingService)
+    {
+       this.taggingService = taggingService;
     }
 
     public void setMethodSecurity(MethodSecurityBean<CalendarEntry> methodSecurity)
@@ -103,12 +117,16 @@ public class GetCalendarEntriesCannedQueryFactory extends AbstractCannedQueryFac
         PropertyCheck.mandatory(this, "qnameDAO", qnameDAO);
         PropertyCheck.mandatory(this, "cannedQueryDAO", cannedQueryDAO);
         PropertyCheck.mandatory(this, "tenantService", tenantService);
+        PropertyCheck.mandatory(this, "taggingService", taggingService);
+        PropertyCheck.mandatory(this, "nodeService", nodeService);
     }
     
     @Override
     public CannedQuery<CalendarEntry> getCannedQuery(CannedQueryParameters parameters)
     {
-        final GetCalendarEntriesCannedQuery cq = new GetCalendarEntriesCannedQuery(cannedQueryDAO, methodSecurity, parameters);
+        final GetCalendarEntriesCannedQuery cq = new GetCalendarEntriesCannedQuery(
+              cannedQueryDAO, nodeService, taggingService, methodSecurity, parameters
+        );
         
         return (CannedQuery<CalendarEntry>) cq;
     }
@@ -150,8 +168,8 @@ public class GetCalendarEntriesCannedQueryFactory extends AbstractCannedQueryFac
     protected CannedQuerySortDetails createCQSortDetails()
     {
         List<Pair<? extends Object,SortOrder>> sort = new ArrayList<Pair<? extends Object, SortOrder>>();
-        sort.add(new Pair<QName, SortOrder>(CalendarModel.PROP_FROM_DATE, SortOrder.DESCENDING)); 
-        sort.add(new Pair<QName, SortOrder>(CalendarModel.PROP_TO_DATE, SortOrder.DESCENDING));
+        sort.add(new Pair<QName, SortOrder>(CalendarModel.PROP_FROM_DATE, SortOrder.ASCENDING)); 
+        sort.add(new Pair<QName, SortOrder>(CalendarModel.PROP_TO_DATE, SortOrder.ASCENDING));
         
         return new CannedQuerySortDetails(sort);
     }

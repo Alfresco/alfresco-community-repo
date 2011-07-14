@@ -55,7 +55,9 @@
    <!-- The multiple site, Date filtering GetChildren Canned Query Factory -->
    <bean name="calendarGetCalendarEntriesCannedQueryFactory" class="org.alfresco.repo.calendar.cannedqueries.GetCalendarEntriesCannedQueryFactory">
        <property name="registry" ref="calendarCannedQueryRegistry"/>
+       <property name="taggingService" ref="taggingService"/>
        <property name="tenantService" ref="tenantService"/>
+       <property name="nodeService" ref="nodeService"/>
        <property name="nodeDAO" ref="nodeDAO"/>
        <property name="qnameDAO" ref="qnameDAO"/>
        <property name="cannedQueryDAO" ref="cannedQueryDAO"/>

@@ -56,15 +56,8 @@ function main()
    if (authorityType == null || authorityType == "GROUP")
    {
       // Get the collection of groups
-      if (zone == null)
-      {
-          paging = utils.createPaging(maxResults, -1);
-          groupsFound = groups.getGroups(filter, paging);
-      }
-      else
-      {
-          groupsFound = groups.searchGroupsInZone(filter, zone);
-      }
+      paging = utils.createPaging(maxResults, -1);
+      groupsFound = groups.getGroupsInZone(filter, zone, paging, "displayName");
 
       // Filter this collection for site membership
       for (i = 0, ii = groupsFound.length; i < ii; i++)

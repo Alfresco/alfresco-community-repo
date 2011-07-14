@@ -42,7 +42,6 @@ import org.alfresco.service.cmr.calendar.CalendarService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -493,35 +492,26 @@ public class CalendarServiceImplTest
     /**
      * Checks that the correct permission checking occurs on fetching
      *  calendar listings (which go through canned queries)
-     * TODO FIX
      */
-    public void DISABLEDcalendarListingPermissionsChecking() throws Exception
+    @Test public void calendarListingPermissionsChecking() throws Exception
     {
        PagingRequest paging = new PagingRequest(10);
        PagingResults<CalendarEntry> results;
      
-       // TODO This shouldn't be needed...
-       PERMISSION_SERVICE.clearPermission(ALTERNATE_CALENDAR_SITE.getNodeRef(), TEST_USER);
-       System.err.println(PERMISSION_SERVICE.getPermissions(ALTERNATE_CALENDAR_SITE.getNodeRef()));
-       System.err.println(PERMISSION_SERVICE.getAllSetPermissions(ALTERNATE_CALENDAR_SITE.getNodeRef()));
-       System.err.println(NODE_SERVICE.getChildAssocs(ALTERNATE_CALENDAR_SITE.getNodeRef()));
-       System.err.println(PUBLIC_NODE_SERVICE.getChildAssocs(ALTERNATE_CALENDAR_SITE.getNodeRef()));
-       
-       
        // Nothing to start with in either site
        results = CALENDAR_SERVICE.listCalendarEntries(CALENDAR_SITE.getShortName(), paging);
-//       assertEquals(0, results.getPage().size());
+       assertEquals(0, results.getPage().size());
        results = CALENDAR_SERVICE.listCalendarEntries(ALTERNATE_CALENDAR_SITE.getShortName(), paging);
        assertEquals(0, results.getPage().size());
 
        // Double check that we're only allowed to see the 1st site
        assertEquals(true,  SITE_SERVICE.isMember(CALENDAR_SITE.getShortName(), TEST_USER));
        assertEquals(false, SITE_SERVICE.isMember(ALTERNATE_CALENDAR_SITE.getShortName(), TEST_USER));
-       assertEquals(AccessStatus.ALLOWED, PERMISSION_SERVICE.hasReadPermission(CALENDAR_SITE.getNodeRef()));
-       assertEquals(AccessStatus.DENIED,  PERMISSION_SERVICE.hasReadPermission(ALTERNATE_CALENDAR_SITE.getNodeRef()));
 
        
        // Add two events to one site and three to the other
+       // Note - add the events as a different user for the site that the
+       //  test user isn't a member of!
        CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
              "TitleA", "Description", "Location", new Date(1302431400), new Date(1302435000)
        ));
@@ -529,6 +519,7 @@ public class CalendarServiceImplTest
              "TitleB", "Description", "Location", new Date(1302431400), new Date(1302442200)
        ));
        
+       AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
        CALENDAR_SERVICE.createCalendarEntry(ALTERNATE_CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
              "PrivateTitleA", "Description", "Location", new Date(1302431400), new Date(1302435000)
        ));
@@ -538,17 +529,28 @@ public class CalendarServiceImplTest
        NodeRef priv3 = CALENDAR_SERVICE.createCalendarEntry(ALTERNATE_CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
              "PrivateTitleC", "Description", "Location", new Date(1302431400), new Date(1302442200)
        )).getNodeRef();
+       AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
        
        
        // Check again, as we're not in the 2nd site won't see any there  
        results = CALENDAR_SERVICE.listCalendarEntries(CALENDAR_SITE.getShortName(), paging);
        assertEquals(2, results.getPage().size());
        results = CALENDAR_SERVICE.listCalendarEntries(ALTERNATE_CALENDAR_SITE.getShortName(), paging);
-       assertEquals(0, results.getPage().size());
+       assertEquals(null, results); // TODO is this the right answer?
        
        
        // Join the site, now we can see both
-       SITE_SERVICE.setMembership(ALTERNATE_CALENDAR_SITE.getShortName(), TEST_USER, SiteModel.SITE_CONTRIBUTOR);
+       TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+       {
+          @Override
+          public Void execute() throws Throwable
+          {
+             AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
+             SITE_SERVICE.setMembership(ALTERNATE_CALENDAR_SITE.getShortName(), TEST_USER, SiteModel.SITE_COLLABORATOR);
+             AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
+             return null;
+          }
+       });
        
        results = CALENDAR_SERVICE.listCalendarEntries(CALENDAR_SITE.getShortName(), paging);
        assertEquals(2, results.getPage().size());
@@ -567,27 +569,43 @@ public class CalendarServiceImplTest
        
        
        // Leave, they go away again
-       SITE_SERVICE.removeMembership(ALTERNATE_CALENDAR_SITE.getShortName(), TEST_USER);
+       TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+       {
+          @Override
+          public Void execute() throws Throwable
+          {
+             AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
+             SITE_SERVICE.removeMembership(ALTERNATE_CALENDAR_SITE.getShortName(), TEST_USER);
+             AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
+             return null;
+          }
+       });
        
        results = CALENDAR_SERVICE.listCalendarEntries(CALENDAR_SITE.getShortName(), paging);
        assertEquals(2, results.getPage().size());
        results = CALENDAR_SERVICE.listCalendarEntries(ALTERNATE_CALENDAR_SITE.getShortName(), paging);
-       assertEquals(0, results.getPage().size());
+       assertEquals(null, results);
        
        
        // Tidy
+       AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
        paging = new PagingRequest(10);
        results = CALENDAR_SERVICE.listCalendarEntries(CALENDAR_SITE.getShortName(), paging);
        for(CalendarEntry entry : results.getPage())
        {
           testNodesToTidy.add(entry.getNodeRef());
        }
+       results = CALENDAR_SERVICE.listCalendarEntries(ALTERNATE_CALENDAR_SITE.getShortName(), paging);
+       for(CalendarEntry entry : results.getPage())
+       {
+          testNodesToTidy.add(entry.getNodeRef());
+       }
+       AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
     }
     
     /**
      * Test that we can retrieve (with date filtering) events from
      *  multiple sites
-     * TODO Fix permission tests
      */
     @Test public void calendarMultiSiteListing() throws Exception
     {
@@ -631,25 +649,25 @@ public class CalendarServiceImplTest
        assertEquals(3, results.getPage().size());
        
        // Should be date ordered, from then too
-       CalendarEntry a = results.getPage().get(0);
        assertEquals("TitleA", results.getPage().get(0).getTitle());
        assertEquals("TitleC", results.getPage().get(1).getTitle());
        assertEquals("TitleB", results.getPage().get(2).getTitle());
 
        
-       // Add some to the other site
+       // Add some to the other site, which the user isn't a member of
+       AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
        CALENDAR_SERVICE.createCalendarEntry(ALTERNATE_CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
              "PrivateTitleA", "Description", "Location", new Date(1302131400), new Date(1302135000)
        ));
        CALENDAR_SERVICE.createCalendarEntry(ALTERNATE_CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
              "PrivateTitleB", "Description", "Location", new Date(1302731400), new Date(1302472200)
        ));
+       AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
        
        // Check, they won't show up due to permissions
        results = CALENDAR_SERVICE.listCalendarEntries(new String[] {
              CALENDAR_SITE.getShortName(), ALTERNATE_CALENDAR_SITE.getShortName()}, paging);
-       // TODO FIX the permissions!
-       //assertEquals(3, results.getPage().size());
+       assertEquals(3, results.getPage().size());
        
        
        // Make a member of the site, they should now show up

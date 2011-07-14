@@ -120,6 +120,24 @@ public class CalendarServiceImpl implements CalendarService
      */
     protected NodeRef getSiteCalendarContainer(final String siteShortName, boolean create)
     {
+       // Does the site exist?
+       if(siteService.getSite(siteShortName) == null) {
+          // Either the site doesn't exist, or you're not allowed to see it
+          if(! create)
+          {
+             // Just say there's no container
+             return null;
+          }
+          else
+          {
+             // We can't create on a non-existant site
+             throw new AlfrescoRuntimeException(
+                   "Unable to create the calendar container from a hidden or non-existant site"
+             );
+          }
+       }
+       
+       // Check about the container
        if(! siteService.hasContainer(siteShortName, CALENDAR_COMPONENT))
        {
           if(create)
@@ -405,12 +423,6 @@ public class CalendarServiceImpl implements CalendarService
        List<NodeRef> containersL = new ArrayList<NodeRef>();
        for(String siteShortName : siteShortNames)
        {
-          // Ensure the site exists, skip if not
-          if(siteService.getSite(siteShortName) == null)
-          {
-             continue;
-          }
-          
           // Grab the container for this site
           NodeRef container = getSiteCalendarContainer(siteShortName, false);
           if(container != null)

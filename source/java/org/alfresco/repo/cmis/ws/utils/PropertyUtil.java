@@ -246,9 +246,9 @@ public class PropertyUtil
             {
                 value = (convertedValue.size() > 0) ? new ArrayList<Object>((convertedValue)) : (null);
             }
-            else
+            else if (!convertedValue.isEmpty())
             {
-                value = (Serializable)convertedValue.iterator().next();
+                value = (Serializable) convertedValue.iterator().next();
             }
         }
 
@@ -338,7 +338,11 @@ public class PropertyUtil
             if (null != cmisProperty)
             {
                 String pdid = getPropertyName(cmisProperty);
-                properties.put(pdid, getValue(cmisProperty));
+                Serializable value = getValue(cmisProperty);
+                if (value != null)
+                {
+                    properties.put(pdid, value);
+                }
             }
         }
 

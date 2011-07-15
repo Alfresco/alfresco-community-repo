@@ -137,17 +137,17 @@ public class DraftsAndPublishedBlogPostsCannedQuery extends AbstractCannedQueryP
         }
         
         List<Pair<? extends Object, SortOrder>> sortPairs = parameters.getSortDetails().getSortPairs();
-        // For now, the BlogService only sorts by a single property.
         if (sortPairs != null && !sortPairs.isEmpty())
         {
-            Pair<? extends Object, SortOrder> sortPair = sortPairs.get(0);
-            
-            QName sortProperty = (QName) sortPair.getFirst();
-            final PropertyBasedComparator comparator = new PropertyBasedComparator(sortProperty);
-            
-            if (sortPair.getSecond() == SortOrder.DESCENDING)
+            for (Pair<? extends Object, SortOrder> sortPair : sortPairs)
             {
-                Collections.sort(filtered, Collections.reverseOrder(comparator));
+                QName sortProperty = (QName) sortPair.getFirst();
+                final PropertyBasedComparator comparator = new PropertyBasedComparator(sortProperty);
+                
+                if (sortPair.getSecond() == SortOrder.DESCENDING)
+                {
+                    Collections.sort(filtered, Collections.reverseOrder(comparator));
+                }
             }
         }
         

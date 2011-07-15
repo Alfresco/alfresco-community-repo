@@ -21,8 +21,8 @@ package org.alfresco.repo.blog;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -46,7 +46,6 @@ import org.alfresco.service.cmr.blog.BlogService.RangedDateProperty;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
@@ -300,19 +299,27 @@ public class BlogServiceImplTest
     
     @Test public void createTaggedDraftBlogPost() throws Exception
     {
-        final List<String> tags = Arrays.asList(new String[]{"foo", "bar"});
+        final List<String> tags = Arrays.asList(new String[]{"alpha", "beta", "gamma"});
         
-        final NodeRef blogPost = TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
+        // Create a list of Blog Posts, all drafts, each with one of the tags above.
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<List<NodeRef>>()
             {
                 
                 @Override
-                public NodeRef execute() throws Throwable
+                public List<NodeRef> execute() throws Throwable
                 {
-                    BlogPostInfo newBlogPost = BLOG_SERVICE.createBlogPost(BLOG_CONTAINER_NODE, "draftWithTag", "Hello world", true);
-                    TAGGING_SERVICE.addTags(newBlogPost.getNodeRef(), tags);
-                    testNodesToTidy.add(newBlogPost.getNodeRef());
+                    List<NodeRef> results = new ArrayList<NodeRef>();
                     
-                    return newBlogPost.getNodeRef();
+                    for (String tag : tags)
+                    {
+                        final String blogTitle = "draftWithTag" + tag;
+                        BlogPostInfo newBlogPost = BLOG_SERVICE.createBlogPost(BLOG_CONTAINER_NODE, blogTitle, "Hello world", true);
+                        TAGGING_SERVICE.addTags(newBlogPost.getNodeRef(), Arrays.asList(new String[]{tag}));
+                        testNodesToTidy.add(newBlogPost.getNodeRef());
+                        results.add(newBlogPost.getNodeRef());
+                    }
+                    
+                    return results;
                 }
             });
         
@@ -321,16 +328,23 @@ public class BlogServiceImplTest
                 @Override
                 public Void execute() throws Throwable
                 {
+                    // Now we'll recover these blogposts & we should expect to find the same tags.
+                    Set<String> expectedTags = new HashSet<String>();
+                    expectedTags.addAll(tags);
+                    
                     PagingRequest pagingReq = new PagingRequest(0, 10, null);
                     
                     PagingResults<BlogPostInfo> pagedResults = BLOG_SERVICE.getDrafts(BLOG_CONTAINER_NODE, ADMIN_USER, pagingReq);
-                    assertEquals("Expected one blog post", 1, pagedResults.getPage().size());
+                    assertEquals("Wrong number of blog posts", tags.size(), pagedResults.getPage().size());
                     
-                    NodeRef blogNode = pagedResults.getPage().get(0).getNodeRef();
-                    assertEquals("Incorrect NodeRef.", blogNode, blogPost);
-                    
-                    List<String> recoveredTags = TAGGING_SERVICE.getTags(blogNode);
-                    assertEquals("Incorrect tags.", tags, recoveredTags);
+                    for (BlogPostInfo bpi : pagedResults.getPage())
+                    {
+                        NodeRef blogNode = bpi.getNodeRef();
+                        List<String> recoveredTags = TAGGING_SERVICE.getTags(blogNode);
+                        assertEquals("Wrong number of tags", 1, recoveredTags.size());
+                        assertTrue("Missing expected tag", expectedTags.remove(recoveredTags.get(0)));
+                    }
+                    assertTrue("Not all tags were recovered from a blogpost", expectedTags.isEmpty());
                     
                     return null;
                 }
@@ -450,6 +464,119 @@ public class BlogServiceImplTest
                     return null;
                 }
             });
+    }
+    
+    @Test public void ensureBlogPostsAreCorrectlySorted() throws Exception
+    {
+        final int testBlogCount = 3;
+        
+        // Set up some test data to check sorting. We don't need to retain references to these posts.
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+            {
+                @Override
+                public Void execute() throws Throwable
+                {
+                    // Create some blog posts. They'll all be published 'now' but the slight delay between each should ensure they
+                    // are given distinct creation dates
+                    final long slightDelay = 50;
+                    
+                    for (int i = 0; i < testBlogCount; i++)
+                    {
+                        BlogPostInfo newDraft = BLOG_SERVICE.createBlogPost(BLOG_CONTAINER_NODE, "draftPost_ensureBlogPostsAreCorrectlySorted" + i, "x", true);
+                        
+                        Thread.sleep(slightDelay);
+                        
+                        // And the same for some published posts...
+                        BlogPostInfo newPublished = BLOG_SERVICE.createBlogPost(BLOG_CONTAINER_NODE, "publishedPost_ensureBlogPostsAreCorrectlySorted" + i, "x", false);
+                        
+                        Thread.sleep(slightDelay);
+                        
+                        testNodesToTidy.add(newDraft.getNodeRef());
+                        testNodesToTidy.add(newPublished.getNodeRef());
+                    }
+                    
+                    return null;
+                }
+            });
+        
+        final PagingRequest pagingReq = new PagingRequest(100);
+        
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+            {
+                @SuppressWarnings("deprecation")
+                @Override
+                public Void execute() throws Throwable
+                {
+                    String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+                    
+                    // get DRAFTS
+                    PagingResults<BlogPostInfo> resultsPage = BLOG_SERVICE.getDrafts(BLOG_CONTAINER_NODE, currentUser, pagingReq);
+                    List<BlogPostInfo> blogPosts = resultsPage.getPage();
+                    assertTrue("Expected more draft blog posts than " + blogPosts.size(),
+                               blogPosts.size() >= testBlogCount);
+                    
+                    assertSortingIsCorrect(blogPosts);
+                    
+                    // And the published ones
+                    resultsPage = BLOG_SERVICE.getPublished(BLOG_CONTAINER_NODE, null, null, currentUser, pagingReq); // Date filtering tested elsewhere.
+                    blogPosts = resultsPage.getPage();
+                    assertTrue("Expected more published blog posts than " + blogPosts.size(),
+                               blogPosts.size() >= testBlogCount);
+                    
+                    assertSortingIsCorrect(blogPosts);
+                    
+                    
+                    // And the combination. This should be ordered:
+                    // published posts, most recent cm:published first - followed by
+                    // draft posts, most recent cm:created first
+                    System.out.println("  getMyDraftsAndAllPublished");
+                    
+                    resultsPage = BLOG_SERVICE.getMyDraftsAndAllPublished(BLOG_CONTAINER_NODE, null, null, pagingReq);
+                    blogPosts = resultsPage.getPage();
+                    
+                    assertSortingIsCorrect(blogPosts);
+                    
+                    return null;
+                }
+            });
+    }
+    
+    private void assertSortingIsCorrect(List<BlogPostInfo> blogPosts)
+    {
+        // Sometimes you just have to see the data...
+        for (BlogPostInfo bpi : blogPosts)
+        {
+            System.out.println("  -----");
+            Date published = (Date) NODE_SERVICE.getProperty(bpi.getNodeRef(), ContentModel.PROP_PUBLISHED);
+            Date created = (Date) NODE_SERVICE.getProperty(bpi.getNodeRef(), ContentModel.PROP_CREATED);
+            System.out.print("    published: " + (published == null ? "             " : published.getTime()));
+            System.out.println("    created  : " + created.getTime());
+        }
+        
+        for (int i = 0; i < blogPosts.size() - 1; i++) // We only want to iterate to the second-last item
+        {
+            BlogPostInfo nextBPI = blogPosts.get(i);
+            BlogPostInfo followingBPI = blogPosts.get(i + 1);
+            
+            Date nextPublishedDate = (Date) NODE_SERVICE.getProperty(nextBPI.getNodeRef(), ContentModel.PROP_PUBLISHED);
+            Date followingPublishedDate = (Date) NODE_SERVICE.getProperty(followingBPI.getNodeRef(), ContentModel.PROP_PUBLISHED);
+            Date nextCreatedDate = (Date) NODE_SERVICE.getProperty(nextBPI.getNodeRef(), ContentModel.PROP_CREATED);
+            Date followingCreatedDate = (Date) NODE_SERVICE.getProperty(followingBPI.getNodeRef(), ContentModel.PROP_CREATED);
+            
+            // published must precede draft
+            if ( nextPublishedDate == null && followingPublishedDate != null)
+            {
+                fail("Published posts must precede draft posts");
+            }
+            else if (nextPublishedDate != null && followingPublishedDate != null)
+            {
+                assertTrue("Error in BlogPostInfo sorting. Published dates in wrong order.", !nextPublishedDate.before(followingPublishedDate));
+            }
+            else if (nextPublishedDate == null && followingPublishedDate == null)
+            {
+                assertTrue("Error in BlogPostInfo sorting. Created dates in wrong order.", !nextCreatedDate.before(followingCreatedDate));
+            }
+        }
     }
     
     /**

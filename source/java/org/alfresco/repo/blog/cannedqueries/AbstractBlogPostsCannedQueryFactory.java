@@ -85,10 +85,15 @@ public abstract class AbstractBlogPostsCannedQueryFactory extends AbstractCanned
     
     protected CannedQuerySortDetails createCQSortDetails(QName sortProp, SortOrder sortOrder)
     {
-        CannedQuerySortDetails cqsd = null;
-        List<Pair<? extends Object, SortOrder>> sortPairs = new ArrayList<Pair<? extends Object, SortOrder>>();
-        sortPairs.add(new Pair<QName, SortOrder>(sortProp, sortOrder));
-        cqsd = new CannedQuerySortDetails(sortPairs);
+        List<Pair<? extends Object, SortOrder>> singlePair = new ArrayList<Pair<? extends Object, SortOrder>>(1);
+        singlePair.add(new Pair<QName, SortOrder>(sortProp, sortOrder));
+        
+        return this.createCQSortDetails(singlePair);
+    }
+    
+    protected CannedQuerySortDetails createCQSortDetails(List<Pair<? extends Object, SortOrder>> sortPairs)
+    {
+        CannedQuerySortDetails cqsd = new CannedQuerySortDetails(sortPairs);
         return cqsd;
     }
     

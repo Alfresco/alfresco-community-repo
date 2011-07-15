@@ -18,7 +18,9 @@
  */
 package org.alfresco.repo.blog.cannedqueries;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQuery;
@@ -30,6 +32,8 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.query.CannedQuerySortDetails.SortOrder;
 import org.alfresco.service.cmr.blog.BlogService.BlogPostInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 
 /**
@@ -67,7 +71,15 @@ public class DraftsAndPublishedBlogPostsCannedQueryFactory extends AbstractBlogP
                                                                                     fromDate, toDate);
         
         CannedQueryPageDetails cqpd = createCQPageDetails(pagingReq);
-        CannedQuerySortDetails cqsd = createCQSortDetails(ContentModel.PROP_PUBLISHED, SortOrder.DESCENDING);
+        
+        List<Pair<? extends Object, SortOrder>> sortPairs = new ArrayList<Pair<? extends Object, SortOrder>>(2);
+        
+        // Sort by created then published. We want a list of all published (most recently published first),
+        //                                 followed by all unpublished (most recently created first)
+        sortPairs.add(new Pair<QName, SortOrder>(ContentModel.PROP_CREATED, SortOrder.DESCENDING));
+        sortPairs.add(new Pair<QName, SortOrder>(ContentModel.PROP_PUBLISHED, SortOrder.DESCENDING));
+        
+        CannedQuerySortDetails cqsd = createCQSortDetails(sortPairs);
         
         // create query params holder
         CannedQueryParameters params = new CannedQueryParameters(paramBean, cqpd, cqsd, requestTotalCountMax, pagingReq.getQueryExecutionId());

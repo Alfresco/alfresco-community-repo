@@ -1872,7 +1872,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             // relationships from and to versions are not preserved
             return result;
         }
-
+        
         // get relationships
         List<AssociationRef> assocs = new ArrayList<AssociationRef>();
         if (relationshipDirection == RelationshipDirection.SOURCE
@@ -1903,7 +1903,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                     continue;
                 }
 
-                if ((typeId != null) && !assocRef.getId().equals(typeId))
+                if ((typeId != null) && !assocTypeDef.getTypeId().equals(typeId))
                 {
                     continue;
                 }

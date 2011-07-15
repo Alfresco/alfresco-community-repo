@@ -142,7 +142,7 @@ import org.apache.commons.logging.LogFactory;
 public class AlfrescoCmisService extends AbstractCmisService
 {
     private static Log logger = LogFactory.getLog(AlfrescoCmisService.class);
-    
+
     private CMISConnector connector;
     private CallContext context;
     private UserTransaction txn;
@@ -511,30 +511,30 @@ public class AlfrescoCmisService extends AbstractCmisService
             Boolean includePathSegment, BigInteger maxItems, BigInteger skipCount, ExtensionsData extension)
     {
         long start = System.currentTimeMillis();
-        
+
         checkRepositoryId(repositoryId);
-        
+
         // convert BigIntegers to int
         int max = (maxItems == null ? Integer.MAX_VALUE : maxItems.intValue());
         int skip = (skipCount == null || skipCount.intValue() < 0 ? 0 : skipCount.intValue());
-        
+
         ObjectInFolderListImpl result = new ObjectInFolderListImpl();
         List<ObjectInFolderData> list = new ArrayList<ObjectInFolderData>();
         result.setObjects(list);
-        
+
         // get the children references
         NodeRef folderNodeRef = connector.getFolderNodeRef("Folder", folderId);
-        
+
         // convert orderBy to sortProps
         List<Pair<QName, Boolean>> sortProps = null;
         if (orderBy != null)
         {
             sortProps = new ArrayList<Pair<QName, Boolean>>(1);
-            
+
             String[] parts = orderBy.split(",");
             int len = parts.length;
             final int origLen = len;
-            
+
             if (origLen > 0)
             {
                 int maxSortProps = GetChildrenCannedQuery.MAX_FILTER_SORT_PROPS;
@@ -542,17 +542,19 @@ public class AlfrescoCmisService extends AbstractCmisService
                 {
                     if (logger.isDebugEnabled())
                     {
-                        logger.debug("Too many sort properties in 'orderBy' - ignore those above max (max="+maxSortProps+",actual="+len+")");
+                        logger.debug("Too many sort properties in 'orderBy' - ignore those above max (max="
+                                + maxSortProps + ",actual=" + len + ")");
                     }
                     len = maxSortProps;
                 }
                 for (int i = 0; i < len; i++)
                 {
                     String[] sort = parts[i].split(" +");
-                    
+
                     if (sort.length > 0)
                     {
-                        PropertyDefintionWrapper propDef = connector.getOpenCMISDictionaryService().findPropertyByQueryName(sort[0]);
+                        PropertyDefintionWrapper propDef = connector.getOpenCMISDictionaryService()
+                                .findPropertyByQueryName(sort[0]);
                         if (propDef != null)
                         {
                             QName sortProp = propDef.getPropertyAccessor().getMappedProperty();
@@ -560,80 +562,88 @@ public class AlfrescoCmisService extends AbstractCmisService
                             {
                                 boolean sortAsc = ((sort.length == 1) || (sortAsc = (sort[1].equalsIgnoreCase("asc"))));
                                 sortProps.add(new Pair<QName, Boolean>(sortProp, sortAsc));
-                            }
-                            else
+                            } else
                             {
                                 if (logger.isDebugEnabled())
                                 {
-                                    logger.debug("Ignore sort property '"+sort[0]+" - mapping not found");
+                                    logger.debug("Ignore sort property '" + sort[0] + " - mapping not found");
                                 }
                             }
-                        }
-                        else
+                        } else
                         {
                             if (logger.isDebugEnabled())
                             {
-                                logger.debug("Ignore sort property '"+sort[0]+" - query name not found");
+                                logger.debug("Ignore sort property '" + sort[0] + " - query name not found");
                             }
                         }
                     }
                 }
             }
-            
+
             if (sortProps.size() < origLen)
             {
-                logger.warn("Sort properties trimmed - either too many and/or not found: \n" +
-                        "   orig:  " + orderBy + "\n" +
-                        "   final: " + sortProps);
+                logger.warn("Sort properties trimmed - either too many and/or not found: \n" + "   orig:  " + orderBy
+                        + "\n" + "   final: " + sortProps);
             }
         }
-        
+
         PagingRequest pageRequest = new PagingRequest(skipCount.intValue(), maxItems.intValue(), null);
-        pageRequest.setRequestTotalCountMax(skipCount.intValue() + 1000); // TODO make this optional/configurable - affects whether numItems may be returned
-        
-        PagingResults<FileInfo> pageOfNodeInfos = connector.getFileFolderService().list(folderNodeRef, true, true, null, sortProps, pageRequest);
+        pageRequest.setRequestTotalCountMax(skipCount.intValue() + 1000); // TODO
+                                                                          // make
+                                                                          // this
+                                                                          // optional/configurable
+                                                                          // -
+                                                                          // affects
+                                                                          // whether
+                                                                          // numItems
+                                                                          // may
+                                                                          // be
+                                                                          // returned
+
+        PagingResults<FileInfo> pageOfNodeInfos = connector.getFileFolderService().list(folderNodeRef, true, true,
+                null, sortProps, pageRequest);
         List<FileInfo> childrenList = pageOfNodeInfos.getPage();
-        
+
         if (max > 0)
         {
             int lastIndex = (max + skip > childrenList.size() ? childrenList.size() : max + skip) - 1;
             for (int i = skip; i <= lastIndex; i++)
             {
                 FileInfo child = childrenList.get(i);
-                
+
                 try
                 {
                     // create a child CMIS object
-                    ObjectData object = connector.createCMISObject(child, filter,
-                             includeAllowableActions, includeRelationships, renditionFilter, false, false);
-                    
+                    ObjectData object = connector.createCMISObject(child, filter, includeAllowableActions,
+                            includeRelationships, renditionFilter, false, false);
+
                     if (context.isObjectInfoRequired())
                     {
                         getObjectInfo(repositoryId, object.getId());
                     }
-                    
+
                     ObjectInFolderDataImpl childData = new ObjectInFolderDataImpl();
                     childData.setObject(object);
-                    
+
                     // include path segment
                     if (includePathSegment)
                     {
                         childData.setPathSegment(child.getName());
                     }
-                    
+
                     // add it
                     list.add(childData);
-                    
+
                 } catch (InvalidNodeRefException e)
                 {
                     // ignore invalid children
                 }
             }
         }
-        
-        /// has more ?
+
+        // / has more ?
         result.setHasMoreItems(pageOfNodeInfos.hasMoreItems());
-        
+
         // total count ?
         Pair<Integer, Integer> totalCounts = pageOfNodeInfos.getTotalResultCount();
         if (totalCounts != null)
@@ -645,12 +655,13 @@ public class AlfrescoCmisService extends AbstractCmisService
                 result.setNumItems(BigInteger.valueOf(totalCountLower));
             }
         }
-        
+
         if (logger.isDebugEnabled())
         {
-            logger.debug("getChildren: "+childrenList.size()+" in "+(System.currentTimeMillis()-start)+" msecs");
+            logger.debug("getChildren: " + childrenList.size() + " in " + (System.currentTimeMillis() - start)
+                    + " msecs");
         }
-        
+
         return result;
     }
 
@@ -2299,6 +2310,27 @@ public class AlfrescoCmisService extends AbstractCmisService
         if (variant == ObjectVariantEnum.ASSOC)
         {
             throw new CmisInvalidArgumentException("Object is a relationship!");
+        }
+
+        // check if the relationship base type is requested
+        if (BaseTypeId.CMIS_RELATIONSHIP.value().equals(typeId))
+        {
+            boolean isrt = (includeSubRelationshipTypes == null ? false : includeSubRelationshipTypes.booleanValue());
+            if (isrt)
+            {
+                // all relationships are a direct subtype of the base type in
+                // Alfresco -> remove filter
+                typeId = null;
+            } else
+            {
+                // there are no relationships of the base type in ALfresco ->
+                // return empty list
+                ObjectListImpl result = new ObjectListImpl();
+                result.setHasMoreItems(false);
+                result.setNumItems(BigInteger.ZERO);
+                result.setObjects(new ArrayList<ObjectData>());
+                return result;
+            }
         }
 
         NodeRef nodeRef = connector.getNodeRefIfCurrent("Object", objectId);

@@ -16,41 +16,42 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.publishing.facebook;
+package org.alfresco.repo.publishing.flickr;
 
 import org.alfresco.repo.publishing.PublishingModel;
+import org.alfresco.repo.publishing.flickr.springsocial.api.Flickr;
+import org.alfresco.repo.publishing.flickr.springsocial.connect.FlickrConnectionFactory;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.springframework.social.connect.Connection;
-import org.springframework.social.facebook.api.Facebook;
-import org.springframework.social.facebook.connect.FacebookConnectionFactory;
-import org.springframework.social.oauth2.AccessGrant;
+import org.springframework.social.oauth1.OAuthToken;
 
-public class FacebookPublishingHelper
+public class FlickrPublishingHelper
 {
     private NodeService nodeService;
-    private FacebookConnectionFactory connectionFactory;
+    private FlickrConnectionFactory connectionFactory;
 
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
 
-    public void setConnectionFactory(FacebookConnectionFactory connectionFactory)
+    public void setConnectionFactory(FlickrConnectionFactory connectionFactory)
     {
         this.connectionFactory = connectionFactory;
     }
 
-    public FacebookConnectionFactory getConnectionFactory()
+    public FlickrConnectionFactory getConnectionFactory()
     {
         return connectionFactory;
     }
 
-    public Connection<Facebook> getFacebookConnectionForChannel(NodeRef channelNode)
+    public Connection<Flickr> getConnectionForPublishNode(NodeRef publishNode)
     {
-        Connection<Facebook> connection = null;
+        Connection<Flickr> connection = null;
+        NodeRef channelNode = nodeService.getPrimaryParent(publishNode).getParentRef();
         if (nodeService.exists(channelNode)
-                && nodeService.hasAspect(channelNode, FacebookPublishingModel.ASPECT_DELIVERY_CHANNEL))
+                && nodeService.hasAspect(channelNode, PublishingModel.ASPECT_OAUTH1_DELIVERY_CHANNEL))
         {
             String tokenValue = (String) nodeService.getProperty(channelNode, PublishingModel.PROP_OAUTH1_TOKEN_VALUE);
             String tokenSecret = (String) nodeService.getProperty(channelNode, PublishingModel.PROP_OAUTH1_TOKEN_SECRET);
@@ -58,7 +59,7 @@ public class FacebookPublishingHelper
             
             if (danceComplete)
             {
-                AccessGrant token = new AccessGrant("   ");
+                OAuthToken token = new OAuthToken(tokenValue, tokenSecret);
                 connection = connectionFactory.createConnection(token);
             }
         }

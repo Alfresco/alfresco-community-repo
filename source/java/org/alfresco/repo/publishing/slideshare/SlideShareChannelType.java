@@ -22,9 +22,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
-import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.publishing.AbstractChannelType;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
@@ -36,28 +34,11 @@ import org.alfresco.service.namespace.QName;
 public class SlideShareChannelType extends AbstractChannelType
 {
     public final static String ID = "slideshare";
-    private final static Set<String> DEFAULT_MIME_TYPES = new TreeSet<String>(); 
 
     private NodeService nodeService;
     private ActionService actionService;
-    private Set<String> permittedMimeTypes = Collections.unmodifiableSet(DEFAULT_MIME_TYPES);
-    
-    static
-    {
-        DEFAULT_MIME_TYPES.add(MimetypeMap.MIMETYPE_PPT);
-        DEFAULT_MIME_TYPES.add(MimetypeMap.MIMETYPE_PDF);
-        DEFAULT_MIME_TYPES.add(MimetypeMap.MIMETYPE_OPENDOCUMENT_PRESENTATION);
-        DEFAULT_MIME_TYPES.add(MimetypeMap.MIMETYPE_OPENXML_PRESENTATION);
-        DEFAULT_MIME_TYPES.add(MimetypeMap.MIMETYPE_IWORK_KEYNOTE);
-        DEFAULT_MIME_TYPES.add(MimetypeMap.MIMETYPE_IWORK_PAGES);
-        DEFAULT_MIME_TYPES.add(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        DEFAULT_MIME_TYPES.add(MimetypeMap.MIMETYPE_OPENDOCUMENT_TEXT);
-        DEFAULT_MIME_TYPES.add(MimetypeMap.MIMETYPE_TEXT_CSV);
-        DEFAULT_MIME_TYPES.add(MimetypeMap.MIMETYPE_EXCEL);
-        DEFAULT_MIME_TYPES.add(MimetypeMap.MIMETYPE_OPENXML_WORDPROCESSING);
-        DEFAULT_MIME_TYPES.add(MimetypeMap.MIMETYPE_OPENDOCUMENT_SPREADSHEET);
-    }
-    
+    private SlideSharePublishingHelper publishingHelper;
+
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
@@ -68,13 +49,9 @@ public class SlideShareChannelType extends AbstractChannelType
         this.actionService = actionService;
     }
 
-    public void setPermittedMimeTypes(Set<String> permittedMimeTypes)
+    public void setPublishingHelper(SlideSharePublishingHelper publishingHelper)
     {
-        if (permittedMimeTypes == null)
-        {
-            permittedMimeTypes = Collections.emptySet();
-        }
-        this.permittedMimeTypes = Collections.unmodifiableSet(permittedMimeTypes);
+        this.publishingHelper = publishingHelper;
     }
 
     @Override
@@ -116,7 +93,7 @@ public class SlideShareChannelType extends AbstractChannelType
     @Override
     public Set<String> getSupportedMimetypes()
     {
-        return permittedMimeTypes;
+        return publishingHelper.getAllowedMimeTypes().keySet();
     }
 
     @Override

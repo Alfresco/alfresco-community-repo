@@ -107,7 +107,6 @@
    <bean id="urlShortener" class="org.alfresco.repo.urlshortening.BitlyUrlShortenerImpl"  >
       <property name="username" value="${urlshortening.bitly.username}" />
       <property name="apiKey" value="${urlshortening.bitly.api.key}" />
-      <property name="urlLength" value="${urlshortening.bitly.url.length}" />
    </bean>
 
 </beans>

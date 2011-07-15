@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    <bean parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
+        <property name="models">
+            <list>
+                <value>alfresco/model/flickrPublishingModel.xml</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="flickrDeliveryChannelType" class="org.alfresco.repo.publishing.flickr.FlickrChannelType" parent="baseChannelType" >
+        <property name="nodeService" ref="NodeService" />
+        <property name="publishingHelper" ref="flickrPublishingHelper" />
+        <property name="actionService" ref="ActionService" />
+    </bean>
+
+    <bean id="flickrPublishingHelper" class="org.alfresco.repo.publishing.flickr.FlickrPublishingHelper">
+        <property name="nodeService" ref="NodeService" />
+        <property name="connectionFactory">
+            <bean class="org.springframework.social.flickr.connect.FlickrConnectionFactory">
+                <constructor-arg value="cc61f5d37569cec8c04fce8b4db3f37d" />
+                <constructor-arg value="75f29c6fc18a1b0c" />
+            </bean>
+        </property>
+    </bean>
+
+    <bean id="publish_flickr" parent="action-executer" class="org.alfresco.repo.publishing.flickr.FlickrPublishAction">
+        <property name="nodeService" ref="NodeService" />
+        <property name="taggingService" ref="TaggingService" />
+        <property name="contentService" ref="ContentService" />
+        <property name="flickrHelper" ref="flickrPublishingHelper" />
+    </bean>
+
+</beans>

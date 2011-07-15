@@ -97,7 +97,8 @@ public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrat
     {
         testCreateChannel();
         
-        channelService.deleteChannel(siteId, channelName);
+        Channel channel = channelService.getChannel(siteId, channelName);
+        channelService.deleteChannel(channel);
         
         List<Channel> channels = channelService.getChannels(siteId);
         assertTrue(channels.isEmpty());

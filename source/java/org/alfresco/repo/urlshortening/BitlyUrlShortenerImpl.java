@@ -17,7 +17,7 @@ public class BitlyUrlShortenerImpl implements UrlShortener
 {
     private static final Log log = LogFactory.getLog(BitlyUrlShortenerImpl.class);
 
-    private int urlLength;
+    private int urlLength = 20;
     private String username;
     private String apiKey = "R_ca15c6c89e9b25ccd170bafd209a0d4f";
     private HttpClient httpClient;

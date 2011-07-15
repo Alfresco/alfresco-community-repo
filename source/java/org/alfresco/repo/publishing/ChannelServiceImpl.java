@@ -175,16 +175,18 @@ public class ChannelServiceImpl implements ChannelService
     /**
      * {@inheritDoc}
      */
-    public void deleteChannel(String siteId, String channelName)
+    public void deleteChannel(Channel channel)
     {
-        Set<NodeRef> containers = getAllChannelContainers(siteId);
-        for (NodeRef channelContainer : containers)
+        List<NodeRef> allChannelNodes = new ArrayList<NodeRef>();
+        NodeRef editorialNode = channel.getNodeRef();
+        allChannelNodes.add(editorialNode);
+        for (AssociationRef assoc : nodeService.getSourceAssocs(editorialNode, PublishingModel.ASSOC_EDITORIAL_CHANNEL))
         {
-            NodeRef channel = nodeService.getChildByName(channelContainer, ContentModel.ASSOC_CONTAINS, channelName);
-            if (channel != null)
-            {
-                nodeService.deleteNode(channel);
-            }
+            allChannelNodes.add(assoc.getSourceRef());
+        }
+        for (NodeRef channelNode : allChannelNodes)
+        {
+            nodeService.deleteNode(channelNode);
         }
     }
 

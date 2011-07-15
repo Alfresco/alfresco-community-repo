@@ -24,7 +24,6 @@ import java.util.List;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
-import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -38,6 +37,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.benfante.jslideshare.SlideShareAPI;
+import com.benfante.jslideshare.messages.Slideshow;
 
 public class SlideSharePublishAction extends ActionExecuterAbstractBase
 {
@@ -84,20 +84,19 @@ public class SlideSharePublishAction extends ActionExecuterAbstractBase
         if (reader.exists())
         {
             File contentFile;
+            String mime = reader.getMimetype();
+            
+            String extension = slideShareHelper.getAllowedMimeTypes().get(mime);
+            if (extension == null) extension = "";
+            
             boolean deleteContentFileOnCompletion = false;
-            if (FileContentReader.class.isAssignableFrom(reader.getClass()))
-            {
-                //Grab the content straight from the content store if we can...
-                contentFile = ((FileContentReader)reader).getFile();
-            }
-            else
-            {
-                //...otherwise copy it to a temp file and use the copy... 
-                File tempDir = TempFileProvider.getLongLifeTempDir("slideshare");
-                contentFile = TempFileProvider.createTempFile("slideshare", "", tempDir);
-                reader.getContent(contentFile);
-                deleteContentFileOnCompletion = true;
-            }
+            
+            //SlideShare seems to work entirely off file extension, so we always copy onto the 
+            //file system and upload from there.
+            File tempDir = TempFileProvider.getLongLifeTempDir("slideshare");
+            contentFile = TempFileProvider.createTempFile("slideshare", extension, tempDir);
+            reader.getContent(contentFile);
+            deleteContentFileOnCompletion = true;
 
             String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
             String title = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_TITLE);
@@ -121,8 +120,17 @@ public class SlideSharePublishAction extends ActionExecuterAbstractBase
 
             String assetId = api.uploadSlideshow(usernamePassword.getFirst(), usernamePassword.getSecond(), title, 
                     contentFile, description, tags.toString(), false, false, false, false, false);
-//          String url = api.getSlideshow(assetId).getPermalink();
+            
             String url = null;
+            Slideshow slides =  api.getSlideshow(assetId);
+            if (slides != null)
+            {
+                url = slides.getPermalink();
+                if (log.isInfoEnabled())
+                {
+                    log.info("SlideShare has provided a URL for asset " + assetId + ": " + url);
+                }
+            }
             if (log.isInfoEnabled())
             {
                 log.info("File " + name + " has been published to SlideShare with id " + assetId + " at URL " + url);

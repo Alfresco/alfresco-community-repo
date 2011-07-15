@@ -64,11 +64,10 @@ public interface ChannelService
     Channel createChannel(String siteId, String channelTypeId, String name, Map<QName, Serializable> properties);
     
     /**
-     * Remove the channel with the specified name on the specified Share site.
-     * @param siteId The identifier of the Share site that contains the channel to be deleted.
-     * @param channelName The name of the channel that is to be deleted.
+     * Remove the specified channel.
+     * @param channel The channel to delete.
      */
-    void deleteChannel(String siteId, String channelName);
+    void deleteChannel(Channel channel);
     
     /**
      * Rename the specified channel

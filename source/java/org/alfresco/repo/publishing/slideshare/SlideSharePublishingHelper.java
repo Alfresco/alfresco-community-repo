@@ -18,6 +18,11 @@
  */
 package org.alfresco.repo.publishing.slideshare;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.TreeMap;
+
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.publishing.PublishingModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -28,6 +33,24 @@ import com.benfante.jslideshare.SlideShareConnector;
 
 public class SlideSharePublishingHelper
 {
+    private final static Map<String,String> DEFAULT_MIME_TYPES = new TreeMap<String,String>(); 
+    static
+    {
+        DEFAULT_MIME_TYPES.put(MimetypeMap.MIMETYPE_PPT, ".ppt");
+        DEFAULT_MIME_TYPES.put(MimetypeMap.MIMETYPE_PDF, ".pdf");
+        DEFAULT_MIME_TYPES.put(MimetypeMap.MIMETYPE_OPENDOCUMENT_PRESENTATION, ".odp");
+        DEFAULT_MIME_TYPES.put(MimetypeMap.MIMETYPE_OPENXML_PRESENTATION, ".pptx");
+        DEFAULT_MIME_TYPES.put(MimetypeMap.MIMETYPE_IWORK_KEYNOTE, "");
+        DEFAULT_MIME_TYPES.put(MimetypeMap.MIMETYPE_IWORK_PAGES, "");
+        DEFAULT_MIME_TYPES.put(MimetypeMap.MIMETYPE_TEXT_PLAIN, ".txt");
+        DEFAULT_MIME_TYPES.put(MimetypeMap.MIMETYPE_OPENDOCUMENT_TEXT, ".odt");
+        DEFAULT_MIME_TYPES.put(MimetypeMap.MIMETYPE_TEXT_CSV, ".csv");
+        DEFAULT_MIME_TYPES.put(MimetypeMap.MIMETYPE_EXCEL, ".xls");
+        DEFAULT_MIME_TYPES.put(MimetypeMap.MIMETYPE_OPENXML_WORDPROCESSING, ".docx");
+        DEFAULT_MIME_TYPES.put(MimetypeMap.MIMETYPE_OPENDOCUMENT_SPREADSHEET, ".ods");
+    }
+    
+    private Map<String, String> allowedMimeTypes = Collections.unmodifiableMap(DEFAULT_MIME_TYPES);
     private NodeService nodeService;
     private SlideShareConnector slideshareConnector;
     
@@ -39,6 +62,16 @@ public class SlideSharePublishingHelper
     public void setSlideshareConnector(SlideShareConnector slideshareConnector)
     {
         this.slideshareConnector = slideshareConnector;
+    }
+
+    public Map<String, String> getAllowedMimeTypes()
+    {
+        return allowedMimeTypes;
+    }
+
+    public void setAllowedMimeTypes(Map<String, String> allowedMimeTypes)
+    {
+        this.allowedMimeTypes = Collections.unmodifiableMap(allowedMimeTypes);
     }
 
     public SlideShareAPI getSlideShareApi()

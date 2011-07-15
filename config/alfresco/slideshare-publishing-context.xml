@@ -30,6 +30,7 @@
     <bean id="slideshareDeliveryChannelType" class="org.alfresco.repo.publishing.slideshare.SlideShareChannelType" parent="baseChannelType" >
         <property name="actionService" ref="ActionService" />
         <property name="nodeService" ref="NodeService" />
+        <property name="publishingHelper" ref="slidesharePublishingHelper" />
     </bean>
 
 

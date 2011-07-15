@@ -3,7 +3,17 @@
 
 <beans>
 
-   <import resource="classpath:alfresco/extension/dev-context.xml" />
+    <bean id="repository-properties" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="ignoreUnresolvablePlaceholders">
+            <value>true</value>
+        </property>
+        <property name="locations">
+            <list>
+                <value>classpath:alfresco/repository.properties</value>
+            </list>
+        </property>
+    </bean>
+
    <import resource="classpath:alfresco/web-publishing-context.xml" />
 
    <!-- Mock Channel Type -->

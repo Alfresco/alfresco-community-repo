@@ -20,6 +20,8 @@
 package org.alfresco.repo.web.scripts.publishing;
 
 import java.io.IOException;
+import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -28,6 +30,7 @@ import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.AbstractWebScript;
@@ -86,7 +89,9 @@ public class AuthCallbackWebScript extends AbstractWebScript
         
         if (channel.getChannelType().acceptAuthorisationCallback(channel, headers, params))
         {
-            nodeService.setProperty(channelNodeRef, PublishingModel.PROP_AUTHORISATION_COMPLETE, Boolean.TRUE);
+            Map<QName,Serializable> props = new HashMap<QName, Serializable>();
+            props.put(PublishingModel.PROP_AUTHORISATION_COMPLETE, Boolean.TRUE);
+            channelService.updateChannel(channel, props);
             res.getWriter().write("Authorisation granted!");
         }
         else
@@ -96,7 +101,7 @@ public class AuthCallbackWebScript extends AbstractWebScript
             {
                 //If we have not been granted access by the service provider then we 
                 //simply delete this publishing channel
-                nodeService.deleteNode(channelNodeRef);
+                channelService.deleteChannel(channel);
             }
             res.getWriter().write("Authorisation denied!");
         }

@@ -18,7 +18,7 @@
    
    ]]></description>
    <description></description>
-   <url>/api/publishing/channel</url>
+   <url>/api/publishing/channels</url>
    <format default="json"/>
    <authentication>user</authentication>
    <transaction>required</transaction>

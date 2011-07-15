@@ -18,7 +18,6 @@
  */
 package org.alfresco.repo.web.scripts.calendar;
 
-import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -26,8 +25,6 @@ import java.util.StringTokenizer;
 import org.alfresco.service.cmr.calendar.CalendarEntry;
 import org.alfresco.service.cmr.calendar.CalendarEntryDTO;
 import org.alfresco.service.cmr.site.SiteInfo;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
@@ -42,8 +39,6 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class CalendarEntryPut extends AbstractCalendarWebScript
 {
-   private static Log logger = LogFactory.getLog(CalendarEntryPut.class);
-   
    @Override
    protected Map<String, Object> executeImpl(SiteInfo site, String eventName,
          WebScriptRequest req, JSONObject json, Status status, Cache cache) {
@@ -157,26 +152,7 @@ public class CalendarEntryPut extends AbstractCalendarWebScript
       
       
       // Generate the activity feed for this
-      SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
-      String dateOpt = "?date=" + fmt.format(entry.getStart());
-      try
-      {
-         JSONObject activity = new JSONObject();
-         activity.put("title", entry.getTitle());
-         activity.put("page", req.getParameter("page") + dateOpt);
-         
-         activityService.postActivity(
-               "org.alfresco.calendar.event-updated",
-               site.getShortName(),
-               CALENDAR_SERVICE_ACTIVITY_APP_NAME,
-               activity.toString()
-         );
-      }
-      catch(Exception e)
-      {
-         // Warn, but carry on
-         logger.warn("Error adding event deletion to activities feed", e);
-      }
+      String dateOpt = addActivityEntry("updated", entry, site, req, json);
       
       
       // Build the return object

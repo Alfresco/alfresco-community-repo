@@ -22,8 +22,6 @@ import java.util.Map;
 
 import org.alfresco.service.cmr.calendar.CalendarEntry;
 import org.alfresco.service.cmr.site.SiteInfo;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
@@ -37,8 +35,6 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class CalendarEntryDelete extends AbstractCalendarWebScript
 {
-   private static Log logger = LogFactory.getLog(CalendarEntryDelete.class);
-   
    /**
     * This WebScript uses HTTP status codes for errors
     */
@@ -75,24 +71,7 @@ public class CalendarEntryDelete extends AbstractCalendarWebScript
       calendarService.deleteCalendarEntry(entry);
       
       // Record this in the activity feed
-      try
-      {
-         JSONObject activity = new JSONObject();
-         activity.put("title", entry.getTitle());
-         activity.put("page", req.getParameter("page"));
-         
-         activityService.postActivity(
-               "org.alfresco.calendar.event-deleted",
-               site.getShortName(),
-               CALENDAR_SERVICE_ACTIVITY_APP_NAME,
-               activity.toString()
-         );
-      }
-      catch(Exception e)
-      {
-         // Warn, but carry on
-         logger.warn("Error adding event deletion to activities feed", e);
-      }
+      addActivityEntry("deleted", entry, site, req, json);
 
       // All done
       status.setCode(Status.STATUS_NO_CONTENT, "Entry deleted");

@@ -39,6 +39,8 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.ISO8601DateFormat;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -55,6 +57,8 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
 {
     public static final String CALENDAR_SERVICE_ACTIVITY_APP_NAME = "calendar";
+    
+    private static Log logger = LogFactory.getLog(AbstractCalendarWebScript.class);
     
     /**
      * When no maximum or paging info is given, what should we use?
@@ -218,6 +222,57 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
        model.put("result", result);
        
        return model;
+    }
+
+    /**
+     * Generates an activity entry for the entry
+     */
+    protected String addActivityEntry(String event, CalendarEntry entry, SiteInfo site, 
+          WebScriptRequest req, JSONObject json)
+    {
+       SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
+       String dateOpt = "?date=" + fmt.format(entry.getStart());
+       
+       // What page is this for?
+       String page = req.getParameter("page");
+       if(page == null && json != null)
+       {
+          if(json.has("page"))
+          {
+             try
+             {
+                page = json.getString("page");
+             }
+             catch(JSONException e) {}
+          }
+       }
+       if(page == null)
+       {
+          // Default
+          page = "calendar";
+       }
+       
+       try
+       {
+          JSONObject activity = new JSONObject();
+          activity.put("title", entry.getTitle());
+          activity.put("page", page + dateOpt);
+          
+          activityService.postActivity(
+                "org.alfresco.calendar.event-" + event,
+                site.getShortName(),
+                CALENDAR_SERVICE_ACTIVITY_APP_NAME,
+                activity.toString()
+          );
+       }
+       catch(Exception e)
+       {
+          // Warn, but carry on
+          logger.warn("Error adding event " + event + " to activities feed", e);
+       }
+       
+       // Return the date we used
+       return dateOpt;
     }
     
     /**

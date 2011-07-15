@@ -26,6 +26,7 @@ import java.util.Set;
 import net.sf.acegisecurity.Authentication;
 import net.sf.acegisecurity.AuthenticationManager;
 import net.sf.acegisecurity.UserDetails;
+import net.sf.acegisecurity.context.ContextHolder;
 import net.sf.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -119,9 +120,32 @@ public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
     @Override
     protected UserDetails getUserDetails(String userName)
     {
-        return this.authenticationDao.loadUserByUsername(userName);
+        if (AuthenticationUtil.isMtEnabled())
+        {
+            // ALF-9403 - "manual" runAs to avoid clearing ticket, eg. when called via "validate" (->setCurrentUser->CheckCurrentUser)
+            Authentication originalFullAuthentication = AuthenticationUtil.getFullAuthentication();
+            try
+            {
+                if (originalFullAuthentication == null)
+                {
+                    AuthenticationUtil.setFullyAuthenticatedUser(getSystemUserName(getUserDomain(userName)));
+                }
+                return authenticationDao.loadUserByUsername(userName);
+            }
+            finally
+            {
+                if (originalFullAuthentication == null)
+                {
+                    ContextHolder.setContext(null); // note: does not clear ticket (unlike AuthenticationUtil.clearCurrentSecurityContext())
+                }
+            }
+        }
+        else
+        {
+            return authenticationDao.loadUserByUsername(userName);
+        }
     }
-
+    
     /**
      * Get the password hash from the DAO
      */

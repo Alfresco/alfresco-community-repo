@@ -44,6 +44,7 @@ public class SolrIndexerAndSearcherFactory extends AbstractIndexerAndSearcher
     private NodeService nodeService;
     private QueryRegisterComponent queryRegister;
     private TenantService tenantService;
+    private String baseUrl;
     
     public DictionaryService getDictionaryService()
     {
@@ -93,6 +94,16 @@ public class SolrIndexerAndSearcherFactory extends AbstractIndexerAndSearcher
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
+    }
+
+    public String getBaseUrl()
+    {
+        return baseUrl;
+    }
+
+    public void setBaseUrl(String baseUrl)
+    {
+        this.baseUrl = baseUrl;
     }
 
     /* (non-Javadoc)

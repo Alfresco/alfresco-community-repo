@@ -30,7 +30,14 @@
     </bean>
 
 
-	<bean id="search.lucene.alfresco" class="org.alfresco.repo.search.impl.solr.SolrAlfrescoFTSQueryLanguage" >
+    <bean id="search.abstract.query.language" abstract="true">
+        <property name="baseUrl">
+            <value>${solr.base.url}</value>
+        </property>
+    </bean>
+
+	<bean id="search.lucene.alfresco" class="org.alfresco.repo.search.impl.solr.SolrAlfrescoFTSQueryLanguage" 
+	      parent="search.abstract.query.language" >
 	    <property name="nodeDAO">
             <ref bean="nodeDAO" />
         </property>
@@ -49,7 +56,8 @@
    
    <!-- TODO: XPATH -->
 	
-	<bean id="search.lucene.fts.alfresco" class="org.alfresco.repo.search.impl.solr.SolrAlfrescoFTSQueryLanguage" >
+	<bean id="search.lucene.fts.alfresco" class="org.alfresco.repo.search.impl.solr.SolrAlfrescoFTSQueryLanguage" 
+	      parent="search.abstract.query.language" >
 	    <property name="nodeDAO">
             <ref bean="nodeDAO" />
         </property>
@@ -66,7 +74,8 @@
         </property>
     </bean>
     
-    <bean id="search.solr.fts.alfresco" class="org.alfresco.repo.search.impl.solr.SolrAlfrescoFTSQueryLanguage" >
+    <bean id="search.solr.fts.alfresco" class="org.alfresco.repo.search.impl.solr.SolrAlfrescoFTSQueryLanguage" 
+          parent="search.abstract.query.language" >
         <property name="nodeDAO">
             <ref bean="nodeDAO" />
         </property>
@@ -80,7 +89,8 @@
         </property>
     </bean>
     
-    <bean id="search.solr.cmis" class="org.alfresco.repo.search.impl.solr.SolrCMISQueryLanguage" >
+    <bean id="search.solr.cmis" class="org.alfresco.repo.search.impl.solr.SolrCMISQueryLanguage" 
+        parent="search.abstract.query.language" >
         <property name="nodeDAO">
             <ref bean="nodeDAO" />
         </property>
@@ -120,6 +130,9 @@
         </property>
         <property name="queryRegister">
             <ref bean="search.queryRegisterComponent" />
+        </property>
+        <property name="baseUrl">
+            <value>${solr.base.url}</value>
         </property>
     </bean>
     

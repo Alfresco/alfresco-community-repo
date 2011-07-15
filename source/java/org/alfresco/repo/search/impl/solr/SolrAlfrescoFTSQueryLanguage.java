@@ -61,7 +61,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 /**
  * @author Andy
  */
-public class SolrAlfrescoFTSQueryLanguage extends AbstractLuceneQueryLanguage
+public class SolrAlfrescoFTSQueryLanguage extends AbstractSolrQueryLanguage
 {
     static Log s_logger = LogFactory.getLog(SolrAlfrescoFTSQueryLanguage.class);
     
@@ -104,7 +104,9 @@ public class SolrAlfrescoFTSQueryLanguage extends AbstractLuceneQueryLanguage
             httpClient.getParams().setBooleanParameter(HttpClientParams.PREEMPTIVE_AUTHENTICATION, true);
             httpClient.getState().setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), new UsernamePasswordCredentials("admin", "admin"));
 
-            StringBuilder url = new StringBuilder("http://localhost:8080/solr/alfresco/afts");
+            StringBuilder url = new StringBuilder();
+            url.append(getBaseUrl());
+            url.append("/alfresco/afts");
             //duplicate the query in the URL
             url.append("?q=");
             URLCodec encoder = new URLCodec();

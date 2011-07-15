@@ -198,6 +198,8 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory extends AbstractIn
 
     private ConfigurableApplicationContext applicationContext;
 
+    private boolean contentIndexingEnabled = true;
+
     /**
      * Private constructor for the singleton TODO: FIt in with IOC
      */
@@ -1972,6 +1974,22 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory extends AbstractIn
     public void setWriterRamBufferSizeMb(double writerRamBufferSizeMb)
     {
         this.writerRamBufferSizeMb = writerRamBufferSizeMb;
+    }
+
+    
+    
+    
+    @Override
+    public boolean isContentIndexingEnabled()
+    {
+        return contentIndexingEnabled;
+    }
+
+    @Override
+    public void setContentIndexingEnabled(boolean contentIndexingEnabled)
+    {
+        this.contentIndexingEnabled = contentIndexingEnabled;
+        
     }
 
     protected LuceneQueryLanguageSPI getQueryLanguage(String name)

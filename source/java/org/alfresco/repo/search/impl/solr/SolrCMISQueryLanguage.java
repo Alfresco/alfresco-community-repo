@@ -58,7 +58,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 /**
  * @author Andy
  */
-public class SolrCMISQueryLanguage extends AbstractLuceneQueryLanguage
+public class SolrCMISQueryLanguage extends AbstractSolrQueryLanguage
 {
     static Log s_logger = LogFactory.getLog(SolrCMISQueryLanguage.class);
 
@@ -103,8 +103,9 @@ public class SolrCMISQueryLanguage extends AbstractLuceneQueryLanguage
             httpClient.getParams().setBooleanParameter(HttpClientParams.PREEMPTIVE_AUTHENTICATION, true);
             httpClient.getState().setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), new UsernamePasswordCredentials("admin", "admin"));
 
-            StringBuilder url = new StringBuilder("http://localhost:8080/solr/alfresco/cmis");
-            // duplicate the query in the URL
+            StringBuilder url = new StringBuilder();
+            url.append(getBaseUrl());
+            url.append("/alfresco/cmis");
             url.append("?q=");
             URLCodec encoder = new URLCodec();
             url.append(encoder.encode(searchParameters.getQuery(), "UTF-8"));

@@ -534,7 +534,13 @@
          <param-value>org.apache.chemistry.opencmis.server.shared.BasicAuthCallContextHandler</param-value>
       </init-param>
       <load-on-startup>8</load-on-startup>
-	</servlet>
+   </servlet>
+
+   <servlet>
+      <servlet-name>cmistck</servlet-name>
+      <servlet-class>org.apache.chemistry.opencmis.tck.runner.WebRunnerServlet</servlet-class>
+      <load-on-startup>8</load-on-startup>
+   </servlet>
 
    <servlet>
       <servlet-name>authenticatorServlet</servlet-name>
@@ -727,6 +733,14 @@
       <servlet-name>cmisbrowser</servlet-name>
       <url-pattern>/cmisbrowser/*</url-pattern>
    </servlet-mapping>
+    
+   <!-- The CMIS TCK is deactivated by default. -->
+   <!-- CMISTCK
+   <servlet-mapping>
+      <servlet-name>cmistck</servlet-name>
+      <url-pattern>/cmistck</url-pattern>
+   </servlet-mapping>
+   CMISTCK -->
    
    <!-- Activiti servlet mapping placeholder -->
 

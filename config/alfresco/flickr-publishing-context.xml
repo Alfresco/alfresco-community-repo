@@ -19,7 +19,7 @@
     <bean id="flickrPublishingHelper" class="org.alfresco.repo.publishing.flickr.FlickrPublishingHelper">
         <property name="nodeService" ref="NodeService" />
         <property name="connectionFactory">
-            <bean class="org.springframework.social.flickr.connect.FlickrConnectionFactory">
+            <bean class="org.alfresco.repo.publishing.flickr.springsocial.connect.FlickrConnectionFactory">
                 <constructor-arg value="cc61f5d37569cec8c04fce8b4db3f37d" />
                 <constructor-arg value="75f29c6fc18a1b0c" />
             </bean>

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.search.impl.lucene;
+package org.alfresco.repo.search.impl.solr;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -29,6 +29,10 @@ import java.util.Locale;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.domain.node.NodeDAO;
+import org.alfresco.repo.search.impl.lucene.ADMLuceneSearcherImpl;
+import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryLanguage;
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParserException;
+import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.ResultSet;
@@ -57,13 +61,18 @@ import org.springframework.extensions.surf.util.I18NUtil;
 /**
  * @author Andy
  */
-public class SolrAlfrescoFTSQueryLanguage implements LuceneQueryLanguageSPI
+public class SolrAlfrescoFTSQueryLanguage extends AbstractLuceneQueryLanguage
 {
     static Log s_logger = LogFactory.getLog(SolrAlfrescoFTSQueryLanguage.class);
     
     private NodeDAO nodeDAO;
     
     private PermissionService permissionService;
+    
+    public SolrAlfrescoFTSQueryLanguage()
+    {
+        this.setName(SearchService.LANGUAGE_SOLR_FTS_ALFRESCO);
+    }
     
     /**
      * @param nodeDAO the nodeDAO to set
@@ -258,19 +267,6 @@ public class SolrAlfrescoFTSQueryLanguage implements LuceneQueryLanguageSPI
         }
     }
 
-    public String getName()
-    {
-        return SearchService.LANGUAGE_SOLR_FTS_ALFRESCO;
-    }
-
-    public void setFactories(List<AbstractLuceneIndexerAndSearcherFactory> factories)
-    {
-        for (AbstractLuceneIndexerAndSearcherFactory factory : factories)
-        {
-            factory.registerQueryLanguage(this);
-        }
-    }
-    
     public static void main(String[] args)
     {
         SolrAlfrescoFTSQueryLanguage solrAlfrescoFTSQueryLanguage = new SolrAlfrescoFTSQueryLanguage();

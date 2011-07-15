@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -75,6 +76,20 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
     private OwnableService ownableService;
     private TenantService tenantService;
     private DictionaryService dictionaryService;
+    private boolean enabled = true;
+    
+    
+    @Override
+    public boolean isEnabled()
+    {
+        return enabled;
+    }
+
+    @Override
+    public void setEnabled(boolean enabled)
+    {
+        this.enabled = enabled;
+    }
 
     public void setSolrDAO(SOLRDAO solrDAO)
     {
@@ -136,42 +151,70 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
     @Override
     public List<AclChangeSet> getAclChangeSets(Long minAclChangeSetId, Long fromCommitTime, int maxResults)
     {
-        List<AclChangeSet> changesets = solrDAO.getAclChangeSets(minAclChangeSetId, fromCommitTime, maxResults);
-        return changesets;
+        if(enabled)
+        {
+            List<AclChangeSet> changesets = solrDAO.getAclChangeSets(minAclChangeSetId, fromCommitTime, maxResults);
+            return changesets;
+        }
+        else
+        {
+            return Collections.<AclChangeSet>emptyList();
+        }
     }
 
     @Override
     public List<Acl> getAcls(List<Long> aclChangeSetIds, Long minAclId, int maxResults)
     {
-        List<Acl> acls = solrDAO.getAcls(aclChangeSetIds, minAclId, maxResults);
-        return acls;
+        if(enabled)
+        {
+            List<Acl> acls = solrDAO.getAcls(aclChangeSetIds, minAclId, maxResults);
+            return acls;
+        }
+        else
+        {
+            return Collections.<Acl>emptyList();
+        }
     }
 
     @Override
     public List<AclReaders> getAclsReaders(List<Long> aclIds)
     {
-        /*
-         * This is an N+1 query that should, in theory, make use of cached ACL readers data.
-         */
-        
-        List<AclReaders> aclsReaders = new ArrayList<AclReaders>(aclIds.size() * 10);
-        for (Long aclId : aclIds)
+        if(enabled)
         {
-            Set<String> readersSet = permissionService.getReaders(aclId);
-            AclReaders readers = new AclReaders();
-            readers.setAclId(aclId);
-            readers.setReaders(readersSet);
-            aclsReaders.add(readers);
+            /*
+             * This is an N+1 query that should, in theory, make use of cached ACL readers data.
+             */
+
+            List<AclReaders> aclsReaders = new ArrayList<AclReaders>(aclIds.size() * 10);
+            for (Long aclId : aclIds)
+            {
+                Set<String> readersSet = permissionService.getReaders(aclId);
+                AclReaders readers = new AclReaders();
+                readers.setAclId(aclId);
+                readers.setReaders(readersSet);
+                aclsReaders.add(readers);
+            }
+
+            return aclsReaders;
         }
-        
-        return aclsReaders;
+        else
+        {
+            return Collections.<AclReaders>emptyList();
+        }
     }
 
     @Override
     public List<Transaction> getTransactions(Long minTxnId, Long fromCommitTime, int maxResults)
     {
-        List<Transaction> txns = solrDAO.getTransactions(minTxnId, fromCommitTime, maxResults);
-        return txns;
+        if(enabled)
+        {
+            List<Transaction> txns = solrDAO.getTransactions(minTxnId, fromCommitTime, maxResults);
+            return txns;
+        }
+        else
+        {
+            return Collections.<Transaction>emptyList();
+        } 
     }
 
     /**
@@ -179,11 +222,14 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
      */
 	public void getNodes(NodeParameters nodeParameters, NodeQueryCallback callback)
 	{
-	    List<Node> nodes = solrDAO.getNodes(nodeParameters);
-	    
-	    for (Node node : nodes)
+	    if(enabled)
 	    {
-	    	callback.handleNode(node);
+	        List<Node> nodes = solrDAO.getNodes(nodeParameters);
+
+	        for (Node node : nodes)
+	        {
+	            callback.handleNode(node);
+	        }
 	    }
 	}
 
@@ -408,6 +454,11 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
             MetaDataResultsFilter resultFilter,
             NodeMetaDataQueryCallback callback)
     {
+        if(false == enabled)
+        {
+            return;
+        }
+        
         NodeMetaDataQueryRowHandler rowHandler = new NodeMetaDataQueryRowHandler(callback);
         boolean includeType = (resultFilter == null ? true : resultFilter.getIncludeType());
         boolean includeProperties = (resultFilter == null ? true : resultFilter.getIncludeProperties());
@@ -550,8 +601,15 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
      */
     public AlfrescoModel getModel(QName modelName)
     {
-        ModelDefinition modelDef = dictionaryService.getModel(modelName);
-        return (modelDef != null ? new AlfrescoModel(modelDef) : null);
+        if(enabled)
+        {
+            ModelDefinition modelDef = dictionaryService.getModel(modelName);
+            return (modelDef != null ? new AlfrescoModel(modelDef) : null);
+        }
+        else
+        {
+            return null;
+        }
     }
 
     /**
@@ -559,6 +617,11 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
      */
     public List<AlfrescoModelDiff> getModelDiffs(Map<QName, Long> models)
     {
+        if(false == enabled)
+        {
+            return Collections.<AlfrescoModelDiff>emptyList();
+        }
+        
         List<AlfrescoModelDiff> diffs = new ArrayList<AlfrescoModelDiff>();
 
         // get all models the repository knows about and add each to a list with its checksum

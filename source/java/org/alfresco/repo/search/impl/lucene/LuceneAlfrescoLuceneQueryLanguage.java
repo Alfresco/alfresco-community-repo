@@ -71,10 +71,15 @@ import org.apache.lucene.search.SortField;
  * 
  * @author andyh
  */
-public class LuceneAlfrescoLuceneQueryLanguage implements LuceneQueryLanguageSPI
+public class LuceneAlfrescoLuceneQueryLanguage extends AbstractLuceneQueryLanguage
 {
     static Log s_logger = LogFactory.getLog(LuceneAlfrescoLuceneQueryLanguage.class);
 
+    public LuceneAlfrescoLuceneQueryLanguage()
+    {
+        this.setName(SearchService.LANGUAGE_LUCENE);
+    }
+    
     public ResultSet executeQuery(SearchParameters searchParameters, ADMLuceneSearcherImpl admLuceneSearcher)
     {
         try
@@ -249,16 +254,4 @@ public class LuceneAlfrescoLuceneQueryLanguage implements LuceneQueryLanguageSPI
         }
     }
 
-    public String getName()
-    {
-        return SearchService.LANGUAGE_LUCENE;
-    }
-
-    public void setFactories(List<AbstractLuceneIndexerAndSearcherFactory> factories)
-    {
-        for (AbstractLuceneIndexerAndSearcherFactory factory : factories)
-        {
-            factory.registerQueryLanguage(this);
-        }
-    }
 }

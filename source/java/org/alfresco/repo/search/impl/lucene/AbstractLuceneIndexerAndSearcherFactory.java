@@ -80,15 +80,13 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * @author andyh
  */
 
-public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneIndexerAndSearcher, XAResource, ApplicationContextAware
+public abstract class AbstractLuceneIndexerAndSearcherFactory extends AbstractIndexerAndSearcher implements LuceneIndexerAndSearcher, XAResource, ApplicationContextAware
 {
     private static Log logger = LogFactory.getLog(AbstractLuceneIndexerAndSearcherFactory.class);
 
     private int queryMaxClauses;
 
     private int indexerBatchSize;
-
-    protected Map<String, LuceneQueryLanguageSPI> queryLanguages = new HashMap<String, LuceneQueryLanguageSPI>();
 
     /**
      * A map of active global transactions . It contains all the indexers a transaction has used, with at most one
@@ -278,6 +276,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
      * @param maxAtomicTransformationTime
      *            the maximum average time that a text transformation may take in order to be performed atomically.
      */
+    @Override
     public void setMaxAtomicTransformationTime(long maxAtomicTransformationTime)
     {
         this.maxAtomicTransformationTime = maxAtomicTransformationTime;
@@ -288,6 +287,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
      * 
      * @return - milliseconds as a long
      */
+    @Override
     public long getMaxTransformationTime()
     {
         return maxAtomicTransformationTime;
@@ -869,11 +869,13 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
         }
     }
 
+    @Override
     public String getIndexRootLocation()
     {
         return indexRootLocation;
     }
 
+    @Override
     public int getIndexerBatchSize()
     {
         return indexerBatchSize;
@@ -884,6 +886,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
      * 
      * @param indexerBatchSize
      */
+    @Override
     public void setIndexerBatchSize(int indexerBatchSize)
     {
         this.indexerBatchSize = indexerBatchSize;
@@ -930,6 +933,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
         }
     }
 
+    @Override
     public int getQueryMaxClauses()
     {
         return queryMaxClauses;
@@ -940,6 +944,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
      * 
      * @param queryMaxClauses
      */
+    @Override
     public void setQueryMaxClauses(int queryMaxClauses)
     {
         this.queryMaxClauses = queryMaxClauses;
@@ -951,6 +956,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
      * 
      * @param timeout
      */
+    @Override
     public void setWriteLockTimeout(long timeout)
     {
         this.writeLockTimeout = timeout;
@@ -961,6 +967,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
      * 
      * @param timeout
      */
+    @Override
     public void setCommitLockTimeout(long timeout)
     {
         this.commitLockTimeout = timeout;
@@ -971,6 +978,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
      * 
      * @return - the timeout
      */
+    @Override
     public long getCommitLockTimeout()
     {
         return commitLockTimeout;
@@ -981,6 +989,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
      * 
      * @return - the timeout in ms
      */
+    @Override
     public long getWriteLockTimeout()
     {
         return writeLockTimeout;
@@ -991,6 +1000,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
      * 
      * @param time
      */
+    @Override
     public void setLockPollInterval(long time)
     {
         Lock.LOCK_POLL_INTERVAL = time;
@@ -1001,6 +1011,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
      * 
      * @return - the max tokens considered.
      */
+    @Override
     public int getIndexerMaxFieldLength()
     {
         return indexerMaxFieldLength;
@@ -1011,6 +1022,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
      * 
      * @param indexerMaxFieldLength
      */
+    @Override
     public void setIndexerMaxFieldLength(int indexerMaxFieldLength)
     {
         this.indexerMaxFieldLength = indexerMaxFieldLength;
@@ -1567,6 +1579,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
         }
     }
 
+    @Override
     public MLAnalysisMode getDefaultMLIndexAnalysisMode()
     {
         return defaultMLIndexAnalysisMode;
@@ -1577,12 +1590,14 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
      * 
      * @param mode
      */
+    @Override
     public void setDefaultMLIndexAnalysisMode(MLAnalysisMode mode)
     {
         // defaultMLIndexAnalysisMode = MLAnalysisMode.getMLAnalysisMode(mode);
         defaultMLIndexAnalysisMode = mode;
     }
 
+    @Override
     public MLAnalysisMode getDefaultMLSearchAnalysisMode()
     {
         return defaultMLSearchAnalysisMode;
@@ -1593,241 +1608,281 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
      * 
      * @param mode
      */
+    @Override
     public void setDefaultMLSearchAnalysisMode(MLAnalysisMode mode)
     {
         // defaultMLSearchAnalysisMode = MLAnalysisMode.getMLAnalysisMode(mode);
         defaultMLSearchAnalysisMode = mode;
     }
 
+    @Override
     public int getMaxDocIdCacheSize()
     {
         return maxDocIdCacheSize;
     }
 
+    @Override
     public void setMaxDocIdCacheSize(int maxDocIdCacheSize)
     {
         this.maxDocIdCacheSize = maxDocIdCacheSize;
     }
 
+    @Override
     public int getMaxDocsForInMemoryMerge()
     {
         return maxDocsForInMemoryMerge;
     }
 
+    @Override
     public void setMaxDocsForInMemoryMerge(int maxDocsForInMemoryMerge)
     {
         this.maxDocsForInMemoryMerge = maxDocsForInMemoryMerge;
     }
 
+    @Override
     public int getMaxDocumentCacheSize()
     {
         return maxDocumentCacheSize;
     }
 
+    @Override
     public void setMaxDocumentCacheSize(int maxDocumentCacheSize)
     {
         this.maxDocumentCacheSize = maxDocumentCacheSize;
     }
 
+    @Override
     public int getMaxIsCategoryCacheSize()
     {
         return maxIsCategoryCacheSize;
     }
 
+    @Override
     public void setMaxIsCategoryCacheSize(int maxIsCategoryCacheSize)
     {
         this.maxIsCategoryCacheSize = maxIsCategoryCacheSize;
     }
 
+    @Override
     public int getMaxLinkAspectCacheSize()
     {
         return maxLinkAspectCacheSize;
     }
 
+    @Override
     public void setMaxLinkAspectCacheSize(int maxLinkAspectCacheSize)
     {
         this.maxLinkAspectCacheSize = maxLinkAspectCacheSize;
     }
 
+    @Override
     public int getMaxParentCacheSize()
     {
         return maxParentCacheSize;
     }
 
+    @Override
     public void setMaxParentCacheSize(int maxParentCacheSize)
     {
         this.maxParentCacheSize = maxParentCacheSize;
     }
 
+    @Override
     public int getMaxPathCacheSize()
     {
         return maxPathCacheSize;
     }
 
+    @Override
     public void setMaxPathCacheSize(int maxPathCacheSize)
     {
         this.maxPathCacheSize = maxPathCacheSize;
     }
 
+    @Override
     public int getMaxTypeCacheSize()
     {
         return maxTypeCacheSize;
     }
 
+    @Override
     public void setMaxTypeCacheSize(int maxTypeCacheSize)
     {
         this.maxTypeCacheSize = maxTypeCacheSize;
     }
 
+    @Override
     public int getMergerMaxMergeDocs()
     {
         return mergerMaxMergeDocs;
     }
 
+    @Override
     public void setMergerMaxMergeDocs(int mergerMaxMergeDocs)
     {
         this.mergerMaxMergeDocs = mergerMaxMergeDocs;
     }
 
+    @Override
     public int getMergerMergeFactor()
     {
         return mergerMergeFactor;
     }
 
+    @Override
     public void setMergerMergeFactor(int mergerMergeFactor)
     {
         this.mergerMergeFactor = mergerMergeFactor;
     }
     
-
+    @Override
     public int getMergerMaxBufferedDocs()
     {
         return mergerMaxBufferedDocs;
     }
 
+    @Override
     public void setMergerMaxBufferedDocs(int mergerMaxBufferedDocs)
     {
         this.mergerMaxBufferedDocs = mergerMaxBufferedDocs;
     }
 
+    @Override
     public int getMergerTargetIndexCount()
     {
         return mergerTargetIndexCount;
     }
 
+    @Override
     public void setMergerTargetIndexCount(int mergerTargetIndexCount)
     {
         this.mergerTargetIndexCount = mergerTargetIndexCount;
     }
 
+    @Override
     public int getMergerTargetOverlayCount()
     {
         return mergerTargetOverlayCount;
     }
 
+    @Override
     public void setMergerTargetOverlayCount(int mergerTargetOverlayCount)
     {
         this.mergerTargetOverlayCount = mergerTargetOverlayCount;
     }
 
+    @Override
     public int getMergerTargetOverlaysBlockingFactor()
     {
         return mergerTargetOverlaysBlockingFactor;
     }
 
+    @Override
     public void setMergerTargetOverlaysBlockingFactor(int mergerTargetOverlaysBlockingFactor)
     {
         this.mergerTargetOverlaysBlockingFactor = mergerTargetOverlaysBlockingFactor;
     }
 
+    @Override
     public boolean getFairLocking()
     {
         return this.fairLocking;
     }
     
+    @Override
     public void setFairLocking(boolean fairLocking)
     {
         this.fairLocking = fairLocking;
     }
 
+    @Override
     public int getTermIndexInterval()
     {
         return termIndexInterval;
     }
 
+    @Override
     public void setTermIndexInterval(int termIndexInterval)
     {
         this.termIndexInterval = termIndexInterval;
     }
 
+    @Override
     public boolean getUseNioMemoryMapping()
     {
         return useNioMemoryMapping;
     }
 
+    @Override
     public void setUseNioMemoryMapping(boolean useNioMemoryMapping)
     {
         this.useNioMemoryMapping = useNioMemoryMapping;
     }
 
+    @Override
     public int getWriterMaxMergeDocs()
     {
         return writerMaxMergeDocs;
     }
 
+    @Override
     public void setWriterMaxMergeDocs(int writerMaxMergeDocs)
     {
         this.writerMaxMergeDocs = writerMaxMergeDocs;
     }
 
+    @Override
     public int getWriterMergeFactor()
     {
         return writerMergeFactor;
     }
 
+    @Override
     public void setWriterMergeFactor(int writerMergeFactor)
     {
         this.writerMergeFactor = writerMergeFactor;
     }
 
+    @Override
     public int getWriterMaxBufferedDocs()
     {
         return writerMaxBufferedDocs;
     }
 
+    @Override
     public void setWriterMaxBufferedDocs(int writerMaxBufferedDocs)
     {
         this.writerMaxBufferedDocs = writerMaxBufferedDocs;
     }
 
+    @Override
     public boolean isCacheEnabled()
     {
         return cacheEnabled;
     }
 
+    @Override
     public void setCacheEnabled(boolean cacheEnabled)
     {
         this.cacheEnabled = cacheEnabled;
     }
 
+    @Override
     public boolean getPostSortDateTime()
     {
         return postSortDateTime;
     }
 
+    @Override
     public void setPostSortDateTime(boolean postSortDateTime)
     {
         this.postSortDateTime = postSortDateTime;
     }
 
-    public void registerQueryLanguage(LuceneQueryLanguageSPI queryLanguage)
-    {
-        this.queryLanguages.put(queryLanguage.getName().toLowerCase(), queryLanguage);
-    }
-
     /**
      * @return the maxDocsForInMemoryIndex
      */
+    @Override
     public int getMaxDocsForInMemoryIndex()
     {
         return maxDocsForInMemoryIndex;
@@ -1837,6 +1892,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
      * @param maxDocsForInMemoryIndex
      *            the maxDocsForInMemoryIndex to set
      */
+    @Override
     public void setMaxDocsForInMemoryIndex(int maxDocsForInMemoryIndex)
     {
         this.maxDocsForInMemoryIndex = maxDocsForInMemoryIndex;
@@ -1845,6 +1901,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
     /**
      * @return the maxRamInMbForInMemoryMerge
      */
+    @Override
     public double getMaxRamInMbForInMemoryMerge()
     {
         return maxRamInMbForInMemoryMerge;
@@ -1854,6 +1911,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
      * @param maxRamInMbForInMemoryMerge
      *            the maxRamInMbForInMemoryMerge to set
      */
+    @Override
     public void setMaxRamInMbForInMemoryMerge(double maxRamInMbForInMemoryMerge)
     {
         this.maxRamInMbForInMemoryMerge = maxRamInMbForInMemoryMerge;
@@ -1862,6 +1920,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
     /**
      * @return the maxRamInMbForInMemoryIndex
      */
+    @Override
     public double getMaxRamInMbForInMemoryIndex()
     {
         return maxRamInMbForInMemoryIndex;
@@ -1871,6 +1930,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
      * @param maxRamInMbForInMemoryIndex
      *            the maxRamInMbForInMemoryIndex to set
      */
+    @Override
     public void setMaxRamInMbForInMemoryIndex(double maxRamInMbForInMemoryIndex)
     {
         this.maxRamInMbForInMemoryIndex = maxRamInMbForInMemoryIndex;
@@ -1879,6 +1939,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
     /**
      * @return the mergerRamBufferSizeMb
      */
+    @Override
     public double getMergerRamBufferSizeMb()
     {
         return mergerRamBufferSizeMb;
@@ -1888,6 +1949,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
      * @param mergerRamBufferSizeMb
      *            the mergerRamBufferSizeMb to set
      */
+    @Override
     public void setMergerRamBufferSizeMb(double mergerRamBufferSizeMb)
     {
         this.mergerRamBufferSizeMb = mergerRamBufferSizeMb;
@@ -1896,6 +1958,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
     /**
      * @return the writerRamBufferSizeMb
      */
+    @Override
     public double getWriterRamBufferSizeMb()
     {
         return writerRamBufferSizeMb;
@@ -1905,6 +1968,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
      * @param writerRamBufferSizeMb
      *            the writerRamBufferSizeMb to set
      */
+    @Override
     public void setWriterRamBufferSizeMb(double writerRamBufferSizeMb)
     {
         this.writerRamBufferSizeMb = writerRamBufferSizeMb;
@@ -1912,7 +1976,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
 
     protected LuceneQueryLanguageSPI getQueryLanguage(String name)
     {
-        return this.queryLanguages.get(name);
+        return getQueryLanguages().get(name);
     }
 
     protected abstract List<StoreRef> getAllStores();

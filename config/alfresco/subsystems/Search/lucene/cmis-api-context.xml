@@ -1,0 +1,51 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+  
+    <bean id="search.CMISQueryService" class="org.alfresco.cmis.search.CMISQueryServiceImpl" >
+        <property name="CMISDictionaryService">
+            <ref bean="CMISDictionaryService" />
+        </property>
+        <property name="CMISService">
+            <ref bean="CMISService" />
+        </property>
+        <property name="queryEngine">
+            <ref bean="search.adm.luceneQueryEngine" />
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="alfrescoDictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+    </bean>
+
+   
+    <bean id="search.adm.luceneQueryEngine" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.repo.search.impl.querymodel.QueryEngine</value>
+        </property>
+        <property name="target">
+            <ref bean="search.adm.luceneQueryEngineImpl"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="adm.luceneQueryEngineSecurity"/>
+            </list>
+        </property>
+    </bean>
+   
+   <bean id="search.adm.luceneQueryEngineSecurity" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
+        <property name="authenticationManager"><ref bean="authenticationManager"/></property>
+        <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>
+        <property name="objectDefinitionSource">
+            <value>
+               org.alfresco.repo.search.impl.querymodel.QueryEngine.executeQuery=ACL_ALLOW,AFTER_ACL_NODE.sys:base.Read
+               org.alfresco.repo.search.impl.querymodel.QueryEngine.getQueryModelFactory=ACL_ALLOW
+            </value>
+        </property>
+    </bean>
+   
+</beans>

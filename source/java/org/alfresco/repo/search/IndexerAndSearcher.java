@@ -18,6 +18,9 @@
  */
 package org.alfresco.repo.search;
 
+import java.util.Map;
+
+import org.alfresco.repo.search.impl.lucene.LuceneQueryLanguageSPI;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 
@@ -56,4 +59,14 @@ public interface IndexerAndSearcher
      *
      */
     public abstract void flush();
+
+    /**
+     * @param luceneAlfrescoFtsQueryLanguage
+     */
+    public abstract void registerQueryLanguage(LuceneQueryLanguageSPI luceneQueryLanguageSPI);
+
+    /**
+     * @return
+     */
+    public abstract Map<String, LuceneQueryLanguageSPI> getQueryLanguages();
 }

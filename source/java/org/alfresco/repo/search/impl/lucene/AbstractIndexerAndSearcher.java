@@ -18,36 +18,36 @@
  */
 package org.alfresco.repo.search.impl.lucene;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.alfresco.repo.search.Indexer;
 import org.alfresco.repo.search.IndexerAndSearcher;
-import org.alfresco.repo.search.impl.querymodel.QueryOptions;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchParameters;
-import org.apache.lucene.search.Searcher;
+import org.alfresco.repo.search.IndexerException;
+import org.alfresco.repo.search.SearcherException;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.SearchService;
 
 /**
- * @author andyh
+ * @author Andy
  *
  */
-public interface LuceneQueryLanguageSPI
+public abstract class AbstractIndexerAndSearcher implements IndexerAndSearcher
 {
-    /**
-     * The unique name for the query language
-     * @return - the unique name
-     */
-    public String getName();
+
+    private  Map<String, LuceneQueryLanguageSPI> queryLanguages = new HashMap<String, LuceneQueryLanguageSPI>();
     
-    /**
-     * Execute the query
-     * @param searchParameters 
-     * @param admLuceneSearcher 
-     * @return - the query results
-     */
-    public ResultSet executeQuery(SearchParameters searchParameters, ADMLuceneSearcherImpl admLuceneSearcher);
+    @Override
+    public void registerQueryLanguage(LuceneQueryLanguageSPI queryLanguage)
+    {
+        this.queryLanguages.put(queryLanguage.getName().toLowerCase(), queryLanguage);
+    }
+
     
-    /**
-     * Register
-     */
-    public void setFactories(List<IndexerAndSearcher> factories);
+    @Override
+    public Map<String, LuceneQueryLanguageSPI> getQueryLanguages()
+    {
+        return queryLanguages;
+    }
+
 }

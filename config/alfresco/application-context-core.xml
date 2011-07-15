@@ -25,7 +25,6 @@
     <import resource="classpath:alfresco/ownable-services-context.xml" />
     <import resource="classpath:alfresco/template-services-context.xml" />
     <import resource="classpath:alfresco/script-services-context.xml" />
-    <import resource="classpath:alfresco/index-recovery-context.xml" />
     <import resource="classpath:alfresco/authority-services-context.xml" />
     <import resource="classpath:alfresco/authentication-services-context.xml" />
     <import resource="classpath:alfresco/usage-services-context.xml" />

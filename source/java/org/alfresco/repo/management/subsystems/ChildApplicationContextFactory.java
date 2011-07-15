@@ -154,7 +154,7 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
     /**
      * Default constructor for container construction.
      */
-    protected ChildApplicationContextFactory()
+    public ChildApplicationContextFactory()
     {
     }
 

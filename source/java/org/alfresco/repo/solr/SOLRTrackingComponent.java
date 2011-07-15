@@ -31,7 +31,7 @@ import org.alfresco.service.namespace.QName;
  * @since 4.0
  */
 public interface SOLRTrackingComponent
-{
+{   
     /**
      * Get the ACL changesets for given range parameters
      * 
@@ -132,4 +132,14 @@ public interface SOLRTrackingComponent
          */
         boolean handleNodeMetaData(NodeMetaData nodeMetaData);
     }
+
+    /**
+     * @return
+     */
+    boolean isEnabled();
+
+    /**
+     * @param enabled
+     */
+    void setEnabled(boolean enabled);
 }

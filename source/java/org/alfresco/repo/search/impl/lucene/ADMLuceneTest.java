@@ -55,6 +55,7 @@ import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.NamespaceDAOImpl;
 import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.node.NodeBulkLoader;
+import org.alfresco.repo.search.IndexerAndSearcher;
 import org.alfresco.repo.search.MLAnalysisMode;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.search.QueryRegisterComponent;
@@ -201,7 +202,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
 
     private DictionaryNamespaceComponent namespacePrefixResolver;
 
-    private LuceneIndexerAndSearcher indexerAndSearcher;
+    private IndexerAndSearcher indexerAndSearcher;
 
     private ServiceRegistry serviceRegistry;
 
@@ -225,6 +226,8 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
 
     // TODO: pending replacement
     private Dialect dialect;
+
+    private LuceneConfig luceneConfig;
 
     /**
      *
@@ -267,8 +270,9 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         contentService = (ContentService) ctx.getBean("contentService");
         queryRegisterComponent = (QueryRegisterComponent) ctx.getBean("queryRegisterComponent");
         namespacePrefixResolver = (DictionaryNamespaceComponent) ctx.getBean("namespaceService");
-        indexerAndSearcher = (LuceneIndexerAndSearcher) ctx.getBean("admLuceneIndexerAndSearcherFactory");
-        ((AbstractLuceneIndexerAndSearcherFactory) indexerAndSearcher).setMaxAtomicTransformationTime(1000000);
+        indexerAndSearcher = (IndexerAndSearcher) ctx.getBean("admLuceneIndexerAndSearcherFactory");
+        luceneConfig = (LuceneConfig)ctx.getBean("admLuceneIndexerAndSearcherFactory");
+        ((LuceneConfig) indexerAndSearcher).setMaxAtomicTransformationTime(1000000);
         transactionService = (TransactionService) ctx.getBean("transactionComponent");
         retryingTransactionHelper = (RetryingTransactionHelper) ctx.getBean("retryingTransactionHelper");
         tenantService = (TenantService) ctx.getBean("tenantService");
@@ -1768,13 +1772,13 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
     
     private ADMLuceneSearcherImpl buildSearcher()
     {
-        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), luceneConfig);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
         searcher.setTenantService(tenantService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixResolver("namespace"));
         searcher.setQueryRegister(queryRegisterComponent);
-        searcher.setQueryLanguages(((AbstractLuceneIndexerAndSearcherFactory) indexerAndSearcher).queryLanguages);
+        searcher.setQueryLanguages(indexerAndSearcher.getQueryLanguages());
         return searcher;
     }
     
@@ -3718,7 +3722,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
     public void testNoOp() throws Exception
     {
         luceneFTS.pause();
-        ADMLuceneIndexerImpl indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta" + System.currentTimeMillis() + "_1", indexerAndSearcher);
+        ADMLuceneIndexerImpl indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta" + System.currentTimeMillis() + "_1", luceneConfig);
         indexer.setMaxAtomicTransformationTime(1000000);
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
@@ -3742,7 +3746,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
     public void testStandAloneIndexerCommit() throws Exception
     {
         luceneFTS.pause();
-        ADMLuceneIndexerImpl indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta" + System.currentTimeMillis() + "_1", indexerAndSearcher);
+        ADMLuceneIndexerImpl indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta" + System.currentTimeMillis() + "_1", luceneConfig);
         indexer.setMaxAtomicTransformationTime(1000000);
 
         indexer.setNodeService(nodeService);
@@ -3925,7 +3929,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
     private void buildBaseIndex()
     {
         ADMLuceneIndexerImpl indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta" + System.currentTimeMillis() + "_" + (new Random().nextInt()),
-                indexerAndSearcher);
+                luceneConfig);
         indexer.setMaxAtomicTransformationTime(1000000);
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
@@ -6406,7 +6410,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
 
         runBaseTests();
 
-        ADMLuceneIndexerImpl indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta" + System.currentTimeMillis(), indexerAndSearcher);
+        ADMLuceneIndexerImpl indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta" + System.currentTimeMillis(), luceneConfig);
         indexer.setMaxAtomicTransformationTime(1000000);
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
@@ -6665,7 +6669,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         buildBaseIndex();
         runBaseTests();
 
-        ADMLuceneIndexerImpl indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta" + System.currentTimeMillis(), indexerAndSearcher);
+        ADMLuceneIndexerImpl indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta" + System.currentTimeMillis(), luceneConfig);
         indexer.setMaxAtomicTransformationTime(1000000);
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
@@ -6696,7 +6700,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         buildBaseIndex();
         runBaseTests();
 
-        ADMLuceneIndexerImpl indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta" + System.currentTimeMillis(), indexerAndSearcher);
+        ADMLuceneIndexerImpl indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta" + System.currentTimeMillis(), luceneConfig);
         indexer.setMaxAtomicTransformationTime(1000000);
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
@@ -6729,7 +6733,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         runBaseTests();
         testTX.commit();
 
-        ADMLuceneIndexerImpl indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta" + System.currentTimeMillis(), indexerAndSearcher);
+        ADMLuceneIndexerImpl indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta" + System.currentTimeMillis(), luceneConfig);
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
@@ -6945,7 +6949,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         buildBaseIndex();
         runBaseTests();
 
-        ADMLuceneIndexerImpl indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta" + System.currentTimeMillis(), indexerAndSearcher);
+        ADMLuceneIndexerImpl indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta" + System.currentTimeMillis(), luceneConfig);
         indexer.setMaxAtomicTransformationTime(1000000);
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
@@ -7156,7 +7160,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         assertEquals(1, results.length());
         results.close();
 
-        indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta" + System.currentTimeMillis(), indexerAndSearcher);
+        indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta" + System.currentTimeMillis(), luceneConfig);
         indexer.setMaxAtomicTransformationTime(1000000);
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
@@ -7197,7 +7201,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         assertEquals(0, results.length());
         results.close();
 
-        ADMLuceneIndexerImpl indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta" + System.currentTimeMillis(), indexerAndSearcher);
+        ADMLuceneIndexerImpl indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta" + System.currentTimeMillis(), luceneConfig);
         indexer.setMaxAtomicTransformationTime(1000000);
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
@@ -7260,7 +7264,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         // Do index
 
         ADMLuceneIndexerImpl indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta" + System.currentTimeMillis() + "_" + (new Random().nextInt()),
-                indexerAndSearcher);
+                luceneConfig);
         indexer.setMaxAtomicTransformationTime(1000000);
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
@@ -7329,7 +7333,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         results.close();
 
         ADMLuceneIndexerImpl indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta" + System.currentTimeMillis() + "_" + (new Random().nextInt()),
-                indexerAndSearcher);
+                luceneConfig);
         indexer.setMaxAtomicTransformationTime(1000000);
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
@@ -7730,7 +7734,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
     private void runPerformanceTest(double time, boolean clear)
     {
         ADMLuceneIndexerImpl indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta" + System.currentTimeMillis() + "_" + (new Random().nextInt()),
-                indexerAndSearcher);
+                luceneConfig);
         indexer.setMaxAtomicTransformationTime(1000000);
         indexer.setNodeService(nodeService);
         // indexer.setLuceneIndexLock(luceneIndexLock);

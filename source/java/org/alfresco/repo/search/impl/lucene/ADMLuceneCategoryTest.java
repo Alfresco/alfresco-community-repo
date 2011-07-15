@@ -35,6 +35,7 @@ import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.repo.dictionary.M2Aspect;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.M2Property;
+import org.alfresco.repo.search.IndexerAndSearcher;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
@@ -104,10 +105,12 @@ public class ADMLuceneCategoryTest extends TestCase
     private NodeRef catRTwo;
     private NodeRef catRThree;
     private SearchService searcher;
-    private LuceneIndexerAndSearcher indexerAndSearcher;
+    private IndexerAndSearcher indexerAndSearcher;
     private TenantService tenantService;
 
     private CategoryService categoryService;
+
+    private LuceneConfig luceneConfig;
 
     /**
      * Simple test constructor
@@ -134,7 +137,8 @@ public class ADMLuceneCategoryTest extends TestCase
         luceneFTS = (FullTextSearchIndexer) ctx.getBean("LuceneFullTextSearchIndexer");
         dictionaryDAO = (DictionaryDAO) ctx.getBean("dictionaryDAO");
         searcher = (SearchService) ctx.getBean("searchService");
-        indexerAndSearcher = (LuceneIndexerAndSearcher) ctx.getBean("admLuceneIndexerAndSearcherFactory");
+        indexerAndSearcher = (IndexerAndSearcher) ctx.getBean("admLuceneIndexerAndSearcherFactory");
+        luceneConfig = (LuceneConfig) ctx.getBean("admLuceneIndexerAndSearcherFactory");
         categoryService = (CategoryService) ctx.getBean("categoryService");
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         tenantService = (TenantService) ctx.getBean("tenantService");
@@ -334,7 +338,7 @@ public class ADMLuceneCategoryTest extends TestCase
     
     private void buildBaseIndex()
     {
-        ADMLuceneIndexerImpl indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta" + System.currentTimeMillis() + "_" + (new Random().nextInt()), indexerAndSearcher);
+        ADMLuceneIndexerImpl indexer = ADMLuceneIndexerImpl.getUpdateIndexer(rootNodeRef.getStoreRef(), "delta" + System.currentTimeMillis() + "_" + (new Random().nextInt()), luceneConfig);
         indexer.setNodeService(nodeService);
         //indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setDictionaryService(dictionaryService);
@@ -375,12 +379,12 @@ public class ADMLuceneCategoryTest extends TestCase
 
     private ADMLuceneSearcherImpl buildSearcher()
     {
-        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), luceneConfig);
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
         searcher.setTenantService(tenantService);
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver(""));
-        searcher.setQueryLanguages(((AbstractLuceneIndexerAndSearcherFactory) indexerAndSearcher).queryLanguages);
+        searcher.setQueryLanguages(indexerAndSearcher.getQueryLanguages());
         return searcher;
     }
     

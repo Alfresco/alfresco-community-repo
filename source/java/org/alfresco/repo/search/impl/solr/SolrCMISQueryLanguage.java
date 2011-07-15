@@ -16,26 +16,28 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.search.impl.lucene;
+package org.alfresco.repo.search.impl.solr;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
-import java.util.List;
 import java.util.Locale;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.domain.node.NodeDAO;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.search.impl.lucene.ADMLuceneSearcherImpl;
+import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryLanguage;
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParserException;
+import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.search.SearchParameters.SortDefinition;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.apache.commons.codec.net.URLCodec;
 import org.apache.commons.httpclient.HttpClient;
@@ -44,7 +46,6 @@ import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -57,16 +58,22 @@ import org.springframework.extensions.surf.util.I18NUtil;
 /**
  * @author Andy
  */
-public class SolrCMISQueryLanguage implements LuceneQueryLanguageSPI
+public class SolrCMISQueryLanguage extends AbstractLuceneQueryLanguage
 {
     static Log s_logger = LogFactory.getLog(SolrCMISQueryLanguage.class);
-    
+
     private NodeDAO nodeDAO;
-    
+
     private PermissionService permissionService;
+
+    public SolrCMISQueryLanguage()
+    {
+        this.setName(SearchService.LANGUAGE_SOLR_CMIS);
+    }
     
     /**
-     * @param nodeDAO the nodeDAO to set
+     * @param nodeDAO
+     *            the nodeDAO to set
      */
     public void setNodeDAO(NodeDAO nodeDAO)
     {
@@ -74,7 +81,8 @@ public class SolrCMISQueryLanguage implements LuceneQueryLanguageSPI
     }
 
     /**
-     * @param permissionService the permissionService to set
+     * @param permissionService
+     *            the permissionService to set
      */
     public void setPermissionService(PermissionService permissionService)
     {
@@ -96,13 +104,13 @@ public class SolrCMISQueryLanguage implements LuceneQueryLanguageSPI
             httpClient.getState().setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), new UsernamePasswordCredentials("admin", "admin"));
 
             StringBuilder url = new StringBuilder("http://localhost:8080/solr/alfresco/cmis");
-            //duplicate the query in the URL
+            // duplicate the query in the URL
             url.append("?q=");
             URLCodec encoder = new URLCodec();
             url.append(encoder.encode(searchParameters.getQuery(), "UTF-8"));
             url.append("&wt=json");
             url.append("&fl=*,score");
-            if(searchParameters.getMaxItems() > 0)
+            if (searchParameters.getMaxItems() > 0)
             {
                 url.append("&rows=").append(searchParameters.getMaxItems());
             }
@@ -112,23 +120,22 @@ public class SolrCMISQueryLanguage implements LuceneQueryLanguageSPI
             }
             url.append("&df=").append(searchParameters.getDefaultFieldName());
             url.append("&start=").append(searchParameters.getSkipCount());
-            
+
             Locale locale = I18NUtil.getLocale();
-            if(searchParameters.getLocales().size() > 0)
+            if (searchParameters.getLocales().size() > 0)
             {
                 locale = searchParameters.getLocales().get(0);
             }
             url.append("&locale=");
             encoder = new URLCodec();
             url.append(encoder.encode(locale.toString(), "UTF-8"));
-            
-            
+
             // Will use this search if not specified as part of the query )no order by clause)
             // If the query contains an order by clause this will be used instead.
             StringBuffer sortBuffer = new StringBuffer();
-            for(SortDefinition sortDefinition : searchParameters.getSortDefinitions())
+            for (SortDefinition sortDefinition : searchParameters.getSortDefinitions())
             {
-                if(sortBuffer.length() == 0)
+                if (sortBuffer.length() == 0)
                 {
                     sortBuffer.append("&sort=");
                 }
@@ -137,7 +144,7 @@ public class SolrCMISQueryLanguage implements LuceneQueryLanguageSPI
                     sortBuffer.append(", ");
                 }
                 sortBuffer.append(sortDefinition.getField()).append(" ");
-                if(sortDefinition.isAscending())
+                if (sortDefinition.isAscending())
                 {
                     sortBuffer.append("asc");
                 }
@@ -145,53 +152,52 @@ public class SolrCMISQueryLanguage implements LuceneQueryLanguageSPI
                 {
                     sortBuffer.append("desc");
                 }
-               
+
             }
             url.append(sortBuffer);
-            
+
             // Authorities go over in body
-            
+
             StringBuilder authQuery = new StringBuilder();
-            for(String authority : permissionService.getAuthorisations())
+            for (String authority : permissionService.getAuthorisations())
             {
-                if(authQuery.length() > 0)
+                if (authQuery.length() > 0)
                 {
                     authQuery.append(" ");
                 }
                 authQuery.append("AUTHORITY:\"").append(authority).append("\"");
             }
-            
-            //url.append("&fq=");
-            //encoder = new URLCodec();
-            //url.append(encoder.encode(authQuery.toString(), "UTF-8"));
-            
+
+            // url.append("&fq=");
+            // encoder = new URLCodec();
+            // url.append(encoder.encode(authQuery.toString(), "UTF-8"));
+
             url.append("&fq=");
             url.append(encoder.encode("{!afts}", "UTF-8"));
             url.append("AUTHORITY_FILTER_FROM_JSON");
-            
+
             // facets would go on url?
-            
+
             JSONObject body = new JSONObject();
             body.put("query", searchParameters.getQuery());
-            //body.put("defaultField", searchParameters.getDefaultFieldName());
-            
+            // body.put("defaultField", searchParameters.getDefaultFieldName());
+
             body.put("filter", authQuery);
-            
+
             JSONArray locales = new JSONArray();
-            for(Locale currentLocale : searchParameters.getLocales())
+            for (Locale currentLocale : searchParameters.getLocales())
             {
                 locales.put(DefaultTypeConverter.INSTANCE.convert(String.class, currentLocale));
             }
-            if(locales.length() == 0)
+            if (locales.length() == 0)
             {
                 locales.put(I18NUtil.getLocale());
             }
             body.put("locales", locales);
-            
-            
+
             // templates etc may affect CONTAINS() clause
             JSONArray templates = new JSONArray();
-            for(String templateName : searchParameters.getQueryTemplates().keySet())
+            for (String templateName : searchParameters.getQueryTemplates().keySet())
             {
                 JSONObject template = new JSONObject();
                 template.put("name", templateName);
@@ -199,52 +205,50 @@ public class SolrCMISQueryLanguage implements LuceneQueryLanguageSPI
                 templates.put(template);
             }
             body.put("templates", templates);
-            
+
             JSONArray allAttributes = new JSONArray();
-            for(String attribute : searchParameters.getAllAttributes())
+            for (String attribute : searchParameters.getAllAttributes())
             {
                 allAttributes.put(attribute);
             }
             body.put("allAttributes", allAttributes);
-            
+
             body.put("defaultFTSOperator", searchParameters.getDefaultFTSOperator());
             body.put("defaultFTSFieldOperator", searchParameters.getDefaultFTSFieldOperator());
-            if(searchParameters.getMlAnalaysisMode() != null)
+            if (searchParameters.getMlAnalaysisMode() != null)
             {
                 body.put("mlAnalaysisMode", searchParameters.getMlAnalaysisMode().toString());
             }
             body.put("defaultNamespace", searchParameters.getNamespace());
-            
-            
+
             JSONArray textAttributes = new JSONArray();
-            for(String attribute : searchParameters.getTextAttributes())
+            for (String attribute : searchParameters.getTextAttributes())
             {
                 textAttributes.put(attribute);
             }
             body.put("textAttributes", textAttributes);
-            
+
             PostMethod post = new PostMethod(url.toString());
             post.setRequestEntity(new ByteArrayRequestEntity(body.toString().getBytes("UTF-8"), "application/json"));
-         
+
             httpClient.executeMethod(post);
 
             if (post.getStatusCode() != HttpServletResponse.SC_OK)
             {
-                throw new LuceneQueryParserException("Request failed " + post.getStatusCode()+" "+url.toString());
+                throw new LuceneQueryParserException("Request failed " + post.getStatusCode() + " " + url.toString());
             }
-            
 
             Reader reader = new BufferedReader(new InputStreamReader(post.getResponseBodyAsStream()));
             // TODO - replace with streaming-based solution e.g. SimpleJSON ContentHandler
             JSONObject json = new JSONObject(new JSONTokener(reader));
             SolrJSONResultSet results = new SolrJSONResultSet(json, nodeDAO, searchParameters);
-            if(s_logger.isDebugEnabled())
+            if (s_logger.isDebugEnabled())
             {
-                s_logger.debug("Sent :"+url);
-                s_logger.debug("   with: "+body.toString());
-                s_logger.debug("Got: "+results.getNumberFound()+ " in "+results.getQueryTime()+ " ms");
+                s_logger.debug("Sent :" + url);
+                s_logger.debug("   with: " + body.toString());
+                s_logger.debug("Got: " + results.getNumberFound() + " in " + results.getQueryTime() + " ms");
             }
-            
+
             return results;
         }
         catch (UnsupportedEncodingException e)
@@ -265,19 +269,6 @@ public class SolrCMISQueryLanguage implements LuceneQueryLanguageSPI
         }
     }
 
-    public String getName()
-    {
-        return SearchService.LANGUAGE_SOLR_CMIS;
-    }
-
-    public void setFactories(List<AbstractLuceneIndexerAndSearcherFactory> factories)
-    {
-        for (AbstractLuceneIndexerAndSearcherFactory factory : factories)
-        {
-            factory.registerQueryLanguage(this);
-        }
-    }
-    
     public static void main(String[] args)
     {
         SolrCMISQueryLanguage solrAlfrescoFTSQueryLanguage = new SolrCMISQueryLanguage();
@@ -286,15 +277,15 @@ public class SolrCMISQueryLanguage implements LuceneQueryLanguageSPI
         sp.setMaxItems(100);
         sp.setSkipCount(12);
         ResultSet rs = solrAlfrescoFTSQueryLanguage.executeQuery(sp, null);
-        System.out.println("Found "+rs.length());
-        System.out.println("More "+rs.hasMore());
-        System.out.println("Start "+rs.getStart());
-        
-        for(ResultSetRow row : rs)
+        System.out.println("Found " + rs.length());
+        System.out.println("More " + rs.hasMore());
+        System.out.println("Start " + rs.getStart());
+
+        for (ResultSetRow row : rs)
         {
-            System.out.println("Score "+row.getScore());
+            System.out.println("Score " + row.getScore());
         }
         rs.close();
     }
-    
+
 }

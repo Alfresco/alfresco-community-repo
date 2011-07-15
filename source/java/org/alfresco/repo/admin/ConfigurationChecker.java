@@ -71,12 +71,11 @@ public class ConfigurationChecker extends AbstractLifecycleBean
     
     private static final String WARN_RELATIVE_DIR_ROOT = "system.config_check.warn.dir_root";
     private static final String MSG_DIR_ROOT = "system.config_check.msg.dir_root";
-    private static final String ERR_DUPLICATE_ROOT_NODE = "system.config_check.err.indexes.duplicate_root_node";
-    private static final String ERR_MISSING_INDEXES = "system.config_check.err.missing_index";
+    static final String ERR_MISSING_INDEXES = "system.config_check.err.missing_index";
     private static final String ERR_MISSING_CONTENT = "system.config_check.err.missing_content";
-    private static final String ERR_FIX_DIR_ROOT = "system.config_check.err.fix_dir_root";
-    private static final String MSG_HOWTO_INDEX_RECOVER = "system.config_check.msg.howto_index_recover";
-    private static final String WARN_STARTING_WITH_ERRORS = "system.config_check.warn.starting_with_errors";
+    static final String ERR_FIX_DIR_ROOT = "system.config_check.err.fix_dir_root";
+    static final String MSG_HOWTO_INDEX_RECOVER = "system.config_check.msg.howto_index_recover";
+    static final String WARN_STARTING_WITH_ERRORS = "system.config_check.warn.starting_with_errors";
 
     private boolean strict;
     private RecoveryMode indexRecoveryMode;
@@ -88,7 +87,7 @@ public class ConfigurationChecker extends AbstractLifecycleBean
     private NodeService nodeService;
     private SearchService searchService;
     private ContentService contentService;
-    private AVMSnapShotTriggeredIndexingMethodInterceptor avmSnapShotTriggeredIndexingMethodInterceptor;
+    private IndexConfigurationChecker indexConfigurationChecker;
     
     public ConfigurationChecker()
     {
@@ -165,11 +164,11 @@ public class ConfigurationChecker extends AbstractLifecycleBean
         this.contentService = contentService;
     }
     
-    public void setAvmSnapShotTriggeredIndexingMethodInterceptor(AVMSnapShotTriggeredIndexingMethodInterceptor avmSnapShotTriggeredIndexingMethodInterceptor)
+    public void setIndexConfigurationChecker(IndexConfigurationChecker indexConfigurationChecker)
     {
-        this.avmSnapShotTriggeredIndexingMethodInterceptor = avmSnapShotTriggeredIndexingMethodInterceptor;
+        this.indexConfigurationChecker = indexConfigurationChecker;
     }
-    
+
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
@@ -205,90 +204,7 @@ public class ConfigurationChecker extends AbstractLifecycleBean
         String msgDirRoot = I18NUtil.getMessage(MSG_DIR_ROOT, dirRootFile);
         logger.info(msgDirRoot);
 
-        // get all root nodes from the NodeService, i.e. database
-        List<StoreRef> storeRefs = nodeService.getStores();
-        List<StoreRef> missingIndexStoreRefs = new ArrayList<StoreRef>(0);
-        for (StoreRef storeRef : storeRefs)
-        {
-            @SuppressWarnings("unused")
-            NodeRef rootNodeRef = null;
-            try
-            {
-                rootNodeRef = nodeService.getRootNode(storeRef);
-            }
-            catch (InvalidStoreRefException e)
-            {
-                // the store is invalid and will therefore not have a root node entry
-                continue;
-            }
-            if (indexRecoveryMode != RecoveryMode.FULL)
-            {
-                if (storeRef.getProtocol().equals(StoreRef.PROTOCOL_AVM))
-                {
-                    if (avmSnapShotTriggeredIndexingMethodInterceptor.isIndexingEnabled())
-                    {
-                        IndexMode storeIndexMode = avmSnapShotTriggeredIndexingMethodInterceptor.getIndexMode(storeRef.getIdentifier());
-                        if (storeIndexMode.equals(IndexMode.UNINDEXED))
-                        {
-                            if (logger.isDebugEnabled())
-                            {
-                                logger.debug("Skipping index check for store: " + storeRef + " (unindexed AVM store)");
-                            }
-                            continue;
-                        }
-                    }
-                    else
-                    {
-                        if (logger.isDebugEnabled())
-                        {
-                            logger.debug("Skipping index check for store: " + storeRef + " (AVM indexing is disabled)");
-                        }
-                        continue;
-                    }
-                }
-                
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("Checking index for store: " + storeRef);
-                }
-                
-                // perform a Lucene query for the root node
-                SearchParameters sp = new SearchParameters();
-                sp.addStore(storeRef);
-                sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-                sp.setQuery("ISROOT:T");
-                
-                ResultSet results = null;
-                int size = 0;
-                try
-                {
-                    results = searchService.query(sp);
-                    size = results.length();
-                }
-                finally
-                {
-                    try { results.close(); } catch (Throwable e) {}
-                }
-                
-                if (size == 0)
-                {
-                    // indexes missing for root node
-                    missingIndexStoreRefs.add(storeRef);
-                    // debug
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug("Index missing for store: \n" +
-                                "   store: " + storeRef);
-                    }
-                }
-                else if (size > 1)
-                {
-                    // there are duplicates
-                    String msg = I18NUtil.getMessage(ERR_DUPLICATE_ROOT_NODE, storeRef);
-                    throw new AlfrescoRuntimeException(msg);
-                }
-            }
-        }
+        List<StoreRef> missingIndexStoreRefs = indexConfigurationChecker.checkIndexConfiguration();
         // check for the system version properties content snippet
         boolean versionPropertiesContentAvailable = true;
         NodeRef descriptorNodeRef = getSystemDescriptor();
@@ -338,6 +254,8 @@ public class ConfigurationChecker extends AbstractLifecycleBean
             }
         }
     }
+
+    
     
     /**
      * @return Returns the system descriptor node or null

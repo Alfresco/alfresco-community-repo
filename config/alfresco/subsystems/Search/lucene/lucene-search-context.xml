@@ -1,0 +1,516 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+    <import resource="../common-search-context.xml" />
+
+    <!--                         -->
+    <!-- Indexing and Search API -->
+    <!--                         -->
+
+    <bean id="search.indexerComponent" class="org.alfresco.repo.search.IndexerComponent">
+        <property name="storeRedirectorProxyFactory">
+            <ref bean="&amp;search.indexerAndSearcherFactory" />
+        </property>
+    </bean>
+
+    <bean id="search.searchService" class="org.alfresco.repo.search.SearcherComponent">
+        <property name="indexerAndSearcherFactory">
+            <ref bean="search.indexerAndSearcherFactory" />
+        </property>
+    </bean>
+
+    <bean id="search.admSearchService" class="org.alfresco.repo.search.SearcherComponent">
+        <property name="indexerAndSearcherFactory">
+            <ref bean="search.admLuceneIndexerAndSearcherFactory" />
+        </property>
+    </bean>
+    
+    <bean id="search.versionSearchService" class="org.alfresco.repo.search.SearcherComponent">
+        <property name="indexerAndSearcherFactory">
+            <ref bean="search.admLuceneUnIndexedIndexerAndSearcherFactory" />
+        </property>
+    </bean>
+
+
+    <!--                                                                               -->
+    <!-- Generic factory for making indexers and searchers for a given protol or store -->
+    <!--                                                                               -->
+    <bean id="search.indexerAndSearcherFactory" class="org.alfresco.repo.service.StoreRedirectorProxyFactory">
+        <property name="proxyInterface">
+            <value>org.alfresco.repo.search.impl.lucene.LuceneIndexerAndSearcher</value>
+        </property>
+        <property name="defaultBinding">
+            <ref bean="search.admLuceneIndexerAndSearcherFactory"></ref>
+        </property>
+        <property name="redirectedProtocolBindings">
+            <map>
+                <entry key="deleted">
+                    <ref bean="search.admLuceneUnIndexedIndexerAndSearcherFactory"></ref>
+                </entry>
+                <entry key="workspace">
+                    <ref bean="search.admLuceneIndexerAndSearcherFactory"></ref>
+                </entry>
+                <entry key="avm">
+                    <ref bean="search.avmLuceneIndexerAndSearcherFactory"></ref>
+                </entry>
+            </map>
+        </property>
+        <property name="redirectedStoreBindings">
+            <map>
+                <entry key="workspace://lightWeightVersionStore">
+                    <ref bean="search.admLuceneUnIndexedIndexerAndSearcherFactory"></ref>
+                </entry>
+                <entry key="workspace://version2Store">
+                    <ref bean="search.admLuceneUnIndexedIndexerAndSearcherFactory"></ref>
+                </entry>
+            </map>
+        </property>
+    </bean>
+
+    <bean id="search.categoryService" class="org.alfresco.repo.service.StoreRedirectorProxyFactory">
+        <property name="proxyInterface">
+            <value>org.alfresco.service.cmr.search.CategoryService</value>
+        </property>
+        <property name="defaultBinding">
+            <ref bean="search.luceneCategoryService"></ref>
+        </property>
+        <property name="redirectedProtocolBindings">
+            <map>
+                <entry key="workspace">
+                    <ref bean="search.luceneCategoryService"></ref>
+                </entry>
+                <entry key="versionStore">
+                    <ref bean="search.luceneCategoryService"></ref>
+                </entry>
+                <entry key="avm">
+                    <ref bean="search.luceneCategoryService"></ref>
+                </entry>
+            </map>
+        </property>
+    </bean>
+
+    <bean id="search.indexThreadPoolExecutor" class="org.alfresco.util.ThreadPoolExecutorFactoryBean">
+        <property name="poolName">
+            <value>indexThread</value>
+        </property>
+        <property name="corePoolSize">
+            <value>10</value>
+        </property>
+        <property name="maximumPoolSize">
+            <value>20</value>
+        </property>
+        <property name="threadPriority">
+            <value>5</value>
+        </property>
+    </bean>
+    
+	<bean id="search.lucene.alfresco" class="org.alfresco.repo.search.impl.lucene.LuceneAlfrescoLuceneQueryLanguage" >
+	    <property name="factories">
+			<list>
+			    <ref bean="search.admLuceneIndexerAndSearcherFactory" />	
+				<ref bean="search.admLuceneUnIndexedIndexerAndSearcherFactory" />	
+				<ref bean="search.avmLuceneIndexerAndSearcherFactory" />	
+			</list>
+        </property>
+    </bean>
+    
+    <bean id="search.lucene.xpath" class="org.alfresco.repo.search.impl.lucene.LuceneAlfrescoXPathQueryLanguage" >
+	    <property name="factories">
+			<list>
+			    <ref bean="search.admLuceneIndexerAndSearcherFactory" />	
+				<ref bean="search.admLuceneUnIndexedIndexerAndSearcherFactory" />	
+				<ref bean="search.avmLuceneIndexerAndSearcherFactory" />	
+			</list>
+        </property>
+    </bean>
+	
+	<bean id="search.lucene.fts.alfresco" class="org.alfresco.repo.search.impl.lucene.LuceneAlfrescoFtsQueryLanguage" >
+        <property name="queryEngine">
+            <ref bean="search.adm.luceneQueryEngineImpl" />
+        </property>
+	    <property name="factories">
+			<list>
+			    <ref bean="search.admLuceneIndexerAndSearcherFactory" />	
+				<ref bean="search.admLuceneUnIndexedIndexerAndSearcherFactory" />	
+				<ref bean="search.avmLuceneIndexerAndSearcherFactory" />	
+			</list>
+        </property>
+    </bean>
+    
+    <bean id="search.solr.fts.alfresco" class="org.alfresco.repo.search.impl.solr.SolrAlfrescoFTSQueryLanguage" >
+        <property name="nodeDAO">
+            <ref bean="nodeDAO" />
+        </property>
+        <property name="permissionService">
+            <ref bean="permissionService" />
+        </property>
+	    <property name="factories">
+			<list>
+			    <ref bean="search.admLuceneIndexerAndSearcherFactory" />	
+				<ref bean="search.admLuceneUnIndexedIndexerAndSearcherFactory" />	
+				<ref bean="search.avmLuceneIndexerAndSearcherFactory" />	
+			</list>
+        </property>
+    </bean>
+    
+    <bean id="search.solr.cmis" class="org.alfresco.repo.search.impl.solr.SolrCMISQueryLanguage" >
+        <property name="nodeDAO">
+            <ref bean="nodeDAO" />
+        </property>
+        <property name="permissionService">
+            <ref bean="permissionService" />
+        </property>
+	    <property name="factories">
+			<list>
+			    <ref bean="search.admLuceneIndexerAndSearcherFactory" />	
+				<ref bean="search.admLuceneUnIndexedIndexerAndSearcherFactory" />	
+				<ref bean="search.avmLuceneIndexerAndSearcherFactory" />	
+			</list>
+        </property>
+    </bean>
+
+    <bean id="search.abstractLuceneIndexerAndSearcherFactory" abstract="true">
+        <property name="indexRootLocation">
+            <value>${dir.indexes}</value>
+        </property>
+        <property name="lockDirectory">
+            <value>${dir.indexes.lock}</value>
+        </property>
+        <property name="maxAtomicTransformationTime">
+            <value>${lucene.maxAtomicTransformationTime}</value>  <!-- milliseconds allowed for inline text transformation -->
+        </property>
+        <property name="queryMaxClauses">
+            <value>${lucene.query.maxClauses}</value>
+        </property>
+        <property name="indexerBatchSize">
+            <value>${lucene.indexer.batchSize}</value>
+        </property>
+        <!-- cache -->
+        <property name="cacheEnabled">
+            <value>${lucene.indexer.cacheEnabled}</value>
+        </property>
+        <property name="maxDocIdCacheSize">
+            <value>${lucene.indexer.maxDocIdCacheSize}</value>
+        </property>
+        <property name="maxDocumentCacheSize">
+            <value>${lucene.indexer.maxDocumentCacheSize}</value>
+        </property>
+        <property name="maxIsCategoryCacheSize">
+            <value>${lucene.indexer.maxIsCategoryCacheSize}</value>
+        </property>
+        <property name="maxLinkAspectCacheSize">
+            <value>${lucene.indexer.maxLinkAspectCacheSize}</value>
+        </property>
+        <property name="maxParentCacheSize">
+            <value>${lucene.indexer.maxParentCacheSize}</value>
+        </property>
+        <property name="maxPathCacheSize">
+            <value>${lucene.indexer.maxPathCacheSize}</value>
+        </property>
+        <property name="maxTypeCacheSize">
+            <value>${lucene.indexer.maxTypeCacheSize}</value>
+        </property>
+        <!-- merge indexers -->
+        <property name="mergerMaxMergeDocs">
+            <value>${lucene.indexer.mergerMaxMergeDocs}</value>
+        </property>
+        <property name="mergerMergeFactor">
+            <value>${lucene.indexer.mergerMergeFactor}</value>
+        </property>
+        <property name="mergerMaxBufferedDocs">
+            <value>${lucene.indexer.mergerMaxBufferedDocs}</value>
+        </property>
+        <property name="mergerRamBufferSizeMb">
+            <value>${lucene.indexer.mergerRamBufferSizeMb}</value>
+        </property>
+        <!-- delta indexers -->
+        <property name="writerMaxMergeDocs">
+            <value>${lucene.indexer.writerMaxMergeDocs}</value>
+        </property>
+        <property name="writerMergeFactor">
+            <value>${lucene.indexer.writerMergeFactor}</value>
+        </property>
+        <property name="writerMaxBufferedDocs">
+            <value>${lucene.indexer.writerMaxBufferedDocs}</value>
+        </property>
+        <property name="writerRamBufferSizeMb">
+            <value>${lucene.indexer.writerRamBufferSizeMb}</value>
+        </property>
+        <!-- target -->
+        <property name="mergerTargetIndexCount">
+            <value>${lucene.indexer.mergerTargetIndexCount}</value>
+        </property>
+        <property name="mergerTargetOverlayCount">
+            <value>${lucene.indexer.mergerTargetOverlayCount}</value>
+        </property>
+        <property name="mergerTargetOverlaysBlockingFactor">
+            <value>${lucene.indexer.mergerTargetOverlaysBlockingFactor}</value>
+        </property>
+        <property name="maxDocsForInMemoryMerge">
+            <value>${lucene.indexer.maxDocsForInMemoryMerge}</value>
+        </property>
+        <property name="maxRamInMbForInMemoryMerge">
+            <value>${lucene.indexer.maxRamInMbForInMemoryMerge}</value>
+        </property>
+        <property name="maxDocsForInMemoryIndex">
+            <value>${lucene.indexer.maxDocsForInMemoryIndex}</value>
+        </property>
+        <property name="maxRamInMbForInMemoryIndex">
+            <value>${lucene.indexer.maxRamInMbForInMemoryIndex}</value>
+        </property>
+        <!-- other -->    
+        <property name="termIndexInterval">
+            <value>${lucene.indexer.termIndexInterval}</value>
+        </property>
+        <property name="useNioMemoryMapping">
+            <value>${lucene.indexer.useNioMemoryMapping}</value>
+        </property>
+        <property name="postSortDateTime">
+            <value>${lucene.indexer.postSortDateTime}</value>
+        </property>
+        <property name="defaultMLIndexAnalysisMode">
+            <value>${lucene.indexer.defaultMLIndexAnalysisMode}</value>
+        </property>
+        <property name="defaultMLSearchAnalysisMode">
+            <value>${lucene.indexer.defaultMLSearchAnalysisMode}</value>
+        </property>
+        <property name="indexerMaxFieldLength">
+            <value>${lucene.indexer.maxFieldLength}</value>
+        </property>
+        <property name="fairLocking">
+            <value>${lucene.indexer.fairLocking}</value>
+        </property>
+        <property name="writeLockTimeout">
+            <value>${lucene.write.lock.timeout}</value>
+        </property>
+        <property name="commitLockTimeout">
+            <value>${lucene.commit.lock.timeout}</value>
+        </property>
+        <property name="lockPollInterval">
+            <value>${lucene.lock.poll.interval}</value>
+        </property>
+    </bean>
+    
+    <!-- Indexer and searchers for lucene -->
+    <bean id="search.admLuceneIndexerAndSearcherFactory"
+        parent="search.abstractLuceneIndexerAndSearcherFactory"
+        class="org.alfresco.repo.search.impl.lucene.ADMLuceneIndexerAndSearcherFactory">
+        <property name="nodeService">
+            <ref bean="mlAwareNodeService" />
+        </property>
+        <property name="tenantService">
+            <ref bean="tenantService"/>
+        </property>
+        <property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+        <property name="nameSpaceService">
+            <ref bean="namespaceService" />
+        </property>
+        <property name="contentService">
+            <ref bean="contentService" />
+        </property>
+        <property name="queryRegister">
+            <ref bean="search.queryRegisterComponent" />
+        </property>
+        <property name="threadPoolExecutor">
+            <ref bean="search.indexThreadPoolExecutor"></ref>
+        </property>
+        <property name="bulkLoader">
+            <ref bean="nodeDAO"></ref>
+        </property>
+    </bean>
+    
+    <bean id="search.adm.luceneQueryEngineImpl" class="org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryEngine" >
+        <property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+        <property name="indexAndSearcher">
+            <ref bean="search.admLuceneIndexerAndSearcherFactory" />
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="tenantService">
+            <ref bean="tenantService" />
+        </property>
+        <property name="namespaceService">
+            <ref bean="namespaceService" />
+        </property>
+    </bean>
+	
+     <!-- Indexer and searchers for lucene -->
+    <bean id="search.admLuceneUnIndexedIndexerAndSearcherFactory"
+        parent="search.abstractLuceneIndexerAndSearcherFactory"
+        class="org.alfresco.repo.search.impl.lucene.ADMLuceneUnIndexedIndexAndSearcherFactory">
+        <property name="nodeService">
+            <ref bean="mlAwareNodeService" />
+        </property>
+        <property name="tenantService">
+            <ref bean="tenantService"/>
+        </property>
+        <property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+        <property name="nameSpaceService">
+            <ref bean="namespaceService" />
+        </property>
+        <property name="contentService">
+            <ref bean="contentService" />
+        </property>
+        <property name="queryRegister">
+            <ref bean="search.queryRegisterComponent" />
+        </property>
+        <property name="threadPoolExecutor">
+            <ref bean="search.indexThreadPoolExecutor"></ref>
+        </property>
+    </bean>
+
+    <!-- Indexer and searchers for lucene -->
+    <bean id="search.avmLuceneIndexerAndSearcherFactory"
+        parent="search.abstractLuceneIndexerAndSearcherFactory"
+        class="org.alfresco.repo.search.impl.lucene.AVMLuceneIndexerAndSearcherFactory">
+        <property name="nodeService">
+            <ref bean="mlAwareNodeService" />
+        </property>
+        <property name="tenantService">
+            <ref bean="tenantService"/>
+        </property>
+        <property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+        <property name="nameSpaceService">
+            <ref bean="namespaceService" />
+        </property>
+        <property name="contentService">
+            <ref bean="contentService" />
+        </property>
+        <property name="contentStore">
+            <ref bean="fileContentStore"/>
+        </property>
+        <property name="avmService">
+            <ref bean="avmService" />
+        </property>
+        <property name="avmSyncService">
+            <ref bean="avmSyncService" />
+        </property>
+        <property name="queryRegister">
+            <ref bean="search.queryRegisterComponent" />
+        </property>
+        <property name="threadPoolExecutor">
+            <ref bean="search.indexThreadPoolExecutor"></ref>
+        </property>
+        <property name="avmSnapShotTriggeredIndexingMethodInterceptor">
+            <ref bean="avmSnapShotTriggeredIndexingMethodInterceptor" />
+        </property>
+    </bean>
+
+	<bean id="search.avm.luceneQueryEngineImpl" class="org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryEngine" >
+        <property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+        <property name="indexAndSearcher">
+            <ref bean="search.avmLuceneIndexerAndSearcherFactory" />
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="tenantService">
+            <ref bean="tenantService" />
+        </property>
+        <property name="namespaceService">
+            <ref bean="namespaceService" />
+        </property>
+    </bean>
+
+    <!-- Indexer and searchers for lucene -->
+    <bean id="search.luceneCategoryService" class="org.alfresco.repo.search.impl.lucene.LuceneCategoryServiceImpl">
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="publicNodeService">
+            <ref bean="NodeService" />
+        </property>
+        <property name="tenantService">
+            <ref bean="tenantService"/>
+        </property>
+        <property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+        <property name="namespacePrefixResolver">
+            <ref bean="namespaceService" />
+        </property>
+        <property name="indexerAndSearcher">
+            <ref bean="search.indexerAndSearcherFactory" />
+        </property>
+    </bean>
+
+    <!-- Bean to support full text search -->
+
+    <bean id="search.LuceneFullTextSearchIndexer"
+        class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean" depends-on="indexerAndSearcherFactory">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer</value>
+        </property>
+        <property name="transactionManager">
+            <ref bean="transactionManager" />
+        </property>
+        <property name="target">
+           <ref bean="search.luceneFullTextSearchIndexer" />
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+
+     <bean id="search.luceneFullTextSearchIndexer" class="org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexerImpl">
+        <property name="indexerAndSearcherFactory">
+           <ref bean="search.indexerAndSearcherFactory" />
+        </property>
+        <property name="batchSize">
+           <value>${fts.indexer.batchSize}</value>
+        </property>
+     </bean>
+
+    <!-- Bean to backup Lucene indexes -->
+    <bean id="search.luceneIndexBackupComponent"
+          class="org.alfresco.repo.search.impl.lucene.AbstractLuceneIndexerAndSearcherFactory$LuceneIndexBackupComponent">
+        <property name="transactionService">
+            <ref bean="transactionService" />
+        </property>
+        <property name="factories">
+            <set>
+                <ref bean="search.admLuceneIndexerAndSearcherFactory" />
+            </set>
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="targetLocation">
+            <value>${dir.indexes.backup}</value>
+        </property>
+        <property name="checkConfiguration">
+            <value>true</value>
+        </property>
+    </bean>
+    
+    <bean id="search.indexConfigurationChecker" class="org.alfresco.repo.admin.IndexConfigurationCheckerImpl">
+       <property name="indexRecoveryMode">
+           <value>${index.recovery.mode}</value>
+       </property>
+       <!-- helper beans -->
+       <property name="nodeService">
+           <ref bean="nodeService"/>
+       </property>
+       <property name="searchService">
+           <ref bean="searchService"/>
+       </property>
+       <property name="avmSnapShotTriggeredIndexingMethodInterceptor">
+           <ref bean="avmSnapShotTriggeredIndexingMethodInterceptor"/>
+       </property>
+    </bean>
+</beans>

@@ -38,10 +38,15 @@ import org.alfresco.service.cmr.search.SearchService;
  * @author andyh
  * 
  */
-public class LuceneOpenCMISStrictSqlQueryLanguage implements LuceneQueryLanguageSPI
+public class LuceneOpenCMISStrictSqlQueryLanguage extends AbstractLuceneQueryLanguage
 {
     private CMISQueryService cmisQueryService;
 
+    public LuceneOpenCMISStrictSqlQueryLanguage()
+    {
+        this.setName(SearchService.LANGUAGE_CMIS_STRICT);
+    }
+    
     /**
      * Set the search service
      * 
@@ -80,18 +85,4 @@ public class LuceneOpenCMISStrictSqlQueryLanguage implements LuceneQueryLanguage
 
         return new ResultSetSPIWrapper<CMISResultSetRow, CMISResultSetMetaData>(cmisQueryService.query(options));
     }
-
-    public String getName()
-    {
-        return SearchService.LANGUAGE_CMIS_STRICT;
-    }
-
-    public void setFactories(List<AbstractLuceneIndexerAndSearcherFactory> factories)
-    {
-        for (AbstractLuceneIndexerAndSearcherFactory factory : factories)
-        {
-            factory.registerQueryLanguage(this);
-        }
-    }
-
 }

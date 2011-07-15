@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+   
+    <bean id="search.ftsIndexerTrigger" class="org.alfresco.util.TriggerBean">
+        <property name="jobDetail">
+            <bean id="ftsIndexerJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+                <property name="jobClass">
+                    <value>org.alfresco.repo.search.impl.lucene.fts.FTSIndexerJob</value>
+                </property>
+                <property name="jobDataAsMap">
+                    <map>
+                        <entry key="bean">
+                            <ref bean="search.LuceneFullTextSearchIndexer" />
+                        </entry>
+                    </map>
+                </property>
+            </bean>
+        </property>
+        <property name="scheduler">
+            <ref bean="schedulerFactory" />
+        </property>
+        <property name="startDelayMinutes">
+            <value>1</value>
+        </property>
+        <property name="repeatIntervalMinutes">
+            <value>1</value>
+        </property>
+    </bean>
+
+  
+  
+
+    <bean id="search.indexBackupJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass">
+            <value>org.alfresco.repo.search.impl.lucene.AbstractLuceneIndexerAndSearcherFactory$LuceneIndexBackupJob</value>
+        </property>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="luceneIndexBackupComponent">
+                    <ref bean="search.luceneIndexBackupComponent" />
+                </entry>
+            </map>
+        </property>
+    </bean>
+    
+    <bean id="search.indexBackupTrigger" class="org.alfresco.util.CronTriggerBean">
+        <property name="jobDetail">
+            <ref bean="search.indexBackupJobDetail" />
+        </property>
+        <property name="scheduler">
+            <ref bean="schedulerFactory" />
+        </property>
+        <!-- trigger at 3am each day -->
+        <property name="cronExpression">
+            <value>${index.backup.cronExpression}</value>
+        </property>
+    </bean>
+
+ 
+</beans>

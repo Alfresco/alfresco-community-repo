@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+
+<beans>
+    <!-- rebuild the index if required - before we check that it is there -->
+    
+    <bean id="search.indexRecoveryBootstrap" class="org.alfresco.repo.node.index.IndexRecoveryBootstrapBean" >
+       <property name="indexRecoveryComponent">
+           <ref bean="search.indexRecoveryComponent"/>
+       </property>
+       <property name="repositoryState">
+           <ref bean="repositoryState"/>
+       </property>
+    </bean>
+    
+    <bean id="search.avmIndexRecoveryBootstrap" class="org.alfresco.repo.node.index.IndexRecoveryBootstrapBean" >
+       <property name="indexRecoveryComponent">
+          <ref bean="search.avmIndexRecoveryComponent"/>
+       </property>
+       <property name="repositoryState">
+           <ref bean="repositoryState"/>
+       </property>
+    </bean>
+    
+    
+    <bean id="search.indexConfigurationCheckerBootstrap" class="org.alfresco.repo.admin.IndexConfigurationCheckerBootstrapBean">
+       <property name="strict">
+           <value>${system.bootstrap.config_check.strict}</value>
+       </property>
+       <property name="dirRoot">
+           <value>${dir.root}</value>
+       </property>
+       <!-- helper beans -->
+       <property name="transactionService">
+           <ref bean="transactionService"/>
+       </property>
+       <property name="indexConfigurationChecker">
+           <ref bean="search.indexConfigurationChecker"/>
+        </property>
+        <property name="repositoryState">
+           <ref bean="repositoryState"/>
+       </property>
+    </bean>
+    
+</beans>

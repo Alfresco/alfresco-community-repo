@@ -6,7 +6,7 @@
    <!--
       The thread pool to use for index rebuilding and recovery
    -->
-   <bean id="indexTrackerThreadPoolExecutor" class="org.alfresco.util.ThreadPoolExecutorFactoryBean">
+   <bean id="search.indexTrackerThreadPoolExecutor" class="org.alfresco.util.ThreadPoolExecutorFactoryBean">
 	  <property name="poolName">
 	  	<value>indexTrackerThread</value>
 	  </property>
@@ -21,21 +21,21 @@
       </property>
    </bean>
 
-   <bean id="indexRecoveryComponentBase" abstract="true" >
+   <bean id="search.indexRecoveryComponentBase" abstract="true" >
       <property name="threadPoolExecutor">
-         <ref bean="indexTrackerThreadPoolExecutor" />
+         <ref bean="search.indexTrackerThreadPoolExecutor" />
       </property>
       <property name="transactionService">
          <ref bean="transactionService" />
       </property>
       <property name="indexer">
-         <ref bean="indexerComponent" />
+         <ref bean="search.indexerComponent" />
       </property>
       <property name="ftsIndexer">
-         <ref bean="LuceneFullTextSearchIndexer" />
+         <ref bean="search.LuceneFullTextSearchIndexer" />
       </property>
       <property name="searcher">
-         <ref bean="searchService" />
+         <ref bean="search.searchService" />
       </property>
       <property name="nodeService">
           <ref bean="nodeService" />
@@ -61,9 +61,9 @@
    
    <!-- index recovery and validation -->
    <bean
-         id="indexRecoveryComponent"
+         id="search.indexRecoveryComponent"
          class="org.alfresco.repo.node.index.FullIndexRecoveryComponent"
-         parent="indexRecoveryComponentBase">
+         parent="search.indexRecoveryComponentBase">
       <property name="recoveryMode">
          <value>${index.recovery.mode}</value>
       </property>
@@ -74,14 +74,14 @@
          <value>${index.tracking.maxTransactionsPerLuceneCommit}</value>
       </property>
       <property name="indexTracker">
-         <ref bean="admIndexTrackerComponent" />
+         <ref bean="search.admIndexTrackerComponent" />
       </property>
    </bean>
 	
    <bean
-         id="avmIndexRecoveryComponent"
+         id="search.avmIndexRecoveryComponent"
          class="org.alfresco.repo.node.index.AVMFullIndexRecoveryComponent"
-         parent="indexRecoveryComponentBase">
+         parent="search.indexRecoveryComponentBase">
       <property name="recoveryMode">
           <value>${index.recovery.mode}</value>
       </property>
@@ -100,9 +100,9 @@
       is required.
    -->
    <bean
-         id="admIndexTrackerComponent"
+         id="search.admIndexTrackerComponent"
          class="org.alfresco.repo.node.index.IndexTransactionTracker"
-         parent="indexRecoveryComponentBase">
+         parent="search.indexRecoveryComponentBase">
       <property name="nodeIndexer">
          <ref bean="nodeIndexer"/>
       </property>
@@ -124,7 +124,7 @@
    </bean>
 
     <!-- Schedule index tracking for ADM -->
-    <bean id="admIndexTrackerTrigger" class="org.alfresco.util.CronTriggerBean">
+    <bean id="search.admIndexTrackerTrigger" class="org.alfresco.util.CronTriggerBean">
         <property name="jobDetail">
             <bean class="org.springframework.scheduling.quartz.JobDetailBean">
                 <property name="jobClass">
@@ -133,7 +133,7 @@
                 <property name="jobDataAsMap">
                     <map>
                         <entry key="indexRecoveryComponent">
-                            <ref bean="admIndexTrackerComponent" />
+                            <ref bean="search.admIndexTrackerComponent" />
                         </entry>
                         <entry key="clusterName">
                             <value>${alfresco.cluster.name}</value>
@@ -155,9 +155,9 @@
     <!--===========================-->
 
     <bean
-          id="avmIndexTrackerComponent"
+          id="search.avmIndexTrackerComponent"
           class="org.alfresco.repo.node.index.AVMRemoteSnapshotTracker"
-          parent="indexRecoveryComponentBase">
+          parent="search.indexRecoveryComponentBase">
 	   <property name="avmService">
           <ref bean="avmService" />
       </property>
@@ -167,7 +167,7 @@
     </bean>
 
     <!-- Schedule index tracking for AVM -->
-    <bean id="avmIndexTrackerTrigger" class="org.alfresco.util.CronTriggerBean">
+    <bean id="search.avmIndexTrackerTrigger" class="org.alfresco.util.CronTriggerBean">
         <property name="jobDetail">
             <bean class="org.springframework.scheduling.quartz.JobDetailBean">
                 <property name="jobClass">
@@ -176,7 +176,7 @@
                 <property name="jobDataAsMap">
                     <map>
                         <entry key="indexRecoveryComponent">
-                            <ref bean="avmIndexTrackerComponent" />
+                            <ref bean="search.avmIndexTrackerComponent" />
                         </entry>
                         <entry key="clusterName">
                             <value>${alfresco.cluster.name}</value>
@@ -201,16 +201,16 @@
         nint: Not Indexed No Transformation
    -->
    <bean
-         id="missingFullTextReindexComponent"
+         id="search.missingFullTextReindexComponent"
          class="org.alfresco.repo.node.index.MissingContentReindexComponent"
-         parent="indexRecoveryComponentBase">
+         parent="search.indexRecoveryComponentBase">
    </bean>
    
    
    <!-- This JobDetail and its associated Trigger bean will in practice not be run due to the cron
         expression used. In order to activate the missing content reindexing, the cron expression
         can be changed in the properties file or via JMX (Enterprise-only) -->
-    <bean id="missingFullTextReindexTrigger" class="org.alfresco.util.CronTriggerBean">
+    <bean id="search.missingFullTextReindexTrigger" class="org.alfresco.util.CronTriggerBean">
         <property name="jobDetail">
             <bean class="org.springframework.scheduling.quartz.JobDetailBean">
                 <property name="jobClass">
@@ -219,7 +219,7 @@
                 <property name="jobDataAsMap">
                     <map>
                         <entry key="indexRecoveryComponent">
-                            <ref bean="missingFullTextReindexComponent" />
+                            <ref bean="search.missingFullTextReindexComponent" />
                         </entry>
                         <entry key="clusterName">
                             <value>${alfresco.cluster.name}</value>

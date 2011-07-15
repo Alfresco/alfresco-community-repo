@@ -42,6 +42,12 @@
        </property>   
     </bean>  
 
+    <bean id="repositoryStartBootstrapBean" class="org.alfresco.repo.admin.RepositoryStartBootstrapBean" >
+       <property name="repositoryState">
+          <ref bean="repositoryState"/>
+       </property>
+    </bean>
+
 
     <!-- ensure that the schema is bootstrapped -->
     <bean id="schemaBootstrap" class="org.alfresco.repo.domain.schema.SchemaBootstrap" >
@@ -469,8 +475,8 @@
        <property name="contentService">
            <ref bean="contentService"/>
        </property>
-       <property name="avmSnapShotTriggeredIndexingMethodInterceptor">
-           <ref bean="avmSnapShotTriggeredIndexingMethodInterceptor"/>
+       <property name="indexConfigurationChecker">
+           <ref bean="indexConfigurationChecker"/>
         </property>
     </bean>
 
@@ -748,6 +754,12 @@
    <bean id="scheduledPersistedActionServiceBootstrap" class="org.alfresco.repo.action.scheduled.ScheduledPersistedActionServiceImpl$ScheduledPersistedActionServiceBootstrap">
        <property name="scheduledPersistedActionService" ref="scheduledPersistedActionService" />
        <property name="transactionHelper" ref="retryingTransactionHelper" />
+    </bean>
+
+    <bean id="repositoryEndBootstrapBean" class="org.alfresco.repo.admin.RepositoryEndBootstrapBean" >
+       <property name="repositoryState">
+          <ref bean="repositoryState"/>
+       </property>
     </bean>
 
     <!-- Startup Message -->

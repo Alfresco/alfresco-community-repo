@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+
+    <bean id="search.OpenCMISQueryService" class="org.alfresco.repo.search.impl.solr.SolrCMISQueryServiceImpl" >
+       
+    </bean>
+    
+    
+    
+     <bean id="search.lucene.sql.cmis.strict" class="org.alfresco.repo.search.impl.solr.SolrCMISQueryLanguage" >
+        <property name="nodeDAO">
+            <ref bean="nodeDAO" />
+        </property>
+        <property name="permissionService">
+            <ref bean="permissionService" />
+        </property>
+	    <property name="factories">
+			<list>
+			    <ref bean="search.indexerAndSearcherFactory" />
+			</list>
+        </property>
+        <property name="name">
+            <value>cmis-strict</value>
+        </property>
+    </bean>
+    
+     <bean id="search.lucene.sql.alfresco" class="org.alfresco.repo.search.impl.solr.SolrCMISQueryLanguage" >
+        <property name="nodeDAO">
+            <ref bean="nodeDAO" />
+        </property>
+        <property name="permissionService">
+            <ref bean="permissionService" />
+        </property>
+	    <property name="factories">
+			<list>
+			    <ref bean="search.indexerAndSearcherFactory" />
+			</list>
+        </property>
+        <property name="name">
+            <value>cmis-alfresco</value>
+        </property>
+    </bean>
+	
+</beans>

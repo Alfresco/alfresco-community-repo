@@ -61,9 +61,12 @@ import com.werken.saxpath.XPathReader;
  * 
  * @author andyh
  */
-public class LuceneAlfrescoXPathQueryLanguage implements LuceneQueryLanguageSPI
+public class LuceneAlfrescoXPathQueryLanguage extends AbstractLuceneQueryLanguage
 {
-   
+    public LuceneAlfrescoXPathQueryLanguage()
+    {
+        this.setName(SearchService.LANGUAGE_XPATH);
+    }
 
     public ResultSet executeQuery(SearchParameters searchParameters, ADMLuceneSearcherImpl admLuceneSearcher)
     {
@@ -100,19 +103,4 @@ public class LuceneAlfrescoXPathQueryLanguage implements LuceneQueryLanguageSPI
             throw new SearcherException("IO exception during search", e);
         }
     }
-
-    public String getName()
-    {
-        return SearchService.LANGUAGE_XPATH;
-    }
-
-    public void setFactories(List<AbstractLuceneIndexerAndSearcherFactory> factories)
-    {
-        for (AbstractLuceneIndexerAndSearcherFactory factory : factories)
-        {
-            factory.registerQueryLanguage(this);
-        }
-    }
-
-   
 }

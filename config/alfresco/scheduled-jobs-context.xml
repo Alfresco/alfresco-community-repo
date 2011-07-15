@@ -6,60 +6,8 @@
     <!-- Scheduled tasks -->
     <!--                 -->
 
-    <bean id="ftsIndexerTrigger" class="org.alfresco.util.TriggerBean">
-        <property name="jobDetail">
-            <bean id="ftsIndexerJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
-                <property name="jobClass">
-                    <value>org.alfresco.repo.search.impl.lucene.fts.FTSIndexerJob</value>
-                </property>
-                <property name="jobDataAsMap">
-                    <map>
-                        <entry key="bean">
-                            <ref bean="LuceneFullTextSearchIndexer" />
-                        </entry>
-                    </map>
-                </property>
-            </bean>
-        </property>
-        <property name="scheduler">
-            <ref bean="schedulerFactory" />
-        </property>
-        <property name="startDelayMinutes">
-            <value>1</value>
-        </property>
-        <property name="repeatIntervalMinutes">
-            <value>1</value>
-        </property>
-    </bean>
 
-    <!-- This has now been moved into the bootstrap process and is not required here -->
-    <!--
-    <bean id="indexRecoveryTrigger" class="org.alfresco.util.TriggerBean">
-        <property name="jobDetail">
-            <bean class="org.springframework.scheduling.quartz.JobDetailBean">
-                <property name="jobClass">
-                    <value>org.alfresco.repo.node.index.IndexRecoveryJob</value>
-                </property>
-                <property name="jobDataAsMap">
-                    <map>
-                        <entry key="indexRecoveryComponent">
-                            <ref bean="indexRecoveryComponent" />
-                        </entry>
-                    </map>
-                </property>
-            </bean>
-        </property>
-        <property name="scheduler">
-            <ref bean="schedulerFactory" />
-        </property>
-        <property name="startDelayMinutes">
-            <value>1</value>
-        </property>
-        <property name="repeatCount">
-            <value>0</value>
-        </property>
-    </bean>
-    -->
+
     
     <bean id="tempFileCleanerTrigger" class="org.alfresco.util.CronTriggerBean">
         <property name="jobDetail">
@@ -154,31 +102,6 @@
         </property>
         <property name="cronExpression">
             <value>0 0 21 * * ?</value>
-        </property>
-    </bean>
-
-    <bean id="indexBackupJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
-        <property name="jobClass">
-            <value>org.alfresco.repo.search.impl.lucene.AbstractLuceneIndexerAndSearcherFactory$LuceneIndexBackupJob</value>
-        </property>
-        <property name="jobDataAsMap">
-            <map>
-                <entry key="luceneIndexBackupComponent">
-                    <ref bean="luceneIndexBackupComponent" />
-                </entry>
-            </map>
-        </property>
-    </bean>
-    <bean id="indexBackupTrigger" class="org.alfresco.util.CronTriggerBean">
-        <property name="jobDetail">
-            <ref bean="indexBackupJobDetail" />
-        </property>
-        <property name="scheduler">
-            <ref bean="schedulerFactory" />
-        </property>
-        <!-- trigger at 3am each day -->
-        <property name="cronExpression">
-            <value>0 0 3 * * ?</value>
         </property>
     </bean>
 

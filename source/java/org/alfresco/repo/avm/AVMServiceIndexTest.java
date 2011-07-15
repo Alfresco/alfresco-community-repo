@@ -27,6 +27,9 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.util.TriggerBean;
+import org.alfresco.util.TriggerBeanSPI;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Test AVMService indexing
@@ -51,15 +54,16 @@ public class AVMServiceIndexTest extends AVMServiceTestBase
         //
         // override default schedule to speed up this unit test (by reducing the sleep time)
         //
+        DisposableBean dispBean = (DisposableBean)fContext.getBean("ftsIndexerTrigger");
+        InitializingBean initBean = (InitializingBean)fContext.getBean("ftsIndexerTrigger");
+        TriggerBeanSPI triggerBeanSPI = (TriggerBeanSPI)fContext.getBean("ftsIndexerTrigger");
+       
+        dispBean.destroy(); // unschedule
         
-        TriggerBean ftsIndexerTrigger = (TriggerBean)fContext.getBean("ftsIndexerTrigger");
+        triggerBeanSPI.setStartDelay(START_DELAY_MSECS);
+        triggerBeanSPI.setRepeatInterval(REPEAT_INTERVAL_MSECS);
         
-        ftsIndexerTrigger.destroy(); // unschedule
-        
-        ftsIndexerTrigger.setStartDelay(START_DELAY_MSECS);
-        ftsIndexerTrigger.setRepeatInterval(REPEAT_INTERVAL_MSECS);
-        
-        ftsIndexerTrigger.afterPropertiesSet(); // re-schedule
+        initBean.afterPropertiesSet(); // re-schedule
     }
     
     /**

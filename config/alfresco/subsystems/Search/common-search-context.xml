@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<!-- Core and miscellaneous bean definitions -->
+<beans>
+
+    <!-- SOLR Tracking   -->
+    
+    <bean id="search.solrTrackingComponent" class="org.alfresco.repo.solr.SOLRTrackingComponentImpl" init-method="init">
+        <property name="permissionService" ref="permissionService"/>
+        <property name="dictionaryService" ref="dictionaryService"/>
+        <property name="ownableService" ref="ownableService"/>
+        <property name="tenantService" ref="tenantService"/>
+        <property name="nodeDAO" ref="nodeDAO"/>
+        <property name="qnameDAO" ref="qnameDAO"/>
+        <property name="solrDAO" ref="solrDAO" />
+        <property name="dictionaryDAO" ref="dictionaryDAO" />
+        <property name="enabled">
+            <value>${search.solrTrackingSupport.enabled}</value>
+        </property>
+    </bean>
+
+    <!-- Query Register Component -->
+
+    <bean id="search.queryRegisterComponent" class="org.alfresco.repo.search.QueryRegisterComponentImpl">
+        <property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+        <property name="namespaceService">
+            <ref bean="namespaceService" />
+        </property>
+        <!-- Query collections should be loaded on demand using this component - once loaded thay are available for use -->
+    </bean>
+   
+</beans>

@@ -57,22 +57,18 @@
         </property>
     </bean>
    
-    <bean id="CMISQueryService" class="org.alfresco.cmis.search.CMISQueryServiceImpl" >
-        <property name="CMISDictionaryService">
-            <ref bean="CMISDictionaryService" />
-        </property>
-        <property name="CMISService">
-            <ref bean="CMISService" />
-        </property>
-        <property name="queryEngine">
-            <ref bean="adm.luceneQueryEngine" />
-        </property>
-        <property name="nodeService">
-            <ref bean="nodeService" />
-        </property>
-        <property name="alfrescoDictionaryService">
-            <ref bean="dictionaryService" />
-        </property>
+    <bean id="CMISQueryService" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+      <property name="sourceApplicationContextFactory">
+         <ref bean="Search" />
+      </property>
+      <property name="sourceBeanName">
+         <value>search.CMISQueryService</value>
+      </property>
+      <property name="interfaces">
+         <list>
+            <value>org.alfresco.cmis.CMISQueryService</value>
+         </list>
+      </property>
     </bean>
 
     <bean id="CMISRenditionService" class="org.alfresco.cmis.renditions.CMISRenditionServiceImpl">
@@ -140,59 +136,6 @@
         <property name="CMISMapping" ref="CMISMapping" />
         <property name="CMISDictionaryService" ref="CMISDictionaryService" />
         <property name="nodeService" ref="NodeService" />
-    </bean>
-
-    <bean id="lucene.sql.cmis.strict" class="org.alfresco.repo.search.impl.lucene.LuceneCmisStrictSqlQueryLanguage" >
-        <property name="cmisQueryService">
-            <ref bean="CMISQueryService" />
-        </property>
-        <property name="factories">
-            <list>
-                <ref bean="admLuceneIndexerAndSearcherFactory" />
-                <ref bean="admLuceneUnIndexedIndexerAndSearcherFactory" />
-                <ref bean="avmLuceneIndexerAndSearcherFactory" />
-            </list>
-        </property>
-    </bean>
-
-    <bean id="lucene.sql.alfresco" class="org.alfresco.repo.search.impl.lucene.LuceneAlfrescoSqlQueryLanguage">
-        <property name="cmisQueryService">
-            <ref bean="CMISQueryService" />
-        </property>
-        <property name="factories">
-            <list>
-                <ref bean="admLuceneIndexerAndSearcherFactory" />
-                <ref bean="admLuceneUnIndexedIndexerAndSearcherFactory" />
-                <ref bean="avmLuceneIndexerAndSearcherFactory" />
-            </list>
-        </property>
-    </bean>
-	
-   
-    <bean id="adm.luceneQueryEngine" class="org.springframework.aop.framework.ProxyFactoryBean">
-        <property name="proxyInterfaces">
-            <value>org.alfresco.repo.search.impl.querymodel.QueryEngine</value>
-        </property>
-        <property name="target">
-            <ref bean="adm.luceneQueryEngineImpl"/>
-        </property>
-        <property name="interceptorNames">
-            <list>
-                <idref bean="adm.luceneQueryEngineSecurity"/>
-            </list>
-        </property>
-    </bean>
-   
-   <bean id="adm.luceneQueryEngineSecurity" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
-        <property name="authenticationManager"><ref bean="authenticationManager"/></property>
-        <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
-        <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>
-        <property name="objectDefinitionSource">
-            <value>
-               org.alfresco.repo.search.impl.querymodel.QueryEngine.executeQuery=ACL_ALLOW,AFTER_ACL_NODE.sys:base.Read
-               org.alfresco.repo.search.impl.querymodel.QueryEngine.getQueryModelFactory=ACL_ALLOW
-            </value>
-        </property>
     </bean>
    
 </beans>

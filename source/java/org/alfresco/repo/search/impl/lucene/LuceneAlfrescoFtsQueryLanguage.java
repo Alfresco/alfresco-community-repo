@@ -23,6 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.search.IndexerAndSearcher;
 import org.alfresco.repo.search.impl.parsers.AlfrescoFunctionEvaluationContext;
 import org.alfresco.repo.search.impl.parsers.FTSParser;
 import org.alfresco.repo.search.impl.parsers.FTSQueryParser;
@@ -52,10 +53,15 @@ import org.alfresco.service.cmr.search.SearchParameters.SortDefinition.SortType;
  * 
  * @author andyh
  */
-public class LuceneAlfrescoFtsQueryLanguage implements LuceneQueryLanguageSPI
+public class LuceneAlfrescoFtsQueryLanguage extends AbstractLuceneQueryLanguage
 {
     QueryEngine queryEngine;
 
+    public LuceneAlfrescoFtsQueryLanguage()
+    {
+        this.setName(SearchService.LANGUAGE_FTS_ALFRESCO);
+    }
+    
     /**
      * Set the query engine
      * 
@@ -111,19 +117,6 @@ public class LuceneAlfrescoFtsQueryLanguage implements LuceneQueryLanguageSPI
         QueryEngineResults results = queryEngine.executeQuery(query, options, context);
         ResultSet resultSet = results.getResults().values().iterator().next();
         return resultSet;
-    }
-
-    public String getName()
-    {
-        return SearchService.LANGUAGE_FTS_ALFRESCO;
-    }
-
-    public void setFactories(List<AbstractLuceneIndexerAndSearcherFactory> factories)
-    {
-        for (AbstractLuceneIndexerAndSearcherFactory factory : factories)
-        {
-            factory.registerQueryLanguage(this);
-        }
     }
 
     public List<Ordering> buildOrderings(QueryModelFactory factory, SearchParameters searchParameters)

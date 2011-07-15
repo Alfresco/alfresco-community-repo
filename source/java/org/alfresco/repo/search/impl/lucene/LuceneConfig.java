@@ -268,4 +268,199 @@ public interface LuceneConfig
      */
     public boolean getFairLocking();
 
+    /**
+     * @param maxAtomicTransformationTime
+     */
+    void setMaxAtomicTransformationTime(long maxAtomicTransformationTime);
+
+    /**
+     * @return
+     */
+    long getMaxTransformationTime();
+
+    /**
+     * @param indexerBatchSize
+     */
+    void setIndexerBatchSize(int indexerBatchSize);
+
+    /**
+     * @param queryMaxClauses
+     */
+    void setQueryMaxClauses(int queryMaxClauses);
+
+    /**
+     * @param timeout
+     */
+    void setWriteLockTimeout(long timeout);
+
+    /**
+     * @param timeout
+     */
+    void setCommitLockTimeout(long timeout);
+
+    /**
+     * @return
+     */
+    long getCommitLockTimeout();
+
+    /**
+     * @return
+     */
+    long getWriteLockTimeout();
+
+    /**
+     * @param time
+     */
+    void setLockPollInterval(long time);
+
+    /**
+     * @param indexerMaxFieldLength
+     */
+    void setIndexerMaxFieldLength(int indexerMaxFieldLength);
+
+    /**
+     * @param mode
+     */
+    void setDefaultMLIndexAnalysisMode(MLAnalysisMode mode);
+
+    /**
+     * @param mode
+     */
+    void setDefaultMLSearchAnalysisMode(MLAnalysisMode mode);
+
+    /**
+     * @param maxDocIdCacheSize
+     */
+    void setMaxDocIdCacheSize(int maxDocIdCacheSize);
+
+    /**
+     * @param maxDocsForInMemoryMerge
+     */
+    void setMaxDocsForInMemoryMerge(int maxDocsForInMemoryMerge);
+
+    /**
+     * @param maxDocumentCacheSize
+     */
+    void setMaxDocumentCacheSize(int maxDocumentCacheSize);
+
+    /**
+     * @param maxIsCategoryCacheSize
+     */
+    void setMaxIsCategoryCacheSize(int maxIsCategoryCacheSize);
+
+    /**
+     * @param maxLinkAspectCacheSize
+     */
+    void setMaxLinkAspectCacheSize(int maxLinkAspectCacheSize);
+
+    /**
+     * @param maxParentCacheSize
+     */
+    void setMaxParentCacheSize(int maxParentCacheSize);
+
+    /**
+     * @param maxPathCacheSize
+     */
+    void setMaxPathCacheSize(int maxPathCacheSize);
+
+    /**
+     * @param maxTypeCacheSize
+     */
+    void setMaxTypeCacheSize(int maxTypeCacheSize);
+
+    /**
+     * @param mergerMaxMergeDocs
+     */
+    void setMergerMaxMergeDocs(int mergerMaxMergeDocs);
+
+    /**
+     * @param mergerMergeFactor
+     */
+    void setMergerMergeFactor(int mergerMergeFactor);
+
+    /**
+     * @param mergerMaxBufferedDocs
+     */
+    void setMergerMaxBufferedDocs(int mergerMaxBufferedDocs);
+
+    /**
+     * @param mergerTargetIndexCount
+     */
+    void setMergerTargetIndexCount(int mergerTargetIndexCount);
+
+    /**
+     * @param mergerTargetOverlayCount
+     */
+    void setMergerTargetOverlayCount(int mergerTargetOverlayCount);
+
+    /**
+     * @param mergerTargetOverlaysBlockingFactor
+     */
+    void setMergerTargetOverlaysBlockingFactor(int mergerTargetOverlaysBlockingFactor);
+
+    /**
+     * @param fairLocking
+     */
+    void setFairLocking(boolean fairLocking);
+
+    /**
+     * @param termIndexInterval
+     */
+    void setTermIndexInterval(int termIndexInterval);
+
+    /**
+     * @param useNioMemoryMapping
+     */
+    void setUseNioMemoryMapping(boolean useNioMemoryMapping);
+
+    /**
+     * @param writerMaxMergeDocs
+     */
+    void setWriterMaxMergeDocs(int writerMaxMergeDocs);
+
+    /**
+     * @param writerMergeFactor
+     */
+    void setWriterMergeFactor(int writerMergeFactor);
+
+    /**
+     * @param writerMaxBufferedDocs
+     */
+    void setWriterMaxBufferedDocs(int writerMaxBufferedDocs);
+
+    /**
+     * @param cacheEnabled
+     */
+    void setCacheEnabled(boolean cacheEnabled);
+
+    /**
+     * @param postSortDateTime
+     */
+    void setPostSortDateTime(boolean postSortDateTime);
+
+    /**
+     * @param maxDocsForInMemoryIndex
+     */
+    void setMaxDocsForInMemoryIndex(int maxDocsForInMemoryIndex);
+
+    /**
+     * @param maxRamInMbForInMemoryMerge
+     */
+    void setMaxRamInMbForInMemoryMerge(double maxRamInMbForInMemoryMerge);
+
+    /**
+     * @param maxRamInMbForInMemoryIndex
+     */
+    void setMaxRamInMbForInMemoryIndex(double maxRamInMbForInMemoryIndex);
+
+    /**
+     * @param mergerRamBufferSizeMb
+     */
+    void setMergerRamBufferSizeMb(double mergerRamBufferSizeMb);
+
+    /**
+     * @param writerRamBufferSizeMb
+     */
+    void setWriterRamBufferSizeMb(double writerRamBufferSizeMb);
+
 }

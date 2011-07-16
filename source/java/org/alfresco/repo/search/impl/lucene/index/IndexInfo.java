@@ -139,37 +139,51 @@ import com.werken.saxpath.XPathReader;
  */
 public class IndexInfo implements IndexMonitor
 {
-    public static void destroy()
+    public static synchronized void destroy()
     {
         timer.cancel();
         timer = new Timer(true);
         for(IndexInfo indexInfo : indexInfos.values())
         {
-            try
+           indexInfo.destroyInstance();
+        }
+        indexInfos.clear();
+        ReferenceCountingReadOnlyIndexReaderFactory.destroy();
+    }
+    
+    public void destroyInstance()
+    {
+        getWriteLock();
+        try
+        {
+            if(mainIndexReader != null)
             {
-                ((ReferenceCounting) indexInfo.mainIndexReader).setInvalidForReuse();
-            }
-            catch (IOException e)
-            {
-                // OK filed to close
-            }
-            indexInfo.mainIndexReader = null;
-
-            for(IndexReader reader : indexInfo.referenceCountingReadOnlyIndexReaders.values())
-            {
-                ReferenceCounting referenceCounting = (ReferenceCounting) reader;
                 try
                 {
-                    referenceCounting.setInvalidForReuse();
+                    ((ReferenceCounting) mainIndexReader).setInvalidForReuse();
                 }
                 catch (IOException e)
                 {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    // OK filed to close
+                }
+                mainIndexReader = null;
+
+                for(IndexReader reader : referenceCountingReadOnlyIndexReaders.values())
+                {
+                    ReferenceCounting referenceCounting = (ReferenceCounting) reader;
+                    try
+                    {
+                        referenceCounting.setInvalidForReuse();
+                    }
+                    catch (IOException e)
+                    {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
                 }
             }
 
-            for(IndexReader reader : indexInfo.indexReaders.values())
+            for(IndexReader reader : indexReaders.values())
             {
                 try
                 {
@@ -181,8 +195,9 @@ public class IndexInfo implements IndexMonitor
                     e.printStackTrace();
                 }
             }
+            indexReaders.clear();
 
-            for(IndexWriter writer : indexInfo.indexWriters.values())
+            for(IndexWriter writer : indexWriters.values())
             {
                 try
                 {
@@ -199,9 +214,41 @@ public class IndexInfo implements IndexMonitor
                     e.printStackTrace();
                 }
             }
+            indexWriters.clear();
+            
+            if(indexInfoRAF != null)
+            {
+                try
+                {
+                    indexInfoRAF.close();
+                }
+                catch (IOException e)
+                {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+            
+            if(indexInfoBackupRAF != null)
+            {
+                try
+                {
+                    indexInfoBackupRAF.close();
+                }
+                catch (IOException e)
+                {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+            
+            // TODO: should set some running flag .... to abort ungoing stuff
+            // at the moment it will die ungracefully ....
         }
-        indexInfos.clear();
-        ReferenceCountingReadOnlyIndexReaderFactory.destroy();
+        finally
+        {
+            releaseWriteLock();
+        }
     }
     
     public static final String MAIN_READER = "MainReader";

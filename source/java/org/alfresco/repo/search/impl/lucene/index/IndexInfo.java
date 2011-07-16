@@ -72,6 +72,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.FilterIndexReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
@@ -138,6 +139,71 @@ import com.werken.saxpath.XPathReader;
  */
 public class IndexInfo implements IndexMonitor
 {
+    public static void destroy()
+    {
+        timer.cancel();
+        timer = new Timer(true);
+        for(IndexInfo indexInfo : indexInfos.values())
+        {
+            try
+            {
+                ((ReferenceCounting) indexInfo.mainIndexReader).setInvalidForReuse();
+            }
+            catch (IOException e)
+            {
+                // OK filed to close
+            }
+            indexInfo.mainIndexReader = null;
+
+            for(IndexReader reader : indexInfo.referenceCountingReadOnlyIndexReaders.values())
+            {
+                ReferenceCounting referenceCounting = (ReferenceCounting) reader;
+                try
+                {
+                    referenceCounting.setInvalidForReuse();
+                }
+                catch (IOException e)
+                {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+
+            for(IndexReader reader : indexInfo.indexReaders.values())
+            {
+                try
+                {
+                    reader.close();
+                }
+                catch (IOException e)
+                {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+
+            for(IndexWriter writer : indexInfo.indexWriters.values())
+            {
+                try
+                {
+                    writer.close();
+                }
+                catch (CorruptIndexException e)
+                {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                catch (IOException e)
+                {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
+        indexInfos.clear();
+        ReferenceCountingReadOnlyIndexReaderFactory.destroy();
+    }
+    
     public static final String MAIN_READER = "MainReader";
 
     private static Timer timer = new Timer(true);

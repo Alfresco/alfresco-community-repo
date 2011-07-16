@@ -1388,6 +1388,25 @@
          </properties>
       </aspect>
       
+        
+      <!--                  -->
+      <!-- Indexing control -->
+      <!--                  -->
+      
+      <aspect name="cm:indexControl">
+         <title>Index Control</title>
+         <properties>
+            <property name="cm:isIndexed">
+               <title>Is indexed</title>
+               <type>d:boolean</type>
+            </property>
+            <property name="cm:isContentIndexed">
+               <title>Is content indexed</title>
+               <type>d:boolean</type>
+            </property>
+         </properties>
+      </aspect>
+      
       <!--             -->
       <!--  DEPRECATED -->
       <!--             -->

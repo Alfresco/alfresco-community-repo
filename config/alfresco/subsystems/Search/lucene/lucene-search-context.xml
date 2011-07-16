@@ -291,6 +291,11 @@
         <property name="lockPollInterval">
             <value>${lucene.lock.poll.interval}</value>
         </property>
+        <property name="contentIndexingEnabled">
+            <value>${lucene.indexer.contentIndexingEnabled}</value>
+        </property>
+        
+        
     </bean>
     
     <!-- Indexer and searchers for lucene -->

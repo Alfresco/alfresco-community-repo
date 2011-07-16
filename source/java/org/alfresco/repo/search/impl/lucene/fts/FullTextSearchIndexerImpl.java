@@ -32,6 +32,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -41,7 +42,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * @author andyh
  *
  */
-public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearchIndexer
+public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearchIndexer, DisposableBean
 {
     private static Log s_logger = LogFactory.getLog(FullTextSearchIndexerImpl.class);
     
@@ -310,6 +311,17 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
     public void setBatchSize(int batchSzie)
     {
         this.batchSize = batchSzie;
+    }
+
+    /* (non-Javadoc)
+     * @see org.springframework.beans.factory.DisposableBean#destroy()
+     */
+    @Override
+    public void destroy() throws Exception
+    {
+        pause();
+        requiresIndex.clear();
+        indexing.clear();
     }
     
     

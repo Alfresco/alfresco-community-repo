@@ -43,4 +43,13 @@
        </property>
     </bean>
     
+    <bean id="search.fullTextSearchIndexerBootstrap" class="org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexerBootstrapBean" >
+       <property name="nodeService">
+           <ref bean="nodeService"/>
+       </property>
+       <property name="fullTextSearchIndexer">
+           <ref bean="search.luceneFullTextSearchIndexer"/>
+       </property>
+    </bean>
+    
 </beans>

@@ -67,6 +67,7 @@ import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -80,7 +81,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * @author andyh
  */
 
-public abstract class AbstractLuceneIndexerAndSearcherFactory extends AbstractIndexerAndSearcher implements LuceneIndexerAndSearcher, XAResource, ApplicationContextAware
+public abstract class AbstractLuceneIndexerAndSearcherFactory extends AbstractIndexerAndSearcher implements LuceneIndexerAndSearcher, XAResource, ApplicationContextAware, DisposableBean
 {
     private static Log logger = LogFactory.getLog(AbstractLuceneIndexerAndSearcherFactory.class);
 
@@ -2172,4 +2173,12 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory extends AbstractIn
             throw new IOException("Unable to delete directory " + directory);
         }
     }
+
+    @Override
+    public void destroy() throws Exception
+    {
+        IndexInfo.destroy();
+    }
+    
+    
 }

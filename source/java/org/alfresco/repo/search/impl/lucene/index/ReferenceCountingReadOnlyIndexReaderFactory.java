@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Timer;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -65,6 +66,11 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
         return rc;
     }
 
+    public static void destroy()
+    {
+       log.clear();
+    }
+    
     public static String getState(String id)
     {
         if (s_logger.isDebugEnabled())

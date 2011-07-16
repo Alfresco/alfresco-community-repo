@@ -463,4 +463,20 @@ public interface LuceneConfig
      */
     void setWriterRamBufferSizeMb(double writerRamBufferSizeMb);
 
+    
+    /**
+     * 
+     * @return if content indexing is enable.
+     */
+    boolean isContentIndexingEnabled();
+    
+    /**
+     * Enable/Disable the indexing of content 
+     * Content is not indexed and FTS disabled
+     * When disabled, documents are marked as requiring FTS indexing.
+     * When enabled the normal FTS process will catch up with content that was not indexed.
+     * @param contentIndexingEnabled
+     */
+            
+    void setContentIndexingEnabled(boolean contentIndexingEnabled);
 }

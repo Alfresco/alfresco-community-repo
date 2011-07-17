@@ -363,7 +363,7 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
         
         // Check Status has changed to COMPLETE
         eventStatus = nodeService.getProperty(eventNode, PublishingModel.PROP_PUBLISHING_EVENT_STATUS);
-        assertEquals(PublishingEvent.Status.COMPLETE.name(), eventStatus);
+        assertEquals(PublishingEvent.Status.COMPLETED.name(), eventStatus);
 
         return eventNode;
     }

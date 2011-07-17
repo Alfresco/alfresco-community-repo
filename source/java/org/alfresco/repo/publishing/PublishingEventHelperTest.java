@@ -129,7 +129,7 @@ public class PublishingEventHelperTest
         assertNull(result);
         
         String comment = "The comment";
-        Status status = Status.COMPLETE;
+        Status status = Status.COMPLETED;
         Date modified= new Date();
         Date created = new Date(modified.getTime()-3600000);
         String creatorName = "The creator";

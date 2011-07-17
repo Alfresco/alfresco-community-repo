@@ -33,8 +33,4 @@ public interface FacebookPublishingModel
     public static final QName TYPE_DELIVERY_CHANNEL = QName.createQName(NAMESPACE, "DeliveryChannel");
 
     public static final QName ASPECT_DELIVERY_CHANNEL = QName.createQName(NAMESPACE, "DeliveryChannelAspect");
-
-    public static final QName ASPECT_ASSET = QName.createQName(NAMESPACE, "AssetAspect");
-    public static final QName PROP_ASSET_ID = QName.createQName(NAMESPACE, "assetId");
-    public static final QName PROP_ASSET_URL = QName.createQName(NAMESPACE, "assetUrl");
 }

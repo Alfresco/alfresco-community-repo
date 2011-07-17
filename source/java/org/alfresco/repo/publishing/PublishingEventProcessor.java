@@ -83,7 +83,7 @@ public class PublishingEventProcessor
             {
                 publishEvent(channel, event);
                 updateStatus(channel, environment, event.getStatusUpdate());
-                String completedStatus = PublishingEvent.Status.COMPLETE.name();
+                String completedStatus = PublishingEvent.Status.COMPLETED.name();
                 nodeService.setProperty(eventNode, PublishingModel.PROP_PUBLISHING_EVENT_STATUS, completedStatus);
             }
         }

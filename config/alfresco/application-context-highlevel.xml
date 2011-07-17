@@ -28,5 +28,6 @@
     <import resource="classpath*:alfresco/twitter-publishing-context.xml" />
     <import resource="classpath*:alfresco/slideshare-publishing-context.xml" />
     <import resource="classpath*:alfresco/flickr-publishing-context.xml" />
+    <import resource="classpath*:alfresco/facebook-publishing-context.xml" />
     <import resource="classpath*:alfresco/domain/*-context.xml" />
 </beans>

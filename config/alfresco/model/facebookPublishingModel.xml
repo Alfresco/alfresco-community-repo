@@ -32,22 +32,7 @@
       <aspect name="facebook:DeliveryChannelAspect">
          <title>Facebook Delivery Channel Aspect</title>
          <description>Applied to a node that represents a Facebook delivery channel</description>
-         <parent>pub:UserPasswordDeliveryChannelAspect</parent>
-      </aspect>
-
-      <aspect name="facebook:AssetAspect">
-         <title>Facebook Asset</title>
-         <description>Applied to a node that has been published to Facebook</description>
-         <properties>
-            <property name="facebook:assetId">
-               <title>Facebook Asset Id</title>
-               <type>d:text</type>
-           </property>
-           <property name="facebook:assetUrl">
-              <title>Facebook Asset URL</title>
-              <type>d:text</type>
-           </property>
-        </properties>
+         <parent>pub:OAuth2DeliveryChannelAspect</parent>
       </aspect>
    </aspects>
 </model>

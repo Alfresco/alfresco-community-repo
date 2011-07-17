@@ -321,6 +321,18 @@
             </properties>
         </aspect>
 
+        <aspect name="pub:OAuth2DeliveryChannelAspect">
+            <title>OAuth2 Authenticated Delivery Channel</title>
+            <description>Applied to delivery channels that use OAuth2</description>
+            <properties>
+                <property name="pub:oauth2Token">
+                    <title>The value of the OAuth2 token</title>
+                    <type>d:text</type>
+                    <multiple>false</multiple>
+                </property>
+            </properties>
+        </aspect>
+
         <aspect name="pub:UserPasswordDeliveryChannelAspect">
             <title>Username and Password Authenticated Delivery Channel</title>
             <description>Applied to delivery channels that use OAuth1</description>
@@ -338,5 +350,19 @@
             </properties>
         </aspect>
 
+      <aspect name="pub:AssetAspect">
+         <title>Published Asset</title>
+         <description>Applied to a node that has been published to an external delivery service</description>
+         <properties>
+            <property name="pub:assetId">
+               <title>Published Asset Id</title>
+               <type>d:text</type>
+           </property>
+           <property name="pub:assetUrl">
+              <title>Published Asset URL</title>
+              <type>d:text</type>
+           </property>
+        </properties>
+      </aspect>
     </aspects>
 </model>

@@ -45,6 +45,8 @@ public interface PublishingModel
     public static final QName ASPECT_CHANNEL_INFO= QName.createQName(NAMESPACE, "channelInfo");
     public static final QName ASPECT_PUBLISHED = QName.createQName(NAMESPACE, "published");
     public static final QName ASPECT_OAUTH1_DELIVERY_CHANNEL = QName.createQName(NAMESPACE, "OAuth1DeliveryChannelAspect");
+    public static final QName ASPECT_OAUTH2_DELIVERY_CHANNEL = QName.createQName(NAMESPACE, "OAuth2DeliveryChannelAspect");
+    public static final QName ASPECT_ASSET = QName.createQName(NAMESPACE, "AssetAspect");
 
     public static final QName PROP_CHANNEL = QName.createQName(NAMESPACE, "channel");
     public static final QName PROP_CHANNEL_TYPE = QName.createQName(NAMESPACE, "channelType");
@@ -66,6 +68,9 @@ public interface PublishingModel
     public static final QName PROP_OAUTH1_TOKEN_SECRET = QName.createQName(NAMESPACE, "oauth1TokenSecret");
     public static final QName PROP_CHANNEL_USERNAME = QName.createQName(NAMESPACE, "channelUsername");
     public static final QName PROP_CHANNEL_PASSWORD = QName.createQName(NAMESPACE, "channelPassword");
+    public static final QName PROP_OAUTH2_TOKEN = QName.createQName(NAMESPACE, "oauth2Token");
+    public static final QName PROP_ASSET_ID = QName.createQName(NAMESPACE, "assetId");
+    public static final QName PROP_ASSET_URL = QName.createQName(NAMESPACE, "assetUrl");
     
     
     // Publishing Connection Properties

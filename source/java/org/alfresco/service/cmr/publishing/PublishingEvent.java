@@ -29,7 +29,7 @@ import java.util.Date;
  */
 public interface PublishingEvent
 {
-    enum Status {SCHEDULED, IN_PROGRESS, CANCEL_REQUESTED, COMPLETE, FAILED}
+    enum Status {SCHEDULED, IN_PROGRESS, CANCEL_REQUESTED, COMPLETED, FAILED}
     
     String getId();
     

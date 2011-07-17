@@ -20,6 +20,7 @@ package org.alfresco.repo.publishing.facebook;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -27,34 +28,31 @@ import org.alfresco.repo.publishing.AbstractChannelType;
 import org.alfresco.repo.publishing.PublishingModel;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.social.connect.Connection;
 import org.springframework.social.facebook.api.Facebook;
-import org.springframework.social.oauth1.AuthorizedRequestToken;
-import org.springframework.social.oauth1.OAuth1Operations;
-import org.springframework.social.oauth1.OAuth1Parameters;
-import org.springframework.social.oauth1.OAuthToken;
+import org.springframework.social.oauth2.AccessGrant;
 import org.springframework.social.oauth2.GrantType;
 import org.springframework.social.oauth2.OAuth2Operations;
 import org.springframework.social.oauth2.OAuth2Parameters;
-import org.springframework.social.twitter.api.Twitter;
 
 public class FacebookChannelType extends AbstractChannelType
 {
     public final static String ID = "facebook";
-    private NodeService nodeService;
+    public final static String DEFAULT_REDIRECT_URI = "http://cognite.net";
+
     private FacebookPublishingHelper publishingHelper;
-    
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
+    private String redirectUri = DEFAULT_REDIRECT_URI;
 
     public void setPublishingHelper(FacebookPublishingHelper facebookPublishingHelper)
     {
         this.publishingHelper = facebookPublishingHelper;
+    }
+
+    public void setRedirectUri(String redirectUri)
+    {
+        this.redirectUri = redirectUri;
     }
 
     @Override
@@ -119,14 +117,9 @@ public class FacebookChannelType extends AbstractChannelType
     @Override
     public String getNodeUrl(NodeRef node)
     {
-        String url = null;
-        if (node != null && nodeService.exists(node) && nodeService.hasAspect(node, FacebookPublishingModel.ASPECT_ASSET))
-        {
-            url = (String)nodeService.getProperty(node, FacebookPublishingModel.PROP_ASSET_URL);
-        }
-        return url;
+        return null;
     }
-    
+
     @Override
     public String getAuthorisationUrl(Channel channel, String callbackUrl)
     {
@@ -136,33 +129,42 @@ public class FacebookChannelType extends AbstractChannelType
         {
             throw new IllegalArgumentException("Invalid channel type: " + channel.getChannelType().getId());
         }
-        
+
+        NodeRef channelRef = channel.getNodeRef();
+        StringBuilder authStateBuilder = new StringBuilder(channelRef.getStoreRef().getProtocol()).append('.').append(
+                channelRef.getStoreRef().getIdentifier()).append('.').append(channelRef.getId());
         OAuth2Operations oauthOperations = publishingHelper.getConnectionFactory().getOAuthOperations();
-        return oauthOperations.buildAuthorizeUrl(GrantType.AUTHORIZATION_CODE, new OAuth2Parameters(callbackUrl));
+        OAuth2Parameters params = new OAuth2Parameters(redirectUri,
+                "publish_stream,offline_access,user_photos,user_videos", authStateBuilder.toString(), null);
+        return oauthOperations.buildAuthorizeUrl(GrantType.IMPLICIT_GRANT, params);
     }
-    
+
     @Override
     public boolean acceptAuthorisationCallback(Channel channel, Map<String, String[]> callbackHeaders,
             Map<String, String[]> callbackParams)
     {
         boolean authorised = false;
-        //FIXME: BJR: 20110708: Write this.
-//        String[] verifier = callbackParams.get("oauth_verifier");
-//        if (verifier != null)
-//        {
-//            OAuth2Operations oauthOperations = publishingHelper.getConnectionFactory().getOAuthOperations();
-//            NodeRef channelNodeRef = channel.getNodeRef();
-//
-//            Map<QName, Serializable> props = nodeService.getProperties(channelNodeRef);
-//            String tokenValue = (String) props.get(PublishingModel.PROP_OAUTH1_TOKEN_VALUE);
-//            String tokenSecret = (String) props.get(PublishingModel.PROP_OAUTH1_TOKEN_SECRET);
-//            OAuthToken token = new OAuthToken(tokenValue, tokenSecret);
-//            OAuthToken accessToken = oauthOperations.exchangeForAccessToken(new AuthorizedRequestToken(token, verifier[0]), null);
-//            nodeService.setProperty(channelNodeRef, PublishingModel.PROP_OAUTH1_TOKEN_VALUE, accessToken.getValue());
-//            nodeService.setProperty(channelNodeRef, PublishingModel.PROP_OAUTH1_TOKEN_SECRET, accessToken.getSecret());
-//            
-//            authorised = true;
-//        }
+        
+        String accessToken = null;
+        if (callbackParams.containsKey("access_token"))
+        {
+            //We have been given the access token directly.
+            accessToken = callbackParams.get("access_token")[0];
+        }
+        else if (callbackParams.containsKey("code"))
+        {
+            //We have been passed an authorisation code that needs to be exchanged for a token
+            OAuth2Operations oauthOps = publishingHelper.getConnectionFactory().getOAuthOperations();
+            AccessGrant grant = oauthOps.exchangeForAccess(callbackParams.get("code")[0], redirectUri, null);
+            accessToken = grant.getAccessToken();
+        }
+        if (accessToken != null)
+        {
+            Map<QName,Serializable> channelProps = new HashMap<QName, Serializable>();
+            channelProps.put(PublishingModel.PROP_OAUTH2_TOKEN, accessToken);
+            getChannelService().updateChannel(channel, channelProps);
+            authorised = true;
+        }
         return authorised;
     }
 }

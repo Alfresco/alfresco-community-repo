@@ -52,13 +52,12 @@ public class FacebookPublishingHelper
         if (nodeService.exists(channelNode)
                 && nodeService.hasAspect(channelNode, FacebookPublishingModel.ASPECT_DELIVERY_CHANNEL))
         {
-            String tokenValue = (String) nodeService.getProperty(channelNode, PublishingModel.PROP_OAUTH1_TOKEN_VALUE);
-            String tokenSecret = (String) nodeService.getProperty(channelNode, PublishingModel.PROP_OAUTH1_TOKEN_SECRET);
+            String tokenValue = (String) nodeService.getProperty(channelNode, PublishingModel.PROP_OAUTH2_TOKEN);
             Boolean danceComplete = (Boolean) nodeService.getProperty(channelNode, PublishingModel.PROP_AUTHORISATION_COMPLETE);
             
             if (danceComplete)
             {
-                AccessGrant token = new AccessGrant("   ");
+                AccessGrant token = new AccessGrant(tokenValue);
                 connection = connectionFactory.createConnection(token);
             }
         }

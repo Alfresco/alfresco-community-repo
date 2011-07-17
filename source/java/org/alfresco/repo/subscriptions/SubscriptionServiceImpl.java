@@ -515,7 +515,7 @@ public class SubscriptionServiceImpl implements SubscriptionService
         mail.setParameterValue(MailActionExecuter.PARAM_TEMPLATE, templateNodeRef);
         mail.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, (Serializable) model);
 
-        actionService.executeAction(mail, null);
+        actionService.executeAction(mail, null, false, true);
     }
 
     /**

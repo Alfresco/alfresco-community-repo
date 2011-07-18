@@ -1,17 +1,20 @@
 /*
- * Copyright 2010 the original author or authors.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This file is part of Alfresco
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
 package org.alfresco.repo.publishing.flickr.springsocial.api.impl;
 
@@ -31,7 +34,9 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 /**
- * <p>This is the central class for interacting with Facebook.</p>
+ * <p>
+ * This is the central class for interacting with Facebook.
+ * </p>
  * <p>
  * There are some operations, such as searching, that do not require OAuth
  * authentication. In those cases, you may use a {@link FlickrTemplate} that is
@@ -39,65 +44,81 @@ import org.springframework.util.MultiValueMap;
  * Attempts to perform secured operations through such an instance, however,
  * will result in {@link NotAuthorizedException} being thrown.
  * </p>
+ * 
  * @author Craig Walls
  */
-public class FlickrTemplate extends AbstractOAuth1ApiBinding implements Flickr {
+public class FlickrTemplate extends AbstractOAuth1ApiBinding implements Flickr
+{
     private final String REST_ENDPOINT = "http://api.flickr.com/services/rest/";
     private String consumerKey;
-    
-	private MediaOperations mediaOperations;
 
-	/**
-	 * Create a new instance of FacebookTemplate.
-	 * This constructor creates a new FacebookTemplate able to perform unauthenticated operations against Facebook's Graph API.
-	 * Some operations do not require OAuth authentication. 
-	 * For example, retrieving a specified user's profile or feed does not require authentication (although the data returned will be limited to what is publicly available). 
-	 * A FacebookTemplate created with this constructor will support those operations.
-	 * Those operations requiring authentication will throw {@link NotAuthorizedException}.
-	 */
-	public FlickrTemplate() {
-		initialize();		
-	}
+    private MediaOperations mediaOperations;
 
-	/**
-	 * Create a new instance of FacebookTemplate.
-	 * This constructor creates the FacebookTemplate using a given access token.
-	 * @param accessToken An access token given by Facebook after a successful OAuth 2 authentication (or through Facebook's JS library).
-	 */
-	public FlickrTemplate(String consumerKey, String consumerSecret, String accessToken, String accessTokenSecret) {
-		super(consumerKey, consumerSecret, accessToken, accessTokenSecret);
-		this.consumerKey = consumerKey;
-		initialize();
-	}
+    /**
+     * Create a new instance of FacebookTemplate. This constructor creates a new
+     * FacebookTemplate able to perform unauthenticated operations against
+     * Facebook's Graph API. Some operations do not require OAuth
+     * authentication. For example, retrieving a specified user's profile or
+     * feed does not require authentication (although the data returned will be
+     * limited to what is publicly available). A FacebookTemplate created with
+     * this constructor will support those operations. Those operations
+     * requiring authentication will throw {@link NotAuthorizedException}.
+     */
+    public FlickrTemplate()
+    {
+        initialize();
+    }
 
-	private void initSubApis() {
-		mediaOperations = new MediaTemplate(consumerKey, getRestTemplate(), isAuthorized());
-	}
-	
-	@Override
-	public void setRequestFactory(ClientHttpRequestFactory requestFactory) {
-		// Wrap the request factory with a BufferingClientHttpRequestFactory so that the error handler can do repeat reads on the response.getBody()
-		super.setRequestFactory(ClientHttpRequestFactorySelector.bufferRequests(requestFactory));
-	}
+    /**
+     * Create a new instance of FacebookTemplate. This constructor creates the
+     * FacebookTemplate using a given access token.
+     * 
+     * @param accessToken
+     *            An access token given by Facebook after a successful OAuth 2
+     *            authentication (or through Facebook's JS library).
+     */
+    public FlickrTemplate(String consumerKey, String consumerSecret, String accessToken, String accessTokenSecret)
+    {
+        super(consumerKey, consumerSecret, accessToken, accessTokenSecret);
+        this.consumerKey = consumerKey;
+        initialize();
+    }
 
-	public MediaOperations mediaOperations() {
-		return mediaOperations;
-	}
-	
-	@Override
-	protected List<HttpMessageConverter<?>> getMessageConverters() {
-		List<HttpMessageConverter<?>> messageConverters = super.getMessageConverters();
-		messageConverters.add(new ByteArrayHttpMessageConverter());
-		return messageConverters;
-	}
-	
-	// private helpers
-	private void initialize() {
-		getRestTemplate().setErrorHandler(new FlickrErrorHandler());
-		// Wrap the request factory with a BufferingClientHttpRequestFactory so that the error handler can do repeat reads on the response.getBody()
-		super.setRequestFactory(ClientHttpRequestFactorySelector.bufferRequests(getRestTemplate().getRequestFactory()));
-		initSubApis();
-	}
+    private void initSubApis()
+    {
+        mediaOperations = new MediaTemplate(consumerKey, getRestTemplate(), isAuthorized());
+    }
+
+    @Override
+    public void setRequestFactory(ClientHttpRequestFactory requestFactory)
+    {
+        // Wrap the request factory with a BufferingClientHttpRequestFactory so
+        // that the error handler can do repeat reads on the response.getBody()
+        super.setRequestFactory(ClientHttpRequestFactorySelector.bufferRequests(requestFactory));
+    }
+
+    public MediaOperations mediaOperations()
+    {
+        return mediaOperations;
+    }
+
+    @Override
+    protected List<HttpMessageConverter<?>> getMessageConverters()
+    {
+        List<HttpMessageConverter<?>> messageConverters = super.getMessageConverters();
+        messageConverters.add(new ByteArrayHttpMessageConverter());
+        return messageConverters;
+    }
+
+    // private helpers
+    private void initialize()
+    {
+        getRestTemplate().setErrorHandler(new FlickrErrorHandler());
+        // Wrap the request factory with a BufferingClientHttpRequestFactory so
+        // that the error handler can do repeat reads on the response.getBody()
+        super.setRequestFactory(ClientHttpRequestFactorySelector.bufferRequests(getRestTemplate().getRequestFactory()));
+        initSubApis();
+    }
 
     @Override
     public boolean test()

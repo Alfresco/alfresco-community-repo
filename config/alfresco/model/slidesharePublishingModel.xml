@@ -38,16 +38,7 @@
       <aspect name="slideshare:AssetAspect">
          <title>SlideShare Asset</title>
          <description>Applied to a node that has been published to SlideShare</description>
-         <properties>
-            <property name="slideshare:assetId">
-               <title>SlideShare Asset Id</title>
-               <type>d:text</type>
-           </property>
-           <property name="slideshare:assetUrl">
-              <title>SlideShare Asset URL</title>
-              <type>d:text</type>
-           </property>
-        </properties>
+         <parent>pub:AssetAspect</parent>
       </aspect>
    </aspects>
 </model>

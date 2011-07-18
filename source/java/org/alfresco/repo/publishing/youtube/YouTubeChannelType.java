@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.repo.publishing.AbstractChannelType;
+import org.alfresco.repo.publishing.PublishingModel;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.publishing.channels.Channel;
@@ -113,9 +114,9 @@ public class YouTubeChannelType extends AbstractChannelType
     public String getNodeUrl(NodeRef node)
     {
         String url = null;
-        if (node != null && nodeService.exists(node) && nodeService.hasAspect(node, YouTubePublishingModel.ASPECT_ASSET))
+        if (node != null && nodeService.exists(node) && nodeService.hasAspect(node, PublishingModel.ASPECT_ASSET))
         {
-            url = (String)nodeService.getProperty(node, YouTubePublishingModel.PROP_PLAYER_URL);
+            url = (String)nodeService.getProperty(node, PublishingModel.PROP_ASSET_URL);
         }
         return url;
     }

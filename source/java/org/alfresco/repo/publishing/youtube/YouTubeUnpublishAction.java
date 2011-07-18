@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
+import org.alfresco.repo.publishing.PublishingModel;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -64,7 +65,7 @@ public class YouTubeUnpublishAction extends ActionExecuterAbstractBase
             {
                 removeVideo(service, actionedUponNodeRef);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 log.error("Failed to remove asset from YouTube", ex);
                 throw new AlfrescoRuntimeException("exception.publishing.youtube.unpublishFailed", ex);
@@ -72,15 +73,19 @@ public class YouTubeUnpublishAction extends ActionExecuterAbstractBase
         }
     }
 
-    private void removeVideo(YouTubeService service, NodeRef nodeRef) throws MalformedURLException, IOException, ServiceException
+    private void removeVideo(YouTubeService service, NodeRef nodeRef) throws MalformedURLException, IOException,
+            ServiceException
     {
-        String youtubeId = (String) nodeService.getProperty(nodeRef, YouTubePublishingModel.PROP_ASSET_ID);
-        if (youtubeId != null)
+        if (nodeService.hasAspect(nodeRef, YouTubePublishingModel.ASPECT_ASSET))
         {
-            String videoEntryUrl = "https://gdata.youtube.com/feeds/api/users/default/uploads/" + youtubeId;
-            VideoEntry videoEntry = service.getEntry(new URL(videoEntryUrl), VideoEntry.class);
-            videoEntry.delete();
-            nodeService.removeAspect(nodeRef, YouTubePublishingModel.ASPECT_ASSET);
+            String youtubeId = (String) nodeService.getProperty(nodeRef, PublishingModel.PROP_ASSET_ID);
+            if (youtubeId != null)
+            {
+                String videoEntryUrl = "https://gdata.youtube.com/feeds/api/users/default/uploads/" + youtubeId;
+                VideoEntry videoEntry = service.getEntry(new URL(videoEntryUrl), VideoEntry.class);
+                videoEntry.delete();
+                nodeService.removeAspect(nodeRef, YouTubePublishingModel.ASPECT_ASSET);
+            }
         }
     }
 

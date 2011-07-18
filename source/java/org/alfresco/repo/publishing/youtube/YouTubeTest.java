@@ -47,13 +47,8 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * @author Brian
@@ -90,6 +85,11 @@ public class YouTubeTest extends BaseSpringTest
         docLib = siteService.createContainer(siteId, SiteService.DOCUMENT_LIBRARY, ContentModel.TYPE_FOLDER, null);
     }
 
+    public void onTearDown()
+    {
+        siteService.deleteSite(siteId);
+    }
+    
     public void testBlank()
     {
         
@@ -133,17 +133,17 @@ public class YouTubeTest extends BaseSpringTest
                 actionService.executeAction(publishAction, vidNode);
                 Map<QName, Serializable> props = nodeService.getProperties(vidNode);
                 Assert.assertTrue(nodeService.hasAspect(vidNode, YouTubePublishingModel.ASPECT_ASSET));
-                Assert.assertNotNull(props.get(YouTubePublishingModel.PROP_ASSET_ID));
-                Assert.assertNotNull(props.get(YouTubePublishingModel.PROP_PLAYER_URL));
+                Assert.assertNotNull(props.get(PublishingModel.PROP_ASSET_ID));
+                Assert.assertNotNull(props.get(PublishingModel.PROP_ASSET_URL));
 
-                System.out.println("YouTube video: " + props.get(YouTubePublishingModel.PROP_ASSET_ID));
+                System.out.println("YouTube video: " + props.get(PublishingModel.PROP_ASSET_ID));
                 
                 Action unpublishAction = actionService.createAction(YouTubeUnpublishAction.NAME);
                 actionService.executeAction(unpublishAction, vidNode);
                 props = nodeService.getProperties(vidNode);
                 Assert.assertFalse(nodeService.hasAspect(vidNode, YouTubePublishingModel.ASPECT_ASSET));
-                Assert.assertNull(props.get(YouTubePublishingModel.PROP_ASSET_ID));
-                Assert.assertNull(props.get(YouTubePublishingModel.PROP_PLAYER_URL));
+                Assert.assertNull(props.get(PublishingModel.PROP_ASSET_ID));
+                Assert.assertNull(props.get(PublishingModel.PROP_ASSET_URL));
                 return null;
             }
         });

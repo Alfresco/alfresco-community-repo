@@ -35,6 +35,4 @@ public interface SlideSharePublishingModel
     public static final QName ASPECT_DELIVERY_CHANNEL = QName.createQName(NAMESPACE, "DeliveryChannelAspect");
     
     public static final QName ASPECT_ASSET = QName.createQName(NAMESPACE, "AssetAspect");
-    public static final QName PROP_ASSET_ID = QName.createQName(NAMESPACE, "assetId");
-    public static final QName PROP_ASSET_URL = QName.createQName(NAMESPACE, "assetUrl");
 }

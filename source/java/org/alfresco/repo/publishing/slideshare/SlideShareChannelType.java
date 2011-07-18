@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.repo.publishing.AbstractChannelType;
+import org.alfresco.repo.publishing.PublishingModel;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.publishing.channels.Channel;
@@ -121,7 +122,7 @@ public class SlideShareChannelType extends AbstractChannelType
         String url = null;
         if (node != null && nodeService.exists(node) && nodeService.hasAspect(node, SlideSharePublishingModel.ASPECT_ASSET))
         {
-            url = (String)nodeService.getProperty(node, SlideSharePublishingModel.PROP_ASSET_URL);
+            url = (String)nodeService.getProperty(node, PublishingModel.PROP_ASSET_URL);
         }
         return url;
     }

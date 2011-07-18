@@ -27,6 +27,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.content.filestore.FileContentReader;
+import org.alfresco.repo.publishing.PublishingModel;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -183,8 +184,9 @@ public class YouTubePublishAction extends ActionExecuterAbstractBase
                     log.debug("YouTube content URL is " + contentUrl);
                     log.debug("YouTube video player URL is " + playerUrl);
                 }
-                nodeService.setProperty(nodeRef, YouTubePublishingModel.PROP_ASSET_ID, videoId);
-                nodeService.setProperty(nodeRef, YouTubePublishingModel.PROP_PLAYER_URL, playerUrl);
+                nodeService.addAspect(nodeRef, YouTubePublishingModel.ASPECT_ASSET, null);
+                nodeService.setProperty(nodeRef, PublishingModel.PROP_ASSET_ID, videoId);
+                nodeService.setProperty(nodeRef, PublishingModel.PROP_ASSET_URL, playerUrl);
                 break;
             case CLIENT_ERROR:
                 log.error("Video content failed to upload: " + videoName);

@@ -1,42 +1,30 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This file is part of Alfresco
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
 package org.alfresco.repo.publishing.flickr.springsocial.api;
 
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
-import org.springframework.social.ApiException;
-import org.springframework.social.InsufficientPermissionException;
-import org.springframework.social.MissingAuthorizationException;
 
+public interface MediaOperations
+{
 
-public interface MediaOperations {
+    PhotoMetadata createPhotoMetadata();
 
-	PhotoMetadata createPhotoMetadata();
-	
-	/**
-	 * Uploads a photo to an album created specifically for the application.
-	 * Requires "publish_stream" permission.
-	 * If no album exists for the application, it will be created.
-	 * @param photo A {@link Resource} for the photo data. The given Resource must implement the getFilename() method (such as {@link FileSystemResource} or {@link ClassPathResource}).
-	 * @return the ID of the photo.
-	 * @throws ApiException if there is an error while communicating with Facebook.
-	 * @throws InsufficientPermissionException if the user has not granted "publish_stream" permission.
-	 * @throws MissingAuthorizationException if FacebookTemplate was not created with an access token.
-	 */
-	String postPhoto(Resource photo, PhotoMetadata metadata);
-	
+    String postPhoto(Resource photo, PhotoMetadata metadata);
+
 }

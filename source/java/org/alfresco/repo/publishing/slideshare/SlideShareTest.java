@@ -134,10 +134,10 @@ public class SlideShareTest extends BaseSpringTest
                 actionService.executeAction(publishAction, node);
                 Map<QName, Serializable> props = nodeService.getProperties(node);
                 Assert.assertTrue(nodeService.hasAspect(node, SlideSharePublishingModel.ASPECT_ASSET));
-                Assert.assertNotNull(props.get(SlideSharePublishingModel.PROP_ASSET_ID));
+                Assert.assertNotNull(props.get(PublishingModel.PROP_ASSET_ID));
 //                Assert.assertNotNull(props.get(SlideSharePublishingModel.PROP_ASSET_URL));
 
-                System.out.println("SlideShare id: " + props.get(SlideSharePublishingModel.PROP_ASSET_ID));
+                System.out.println("SlideShare id: " + props.get(PublishingModel.PROP_ASSET_ID));
                 
 //                Action unpublishAction = actionService.createAction(SlideShareUnpublishAction.NAME);
 //                actionService.executeAction(unpublishAction, node);

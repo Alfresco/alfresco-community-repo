@@ -24,6 +24,7 @@ import java.util.List;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
+import org.alfresco.repo.publishing.PublishingModel;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -135,8 +136,9 @@ public class SlideSharePublishAction extends ActionExecuterAbstractBase
             {
                 log.info("File " + name + " has been published to SlideShare with id " + assetId + " at URL " + url);
             }
-            nodeService.setProperty(nodeRef, SlideSharePublishingModel.PROP_ASSET_ID, assetId);
-            nodeService.setProperty(nodeRef, SlideSharePublishingModel.PROP_ASSET_URL, url);
+            nodeService.addAspect(nodeRef, SlideSharePublishingModel.ASPECT_ASSET, null);
+            nodeService.setProperty(nodeRef, PublishingModel.PROP_ASSET_ID, assetId);
+            nodeService.setProperty(nodeRef, PublishingModel.PROP_ASSET_URL, url);
             
             if (deleteContentFileOnCompletion)
             {

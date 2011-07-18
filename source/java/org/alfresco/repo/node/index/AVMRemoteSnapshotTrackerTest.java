@@ -24,6 +24,7 @@ import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.repo.domain.node.NodeDAO;
+import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor;
 import org.alfresco.repo.search.Indexer;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
@@ -86,7 +87,9 @@ public class AVMRemoteSnapshotTrackerTest extends BaseSpringTest
         ftsIndexer = (FullTextSearchIndexer) applicationContext.getBean("LuceneFullTextSearchIndexer");
         indexer = (Indexer) applicationContext.getBean("indexerComponent");
         nodeDAO = (NodeDAO) applicationContext.getBean("nodeDAO");
-        threadPoolExecutor = (ThreadPoolExecutor) applicationContext.getBean("indexTrackerThreadPoolExecutor");
+        
+        ChildApplicationContextFactory luceneSubSystem = (ChildApplicationContextFactory) applicationContext.getBean("lucene");
+        threadPoolExecutor = (ThreadPoolExecutor) luceneSubSystem.getApplicationContext().getBean("search.indexTrackerThreadPoolExecutor");
         
 
         testTX = transactionService.getUserTransaction();

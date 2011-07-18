@@ -27,6 +27,7 @@ import junit.framework.TestCase;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.Transaction;
+import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.node.index.AbstractReindexComponent.InIndex;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -57,8 +58,9 @@ public class FullIndexRecoveryComponentTest extends TestCase
     
     public void setUp() throws Exception
     {
-        indexRecoverer = (FullIndexRecoveryComponent) ctx.getBean("indexRecoveryComponent");
-        avmIndexRecoveryComponent = (AVMFullIndexRecoveryComponent) ctx.getBean("avmIndexRecoveryComponent");
+        ChildApplicationContextFactory luceneSubSystem = (ChildApplicationContextFactory) ctx.getBean("lucene");
+        indexRecoverer = (FullIndexRecoveryComponent) luceneSubSystem.getApplicationContext().getBean("search.indexRecoveryComponent");
+        avmIndexRecoveryComponent = (AVMFullIndexRecoveryComponent) luceneSubSystem.getApplicationContext().getBean("search.avmIndexRecoveryComponent");
         nodeService = (NodeService) ctx.getBean("nodeService");
         transactionService = (TransactionService) ctx.getBean("transactionComponent");
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");     

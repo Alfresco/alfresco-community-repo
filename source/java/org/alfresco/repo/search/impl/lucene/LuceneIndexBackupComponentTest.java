@@ -23,6 +23,7 @@ import java.util.Collections;
 
 import junit.framework.TestCase;
 
+import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.search.impl.lucene.AbstractLuceneIndexerAndSearcherFactory.LuceneIndexBackupComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -49,7 +50,9 @@ public class LuceneIndexBackupComponentTest extends TestCase
     {
         TransactionService transactionService = (TransactionService) ctx.getBean("transactionComponent");
         NodeService nodeService = (NodeService) ctx.getBean("NodeService");
-        LuceneIndexerAndSearcher factory = (LuceneIndexerAndSearcher) ctx.getBean("admLuceneIndexerAndSearcherFactory");
+        
+        ChildApplicationContextFactory luceneSubSystem = (ChildApplicationContextFactory) ctx.getBean("lucene");
+        LuceneIndexerAndSearcher factory = (LuceneIndexerAndSearcher) luceneSubSystem.getApplicationContext().getBean("search.admLuceneIndexerAndSearcherFactory");
         
         this.authenticationComponent = (AuthenticationComponent)ctx.getBean("authenticationComponent");
         this.authenticationComponent.setSystemUserAsCurrentUser();

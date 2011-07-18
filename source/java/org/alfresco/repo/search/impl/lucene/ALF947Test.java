@@ -12,6 +12,7 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -53,7 +54,8 @@ public class ALF947Test extends TestCase
     public void setUp() throws Exception
     {
         this.nodeService = (NodeService) ctx.getBean("dbNodeService");
-        this.indexerAndSearcher = (LuceneIndexerAndSearcher) ctx.getBean("admLuceneIndexerAndSearcherFactory");
+        ChildApplicationContextFactory luceneSubSystem = (ChildApplicationContextFactory) ctx.getBean("lucene");
+        this.indexerAndSearcher = (LuceneIndexerAndSearcher) luceneSubSystem.getApplicationContext().getBean("search.admLuceneIndexerAndSearcherFactory");
         this.authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         this.transactionService = (TransactionService) ctx.getBean("transactionComponent");
         this.copyService = (CopyService) ctx.getBean("CopyService");

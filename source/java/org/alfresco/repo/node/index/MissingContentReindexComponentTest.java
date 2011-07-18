@@ -27,6 +27,7 @@ import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.repo.domain.node.NodeDAO;
+import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.search.Indexer;
 import org.alfresco.repo.search.impl.lucene.AbstractLuceneIndexerImpl;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
@@ -73,7 +74,9 @@ public class MissingContentReindexComponentTest extends TestCase
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         searchService = serviceRegistry.getSearchService();
         nodeService = serviceRegistry.getNodeService();
-        threadPoolExecutor = (ThreadPoolExecutor) ctx.getBean("indexTrackerThreadPoolExecutor");
+        
+        ChildApplicationContextFactory luceneSubSystem = (ChildApplicationContextFactory) ctx.getBean("lucene");
+        threadPoolExecutor = (ThreadPoolExecutor) luceneSubSystem.getApplicationContext().getBean("search.indexTrackerThreadPoolExecutor");
         fileFolderService = serviceRegistry.getFileFolderService();
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         contentStore = (ContentStore) ctx.getBean("fileContentStore");

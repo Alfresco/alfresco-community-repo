@@ -18,7 +18,6 @@
  */
 package org.alfresco.repo.web.scripts.calendar;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -31,6 +30,7 @@ import org.alfresco.repo.calendar.CalendarServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.calendar.CalendarEntry;
 import org.alfresco.service.cmr.calendar.CalendarEntryDTO;
+import org.alfresco.service.cmr.calendar.CalendarRecurrenceHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.json.JSONObject;
@@ -46,6 +46,11 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class UserCalendarEntriesGet extends AbstractCalendarWebScript
 {
+   private static final String RESULT_NAME = "name"; 
+   private static final String RESULT_TITLE = "title"; 
+   private static final String RESULT_START = "start"; 
+   private static final String RESULT_END = "end"; 
+   
    @Override
    protected Map<String, Object> executeImpl(WebScriptRequest req,
          Status status, Cache cache) 
@@ -66,11 +71,27 @@ public class UserCalendarEntriesGet extends AbstractCalendarWebScript
    @Override
    protected Map<String, Object> executeImpl(SiteInfo singleSite, String eventName,
          WebScriptRequest req, JSONObject json, Status status, Cache cache) {
-      SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy"); // Evil...
-      
       // Did they restrict by date?
       Date fromDate = parseDate(req.getParameter("from"));
       Date toDate = parseDate(req.getParameter("to"));
+      
+      // What should we do about repeating events? First or all?
+      boolean repeatingFirstOnly = true;
+      if(fromDate != null)
+      {
+         // TODO Find a better way to do this...
+         String fromDateS = req.getParameter("from");
+         if(fromDateS.indexOf('-') != -1)
+         {
+            // Apparently this is the site calendar dashlet...
+            repeatingFirstOnly = true;
+         }
+         if(fromDateS.indexOf('/') != -1)
+         {
+            // This is something else, wants all events in range
+            repeatingFirstOnly = false;
+         }
+      }
       
       // One site, or all the user's ones?
       List<SiteInfo> sites = new ArrayList<SiteInfo>();
@@ -96,7 +117,7 @@ public class UserCalendarEntriesGet extends AbstractCalendarWebScript
              siteService.getContainer(site.getShortName(), CalendarServiceImpl.CALENDAR_COMPONENT), 
              site
          );
-      } 
+      }
       
       
       // Get the entries for the list
@@ -109,18 +130,16 @@ public class UserCalendarEntriesGet extends AbstractCalendarWebScript
       {
          // Build the object
          Map<String, Object> result = new HashMap<String, Object>();
-         result.put("name", entry.getSystemName());
-         result.put("title", entry.getTitle());
+         result.put(RESULT_NAME,   entry.getSystemName());
+         result.put(RESULT_TITLE,  entry.getTitle());
          result.put("description", entry.getDescription());
-         result.put("where", entry.getLocation());
-         result.put("start", entry.getStart());
-         result.put("end", entry.getEnd());
+         result.put("where",       entry.getLocation());
+         result.put(RESULT_START,  entry.getStart());
+         result.put(RESULT_END,    entry.getEnd());
          result.put("duration", buildDuration(entry));
          result.put("tags", entry.getTags());
          result.put("isoutlook", entry.isOutlook());
          result.put("allday", CalendarEntryDTO.isAllDay(entry));
-         
-         // TODO Recurring
          
          // Identify the site
          SiteInfo site = containerLookup.get(entry.getContainerNodeRef());
@@ -136,7 +155,12 @@ public class UserCalendarEntriesGet extends AbstractCalendarWebScript
                result.put(key, "");
             }
          }
+         
+         // Save this one
          results.add(result);
+         
+         // Handle recurring as needed
+         handleRecurring(entry, result, results, fromDate, repeatingFirstOnly);
       }
       
       // All done
@@ -203,5 +227,70 @@ public class UserCalendarEntriesGet extends AbstractCalendarWebScript
       }
       
       return duration.toString();
+   }
+   
+   /**
+    * Do what's needed for recurring events 
+    */
+   private void handleRecurring(CalendarEntry entry, Map<String, Object> entryResult, 
+         List<Map<String, Object>> allResults, Date from, boolean repeatingFirstOnly)
+   {
+      if(entry.getRecurrenceRule() == null)
+      {
+         // Nothing to do
+         return;
+      }
+      
+      // Should we limit ourselves?
+      Date until = null;
+      if(!repeatingFirstOnly)
+      {
+         // Only repeating instances for the next 60 days
+         until = new Date(from.getTime() + 24*60*60*1000);
+      }
+      
+      // How long is it?
+      long duration = entry.getEnd().getTime() - entry.getStart().getTime();
+      
+      // Get it's recurring instances
+      List<Date> dates = CalendarRecurrenceHelper.getRecurrencesOnOrAfter(
+            entry, from, until, repeatingFirstOnly);
+      
+      // If we got no dates, then no recurrences in the period so zap
+      if(dates == null || dates.size() == 0)
+      {
+         allResults.remove(entryResult);
+         return;
+      }
+
+      // Always update the live entry
+      updateRepeatingStartEnd(dates.get(0), duration, entryResult);
+      
+      // If first result only, alter title and finish
+      if(repeatingFirstOnly)
+      {
+         entryResult.put(RESULT_TITLE, entry.getTitle() + " (Repeating)");
+         return;
+      }
+      
+      // Otherwise generate one entry per extra date
+      for(int i=1; i<dates.size(); i++)
+      {
+         // Clone the properties
+         Map<String, Object> newResult = new HashMap<String, Object>(entryResult);
+         
+         // Generate start and end based on this date
+         updateRepeatingStartEnd(dates.get(i), duration, newResult);
+         
+         // Save as a new event
+         allResults.add(newResult);
+      }
+   }
+   
+   private void updateRepeatingStartEnd(Date newStart, long duration, Map<String, Object> result)
+   {
+      Date newEnd = new Date(newStart.getTime() + duration);
+      result.put(RESULT_START, newStart);
+      result.put(RESULT_END, newEnd);
    }
 }

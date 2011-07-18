@@ -19,14 +19,13 @@
 package org.alfresco.repo.web.scripts.calendar;
 
 import java.text.DateFormat;
-import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.service.cmr.calendar.CalendarEntry;
 import org.alfresco.service.cmr.calendar.CalendarEntryDTO;
+import org.alfresco.service.cmr.calendar.CalendarRecurrenceHelper;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -104,34 +103,12 @@ public class CalendarEntryGet extends AbstractCalendarWebScript
          return null;
       }
       
-      // Get our days of the week, in the current locale
-      DateFormatSymbols dates = new DateFormatSymbols(I18NUtil.getLocale());
-      String[] weekdays = dates.getWeekdays();
-      
-      // And map them based on the outlook two letter codes
-      Map<String,String> days = new HashMap<String, String>();
-      days.put("SU", weekdays[Calendar.SUNDAY]);
-      days.put("MO", weekdays[Calendar.MONDAY]);
-      days.put("TU", weekdays[Calendar.TUESDAY]);
-      days.put("WE", weekdays[Calendar.WEDNESDAY]);
-      days.put("Th", weekdays[Calendar.THURSDAY]);
-      days.put("FR", weekdays[Calendar.FRIDAY]);
-      days.put("SA", weekdays[Calendar.SATURDAY]);
+      // Get our days of the week, in the current locale, for each outlook two letter code
+      Map<String,String> days = 
+         CalendarRecurrenceHelper.buildLocalRecurrenceDaysOfTheWeek(I18NUtil.getLocale());
       
       // Turn the string into a useful map
-      Map<String,String> params = new HashMap<String, String>();
-      for(String rule : recurrence.split(";"))
-      {
-         String[] parts = rule.split("=");
-         if(parts.length != 2)
-         {
-            logger.warn("Invalid rule '" + rule + "' in recurrence: " + recurrence);
-         }
-         else
-         {
-            params.put(parts[0], parts[1]);
-         }
-      }
+      Map<String,String> params = CalendarRecurrenceHelper.extractRecurrenceRule(event);
       
       // To hold our result
       StringBuffer text = new StringBuffer();

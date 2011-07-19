@@ -387,6 +387,7 @@
          <aspect name="emailed"/>
          <aspect name="emailserver:aliasable"/>
          <aspect name="taggable"/>
+         <aspect name="indexControl"/>
       </aspects>
       <!-- List of aspects to only show in the add features action -->
       <aspects-add>

@@ -811,4 +811,15 @@
       </property-sheet>
    </config>
    
+   <!-- ************************************** -->
+   <!-- Configuration for IndexControl aspect  -->
+   <!-- ************************************** -->
+   
+   <config evaluator="aspect-name" condition="indexControl">
+      <property-sheet>
+         <show-property name="cm:isIndexed" converter="org.alfresco.faces.BooleanLabelConverter" />
+         <show-property name="cm:isContentIndexed" converter="org.alfresco.faces.BooleanLabelConverter" />
+      </property-sheet>
+   </config>
+   
 </alfresco-config>

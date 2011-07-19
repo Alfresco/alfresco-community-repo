@@ -219,5 +219,64 @@
             <ref bean="activityService"/>
         </property>
     </bean>
-    
+
+    <bean id="usernamePropertyDecorator" class="org.alfresco.repo.jscript.app.UsernamePropertyDecorator">
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
+        </property>
+    </bean>
+    <bean id="tagPropertyDecorator" class="org.alfresco.repo.jscript.app.TagPropertyDecorator">
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
+        </property>
+    </bean>
+    <bean id="categoryPropertyDecorator" class="org.alfresco.repo.jscript.app.CategoryPropertyDecorator">
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
+        </property>
+    </bean>
+
+    <bean id="applicationScriptUtils" parent="baseJavaScriptExtension" class="org.alfresco.repo.jscript.ApplicationScriptUtils">
+        <property name="extensionName">
+            <value>appUtils</value>
+        </property>
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
+        </property>
+        <property name="decoratedProperties">
+            <map>
+                <entry key="cm:creator">
+                    <ref bean="usernamePropertyDecorator"/>
+                </entry>
+                <entry key="cm:modifier">
+                    <ref bean="usernamePropertyDecorator"/>
+                </entry>
+                <entry key="cm:workingCopyOwner">
+                    <ref bean="usernamePropertyDecorator"/>
+                </entry>
+                <entry key="cm:lockOwner">
+                    <ref bean="usernamePropertyDecorator"/>
+                </entry>
+                <entry key="cm:owner">
+                    <ref bean="usernamePropertyDecorator"/>
+                </entry>
+                <entry key="cm:taggable">
+                   <ref bean="tagPropertyDecorator"/>
+                </entry>
+                <entry key="cm:categories">
+                   <ref bean="categoryPropertyDecorator"/>
+                </entry>
+           </map>
+        </property>
+        <property name="userPermissions">
+            <list>
+                <value>CancelCheckOut</value>
+                <value>ChangePermissions</value>
+                <value>CreateChildren</value>
+                <value>Delete</value>
+                <value>Write</value>
+            </list>
+        </property>
+    </bean>
+
 </beans>

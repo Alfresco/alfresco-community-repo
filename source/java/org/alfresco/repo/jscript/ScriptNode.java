@@ -130,7 +130,7 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
     private final static String CONTENT_PROP_URL = "/d/d/{0}/{1}/{2}/{3}?property={4}";
     private final static String CONTENT_DOWNLOAD_PROP_URL = "/d/a/{0}/{1}/{2}/{3}?property={4}";
     private final static String FOLDER_BROWSE_URL = "/n/browse/{0}/{1}/{2}";
-    
+
     /** Root scope for this object */
     protected Scriptable scope;
     
@@ -1263,7 +1263,7 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
     {
         return getDownloadUrl();
     }
-    
+
     /**
      * @return The WebDav cm:name based path to the content for the default content property
      *         (@see ContentModel.PROP_CONTENT)
@@ -1411,7 +1411,7 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
      * 
      * @return Object[] of packed permission strings.
      */
-    private Object[] retrieveAllSetPermissions(boolean direct, boolean full)
+    protected Object[] retrieveAllSetPermissions(boolean direct, boolean full)
     {
         Set<AccessPermission> acls = this.services.getPermissionService().getAllSetPermissions(getNodeRef());
         List<Object> permissions = new ArrayList<Object>(acls.size());
@@ -3076,7 +3076,7 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
      * @param longQName
      * @return the short form of the QName string, e.g. "cm:content"
      */
-    private String getShortQName(QName longQName)
+    protected String getShortQName(QName longQName)
     {
         return longQName.toPrefixString(services.getNamespaceService());
     }
@@ -3088,7 +3088,7 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
      * 
      * @return QName
      */
-    private QName createQName(String s)
+    protected QName createQName(String s)
     {
         QName qname;
         if (s.indexOf(NAMESPACE_BEGIN) != -1)

@@ -52,7 +52,7 @@ public class CalendarRecurrenceHelper
       d2cd.put("MO", Calendar.MONDAY);
       d2cd.put("TU", Calendar.TUESDAY);
       d2cd.put("WE", Calendar.WEDNESDAY);
-      d2cd.put("Th", Calendar.THURSDAY);
+      d2cd.put("TH", Calendar.THURSDAY);
       d2cd.put("FR", Calendar.FRIDAY);
       d2cd.put("SA", Calendar.SATURDAY);
    }
@@ -275,8 +275,10 @@ public class CalendarRecurrenceHelper
       Collections.sort(daysOfWeek);
       
       // Wind forward
+      boolean going = true;
       boolean valid = false;
-      while(true)
+      Date origDate = currentDate.getTime();
+      while(going)
       {
          // Check each day
          for(int day : daysOfWeek)
@@ -284,9 +286,13 @@ public class CalendarRecurrenceHelper
             currentDate.set(Calendar.DAY_OF_WEEK, day);
             if(!valid)
             {
-               if(currentDate.before(onOrAfter))
+               if(currentDate.getTime().before(onOrAfter))
                {
                   // To early
+               }
+               else if(currentDate.getTime().before(origDate))
+               {
+                  // Too early
                }
                else
                {
@@ -298,15 +304,17 @@ public class CalendarRecurrenceHelper
             {
                if(until != null)
                {
-                  if(currentDate.after(until))
+                  if(currentDate.getTime().after(until))
                   {
                      // Too late
+                     going = false;
                      break;
                   }
                }
                dates.add(currentDate.getTime());
                if(firstOnly) 
                {
+                  going = false;
                   break;
                }
             }

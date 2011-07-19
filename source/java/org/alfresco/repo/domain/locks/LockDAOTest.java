@@ -223,11 +223,11 @@ public class LockDAOTest extends TestCase
     
     public void testExclusiveLockBlockedByShared() throws Exception
     {
-        lock(lockAAA, 100L, true);
-        lock(lockAA, 100L, false);
-        lock(lockAB, 100L, true);
-        lock(lockA, 100L, false);
-        lock(lockABA, 100L, false);
+        lock(lockAAA, 5000L, true);
+        lock(lockAA, 5000L, false);
+        lock(lockAB, 5000L, true);
+        lock(lockA, 5000L, false);
+        lock(lockABA, 5000L, false);
     }
     
     public void testReleaseLockBasic() throws Exception

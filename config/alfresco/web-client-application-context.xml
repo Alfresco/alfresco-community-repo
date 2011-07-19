@@ -223,6 +223,16 @@
       </property>
    </bean>
 
+   <bean id="SOLRAuthenticationFilter" class="org.alfresco.repo.web.scripts.solr.SOLRAuthenticationFilter">
+      <property name="encryptor">
+         <ref bean="encryptor" />
+      </property>
+      <property name="encryptionUtils">
+         <ref bean="encryptionUtils" />
+      </property>
+      <property name="enabled" value="${solr.secureComms.enabled}"/>
+   </bean>
+   
    <bean id="WebscriptAuthenticationFilter" class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
       <property name="applicationContextManager">
          <ref bean="Authentication" />

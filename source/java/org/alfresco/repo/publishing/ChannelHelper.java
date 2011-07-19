@@ -21,8 +21,8 @@ package org.alfresco.repo.publishing;
 
 import static org.alfresco.model.ContentModel.ASSOC_CONTAINS;
 import static org.alfresco.repo.publishing.PublishingModel.ASPECT_PUBLISHED;
+import static org.alfresco.repo.publishing.PublishingModel.ASSOC_PUBLISHED_CHANNEL;
 import static org.alfresco.repo.publishing.PublishingModel.ASSOC_SOURCE;
-import static org.alfresco.repo.publishing.PublishingModel.NAMESPACE;
 import static org.alfresco.repo.publishing.PublishingModel.PROP_CHANNEL;
 import static org.alfresco.repo.publishing.PublishingModel.PROP_CHANNEL_TYPE;
 import static org.alfresco.repo.publishing.PublishingModel.PROP_CHANNEL_TYPE_ID;
@@ -44,14 +44,13 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
 import org.alfresco.service.cmr.publishing.channels.ChannelType;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.collections.CollectionUtils;
 import org.alfresco.util.collections.Filter;
@@ -99,82 +98,41 @@ public class ChannelHelper
             return null;
         }
         Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
-        String channelTypeId = (String) props.get(PublishingModel.PROP_CHANNEL_TYPE_ID);
+        String channelTypeId = (String) props.get(PROP_CHANNEL_TYPE_ID);
         ChannelType channelType = channelService.getChannelType(channelTypeId);
         String name = (String) props.get(ContentModel.PROP_NAME);
         return new ChannelImpl(channelType, nodeRef, name, this);
     }
 
-    public NodeRef addChannelToEnvironment(NodeRef environment, Channel channel, Map<QName, Serializable> properties)
-    {
-        ChannelType channelType = channel.getChannelType();
-        String channelName = channel.getName();
-        NodeRef envChannel = createChannelNode(environment, channelType, channelName, properties);
-        nodeService.createAssociation(envChannel, channel.getNodeRef(), PublishingModel.ASSOC_EDITORIAL_CHANNEL);
-        return envChannel;
-    }
-
-    public Channel getChannel(NodeRef environment, String channelName, ChannelService channelService)
-    {
-        NodeRef channelNode = getChannelNodeForEnvironment(environment, channelName);
-        if(channelNode != null)
-        {
-            return buildChannelObject(channelNode, channelService);
-        }
-        return null;
-    }
-
-    public NodeRef getChannelNodeForEnvironment(NodeRef environment, String channelName)
-    {
-        QName channelQName = getChannelQName(channelName);
-        List<ChildAssociationRef> channelAssocs = nodeService.getChildAssocs(environment, ASSOC_CONTAINS, channelQName);
-        return getSingleValue(channelAssocs, true);
-    }
-
     /**
-     * Given a noderef from the editorial space (e.g. the doclib), this returns the corresponding noderef in the specified channel and environment.
+     * Given a noderef from the editorial space (e.g. the doclib), this returns the corresponding noderef published to the specified channel.
      * @param source
-     * @param environment
-     * @param channelName
+     * @param channelNode
      * @return
      */
-    public NodeRef mapSourceToEnvironment(NodeRef source, NodeRef environment, String channelName)
+    public NodeRef mapSourceToEnvironment(NodeRef source, final NodeRef channelNode)
     {
-        NodeRef channel = getChannelNodeForEnvironment(environment, channelName);
-        return mapSourceToEnvironmentInternal(source, channel);
-    }
-    /**
-     * Given a noderef from the editorial space (e.g. the doclib), this returns the corresponding noderef in the specified channelt
-     * @param source
-     * @param editorialChannel
-     * @return
-     */
-    public NodeRef mapSourceToEnvironment(NodeRef source, NodeRef editorialChannel)
-    {
-//        NodeRef liveChannel = mapChannelNOde(editorialChannel);
-        return mapSourceToEnvironmentInternal(source, editorialChannel);
-    }   
-    
-    private NodeRef mapSourceToEnvironmentInternal(NodeRef source, NodeRef liveChannel)
-    {
-        if(source == null || liveChannel == null)
+        if(source == null || channelNode == null)
         {
             return null;
         }
-        List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(source, ASSOC_SOURCE, RegexQNamePattern.MATCH_ALL);
-        if(parentAssocs != null)
+        List<AssociationRef> sourceAssocs = nodeService.getSourceAssocs(source, ASSOC_SOURCE);
+        Function<? super AssociationRef, Boolean> acceptor = new Filter<AssociationRef>()
         {
-            for (ChildAssociationRef parentAssoc : parentAssocs)
+            public Boolean apply(AssociationRef assoc)
             {
-                NodeRef publishedNode = parentAssoc.getParentRef();
-                NodeRef parent = nodeService.getPrimaryParent(publishedNode).getParentRef();
-                if(liveChannel.equals(parent))
+                NodeRef publishedNode = assoc.getSourceRef();
+                List<AssociationRef> channelAssoc = nodeService.getTargetAssocs(publishedNode, ASSOC_PUBLISHED_CHANNEL);
+                if(CollectionUtils.isEmpty(channelAssoc))
                 {
-                    return publishedNode;
+                    return false;
                 }
+                NodeRef target = channelAssoc.get(0).getTargetRef();
+                return target.equals(channelNode);
             }
-        }
-        return null;
+        };
+        AssociationRef assoc = CollectionUtils.findFirst(sourceAssocs, acceptor);
+        return assoc == null ? null : assoc.getSourceRef();
     }
     
     /**
@@ -184,29 +142,10 @@ public class ChannelHelper
      */
     public NodeRef mapEnvironmentToSource(NodeRef publishedNode)
     {
-        List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(publishedNode, ASSOC_SOURCE, RegexQNamePattern.MATCH_ALL);
-        return getSingleValue(childAssocs, true);
+        List<AssociationRef> assocs = nodeService.getTargetAssocs(publishedNode, ASSOC_SOURCE);
+        return getSingleValue(assocs, true);
     }
 
-    /**
-     * Returns the {@link NodeRef} for the live channel given the {@link NodeRef} for the editorial channel.
-     * @param editorialChannel
-     * @return
-     */
-    public NodeRef mapChannelNOde(NodeRef editorialChannel)
-    {
-        List<ChildAssociationRef> assocs = nodeService.getParentAssocs(editorialChannel, PublishingModel.ASSOC_EDITORIAL_CHANNEL, RegexQNamePattern.MATCH_ALL);
-        if(assocs.isEmpty())
-        {
-            return null;
-        }
-        if(assocs.size()>1)
-        {
-            throw new IllegalStateException("There is more than one environment channel node!");
-        }
-        return assocs.get(0).getParentRef();
-    }
-    
     /**
      * Finds the {@link Channel} NodeRef and {@link ChannelType} id for a given node, if such a Channel exists.
      * @param node
@@ -239,11 +178,9 @@ public class ChannelHelper
         return nodeService.getProperties(channel);
     }
     
-    public ChildAssociationRef createMapping(NodeRef source, NodeRef publishedNode)
+    public AssociationRef createMapping(NodeRef source, NodeRef publishedNode)
     {
-        QName qName = QName.createQName(NAMESPACE, GUID.generate());
-        ChildAssociationRef assoc = nodeService.addChild(publishedNode, source, ASSOC_SOURCE, qName);
-        nodeService.addAspect(source, ASPECT_PUBLISHED, null);
+        AssociationRef assoc = nodeService.createAssociation(publishedNode, source, ASSOC_SOURCE);
         return assoc;
     }
 
@@ -348,6 +285,16 @@ public class ChannelHelper
         });
     }
 
+    public void addPublishedAspect(NodeRef publishedNode, NodeRef channelNode)
+    {
+        nodeService.addAspect(publishedNode, ASPECT_PUBLISHED, null);
+        List<AssociationRef> channelAssoc = nodeService.getTargetAssocs(publishedNode, ASSOC_PUBLISHED_CHANNEL);
+        if(CollectionUtils.isEmpty(channelAssoc))
+        {
+            nodeService.createAssociation(publishedNode, channelNode, ASSOC_PUBLISHED_CHANNEL);
+        }
+    }
+
     private List<ChildAssociationRef> getChannelAssocs(NodeRef channelContainer)
     {
         if(channelContainer == null)
@@ -379,12 +326,12 @@ public class ChannelHelper
         return null;
     }
     
-    private NodeRef getSingleValue(List<ChildAssociationRef> assocs, boolean getChild)
+    private NodeRef getSingleValue(List<AssociationRef> assocs, boolean getChild)
     {
         if(assocs != null && assocs.size()==1 )
         {
-            ChildAssociationRef association = assocs.get(0);
-            return getChild ? association.getChildRef() : association.getParentRef();
+            AssociationRef association = assocs.get(0);
+            return getChild ? association.getTargetRef() : association.getSourceRef();
         }
         return null;
     }
@@ -424,5 +371,6 @@ public class ChannelHelper
     {
         this.fileFolderService = fileFolderService;
     }
+
 
 }

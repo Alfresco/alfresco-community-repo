@@ -28,7 +28,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -70,7 +69,6 @@ public class EnvironmentHelper
     private SiteService siteService;
     private NodeService nodeService;
     private PublishingEventHelper publishingEventHelper; 
-    private ChannelHelper channelHelper;
     
     static
     {
@@ -123,7 +121,7 @@ public class EnvironmentHelper
      */
     public void setChannelHelper(ChannelHelper channelHelper)
     {
-        this.channelHelper = channelHelper;
+        //NOOP
     }
     
     public NodeRef getEnvironment(String siteId)
@@ -261,11 +259,6 @@ public class EnvironmentHelper
 
     private PublishingEvent getLastPublishingEvent(NodeRef node, EnvironmentImpl environment, String channelName)
     {
-        NodeRef mappedNode = channelHelper.mapSourceToEnvironment(node, environment.getNodeRef(), channelName);
-        if(mappedNode==null || nodeService.exists(mappedNode)==false)
-        {
-            return null; // Node is not published.
-        }
         //TODO Find the publish event.
         return null;
     }

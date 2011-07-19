@@ -34,19 +34,19 @@ public interface PublishingQueue
      */
     MutablePublishingPackage createPublishingPackage();
     
-    StatusUpdate createStatusUpdate(String message, NodeRef nodeToLinkTo, String... channelNames);
-    StatusUpdate createStatusUpdate(String message, NodeRef nodeToLinkTo, Collection<String> channelNames);
+    StatusUpdate createStatusUpdate(String message, NodeRef nodeToLinkTo, String... channelIds);
+    StatusUpdate createStatusUpdate(String message, NodeRef nodeToLinkTo, Collection<String> channelIds);
 
     /**
      * Adds the supplied publishing package onto the queue.
      * @param publishingPackage The publishing package that is to be enqueued
-     * @param channelName The name of the channel that the package is to be published to
+     * @param channelId The name of the channel that the package is to be published to
      * @param schedule The time at which the new publishing event should be scheduled (optional - <code>null</code> indicates "as soon as possible")
      * @param comment A comment to be stored with this new event (optional - may be <code>null</code>)
      * @param statusUpdate TODO
      * @return The identifier of the newly scheduled event
      */
-    String scheduleNewEvent(PublishingPackage publishingPackage, String channelName, Calendar schedule, String comment, StatusUpdate statusUpdate);
+    String scheduleNewEvent(PublishingPackage publishingPackage, String channelId, Calendar schedule, String comment, StatusUpdate statusUpdate);
     
     /**
      * Retrieve a list of publishing events associated with this publishing environment, filtering them using the

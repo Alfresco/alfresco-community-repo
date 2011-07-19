@@ -51,7 +51,7 @@ public interface PublishingEvent
     
     MutablePublishingEvent edit();
 
-    String getChannelName();
+    String getChannelId();
     
     StatusUpdate getStatusUpdate();
 }

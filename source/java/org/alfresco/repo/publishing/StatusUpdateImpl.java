@@ -57,7 +57,7 @@ public class StatusUpdateImpl implements StatusUpdate
     /**
     * {@inheritDoc}
     */
-    public Set<String> getChannelNames()
+    public Set<String> getChannelIds()
     {
         return channelNames;
     }

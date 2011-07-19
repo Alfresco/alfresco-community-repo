@@ -34,7 +34,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.site.SiteServiceException;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelType;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.junit.Before;
@@ -53,9 +52,6 @@ public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrat
     @Resource(name="channelService")
     private ChannelServiceImpl channelService;
 
-    @Resource(name="environmentHelper")
-    private EnvironmentHelper environmentHelper;
-
     private ChannelType mockedChannelType = mock(ChannelType.class);
 
     @Before
@@ -64,7 +60,6 @@ public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrat
     {
         super.onSetUp();
         channelService = (ChannelServiceImpl) getApplicationContext().getBean("channelService");
-        environmentHelper = (EnvironmentHelper) getApplicationContext().getBean("environmentHelper");
         when(mockedChannelType.getId()).thenReturn(channelTypeName);
         when(mockedChannelType.getChannelNodeType()).thenReturn(PublishingModel.TYPE_DELIVERY_CHANNEL);
 
@@ -82,30 +77,20 @@ public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrat
         List<Channel> channels = channelService.getChannels(siteId);
         assertTrue(channels.isEmpty());
 
-        Channel channel = channelService.createChannel(siteId, channelTypeName, channelName, null);
+        Channel channel = createChannel();
         assertEquals(channelTypeName, channel.getChannelType().getId());
         assertEquals(channelName, channel.getName());
         assertTrue(nodeService.exists(channel.getNodeRef()));
-        
-        NodeRef environmentNode = environmentHelper.getEnvironment(siteId);
-        assertNotNull(environmentNode);
-        assertNotNull(nodeService.getChildByName(environmentNode, ContentModel.ASSOC_CONTAINS, channelName));
     }
 
     @Test
     public void testDeleteChannel() throws Exception
     {
-        testCreateChannel();
-        
-        Channel channel = channelService.getChannel(siteId, channelName);
+        Channel channel = createChannel();
         channelService.deleteChannel(channel);
         
         List<Channel> channels = channelService.getChannels(siteId);
         assertTrue(channels.isEmpty());
-
-        NodeRef environmentNode = environmentHelper.getEnvironment(siteId);
-        assertNotNull(environmentNode);
-        assertNull(nodeService.getChildByName(environmentNode, ContentModel.ASSOC_CONTAINS, channelName));
     }
 
     @Test
@@ -121,10 +106,6 @@ public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrat
         assertEquals(1, channels.size());
         Channel channel = channels.get(0);
         assertEquals(newChannelName, channel.getName());
-        NodeRef environmentNode = environmentHelper.getEnvironment(siteId);
-        assertNotNull(environmentNode);
-        assertNull(nodeService.getChildByName(environmentNode, ContentModel.ASSOC_CONTAINS, channelName));
-        assertNotNull(nodeService.getChildByName(environmentNode, ContentModel.ASSOC_CONTAINS, newChannelName));
     }
 
     @Test
@@ -197,8 +178,7 @@ public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrat
         Channel channel = channelService.getChannel(siteId, channelName);
         assertNull("Should return null if unknown channelName", channel);
         
-        // Create channel
-        Channel createdChannel = channelService.createChannel(siteId, channelTypeName, channelName, null);
+        Channel createdChannel = createChannel();
         
         try
         {
@@ -215,5 +195,13 @@ public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrat
         assertEquals(channelName, channel.getName());
         assertEquals(createdChannel.getChannelType().getId(), channel.getChannelType().getId());
         assertEquals(createdChannel.getNodeRef(), channel.getNodeRef());
+    }
+    
+    /**
+     * @return
+     */
+    private Channel createChannel()
+    {
+        return channelService.createChannel(siteId, channelTypeName, channelName, null);
     }
 }

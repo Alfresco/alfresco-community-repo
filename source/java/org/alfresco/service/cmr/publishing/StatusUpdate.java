@@ -31,6 +31,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public interface StatusUpdate
 {
     String getMessage();
-    Set<String> getChannelNames();
+    Set<String> getChannelIds();
     NodeRef getNodeToLinkTo();
 }

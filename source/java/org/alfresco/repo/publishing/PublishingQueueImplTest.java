@@ -55,7 +55,7 @@ import org.junit.Test;
  */
 public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
 {
-    private static final String channelName = "TheChannel";
+    private static final String channelId = "test://channel/node";
     private static final String comment = "The Comment";
     
     protected PublishingService publishingService;
@@ -82,7 +82,7 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         Calendar schedule = Calendar.getInstance();
         schedule.add(Calendar.HOUR, 2);
         
-        this.eventId = queue.scheduleNewEvent(publishingPackage, channelName, schedule, comment, null);
+        this.eventId = queue.scheduleNewEvent(publishingPackage, channelId, schedule, comment, null);
         
         //Check schedule triggered versioning.
         Serializable version = nodeService.getProperty(firstNode, PROP_VERSION_LABEL);
@@ -94,7 +94,7 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         assertEquals(Status.SCHEDULED, event.getStatus());
         assertEquals(AuthenticationUtil.getAdminUserName(), event.getCreator());
         assertEquals(schedule, event.getScheduledTime());
-        assertEquals(channelName, event.getChannelName());
+        assertEquals(channelId, event.getChannelId());
         assertNull(event.getStatusUpdate());
         
         PublishingPackage pckg = event.getPackage();
@@ -151,13 +151,13 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         publishingPackage.addNodesToPublish(firstNode, secondNode);
         Calendar schedule = Calendar.getInstance();
         schedule.add(Calendar.HOUR, 2);
-        this.eventId = queue.scheduleNewEvent(publishingPackage, channelName, schedule, comment, update);
+        this.eventId = queue.scheduleNewEvent(publishingPackage, channelId, schedule, comment, update);
 
         PublishingEvent event = publishingService.getPublishingEvent(eventId);
         StatusUpdate actualUpdate = event.getStatusUpdate();
         assertEquals(message, actualUpdate.getMessage());
         assertEquals(secondNode, actualUpdate.getNodeToLinkTo());
-        Set<String> names = actualUpdate.getChannelNames();
+        Set<String> names = actualUpdate.getChannelIds();
         assertEquals(3, names.size());
         assertTrue(names.containsAll(channelNames));
     }

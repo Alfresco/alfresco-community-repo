@@ -73,11 +73,11 @@ public class PublishingEventProcessor
             nodeService.setProperty(eventNode, PublishingModel.PROP_PUBLISHING_EVENT_STATUS, inProgressStatus);
             PublishingEvent event = eventHelper.getPublishingEvent(eventNode);
             NodeRef environment = eventHelper.getEnvironmentNodeForPublishingEvent(eventNode);
-            String channelName = event.getChannelName();
-            Channel channel = channelHelper.getChannel(environment, channelName, channelService);
+            String channelName = event.getChannelId();
+            Channel channel = channelService.getChannel(channelName);
             if (channel == null)
             {
-                fail(event, "No channel found");
+                fail(eventNode, "No channel found");
             }
             else
             {
@@ -86,6 +86,10 @@ public class PublishingEventProcessor
                 String completedStatus = PublishingEvent.Status.COMPLETED.name();
                 nodeService.setProperty(eventNode, PublishingModel.PROP_PUBLISHING_EVENT_STATUS, completedStatus);
             }
+        }
+        catch(Exception e)
+        {
+            fail(eventNode, e.getMessage());
         }
         finally
         {
@@ -109,10 +113,10 @@ public class PublishingEventProcessor
                 message += urlShortener.shortenUrl(nodeUrl);
             }
         }
-        Set<String> channels = update.getChannelNames();
-        for (String channelName : channels)
+        Set<String> channels = update.getChannelIds();
+        for (String channelId : channels)
         {
-            Channel channel = channelHelper.getChannel(environment, channelName, channelService);
+            Channel channel = channelService.getChannel(channelId);
             if(channel != null && channel.getChannelType().canPublishStatusUpdates())
             {
                 channel.updateStatus(message);
@@ -143,9 +147,10 @@ public class PublishingEventProcessor
      }
 
 
-     public void fail(PublishingEvent event, String msg)
+     public void fail(NodeRef eventNode, String msg)
      {
-         // TODO Auto-generated method stub
+         String completedStatus = PublishingEvent.Status.FAILED.name();
+         nodeService.setProperty(eventNode, PublishingModel.PROP_PUBLISHING_EVENT_STATUS, completedStatus);
      }
 
      public NodeRef publishEntry(Channel channel, PublishingPackageEntry entry, NodeRef eventNode)
@@ -159,8 +164,7 @@ public class PublishingEventProcessor
          {
              updatePublishedNode(publishedNode, entry);
          }
-         QName qName = QName.createQName(NAMESPACE, eventNode.getId());
-         nodeService.addChild(publishedNode, eventNode, ASSOC_LAST_PUBLISHING_EVENT, qName);
+         eventHelper.linkeToLastEvent(publishedNode, eventNode);
          channel.publish(publishedNode);
          return publishedNode; 
      }

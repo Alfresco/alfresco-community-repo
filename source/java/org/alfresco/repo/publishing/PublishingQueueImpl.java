@@ -47,7 +47,7 @@ public class PublishingQueueImpl implements PublishingQueue
     private TransferManifestNodeFactory transferManifestNodeFactory;
     private VersionService versionService;
     private PublishingEventHelper publishingEventHelper;
-
+    
     /**
      * {@inheritDoc}
     */
@@ -73,13 +73,29 @@ public class PublishingQueueImpl implements PublishingQueue
      }
 
      /**
+      * {@inheritDoc}
+      */
+     public List<PublishingEvent> getPublishingEvents(PublishingEventFilter filter)
+     {
+         return publishingEventHelper.findPublishingEvents(nodeRef, filter);
+     }
+
+     /**
+      * {@inheritDoc}
+      */
+      public PublishingEventFilter createPublishingEventFilter()
+      {
+          return new PublishingEventFilterImpl();
+      }
+
+      /**
      * {@inheritDoc}
     */
-    public String scheduleNewEvent(PublishingPackage publishingPackage, String channelName, Calendar schedule, String comment, StatusUpdate statusUpdate)
+    public String scheduleNewEvent(PublishingPackage publishingPackage, String channelId, Calendar schedule, String comment, StatusUpdate statusUpdate)
     {
         try
         {
-            NodeRef eventNode = publishingEventHelper.createNode(nodeRef, publishingPackage, channelName, schedule, comment, statusUpdate);
+            NodeRef eventNode = publishingEventHelper.createNode(nodeRef, publishingPackage, channelId, schedule, comment, statusUpdate);
             publishingEventHelper.startPublishingWorkflow(eventNode, schedule);
             return eventNode.toString();
         }
@@ -123,19 +139,5 @@ public class PublishingQueueImpl implements PublishingQueue
         this.versionService = versionService;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public List<PublishingEvent> getPublishingEvents(PublishingEventFilter filter)
-    {
-        return publishingEventHelper.findPublishingEvents(nodeRef, filter);
-    }
 
-    /**
-     * {@inheritDoc}
-     */
-     public PublishingEventFilter createPublishingEventFilter()
-     {
-         return new PublishingEventFilterImpl();
-     }
 }

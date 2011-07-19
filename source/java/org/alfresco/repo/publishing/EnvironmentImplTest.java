@@ -28,9 +28,11 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.publishing.MutablePublishingPackage;
 import org.alfresco.service.cmr.publishing.NodePublishStatus;
 import org.alfresco.service.cmr.publishing.NodePublishStatus.Status;
+import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
 import org.alfresco.service.cmr.publishing.channels.ChannelType;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.GUID;
 import org.junit.Test;
 
 /**
@@ -40,9 +42,9 @@ import org.junit.Test;
  */
 public class EnvironmentImplTest extends AbstractPublishingIntegrationTest
 {
-    private static final String channel1Name = "Channel1";
-    private static final String channel2Name = "Channel2";
-
+    private Channel channel1;
+    private Channel channel2;
+    
     @Resource(name="channelService")
     private ChannelService channelService;
     
@@ -52,7 +54,7 @@ public class EnvironmentImplTest extends AbstractPublishingIntegrationTest
         NodeRef first = fileFolderService.create(docLib, "first", ContentModel.TYPE_CONTENT).getNodeRef();
         NodeRef second = fileFolderService.create(docLib, "second", ContentModel.TYPE_CONTENT).getNodeRef();
 
-        Map<NodeRef, NodePublishStatus> results = environment.checkPublishStatus(channel1Name, first);
+        Map<NodeRef, NodePublishStatus> results = environment.checkPublishStatus(channel1.getId(), first);
         assertEquals(1, results.size());
         checkNodeStatus(first, Status.NOT_PUBLISHED, results);
 
@@ -61,14 +63,14 @@ public class EnvironmentImplTest extends AbstractPublishingIntegrationTest
         schedule.add(Calendar.YEAR, 1);
         MutablePublishingPackage pckg =queue.createPublishingPackage();
         pckg.addNodesToPublish(first);
-        queue.scheduleNewEvent(pckg, channel1Name, schedule, null, null);
+        queue.scheduleNewEvent(pckg, channel1.getId(), schedule, null, null);
         
-        results = environment.checkPublishStatus(channel1Name, first, second);
+        results = environment.checkPublishStatus(channel1.getId(), first, second);
         assertEquals(2, results.size());
         checkNodeStatus(first, Status.ON_QUEUE, results);
         checkNodeStatus(second, Status.NOT_PUBLISHED, results);
         
-        results = environment.checkPublishStatus(channel2Name, first, second);
+        results = environment.checkPublishStatus(channel2.getId(), first, second);
         assertEquals(2, results.size());
         checkNodeStatus(first, Status.NOT_PUBLISHED, results);
         checkNodeStatus(second, Status.NOT_PUBLISHED, results);
@@ -95,8 +97,8 @@ public class EnvironmentImplTest extends AbstractPublishingIntegrationTest
         {
             channelService.register(channelType);
         }
-        channelService.createChannel(siteId, channelTypeId, channel1Name, null);
-        channelService.createChannel(siteId, channelTypeId, channel2Name, null);
+        this.channel1 = channelService.createChannel(siteId, channelTypeId, GUID.generate(), null);
+        this.channel2 = channelService.createChannel(siteId, channelTypeId, GUID.generate(), null);
     }
     
 }

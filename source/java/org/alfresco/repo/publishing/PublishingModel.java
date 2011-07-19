@@ -72,7 +72,6 @@ public interface PublishingModel
     public static final QName PROP_ASSET_ID = QName.createQName(NAMESPACE, "assetId");
     public static final QName PROP_ASSET_URL = QName.createQName(NAMESPACE, "assetUrl");
     
-    
     // Publishing Connection Properties
     public static final QName PROP_ACCOUNT_ID= QName.createQName(NAMESPACE, "accountId");
     public static final QName PROP_PROVIDER_ID= QName.createQName(NAMESPACE, "providerId");
@@ -92,7 +91,7 @@ public interface PublishingModel
     public static final QName ASSOC_PUBLISHING_EVENT = QName.createQName(NAMESPACE, "publishingEventAssoc");
     public static final QName ASSOC_SOURCE = QName.createQName(NAMESPACE, "source");
     public static final QName ASSOC_LAST_PUBLISHING_EVENT= QName.createQName(NAMESPACE, "lastPublishingEvent");
-    public static final QName ASSOC_EDITORIAL_CHANNEL= QName.createQName(NAMESPACE, "editorialChannel");
+    public static final QName ASSOC_PUBLISHED_CHANNEL= QName.createQName(NAMESPACE, "publishedChannel");
 
     // Workflow Properties
     public static final QName PROP_WF_PUBLISHING_EVENT= QName.createQName(WF_NAMESPACE, "publishingEvent");

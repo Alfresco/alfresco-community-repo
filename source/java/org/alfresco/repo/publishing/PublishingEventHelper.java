@@ -19,6 +19,7 @@
 
 package org.alfresco.repo.publishing;
 
+import static org.alfresco.repo.publishing.PublishingModel.ASSOC_LAST_PUBLISHING_EVENT;
 import static org.alfresco.repo.publishing.PublishingModel.ASSOC_PUBLISHING_EVENT;
 import static org.alfresco.repo.publishing.PublishingModel.NAMESPACE;
 import static org.alfresco.repo.publishing.PublishingModel.PROP_PUBLISHING_EVENT_CHANNEL;
@@ -64,6 +65,7 @@ import org.alfresco.service.cmr.publishing.PublishingEvent.Status;
 import org.alfresco.service.cmr.publishing.PublishingEventFilter;
 import org.alfresco.service.cmr.publishing.PublishingPackage;
 import org.alfresco.service.cmr.publishing.StatusUpdate;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -193,7 +195,7 @@ public class PublishingEventHelper
                 });
     }
     
-    public NodeRef createNode(NodeRef queueNode, PublishingPackage publishingPackage, String channelName, Calendar schedule, String comment, StatusUpdate statusUpdate)
+    public NodeRef createNode(NodeRef queueNode, PublishingPackage publishingPackage, String channelId, Calendar schedule, String comment, StatusUpdate statusUpdate)
         throws Exception
     {
         if (schedule == null)
@@ -202,7 +204,7 @@ public class PublishingEventHelper
         }
         String name = GUID.generate();
         Map<QName, Serializable> props = 
-            buildPublishingEventProperties(publishingPackage, channelName, schedule, comment, statusUpdate, name);
+            buildPublishingEventProperties(publishingPackage, channelId, schedule, comment, statusUpdate, name);
         ChildAssociationRef newAssoc = nodeService.createNode(queueNode, 
                 ASSOC_PUBLISHING_EVENT,
                 QName.createQName(NAMESPACE, name),
@@ -213,14 +215,14 @@ public class PublishingEventHelper
     }
 
     private Map<QName, Serializable> buildPublishingEventProperties(PublishingPackage publishingPackage,
-            String channelName, Calendar schedule, String comment, StatusUpdate statusUpdate, String name)
+            String channelId, Calendar schedule, String comment, StatusUpdate statusUpdate, String name)
     {
         Map<QName, Serializable> props = new HashMap<QName, Serializable>();
         props.put(ContentModel.PROP_NAME, name);
         props.put(PROP_PUBLISHING_EVENT_STATUS, Status.IN_PROGRESS.name());
         props.put(PROP_PUBLISHING_EVENT_TIME, schedule.getTime());
         props.put(PublishingModel.PROP_PUBLISHING_EVENT_TIME_ZONE, schedule.getTimeZone().getID());
-        props.put(PublishingModel.PROP_PUBLISHING_EVENT_CHANNEL, channelName);
+        props.put(PublishingModel.PROP_PUBLISHING_EVENT_CHANNEL, channelId);
         props.put(PublishingModel.PROP_PUBLISHING_EVENT_STATUS, PublishingModel.PROPVAL_PUBLISHING_EVENT_STATUS_SCHEDULED);
         if (comment != null)
         {
@@ -238,7 +240,7 @@ public class PublishingEventHelper
             {
                 props.put(PROP_STATUS_UPDATE_NODE_REF, statusNode.toString());
             }
-            props.put(PROP_STATUS_UPDATE_CHANNEL_NAMES, (Serializable) statusUpdate.getChannelNames());
+            props.put(PROP_STATUS_UPDATE_CHANNEL_NAMES, (Serializable) statusUpdate.getChannelIds());
         }
         return props;
     }
@@ -466,5 +468,17 @@ public class PublishingEventHelper
         ChildAssociationRef environmentAssoc = nodeService.getPrimaryParent(queueAssoc.getParentRef());
         NodeRef environment = environmentAssoc.getParentRef();
         return environment;
+    }
+    
+    public AssociationRef linkeToLastEvent(NodeRef publishedNode, NodeRef eventNode)
+    {
+        List<AssociationRef> assocs = nodeService.getTargetAssocs(publishedNode, ASSOC_LAST_PUBLISHING_EVENT);
+        if(isEmpty(assocs)==false)
+        {
+            // Remove old association.
+            AssociationRef assoc = assocs.get(0);
+            nodeService.removeAssociation(assoc.getSourceRef(), assoc.getTargetRef(), assoc.getTypeQName());
+        }
+        return nodeService.createAssociation(publishedNode, eventNode, ASSOC_LAST_PUBLISHING_EVENT);
     }
 }

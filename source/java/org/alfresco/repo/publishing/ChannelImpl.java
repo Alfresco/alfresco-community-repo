@@ -53,6 +53,16 @@ public class ChannelImpl implements Channel
 
     /**
     * {@inheritDoc}
+    */
+    @Override
+    public String getId()
+    {
+        // TODO Auto-generated method stub
+        return nodeRef.toString();
+    }
+    
+    /**
+    * {@inheritDoc}
      */
     public ChannelType getChannelType()
     {
@@ -89,6 +99,7 @@ public class ChannelImpl implements Channel
     @Override
     public void publish(NodeRef nodeToPublish)
     {
+        channelHelper.addPublishedAspect(nodeToPublish, nodeRef);
         if(channelHelper.canPublish(nodeToPublish, channelType))
         {
             channelType.publish(nodeToPublish, getProperties());
@@ -119,8 +130,7 @@ public class ChannelImpl implements Channel
     */
     public String getUrl(NodeRef publishedNode)
     {
-        NodeRef mappedChannel = channelHelper.mapChannelNOde(nodeRef);
-        NodeRef mappedNode = channelHelper.mapSourceToEnvironment(publishedNode, mappedChannel);
+        NodeRef mappedNode = channelHelper.mapSourceToEnvironment(publishedNode, nodeRef);
         return channelType.getNodeUrl(mappedNode);
     }
 }

@@ -58,8 +58,6 @@ import org.junit.Test;
  */
 public class PublishingIntegratedTest extends BaseSpringTest
 {
-    private static String channelName = "Test Channel - Name";
-
     protected ServiceRegistry serviceRegistry;
     protected RetryingTransactionHelper retryingTransactionHelper;
     protected NodeService nodeService;
@@ -74,6 +72,65 @@ public class PublishingIntegratedTest extends BaseSpringTest
     private ChannelType mockedChannelType = mock(ChannelType.class);
     private String channelTypeName;
 
+    @Test
+    public void testScheduleNewEvent() throws Exception
+    {
+        Channel channel = channelService.createChannel(siteId, channelTypeName, GUID.generate(), null);
+
+        Set<NodeRef> nodes = new HashSet<NodeRef>();
+        for (int i = 0; i < 4; ++i)
+        {
+            nodes.add(nodeService.createNode(channel.getNodeRef(), ContentModel.ASSOC_CONTAINS, QName.createQName(
+                    NamespaceService.CONTENT_MODEL_1_0_URI, Integer.toString(i)), ContentModel.TYPE_CONTENT).getChildRef());
+        }
+
+        PublishingQueue liveQueue = publishingService.getPublishingQueue(siteId);
+        MutablePublishingPackage publishingPackage = liveQueue.createPublishingPackage();
+        publishingPackage.addNodesToPublish(nodes);
+
+        Calendar scheduleTime = Calendar.getInstance();
+        scheduleTime.add(Calendar.HOUR, 1);
+        String eventId = liveQueue.scheduleNewEvent(publishingPackage, channel.getId(), scheduleTime, null, null);
+        
+        PublishingEvent event = publishingService.getPublishingEvent(eventId);
+        
+        Assert.assertEquals(scheduleTime, event.getScheduledTime());
+        Assert.assertEquals(eventId, event.getId());
+        Collection<PublishingPackageEntry> entries = event.getPackage().getEntries();
+        Assert.assertEquals(4, entries.size());
+        for (PublishingPackageEntry entry : entries)
+        {
+            Assert.assertTrue(entry.isPublish());
+            Assert.assertTrue(nodes.remove(entry.getNodeRef()));
+        }
+        Assert.assertTrue(nodes.isEmpty());
+    }
+    
+    @Test
+    public void testCancelScheduledEvent()
+    {
+        Channel channel = channelService.createChannel(siteId, channelTypeName, GUID.generate(), null);
+
+        Set<NodeRef> nodes = new HashSet<NodeRef>();
+        for (int i = 0; i < 4; ++i)
+        {
+            nodes.add(nodeService.createNode(channel.getNodeRef(), ContentModel.ASSOC_CONTAINS, QName.createQName(
+                    NamespaceService.CONTENT_MODEL_1_0_URI, Integer.toString(i)), ContentModel.TYPE_CONTENT).getChildRef());
+        }
+        PublishingQueue liveQueue = publishingService.getPublishingQueue(siteId);
+        MutablePublishingPackage publishingPackage = liveQueue.createPublishingPackage();
+        publishingPackage.addNodesToPublish(nodes);
+
+        Calendar scheduleTime = Calendar.getInstance();
+        scheduleTime.add(Calendar.HOUR, 1);
+        String eventId = liveQueue.scheduleNewEvent(publishingPackage, channel.getId(), scheduleTime, null, null);
+        PublishingEvent event = publishingService.getPublishingEvent(eventId);
+        Assert.assertNotNull(event);
+        publishingService.cancelPublishingEvent(eventId);
+        event = publishingService.getPublishingEvent(eventId);
+        Assert.assertNull(event);
+    }
+    
     /**
      * @throws java.lang.Exception
      */
@@ -106,62 +163,4 @@ public class PublishingIntegratedTest extends BaseSpringTest
         }
     }
 
-    @Test
-    public void testScheduleNewEvent() throws Exception
-    {
-        Channel channel = channelService.createChannel(siteId, channelTypeName, channelName, null);
-
-        Set<NodeRef> nodes = new HashSet<NodeRef>();
-        for (int i = 0; i < 4; ++i)
-        {
-            nodes.add(nodeService.createNode(channel.getNodeRef(), ContentModel.ASSOC_CONTAINS, QName.createQName(
-                    NamespaceService.CONTENT_MODEL_1_0_URI, Integer.toString(i)), ContentModel.TYPE_CONTENT).getChildRef());
-        }
-
-        PublishingQueue liveQueue = publishingService.getPublishingQueue(siteId);
-        MutablePublishingPackage publishingPackage = liveQueue.createPublishingPackage();
-        publishingPackage.addNodesToPublish(nodes);
-
-        Calendar scheduleTime = Calendar.getInstance();
-        scheduleTime.add(Calendar.HOUR, 1);
-        String eventId = liveQueue.scheduleNewEvent(publishingPackage, channelName, scheduleTime, null, null);
-        
-        PublishingEvent event = publishingService.getPublishingEvent(eventId);
-        
-        Assert.assertEquals(scheduleTime, event.getScheduledTime());
-        Assert.assertEquals(eventId, event.getId());
-        Collection<PublishingPackageEntry> entries = event.getPackage().getEntries();
-        Assert.assertEquals(4, entries.size());
-        for (PublishingPackageEntry entry : entries)
-        {
-            Assert.assertTrue(entry.isPublish());
-            Assert.assertTrue(nodes.remove(entry.getNodeRef()));
-        }
-        Assert.assertTrue(nodes.isEmpty());
-    }
-    
-    @Test
-    public void testCancelScheduledEvent()
-    {
-        Channel channel = channelService.createChannel(siteId, channelTypeName, channelName, null);
-
-        Set<NodeRef> nodes = new HashSet<NodeRef>();
-        for (int i = 0; i < 4; ++i)
-        {
-            nodes.add(nodeService.createNode(channel.getNodeRef(), ContentModel.ASSOC_CONTAINS, QName.createQName(
-                    NamespaceService.CONTENT_MODEL_1_0_URI, Integer.toString(i)), ContentModel.TYPE_CONTENT).getChildRef());
-        }
-        PublishingQueue liveQueue = publishingService.getPublishingQueue(siteId);
-        MutablePublishingPackage publishingPackage = liveQueue.createPublishingPackage();
-        publishingPackage.addNodesToPublish(nodes);
-
-        Calendar scheduleTime = Calendar.getInstance();
-        scheduleTime.add(Calendar.HOUR, 1);
-        String eventId = liveQueue.scheduleNewEvent(publishingPackage, channelName, scheduleTime, null, null);
-        PublishingEvent event = publishingService.getPublishingEvent(eventId);
-        Assert.assertNotNull(event);
-        publishingService.cancelPublishingEvent(eventId);
-        event = publishingService.getPublishingEvent(eventId);
-        Assert.assertNull(event);
-    }
 }

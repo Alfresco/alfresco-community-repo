@@ -36,7 +36,7 @@ public class PublishingEventImpl implements PublishingEvent
 {
     private final String id;
     private final Status status;
-    private final String channelName;
+    private final String channelId;
     private final PublishingPackage publishingPackage;
     private final Date createdTime;
     private final String creator;
@@ -55,7 +55,7 @@ public class PublishingEventImpl implements PublishingEvent
     {
         this.id = id;
         this.status = status;
-        this.channelName = channelName;
+        this.channelId = channelName;
         this.publishingPackage = publishingPackage;
         this.createdTime = createdTime;
         this.creator = creator;
@@ -69,7 +69,7 @@ public class PublishingEventImpl implements PublishingEvent
     public PublishingEventImpl(PublishingEvent event)
     {
         this(event.getId(),
-                event.getStatus(), event.getChannelName(),
+                event.getStatus(), event.getChannelId(),
                 event.getPackage(), event.getCreatedTime(),
                 event.getCreator(), event.getModifiedTime(),
                 event.getModifier(), event.getScheduledTime(), event.getComment(),
@@ -97,9 +97,9 @@ public class PublishingEventImpl implements PublishingEvent
     /**
     * {@inheritDoc}
     */
-    public String getChannelName()
+    public String getChannelId()
     {
-        return channelName;
+        return channelId;
     }
     
     /**

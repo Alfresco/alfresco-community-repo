@@ -34,17 +34,6 @@
                 </property>
             </properties>
             <associations>
-                <association name="pub:editorialChannel">
-                    <source>
-                        <mandatory>false</mandatory>
-                        <many>false</many>
-                    </source>
-                    <target>
-                        <class>pub:DeliveryChannel</class>
-                        <mandatory>false</mandatory>
-                        <many>false</many>
-                    </target>
-                </association>
                 <child-association name="pub:deliveryServers">
                     <source>
                         <mandatory>false</mandatory>
@@ -275,11 +264,11 @@
         </aspect>
 
         <aspect name="pub:published">
-            <title>Channel Info</title>
+            <title>Published</title>
             <description>Applied to a published node</description>
             <parent>cm:titled</parent>
             <associations>
-                <child-association name="pub:source">
+                <association name="pub:source">
                     <source>
                         <mandatory>false</mandatory>
                         <many>true</many>
@@ -289,8 +278,8 @@
                         <mandatory>false</mandatory>
                         <many>false</many>
                     </target>
-                </child-association>
-                <child-association name="pub:lastPublishingEvent">
+                </association>
+                <association name="pub:lastPublishingEvent">
                     <source>
                         <mandatory>false</mandatory>
                         <many>false</many>
@@ -300,7 +289,18 @@
                         <mandatory>false</mandatory>
                         <many>true</many>
                     </target>
-                </child-association>
+                </association>
+                <association name="pub:publishedChannel">
+                    <source>
+                        <mandatory>false</mandatory>
+                        <many>false</many>
+                    </source>
+                    <target>
+                        <class>pub:DeliveryChannel</class>
+                        <mandatory>false</mandatory>
+                        <many>true</many>
+                    </target>
+                </association>
             </associations>
         </aspect>
 

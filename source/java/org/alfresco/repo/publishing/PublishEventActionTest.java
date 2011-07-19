@@ -55,13 +55,13 @@ import org.alfresco.service.cmr.publishing.StatusUpdate;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
 import org.alfresco.service.cmr.publishing.channels.ChannelType;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.GUID;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,7 +73,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class PublishEventActionTest extends AbstractPublishingIntegrationTest
 {
-    private static final String channelName = "Channel1";
     private static final String contentNodeName = "TheName";
     private static final String content = "The quick brown fox jumped over the lazy dog";
     
@@ -92,7 +91,8 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
     @Autowired
     private PublishEventAction action;
 
-    private NodeRef channel;
+    private Channel channel;
+    private NodeRef channelNode;
     private String eventId;
     private ChannelType channelType;
 
@@ -110,10 +110,10 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
         NodeRef publishEventNode = publishNode(source);
         
         // Check published node exists and is in correct place.
-        NodeRef publishedNode = channelHelper.mapSourceToEnvironment(source, channel);
+        NodeRef publishedNode = channelHelper.mapSourceToEnvironment(source, channelNode);
         assertNotNull(publishedNode);
         assertTrue(nodeService.exists(publishedNode));
-        assertEquals(channel, nodeService.getPrimaryParent(publishedNode).getParentRef());
+        assertEquals(channelNode, nodeService.getPrimaryParent(publishedNode).getParentRef());
         
         // Check published node type and aspects
         assertEquals(TYPE_CONTENT, nodeService.getType(publishedNode));
@@ -131,9 +131,9 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
         assertEquals(content, readContent(source));
         
         // Check lastPublishingEvent association is created.
-        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(publishedNode, ASSOC_LAST_PUBLISHING_EVENT, RegexQNamePattern.MATCH_ALL);
+        List<AssociationRef> assocs = nodeService.getTargetAssocs(publishedNode, ASSOC_LAST_PUBLISHING_EVENT);
         assertEquals(1, assocs.size());
-        assertEquals(publishEventNode, assocs.get(0).getChildRef());
+        assertEquals(publishEventNode, assocs.get(0).getTargetRef());
     }
 
     public void testUpdatePublishedNode() throws Exception
@@ -143,7 +143,7 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
         NodeRef publishEventNode = publishNode(source);
 
         // Check published node exists
-        NodeRef publishedNode = channelHelper.mapSourceToEnvironment(source, channel);
+        NodeRef publishedNode = channelHelper.mapSourceToEnvironment(source, channelNode);
         assertNotNull(publishedNode);
         assertTrue(nodeService.exists(publishedNode));
 
@@ -158,9 +158,9 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
         assertFalse(aspects.contains(ASPECT_GEOGRAPHIC));
         
         // Check lastPublishingEvent association is created.
-        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(publishedNode, ASSOC_LAST_PUBLISHING_EVENT, RegexQNamePattern.MATCH_ALL);
+        List<AssociationRef> assocs = nodeService.getTargetAssocs(publishedNode, ASSOC_LAST_PUBLISHING_EVENT);
         assertEquals(1, assocs.size());
-        assertEquals(publishEventNode, assocs.get(0).getChildRef());
+        assertEquals(publishEventNode, assocs.get(0).getTargetRef());
 
         // Modify source node
         double lattitude = 0.25;
@@ -174,7 +174,7 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
         
         // Update published node.
         publishEventNode = publishNode(source);
-        NodeRef newPublishNode = channelHelper.mapSourceToEnvironment(source, channel);
+        NodeRef newPublishNode = channelHelper.mapSourceToEnvironment(source, channelNode);
         assertEquals(publishedNode, newPublishNode);
         
         // Published node shoudl still exist.
@@ -194,16 +194,16 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
         assertEquals(newContent, readContent(source));
 
         // Check lastPublishingEvent association has changed.
-        assocs = nodeService.getChildAssocs(publishedNode, ASSOC_LAST_PUBLISHING_EVENT, RegexQNamePattern.MATCH_ALL);
+        assocs = nodeService.getTargetAssocs(publishedNode, ASSOC_LAST_PUBLISHING_EVENT);
         assertEquals(1, assocs.size());
-        assertEquals(publishEventNode, assocs.get(0).getChildRef());
+        assertEquals(publishEventNode, assocs.get(0).getTargetRef());
 
         // Remove aspect from source node.
         nodeService.removeAspect(source, ASPECT_GEOGRAPHIC);
         
         // Update publish node
         publishNode(source);
-        newPublishNode = channelHelper.mapSourceToEnvironment(source, channel);
+        newPublishNode = channelHelper.mapSourceToEnvironment(source, channelNode);
         assertEquals(publishedNode, newPublishNode);
 
         aspects = nodeService.getAspects(source);
@@ -225,7 +225,7 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
         when(channelType.canPublish()).thenReturn(true);
         
         publishNode(source);
-        NodeRef publishedNode = channelHelper.mapSourceToEnvironment(source, channel);
+        NodeRef publishedNode = channelHelper.mapSourceToEnvironment(source, channelNode);
         
         // Check publish was called
         verify(channelType, times(1)).publish(eq(publishedNode), anyMap());
@@ -239,7 +239,7 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
         
         // Publish source node but dont' call ChannelType.publish().
         publishNode(source);
-        NodeRef publishedNode = channelHelper.mapSourceToEnvironment(source, channel);
+        NodeRef publishedNode = channelHelper.mapSourceToEnvironment(source, channelNode);
 
         // Check publish was not called.
         verify(channelType, never()).publish(eq(publishedNode), anyMap());
@@ -270,7 +270,7 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
 
         // Publish source node but don't call ChannelType.publish().
         publishNode(source);
-        NodeRef publishedNode = channelHelper.mapSourceToEnvironment(source, channel);
+        NodeRef publishedNode = channelHelper.mapSourceToEnvironment(source, channelNode);
         
         verify(channelType, never()).publish(eq(publishedNode), anyMap());
         
@@ -309,7 +309,7 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
 
         // Publish source node but don't call ChannelType.publish().
         publishNode(source);
-        NodeRef publishedNode = channelHelper.mapSourceToEnvironment(source, channel);
+        NodeRef publishedNode = channelHelper.mapSourceToEnvironment(source, channelNode);
         
         verify(channelType, never()).publish(eq(publishedNode), anyMap());
         
@@ -330,7 +330,7 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
         
         // Create Status Update
         String message = "Here is the message ";
-        StatusUpdate status = queue.createStatusUpdate(message, source, channelName);
+        StatusUpdate status = queue.createStatusUpdate(message, source, channel.getId());
         
         String url = "http://test/url";
         when(channelType.getNodeUrl(any(NodeRef.class))).thenReturn(url);
@@ -372,7 +372,7 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
     {
         Calendar schedule = Calendar.getInstance();
         schedule.add(Calendar.YEAR, 1);
-        this.eventId = queue.scheduleNewEvent(publishPckg, channelName, schedule, null, statusUpdate);
+        this.eventId = queue.scheduleNewEvent(publishPckg, channel.getId(), schedule, null, statusUpdate);
     }
 
     private void addGeographicAspect(NodeRef source, double lattitude, double longtitude)
@@ -425,9 +425,8 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
             Mockito.reset(channelType);
             mockChannelTypeBehaviour(channelType);
         }
-        channelService.createChannel(siteId, channelTypeId, channelName, null);
-        
-        this.channel = channelHelper.getChannelNodeForEnvironment(environment.getNodeRef(), channelName);
+        this.channel = channelService.createChannel(siteId, channelTypeId, GUID.generate(), null);
+        this.channelNode = channel.getNodeRef();
     }
 
     @Override

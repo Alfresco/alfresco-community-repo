@@ -31,6 +31,7 @@ import org.alfresco.service.namespace.QName;
  */
 public interface Channel
 {
+    String getId();
     ChannelType getChannelType();
     
     /**

@@ -39,7 +39,6 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
 import org.alfresco.service.cmr.publishing.channels.ChannelType;
-import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.site.SiteInfo;
@@ -164,12 +163,7 @@ public class ChannelServiceImpl implements ChannelService
         actualProps.put(PROP_CHANNEL_TYPE_ID, channelType.getId());
         actualProps.put(PublishingModel.PROP_AUTHORISATION_COMPLETE, Boolean.FALSE);
         NodeRef channelNode = channelHelper.createChannelNode(channelContainer, channelType, name, actualProps);
-        Channel channel = channelHelper.buildChannelObject(channelNode, this);
-
-        // Now create the corresponding channel nodes in the environment
-        NodeRef environment = environmentHelper.getEnvironment(siteId);
-        channelHelper.addChannelToEnvironment(environment, channel, actualProps);
-        return channel;
+        return channelHelper.buildChannelObject(channelNode, this);
     }
 
     /**
@@ -177,17 +171,7 @@ public class ChannelServiceImpl implements ChannelService
      */
     public void deleteChannel(Channel channel)
     {
-        List<NodeRef> allChannelNodes = new ArrayList<NodeRef>();
-        NodeRef editorialNode = channel.getNodeRef();
-        allChannelNodes.add(editorialNode);
-        for (AssociationRef assoc : nodeService.getSourceAssocs(editorialNode, PublishingModel.ASSOC_EDITORIAL_CHANNEL))
-        {
-            allChannelNodes.add(assoc.getSourceRef());
-        }
-        for (NodeRef channelNode : allChannelNodes)
-        {
-            nodeService.deleteNode(channelNode);
-        }
+        nodeService.deleteNode(channel.getNodeRef());
     }
 
     /**
@@ -386,20 +370,8 @@ public class ChannelServiceImpl implements ChannelService
     {
         HashMap<QName, Serializable> actualProps = new HashMap<QName, Serializable>(properties);
         actualProps.remove(ContentModel.PROP_NODE_UUID);
-        List<NodeRef> allChannelNodes = new ArrayList<NodeRef>();
         NodeRef editorialNode = channel.getNodeRef();
-        allChannelNodes.add(editorialNode);
-        for (AssociationRef assoc : nodeService.getSourceAssocs(editorialNode, PublishingModel.ASSOC_EDITORIAL_CHANNEL))
-        {
-            allChannelNodes.add(assoc.getSourceRef());
-        }
-        for (NodeRef channelNode : allChannelNodes)
-        {
-            for (Map.Entry<QName, Serializable> entry : actualProps.entrySet())
-            {
-                nodeService.setProperty(channelNode, entry.getKey(), entry.getValue());
-            }
-        }
+        nodeService.setProperties(editorialNode, actualProps);
     }
 
     /**
@@ -408,7 +380,8 @@ public class ChannelServiceImpl implements ChannelService
     @Override
     public Channel getChannel(String id)
     {
-        if(id!=null)
+        if(id!=null&& id.isEmpty()==false
+                && NodeRef.isNodeRef(id))
         {
             NodeRef node = new NodeRef(id);
             return channelHelper.buildChannelObject(node, this);

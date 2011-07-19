@@ -360,6 +360,248 @@ public class CalendarHelpersTest
       assertEquals("2011-07-25", dateFmt.format(dates.get(0)));
    }
    
+   /**
+    * eg on the 2nd of the month
+    */
+   @Test public void monthlyRecurrenceByDateInMonth()
+   {
+      List<Date> dates = new ArrayList<Date>();
+      Calendar currentDate = Calendar.getInstance();
+      
+      Map<String,String> params = new HashMap<String, String>();
+      params.put("BYMONTHDAY", "2");
+      
+      
+      // Dates in the past, get nothing
+      dates.clear();
+      currentDate.set(2011,7-1,19,10,30);
+      RecurrenceHelper.buildMonthlyRecurrences(
+            currentDate, dates, params,
+            date(2011,7,10), date(2011,7,15),
+            true, 1
+      );
+      assertEquals(0, dates.size());
+      
+      dates.clear();
+      currentDate.set(2011,7-1,19,10,30);
+      RecurrenceHelper.buildMonthlyRecurrences(
+            currentDate, dates, params,
+            date(2011,7,10), date(2011,7,15),
+            false, 1
+      );
+      assertEquals(0, dates.size());
+      
+      
+      // With this month
+      dates.clear();
+      currentDate.set(2011,7-1,1,10,30);
+      RecurrenceHelper.buildMonthlyRecurrences(
+            currentDate, dates, params,
+            date(2011,7,1), date(2011,7,26),
+            true, 1
+      );
+      assertEquals(1, dates.size());
+      assertEquals("2011-07-02", dateFmt.format(dates.get(0)));
+      
+      dates.clear();
+      currentDate.set(2011,7-1,1,10,30);
+      RecurrenceHelper.buildMonthlyRecurrences(
+            currentDate, dates, params,
+            date(2011,7,1), date(2011,7,26),
+            false, 1
+      );
+      assertEquals(1, dates.size());
+      assertEquals("2011-07-02", dateFmt.format(dates.get(0)));
+      
+      
+      // From the day of the month 
+      dates.clear();
+      currentDate.set(2011,7-1,2,10,30);
+      RecurrenceHelper.buildMonthlyRecurrences(
+            currentDate, dates, params,
+            date(2011,7,2), date(2011,7,26),
+            true, 1
+      );
+      assertEquals(1, dates.size());
+      assertEquals("2011-07-02", dateFmt.format(dates.get(0)));
+      
+      dates.clear();
+      currentDate.set(2011,7-1,2,10,30);
+      RecurrenceHelper.buildMonthlyRecurrences(
+            currentDate, dates, params,
+            date(2011,7,2), date(2011,7,26),
+            false, 1
+      );
+      assertEquals(1, dates.size());
+      assertEquals("2011-07-02", dateFmt.format(dates.get(0)));
+      
+      
+      // Dates in the future, goes from then
+      dates.clear();
+      currentDate.set(2011,7-1,19,10,30);
+      RecurrenceHelper.buildMonthlyRecurrences(
+            currentDate, dates, params,
+            date(2011,7,20), date(2011,9,20),
+            true, 1
+      );
+      assertEquals(1, dates.size());
+      assertEquals("2011-08-02", dateFmt.format(dates.get(0)));
+      
+      dates.clear();
+      currentDate.set(2011,7-1,19,10,30);
+      RecurrenceHelper.buildMonthlyRecurrences(
+            currentDate, dates, params,
+            date(2011,7,20), date(2011,9,20),
+            false, 1
+      );
+      assertEquals(2, dates.size());
+      assertEquals("2011-08-02", dateFmt.format(dates.get(0)));
+      assertEquals("2011-09-02", dateFmt.format(dates.get(1)));
+      
+      
+      // With no end date but only first, check it behaves
+      dates.clear();
+      currentDate.set(2011,7-1,2,10,30);
+      RecurrenceHelper.buildMonthlyRecurrences(
+            currentDate, dates, params,
+            date(2011,7,1), null,
+            true, 1
+      );
+      assertEquals(1, dates.size());
+      assertEquals("2011-07-02", dateFmt.format(dates.get(0)));
+      
+      dates.clear();
+      currentDate.set(2011,7-1,19,10,30);
+      RecurrenceHelper.buildMonthlyRecurrences(
+            currentDate, dates, params,
+            date(2011,7,19), null,
+            true, 1
+      );
+      assertEquals(1, dates.size());
+      assertEquals("2011-08-02", dateFmt.format(dates.get(0)));
+   }
+   
+   /**
+    * on the 1st Tuesday of the month
+    */
+   @Test public void monthlyRecurrenceByDayOfWeek()
+   {
+      List<Date> dates = new ArrayList<Date>();
+      Calendar currentDate = Calendar.getInstance();
+      
+      Map<String,String> params = new HashMap<String, String>();
+      params.put("BYSETPOS", "TU");
+      
+      
+      // Dates in the past, get nothing
+      dates.clear();
+      currentDate.set(2011,7-1,19,10,30);
+      RecurrenceHelper.buildMonthlyRecurrences(
+            currentDate, dates, params,
+            date(2011,7,10), date(2011,7,15),
+            true, 1
+      );
+      assertEquals(0, dates.size());
+      
+      dates.clear();
+      currentDate.set(2011,7-1,19,10,30);
+      RecurrenceHelper.buildMonthlyRecurrences(
+            currentDate, dates, params,
+            date(2011,7,10), date(2011,7,15),
+            false, 1
+      );
+      assertEquals(0, dates.size());
+      
+      
+      // With this month
+      dates.clear();
+      currentDate.set(2011,7-1,1,10,30);
+      RecurrenceHelper.buildMonthlyRecurrences(
+            currentDate, dates, params,
+            date(2011,7,1), date(2011,7,26),
+            true, 1
+      );
+      assertEquals(1, dates.size());
+      assertEquals("2011-07-05", dateFmt.format(dates.get(0))); // Tuesday 5th
+      
+      dates.clear();
+      currentDate.set(2011,7-1,1,10,30);
+      RecurrenceHelper.buildMonthlyRecurrences(
+            currentDate, dates, params,
+            date(2011,7,1), date(2011,7,26),
+            false, 1
+      );
+      assertEquals(1, dates.size());
+      assertEquals("2011-07-05", dateFmt.format(dates.get(0))); // Tuesday 5th
+      
+      
+      // From the day of the month 
+      dates.clear();
+      currentDate.set(2011,7-1,2,10,30);
+      RecurrenceHelper.buildMonthlyRecurrences(
+            currentDate, dates, params,
+            date(2011,7,2), date(2011,7,26),
+            true, 1
+      );
+      assertEquals(1, dates.size());
+      assertEquals("2011-07-05", dateFmt.format(dates.get(0))); // Tuesday 5th
+      
+      dates.clear();
+      currentDate.set(2011,7-1,2,10,30);
+      RecurrenceHelper.buildMonthlyRecurrences(
+            currentDate, dates, params,
+            date(2011,7,2), date(2011,7,26),
+            false, 1
+      );
+      assertEquals(1, dates.size());
+      assertEquals("2011-07-05", dateFmt.format(dates.get(0))); // Tuesday 5th
+      
+      
+      // Dates in the future, goes from then
+      dates.clear();
+      currentDate.set(2011,7-1,19,10,30);
+      RecurrenceHelper.buildMonthlyRecurrences(
+            currentDate, dates, params,
+            date(2011,7,20), date(2011,9,20),
+            true, 1
+      );
+      assertEquals(1, dates.size());
+      assertEquals("2011-08-02", dateFmt.format(dates.get(0))); // Tuesday 2nd
+      
+      dates.clear();
+      currentDate.set(2011,7-1,19,10,30);
+      RecurrenceHelper.buildMonthlyRecurrences(
+            currentDate, dates, params,
+            date(2011,7,20), date(2011,9,20),
+            false, 1
+      );
+      assertEquals(2, dates.size());
+      assertEquals("2011-08-02", dateFmt.format(dates.get(0))); // Tuesday 2nd
+      assertEquals("2011-09-06", dateFmt.format(dates.get(1))); // Tuesday 6th
+      
+      
+      // With no end date but only first, check it behaves
+      dates.clear();
+      currentDate.set(2011,7-1,2,10,30);
+      RecurrenceHelper.buildMonthlyRecurrences(
+            currentDate, dates, params,
+            date(2011,7,1), null,
+            true, 1
+      );
+      assertEquals(1, dates.size());
+      assertEquals("2011-07-05", dateFmt.format(dates.get(0)));
+      
+      dates.clear();
+      currentDate.set(2011,7-1,19,10,30);
+      RecurrenceHelper.buildMonthlyRecurrences(
+            currentDate, dates, params,
+            date(2011,7,19), null,
+            true, 1
+      );
+      assertEquals(1, dates.size());
+      assertEquals("2011-08-02", dateFmt.format(dates.get(0)));
+   }
+   
    private static class RecurrenceHelper extends CalendarRecurrenceHelper
    {
       protected static void buildDailyRecurrences(Calendar currentDate, List<Date> dates, 
@@ -373,6 +615,13 @@ public class CalendarHelpersTest
             Map<String,String> params, Date onOrAfter, Date until, boolean firstOnly, int interval)
       {
          CalendarRecurrenceHelper.buildWeeklyRecurrences(
+               currentDate, dates, params, onOrAfter, until, firstOnly, interval);
+      }
+      
+      protected static void buildMonthlyRecurrences(Calendar currentDate, List<Date> dates, 
+            Map<String,String> params, Date onOrAfter, Date until, boolean firstOnly, int interval)
+      {
+         CalendarRecurrenceHelper.buildMonthlyRecurrences(
                currentDate, dates, params, onOrAfter, until, firstOnly, interval);
       }
    }

@@ -333,14 +333,19 @@ public class CalendarRecurrenceHelper
       {
          // eg the 15th of each month
          int dayOfMonth = Integer.parseInt(params.get("BYMONTHDAY"));
-         if(currentDate.get(Calendar.DAY_OF_MONTH) < dayOfMonth)
+         if(currentDate.get(Calendar.DAY_OF_MONTH) > dayOfMonth)
          {
-            // Move forward to start
+            // Move forward to start of the next month
             addMonthToDayOfMonth(currentDate, dayOfMonth);
+         }
+         else
+         {
+            // Move to that date in this month
+            currentDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
          }
          
          // Go until in the ok range
-         while(currentDate.before(onOrAfter))
+         while(currentDate.getTime().before(onOrAfter))
          {
             addMonthToDayOfMonth(currentDate, dayOfMonth);
          }
@@ -348,7 +353,7 @@ public class CalendarRecurrenceHelper
          {
             if(until != null)
             {
-               if(currentDate.after(until))
+               if(currentDate.getTime().after(until))
                {
                   break;
                }
@@ -377,13 +382,13 @@ public class CalendarRecurrenceHelper
             // Move forward to start
             Date t = currentDate.getTime();
             currentDate.set(Calendar.DAY_OF_WEEK, dayOfWeek);
-            if(currentDate.before(t))
+            if(currentDate.getTime().before(t))
             {
                currentDate.add(Calendar.DATE, 7);
             }
          }
          
-         while(currentDate.before(onOrAfter))
+         while(currentDate.getTime().before(onOrAfter))
          {
             addMonthToFirstDayOfWeek(currentDate, dayOfWeek);
          }
@@ -391,7 +396,7 @@ public class CalendarRecurrenceHelper
          {
             if(until != null)
             {
-               if(currentDate.after(until))
+               if(currentDate.getTime().after(until))
                {
                   break;
                }
@@ -469,8 +474,8 @@ public class CalendarRecurrenceHelper
    {
       // Set it to the 1st
       c.set(Calendar.DAY_OF_MONTH, 1);
-      // Add 32 days, will be on the 1st-5th
-      c.add(Calendar.DATE, 32);
+      // Add 33 days, will be on the 2nd-6th
+      c.add(Calendar.DATE, 33);
       // Set to the requred day in the month
       c.set(Calendar.DAY_OF_MONTH, dayOfMonth);
    }
@@ -483,7 +488,7 @@ public class CalendarRecurrenceHelper
       Date t = c.getTime();
       c.set(Calendar.DAY_OF_WEEK, dayOfWeek);
       // If we went back, go forward a week
-      if(c.before(t))
+      if(c.getTime().before(t))
       {
          c.add(Calendar.DATE, 7);
       }

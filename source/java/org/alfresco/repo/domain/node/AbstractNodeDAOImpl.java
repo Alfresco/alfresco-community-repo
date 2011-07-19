@@ -2309,16 +2309,19 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return deleteCount > 0;
     }
 
-    public void getNodesWithAspect(QName aspectQName, Long minNodeId, int count, NodeRefQueryCallback resultsCallback)
+    public void getNodesWithAspects(
+            Set<QName> aspectQNames,
+            Long minNodeId, Long maxNodeId,
+            NodeRefQueryCallback resultsCallback)
     {
-        Pair<Long, QName> qnamePair = qnameDAO.getQName(aspectQName);
-        if (qnamePair == null)
+        Set<Long> qnameIdsSet = qnameDAO.convertQNamesToIds(aspectQNames, false);
+        if (qnameIdsSet.size() == 0)
         {
             // No point running a query
             return;
         }
-        Long qnameId = qnamePair.getFirst();
-        selectNodesWithAspect(qnameId, minNodeId, resultsCallback);
+        List<Long> qnameIds = new ArrayList<Long>(qnameIdsSet);
+        selectNodesWithAspects(qnameIds, minNodeId, maxNodeId, resultsCallback);
     }
 
     /**
@@ -3684,7 +3687,10 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     protected abstract Set<Long> selectNodeAspectIds(Long nodeId);
     protected abstract void insertNodeAspect(Long nodeId, Long qnameId);
     protected abstract int deleteNodeAspects(Long nodeId, Set<Long> qnameIds);
-    protected abstract void selectNodesWithAspect(Long qnameId, Long minNodeId, NodeRefQueryCallback resultsCallback);
+    protected abstract void selectNodesWithAspects(
+            List<Long> qnameIds,
+            Long minNodeId, Long maxNodeId,
+            NodeRefQueryCallback resultsCallback);
     protected abstract Long insertNodeAssoc(Long sourceNodeId, Long targetNodeId, Long assocTypeQNameId, int assocIndex);
     protected abstract int updateNodeAssoc(Long id, int assocIndex);
     protected abstract int deleteNodeAssoc(Long sourceNodeId, Long targetNodeId, Long assocTypeQNameId);

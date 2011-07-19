@@ -21,9 +21,12 @@ package org.alfresco.repo.action.executer;
 import java.util.List;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -35,6 +38,7 @@ import org.alfresco.service.cmr.repository.NoTransformerException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TransformationOptions;
+import org.alfresco.service.cmr.repository.CopyService.CopyInfo;
 import org.alfresco.service.cmr.rule.RuleServiceException;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
@@ -47,20 +51,16 @@ import org.apache.commons.logging.LogFactory;
  */
 public class TransformActionExecuter extends ActionExecuterAbstractBase 
 {    
-
-    /** Error messages */
+    /* Error messages */
     public static final String ERR_OVERWRITE = "Unable to overwrite copy because more than one have been found.";
     private static final String CONTENT_READER_NOT_FOUND_MESSAGE = "Can not find Content Reader for document. Operation can't be performed";
     private static final String TRANSFORMING_ERROR_MESSAGE = "Some error occurred during document transforming. Error message: ";
 
     private static final String TRANSFORMER_NOT_EXISTS_MESSAGE_PATTERN = "Transformer for '%s' source mime type and '%s' target mime type was not found. Operation can't be performed";
     
-    /**
-     * The logger
-     */
     private static Log logger = LogFactory.getLog(TransformActionExecuter.class); 
     
-    /**
+    /*
      * Action constants
      */
     public static final String NAME = "transform";
@@ -70,19 +70,18 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
     public static final String PARAM_ASSOC_QNAME = "assoc-name";
     public static final String PARAM_OVERWRITE_COPY = "overwrite-copy";
     
-    /**
+    /*
      * Injected services
      */
     private DictionaryService dictionaryService;
     private NodeService nodeService;
+    private CheckOutCheckInService checkOutCheckInService;
     private ContentService contentService;
     private CopyService copyService;
     private MimetypeService mimetypeService;
     
     /**
      * Set the mime type service
-     * 
-     * @param mimetypeService  the mime type service
      */
     public void setMimetypeService(MimetypeService mimetypeService) 
     {
@@ -91,18 +90,22 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
     
     /**
      * Set the node service
-     * 
-     * @param nodeService  set the node service
      */
     public void setNodeService(NodeService nodeService) 
     {
         this.nodeService = nodeService;
     }
-    
+
+    /**
+     * Set the service to determine check-in and check-out status
+     */
+    public void setCheckOutCheckInService(CheckOutCheckInService checkOutCheckInService)
+    {
+        this.checkOutCheckInService = checkOutCheckInService;
+    }
+
     /**
      * Set the dictionary service
-     * 
-     * @param dictionaryService  the dictionary service
      */
     public void setDictionaryService(DictionaryService dictionaryService) 
     {
@@ -111,8 +114,6 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
     
     /**
      * Set the content service
-     * 
-     * @param contentService  the content service
      */
     public void setContentService(ContentService contentService) 
     {
@@ -121,8 +122,6 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
     
     /**
      * Set the copy service
-     * 
-     * @param copyService  the copy service
      */
     public void setCopyService(CopyService copyService) 
     {
@@ -198,32 +197,35 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
         NodeRef copyNodeRef = null;
         if (overwrite == true)
         {
-            // Try and find copies of the actioned upon node reference
-            List<NodeRef> copies = this.copyService.getCopies(actionedUponNodeRef);
-            if (copies != null && copies.isEmpty() == false)
+            // Try and find copies of the actioned upon node reference.
+            // Include the parent folder because that's where the copy will be if this action
+            // had done the first copy.
+            PagingResults<CopyInfo> copies = copyService.getCopies(
+                    actionedUponNodeRef,
+                    destinationParent,
+                    new PagingRequest(1000));
+            for (CopyInfo copyInfo : copies.getPage())
             {
-                for (NodeRef copy : copies)
+                NodeRef copy = copyInfo.getNodeRef();
+                String copyName = copyInfo.getName();
+                // We know that it is in the destination parent, but avoid working copies
+                if (checkOutCheckInService.isWorkingCopy(copy))
                 {
-                    // Ignore if the copy is a working copy
-                    if (this.nodeService.hasAspect(copy, ContentModel.ASPECT_WORKING_COPY) == false)
-                    {
-                        // We can assume that we are looking for a node created by this action so the primary parent will
-                        // match the destination folder and the name will be the same
-                        NodeRef parent = this.nodeService.getPrimaryParent(copy).getParentRef();
-                        String copyName = (String)this.nodeService.getProperty(copy, ContentModel.PROP_NAME);
-                        if (parent.equals(destinationParent) == true && copyName.equals(newName) == true)
-                        {
-                            if (copyNodeRef == null)
-                            {
-                                copyNodeRef = copy;
-                            }
-                            else
-                            {
-                                throw new RuleServiceException(ERR_OVERWRITE);
-                            }
-                        }
-                        
-                    }
+                    // It is a working copy
+                    continue;
+                }
+                else if (!newName.equals(copyName))
+                {
+                    // The copy's name is not what this action would have set it to
+                    continue;
+                }
+                if (copyNodeRef == null)
+                {
+                    copyNodeRef = copy;
+                }
+                else
+                {
+                    throw new RuleServiceException(ERR_OVERWRITE);
                 }
             }
         }

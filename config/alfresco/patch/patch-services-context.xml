@@ -45,27 +45,13 @@
 
     <!-- base patch definition -->
     <bean id="basePatch" abstract="true" depends-on="patchComponent" init-method="init">
-        <property name="patchService">
-            <ref bean="patchComponent" />
-        </property>
-        <property name="transactionService">
-            <ref bean="transactionService" />
-        </property>
-        <property name="namespaceService">
-            <ref bean="namespaceService" />
-        </property>
-        <property name="searchService">
-            <ref bean="searchService" />
-        </property>
-        <property name="nodeService">
-            <ref bean="nodeService"/>
-        </property>
-        <property name="authenticationContext">
-            <ref bean="authenticationContext" />
-        </property>
-        <property name="tenantAdminService">
-            <ref bean="tenantAdminService" />
-        </property>
+        <property name="patchService" ref="patchComponent" />
+        <property name="transactionService" ref="transactionService" />
+        <property name="namespaceService" ref="namespaceService" />
+        <property name="searchService" ref="searchService" />
+        <property name="nodeService" ref="nodeService"/>
+        <property name="authenticationContext" ref="authenticationContext" />
+        <property name="tenantAdminService" ref="tenantAdminService" />
     </bean>
     
     <!-- Example patches -->
@@ -1864,18 +1850,10 @@
                 <ref bean="patch.InvalidNameEnding" />
             </list>
         </property>
-        <property name="patchDAO">
-            <ref bean="patchDAO" />
-        </property>
-        <property name="qnameDAO">
-            <ref bean="qnameDAO" />
-        </property>
-        <property name="controlDAO">
-            <ref bean="controlDAO" />
-        </property>
-        <property name="dictionaryService">
-            <ref bean="dictionaryService" />
-        </property>
+        <property name="patchDAO" ref="patchDAO" />
+        <property name="qnameDAO" ref="qnameDAO" />
+        <property name="controlDAO" ref="controlDAO" />
+        <property name="dictionaryService" ref="dictionaryService" />
         <property name="batchThreads" value="2"/>
         <property name="batchSize" value="1000"/>
         <property name="batchMaxQueryRange" value="5000"/>
@@ -2909,7 +2887,7 @@
         <property name="description"><value>patch.avmToAdmRemoteStore.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>5011</value></property>
-        <property name="targetSchema"><value>5012</value></property><!-- TODO: set this correctly before commit! -->
+        <property name="targetSchema"><value>5012</value></property>
         <property name="requiresTransaction"><value>false</value></property>
         
         <property name="fileFolderService" ref="fileFolderService" />
@@ -2918,6 +2896,24 @@
         <property name="avmService" ref="AVMService" />
         <property name="avmStore"><value>sitestore</value></property>
         <property name="avmRootPath"><value>/alfresco/site-data</value></property>
+    </bean>
+    
+    <!-- Fix data related to cm:copiedfrom aspect -->
+    <bean id="patch.copiedFromAspect" class="org.alfresco.repo.admin.patch.impl.CopiedFromAspectPatch" parent="basePatch">
+        <property name="id"><value>patch.copiedFromAspect</value></property>
+        <property name="description"><value>patch.copiedFromAspect.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>5012</value></property>
+        <property name="targetSchema"><value>5013</value></property>
+        <property name="requiresTransaction"><value>false</value></property>
+        <property name="applyToTenants"><value>false</value></property>
+
+        <property name="patchDAO" ref="patchDAO" />
+        <property name="nodeDAO" ref="nodeDAO" />
+        <property name="dictionaryService" ref="dictionaryService" />
+        <property name="batchThreads" value="2"/>
+        <property name="batchSize" value="1000"/>
+        <property name="batchMaxQueryRange" value="5000"/>
     </bean>
     
 </beans>

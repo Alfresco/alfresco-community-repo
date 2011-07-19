@@ -27,7 +27,7 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -88,12 +88,12 @@ public class OnContentUpdateRuleTrigger extends RuleTriggerAbstractBase
      */
     public void onContentUpdate(NodeRef nodeRef, boolean newContent)
     {
-    	
-    	// Check the new content and make sure that we do indeed want to trigger the rule
-    	boolean fail = false;
-    	if (newContent == true)
-    	{
-    	    Boolean value = (Boolean)nodeService.getProperty(nodeRef, QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "editInline"));
+        
+        // Check the new content and make sure that we do indeed want to trigger the rule
+        boolean fail = false;
+        if (newContent == true)
+        {
+            Boolean value = (Boolean)nodeService.getProperty(nodeRef, QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "editInline"));
             if (value != null)
             {
                 boolean editInline = value.booleanValue();
@@ -102,18 +102,17 @@ public class OnContentUpdateRuleTrigger extends RuleTriggerAbstractBase
                     fail = true;
                 }
             }
-    	    
+            
             if (fail == false)
             {
-        		ContentReader contentReader = this.contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
-        		if (contentReader == null || 
-        			contentReader.exists() == false || 
-        			isZeroLengthOfficeDoc(contentReader) == true)
-        		{
-    				fail = true;
-        		}
+                // Note: Don't use the ContentService.getReader() because we don't need access to the content
+                ContentData contentData = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+                if (contentData == null || isZeroLengthOfficeDoc(contentData))
+                {
+                    fail = true;
+                }
             }
-    	}
+        }
         
         // Double check for content created in this transaction
         if (fail == false && !newContent)
@@ -126,11 +125,11 @@ public class OnContentUpdateRuleTrigger extends RuleTriggerAbstractBase
             }
             fail = wasCreatedInTxn;
         }
-    	
-    	// Trigger the rules in the appropriate way
+        
+        // Trigger the rules in the appropriate way
         if (fail == false && newContent == this.onNewContent)
         {
-        	if (triggerParentRules == true)
+            if (triggerParentRules == true)
             {
                 if (logger.isDebugEnabled() == true)
                 {
@@ -153,20 +152,20 @@ public class OnContentUpdateRuleTrigger extends RuleTriggerAbstractBase
     /**
      * Indicates whether we are dealing with a zero length office document or not
      * 
-     * @param contentReader		the content reader
-     * @return boolean			true if zero length office document, false otherwise					
+     * @param contentData        the content details
+     * @return boolean            true if zero length office document, false otherwise                    
      */
-    private boolean isZeroLengthOfficeDoc(ContentReader contentReader)
+    private boolean isZeroLengthOfficeDoc(ContentData contentData)
     {
-    	boolean result = false;
-    	if (contentReader.getSize() == 0 &&
-    		(MimetypeMap.MIMETYPE_WORD.equals(contentReader.getMimetype()) == true ||
-    		 MimetypeMap.MIMETYPE_EXCEL.equals(contentReader.getMimetype()) == true ||
-    		 MimetypeMap.MIMETYPE_PPT.equals(contentReader.getMimetype()) == true))
-    	{
-    		result = true;
-    	}
-    	return result;
+        boolean result = false;
+        if (contentData.getSize() == 0 &&
+            (MimetypeMap.MIMETYPE_WORD.equals(contentData.getMimetype()) == true ||
+             MimetypeMap.MIMETYPE_EXCEL.equals(contentData.getMimetype()) == true ||
+             MimetypeMap.MIMETYPE_PPT.equals(contentData.getMimetype()) == true))
+        {
+            result = true;
+        }
+        return result;
     }
 
 }

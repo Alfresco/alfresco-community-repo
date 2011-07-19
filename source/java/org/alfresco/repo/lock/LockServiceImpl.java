@@ -56,8 +56,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
-import org.alfresco.service.cmr.security.OwnableService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -73,100 +71,36 @@ public class LockServiceImpl implements LockService,
                                         VersionServicePolicies.BeforeCreateVersionPolicy,
                                         VersionServicePolicies.OnCreateVersionPolicy
 {
-    /**
-     * The node service
-     */
-    private NodeService nodeService;
-    
-    /**
-     * The tenant service
-     */
-    private TenantService tenantService;
-
-    /**
-     * The policy component
-     */
-    private PolicyComponent policyComponent;
-    
     /** Key to the nodes ref's to ignore when checking for locks */
     private static final String KEY_IGNORE_NODES = "lockService.ignoreNodes";
     
-    /**
-     * The authentication service
-     */
+    private NodeService nodeService;
+    private TenantService tenantService;
     private AuthenticationService authenticationService;
-
-    /**
-     * The ownable service
-     * 
-     */
-    private OwnableService ownableService;
-    
-    /**
-     * The search service
-     */
     private SearchService searchService;
 
-    /**
-     * Set the node service
-     * 
-     * @param nodeService
-     *            the node service
-     */
+    private PolicyComponent policyComponent;
+    
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
  
-    /**
-     * Set the tenant service
-     * 
-     * @param tenantService
-     *            the tenant service
-     */   
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
     }
 
-    /**
-     * Sets the policy component
-     * 
-     * @param policyComponent
-     *            the policy componentO
-     */
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
     }
 
-    /**
-     * Sets the authentication service
-     * 
-     * @param authenticationService
-     *            the authentication service
-     */
     public void setAuthenticationService(AuthenticationService authenticationService)
     {
         this.authenticationService = authenticationService;
     }
 
-    /**
-     * Sets the ownable service
-     * 
-     * @param ownableService
-     *            the ownable service
-     */
-    public void setOwnableService(OwnableService ownableService)
-    {
-        this.ownableService = ownableService;
-    }
-    
-    /**
-     * Set the search service
-     * 
-     * @param searchService     the search service
-     */
     public void setSearchService(SearchService searchService)
     {
         this.searchService = searchService;
@@ -353,19 +287,25 @@ public class LockServiceImpl implements LockService,
     public void unlock(NodeRef nodeRef) throws UnableToReleaseLockException
     {
         nodeRef = tenantService.getName(nodeRef);
-        
-        // Check for lock aspect
-        checkForLockApsect(nodeRef);
-        
-        addToIgnoreSet(nodeRef);
-        try
+        if (!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
         {
-            // Clear the lock
-            this.nodeService.removeAspect(nodeRef, ContentModel.ASPECT_LOCKABLE);
+            // Nothing to unlock
         }
-        finally
+        else
         {
-            removeFromIgnoreSet(nodeRef);
+            // Check for lock aspect
+            checkForLockApsect(nodeRef);
+            
+            addToIgnoreSet(nodeRef);
+            try
+            {
+                // Clear the lock
+                this.nodeService.removeAspect(nodeRef, ContentModel.ASPECT_LOCKABLE);
+            }
+            finally
+            {
+                removeFromIgnoreSet(nodeRef);
+            }
         }
     }
 

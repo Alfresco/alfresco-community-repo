@@ -62,13 +62,6 @@
         <result property="lastModified" column="lastModified" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </resultMap>
     
-    <resultMap id="result_DuplicateEntry" type="DuplicateEntry">
-        <result property="id" column="child_id" jdbcType="BIGINT" javaType="java.lang.Long" />
-        <result property="parentId" column="parent_id" jdbcType="BIGINT" javaType="java.lang.Long" />
-        <result property="name" column="name" jdbcType="VARCHAR" javaType="java.lang.String" />
-        <result property="amount" column="cnt" jdbcType="BIGINT" javaType="java.lang.Long" />
-    </resultMap>
-    
     <resultMap id="result_aclIneritanceIssue" type="java.util.HashMap">
         <result property="childAclId" column="child_acl_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="childAclType" column="child_acl_type" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -115,12 +108,6 @@
         <parameter property="typeQNameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="propQNameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="namePattern" jdbcType="VARCHAR" javaType="java.lang.String"/>
-    </parameterMap>
-    
-    <parameterMap id="parameter_RenamedDuplicateEntry" type="DuplicateEntry">
-        <parameter property="name" jdbcType="VARCHAR" javaType="java.lang.String" />
-        <parameter property="id" jdbcType="BIGINT" javaType="java.lang.Long" />
-        <parameter property="parentId" jdbcType="BIGINT" javaType="java.lang.Long" />
     </parameterMap>
     
     <!--                -->
@@ -342,31 +329,6 @@
             acl_id > ?
     </select>
     
-    <!-- deprecated - superceded by 'patch.db-V3.4-AVM-rename-dupes' -->
-    <select id="select_AvmNodeDuplicates" resultMap="result_DuplicateEntry">
-        <![CDATA[
-        select
-            ce.child_id, ce.parent_id, ce.name, entities.cnt
-        from
-            avm_child_entries ce,
-            (
-               select
-                  ce2.parent_id, lower(ce2.name) as lname, count(*) as cnt
-               from
-                  avm_child_entries ce2
-               group by
-                  ce2.parent_id, lower(ce2.name)
-               having
-                  count(*) > 1
-            ) entities
-        where
-            (ce.parent_id = entities.parent_id)
-            and (lower(ce.name) = entities.lname)
-        order by
-            parent_id, lower(name), child_id
-        ]]>
-    </select>
-    
     <select id="select_sharedAclsThatDoNotInheritCorrectlyFromThePrimaryParent" parameterType="boolean" resultMap="result_aclIneritanceIssue">
         <![CDATA[
         select distinct
@@ -499,6 +461,16 @@
        ]]>
     </select>
     
+    <select id="select_CountNodesWithAspectIds" parameterType="Ids" resultType="long" >
+        select
+            count(*)
+        from
+            alf_node_aspects na
+        where
+            na.qname_id in
+                <foreach item="item" index="i" collection="ids" open="(" separator="," close=")">#{item}</foreach>
+    </select>
+    
     <!--                -->
     <!-- Updates        -->
     <!--                -->
@@ -535,17 +507,6 @@
             qname_crc = ?
         where
             id = ?
-    </update>
-    
-    <!-- deprecated - superceded by 'patch.db-V3.4-AVM-rename-dupes' -->
-    <update id="update_AvmNodeNameById" parameterMap="parameter_RenamedDuplicateEntry">
-        update
-            avm_child_entries
-        set
-            name = ?
-        where
-            child_id = ?
-            and parent_id = ?
     </update>
     
     <update id="update_CreateSizeCurrentProperty" parameterType="SizeCurrentParams" >

@@ -19,10 +19,10 @@
 package org.alfresco.service.cmr.repository;
 
 import java.util.List;
-import java.util.Set;
 
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.security.permissions.PermissionCheckValue;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.namespace.QName;
 
@@ -161,6 +161,16 @@ public interface CopyService
     public void copy(NodeRef sourceNodeRef, NodeRef destinationNodeRef);   
     
     /**
+     * Get the original for a given copied node
+     * 
+     * @param copiedNodeRef             the copied node reference
+     * @return                          the original node reference or <tt>null</tt> if it isn't a
+     *                                  copy or the original has been deleted
+     */
+    @Auditable(parameters = {"nodeRef"})
+    public NodeRef getOriginal(NodeRef copiedNodeRef);
+    
+    /**
      * Gets all the copies of a given node that have been made using this service.
      * 
      * @param nodeRef   the original node reference
@@ -176,19 +186,15 @@ public interface CopyService
      * @author Derek Hulley
      * @since 4.0
      */
-    public class CopyInfo
+    public class CopyInfo implements PermissionCheckValue
     {
         private final NodeRef nodeRef;
         private final String name;
-        private final NodeRef parentNodeRef;
-        private final String parentName;
         
-        public CopyInfo(NodeRef nodeRef, String name, NodeRef parentNodeRef, String parentName)
+        public CopyInfo(NodeRef nodeRef, String name)
         {
             this.nodeRef = nodeRef;
             this.name = name;
-            this.parentNodeRef = parentNodeRef;
-            this.parentName = parentName;
         }
 
         /**
@@ -206,22 +212,6 @@ public interface CopyService
         {
             return name;
         }
-
-        /**
-         * @return              the parent of the node copy
-         */
-        public NodeRef getParentNodeRef()
-        {
-            return parentNodeRef;
-        }
-
-        /**
-         * @return              the name of the parent of the node copy
-         */
-        public String getParentName()
-        {
-            return parentName;
-        }
     }
     
     /**
@@ -231,7 +221,7 @@ public interface CopyService
      * @param pagingRequest             page request details
      * @return                          the page(s) of nodes that were copied from the given node
      */
-    @Auditable(parameters = {"nodeRef"})
+    @Auditable(parameters = {"originalNodeRef"})
     public PagingResults<CopyInfo> getCopies(NodeRef originalNodeRef, PagingRequest pagingRequest);
     
     /**
@@ -243,10 +233,9 @@ public interface CopyService
      * @param pagingRequest             page request details
      * @return                          the page(s) of nodes that were copied from the given node
      */
-    @Auditable(parameters = {"nodeRef"})
+    @Auditable(parameters = {"originalNodeRef", "copyParentNodeRef"})
     public PagingResults<CopyInfo> getCopies(
             NodeRef originalNodeRef,
             NodeRef copyParentNodeRef,
-            Set<QName> copyNodeAspectsToIgnore,
             PagingRequest pagingRequest);
 }

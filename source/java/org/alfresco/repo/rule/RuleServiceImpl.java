@@ -43,6 +43,7 @@ import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ActionServiceException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -89,6 +90,7 @@ public class RuleServiceImpl
     
     private NodeService nodeService;
     private NodeService runtimeNodeService;
+    private CopyService copyService;
     private ActionService actionService;
     private DictionaryService dictionaryService;
     private PolicyComponent policyComponent;
@@ -156,7 +158,15 @@ public class RuleServiceImpl
     {
         this.runtimeNodeService = runtimeNodeService;
     }
-    
+
+    /**
+     * Set the service for locating copied nodes' originals
+     */
+    public void setCopyService(CopyService copyService)
+    {
+        this.copyService = copyService;
+    }
+
     /**
      * Set the action service
      */
@@ -335,107 +345,81 @@ public class RuleServiceImpl
         return result;
     }
     
-    /**
-     * @see org.alfresco.repo.rule.RuleService#getRuleTypes()
-     */
+    @Override
     public List<RuleType> getRuleTypes()
     {
         return new ArrayList<RuleType>(this.ruleTypes.values());
     }
     
-    /**
-     * @see org.alfresco.repo.rule.RuleService#getRuleType(java.lang.String)
-     */
+    @Override
     public RuleType getRuleType(String name)
     {
         return this.ruleTypes.get(name);
     }    
     
-    /**
-     * @see org.alfresco.service.cmr.rule.RuleService#enableRules()
-     */
+    @Override
     public void enableRules()
     {
         this.rulesDisabled.remove();        
     }
 
-    /**
-     * @see org.alfresco.service.cmr.rule.RuleService#disableRules()
-     */
+    @Override
     public void disableRules()
     {
         this.rulesDisabled.set(Boolean.TRUE);
     }
     
-    /**
-     * @see org.alfresco.service.cmr.rule.RuleService#isEnabled()
-     */
+    @Override
     public boolean isEnabled()
     {
         return (this.globalRulesDisabled == false && this.rulesDisabled.get() == null);
     }
     
-    /**
-     * @see org.alfresco.service.cmr.rule.RuleService#rulesEnabled(NodeRef)
-     */
+    @Override
     public boolean rulesEnabled(NodeRef nodeRef)
     {
         return (this.disabledNodeRefs.contains(nodeRef) == false);
     }
 
-    /**
-     * @see org.alfresco.service.cmr.rule.RuleService#disableRules(NodeRef)
-     */
+    @Override
     public void disableRules(NodeRef nodeRef)
     {
         // Add the node to the set of disabled nodes
         this.disabledNodeRefs.add(nodeRef);
     }
 
-    /**
-     * @see org.alfresco.service.cmr.rule.RuleService#enableRules(NodeRef)
-     */
+    @Override
     public void enableRules(NodeRef nodeRef)
     {
         // Remove the node from the set of disabled nodes
         this.disabledNodeRefs.remove(nodeRef);
     }
     
-    /**
-     * @see org.alfresco.service.cmr.rule.RuleService#disableRule(org.alfresco.service.cmr.rule.Rule)
-     */
+    @Override
     public void disableRule(Rule rule)
     {
         this.disabledRules.add(rule);
     }
     
-    /**
-     * @see org.alfresco.service.cmr.rule.RuleService#enableRule(org.alfresco.service.cmr.rule.Rule)
-     */
+    @Override
     public void enableRule(Rule rule)
     {
         this.disabledRules.remove(rule);
     }
     
-    /**
-     * @see org.alfresco.service.cmr.rule.RuleService#disableRuleType(org.alfresco.service.cmr.rule.RuleType)
-     */
+    @Override
     public void disableRuleType(String ruleType)
     {
     	disabledRuleTypes.add(ruleType);
     }
 
-    /**
-     * @see org.alfresco.service.cmr.rule.RuleService#enableRuleType(org.alfresco.service.cmr.rule.RuleType)
-     */
+    @Override
     public void enableRuleType(String ruleType)
     {
     	disabledRuleTypes.remove(ruleType);
     }
     
-    /**
-     * @see org.alfresco.service.cmr.rule.RuleService#isRuleTypeEnabled(org.alfresco.service.cmr.rule.RuleType)
-     */
+    @Override
     public boolean isRuleTypeEnabled(String ruleType)
     {
     	boolean result = true;
@@ -446,33 +430,25 @@ public class RuleServiceImpl
     	return result;
     }
     
-    /**
-     * @see org.alfresco.service.cmr.rule.RuleService#hasRules(org.alfresco.repo.ref.NodeRef)
-     */
+    @Override
     public boolean hasRules(NodeRef nodeRef)
     {
         return getRules(nodeRef).size() != 0;
     } 
 
-    /**
-     * @see org.alfresco.repo.rule.RuleService#getRules(org.alfresco.repo.ref.NodeRef)
-     */
+    @Override
     public List<Rule> getRules(NodeRef nodeRef)
     {
         return getRules(nodeRef, true, null);
     }
 
-    /**  
-     * @see org.alfresco.repo.rule.RuleService#getRules(org.alfresco.repo.ref.NodeRef, boolean)
-     */
+    @Override
     public List<Rule> getRules(NodeRef nodeRef, boolean includeInherited)
     {
         return getRules(nodeRef, includeInherited, null);
     }
     
-    /**
-     * @see org.alfresco.repo.rule.RuleService#getRulesByRuleType(org.alfresco.repo.ref.NodeRef, org.alfresco.repo.rule.RuleType)
-     */
+    @Override
     public List<Rule> getRules(final NodeRef nodeRef, final boolean includeInherited, final String ruleTypeName)
     {
         //Run from system user: https://issues.alfresco.com/jira/browse/ALF-607
@@ -556,9 +532,7 @@ public class RuleServiceImpl
         return nodeRules;
     }
         
-    /**
-     * @see org.alfresco.service.cmr.rule.RuleService#countRules(org.alfresco.service.cmr.repository.NodeRef)
-     */
+    @Override
     public int countRules(NodeRef nodeRef)
     {
         int ruleCount = 0;
@@ -749,9 +723,7 @@ public class RuleServiceImpl
         return rule;
     }
 
-    /**
-     * @see org.alfresco.repo.rule.RuleService#saveRule(org.alfresco.repo.ref.NodeRef, org.alfresco.repo.rule.Rule)
-     */
+    @Override
     public void saveRule(NodeRef nodeRef, Rule rule)
     {
         checkForLinkedRules(nodeRef);
@@ -810,18 +782,14 @@ public class RuleServiceImpl
         }
     }
     
-    /**
-     * @see org.alfresco.service.cmr.rule.RuleService#saveRule(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.rule.Rule, int)
-     */    
+    @Override
     public void saveRule(NodeRef nodeRef, Rule rule, int index)
     {
         saveRule(nodeRef, rule);
         setRulePosition(nodeRef, rule.getNodeRef(), index);
     }
     
-    /**
-     * @see org.alfresco.service.cmr.rule.RuleService#setRulePosition(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, int)
-     */
+    @Override
     public void setRulePosition(NodeRef nodeRef, NodeRef ruleNodeRef, int index)
     {
         NodeRef ruleFolder = getSavedRuleFolderRef(nodeRef);
@@ -856,9 +824,7 @@ public class RuleServiceImpl
         }
     }
     
-    /**
-     * @see org.alfresco.service.cmr.rule.RuleService#setRulePosition(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.rule.Rule, int)
-     */
+    @Override
     public void setRulePosition(NodeRef nodeRef, Rule rule, int index)
     {
         setRulePosition(nodeRef, rule.getNodeRef(), index);
@@ -909,9 +875,7 @@ public class RuleServiceImpl
             
     }
     
-    /**
-     * @see org.alfresco.repo.rule.RuleService#removeRule(org.alfresco.repo.ref.NodeRef, org.alfresco.service.cmr.rule.Rule)
-     */
+    @Override
     public void removeRule(NodeRef nodeRef, Rule rule)
     {
         checkForLinkedRules(nodeRef);
@@ -962,10 +926,8 @@ public class RuleServiceImpl
             throw new RuleServiceException("Can not edit rules as they are linked to another rule set.");
         }
     }
-    
-    /**
-     * @see org.alfresco.repo.rule.RuleService#removeAllRules(NodeRef)
-     */
+
+    @Override
     public void removeAllRules(NodeRef nodeRef)
     {
         checkForLinkedRules(nodeRef);
@@ -999,14 +961,13 @@ public class RuleServiceImpl
         }
     }
     
-    /**
-     * @see org.alfresco.repo.rule.RuntimeRuleService#addRulePendingExecution(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.rule.Rule)
-     */
+    @Override
     public void addRulePendingExecution(NodeRef actionableNodeRef, NodeRef actionedUponNodeRef, Rule rule) 
     {
         addRulePendingExecution(actionableNodeRef, actionedUponNodeRef, rule, false);
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public void removeRulePendingExecution(NodeRef actionedUponNodeRef)
     {
@@ -1035,9 +996,7 @@ public class RuleServiceImpl
         }
     }
     
-    /**
-     * @see org.alfresco.repo.rule.RuntimeRuleService#addRulePendingExecution(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.rule.Rule, boolean)
-     */
+    @Override
     @SuppressWarnings("unchecked")
     public void addRulePendingExecution(NodeRef actionableNodeRef, NodeRef actionedUponNodeRef, Rule rule, boolean executeAtEnd) 
     {
@@ -1082,11 +1041,7 @@ public class RuleServiceImpl
         }
     }
     
-    
-    
-    /**
-     * @see org.alfresco.repo.rule.RuleService#executePendingRules()
-     */
+    @Override
     public void executePendingRules() 
     {           
         if (AlfrescoTransactionSupport.getResource(KEY_RULES_EXECUTED) == null)
@@ -1186,9 +1141,7 @@ public class RuleServiceImpl
         }
     }
     
-    /**
-     * @see org.alfresco.repo.rule.RuntimeRuleService#executeRule(org.alfresco.service.cmr.rule.Rule, org.alfresco.service.cmr.repository.NodeRef, java.util.Set)
-     */
+    @Override
     public void executeRule(Rule rule, NodeRef actionedUponNodeRef, Set<ExecutedRuleData> executedRules)
     {
         // Get the action associated with the rule
@@ -1220,11 +1173,6 @@ public class RuleServiceImpl
     
     /**
      * Determines whether the rule can be executed
-     * 
-     * @param executedRules
-     * @param actionedUponNodeRef
-     * @param rule
-     * @return
      */
     private boolean canExecuteRule(Set<ExecutedRuleData> executedRules, NodeRef actionedUponNodeRef, Rule rule)
     {
@@ -1263,26 +1211,18 @@ public class RuleServiceImpl
 
     /**
      * Checks to see if a copy exists in the executed rules list
-     * 
-     * @param executedRules
-     * @param actionedUponNodeRef
-     * @param rule
-     * @return
      */
     private boolean checkForCopy(Set<ExecutedRuleData> executedRules, NodeRef actionedUponNodeRef, Rule rule)
     {
         boolean result = true;
         if (this.nodeService.exists(actionedUponNodeRef)
-                && this.permissionService.hasPermission(actionedUponNodeRef, PermissionService.READ).equals(AccessStatus.ALLOWED)
-                && this.nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_COPIEDFROM) == true)
+                && this.permissionService.hasPermission(actionedUponNodeRef, PermissionService.READ).equals(AccessStatus.ALLOWED))
         {
+            NodeRef copiedFrom = copyService.getOriginal(actionedUponNodeRef);
             if (logger.isDebugEnabled() == true)
             {
-                logger.debug(" >> Has the copied from aspect (" + actionedUponNodeRef.getId() + ")");
+                logger.debug(" >> Got the copiedFrom nodeRef (" + copiedFrom + ")");
             }
-            NodeRef copiedFrom = (NodeRef)this.nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_COPY_REFERENCE);
-            
-            if (logger.isDebugEnabled() == true && copiedFrom != null) {logger.debug(" >> Got the copedFrom nodeRef (" + copiedFrom.getId() + ")");};
             
             if (copiedFrom != null)
             {
@@ -1436,18 +1376,14 @@ public class RuleServiceImpl
         }
     }
 
-    /**
-     * @see org.alfresco.service.cmr.rule.RuleService#getOwningNodeRef(org.alfresco.service.cmr.rule.Rule)
-     */
+    @Override
     public NodeRef getOwningNodeRef(final Rule rule)
     {
         // Run from system user: https://issues.alfresco.com/jira/browse/ALF-607
         return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
         {
-
             public NodeRef doWork() throws Exception
             {
-
                 NodeRef result = null;
         
                 NodeRef ruleNodeRef = rule.getNodeRef();
@@ -1461,10 +1397,6 @@ public class RuleServiceImpl
         }, AuthenticationUtil.getSystemUserName());
     }
 
-    /**
-     * @param ruleNodeRef
-     * @return
-     */
     private NodeRef getOwningNodeRefRuleImpl(NodeRef ruleNodeRef)
     {
         // Get the system folder parent
@@ -1474,9 +1406,7 @@ public class RuleServiceImpl
         return this.nodeService.getPrimaryParent(systemFolder).getParentRef();
     }
 
-    /**
-     * @see org.alfresco.service.cmr.rule.RuleService#getOwningNodeRef(org.alfresco.service.cmr.action.Action)
-     */
+    @Override
     public NodeRef getOwningNodeRef(final Action action)
     {
         // Run from system user: https://issues.alfresco.com/jira/browse/ALF-607
@@ -1498,9 +1428,6 @@ public class RuleServiceImpl
         }, AuthenticationUtil.getSystemUserName());
     }
 
-    /**
-     * @param actionNodeRef
-     */
     private NodeRef getOwningNodeRefActionImpl(NodeRef actionNodeRef)
     {
         NodeRef result = null;
@@ -1520,17 +1447,13 @@ public class RuleServiceImpl
         return result;
     }
     
-    /**
-     * @see org.alfresco.service.cmr.rule.RuleService#isLinkedToRuleNode(org.alfresco.service.cmr.repository.NodeRef)
-     */
+    @Override
     public boolean isLinkedToRuleNode(NodeRef nodeRef)
     {
         return (getLinkedToRuleNode(nodeRef) != null);
     }
     
-    /**
-     * @see org.alfresco.service.cmr.rule.RuleService#getLinkedToRuleNode(org.alfresco.service.cmr.repository.NodeRef)
-     */
+    @Override
     public NodeRef getLinkedToRuleNode(NodeRef nodeRef)
     {
         NodeRef result = null;
@@ -1548,9 +1471,7 @@ public class RuleServiceImpl
         return result;
     }
     
-    /**
-     * @see org.alfresco.service.cmr.rule.RuleService#getLinkedFromRuleNodes(org.alfresco.service.cmr.repository.NodeRef)
-     */
+    @Override
     public List<NodeRef> getLinkedFromRuleNodes(NodeRef nodeRef)
     {
         List<NodeRef> result = new ArrayList<NodeRef>();
@@ -1570,8 +1491,6 @@ public class RuleServiceImpl
                 }
             }
         }
-        
         return result;
     }
-    
 }

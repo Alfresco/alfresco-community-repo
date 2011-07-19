@@ -902,6 +902,8 @@ public class RuleServiceCoverageTest extends TestCase
      */
     public void testCopyAction()
     {
+        String localName = getName() + System.currentTimeMillis();
+        
         Map<String, Serializable> params = new HashMap<String, Serializable>(1);
         params.put(MoveActionExecuter.PARAM_DESTINATION_FOLDER, this.rootNodeRef);
         
@@ -917,7 +919,7 @@ public class RuleServiceCoverageTest extends TestCase
         NodeRef newNodeRef = this.nodeService.createNode(
                 this.nodeRef,
                 ContentModel.ASSOC_CHILDREN,                
-                QName.createQName(TEST_NAMESPACE, "origional"),
+                QName.createQName(TEST_NAMESPACE, localName),
                 ContentModel.TYPE_CONTENT,
                 getContentProperties()).getChildRef(); 
         addContentToNode(newNodeRef);
@@ -928,7 +930,7 @@ public class RuleServiceCoverageTest extends TestCase
         List<ChildAssociationRef> origRefs = this.nodeService.getChildAssocs(
                 this.nodeRef, 
                 RegexQNamePattern.MATCH_ALL,
-                QName.createQName(TEST_NAMESPACE, "origional"));
+                QName.createQName(TEST_NAMESPACE, localName));
         assertNotNull(origRefs);
         assertEquals(1, origRefs.size());
         NodeRef origNodeRef = origRefs.get(0).getChildRef();
@@ -937,7 +939,7 @@ public class RuleServiceCoverageTest extends TestCase
         // Check that the created node has been copied
         List<ChildAssociationRef> copyChildAssocRefs = this.nodeService.getChildAssocs(
                                                     this.rootNodeRef, 
-                                                    RegexQNamePattern.MATCH_ALL, QName.createQName(TEST_NAMESPACE, "origional"));
+                                                    RegexQNamePattern.MATCH_ALL, QName.createQName(TEST_NAMESPACE, localName));
         assertNotNull(copyChildAssocRefs);
         
         // **********************************
@@ -947,7 +949,7 @@ public class RuleServiceCoverageTest extends TestCase
         
         NodeRef copyNodeRef = copyChildAssocRefs.get(0).getChildRef();
         assertTrue(this.nodeService.hasAspect(copyNodeRef, ContentModel.ASPECT_COPIEDFROM));
-        NodeRef source = (NodeRef)this.nodeService.getProperty(copyNodeRef, ContentModel.PROP_COPY_REFERENCE);
+        NodeRef source = copyService.getOriginal(copyNodeRef);
         assertEquals(newNodeRef, source);
         
         // TODO test deep copy !!
@@ -1028,7 +1030,7 @@ public class RuleServiceCoverageTest extends TestCase
         assertEquals(1, copyChildAssocRefs.size());
         NodeRef copyNodeRef = copyChildAssocRefs.get(0).getChildRef();
         assertTrue(this.nodeService.hasAspect(copyNodeRef, ContentModel.ASPECT_COPIEDFROM));
-        NodeRef source = (NodeRef)this.nodeService.getProperty(copyNodeRef, ContentModel.PROP_COPY_REFERENCE);
+        NodeRef source = copyService.getOriginal(copyNodeRef);
         assertEquals(newNodeRef, source);
         
         // Check the transformed content
@@ -1107,7 +1109,7 @@ public class RuleServiceCoverageTest extends TestCase
         assertEquals(1, copyChildAssocRefs.size());
         NodeRef copyNodeRef = copyChildAssocRefs.get(0).getChildRef();
         assertTrue(this.nodeService.hasAspect(copyNodeRef, ContentModel.ASPECT_COPIEDFROM));
-        NodeRef source = (NodeRef)this.nodeService.getProperty(copyNodeRef, ContentModel.PROP_COPY_REFERENCE);
+        NodeRef source = copyService.getOriginal(copyNodeRef);
         assertEquals(newNodeRef, source);
     }
 	
@@ -1215,7 +1217,7 @@ public class RuleServiceCoverageTest extends TestCase
             else if (this.nodeService.hasAspect(childNodeRef, ContentModel.ASPECT_WORKING_COPY) == true)
             {
                 // assert that it is the working copy that relates to the origional node
-                NodeRef copiedFromNodeRef = (NodeRef)this.nodeService.getProperty(childNodeRef, ContentModel.PROP_COPY_REFERENCE);
+                NodeRef copiedFromNodeRef = copyService.getOriginal(childNodeRef);
                 assertEquals(newNodeRef, copiedFromNodeRef);
             }
         }

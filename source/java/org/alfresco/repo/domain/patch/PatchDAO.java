@@ -20,6 +20,7 @@ package org.alfresco.repo.domain.patch;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.repo.domain.avm.AVMNodeEntity;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
@@ -215,33 +216,32 @@ public interface PatchDAO
     
     /**
      * Get shared acls with inheritance issues
-     * @return
      */
     public List<Map<String, Object>> getSharedAclsThatDoNotInheritCorrectlyFromThePrimaryParent();
     
     /**
      * Get defining acls with inheritance issues
-     * @return
      */
     public List<Map<String, Object>> getDefiningAclsThatDoNotInheritCorrectlyFromThePrimaryParent();
     
     /**
      * Get acls that do not inherit from the primary parent.
-     * @return
      */
     public List<Map<String, Object>> getAclsThatInheritFromNonPrimaryParent();
     
     /**
      * Get acls that inherit with inheritance unset
-     * @return
      */
     public List<Map<String, Object>> getAclsThatInheritWithInheritanceUnset();
     
     /**
      * Get shared acls that do not inherit correctly from the defining acl
-     * @return
      */
     public List<Map<String, Object>> getSharedAclsThatDoNotInheritCorrectlyFromTheirDefiningAcl();
     
-    
+    /**
+     * @param qnames                the qnames to search for
+     * @return                      Returns a count of the number of nodes that have either of the aspects
+     */
+    public long getCountNodesWithAspects(Set<QName> qnames);
 }

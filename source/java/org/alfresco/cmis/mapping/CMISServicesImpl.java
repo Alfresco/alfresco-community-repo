@@ -1341,11 +1341,8 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
         return nodeService.getPrimaryParent(folderRef).getParentRef();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.CMISServices#getVersionSeries(java.lang.String, java.lang.Class, boolean)
-     */
     @SuppressWarnings("unchecked")
+    @Override
     public <T> T getVersionSeries(String objectId, Class<T> requiredType, boolean isVersionable)
             throws CMISConstraintException, CMISVersioningException, CMISObjectNotFoundException,
             CMISInvalidArgumentException, CMISPermissionDeniedException
@@ -1367,12 +1364,13 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
         {
             NodeRef nodeRef = (NodeRef) object;
             // Map working copy nodes back to where they were checked out from
-            if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
+            NodeRef workingCopyNodeRef = checkOutCheckInService.getCheckedOut(nodeRef);
+            if (workingCopyNodeRef != null)
             {
-                result = (NodeRef) nodeService.getProperty(nodeRef, ContentModel.PROP_COPY_REFERENCE);
+                // It is a working copy
+                result = workingCopyNodeRef;
             }
-            // Preserve all other nodes
-            else
+            else                    // Preserve all other nodes
             {
                 result = nodeRef;
             }

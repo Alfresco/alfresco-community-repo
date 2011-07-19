@@ -508,24 +508,11 @@
     <!--                               -->
 
     <bean id="lockService" class="org.alfresco.repo.lock.LockServiceImpl" init-method="init">
-        <property name="nodeService">
-            <ref bean="nodeService" />
-        </property>
-        <property name="tenantService">
-            <ref bean="tenantService" />
-        </property>        
-        <property name="policyComponent">
-            <ref bean="policyComponent" />
-        </property>
-        <property name="authenticationService">
-            <ref bean="authenticationService"></ref>
-        </property>
-        <property name="ownableService">
-            <ref bean="ownableService"></ref>
-        </property>
-        <property name="searchService">
-            <ref bean="admSearchService"></ref>
-        </property>
+        <property name="nodeService" ref="nodeService" />
+        <property name="tenantService" ref="tenantService" />
+        <property name="policyComponent" ref="policyComponent" />
+        <property name="authenticationService" ref="authenticationService" />
+        <property name="searchService" ref="admSearchService" />
     </bean>
 
     <!--                               -->
@@ -791,54 +778,24 @@
     <!--                           -->
 
     <bean id="checkOutCheckInService" class="org.alfresco.repo.coci.CheckOutCheckInServiceImpl" init-method="init">
-        <property name="nodeService">
-            <ref bean="nodeService" />
-        </property>
-        <property name="versionService">
-            <ref bean="versionService" />
-        </property>
-        <property name="ruleService">
-            <ref bean="ruleService" />
-        </property>
-        <property name="lockService">
-            <ref bean="LockService" />
-        </property>
-        <property name="ownableService">
-            <ref bean="OwnableService" />
-        </property>
-        <property name="copyService">
-            <ref bean="CopyService" />
-        </property>
-        <property name="authenticationService">
-            <ref bean="authenticationService" />
-        </property>
-        <property name="fileFolderService">
-            <ref bean="fileFolderService" />
-        </property>
-        <property name="searchService">
-            <ref bean="searchService" />
-        </property>
-        <property name="versionableAspect">
-            <ref bean="versionableAspect" />
-        </property>
-        <property name="policyComponent">
-            <ref bean="policyComponent" />
-        </property>
-         <property name="behaviourFilter" >
-            <ref bean="policyBehaviourFilter" />
-        </property>
+        <property name="nodeService" ref="nodeService" />
+        <property name="versionService" ref="versionService" />
+        <property name="ruleService" ref="ruleService" />
+        <property name="lockService" ref="LockService" />
+        <property name="ownableService" ref="OwnableService" />
+        <property name="copyService" ref="CopyService" />
+        <property name="authenticationService" ref="authenticationService" />
+        <property name="fileFolderService" ref="fileFolderService" />
+        <property name="versionableAspect" ref="versionableAspect" />
+        <property name="policyComponent" ref="policyComponent" />
+         <property name="behaviourFilter" ref="policyBehaviourFilter" />
     </bean>
 
     <bean id="workingCopyAspect" class="org.alfresco.repo.coci.WorkingCopyAspect" init-method="init">
-        <property name="policyComponent">
-            <ref bean="policyComponent" />
-        </property>
-        <property name="nodeService">
-            <ref bean="NodeService" />
-        </property>
-        <property name="lockService">
-            <ref bean="LockService" />
-        </property>
+        <property name="policyComponent" ref="policyComponent" />
+        <property name="nodeService" ref="NodeService" />
+        <property name="lockService" ref="LockService" />
+        <property name="checkOutCheckInService" ref="CheckoutCheckinService" />
     </bean>
 
 

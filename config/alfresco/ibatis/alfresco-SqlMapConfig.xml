@@ -80,12 +80,12 @@ Inbound settings from iBatis
         
         <!-- Copy CQ -->
         <typeAlias alias="CopyParameters" type="org.alfresco.repo.copy.query.CopyParametersEntity"/>
+        <typeAlias alias="Copy" type="org.alfresco.repo.copy.query.CopyEntity"/>
         
         <!-- Patch -->
         
         <typeAlias alias="Ids" type="org.alfresco.ibatis.IdsEntity"/>
         <typeAlias alias="SizeCurrentParams" type="org.alfresco.repo.domain.patch.ibatis.SizeCurrentParams"/>
-        <typeAlias alias="DuplicateEntry" type="org.alfresco.repo.admin.patch.impl.DuplicateEntry" />
         
         <!-- Permissions -->
         

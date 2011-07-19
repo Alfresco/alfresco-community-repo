@@ -43,6 +43,7 @@ import org.alfresco.repo.dictionary.M2ChildAssociation;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.M2Property;
 import org.alfresco.repo.dictionary.M2Type;
+import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -77,6 +78,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -477,14 +479,14 @@ public class CopyServiceImplTest extends TestCase
     /**
      * Test copy new node within store     
      */
-    public void DISABLED_testCopyToNewNode()
+    public void testCopyToNewNode()
     {
         PagingRequest pageRequest = new PagingRequest(10);
         PagingResults<CopyInfo> copies = null;
         
         // Check that the node has no copies
         copies = copyService.getCopies(sourceNodeRef, pageRequest);
-        assertEquals("Incorrect number of copies", 1, copies.getPage().size());
+        assertEquals("Incorrect number of copies", 0, copies.getPage().size());
         
         // Copy to new node without copying children
         NodeRef copy = copyService.copy(
@@ -535,7 +537,87 @@ public class CopyServiceImplTest extends TestCase
         
         //System.out.println(
         //        NodeStoreInspector.dumpNodeStore(nodeService, storeRef));
-    }    
+    }
+    
+    public void testCopiedFromAspect()
+    {
+        IntegrityChecker integrityChecker = (IntegrityChecker) ctx.getBean("integrityChecker");
+
+        // Create the node used for copying
+        ChildAssociationRef childAssocRef = nodeService.createNode(
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName("{test}test"),
+                TEST_TYPE_QNAME,
+                createTypePropertyBag());
+        NodeRef nodeRef = childAssocRef.getChildRef();
+
+        PagingRequest pageRequest = new PagingRequest(10);
+        pageRequest.setRequestTotalCountMax(200);
+        PagingResults<CopyInfo> copies = null;
+        
+        NodeRef firstCopy = null;
+
+        for (int i = 1; i <= 100; i++)
+        {
+            NodeRef copyNodeRef = copyService.copy(
+                    nodeRef,
+                    rootNodeRef,
+                    ContentModel.ASSOC_CHILDREN,
+                    QName.createQName("{test}copyAssoc"));
+            if (firstCopy == null)
+            {
+                firstCopy = copyNodeRef;
+            }
+            copies = copyService.getCopies(nodeRef, pageRequest);
+            assertEquals("Total count not correct", new Pair<Integer, Integer>(i, i), copies.getTotalResultCount());
+            assertEquals("Incorrect number of copies", (i > 10 ? 10 : i), copies.getPage().size());
+            
+            // Since the results are paged, make sure that we have the correct results while we only have a page
+            boolean found = (i > 10) ? true : false;
+            for (CopyInfo copy : copies.getPage())
+            {
+                if (found)          // Might not be checking if we are over a page
+                {
+                    break;
+                }
+                if (copy.getNodeRef().equals(copyNodeRef))
+                {
+                    found = true;
+                }
+            }
+            assertTrue("Did not find the copy in the list of copies.", found);
+            
+            // Run integrity checks to ensure that commit has a chance
+            integrityChecker.checkIntegrity();
+            
+            // Now query for copies in current parent location
+            copies = copyService.getCopies(nodeRef, rootNodeRef, pageRequest);
+            assertEquals("Total count not correct", new Pair<Integer, Integer>(i, i), copies.getTotalResultCount());
+            assertEquals("Incorrect number of copies", (i > 10 ? 10 : i), copies.getPage().size());
+            
+            // Check that the original node can be retrieved
+            NodeRef originalCheck = copyService.getOriginal(copyNodeRef);
+            assertEquals("Original is not as expected. ", nodeRef, originalCheck);
+
+            // Check that the parent node can be included
+            copies = copyService.getCopies(nodeRef, rootNodeRef, pageRequest);
+            assertEquals("Total count not correct", new Pair<Integer, Integer>(i, i), copies.getTotalResultCount());
+            assertEquals("Incorrect number of copies", (i > 10 ? 10 : i), copies.getPage().size());
+            
+            // And query against some other parent node
+            copies = copyService.getCopies(nodeRef, sourceNodeRef, pageRequest);        // Some arbitrary parent
+            assertEquals("Expected to find no copies", 0, copies.getPage().size());
+        }
+        
+        // Should be able to delete the original
+        nodeService.deleteNode(nodeRef);
+        // Run integrity checks to ensure that commit has a chance
+        integrityChecker.checkIntegrity();
+        // Should be no original
+        NodeRef originalCheck = copyService.getOriginal(firstCopy);
+        assertNull("Original should not be present. ", originalCheck);
+    }
     
     public void testCopyNodeWithRules()
     {
@@ -1069,9 +1151,10 @@ public class CopyServiceImplTest extends TestCase
                 // Check that the copy aspect has been applied to the copy
                 boolean hasCopyAspect = nodeService.hasAspect(destinationNodeRef, ContentModel.ASPECT_COPIEDFROM);
                 assertTrue("Missing aspect: " + ContentModel.ASPECT_COPIEDFROM, hasCopyAspect);
-                NodeRef copyNodeRef = (NodeRef)nodeService.getProperty(destinationNodeRef, ContentModel.PROP_COPY_REFERENCE);
-                assertNotNull(copyNodeRef);
-                assertEquals(sourceNodeRef, copyNodeRef);
+                List<AssociationRef> assocs = nodeService.getTargetAssocs(destinationNodeRef, ContentModel.ASSOC_ORIGINAL);
+                assertEquals("Expectd exactly one reference back to original", 1, assocs.size());
+                NodeRef checkSourceNodeRef = assocs.get(0).getTargetRef();
+                assertEquals("Copy refers to incorrect original source", sourceNodeRef, checkSourceNodeRef);
             }
             else
             {

@@ -431,7 +431,7 @@ public class VersionMigratorTest extends BaseVersionStoreTest
         NodeRef nodeRef = nodeService.createNode(
                 rootNodeRef, 
                 ContentModel.ASSOC_CHILDREN, 
-                QName.createQName("{test}MyVersionableNode"),
+                QName.createQName(TEST_NAMESPACE, "MyVersionableNode"),
                 TEST_TYPE_QNAME,
                 this.nodeProperties).getChildRef();
         

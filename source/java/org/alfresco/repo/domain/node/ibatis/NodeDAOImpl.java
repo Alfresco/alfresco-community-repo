@@ -96,7 +96,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String INSERT_NODE_ASPECT = "alfresco.node.insert.insert_NodeAspect";
     private static final String DELETE_NODE_ASPECTS = "alfresco.node.delete_NodeAspects";
     private static final String DELETE_NODE_PROPERTIES = "alfresco.node.delete_NodeProperties";
-    private static final String SELECT_NODES_WITH_ASPECT_ID = "alfresco.node.select_NodesWithAspectId";
+    private static final String SELECT_NODES_WITH_ASPECT_IDS = "alfresco.node.select_NodesWithAspectIds";
     private static final String INSERT_NODE_ASSOC = "alfresco.node.insert.insert_NodeAssoc";
     private static final String UPDATE_NODE_ASSOC = "alfresco.node.update_NodeAssoc";
     private static final String DELETE_NODE_ASSOC = "alfresco.node.delete_NodeAssoc";
@@ -629,7 +629,10 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     }
 
     @Override
-    protected void selectNodesWithAspect(Long qnameId, Long minNodeId, final NodeRefQueryCallback resultsCallback)
+    protected void selectNodesWithAspects(
+            List<Long> qnameIds,
+            Long minNodeId, Long maxNodeId,
+            final NodeRefQueryCallback resultsCallback)
     {
         ResultHandler resultHandler = new ResultHandler()
         {
@@ -641,10 +644,11 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
             }
         };
         
-        Map<String, Long> parameters = new HashMap<String, Long>(5);
-        parameters.put("minNodeId", minNodeId);
-        parameters.put("qnameId", qnameId);
-        template.select(SELECT_NODES_WITH_ASPECT_ID, parameters,resultHandler);
+        IdsEntity parameters = new IdsEntity();
+        parameters.setIdOne(minNodeId);
+        parameters.setIdTwo(maxNodeId);
+        parameters.setIds(qnameIds);
+        template.select(SELECT_NODES_WITH_ASPECT_IDS, parameters, resultHandler);
     }
 
     @Override

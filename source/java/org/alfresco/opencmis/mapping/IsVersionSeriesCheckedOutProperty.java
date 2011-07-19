@@ -33,21 +33,13 @@ public class IsVersionSeriesCheckedOutProperty extends AbstractVersioningPropert
 {
     /**
      * Construct
-     * 
-     * @param serviceRegistry
      */
     public IsVersionSeriesCheckedOutProperty(ServiceRegistry serviceRegistry)
     {
         super(serviceRegistry, PropertyIds.IS_VERSION_SERIES_CHECKED_OUT);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.alfresco.cmis.property.PropertyAccessor#getValue(org.alfresco.service
-     * .cmr.repository.NodeRef)
-     */
+    @Override
     public Serializable getValue(NodeRef nodeRef)
     {
         return isWorkingCopy(nodeRef) || hasWorkingCopy(getVersionSeries(nodeRef));

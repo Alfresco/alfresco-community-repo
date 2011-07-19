@@ -23,13 +23,16 @@ package org.alfresco.repo.action.executer;
 
 import java.util.List;
 
-import org.alfresco.model.ContentModel;
+import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.CopyService;
+import org.alfresco.service.cmr.repository.CopyService.CopyInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.RuleServiceException;
@@ -50,20 +53,12 @@ public class CopyActionExecuter extends ActionExecuterAbstractBase
     public static final String PARAM_DEEP_COPY = "deep-copy";
     public static final String PARAM_OVERWRITE_COPY = "overwrite-copy";
     
-    /**
-     * Node operations service
-     */
     private CopyService copyService;
-	
-	/**
-	 * The node service
-	 */
 	private NodeService nodeService;
+	private CheckOutCheckInService checkOutCheckInService;
 	
     /**
      * Sets the node service
-     * 
-     * @param nodeService   the node service
      */
 	public void setNodeService(NodeService nodeService) 
 	{
@@ -72,19 +67,21 @@ public class CopyActionExecuter extends ActionExecuterAbstractBase
 	
     /**
      * Sets the copy service
-     * 
-     * @param copyService   the copy service
      */
 	public void setCopyService(CopyService copyService) 
 	{
 		this.copyService = copyService;
 	}
-    
 
-    /**
-     * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
-     */
-	@Override
+	/**
+	 * Service to determine check-in or check-out status
+	 */
+	public void setCheckOutCheckInService(CheckOutCheckInService checkOutCheckInService)
+    {
+        this.checkOutCheckInService = checkOutCheckInService;
+    }
+
+    @Override
 	protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
 	{
 		paramList.add(new ParameterDefinitionImpl(PARAM_DESTINATION_FOLDER, DataTypeDefinition.NODE_REF, true, getParamDisplayLabel(PARAM_DESTINATION_FOLDER)));
@@ -92,80 +89,76 @@ public class CopyActionExecuter extends ActionExecuterAbstractBase
         paramList.add(new ParameterDefinitionImpl(PARAM_OVERWRITE_COPY, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_OVERWRITE_COPY)));
 	}
 
-    /**
-     * @see org.alfresco.repo.action.executer.ActionExecuter#execute(org.alfresco.repo.ref.NodeRef, org.alfresco.repo.ref.NodeRef)
-     */
+	@Override
     public void executeImpl(Action ruleAction, NodeRef actionedUponNodeRef)
     {
-	if (this.nodeService.exists(actionedUponNodeRef) == true)
-	{
+        if (!nodeService.exists(actionedUponNodeRef))
+    	{
+            return;
+    	}
 	    NodeRef destinationParent = (NodeRef)ruleAction.getParameterValue(PARAM_DESTINATION_FOLDER);
 	       
 	    // Get the deep copy value
 	    boolean deepCopy = false;
-            Boolean deepCopyValue = (Boolean)ruleAction.getParameterValue(PARAM_DEEP_COPY);
-            if (deepCopyValue != null)
+        Boolean deepCopyValue = (Boolean)ruleAction.getParameterValue(PARAM_DEEP_COPY);
+        if (deepCopyValue != null)
+        {
+            deepCopy = deepCopyValue.booleanValue();
+        }
+        
+        // Get the overwirte value
+        boolean overwrite = true;
+        Boolean overwriteValue = (Boolean)ruleAction.getParameterValue(PARAM_OVERWRITE_COPY);
+        if (overwriteValue != null)
+        {
+            overwrite = overwriteValue.booleanValue();
+        }
+        
+        // Since we are overwriting we need to figure out whether the destination node exists
+        NodeRef copyNodeRef = null;
+        if (overwrite == true)
+        {
+            // Try and find copies of the actioned upon node reference.
+            // Include the parent folder because that's where the copy will be if this action
+            // had done the first copy.
+            PagingResults<CopyInfo> copies = copyService.getCopies(
+                    actionedUponNodeRef,
+                    destinationParent,
+                    new PagingRequest(1000));
+            for (CopyInfo copyInfo : copies.getPage())
             {
-                deepCopy = deepCopyValue.booleanValue();
-            }
-	        
-            // Get the overwirte value
-            boolean overwrite = true;
-            Boolean overwriteValue = (Boolean)ruleAction.getParameterValue(PARAM_OVERWRITE_COPY);
-            if (overwriteValue != null)
-            {
-                overwrite = overwriteValue.booleanValue();
-            }
-            
-            // Since we are overwriting we need to figure out whether the destination node exists
-            NodeRef destinationNodeRef = null;
-            if (overwrite == true)
-            {
-                // Try and find copies of the actioned upon node reference
-                List<NodeRef> copies = this.copyService.getCopies(actionedUponNodeRef);
-                if (copies != null && copies.isEmpty() == false)
+                NodeRef copy = copyInfo.getNodeRef();
+                // We know that it is in the destination parent, but avoid working copies
+                if (checkOutCheckInService.isWorkingCopy(copy))
                 {
-                    for (NodeRef copy : copies)
-                    {
-                        // Ignore if the copy is a working copy
-                        if (this.nodeService.hasAspect(copy, ContentModel.ASPECT_WORKING_COPY) == false)
-                        {
-                            // We can assume that we are looking for a node created by this action so the primary parent will
-                            // match the destination folder
-                            NodeRef parent = this.nodeService.getPrimaryParent(copy).getParentRef();
-                            if (parent.equals(destinationParent) == true)
-                            {
-                                if (destinationNodeRef == null)
-                                {
-                                    destinationNodeRef = copy;
-                                }
-                                else
-                                {
-                                    throw new RuleServiceException(ERR_OVERWRITE);
-                                }
-                            }
-                            
-                        }
-                    }
+                    continue;
+                }
+                if (copyNodeRef == null)
+                {
+                    copyNodeRef = copy;
+                }
+                else
+                {
+                    throw new RuleServiceException(ERR_OVERWRITE);
                 }
             }
-            
-            if (destinationNodeRef != null)
-            {
-                // Overwrite the state of the destination node ref with the actioned upon node state
-                this.copyService.copy(actionedUponNodeRef, destinationNodeRef);
-            }
-            else
-            {
-                ChildAssociationRef originalAssoc = nodeService.getPrimaryParent(actionedUponNodeRef);
-                // Create a new copy of the node
-                this.copyService.copyAndRename(
-	                actionedUponNodeRef, 
-	                destinationParent,
-                    originalAssoc.getTypeQName(),
-                    originalAssoc.getQName(),
-	                deepCopy);
-            }
-		}
+        }
+        
+        if (copyNodeRef != null)
+        {
+            // Overwrite the state of the destination node ref with the actioned upon node state
+            this.copyService.copy(actionedUponNodeRef, copyNodeRef);
+        }
+        else
+        {
+            ChildAssociationRef originalAssoc = nodeService.getPrimaryParent(actionedUponNodeRef);
+            // Create a new copy of the node
+            this.copyService.copyAndRename(
+                actionedUponNodeRef, 
+                destinationParent,
+                originalAssoc.getTypeQName(),
+                originalAssoc.getQName(),
+                deepCopy);
+        }
     }
 }

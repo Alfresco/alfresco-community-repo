@@ -29,7 +29,8 @@ import java.util.List;
 public class CopyParametersEntity
 {
     private Long originalNodeId;
-    private Long copiedFromAssocTypeId;
+    private Long originalAssocTypeId;
+    private Long namePropId;
     private Long copyParentNodeId;
     private List<Long> copyAspectIdsToIgnore;
     
@@ -41,13 +42,21 @@ public class CopyParametersEntity
     {
         this.originalNodeId = originalNodeId;
     }
-    public Long getCopiedFromAssocTypeId()
+    public Long getOriginalAssocTypeId()
     {
-        return copiedFromAssocTypeId;
+        return originalAssocTypeId;
     }
-    public void setCopiedFromAssocTypeId(Long copiedFromAssocTypeId)
+    public void setOriginalAssocTypeId(Long originalAssocTypeId)
     {
-        this.copiedFromAssocTypeId = copiedFromAssocTypeId;
+        this.originalAssocTypeId = originalAssocTypeId;
+    }
+    public Long getNamePropId()
+    {
+        return namePropId;
+    }
+    public void setNamePropId(Long namePropId)
+    {
+        this.namePropId = namePropId;
     }
     public Long getCopyParentNodeId()
     {
@@ -64,5 +73,9 @@ public class CopyParametersEntity
     public void setCopyAspectIdsToIgnore(List<Long> copyAspectIdsToIgnore)
     {
         this.copyAspectIdsToIgnore = copyAspectIdsToIgnore;
+    }
+    public boolean getTrue()
+    {
+        return true;
     }
 }

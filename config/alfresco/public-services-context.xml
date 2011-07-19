@@ -308,8 +308,9 @@
     </bean>
 
     <!-- COCI Service -->
-
-    <bean id="CheckoutCheckinService" class="org.springframework.aop.framework.ProxyFactoryBean">
+    
+    <alias alias="CheckoutCheckinService" name="CheckOutCheckInService" />
+    <bean id="CheckOutCheckInService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.service.cmr.coci.CheckOutCheckInService</value>
         </property>
@@ -318,15 +319,15 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="CheckoutCheckinService_transaction"/>
+                <idref local="CheckOutCheckInService_transaction"/>
                 <idref local="AuditMethodInterceptor"/>
                 <idref local="exceptionTranslator"/>
-                <idref bean="CheckoutCheckinService_security"/>
+                <idref bean="CheckOutCheckInService_security"/>
             </list>
         </property>
     </bean>
 
-    <bean id="CheckoutCheckinService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+    <bean id="CheckOutCheckInService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
             <ref bean="transactionManager"/>
         </property>

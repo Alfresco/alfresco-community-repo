@@ -54,33 +54,23 @@ import org.springframework.context.ApplicationContext;
  * Test the lock owner dynamic authority
  * 
  * @author andyh
- *
  */
 public class LockOwnerDynamicAuthorityTest extends TestCase
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
 
     private NodeService nodeService;
-
     private MutableAuthenticationService authenticationService;
-
     private AuthenticationComponent authenticationComponent;
-    
     private MutableAuthenticationDao authenticationDAO;
-
     private LockService lockService;
-    
-    private NodeRef rootNodeRef;
-
-    private UserTransaction userTransaction;
-
     private PermissionService permissionService;
-
     private LockOwnerDynamicAuthority dynamicAuthority;
-
     private CheckOutCheckInService checkOutCheckInService;
-    
     private OwnableService ownableService;
+
+    private NodeRef rootNodeRef;
+    private UserTransaction userTransaction;
     
     /**
      * 

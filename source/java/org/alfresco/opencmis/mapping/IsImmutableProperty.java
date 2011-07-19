@@ -33,21 +33,13 @@ public class IsImmutableProperty extends AbstractVersioningProperty
 {
     /**
      * Construct
-     * 
-     * @param serviceRegistry
      */
     public IsImmutableProperty(ServiceRegistry serviceRegistry)
     {
         super(serviceRegistry, PropertyIds.IS_IMMUTABLE);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.alfresco.cmis.property.PropertyAccessor#getValue(org.alfresco.service
-     * .cmr.repository.NodeRef)
-     */
+    @Override
     public Serializable getValue(NodeRef nodeRef)
     {
         if (!isCurrentVersion(nodeRef))

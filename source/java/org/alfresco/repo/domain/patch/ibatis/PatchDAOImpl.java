@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.ibatis.IdsEntity;
 import org.alfresco.model.ContentModel;
@@ -101,6 +102,8 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     private static final String SELECT_SHARED_ACLS_THAT_DO_NOT_INHERIT_CORRECTLY_FROM_THE_PRIMARY_PARENT = "alfresco.patch.select_sharedAclsThatDoNotInheritCorrectlyFromThePrimaryParent";
     private static final String SELECT_SHARED_ACLS_THAT_DO_NOT_INHERIT_CORRECTLY_FROM_THEIR_DEFINING_ACL = "alfresco.patch.select_sharedAclsThatDoNotInheritCorrectlyFromTheirDefiningAcl";
    
+    private static final String SELECT_COUNT_NODES_WITH_ASPECTS = "alfresco.patch.select_CountNodesWithAspectIds";
+
     private LocaleDAO localeDAO;
     
     protected SqlSessionTemplate template;
@@ -627,5 +630,27 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
                 SELECT_SHARED_ACLS_THAT_DO_NOT_INHERIT_CORRECTLY_FROM_THEIR_DEFINING_ACL,
                 Boolean.TRUE);
         return rows;
+    }
+
+    @Override
+    public long getCountNodesWithAspects(Set<QName> qnames)
+    {
+        // Resolve QNames
+        Set<Long> qnameIds = qnameDAO.convertQNamesToIds(qnames, false);
+        if (qnameIds.size() == 0)
+        {
+            return 0L;
+        }
+        IdsEntity params = new IdsEntity();
+        params.setIds(new ArrayList<Long>(qnameIds));
+        Long count = (Long) template.selectOne(SELECT_COUNT_NODES_WITH_ASPECTS, params);
+        if (count == null)
+        {
+            return 0L;
+        }
+        else
+        {
+            return count;
+        }
     }
 }

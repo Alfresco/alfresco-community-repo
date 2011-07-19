@@ -28,42 +28,30 @@ import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.CopyServicePolicies;
 import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
+import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.lock.LockService;
-import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 
 public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy
 {    
-    /**
-     * Policy component
-     */
     private PolicyComponent policyComponent;
-    
-    /**
-     * The node service
-     */
     private NodeService nodeService;
-    
-    /**
-     * The lock service
-     */
     private LockService lockService;
+    private CheckOutCheckInService checkOutCheckInService;
     
     /**
      * The working copy aspect copy behaviour callback.
-     * */
+     */
     private WorkingCopyAspectCopyBehaviourCallback workingCopyAspectCopyBehaviourCallback = new WorkingCopyAspectCopyBehaviourCallback();
     
     /**
      * Sets the policy component
-     * 
-     * @param policyComponent  the policy component
      */
     public void setPolicyComponent(PolicyComponent policyComponent) 
     {
@@ -72,8 +60,6 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy
     
     /**
      * Set the node service
-     * 
-     * @param nodeService   the node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -82,14 +68,20 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy
     
     /**
      * Set the lock service
-     * 
-     * @param lockService   the lock service
      */
     public void setLockService(LockService lockService)
     {
         this.lockService = lockService;
     }
-    
+
+    /**
+     * @param checkOutCheckInService            the service dealing with working copies
+     */
+    public void setCheckOutCheckInService(CheckOutCheckInService checkOutCheckInService)
+    {
+        this.checkOutCheckInService = checkOutCheckInService;
+    }
+
     /**
      * Initialise method
      */
@@ -97,19 +89,24 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy
     {
         // Register copy behaviour for the working copy aspect
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
+                CopyServicePolicies.OnCopyNodePolicy.QNAME,
                 ContentModel.TYPE_CMOBJECT,
                 new JavaBehaviour(this, "getCopyCallback"));
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
+                CopyServicePolicies.OnCopyNodePolicy.QNAME,
                 ContentModel.ASPECT_WORKING_COPY,
+                new JavaBehaviour(this, "getCopyCallback"));
+        this.policyComponent.bindClassBehaviour(
+                CopyServicePolicies.OnCopyNodePolicy.QNAME,
+                ContentModel.ASPECT_CHECKED_OUT,
                 new JavaBehaviour(this, "getCopyCallback"));
         
         // register onBeforeDelete class behaviour for the working copy aspect
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),
+                NodeServicePolicies.BeforeDeleteNodePolicy.QNAME,
                 ContentModel.ASPECT_WORKING_COPY,
-                new JavaBehaviour(this, "beforeDeleteNode"));
+                new JavaBehaviour(this, "beforeDeleteWorkingCopy"));
+        // register onBeforeDelete class behaviour for the checked-out aspect
     }
     
     /**
@@ -117,23 +114,13 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy
      * 
      * @param nodeRef   the node reference about to be deleted
      */
-    public void beforeDeleteNode(NodeRef nodeRef)
+    public void beforeDeleteWorkingCopy(NodeRef nodeRef)
     {
-        // Prior to deleting a working copy the lock on the origional node should be released
-        // Note: we do not call cancelCheckOut since this will also attempt to delete the node is question
-        if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY) == true &&
-            this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_COPIEDFROM) == true)
+        NodeRef checkedOutNodeRef = checkOutCheckInService.getCheckedOut(nodeRef);
+        if (checkedOutNodeRef != null)
         {
-            // Get the origional node
-            NodeRef origNodeRef = (NodeRef)this.nodeService.getProperty(nodeRef, ContentModel.PROP_COPY_REFERENCE);
-            if (origNodeRef != null)
-            {      
-               if (this.lockService.getLockStatus(origNodeRef).equals(LockStatus.NO_LOCK) == false)
-               {               
-                   // Release the lock on the origional node
-                   this.lockService.unlock(origNodeRef);
-               }
-            }
+            lockService.unlock(checkedOutNodeRef);
+            nodeService.removeAspect(checkedOutNodeRef, ContentModel.ASPECT_CHECKED_OUT);
         }
     }
     
@@ -175,7 +162,9 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy
          * Prevents copying off the {@link ContentModel#PROP_NAME <b>cm:name</b>} property.
          */
         @Override
-        public Map<QName, Serializable> getCopyProperties(QName classQName, CopyDetails copyDetails,
+        public Map<QName, Serializable> getCopyProperties(
+                QName classQName,
+                CopyDetails copyDetails,
                 Map<QName, Serializable> properties)
         {
             if (classQName.equals(ContentModel.ASPECT_WORKING_COPY))
@@ -187,19 +176,22 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy
                 // Generate a new name for a new copy of a working copy
                 String newName = null;
 
-                // This is a copy of a working copy to a new node (not a check in). Try to derive a new name from the
-                // node it is checked out from
-                if (copyDetails.isTargetNodeIsNew() && copyDetails.getSourceNodeAspectQNames().contains(ContentModel.ASPECT_COPIEDFROM))
+                if (copyDetails.isTargetNodeIsNew())
                 {
-                    NodeRef checkedOutFrom = (NodeRef) copyDetails.getSourceNodeProperties().get(
-                            ContentModel.PROP_COPY_REFERENCE);
-                    if (nodeService.exists(checkedOutFrom))
+                    // This is a copy of a working copy to a new node (not a check in). Try to derive a new name from the
+                    // node it is checked out from
+                    NodeRef checkedOutFrom = checkOutCheckInService.getCheckedOut(copyDetails.getSourceNodeRef());
+                    if (checkedOutFrom != null)
                     {
                         String oldName = (String) nodeService.getProperty(checkedOutFrom, ContentModel.PROP_NAME);
                         int extIndex = oldName.lastIndexOf('.');
                         newName = extIndex == -1 ? oldName + "_" + GUID.generate() : oldName.substring(0, extIndex)
                                 + "_" + GUID.generate() + oldName.substring(extIndex);
                     }
+                }
+                else
+                {
+                    // This is a check-in i.e. a copy to an existing node, so keep a null cm:name
                 }
 
                 if (newName == null)

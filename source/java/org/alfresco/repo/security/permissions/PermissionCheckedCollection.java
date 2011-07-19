@@ -97,6 +97,31 @@ public interface PermissionCheckedCollection<T>
         }
         /**
          * Helper method to create a {@link PermissionCheckedCollection} from an existing <code>Collection</code>
+         * by applying the same values as present on a potentially permission-checked source.  If the
+         * existing checked source is <b>NOT</b> permission-checked, then the collection will not be
+         * decorated.
+         * 
+         * @param <TT>              the type of the <code>Collection</code>
+         * @param collection        the <code>Collection</code> to proxy
+         * @param checkedSource     a collection that might implement {@link PermissionCheckedCollection}
+         * @return                  a <code>Collection</code> of the same type but including the
+         *                          {@link PermissionCheckedCollection} interface
+         */
+        public static final <TT> Collection<TT> create(
+                Collection<TT> collection, Collection<?> checkedSource)
+        {
+            if (checkedSource instanceof PermissionCheckedCollection)
+            {
+                PermissionCheckedCollection<?> source = (PermissionCheckedCollection<?>) checkedSource;
+                return create(collection, source.isCutOff(), source.sizeUnchecked(), source.sizeOriginal());
+            }
+            else
+            {
+                return collection;
+            }
+        }
+        /**
+         * Helper method to create a {@link PermissionCheckedCollection} from an existing <code>Collection</code>
          * 
          * @param <TT>              the type of the <code>Collection</code>
          * @param collection        the <code>Collection</code> to proxy

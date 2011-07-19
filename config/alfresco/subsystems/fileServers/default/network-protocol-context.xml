@@ -52,6 +52,7 @@
       </constructor-arg>
       <property name="transactionService"><ref bean="transactionService" /></property>
       <property name="nodeService"><ref bean="NodeService" /></property>
+      <property name="checkOutCheckInService"><ref bean="CheckoutCheckinService" /></property>
       <property name="searchService"><ref bean="SearchService" /></property>
       <property name="namespaceService"><ref bean="namespaceService" /></property>
       <property name="contentService"><ref bean="ContentService" /></property>

@@ -39,16 +39,12 @@ public abstract class AbstractVersioningProperty extends AbstractProperty
 
     /**
      * Construct
-     * 
-     * @param serviceRegistry
-     * @param propertyName
      */
     protected AbstractVersioningProperty(ServiceRegistry serviceRegistry, String propertyName)
     {
         super(serviceRegistry, propertyName);
     }
 
-    
     public NodeRef getVersionSeries(NodeRef nodeRef)
     {
         if (nodeRef.getStoreRef().getProtocol().equals(VersionBaseModel.STORE_PROTOCOL))
@@ -56,20 +52,21 @@ public abstract class AbstractVersioningProperty extends AbstractProperty
             // Due to the remapping done for us by the versioned node services, we can simply look up the properties
             // containing the component parts of the node ref to map back to the original node
             Map<QName, Serializable> properties = getServiceRegistry().getNodeService().getProperties(nodeRef);
-            return new NodeRef((String) properties.get(ContentModel.PROP_STORE_PROTOCOL),
+            nodeRef = new NodeRef((String) properties.get(ContentModel.PROP_STORE_PROTOCOL),
                     (String) properties.get(ContentModel.PROP_STORE_IDENTIFIER), (String) properties
                             .get(ContentModel.PROP_NODE_UUID));
         }
         else if (isWorkingCopy(nodeRef))
         {
-            return (NodeRef) getServiceRegistry().getNodeService().getProperty(nodeRef, ContentModel.PROP_COPY_REFERENCE);
+            NodeRef originalNodeRef = getServiceRegistry().getCopyService().getOriginal(nodeRef);
+            nodeRef = originalNodeRef == null ? nodeRef : originalNodeRef;
         }
         return nodeRef;
     }
 
     public boolean isWorkingCopy(NodeRef nodeRef)
     {
-        return getServiceRegistry().getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY);
+        return getServiceRegistry().getCheckOutCheckInService().isWorkingCopy(nodeRef);
     }
     
     public boolean hasWorkingCopy(NodeRef nodeRef)

@@ -82,7 +82,6 @@ import org.alfresco.jlan.util.WildCard;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
@@ -90,11 +89,13 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.lock.NodeLockedException;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -177,6 +178,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     private CifsHelper cifsHelper;
     private NamespaceService namespaceService;
     private NodeService nodeService;
+    private CheckOutCheckInService checkOutCheckInService;
     private SearchService searchService;
     private ContentService contentService;
     private MimetypeService mimetypeService;
@@ -244,7 +246,15 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     {
     	return this.nodeService;
     }
-    
+
+    /**
+     * @return          service to provide information on check-in and check-out
+     */
+    public CheckOutCheckInService getCheckOutCheckInService()
+    {
+        return checkOutCheckInService;
+    }
+
     /**
      * Return the content service
      * 
@@ -359,7 +369,15 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     {
         this.nodeService = nodeService;
     }
-    
+
+    /**
+     * @param checkOutCheckInService            used to check for checked out nodes
+     */
+    public void setCheckOutCheckInService(CheckOutCheckInService checkOutCheckInService)
+    {
+        this.checkOutCheckInService = checkOutCheckInService;
+    }
+
     /**
      * @param searchService the search service
      */
@@ -3198,15 +3216,12 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         
                                             // Check if the node is a working copy
                                             
-                                            if ( nodeService.hasAspect( targetNodeRef, ContentModel.ASPECT_WORKING_COPY)) {
-                                                
+                                            NodeRef mainNodeRef = checkOutCheckInService.getCheckedOut(targetNodeRef);
+                                            if ( mainNodeRef != null)
+                                            {
                                                 // Check if the main document is still locked
-                                                
-                                                NodeRef mainNodeRef = (NodeRef) nodeService.getProperty( targetNodeRef, ContentModel.PROP_COPY_REFERENCE);
-                                                if ( mainNodeRef != null) {
-                                                    LockType lockTyp = lockService.getLockType( mainNodeRef);
-                                                    logger.debug("  Main node ref lock type = " + lockTyp);
-                                                }
+                                                LockType lockTyp = lockService.getLockType( mainNodeRef);
+                                                logger.debug("  Main node ref lock type = " + lockTyp);
                                             }
                                         }
                                     }
@@ -4083,12 +4098,13 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         if ( nodeService.hasAspect( fromNode, ContentModel.ASPECT_COPIEDFROM)) {
             
             // Add the copied from aspect to the new file
-            
-            NodeRef copiedFromNode = (NodeRef) nodeService.getProperty( fromNode, ContentModel.PROP_COPY_REFERENCE);
-            Map<QName, Serializable> copiedFromProperties = new HashMap<QName, Serializable>(1);
-            copiedFromProperties.put(ContentModel.PROP_COPY_REFERENCE, copiedFromNode);
-            
-            nodeService.addAspect( toNode, ContentModel.ASPECT_COPIEDFROM, copiedFromProperties);
+            List<AssociationRef> assocs = nodeService.getSourceAssocs(fromNode, ContentModel.ASSOC_ORIGINAL);
+            if (assocs.size() > 0)
+            {
+                AssociationRef assoc = assocs.get(0);
+                NodeRef originalNodeRef = assoc.getTargetRef();
+                nodeService.createAssociation(toNode, originalNodeRef, ContentModel.ASSOC_ORIGINAL);
+            }
             
             // Remove the copied from aspect from old working copy file 
             
@@ -4099,19 +4115,19 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
                 logger.debug("  Moved aspect " + ContentModel.ASPECT_COPIEDFROM + " to new document");
             
-            // Check if the original node is locked
-            
-            if ( lockService.getLockType( copiedFromNode) == null) {
-                
-                // Add the lock back onto the original file
-                
-                lockService.lock( copiedFromNode, LockType.READ_ONLY_LOCK);
-
-                // DEBUG
-                
-                if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
-                    logger.debug("  Re-locked copied from node " + copiedFromNode);
-            }
+//            // Check if the original node is locked
+//            
+//            if ( lockService.getLockType( copiedFromNode) == null) {
+//                
+//                // Add the lock back onto the original file
+//                
+//                lockService.lock( copiedFromNode, LockType.READ_ONLY_LOCK);
+//
+//                // DEBUG
+//                
+//                if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
+//                    logger.debug("  Re-locked copied from node " + copiedFromNode);
+//            }
         }
         
         // Copy over all aspects from non-system namespaces (we will copy their properties later)

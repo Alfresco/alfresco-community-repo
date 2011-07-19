@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.alfresco.service.Auditable;
-import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 
@@ -137,7 +136,7 @@ public interface LockService
        throws UnableToAquireLockException;
    
    /**
-    * Removes the lock on a node.  
+    * Removes the lock on a node; if there is no lock then nothing is done.
     * <p>
     * The user must have sufficient permissions to remove the lock (ie: be the 
     * owner of the lock or have admin rights) otherwise an exception will be raised. 

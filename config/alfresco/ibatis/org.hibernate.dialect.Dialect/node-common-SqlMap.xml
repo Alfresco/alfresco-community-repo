@@ -748,7 +748,7 @@
         </where>
     </select>
     
-    <select id="select_NodesWithAspectId" parameterMap="parameter_NodesWithAspect" resultMap="result_NodeRef" >
+    <select id="select_NodesWithAspectIds" parameterType="Ids" resultMap="result_NodeRef" >
         select
             node.id             as id,
             store.protocol      as protocol,
@@ -756,11 +756,14 @@
             node.uuid           as uuid,
             node.node_deleted   as node_deleted
         from
-            alf_node node
+            alf_node_aspects na
+            join alf_node node on (na.node_id = node.id)
             join alf_store store on (store.id = node.store_id)
-            join alf_node_aspects na on (na.node_id = node.id and na.node_id > ? and na.qname_id = ?)
-        order by
-            node.id
+        where
+            <![CDATA[na.node_id >= #{idOne}]]>
+            <if test="idTwo != null"><![CDATA[and na.node_id < #{idTwo}]]></if>
+            and na.qname_id in
+                <foreach item="item" index="i" collection="ids" open="(" separator="," close=")">#{item}</foreach>
     </select>
 
     <!-- Common results for result_NodeAssoc -->

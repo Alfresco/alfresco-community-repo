@@ -19,7 +19,9 @@
 package org.alfresco.repo.coci;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
@@ -30,6 +32,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.lock.LockService;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -78,6 +81,8 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
 	private NodeRef rootNodeRef;	
 	private NodeRef nodeRef;
 	private String userNodeRef;
+    private NodeRef folderNodeRef;
+    private NodeRef fileNodeRef;
 	
 	/**
 	 * Types and properties used by the tests
@@ -106,7 +111,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
 	{
 		// Set the services
 		this.nodeService = (NodeService)this.applicationContext.getBean("nodeService");
-		this.cociService = (CheckOutCheckInService)this.applicationContext.getBean("checkOutCheckInService");
+		this.cociService = (CheckOutCheckInService)this.applicationContext.getBean("CheckoutCheckinService");
 		this.contentService = (ContentService)this.applicationContext.getBean("contentService");
 		this.versionService = (VersionService)this.applicationContext.getBean("versionService");
         this.authenticationService = (MutableAuthenticationService)this.applicationContext.getBean("authenticationService");
@@ -120,19 +125,19 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         authenticationComponent.setSystemUserAsCurrentUser();
 	
 		// Create the store and get the root node reference
-		this.storeRef = this.nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
-		this.rootNodeRef = this.nodeService.getRootNode(storeRef);
+		this.storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
+		this.rootNodeRef = nodeService.getRootNode(storeRef);
 		
 		// Create the node used for tests
-		ChildAssociationRef childAssocRef = this.nodeService.createNode(
+		ChildAssociationRef childAssocRef = nodeService.createNode(
 				rootNodeRef,
 				ContentModel.ASSOC_CHILDREN,
 				QName.createQName("test"),
 				ContentModel.TYPE_CONTENT);
 		this.nodeRef = childAssocRef.getChildRef();
-        this.nodeService.addAspect(this.nodeRef, ContentModel.ASPECT_TITLED, null);
-        this.nodeService.setProperty(this.nodeRef, ContentModel.PROP_NAME, TEST_VALUE_NAME);
-        this.nodeService.setProperty(this.nodeRef, PROP2_QNAME, TEST_VALUE_2);
+        nodeService.addAspect(this.nodeRef, ContentModel.ASPECT_TITLED, null);
+        nodeService.setProperty(this.nodeRef, ContentModel.PROP_NAME, TEST_VALUE_NAME);
+        nodeService.setProperty(this.nodeRef, PROP2_QNAME, TEST_VALUE_2);
         
 		// Add the initial content to the node
 		ContentWriter contentWriter = this.contentService.getWriter(this.nodeRef, ContentModel.PROP_CONTENT, true);
@@ -141,8 +146,8 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
 		contentWriter.putContent(CONTENT_1);
 		
 		// Add the lock and version aspects to the created node
-		this.nodeService.addAspect(this.nodeRef, ContentModel.ASPECT_VERSIONABLE, null);
-		this.nodeService.addAspect(this.nodeRef, ContentModel.ASPECT_LOCKABLE, null);		
+		nodeService.addAspect(this.nodeRef, ContentModel.ASPECT_VERSIONABLE, null);
+		nodeService.addAspect(this.nodeRef, ContentModel.ASPECT_LOCKABLE, null);		
         
         // Create and authenticate the user
         this.userName = "cociTest" + GUID.generate();
@@ -152,6 +157,23 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         
         permissionService.setPermission(this.rootNodeRef, this.userName, PermissionService.ALL_PERMISSIONS, true);
         permissionService.setPermission(this.nodeRef, this.userName, PermissionService.ALL_PERMISSIONS, true);
+
+        folderNodeRef = nodeService.createNode(
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName("test"),
+                ContentModel.TYPE_FOLDER,
+                Collections.<QName, Serializable>singletonMap(ContentModel.PROP_NAME, "folder")).getChildRef();
+        fileNodeRef = nodeService.createNode(
+                folderNodeRef,
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName("test"),
+                ContentModel.TYPE_CONTENT,
+                Collections.<QName, Serializable>singletonMap(ContentModel.PROP_NAME, "file")).getChildRef();
+        contentWriter = this.contentService.getWriter(fileNodeRef, ContentModel.PROP_CONTENT, true);
+        contentWriter.setMimetype("text/plain");
+        contentWriter.setEncoding("UTF-8");
+        contentWriter.putContent(CONTENT_1);
 	}
 	
 	/**
@@ -181,7 +203,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
 	private NodeRef checkout()
 	{
 		// Check out the node
-		NodeRef workingCopy = this.cociService.checkout(
+		NodeRef workingCopy = cociService.checkout(
 				this.nodeRef, 
 				this.rootNodeRef, 
 				ContentModel.ASSOC_CHILDREN, 
@@ -191,16 +213,16 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         //System.out.println(NodeStoreInspector.dumpNodeStore(this.nodeService, this.storeRef));
         
 		// Ensure that the working copy and copy aspect has been applied
-		assertTrue(this.nodeService.hasAspect(workingCopy, ContentModel.ASPECT_WORKING_COPY));	
-		assertTrue(this.nodeService.hasAspect(workingCopy, ContentModel.ASPECT_COPIEDFROM));
+		assertTrue(nodeService.hasAspect(workingCopy, ContentModel.ASPECT_WORKING_COPY));	
+		assertTrue(nodeService.hasAspect(workingCopy, ContentModel.ASPECT_COPIEDFROM));
 		
 		// Check that the working copy owner has been set correctly
-		assertEquals(this.userNodeRef, this.nodeService.getProperty(workingCopy, ContentModel.PROP_WORKING_COPY_OWNER));
+		assertEquals(this.userNodeRef, nodeService.getProperty(workingCopy, ContentModel.PROP_WORKING_COPY_OWNER));
 		
 		// Check that the working copy name has been set correctly
-        String name = (String)this.nodeService.getProperty(this.nodeRef, PROP_NAME_QNAME);
-        String workingCopyLabel = ((CheckOutCheckInServiceImpl)this.cociService).createWorkingCopyName(name);
-        String workingCopyName = (String)this.nodeService.getProperty(workingCopy, PROP_NAME_QNAME);
+        String name = (String)nodeService.getProperty(this.nodeRef, PROP_NAME_QNAME);
+        String workingCopyLabel = CheckOutCheckInServiceImpl.createWorkingCopyName(name);
+        String workingCopyName = (String)nodeService.getProperty(workingCopy, PROP_NAME_QNAME);
         assertEquals(workingCopyLabel, workingCopyName);
 		
 		// Ensure that the content has been copied correctly
@@ -226,13 +248,13 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
 		// Test standard check-in
 		Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
 		versionProperties.put(Version.PROP_DESCRIPTION, "This is a test version");		
-		this.cociService.checkin(workingCopy, versionProperties);	
+		cociService.checkin(workingCopy, versionProperties);	
 		
 		// Test check-in with content
         NodeRef workingCopy3 = checkout();
         
-		this.nodeService.setProperty(workingCopy3, PROP_NAME_QNAME, TEST_VALUE_2);
-		this.nodeService.setProperty(workingCopy3, PROP2_QNAME, TEST_VALUE_3);
+		nodeService.setProperty(workingCopy3, PROP_NAME_QNAME, TEST_VALUE_2);
+		nodeService.setProperty(workingCopy3, PROP2_QNAME, TEST_VALUE_3);
         ContentWriter tempWriter = this.contentService.getWriter(workingCopy3, ContentModel.PROP_CONTENT, false);
 		assertNotNull(tempWriter);
 		tempWriter.putContent(CONTENT_2);
@@ -240,7 +262,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
 		Map<String, Serializable> versionProperties3 = new HashMap<String, Serializable>();
 		versionProperties3.put(Version.PROP_DESCRIPTION, "description");
 		versionProperties3.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
-		NodeRef origNodeRef = this.cociService.checkin(workingCopy3, versionProperties3, contentUrl, true);
+		NodeRef origNodeRef = cociService.checkin(workingCopy3, versionProperties3, contentUrl, true);
 		assertNotNull(origNodeRef);
 		
 		// Check the checked in content
@@ -262,38 +284,53 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         assertEquals(CONTENT_2, versionContentReader.getContentString());
 		
 		// Check that the name is not updated during the check-in
-		assertEquals(TEST_VALUE_2, this.nodeService.getProperty(versionNodeRef, PROP_NAME_QNAME));
-		assertEquals(TEST_VALUE_2, this.nodeService.getProperty(origNodeRef, PROP_NAME_QNAME));
+		assertEquals(TEST_VALUE_2, nodeService.getProperty(versionNodeRef, PROP_NAME_QNAME));
+		assertEquals(TEST_VALUE_2, nodeService.getProperty(origNodeRef, PROP_NAME_QNAME));
 		
 		// Check that the other properties are updated during the check-in
-		assertEquals(TEST_VALUE_3, this.nodeService.getProperty(versionNodeRef, PROP2_QNAME));
-		assertEquals(TEST_VALUE_3, this.nodeService.getProperty(origNodeRef, PROP2_QNAME));
+		assertEquals(TEST_VALUE_3, nodeService.getProperty(versionNodeRef, PROP2_QNAME));
+		assertEquals(TEST_VALUE_3, nodeService.getProperty(origNodeRef, PROP2_QNAME));
 		
 		// Cancel the check out after is has been left checked out
-		this.cociService.cancelCheckout(workingCopy3);
+		cociService.cancelCheckout(workingCopy3);
 		
 		// Test keep checked out flag
 		NodeRef workingCopy2 = checkout();		
 		Map<String, Serializable> versionProperties2 = new HashMap<String, Serializable>();
 		versionProperties2.put(Version.PROP_DESCRIPTION, "Another version test");		
-		this.cociService.checkin(workingCopy2, versionProperties2, null, true);
-		this.cociService.checkin(workingCopy2, new HashMap<String, Serializable>(), null, true);	
+		cociService.checkin(workingCopy2, versionProperties2, null, true);
+		cociService.checkin(workingCopy2, new HashMap<String, Serializable>(), null, true);	
 	}
 	
+    public void testCheckInWithNameChange()
+    {
+        // Check out the file
+        NodeRef fileWorkingCopyNodeRef = cociService.checkout(fileNodeRef);
+        // Make sure we can get the checked out node
+        NodeRef fileWorkingCopyNodeRefCheck = cociService.getWorkingCopy(fileNodeRef);
+        assertEquals("Working copy not found ", fileWorkingCopyNodeRef, fileWorkingCopyNodeRefCheck);
+        
+        // Rename the working copy
+        nodeService.setProperty(fileWorkingCopyNodeRef, ContentModel.PROP_NAME, "renamed");
+        
+        // Check in
+        cociService.checkin(fileWorkingCopyNodeRef, null);
+    }
+    
 	public void testCheckOutCheckInWithTranslatableAspect()
 	{
 		// Create a node to be used as the translation
-		NodeRef translationNodeRef = this.nodeService.createNode(
+		NodeRef translationNodeRef = nodeService.createNode(
 				rootNodeRef,
 				ContentModel.ASSOC_CHILDREN,
 				QName.createQName("translation"),
 				ContentModel.TYPE_CONTENT).getChildRef();
 		
-		this.nodeService.addAspect(this.nodeRef, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "translatable"), null);
-		this.nodeService.createAssociation(this.nodeRef, translationNodeRef, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "translations"));
+		nodeService.addAspect(this.nodeRef, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "translatable"), null);
+		nodeService.createAssociation(this.nodeRef, translationNodeRef, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "translations"));
 				
 		// Check it out
-		NodeRef workingCopy = this.cociService.checkout(
+		NodeRef workingCopy = cociService.checkout(
 				this.nodeRef, 
 				this.rootNodeRef, 
 				ContentModel.ASSOC_CHILDREN, 
@@ -303,7 +340,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
 		// Check it back in again
 		Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
 		versionProperties.put(Version.PROP_DESCRIPTION, "This is a test version");
-		this.cociService.checkin(workingCopy, versionProperties);
+		cociService.checkin(workingCopy, versionProperties);
 	}
 	
 	/**
@@ -316,7 +353,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         bagOfProps.put(ContentModel.PROP_CONTENT, new ContentData(null, MimetypeMap.MIMETYPE_TEXT_PLAIN, 0L, "UTF-8"));
 
 		// Create a new node 
-		ChildAssociationRef childAssocRef = this.nodeService.createNode(
+		ChildAssociationRef childAssocRef = nodeService.createNode(
 				rootNodeRef,
 				ContentModel.ASSOC_CHILDREN,
 				QName.createQName("test"),
@@ -325,8 +362,8 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
 		NodeRef noVersionNodeRef = childAssocRef.getChildRef();
 		
 		// Check out and check in
-		NodeRef workingCopy = this.cociService.checkout(noVersionNodeRef);
-		this.cociService.checkin(workingCopy, new HashMap<String, Serializable>());
+		NodeRef workingCopy = cociService.checkout(noVersionNodeRef);
+		cociService.checkin(workingCopy, new HashMap<String, Serializable>());
 		
 		// Check that the origional node has no version history dispite sending verion props
 		assertNull(this.versionService.getVersionHistory(noVersionNodeRef));		
@@ -350,7 +387,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
             // Good the origional is locked
         }
 		
-		NodeRef origNodeRef = this.cociService.cancelCheckout(workingCopy);
+		NodeRef origNodeRef = cociService.cancelCheckout(workingCopy);
 		assertEquals(this.nodeRef, origNodeRef);
         
 		// The origional should no longer be locked
@@ -358,7 +395,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
 	}
     
     /**
-     * Test the deleting a wokring copy node removed the lock on the origional node
+     * Test the deleting a wokring copy node removed the lock on the original node
      */
     public void testAutoCancelCheckOut()
     {
@@ -368,38 +405,44 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         try
         {
             this.lockService.checkForLock(this.nodeRef);
-            fail("The origional should be locked now.");
+            fail("The original should be locked now.");
         }
         catch (Throwable exception)
         {
-            // Good the origional is locked
+            // Good the original is locked
         }
         
         // Delete the working copy
-        this.nodeService.deleteNode(workingCopy);
+        nodeService.deleteNode(workingCopy);
         
-        // The origional should no longer be locked
+        // The original should no longer be locked
         this.lockService.checkForLock(this.nodeRef);
         
     }
     
     /**
-     * Test the getWorkingCopy method
+     * @see CheckOutCheckInService#getWorkingCopy(NodeRef)
+     * @see CheckOutCheckInService#getCheckedOut(NodeRef)
      */
-    public void testGetWorkingCopy()
+    public void testBidirectionalReferences()
     {
-        NodeRef origNodeRef = this.nodeService.createNode(
+        final NodeRef origNodeRef = nodeService.createNode(
                 this.rootNodeRef,
                 ContentModel.ASSOC_CHILDREN,
                 QName.createQName("test2"),
                 ContentModel.TYPE_CONTENT).getChildRef();
         
-        
-        NodeRef wk1 = this.cociService.getWorkingCopy(origNodeRef);
+        NodeRef wk1 = cociService.getWorkingCopy(origNodeRef);
         assertNull(wk1);
 
         // Check the document out
-        final NodeRef workingCopy = this.cociService.checkout(origNodeRef);
+        final NodeRef workingCopy = cociService.checkout(origNodeRef);
+        assertTrue("Expect cm:workingcopy aspect", nodeService.hasAspect(workingCopy, ContentModel.ASPECT_WORKING_COPY));
+        assertTrue("Expect cm:checkedOut aspect", nodeService.hasAspect(origNodeRef, ContentModel.ASPECT_CHECKED_OUT));
+        List<AssociationRef> targetAssocs = nodeService.getTargetAssocs(origNodeRef, ContentModel.ASSOC_WORKING_COPY_LINK);
+        assertEquals("Expect a 1:1 relationship", 1, targetAssocs.size());
+        List<AssociationRef> sourceAssocs = nodeService.getSourceAssocs(workingCopy, ContentModel.ASSOC_WORKING_COPY_LINK);
+        assertEquals("Expect a 1:1 relationship", 1, sourceAssocs.size());
         
         // Need to commit the transaction in order to get the indexer to run
         setComplete();
@@ -412,25 +455,27 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
                 {
                     public Object execute()
                     {
-                        NodeRef wk2 = CheckOutCheckInServiceImplTest.this.cociService.getWorkingCopy(finalNodeRef);
+                        NodeRef wk2 = cociService.getWorkingCopy(finalNodeRef);
                         assertNotNull(wk2);
                         assertEquals(workingCopy, wk2);
+                        NodeRef orig2 = cociService.getCheckedOut(wk2);
+                        assertNotNull(orig2);
+                        assertEquals(origNodeRef, orig2);
                         
-                        CheckOutCheckInServiceImplTest.this.cociService.cancelCheckout(workingCopy);                        
+                        cociService.cancelCheckout(workingCopy);                        
                         return null;
                     }
                 });
         
-        NodeRef wk3 = this.cociService.getWorkingCopy(this.nodeRef);
-        assertNull(wk3);           
+        NodeRef wk3 = cociService.getWorkingCopy(this.nodeRef);
+        assertNull(wk3);
     }
-    
     /**
      * Test the getWorkingCopy method
      */
     public void testETWOTWO_733()
     {
-        NodeRef origNodeRef = this.nodeService.createNode(
+        NodeRef origNodeRef = nodeService.createNode(
                 this.rootNodeRef,
                 ContentModel.ASSOC_CHILDREN,
                 QName.createQName("test2"),
@@ -444,11 +489,11 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
                 QName.createQName("test6"),
                 false);        
         
-        NodeRef wk1 = this.cociService.getWorkingCopy(origNodeRef);
+        NodeRef wk1 = cociService.getWorkingCopy(origNodeRef);
         assertNull(wk1);
 
         // Check the document out
-        final NodeRef workingCopy = this.cociService.checkout(origNodeRef);
+        final NodeRef workingCopy = cociService.checkout(origNodeRef);
         
         // Need to commit the transaction in order to get the indexer to run
         setComplete();
@@ -461,23 +506,23 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
                 {
                     public Object execute()
                     {
-                        NodeRef wk2 = CheckOutCheckInServiceImplTest.this.cociService.getWorkingCopy(finalNodeRef);
+                        NodeRef wk2 = cociService.getWorkingCopy(finalNodeRef);
                         assertNotNull(wk2);
                         assertEquals(workingCopy, wk2);
                         
-                        CheckOutCheckInServiceImplTest.this.cociService.cancelCheckout(workingCopy);                        
+                        cociService.cancelCheckout(workingCopy);                        
                         return null;
                     }
                 });
         
-        NodeRef wk3 = this.cociService.getWorkingCopy(this.nodeRef);
+        NodeRef wk3 = cociService.getWorkingCopy(this.nodeRef);
         assertNull(wk3);           
     }
     
     public void testAR1056()
     {
     	// Check out the node
-		NodeRef workingCopy = this.cociService.checkout(
+		NodeRef workingCopy = cociService.checkout(
 				this.nodeRef, 
 				this.rootNodeRef, 
 				ContentModel.ASSOC_CHILDREN, 
@@ -487,7 +532,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
 		// Try and check the same node out again
 		try
 		{
-			this.cociService.checkout(
+			cociService.checkout(
 				this.nodeRef, 
 				this.rootNodeRef, 
 				ContentModel.ASSOC_CHILDREN, 
@@ -496,9 +541,8 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
 		}
 		catch (Exception exception)
 		{
-			// Good because we shouldnt be able to checkout a document twice
+			// Good because we shouldn't be able to checkout a document twice
 		}
-    
     }
     
     public void testMultipleCheckoutsCheckInsWithPropChange()
@@ -506,7 +550,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         // Note: this test assumes cm:autoVersionProps=true by default (refer to cm:versionableAspect in contentModel.xml)
         
         // Create a new node 
-        ChildAssociationRef childAssocRef = this.nodeService.createNode(
+        ChildAssociationRef childAssocRef = nodeService.createNode(
                 rootNodeRef,
                 ContentModel.ASSOC_CHILDREN,
                 QName.createQName("test"),
@@ -515,7 +559,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         final NodeRef testNodeRef = childAssocRef.getChildRef();
         
         // Add the version aspect to the created node
-        this.nodeService.addAspect(testNodeRef, ContentModel.ASPECT_VERSIONABLE, null);
+        nodeService.addAspect(testNodeRef, ContentModel.ASPECT_VERSIONABLE, null);
         
         setComplete();
         endTransaction();
@@ -598,9 +642,9 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         String adminUser = AuthenticationUtil.getAdminUserName();
         AuthenticationUtil.setFullyAuthenticatedUser(adminUser);
         
-        Serializable initModifieer = nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIER);
-        Serializable initModifieed = nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
-        assertFalse("The initial modifier should not be Admin!", adminUser.equals(initModifieer));
+        Serializable initModifier = nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIER);
+        Serializable initModified = nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
+        assertFalse("The initial modifier should not be Admin!", adminUser.equals(initModifier));
         
         NodeRef copy = cociService.checkout(
                 nodeRef, 
@@ -608,16 +652,16 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
                 ContentModel.ASSOC_CHILDREN, 
                 QName.createQName("workingCopy"));
 
-        Serializable modifieer = nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIER);
-        assertEquals("Checkout should not cause the modifier to change!", initModifieer, modifieer);
-        Serializable modifieed = nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
-        assertEquals("Checkout should not cause the modified date to change!", initModifieed, modifieed);
+        Serializable modifier = nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIER);
+        assertEquals("Checkout should not cause the modifier to change!", initModifier, modifier);
+        Serializable modified = nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
+        assertEquals("Checkout should not cause the modified date to change!", initModified, modified);
 
         cociService.cancelCheckout(copy);
-        modifieer = nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIER);
-        assertEquals("Checkout should not cause the modifier to change!", initModifieer, modifieer);
-        modifieed = nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
-        assertEquals("Checkout should not cause the modified date to change!", initModifieed, modifieed);
+        modifier = nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIER);
+        assertEquals("Cancel checkout should not cause the modifier to change!", initModifier, modifier);
+        modified = nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
+        assertEquals("Cancel checkout should not cause the modified date to change!", initModified, modified);
         
         copy = cociService.checkout(
                 nodeRef, 
@@ -628,8 +672,8 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         versionProperties.put(Version.PROP_DESCRIPTION, "This is a test version");      
         cociService.checkin(copy, versionProperties);
         
-        modifieer = nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIER);
-        assertEquals("The modifier should change to Admin after checkin!", adminUser, modifieer);
+        modifier = nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIER);
+        assertEquals("The modifier should change to Admin after checkin!", adminUser, modifier);
     }
     
     public void testCheckOutPermissions_ALF7680_ALF535()
@@ -645,7 +689,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         NodeRef node = createNodeWithPermission(folder1, userName, PermissionService.EDITOR);
 
         // Check out the node
-        NodeRef workingCopy = this.cociService.checkout(
+        NodeRef workingCopy = cociService.checkout(
                 node, 
                 folder1, 
                 ContentModel.ASSOC_CHILDREN, 
@@ -653,10 +697,10 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
 
         // Ensure that the working copy was created and current user was set as owner
         assertNotNull(workingCopy);
-        assertTrue(this.nodeService.hasAspect(workingCopy, ContentModel.ASPECT_WORKING_COPY));
-        assertEquals(this.userNodeRef, this.nodeService.getProperty(workingCopy, ContentModel.PROP_WORKING_COPY_OWNER));
+        assertTrue(nodeService.hasAspect(workingCopy, ContentModel.ASPECT_WORKING_COPY));
+        assertEquals(this.userNodeRef, nodeService.getProperty(workingCopy, ContentModel.PROP_WORKING_COPY_OWNER));
 
-        this.cociService.cancelCheckout(workingCopy);
+        cociService.cancelCheckout(workingCopy);
 
         /*
          * Testing working copy creation in a different folder. 
@@ -668,7 +712,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         NodeRef folder2 = createFolderWithPermission(rootNodeRef, userName, PermissionService.ALL_PERMISSIONS);
 
         // Check out the node
-        workingCopy = this.cociService.checkout(
+        workingCopy = cociService.checkout(
                 node, 
                 folder2, 
                 ContentModel.ASSOC_CHILDREN, 
@@ -676,10 +720,10 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
 
         // Ensure that the working copy was created and current user was set as owner
         assertNotNull(workingCopy);
-        assertTrue(this.nodeService.hasAspect(workingCopy, ContentModel.ASPECT_WORKING_COPY));
-        assertEquals(this.userNodeRef, this.nodeService.getProperty(workingCopy, ContentModel.PROP_WORKING_COPY_OWNER));
+        assertTrue(nodeService.hasAspect(workingCopy, ContentModel.ASPECT_WORKING_COPY));
+        assertEquals(this.userNodeRef, nodeService.getProperty(workingCopy, ContentModel.PROP_WORKING_COPY_OWNER));
 
-        this.cociService.cancelCheckout(workingCopy);
+        cociService.cancelCheckout(workingCopy);
 
         /*
          * Testing working copy creation in a different folder. 
@@ -692,7 +736,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         try
         {
             // Check out the node
-            workingCopy = this.cociService.checkout(
+            workingCopy = cociService.checkout(
                     node, 
                     folder3, 
                     ContentModel.ASSOC_CHILDREN, 
@@ -717,7 +761,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         try
         {
             // Check out the node
-            workingCopy = this.cociService.checkout(
+            workingCopy = cociService.checkout(
                     node2, 
                     folder3, 
                     ContentModel.ASSOC_CHILDREN, 
@@ -739,7 +783,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         authenticationComponent.setSystemUserAsCurrentUser();
 
         // Create the folder
-        NodeRef folder = this.nodeService.createNode(
+        NodeRef folder = nodeService.createNode(
                 parent, 
                 ContentModel.ASSOC_CHILDREN, 
                 QName.createQName("TestFolder" + GUID.generate()), 

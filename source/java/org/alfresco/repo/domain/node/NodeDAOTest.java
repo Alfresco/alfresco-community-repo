@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.domain.node;
 
+import java.util.Collections;
 import java.util.List;
 
 import junit.framework.TestCase;
@@ -139,7 +140,10 @@ public class NodeDAOTest extends TestCase
                 return false;
             }
         };
-        nodeDAO.getNodesWithAspect(ContentModel.ASPECT_AUDITABLE, 1L, 5, callback);
+        nodeDAO.getNodesWithAspects(
+                Collections.singleton(ContentModel.ASPECT_AUDITABLE),
+                1L, 1000L,
+                callback);
     }
     
     public void testGetPrimaryChildAcls() throws Throwable

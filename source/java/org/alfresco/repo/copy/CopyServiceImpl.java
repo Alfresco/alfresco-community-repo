@@ -32,7 +32,6 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQuery;
 import org.alfresco.query.CannedQueryFactory;
-import org.alfresco.query.CannedQueryPageDetails;
 import org.alfresco.query.CannedQueryParameters;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
@@ -43,6 +42,7 @@ import org.alfresco.repo.copy.CopyBehaviourCallback.ChildAssocCopyAction;
 import org.alfresco.repo.copy.CopyBehaviourCallback.ChildAssocRecurseAction;
 import org.alfresco.repo.copy.CopyBehaviourCallback.CopyAssociationDetails;
 import org.alfresco.repo.copy.CopyBehaviourCallback.CopyChildAssociationDetails;
+import org.alfresco.repo.copy.query.AbstractCopyCannedQueryFactory;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -61,8 +61,6 @@ import org.alfresco.service.cmr.repository.CopyServiceException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.RuleService;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -90,7 +88,6 @@ public class CopyServiceImpl implements CopyService
     
     /* Query names */
     private static final String QUERY_FACTORY_GET_COPIES = "getCopiesCannedQueryFactory";
-    private static final String QUERY_FACTORY_GET_COPIED = "getCopiesCannedQueryFactory";
     
     /* I18N labels */
     private static final String COPY_OF_LABEL = "copy_service.copy_of_label";
@@ -100,7 +97,6 @@ public class CopyServiceImpl implements CopyService
     private NodeService internalNodeService;
     private NamedObjectRegistry<CannedQueryFactory<CopyInfo>> cannedQueryRegistry;
     private DictionaryService dictionaryService;     
-    private SearchService searchService;
     private PolicyComponent policyComponent;
     private RuleService ruleService;
     private PermissionService permissionService;
@@ -149,14 +145,6 @@ public class CopyServiceImpl implements CopyService
     }
     
     /**
-     * @param searchService     the search service
-     */
-    public void setSearchService(SearchService searchService)
-    {
-        this.searchService = searchService;
-    }
-    
-    /**
      * @param ruleService  the rule service
      */
     public void setRuleService(RuleService ruleService)
@@ -192,15 +180,15 @@ public class CopyServiceImpl implements CopyService
         
         // Register policy behaviours
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
+                CopyServicePolicies.OnCopyNodePolicy.QNAME,
                 ContentModel.ASPECT_COPIEDFROM,
                 new JavaBehaviour(this, "getCallbackForCopiedFromAspect"));    
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
+                CopyServicePolicies.OnCopyNodePolicy.QNAME,
                 ContentModel.TYPE_FOLDER,
                 new JavaBehaviour(this, "getCallbackForFolderType"));    
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
+                CopyServicePolicies.OnCopyNodePolicy.QNAME,
                 ContentModel.ASPECT_OWNABLE,
                 new JavaBehaviour(this, "getCallbackForOwnableAspect"));
     }
@@ -377,33 +365,39 @@ public class CopyServiceImpl implements CopyService
     }
     
     @Override
+    public NodeRef getOriginal(NodeRef nodeRef)
+    {
+        List<AssociationRef> assocs = internalNodeService.getTargetAssocs(nodeRef, ContentModel.ASSOC_ORIGINAL);
+        if (assocs.size() > 1)
+        {
+            logger.warn("Multiple cm:orignal associations from node: " + nodeRef);
+        }
+        if (assocs.size() == 0)
+        {
+            return null;
+        }
+        else
+        {
+            return assocs.get(0).getTargetRef();
+        }
+    }
+
+    @Override
     public List<NodeRef> getCopies(NodeRef nodeRef)
     {
-        List<NodeRef> copies = new ArrayList<NodeRef>();
-        
-        // Do a search to find the origional document
-        ResultSet resultSet = null;
-        try
+        PagingRequest pagingRequest = new PagingRequest(1000);
+        PagingResults<CopyInfo> page = getCopies(nodeRef, pagingRequest);
+        if (page.hasMoreItems())
         {
-            resultSet = this.searchService.query(
-                    nodeRef.getStoreRef(), 
-                    SearchService.LANGUAGE_LUCENE, 
-                    "+@\\{http\\://www.alfresco.org/model/content/1.0\\}" + ContentModel.PROP_COPY_REFERENCE.getLocalName() + ":\"" + nodeRef.toString() + "\"");
-            
-            for (NodeRef copy : resultSet.getNodeRefs())
-            {
-                copies.add(copy);
-            }
+            logger.warn("Trimmed page size for deprecated getCopies() call.");
         }
-        finally
+        List<CopyInfo> pageResults = page.getPage();
+        List<NodeRef> results = new ArrayList<NodeRef>(pageResults.size());
+        for (CopyInfo copyInfo : pageResults)
         {
-            if (resultSet != null)
-            {
-                resultSet.close();
-            }
+            results.add(copyInfo.getNodeRef());
         }
-        
-        return copies;
+        return results;
     }
     
     @Override
@@ -411,9 +405,9 @@ public class CopyServiceImpl implements CopyService
     {
         CannedQueryFactory<CopyInfo> queryFactory = cannedQueryRegistry.getNamedObject(QUERY_FACTORY_GET_COPIES);
         CannedQueryParameters params = new CannedQueryParameters(
-                originalNodeRef,
-                new CannedQueryPageDetails(pagingRequest),
-                null);
+                new AbstractCopyCannedQueryFactory.CopyCannedQueryDetail(originalNodeRef),
+                null,
+                pagingRequest);
         CannedQuery<CopyInfo> query = queryFactory.getCannedQuery(params);
         return query.execute();
     }
@@ -421,14 +415,14 @@ public class CopyServiceImpl implements CopyService
     @Override
     public PagingResults<CopyInfo> getCopies(
             NodeRef originalNodeRef,
-            NodeRef copyParentNodeRef, Set<QName> copyNodeAspectsToIgnore,
+            NodeRef copyParentNodeRef,
             PagingRequest pagingRequest)
     {
         CannedQueryFactory<CopyInfo> queryFactory = cannedQueryRegistry.getNamedObject(QUERY_FACTORY_GET_COPIES);
         CannedQueryParameters params = new CannedQueryParameters(
-                originalNodeRef,
-                new CannedQueryPageDetails(pagingRequest),
-                null);
+                new AbstractCopyCannedQueryFactory.CopyCannedQueryDetail(originalNodeRef, copyParentNodeRef),
+                null,
+                pagingRequest);
         CannedQuery<CopyInfo> query = queryFactory.getCannedQuery(params);
         return query.execute();
     }
@@ -593,10 +587,16 @@ public class CopyServiceImpl implements CopyService
             // Copy residual properties
             copyResidualProperties(copyDetails, copyTarget);
             
-            //  Apply the copy aspect to the new node   
-            Map<QName, Serializable> copyProperties = new HashMap<QName, Serializable>();
-            copyProperties.put(ContentModel.PROP_COPY_REFERENCE, sourceNodeRef);
-            internalNodeService.addAspect(copyTarget, ContentModel.ASPECT_COPIEDFROM, copyProperties);
+            //  Link the new node to the original, but ensure that we only keep track of the last copy
+            List<AssociationRef> originalAssocs = internalNodeService.getTargetAssocs(copyTarget, ContentModel.ASSOC_ORIGINAL);
+            for (AssociationRef originalAssoc : originalAssocs)
+            {
+                internalNodeService.removeAssociation(
+                        originalAssoc.getSourceRef(),
+                        originalAssoc.getTargetRef(),
+                        ContentModel.ASSOC_ORIGINAL);
+            }
+            internalNodeService.createAssociation(copyTarget, sourceNodeRef, ContentModel.ASSOC_ORIGINAL);
 
             // Copy permissions
             copyPermissions(sourceNodeRef, copyTarget);
@@ -1389,5 +1389,5 @@ public class CopyServiceImpl implements CopyService
     public CopyBehaviourCallback getCallbackForOwnableAspect(QName classRef, CopyDetails copyDetails)
     {
         return DoNothingCopyBehaviourCallback.getInstance();
-    }    
+    }
 }

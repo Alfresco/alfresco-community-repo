@@ -104,23 +104,15 @@
 
     <!-- The provider to evaluate if the current authentication is the owner of a node.  -->
     <bean id="ownerDynamicAuthority" class="org.alfresco.repo.security.permissions.dynamic.OwnerDynamicAuthority">
-        <property name="ownableService">
-            <ref bean="ownableService" />
-        </property>
+        <property name="ownableService" ref="ownableService" />
     </bean>
 
-    <!-- The provider to evaluate if the currfent authentication is the local owner on a -->
-    <!-- node.                                                                           -->
+    <!-- The provider to evaluate if the currfent authentication is the local owner on a node -->
     <bean id="lockOwnerDynamicAuthority" class="org.alfresco.repo.security.permissions.dynamic.LockOwnerDynamicAuthority">
-        <property name="lockService">
-            <ref bean="lockService" />
-        </property>
-        <property name="nodeService">
-            <ref bean="nodeService" />
-        </property>
-		<property name="modelDAO">
-            <ref bean="permissionsModelDAO" />
-        </property>
+        <property name="lockService" ref="lockService" />
+        <!-- Done by bootstrap due to circular dependency -->
+        <!-- <property name="checkOutCheckInService" ref="checkOutCheckInService" />  -->
+		<property name="modelDAO" ref="permissionsModelDAO" />
 		<property name="requiredFor">
 			<list>
 				<value>Unlock</value>
@@ -544,7 +536,26 @@
     <!-- The copy service does not require any security restrictions, they are imposed   -->
     <!-- by the node service it uses to do its work.                                     -->
 
-    <bean id="CopyService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+    <bean id="CopyService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
+        <property name="authenticationManager"><ref bean="authenticationManager"/></property>
+        <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
+        <property name="objectDefinitionSource">
+            <value>
+                org.alfresco.service.cmr.repository.CopyService.copy=ACL_ALLOW
+                org.alfresco.service.cmr.repository.CopyService.copyAndRename=ACL_ALLOW
+                org.alfresco.service.cmr.repository.CopyService.getOriginal=ACL_NODE.0.sys:base.ReadProperties,AFTER_ACL_NODE.sys:base.ReadProperties
+                org.alfresco.service.cmr.repository.CopyService.getCopies=ACL_NODE.0.sys:base.ReadProperties,AFTER_ACL_NODE.sys:base.ReadProperties
+                org.alfresco.service.cmr.repository.CopyService.*=ACL_DENY
+            </value>
+        </property>
+    </bean>
+
+    <bean id="CopyService_security_getCopies" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean">
+        <property name="methodSecurityInterceptor" ref="CopyService_security" />
+        <property name="service" value="org.alfresco.service.cmr.repository.CopyService" />
+        <property name="methodName" value="getCopies" />
+    </bean>
 
     <!-- ================ -->
     <!-- The Lock Service -->
@@ -638,7 +649,7 @@
     <!-- the associated permission, as does cancel check out. See the permission model   -->
     <!-- for how these permissions are granted.                                          -->
 
-    <bean id="CheckoutCheckinService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
+    <bean id="CheckOutCheckInService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
         <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
@@ -648,6 +659,9 @@
                 org.alfresco.service.cmr.coci.CheckOutCheckInService.checkin=ACL_NODE.0.cm:lockable.CheckIn
                 org.alfresco.service.cmr.coci.CheckOutCheckInService.cancelCheckout=ACL_NODE.0.cm:lockable.CancelCheckOut
                 org.alfresco.service.cmr.coci.CheckOutCheckInService.getWorkingCopy=ACL_NODE.0.sys:base.Read
+                org.alfresco.service.cmr.coci.CheckOutCheckInService.getCheckedOut=ACL_NODE.0.sys:base.Read
+                org.alfresco.service.cmr.coci.CheckOutCheckInService.isWorkingCopy=ACL_NODE.0.sys:base.Read
+                org.alfresco.service.cmr.coci.CheckOutCheckInService.isCheckedOut=ACL_NODE.0.sys:base.Read
                 org.alfresco.service.cmr.coci.CheckOutCheckInService.*=ACL_DENY
             </value>
         </property>

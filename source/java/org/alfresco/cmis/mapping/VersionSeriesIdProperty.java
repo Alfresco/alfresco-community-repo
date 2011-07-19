@@ -21,10 +21,9 @@ package org.alfresco.cmis.mapping;
 import java.io.Serializable;
 
 import org.alfresco.cmis.CMISDictionaryModel;
-import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 
 /**
  * @author dward
@@ -33,28 +32,29 @@ public class VersionSeriesIdProperty extends AbstractVersioningProperty
 {
     /**
      * Construct
-     * 
-     * @param serviceRegistry
      */
     public VersionSeriesIdProperty(ServiceRegistry serviceRegistry)
     {
         super(serviceRegistry, CMISDictionaryModel.PROP_VERSION_SERIES_ID);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.property.PropertyAccessor#getValue(org.alfresco.service.cmr.repository.NodeRef)
-     */
+    @Override
     public Serializable getValue(NodeRef nodeRef)
     {
-        NodeService nodeService = getServiceRegistry().getNodeService();
-        if (isWorkingCopy(nodeRef))
+        CheckOutCheckInService checkOutCheckInService = getServiceRegistry().getCheckOutCheckInService();
+        NodeRef result = null;
+        if (checkOutCheckInService.isWorkingCopy(nodeRef))
         {
-            return nodeService.getProperty(nodeRef, ContentModel.PROP_COPY_REFERENCE).toString();
+            result = checkOutCheckInService.getCheckedOut(nodeRef);
+            if (result == null)
+            {
+                result = nodeRef;
+            }
         }
         else
         {
-            return getVersionSeries(nodeRef).toString();
+            result = getVersionSeries(nodeRef);
         }
+        return result.toString();
     }
 }

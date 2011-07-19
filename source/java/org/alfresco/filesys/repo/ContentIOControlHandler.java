@@ -31,7 +31,6 @@ import org.alfresco.filesys.alfresco.DesktopTarget;
 import org.alfresco.filesys.alfresco.IOControl;
 import org.alfresco.filesys.alfresco.IOControlHandler;
 import org.alfresco.jlan.server.SrvSession;
-import org.alfresco.jlan.server.auth.ClientInfo;
 import org.alfresco.jlan.server.filesys.IOControlNotImplementedException;
 import org.alfresco.jlan.server.filesys.NetworkFile;
 import org.alfresco.jlan.server.filesys.TreeConnection;
@@ -41,6 +40,7 @@ import org.alfresco.jlan.smb.nt.NTIOCtl;
 import org.alfresco.jlan.util.DataBuffer;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -125,6 +125,14 @@ public class ContentIOControlHandler implements IOControlHandler
     public final NodeService getNodeService()
     {
     	return contentDriver.getNodeService();
+    }
+    
+    /**
+     * @return              the service to provide check-in and check-out data
+     */
+    public final CheckOutCheckInService getCheckOutCheckInService()
+    {
+        return contentDriver.getCheckOutCheckInService();
     }
     
     /**
@@ -374,14 +382,10 @@ public class ContentIOControlHandler implements IOControlHandler
                 String owner = (String) getNodeService().getProperty( childNode, ContentModel.PROP_WORKING_COPY_OWNER);
                 String copiedFrom = null;
                 
-                if ( getNodeService().hasAspect( childNode, ContentModel.ASPECT_COPIEDFROM))
-                {
-                    // Get the path of the file the working copy was generated from
-                    
-                    NodeRef fromNode = (NodeRef) getNodeService().getProperty( childNode, ContentModel.PROP_COPY_REFERENCE);
-                    if ( fromNode != null)
-                        copiedFrom = (String) getNodeService().getProperty( fromNode, ContentModel.PROP_NAME);
-                }
+                // Get the path of the file the working copy was generated from
+                NodeRef fromNode = getCheckOutCheckInService().getCheckedOut(childNode);
+                if ( fromNode != null)
+                    copiedFrom = (String) getNodeService().getProperty( fromNode, ContentModel.PROP_NAME);
                 
                 // Pack the owner and copied from values
                 

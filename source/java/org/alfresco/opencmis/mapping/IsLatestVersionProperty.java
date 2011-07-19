@@ -36,21 +36,13 @@ public class IsLatestVersionProperty extends AbstractVersioningProperty
 {
     /**
      * Construct
-     * 
-     * @param serviceRegistry
      */
     public IsLatestVersionProperty(ServiceRegistry serviceRegistry)
     {
         super(serviceRegistry, PropertyIds.IS_LATEST_VERSION);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.alfresco.cmis.property.PropertyAccessor#getValue(org.alfresco.service
-     * .cmr.repository.NodeRef)
-     */
+    @Override
     public Serializable getValue(NodeRef nodeRef)
     {
         if (isWorkingCopy(nodeRef) || getVersionSeries(nodeRef).equals(nodeRef) && !hasWorkingCopy(nodeRef))

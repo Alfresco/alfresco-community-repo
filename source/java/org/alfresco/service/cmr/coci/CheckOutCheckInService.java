@@ -22,7 +22,6 @@ import java.io.Serializable;
 import java.util.Map;
 
 import org.alfresco.service.Auditable;
-import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -176,4 +175,33 @@ public interface CheckOutCheckInService
      */
     @Auditable(parameters = {"nodeRef"})
     public NodeRef getWorkingCopy(NodeRef nodeRef);
+
+    /**
+     * Helper method to retrieve the original node (check-out source) for a working copy.
+     * <p/>
+     * A <tt>null</tt> node reference is returned if the node is not a working copy.
+     * 
+     * @param nodeRef       the (potential) working copy
+     * @return              the original (source) node or <tt>null</tt> if it is not a working copy
+     */
+    @Auditable(parameters = {"nodeRef"})
+    public NodeRef getCheckedOut(NodeRef nodeRef);
+    
+    /**
+     * Determine if a node is a working copy or not
+     * 
+     * @param nodeRef       the (potential) working copy
+     * @return              <tt>true</tt> if the node is a working copy otherwise <tt>false</tt>
+     */
+    @Auditable(parameters = {"nodeRef"})
+    public boolean isWorkingCopy(NodeRef nodeRef);
+    
+    /**
+     * Determine if a node has been checked out or not
+     * 
+     * @param nodeRef       the (potentially) checked out node
+     * @return              <tt>true</tt> if the node has been checked out otherwise <tt>false</tt>
+     */
+    @Auditable(parameters = {"nodeRef"})
+    public boolean isCheckedOut(NodeRef nodeRef);
 }

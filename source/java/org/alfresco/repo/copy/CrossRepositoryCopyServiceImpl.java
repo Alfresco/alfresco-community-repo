@@ -264,15 +264,17 @@ public class CrossRepositoryCopyServiceImpl implements CrossRepositoryCopyServic
         {
             fNodeService.addAspect(dst, aspect, empty);
         }
-        if (!fNodeService.hasAspect(dst, ContentModel.ASPECT_COPIEDFROM))
-        {
-            empty.put(ContentModel.PROP_COPY_REFERENCE, src);
-            fNodeService.addAspect(dst, ContentModel.ASPECT_COPIEDFROM, empty);
-        }
-        else
-        {
-            fNodeService.setProperty(dst, ContentModel.PROP_COPY_REFERENCE, src);
-        }
+// 4.0: Derek Hulley: The cm:copiedFrom aspect is not that important and
+//                    AVM doesn't support associations
+//        if (!fNodeService.hasAspect(dst, ContentModel.ASPECT_COPIEDFROM))
+//        {
+//            empty.put(ContentModel.PROP_COPY_REFERENCE, src);
+//            fNodeService.addAspect(dst, ContentModel.ASPECT_COPIEDFROM, empty);
+//        }
+//        else
+//        {
+//            fNodeService.setProperty(dst, ContentModel.PROP_COPY_REFERENCE, src);
+//        }
     }
 
     /**
@@ -361,11 +363,13 @@ public class CrossRepositoryCopyServiceImpl implements CrossRepositoryCopyServic
         {
             fAVMService.addAspect(dstPath, aspect);
         }
-        if (!fAVMService.hasAspect(-1, dstPath, ContentModel.ASPECT_COPIEDFROM))
-        {
-            fAVMService.addAspect(dstPath, ContentModel.ASPECT_COPIEDFROM);
-        }
-        fNodeService.setProperty(dst, ContentModel.PROP_COPY_REFERENCE, src);
+// 4.0: Derek Hulley: The cm:copiedFrom aspect is not that important and
+//      AVM doesn't support associations
+//        if (!fAVMService.hasAspect(-1, dstPath, ContentModel.ASPECT_COPIEDFROM))
+//        {
+//            fAVMService.addAspect(dstPath, ContentModel.ASPECT_COPIEDFROM);
+//        }
+//        fNodeService.setProperty(dst, ContentModel.PROP_COPY_REFERENCE, src);
     }
 
     /**

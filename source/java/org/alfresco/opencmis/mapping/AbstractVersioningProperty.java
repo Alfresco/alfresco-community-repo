@@ -41,9 +41,6 @@ public abstract class AbstractVersioningProperty extends AbstractProperty
 
     /**
      * Construct
-     * 
-     * @param serviceRegistry
-     * @param propertyName
      */
     protected AbstractVersioningProperty(ServiceRegistry serviceRegistry, String propertyName)
     {
@@ -59,13 +56,14 @@ public abstract class AbstractVersioningProperty extends AbstractProperty
             // containing the component parts of the node ref to map back to the
             // original node
             Map<QName, Serializable> properties = getServiceRegistry().getNodeService().getProperties(nodeRef);
-            return new NodeRef((String) properties.get(ContentModel.PROP_STORE_PROTOCOL),
+            nodeRef = new NodeRef((String) properties.get(ContentModel.PROP_STORE_PROTOCOL),
                     (String) properties.get(ContentModel.PROP_STORE_IDENTIFIER),
                     (String) properties.get(ContentModel.PROP_NODE_UUID));
-        } else if (isWorkingCopy(nodeRef))
+        }
+        else if (isWorkingCopy(nodeRef))
         {
-            return (NodeRef) getServiceRegistry().getNodeService().getProperty(nodeRef,
-                    ContentModel.PROP_COPY_REFERENCE);
+            NodeRef originalNodeRef = getServiceRegistry().getCheckOutCheckInService().getCheckedOut(nodeRef);
+            nodeRef = originalNodeRef == null ? nodeRef : originalNodeRef;
         }
         return nodeRef;
     }

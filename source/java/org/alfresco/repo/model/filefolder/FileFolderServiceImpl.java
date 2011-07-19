@@ -41,6 +41,7 @@ import org.alfresco.query.PagingResults;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory;
 import org.alfresco.repo.search.QueryParameterDefImpl;
+import org.alfresco.repo.security.permissions.PermissionCheckedCollection.PermissionCheckedCollectionMixin;
 import org.alfresco.repo.security.permissions.PermissionCheckedValue.PermissionCheckedValueMixin;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -386,6 +387,7 @@ public class FileFolderServiceImpl implements FileFolderService
         {
             nodeInfos.add(toFileInfo(nodeRef, true));
         }
+        PermissionCheckedCollectionMixin.create(nodeInfos, nodeRefs);
         
         return new PagingResults<FileInfo>()
         {

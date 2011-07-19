@@ -18,26 +18,24 @@
  */
 package org.alfresco.repo.security.permissions.dynamic;
 
-import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.DynamicAuthority;
 import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.repo.security.permissions.impl.ModelDAO;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.util.PropertyCheck;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
-import org.alfresco.util.PropertyCheck;
 
 /**
  * LockOwnerDynamicAuthority
@@ -46,7 +44,7 @@ public class LockOwnerDynamicAuthority extends AbstractLifecycleBean implements 
 {
     private LockService lockService;
     
-    private NodeService nodeService;
+    private CheckOutCheckInService checkOutCheckInService;
     
     private ModelDAO modelDAO;
     
@@ -64,22 +62,10 @@ public class LockOwnerDynamicAuthority extends AbstractLifecycleBean implements 
                 {
                     return true;
                 }
-                if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
+                NodeRef original = checkOutCheckInService.getCheckedOut(nodeRef);
+                if (original != null)
                 {
-                    NodeRef original = null;
-                    Serializable reference = nodeService.getProperty(nodeRef, ContentModel.PROP_COPY_REFERENCE);
-                    if (reference != null)
-                    {
-                        original = DefaultTypeConverter.INSTANCE.convert(NodeRef.class, reference);
-                    }
-                    if (original != null && nodeService.exists(original))
-                    {
-                        return (lockService.getLockStatus(original, userName) == LockStatus.LOCK_OWNER);
-                    }
-                    else
-                    {
-                        return false;
-                    }
+                    return (lockService.getLockStatus(original, userName) == LockStatus.LOCK_OWNER);
                 }
                 else
                 {
@@ -99,8 +85,11 @@ public class LockOwnerDynamicAuthority extends AbstractLifecycleBean implements 
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
+        ApplicationContext ctx = super.getApplicationContext();
+        checkOutCheckInService = (CheckOutCheckInService) ctx.getBean("checkOutCheckInService");
+        
         PropertyCheck.mandatory(this, "lockService", lockService);
-        PropertyCheck.mandatory(this, "nodeService", nodeService);
+        PropertyCheck.mandatory(this, "checkOutCheckInService", checkOutCheckInService);
         PropertyCheck.mandatory(this, "modelDAO", modelDAO);
 
         // Build the permission set
@@ -126,7 +115,6 @@ public class LockOwnerDynamicAuthority extends AbstractLifecycleBean implements 
 
     /**
      * Set the lock service
-     * @param lockService
      */
     public void setLockService(LockService lockService)
     {
@@ -134,17 +122,17 @@ public class LockOwnerDynamicAuthority extends AbstractLifecycleBean implements 
     }
     
     /**
-     * Set the node service
-     * @param nodeService
+     * Service to get the check-in details.  This is not used for Spring configuration
+     * because it requires a permission-wrapped public service that in turn depends on
+     * this component.
      */
-    public void setNodeService(NodeService nodeService)
+    public void setCheckOutCheckInService(CheckOutCheckInService checkOutCheckInService)
     {
-        this.nodeService = nodeService;
+        this.checkOutCheckInService = checkOutCheckInService;
     }
-    
+
     /**
      * Set the permissions model dao
-     * @param modelDAO
      */
     public void setModelDAO(ModelDAO modelDAO)
     {
@@ -153,13 +141,11 @@ public class LockOwnerDynamicAuthority extends AbstractLifecycleBean implements 
     
     /**
      * Set the permissions for which this dynamic authority is required
-     * @param requiredFor
      */
     public void setRequiredFor(List<String> requiredFor)
     {
         this.requiredFor = requiredFor;
     }
-    
     
     public Set<PermissionReference> requiredFor()
     {

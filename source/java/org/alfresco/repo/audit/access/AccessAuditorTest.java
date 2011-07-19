@@ -495,7 +495,6 @@ public class AccessAuditorTest
         assertEquals("addNodeAspect", origMap.get("action"));
         // createNode createContent readContent updateNodeProperties addNodeAspect copyNode checkOut createVersion
         assertContains("updateNodeProperties", origMap.get("sub-actions"));
-        assertContains("readContent", origMap.get("sub-actions"));
         assertEquals("cm:content", origMap.get("type"));
         assertEquals("/cm:homeFolder/cm:folder1/cm:content1", origMap.get("path"));
 
@@ -503,7 +502,6 @@ public class AccessAuditorTest
         assertEquals("CHECK OUT", workMap.get("action"));
         assertContains("createNode", workMap.get("sub-actions"));
         assertContains("createContent", workMap.get("sub-actions"));
-        assertContains("readContent", workMap.get("sub-actions"));
         assertContains("updateNodeProperties", workMap.get("sub-actions"));
         assertContains("addNodeAspect", workMap.get("sub-actions"));
         assertContains("copyNode", workMap.get("sub-actions"));
@@ -545,7 +543,6 @@ public class AccessAuditorTest
         assertContains("createVersion", origMap.get("sub-actions"));
         assertContains("updateNodeProperties", origMap.get("sub-actions"));
         assertContains("checkIn", origMap.get("sub-actions"));
-        assertContains("readContent", origMap.get("sub-actions"));
         assertEquals("/cm:homeFolder/cm:folder1/cm:content1", origMap.get("path"));
         assertEquals("cm:content", origMap.get("type"));
     }

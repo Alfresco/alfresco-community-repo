@@ -8,31 +8,40 @@
     <!-- Result Maps    -->
     <!--                -->
     
-    <resultMap id="result_Copy" type="Node">
-        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="store.protocol" column="protocol" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        <result property="store.identifier" column="identifier" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        <result property="uuid" column="uuid" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    <resultMap id="result_Copy" type="Copy">
+        <result property="copy.id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="copy.store.protocol" column="protocol" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="copy.store.identifier" column="identifier" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="copy.uuid" column="uuid" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="copyName" column="name" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </resultMap>
     
     <!--                -->
     <!-- SQL Selects    -->
     <!--                -->
     
-    <!-- Query to get copies of a node -->
+    <!-- Query to get copies of a node.  The 'target' is the original and the copy is the 'source'. -->
     <select id="select_GetCopies" parameterType="CopyParameters" resultMap="result_Copy">
         select
-            copiedNode.id            as id,
-            copiedStore.protocol     as protocol,
-            copiedtore.identifier    as identifier,
-            copiedNode.uuid          as uuid,
+            copy.id                 as id,
+            copyStore.protocol      as protocol,
+            copyStore.identifier    as identifier,
+            copy.uuid               as uuid,
+            np.string_value         as name
         from
             alf_node_assoc assoc
-            join alf_node copiedNode on (copiedNode.id = assoc.targetNodeId)
-            join alf_store copiedStore on (copiedStore.id = copiedNode.store_id)
+            join alf_node copy on (copy.id = assoc.source_node_id)
+            join alf_store copyStore on (copyStore.id = copy.store_id)
+            left join alf_node_properties np on (np.node_id = copy.id and np.qname_id = #{namePropId})
+            <if test="copyParentNodeId != null">
+                join alf_child_assoc ca on (ca.child_node_id = copy.id and ca.is_primary = #{true})
+            </if>
         where
             assoc.target_node_id = #{originalNodeId} and
-            assoc.type_qname_id = #{copiedFromAssocTypeId}  
+            assoc.type_qname_id = #{originalAssocTypeId}
+            <if test="copyParentNodeId != null">
+                and ca.parent_node_id = #{copyParentNodeId}
+            </if>
     </select>
     
 </mapper>

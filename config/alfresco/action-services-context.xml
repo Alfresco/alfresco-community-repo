@@ -394,21 +394,12 @@
     </bean>
 
     <bean id="transform" class="org.alfresco.repo.action.executer.TransformActionExecuter" parent="action-executer">
-        <property name="nodeService">
-            <ref bean="NodeService" />
-        </property>
-        <property name="dictionaryService">
-            <ref bean="dictionaryService" />
-        </property>
-        <property name="contentService">
-            <ref bean="ContentService" />
-        </property>
-        <property name="copyService">
-            <ref bean="CopyService" />
-        </property>
-        <property name="mimetypeService">
-            <ref bean="mimetypeService" />
-        </property>
+        <property name="dictionaryService" ref="dictionaryService" />
+        <property name="nodeService" ref="NodeService" />
+        <property name="checkOutCheckInService" ref="CheckOutCheckInService" />
+        <property name="contentService" ref="ContentService" />
+        <property name="copyService" ref="CopyService" />
+        <property name="mimetypeService" ref="mimetypeService" />
         <property name="applicableTypes">
             <list>
                 <value>{http://www.alfresco.org/model/content/1.0}content</value>
@@ -424,12 +415,9 @@
     </bean>
 
     <bean id="copy" class="org.alfresco.repo.action.executer.CopyActionExecuter" parent="action-executer">
-        <property name="nodeService">
-            <ref bean="NodeService" />
-        </property>
-        <property name="copyService">
-            <ref bean="CopyService" />
-        </property>
+        <property name="nodeService" ref="NodeService" />
+        <property name="copyService" ref="CopyService" />
+        <property name="checkOutCheckInService" ref="CheckOutCheckInService" />
     </bean>
     
     <bean id="copy-to-web-project" class="org.alfresco.repo.action.executer.CopyToWebProjectActionExecuter" parent="action-executer">

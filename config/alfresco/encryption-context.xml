@@ -9,9 +9,13 @@
         http://code.google.com/p/spring-crypto-utils/schema/crypt
         http://code.google.com/p/spring-crypto-utils/schema/crypt.xsd">
 
+    <bean id="springKeyStoreLoader" class="org.alfresco.encryption.SpringKeyStoreLoader">
+    </bean>
+
     <!-- Beans to initilize encryption -->
-    <bean id="keyProvider" class="org.alfresco.repo.security.encryption.KeystoreKeyProvider" init-method="init">
+    <bean id="keyProvider" class="org.alfresco.encryption.KeystoreKeyProvider" init-method="init">
        <property name="location" value="${encryption.keystore.location}"/>
+       <property name="keyStoreLoader" ref="springKeyStoreLoader"/>
        <property name="provider" value="${encryption.keystore.provider}"/>
        <property name="type"     value="${encryption.keystore.type}"/>
        <property name="passwords">
@@ -22,10 +26,22 @@
            </map>
        </property>
     </bean>
-
-    <bean id="encryptor" class="org.alfresco.repo.security.encryption.DefaultEncryptor" init-method="init">
+    
+    <bean id="encryptor" class="org.alfresco.encryption.DefaultEncryptor" init-method="init">
         <property name="keyProvider" ref="keyProvider"/>
         <property name="cipherAlgorithm" value="${encryption.encryption.cipherAlgorithm}" />
     </bean>
-    
+
+    <bean id="macUtils" class="org.alfresco.encryption.MACUtils">
+        <property name="keyProvider" ref="keyProvider"/>
+        <property name="macAlgorithm" value="${encryption.macAlgorithm}"/>
+    </bean>
+
+    <bean id="encryptionUtils" class="org.alfresco.encryption.DefaultEncryptionUtils">
+        <property name="encryptor" ref="encryptor"/>
+        <property name="macUtils" ref="macUtils"/>
+        <property name="messageTimeout" value="${encryption.messageTimeout}"/>
+        <property name="remoteIP" value="${solr.solrHost}" />
+    </bean>
+
 </beans>

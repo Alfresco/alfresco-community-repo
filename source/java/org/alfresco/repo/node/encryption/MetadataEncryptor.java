@@ -8,10 +8,10 @@ import java.util.Set;
 
 import javax.crypto.SealedObject;
 
+import org.alfresco.encryption.Encryptor;
+import org.alfresco.encryption.KeyProvider;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.encryption.Encryptor;
-import org.alfresco.repo.security.encryption.KeyProvider;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;

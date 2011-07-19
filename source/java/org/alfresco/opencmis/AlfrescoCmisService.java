@@ -587,30 +587,20 @@ public class AlfrescoCmisService extends AbstractCmisService
             }
         }
 
-        PagingRequest pageRequest = new PagingRequest(skipCount.intValue(), maxItems.intValue(), null);
-        pageRequest.setRequestTotalCountMax(skipCount.intValue() + 1000); // TODO
-                                                                          // make
-                                                                          // this
-                                                                          // optional/configurable
-                                                                          // -
-                                                                          // affects
-                                                                          // whether
-                                                                          // numItems
-                                                                          // may
-                                                                          // be
-                                                                          // returned
+        PagingRequest pageRequest = new PagingRequest(skip, max, null);
+        pageRequest.setRequestTotalCountMax(skip + 10000); // TODO make this
+                                                           // optional/configurable
+                                                           // - affects whether
+                                                           // numItems may be
+                                                           // returned
 
         PagingResults<FileInfo> pageOfNodeInfos = connector.getFileFolderService().list(folderNodeRef, true, true,
                 null, sortProps, pageRequest);
-        List<FileInfo> childrenList = pageOfNodeInfos.getPage();
 
         if (max > 0)
         {
-            int lastIndex = (max + skip > childrenList.size() ? childrenList.size() : max + skip) - 1;
-            for (int i = skip; i <= lastIndex; i++)
+            for (FileInfo child : pageOfNodeInfos.getPage())
             {
-                FileInfo child = childrenList.get(i);
-
                 try
                 {
                     // create a child CMIS object
@@ -633,7 +623,6 @@ public class AlfrescoCmisService extends AbstractCmisService
 
                     // add it
                     list.add(childData);
-
                 } catch (InvalidNodeRefException e)
                 {
                     // ignore invalid children
@@ -658,8 +647,7 @@ public class AlfrescoCmisService extends AbstractCmisService
 
         if (logger.isDebugEnabled())
         {
-            logger.debug("getChildren: " + childrenList.size() + " in " + (System.currentTimeMillis() - start)
-                    + " msecs");
+            logger.debug("getChildren: " + list.size() + " in " + (System.currentTimeMillis() - start) + " msecs");
         }
 
         return result;

@@ -36,7 +36,7 @@
         </property>
     </bean>
 
-	<bean id="search.lucene.alfresco" class="org.alfresco.repo.search.impl.solr.SolrAlfrescoFTSQueryLanguage" 
+	<bean id="search.lucene.alfresco" class="org.alfresco.repo.search.impl.solr.SolrAlfrescoQueryLanguage" 
 	      parent="search.abstract.query.language" >
 	    <property name="nodeDAO">
             <ref bean="nodeDAO" />

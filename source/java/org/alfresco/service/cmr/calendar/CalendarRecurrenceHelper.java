@@ -188,236 +188,22 @@ public class CalendarRecurrenceHelper
          
          Calendar currentDate = Calendar.getInstance();
          currentDate.setTime(entry.getStart());
-         if ("WEEKLY".equals(freq))
-         {
-            // Get a sorted list of the days it applies to
-            List<Integer> daysOfWeek = new ArrayList<Integer>(); 
-            for(String dayS : params.get("BYDAY").split(","))
-            {
-               Integer day = DAY_NAMES_TO_CALENDAR_DAYS.get(dayS);
-               if(day == null)
-               {
-                  logger.warn("Invalid day " + dayS);
-               }
-               else
-               {
-                  daysOfWeek.add(day);
-               }
-            }
-            Collections.sort(daysOfWeek);
-            
-            // Wind forward
-            boolean valid = false;
-            while(true)
-            {
-               // Check each day
-               for(int day : daysOfWeek)
-               {
-                  currentDate.set(Calendar.DAY_OF_WEEK, day);
-                  if(!valid)
-                  {
-                     if(currentDate.before(onOrAfter))
-                     {
-                        // To early
-                     }
-                     else
-                     {
-                        // Now in the right range
-                        valid = true;
-                     }
-                  }
-                  if(valid)
-                  {
-                     if(until != null)
-                     {
-                        if(currentDate.after(until))
-                        {
-                           // Too late
-                           break;
-                        }
-                     }
-                     dates.add(currentDate.getTime());
-                     if(firstOnly) 
-                     {
-                        break;
-                     }
-                  }
-               }
-               
-               // Wind on to the next week
-               currentDate.set(Calendar.DAY_OF_WEEK, daysOfWeek.get(0));
-               currentDate.add(Calendar.DATE, interval*7);
-            }
-         }
          
-         else if ("DAILY".equals(freq))
+         if ("DAILY".equals(freq))
          {
-            // Nice and easy
-            while(currentDate.before(onOrAfter))
-            {
-               currentDate.add(Calendar.DATE, 1);
-            }
-            
-            if(firstOnly)
-            {
-               // Save the first date, if valid
-               if(until != null)
-               {
-                  if(currentDate.before(until))
-                  {
-                     dates.add(currentDate.getTime());
-                  }
-               }
-               else
-               {
-                  dates.add(currentDate.getTime());
-               }
-            }
-            else
-            {
-               // Run until the end
-               while(currentDate.before(until))
-               {
-                  dates.add(currentDate.getTime());
-                  currentDate.add(Calendar.DATE, 1);
-               }
-            }
+            buildDailyRecurrences(currentDate, dates, params, onOrAfter, until, firstOnly, interval);
          }
-         
+         else if ("WEEKLY".equals(freq))
+         {
+            buildWeeklyRecurrences(currentDate, dates, params, onOrAfter, until, firstOnly, interval);
+         }
          else if ("MONTHLY".equals(freq))
          {
-            if (params.get("BYMONTHDAY") != null)
-            {
-               // eg the 15th of each month
-               int dayOfMonth = Integer.parseInt(params.get("BYMONTHDAY"));
-               if(currentDate.get(Calendar.DAY_OF_MONTH) < dayOfMonth)
-               {
-                  // Move forward to start
-                  addMonthToDayOfMonth(currentDate, dayOfMonth);
-               }
-               
-               // Go until in the ok range
-               while(currentDate.before(onOrAfter))
-               {
-                  addMonthToDayOfMonth(currentDate, dayOfMonth);
-               }
-               while(true)
-               {
-                  if(until != null)
-                  {
-                     if(currentDate.after(until))
-                     {
-                        break;
-                     }
-                  }
-                  
-                  dates.add(currentDate.getTime());
-                  if(firstOnly)
-                  {
-                     break;
-                  }
-                  
-                  addMonthToDayOfMonth(currentDate, dayOfMonth);
-               }
-            }
-            else if (params.get("BYSETPOS") != null)
-            {
-               // eg the first Thursday of the month
-               int dayOfWeek = DAY_NAMES_TO_CALENDAR_DAYS.get(params.get("BYSETPOS"));
-               if(currentDate.get(Calendar.DAY_OF_MONTH) > 8)
-               {
-                  // Move to start, in next month
-                  addMonthToFirstDayOfWeek(currentDate, dayOfWeek);
-               }
-               else if(currentDate.get(Calendar.DAY_OF_WEEK) != dayOfWeek)
-               {
-                  // Move forward to start
-                  Date t = currentDate.getTime();
-                  currentDate.set(Calendar.DAY_OF_WEEK, dayOfWeek);
-                  if(currentDate.before(t))
-                  {
-                     currentDate.add(Calendar.DATE, 7);
-                  }
-               }
-               
-               while(currentDate.before(onOrAfter))
-               {
-                  addMonthToFirstDayOfWeek(currentDate, dayOfWeek);
-               }
-               while(true)
-               {
-                  if(until != null)
-                  {
-                     if(currentDate.after(until))
-                     {
-                        break;
-                     }
-                  }
-                  
-                  dates.add(currentDate.getTime());
-                  if(firstOnly)
-                  {
-                     break;
-                  }
-                  
-                  addMonthToFirstDayOfWeek(currentDate, dayOfWeek);
-               }
-            }
+            buildMonthlyRecurrences(currentDate, dates, params, onOrAfter, until, firstOnly, interval);
          }
-         
          else if ("YEARLY".equals(freq))
          {
-            int month = Integer.parseInt(params.get("BYMONTH"));
-            
-            if (params.get("BYMONTHDAY") != null)
-            {
-               // eg the 2nd of March every year
-               int dayOfMonth = Integer.parseInt(params.get("BYMONTHDAY"));
-               if(currentDate.get(Calendar.MONTH) == month &&
-                  currentDate.get(Calendar.DAY_OF_MONTH) == dayOfMonth)
-               {
-                  // Correct start time
-               }
-               else
-               {
-                  currentDate.set(Calendar.YEAR, currentDate.get(Calendar.YEAR) + 1);
-                  currentDate.set(Calendar.MONTH, month);
-                  currentDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-               }
-               
-               while(currentDate.before(onOrAfter))
-               {
-                  currentDate.set(Calendar.YEAR, currentDate.get(Calendar.YEAR) + 1);
-                  currentDate.set(Calendar.MONTH, month);
-                  currentDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-               }
-               while(true)
-               {
-                  if(until != null)
-                  {
-                     if(currentDate.after(until))
-                     {
-                        break;
-                     }
-                  }
-                  
-                  dates.add(currentDate.getTime());
-                  if(firstOnly)
-                  {
-                     break;
-                  }
-                  
-                  currentDate.set(Calendar.YEAR, currentDate.get(Calendar.YEAR) + 1);
-                  currentDate.set(Calendar.MONTH, month);
-                  currentDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-               }
-            }
-            else
-            {
-               // eg the first Tuesday in February every year
-               int dayOfWeek = DAY_NAMES_TO_CALENDAR_DAYS.get(params.get("BYSETPOS"));
-               // TODO
-            }
+            buildYearlyRecurrences(currentDate, dates, params, onOrAfter, until, firstOnly, interval);
          }
          else
          {
@@ -433,6 +219,243 @@ public class CalendarRecurrenceHelper
          return null;
       }
    }
+   
+   protected static void buildDailyRecurrences(Calendar currentDate, List<Date> dates, 
+         Map<String,String> params, Date onOrAfter, Date until, boolean firstOnly, int interval)
+   {
+      // Nice and easy
+      while(currentDate.getTime().before(onOrAfter))
+      {
+         currentDate.add(Calendar.DATE, 1);
+      }
+      
+      if(firstOnly)
+      {
+         // Save the first date, if valid
+         if(until != null)
+         {
+            if(currentDate.getTime().before(until))
+            {
+               dates.add(currentDate.getTime());
+            }
+         }
+         else
+         {
+            dates.add(currentDate.getTime());
+         }
+      }
+      else
+      {
+         // Run until the end
+         while(currentDate.getTime().before(until))
+         {
+            dates.add(currentDate.getTime());
+            currentDate.add(Calendar.DATE, 1);
+         }
+      }
+   }
+   
+   protected static void buildWeeklyRecurrences(Calendar currentDate, List<Date> dates, 
+         Map<String,String> params, Date onOrAfter, Date until, boolean firstOnly, int interval)
+   {
+      // Get a sorted list of the days it applies to
+      List<Integer> daysOfWeek = new ArrayList<Integer>(); 
+      for(String dayS : params.get("BYDAY").split(","))
+      {
+         Integer day = DAY_NAMES_TO_CALENDAR_DAYS.get(dayS);
+         if(day == null)
+         {
+            logger.warn("Invalid day " + dayS);
+         }
+         else
+         {
+            daysOfWeek.add(day);
+         }
+      }
+      Collections.sort(daysOfWeek);
+      
+      // Wind forward
+      boolean valid = false;
+      while(true)
+      {
+         // Check each day
+         for(int day : daysOfWeek)
+         {
+            currentDate.set(Calendar.DAY_OF_WEEK, day);
+            if(!valid)
+            {
+               if(currentDate.before(onOrAfter))
+               {
+                  // To early
+               }
+               else
+               {
+                  // Now in the right range
+                  valid = true;
+               }
+            }
+            if(valid)
+            {
+               if(until != null)
+               {
+                  if(currentDate.after(until))
+                  {
+                     // Too late
+                     break;
+                  }
+               }
+               dates.add(currentDate.getTime());
+               if(firstOnly) 
+               {
+                  break;
+               }
+            }
+         }
+         
+         // Wind on to the next week
+         currentDate.set(Calendar.DAY_OF_WEEK, daysOfWeek.get(0));
+         currentDate.add(Calendar.DATE, interval*7);
+      }
+   }
+   
+   protected static void buildMonthlyRecurrences(Calendar currentDate, List<Date> dates, 
+         Map<String,String> params, Date onOrAfter, Date until, boolean firstOnly, int interval)
+   {
+      if (params.get("BYMONTHDAY") != null)
+      {
+         // eg the 15th of each month
+         int dayOfMonth = Integer.parseInt(params.get("BYMONTHDAY"));
+         if(currentDate.get(Calendar.DAY_OF_MONTH) < dayOfMonth)
+         {
+            // Move forward to start
+            addMonthToDayOfMonth(currentDate, dayOfMonth);
+         }
+         
+         // Go until in the ok range
+         while(currentDate.before(onOrAfter))
+         {
+            addMonthToDayOfMonth(currentDate, dayOfMonth);
+         }
+         while(true)
+         {
+            if(until != null)
+            {
+               if(currentDate.after(until))
+               {
+                  break;
+               }
+            }
+            
+            dates.add(currentDate.getTime());
+            if(firstOnly)
+            {
+               break;
+            }
+            
+            addMonthToDayOfMonth(currentDate, dayOfMonth);
+         }
+      }
+      else if (params.get("BYSETPOS") != null)
+      {
+         // eg the first Thursday of the month
+         int dayOfWeek = DAY_NAMES_TO_CALENDAR_DAYS.get(params.get("BYSETPOS"));
+         if(currentDate.get(Calendar.DAY_OF_MONTH) > 8)
+         {
+            // Move to start, in next month
+            addMonthToFirstDayOfWeek(currentDate, dayOfWeek);
+         }
+         else if(currentDate.get(Calendar.DAY_OF_WEEK) != dayOfWeek)
+         {
+            // Move forward to start
+            Date t = currentDate.getTime();
+            currentDate.set(Calendar.DAY_OF_WEEK, dayOfWeek);
+            if(currentDate.before(t))
+            {
+               currentDate.add(Calendar.DATE, 7);
+            }
+         }
+         
+         while(currentDate.before(onOrAfter))
+         {
+            addMonthToFirstDayOfWeek(currentDate, dayOfWeek);
+         }
+         while(true)
+         {
+            if(until != null)
+            {
+               if(currentDate.after(until))
+               {
+                  break;
+               }
+            }
+            
+            dates.add(currentDate.getTime());
+            if(firstOnly)
+            {
+               break;
+            }
+            
+            addMonthToFirstDayOfWeek(currentDate, dayOfWeek);
+         }
+      }
+   }
+   
+   protected static void buildYearlyRecurrences(Calendar currentDate, List<Date> dates, 
+         Map<String,String> params, Date onOrAfter, Date until, boolean firstOnly, int interval)
+   {
+      int month = Integer.parseInt(params.get("BYMONTH"));
+      
+      if (params.get("BYMONTHDAY") != null)
+      {
+         // eg the 2nd of March every year
+         int dayOfMonth = Integer.parseInt(params.get("BYMONTHDAY"));
+         if(currentDate.get(Calendar.MONTH) == month &&
+            currentDate.get(Calendar.DAY_OF_MONTH) == dayOfMonth)
+         {
+            // Correct start time
+         }
+         else
+         {
+            currentDate.set(Calendar.YEAR, currentDate.get(Calendar.YEAR) + 1);
+            currentDate.set(Calendar.MONTH, month);
+            currentDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+         }
+         
+         while(currentDate.before(onOrAfter))
+         {
+            currentDate.set(Calendar.YEAR, currentDate.get(Calendar.YEAR) + 1);
+            currentDate.set(Calendar.MONTH, month);
+            currentDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+         }
+         while(true)
+         {
+            if(until != null)
+            {
+               if(currentDate.after(until))
+               {
+                  break;
+               }
+            }
+            
+            dates.add(currentDate.getTime());
+            if(firstOnly)
+            {
+               break;
+            }
+            
+            currentDate.set(Calendar.YEAR, currentDate.get(Calendar.YEAR) + 1);
+            currentDate.set(Calendar.MONTH, month);
+            currentDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+         }
+      }
+      else
+      {
+         // eg the first Tuesday in February every year
+         int dayOfWeek = DAY_NAMES_TO_CALENDAR_DAYS.get(params.get("BYSETPOS"));
+         // TODO
+      }
+   }
+   
    
    private static void addMonthToDayOfMonth(Calendar c, int dayOfMonth)
    {

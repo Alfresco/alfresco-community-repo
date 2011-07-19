@@ -31,7 +31,7 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref bean="adm.luceneQueryEngineSecurity"/>
+                <idref bean="search.adm.luceneQueryEngineSecurity"/>
             </list>
         </property>
     </bean>

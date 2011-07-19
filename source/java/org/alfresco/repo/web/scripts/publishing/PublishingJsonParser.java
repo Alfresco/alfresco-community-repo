@@ -20,8 +20,8 @@
 package org.alfresco.repo.web.scripts.publishing;
 
 import static org.alfresco.repo.web.scripts.WebScriptUtil.getCalendar;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CHANNEL_NAME;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CHANNEL_NAMES;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CHANNEL_ID;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CHANNEL_IDS;
 import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.COMMENT;
 import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.IDS;
 import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.MESSAGE;
@@ -93,12 +93,12 @@ public class PublishingJsonParser
     public String schedulePublishingEvent(PublishingQueue queue, String jsonStr) throws ParseException, JSONException
     {
         JSONObject json = getJson(jsonStr);
-        String channelName = json.optString(CHANNEL_NAME);
+        String channelId= json.optString(CHANNEL_ID);
         String comment = json.optString(COMMENT);
         Calendar schedule = getCalendar(json.optJSONObject(SCHEDULED_TIME));
         PublishingPackage publishingPackage = getPublishingPackage(queue, json);
         StatusUpdate statusUpdate = getStatusUpdate(queue, json.optJSONObject(STATUS_UPDATE));
-        return queue.scheduleNewEvent(publishingPackage, channelName, schedule, comment, statusUpdate);
+        return queue.scheduleNewEvent(publishingPackage, channelId, schedule, comment, statusUpdate);
     }
     
     public StatusUpdate getStatusUpdate(PublishingQueue queue, JSONObject json)
@@ -114,7 +114,7 @@ public class PublishingJsonParser
         {
             nodeToLinkTo = new NodeRef(nodeStr);
         }
-        Collection<String> channelNames = toStrings(json.optJSONArray(CHANNEL_NAMES));
+        Collection<String> channelNames = toStrings(json.optJSONArray(CHANNEL_IDS));
         return queue.createStatusUpdate(message, nodeToLinkTo, channelNames);
     }
     

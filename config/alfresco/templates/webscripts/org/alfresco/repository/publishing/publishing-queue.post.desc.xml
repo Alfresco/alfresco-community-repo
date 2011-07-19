@@ -32,7 +32,7 @@
                {
                   "message": string,
                   "nodeRef": string,
-                  "channelNames": [string, ... ]
+                  "channelIds": [string, ... ]
                }
             }
             ]]>

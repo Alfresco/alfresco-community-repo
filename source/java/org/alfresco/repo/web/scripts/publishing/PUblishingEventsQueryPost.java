@@ -52,7 +52,7 @@ public class PUblishingEventsQueryPost extends PublishingEnvironmentWebScript
         {
             content = WebScriptUtil.getContent(req);
             List<PublishingEvent> events = jsonParser.query(queue, content);
-            List<Map<String, Object>> model = builder.buildPublishingEvents(events, channelService, siteId);
+            List<Map<String, Object>> model = builder.buildPublishingEvents(events, channelService);
             return WebScriptUtil.createBaseModel(model);
         }
         catch(Exception e)

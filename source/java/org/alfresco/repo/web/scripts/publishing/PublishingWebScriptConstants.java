@@ -62,9 +62,10 @@ public interface PublishingWebScriptConstants
     public static final String VERSION = "version";
     public static final String STATUS_UPDATE = "statusUpdate";
     public static final String CHANNEL_NAME = "channelName";
+    public static final String CHANNEL_ID = "channelId";
 
     // Status Update Model Keys
-    public static final String CHANNEL_NAMES = "channelNames";
+    public static final String CHANNEL_IDS = "channelIds";
     public static final String NODE_REF = "nodeRef";
     public static final String MESSAGE = "message";
 

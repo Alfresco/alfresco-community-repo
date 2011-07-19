@@ -74,7 +74,7 @@ import org.springframework.extensions.surf.util.URLEncoder;
 public class PublishingModelBuilder
 {
     
-    public Map<String, Object> buildPublishingEvent(PublishingEvent event, ChannelService channelService, String siteId)
+    public Map<String, Object> buildPublishingEvent(PublishingEvent event, ChannelService channelService)
     {
         Map<String, Object> model = new HashMap<String, Object>();
         model.put(ID, event.getId());
@@ -88,28 +88,27 @@ public class PublishingModelBuilder
         model.put(PUBLISH_NODES, buildNodes(event.getPackage(), true));
         model.put(UNPUBLISH_NODES, buildNodes(event.getPackage(), false));
         
-        String channelName = event.getChannelName();
-        Channel channel = channelService.getChannel(siteId, channelName);
+        String channelId = event.getChannelId();
+        Channel channel = channelService.getChannel(channelId);
         if(channel!= null)
         {
             model.put(CHANNEL, buildChannel(channel));
         }
         else
         {
-            model.put(CHANNEL_TYPE, channelName);
+            model.put(CHANNEL_TYPE, channelId);
         }
         return model;
     }    
 
     public List<Map<String, Object>> buildPublishingEvents(List<PublishingEvent> events,
-            final ChannelService channelService,
-            final String siteId)
+            final ChannelService channelService)
     {
         return transform(events, new Function<PublishingEvent, Map<String, Object>>()
         {
             public Map<String, Object> apply(PublishingEvent event)
             {
-                return buildPublishingEvent(event, channelService, siteId);
+                return buildPublishingEvent(event, channelService);
             }
         });
     }
@@ -118,6 +117,7 @@ public class PublishingModelBuilder
     {
         Map<String, Object> model = new HashMap<String, Object>();
         model.put(URL, getUrl(channel));
+        model.put(ID, channel.getId());
         model.put(NAME, channel.getName());
         //TODO Localize the title.
         model.put(TITLE, channel.getName());

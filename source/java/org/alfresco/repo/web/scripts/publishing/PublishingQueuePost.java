@@ -57,7 +57,7 @@ public class PublishingQueuePost extends PublishingEnvironmentWebScript
             }
             String eventId = jsonParser.schedulePublishingEvent(queue, content);
             PublishingEvent event = publishingService.getPublishingEvent(eventId);
-            Map<String, Object> eventModel = builder.buildPublishingEvent(event, channelService, siteId);
+            Map<String, Object> eventModel = builder.buildPublishingEvent(event, channelService);
             return WebScriptUtil.createBaseModel(eventModel);
         }
         catch(WebScriptException we)

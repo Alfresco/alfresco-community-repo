@@ -75,6 +75,7 @@
 <#macro channelJSON channel>
 {
    "url": "${channel.url}",
+   "id": "${channel.id}",
    "name": "${channel.name}",
    "title": "${channel.title}",
    "channelType":

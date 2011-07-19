@@ -25,8 +25,8 @@ import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConsta
 import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CAN_PUBLISH_STATUS_UPDATES;
 import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CAN_UNPUBLISH;
 import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CHANNEL;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CHANNEL_NAME;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CHANNEL_NAMES;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CHANNEL_ID;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CHANNEL_IDS;
 import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CHANNEL_NODE_TYPE;
 import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CHANNEL_TYPE;
 import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.COMMENT;
@@ -64,7 +64,6 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
@@ -108,6 +107,7 @@ import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.GUID;
 import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.collections.CollectionUtils;
+import org.alfresco.util.collections.Function;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -265,7 +265,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         List<PublishingEvent> events = queue.getPublishingEvents(filter);
         assertEquals(1, events.size());
         PublishingEvent event = events.get(0);
-        assertEquals(publishChannel.getName(), event.getChannelName());
+        assertEquals(publishChannel.getId(), event.getChannelId());
         assertEquals(comment, event.getComment());
         assertEquals(Status.SCHEDULED, event.getStatus());
         
@@ -280,9 +280,9 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         StatusUpdate statusUpdate = event.getStatusUpdate();
         assertEquals(statusMessage, statusUpdate.getMessage());
         assertEquals(textNode, statusUpdate.getNodeToLinkTo());
-        Set<String> channelNames = statusUpdate.getChannelNames();
-        assertEquals(1, channelNames.size());
-        assertTrue(channelNames.contains(statusChannel.getName()));
+        Set<String> channelIds = statusUpdate.getChannelIds();
+        assertEquals(1, channelIds.size());
+        assertTrue(channelIds.contains(statusChannel.getId()));
         
         // Wait for Publishing Event to execute asynchronously
         Thread.sleep(3000);
@@ -290,8 +290,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         ChannelType publishAnyChannelType = channelService.getChannelType(publishAnyType);
         ChannelType statusUpdateChannelType = channelService.getChannelType(statusUpdateType);
         
-        NodeRef environmentNode = new NodeRef(environment.getId());
-        NodeRef mappedTextNode = channelHelper.mapSourceToEnvironment(textNode, environmentNode, publishChannel.getName());
+        NodeRef mappedTextNode = channelHelper.mapSourceToEnvironment(textNode, publishChannel.getNodeRef());
         
         // Check publish is called.
         verify(publishAnyChannelType)
@@ -349,7 +348,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         Calendar schedule = Calendar.getInstance();
         schedule.add(Calendar.YEAR, 1);
         
-        String event1Id = queue.scheduleNewEvent(pckg1, publishChannel.getName(), schedule, comment, statusUpdate);
+        String event1Id = queue.scheduleNewEvent(pckg1, publishChannel.getId(), schedule, comment, statusUpdate);
         
         // Query for all events.
         response = sendRequest(new PostRequest(queryUrl, "", JSON), 200);
@@ -452,7 +451,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         checkContainsNodes(pckg, json.getJSONArray(PUBLISH_NODES), true);
         checkContainsNodes(pckg, json.getJSONArray(UNPUBLISH_NODES), false);
         
-        Channel channel = channelService.getChannel(siteId, event.getChannelName());
+        Channel channel = channelService.getChannel(event.getChannelId());
         checkChannel(json.optJSONObject(CHANNEL), channel);
     }
 
@@ -521,7 +520,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
             Channel... statusChannels) throws JSONException
     {
         JSONObject json = new JSONObject();
-        json.put(CHANNEL_NAME, publishChannel.getName());
+        json.put(CHANNEL_ID, publishChannel.getId());
         json.put(COMMENT, comment);
         Calendar schedule = Calendar.getInstance();
         schedule.add(Calendar.SECOND, 1);
@@ -534,15 +533,19 @@ public class PublishingRestApiTest extends BaseWebScriptTest
 
     private JSONObject buildStatusUpdate(String message, NodeRef textNode, Channel... channels) throws JSONException
     {
-        ArrayList<String> channelNames = new ArrayList<String>(channels.length);
-        for (Channel channel : channels)
+        Function<Channel, String> transformer = new Function<Channel, String>()
         {
-            channelNames.add(channel.getName());
-        }
+            public String apply(Channel channel)
+            {
+                return channel.getId();
+            }
+        };
+        List<String> ids = CollectionUtils.transform(transformer, channels);
+            
         JSONObject statusUpdate = new JSONObject();
         statusUpdate.put(MESSAGE, message);
         statusUpdate.put(NODE_REF, textNode.toString());
-        statusUpdate.put(CHANNEL_NAMES, channelNames);
+        statusUpdate.put(CHANNEL_IDS, ids);
         return statusUpdate;
     }
 

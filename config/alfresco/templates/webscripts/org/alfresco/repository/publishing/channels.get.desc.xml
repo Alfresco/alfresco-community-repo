@@ -38,6 +38,7 @@
                   [
                      {
                         "url": string,
+                        "id": string,
                         "name": string,
                         "title": string,
                         "channelType":

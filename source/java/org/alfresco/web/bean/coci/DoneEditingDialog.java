@@ -18,8 +18,6 @@
  */
 package org.alfresco.web.bean.coci;
 
-import java.io.Serializable;
-import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.faces.application.NavigationHandler;
@@ -29,7 +27,6 @@ import javax.faces.event.ActionEvent;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.Version;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
@@ -198,13 +195,7 @@ public class DoneEditingDialog extends CheckinCheckoutDialog
     */
    private NodeRef getSourceNodeRef(NodeRef workingCopyNodeRef)
    {
-      if (getNodeService().hasAspect(workingCopyNodeRef, ContentModel.ASPECT_COPIEDFROM) == true)
-      {
-         Map<QName, Serializable> workingCopyProperties = getNodeService().getProperties(workingCopyNodeRef);
-         return (NodeRef) workingCopyProperties.get(ContentModel.PROP_COPY_REFERENCE);
-      }
-
-      return null;
+      return getCheckOutCheckInService().getCheckedOut(workingCopyNodeRef);
    }
 
 }

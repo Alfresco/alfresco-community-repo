@@ -36,14 +36,12 @@ import javax.faces.event.AbortProcessingException;
 import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
-import org.springframework.extensions.config.Config;
-import org.springframework.extensions.config.ConfigElement;
-import org.springframework.extensions.config.ConfigService;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.web.scripts.FileTypeImageUtils;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.lock.LockService;
@@ -87,8 +85,8 @@ import org.alfresco.web.ui.common.component.IBreadcrumbHandler;
 import org.alfresco.web.ui.common.component.UIActionLink;
 import org.alfresco.web.ui.common.component.UIBreadcrumb;
 import org.alfresco.web.ui.common.component.UIModeList;
-import org.alfresco.web.ui.common.component.UIStatusMessage;
 import org.alfresco.web.ui.common.component.UIPanel.ExpandedEvent;
+import org.alfresco.web.ui.common.component.UIStatusMessage;
 import org.alfresco.web.ui.common.component.data.UIRichList;
 import org.alfresco.web.ui.repo.component.IRepoBreadcrumbHandler;
 import org.alfresco.web.ui.repo.component.UINodeDescendants;
@@ -96,6 +94,9 @@ import org.alfresco.web.ui.repo.component.UINodePath;
 import org.alfresco.web.ui.repo.component.UISimpleSearch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.config.Config;
+import org.springframework.extensions.config.ConfigElement;
+import org.springframework.extensions.config.ConfigService;
 
 
 /**
@@ -144,6 +145,23 @@ public class BrowseBean implements IContextListener, Serializable
          nodeService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNodeService();
       }
       return nodeService;
+   }
+
+   /**
+    * @param checkOutCheckInService The service for check-in and check-out.
+    */
+   public void setCheckOutCheckInService(CheckOutCheckInService checkOutCheckInService)
+   {
+      this.checkOutCheckInService = checkOutCheckInService;
+   }
+
+   protected CheckOutCheckInService getCheckOutCheckInService()
+   {
+      if (checkOutCheckInService == null)
+      {
+          checkOutCheckInService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getCheckOutCheckInService();
+      }
+      return checkOutCheckInService;
    }
 
    /**
@@ -2152,31 +2170,9 @@ public class BrowseBean implements IContextListener, Serializable
       {
          NodeRef nodeRef = new NodeRef(ref);
          
-         boolean hasWorkingCopy = false;
-         ResultSet resultSet = null;
-
-         try
-         {
-            // query for a working copy
-            resultSet = getSearchService().query(nodeRef.getStoreRef(), SearchService.LANGUAGE_LUCENE, 
-                     "ASPECT:\"" + ContentModel.ASPECT_WORKING_COPY.toString() +
-                     "\" AND +@\\{http\\://www.alfresco.org/model/content/1.0\\}" +
-                     ContentModel.PROP_COPY_REFERENCE.getLocalName() + ":\"" + nodeRef.toString() + "\"");
- 
-            if (resultSet.getNodeRefs().size() != 0)
-            {               
-               hasWorkingCopy = true;
-            }
-         }
-         finally
-         {
-            if (resultSet != null)
-            {
-               resultSet.close();
-            }
-         }
+         NodeRef workingCopyNodeRef = getCheckOutCheckInService().getWorkingCopy(nodeRef);
          
-         if (hasWorkingCopy)
+         if (workingCopyNodeRef != null)
          {
             // if node has a working copy setup error message and return
             Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
@@ -2366,6 +2362,9 @@ public class BrowseBean implements IContextListener, Serializable
 
    /** The NodeService to be used by the bean */
    private transient NodeService nodeService;
+
+   /** The CheckOutCheckInService to be used by the bean */
+   private transient CheckOutCheckInService checkOutCheckInService;
 
    /** The SearchService to be used by the bean */
    private transient SearchService searchService;

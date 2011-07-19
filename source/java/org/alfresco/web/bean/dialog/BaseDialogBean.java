@@ -29,6 +29,7 @@ import javax.faces.context.FacesContext;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -51,6 +52,7 @@ import org.alfresco.web.ui.common.Utils;
  * 
  * @author gavinc
  */
+@SuppressWarnings("serial")
 public abstract class BaseDialogBean implements IDialogBean, Serializable
 {
    protected Map<String, String> parameters;
@@ -62,6 +64,7 @@ public abstract class BaseDialogBean implements IDialogBean, Serializable
    
    transient private TransactionService transactionService;
    transient private NodeService nodeService;
+   transient private CheckOutCheckInService checkOutCheckInService;
    transient private FileFolderService fileFolderService;
    transient private SearchService searchService;
    transient private DictionaryService dictionaryService;
@@ -270,6 +273,15 @@ public abstract class BaseDialogBean implements IDialogBean, Serializable
          this.nodeService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNodeService();
       }
       return this.nodeService;
+   }
+   
+   protected CheckOutCheckInService getCheckOutCheckInService()
+   {
+      if (this.checkOutCheckInService == null)
+      {
+         this.checkOutCheckInService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getCheckOutCheckInService();
+      }
+      return this.checkOutCheckInService;
    }
    
    /**

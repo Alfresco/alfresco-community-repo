@@ -18,8 +18,13 @@
  */
 package org.alfresco.web.action.evaluator;
 
+import javax.faces.context.FacesContext;
+
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.web.action.ActionEvaluator;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.bean.repository.Repository;
 
 /**
  * Base class for all action evaluators.
@@ -35,7 +40,7 @@ public class BaseActionEvaluator implements ActionEvaluator
       return true;
    }
    
-   public boolean evaluate(Object obj)
+   public boolean evaluate(final Object obj)
    {
       // if a Node object is passed to this method call
       // the explicit evaluate(Node) method otherwise
@@ -43,7 +48,17 @@ public class BaseActionEvaluator implements ActionEvaluator
       
       if (obj instanceof Node)
       {
-         return evaluate((Node)obj);
+         RetryingTransactionCallback<Boolean> txnCallback = new RetryingTransactionCallback<Boolean>()
+         {
+            @Override
+            public Boolean execute() throws Throwable
+            {
+               return evaluate((Node)obj);
+            }
+         };
+         TransactionService txnService =
+             Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getTransactionService();
+         return txnService.getRetryingTransactionHelper().doInTransaction(txnCallback, true, true);
       }
       else
       {

@@ -22,8 +22,8 @@ import javax.faces.context.FacesContext;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
@@ -49,11 +49,10 @@ public class ForumsCheckinDocEvaluator extends BaseActionEvaluator
       {
          if (node.hasAspect(ForumModel.ASPECT_DISCUSSABLE))
          {
-            NodeService nodeService =
-               Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNodeService();
-            
+            CheckOutCheckInService checkOutCheckInService =
+                Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getCheckOutCheckInService();
             // get the original locked node (via the copiedfrom aspect)
-            NodeRef lockedNodeRef = (NodeRef)nodeService.getProperty(node.getNodeRef(), ContentModel.PROP_COPY_REFERENCE);
+            NodeRef lockedNodeRef = checkOutCheckInService.getCheckedOut(node.getNodeRef());
             if (lockedNodeRef != null)
             {
                Node lockedNode = new Node(lockedNodeRef);

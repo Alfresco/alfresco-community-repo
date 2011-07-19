@@ -338,6 +338,10 @@
          <value>#{SearchService}</value>
       </managed-property>
       <managed-property>
+         <property-name>checkOutCheckInService</property-name>
+         <value>#{CheckOutCheckInService}</value>
+      </managed-property>
+      <managed-property>
          <property-name>lockService</property-name>
          <value>#{LockService}</value>
       </managed-property>

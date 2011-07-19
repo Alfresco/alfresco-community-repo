@@ -26,27 +26,12 @@ import org.alfresco.repo.publishing.flickr.springsocial.api.MediaOperations;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.social.NotAuthorizedException;
 import org.springframework.social.oauth1.AbstractOAuth1ApiBinding;
 import org.springframework.social.support.ClientHttpRequestFactorySelector;
 import org.springframework.social.support.URIBuilder;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-/**
- * <p>
- * This is the central class for interacting with Facebook.
- * </p>
- * <p>
- * There are some operations, such as searching, that do not require OAuth
- * authentication. In those cases, you may use a {@link FlickrTemplate} that is
- * created through the default constructor and without any OAuth details.
- * Attempts to perform secured operations through such an instance, however,
- * will result in {@link NotAuthorizedException} being thrown.
- * </p>
- * 
- * @author Craig Walls
- */
 public class FlickrTemplate extends AbstractOAuth1ApiBinding implements Flickr
 {
     private final String REST_ENDPOINT = "http://api.flickr.com/services/rest/";
@@ -54,29 +39,11 @@ public class FlickrTemplate extends AbstractOAuth1ApiBinding implements Flickr
 
     private MediaOperations mediaOperations;
 
-    /**
-     * Create a new instance of FacebookTemplate. This constructor creates a new
-     * FacebookTemplate able to perform unauthenticated operations against
-     * Facebook's Graph API. Some operations do not require OAuth
-     * authentication. For example, retrieving a specified user's profile or
-     * feed does not require authentication (although the data returned will be
-     * limited to what is publicly available). A FacebookTemplate created with
-     * this constructor will support those operations. Those operations
-     * requiring authentication will throw {@link NotAuthorizedException}.
-     */
     public FlickrTemplate()
     {
         initialize();
     }
 
-    /**
-     * Create a new instance of FacebookTemplate. This constructor creates the
-     * FacebookTemplate using a given access token.
-     * 
-     * @param accessToken
-     *            An access token given by Facebook after a successful OAuth 2
-     *            authentication (or through Facebook's JS library).
-     */
     public FlickrTemplate(String consumerKey, String consumerSecret, String accessToken, String accessTokenSecret)
     {
         super(consumerKey, consumerSecret, accessToken, accessTokenSecret);

@@ -18,11 +18,8 @@
  */
 package org.alfresco.repo.publishing.flickr.springsocial.api.impl;
 
-import java.net.URI;
-
 import org.alfresco.repo.publishing.flickr.springsocial.api.MediaOperations;
 import org.alfresco.repo.publishing.flickr.springsocial.api.PhotoMetadata;
-import org.alfresco.repo.publishing.flickr.springsocial.api.impl.AbstractFlickrOperations;
 import org.springframework.core.io.Resource;
 import org.springframework.social.support.URIBuilder;
 import org.springframework.util.LinkedMultiValueMap;
@@ -32,27 +29,32 @@ import org.springframework.web.client.RestTemplate;
 class MediaTemplate extends AbstractFlickrOperations implements MediaOperations
 {
     private final RestTemplate restTemplate;
-    private String consumerKey;
 
     public MediaTemplate(String consumerKey, RestTemplate restTemplate, boolean isAuthorizedForUser)
     {
         super(isAuthorizedForUser);
         this.restTemplate = restTemplate;
-        this.consumerKey = consumerKey;
     }
 
     public String postPhoto(Resource photo, PhotoMetadata metadata)
     {
         requireAuthorization();
         MultiValueMap<String, Object> parts = new LinkedMultiValueMap<String, Object>();
-        parts.set("api_key", consumerKey);
         if (metadata.getDescription() != null)
             parts.set("description", metadata.getDescription());
         parts.set("photo", photo);
         if (metadata.getTitle() != null)
             parts.set("title", metadata.getTitle());
-        URI uri = URIBuilder.fromUri("http://api.flickr.com/services/upload/").build();
-        String response = restTemplate.postForObject(uri, parts, String.class);
+        URIBuilder uriBuilder = URIBuilder.fromUri("http://api.flickr.com/services/upload/");
+        if (metadata.getDescription() != null)
+        {
+            uriBuilder.queryParam("description", metadata.getDescription());
+        }
+        if (metadata.getTitle() != null)
+        {
+            uriBuilder.queryParam("title", metadata.getTitle());
+        }
+        String response = restTemplate.postForObject(uriBuilder.build(), parts, String.class);
         return (String) response;
     }
 

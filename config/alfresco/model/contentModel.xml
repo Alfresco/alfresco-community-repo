@@ -1419,10 +1419,12 @@
             <property name="cm:isIndexed">
                <title>Is indexed</title>
                <type>d:boolean</type>
+               <default>true</default>
             </property>
             <property name="cm:isContentIndexed">
                <title>Is content indexed</title>
                <type>d:boolean</type>
+               <default>true</default>
             </property>
          </properties>
       </aspect>

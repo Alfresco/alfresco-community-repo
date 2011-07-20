@@ -935,7 +935,7 @@ public class CalendarServiceImplTest
        
        
        // Now make one repeating and check the correct info comes through
-       c3.setRecurrenceRule("FREQ=WEEKLY");
+       c3.setRecurrenceRule("FREQ=WEEKLY;BYDAY=TH;INTERVAL=1");
        c3.setLastRecurrence(new Date(1303431400));
        CALENDAR_SERVICE.updateCalendarEntry(c3);
        
@@ -959,6 +959,66 @@ public class CalendarServiceImplTest
        assertEquals(ISO8601DateFormat.format(c1.getEnd()),   filtered.get(1).getToDate());
        assertEquals(c1.getRecurrenceRule(),                  filtered.get(1).getRecurrenceRule());
        assertEquals(null,                                    filtered.get(1).getRecurrenceLastMeeting());
+       
+       
+       
+       // Do a recurring query
+       Calendar c20110718mon = Calendar.getInstance();
+       Calendar c20110719tue = Calendar.getInstance();
+       Calendar c20110720wed = Calendar.getInstance();
+       Calendar c20110722fri = Calendar.getInstance();
+       c20110718mon.set(2011, 7-1, 18, 0, 0, 0);
+       c20110719tue.set(2011, 7-1, 19, 0, 0, 0);
+       c20110720wed.set(2011, 7-1, 20, 0, 0, 0);
+       c20110722fri.set(2011, 7-1, 22, 0, 0, 0);
+       
+       c3.setStart(c20110719tue.getTime());
+       c3.setEnd(c20110719tue.getTime());
+       c3.setLastRecurrence(c20110722fri.getTime());
+       CALENDAR_SERVICE.updateCalendarEntry(c3);
+       
+       
+       // Monday-Tuesday will find it for itself
+       cq = (GetCalendarEntriesCannedQuery)CALENDAR_CQ_FACTORY.getCannedQuery(
+             containers, c20110718mon.getTime(), c20110719tue.getTime(), paging
+       );
+       cq.setTestHook(hook);
+       cq.execute();
+       assertEquals(3, full.size());
+       assertEquals(1, filtered.size());
+       assertEquals(c3.getSystemName(), filtered.get(0).getName());
+       
+       // Monday-Wednesday will find it for itself
+       cq = (GetCalendarEntriesCannedQuery)CALENDAR_CQ_FACTORY.getCannedQuery(
+             containers, c20110718mon.getTime(), c20110720wed.getTime(), paging
+       );
+       cq.setTestHook(hook);
+       cq.execute();
+       assertEquals(3, full.size());
+       assertEquals(1, filtered.size());
+       assertEquals(c3.getSystemName(), filtered.get(0).getName());
+       
+       // Wednesday-Friday will find it as a repeating event on the Thursday
+       cq = (GetCalendarEntriesCannedQuery)CALENDAR_CQ_FACTORY.getCannedQuery(
+             containers, c20110720wed.getTime(), c20110722fri.getTime(), paging
+       );
+       cq.setTestHook(hook);
+       cq.execute();
+       assertEquals(3, full.size());
+       assertEquals(1, filtered.size());
+       assertEquals(c3.getSystemName(), filtered.get(0).getName());
+       
+       // Bring the last recurrence date back, will no longer show up 
+       c3.setLastRecurrence(c20110720wed.getTime());
+       CALENDAR_SERVICE.updateCalendarEntry(c3);
+       
+       cq = (GetCalendarEntriesCannedQuery)CALENDAR_CQ_FACTORY.getCannedQuery(
+             containers, c20110720wed.getTime(), c20110722fri.getTime(), paging
+       );
+       cq.setTestHook(hook);
+       cq.execute();
+       assertEquals(3, full.size());
+       assertEquals(0, filtered.size());
     }
     
     

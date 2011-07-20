@@ -41,17 +41,17 @@ public class FlickrAdapter implements ApiAdapter<Flickr>
         }
     }
 
-    public void setConnectionValues(Flickr facebook, ConnectionValues values)
+    public void setConnectionValues(Flickr flickr, ConnectionValues values)
     {
     }
 
-    public UserProfile fetchUserProfile(Flickr facebook)
+    public UserProfile fetchUserProfile(Flickr flickr)
     {
         return new UserProfileBuilder().setName("Brian").setFirstName("Brian").setLastName(
                 "Brian").setEmail("Brian").setUsername("Brian").build();
     }
 
-    public void updateStatus(Flickr facebook, String message)
+    public void updateStatus(Flickr flickr, String message)
     {
     }
 

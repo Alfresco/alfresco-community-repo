@@ -33,4 +33,8 @@
         <property name="flickrHelper" ref="flickrPublishingHelper" />
     </bean>
 
+    <bean id="unpublish_flickr" parent="action-executer" class="org.alfresco.repo.publishing.flickr.FlickrUnpublishAction">
+        <property name="nodeService" ref="NodeService" />
+        <property name="flickrHelper" ref="flickrPublishingHelper" />
+    </bean>
 </beans>

@@ -23,8 +23,9 @@ import org.springframework.core.io.Resource;
 public interface MediaOperations
 {
 
-    PhotoMetadata createPhotoMetadata();
+    String postPhoto(Resource photo, String title, String description, String... tags);
 
-    String postPhoto(Resource photo, PhotoMetadata metadata);
-
+    PhotoInfo getPhoto(String id);
+    
+    void deletePhoto(String id);
 }

@@ -16,32 +16,18 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.publishing.flickr.springsocial.api.impl;
+package org.alfresco.repo.publishing.flickr.springsocial.api;
 
-import org.alfresco.repo.publishing.flickr.springsocial.api.PhotoMetadata;
+import org.springframework.social.support.URIBuilder;
+import org.springframework.util.MultiValueMap;
 
-public class PhotoMetadataImpl implements PhotoMetadata
+public interface FlickrHelper
 {
-    private String title;
-    private String description;
+    String getRestEndpoint();
 
-    public String getTitle()
-    {
-        return title;
-    }
-
-    public void setTitle(String title)
-    {
-        this.title = title;
-    }
-
-    public String getDescription()
-    {
-        return description;
-    }
-
-    public void setDescription(String description)
-    {
-        this.description = description;
-    }
+    String getUploadEndpoint();
+    
+    void addStandardParams(URIBuilder uriBuilder);
+    
+    void addStandardParams(MultiValueMap<String, String> params);
 }

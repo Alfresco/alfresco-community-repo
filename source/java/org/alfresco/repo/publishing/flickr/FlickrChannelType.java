@@ -128,7 +128,7 @@ public class FlickrChannelType extends AbstractChannelType
         String url = null;
         if (node != null && nodeService.exists(node) && nodeService.hasAspect(node, FlickrPublishingModel.ASPECT_ASSET))
         {
-            url = (String)nodeService.getProperty(node, FlickrPublishingModel.PROP_ASSET_URL);
+            url = (String)nodeService.getProperty(node, PublishingModel.PROP_ASSET_URL);
         }
         return url;
     }

@@ -16,21 +16,22 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
+package org.alfresco.repo.publishing.flickr.springsocial.api.impl.xml;
 
-package org.alfresco.repo.publishing.flickr;
+import javax.xml.bind.annotation.XmlAnyElement;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 
-import org.alfresco.service.namespace.QName;
-
-/**
- * @author Brian
- *
- */
-public interface FlickrPublishingModel
+@XmlRootElement(name = "rsp")
+public class FlickrResponse
 {
-    public static final String NAMESPACE = "http://www.alfresco.org/model/publishing/flickr/1.0";
-    public static final String PREFIX = "flickr";
-    
-    public static final QName TYPE_DELIVERY_CHANNEL = QName.createQName(NAMESPACE, "DeliveryChannel");
+    @XmlAttribute
+    public String stat = "ok";
+    @XmlAnyElement(lax = true)
+    public FlickrPayload payload;
 
-    public static final QName ASPECT_ASSET = QName.createQName(NAMESPACE, "AssetAspect");
+    public String toString()
+    {
+        return "FlickrResponse[stat=" + stat + ", payload=" + payload + "]";
+    }
 }

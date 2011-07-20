@@ -24,9 +24,10 @@ import java.util.List;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.content.filestore.FileContentReader;
+import org.alfresco.repo.publishing.PublishingModel;
 import org.alfresco.repo.publishing.flickr.springsocial.api.Flickr;
 import org.alfresco.repo.publishing.flickr.springsocial.api.MediaOperations;
-import org.alfresco.repo.publishing.flickr.springsocial.api.PhotoMetadata;
+import org.alfresco.repo.publishing.flickr.springsocial.api.PhotoInfo;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -109,14 +110,21 @@ public class FlickrPublishAction extends ActionExecuterAbstractBase
                 {
                     description = title;
                 }
+                List<String> tags = taggingService.getTags(nodeToPublish);
+                String[] tagArray = tags.toArray(new String[tags.size()]);
 
                 MediaOperations mediaOps = connection.getApi().mediaOperations();
-                PhotoMetadata metadata = mediaOps.createPhotoMetadata();
-                metadata.setTitle(title);
-                metadata.setDescription(description);
-                String id = mediaOps.postPhoto(res, metadata);
+                String id = mediaOps.postPhoto(res, title, description, tagArray);
+                
+                //Store info onto the published node...
+                nodeService.addAspect(nodeToPublish, FlickrPublishingModel.ASPECT_ASSET, null);
                 log.info("Posted image " + name + " to Flickr with id " + id);
-                nodeService.setProperty(nodeToPublish, FlickrPublishingModel.PROP_ASSET_ID, id);
+                nodeService.setProperty(nodeToPublish, PublishingModel.PROP_ASSET_ID, id);
+
+                PhotoInfo photoInfo = mediaOps.getPhoto(id);
+                String url = photoInfo.getPrimaryUrl();
+                log.info("Photo url = " + url);
+                nodeService.setProperty(nodeToPublish, PublishingModel.PROP_ASSET_URL, url);
             }
             finally
             {

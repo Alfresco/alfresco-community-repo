@@ -85,6 +85,7 @@ public class YouTubeUnpublishAction extends ActionExecuterAbstractBase
                 VideoEntry videoEntry = service.getEntry(new URL(videoEntryUrl), VideoEntry.class);
                 videoEntry.delete();
                 nodeService.removeAspect(nodeRef, YouTubePublishingModel.ASPECT_ASSET);
+                nodeService.removeAspect(nodeRef, PublishingModel.ASPECT_ASSET);
             }
         }
     }

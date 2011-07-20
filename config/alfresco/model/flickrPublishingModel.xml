@@ -32,16 +32,7 @@
       <aspect name="flickr:AssetAspect">
          <title>Flickr Asset</title>
          <description>Applied to a node that has been published to Flickr</description>
-         <properties>
-            <property name="flickr:assetId">
-               <title>Flickr asset Id</title>
-               <type>d:text</type>
-           </property>
-            <property name="flickr:assetUrl">
-               <title>Flickr Asset URL</title>
-               <type>d:text</type>
-           </property>
-        </properties>
+         <parent>pub:AssetAspect</parent>
       </aspect>
    </aspects>
 </model>

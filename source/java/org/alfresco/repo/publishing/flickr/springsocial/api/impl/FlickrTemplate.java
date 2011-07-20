@@ -21,22 +21,29 @@ package org.alfresco.repo.publishing.flickr.springsocial.api.impl;
 import java.net.URI;
 import java.util.List;
 
+import javax.xml.transform.Source;
+
+import org.alfresco.repo.publishing.JaxbHttpMessageConverter;
 import org.alfresco.repo.publishing.flickr.springsocial.api.Flickr;
+import org.alfresco.repo.publishing.flickr.springsocial.api.FlickrHelper;
 import org.alfresco.repo.publishing.flickr.springsocial.api.MediaOperations;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.xml.SourceHttpMessageConverter;
 import org.springframework.social.oauth1.AbstractOAuth1ApiBinding;
 import org.springframework.social.support.ClientHttpRequestFactorySelector;
 import org.springframework.social.support.URIBuilder;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-public class FlickrTemplate extends AbstractOAuth1ApiBinding implements Flickr
+public class FlickrTemplate extends AbstractOAuth1ApiBinding implements Flickr, FlickrHelper
 {
-    private final String REST_ENDPOINT = "http://api.flickr.com/services/rest/";
+    private static final String DEFAULT_ENDPOINT = "http://api.flickr.com/services/";
+    
+    private static String endpoint = DEFAULT_ENDPOINT;
+    
     private String consumerKey;
-
     private MediaOperations mediaOperations;
 
     public FlickrTemplate()
@@ -53,7 +60,7 @@ public class FlickrTemplate extends AbstractOAuth1ApiBinding implements Flickr
 
     private void initSubApis()
     {
-        mediaOperations = new MediaTemplate(consumerKey, getRestTemplate(), isAuthorized());
+        mediaOperations = new MediaTemplate(this, getRestTemplate(), isAuthorized());
     }
 
     @Override
@@ -62,6 +69,11 @@ public class FlickrTemplate extends AbstractOAuth1ApiBinding implements Flickr
         // Wrap the request factory with a BufferingClientHttpRequestFactory so
         // that the error handler can do repeat reads on the response.getBody()
         super.setRequestFactory(ClientHttpRequestFactorySelector.bufferRequests(requestFactory));
+    }
+
+    public static void setEndpoint(String endpoint)
+    {
+        FlickrTemplate.endpoint = endpoint;
     }
 
     public MediaOperations mediaOperations()
@@ -74,6 +86,8 @@ public class FlickrTemplate extends AbstractOAuth1ApiBinding implements Flickr
     {
         List<HttpMessageConverter<?>> messageConverters = super.getMessageConverters();
         messageConverters.add(new ByteArrayHttpMessageConverter());
+        messageConverters.add(new SourceHttpMessageConverter<Source>());
+        messageConverters.add(new JaxbHttpMessageConverter("org.alfresco.repo.publishing.flickr.springsocial.api.impl.xml"));
         return messageConverters;
     }
 
@@ -91,12 +105,36 @@ public class FlickrTemplate extends AbstractOAuth1ApiBinding implements Flickr
     public boolean test()
     {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<String, String>();
-        params.add("api_key", consumerKey);
-        params.add("format", "json");
         params.add("method", "flickr.test.login");
-        params.add("nojsoncallback", "1");
-        URI uri = URIBuilder.fromUri(REST_ENDPOINT).queryParams(params).build();
+        addStandardParams(params);
+        URI uri = URIBuilder.fromUri(getRestEndpoint()).queryParams(params).build();
         getRestTemplate().getForObject(uri, String.class);
         return true;
+    }
+
+    @Override
+    public void addStandardParams(URIBuilder uriBuilder)
+    {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<String, String>();
+        addStandardParams(params);
+        uriBuilder.queryParams(params);
+    }
+
+    @Override
+    public void addStandardParams(MultiValueMap<String, String> params)
+    {
+        params.set("api_key", consumerKey);
+    }
+
+    @Override
+    public String getRestEndpoint()
+    {
+        return endpoint + "rest/";
+    }
+
+    @Override
+    public String getUploadEndpoint()
+    {
+        return endpoint + "upload/";
     }
 }

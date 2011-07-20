@@ -47,7 +47,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
-import org.apache.commons.fileupload.MultipartStream;
 import org.junit.Assert;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -129,7 +128,6 @@ public class FlickrTest extends BaseSpringTest
                 return contentNode;
             }
         });
-        MultipartStream stream = new MultipartStream(null, null);
         transactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
         {
             public NodeRef execute() throws Throwable
@@ -139,20 +137,21 @@ public class FlickrTest extends BaseSpringTest
                 actionService.executeAction(publishAction, contentNode);
                 Map<QName, Serializable> props = nodeService.getProperties(contentNode);
                 Assert.assertTrue(nodeService.hasAspect(contentNode, FlickrPublishingModel.ASPECT_ASSET));
-                Assert.assertNotNull(props.get(FlickrPublishingModel.PROP_ASSET_ID));
+                Assert.assertNotNull(props.get(PublishingModel.PROP_ASSET_ID));
+                Assert.assertNotNull(props.get(PublishingModel.PROP_ASSET_URL));
 
-                System.out.println("Asset id: " + props.get(FlickrPublishingModel.PROP_ASSET_ID));
+                System.out.println("Asset id: " + props.get(PublishingModel.PROP_ASSET_ID));
+                System.out.println("Asset URL: " + props.get(PublishingModel.PROP_ASSET_URL));
                 
-//                Action unpublishAction = actionService.createAction(YouTubeUnpublishAction.NAME);
-//                actionService.executeAction(unpublishAction, contentNode);
-//                props = nodeService.getProperties(contentNode);
-//                Assert.assertFalse(nodeService.hasAspect(contentNode, YouTubePublishingModel.ASPECT_ASSET));
-//                Assert.assertNull(props.get(YouTubePublishingModel.PROP_ASSET_ID));
-//                Assert.assertNull(props.get(YouTubePublishingModel.PROP_PLAYER_URL));
+                Action unpublishAction = actionService.createAction(FlickrUnpublishAction.NAME);
+                actionService.executeAction(unpublishAction, contentNode);
+                props = nodeService.getProperties(contentNode);
+                Assert.assertFalse(nodeService.hasAspect(contentNode, FlickrPublishingModel.ASPECT_ASSET));
+                Assert.assertFalse(nodeService.hasAspect(contentNode, PublishingModel.ASPECT_ASSET));
+                Assert.assertNull(props.get(PublishingModel.PROP_ASSET_ID));
+                Assert.assertNull(props.get(PublishingModel.PROP_ASSET_URL));
                 return null;
             }
         });
-
     }
-
 }

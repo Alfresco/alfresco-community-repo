@@ -16,17 +16,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.publishing.flickr.springsocial.api;
+package org.alfresco.repo.publishing.flickr.springsocial.api.impl.xml;
 
-public interface PhotoMetadata
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlValue;
+
+@XmlRootElement(name = "photoid")
+public class PhotoId implements FlickrPayload
 {
-
-    void setDescription(String description);
-
-    void setTitle(String title);
-
-    String getDescription();
-
-    String getTitle();
-
+    @XmlValue
+    public String id;
 }

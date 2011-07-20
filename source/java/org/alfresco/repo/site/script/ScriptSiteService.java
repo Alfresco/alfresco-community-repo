@@ -161,19 +161,39 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
      * If no filters are specified then all the available sites are returned.
      * 
      * @param filter            inclusion filter for returned sites. Only sites whose cm:name OR cm:title
-     *                          OR cm:description CONTAIN the filter string will be returned.
+     *                          OR cm:description start with the filter string will be returned.
      * @param sitePresetFilter  site preset filter
      * @return Site[]           a list of the site filtered as appropriate
      * 
-     * @see SiteService#findSites(String, String, int) for a description of the limitations of this method.
+     * @see SiteService#listSites(String, String, int) for a description of the limitations of this method.
      */
     public Site[] listSites(String filter, String sitePresetFilter)
     {
-        return listSites(filter, sitePresetFilter, 0);
+        return listSites(filter, sitePresetFilter, -1);
     }
     
     /**
      * List the sites available in the repository.  The returned list can optionally be filtered by name and site
+     * preset.
+     * <p/>
+     * If no filters are specified then all the available sites are returned.
+     * 
+     * @param filter            inclusion filter for returned sites. Only sites whose cm:name OR cm:title
+     *                          OR cm:description start with the filter string will be returned.
+     * @param sitePresetFilter  site preset filter
+     * @param size              max results size crop if >0
+     * @return Site[]           a list of the site filtered as appropriate
+     * 
+     * @see SiteService#listSites(String, String, int) for a description of the limitations of this method.
+     */
+    public Site[] listSites(String filter, String sitePresetFilter, int size)
+    {
+        List<SiteInfo> siteInfos = this.siteService.listSites(filter, sitePresetFilter, size);
+        return makeSitesArray(siteInfos);
+    }
+    
+    /**
+     * Find (search) the sites available in the repository.  The returned list can optionally be filtered by name and site
      * preset.
      * <p/>
      * If no filters are specified then all the available sites are returned.
@@ -186,15 +206,29 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
      * @return Site[]           a list of the site filtered as appropriate
      * 
      * @see SiteService#findSites(String, String, int) for a description of the limitations of this method.
+     * @since 4.0
      */
-    public Site[] listSites(String filter, String sitePresetFilter, int size)
+    public Site[] findSites(String filter, String sitePresetFilter, int size)
     {
         List<SiteInfo> siteInfos = this.siteService.findSites(filter, sitePresetFilter, size);
+        return makeSitesArray(siteInfos);
+    }
+    
+    /**
+     * Converts the given List of SiteInfo objects to a JavaScript friendly array
+     * of Site objects.
+     * 
+     * @param siteInfos
+     * @return Array of Site objects
+     */
+    protected Site[] makeSitesArray(List<SiteInfo> siteInfos)
+    {
         List<Site> sites = new ArrayList<Site>(siteInfos.size());
         for (SiteInfo siteInfo : siteInfos)
         {
             sites.add(new Site(siteInfo, this.serviceRegistry, this.siteService, getScope()));
         }
+        
         return sites.toArray(new Site[sites.size()]);
     }
     

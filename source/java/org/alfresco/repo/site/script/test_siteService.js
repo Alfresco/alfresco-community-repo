@@ -57,6 +57,24 @@ function testListSites()
 	// TODO .. check the filters
 }
 
+function testFindSites()
+{
+   // Find all the sites
+   var sites = siteService.findSites(null, null, -1);
+   test.assertEquals(preexistingSiteCount + 2, sites.length);
+      
+   // find all sites with "short" in the name
+   sites = siteService.findSites("short", null, -1);
+   test.assertEquals(2, sites.length);
+   
+   sites = siteService.findSites("short", null, 0);
+   test.assertEquals(2, sites.length);
+   
+   // find just one site with "short" in the name
+   sites = siteService.findSites("short", null, 1);
+   test.assertEquals(1, sites.length);
+}
+
 function testMembership()
 {
 	var site = siteService.getSite("siteShortName");
@@ -207,6 +225,7 @@ function testSiteCustomProperties()
 // Execute test's
 testCRUD();
 testListSites();
+testFindSites();
 testMembership();
 testContainer();
 testPermissions();

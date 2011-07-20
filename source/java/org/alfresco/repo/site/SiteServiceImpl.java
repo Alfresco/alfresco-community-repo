@@ -810,7 +810,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
      */
     public List<SiteInfo> listSites(String nameFilter, String sitePresetFilter)
     {
-        return listSites(nameFilter, sitePresetFilter, 0);
+        return listSites(nameFilter, sitePresetFilter, -1);
     }
 
     /**
@@ -828,7 +828,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
             
             List<Pair<QName, Boolean>> sortProps = null;
             
-            PagingRequest pagingRequest = new PagingRequest(size == 0 ? Integer.MAX_VALUE : size);
+            PagingRequest pagingRequest = new PagingRequest(size <= 0 ? Integer.MAX_VALUE : size);
             List<FilterProp> filterProps = new ArrayList<FilterProp>();
             
             if (filterHasValue)

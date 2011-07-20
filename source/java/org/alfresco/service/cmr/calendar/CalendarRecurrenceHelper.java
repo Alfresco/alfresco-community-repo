@@ -88,20 +88,28 @@ public class CalendarRecurrenceHelper
     */
    public static Map<String,String> extractRecurrenceRule(CalendarEntry entry)
    {
-      String recurrence = entry.getRecurrenceRule();
-      if(recurrence == null)
+      return extractRecurrenceRule(entry.getRecurrenceRule());
+   }
+   /**
+    * Returns the parsed calendar recurrence rule
+    * WARNING - Alfresco use only. Return type will likely shift to
+    *  a real object in the near future 
+    */
+   private static Map<String,String> extractRecurrenceRule(String recurrenceRule)
+   {
+      if(recurrenceRule == null)
       {
          return null;
       }
       
       // Turn the string into a useful map
       Map<String,String> params = new HashMap<String, String>();
-      for(String rule : recurrence.split(";"))
+      for(String rule : recurrenceRule.split(";"))
       {
          String[] parts = rule.split("=");
          if(parts.length != 2)
          {
-            logger.warn("Invalid rule '" + rule + "' in recurrence: " + recurrence);
+            logger.warn("Invalid rule '" + rule + "' in recurrence: " + recurrenceRule);
          }
          else
          {
@@ -123,8 +131,25 @@ public class CalendarRecurrenceHelper
    public static List<Date> getRecurrencesOnOrAfter(CalendarEntry entry, Date onOrAfter,
                                                     Date until, boolean firstOnly)
    {
-      String recurrence = entry.getRecurrenceRule(); 
-      if(recurrence == null)
+      return getRecurrencesOnOrAfter(
+            entry.getRecurrenceRule(), entry.getStart(), entry.getEnd(), 
+            entry.getLastRecurrence(), onOrAfter, until, firstOnly
+      );
+   }
+   
+   /**
+    * For the given Calendar Entry, return its subsequent Recurrence on or after
+    *  the specified date, until the given limit. If it doesn't have any recurrences 
+    *  on or after the start date (either no recurrence rules, or the last recurrence 
+    *  date is before then), null will be returned.
+    * If requested, can stop after the first hit
+    * @return The next recurrence on or after the given date, or null if there aren't any 
+    */
+   public static List<Date> getRecurrencesOnOrAfter(String recurrenceRule, Date eventStart, 
+                                                    Date eventEnd, Date lastRecurrence,
+                                                    Date onOrAfter, Date until, boolean firstOnly)
+   {
+      if(recurrenceRule == null)
       {
          // No recurrence
          return null;
@@ -132,7 +157,6 @@ public class CalendarRecurrenceHelper
       
       // See if we're past the last recurrence date
       // Note - we rely on this being set for us, rather than checking the count
-      Date lastRecurrence = entry.getLastRecurrence();
       if(lastRecurrence != null && lastRecurrence.before(onOrAfter))
       {
          // Recurrence has stopped by this point
@@ -168,7 +192,7 @@ public class CalendarRecurrenceHelper
       List<Date> dates = new ArrayList<Date>();
       
       // Handle the different frequencies
-      Map<String,String> params = extractRecurrenceRule(entry);
+      Map<String,String> params = extractRecurrenceRule(recurrenceRule);
       if(params.containsKey("FREQ"))
       {
          String freq = params.get("FREQ");
@@ -187,7 +211,7 @@ public class CalendarRecurrenceHelper
          }
          
          Calendar currentDate = Calendar.getInstance();
-         currentDate.setTime(entry.getStart());
+         currentDate.setTime(eventStart);
          
          if ("DAILY".equals(freq))
          {
@@ -215,7 +239,7 @@ public class CalendarRecurrenceHelper
       }
       else
       {
-         logger.warn("No frequency found, possible invalid rule? " + recurrence);
+         logger.warn("No frequency found, possible invalid rule? " + recurrenceRule);
          return null;
       }
    }
@@ -434,7 +458,7 @@ public class CalendarRecurrenceHelper
             currentDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
          }
          
-         while(currentDate.before(onOrAfter))
+         while(currentDate.getTime().before(onOrAfter))
          {
             currentDate.set(Calendar.YEAR, currentDate.get(Calendar.YEAR) + 1);
             currentDate.set(Calendar.MONTH, month);
@@ -444,7 +468,7 @@ public class CalendarRecurrenceHelper
          {
             if(until != null)
             {
-               if(currentDate.after(until))
+               if(currentDate.getTime().after(until))
                {
                   break;
                }

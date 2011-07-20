@@ -151,6 +151,8 @@ public class GetCalendarEntriesCannedQueryFactory extends AbstractCannedQueryFac
               getQNameId(CalendarModel.TYPE_EVENT),
               getQNameId(CalendarModel.PROP_FROM_DATE),
               getQNameId(CalendarModel.PROP_TO_DATE),
+              getQNameId(CalendarModel.PROP_RECURRENCE_RULE),
+              getQNameId(CalendarModel.PROP_RECURRENCE_LAST_MEETING),
               fromDate, 
               toDate
         );

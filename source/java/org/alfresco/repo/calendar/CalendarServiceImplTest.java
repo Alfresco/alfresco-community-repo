@@ -30,8 +30,14 @@ import java.util.Date;
 import java.util.List;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.query.CannedQueryFactory;
+import org.alfresco.query.CannedQueryResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.calendar.cannedqueries.CalendarEntity;
+import org.alfresco.repo.calendar.cannedqueries.GetCalendarEntriesCannedQuery;
+import org.alfresco.repo.calendar.cannedqueries.GetCalendarEntriesCannedQueryFactory;
+import org.alfresco.repo.calendar.cannedqueries.GetCalendarEntriesCannedQueryTestHook;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
@@ -50,7 +56,9 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.util.registry.NamedObjectRegistry;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -82,6 +90,7 @@ public class CalendarServiceImplTest
     private static PermissionService            PERMISSION_SERVICE;
     private static SiteService                  SITE_SERVICE;
     private static TaggingService               TAGGING_SERVICE;
+    private static GetCalendarEntriesCannedQueryFactory CALENDAR_CQ_FACTORY;
     
     private static final String TEST_USER = CalendarServiceImplTest.class.getSimpleName() + "_testuser";
     private static final String ADMIN_USER = AuthenticationUtil.getAdminUserName();
@@ -111,7 +120,14 @@ public class CalendarServiceImplTest
         PERMISSION_SERVICE     = (PermissionService)testContext.getBean("permissionService");
         SITE_SERVICE           = (SiteService)testContext.getBean("siteService");
         TAGGING_SERVICE        = (TaggingService)testContext.getBean("TaggingService");
+
+        // Get the canned query registry, and from that the factory
+        NamedObjectRegistry<CannedQueryFactory<? extends Object>> calendarCannedQueryRegistry =
+           (NamedObjectRegistry<CannedQueryFactory<? extends Object>>)testContext.getBean("calendarCannedQueryRegistry");
+        CALENDAR_CQ_FACTORY = (GetCalendarEntriesCannedQueryFactory)
+           calendarCannedQueryRegistry.getNamedObject(CalendarServiceImpl.CANNED_QUERY_GET_ENTRIES);
         
+        // Do the setup as admin
         AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
         createUser(TEST_USER);
         
@@ -335,6 +351,7 @@ public class CalendarServiceImplTest
              "Title", "Description", "Location", new Date(1), new Date(1234)
        );
        entry = CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), entry);
+       testNodesToTidy.add(entry.getNodeRef());
        
        // Check
        assertEquals(0, entry.getTags().size());
@@ -364,9 +381,15 @@ public class CalendarServiceImplTest
        entry.getTags().add(TAG_1);
        CALENDAR_SERVICE.updateCalendarEntry(entry);
        
-       // Check
-       entry = CALENDAR_SERVICE.getCalendarEntry(CALENDAR_SITE.getShortName(), entry.getSystemName());       
-       assertEquals(2, entry.getTags().size());
+       // Check it as-is
+       assertEquals(3, entry.getTags().size()); // Includes duplicate tag until re-loaded
+       assertEquals(true, entry.getTags().contains(TAG_1));
+       assertEquals(false, entry.getTags().contains(TAG_2));
+       assertEquals(true, entry.getTags().contains(TAG_3));
+       
+       // Now load and re-check
+       entry = CALENDAR_SERVICE.getCalendarEntry(CALENDAR_SITE.getShortName(), entry.getSystemName());
+       assertEquals(2, entry.getTags().size()); // Duplicate now gone
        assertEquals(true, entry.getTags().contains(TAG_1));
        assertEquals(false, entry.getTags().contains(TAG_2));
        assertEquals(true, entry.getTags().contains(TAG_3));
@@ -632,15 +655,18 @@ public class CalendarServiceImplTest
        
        
        // Now add some events to one site
-       CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
+       NodeRef c1 = CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
              "TitleA", "Description", "Location", new Date(1302431400), new Date(1302442200)
-       ));
-       CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
+       )).getNodeRef();
+       NodeRef c2 = CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
              "TitleB", "Description", "Location", new Date(1302435000), new Date(1302435000)
-       ));
-       CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
+       )).getNodeRef();
+       NodeRef c3 = CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
              "TitleC", "Description", "Location", new Date(1302431400), new Date(1302435000)
-       ));
+       )).getNodeRef();
+       testNodesToTidy.add(c1);
+       testNodesToTidy.add(c2);
+       testNodesToTidy.add(c3);
 
        
        // Check
@@ -649,20 +675,30 @@ public class CalendarServiceImplTest
        assertEquals(3, results.getPage().size());
        
        // Should be date ordered, from then too
-       assertEquals("TitleA", results.getPage().get(0).getTitle());
-       assertEquals("TitleC", results.getPage().get(1).getTitle());
+       assertEquals("TitleC", results.getPage().get(0).getTitle()); // Same start as A, earlier end
+       assertEquals("TitleA", results.getPage().get(1).getTitle());
        assertEquals("TitleB", results.getPage().get(2).getTitle());
 
        
        // Add some to the other site, which the user isn't a member of
        AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
-       CALENDAR_SERVICE.createCalendarEntry(ALTERNATE_CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
+       NodeRef ca1 = CALENDAR_SERVICE.createCalendarEntry(ALTERNATE_CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
              "PrivateTitleA", "Description", "Location", new Date(1302131400), new Date(1302135000)
-       ));
-       CALENDAR_SERVICE.createCalendarEntry(ALTERNATE_CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
+       )).getNodeRef();
+       NodeRef ca2 = CALENDAR_SERVICE.createCalendarEntry(ALTERNATE_CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
              "PrivateTitleB", "Description", "Location", new Date(1302731400), new Date(1302472200)
-       ));
+       )).getNodeRef();
        AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
+       testNodesToTidy.add(ca1);
+       testNodesToTidy.add(ca2);
+       
+       // Our nodes are now, in start+end order:
+       //  PrivateTitleA   1302131400 -> 1302135000
+       //  TitleC          1302431400 -> 1302435000
+       //  TitleA          1302431400 -> 1302442200
+       //  TitleB          1302435000 -> 1302435000
+       //  PrivateTitleB   1302731400 -> 1302472200
+       
        
        // Check, they won't show up due to permissions
        results = CALENDAR_SERVICE.listCalendarEntries(new String[] {
@@ -690,8 +726,8 @@ public class CalendarServiceImplTest
 
        // Should be date ordered, from then too
        assertEquals("PrivateTitleA", results.getPage().get(0).getTitle());
-       assertEquals("TitleA", results.getPage().get(1).getTitle());
-       assertEquals("TitleC", results.getPage().get(2).getTitle());
+       assertEquals("TitleC", results.getPage().get(1).getTitle());
+       assertEquals("TitleA", results.getPage().get(2).getTitle());
        assertEquals("TitleB", results.getPage().get(3).getTitle());
        assertEquals("PrivateTitleB", results.getPage().get(4).getTitle());
        
@@ -704,12 +740,22 @@ public class CalendarServiceImplTest
              new Date(1300031400), null, paging);
        assertEquals(5, results.getPage().size());
        
-       // Date in the middle
+       // Date in the middle, several just finishing
        results = CALENDAR_SERVICE.listCalendarEntries(new String[] {
              CALENDAR_SITE.getShortName(), ALTERNATE_CALENDAR_SITE.getShortName()},
              new Date(1302435000), null, paging);
+       assertEquals(4, results.getPage().size());
+       assertEquals("TitleC", results.getPage().get(0).getTitle());
+       assertEquals("TitleA", results.getPage().get(1).getTitle());
+       assertEquals("TitleB", results.getPage().get(2).getTitle());
+       assertEquals("PrivateTitleB", results.getPage().get(3).getTitle());
+       
+       // Date in the middle, past the finish of many
+       results = CALENDAR_SERVICE.listCalendarEntries(new String[] {
+             CALENDAR_SITE.getShortName(), ALTERNATE_CALENDAR_SITE.getShortName()},
+             new Date(1302441000), null, paging);
        assertEquals(2, results.getPage().size());
-       assertEquals("TitleB", results.getPage().get(0).getTitle());
+       assertEquals("TitleA", results.getPage().get(0).getTitle());
        assertEquals("PrivateTitleB", results.getPage().get(1).getTitle());
        
        // Date in the future
@@ -727,15 +773,24 @@ public class CalendarServiceImplTest
              null, new Date(1300031400), paging);
        assertEquals(0, results.getPage().size());
        
-       // Date in the middle
+       // Date in the middle, with some touching on the end date
        results = CALENDAR_SERVICE.listCalendarEntries(new String[] {
              CALENDAR_SITE.getShortName(), ALTERNATE_CALENDAR_SITE.getShortName()},
              null, new Date(1302435000), paging);
        assertEquals(4, results.getPage().size());
        assertEquals("PrivateTitleA", results.getPage().get(0).getTitle());
-       assertEquals("TitleA", results.getPage().get(1).getTitle());
-       assertEquals("TitleC", results.getPage().get(2).getTitle());
+       assertEquals("TitleC", results.getPage().get(1).getTitle());
+       assertEquals("TitleA", results.getPage().get(2).getTitle());
        assertEquals("TitleB", results.getPage().get(3).getTitle());
+       
+       // Date in the middle, before the start date of several
+       results = CALENDAR_SERVICE.listCalendarEntries(new String[] {
+             CALENDAR_SITE.getShortName(), ALTERNATE_CALENDAR_SITE.getShortName()},
+             null, new Date(1302432400), paging);
+       assertEquals(3, results.getPage().size());
+       assertEquals("PrivateTitleA", results.getPage().get(0).getTitle());
+       assertEquals("TitleC", results.getPage().get(1).getTitle());
+       assertEquals("TitleA", results.getPage().get(2).getTitle());
        
        // Date in the future
        results = CALENDAR_SERVICE.listCalendarEntries(new String[] {
@@ -749,16 +804,16 @@ public class CalendarServiceImplTest
              CALENDAR_SITE.getShortName(), ALTERNATE_CALENDAR_SITE.getShortName()},
              new Date(1302431400), new Date(1302432000), paging);
        assertEquals(2, results.getPage().size());
-       assertEquals("TitleA", results.getPage().get(0).getTitle());
-       assertEquals("TitleC", results.getPage().get(1).getTitle());
+       assertEquals("TitleC", results.getPage().get(0).getTitle());
+       assertEquals("TitleA", results.getPage().get(1).getTitle());
        
        results = CALENDAR_SERVICE.listCalendarEntries(new String[] {
              CALENDAR_SITE.getShortName(), ALTERNATE_CALENDAR_SITE.getShortName()},
              new Date(1302131400), new Date(1302432000), paging);
        assertEquals(3, results.getPage().size());
        assertEquals("PrivateTitleA", results.getPage().get(0).getTitle());
-       assertEquals("TitleA", results.getPage().get(1).getTitle());
-       assertEquals("TitleC", results.getPage().get(2).getTitle());
+       assertEquals("TitleC", results.getPage().get(1).getTitle());
+       assertEquals("TitleA", results.getPage().get(2).getTitle());
        
        
        // Filter on just one site, won't see from the other
@@ -766,30 +821,150 @@ public class CalendarServiceImplTest
              CALENDAR_SITE.getShortName()},
              new Date(1302131400), new Date(1302432000), paging);
        assertEquals(2, results.getPage().size());
-       assertEquals("TitleA", results.getPage().get(0).getTitle());
-       assertEquals("TitleC", results.getPage().get(1).getTitle());
+       assertEquals("TitleC", results.getPage().get(0).getTitle());
+       assertEquals("TitleA", results.getPage().get(1).getTitle());
        
        results = CALENDAR_SERVICE.listCalendarEntries(new String[] {
              ALTERNATE_CALENDAR_SITE.getShortName()},
              new Date(1302131400), new Date(1302432000), paging);
        assertEquals(1, results.getPage().size());
        assertEquals("PrivateTitleA", results.getPage().get(0).getTitle());
-       
-       
-       // Tidy
-       paging = new PagingRequest(10);
-       results = CALENDAR_SERVICE.listCalendarEntries(CALENDAR_SITE.getShortName(), paging);
-       for(CalendarEntry entry : results.getPage())
-       {
-          testNodesToTidy.add(entry.getNodeRef());
-       }
-       results = CALENDAR_SERVICE.listCalendarEntries(ALTERNATE_CALENDAR_SITE.getShortName(), paging);
-       for(CalendarEntry entry : results.getPage())
-       {
-          testNodesToTidy.add(entry.getNodeRef());
-       }
     }
+    
+    /**
+     * Ensure that the canned query returns the right entity objects
+     *  for the underlying calendar entries.
+     * Checks both the low level filtering, and the DB fetching of the
+     *  properties used in the filter 
+     */
+    @Test public void testCannedQueryEntityResults() throws Exception
+    {
+       PagingRequest paging = new PagingRequest(10);
+       NodeRef[] containers = new NodeRef[] {
+             SITE_SERVICE.getContainer(CALENDAR_SITE.getShortName(), CalendarServiceImpl.CALENDAR_COMPONENT),
+             SITE_SERVICE.getContainer(ALTERNATE_CALENDAR_SITE.getShortName(), CalendarServiceImpl.CALENDAR_COMPONENT),
+       };
+       Date from = new Date(1302431400);
+       Date to = new Date(1302442200);
+       
+       
+       // To capture the low level results
+       final List<CalendarEntity> full = new ArrayList<CalendarEntity>();
+       final List<CalendarEntity> filtered = new ArrayList<CalendarEntity>();
+       GetCalendarEntriesCannedQueryTestHook hook = new GetCalendarEntriesCannedQueryTestHook()
+       {
+          @Override
+          public void notifyComplete(List<CalendarEntity> fullList,
+                List<CalendarEntity> filteredList) {
+             full.clear();
+             filtered.clear();
+             full.addAll(fullList);
+             filtered.addAll(filteredList);
+          }
+       };
+       
+       
+       // With no entries, won't find anything
+       GetCalendarEntriesCannedQuery cq = (GetCalendarEntriesCannedQuery)CALENDAR_CQ_FACTORY.getCannedQuery(
+             containers, from, to, paging
+       );
+       cq.setTestHook(hook);
+       cq.execute();
+       
+       assertEquals(0, full.size());
+       assertEquals(0, filtered.size());
+       
+       
+       // Add some events, with a mixture of repeating and non
+       CalendarEntry c1 = CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
+             "SiteNormal", "Description", "Location", new Date(1302431400), new Date(1302442200)
+       ));
+       CalendarEntry c2 = CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
+             "SiteRepeating", "Description", "Location", new Date(1302435000), new Date(1302435000)
+       ));
+       CalendarEntry c3 = CALENDAR_SERVICE.createCalendarEntry(ALTERNATE_CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
+             "AltSiteNormal", "Description", "Location", new Date(1302431400), new Date(1302435000)
+       ));
+       
+       
+       // Do a fetch that'll include all of them
+       cq = (GetCalendarEntriesCannedQuery)CALENDAR_CQ_FACTORY.getCannedQuery(
+             containers, from, to, paging
+       );
+       cq.setTestHook(hook);
+       cq.execute();
+       
+       assertEquals(3, full.size());
+       assertEquals(3, filtered.size());
+       
+       // Check they have the right details on them, and are correctly sorted
+       assertEquals(c3.getSystemName(),                      filtered.get(0).getName());
+       assertEquals(ISO8601DateFormat.format(c3.getStart()), filtered.get(0).getFromDate());
+       assertEquals(ISO8601DateFormat.format(c3.getEnd()),   filtered.get(0).getToDate());
+       assertEquals(c3.getRecurrenceRule(),                  filtered.get(0).getRecurrenceRule());
+       assertEquals(null,                                    filtered.get(0).getRecurrenceLastMeeting());
+       
+       assertEquals(c1.getSystemName(),                      filtered.get(1).getName());
+       assertEquals(ISO8601DateFormat.format(c1.getStart()), filtered.get(1).getFromDate());
+       assertEquals(ISO8601DateFormat.format(c1.getEnd()),   filtered.get(1).getToDate());
+       assertEquals(c1.getRecurrenceRule(),                  filtered.get(1).getRecurrenceRule());
+       assertEquals(null,                                    filtered.get(1).getRecurrenceLastMeeting());
+       
+       assertEquals(c2.getSystemName(),                      filtered.get(2).getName());
+       assertEquals(ISO8601DateFormat.format(c2.getStart()), filtered.get(2).getFromDate());
+       assertEquals(ISO8601DateFormat.format(c2.getEnd()),   filtered.get(2).getToDate());
+       assertEquals(c2.getRecurrenceRule(),                  filtered.get(2).getRecurrenceRule());
+       assertEquals(null,                                    filtered.get(2).getRecurrenceLastMeeting());
+       
+       
+       // Now do one that'll only have some
+       from = new Date(1302431400-10);
+       to = new Date(1302431400+10);
+       cq = (GetCalendarEntriesCannedQuery)CALENDAR_CQ_FACTORY.getCannedQuery(
+             containers, from, to, paging
+       );
+       cq.setTestHook(hook);
+       cq.execute();
+       
+       assertEquals(3, full.size());
+       assertEquals(2, filtered.size());
+       
+       // Check the ordering and filtering
+       assertEquals(c3.getSystemName(), filtered.get(0).getName());
+       assertEquals(c1.getSystemName(), filtered.get(1).getName());
+       
+       
+       // Now make one repeating and check the correct info comes through
+       c3.setRecurrenceRule("FREQ=WEEKLY");
+       c3.setLastRecurrence(new Date(1303431400));
+       CALENDAR_SERVICE.updateCalendarEntry(c3);
+       
+       cq = (GetCalendarEntriesCannedQuery)CALENDAR_CQ_FACTORY.getCannedQuery(
+             containers, from, to, paging
+       );
+       cq.setTestHook(hook);
+       cq.execute();
+       assertEquals(3, full.size());
+       assertEquals(2, filtered.size());
+       
+       // Check the details
+       assertEquals(c3.getSystemName(),                      filtered.get(0).getName());
+       assertEquals(ISO8601DateFormat.format(c3.getStart()), filtered.get(0).getFromDate());
+       assertEquals(ISO8601DateFormat.format(c3.getEnd()),   filtered.get(0).getToDate());
+       assertEquals(ISO8601DateFormat.format(c3.getLastRecurrence()), filtered.get(0).getRecurrenceLastMeeting());
+       assertEquals(c3.getRecurrenceRule(),                  filtered.get(0).getRecurrenceRule());
+       
+       assertEquals(c1.getSystemName(),                      filtered.get(1).getName());
+       assertEquals(ISO8601DateFormat.format(c1.getStart()), filtered.get(1).getFromDate());
+       assertEquals(ISO8601DateFormat.format(c1.getEnd()),   filtered.get(1).getToDate());
+       assertEquals(c1.getRecurrenceRule(),                  filtered.get(1).getRecurrenceRule());
+       assertEquals(null,                                    filtered.get(1).getRecurrenceLastMeeting());
+    }
+    
+    
+    // --------------------------------------------------------------------------------
 
+    
     private static void createTestSites() throws Exception
     {
         final CalendarServiceImpl privateCalendarService = (CalendarServiceImpl)testContext.getBean("calendarService");

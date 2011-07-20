@@ -69,8 +69,8 @@ public class CalendarServiceImpl implements CalendarService
      */
     private static final int MAX_QUERY_ENTRY_COUNT = 10000;
 
-    private static final String CANNED_QUERY_GET_CHILDREN = "calendarGetChildrenCannedQueryFactory";
-    private static final String CANNED_QUERY_GET_ENTRIES = "calendarGetCalendarEntriesCannedQueryFactory";
+    protected static final String CANNED_QUERY_GET_CHILDREN = "calendarGetChildrenCannedQueryFactory";
+    protected static final String CANNED_QUERY_GET_ENTRIES = "calendarGetCalendarEntriesCannedQueryFactory";
     
     /**
      * The logger
@@ -262,7 +262,6 @@ public class CalendarServiceImpl implements CalendarService
        }
        
        // Make the changes
-       taggingService.clearTags(nodeRef);
        for(String tag : toDel)
        {
           taggingService.removeTag(nodeRef, tag);
@@ -346,20 +345,31 @@ public class CalendarServiceImpl implements CalendarService
 
     @Override
     public CalendarEntry updateCalendarEntry(CalendarEntry entry) {
-       Map<QName,Serializable> properties = CalendarEntryImpl.toNodeProperties(entry);
-       
+       // Sanity check what we were given
        if(entry.getNodeRef() == null)
        {
           throw new IllegalArgumentException("Can't update a calendar entry that was never persisted, call create instead");
        }
        
-       // Update the existing one
+       // Get the Calendar properties
+       Map<QName,Serializable> properties = CalendarEntryImpl.toNodeProperties(entry);
+       
+       // Merge in the non calendar ones
+       for(Map.Entry<QName,Serializable> prop : nodeService.getProperties(entry.getNodeRef()).entrySet())
+       {
+          if(! prop.getKey().getNamespaceURI().equals(CalendarModel.CALENDAR_MODEL_URL))
+          {
+             properties.put(prop.getKey(), prop.getValue());
+          }
+       }
+       
+       // Save the new properties
        nodeService.setProperties(entry.getNodeRef(), properties);
        
-       // Update tags
+       // Update the tags
        handleTags(entry);
        
-       // Nothing changed
+       // Nothing was changed on the entry itself
        return entry;
     }
 

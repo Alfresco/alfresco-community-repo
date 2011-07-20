@@ -12,7 +12,9 @@
         <id property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="name" column="name" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="fromDate" column="from_date" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        <result property="toDate" column="from_date" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="toDate" column="to_date" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="recurrenceRule" column="recurrence_rule" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="recurrenceLastMeeting" column="recurrence_last_meeting" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <association property="node" resultMap="alfresco.node.result_Node"/>
     </resultMap>
     
@@ -28,6 +30,8 @@
             childNode.audit_creator    as audit_creator,
             prop_fromdate.string_value as from_date,
             prop_todate.string_value   as to_date,
+            prop_recurrenceRule.string_value         as recurrence_rule,
+            prop_recurrenceLastMeeting.string_value  as recurrence_last_meeting,
             prop_name.string_value     as name
         from
             alf_child_assoc assoc
@@ -35,6 +39,8 @@
             join alf_store childStore on (childStore.id = childNode.store_id)
             left join alf_node_properties prop_fromdate on (prop_fromdate.node_id = childNode.id and prop_fromdate.qname_id = #{fromDateQNameId})
             left join alf_node_properties prop_todate on (prop_todate.node_id = childNode.id and prop_todate.qname_id = #{toDateQNameId})
+            left join alf_node_properties prop_recurrenceRule on (prop_recurrenceRule.node_id = childNode.id and prop_recurrenceRule.qname_id = #{recurrenceRuleQNameId})
+            left join alf_node_properties prop_recurrenceLastMeeting on (prop_recurrenceLastMeeting.node_id = childNode.id and prop_recurrenceLastMeeting.qname_id = #{recurrenceLastMeetingQNameId})
             left join alf_node_properties prop_name on (prop_name.node_id = childNode.id and prop_name.qname_id = #{nameQNameId})
         where
             assoc.parent_node_id IN <foreach item="nodeRef" index="index" collection="sitesContainerNodeIds" open="(" separator="," close=")">#{nodeRef}</foreach> 

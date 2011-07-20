@@ -33,6 +33,7 @@ import org.alfresco.repo.domain.query.CannedQueryDAO;
 import org.alfresco.repo.security.permissions.impl.acegi.AbstractCannedQueryPermissions;
 import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean;
 import org.alfresco.service.cmr.calendar.CalendarEntry;
+import org.alfresco.service.cmr.calendar.CalendarRecurrenceHelper;
 import org.alfresco.service.cmr.calendar.CalendarService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -59,6 +60,7 @@ public class GetCalendarEntriesCannedQuery extends AbstractCannedQueryPermission
     private final CannedQueryDAO cannedQueryDAO;
     private final TaggingService taggingService;
     private final NodeService nodeService;
+    private GetCalendarEntriesCannedQueryTestHook testHook;
     
     public GetCalendarEntriesCannedQuery(
             CannedQueryDAO cannedQueryDAO,
@@ -101,6 +103,9 @@ public class GetCalendarEntriesCannedQuery extends AbstractCannedQueryPermission
                toDate = fromDate;
             }
             
+            String recurringRule = result.getRecurrenceRule();
+            Date recurringLastDate = DefaultTypeConverter.INSTANCE.convert(Date.class, result.getRecurrenceLastMeeting());
+            
             // Only return entries in the right period
             if(entriesFromDate != null)
             {
@@ -112,13 +117,72 @@ public class GetCalendarEntriesCannedQuery extends AbstractCannedQueryPermission
             }
             if(entriesToDate != null)
             {
-               // Needs to start on or after the Filter End date
+               // Needs have started by the Filter To date
                if(fromDate == null || fromDate.after(entriesToDate))
                {
                   nextNodeIsAcceptable = false;
                }
             }
             
+            // Handle recurring events specially
+            if(recurringRule != null && !nextNodeIsAcceptable)
+            {
+               if(entriesToDate != null || recurringLastDate != null)
+               {
+                  Date searchFrom = entriesFromDate;
+                  if(searchFrom == null)
+                  {
+                     searchFrom = fromDate;
+                  }
+                  Date searchTo = entriesToDate;
+                  if(searchTo == null)
+                  {
+                     searchTo = recurringLastDate;
+                  }
+                     
+                  List<Date> dates = CalendarRecurrenceHelper.getRecurrencesOnOrAfter(
+                        recurringRule, fromDate, toDate, recurringLastDate,
+                        searchFrom, searchTo, false
+                  );
+                  if(dates != null && dates.size() > 0)
+                  {
+                     // Do any of these fit?
+                     for(Date date : dates)
+                     {
+                        if(entriesFromDate != null && entriesToDate != null)
+                        {
+                           // From and To date given, needs to sit between them
+                           if(entriesFromDate.getTime() <= date.getTime() &&
+                              date.getTime() <= entriesToDate.getTime())
+                           {
+                              nextNodeIsAcceptable = true;
+                              break;
+                           }
+                        }
+                        else if(entriesFromDate != null)
+                        {
+                           // From date but no end date, needs to be after the from
+                           if(entriesFromDate.getTime() <= date.getTime())
+                           {
+                              nextNodeIsAcceptable = true;
+                              break;
+                           }
+                        }
+                        else if(entriesToDate != null)
+                        {
+                           // End date but no start date, needs to be before the from
+                           if(date.getTime() <= entriesToDate.getTime())
+                           {
+                              nextNodeIsAcceptable = true;
+                              break;
+                           }
+                        }
+                     }
+                  }
+               }
+            }
+            
+            // Did it make the cut
             if (nextNodeIsAcceptable)
             {
                 filtered.add(result);
@@ -155,6 +219,11 @@ public class GetCalendarEntriesCannedQuery extends AbstractCannedQueryPermission
             logger.debug("Base query: "+calendarEntries.size()+" in "+(System.currentTimeMillis()-start)+" msecs");
         }
         
+        if(testHook != null)
+        {
+           testHook.notifyComplete(results, filtered);
+        }
+        
         return calendarEntries;
     }
     
@@ -163,6 +232,11 @@ public class GetCalendarEntriesCannedQuery extends AbstractCannedQueryPermission
     {
         // No post-query sorting. It's done within the queryAndFilter() method above.
         return false;
+    }
+    
+    public void setTestHook(GetCalendarEntriesCannedQueryTestHook hook)
+    {
+       this.testHook = hook;
     }
     
     private class CalendarEntryImpl extends org.alfresco.repo.calendar.CalendarEntryImpl

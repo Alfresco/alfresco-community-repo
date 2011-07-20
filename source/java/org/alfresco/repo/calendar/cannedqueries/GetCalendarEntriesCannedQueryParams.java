@@ -37,10 +37,13 @@ public class GetCalendarEntriesCannedQueryParams extends CalendarEntity
                                          Long contentTypeQNameId, 
                                          Long fromDateQNameId, 
                                          Long toDateQNameId, 
+                                         Long recurrenceRuleQNameId, 
+                                         Long recurrenceLastMeetingQNameId,
                                          Date entriesFromDate,
                                          Date entriesToDate)
     {
-        super(null, nameQNameId, contentTypeQNameId, fromDateQNameId, toDateQNameId);
+        super(null, nameQNameId, contentTypeQNameId, fromDateQNameId, 
+              toDateQNameId, recurrenceRuleQNameId, recurrenceLastMeetingQNameId);
         
         this.sitesContainerNodeIds = sitesContainerNodeIds;
         this.entriesFromDate = entriesFromDate;

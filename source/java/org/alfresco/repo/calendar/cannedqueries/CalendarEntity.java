@@ -39,6 +39,8 @@ public class CalendarEntity
     
     private String fromDate;
     private String toDate;
+    private String recurrenceRule;
+    private String recurrenceLastMeeting;
     
     // Supplemental query-related parameters
     private Long parentNodeId;
@@ -46,6 +48,8 @@ public class CalendarEntity
     private Long contentTypeQNameId;
     private Long fromDateQNameId;
     private Long toDateQNameId;
+    private Long recurrenceRuleQNameId;
+    private Long recurrenceLastMeetingQNameId;
     
     /**
      * Default constructor
@@ -55,13 +59,16 @@ public class CalendarEntity
     }
     
     public CalendarEntity(Long parentNodeId, Long nameQNameId, Long contentTypeQNameId,
-                          Long fromDateQNameId, Long toDateQNameId)
+                          Long fromDateQNameId, Long toDateQNameId,
+                          Long recurrenceRuleQNameId, Long recurrenceLastMeetingQNameId)
     {
         this.parentNodeId = parentNodeId;
         this.nameQNameId = nameQNameId;
         this.contentTypeQNameId = contentTypeQNameId;
         this.fromDateQNameId = fromDateQNameId;
         this.toDateQNameId = toDateQNameId;
+        this.recurrenceRuleQNameId = recurrenceRuleQNameId;
+        this.recurrenceLastMeetingQNameId = recurrenceLastMeetingQNameId;
     }
     
     public Long getId()
@@ -134,6 +141,33 @@ public class CalendarEntity
         this.toDate = toISO8061;
     }
     
+    /**
+     * SharePoint/Oulook rules string
+     */
+    public String getRecurrenceRule() 
+    {
+       return recurrenceRule;
+    }
+
+    /**
+     * SharePoint/Oulook rules string
+     */
+    public void setRecurrenceRule(String recurrenceRule) 
+    {
+       this.recurrenceRule = recurrenceRule;
+    }
+
+    // (ISO-8061)
+    public String getRecurrenceLastMeeting() 
+    {
+       return recurrenceLastMeeting;
+    }
+
+    public void setRecurrenceLastMeeting(String recurrenceLastMeetingISO8601) 
+    {
+       this.recurrenceLastMeeting = recurrenceLastMeetingISO8601;
+    }
+    
     
     // Supplemental query-related parameters
     
@@ -160,5 +194,15 @@ public class CalendarEntity
     public Long getToDateQNameId() 
     {
        return toDateQNameId;
+    }
+
+    public Long getRecurrenceRuleQNameId() 
+    {
+       return recurrenceRuleQNameId;
+    }
+
+    public Long getRecurrenceLastMeetingQNameId() 
+    {
+       return recurrenceLastMeetingQNameId;
     }
 }

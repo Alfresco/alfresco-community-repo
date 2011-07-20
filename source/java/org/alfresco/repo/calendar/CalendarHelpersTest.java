@@ -20,9 +20,7 @@ package org.alfresco.repo.calendar;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -32,35 +30,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.query.PagingRequest;
-import org.alfresco.query.PagingResults;
-import org.alfresco.repo.policy.BehaviourFilter;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.site.SiteModel;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.service.cmr.calendar.CalendarEntry;
 import org.alfresco.service.cmr.calendar.CalendarEntryDTO;
 import org.alfresco.service.cmr.calendar.CalendarRecurrenceHelper;
 import org.alfresco.service.cmr.calendar.CalendarService;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.security.MutableAuthenticationService;
-import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.cmr.site.SiteInfo;
-import org.alfresco.service.cmr.site.SiteService;
-import org.alfresco.service.cmr.site.SiteVisibility;
-import org.alfresco.service.cmr.tagging.TaggingService;
-import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.PropertyMap;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Test cases for the helpers relating to the {@link CalendarService},
@@ -622,6 +595,13 @@ public class CalendarHelpersTest
             Map<String,String> params, Date onOrAfter, Date until, boolean firstOnly, int interval)
       {
          CalendarRecurrenceHelper.buildMonthlyRecurrences(
+               currentDate, dates, params, onOrAfter, until, firstOnly, interval);
+      }
+      
+      protected static void buildYearlyRecurrences(Calendar currentDate, List<Date> dates, 
+            Map<String,String> params, Date onOrAfter, Date until, boolean firstOnly, int interval)
+      {
+         CalendarRecurrenceHelper.buildYearlyRecurrences(
                currentDate, dates, params, onOrAfter, until, firstOnly, interval);
       }
    }

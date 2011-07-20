@@ -241,6 +241,7 @@ public class GetCalendarEntriesCannedQuery extends AbstractCannedQueryPermission
     
     private class CalendarEntryImpl extends org.alfresco.repo.calendar.CalendarEntryImpl
     {
+       private static final long serialVersionUID = 5717119409619436964L;
        private CalendarEntryImpl(CalendarEntity entity)
        {
           super(

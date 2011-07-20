@@ -198,7 +198,7 @@ public class CalendarRecurrenceHelper
          String freq = params.get("FREQ");
          String intervalS = params.get("INTERVAL");
          int interval = 1;
-         if(intervalS == null)
+         if(intervalS != null)
          {
             try
             {

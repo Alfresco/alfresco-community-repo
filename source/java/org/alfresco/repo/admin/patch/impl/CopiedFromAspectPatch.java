@@ -363,6 +363,7 @@ public class CopiedFromAspectPatch extends AbstractPatch
         // Does the source exist?
         if (sourceNodeRef == null || !nodeService.exists(sourceNodeRef))
         {
+            boolean isNewModel = true;
             if (
                     nodeService.hasAspect(nodeRef, ContentModel.ASPECT_COPIEDFROM) &&
                     nodeService.getSourceAssocs(nodeRef, ContentModel.ASSOC_ORIGINAL).size() == 0)
@@ -374,6 +375,7 @@ public class CopiedFromAspectPatch extends AbstractPatch
                 }
                 writeLine(file, "Removing cm:copiedfrom from node: " + nodePair);
                 nodeService.removeAspect(nodeRef, ContentModel.ASPECT_COPIEDFROM);
+                isNewModel = false;
             }
             if (
                     nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY) &&
@@ -386,8 +388,17 @@ public class CopiedFromAspectPatch extends AbstractPatch
                 }
                 writeLine(file, "Removing cm:workingcopy from node: " + nodePair);
                 nodeService.removeAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY);
+                isNewModel = false;
             }
             // If nothing was done, then it's a node with the new data model and we can leave it
+            if (isNewModel)
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("\tP: Ignoring data with new model: " + nodePair);
+                }
+                writeLine(file, "Ignoring data with new model: " + nodePair);
+            }
         }
         else
         {
@@ -415,6 +426,20 @@ public class CopiedFromAspectPatch extends AbstractPatch
                 if (nodeService.getSourceAssocs(nodeRef, ContentModel.ASSOC_WORKING_COPY_LINK).size() > 0)
                 {
                     // The association is already present, so just remove the property (we'll do that later)
+                }
+                else if (nodeService.hasAspect(sourceNodeRef, ContentModel.ASPECT_CHECKED_OUT))
+                {
+                    // ALF-9569: copiedFromAspect patch does not take documents with
+                    //           more than one working copy into account
+                    // So there are multiple working copies
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("\tP: Found node with multiple working copies: " + sourceNodeRef);
+                        logger.debug("\tP: Removing cm:workingcopy: " + nodePair);
+                    }
+                    writeLine(file, "Found node with multiple working copies: " + nodePair);
+                    writeLine(file, "Removing cm:workingcopy from node: " + nodePair);
+                    nodeService.removeAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY);
                 }
                 else
                 {

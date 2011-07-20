@@ -140,6 +140,28 @@
     <alias name="search.indexerAndSearcherFactory" alias="search.admLuceneUnIndexedIndexerAndSearcherFactory"/>
     <alias name="search.indexerAndSearcherFactory" alias="search.avmLuceneIndexerAndSearcherFactory"/>
     
+    <bean id="search.categoryService" class="org.alfresco.repo.service.StoreRedirectorProxyFactory">
+        <property name="proxyInterface">
+            <value>org.alfresco.service.cmr.search.CategoryService</value>
+        </property>
+        <property name="defaultBinding">
+            <ref bean="search.luceneCategoryService"></ref>
+        </property>
+        <property name="redirectedProtocolBindings">
+            <map>
+                <entry key="workspace">
+                    <ref bean="search.luceneCategoryService"></ref>
+                </entry>
+                <entry key="versionStore">
+                    <ref bean="search.luceneCategoryService"></ref>
+                </entry>
+                <entry key="avm">
+                    <ref bean="search.luceneCategoryService"></ref>
+                </entry>
+            </map>
+        </property>
+    </bean>
+    
     <bean id="search.luceneCategoryService" class="org.alfresco.repo.search.impl.lucene.LuceneCategoryServiceImpl">
         <property name="nodeService">
             <ref bean="nodeService" />

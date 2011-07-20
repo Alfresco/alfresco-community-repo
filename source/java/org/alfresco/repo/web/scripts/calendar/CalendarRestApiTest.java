@@ -211,7 +211,7 @@ public class CalendarRestApiTest extends BaseWebScriptTest
           int expectedStatus)
     throws Exception
     {
-       String date = "2011/06/29";
+       String date = "2011/06/29"; // A wednesday
        String start = "12:00";
        String end = "13:00";
        
@@ -252,7 +252,7 @@ public class CalendarRestApiTest extends BaseWebScriptTest
     private JSONObject updateEntry(String name, String what, String where, String description, 
           boolean withRecurrence, int expectedStatus) throws Exception
     {
-       String date = "2011/06/28";
+       String date = "2011/06/28"; // A Tuesday
        String start = "11:30";
        String end = "13:30";
        
@@ -530,7 +530,13 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        result = getEntries(null, null);
        assertEquals(1, result.length());
        
-       result = getEntries("admin", "2000/01/01"); // TODO From date shouldn't be needed...
+       result = getEntries("admin", "2000/01/01"); // With a from date
+       events = result.getJSONArray("events");
+       assertEquals(2, events.length());
+       assertEquals(EVENT_TITLE_ONE, events.getJSONObject(0).getString("title"));
+       assertEquals(EVENT_TITLE_TWO, events.getJSONObject(1).getString("title"));
+       
+       result = getEntries("admin", null); // Without a from date
        events = result.getJSONArray("events");
        assertEquals(2, events.length());
        assertEquals(EVENT_TITLE_ONE, events.getJSONObject(0).getString("title"));
@@ -587,5 +593,79 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        events = result.getJSONArray("events");
        assertEquals(0, events.length());
     }
-    
+
+    /**
+     * Repeating events support
+     */
+    public void testRepeatingEventsInUserListing() throws Exception 
+    {
+       JSONObject result;
+       JSONArray events;
+       
+       // Initially, there are no events
+       result = getEntries(null, null);
+       assertEquals(0, result.length());
+       
+       result = getEntries("admin", null);
+       events = result.getJSONArray("events");
+       assertEquals(0, events.length());
+       
+       // Add two events in the past, one of which repeats 
+       JSONObject entry1 = createEntry(EVENT_TITLE_ONE, "Somewhere", "Thing 1", Status.STATUS_OK);
+       JSONObject entry2 = createEntry(EVENT_TITLE_TWO, "Somewhere", "Thing 2", Status.STATUS_OK);
+       String entryName1 = getNameFromEntry(entry1); 
+       String entryName2 = getNameFromEntry(entry2);
+       // Have it repeat on wednesdays and fridays every two weeks
+       updateEntry(entryName2, EVENT_TITLE_TWO, "Somewhere", "Thing 2", true, Status.STATUS_OK);
+       
+       
+       // Get all the entries, without repeats expanded
+       result = getEntries("admin", "2011-06-27");
+       events = result.getJSONArray("events");
+       assertEquals(2, events.length());
+       assertEquals(entryName2, events.getJSONObject(0).getString("name"));
+       assertEquals(entryName1, events.getJSONObject(1).getString("name"));
+       assertEquals(EVENT_TITLE_TWO + " (Repeating)", events.getJSONObject(0).getString("title"));
+       assertEquals(EVENT_TITLE_ONE, events.getJSONObject(1).getString("title"));
+       
+       
+       // Get all the entries, with repeats expanded
+       result = getEntries("admin", "2011/06/27");
+       events = result.getJSONArray("events");
+       assertEquals(7, Math.min(events.length(),7)); // At least
+       assertEquals(entryName2, events.getJSONObject(0).getString("name"));
+       assertEquals(entryName2, events.getJSONObject(1).getString("name")); // 11:30 ->
+       assertEquals(entryName1, events.getJSONObject(2).getString("name")); // 12:00 ->
+       assertEquals(entryName2, events.getJSONObject(3).getString("name"));
+       assertEquals(entryName2, events.getJSONObject(4).getString("name"));
+       assertEquals(entryName2, events.getJSONObject(5).getString("name"));
+       assertEquals(entryName2, events.getJSONObject(6).getString("name"));
+       assertEquals(entryName2, events.getJSONObject(7).getString("name"));
+       assertEquals(EVENT_TITLE_TWO, events.getJSONObject(0).getString("title"));
+       assertEquals(EVENT_TITLE_TWO, events.getJSONObject(1).getString("title"));
+       assertEquals(EVENT_TITLE_ONE, events.getJSONObject(2).getString("title"));
+       assertEquals(EVENT_TITLE_TWO, events.getJSONObject(3).getString("title"));
+       assertEquals(EVENT_TITLE_TWO, events.getJSONObject(4).getString("title"));
+       assertEquals(EVENT_TITLE_TWO, events.getJSONObject(5).getString("title"));
+       assertEquals(EVENT_TITLE_TWO, events.getJSONObject(6).getString("title"));
+       assertEquals(EVENT_TITLE_TWO, events.getJSONObject(7).getString("title"));
+       
+       // Check the dates on these:
+       // Repeating original
+       assertEquals("2011-06-28T", events.getJSONObject(0).getJSONObject("startAt").getString("iso8601").substring(0,11));
+       // 1st repeat Wednesday
+       assertEquals("2011-06-29T", events.getJSONObject(1).getJSONObject("startAt").getString("iso8601").substring(0,11));
+       // Non-repeating original
+       assertEquals("2011-06-29T", events.getJSONObject(2).getJSONObject("startAt").getString("iso8601").substring(0,11));
+       // 1st repeat Friday
+       assertEquals("2011-07-01T", events.getJSONObject(3).getJSONObject("startAt").getString("iso8601").substring(0,11));
+       // 2nd repeat Wednesday
+       assertEquals("2011-07-13T", events.getJSONObject(4).getJSONObject("startAt").getString("iso8601").substring(0,11));
+       // 2nd repeat Friday
+       assertEquals("2011-07-15T", events.getJSONObject(5).getJSONObject("startAt").getString("iso8601").substring(0,11));
+       // 3rd repeat Wednesday
+       assertEquals("2011-07-27T", events.getJSONObject(6).getJSONObject("startAt").getString("iso8601").substring(0,11));
+       // 3rd repeat Friday
+       assertEquals("2011-07-29T", events.getJSONObject(7).getJSONObject("startAt").getString("iso8601").substring(0,11));
+    }
 }

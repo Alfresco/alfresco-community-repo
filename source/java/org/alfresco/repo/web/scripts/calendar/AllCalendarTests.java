@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.web.scripts.calendar;
 
+import org.alfresco.repo.calendar.CalendarHelpersTest;
 import org.alfresco.repo.calendar.CalendarServiceImplTest;
 import org.alfresco.service.cmr.calendar.CalendarService;
 import org.junit.runner.RunWith;
@@ -34,6 +35,7 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
     CalendarServiceImplTest.class,
+    CalendarHelpersTest.class,
     CalendarRestApiTest.class
 })
 public class AllCalendarTests

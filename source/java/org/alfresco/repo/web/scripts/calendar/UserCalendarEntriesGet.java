@@ -19,6 +19,9 @@
 package org.alfresco.repo.web.scripts.calendar;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -77,19 +80,35 @@ public class UserCalendarEntriesGet extends AbstractCalendarWebScript
       
       // What should we do about repeating events? First or all?
       boolean repeatingFirstOnly = true;
-      if(fromDate != null)
+      String repeatingEvents = req.getParameter("repeating");
+      if(repeatingEvents != null)
       {
-         // TODO Find a better way to do this...
-         String fromDateS = req.getParameter("from");
-         if(fromDateS.indexOf('-') != -1)
+         if("first".equals(repeatingEvents))
          {
-            // Apparently this is the site calendar dashlet...
             repeatingFirstOnly = true;
          }
-         if(fromDateS.indexOf('/') != -1)
+         else if("all".equals(repeatingEvents))
          {
-            // This is something else, wants all events in range
             repeatingFirstOnly = false;
+         }
+      }
+      else
+      {
+         // Fall back to the icky old way of guessing it from 
+         //  the format of the from date, which differs between uses!
+         if(fromDate != null)
+         {
+            String fromDateS = req.getParameter("from");
+            if(fromDateS.indexOf('-') != -1)
+            {
+               // Apparently this is the site calendar dashlet...
+               repeatingFirstOnly = true;
+            }
+            if(fromDateS.indexOf('/') != -1)
+            {
+               // This is something else, wants all events in range
+               repeatingFirstOnly = false;
+            }
          }
       }
       
@@ -125,6 +144,7 @@ public class UserCalendarEntriesGet extends AbstractCalendarWebScript
       PagingResults<CalendarEntry> entries = 
          calendarService.listCalendarEntries(siteShortNames, fromDate, toDate, paging);
 
+      boolean resortNeeded = false;
       List<Map<String, Object>> results = new ArrayList<Map<String,Object>>();
       for(CalendarEntry entry : entries.getPage())
       {
@@ -160,7 +180,39 @@ public class UserCalendarEntriesGet extends AbstractCalendarWebScript
          results.add(result);
          
          // Handle recurring as needed
-         handleRecurring(entry, result, results, fromDate, repeatingFirstOnly);
+         boolean orderChanged = handleRecurring(entry, result, results, fromDate, repeatingFirstOnly);
+         if(orderChanged)
+         {
+            resortNeeded = true;
+         }
+      }
+      
+      // If the recurring events meant dates changed, re-sort
+      if(resortNeeded)
+      {
+         Collections.sort(results, new Comparator<Map<String, Object>>() {
+            public int compare(Map<String, Object> resultA,
+                  Map<String, Object> resultB) {
+               Date startA = (Date)resultA.get(RESULT_START);
+               Date startB = (Date)resultB.get(RESULT_START);
+               
+               int cmp = startA.compareTo(startB);
+               if(cmp == 0)
+               {
+                  Date endA = (Date)resultA.get(RESULT_END);
+                  Date endB = (Date)resultB.get(RESULT_END);
+                  cmp = endA.compareTo(endB);
+                  if(cmp == 0)
+                  {
+                     String nameA = (String)resultA.get(RESULT_NAME);
+                     String nameB = (String)resultB.get(RESULT_NAME);
+                     return nameA.compareTo(nameB);
+                  }
+                  return cmp;
+               }
+               return cmp;
+            }
+         });
       }
       
       // All done
@@ -230,23 +282,29 @@ public class UserCalendarEntriesGet extends AbstractCalendarWebScript
    }
    
    /**
-    * Do what's needed for recurring events 
+    * Do what's needed for recurring events.
+    * 
+    * @return If dates have been tweaked, and a sort may be required 
     */
-   private void handleRecurring(CalendarEntry entry, Map<String, Object> entryResult, 
+   private boolean handleRecurring(CalendarEntry entry, Map<String, Object> entryResult, 
          List<Map<String, Object>> allResults, Date from, boolean repeatingFirstOnly)
    {
       if(entry.getRecurrenceRule() == null)
       {
          // Nothing to do
-         return;
+         return false;
       }
       
       // Should we limit ourselves?
       Date until = null;
       if(!repeatingFirstOnly)
       {
-         // Only repeating instances for the next 60 days
-         until = new Date(from.getTime() + 24*60*60*1000);
+         // Only repeating instances for the next 60 days, to keep the list sane
+         // (It's normally only used for a month view anyway)
+         Calendar c = Calendar.getInstance();
+         c.setTime(from);
+         c.add(Calendar.DATE, 60);
+         until = c.getTime();
       }
       
       // How long is it?
@@ -255,12 +313,26 @@ public class UserCalendarEntriesGet extends AbstractCalendarWebScript
       // Get it's recurring instances
       List<Date> dates = CalendarRecurrenceHelper.getRecurrencesOnOrAfter(
             entry, from, until, repeatingFirstOnly);
+      if(dates == null)
+      {
+         dates = new ArrayList<Date>();
+      }
+      
+      // Add on the original event time itself if needed
+      if(entry.getStart().getTime() >= from.getTime())
+      {
+         if(dates.size() == 0 || dates.get(0).getTime() != entry.getStart().getTime())
+         {
+            // Original event is after the start time, and not on the recurring list
+            dates.add(0, entry.getStart());
+         }
+      }
       
       // If we got no dates, then no recurrences in the period so zap
-      if(dates == null || dates.size() == 0)
+      if(dates.size() == 0)
       {
          allResults.remove(entryResult);
-         return;
+         return false; // Remains sorted despite delete
       }
 
       // Always update the live entry
@@ -270,7 +342,7 @@ public class UserCalendarEntriesGet extends AbstractCalendarWebScript
       if(repeatingFirstOnly)
       {
          entryResult.put(RESULT_TITLE, entry.getTitle() + " (Repeating)");
-         return;
+         return true; // Date has been changed
       }
       
       // Otherwise generate one entry per extra date
@@ -285,6 +357,9 @@ public class UserCalendarEntriesGet extends AbstractCalendarWebScript
          // Save as a new event
          allResults.add(newResult);
       }
+      
+      // New dates have been added
+      return true;
    }
    
    private void updateRepeatingStartEnd(Date newStart, long duration, Map<String, Object> result)

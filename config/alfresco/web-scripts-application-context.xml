@@ -1126,8 +1126,8 @@
     </bean>
 
     <!-- Create a new Channel web script -->
-    <bean id="webscript.org.alfresco.repository.publishing.channel.post"
-          class="org.alfresco.repo.web.scripts.publishing.ChannelPostWebScript"
+    <bean id="webscript.org.alfresco.repository.publishing.channels.post"
+          class="org.alfresco.repo.web.scripts.publishing.ChannelsPostWebScript"
           parent="webscript">
         <property name="channelService" ref="channelService" />
     </bean>

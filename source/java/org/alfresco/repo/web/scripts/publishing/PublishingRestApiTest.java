@@ -599,7 +599,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         
         List<String> contentTypes = CollectionUtils.toListOfStrings(channelType.getSupportedContentTypes());
         checkStrings(jsonType.getJSONArray(SUPPORTED_CONTENT_TYPES), contentTypes);
-        checkStrings(jsonType.getJSONArray(SUPPORTED_MIME_TYPES), channelType.getSupportedMimetypes());
+        checkStrings(jsonType.getJSONArray(SUPPORTED_MIME_TYPES), channelType.getSupportedMimeTypes());
         
         check(CAN_PUBLISH, jsonType, channelType.canPublish());
         check(CAN_PUBLISH_STATUS_UPDATES, jsonType, channelType.canPublishStatusUpdates());
@@ -731,7 +731,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         
         ChannelType publishPdf= mockChannelType(publishPdfType);
         when(publishPdf.canPublish()).thenReturn(true);
-        when(publishPdf.getSupportedMimetypes()).thenReturn(Collections.singleton(MimetypeMap.MIMETYPE_PDF));
+        when(publishPdf.getSupportedMimeTypes()).thenReturn(Collections.singleton(MimetypeMap.MIMETYPE_PDF));
         
         ChannelType statusUpdate= mockChannelType(statusUpdateType);
         when(statusUpdate.canPublishStatusUpdates()).thenReturn(true);

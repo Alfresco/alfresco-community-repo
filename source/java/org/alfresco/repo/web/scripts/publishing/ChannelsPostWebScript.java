@@ -30,7 +30,7 @@ import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
-public class ChannelPostWebScript extends DeclarativeWebScript
+public class ChannelsPostWebScript extends DeclarativeWebScript
 {
     private ChannelService channelService;
 
@@ -76,6 +76,7 @@ public class ChannelPostWebScript extends DeclarativeWebScript
         model.put("pollUrl", pollUrl);
         model.put("authoriseUrl", authoriseUrl);
         model.put("channelId", channelNodeRef.toString());
+        model.put("authCallbackUrl", callbackUrl);
 
         return model;
     }

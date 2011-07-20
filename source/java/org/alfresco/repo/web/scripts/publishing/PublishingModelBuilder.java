@@ -146,7 +146,7 @@ public class PublishingModelBuilder
         
         model.put(CHANNEL_NODE_TYPE, type.getChannelNodeType().toString());
         model.put(SUPPORTED_CONTENT_TYPES, toListOfStrings(type.getSupportedContentTypes()));
-        model.put(SUPPORTED_MIME_TYPES, type.getSupportedMimetypes());
+        model.put(SUPPORTED_MIME_TYPES, type.getSupportedMimeTypes());
 
         model.put(CAN_PUBLISH, toString(type.canPublish()));
         model.put(CAN_PUBLISH_STATUS_UPDATES, toString(type.canPublishStatusUpdates()));

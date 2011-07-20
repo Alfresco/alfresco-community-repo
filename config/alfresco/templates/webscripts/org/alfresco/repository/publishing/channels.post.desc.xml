@@ -14,6 +14,7 @@
    <dt>channelId</dt><dd>the identifier of the new publishing channel</dd>
    <dt>pollUrl</dt> <dd>The URL to poll to discover whether the channel has been authorised</dd>
    <dt>authoriseUrl</dt> <dd>The URL to send the user to in order for them to authorise access to the channel</dd>
+   <dt>authCallbackUrl</dt> <dd>The URL to return the channel authorisation details to</dd>
    </dl>
    
    ]]></description>
@@ -48,6 +49,7 @@
                   "channelId": string,
                   "pollUrl": string,
                   "authoriseUrl": string
+                  "authCallbackUrl": string
                }
             }
             ]]>

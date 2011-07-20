@@ -5,7 +5,8 @@
    {
       "channelId" : "${channelId}",
       "pollUrl": "${pollUrl}",
-      "authoriseUrl": "${authoriseUrl}"
+      "authoriseUrl": "${authoriseUrl}",
+      "authCallbackUrl": "${authCallbackUrl}"
    }
 }
 </#escape>

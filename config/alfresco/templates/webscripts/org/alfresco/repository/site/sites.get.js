@@ -6,7 +6,7 @@ function main()
     var sizeString = args["size"];
     
     // Get the list of sites
-    var sites = siteService.listSites(nameFilter, sitePreset, sizeString != null ? parseInt(sizeString) : 0);
+    var sites = siteService.findSites(nameFilter, sitePreset, sizeString != null ? parseInt(sizeString) : -1);
     model.sites = sites;
 }
 

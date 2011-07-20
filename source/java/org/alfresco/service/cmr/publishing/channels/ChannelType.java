@@ -46,7 +46,7 @@ public interface ChannelType
     boolean canUnpublish();
     boolean canPublishStatusUpdates();
     
-    Set<String> getSupportedMimetypes();
+    Set<String> getSupportedMimeTypes();
     Set<QName> getSupportedContentTypes();
     
     /**

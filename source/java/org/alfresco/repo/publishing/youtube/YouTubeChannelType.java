@@ -85,7 +85,7 @@ public class YouTubeChannelType extends AbstractChannelType
     }
 
     @Override
-    public Set<String> getSupportedMimetypes()
+    public Set<String> getSupportedMimeTypes()
     {
         return Collections.emptySet();
     }

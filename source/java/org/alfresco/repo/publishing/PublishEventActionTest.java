@@ -305,7 +305,7 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
 
         // Set supported type to XML
         Set<String> mimeTypes = Collections.singleton(MimetypeMap.MIMETYPE_XML);
-        when(channelType.getSupportedMimetypes()).thenReturn(mimeTypes);
+        when(channelType.getSupportedMimeTypes()).thenReturn(mimeTypes);
 
         // Publish source node but don't call ChannelType.publish().
         publishNode(source);
@@ -315,7 +315,7 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
         
         // Change supported type to plain text.
         mimeTypes = Collections.singleton(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        when(channelType.getSupportedMimetypes()).thenReturn(mimeTypes);
+        when(channelType.getSupportedMimeTypes()).thenReturn(mimeTypes);
         
         // Publish source node
         publishNode(source);

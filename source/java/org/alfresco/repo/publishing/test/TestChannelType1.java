@@ -95,7 +95,7 @@ public class TestChannelType1 extends AbstractChannelType
     }
 
     @Override
-    public Set<String> getSupportedMimetypes()
+    public Set<String> getSupportedMimeTypes()
     {
         return null;
     }

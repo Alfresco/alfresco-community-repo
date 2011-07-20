@@ -23,7 +23,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.publishing.AbstractChannelType;
 import org.alfresco.repo.publishing.PublishingModel;
 import org.alfresco.service.cmr.action.Action;
@@ -43,9 +45,19 @@ import org.springframework.util.MultiValueMap;
 public class FlickrChannelType extends AbstractChannelType
 {
     public final static String ID = "flickr";
+    private final static Set<String> DEFAULT_SUPPORTED_MIME_TYPES = new TreeSet<String>();
+    
+    static
+    {
+        DEFAULT_SUPPORTED_MIME_TYPES.add(MimetypeMap.MIMETYPE_IMAGE_GIF);
+        DEFAULT_SUPPORTED_MIME_TYPES.add(MimetypeMap.MIMETYPE_IMAGE_JPEG);
+        DEFAULT_SUPPORTED_MIME_TYPES.add(MimetypeMap.MIMETYPE_IMAGE_PNG);
+    }
+    
     private NodeService nodeService;
     private FlickrPublishingHelper publishingHelper;
     private ActionService actionService;
+    private Set<String> supportedMimeTypes = Collections.unmodifiableSet(DEFAULT_SUPPORTED_MIME_TYPES);
     
     public void setNodeService(NodeService nodeService)
     {
@@ -60,6 +72,11 @@ public class FlickrChannelType extends AbstractChannelType
     public void setActionService(ActionService actionService)
     {
         this.actionService = actionService;
+    }
+    
+    public void setSupportedMimeTypes(Set<String> mimeTypes)
+    {
+        supportedMimeTypes = Collections.unmodifiableSet(new TreeSet<String>(mimeTypes));
     }
 
     @Override
@@ -99,9 +116,9 @@ public class FlickrChannelType extends AbstractChannelType
     }
 
     @Override
-    public Set<String> getSupportedMimetypes()
+    public Set<String> getSupportedMimeTypes()
     {
-        return Collections.emptySet();
+        return supportedMimeTypes;
     }
 
     @Override

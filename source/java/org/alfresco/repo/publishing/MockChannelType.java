@@ -119,7 +119,7 @@ public class MockChannelType extends AbstractChannelType
     * {@inheritDoc}
     */
     @Override
-    public Set<String> getSupportedMimetypes()
+    public Set<String> getSupportedMimeTypes()
     {
         return null;
     }

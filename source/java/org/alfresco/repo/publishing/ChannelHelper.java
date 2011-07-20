@@ -200,7 +200,7 @@ public class ChannelHelper
 
     private boolean isMimetypeSupported(String mimetype, ChannelType type)
     {
-        Set<String> supportedMimetypes = type.getSupportedMimetypes();
+        Set<String> supportedMimetypes = type.getSupportedMimeTypes();
         if (supportedMimetypes == null || supportedMimetypes.isEmpty())
         {
             return true;

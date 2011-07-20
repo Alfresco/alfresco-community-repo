@@ -92,7 +92,7 @@ public class FacebookChannelType extends AbstractChannelType
     }
 
     @Override
-    public Set<String> getSupportedMimetypes()
+    public Set<String> getSupportedMimeTypes()
     {
         return Collections.emptySet();
     }
@@ -124,7 +124,6 @@ public class FacebookChannelType extends AbstractChannelType
     public String getAuthorisationUrl(Channel channel, String callbackUrl)
     {
         ParameterCheck.mandatory("channel", channel);
-        ParameterCheck.mandatory("callbackUrl", callbackUrl);
         if (!ID.equals(channel.getChannelType().getId()))
         {
             throw new IllegalArgumentException("Invalid channel type: " + channel.getChannelType().getId());

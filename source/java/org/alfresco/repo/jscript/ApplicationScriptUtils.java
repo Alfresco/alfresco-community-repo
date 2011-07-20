@@ -232,24 +232,27 @@ public final class ApplicationScriptUtils extends BaseScopableProcessorExtension
                 String key = useShortQNames ? shortQName : nextLongQName.toString();
                 Serializable value = properties.get(nextLongQName);
 
-                // Has a decorator has been registered for this property?
-                if (this.decoratedProperties.containsKey(shortQName))
+                if (value != null)
                 {
-                    json.put(key, ((JSONPropertyDecorator) this.decoratedProperties.get(shortQName)).decorate(nodeRef, shortQName, value));
-                }
-                else
-                {
-                    // Built-in data type processing
-                    if (value instanceof Date)
+                    // Has a decorator has been registered for this property?
+                    if (this.decoratedProperties.containsKey(shortQName))
                     {
-                        Map<String, Serializable> dateObj = new LinkedHashMap<String, Serializable>(1);
-                        dateObj.put("value", value);
-                        dateObj.put("iso8601", ISO8601DateFormat.format((Date)value));
-                        json.put(key, (Serializable)dateObj);
+                        json.put(key, ((JSONPropertyDecorator) this.decoratedProperties.get(shortQName)).decorate(nodeRef, shortQName, value));
                     }
                     else
                     {
-                        json.put(key, value);
+                        // Built-in data type processing
+                        if (value instanceof Date)
+                        {
+                            Map<String, Serializable> dateObj = new LinkedHashMap<String, Serializable>(1);
+                            dateObj.put("value", value);
+                            dateObj.put("iso8601", ISO8601DateFormat.format((Date)value));
+                            json.put(key, (Serializable)dateObj);
+                        }
+                        else
+                        {
+                            json.put(key, value);
+                        }
                     }
                 }
             }

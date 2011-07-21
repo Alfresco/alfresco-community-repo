@@ -104,25 +104,27 @@ public class SolrAlfrescoQueryLanguage extends AbstractSolrQueryLanguage
             httpClient.getParams().setBooleanParameter(HttpClientParams.PREEMPTIVE_AUTHENTICATION, true);
             httpClient.getState().setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), new UsernamePasswordCredentials("admin", "admin"));
 
+            URLCodec encoder = new URLCodec();
             StringBuilder url = new StringBuilder();
             url.append(getBaseUrl());
             url.append("/alfresco/alfresco");
             //duplicate the query in the URL
+            //duplicate the query in the URL
             url.append("?q=");
-            URLCodec encoder = new URLCodec();
+            
             url.append(encoder.encode(searchParameters.getQuery(), "UTF-8"));
-            url.append("&wt=json");
-            url.append("&fl=*,score");
+            url.append("&wt=").append(encoder.encode("json", "UTF-8"));
+            url.append("&fl=").append(encoder.encode("*,score", "UTF-8"));
             if(searchParameters.getMaxItems() > 0)
             {
-                url.append("&rows=").append(searchParameters.getMaxItems());
+                url.append("&rows=").append(encoder.encode(""+searchParameters.getMaxItems(), "UTF-8"));
             }
             else
             {
-                url.append("&rows=").append(Integer.MAX_VALUE);
+                url.append("&rows=").append(encoder.encode(""+Integer.MAX_VALUE, "UTF-8"));
             }
-            url.append("&df=").append(searchParameters.getDefaultFieldName());
-            url.append("&start=").append(searchParameters.getSkipCount());
+            url.append("&df=").append(encoder.encode(searchParameters.getDefaultFieldName(), "UTF-8"));
+            url.append("&start=").append(encoder.encode(""+searchParameters.getSkipCount(), "UTF-8"));
             
             Locale locale = I18NUtil.getLocale();
             if(searchParameters.getLocales().size() > 0)
@@ -130,7 +132,6 @@ public class SolrAlfrescoQueryLanguage extends AbstractSolrQueryLanguage
                 locale = searchParameters.getLocales().get(0);
             }
             url.append("&locale=");
-            encoder = new URLCodec();
             url.append(encoder.encode(locale.toString(), "UTF-8"));
             
             StringBuffer sortBuffer = new StringBuffer();
@@ -142,16 +143,16 @@ public class SolrAlfrescoQueryLanguage extends AbstractSolrQueryLanguage
                 }
                 else
                 {
-                    sortBuffer.append(", ");
+                    sortBuffer.append(encoder.encode(", ", "UTF-8"));
                 }
-                sortBuffer.append(sortDefinition.getField()).append(" ");
+                sortBuffer.append(encoder.encode(sortDefinition.getField(), "UTF-8")).append(encoder.encode(" ", "UTF-8"));
                 if(sortDefinition.isAscending())
                 {
-                    sortBuffer.append("asc");
+                    sortBuffer.append(encoder.encode("asc", "UTF-8"));
                 }
                 else
                 {
-                    sortBuffer.append("desc");
+                    sortBuffer.append(encoder.encode("desc", "UTF-8"));
                 }
                
             }
@@ -173,9 +174,7 @@ public class SolrAlfrescoQueryLanguage extends AbstractSolrQueryLanguage
             //encoder = new URLCodec();
             //url.append(encoder.encode(authQuery.toString(), "UTF-8"));
             
-            url.append("&fq=");
-            url.append(encoder.encode("{!afts}", "UTF-8"));
-            url.append("AUTHORITY_FILTER_FROM_JSON");
+            url.append("&fq=").append(encoder.encode("{!afts}AUTHORITY_FILTER_FROM_JSON", "UTF-8"));
             
             // facets would go on url?
             

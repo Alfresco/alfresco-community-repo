@@ -295,6 +295,12 @@ public class UserCalendarEntriesGet extends AbstractCalendarWebScript
          return false;
       }
       
+      // If no date is given, start looking for occurrences from the event itself
+      if(from == null)
+      {
+         from = entry.getStart();
+      }
+      
       // Should we limit ourselves?
       Date until = null;
       if(!repeatingFirstOnly)

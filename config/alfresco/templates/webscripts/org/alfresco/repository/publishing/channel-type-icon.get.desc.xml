@@ -1,0 +1,29 @@
+<webscript>
+   <shortname>Get channel type icon</shortname>
+   <description><![CDATA[
+   Create a new publishing channel using the supplied information.
+   <br />
+   <dl>
+   <dt>channelType</dt><dd>mandatory - the channel type for which the icon is required</dd>
+   <dt>iconSize</dt> <dd>mandatory - the size of the icon required. Must be either "16" or "32"</dd>
+   </dl>
+   Streams the requested icon if it can be found, otherwise returns a 404 status code. If either channelType or iconSize
+   are missing then a 400 status code is returned.
+   ]]></description>
+   <description></description>
+   <url>/api/publishing/channel-type/{channelType}/icon/{iconSize}</url>
+   <format default="json"/>
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+   <lifecycle>public_api</lifecycle>
+   <args>
+      <arg>
+         <shortname>channelType</shortname>
+         <description>The identifier of the channel type whose icon is wanted.</description>
+      </arg>
+      <arg>
+         <shortname>iconSize</shortname>
+         <description>The size (in pixels) of the required icon. Must be either "16" or "32".</description>
+      </arg>
+   </args>
+</webscript>

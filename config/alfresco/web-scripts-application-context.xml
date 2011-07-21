@@ -1161,6 +1161,13 @@
         <property name="channelService" ref="channelService" />
     </bean>
 
+    <bean id="webscript.org.alfresco.repository.publishing.channel-type-icon.get" 
+            class="org.alfresco.repo.web.scripts.publishing.ChannelTypeIconGetWebScript"
+            parent="webscript">
+        <property name="channelService" ref="channelService" />
+        <property name="mimetypeService" ref="mimetypeService" />
+    </bean>
+
     <!--                                   -->
     <!--      Audit Service REST API    -->
     <!--                                   -->

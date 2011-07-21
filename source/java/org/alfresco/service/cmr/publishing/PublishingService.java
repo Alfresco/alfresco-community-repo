@@ -55,11 +55,11 @@ public interface PublishingService
     
     /**
      * Discover the publishing status of each of the specified nodes
-     * @param channelName TODO
+     * @param channelId TODO
      * @param nodes The identifiers of the nodes whose publishing status is being sought
      * @return A map associating a NodePublishStatus object with each of the supplied NodeRef objects
      */
-    Map<NodeRef,NodePublishStatus> checkPublishStatus(String siteId, String channelName, Collection<NodeRef> nodes);
+    Map<NodeRef,NodePublishStatus> checkPublishStatus(String channelId, Collection<NodeRef> nodes);
 
-    Map<NodeRef,NodePublishStatus> checkPublishStatus(String siteId, String channelName, NodeRef... nodes);
+    Map<NodeRef,NodePublishStatus> checkPublishStatus(String channelId, NodeRef... nodes);
 }

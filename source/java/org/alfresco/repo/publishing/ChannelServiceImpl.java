@@ -26,15 +26,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
@@ -60,27 +56,15 @@ import org.alfresco.util.collections.Function;
  */
 public class ChannelServiceImpl implements ChannelService
 {
-
-    private static final String CHANNEL_CONTAINER_NAME = "channels";
-
     public static final String NAME = "channelService";
 
     private final Map<String, ChannelType> channelTypes = new TreeMap<String, ChannelType>();
     private SiteService siteService;
     private NodeService nodeService;
     private DictionaryService dictionaryService;
-    private EnvironmentHelper environmentHelper;
     private ChannelHelper channelHelper;
+    private PublishingRootObject rootObject;
     
-    /**
-     * @param siteService
-     *            the siteService to set
-     */
-    public void setSiteService(SiteService siteService)
-    {
-        this.siteService = siteService;
-    }
-
     /**
      * @param nodeService
      *            the nodeService to set
@@ -100,14 +84,13 @@ public class ChannelServiceImpl implements ChannelService
     }
 
     /**
-     * @param environmentHelper
-     *            the environmentHelper to set
+     * @param rootObject the rootObject to set
      */
-    public void setEnvironmentHelper(EnvironmentHelper environmentHelper)
+    public void setPublishingRootObject(PublishingRootObject rootObject)
     {
-        this.environmentHelper = environmentHelper;
+        this.rootObject = rootObject;
     }
-
+    
     /**
      * @param channelHelper the channelHelper to set
      */
@@ -141,13 +124,9 @@ public class ChannelServiceImpl implements ChannelService
     /**
      * {@inheritDoc}
      */
-    public Channel createChannel(String siteId, String channelTypeId, String name, Map<QName, Serializable> properties)
+    public Channel createChannel(String channelTypeId, String name, Map<QName, Serializable> properties)
     {
-        NodeRef channelContainer = getChannelContainer(siteId);
-        if(channelContainer==null)
-        {
-            channelContainer = createChannelContainer(siteId);
-        }
+        NodeRef channelContainer = getChannelContainer();
         ChannelType channelType = channelTypes.get(channelTypeId);
         if(channelType == null)
         {
@@ -177,22 +156,27 @@ public class ChannelServiceImpl implements ChannelService
     /**
      * {@inheritDoc}
      */
-    public List<Channel> getChannels(String siteId)
+    public List<Channel> getChannels()
     {
-        ParameterCheck.mandatory("siteId", siteId);
-        NodeRef channelContainer = getChannelContainer(siteId);
+        NodeRef channelContainer = getChannelContainer();
         return channelHelper.getChannels(channelContainer, this);
     }
 
     /**
     * {@inheritDoc}
     */
-    public Channel getChannel(String siteId, String channelName)
+    @Override
+    public Channel getChannelByName(String channelName)
     {
-        ParameterCheck.mandatory("siteId", siteId);
+        NodeRef node = getChannelNodeByName(channelName);
+        return channelHelper.buildChannelObject(node, this);
+    }
+    
+    private NodeRef getChannelNodeByName(String channelName)
+    {
         ParameterCheck.mandatory("channelName", channelName);
 
-        NodeRef channelContainer = getChannelContainer(siteId);
+        NodeRef channelContainer = getChannelContainer();
         if(channelContainer == null)
         {
             return null;
@@ -204,7 +188,7 @@ public class ChannelServiceImpl implements ChannelService
             QName type = nodeService.getType(child);
             if(dictionaryService.isSubClass(type, TYPE_DELIVERY_CHANNEL))
             {
-                return channelHelper.buildChannelObject(child, this);
+                return child;
             }
         }
         return null;
@@ -215,25 +199,17 @@ public class ChannelServiceImpl implements ChannelService
     */
     public List<Channel> getRelevantPublishingChannels(NodeRef nodeToPublish)
     {
-        SiteInfo siteInfo = siteService.getSite(nodeToPublish);
-        if(siteInfo != null)
-        {
-            final NodeRef containerNode = getChannelContainer(siteInfo.getShortName());
-            if(containerNode != null)
-            {
-                List<ChannelType> types = channelHelper.getReleventChannelTypes(nodeToPublish, channelTypes.values());
-                return getChannelsForTypes(containerNode, types);
-            }
-        }
-        return Collections.emptyList();
+        NodeRef containerNode = getChannelContainer();
+        List<ChannelType> types = channelHelper.getReleventChannelTypes(nodeToPublish, channelTypes.values());
+        return getChannelsForTypes(containerNode, types);
     }
     
     /**
     * {@inheritDoc}
     */
-    public List<Channel> getPublishingChannels(String siteId)
+    public List<Channel> getPublishingChannels()
     {
-        final NodeRef containerNode = getChannelContainer(siteId);
+        final NodeRef containerNode = getChannelContainer();
         if(containerNode != null)
         {
             List<ChannelType> types = CollectionUtils.filter(channelTypes.values(), new Filter<ChannelType>()
@@ -251,9 +227,9 @@ public class ChannelServiceImpl implements ChannelService
     /**
      * {@inheritDoc}
      */
-    public List<Channel> getStatusUpdateChannels(String siteId)
+    public List<Channel> getStatusUpdateChannels()
     {
-        final NodeRef containerNode = getChannelContainer(siteId);
+        final NodeRef containerNode = getChannelContainer();
         if (containerNode != null)
         {
             List<ChannelType> types = channelHelper.getStatusUpdateChannelTypes(channelTypes.values());
@@ -270,7 +246,7 @@ public class ChannelServiceImpl implements ChannelService
         SiteInfo site = siteService.getSite(nodeToPublish);
         if(site!=null)
         {
-            return getStatusUpdateChannels(site.getShortName());
+            return getStatusUpdateChannels();
         }
         return Collections.emptyList();
     }
@@ -286,34 +262,9 @@ public class ChannelServiceImpl implements ChannelService
         });
     }
 
-    private NodeRef getChannelContainer(final String siteId)
+    private NodeRef getChannelContainer()
     {
-        return siteService.getContainer(siteId, CHANNEL_CONTAINER_NAME);
-    }
-
-    private Set<NodeRef> getAllChannelContainers(String siteId)
-    {
-        Set<NodeRef> containers = new HashSet<NodeRef>();
-        NodeRef environment = environmentHelper.getEnvironment(siteId);
-        containers.add(environment);
-        NodeRef editorialContainer = getChannelContainer(siteId);
-        if(editorialContainer!=null)
-        {
-            containers.add(editorialContainer);
-        }
-        return containers;
-    }
-
-    private NodeRef createChannelContainer(final String siteId)
-    {
-        return AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
-        {
-            public NodeRef doWork() throws Exception
-            {
-                    return siteService.createContainer(siteId, CHANNEL_CONTAINER_NAME,
-                            PublishingModel.TYPE_CHANNEL_CONTAINER, null);
-            }
-        }, AuthenticationUtil.getSystemUserName());
+        return rootObject.getChannelContainer();
     }
 
     /**
@@ -343,18 +294,15 @@ public class ChannelServiceImpl implements ChannelService
     /**
     * {@inheritDoc}
     */
-    public void renameChannel(String siteId, String oldName, String newName)
+    public void renameChannel(String oldName, String newName)
     {
-        Set<NodeRef> containers = getAllChannelContainers(siteId);
-        for (NodeRef channelContainer : containers)
+        NodeRef channelContainer = getChannelContainer();
+        NodeRef channel = nodeService.getChildByName(channelContainer, ContentModel.ASSOC_CONTAINS, oldName);
+        if (channel != null)
         {
-            NodeRef channel = nodeService.getChildByName(channelContainer, ContentModel.ASSOC_CONTAINS, oldName);
-            if (channel != null)
-            {
-                nodeService.setProperty(channel, ContentModel.PROP_NAME, newName);
-                nodeService.moveNode(channel, channelContainer, ContentModel.ASSOC_CONTAINS, QName.createQName(
-                        NamespaceService.APP_MODEL_1_0_URI, newName));
-            }
+            nodeService.setProperty(channel, ContentModel.PROP_NAME, newName);
+            nodeService.moveNode(channel, channelContainer, ContentModel.ASSOC_CONTAINS,
+                    QName.createQName(NamespaceService.APP_MODEL_1_0_URI, newName));
         }
     }
 
@@ -378,7 +326,7 @@ public class ChannelServiceImpl implements ChannelService
     * {@inheritDoc}
     */
     @Override
-    public Channel getChannel(String id)
+    public Channel getChannelById(String id)
     {
         if(id!=null&& id.isEmpty()==false
                 && NodeRef.isNodeRef(id))

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0"
+   xmlns:d="http://www.alfresco.org/model/dictionary/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0"
+   xmlns:pub="http://www.alfresco.org/model/publishing/1.0" xmlns:sys="http://www.alfresco.org/model/system/1.0" xmlns="">
+
+   <pub:Environment view:childName="${spaces.publishing.root.childname}">
+      <view:properties>
+         <sys:store-protocol>workspace</sys:store-protocol>
+         <sys:store-identifier>SpacesStore</sys:store-identifier>
+         <sys:node-uuid>publishing_root_space</sys:node-uuid>
+         <cm:name>${spaces.publishing.root.name}</cm:name>
+         <cm:title>${spaces.publishing.root.name}</cm:title>
+         <cm:description>${spaces.publishing.root.description}</cm:description>
+      </view:properties>
+   </pub:Environment>
+</view:view>

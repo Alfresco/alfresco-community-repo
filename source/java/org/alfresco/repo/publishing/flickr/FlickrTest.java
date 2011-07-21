@@ -25,7 +25,7 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.publishing.EnvironmentImpl;
+import org.alfresco.repo.publishing.Environment;
 import org.alfresco.repo.publishing.PublishingModel;
 import org.alfresco.repo.publishing.PublishingQueueImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -63,7 +63,7 @@ public class FlickrTest extends BaseSpringTest
     protected NodeService nodeService;
     protected String siteId;
     protected PublishingQueueImpl queue;
-    protected EnvironmentImpl environment;
+    protected Environment environment;
     protected NodeRef docLib;
 
     private ChannelService channelService;
@@ -109,7 +109,7 @@ public class FlickrTest extends BaseSpringTest
                 props.put(PublishingModel.PROP_OAUTH1_TOKEN_SECRET, "YOUR_OAUTH_TOKEN_SECRET");
                 props.put(PublishingModel.PROP_AUTHORISATION_COMPLETE, Boolean.TRUE);
                 
-                Channel channel = channelService.createChannel(siteId, FlickrChannelType.ID, "FlickrTestChannel", props);
+                Channel channel = channelService.createChannel(FlickrChannelType.ID, "FlickrTestChannel", props);
                 //This looks a little odd, but a new channel always has its "authorisation complete" flag
                 //forced off initially. This will force it on for this channel...
                 channelService.updateChannel(channel, props);
@@ -153,5 +153,7 @@ public class FlickrTest extends BaseSpringTest
                 return null;
             }
         });
+
     }
+
 }

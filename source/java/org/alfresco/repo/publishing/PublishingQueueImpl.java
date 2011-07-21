@@ -43,11 +43,20 @@ import org.alfresco.service.cmr.version.VersionService;
 public class PublishingQueueImpl implements PublishingQueue
 {
     private final static String MSG_FAILED_TO_CREATE_PUBLISHING_EVENT = "publishing-create-event-failed";
-    private NodeRef nodeRef;
-    private TransferManifestNodeFactory transferManifestNodeFactory;
-    private VersionService versionService;
-    private PublishingEventHelper publishingEventHelper;
+    private final NodeRef nodeRef;
+    private final TransferManifestNodeFactory transferManifestNodeFactory;
+    private final VersionService versionService;
+    private final PublishingEventHelper publishingEventHelper;
     
+    public PublishingQueueImpl(NodeRef nodeRef, PublishingEventHelper publishingEventHelper,
+            VersionService versionService, TransferManifestNodeFactory transferManifestNodeFactory)
+    {
+        this.nodeRef = nodeRef;
+        this.publishingEventHelper = publishingEventHelper;
+        this.versionService = versionService;
+        this.transferManifestNodeFactory = transferManifestNodeFactory;
+    }
+
     /**
      * {@inheritDoc}
     */
@@ -106,38 +115,11 @@ public class PublishingQueueImpl implements PublishingQueue
     }
 
     /**
-     * @param queueNode
+     * @return the nodeRef
      */
-    public void setNodeRef(NodeRef queueNode)
+    public NodeRef getNodeRef()
     {
-        this.nodeRef = queueNode;
+        return nodeRef;
     }
-
-    /**
-     * @param transferManifestNodeFactory
-     *            the transferManifestNodeFactory to set
-     */
-    public void setTransferManifestNodeFactory(TransferManifestNodeFactory transferManifestNodeFactory)
-    {
-        this.transferManifestNodeFactory = transferManifestNodeFactory;
-    }
-
-    /**
-     * @param publishingEventHelper
-     *            the publishingEventHelper to set
-     */
-    public void setPublishingEventHelper(PublishingEventHelper publishingEventHelper)
-    {
-        this.publishingEventHelper = publishingEventHelper;
-    }
-
-    /**
-     * @param versionService the versionService to set
-     */
-    public void setVersionService(VersionService versionService)
-    {
-        this.versionService = versionService;
-    }
-
 
 }

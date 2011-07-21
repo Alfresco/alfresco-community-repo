@@ -2421,6 +2421,32 @@
         </property>
     </bean>
     
+    <bean id="patch.publishing.root" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+        <property name="id"><value>patch.publishing.root</value></property>
+        <property name="description"><value>patch.publishing.root.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>5013</value></property>
+        <property name="targetSchema"><value>5014</value></property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.updateDmPermissions" />
+            </list>
+        </property>
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="checkPath">
+            <value>${publishing.root}</value>
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">${publishing.root.path}</prop>
+                <prop key="location">alfresco/bootstrap/publishingRootFolder.xml</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+            </props>
+        </property>
+    </bean>
+    
     <bean id="patch.updateMimetypes2" class="org.alfresco.repo.admin.patch.impl.GenericMimetypeRenamePatch" parent="basePatch" >
         <property name="id"><value>patch.updateMimetypes2</value></property>
         <property name="description"><value>patch.updateMimetypes2.description</value></property>

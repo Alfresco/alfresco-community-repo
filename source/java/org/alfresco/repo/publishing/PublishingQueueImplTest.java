@@ -180,9 +180,10 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
     
     /**
     * {@inheritDoc}
+     * @throws Exception 
     */
     @Override
-    public void onTearDown()
+    public void onTearDown() throws Exception
     {
         if(eventId!=null)
         {

@@ -425,12 +425,12 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
             Mockito.reset(channelType);
             mockChannelTypeBehaviour(channelType);
         }
-        this.channel = channelService.createChannel(siteId, channelTypeId, GUID.generate(), null);
+        this.channel = channelService.createChannel(channelTypeId, GUID.generate(), null);
         this.channelNode = channel.getNodeRef();
     }
 
     @Override
-    public void onTearDown()
+    public void onTearDown() throws Exception
     {
         if(eventId !=null)
         {

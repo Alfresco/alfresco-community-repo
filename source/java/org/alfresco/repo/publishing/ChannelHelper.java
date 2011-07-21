@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.node.NodeUtils;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
@@ -143,7 +144,7 @@ public class ChannelHelper
     public NodeRef mapEnvironmentToSource(NodeRef publishedNode)
     {
         List<AssociationRef> assocs = nodeService.getTargetAssocs(publishedNode, ASSOC_SOURCE);
-        return getSingleValue(assocs, true);
+        return NodeUtils.getSingleAssocNode(assocs, true);
     }
 
     /**
@@ -326,16 +327,6 @@ public class ChannelHelper
         return null;
     }
     
-    private NodeRef getSingleValue(List<AssociationRef> assocs, boolean getChild)
-    {
-        if(assocs != null && assocs.size()==1 )
-        {
-            AssociationRef association = assocs.get(0);
-            return getChild ? association.getTargetRef() : association.getSourceRef();
-        }
-        return null;
-    }
-
     private Function<ChildAssociationRef, Channel> getChannelTransformer(final ChannelService channelService)
     {
         return new Function<ChildAssociationRef, Channel>()

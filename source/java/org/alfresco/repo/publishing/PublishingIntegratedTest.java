@@ -75,7 +75,7 @@ public class PublishingIntegratedTest extends BaseSpringTest
     @Test
     public void testScheduleNewEvent() throws Exception
     {
-        Channel channel = channelService.createChannel(siteId, channelTypeName, GUID.generate(), null);
+        Channel channel = channelService.createChannel(channelTypeName, GUID.generate(), null);
 
         Set<NodeRef> nodes = new HashSet<NodeRef>();
         for (int i = 0; i < 4; ++i)
@@ -109,7 +109,7 @@ public class PublishingIntegratedTest extends BaseSpringTest
     @Test
     public void testCancelScheduledEvent()
     {
-        Channel channel = channelService.createChannel(siteId, channelTypeName, GUID.generate(), null);
+        Channel channel = channelService.createChannel(channelTypeName, GUID.generate(), null);
 
         Set<NodeRef> nodes = new HashSet<NodeRef>();
         for (int i = 0; i < 4; ++i)

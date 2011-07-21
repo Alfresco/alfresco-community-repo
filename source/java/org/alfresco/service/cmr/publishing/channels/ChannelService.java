@@ -54,14 +54,13 @@ public interface ChannelService
     
     /**
      * Create a new channel of the specified channel type on the specified Share site with the specified name and properties.
-     * @param siteId The identifier of the Share site on which this channel is to be created.
      * @param channelTypeId The identifier of the channel type that is to be used for the new channel. This must identify a channel type that
      * has been registered with the channel service.
      * @param name The name of the new channel. This must be unique within the specified Share site.
      * @param properties Any additional properties that are to be saved as part of the new channel.
      * @return A Channel object corresponding to the newly created channel.
      */
-    Channel createChannel(String siteId, String channelTypeId, String name, Map<QName, Serializable> properties);
+    Channel createChannel(String channelTypeId, String name, Map<QName, Serializable> properties);
     
     /**
      * Remove the specified channel.
@@ -71,11 +70,10 @@ public interface ChannelService
     
     /**
      * Rename the specified channel
-     * @param siteId The identifier of the Share site that contains the channel to be renamed.
      * @param oldName The current name of the channel that is to be renamed.
      * @param newName The new name of the channel
      */
-    void renameChannel(String siteId, String oldName, String newName);
+    void renameChannel(String oldName, String newName);
     
     /**
      * Update the properties of the specified channel.
@@ -87,25 +85,23 @@ public interface ChannelService
     
     /**
      * Retrieve all the channels contained by the specified Share site.
-     * @param siteId The identifier of the Share site
      * @return A list of Channel objects, each one representing a channel that exists within the specified Share site.
      */
-    List<Channel> getChannels(String siteId);
+    List<Channel> getChannels();
 
     /**
      * Retrieve the channel with the given channel name contained by the specified Share site.
-     * @param siteId The identifier of the Share site
      * @param channelName The name of the channel
      * @return The specified Channel objects or <code>null</code> if the specified channel does not exist.
      */
-    Channel getChannel(String siteId, String channelName);
+    Channel getChannelByName(String channelName);
     
     /**
      * Retrieve the channel with the given id.
      * @param id The string value of the channel {@link NodeRef}.
      * @return The specified Channel objects or <code>null</code> if the specified channel does not exist.
      */
-    Channel getChannel(String id);
+    Channel getChannelById(String id);
     
     /**
      * Returns a list of all the channels that are capable of publishing the specified NodeRef.
@@ -116,23 +112,14 @@ public interface ChannelService
     
     /**
      * Returns a list of all the channels that are capable of publishing in the specified Share site.
-     * @param siteId
      * @return
      */
-    List<Channel> getPublishingChannels(String siteId);
+    List<Channel> getPublishingChannels();
     
     /**
      * Returns all {@link Channel}s cpaable of performing a status update for the given Share Site.
-     * @param siteId
      * @return
      */
-    List<Channel> getStatusUpdateChannels(String siteId);
-    
-    /**
-     * Returns all {@link Channel}s capable of performing a status update for the Share Site in which the specified <code>nodeToPublish</code> exists.
-     * @param siteId
-     * @return
-     */
-    List<Channel> getStatusUpdateChannels(NodeRef nodeToPublish);
+    List<Channel> getStatusUpdateChannels();
     
 }

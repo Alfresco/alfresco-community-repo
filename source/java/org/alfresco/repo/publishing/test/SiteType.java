@@ -82,9 +82,9 @@ public class SiteType
             log.debug("onCreateNode " + childAssocRef);
         }
         String siteId = childAssocRef.getQName().getLocalName();
-        channelService.createChannel(siteId, "TestChannelType1", "Test Channel One", null);
-        channelService.createChannel(siteId, "TestChannelType2", "Test Channel Two", null);
-        channelService.createChannel(siteId, "TestChannelType3", "Test Channel Three", null);
+        channelService.createChannel("TestChannelType1", "Test Channel One", null);
+        channelService.createChannel("TestChannelType2", "Test Channel Two", null);
+        channelService.createChannel("TestChannelType3", "Test Channel Three", null);
     }
 
 }

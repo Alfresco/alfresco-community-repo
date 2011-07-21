@@ -397,6 +397,7 @@
                 <prop key="spaces.rendition.rendering_actions.childname">${spaces.rendition.rendering_actions.childname}</prop>
                 <prop key="spaces.replication.replication_actions.childname">${spaces.replication.replication_actions.childname}</prop>
                 <prop key="spaces.wcm_deployed.childname">${spaces.wcm_deployed.childname}</prop>
+                <prop key="spaces.publishing.root.childname">${spaces.publishing.root.childname}</prop>
             </props>
         </property>
     </bean>
@@ -661,6 +662,14 @@
                <props>
                     <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.imapConfig.childname}/${spaces.imap_templates.childname}</prop>
                     <prop key="location">alfresco/bootstrap/imapSpacesTemplates.acp</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+               </props>
+
+               <!-- imapSpacesTemplates.acp depends on the above imapSpaces.acp being bootstrapped as it imports
+                    into folders defined in that acp.  -->
+               <props>
+                    <prop key="path">${publishing.root.path}</prop>
+                    <prop key="location">alfresco/bootstrap/publishingRootFolder.xml</prop>
                     <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
                </props>
 

@@ -22,6 +22,7 @@ package org.alfresco.repo.node;
 import java.util.Collection;
 import java.util.List;
 
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -110,4 +111,23 @@ public abstract class NodeUtils
         };
     }
     
+    public static NodeRef getSingleChildAssocNode(Collection<ChildAssociationRef> assocs, boolean getChild)
+    {
+        if(assocs != null && assocs.size()==1 )
+        {
+            ChildAssociationRef association = assocs.iterator().next();
+            return getChild ? association.getChildRef() : association.getParentRef();
+        }
+        return null;
+    }
+
+    public static NodeRef getSingleAssocNode(Collection<AssociationRef> assocs, boolean getTarget)
+    {
+        if(assocs != null && assocs.size()==1 )
+        {
+            AssociationRef association = assocs.iterator().next();
+            return getTarget ? association.getTargetRef() : association.getSourceRef();
+        }
+        return null;
+    }
 }

@@ -25,7 +25,7 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.publishing.EnvironmentImpl;
+import org.alfresco.repo.publishing.Environment;
 import org.alfresco.repo.publishing.PublishingModel;
 import org.alfresco.repo.publishing.PublishingQueueImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -63,7 +63,7 @@ public class SlideShareTest extends BaseSpringTest
     protected NodeService nodeService;
     protected String siteId;
     protected PublishingQueueImpl queue;
-    protected EnvironmentImpl environment;
+    protected Environment environment;
     protected NodeRef docLib;
 
     private ChannelService channelService;
@@ -108,7 +108,7 @@ public class SlideShareTest extends BaseSpringTest
                 Map<QName, Serializable> props = new HashMap<QName, Serializable>();
                 props.put(PublishingModel.PROP_CHANNEL_USERNAME, "YOUR_USER_NAME");
                 props.put(PublishingModel.PROP_CHANNEL_PASSWORD, "YOUR_PASSWORD");
-                Channel channel = channelService.createChannel(siteId, SlideShareChannelType.ID, "SlideShareChannel", props);
+                Channel channel = channelService.createChannel(SlideShareChannelType.ID, "SlideShareChannel", props);
 
                 NodeRef channelNode = channel.getNodeRef();
                 Resource file = new ClassPathResource("test/alfresco/TestPresentation.pptx");

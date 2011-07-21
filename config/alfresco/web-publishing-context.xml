@@ -39,10 +39,9 @@
 
    <!--  Channel Service -->
    <bean id="channelService" class="org.alfresco.repo.publishing.ChannelServiceImpl">
+      <property name="publishingRootObject" ref="publishingRootObject" />
       <property name="dictionaryService" ref="DictionaryService" />
       <property name="nodeService" ref="NodeService" />
-      <property name="siteService" ref="SiteService" />
-      <property name="environmentHelper" ref="environmentHelper" />
       <property name="channelHelper" ref="channelHelper" />
    </bean>
 
@@ -58,11 +57,16 @@
       <property name="fileFolderService" ref="FileFolderService" />
    </bean>
 
-   <bean id="environmentHelper" class="org.alfresco.repo.publishing.EnvironmentHelper">
+   <bean id="publishingRootObject" class="org.alfresco.repo.publishing.PublishingRootObject">
       <property name="nodeService" ref="NodeService" />
-      <property name="siteService" ref="SiteService" />
+      <property name="namespaceService" ref="NamespaceService" />
+      <property name="searchService" ref="SearchService" />
+      <property name="versionService" ref="VersionService" />
       <property name="publishingEventHelper" ref="publishingEventHelper" />
-      <property name="channelHelper" ref="channelHelper" />
+      <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
+      <property name="transferManifestNodeFactory" ref="transferManifestNodeFactory" />
+      <property name="publishingStore" value="${spaces.store}" />
+      <property name="publishingRootPath" value="${publishing.root}" />
    </bean>
 
    <bean id="publishingEventHelper" class="org.alfresco.repo.publishing.PublishingEventHelper">
@@ -89,17 +93,10 @@
       <property name="urlShortener" ref="urlShortener" />
       <property name="dictionaryService" ref="DictionaryService" />
    </bean>
-
-   <bean id="publishingObjectFactory" class="org.alfresco.repo.publishing.PublishingObjectFactory">
-      <property name="environmentHelper" ref="environmentHelper" />
-      <property name="transferManifestNodeFactory" ref="transferManifestNodeFactory" />
-      <property name="publishingEventHelper" ref="publishingEventHelper" />
-      <property name="versionService" ref="VersionService" />
-   </bean>
    
       <!--  Publishing Service -->
    <bean id="publishingService" class="org.alfresco.repo.publishing.PublishServiceImpl">
-      <property name="environmentFactory" ref="publishingObjectFactory" />
+      <property name="publishingRootObject" ref="publishingRootObject" />
       <property name="publishingEventHelper" ref="publishingEventHelper" />
    </bean>
    

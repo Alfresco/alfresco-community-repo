@@ -20,9 +20,7 @@
 package org.alfresco.repo.publishing;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.service.cmr.publishing.NodePublishStatus;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
@@ -40,17 +38,17 @@ public class PublishServiceImpl implements PublishingService
 {
     public static final String NAME = "publishingService";
 
-    private EnvironmentFactory environmentFactory;
     private PublishingEventHelper publishingEventHelper;
+    private PublishingRootObject rootObject;
     
     /**
-     * @param environmentFactory the environmentFactory to set
+     * @param rootObject the rootObject to set
      */
-    public void setEnvironmentFactory(EnvironmentFactory environmentFactory)
+    public void setPublishingRootObject(PublishingRootObject rootObject)
     {
-        this.environmentFactory = environmentFactory;
+        this.rootObject = rootObject;
     }
-
+    
     /**
      * @param publishingEventHelper the publishingEventHelper to set
      */
@@ -59,16 +57,6 @@ public class PublishServiceImpl implements PublishingService
         this.publishingEventHelper = publishingEventHelper;
     }
     
-    /**
-     * 
-    * {@inheritDoc}
-     */
-    public Set<NodeRef> getPublishingDependencies(NodeRef node)
-    {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
     /**
      * {@inheritDoc}
      */
@@ -91,44 +79,35 @@ public class PublishServiceImpl implements PublishingService
     */
     public PublishingQueue getPublishingQueue(String siteId)
     {
-        EnvironmentImpl environment = getEnvironment(siteId);
-        if(environment!=null)
-        {
-            return environment.getPublishingQueue();
-        }
+        return rootObject.getPublishingQueue();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Map<NodeRef, NodePublishStatus> checkPublishStatus(String channelId, Collection<NodeRef> nodes)
+    {
+//        Map<NodeRef, NodePublishStatus> results = new HashMap<NodeRef, NodePublishStatus>();
+//        for (NodeRef node : nodes)
+//        {
+//            if(node!=null && results.containsKey(node)==false)
+//            {
+//                results.put(node, environmentHelper.checkNodeStatus(node, channelId));
+//            }
+//        }
+//        return results;
+        //TODO
         return null;
     }
-
-    /**
-    * {@inheritDoc}
-    */
-    public Map<NodeRef, NodePublishStatus> checkPublishStatus(String siteId, String channelName,
-            Collection<NodeRef> nodes)
-    {
-        EnvironmentImpl environment = getEnvironment(siteId);
-        if(environment !=null )
-        {
-            return environment.checkPublishStatus(channelName, nodes);
-        }
-        return Collections.emptyMap();
-    }
-
-    /**
-    * {@inheritDoc}
-    */
-    public Map<NodeRef, NodePublishStatus> checkPublishStatus(String siteId, String channelName, NodeRef... nodes)
-    {
-        EnvironmentImpl environment = getEnvironment(siteId);
-        if(environment !=null )
-        {
-            return environment.checkPublishStatus(channelName, nodes);
-        }
-        return Collections.emptyMap();
-    }
     
-    private EnvironmentImpl getEnvironment(String siteId)
+    /**
+     * {@inheritDoc}
+     */
+    public Map<NodeRef, NodePublishStatus> checkPublishStatus(String channelId, NodeRef... nodes)
     {
-        return environmentFactory.createEnvironmentObject(siteId);
+//        return checkPublishStatus(channelId, Arrays.asList(nodes));
+        //TODO
+        return null;
     }
 
 }

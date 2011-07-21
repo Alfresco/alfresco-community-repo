@@ -23,11 +23,7 @@ import static org.alfresco.repo.publishing.PublishingModel.TYPE_DELIVERY_CHANNEL
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import javax.transaction.HeuristicMixedException;
-import javax.transaction.HeuristicRollbackException;
-import javax.transaction.RollbackException;
 import javax.transaction.Status;
-import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
@@ -43,7 +39,6 @@ import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.junit.After;
 import org.junit.Before;
-import org.mockito.Mockito;
 
 /**
  * @author Nick Smith
@@ -54,7 +49,7 @@ public abstract class AbstractPublishingIntegrationTest extends BaseSpringTest
 {
     protected static final String channelTypeId = "MockChannelType";
     
-    protected PublishingObjectFactory factory;
+    protected PublishingRootObject rootObject;
     
     protected ServiceRegistry serviceRegistry;
     
@@ -64,15 +59,17 @@ public abstract class AbstractPublishingIntegrationTest extends BaseSpringTest
     
     protected String siteId;
     protected PublishingQueueImpl queue;
-    protected EnvironmentImpl environment;
+    protected Environment environment;
     protected NodeRef docLib;
 
     protected UserTransaction transaction;
 
+    @Override
     @Before
     public void onSetUp() throws Exception
     {
-        factory = (PublishingObjectFactory) getApplicationContext().getBean("publishingObjectFactory");
+        super.onSetUp();
+        this.rootObject = (PublishingRootObject) getApplicationContext().getBean("publishingRootObject");
         serviceRegistry = (ServiceRegistry) getApplicationContext().getBean("ServiceRegistry");
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         this.siteService = serviceRegistry.getSiteService();
@@ -90,12 +87,12 @@ public abstract class AbstractPublishingIntegrationTest extends BaseSpringTest
                 SiteVisibility.PUBLIC);
         this.docLib = siteService.createContainer(siteId, SiteService.DOCUMENT_LIBRARY, ContentModel.TYPE_FOLDER, null);
 
-        this.environment = (EnvironmentImpl) factory.createEnvironmentObject(siteId);
-        this.queue = (PublishingQueueImpl) environment.getPublishingQueue();
+        this.environment = rootObject.getEnvironment();
+        this.queue = rootObject.getPublishingQueue();
     }
     
     @After
-    public void onTearDown()
+    public void onTearDown() throws Exception
     {
         siteService.deleteSite(siteId);
         try
@@ -114,6 +111,7 @@ public abstract class AbstractPublishingIntegrationTest extends BaseSpringTest
             e.printStackTrace();
             throw new RuntimeException(e);
         }
+        super.onTearDown();
     }
 
     protected ChannelType mockChannelType()

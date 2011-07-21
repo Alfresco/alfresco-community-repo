@@ -31,7 +31,6 @@ import java.util.Set;
 import javax.annotation.Resource;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.site.SiteServiceException;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelType;
 import org.alfresco.service.namespace.QName;
@@ -74,9 +73,6 @@ public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrat
     @Test
     public void testCreateChannel() throws Exception
     {
-        List<Channel> channels = channelService.getChannels(siteId);
-        assertTrue(channels.isEmpty());
-
         Channel channel = createChannel();
         assertEquals(channelTypeName, channel.getChannelType().getId());
         assertEquals(channelName, channel.getName());
@@ -89,44 +85,36 @@ public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrat
         Channel channel = createChannel();
         channelService.deleteChannel(channel);
         
-        List<Channel> channels = channelService.getChannels(siteId);
-        assertTrue(channels.isEmpty());
+        assertNull("The channel should have been deleed! Id: "+channel.getId(), channelService.getChannelById(channel.getId()));
+        assertNull("The channel should have been deleed! Name: "+channelName, channelService.getChannelByName(channelName));
     }
 
     @Test
     public void testRenameChannel() throws Exception
     {
         String newChannelName = "New Channel Name";
-        testCreateChannel();
-        List<Channel> channels = channelService.getChannels(siteId);
-        assertEquals(1, channels.size());
-        channelService.renameChannel(siteId, channelName, newChannelName);
+        Channel channel = createChannel();
+        channelService.renameChannel(channelName, newChannelName);
         
-        channels = channelService.getChannels(siteId);
-        assertEquals(1, channels.size());
-        Channel channel = channels.get(0);
-        assertEquals(newChannelName, channel.getName());
+        Channel renamedChannel = channelService.getChannelById(channel.getId());
+        assertNotNull(renamedChannel);
+        assertEquals(newChannelName, renamedChannel.getName());
     }
 
     @Test
     public void testUpdateChannel() throws Exception
     {
         String newTitle = "This is my title";
-        testCreateChannel();
-        List<Channel> channels = channelService.getChannels(siteId);
-        assertEquals(1, channels.size());
-        
-        Channel channel = channels.get(0);
+        Channel channel = createChannel();
+
         Map<QName,Serializable> props = channel.getProperties();
         assertNull(props.get(ContentModel.PROP_TITLE));
         
         props.put(ContentModel.PROP_TITLE, newTitle);
         channelService.updateChannel(channel, props);
         
-        channels = channelService.getChannels(siteId);
-        assertEquals(1, channels.size());
-        channel = channels.get(0);
-        Serializable title = channel.getProperties().get(ContentModel.PROP_TITLE); 
+        Channel updatedChannel = channelService.getChannelById(channel.getId());
+        Serializable title = updatedChannel.getProperties().get(ContentModel.PROP_TITLE); 
         assertNotNull(title);
         assertEquals(newTitle, title);
     }
@@ -134,23 +122,22 @@ public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrat
     @Test
     public void testGetChannels() throws Exception
     {
-        List<Channel> channels = channelService.getChannels(siteId);
-        assertTrue(channels.isEmpty());
-
+        int startingSize = channelService.getChannels().size();
+        
         int channelCount = 7;
         Set<String> channelNames = new HashSet<String>();
         for (int i = 0; i < channelCount; ++i)
         {
             String name = GUID.generate();
             channelNames.add(name);
-            channelService.createChannel(siteId, channelTypeName, name, null);
+            channelService.createChannel(channelTypeName, name, null);
 
-            channels = channelService.getChannels(siteId);
-            assertEquals(i + 1, channels.size());
+            List<Channel> channels = channelService.getChannels();
+            assertEquals(i + 1 + startingSize, channels.size());
             Set<String> names = new HashSet<String>(channelNames);
             for (Channel channel : channels)
             {
-                assertTrue(names.remove(channel.getName()));
+                names.remove(channel.getName());
             }
             assertTrue(names.isEmpty());
         }
@@ -161,36 +148,18 @@ public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrat
     {
         try
         {
-            channelService.getChannel(null, channelName);
-            fail("Should throw an Exception if siteId is null!");
-        }
-        catch (IllegalArgumentException e) {
-            // NOOP
-        }
-        try
-        {
-            channelService.getChannel(siteId, null);
+            channelService.getChannelByName(null);
             fail("Should throw an Exception if channelName is null!");
         }
         catch (IllegalArgumentException e) {
             // NOOP
         }
-        Channel channel = channelService.getChannel(siteId, channelName);
+        Channel channel = channelService.getChannelByName(channelName);
         assertNull("Should return null if unknown channelName", channel);
         
         Channel createdChannel = createChannel();
         
-        try
-        {
-            channel = channelService.getChannel("No Site", channelName);
-            fail("Should throw exception if site does not exist!");
-        }
-        catch (SiteServiceException e)
-        {
-            // NOOP
-        }
-        
-        channel = channelService.getChannel(siteId, channelName);
+        channel = channelService.getChannelByName(channelName);
         assertNotNull("Should return created channel!", channel);
         assertEquals(channelName, channel.getName());
         assertEquals(createdChannel.getChannelType().getId(), channel.getChannelType().getId());
@@ -202,6 +171,6 @@ public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrat
      */
     private Channel createChannel()
     {
-        return channelService.createChannel(siteId, channelTypeName, channelName, null);
+        return channelService.createChannel(channelTypeName, channelName, null);
     }
 }

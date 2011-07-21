@@ -76,7 +76,7 @@ public class PublishingEventProcessor
             PublishingEvent event = eventHelper.getPublishingEvent(eventNode);
             NodeRef environment = eventHelper.getEnvironmentNodeForPublishingEvent(eventNode);
             String channelName = event.getChannelId();
-            Channel channel = channelService.getChannel(channelName);
+            Channel channel = channelService.getChannelById(channelName);
             if (channel == null)
             {
                 fail(eventNode, "No channel found");
@@ -118,7 +118,7 @@ public class PublishingEventProcessor
         Set<String> channels = update.getChannelIds();
         for (String channelId : channels)
         {
-            Channel channel = channelService.getChannel(channelId);
+            Channel channel = channelService.getChannelById(channelId);
             if(channel != null && channel.getChannelType().canPublishStatusUpdates())
             {
                 channel.updateStatus(message);

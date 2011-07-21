@@ -75,9 +75,24 @@
         <constructor-arg value="org.alfresco.repo.policy.BehaviourFilter" />
     </bean>
 
-   <!-- Mock Workflow Service-->
+   <!-- Mock Version Service-->
     <bean id="VersionService" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="org.alfresco.service.cmr.version.VersionService" />
+    </bean>
+
+   <!-- Mock Namespace Service-->
+    <bean id="NamespaceService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.alfresco.service.namespace.NamespaceService" />
+    </bean>
+
+   <!-- Mock Search Service-->
+    <bean id="SearchService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.alfresco.service.cmr.search.SearchService" />
+    </bean>
+
+   <!-- Mock Retrying Transaction Helper -->
+    <bean id="retryingTransactionHelper" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.alfresco.repo.transaction.RetryingTransactionHelper" />
     </bean>
 
    <bean id="dictionaryBootstrap" class="java.lang.Object" />

@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.publishing.EnvironmentImpl;
+import org.alfresco.repo.publishing.Environment;
 import org.alfresco.repo.publishing.PublishingModel;
 import org.alfresco.repo.publishing.PublishingQueueImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -62,7 +62,7 @@ public class YouTubeTest extends BaseSpringTest
     protected NodeService nodeService;
     protected String siteId;
     protected PublishingQueueImpl queue;
-    protected EnvironmentImpl environment;
+    protected Environment environment;
     protected NodeRef docLib;
 
     private ChannelService channelService;
@@ -107,7 +107,7 @@ public class YouTubeTest extends BaseSpringTest
                 Map<QName, Serializable> props = new HashMap<QName, Serializable>();
                 props.put(PublishingModel.PROP_CHANNEL_USERNAME, "YOUR_USER_NAME");
                 props.put(PublishingModel.PROP_CHANNEL_PASSWORD, "YOUR_PASSWORD");
-                Channel channel = channelService.createChannel(siteId, YouTubeChannelType.ID, "YouTubeChannel", props);
+                Channel channel = channelService.createChannel(YouTubeChannelType.ID, "YouTubeChannel", props);
 
                 NodeRef channelNode = channel.getNodeRef();
                 Resource videoFile = new ClassPathResource("test/alfresco/TestVideoFile.MP4");

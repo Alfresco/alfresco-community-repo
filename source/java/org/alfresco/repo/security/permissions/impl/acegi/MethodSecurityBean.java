@@ -28,6 +28,7 @@ import net.sf.acegisecurity.ConfigAttributeDefinition;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.permissions.PermissionCheckCollection.PermissionCheckCollectionMixin;
 import org.alfresco.util.PropertyCheck;
+import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -43,6 +44,7 @@ public class MethodSecurityBean<R> implements InitializingBean
 {
     private Log logger = LogFactory.getLog(MethodSecurityBean.class);
     
+    private MethodInterceptor methodInterceptor;
     private MethodSecurityInterceptor methodSecurityInterceptor;
     private Class<?> service;
     private String methodName;
@@ -65,9 +67,12 @@ public class MethodSecurityBean<R> implements InitializingBean
         this.methodName = methodName;
     }
     
-    public void setMethodSecurityInterceptor(MethodSecurityInterceptor methodSecurityInterceptor)
+    /**
+     * @param methodInterceptor         an method interceptor, ideally a MethodSecurityInterceptor
+     */
+    public void setMethodSecurityInterceptor(MethodInterceptor methodInterceptor)
     {
-        this.methodSecurityInterceptor = methodSecurityInterceptor;
+        this.methodInterceptor = methodInterceptor;
     }
 
     public void setService(Class<?> service)
@@ -89,7 +94,7 @@ public class MethodSecurityBean<R> implements InitializingBean
     @Override
     public void afterPropertiesSet() throws Exception
     {
-        PropertyCheck.mandatory(this, "methodSecurityInterceptor", methodSecurityInterceptor);
+        PropertyCheck.mandatory(this, "methodInterceptor", methodInterceptor);
         PropertyCheck.mandatory(this, "service", service);
         PropertyCheck.mandatory(this, "methodName", methodName);
         
@@ -113,8 +118,19 @@ public class MethodSecurityBean<R> implements InitializingBean
                     "   Interface: " + service.getClass() + "\n" +
                     "   Method:    " + methodName);
         }
+        
+        if (!(methodInterceptor instanceof MethodSecurityInterceptor))
+        {
+            // It is not an interceptor that applies security, so just ignore
+            this.cad = null;
+            if (logger.isTraceEnabled())
+            {
+                logger.trace("Method interceptor doesn't apply security: " + methodSecurityInterceptor);
+            }
+        }
         else
         {
+            this.methodSecurityInterceptor = (MethodSecurityInterceptor) this.methodInterceptor;
             this.cad = methodSecurityInterceptor.getObjectDefinitionSource().getAttributes(new InternalMethodInvocation(method));
             // Null means there are no applicable permissions
         }

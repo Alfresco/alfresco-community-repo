@@ -166,8 +166,19 @@ public class WorkflowServiceImpl implements WorkflowService
      */
     public WorkflowDeployment deployDefinition(String engineId, InputStream workflowDefinition, String mimetype)
     {
+        return deployDefinition(engineId, workflowDefinition, mimetype, null);
+    }
+    
+    /*
+     * (non-Javadoc)
+     * @see
+     * org.alfresco.service.cmr.workflow.WorkflowService#deployDefinition(java
+     * .lang.String, java.io.InputStream, java.lang.String, java.lang.String)
+     */
+    public WorkflowDeployment deployDefinition(String engineId, InputStream workflowDefinition, String mimetype, String name)
+    {
         WorkflowComponent component = getWorkflowComponent(engineId);
-        WorkflowDeployment deployment = component.deployDefinition(workflowDefinition, mimetype);
+        WorkflowDeployment deployment = component.deployDefinition(workflowDefinition, mimetype, name);
 
         if (logger.isDebugEnabled() && deployment.getProblems().length > 0)
         {

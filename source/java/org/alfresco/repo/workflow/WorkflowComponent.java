@@ -55,6 +55,17 @@ public interface WorkflowComponent
      * @return workflow deployment descriptor
      */
     public WorkflowDeployment deployDefinition(InputStream workflowDefinition, String mimetype);
+    
+    /**
+     * Deploy a Workflow Definition
+     * 
+     * @param workflowDefinition  the content object containing the definition
+     * @param mimetype (optional)  the mime type of the workflow definition
+     * @param name (optional)  a name to represent the deployment
+     * @return workflow deployment descriptor
+     * @since 4.0
+     */
+    public WorkflowDeployment deployDefinition(InputStream workflowDefinition, String mimetype, String name);
 
     /**
      * Is the specified Workflow Definition already deployed?

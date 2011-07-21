@@ -280,7 +280,8 @@ public class WorkflowDeployer extends AbstractLifecycleBean
                         }
                         else
                         {
-                            WorkflowDeployment deployment = workflowService.deployDefinition(engineId, workflowResource.getInputStream(), mimetype);
+                            WorkflowDeployment deployment = workflowService.deployDefinition(engineId, workflowResource.getInputStream(), 
+                                        mimetype, workflowResource.getFilename());
                             logDeployment(location, deployment);
                         }
                     }

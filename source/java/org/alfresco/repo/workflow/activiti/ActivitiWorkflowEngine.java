@@ -293,23 +293,33 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     @Override
     public WorkflowDeployment deployDefinition(InputStream workflowDefinition, String mimetype)
     {
-        try 
-        {
-            String resourceName = GUID.generate() + BpmnDeployer.BPMN_RESOURCE_SUFFIX;
-            Deployment deployment = repoService.createDeployment()
-                .addInputStream(resourceName, workflowDefinition)
-                .deploy();
-            
-            // No problems can be added to the WorkflowDeployment, warnings are
-            // not exposed
-            return typeConverter.convert(deployment);
-        } 
-        catch(ActivitiException ae) 
-        {
-            String msg = messageService.getMessage(ERR_DEPLOY_WORKFLOW);
-            throw new WorkflowException(msg, ae);
-        }
+        return deployDefinition(workflowDefinition, mimetype, null);
     }
+    
+    /**
+     * {@inheritDoc}
+     */
+     @Override
+     public WorkflowDeployment deployDefinition(InputStream workflowDefinition, String mimetype, String name)
+     {
+         try 
+         {
+             String resourceName = GUID.generate() + BpmnDeployer.BPMN_RESOURCE_SUFFIX;
+             Deployment deployment = repoService.createDeployment()
+                 .addInputStream(resourceName, workflowDefinition)
+                 .name(name)
+                 .deploy();
+             
+             // No problems can be added to the WorkflowDeployment, warnings are
+             // not exposed
+             return typeConverter.convert(deployment);
+         } 
+         catch(ActivitiException ae) 
+         {
+             String msg = messageService.getMessage(ERR_DEPLOY_WORKFLOW);
+             throw new WorkflowException(msg, ae);
+         }
+     }
 
     /**
     * {@inheritDoc}

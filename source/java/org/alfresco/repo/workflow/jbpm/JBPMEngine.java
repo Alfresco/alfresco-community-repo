@@ -284,13 +284,17 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
     //
     
     /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.alfresco.repo.workflow.WorkflowDefinitionComponent#deployDefinition
-     * (java.io.InputStream)
+     * @see org.alfresco.repo.workflow.WorkflowComponent#deployDefinition(java.io.InputStream, java.lang.String)
      */
     public WorkflowDeployment deployDefinition(final InputStream workflowDefinition, final String mimetype)
+    {
+        return deployDefinition(workflowDefinition, mimetype, null);
+    }
+    
+    /*
+     * @see org.alfresco.repo.workflow.WorkflowComponent#deployDefinition(java.io.InputStream, java.lang.String, java.lang.String)
+     */
+    public WorkflowDeployment deployDefinition(final InputStream workflowDefinition, final String mimetype, final String name)
     {
         try
         {

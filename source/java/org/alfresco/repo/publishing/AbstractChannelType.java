@@ -38,6 +38,8 @@ import org.alfresco.service.cmr.transfer.NodeFinder;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 
 /**
  * @author Nick Smith
@@ -174,5 +176,30 @@ public abstract class AbstractChannelType implements ChannelType, InitializingBe
             result = true;
         }
         return result;
+    }
+    
+    public Resource getIcon16()
+    {
+        return getIcon("16");
+    }
+    
+    public Resource getIcon32()
+    {
+        return getIcon("32");
+    }
+    
+    protected Resource getIcon(String sizeSuffix)
+    {
+        String className = this.getClass().getCanonicalName();
+        className = className.replaceAll("\\.", "\\/");
+        StringBuilder iconPath = new StringBuilder(className);
+        iconPath.append(sizeSuffix).append('.').append(getIconFileExtension());
+        Resource resource = new ClassPathResource(iconPath.toString());
+        return resource.exists() ? resource : null;
+    }
+    
+    public String getIconFileExtension()
+    {
+        return "png";
     }
 }

@@ -87,6 +87,7 @@
       <property name="nodeService" ref="NodeService" />
       <property name="behaviourFilter" ref="policyBehaviourFilter" />
       <property name="urlShortener" ref="urlShortener" />
+      <property name="dictionaryService" ref="DictionaryService" />
    </bean>
 
    <bean id="publishingObjectFactory" class="org.alfresco.repo.publishing.PublishingObjectFactory">

@@ -27,6 +27,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.transfer.NodeFilter;
 import org.alfresco.service.cmr.transfer.NodeFinder;
 import org.alfresco.service.namespace.QName;
+import org.springframework.core.io.Resource;
 
 /**
  * @author Brian
@@ -59,4 +60,8 @@ public interface ChannelType
     
     String getAuthorisationUrl(Channel channel, String callbackUrl);
     boolean acceptAuthorisationCallback(Channel channel, Map<String, String[]> callbackHeaders, Map<String, String[]> callbackParams);
+    
+    String getIconFileExtension();
+    Resource getIcon16();
+    Resource getIcon32();
 }

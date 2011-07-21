@@ -34,6 +34,7 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.publishing.NodeSnapshot;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
 import org.alfresco.service.cmr.publishing.PublishingPackageEntry;
@@ -62,6 +63,7 @@ public class PublishingEventProcessor
     private NodeService nodeService;
     private BehaviourFilter behaviourFilter;
     private UrlShortener urlShortener;
+    private DictionaryService dictionaryService;
     
      public void processEventNode(NodeRef eventNode)
      {
@@ -223,6 +225,13 @@ public class PublishingEventProcessor
         Map<QName, Serializable> publishProps = nodeService.getProperties(publishedNode);
         Set<QName> propsToRemove = new HashSet<QName>(publishProps.keySet());
         propsToRemove.removeAll(snapshotProps.keySet());
+
+        //We want to retain the published asset id and URL in the updated node...
+        snapshotProps.put(PublishingModel.PROP_ASSET_ID, nodeService.getProperty(publishedNode, 
+                PublishingModel.PROP_ASSET_ID));
+        snapshotProps.put(PublishingModel.PROP_ASSET_URL, nodeService.getProperty(publishedNode, 
+                PublishingModel.PROP_ASSET_URL));
+        
         for (QName propertyToRemove : propsToRemove)
         {
             nodeService.removeProperty(publishedNode, propertyToRemove);
@@ -238,6 +247,12 @@ public class PublishingEventProcessor
         Set<QName> aspectsToRemove = nodeService.getAspects(publishedNode);
         aspectsToRemove.removeAll(newAspects);
         aspectsToRemove.remove(ASPECT_PUBLISHED);
+        aspectsToRemove.remove(PublishingModel.ASPECT_ASSET);
+        for (QName publishedAssetAspect : dictionaryService.getSubAspects(PublishingModel.ASPECT_ASSET, true))
+        {
+            aspectsToRemove.remove(publishedAssetAspect);
+        }
+
         for (QName aspectToRemove : aspectsToRemove)
         {
             nodeService.removeAspect(publishedNode, aspectToRemove);
@@ -326,5 +341,10 @@ public class PublishingEventProcessor
     public void setUrlShortener(UrlShortener urlShortener)
     {
         this.urlShortener = urlShortener;
+    }
+
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
     }
 }

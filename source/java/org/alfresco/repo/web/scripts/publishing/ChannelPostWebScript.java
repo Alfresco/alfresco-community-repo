@@ -30,7 +30,7 @@ import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
-public class ChannelsPostWebScript extends DeclarativeWebScript
+public class ChannelPostWebScript extends DeclarativeWebScript
 {
     private ChannelService channelService;
 
@@ -43,6 +43,7 @@ public class ChannelsPostWebScript extends DeclarativeWebScript
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         String channelType = req.getParameter("channelType");
+        String siteId = req.getParameter("siteId");
         String channelName = req.getParameter("channelName");
 
         Channel newChannel = channelService.createChannel(channelType, channelName, null);
@@ -75,7 +76,6 @@ public class ChannelsPostWebScript extends DeclarativeWebScript
         model.put("pollUrl", pollUrl);
         model.put("authoriseUrl", authoriseUrl);
         model.put("channelId", channelNodeRef.toString());
-        model.put("authCallbackUrl", callbackUrl);
 
         return model;
     }

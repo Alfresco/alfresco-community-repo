@@ -65,8 +65,8 @@ public class ChannelsGet extends DeclarativeWebScript
         List<Channel> statusUpdateChannels;
         if (siteId!= null)
         {
-            publishingChannels = channelService.getPublishingChannels(siteId);
-            statusUpdateChannels = channelService.getStatusUpdateChannels(siteId);
+            publishingChannels = channelService.getPublishingChannels();
+            statusUpdateChannels = channelService.getStatusUpdateChannels();
         }
         else
         {
@@ -77,7 +77,7 @@ public class ChannelsGet extends DeclarativeWebScript
                 throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, msg);
             }
             publishingChannels = channelService.getRelevantPublishingChannels(node);
-            statusUpdateChannels = channelService.getStatusUpdateChannels(node);
+            statusUpdateChannels = channelService.getStatusUpdateChannels();
         }
 
         Map<String, Object> model = new HashMap<String, Object>();

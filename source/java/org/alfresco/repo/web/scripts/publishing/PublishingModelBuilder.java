@@ -89,7 +89,7 @@ public class PublishingModelBuilder
         model.put(UNPUBLISH_NODES, buildNodes(event.getPackage(), false));
         
         String channelId = event.getChannelId();
-        Channel channel = channelService.getChannel(channelId);
+        Channel channel = channelService.getChannelById(channelId);
         if(channel!= null)
         {
             model.put(CHANNEL, buildChannel(channel));

@@ -18,7 +18,7 @@
          <type>
             <![CDATA[
             {
-               "channelName": string,
+               "channelId": string,
                "comment": string,
                "scheduledTime":
                {

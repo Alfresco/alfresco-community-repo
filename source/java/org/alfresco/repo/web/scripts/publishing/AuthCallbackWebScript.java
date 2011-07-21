@@ -85,7 +85,7 @@ public class AuthCallbackWebScript extends AbstractWebScript
         String channelNodeStoreId = templateVars.get("store_id");
 
         NodeRef channelNodeRef = new NodeRef(channelNodeStoreProtocol, channelNodeStoreId, channelNodeUuid);
-        Channel channel = channelService.getChannel(channelNodeRef.toString());
+        Channel channel = channelService.getChannelById(channelNodeRef.toString());
         
         if (channel.getChannelType().acceptAuthorisationCallback(channel, headers, params))
         {

@@ -78,30 +78,36 @@ public abstract class AbstractSubscriptionServiceWebScript extends AbstractWebSc
             if (obj instanceof JSONObject || obj instanceof JSONArray)
             {
                 res.setContentEncoding("UTF-8");
-
+                
                 Writer writer = res.getWriter();
                 if (obj instanceof JSONObject)
                 {
                     ((JSONObject) obj).write(writer);
-                } else
+                }
+                else
                 {
                     ((JSONArray) obj).write(writer);
                 }
                 writer.flush();
-            } else
+            }
+            else
             {
                 res.setStatus(204);
             }
-        } catch (SubscriptionsDisabledException sde)
+        }
+        catch (SubscriptionsDisabledException sde)
         {
             throw new WebScriptException(404, "Subscription service is disabled!", sde);
-        } catch (NoSuchPersonException nspe)
+        }
+        catch (NoSuchPersonException nspe)
         {
             throw new WebScriptException(404, "Unknown user '" + nspe.getUserName() + "'!", nspe);
-        } catch (PrivateSubscriptionListException psle)
+        }
+        catch (PrivateSubscriptionListException psle)
         {
             throw new WebScriptException(403, "Subscription list is private!", psle);
-        } catch (JSONException je)
+        }
+        catch (JSONException je)
         {
             throw new WebScriptException(500, "Unable to parse or serialize JSON!", je);
         }
@@ -112,18 +118,19 @@ public abstract class AbstractSubscriptionServiceWebScript extends AbstractWebSc
 
     protected int parseNumber(String name, String number, int def)
     {
-
         if (number != null && number.length() > 0)
         {
             try
             {
                 return Integer.parseInt(number);
 
-            } catch (NumberFormatException e)
+            }
+            catch (NumberFormatException e)
             {
                 throw new WebScriptException(400, name + " is not a number!", e);
             }
-        } else
+        }
+        else
         {
             return def;
         }
@@ -148,6 +155,8 @@ public abstract class AbstractSubscriptionServiceWebScript extends AbstractWebSc
         result.put("userName", username);
         result.put("firstName", nodeService.getProperty(node, ContentModel.PROP_FIRSTNAME));
         result.put("lastName", nodeService.getProperty(node, ContentModel.PROP_LASTNAME));
+        result.put("jobtitle", nodeService.getProperty(node, ContentModel.PROP_JOBTITLE));
+        result.put("organization", nodeService.getProperty(node, ContentModel.PROP_ORGANIZATION));
 
         String status = (String) nodeService.getProperty(node, ContentModel.PROP_USER_STATUS);
         if (status != null)

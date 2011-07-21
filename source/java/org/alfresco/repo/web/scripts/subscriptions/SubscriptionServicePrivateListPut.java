@@ -39,7 +39,8 @@ public class SubscriptionServicePrivateListPut extends SubscriptionServicePrivat
             if (setPrivate.equalsIgnoreCase("true"))
             {
                 subscriptionService.setSubscriptionListPrivate(userId, true);
-            } else if (setPrivate.equalsIgnoreCase("false"))
+            }
+            else if (setPrivate.equalsIgnoreCase("false"))
             {
                 subscriptionService.setSubscriptionListPrivate(userId, false);
             }

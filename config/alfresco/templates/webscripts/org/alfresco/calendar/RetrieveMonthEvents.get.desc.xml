@@ -1,8 +1,0 @@
-<webscript>
-	<shortname>Retrieve Month Events</shortname> 
-	<description>Retrieve Month Events</description> 
-	<url>/calendar/RetrieveMonthEvents?d={requiredDate}&amp;s={currentSpace}</url> 
-	<format default="html">extension</format> 
-   <authentication>user</authentication>
-   <transaction allow="readonly">required</transaction>
-</webscript>

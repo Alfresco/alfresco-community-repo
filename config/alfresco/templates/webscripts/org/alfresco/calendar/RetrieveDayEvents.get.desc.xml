@@ -1,8 +1,0 @@
-<webscript>
-	<shortname>Retrieve Day Events</shortname> 
-	<description>Retrieve Day Events</description> 
-	<url>/calendar/RetrieveDayEvents?d={requiredDate}&amp;s={currentSpace}</url> 
-	<format default="html">extension</format> 
-   <authentication>user</authentication>
-   <transaction allow="readonly">required</transaction>
-</webscript>

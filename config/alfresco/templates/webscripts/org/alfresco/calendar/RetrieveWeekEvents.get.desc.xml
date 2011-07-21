@@ -1,8 +1,0 @@
-<webscript>
-	<shortname>Retrieve Week Events</shortname> 
-	<description>Retrieve Week Events</description> 
-	<url>/calendar/RetrieveWeekEvents?d={requiredDate}&amp;s={currentSpace}</url> 
-	<format default="html">extension</format> 
-   <authentication>user</authentication>
-   <transaction allow="readonly">required</transaction>
-</webscript>

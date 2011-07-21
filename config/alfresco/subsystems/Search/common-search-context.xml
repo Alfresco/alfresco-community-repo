@@ -6,7 +6,7 @@
 
     <!-- SOLR Tracking   -->
     
-    <bean id="search.solrTrackingComponent" class="org.alfresco.repo.solr.SOLRTrackingComponentImpl" init-method="init">
+    <bean id="solrTrackingComponent" class="org.alfresco.repo.solr.SOLRTrackingComponentImpl" init-method="init">
         <property name="permissionService" ref="permissionService"/>
         <property name="dictionaryService" ref="dictionaryService"/>
         <property name="ownableService" ref="ownableService"/>
@@ -17,6 +17,23 @@
         <property name="dictionaryDAO" ref="dictionaryDAO" />
         <property name="enabled">
             <value>${search.solrTrackingSupport.enabled}</value>
+        </property>
+    </bean>
+
+    <bean id="solrTrackingMethodInterceptor" class="org.alfresco.repo.solr.SolrTrackingMethodInterceptor">
+    </bean>
+
+    <bean id="search.solrTrackingComponent" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.repo.solr.SOLRTrackingComponent</value>
+        </property>
+        <property name="target">
+            <ref bean="solrTrackingComponent"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="solrTrackingMethodInterceptor"/>
+            </list>
         </property>
     </bean>
 

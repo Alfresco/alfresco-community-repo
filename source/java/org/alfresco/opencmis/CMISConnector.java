@@ -1872,7 +1872,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             // relationships from and to versions are not preserved
             return result;
         }
-        
+
         // get relationships
         List<AssociationRef> assocs = new ArrayList<AssociationRef>();
         if (relationshipDirection == RelationshipDirection.SOURCE
@@ -2877,6 +2877,14 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     }
 
     /**
+     * Returns the repository id.
+     */
+    public String getRepositoryId()
+    {
+        return descriptorService.getCurrentRepositoryDescriptor().getId();
+    }
+
+    /**
      * Creates the repository info object.
      */
     private RepositoryInfo createRepositoryInfo()
@@ -2884,14 +2892,19 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         Descriptor currentDescriptor = descriptorService.getCurrentRepositoryDescriptor();
 
         // get change token
+        boolean auditEnabled = auditService.isAuditEnabled(CMIS_CHANGELOG_AUDIT_APPLICATION, "/"
+                + CMIS_CHANGELOG_AUDIT_APPLICATION);
         String latestChangeLogToken = null;
 
-        EntryIdCallback auditQueryCallback = new EntryIdCallback(false);
-        AuditQueryParameters params = new AuditQueryParameters();
-        params.setApplicationName(CMIS_CHANGELOG_AUDIT_APPLICATION);
-        params.setForward(false);
-        auditService.auditQuery(auditQueryCallback, params, 1);
-        latestChangeLogToken = auditQueryCallback.getEntryId();
+        if (auditEnabled)
+        {
+            EntryIdCallback auditQueryCallback = new EntryIdCallback(false);
+            AuditQueryParameters params = new AuditQueryParameters();
+            params.setApplicationName(CMIS_CHANGELOG_AUDIT_APPLICATION);
+            params.setForward(false);
+            auditService.auditQuery(auditQueryCallback, params, 1);
+            latestChangeLogToken = auditQueryCallback.getEntryId();
+        }
 
         if (repositoryPermissions == null)
         {
@@ -2926,8 +2939,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
         repCap.setAllVersionsSearchable(false);
         repCap.setCapabilityAcl(CapabilityAcl.MANAGE);
-        repCap.setCapabilityChanges(auditService.isAuditEnabled(CMIS_CHANGELOG_AUDIT_APPLICATION, "/"
-                + CMIS_CHANGELOG_AUDIT_APPLICATION) ? CapabilityChanges.OBJECTIDSONLY : CapabilityChanges.NONE);
+        repCap.setCapabilityChanges(auditEnabled ? CapabilityChanges.OBJECTIDSONLY : CapabilityChanges.NONE);
         repCap.setCapabilityContentStreamUpdates(CapabilityContentStreamUpdates.ANYTIME);
         repCap.setCapabilityJoin(CapabilityJoin.NONE);
         repCap.setCapabilityQuery(CapabilityQuery.BOTHCOMBINED);

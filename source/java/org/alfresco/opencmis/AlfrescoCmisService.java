@@ -2702,7 +2702,7 @@ public class AlfrescoCmisService extends AbstractCmisService
 
     private void checkRepositoryId(String repositoryId)
     {
-        if (!connector.getRepositoryInfo().getId().equals(repositoryId))
+        if (!connector.getRepositoryId().equals(repositoryId))
         {
             throw new CmisObjectNotFoundException("Unknown repository '" + repositoryId + "'!");
         }

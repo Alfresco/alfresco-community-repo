@@ -145,10 +145,10 @@ public class TwitterChannelType extends AbstractChannelType
     }
     
     @Override
-    public boolean acceptAuthorisationCallback(Channel channel, Map<String, String[]> callbackHeaders,
+    protected AuthStatus internalAcceptAuthorisation(Channel channel, Map<String, String[]> callbackHeaders,
             Map<String, String[]> callbackParams)
     {
-        boolean authorised = false;
+        AuthStatus authorised = AuthStatus.UNAUTHORISED;
         String[] verifier = callbackParams.get("oauth_verifier");
         if (verifier != null)
         {
@@ -165,7 +165,7 @@ public class TwitterChannelType extends AbstractChannelType
             newProps.put(PublishingModel.PROP_OAUTH1_TOKEN_VALUE, accessToken.getValue());
             newProps.put(PublishingModel.PROP_OAUTH1_TOKEN_SECRET, accessToken.getSecret());
             getChannelService().updateChannel(channel, newProps);
-            authorised = true;
+            authorised = AuthStatus.AUTHORISED;
         }
         return authorised;
     }

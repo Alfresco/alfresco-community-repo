@@ -58,4 +58,15 @@ public interface Channel
      * @return a URL for the published content.
      */
     String getUrl(NodeRef publishedNode);
+    
+    /**
+     * Has this channel been authorised yet?
+     * Typically, when a channel is created in Alfresco the user is sent to the service provider to authorise
+     * Alfresco to access their account on their behalf. Once Alfresco has been told that the user has done that then
+     * this operation will return true. Until then, this operation will return false.
+     * 
+     * A channel that is not authorised cannot be used to publish content or status updates to.
+     * @return true if this channel has been authorised and is ready for use.
+     */
+    boolean isAuthorised();
 }

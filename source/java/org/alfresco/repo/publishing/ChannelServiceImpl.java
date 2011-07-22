@@ -319,7 +319,10 @@ public class ChannelServiceImpl implements ChannelService
         HashMap<QName, Serializable> actualProps = new HashMap<QName, Serializable>(properties);
         actualProps.remove(ContentModel.PROP_NODE_UUID);
         NodeRef editorialNode = channel.getNodeRef();
-        nodeService.setProperties(editorialNode, actualProps);
+        for (Map.Entry<QName, Serializable> entry : actualProps.entrySet())
+        {
+            nodeService.setProperty(editorialNode, entry.getKey(), entry.getValue());
+        }
     }
 
     /**

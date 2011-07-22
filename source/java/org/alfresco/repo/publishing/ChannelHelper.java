@@ -363,5 +363,13 @@ public class ChannelHelper
         this.fileFolderService = fileFolderService;
     }
 
-
+    public boolean isChannelAuthorised(NodeRef channelNode)
+    {
+        Boolean isAuthorised = Boolean.FALSE;
+        if (nodeService.exists(channelNode))
+        {
+            isAuthorised = (Boolean)nodeService.getProperty(channelNode, PublishingModel.PROP_AUTHORISATION_COMPLETE);
+        }
+        return isAuthorised;
+    }
 }

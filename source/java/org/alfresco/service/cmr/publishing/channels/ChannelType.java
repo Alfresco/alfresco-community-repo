@@ -35,6 +35,8 @@ import org.springframework.core.io.Resource;
  */
 public interface ChannelType
 {
+    enum  AuthStatus {AUTHORISED, RETRY, UNAUTHORISED};
+    
     String getId();
     QName getChannelNodeType();
     NodeFinder getNodeFinder();
@@ -59,9 +61,14 @@ public interface ChannelType
     int getMaximumStatusLength();
     
     String getAuthorisationUrl(Channel channel, String callbackUrl);
-    boolean acceptAuthorisationCallback(Channel channel, Map<String, String[]> callbackHeaders, Map<String, String[]> callbackParams);
+    AuthStatus acceptAuthorisationCallback(Channel channel, Map<String, String[]> callbackHeaders, Map<String, String[]> callbackParams);
     
     String getIconFileExtension();
-    Resource getIcon16();
-    Resource getIcon32();
+    
+    /**
+     * Obtain the resource that represents an icon for this channel type.
+     * @param size A text representation of the icon size required. "16", "32", etc.
+     * @return The resource that represents the requested icon if available. <code>null</code> otherwise.
+     */
+    Resource getIcon(String size);
 }

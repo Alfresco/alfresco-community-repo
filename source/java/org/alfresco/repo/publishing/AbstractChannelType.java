@@ -145,16 +145,15 @@ public abstract class AbstractChannelType implements ChannelType, InitializingBe
     @Override
     public String getAuthorisationUrl(Channel channel, String callbackUrl)
     {
-        //Returning a null here to indicate that we should use our own credential-gathering mechanism.
+        // Returning a null here to indicate that we should use our own
+        // credential-gathering mechanism.
         return null;
     }
 
     @Override
-    public boolean acceptAuthorisationCallback(Channel channel, Map<String, String[]> callbackHeaders,
+    public final AuthStatus acceptAuthorisationCallback(Channel channel, Map<String, String[]> callbackHeaders,
             Map<String, String[]> callbackParams)
     {
-        boolean result = false;
-        
         ParameterCheck.mandatory("channel", channel);
         ParameterCheck.mandatory("callbackHeaders", callbackHeaders);
         ParameterCheck.mandatory("callbackParams", callbackParams);
@@ -164,6 +163,18 @@ public abstract class AbstractChannelType implements ChannelType, InitializingBe
                     + "; Received " + channel.getChannelType().getId());
         }
 
+        AuthStatus result = internalAcceptAuthorisation(channel, callbackHeaders, callbackParams);
+
+        Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+        props.put(PublishingModel.PROP_AUTHORISATION_COMPLETE, Boolean.valueOf(AuthStatus.AUTHORISED.equals(result)));
+        channelService.updateChannel(channel, props);
+        return result;
+    }
+
+    protected AuthStatus internalAcceptAuthorisation(Channel channel, Map<String, String[]> callbackHeaders,
+            Map<String, String[]> callbackParams)
+    {
+        AuthStatus result = AuthStatus.UNAUTHORISED;
         String[] username = callbackParams.get("username");
         String[] password = callbackParams.get("password");
         if (username != null && password != null)
@@ -172,23 +183,13 @@ public abstract class AbstractChannelType implements ChannelType, InitializingBe
             props.put(PublishingModel.PROP_CHANNEL_USERNAME, username[0]);
             props.put(PublishingModel.PROP_CHANNEL_PASSWORD, password[0]);
             channelService.updateChannel(channel, props);
-            //TODO: BJR: 20110707: Should test the connection here
-            result = true;
+            // TODO: BJR: 20110707: Should test the connection here
+            result = AuthStatus.AUTHORISED;
         }
         return result;
     }
-    
-    public Resource getIcon16()
-    {
-        return getIcon("16");
-    }
-    
-    public Resource getIcon32()
-    {
-        return getIcon("32");
-    }
-    
-    protected Resource getIcon(String sizeSuffix)
+
+    public Resource getIcon(String sizeSuffix)
     {
         String className = this.getClass().getCanonicalName();
         className = className.replaceAll("\\.", "\\/");
@@ -197,7 +198,7 @@ public abstract class AbstractChannelType implements ChannelType, InitializingBe
         Resource resource = new ClassPathResource(iconPath.toString());
         return resource.exists() ? resource : null;
     }
-    
+
     public String getIconFileExtension()
     {
         return "png";

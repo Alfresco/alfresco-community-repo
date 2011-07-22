@@ -139,10 +139,10 @@ public class FacebookChannelType extends AbstractChannelType
     }
 
     @Override
-    public boolean acceptAuthorisationCallback(Channel channel, Map<String, String[]> callbackHeaders,
+    protected AuthStatus internalAcceptAuthorisation(Channel channel, Map<String, String[]> callbackHeaders,
             Map<String, String[]> callbackParams)
     {
-        boolean authorised = false;
+        AuthStatus authorised = AuthStatus.UNAUTHORISED;
         
         String accessToken = null;
         if (callbackParams.containsKey("access_token"))
@@ -162,7 +162,7 @@ public class FacebookChannelType extends AbstractChannelType
             Map<QName,Serializable> channelProps = new HashMap<QName, Serializable>();
             channelProps.put(PublishingModel.PROP_OAUTH2_TOKEN, accessToken);
             getChannelService().updateChannel(channel, channelProps);
-            authorised = true;
+            authorised = AuthStatus.AUTHORISED;
         }
         return authorised;
     }

@@ -133,4 +133,10 @@ public class ChannelImpl implements Channel
         NodeRef mappedNode = channelHelper.mapSourceToEnvironment(publishedNode, nodeRef);
         return channelType.getNodeUrl(mappedNode);
     }
+
+    @Override
+    public boolean isAuthorised()
+    {
+        return channelHelper.isChannelAuthorised(getNodeRef());
+    }
 }

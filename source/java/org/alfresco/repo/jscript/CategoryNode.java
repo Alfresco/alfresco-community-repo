@@ -35,12 +35,14 @@ import org.mozilla.javascript.Scriptable;
  */
 public class CategoryNode extends ScriptNode
 {
+    /** Serial version UID */
+    private static final long serialVersionUID = 5757485873550742331L;
+
     /**
      * Constructor
      * 
-     * @param nodeRef
-     * @param services
-     * @param resolver
+     * @param nodeRef   node reference
+     * @param services  service registry
      */
     public CategoryNode(NodeRef nodeRef, ServiceRegistry services)
     {
@@ -50,10 +52,9 @@ public class CategoryNode extends ScriptNode
     /**
      * Constructor
      * 
-     * @param nodeRef
-     * @param services
-     * @param resolver
-     * @param scope
+     * @param nodeRef   node reference
+     * @param services  service registry
+     * @param scope     scriptable scope
      */
     public CategoryNode(NodeRef nodeRef, ServiceRegistry services, Scriptable scope)
     {
@@ -119,6 +120,25 @@ public class CategoryNode extends ScriptNode
     {
        return  new CategoryNode(services.getCategoryService().createCategory(getNodeRef(), name), this.services, this.scope);
     }
+    
+    /**
+     * Renames the category.
+     * 
+     * @param name  new cateogory name
+     */
+    public void rename(String name)
+    {
+        // Rename the category node
+        services.getNodeService().setProperty(getNodeRef(), ContentModel.PROP_NAME, name);
+
+        // ALF-1788 Need to rename the association
+        ChildAssociationRef assocRef = services.getNodeService().getPrimaryParent(nodeRef);
+        if (assocRef != null)
+        {
+            QName qname = QName.createQName(assocRef.getQName().getNamespaceURI(), QName.createValidLocalName(name));
+            services.getNodeService().moveNode(assocRef.getChildRef(), assocRef.getParentRef(), assocRef.getTypeQName(), qname);
+        }
+    }
 
     /**
      * Remove this category
@@ -128,12 +148,23 @@ public class CategoryNode extends ScriptNode
         services.getCategoryService().deleteCategory(getNodeRef());
     }
 
+    /**
+     * Indicates whether this is a category or not.
+     * 
+     * @return boolean  true if category, false otherwise
+     */
     @Override
     public boolean getIsCategory()
     {
         return true;
     }
     
+    /**
+     * Build category nodes from collection of association references.
+     * 
+     * @param cars
+     * @return
+     */
     private CategoryNode[] buildCategoryNodes(Collection<ChildAssociationRef> cars)
     {
         CategoryNode[] categoryNodes = new CategoryNode[cars.size()];
@@ -145,6 +176,12 @@ public class CategoryNode extends ScriptNode
         return categoryNodes;
     }
 
+    /**
+     * Build script nodes from a collection of association references.
+     * 
+     * @param cars
+     * @return
+     */
     private ScriptNode[] buildNodes(Collection<ChildAssociationRef> cars)
     {
         ScriptNode[] nodes = new ScriptNode[cars.size()];
@@ -156,6 +193,12 @@ public class CategoryNode extends ScriptNode
         return nodes;
     }
 
+    /**
+     * Build script nodes and category nodes from a mixed collection of association references.
+     * 
+     * @param cars
+     * @return
+     */
     private ScriptNode[] buildMixedNodes(Collection<ChildAssociationRef> cars)
     {
         ScriptNode[] nodes = new ScriptNode[cars.size()];

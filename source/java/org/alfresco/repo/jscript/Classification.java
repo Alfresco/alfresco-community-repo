@@ -21,6 +21,7 @@ package org.alfresco.repo.jscript;
 import java.util.Collection;
 import java.util.List;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -105,6 +106,24 @@ public final class Classification extends BaseScopableProcessorExtension
 
         return categoryNode;
     }
+    
+    /**
+     * Get the category node from the category node reference.
+     * 
+     * @param categoryRef   category node reference
+     * @return {@link CategoryNode} category node 
+     */
+    public CategoryNode getCategory(String categoryRef)
+    {
+        CategoryNode result = null;
+        NodeRef categoryNodeRef = new NodeRef(categoryRef);
+        if (services.getNodeService().exists(categoryNodeRef) == true &&
+            services.getDictionaryService().isSubClass(ContentModel.TYPE_CATEGORY, services.getNodeService().getType(categoryNodeRef)) == true)
+        {
+            result = new CategoryNode(categoryNodeRef, this.services, getScope());
+        }
+        return result;
+    }
 
     /**
      * Get the root categories in a classification.
@@ -139,6 +158,12 @@ public final class Classification extends BaseScopableProcessorExtension
         return Context.getCurrentContext().newArray(getScope(), tags);
     }
 
+    /**
+     * Build category nodes.
+     * 
+     * @param cars  list of associations to category nodes
+     * @return {@link Object}[] array of category nodes
+     */
     private Object[] buildCategoryNodes(Collection<ChildAssociationRef> cars)
     {
         Object[] categoryNodes = new Object[cars.size()];
@@ -150,6 +175,12 @@ public final class Classification extends BaseScopableProcessorExtension
         return categoryNodes;
     }
 
+    /**
+     * Create QName from string
+     * 
+     * @param s QName string value
+     * @return {@link QName} qualified name object    
+     */
     private QName createQName(String s)
     {
         QName qname;

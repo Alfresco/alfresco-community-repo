@@ -7,7 +7,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 [#assign namespace][@nsLib.entryNS/][/#assign]
 
-[#if node.isDocument]  
+[#if assoc?exists]
+  [@entryLib.assoc assoc=assoc propfilter=filter includeallowableactions=includeAllowableActions ns=namespace/]
+[#elseif node?exists && node.isDocument]
   [@entryLib.document node=node renditionfilter=renditionFilter propfilter=filter includeallowableactions=includeAllowableActions includerelationships=includeRelationships includeacl=includeACL ns=namespace/]
 [#else]
   [@entryLib.folder node=node renditionfilter=renditionFilter propfilter=filter includeallowableactions=includeAllowableActions includerelationships=includeRelationships includeacl=includeACL ns=namespace/]

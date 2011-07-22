@@ -145,6 +145,14 @@ public class ReferenceFactory
     public CMISRelationshipReference createRelationshipReferenceFromUrl(Map<String, String> args, Map<String, String> templateArgs)
     {
         String assocId = templateArgs.get("assoc_id");
+        if (assocId == null)
+        {
+            assocId = templateArgs.get("id");
+        }
+        if (assocId == null)
+        {
+            assocId = args.get("noderef");
+        } 
         if (assocId != null)
         {
             return new AssociationIdRelationshipReference(cmisService, assocId);

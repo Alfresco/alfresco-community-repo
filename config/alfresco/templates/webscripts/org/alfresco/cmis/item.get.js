@@ -2,21 +2,28 @@
 
 script:
 {
-    var object = getObjectFromUrl();
-    if (object.node === null)
-    {
-        break script;
-    }
-    model.node = object.node;
- 
-    // return version
-    var returnVersion = args[cmisserver.ARG_RETURN_VERSION];
-    if (returnVersion === null || returnVersion.length == 0)
-    {
-        returnVersion = "this";
-    }
-    model.node = cmisserver.getReturnVersion(model.node, returnVersion);
-    
+	var object = getObjectOrAssocFromUrl();
+	if (object.node !== null && typeof(object.node) != 'undefined')
+	{
+		model.node = object.node;
+		
+	    // return version
+        var returnVersion = args[cmisserver.ARG_RETURN_VERSION];
+	    if (returnVersion === null || returnVersion.length == 0)
+	    {
+	        returnVersion = "this";
+	    }
+	    model.node = cmisserver.getReturnVersion(model.node, returnVersion);
+	}
+	else
+	{
+	    if (object.assoc === null)
+	    {
+        	break script;
+    	}
+	    model.assoc = object.assoc;
+	}
+	
     // property filter 
     model.filter = args[cmisserver.ARG_FILTER];
     if (model.filter === null || model.filter == "")

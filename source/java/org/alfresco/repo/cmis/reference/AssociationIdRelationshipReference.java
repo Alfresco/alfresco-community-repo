@@ -56,7 +56,7 @@ public class AssociationIdRelationshipReference implements CMISRelationshipRefer
     {
         try
         {
-            return cmisServices.getReadableObject(CMISServices.ASSOC_ID_PREFIX + this.assocId, AssociationRef.class);
+            return cmisServices.getReadableObject(this.assocId, AssociationRef.class);
         }
         catch (CMISServiceException e)
         {

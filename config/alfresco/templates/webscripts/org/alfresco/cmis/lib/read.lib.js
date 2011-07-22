@@ -60,3 +60,24 @@ function getAssocFromUrl()
     }
     return ret;
 }
+
+//
+//Get Node or Association from URL
+//
+//@return  node or association (or null, if not found)
+function getObjectOrAssocFromUrl()
+{
+    var id = url.templateArgs.id;
+
+    if (id === null)
+    {
+    	id = args.noderef;
+    }
+
+    if (id != null && id.indexOf("assoc:") === 0)
+    {
+        return getAssocFromUrl();
+    }
+
+    return getObjectFromUrl();
+}

@@ -27,8 +27,6 @@ import java.util.Map;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
 import org.alfresco.service.cmr.publishing.channels.ChannelType;
 import org.alfresco.service.cmr.repository.MimetypeService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.extensions.webscripts.AbstractWebScript;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -37,7 +35,6 @@ import org.springframework.util.FileCopyUtils;
 
 public class ChannelTypeIconGetWebScript extends AbstractWebScript
 {
-    private final static Log log = LogFactory.getLog(ChannelTypeIconGetWebScript.class);
     private ChannelService channelService;
     private MimetypeService mimetypeService;
 
@@ -73,15 +70,7 @@ public class ChannelTypeIconGetWebScript extends AbstractWebScript
             return;
         }
         
-        Resource iconFile = null;
-        if (iconSize.equals("16"))
-        {
-            iconFile = channelType.getIcon16();
-        }
-        else if (iconSize.equals("32"))
-        {
-            iconFile = channelType.getIcon32();
-        }
+        Resource iconFile = channelType.getIcon(iconSize);
         if (iconFile == null || !iconFile.exists())
         {
             res.setStatus(404);  //Not found

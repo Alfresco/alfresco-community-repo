@@ -11,7 +11,7 @@
    are missing then a 400 status code is returned.
    ]]></description>
    <description></description>
-   <url>/api/publishing/channel-type/{channelType}/icon/{iconSize}</url>
+   <url>/api/publishing/channel-types/{channelType}/icon/{iconSize}</url>
    <format default="json"/>
    <authentication>user</authentication>
    <transaction>required</transaction>

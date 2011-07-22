@@ -48,6 +48,7 @@ public interface PublishingWebScriptConstants
     // Channel Keys
     public static final String NAME = "name";
     public static final String CHANNEL_TYPE = "channelType";
+    public static final String CHANNEL_AUTH_STATUS = "authorised";
     
     // Publishing Event Model Keys
     public static final String CHANNEL = "channel";

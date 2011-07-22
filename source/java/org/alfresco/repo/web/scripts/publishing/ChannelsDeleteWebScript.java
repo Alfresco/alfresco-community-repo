@@ -19,52 +19,57 @@
 
 package org.alfresco.repo.web.scripts.publishing;
 
+import java.io.IOException;
 import java.util.Map;
-import java.util.TreeMap;
 
-import org.alfresco.repo.publishing.PublishingModel;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.service.cmr.publishing.channels.Channel;
+import org.alfresco.service.cmr.publishing.channels.ChannelService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.AbstractWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
 
-public class AuthStatusGetWebScript extends DeclarativeWebScript
+public class ChannelsDeleteWebScript extends AbstractWebScript
 {
-    private NodeService nodeService;
+    private ChannelService channelService;
 
-    public void setNodeService(NodeService nodeService)
+    public void setChannelService(ChannelService channelService)
     {
-        this.nodeService = nodeService;
+        this.channelService = channelService;
     }
 
     @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
+    public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException
     {
         Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
+        
         String channelNodeUuid = templateVars.get("node_id");
         String channelNodeStoreProtocol = templateVars.get("store_protocol");
         String channelNodeStoreId = templateVars.get("store_id");
 
-        String authStatus = "REJECTED";
-        NodeRef channelNodeRef = new NodeRef(channelNodeStoreProtocol, channelNodeStoreId, channelNodeUuid);
-        if (nodeService.exists(channelNodeRef))
+        if (channelNodeStoreId == null || channelNodeStoreProtocol == null || channelNodeUuid == null)
         {
-            Boolean authComplete = (Boolean)nodeService.getProperty(channelNodeRef, PublishingModel.PROP_AUTHORISATION_COMPLETE);
-            if (authComplete)
-            {
-                authStatus = "AUTHORISED";
-            }
-            else
-            {
-                authStatus = "PENDING";
-            }
+            res.setStatus(Status.STATUS_BAD_REQUEST);
+            return;
         }
-        Map<String,Object> model = new TreeMap<String, Object>();
-        model.put("channelId", channelNodeRef.toString());
-        model.put("authStatus", authStatus);
         
-        return model;
+        NodeRef channelNodeRef = new NodeRef(channelNodeStoreProtocol, channelNodeStoreId, channelNodeUuid);
+        Channel channel = channelService.getChannelById(channelNodeRef.toString());
+        if (channel == null)
+        {
+            res.setStatus(Status.STATUS_NOT_FOUND);
+            return;
+        }
+
+        try
+        {
+            channelService.deleteChannel(channel);
+        }
+        catch (AccessDeniedException ex)
+        {
+            res.setStatus(Status.STATUS_UNAUTHORIZED);
+        }
     }
 }

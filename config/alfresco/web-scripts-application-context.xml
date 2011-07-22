@@ -1130,25 +1130,18 @@
           class="org.alfresco.repo.web.scripts.publishing.ChannelsPostWebScript"
           parent="webscript">
         <property name="channelService" ref="channelService" />
+        <property name="sysAdminParams" ref="sysAdminParams" />
     </bean>
 
     <bean id="webscript.org.alfresco.repository.publishing.authcallback.get" 
             class="org.alfresco.repo.web.scripts.publishing.AuthCallbackWebScript"
             parent="webscript">
-        <property name="nodeService" ref="NodeService" />
         <property name="channelService" ref="channelService" />
-    </bean>
-
-    <bean id="webscript.org.alfresco.repository.publishing.authstatus.get" 
-            class="org.alfresco.repo.web.scripts.publishing.AuthStatusGetWebScript"
-            parent="webscript">
-        <property name="nodeService" ref="NodeService" />
     </bean>
 
     <bean id="webscript.org.alfresco.repository.publishing.authform.post" 
             class="org.alfresco.repo.web.scripts.publishing.AuthCallbackWebScript"
             parent="webscript">
-        <property name="nodeService" ref="NodeService" />
         <property name="channelService" ref="channelService" />
     </bean>
 
@@ -1166,6 +1159,12 @@
             parent="webscript">
         <property name="channelService" ref="channelService" />
         <property name="mimetypeService" ref="mimetypeService" />
+    </bean>
+
+    <bean id="webscript.org.alfresco.repository.publishing.channels.delete" 
+            class="org.alfresco.repo.web.scripts.publishing.ChannelsDeleteWebScript"
+            parent="webscript">
+        <property name="channelService" ref="channelService" />
     </bean>
 
     <!--                                   -->

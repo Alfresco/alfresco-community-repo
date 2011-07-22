@@ -4,8 +4,8 @@
    Used to receive authorisation callbacks from publishing service providers 
    ]]></description>
    <description></description>
-   <url>/api/publishing/channel/{store_protocol}/{store_id}/{node_id}/authcallback</url>
-   <format default="json"/>
+   <url>/api/publishing/channels/{store_protocol}/{store_id}/{node_id}/authcallback</url>
+   <format default="html"/>
    <authentication>user</authentication>
    <transaction>required</transaction>
    <lifecycle>public_api</lifecycle>

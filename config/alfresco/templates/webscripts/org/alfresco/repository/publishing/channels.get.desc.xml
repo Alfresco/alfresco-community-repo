@@ -41,6 +41,7 @@
                         "id": string,
                         "name": string,
                         "title": string,
+                        "authorised": boolean,
                         "channelType":
                         {
                            "id": string,

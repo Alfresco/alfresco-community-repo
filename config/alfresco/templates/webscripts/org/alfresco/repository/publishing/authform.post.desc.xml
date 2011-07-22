@@ -1,10 +1,12 @@
 <webscript>
    <shortname>Channel Authorisation Form</shortname>
    <description><![CDATA[
-   Used to post back credentials to publish to a channel. 
+   Used to post back credentials to publish to a channel. Returns a JSON object with one text property: "authStatus".
+   This property has one of three values: "AUTHORISED", "RETRY", or "UNAUTHORISED". The RETRY status indicates that
+   the last authorisation attempt failed, but the user may retry at least once more.
    ]]></description>
-   <url>/api/publishing/channel/{store_protocol}/{store_id}/{node_id}/authform</url>
-   <format default="html"/>
+   <url>/api/publishing/channels/{store_protocol}/{store_id}/{node_id}/authform</url>
+   <format default="json"/>
    <authentication>user</authentication>
    <transaction>required</transaction>
    <lifecycle>public_api</lifecycle>
@@ -22,4 +24,16 @@
          <description>The identifier of the node that represents the relevant publishing channel.</description>
       </arg>
    </args>
+   <responses>
+      <response>
+         <format>json</format>
+         <type>
+            <![CDATA[
+            {
+               "authStatus": string
+            }
+            ]]>
+         </type>
+      </response>
+   </responses>
 </webscript>

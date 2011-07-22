@@ -4,7 +4,6 @@
    "data": 
    {
       "channelId" : "${channelId}",
-      "pollUrl": "${pollUrl}",
       "authoriseUrl": "${authoriseUrl}",
       "authCallbackUrl": "${authCallbackUrl}"
    }

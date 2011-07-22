@@ -78,6 +78,7 @@
    "id": "${channel.id}",
    "name": "${channel.name}",
    "title": "${channel.title}",
+   "authorised": "${channel.authorised}",
    "channelType":
    <@channelTypeJSON type=channel.channelType />
 }

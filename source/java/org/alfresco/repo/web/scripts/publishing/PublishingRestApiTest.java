@@ -580,7 +580,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         check(ID, jsonType, channelType.getId());
         check(TITLE, jsonType, channelType.getId());
         
-        String expUrl = "api/publishing/channelTypes/"+URLEncoder.encode(channelType.getId());
+        String expUrl = "api/publishing/channel-types/"+URLEncoder.encode(channelType.getId());
         check(URL, jsonType, expUrl);
         check(CHANNEL_NODE_TYPE, jsonType, channelType.getChannelNodeType().toString());
         

@@ -21,29 +21,6 @@ package org.alfresco.repo.web.scripts.publishing;
 
 import static org.alfresco.repo.web.scripts.WebScriptUtil.buildCalendarModel;
 import static org.alfresco.repo.web.scripts.WebScriptUtil.buildDateModel;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CAN_PUBLISH;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CAN_PUBLISH_STATUS_UPDATES;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CAN_UNPUBLISH;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CHANNEL;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CHANNEL_NODE_TYPE;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CHANNEL_TYPE;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.COMMENT;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CREATED_TIME;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CREATOR;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.ICON;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.ID;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.MAX_STATUS_LENGTH;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.NAME;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.NODEREF;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.PUBLISH_NODES;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.SCHEDULED_TIME;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.STATUS;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.SUPPORTED_CONTENT_TYPES;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.SUPPORTED_MIME_TYPES;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.TITLE;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.UNPUBLISH_NODES;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.URL;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.VERSION;
 import static org.alfresco.util.collections.CollectionUtils.toListOfStrings;
 import static org.alfresco.util.collections.CollectionUtils.transform;
 
@@ -71,7 +48,7 @@ import org.springframework.extensions.surf.util.URLEncoder;
  * @since 4.0
  *
  */
-public class PublishingModelBuilder
+public class PublishingModelBuilder implements PublishingWebScriptConstants
 {
     
     public Map<String, Object> buildPublishingEvent(PublishingEvent event, ChannelService channelService)
@@ -122,6 +99,7 @@ public class PublishingModelBuilder
         //TODO Localize the title.
         model.put(TITLE, channel.getName());
         model.put(CHANNEL_TYPE, buildChannelType(channel.getChannelType()));
+        model.put(CHANNEL_AUTH_STATUS, toString(channel.isAuthorised()));
         return model;
     }
 
@@ -153,7 +131,7 @@ public class PublishingModelBuilder
         model.put(CAN_UNPUBLISH, toString(type.canUnpublish()));
 
         model.put(MAX_STATUS_LENGTH, type.getMaximumStatusLength());
-        model.put(ICON, "");
+        model.put(ICON, getUrl(type) + "/icon/");
         return model;
     }
     
@@ -175,7 +153,7 @@ public class PublishingModelBuilder
 
     public static String getUrl(ChannelType type)
     {
-        return "api/publishing/channelTypes/"+URLEncoder.encode(type.getId());
+        return "api/publishing/channel-types/"+URLEncoder.encode(type.getId());
     }
     
     public static String getUrl(Channel channel)

@@ -19,34 +19,24 @@
 
 package org.alfresco.repo.web.scripts.publishing;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.alfresco.repo.publishing.PublishingModel;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
+import org.alfresco.service.cmr.publishing.channels.ChannelType;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.webscripts.AbstractWebScript;
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.extensions.webscripts.WebScriptResponse;
 
-public class AuthCallbackWebScript extends AbstractWebScript
+public class AuthCallbackWebScript extends DeclarativeWebScript
 {
     private final static Log log = LogFactory.getLog(AuthCallbackWebScript.class);
-    private NodeService nodeService;
     private ChannelService channelService;
-
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
 
     public void setChannelService(ChannelService channelService)
     {
@@ -54,11 +44,8 @@ public class AuthCallbackWebScript extends AbstractWebScript
     }
 
     @Override
-    public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException
+    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        res.setContentType("text/html");
-        res.setContentEncoding("UTF-8");
-        
         Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
         Map<String,String[]> params = new TreeMap<String, String[]>();
         Map<String,String[]> headers = new TreeMap<String, String[]>();
@@ -87,24 +74,10 @@ public class AuthCallbackWebScript extends AbstractWebScript
         NodeRef channelNodeRef = new NodeRef(channelNodeStoreProtocol, channelNodeStoreId, channelNodeUuid);
         Channel channel = channelService.getChannelById(channelNodeRef.toString());
         
-        if (channel.getChannelType().acceptAuthorisationCallback(channel, headers, params))
-        {
-            Map<QName,Serializable> props = new HashMap<QName, Serializable>();
-            props.put(PublishingModel.PROP_AUTHORISATION_COMPLETE, Boolean.TRUE);
-            channelService.updateChannel(channel, props);
-            res.getWriter().write("Authorisation granted!");
-        }
-        else
-        {
-            Boolean authorised = (Boolean)nodeService.getProperty(channelNodeRef, PublishingModel.PROP_AUTHORISATION_COMPLETE);
-            if (authorised != null && !authorised)
-            {
-                //If we have not been granted access by the service provider then we 
-                //simply delete this publishing channel
-                channelService.deleteChannel(channel);
-            }
-            res.getWriter().write("Authorisation denied!");
-        }
+        ChannelType.AuthStatus authStatus = channel.getChannelType().acceptAuthorisationCallback(channel, headers, params);
+        
+        Map<String,Object> model = new TreeMap<String, Object>();
+        model.put("authStatus", authStatus.name());
+        return model;
     }
-
 }

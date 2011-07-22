@@ -1,10 +1,19 @@
 <webscript>
-   <shortname>Channel Authorisation Form</shortname>
+   <shortname>Delete specified publishing channel</shortname>
    <description><![CDATA[
-   Used to obtain a form to provide credentials to publish to a channel. 
+   Request the deletion of the publishing channel specified on the URL.
+   <br />
+   Response status indicates result:
+   <dl>
+   <dt>200</dt><dd>deletion successful</dd>
+   <dt>400</dt><dd>invalid data received from caller</dd>
+   <dt>401</dt><dd>user doesn't have permission to delete the specified channel</dd>
+   <dt>404</dt><dd>the specified channel cannot be found</dd>
+   </dl>
+    
    ]]></description>
-   <url>/api/publishing/channels/{store_protocol}/{store_id}/{node_id}/authform</url>
-   <format default="html"/>
+   <url>/api/publishing/channels/{store_protocol}/{store_id}/{node_id}</url>
+   <format default="json"/>
    <authentication>user</authentication>
    <transaction>required</transaction>
    <lifecycle>public_api</lifecycle>

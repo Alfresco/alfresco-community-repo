@@ -1,0 +1,26 @@
+<webscript>
+   <shortname>Category Management</shortname>
+   <description><![CDATA[
+   Create new category in specified category or as a root category.
+   ]]></description>
+   <url>/api/category/{store_protocol}/{store_id}/{node_id}</url>
+   <url>/api/category</url>
+   <format default="json">argument</format>
+   <authentication>admin</authentication>
+   <transaction allow="readwrite" buffersize="0">required</transaction>
+   <lifecycle>draft_public_api</lifecycle>
+   <args>
+      <arg>
+         <shortname>store_protocol</shortname>
+         <description>The protocol of the store in which the category lives.</description>
+      </arg>
+      <arg>
+         <shortname>store_id</shortname>
+         <description>The identifier of the store in which the category lives.</description>
+      </arg>
+      <arg>
+         <shortname>node_id</shortname>
+         <description>The identifier of the node that represents the category.</description>
+      </arg>
+   </args>
+</webscript>

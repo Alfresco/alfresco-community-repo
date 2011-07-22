@@ -326,7 +326,7 @@ public class LockDAOTest extends TestCase
     /**
      * Uses a thread lock to ensure that the lock DAO only allows locks through one at a time.
      */
-    public synchronized void testConcurrentLockAquisition() throws Exception
+    public synchronized void testConcurrentLockAcquisition() throws Exception
     {
         ReentrantLock threadLock = new ReentrantLock();
         GetLockThread[] threads = new GetLockThread[5];
@@ -338,12 +338,12 @@ public class LockDAOTest extends TestCase
         // Wait a bit and see if any encountered errors
         boolean allDone = false;
         waitLoop:
-        for (int waitLoop = 0; waitLoop < 50; waitLoop++)
+        for (int waitLoop = 0; waitLoop < 500; waitLoop++)
         {
             wait(1000L);
             for (int i = 0; i < threads.length; i++)
             {
-                if (!threads[i].done)
+                if (!threads[i].isDone())
                 {
                     continue waitLoop;
                 }
@@ -428,6 +428,10 @@ public class LockDAOTest extends TestCase
                     threadLock.unlock();
                 }
             }
+        }
+        public synchronized boolean isDone()
+        {
+            return done;
         }
     }
 }

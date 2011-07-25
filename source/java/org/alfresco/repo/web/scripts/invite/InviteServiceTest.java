@@ -35,6 +35,7 @@ import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
+import org.alfresco.repo.workflow.jbpm.JBPMEngine;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -150,7 +151,7 @@ public class InviteServiceTest extends BaseWebScriptTest
         ClassPathResource inviteWfResource = new ClassPathResource(
                 "alfresco/workflow/invitation-nominated_processdefinition.xml");
         workflowService.deployDefinition(
-                "jbpm", inviteWfResource.getInputStream(), MimetypeMap.MIMETYPE_XML);
+                JBPMEngine.ENGINE_ID, inviteWfResource.getInputStream(), MimetypeMap.MIMETYPE_XML);
         
         // Create new invitee email address list
         this.inviteeEmailAddrs = new ArrayList<String>();

@@ -80,12 +80,21 @@ public class LockAcquisitionException extends AlfrescoRuntimeException
     }
 
     /**
-     * 
      * @param msgId                 one of the message IDs defined
      * @param args                  the arguments that apply
      */
     public LockAcquisitionException(String msgId, Object ... args)
     {
         super(msgId, args);
+    }
+
+    /**
+     * @param cause                 an exception leading up to this
+     * @param msgId                 one of the message IDs defined
+     * @param args                  the arguments that apply
+     */
+    public LockAcquisitionException(Throwable cause, String msgId, Object ... args)
+    {
+        super(msgId, args, cause);
     }
 }

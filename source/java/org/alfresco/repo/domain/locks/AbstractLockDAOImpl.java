@@ -127,16 +127,36 @@ public abstract class AbstractLockDAOImpl implements LockDAO
             {
                 requiredLock = existingLocksMap.get(requiredLock);
                 // Do an update
-                updateLock(requiredLock, lockToken, timeToLive);
+                try
+                {
+                    updateLock(requiredLock, lockToken, timeToLive);
+                }
+                catch (Throwable e)
+                {
+                    throw new LockAcquisitionException(
+                            e,                  // Keep this for possible retrying
+                            LockAcquisitionException.ERR_FAILED_TO_ACQUIRE_LOCK,
+                            lockQName, lockToken);
+                }
             }
             else
             {
-                // Create it
-                requiredLock = createLock(
-                        requiredLockResourceId,
-                        requiredExclusiveLockResourceId,
-                        lockToken,
-                        timeToLive);
+                try
+                {
+                    // Create it
+                    requiredLock = createLock(
+                            requiredLockResourceId,
+                            requiredExclusiveLockResourceId,
+                            lockToken,
+                            timeToLive);
+                }
+                catch (Throwable e)
+                {
+                    throw new LockAcquisitionException(
+                            e,                  // Keep this for possible retrying
+                            LockAcquisitionException.ERR_FAILED_TO_ACQUIRE_LOCK,
+                            lockQName, lockToken);
+                }
             }
         }
         // Done
@@ -153,8 +173,7 @@ public abstract class AbstractLockDAOImpl implements LockDAO
     }
     
     /**
-     * Put new values against the given exclusive lock.  This works against the related locks as
-     * well.
+     * Put new values against the given exclusive lock.  This works against the related locks as well.
      * @throws LockAcquisitionException     on failure
      */
     private void updateLocks(QName lockQName, String lockToken, String newLockToken, long timeToLive)
@@ -305,6 +324,7 @@ public abstract class AbstractLockDAOImpl implements LockDAO
      * @param lockApplicant             the new lock token
      * @param timeToLive                the new lock time, in milliseconds, for the lock to remain valid
      * @return                          Returns the updated lock
+     * @throws ConcurrencyFailureException  if the entity was not updated
      */
     protected abstract LockEntity updateLock(
             LockEntity lockEntity,

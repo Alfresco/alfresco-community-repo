@@ -2011,9 +2011,9 @@ public class AlfrescoCmisService extends AbstractCmisService
     {
         checkRepositoryId(repositoryId);
 
-        if (objectId != null)
+        if (versionSeriesId == null && objectId != null)
         {
-            // it's an AtomPub call
+            // it's a browser binding call
             versionSeriesId = connector.getCurrentVersionId(objectId);
         }
 

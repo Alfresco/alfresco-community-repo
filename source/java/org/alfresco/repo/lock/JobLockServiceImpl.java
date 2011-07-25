@@ -25,13 +25,14 @@ import java.util.concurrent.TimeUnit;
 
 import org.alfresco.repo.domain.locks.LockDAO;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
+import org.alfresco.util.TraceableThreadFactory;
 import org.alfresco.util.VmShutdownListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -68,10 +69,37 @@ public class JobLockServiceImpl implements JobLockService
         defaultRetryWait = 20;
         defaultRetryCount = 10;
         txnListener = new LockTransactionListener();
-        scheduler = Executors.newScheduledThreadPool(1);
+        
+        TraceableThreadFactory threadFactory = new TraceableThreadFactory();
+        threadFactory.setThreadDaemon(false);
+        threadFactory.setNamePrefix("JobLockService");
+        
+        scheduler = Executors.newSingleThreadScheduledExecutor(threadFactory);
+        
         shutdownListener = new VmShutdownListener("JobLockService");
     }
 
+ 
+    
+    /**
+     * Lifecycle method. This method should be called when the JobLockService
+     * is no longer required allowing proper clean up before disposing of the object.
+     * <p>
+     * This is mostly used to tell the thread pool to shut itself down
+     * so as to allow the JVM to terminate.
+     */
+    public void shutdown()
+    {
+        if (logger.isInfoEnabled())
+        {
+            logger.info("shutting down.");
+        }
+        
+        // If we don't tell the thread pool to shutdown, then the JVM won't shutdown.
+        scheduler.shutdown();
+    }
+    
+    
     /**
      * Set the lock DAO
      */
@@ -286,7 +314,7 @@ public class JobLockServiceImpl implements JobLockService
                 
                 // First check the VM
                 if (shutdownListener.isVmShuttingDown())
-                {
+                {                    
                     callLockReleased(callback);
                     return;
                 }

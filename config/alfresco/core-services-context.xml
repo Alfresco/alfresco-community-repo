@@ -936,7 +936,7 @@
     </bean>
     
     <!-- Clustered (DB) locking Service -->
-    <bean id="jobLockService" class="org.alfresco.repo.lock.JobLockServiceImpl">
+    <bean id="jobLockService" class="org.alfresco.repo.lock.JobLockServiceImpl" destroy-method="shutdown">
         <property name="retryingTransactionHelper">
             <bean class="org.alfresco.repo.transaction.RetryingTransactionHelper">
                 <property name="transactionService">

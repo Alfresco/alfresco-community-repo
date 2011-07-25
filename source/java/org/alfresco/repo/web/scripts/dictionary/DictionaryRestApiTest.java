@@ -68,8 +68,8 @@ public class DictionaryRestApiTest extends BaseWebScriptTest
 	private void validateChildAssociation(JSONObject result) throws Exception
 	{
 		assertEquals("wca:formworkflowdefaults", result.get("name"));
-		assertEquals("", result.get("title"));
-		assertEquals("", result.get("description"));
+		assertEquals("Form Workflow Defaults", result.get("title"));
+		assertEquals("Form Workflow Defaults", result.get("description"));
 		assertEquals(true, result.get("isChildAssociation"));
 		assertEquals(false, result.get("protected"));
 		
@@ -87,8 +87,8 @@ public class DictionaryRestApiTest extends BaseWebScriptTest
 	private void validateAssociation(JSONObject result) throws Exception
 	{
 		assertEquals("wca:renderingenginetemplates", result.get("name"));
-		assertEquals("Form Data Renderers", result.get("title"));
-		assertEquals("", result.get("description"));
+		assertEquals("Rendering Engine Templates", result.get("title"));
+		assertEquals("Rendering Engine Templates", result.get("description"));
 		assertEquals(false, result.get("isChildAssociation"));
 		assertEquals(false, result.get("protected"));
 		

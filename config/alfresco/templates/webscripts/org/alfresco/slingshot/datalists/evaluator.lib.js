@@ -123,13 +123,14 @@ var Evaluator =
          objData.displayValue = obj.displayPath.substring(companyhome.name.length() + 1);
          objData.metadata = "container";
       }
-      else if (type == "cm:cmobject" || type == "cm:content")
+      else if (type.indexOf(":") > 0 && node.isSubType("cm:cmobject"))
       {
          obj = Evaluator.getContentObject(value);
          if (obj == null)
          {
             return false;
          }
+         objData.type = "subtype";
          objData.displayValue = obj.properties["cm:name"];
          objData.metadata = obj.isContainer ? "container" : "document";
       }

@@ -36,7 +36,7 @@
    "linkedNodeRef": "${item.linkedNode.nodeRef?string}",
 </#if>
    "fileName": "<#if item.linkedNode??>${item.linkedNode.name}<#else>${node.name}</#if>",
-   "displayName": "<#if item.linkedNode??>${item.linkedNode.name}<#else>${node.name?replace(workingCopyLabel, "")}</#if>",
+   "displayName": "<#if item.linkedNode??>${item.linkedNode.name}<#elseif node.hasAspect("cm:workingcopy")>${node.name?replace(workingCopyLabel, "")}<#else>${node.name}</#if>",
    "status": "<#list item.status?keys as s><#if item.status[s]?is_boolean && item.status[s] == true>${s}<#if s_has_next>,</#if></#if></#list>",
    "title": "${node.properties.title!""}",
    "description": "${node.properties.description!""}",

@@ -49,7 +49,14 @@
 		"totalReplyCount": ${postData.totalReplyCount?c},
 		<#if postData.lastReply??>
 			"lastReplyOn": "${postData.lastReply.properties.created?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
+			<#if postData.lastReplyBy??>
 			<@renderPerson person=postData.lastReplyBy fieldName="lastReplyBy" />
+         <#else>
+         "lastReplyBy":
+         {
+            "username": ""
+         },
+         </#if>
 		</#if>
 		"tags": [<#list postData.tags as x>"${x}"<#if x_has_next>, </#if></#list>],
 	</#if>

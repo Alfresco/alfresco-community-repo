@@ -307,16 +307,63 @@ public class PublishingEventHelper
      */
     public List<NodeRef> getEventNodesForPublishedNodes(final NodeRef queue, Collection<NodeRef> publishedNodes)
     {
-        Function<NodeRef, Collection<NodeRef>>  transformer = new Function<NodeRef, Collection<NodeRef>>()
+        return getEventNodesForNodeProperty(queue, PROP_PUBLISHING_EVENT_NODES_TO_PUBLISH, publishedNodes);
+    }
+    
+    /**
+     * Returns a {@link List} of the {@link NodeRef}s representing PublishingEvents that were scheduled to unpublish at least one of the specified <code>unpublishedNodes</code>. 
+     * @param queue
+     * @param unpublishedNodes
+     * @return
+     */
+    public List<NodeRef> getEventNodesForUnpublishedNodes(final NodeRef queue, Collection<NodeRef> unpublishedNodes)
+    {
+        return getEventNodesForNodeProperty(queue, PROP_PUBLISHING_EVENT_NODES_TO_PUBLISH, unpublishedNodes);
+    }
+    
+    /**
+     * Returns a {@link List} of the {@link NodeRef}s representing PublishingEvents that were scheduled to publish the specified <code>publishedNode</code>. 
+     * @param queue
+     * @param publishedNode
+     * @return
+     */
+    public List<NodeRef> getEventNodesForPublishedNode(final NodeRef queue, NodeRef publishedNode)
+    {
+        Function<NodeRef, List<NodeRef>> transformer = eventNodeForNodePropertyFinder(queue, PROP_PUBLISHING_EVENT_NODES_TO_PUBLISH);
+        return transformer.apply(publishedNode);
+    }
+    
+    /**
+     * Returns a {@link List} of the {@link NodeRef}s representing PublishingEvents that were scheduled to unpublish the specified <code>unpublishedNode</code>. 
+     * @param queue
+     * @param unpublishedNode
+     * @return
+     */
+    public List<NodeRef> getEventNodesForUnpublishedNode(final NodeRef queue, NodeRef unpublishedNode)
+    {
+        Function<NodeRef, List<NodeRef>> transformer = eventNodeForNodePropertyFinder(queue, PROP_PUBLISHING_EVENT_NODES_TO_UNPUBLISH);
+        return transformer.apply(unpublishedNode);
+    }
+
+    private List<NodeRef> getEventNodesForNodeProperty(final NodeRef queue, final QName propertyKey, Collection<NodeRef> publishedNodes)
+    {
+        Function<NodeRef, List<NodeRef>> transformer = eventNodeForNodePropertyFinder(queue, propertyKey);
+        return transformFlat(publishedNodes, transformer);
+    }
+
+    private Function<NodeRef, List<NodeRef>> eventNodeForNodePropertyFinder(final NodeRef queue,
+            final QName propertyKey)
+    {
+        return new Function<NodeRef, List<NodeRef>>()
         {
-            public Collection<NodeRef> apply(NodeRef publishedNode)
+            public List<NodeRef> apply(NodeRef publishedNode)
             {
-                List<ChildAssociationRef> assocs = nodeService.getChildAssocsByPropertyValue(queue, PROP_PUBLISHING_EVENT_NODES_TO_PUBLISH, publishedNode.toString());
+                String nodeString = publishedNode.toString();
+                List<ChildAssociationRef> assocs = 
+                    nodeService.getChildAssocsByPropertyValue(queue, propertyKey, nodeString);
                 return transform(assocs, NodeUtils.toChildRef());
             }
         };
-        List<NodeRef> nodes = transformFlat(publishedNodes, transformer);
-        return nodes;
     }
 
     public List<PublishingEvent> findPublishingEvents(NodeRef queue, PublishingEventFilter filter)

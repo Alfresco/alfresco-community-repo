@@ -84,7 +84,7 @@ public class PublishingIntegratedTest extends BaseSpringTest
                     NamespaceService.CONTENT_MODEL_1_0_URI, Integer.toString(i)), ContentModel.TYPE_CONTENT).getChildRef());
         }
 
-        PublishingQueue liveQueue = publishingService.getPublishingQueue(siteId);
+        PublishingQueue liveQueue = publishingService.getPublishingQueue();
         MutablePublishingPackage publishingPackage = liveQueue.createPublishingPackage();
         publishingPackage.addNodesToPublish(nodes);
 
@@ -117,7 +117,7 @@ public class PublishingIntegratedTest extends BaseSpringTest
             nodes.add(nodeService.createNode(channel.getNodeRef(), ContentModel.ASSOC_CONTAINS, QName.createQName(
                     NamespaceService.CONTENT_MODEL_1_0_URI, Integer.toString(i)), ContentModel.TYPE_CONTENT).getChildRef());
         }
-        PublishingQueue liveQueue = publishingService.getPublishingQueue(siteId);
+        PublishingQueue liveQueue = publishingService.getPublishingQueue();
         MutablePublishingPackage publishingPackage = liveQueue.createPublishingPackage();
         publishingPackage.addNodesToPublish(nodes);
 

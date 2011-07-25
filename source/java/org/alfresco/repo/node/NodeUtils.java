@@ -19,9 +19,16 @@
 
 package org.alfresco.repo.node;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -129,5 +136,39 @@ public abstract class NodeUtils
             return getTarget ? association.getTargetRef() : association.getSourceRef();
         }
         return null;
+    }
+    
+    public List<NodeRef> sortByCreationDate(NodeService nodeService,Collection<NodeRef> nodes)
+    {
+        ArrayList<NodeRef> sorted = new ArrayList<NodeRef>(nodes);
+        Collections.sort(sorted, getNodeCreationDateComparator(nodeService));
+        return sorted;
+    }
+
+    public Comparator<NodeRef> getNodeCreationDateComparator(final NodeService nodeService)
+    {
+        return new Comparator<NodeRef>()
+        {
+            private Map<NodeRef, Long> dates = new HashMap<NodeRef, Long>();
+            
+            public int compare(NodeRef o1, NodeRef o2)
+            {
+                long date1 = getDate(o1);
+                long date2 = getDate(o1);
+                return (int)(date1 - date2);
+            }
+
+            private long getDate(NodeRef node)
+            {
+                Long date = dates.get(node);
+                if(date == null)
+                {
+                    Date dateObj = (Date) nodeService.getProperty(node, ContentModel.PROP_CREATED);
+                    date = dateObj == null ? -1 : dateObj.getTime();
+                    dates.put(node, date);
+                }
+                return date;
+            }
+        }; 
     }
 }

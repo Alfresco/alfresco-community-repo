@@ -20,6 +20,7 @@
 package org.alfresco.repo.publishing;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.service.cmr.publishing.NodePublishStatus;
@@ -68,6 +69,26 @@ public class PublishServiceImpl implements PublishingService
      /**
       * {@inheritDoc}
       */
+      public List<PublishingEvent> getEventsForPublishedNode(NodeRef publishedNode)
+      {
+          NodeRef queueNode = rootObject.getPublishingQueue().getNodeRef();
+          List<NodeRef> eventNodes = publishingEventHelper.getEventNodesForPublishedNode(queueNode, publishedNode);
+          return publishingEventHelper.getPublishingEvents(eventNodes);
+      }
+
+      /**
+      * {@inheritDoc}
+      */
+      public List<PublishingEvent> getEventsForUnpublishedNode(NodeRef unpublishedNode)
+      {
+          NodeRef queueNode = rootObject.getPublishingQueue().getNodeRef();
+          List<NodeRef> eventNodes = publishingEventHelper.getEventNodesForUnpublishedNode(queueNode, unpublishedNode);
+          return publishingEventHelper.getPublishingEvents(eventNodes);
+      }
+
+     /**
+      * {@inheritDoc}
+      */
     public void cancelPublishingEvent(String id)
     {
         ParameterCheck.mandatory("id", id);
@@ -77,7 +98,7 @@ public class PublishServiceImpl implements PublishingService
     /**
     * {@inheritDoc}
     */
-    public PublishingQueue getPublishingQueue(String siteId)
+    public PublishingQueue getPublishingQueue()
     {
         return rootObject.getPublishingQueue();
     }

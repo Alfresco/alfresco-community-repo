@@ -21,7 +21,6 @@ package org.alfresco.service.cmr.publishing;
 
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.List;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -47,18 +46,4 @@ public interface PublishingQueue
      * @return The identifier of the newly scheduled event
      */
     String scheduleNewEvent(PublishingPackage publishingPackage, String channelId, Calendar schedule, String comment, StatusUpdate statusUpdate);
-    
-    /**
-     * Retrieve a list of publishing events associated with this publishing environment, filtering them using the
-     * supplied PublishingEventFilter object (optional - may be <code>null</code>)
-     * @param filter The filter that is to be applied to the publishing events on this environment
-     * @return A list of PublishingEvent objects representing the publishing events that matched the supplied filter on this publishing environment
-     */
-    List<PublishingEvent> getPublishingEvents(PublishingEventFilter filter);
-    
-    /**
-     * A factory method that creates a {@link PublishingEventFilter} object.
-     * @return a new {@link PublishingEventFilter}.
-     */
-    PublishingEventFilter createPublishingEventFilter();
 }

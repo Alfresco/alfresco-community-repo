@@ -183,4 +183,22 @@ public class PublishingEventImpl implements PublishingEvent
         return new MutablePublishingEventImpl(this);
     }
 
+    /**
+    * {@inheritDoc}
+    */
+    @Override
+    public int compareTo(PublishingEvent event)
+    {
+        if(event == null)
+        {
+            return 1;
+        }
+        Date eventTime = event.getCreatedTime();
+        if(eventTime == null)
+        {
+            return 1;
+        }
+        return (int)(createdTime.getTime() - eventTime.getTime());
+    }
+
 }

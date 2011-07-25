@@ -25,9 +25,9 @@ import java.util.Date;
 
 /**
  * @author Brian
- *
+ * @author Nick Smith
  */
-public interface PublishingEvent
+public interface PublishingEvent extends Comparable<PublishingEvent>
 {
     enum Status {SCHEDULED, IN_PROGRESS, CANCEL_REQUESTED, COMPLETED, FAILED}
     

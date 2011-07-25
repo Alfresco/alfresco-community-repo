@@ -619,6 +619,31 @@ public class CopyServiceImplTest extends TestCase
         assertNull("Original should not be present. ", originalCheck);
     }
     
+    /**
+     * Test the behaviour of the aspect when copying types not derived from <b>cm:object</b>
+     */
+    public void testCopiedFromAspect_NonObject()
+    {
+        // Create the node used for copying
+        ChildAssociationRef childAssocRef = nodeService.createNode(
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName("{test}test"),
+                ContentModel.TYPE_BASE,
+                createTypePropertyBag());
+        NodeRef nodeRef = childAssocRef.getChildRef();
+        // If we copy this, there should not be a cm:source association
+        NodeRef copyNodeRef = copyService.copy(
+                nodeRef,
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName("{test}copyAssoc"));
+        
+        assertFalse(
+                "cm:copiedfrom should not be present",
+                nodeService.hasAspect(copyNodeRef, ContentModel.ASPECT_COPIEDFROM));
+    }
+    
     public void testCopyNodeWithRules()
     {
         // Create a new rule and add it to the source noderef

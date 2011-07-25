@@ -596,7 +596,12 @@ public class CopyServiceImpl implements CopyService
                         originalAssoc.getTargetRef(),
                         ContentModel.ASSOC_ORIGINAL);
             }
-            internalNodeService.createAssociation(copyTarget, sourceNodeRef, ContentModel.ASSOC_ORIGINAL);
+            // We create the link if the source is a cm:object
+            QName sourceTypeQName = internalNodeService.getType(sourceNodeRef);
+            if (dictionaryService.isSubClass(sourceTypeQName, ContentModel.TYPE_CMOBJECT))
+            {
+                internalNodeService.createAssociation(copyTarget, sourceNodeRef, ContentModel.ASSOC_ORIGINAL);
+            }
 
             // Copy permissions
             copyPermissions(sourceNodeRef, copyTarget);

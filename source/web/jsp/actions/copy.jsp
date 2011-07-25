@@ -113,6 +113,13 @@
                                                              styleClass="selector" />
                                     </td>
                                  </tr>
+                                 <tr>
+                                    <td>&nbsp;</td>
+                                    <td>
+                                       <h:selectBooleanCheckbox value="#{WizardManager.bean.actionProperties.deepCopy}" />
+                                       <span style="vertical-align:20%"><h:outputText value="#{msg.deep_copy}" /></span>
+                                    </td>
+                                 </tr>
                                  <tr><td class="paddingRow"></td></tr>
                               </table>
                               <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "white"); %>

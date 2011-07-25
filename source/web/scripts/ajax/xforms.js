@@ -36,6 +36,7 @@ alfresco.ieEngine = alfresco.ieVersion == -1 ? -1 : getIEEngine();
 
 djConfig.parseWidgets = false;
 dojo.require("dojo.lfx.html");
+dojo.locale=alfresco.constants.LANGUAGE
 alfresco.log = alfresco.constants.DEBUG ? log : Class.empty;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -4891,6 +4892,7 @@ alfresco.constants.TINY_MCE_DEFAULT_SETTINGS =
   theme: "advanced",
   mode: "exact",
   plugins: alfresco.constants.TINY_MCE_DEFAULT_PLUGINS,
+  language: alfresco.constants.LANGUAGE,
   width: -1,
   height: -1,
   auto_resize: false,

@@ -49,6 +49,7 @@ import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -101,6 +102,9 @@ public abstract class BaseAssociationEditor extends UIInput
    private final static String MSG_CANCEL = "cancel";
    private final static String MSG_SEARCH = "search";
    private final static String MSG_CHANGE = "change";
+   private final static String MSG_WARN_CANNOT_VIEW = "warn_cannot_view_target_details";
+   
+   private static final String PERMISSION_SERVICE = "PermissionService";
    
    protected String associationName;
    protected String availableOptionsSize;
@@ -709,6 +713,7 @@ public abstract class BaseAssociationEditor extends UIInput
    protected void renderExistingAssociation(FacesContext context, ResponseWriter out, NodeService nodeService,
          NodeRef targetRef, boolean allowMany) throws IOException
    {
+      boolean accessDenied = false;
       out.write("<tr><td class='");
       if (this.highlightedRow)
       {
@@ -740,39 +745,53 @@ public abstract class BaseAssociationEditor extends UIInput
       }
       else
       {
-         out.write(Utils.encode(Repository.getDisplayPath(nodeService.getPath(targetRef))));
-         out.write("/");
-         out.write(Utils.encode(Repository.getNameForNode(nodeService, targetRef)));
+         PermissionService permissionService = Repository.getServiceRegistry(context).getPermissionService();
+         if (permissionService.hasPermission(targetRef, PermissionService.READ) == AccessStatus.ALLOWED)
+         {
+             out.write(Utils.encode(Repository.getDisplayPath(nodeService.getPath(targetRef))));
+             out.write("/");
+             out.write(Utils.encode(Repository.getNameForNode(nodeService, targetRef)));
+         }
+         else
+         {
+             accessDenied = true;
+             out.write(Application.getMessage(context, MSG_WARN_CANNOT_VIEW));
+         }
       }
-      
-      out.write("</td><td class='");
-      if (this.highlightedRow)
+      if (accessDenied)
       {
-         out.write("selectedItemsRowAlt");
+          out.write("</td><td>&nbsp;");
       }
       else
       {
-         out.write("selectedItemsRow");
+          out.write("</td><td class='");
+          if (this.highlightedRow)
+          {
+             out.write("selectedItemsRowAlt");
+          }
+          else
+          {
+             out.write("selectedItemsRow");
+          }
+          out.write("'><a href='#' title='");
+          out.write(Application.getMessage(context, MSG_REMOVE));
+          out.write("' onclick=\"");
+          out.write(generateFormSubmit(context, ACTION_REMOVE + ACTION_SEPARATOR + targetRef.toString()));
+          out.write("\"><img src='");
+          out.write(context.getExternalContext().getRequestContextPath());
+          out.write("/images/icons/delete.gif' border='0' width='13' height='16'/></a>");
+          
+          if (allowMany == false)
+          {
+             out.write("&nbsp;<a href='#' title='");
+             out.write(Application.getMessage(context, MSG_CHANGE));
+             out.write("' onclick=\"");
+             out.write(generateFormSubmit(context, ACTION_CHANGE + ACTION_SEPARATOR + targetRef.toString()));
+             out.write("\"><img src='");
+             out.write(context.getExternalContext().getRequestContextPath());
+             out.write("/images/icons/edit_icon.gif' border='0' width='12' height='16'/></a>");
+          }
       }
-      out.write("'><a href='#' title='");
-      out.write(Application.getMessage(context, MSG_REMOVE));
-      out.write("' onclick=\"");
-      out.write(generateFormSubmit(context, ACTION_REMOVE + ACTION_SEPARATOR + targetRef.toString()));
-      out.write("\"><img src='");
-      out.write(context.getExternalContext().getRequestContextPath());
-      out.write("/images/icons/delete.gif' border='0' width='13' height='16'/></a>");
-      
-      if (allowMany == false)
-      {
-         out.write("&nbsp;<a href='#' title='");
-         out.write(Application.getMessage(context, MSG_CHANGE));
-         out.write("' onclick=\"");
-         out.write(generateFormSubmit(context, ACTION_CHANGE + ACTION_SEPARATOR + targetRef.toString()));
-         out.write("\"><img src='");
-         out.write(context.getExternalContext().getRequestContextPath());
-         out.write("/images/icons/edit_icon.gif' border='0' width='12' height='16'/></a>");
-      }
-      
       out.write("</td></tr>");
       
       this.highlightedRow = !this.highlightedRow;

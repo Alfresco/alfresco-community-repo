@@ -37,8 +37,11 @@ import org.alfresco.web.bean.wizard.IWizardBean;
  */
 public class CopyHandler extends BaseActionHandler
 {
-   private static final long serialVersionUID = -3570705279828902436L;
-
+   private static final long serialVersionUID = -3570705279828902437L;
+   
+   private static final String PROP_DEEPCOPY = "deepCopy";
+   
+   
    public String getJSPPath()
    {
       return getJSPPath(CopyActionExecuter.NAME);
@@ -51,6 +54,9 @@ public class CopyHandler extends BaseActionHandler
       NodeRef destNodeRef = (NodeRef)actionProps.get(PROP_DESTINATION);
       repoProps.put(CopyActionExecuter.PARAM_DESTINATION_FOLDER, destNodeRef);
       
+      // deep copy option
+      Boolean deepCopy = (Boolean)actionProps.get(PROP_DEEPCOPY);
+      repoProps.put(CopyActionExecuter.PARAM_DEEP_COPY, deepCopy);
    }
 
    public void prepareForEdit(Map<String, Serializable> actionProps,
@@ -58,6 +64,9 @@ public class CopyHandler extends BaseActionHandler
    {
       NodeRef destNodeRef = (NodeRef)repoProps.get(CopyActionExecuter.PARAM_DESTINATION_FOLDER);
       actionProps.put(PROP_DESTINATION, destNodeRef);
+      
+      Boolean deepCopy = (Boolean)repoProps.get(CopyActionExecuter.PARAM_DEEP_COPY);
+      actionProps.put(PROP_DEEPCOPY, deepCopy);
    }
 
    public String generateSummary(FacesContext context, IWizardBean wizard,
@@ -70,5 +79,4 @@ public class CopyHandler extends BaseActionHandler
       return MessageFormat.format(Application.getMessage(context, "action_copy"),
             new Object[] {spaceName});
    }
-
 }

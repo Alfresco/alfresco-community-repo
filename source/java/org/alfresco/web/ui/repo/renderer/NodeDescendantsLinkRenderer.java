@@ -37,7 +37,10 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.data.IDataContainer;
+import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.renderer.BaseRenderer;
 import org.alfresco.web.ui.repo.component.UINodeDescendants;
@@ -119,7 +122,7 @@ public class NodeDescendantsLinkRenderer extends BaseRenderer
             {
                List<ChildAssociationRef> childRefs = service.getChildAssocs(parentRef,
                      ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
-               List<ChildAssociationRef> refs = new ArrayList<ChildAssociationRef>(childRefs.size());
+               List<Node> nodes = new ArrayList<Node>(childRefs.size());
                for (int index=0; index<childRefs.size(); index++)
                {
                   ChildAssociationRef ref = childRefs.get(index);
@@ -128,17 +131,20 @@ public class NodeDescendantsLinkRenderer extends BaseRenderer
                   if (typeDef != null && dd.isSubClass(type, ContentModel.TYPE_FOLDER) && 
                       dd.isSubClass(type, ContentModel.TYPE_SYSTEM_FOLDER) == false)
                   {
-                     refs.add(ref);
+                	  nodes.add(new Node(ref.getChildRef()));
                   }
                }
                
+               QuickSort sorter = new QuickSort(nodes, "name", true, IDataContainer.SORT_CASEINSENSITIVE);
+               sorter.sort();
+               
                // walk each child ref and output a descendant link control for each item
                int total = 0;
-               int maximum = refs.size() > control.getMaxChildren() ? control.getMaxChildren() : refs.size();
+               int maximum = nodes.size() > control.getMaxChildren() ? control.getMaxChildren() : nodes.size();
                for (int index=0; index<maximum; index++)
                {
-                  ChildAssociationRef ref = refs.get(index);
-                  QName type = service.getType(ref.getChildRef());
+                  Node node = nodes.get(index);
+                  QName type = service.getType(node.getNodeRef());
                   TypeDefinition typeDef = dd.getType(type);
                   if (typeDef != null && dd.isSubClass(type, ContentModel.TYPE_FOLDER) && 
                       dd.isSubClass(type, ContentModel.TYPE_SYSTEM_FOLDER) == false)
@@ -149,19 +155,19 @@ public class NodeDescendantsLinkRenderer extends BaseRenderer
                         out.write( separator );
                      }
                      
-                     out.write(renderDescendant(context, control, ref, false));
+                     out.write(renderDescendant(context, control, node.getNodeRef(), false));
                      total++;
                   }
                }
                
                // do we need to render ellipses to indicate more items than the maximum
-               if (control.getShowEllipses() == true && refs.size() > maximum)
+               if (control.getShowEllipses() == true && nodes.size() > maximum)
                {
                   out.write( separator );
                   // TODO: is this the correct way to get the information we need?
                   //       e.g. primary parent may not be the correct path? how do we make sure we find
                   //       the correct parent and more importantly the correct Display Name value!
-                  out.write( renderDescendant(context, control, service.getPrimaryParent(parentRef), true) );
+                  out.write( renderDescendant(context, control, service.getPrimaryParent(parentRef).getChildRef(), true) );
                }
             }
             
@@ -185,7 +191,7 @@ public class NodeDescendantsLinkRenderer extends BaseRenderer
     *  
     * @return HTML for a descendant link
     */
-   private String renderDescendant(FacesContext context, UINodeDescendants control, ChildAssociationRef childRef, boolean ellipses)
+   private String renderDescendant(FacesContext context, UINodeDescendants control, NodeRef childRef, boolean ellipses)
    {
       StringBuilder buf = new StringBuilder(256);
       
@@ -193,7 +199,7 @@ public class NodeDescendantsLinkRenderer extends BaseRenderer
       // build an HTML param that contains the client Id of this control, followed by the node Id
       // followed by whether this is the parent node not a decendant (ellipses clicked)
       String param = control.getClientId(context) + NamingContainer.SEPARATOR_CHAR +
-                     childRef.getChildRef().getId() + NamingContainer.SEPARATOR_CHAR +
+                     childRef.getId() + NamingContainer.SEPARATOR_CHAR +
                      Boolean.toString(ellipses);
       buf.append(Utils.generateFormSubmit(context, control, getHiddenFieldName(context, control), param));
       buf.append('"');
@@ -214,7 +220,7 @@ public class NodeDescendantsLinkRenderer extends BaseRenderer
       if (ellipses == false)
       {
          // label is the name of the child node assoc
-         String name = Repository.getNameForNode(getNodeService(context), childRef.getChildRef());
+         String name = Repository.getNameForNode(getNodeService(context), childRef);
          buf.append(Utils.encode(name));
       }
       else

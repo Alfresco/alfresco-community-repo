@@ -539,7 +539,7 @@
          
          <dialog name="userConsole" page="/jsp/users/user-console.jsp" managed-bean="UserConsoleDialog"
                  icon="/images/icons/user_console_large.gif" title-id="user_console_info"
-                 description-id="user_console_description" show-ok-button="false"/>
+                 description-id="user_console_description" show-ok-button="false" error-message-id="empty_message"/>
          
          <dialog name="userProfile" page="/jsp/users/user-profile.jsp" managed-bean="UserProfileDialog"
                  icon="/images/icons/user_console_large.gif" title-id="user_profile"

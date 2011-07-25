@@ -1,3 +1,5 @@
+<#setting locale="${locale}">
+
 <div class="taskPopupPanel">
 	<table cellpadding='3' cellspacing='0'>
 	   <tr>
@@ -19,7 +21,7 @@
 	            <tr><td>${msg("task_summary_panel.start_date")}:</td><td>${task.startDate?string(msg("date_pattern"))}</td></tr>
 	            <tr><td>${msg("task_summary_panel.due_date")}:</td><td>
 	            <#if task.properties["bpm:dueDate"]?exists>
-	               ${task.properties["bpm:dueDate"]?date}
+	               ${task.properties["bpm:dueDate"]?string(msg("date_pattern"))}
 	            <#else>
 	               <i>${msg("task_summary_panel.none")}</i>
 	            </#if>

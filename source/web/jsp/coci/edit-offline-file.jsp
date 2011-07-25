@@ -63,12 +63,11 @@
 <h:inputHidden value="#{CCProperties.document.properties.url}" id="url"/>
       
 <h:panelGrid columns="4" cellpadding="1" cellspacing="1" rendered="#{DialogManager.bean.continueCountdown}">
-   <h:outputText value="#{msg.offline_download_first}"/>	
+   <h:outputText value="#{msg.offline_download}"/>
    <f:verbatim>&nbsp;<b id="time">5</b>&nbsp;</f:verbatim>	
-   <h:outputText value="#{msg.offline_download_second}"/>
    <a:actionLink 
           style="text-decoration: underline;"
-          value="#{msg.click_here}"
+          value="#{msg.offline_start_download}"
           onclick="javascript:stopCountdown();"/>
 </h:panelGrid>
 

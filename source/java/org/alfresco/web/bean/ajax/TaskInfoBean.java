@@ -36,6 +36,7 @@ import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.web.app.servlet.BaseTemplateContentServlet;
 import org.alfresco.web.bean.repository.Repository;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Bean used by an AJAX control to send information back on the requested workflow task.
@@ -136,10 +137,12 @@ public class TaskInfoBean implements Serializable
       FacesContext context = FacesContext.getCurrentInstance();
       Map<String, Object> model = new HashMap<String, Object>(8, 1.0f);
       
+      I18NUtil.registerResourceBundle("alfresco.messages.webclient");
       // create template api methods and objects
       model.put("date", new Date());
       model.put("msg", new I18NMessageMethod());
       model.put("url", new BaseTemplateContentServlet.URLHelper(context));
+      model.put("locale", I18NUtil.getLocale());
       model.put("task", new Workflow.WorkflowTaskItem(
             Repository.getServiceRegistry(context),
             this.imageResolver,

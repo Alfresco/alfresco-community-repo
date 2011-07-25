@@ -237,6 +237,11 @@ public class XFormsProcessor implements FormProcessor
       }
          
       js.append("';\n");
+      js.append("alfresco.constants.LANGUAGE = '");
+      String lang = Application.getLanguage(FacesContext.getCurrentInstance()).toString();
+      lang = lang.substring(0,lang.indexOf("_"));
+      js.append(lang);
+      js.append("';\n");
       js.append("alfresco.xforms.constants.XFORMS_UI_DIV_ID = '").
          append(xformsUIDivId).
          append("';\n");

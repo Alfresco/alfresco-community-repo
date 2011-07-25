@@ -56,6 +56,7 @@ public class ClipboardBean implements Serializable
    
    /** I18N messages */
    private static final String MSG_ERROR_PASTE  = "error_paste";
+   private static final String MSG_VIEW_FOR_PASTE_WARN = "not_suitable_view_for_paste_warn";
    
    /** Current state of the clipboard items */
    private List<ClipboardItem> items = new ArrayList<ClipboardItem>(4);
@@ -129,6 +130,12 @@ public class ClipboardBean implements Serializable
           if (parent != null)
           {
               parentNodeRef = new NodeRef(Repository.getStoreRef(), parent);
+              // ALF-8885 fix, if copied node is the same as parent node we should use null.
+              // Primary parent will be used later in FileFolderService#moveOrCopy method
+              if (parentNodeRef.toString().equals(ref))
+              {
+                  parentNodeRef = null;
+              }
           }
           addClipboardNode(new NodeRef(ref), parentNodeRef, ClipboardStatus.CUT);
       }
@@ -167,7 +174,7 @@ public class ClipboardBean implements Serializable
    private void performPasteItems(int index, int action)
    {
       FacesContext context = FacesContext.getCurrentInstance();
-      
+      boolean toClear = false;
       try
       {
          if (index == -1)
@@ -179,6 +186,7 @@ public class ClipboardBean implements Serializable
                if (!getNodeService().exists(item.getNodeRef()))
                {
                   toRemove.add(item);
+                  toClear = true;
                   continue;
                }
 
@@ -190,22 +198,26 @@ public class ClipboardBean implements Serializable
                      // remember which items to remove.
                      toRemove.add(item);
                   }
+                  toClear = true;
                }
             }
             
-            // if configured to do so clear the clipboard after a paste all
-            if (Application.getClientConfig(context).isPasteAllAndClearEnabled())
+            // clear the clipboard after a paste all
+            if (toClear)
             {
-               this.items.clear();
-            }
-            else if (toRemove.size() > 0)
-            {
-               // remove the items that were cut above
-               for (ClipboardItem item : toRemove)
-               {
-                  this.items.remove(item);
-               }
-            }
+                if (Application.getClientConfig(context).isPasteAllAndClearEnabled())
+                {
+                   this.items.clear();
+                }
+                else if (toRemove.size() > 0)
+                {
+                   // remove the items that were cut above
+                   for (ClipboardItem item : toRemove)
+                   {
+                      this.items.remove(item);
+                   }
+                }
+             }
          }
          else
          {
@@ -256,6 +268,13 @@ public class ClipboardBean implements Serializable
          }
          else
          {
+            if (Application.getClientConfig(fc).isClipboardStatusVisible())
+            {
+               String pattern = Application.getMessage(fc, MSG_VIEW_FOR_PASTE_WARN);
+               String msg = MessageFormat.format(pattern, item.getName());
+               FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_WARN, msg, msg);
+               fc.addMessage(null, facesMsg);
+            }
             // we cannot support this view as a Move paste location
             if (logger.isDebugEnabled())
                logger.debug("Clipboard Item: " + item.getNodeRef() + " not suitable for Move paste to current View Id."); 
@@ -269,6 +288,13 @@ public class ClipboardBean implements Serializable
          }
          else
          {
+            if (Application.getClientConfig(fc).isClipboardStatusVisible())
+            {
+               String pattern = Application.getMessage(fc, MSG_VIEW_FOR_PASTE_WARN);
+               String msg = MessageFormat.format(pattern, item.getName());
+               FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_WARN, msg, msg);
+               fc.addMessage(null, facesMsg);
+            }
             // we cannot support this view as a Copy paste location
             if (logger.isDebugEnabled())
                logger.debug("Clipboard Item: " + item.getNodeRef() + " not suitable for Copy paste to current View Id."); 

@@ -19,6 +19,8 @@
 
 package org.alfresco.repo.web.scripts.publishing;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -26,7 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.web.scripts.WebScriptUtil;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
-import org.alfresco.service.cmr.publishing.PublishingQueue;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -37,7 +39,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * @since 4.0
  *
  */
-public class PUblishingEventsQueryPost extends PublishingEnvironmentWebScript
+public class PUblishingEventsForNodeGet extends PublishingWebScript
 {
     /**
     * {@inheritDoc}
@@ -45,20 +47,33 @@ public class PUblishingEventsQueryPost extends PublishingEnvironmentWebScript
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        String siteId = getSiteId(req);
-        PublishingQueue queue = getQueue(siteId);
-        String content = null;
+        Map<String, String> params = req.getServiceMatch().getTemplateVars();
+        NodeRef node = WebScriptUtil.getNodeRef(params);
+        if(node == null)
+        {
+            String msg = "A valid NodeRef must be specified!";
+            throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, msg);
+        }
         try
         {
-            content = WebScriptUtil.getContent(req);
-            List<PublishingEvent> events = jsonParser.query(queue, content);
-            List<Map<String, Object>> model = builder.buildPublishingEvents(events, channelService);
+            ArrayList<PublishingEvent> events = getSortedPublishingEvents(node);
+            List<Map<String, Object>> model = builder.buildPublishingEventsForNode(events, node, channelService);
             return WebScriptUtil.createBaseModel(model);
         }
         catch(Exception e)
         {
-            String msg = "Failed to query for publishing events. POST body: " + content;
+            String msg = "Failed to query for publishing events for node: " + node;
             throw new WebScriptException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg, e);
         }
+    }
+
+    private ArrayList<PublishingEvent> getSortedPublishingEvents(NodeRef node)
+    {
+        List<PublishingEvent> publishedEvents = publishingService.getEventsForPublishedNode(node);
+        List<PublishingEvent> unpublishedEvents = publishingService.getEventsForUnpublishedNode(node);
+        ArrayList<PublishingEvent> allEvents = new ArrayList<PublishingEvent>(publishedEvents);
+        allEvents.addAll(unpublishedEvents);
+        Collections.sort(allEvents);
+        return allEvents;
     }
 }

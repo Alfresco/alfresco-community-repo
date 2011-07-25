@@ -1,17 +1,13 @@
 <webscript>
    <shortname>Get Publishing Channels</shortname>
-   <description>Get the publishing channels for a Share Site.or specified NodeRef</description>
-   <url>/api/publishing/site/{site_id}/channels</url>
+   <description>Get the publishing channels for  specified NodeRef or returns all Publishing Channels</description>
+   <url>/api/publishing/channels</url>
    <url>/api/publishing/{store_protocol}/{store_id}/{node_id}/channels</url>
    <format default="json"/>
    <authentication>user</authentication>
    <transaction allow="readonly">required</transaction>
    <lifecycle>public_api</lifecycle>
    <args>
-      <arg>
-         <shortname>site_id</shortname>
-         <description>The id of the site to retrieve channels for.</description>
-      </arg>
       <arg>
          <shortname>store_protocol</shortname>
          <description>The protocol used by the StoreRef to retrieve channels for.</description>

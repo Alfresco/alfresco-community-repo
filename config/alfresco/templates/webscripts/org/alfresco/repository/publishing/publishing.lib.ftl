@@ -20,6 +20,7 @@
    "url": "${event.url}",
    "status": "${event.status}",
    <#if event.comment?? >"comment": "${event.comment}",</#if>
+   <#if event.eventType?? >"eventType": "${event.eventType}",</#if>
    <#if event.scheduledTime?? >
    "scheduledTime":
    <@calendarJSON calendar=event.scheduledTime />,

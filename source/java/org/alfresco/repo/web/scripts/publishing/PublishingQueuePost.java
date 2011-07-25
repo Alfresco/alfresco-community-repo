@@ -25,7 +25,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.web.scripts.WebScriptUtil;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
-import org.alfresco.service.cmr.publishing.PublishingQueue;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -36,7 +35,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * @since 4.0
  *
  */
-public class PublishingQueuePost extends PublishingEnvironmentWebScript
+public class PublishingQueuePost extends PublishingWebScript
 {
     /**
     * {@inheritDoc}
@@ -44,9 +43,6 @@ public class PublishingQueuePost extends PublishingEnvironmentWebScript
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        String siteId = getSiteId(req);
-        PublishingQueue queue = getQueue(siteId);
-        
         String content = null;
         try
         {
@@ -55,7 +51,7 @@ public class PublishingQueuePost extends PublishingEnvironmentWebScript
             {
                 throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, "No publishing event was posted!");
             }
-            String eventId = jsonParser.schedulePublishingEvent(queue, content);
+            String eventId = jsonParser.schedulePublishingEvent(getQueue(), content);
             PublishingEvent event = publishingService.getPublishingEvent(eventId);
             Map<String, Object> eventModel = builder.buildPublishingEvent(event, channelService);
             return WebScriptUtil.createBaseModel(eventModel);

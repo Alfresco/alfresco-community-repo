@@ -64,7 +64,7 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.text.MessageFormat;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -88,8 +88,6 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.publishing.MutablePublishingPackage;
 import org.alfresco.service.cmr.publishing.NodeSnapshot;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
-import org.alfresco.service.cmr.publishing.PublishingEvent.Status;
-import org.alfresco.service.cmr.publishing.PublishingEventFilter;
 import org.alfresco.service.cmr.publishing.PublishingPackage;
 import org.alfresco.service.cmr.publishing.PublishingPackageEntry;
 import org.alfresco.service.cmr.publishing.PublishingQueue;
@@ -129,12 +127,12 @@ public class PublishingRestApiTest extends BaseWebScriptTest
     private static final String statusUpdateType = "statusUpdateForTest";
     private static final int maxStatusLength = 100;
     
-    private static final String CHANNELS_SITE_URL = "api/publishing/site/{0}/channels";
-    private static final String CHANNEL_TYPES_URL = "api/publishing/channel-types";
+    private static final String CHANNELS_URL = "api/publishing/channels";
     private static final String CHANNELS_NODE_URL = "api/publishing/{0}/{1}/{2}/channels";
-    private static final String PUBLISHING_QUEUE_URL = "api/publishing/{0}/queue";
-    private static final String PUBLISHING_EVENT_QUERY_URL = "api/publishing/{0}/events/query";
-
+    private static final String CHANNEL_TYPES_URL = "api/publishing/channel-types";
+    private static final String PUBLISHING_QUEUE_URL = "api/publishing/queue";
+    private static final String PUBLISHING_EVENTS_FOR_NODE_url = "api/publishing/{0}/{1}/{2}/events";
+    
     private static final String JSON = "application/json";
     
     private SiteService siteService;
@@ -147,6 +145,9 @@ public class PublishingRestApiTest extends BaseWebScriptTest
     private NodeRef docLib;
     private String siteId;
 
+    private List<PublishingEvent> events = new ArrayList<PublishingEvent>();
+    private List<Channel> channels = new ArrayList<Channel>();
+    
     public void testGetChannelsForNode() throws Exception
     {
         NodeRef textNode = createContentNode("plainContent", "Some plain text", MimetypeMap.MIMETYPE_TEXT_PLAIN);
@@ -158,22 +159,14 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         
         assertEquals(MimetypeMap.MIMETYPE_PDF, fileFolderService.getReader(xmlNode).getMimetype());
         String plainTextNodeUrl = MessageFormat.format(CHANNELS_NODE_URL, store.getProtocol(), store.getIdentifier(), textNode.getId() );
-        Response response = sendRequest(new GetRequest(plainTextNodeUrl), 200);
-        
-        // Call with no channels defined on site.
-        response = sendRequest(new GetRequest(plainTextNodeUrl), 200);
-        JSONObject data = getJsonData(response);
-        
-        //TODO Fix hard coding.
-        assertEquals(20, data.getInt(URL_LENGTH));
         
         Channel publishAnyChannel = createChannel(publishAnyType);
         Channel publishPdfChannel = createChannel(publishPdfType);
         Channel statusUpdateChannel= createChannel(statusUpdateType);
         
         // Call with channels defined.
-        response = sendRequest(new GetRequest(plainTextNodeUrl), 200);
-        data = getJsonData(response);
+        Response response = sendRequest(new GetRequest(plainTextNodeUrl), 200);
+        JSONObject data = getJsonData(response);
         
         //TODO Fix hard coding.
         assertEquals(20, data.getInt(URL_LENGTH));
@@ -196,33 +189,20 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         checkChannels(statusChannels, statusUpdateChannel);
     }
     
-    public void testGetChannelsForSite() throws Exception
+    public void testGetChannels() throws Exception
     {
-        // Call with no channels defined on site.
-        String siteUrl = MessageFormat.format(CHANNELS_SITE_URL, siteId);
-        Response response = sendRequest(new GetRequest(siteUrl), 200);
-        JSONObject data = getJsonData(response);
-        
-        //TODO Fix hard coding.
-        assertEquals(20, data.getInt(URL_LENGTH));
-        JSONArray publishingChannels = data.getJSONArray(PUBLISHING_CHANNELS);
-        int startPublishChannelsSize = publishingChannels.length();
-        
-        JSONArray statusChannels = data.getJSONArray(STATUS_UPDATE_CHANNELS);
-        int startStatusChannelsSize = statusChannels.length();
-        
         Channel publishAnyChannel = createChannel(publishAnyType);
         Channel publishPdfChannel = createChannel(publishPdfType);
         Channel statusUpdateChannel= createChannel(statusUpdateType);
         
         // Call channels defined.
-        response = sendRequest(new GetRequest(siteUrl), 200);
-        data = getJsonData(response);
+        Response response = sendRequest(new GetRequest(CHANNELS_URL), 200);
+        JSONObject data = getJsonData(response);
         
         //TODO Fix hard coding.
         assertEquals(20, data.getInt(URL_LENGTH));
-        publishingChannels = data.getJSONArray(PUBLISHING_CHANNELS);
-        statusChannels = data.getJSONArray(STATUS_UPDATE_CHANNELS);
+        JSONArray publishingChannels = data.getJSONArray(PUBLISHING_CHANNELS);
+        JSONArray statusChannels = data.getJSONArray(STATUS_UPDATE_CHANNELS);
         
         checkChannels(publishingChannels, publishAnyChannel, publishPdfChannel);
         checkChannels(statusChannels, statusUpdateChannel);
@@ -232,16 +212,14 @@ public class PublishingRestApiTest extends BaseWebScriptTest
     public void testPublishingQueuePost() throws Exception
     {
         // Create publish and status update channels.
-        Channel publishChannel = channelService.createChannel(publishAnyType, GUID.generate(), null);
-        Channel statusChannel = channelService.createChannel(statusUpdateType, GUID.generate(), null);
+        Channel publishChannel = createChannel(publishAnyType);
+        Channel statusChannel = createChannel(statusUpdateType);
 
         // Create some content.
         NodeRef textNode = createContentNode("plainContent", "Some plain text", MimetypeMap.MIMETYPE_TEXT_PLAIN);
 
-        String pubQueueUrl = MessageFormat.format(PUBLISHING_QUEUE_URL, siteId);
-        
         // Post empty content.
-        sendRequest(new PostRequest(pubQueueUrl, "", JSON), 400);
+        sendRequest(new PostRequest(PUBLISHING_QUEUE_URL, "", JSON), 400);
         
         String comment = "The comment";
         String statusMessage = "The status message";
@@ -251,17 +229,16 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         String jsonStr = json.toString();
 
         // Post JSON content.
-        sendRequest(new PostRequest(pubQueueUrl, jsonStr, JSON), 200);
+        sendRequest(new PostRequest(PUBLISHING_QUEUE_URL, jsonStr, JSON), 200);
 
-        PublishingEventFilter filter = queue.createPublishingEventFilter();
-        filter.setPublishedNodes(textNode);
-        List<PublishingEvent> events = queue.getPublishingEvents(filter);
-        assertEquals(1, events.size());
+        List<PublishingEvent> publishedEvents = publishingService.getEventsForPublishedNode(textNode);
         
-        PublishingEvent event = events.get(0);
+        assertEquals(1, publishedEvents.size());
+        
+        PublishingEvent event = publishedEvents.get(0);
         assertEquals(publishChannel.getId(), event.getChannelId());
         assertEquals(comment, event.getComment());
-        assertEquals(Status.SCHEDULED, event.getStatus());
+        assertEquals(PublishingEvent.Status.SCHEDULED, event.getStatus());
         
         // Check Package
         PublishingPackage pckg = event.getPackage();
@@ -305,28 +282,32 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         jsonStr = json.toString();
         
         // Post JSON without NodeRef in status.
-        sendRequest(new PostRequest(pubQueueUrl, jsonStr, JSON), 200);
+        sendRequest(new PostRequest(PUBLISHING_QUEUE_URL, jsonStr, JSON), 200);
         
         json.remove(STATUS_UPDATE);
         jsonStr = json.toString();
         
         // Post JSON without Status Update.
-        sendRequest(new PostRequest(pubQueueUrl, jsonStr, JSON), 200);
+        sendRequest(new PostRequest(PUBLISHING_QUEUE_URL, jsonStr, JSON), 200);
+        
+        events.addAll(publishingService.getEventsForPublishedNode(textNode));
     }
 
-    public void testPublishingEventsQueryPostPublishedNode() throws Exception
+    public void testPublishingEventsForNodeGet() throws Exception
     {
         Channel publishChannel = createChannel(publishAnyType);
         NodeRef textNode1 = createContentNode("plain1.txt", "This is some plain text", MimetypeMap.MIMETYPE_TEXT_PLAIN);
         NodeRef textNode2 = createContentNode("plain2.txt", "This is some more plain text", MimetypeMap.MIMETYPE_TEXT_PLAIN);
         
-        String queryUrl = MessageFormat.format(PUBLISHING_EVENT_QUERY_URL, siteId);
+        String protocol = textNode1.getStoreRef().getProtocol();
+        String storeId = textNode1.getStoreRef().getIdentifier();
+        String nodeId1 = textNode1.getId();
+        String textNode1Url = MessageFormat.format(PUBLISHING_EVENTS_FOR_NODE_url, protocol, storeId, nodeId1);
 
-        // Post empty string with correct site name.
-        Response response = sendRequest(new PostRequest(queryUrl, "", JSON), 200);
-        
+        // Get events on textNode1 before any events created.
+        Response response = sendRequest(new GetRequest(textNode1Url), 200);
         JSONArray data = getDataArray(response);
-        int startingSize = data.length();
+        assertEquals(0, data.length());
         
         // Create publishing event for textNode1.
         MutablePublishingPackage pckg1 = queue.createPublishingPackage();
@@ -337,35 +318,20 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         schedule.add(Calendar.YEAR, 1);
         
         String event1Id = queue.scheduleNewEvent(pckg1, publishChannel.getId(), schedule, comment, statusUpdate);
-        
-        // Query for all events.
-        response = sendRequest(new PostRequest(queryUrl, "", JSON), 200);
-        data = getDataArray(response);
-        checkContainsEvents(data, startingSize, event1Id);
-        
-        JSONObject json = new JSONObject();
-        json.put(PUBLISH_NODES, Arrays.asList(textNode1.toString()));
+        PublishingEvent event1 = publishingService.getPublishingEvent(event1Id);
+        events.add(event1);
         
         // Query for events on textNode1.
-        response = sendRequest(new PostRequest(queryUrl, json.toString(), JSON), 200);
+        response = sendRequest(new GetRequest(textNode1Url), 200);
         data = getDataArray(response);
-        checkContainsEvents(data, 0, event1Id);
-        
-        json = new JSONObject();
-        json.put(PUBLISH_NODES, Arrays.asList(textNode2.toString()));
+        checkContainsEvents(data, event1Id);
         
         // Query for events on textNode2.
-        response = sendRequest(new PostRequest(queryUrl, json.toString(), JSON), 200);
+        String nodeId2 = textNode2.getId();
+        String textNode2Url = MessageFormat.format(PUBLISHING_EVENTS_FOR_NODE_url, protocol, storeId, nodeId2);
+        response = sendRequest(new GetRequest(textNode2Url), 200);
         data = getDataArray(response);
         assertEquals(0, data.length());
-        
-        json = new JSONObject();
-        json.put(PUBLISH_NODES, Arrays.asList(textNode1.toString(), textNode2.toString()));
-        
-        // Query for events on both textNode1 and textNode2.
-        response = sendRequest(new PostRequest(queryUrl, json.toString(), JSON), 200);
-        data = getDataArray(response);
-        checkContainsEvent(data, event1Id);
     }
     
     public void testChannelTypesGet() throws Exception
@@ -399,9 +365,9 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         fail("Failed to find Channel Type: " + typeId);
     }
 
-    private void checkContainsEvents(JSONArray data, int startSize, String... eventIds) throws Exception
+    private void checkContainsEvents(JSONArray data, String... eventIds) throws Exception
     {
-        assertEquals(eventIds.length + startSize, data.length());
+        assertEquals(eventIds.length, data.length());
         for (String eventId : eventIds)
         {
             checkContainsEvent(data, eventId);
@@ -519,7 +485,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         return json;
     }
 
-    private JSONObject buildStatusUpdate(String message, NodeRef textNode, Channel... channels) throws JSONException
+    private JSONObject buildStatusUpdate(String message, NodeRef textNode, Channel... theChannels) throws JSONException
     {
         Function<Channel, String> transformer = new Function<Channel, String>()
         {
@@ -528,7 +494,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
                 return channel.getId();
             }
         };
-        List<String> ids = CollectionUtils.transform(transformer, channels);
+        List<String> ids = CollectionUtils.transform(transformer, theChannels);
             
         JSONObject statusUpdate = new JSONObject();
         statusUpdate.put(MESSAGE, message);
@@ -537,9 +503,9 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         return statusUpdate;
     }
 
-    private void checkChannels(JSONArray json, Channel... channels)throws Exception
+    private void checkChannels(JSONArray json, Channel... theChannels)throws Exception
     {
-        for (Channel channel : channels)
+        for (Channel channel : theChannels)
         {
             checkContainsChannel(json, channel);
         }
@@ -625,7 +591,9 @@ public class PublishingRestApiTest extends BaseWebScriptTest
 
     private Channel createChannel(String typeId)
     {
-        return channelService.createChannel(typeId, GUID.generate(), null);
+        Channel channel = channelService.createChannel(typeId, GUID.generate(), null);
+        channels.add(channel);
+        return channel;
     }
 
     private JSONObject getJsonData(Response response) throws Exception
@@ -737,14 +705,22 @@ public class PublishingRestApiTest extends BaseWebScriptTest
     @Override
     public void tearDown() throws Exception
     {
-        //FInd all events
-        PublishingEventFilter filter = queue.createPublishingEventFilter();
-        List<PublishingEvent> events = queue.getPublishingEvents(filter);
         for (PublishingEvent event : events)
         {
             try
             {
                 publishingService.cancelPublishingEvent(event.getId());
+            }
+            catch(Throwable t)
+            {
+                //NOOP
+            }
+        }
+        for (Channel channel : channels)
+        {
+            try
+            {
+                channelService.deleteChannel(channel);
             }
             catch(Throwable t)
             {

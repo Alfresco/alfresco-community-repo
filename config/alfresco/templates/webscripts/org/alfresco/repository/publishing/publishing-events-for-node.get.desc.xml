@@ -1,0 +1,160 @@
+<webscript>
+   <shortname>Get Publishing Events For Node</shortname>
+   <description>Find all PublishingEvents that publish or unpublish the specified node.</description>
+   <url>/api/publishing/{store_protocol}/{store_id}/{node_id}/events</url>
+   <format default="json"/>
+   <authentication>user</authentication>
+   <transaction allow="readonly">required</transaction>
+   <lifecycle>public_api</lifecycle>
+   <args>
+      <arg>
+         <shortname>store_protocol</shortname>
+         <description>The store protocol for the published/unpublished node.</description>
+      </arg>
+      <arg>
+         <shortname>store_id</shortname>
+         <description>The store id for the published/unpublished node.</description>
+      </arg>
+      <arg>
+         <shortname>node_id</shortname>
+         <description>The node id for the published/unpublished node.</description>
+      </arg>
+   </args>
+   <responses>
+      <response>
+         <format>json</format>
+         <type>
+            <![CDATA[
+            {
+               "data": 
+               {
+                  "publishingEvents":
+                  [
+                     {
+                        "id": string,
+                        "url": string,
+                        "status": string,
+                        "comment": string,
+                        "eventType": string,
+                        "scheduledTime":
+                        {
+                           "dateTime": string,
+                           "format": string,
+                           "timeZone": string
+                        }
+                        "creator": string,
+                        "createdTime":
+                        {
+                           "dateTime": string,
+                           "format": string
+                        },
+                        "publishNodes":
+                        [
+                           {
+                              "nodeRef": string,
+                              "name": string,
+                              "version": string
+                           },
+                           ...
+                         ],
+                        "unpublishNodes":
+                        [
+                           {
+                              "nodeRef": string,
+                              "name": string,
+                              "version": string
+                           },
+                           ...
+                        ]
+                        "channel":
+                        {
+                           "url": string,
+                           "name": string,
+                           "title": string,
+                           "channelType":
+                           {
+                              "id": string,
+                              "title": string,
+                              "url": string,
+                              "channelNodeType": string,
+                              "contentRootNodeType": string,
+                              "supportedContentTypes": [string, ...],
+                              "supportedMimeTypes": [string, ...],
+                              "canPublish": boolean,
+                              "canPublishStatusUpdates": boolean,
+                              "canUnpublish": boolean,
+                              "maxStatusLength": number,
+                              "icon": string
+                           }
+                        }
+                     },
+                     ...
+                  ]
+                  unpublishingEvents:
+                  [
+                     {
+                        "id": string,
+                        "url": string,
+                        "status": string,
+                        "comment": string,
+                        "scheduledTime":
+                        {
+                           "dateTime": string,
+                           "format": string,
+                           "timeZone": string
+                        }
+                        "creator": string,
+                        "createdTime":
+                        {
+                           "dateTime": string,
+                           "format": string
+                        },
+                        "publishNodes":
+                        [
+                           {
+                              "nodeRef": string,
+                              "name": string,
+                              "version": string
+                           },
+                           ...
+                         ],
+                        "unpublishNodes":
+                        [
+                           {
+                              "nodeRef": string,
+                              "name": string,
+                              "version": string
+                           },
+                           ...
+                        ]
+                        "channel":
+                        {
+                           "url": string,
+                           "name": string,
+                           "title": string,
+                           "channelType":
+                           {
+                              "id": string,
+                              "title": string,
+                              "url": string,
+                              "channelNodeType": string,
+                              "contentRootNodeType": string,
+                              "supportedContentTypes": [string, ...],
+                              "supportedMimeTypes": [string, ...],
+                              "canPublish": boolean,
+                              "canPublishStatusUpdates": boolean,
+                              "canUnpublish": boolean,
+                              "maxStatusLength": number,
+                              "icon": string
+                           }
+                        }
+                     },
+                     ...
+                  ]
+               }
+            }
+            ]]>
+         </type>
+      </response>
+   </responses>
+</webscript>

@@ -23,7 +23,6 @@ import static org.alfresco.repo.web.scripts.WebScriptUtil.getCalendar;
 import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CHANNEL_ID;
 import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CHANNEL_IDS;
 import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.COMMENT;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.IDS;
 import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.MESSAGE;
 import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.NODE_REF;
 import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.PUBLISH_NODES;
@@ -40,8 +39,6 @@ import java.util.List;
 
 import org.alfresco.repo.node.NodeUtils;
 import org.alfresco.service.cmr.publishing.MutablePublishingPackage;
-import org.alfresco.service.cmr.publishing.PublishingEvent;
-import org.alfresco.service.cmr.publishing.PublishingEventFilter;
 import org.alfresco.service.cmr.publishing.PublishingPackage;
 import org.alfresco.service.cmr.publishing.PublishingQueue;
 import org.alfresco.service.cmr.publishing.StatusUpdate;
@@ -70,26 +67,6 @@ public class PublishingJsonParser
         return new JSONObject();
     }
     
-    public List<PublishingEvent> query(PublishingQueue queue, String content) throws JSONException
-    {
-        JSONObject json = getJson(content);
-        PublishingEventFilter filter = buildFilter(queue, json);
-        return queue.getPublishingEvents(filter);
-    }
-
-    private PublishingEventFilter buildFilter(PublishingQueue queue, JSONObject json)
-    {
-        List<NodeRef> publishNodes = toNodes(json.optJSONArray(PUBLISH_NODES));
-        List<NodeRef> unpublishNodes = toNodes(json.optJSONArray(UNPUBLISH_NODES));
-        List<String> ids = JsonUtils.toListOfStrings(json.optJSONArray(IDS));
-
-        PublishingEventFilter filter = queue.createPublishingEventFilter()
-            .setIds(ids)
-            .setPublishedNodes(publishNodes)
-            .setUnpublishedNodes(unpublishNodes);
-        return filter;
-    }
-
     public String schedulePublishingEvent(PublishingQueue queue, String jsonStr) throws ParseException, JSONException
     {
         JSONObject json = getJson(jsonStr);

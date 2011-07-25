@@ -50,6 +50,26 @@ import org.springframework.extensions.surf.util.URLEncoder;
  */
 public class PublishingModelBuilder implements PublishingWebScriptConstants
 {
+    public Map<String, Object> buildPublishingEventForNode(PublishingEvent event, NodeRef node, ChannelService channelService)
+    {
+        Map<String, Object> model = buildPublishingEvent(event, channelService);
+        boolean isPublish = event.getPackage().getNodesToPublish().contains(node);
+        String type = isPublish ? "published" : "unpublished"; 
+        model.put(EVENT_TYPE, type);
+        return model;
+    }
+    
+    public List<Map<String, Object>> buildPublishingEventsForNode(List<PublishingEvent> events,
+            final NodeRef node, final ChannelService channelService)
+    {
+        return transform(events, new Function<PublishingEvent, Map<String, Object>>()
+        {
+            public Map<String, Object> apply(PublishingEvent event)
+            {
+                return buildPublishingEventForNode(event, node, channelService);
+            }
+        });
+    }
     
     public Map<String, Object> buildPublishingEvent(PublishingEvent event, ChannelService channelService)
     {
@@ -89,7 +109,7 @@ public class PublishingModelBuilder implements PublishingWebScriptConstants
             }
         });
     }
-
+    
     public Map<String, Object> buildChannel(Channel channel)
     {
         Map<String, Object> model = new HashMap<String, Object>();

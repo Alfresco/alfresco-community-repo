@@ -26,9 +26,6 @@ package org.alfresco.repo.web.scripts.publishing;
  */
 public interface PublishingWebScriptConstants
 {
-    // URL Template Keys.
-    public static final String SITE_ID = "site_id";
-
     // General Model Keys
     public static final String ID = "id";
     public static final String URL = "url";
@@ -70,8 +67,8 @@ public interface PublishingWebScriptConstants
     public static final String NODE_REF = "nodeRef";
     public static final String MESSAGE = "message";
 
-    // Publishing Event Filter Modek Keys
-    public static final String IDS = "ids";
+    // Publishing Events For Node Modek Keys
+    public static final String EVENT_TYPE = "eventType";
     
     // channels.get Model Keys
     public static final String URL_LENGTH = "urlLength";

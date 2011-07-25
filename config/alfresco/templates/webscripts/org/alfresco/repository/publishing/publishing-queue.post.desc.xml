@@ -1,17 +1,11 @@
 <webscript>
    <shortname>Post Content to Publishing Queue</shortname>
-   <description>Place a new Publishing Event on the Publishing Queue for the specified Environment.</description>
-   <url>/api/publishing/{site_id}/queue</url>
+   <description>Place a new Publishing Event on the Publishing Queue..</description>
+   <url>/api/publishing/queue</url>
    <format default="json"/>
    <authentication>user</authentication>
    <transaction>required</transaction>
    <lifecycle>public_api</lifecycle>
-   <args>
-      <arg>
-         <shortname>site_id</shortname>
-         <description>The id of the site to publish to.</description>
-      </arg>
-   </args>
    <requests>
       <request>
          <format>json</format>

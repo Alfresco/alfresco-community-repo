@@ -20,15 +20,12 @@
 package org.alfresco.repo.web.scripts.publishing;
 
 import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.PUBLISHING_CHANNELS;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.SITE_ID;
 import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.STATUS_UPDATE_CHANNELS;
 import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.URL_LENGTH;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.web.scripts.WebScriptUtil;
 import org.alfresco.service.cmr.publishing.channels.Channel;
@@ -38,7 +35,6 @@ import org.alfresco.service.cmr.urlshortening.UrlShortener;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
@@ -59,23 +55,17 @@ public class ChannelsGet extends DeclarativeWebScript
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         Map<String, String> params = req.getServiceMatch().getTemplateVars();
-        String siteId = params.get(SITE_ID);
-        
+        NodeRef node = WebScriptUtil.getNodeRef(params);
+
         List<Channel> publishingChannels;
         List<Channel> statusUpdateChannels;
-        if (siteId!= null)
+        if (node == null)
         {
             publishingChannels = channelService.getPublishingChannels();
             statusUpdateChannels = channelService.getStatusUpdateChannels();
         }
         else
         {
-            NodeRef node = WebScriptUtil.getNodeRef(params);
-            if(node == null)
-            {
-                String msg = "Either a Site ID or valid NodeRef must be specified!";
-                throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, msg);
-            }
             publishingChannels = channelService.getRelevantPublishingChannels(node);
             statusUpdateChannels = channelService.getStatusUpdateChannels();
         }

@@ -19,54 +19,27 @@
 
 package org.alfresco.repo.web.scripts.publishing;
 
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.SITE_ID;
-
-import java.util.Map;
-
-import javax.servlet.http.HttpServletResponse;
-
 import org.alfresco.service.cmr.publishing.PublishingQueue;
 import org.alfresco.service.cmr.publishing.PublishingService;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * @author Nick Smith
  * @since 4.0
  *
  */
-public abstract class PublishingEnvironmentWebScript extends DeclarativeWebScript
+public abstract class PublishingWebScript extends DeclarativeWebScript
 {
     protected final PublishingJsonParser jsonParser = new PublishingJsonParser();
     protected final PublishingModelBuilder builder= new PublishingModelBuilder();
 
     protected PublishingService publishingService;
     protected ChannelService channelService;
-    
-    protected String getSiteId(WebScriptRequest req)
-    {
-        Map<String, String> params = req.getServiceMatch().getTemplateVars();
-        String siteId = params.get(SITE_ID);
-        
-        if(siteId == null)
-        {
-            String msg = "A Site ID must be specified!";
-            throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, msg);
-        }
-        return siteId;
-    }
-    
-    protected PublishingQueue getQueue(WebScriptRequest req)
-    {
-        String siteId = getSiteId(req);
-        return getQueue(siteId);
-    }
 
-    protected PublishingQueue getQueue(String siteId)
+    protected PublishingQueue getQueue()
     {
-        return publishingService.getPublishingQueue(siteId);
+        return publishingService.getPublishingQueue();
     }
     
     /**

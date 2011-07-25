@@ -195,6 +195,9 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
     private static final String ERR_GET_COMPANY_HOME_INVALID = "jbpm.engine.get.company.home.invalid";
     private static final String ERR_GET_COMPANY_HOME_MULTIPLE = "jbpm.engine.get.company.home.multiple";
     
+    // engine ID
+    public static final String ENGINE_ID = "jbpm";
+    
     /**
      * Sets the JBPM Template used for accessing JBoss JBPM in the correct
      * context

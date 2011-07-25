@@ -21,6 +21,7 @@ package org.alfresco.repo.workflow;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.service.cmr.workflow.WorkflowAdminService;
 import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -46,6 +47,8 @@ public class BPMEngineRegistry
     /** Logging support */
     private static Log logger = LogFactory.getLog("org.alfresco.repo.workflow");
 
+    private WorkflowAdminService workflowAdminService;
+    
     private Map<String, WorkflowComponent> workflowComponents;
     private Map<String, TaskComponent> taskComponents;
 
@@ -56,6 +59,16 @@ public class BPMEngineRegistry
     {
         workflowComponents = new HashMap<String, WorkflowComponent>();
         taskComponents = new HashMap<String, TaskComponent>();
+    }
+    
+    /**
+     * Sets the workflow admin service
+     * 
+     * @param workflowAdminService the workflow admin service
+     */
+    public void setWorkflowAdminService(WorkflowAdminService workflowAdminService)
+    {
+        this.workflowAdminService = workflowAdminService;
     }
     
     /**
@@ -70,10 +83,19 @@ public class BPMEngineRegistry
         {
             throw new WorkflowException("Workflow Component already registered for engine id '" + engineId + "'");
         }
-        workflowComponents.put(engineId, engine);
         
-        if (logger.isInfoEnabled())
-            logger.info("Registered Workflow Component '" + engineId + "' (" + engine.getClass() + ")");
+        if (workflowAdminService.isEngineEnabled(engineId))
+        {
+            workflowComponents.put(engineId, engine);
+        
+            if (logger.isDebugEnabled())
+                logger.debug("Registered Workflow Component '" + engineId + "' (" + engine.getClass() + ")");
+        }
+        else
+        {
+            if (logger.isWarnEnabled())
+                logger.warn("Ignoring Workflow Component '" + engineId + "' (" + engine.getClass() + ") as the engine is disabled");
+        }
     }
 
     /**
@@ -109,10 +131,19 @@ public class BPMEngineRegistry
         {
             throw new WorkflowException("Task Component already registered for engine id '" + engineId + "'");
         }
-        taskComponents.put(engineId, engine);
         
-        if (logger.isInfoEnabled())
-            logger.info("Registered Task Component '" + engineId + "' (" + engine.getClass() + ")");
+        if (workflowAdminService.isEngineEnabled(engineId))
+        {
+            taskComponents.put(engineId, engine);
+        
+            if (logger.isDebugEnabled())
+                logger.debug("Registered Task Component '" + engineId + "' (" + engine.getClass() + ")");
+        }
+        else
+        {
+            if (logger.isWarnEnabled())
+                logger.warn("Ignoring Task Component '" + engineId + "' (" + engine.getClass() + ") as the engine is disabled");
+        }
     }
 
     /**

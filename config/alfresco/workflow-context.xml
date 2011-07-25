@@ -11,6 +11,7 @@
       <property name="transactionService" ref="transactionService"/>
       <property name="authenticationContext" ref="authenticationContext" />
       <property name="workflowService" ref="WorkflowService" />
+      <property name="workflowAdminService" ref="workflowAdminService" />
       <property name="dictionaryDAO" ref="dictionaryDAO"/>
       <property name="nodeService" ref="NodeService"/>
       <property name="searchService" ref="SearchService"/>
@@ -60,6 +61,19 @@
             </list>
         </property>
    </bean>
+   
+   <!--                                       -->
+   <!-- Workflow Admin Service Implementation -->
+   <!--                                       -->
+   
+   <bean id="workflowAdminService" class="org.alfresco.repo.workflow.WorkflowAdminServiceImpl">
+      <property name="jbpmEngineEnabled">
+         <value>${system.workflow.engine.jbpm.enabled}</value>
+      </property>
+      <property name="activitiEngineEnabled">
+         <value>${system.workflow.engine.activiti.enabled}</value>
+      </property>
+   </bean>
 
    <!--                 -->
    <!-- Workflow Action -->
@@ -77,6 +91,7 @@
    <!--                       -->
 
    <bean id="bpm_engineRegistry" class="org.alfresco.repo.workflow.BPMEngineRegistry">
+      <property name="workflowAdminService" ref="workflowAdminService" />
    </bean>
 
    <bean id="bpm_engine" class="org.alfresco.repo.workflow.AlfrescoBpmEngine" abstract="true">

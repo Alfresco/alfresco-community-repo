@@ -40,6 +40,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.workflow.WorkflowAdminService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowDeployment;
 import org.alfresco.service.cmr.workflow.WorkflowException;
@@ -73,6 +74,7 @@ public class WorkflowDeployer extends AbstractLifecycleBean
     // Dependencies
     private TransactionService transactionService;
     private WorkflowService workflowService;
+    private WorkflowAdminService workflowAdminService;
     private AuthenticationContext authenticationContext;
     private DictionaryDAO dictionaryDAO;
     private List<Properties> workflowDefinitions;
@@ -100,13 +102,23 @@ public class WorkflowDeployer extends AbstractLifecycleBean
     }
     
     /**
-     * Sets the namespace service
+     * Sets the workflow service
      * 
-     * @param namespaceService the namespace service
+     * @param workflowService the workflow service
      */
     public void setWorkflowService(WorkflowService workflowService)
     {
         this.workflowService = workflowService;
+    }
+    
+    /**
+     * Sets the workflow admin service
+     * 
+     * @param workflowAdminService the workflow admin service
+     */
+    public void setWorkflowAdminService(WorkflowAdminService workflowAdminService)
+    {
+        this.workflowAdminService = workflowAdminService;
     }
 
     /**
@@ -223,7 +235,9 @@ public class WorkflowDeployer extends AbstractLifecycleBean
         }
         if (!transactionService.getAllowWrite())
         {
-            logger.warn("Repository is in read-only mode; not deploying workflows.");
+            if (logger.isWarnEnabled())
+                logger.warn("Repository is in read-only mode; not deploying workflows.");
+            
             return;
         }
         
@@ -235,12 +249,12 @@ public class WorkflowDeployer extends AbstractLifecycleBean
             // bootstrap the workflow models and static labels (from classpath)
             if (models != null && resourceBundles != null && ((models.size() > 0) || (resourceBundles.size() > 0)))
             {
-            	DictionaryBootstrap dictionaryBootstrap = new DictionaryBootstrap();
-            	dictionaryBootstrap.setDictionaryDAO(dictionaryDAO);
+                DictionaryBootstrap dictionaryBootstrap = new DictionaryBootstrap();
+                dictionaryBootstrap.setDictionaryDAO(dictionaryDAO);
                 dictionaryBootstrap.setTenantService(tenantService);
-            	dictionaryBootstrap.setModels(models);
-            	dictionaryBootstrap.setLabels(resourceBundles);
-            	dictionaryBootstrap.bootstrap(); // also registers with dictionary
+                dictionaryBootstrap.setModels(models);
+                dictionaryBootstrap.setLabels(resourceBundles);
+                dictionaryBootstrap.bootstrap(); // also registers with dictionary
             }
             
             // bootstrap the workflow definitions (from classpath)
@@ -254,25 +268,22 @@ public class WorkflowDeployer extends AbstractLifecycleBean
                     {
                         throw new WorkflowException("Workflow Engine Id must be provided");
                     }
+                    
                     String location = workflowDefinition.getProperty(LOCATION);
                     if (location == null || location.length() == 0)
                     {
                         throw new WorkflowException("Workflow definition location must be provided");
                     }
-                    Boolean redeploy = Boolean.valueOf(workflowDefinition.getProperty(REDEPLOY));
-                    String mimetype = workflowDefinition.getProperty(MIMETYPE);
-
-                    // retrieve input stream on workflow definition
-                    ClassPathResource workflowResource = new ClassPathResource(location);
                     
-                    // deploy workflow definition
-                    if (!redeploy && workflowService.isDefinitionDeployed(engineId, workflowResource.getInputStream(), mimetype))
+                    if (workflowAdminService.isEngineEnabled(engineId))
                     {
-                        if (logger.isDebugEnabled())
-                            logger.debug("Workflow deployer: Definition '" + location + "' already deployed");
-                    }
-                    else
-                    {
+                        Boolean redeploy = Boolean.valueOf(workflowDefinition.getProperty(REDEPLOY));
+                        String mimetype = workflowDefinition.getProperty(MIMETYPE);
+
+                        // retrieve input stream on workflow definition
+                        ClassPathResource workflowResource = new ClassPathResource(location);
+                        
+                        // deploy workflow definition
                         if (!redeploy && workflowService.isDefinitionDeployed(engineId, workflowResource.getInputStream(), mimetype))
                         {
                             if (logger.isDebugEnabled())
@@ -280,10 +291,23 @@ public class WorkflowDeployer extends AbstractLifecycleBean
                         }
                         else
                         {
-                            WorkflowDeployment deployment = workflowService.deployDefinition(engineId, workflowResource.getInputStream(), 
-                                        mimetype, workflowResource.getFilename());
-                            logDeployment(location, deployment);
+                            if (!redeploy && workflowService.isDefinitionDeployed(engineId, workflowResource.getInputStream(), mimetype))
+                            {
+                                if (logger.isDebugEnabled())
+                                    logger.debug("Workflow deployer: Definition '" + location + "' already deployed");
+                            }
+                            else
+                            {
+                                WorkflowDeployment deployment = workflowService.deployDefinition(engineId, workflowResource.getInputStream(), 
+                                            mimetype, workflowResource.getFilename());
+                                logDeployment(location, deployment);
+                            }
                         }
+                    }
+                    else
+                    {
+                        if (logger.isDebugEnabled())
+                            logger.debug("Workflow deployer: Definition '" + location + "' not deployed as the '" + engineId + "' engine is disabled");
                     }
                 }
             }
@@ -299,9 +323,9 @@ public class WorkflowDeployer extends AbstractLifecycleBean
                 {
                     for (NodeRef nodeRef : nodeRefs)
                     {
-                    	deploy(nodeRef, false);
-        			}
-        	    }
+                        deploy(nodeRef, false);
+                    }
+                }
             }
                 
             userTransaction.commit();
@@ -328,59 +352,66 @@ public class WorkflowDeployer extends AbstractLifecycleBean
         {
             Boolean value = (Boolean)nodeService.getProperty(nodeRef, WorkflowModel.PROP_WORKFLOW_DEF_DEPLOYED);
             if ((value != null) && (value.booleanValue() == true))
-            {            
-            	 if (!redeploy && workflowService.isDefinitionDeployed(nodeRef))
-                 {
-                     if (logger.isDebugEnabled())
-                     {
-                         logger.debug("Workflow deployer: Definition '" + nodeRef + "' already deployed");
+            {
+                String engineId = (String) nodeService.getProperty(nodeRef, WorkflowModel.PROP_WORKFLOW_DEF_ENGINE_ID);
+                
+                if (workflowAdminService.isEngineEnabled(engineId))
+                {
+                    if (!redeploy && workflowService.isDefinitionDeployed(nodeRef))
+                    {
+                        if (logger.isDebugEnabled())
+                            logger.debug("Workflow deployer: Definition '" + nodeRef + "' already deployed");
+                    }
+                    else
+                    {
+                        // deploy / re-deploy
+                        WorkflowDeployment deployment = workflowService.deployDefinition(nodeRef);
+                        logDeployment(nodeRef, deployment);
+                        if (deployment != null)
+                        {
+                            WorkflowDefinition def = deployment.getDefinition();
+                            
+                            // Update the meta data for the model
+                            Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
+
+                            props.put(WorkflowModel.PROP_WORKFLOW_DEF_NAME, def.getName());
+
+                            // TODO - ability to return and handle deployment problems / warnings
+                            if (deployment.getProblems().length > 0)
+                            {
+                                for (String problem : deployment.getProblems())
+                                {
+                                    if (logger.isWarnEnabled())
+                                        logger.warn(problem);
+                                }
+                            }
+
+                           nodeService.setProperties(nodeRef, props);
+                         }
                      }
-                 }
-                 else
-                 {
-                	 // deploy / re-deploy
-                     WorkflowDeployment deployment = workflowService.deployDefinition(nodeRef);
-                     logDeployment(nodeRef, deployment);
-	                 if (deployment != null)
-	                 {
-	                	 WorkflowDefinition def = deployment.getDefinition();
-	                    
-	                	 // Update the meta data for the model
-	                	 Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
-						
-	                	 props.put(WorkflowModel.PROP_WORKFLOW_DEF_NAME, def.getName());
-						
-	                	 // TODO - ability to return and handle deployment problems / warnings
-	                	 if (deployment.getProblems().length > 0)
-	                	 {
-	                		 for (String problem : deployment.getProblems())
-	                		 {
-	                			 logger.warn(problem);
-	                		 }
-	                	 }
-						
-	                	 nodeService.setProperties(nodeRef, props);
-	                }
-	            }
+                }
+                else
+                {
+                    if (logger.isDebugEnabled())
+                        logger.debug("Workflow deployer: Definition '" + nodeRef + "' not deployed as the '" + engineId + "' engine is disabled");
+                }
             }
         }
         else
         {
             if (logger.isDebugEnabled())
-            {
-            	logger.debug("Workflow deployer: Definition '" + nodeRef + "' not deployed since it is a working copy");
-            }
+                logger.debug("Workflow deployer: Definition '" + nodeRef + "' not deployed since it is a working copy");
         }
     }
 
     private void logDeployment(Object location, WorkflowDeployment deployment)
     {
-        if (logger.isInfoEnabled())
+        if (logger.isDebugEnabled())
          {
             String title = deployment.getDefinition().getTitle();
             String version = deployment.getDefinition().getVersion();
             int problemLength = deployment.getProblems().length;
-            logger.info("Workflow deployer: Deployed process definition '" + title + "' (version " + version + ") from '" + location + "' with " + problemLength + " problems");
+            logger.debug("Workflow deployer: Deployed process definition '" + title + "' (version " + version + ") from '" + location + "' with " + problemLength + " problems");
          }
     }
     
@@ -396,24 +427,20 @@ public class WorkflowDeployer extends AbstractLifecycleBean
                 List<WorkflowDefinition> defs = workflowService.getAllDefinitionsByName(defName);
                 for (WorkflowDefinition def: defs)
                 {
-                	if (logger.isInfoEnabled())
-                    {
-                		logger.info("Undeploying workflow '" + defName + "' ...");
-                    }
+                    if (logger.isDebugEnabled())
+                        logger.debug("Undeploying workflow '" + defName + "' ...");
+
                     workflowService.undeployDefinition(def.getId());
-                	if (logger.isInfoEnabled())
-                    {
-                		logger.info("... undeployed '" + def.getId() + "' v" + def.getVersion());
-                    }
+
+                    if (logger.isDebugEnabled())
+                        logger.debug("... undeployed '" + def.getId() + "' v" + def.getVersion());
                 }
             }
         }
         else
         {
             if (logger.isDebugEnabled())
-            {
-            	logger.debug("Workflow deployer: Definition '" + nodeRef + "' not undeployed since it is a working copy");
-            }
+                logger.debug("Workflow deployer: Definition '" + nodeRef + "' not undeployed since it is a working copy");
         }
     }
     
@@ -424,10 +451,10 @@ public class WorkflowDeployer extends AbstractLifecycleBean
         AuthenticationUtil.runAs(new RunAsWork<Object>()
         {
             public Object doWork()
-            {            
+            {
                 init();
                 return null;
-            }                               
+            }
         }, AuthenticationUtil.getSystemUserName());
         
         tenantAdminService.register(this);

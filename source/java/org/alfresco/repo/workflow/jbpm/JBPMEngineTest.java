@@ -84,8 +84,8 @@ public class JBPMEngineTest extends BaseAlfrescoSpringTest
         person3 = createPerson(USER3);
         
         BPMEngineRegistry registry = (BPMEngineRegistry)applicationContext.getBean("bpm_engineRegistry");
-        workflowComponent = registry.getWorkflowComponent("jbpm");
-        taskComponent = registry.getTaskComponent("jbpm");
+        workflowComponent = registry.getWorkflowComponent(JBPMEngine.ENGINE_ID);
+        taskComponent = registry.getTaskComponent(JBPMEngine.ENGINE_ID);
         packageComponent = (WorkflowPackageComponent)applicationContext.getBean("workflowPackageImpl"); 
         
         // deploy test process messages

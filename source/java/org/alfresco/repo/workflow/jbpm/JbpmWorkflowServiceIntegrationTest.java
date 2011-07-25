@@ -112,7 +112,7 @@ public class JbpmWorkflowServiceIntegrationTest extends AbstractWorkflowServiceI
     @Override
     protected String getEngine()
     {
-        return "jbpm";
+        return JBPMEngine.ENGINE_ID;
     }
 
     @Override

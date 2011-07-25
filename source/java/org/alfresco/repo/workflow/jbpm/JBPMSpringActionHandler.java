@@ -65,7 +65,7 @@ public abstract class JBPMSpringActionHandler implements ActionHandler
     protected String getWorkflowInstanceId(ExecutionContext context)
     {
         String id = new Long(context.getProcessInstance().getId()).toString();
-        return BPMEngineRegistry.createGlobalId("jbpm", id);
+        return BPMEngineRegistry.createGlobalId(JBPMEngine.ENGINE_ID, id);
     }
     
 }

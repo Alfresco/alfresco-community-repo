@@ -67,8 +67,8 @@ public class ReviewAndApproveTest extends BaseSpringTest
     {
         personService = (PersonService)applicationContext.getBean("personService");
         BPMEngineRegistry registry = (BPMEngineRegistry)applicationContext.getBean("bpm_engineRegistry");
-        workflowComponent = registry.getWorkflowComponent("jbpm");
-        taskComponent = registry.getTaskComponent("jbpm");
+        workflowComponent = registry.getWorkflowComponent(JBPMEngine.ENGINE_ID);
+        taskComponent = registry.getTaskComponent(JBPMEngine.ENGINE_ID);
         
         // deploy latest review and approve process definition
         ClassPathResource processDef = new ClassPathResource("alfresco/workflow/review_processdefinition.xml");

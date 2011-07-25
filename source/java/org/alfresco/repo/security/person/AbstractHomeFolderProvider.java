@@ -48,7 +48,7 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
     /**
      * The home folder manager
      */
-    private HomeFolderManager homeFolderManager;
+    private PortableHomeFolderManager homeFolderManager;
 
     /**
      * The store ref in which to conduct searches
@@ -97,7 +97,7 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
     /**
      * Get the home folder manager.
      */
-    protected HomeFolderManager getHomeFolderManager()
+    protected PortableHomeFolderManager getHomeFolderManager()
     {
         return homeFolderManager;
     }
@@ -106,7 +106,7 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
      * Set the home folder manager.
      * @param homeFolderManager
      */
-    public void setHomeFolderManager(HomeFolderManager homeFolderManager)
+    public void setHomeFolderManager(PortableHomeFolderManager homeFolderManager)
     {
         this.homeFolderManager = homeFolderManager;
     }

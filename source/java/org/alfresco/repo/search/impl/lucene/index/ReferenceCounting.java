@@ -19,6 +19,7 @@
 package org.alfresco.repo.search.impl.lucene.index;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Reference counting and caching for read only index access.
@@ -31,6 +32,10 @@ import java.io.IOException;
  */
 public interface ReferenceCounting
 {
+    public long getCreationTime();
+
+    public List<Throwable> getReferences();
+
     /**
      * Get the number of references
      * @return

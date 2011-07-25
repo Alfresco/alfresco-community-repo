@@ -26,8 +26,9 @@ import org.alfresco.repo.search.BackgroundIndexerAware;
 import org.alfresco.repo.search.Indexer;
 import org.alfresco.repo.search.IndexerAndSearcher;
 import org.alfresco.repo.search.SupportsBackgroundIndexing;
-import org.alfresco.repo.search.impl.lucene.index.IndexInfo;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
@@ -51,6 +52,8 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
     private static Set<StoreRef> indexing = new HashSet<StoreRef>();
 
     private IndexerAndSearcher indexerAndSearcherFactory;
+    
+    private TransactionService transactionService;
 
     private int pauseCount = 0;
 
@@ -201,30 +204,42 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
         int done = 0;
         while (done == 0)
         {
-            StoreRef toIndex = getNextRef();
+            final StoreRef toIndex = getNextRef();
             if (toIndex != null)
             {
                 if(s_logger.isDebugEnabled())
                 {
                     s_logger.debug("FTS Indexing "+toIndex+" at "+(new java.util.Date()));
                 }
-                Indexer indexer = indexerAndSearcherFactory.getIndexer(toIndex);
-                if(indexer instanceof BackgroundIndexerAware)
+                try
                 {
-                   BackgroundIndexerAware backgroundIndexerAware = (BackgroundIndexerAware)indexer;
-                   backgroundIndexerAware.registerCallBack(this);
-                   try
-                   {
-                       done += backgroundIndexerAware.updateFullTextSearch(batchSize);   
-                   }
-                   catch (Exception ex)
-                   {
-                       if(s_logger.isWarnEnabled())
-                       {
-                           s_logger.warn("FTS Job threw exception", ex);
-                       }
-                       done = 1; // better luck next time
-                   }
+                    done += transactionService.getRetryingTransactionHelper().doInTransaction(
+                            new RetryingTransactionCallback<Integer>()
+                            {
+                                @Override
+                                public Integer execute() throws Throwable
+                                {
+                                    Indexer indexer = indexerAndSearcherFactory.getIndexer(toIndex);
+                                    // Activate database 'read through' behaviour so that we don't end up with stale
+                                    // caches during this potentially long running transaction
+                                    indexer.setReadThrough(true);
+                                    if (indexer instanceof BackgroundIndexerAware)
+                                    {
+                                        BackgroundIndexerAware backgroundIndexerAware = (BackgroundIndexerAware) indexer;
+                                        backgroundIndexerAware.registerCallBack(FullTextSearchIndexerImpl.this);
+                                        return backgroundIndexerAware.updateFullTextSearch(batchSize);
+                                    }
+                                    return 0;
+                                }
+                            });
+                }
+                catch (Exception ex)
+                {
+                    if (s_logger.isWarnEnabled())
+                    {
+                        s_logger.warn("FTS Job threw exception", ex);
+                    }
+                    done = 1; // better luck next time
                 }
             }
             else
@@ -276,6 +291,14 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
     public void setIndexerAndSearcherFactory(IndexerAndSearcher indexerAndSearcherFactory)
     {
         this.indexerAndSearcherFactory = indexerAndSearcherFactory;
+    }
+    
+    /**
+     * @param transactionService
+     */
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
     }
 
     /**

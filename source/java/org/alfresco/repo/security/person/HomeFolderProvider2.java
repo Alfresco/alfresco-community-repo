@@ -24,7 +24,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Interface for home folder providers. Instances work with the 
- * {@link HomeFolderManager} (which performs most of the work)
+ * {@link PortableHomeFolderManager} (which performs most of the work)
  * to allow it to create home folders in custom locations.
  * 
  * The home folder may be a simple structure where all users share a root folder (See
@@ -94,8 +94,8 @@ public interface HomeFolderProvider2
     PermissionsManager getOnReferencePermissionsManager();
 
     /**
-     * Callback from {@link HomeFolderManager} to locate or create a home folder.
-     * Implementations normally call {@link HomeFolderManager.getHomeFolder}.
+     * Callback from {@link PortableHomeFolderManager} to locate or create a home folder.
+     * Implementations normally call {@link PortableHomeFolderManager.getHomeFolder}.
      */
     HomeSpaceNodeRef getHomeFolder(NodeRef person);
 }

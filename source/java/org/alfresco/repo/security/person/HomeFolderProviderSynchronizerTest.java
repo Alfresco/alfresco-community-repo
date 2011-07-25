@@ -77,14 +77,13 @@ public class HomeFolderProviderSynchronizerTest
     private static ServiceRegistry serviceRegistry;
     private static TransactionService transactionService;
     private static FileFolderService fileFolderService;
-    private static PersonService personService;
+    private static PersonServiceImpl personService;
     private static NodeService nodeService;
     private static ContentService contentService;
     private static AuthorityService authorityService;
     private static TenantAdminService tenantAdminService;
     private static TenantService tenantService;
-    private static HomeFolderManager homeFolderManager;
-    private static Properties properties;
+    private static PortableHomeFolderManager homeFolderManager;
     private static RegexHomeFolderProvider largeHomeFolderProvider;
     private static String largeHomeFolderProviderName;
     private static RegexHomeFolderProvider testHomeFolderProvider;
@@ -104,18 +103,17 @@ public class HomeFolderProviderSynchronizerTest
         serviceRegistry = (ServiceRegistry) applicationContext.getBean("ServiceRegistry");
         transactionService = (TransactionService) applicationContext.getBean("transactionService");
         fileFolderService = (FileFolderService) applicationContext.getBean("fileFolderService");
-        personService = (PersonService) applicationContext.getBean("personService");
+        personService = (PersonServiceImpl) applicationContext.getBean("personService");
         nodeService = (NodeService) applicationContext.getBean("nodeService");
         contentService = (ContentService) applicationContext.getBean("contentService");
         authorityService = (AuthorityService) applicationContext.getBean("authorityService");
         tenantAdminService = (TenantAdminService) applicationContext.getBean("tenantAdminService");
         tenantService = (TenantService) applicationContext.getBean("tenantService");
-        homeFolderManager = (HomeFolderManager) applicationContext.getBean("homeFolderManager");
+        homeFolderManager = (PortableHomeFolderManager) applicationContext.getBean("homeFolderManager");
         largeHomeFolderProvider = (RegexHomeFolderProvider) applicationContext.getBean("largeHomeFolderProvider");
         largeHomeFolderProviderName = largeHomeFolderProvider.getName();
         storeUrl = largeHomeFolderProvider.getStoreUrl();
         origRootPath = largeHomeFolderProvider.getRootPath();
-        properties = (Properties) applicationContext.getBean("global-properties");
 
         personService.setCreateMissingPeople(true);
 
@@ -144,7 +142,7 @@ public class HomeFolderProviderSynchronizerTest
         homeFolderManager.addProvider(testHomeFolderProvider);
 
         homeFolderProviderSynchronizer = new HomeFolderProviderSynchronizer(
-                properties, transactionService, authorityService,
+                transactionService, authorityService,
                 personService, fileFolderService, nodeService,
                 homeFolderManager, tenantAdminService);
     }
@@ -152,9 +150,9 @@ public class HomeFolderProviderSynchronizerTest
     @Before
     public void setUp() throws Exception
     {
-        properties.setProperty("home_folder_provider_synchronizer.enabled", "true");
-        properties.remove("home_folder_provider_synchronizer.override_provider");
-        properties.remove("home_folder_provider_synchronizer.keep_empty_parents");
+        homeFolderProviderSynchronizer.setEnabled("true");
+        homeFolderProviderSynchronizer.setOverrideHomeFolderProviderName(null);
+        homeFolderProviderSynchronizer.setKeepEmptyParents("false");
 
         largeHomeFolderProvider.setPattern("^(..)");
         testHomeFolderProvider.setRootPath(origRootPath);
@@ -323,7 +321,7 @@ public class HomeFolderProviderSynchronizerTest
                 properties.put(ContentModel.PROP_EMAIL, emailAddress);
                 properties.put(ContentModel.PROP_HOME_FOLDER_PROVIDER, testHomeFolderProviderName);
                 properties.put(PROP_PARENT_PATH, parentPath);
-                homeFolderManager.setEnableHomeFolderCreationAsPeopleAreCreated(createHomeDirectory);
+                personService.setHomeFolderCreationEager(createHomeDirectory);
                 NodeRef person = personService.createPerson(properties);
                 assertNotNull("The person nodeRef for "+domainUsername+" should have been created", person);
                 NodeRef homeFolder = DefaultTypeConverter.INSTANCE.convert(
@@ -598,7 +596,7 @@ public class HomeFolderProviderSynchronizerTest
     public void testNotEnabled() throws Exception
     {
         createUser("", "fred");
-        properties.remove("home_folder_provider_synchronizer.enabled");
+        homeFolderProviderSynchronizer.setEnabled("false");
         
         moveUserHomeFolders();
 
@@ -670,7 +668,7 @@ public class HomeFolderProviderSynchronizerTest
     public void testKeepEmptyParents() throws Exception
     {
         createUser("a/bb/ccc", "peter");
-        properties.put("home_folder_provider_synchronizer.keep_empty_parents", "true");
+        homeFolderProviderSynchronizer.setKeepEmptyParents("true");
 
         moveUserHomeFolders();
 
@@ -746,7 +744,7 @@ public class HomeFolderProviderSynchronizerTest
         createFolder("Temporary3");
         
         // Don't delete the temporary folder
-        properties.put("home_folder_provider_synchronizer.keep_empty_parents", "true");
+        homeFolderProviderSynchronizer.setKeepEmptyParents("true");
         
         moveUserHomeFolders();
 
@@ -837,7 +835,7 @@ public class HomeFolderProviderSynchronizerTest
         moveUserHomeFolders();
         assertHomeFolderLocation("fred", "fr/fred");
         
-        properties.put("home_folder_provider_synchronizer.override_provider",
+        homeFolderProviderSynchronizer.setOverrideHomeFolderProviderName(
                 testHomeFolderProviderName);
         moveUserHomeFolders();
 
@@ -851,7 +849,7 @@ public class HomeFolderProviderSynchronizerTest
     public void testNoOriginalProvider() throws Exception
     {
         createUser("a/b/c", "fred", null, true);
-        properties.put("home_folder_provider_synchronizer.override_provider",
+        homeFolderProviderSynchronizer.setOverrideHomeFolderProviderName(
                 largeHomeFolderProviderName);
         
         moveUserHomeFolders();
@@ -885,7 +883,7 @@ public class HomeFolderProviderSynchronizerTest
 
         createUser("a/b/c", "fred");
         
-        properties.put("home_folder_provider_synchronizer.override_provider", name);
+        homeFolderProviderSynchronizer.setOverrideHomeFolderProviderName(name);
         moveUserHomeFolders();
 
         assertHomeFolderLocation("fred", "a/b/c/fred");
@@ -911,7 +909,7 @@ public class HomeFolderProviderSynchronizerTest
 
         createUser("a/b/c", "fred");
         
-        properties.put("home_folder_provider_synchronizer.override_provider", name);
+        homeFolderProviderSynchronizer.setOverrideHomeFolderProviderName(name);
         moveUserHomeFolders();
 
         assertHomeFolderLocation("fred", "fred");

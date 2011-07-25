@@ -20,9 +20,13 @@ package org.alfresco.repo.node.index;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -36,6 +40,8 @@ import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.Transaction;
 import org.alfresco.repo.search.Indexer;
 import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.lucene.LuceneResultSetRow;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -49,14 +55,19 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.VmShutdownListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
 
 /**
  * Abstract helper for reindexing.
@@ -345,16 +356,16 @@ public abstract class AbstractReindexComponent implements IndexRecovery
      * Helper method that caches ADM store references to prevent repeated and unnecessary calls to the
      * NodeService for this list.
      */
-    private List<StoreRef> getAdmStoreRefs()
+    private Set<StoreRef> getAdmStoreRefs()
     {
-        List<StoreRef> storeRefs = (List<StoreRef>) AlfrescoTransactionSupport.getResource(KEY_STORE_REFS);
+        Set<StoreRef> storeRefs = (Set<StoreRef>) AlfrescoTransactionSupport.getResource(KEY_STORE_REFS);
         if (storeRefs != null)
         {
             return storeRefs;
         }
         else
         {
-            storeRefs = nodeService.getStores();
+            storeRefs = new HashSet<StoreRef>(nodeService.getStores());
             Iterator<StoreRef> storeRefsIterator = storeRefs.iterator();
             while (storeRefsIterator.hasNext())
             {
@@ -377,17 +388,6 @@ public abstract class AbstractReindexComponent implements IndexRecovery
                 }
             }
             
-            // Change the ordering to favour the most common stores
-            if (storeRefs.contains(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE))
-            {
-                storeRefs.remove(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE);
-                storeRefs.add(0, StoreRef.STORE_REF_ARCHIVE_SPACESSTORE);
-            }
-            if (storeRefs.contains(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE))
-            {
-                storeRefs.remove(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-                storeRefs.add(0, StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-            }
             // Bind it in
             AlfrescoTransactionSupport.bindResource(KEY_STORE_REFS, storeRefs);
         }
@@ -400,6 +400,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
      * @param txn       a specific transaction
      * @return          Returns <tt>true</tt> if the transaction is definitely in the index
      */
+    @SuppressWarnings("unchecked")
     public InIndex isTxnPresentInIndex(final Transaction txn)
     {
         if (txn == null)
@@ -413,72 +414,180 @@ public abstract class AbstractReindexComponent implements IndexRecovery
             logger.trace("Checking for transaction in index: " + txnId);
         }
         
-        // Check if the txn ID is present in any store's index
-        boolean foundInIndex = false;
-        List<StoreRef> storeRefs = getAdmStoreRefs();
-        for (StoreRef storeRef : storeRefs)
+
+        // Let's scan the changes for this transaction, and group together changes for applicable stores
+        List<NodeRef.Status> nodeStatuses = nodeDAO.getTxnChanges(txnId);        
+        Set<StoreRef> admStoreRefs = getAdmStoreRefs();
+        Map<StoreRef, List<NodeRef.Status>> storeStatusMap = new HashMap<StoreRef, List<Status>>(admStoreRefs.size() * 2);
+        for (NodeRef.Status nodeStatus : nodeStatuses)
         {
-            boolean inStore = isTxnIdPresentInIndex(storeRef, txn);
-            if (inStore)
+            StoreRef storeRef = nodeStatus.getNodeRef().getStoreRef(); 
+            if (admStoreRefs.contains(storeRef))
             {
-                // found in a particular store
-                foundInIndex = true;
-                break;
+                List<NodeRef.Status> storeStatuses = storeStatusMap.get(storeRef);
+                if (storeStatuses == null)
+                {
+                    storeStatuses = new LinkedList<Status>();
+                    storeStatusMap.put(storeRef, storeStatuses);
+                }
+                storeStatuses.add(nodeStatus);
             }
         }
-        InIndex result = InIndex.NO;
-        if (!foundInIndex)
+
+        // Default decision is indeterminate, unless all established to be in index (YES) or one established to be missing (NO)
+        InIndex result = InIndex.INDETERMINATE;
+
+        // Check if the txn ID is present in every applicable store's index
+        for (Map.Entry<StoreRef, List<NodeRef.Status>> entry : storeStatusMap.entrySet())
         {
-            // If none of the stores have the transaction, then that might be because it consists of 0 modifications
-            int updateCount = nodeDAO.getTxnUpdateCount(txnId);
-            
-            if ((updateCount > 0) && (! allUpdatedNodesCanBeIgnored(txnId)))
+            StoreRef storeRef = entry.getKey();
+            List<NodeRef.Status> storeStatuses = entry.getValue();
+
+            // Establish the number of deletes and updates for this storeRef
+            int deleteCount = 0;
+            int updateCount = 0;
+            for (NodeRef.Status nodeStatus : storeStatuses)
             {
-                // There were updates, but there is no sign in the indexes
-                result = InIndex.NO;
-            }
-            else
-            {
-                // We're now in the case where there were no updates
-                int deleteCount = nodeDAO.getTxnDeleteCount(txnId);
-                if (deleteCount == 0)
+                if (nodeStatus.isDeleted())
                 {
-                    // There are no updates or deletes and no entry in the indexes.
-                    // There are outdated nodes in the index.
-                    result = InIndex.INDETERMINATE;
+                    deleteCount++;
                 }
                 else
                 {
-                    // There were deleted nodes only.  Check that all the deleted nodes were
-                    // removed from the index otherwise it is out of date.
-                    // If all nodes have been removed from the index then the result is that the index is OK
-                    // ETWOTWO-1387
-                    // ALF-1989 - even if the nodes have not been found it is no good to use for AUTO index checking 
-                    result = InIndex.INDETERMINATE;
-                    for (StoreRef storeRef : storeRefs)
+                    updateCount++;
+                }                
+            }
+            
+            if (updateCount > 0)
+            {
+                // Check the index
+                if (isTxnIdPresentInIndex(storeRef, txn))
+                {
+                    result = InIndex.YES;                    
+                }
+                // There were updates, but there is no sign in the indexes
+                else
+                {
+                    result = InIndex.NO;
+                    break;
+                }
+            }
+            // There were deleted nodes only. Check that all the deleted nodes were removed from the index otherwise it
+            // is out of date. If all nodes have been removed from the index then the result is that the index is OK            
+            // ETWOTWO-1387
+            // ALF-1989 - even if the nodes have not been found it is no good to use for AUTO index checking 
+            else if (deleteCount > 0 && !haveNodesBeenRemovedFromIndex(storeRef, storeStatuses, txn))
+            {
+                result = InIndex.NO;
+                break;
+            }
+        }
+
+        // done
+        if (logger.isDebugEnabled())
+        {           
+            if (result == InIndex.NO)
+            {
+                logger.debug("Transaction " + txnId + " not present in indexes");
+
+                logger.debug(nodeStatuses.size() + " nodes in DB transaction");
+                for (NodeRef.Status nodeStatus : nodeStatuses)
+                {
+                    NodeRef nodeRef = nodeStatus.getNodeRef();
+                    if (nodeStatus.isDeleted())
                     {
-                        if (!haveNodesBeenRemovedFromIndex(storeRef, txn))
+                        logger.debug("  DELETED TX " + nodeStatus.getChangeTxnId() + ": " + nodeRef);
+                    }
+                    else
+                    {
+                        logger.debug("  UPDATED / MOVED TX " + nodeStatus.getChangeTxnId() + ": " + nodeRef);
+                        logger.debug("    " + nodeService.getProperties(nodeRef));
+                    }
+                    ResultSet results = null;
+                    SearchParameters sp = new SearchParameters();
+                    sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+                    sp.addStore(nodeRef.getStoreRef());
+                    try
+                    {
+                        sp.setQuery("ID:" + LuceneQueryParser.escape(nodeRef.toString()));
+    
+                        results = searcher.query(sp);
+                        for (ResultSetRow row : results)
                         {
-                            result = InIndex.NO;
-                            break;
+                            StringBuilder builder = new StringBuilder(1024).append("  STILL INDEXED: {");
+                            Document lrsDoc = ((LuceneResultSetRow) row).getDocument();
+                            Iterator<Field> fields = ((List<Field>) lrsDoc.getFields()).iterator();
+                            if (fields.hasNext())
+                            {
+                                Field field = fields.next();
+                                builder.append(field.name()).append("=").append(field.stringValue());
+                                while (fields.hasNext())
+                                {
+                                    field = fields.next();
+                                    builder.append(", ").append(field.name()).append("=").append(field.stringValue());
+                                }
+                            }
+                            builder.append("}");
+                            logger.debug(builder.toString());
                         }
+                    }
+                    finally
+                    {
+                        if (results != null) { results.close(); }
+                    }
+                    try
+                    {
+                        sp.setQuery("FTSREF:" + LuceneQueryParser.escape(nodeRef.toString()));
+    
+                        results = searcher.query(sp);
+                        for (ResultSetRow row : results)
+                        {
+                            StringBuilder builder = new StringBuilder(1024).append("  FTSREF: {");
+                            Document lrsDoc = ((LuceneResultSetRow) row).getDocument();
+                            Iterator<Field> fields = ((List<Field>) lrsDoc.getFields()).iterator();
+                            if (fields.hasNext())
+                            {
+                                Field field = fields.next();
+                                builder.append(field.name()).append("=").append(field.stringValue());
+                                while (fields.hasNext())
+                                {
+                                    field = fields.next();
+                                    builder.append(", ").append(field.name()).append("=").append(field.stringValue());
+                                }
+                            }
+                            builder.append("}");
+                            logger.debug(builder.toString());
+                        }
+                    }
+                    finally
+                    {
+                        if (results != null) { results.close(); }
                     }
                 }
             }
-        }
-        else
-        {
-            result = InIndex.YES;
-        }
-        
-        // done
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Transaction " + txnId + " present in indexes: " + result);
+            else
+            {
+                if (logger.isTraceEnabled())
+                {
+                    logger.trace("Transaction " + txnId + " present in indexes: " + result);
+                }                
+            }
         }
         return result;
     }
     
+    public InIndex isTxnPresentInIndex(final Transaction txn, final boolean readThrough)
+    {
+        return transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<InIndex>()
+        {
+            @Override
+            public InIndex execute() throws Throwable
+            {
+                return isTxnPresentInIndex(txn);
+            }
+        }, true, readThrough);
+    }
+
     /**
      * @return                  Returns true if the given transaction is present in the index
      */
@@ -522,39 +631,10 @@ public abstract class AbstractReindexComponent implements IndexRecovery
         }
     }
     
-    protected boolean allUpdatedNodesCanBeIgnored(Long txnId)
-    {
-        ParameterCheck.mandatory("txnId", txnId);
-        
-        boolean allUpdatedNodesCanBeIgnored = false;
-        
-        List<NodeRef.Status> nodeStatuses = nodeDAO.getTxnChanges(txnId);
-        
-        allUpdatedNodesCanBeIgnored = true;
-        for (NodeRef.Status nodeStatus : nodeStatuses)
-        {
-            NodeRef nodeRef = nodeStatus.getNodeRef();
-            if (! nodeStatus.isDeleted())
-            {
-                // updated node (ie. not deleted)
-                StoreRef storeRef = nodeRef.getStoreRef();
-                if (!isIgnorableStore(storeRef))
-                {
-                    allUpdatedNodesCanBeIgnored = false;
-                    break;
-                }
-            }
-        }
-        
-        return allUpdatedNodesCanBeIgnored;
-    }
-    
-    private boolean haveNodesBeenRemovedFromIndex(final StoreRef storeRef, final Transaction txn)
+    private boolean haveNodesBeenRemovedFromIndex(final StoreRef storeRef, List<NodeRef.Status> nodeStatuses, final Transaction txn)
     {
         final Long txnId = txn.getId();
         // there have been deletes, so we have to ensure that none of the nodes deleted are present in the index
-        // get all node refs for the transaction
-        List<NodeRef.Status> nodeStatuses = nodeDAO.getTxnChangesForStore(storeRef, txnId);
         boolean foundNodeRef = false;
         for (NodeRef.Status nodeStatus : nodeStatuses)
         {
@@ -658,18 +738,41 @@ public abstract class AbstractReindexComponent implements IndexRecovery
             throw new AlfrescoRuntimeException("Reindex work must be done in the context of a read-only transaction");
         }
         
-        // get the node references pertinent to the transaction
-        List<NodeRef.Status> nodeStatuses = nodeDAO.getTxnChanges(txnId);
+        // The indexer will 'read through' to the latest database changes for the rest of this transaction
+        indexer.setReadThrough(true);
+
+        // get the node references pertinent to the transaction - We need to 'read through' here too
+        List<Pair<NodeRef.Status, ChildAssociationRef>> nodePairs = transactionService.getRetryingTransactionHelper().doInTransaction(
+                new RetryingTransactionCallback<List<Pair<NodeRef.Status, ChildAssociationRef>>>()
+                {
+
+                    @Override
+                    public List<Pair<NodeRef.Status, ChildAssociationRef>> execute() throws Throwable
+                    {
+                        List<NodeRef.Status> nodeStatuses = nodeDAO.getTxnChanges(txnId);
+                        List<Pair<NodeRef.Status, ChildAssociationRef>> nodePairs = new ArrayList<Pair<Status,ChildAssociationRef>>(nodeStatuses.size());
+                        for (NodeRef.Status nodeStatus : nodeStatuses)
+                        {
+                            if (nodeStatus == null)
+                            {
+                                // it's not there any more
+                                continue;
+                            }
+                            
+                            ChildAssociationRef parent = nodeStatus.isDeleted() ? null : nodeService.getPrimaryParent(nodeStatus.getNodeRef());
+                            nodePairs.add(new Pair<NodeRef.Status, ChildAssociationRef>(nodeStatus, parent));
+                        }
+                        return nodePairs;
+                    }
+                }, true, true);
+
         // reindex each node
         int nodeCount = 0;
-        for (NodeRef.Status nodeStatus : nodeStatuses)
+        for (Pair<NodeRef.Status, ChildAssociationRef> nodePair: nodePairs)
         {
+            NodeRef.Status nodeStatus = nodePair.getFirst();
             NodeRef nodeRef = nodeStatus.getNodeRef();
-            if (nodeStatus == null)
-            {
-                // it's not there any more
-                continue;
-            }
+
             if (nodeStatus.isDeleted())                                 // node deleted
             {
                 if(isFull == false)
@@ -681,6 +784,10 @@ public abstract class AbstractReindexComponent implements IndexRecovery
                             null,
                             nodeRef);
                     indexer.deleteNode(assocRef);
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("DELETE: " + nodeRef);
+                    }
                 }
             }
             else                                                        // node created
@@ -693,11 +800,31 @@ public abstract class AbstractReindexComponent implements IndexRecovery
                             null,
                             nodeRef);
                     indexer.createNode(assocRef);
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("CREATE: " + nodeRef);
+                    }
                 }
                 else
                 {
-                    // reindex
-                    indexer.updateNode(nodeRef);
+                    // reindex - force a cascade reindex if possible (to account for a possible move)
+                    ChildAssociationRef parent = nodePair.getSecond();
+                    if (parent == null)
+                    {
+                        indexer.updateNode(nodeRef);
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("UPDATE: " + nodeRef);
+                        }
+                    }
+                    else
+                    {
+                        indexer.createChildRelationship(parent);
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("MOVE: " + nodeRef + ", " + parent);
+                        }
+                    }
                 }
             }
             // Make the callback

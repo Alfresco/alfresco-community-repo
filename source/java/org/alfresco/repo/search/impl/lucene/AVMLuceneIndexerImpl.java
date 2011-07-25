@@ -431,7 +431,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
     }
 
     @Override
-    protected List<Document> createDocuments(String stringNodeRef, boolean isNew, boolean indexAllProperties, boolean includeDirectoryDocuments)
+    protected List<Document> createDocuments(String stringNodeRef, FTSStatus ftsStatus, boolean indexAllProperties, boolean includeDirectoryDocuments)
     {
         List<Document> docs = new ArrayList<Document>();
         if (stringNodeRef.startsWith("\u0000"))
@@ -1233,14 +1233,13 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
     protected void doPrepare() throws IOException
     {
         AuthenticationUtil.runAs(new RunAsWork<String>()
-                {
+        {
             public String doWork() throws Exception
-            {    			
-                saveDelta();
+            {
                 flushPending();
                 return null;
             }
-                }, AuthenticationUtil.getSystemUserName());
+        }, AuthenticationUtil.getSystemUserName());
     }
 
     @Override

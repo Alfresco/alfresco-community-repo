@@ -758,8 +758,9 @@
                 <value>alfresco/messages/forum-model</value>
                 <value>alfresco/messages/email-server-model</value>
                 <value>alfresco/messages/data-list-model</value>
-                 <value>alfresco/messages/transfer-model</value>
-                 <value>alfresco/messages/publishing-model</value>
+                <value>alfresco/messages/transfer-model</value>
+                <value>alfresco/messages/wcmapp-model</value>
+                <value>alfresco/messages/publishing-model</value>
             </list>
         </property>
     </bean>
@@ -1235,7 +1236,7 @@
          <ref bean="Search" />
       </property>
       <property name="sourceBeanName">
-         <value>search.LuceneFullTextSearchIndexer</value>
+         <value>search.luceneFullTextSearchIndexer</value>
       </property>
       <property name="interfaces">
          <list>

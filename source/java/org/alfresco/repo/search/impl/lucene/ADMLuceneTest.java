@@ -3730,6 +3730,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         indexer.setTenantService(tenantService);
         indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
+        indexer.setTransactionService(transactionService);
 
         indexer.prepare();
         indexer.commit();
@@ -3755,6 +3756,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         indexer.setTenantService(tenantService);
         indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
+        indexer.setTransactionService(transactionService);
 
         // //indexer.clearIndex();
 
@@ -3937,6 +3939,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         indexer.setTenantService(tenantService);
         indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
+        indexer.setTransactionService(transactionService);
         // indexer.clearIndex();
         indexer.createNode(new ChildAssociationRef(null, null, null, rootNodeRef));
         indexer.createNode(new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, rootNodeRef, QName.createQName("{namespace}one"), n1));
@@ -6418,6 +6421,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         indexer.setTenantService(tenantService);
         indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
+        indexer.setTransactionService(transactionService);
 
         indexer.updateNode(rootNodeRef);
         indexer.updateNode(n1);
@@ -6677,6 +6681,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         indexer.setTenantService(tenantService);
         indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
+        indexer.setTransactionService(transactionService);
 
         ChildAssociationRef car = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}" + COMPLEX_LOCAL_NAME), testSuperType);
         indexer.createNode(car);
@@ -6708,6 +6713,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         indexer.setTenantService(tenantService);
         indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
+        indexer.setTransactionService(transactionService);
 
         ChildAssociationRef car = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}" + COMPLEX_LOCAL_NAME), testSuperType);
         indexer.createNode(car);
@@ -6740,6 +6746,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         indexer.setTenantService(tenantService);
         indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
+        indexer.setTransactionService(transactionService);
 
         testTX = transactionService.getUserTransaction();
         testTX.begin();
@@ -6957,6 +6964,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         indexer.setTenantService(tenantService);
         indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
+        indexer.setTransactionService(transactionService);
 
         nodeService.removeChild(n2, n13);
         indexer.deleteChildRelationship(new ChildAssociationRef(ASSOC_TYPE_QNAME, n2, QName.createQName("{namespace}link"), n13));
@@ -7209,6 +7217,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         indexer.setTenantService(tenantService);
         indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
+        indexer.setTransactionService(transactionService);
 
         nodeService.removeChild(n2, n13);
         nodeService.addChild(n2, n13, ASSOC_TYPE_QNAME, QName.createQName("{namespace}renamed_link"));
@@ -7272,6 +7281,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         indexer.setTenantService(tenantService);
         indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
+        indexer.setTransactionService(transactionService);
         indexer.updateFullTextSearch(1000);
         indexer.prepare();
         indexer.commit();
@@ -7341,6 +7351,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         indexer.setTenantService(tenantService);
         indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
+        indexer.setTransactionService(transactionService);
         indexer.updateFullTextSearch(1000);
         indexer.prepare();
         indexer.commit();
@@ -7742,6 +7753,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         indexer.setTenantService(tenantService);
         indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
+        indexer.setTransactionService(transactionService);
         if (clear)
         {
             // indexer.clearIndex();

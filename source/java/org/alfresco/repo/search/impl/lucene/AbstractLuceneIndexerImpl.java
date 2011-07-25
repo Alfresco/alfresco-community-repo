@@ -33,7 +33,9 @@ import javax.transaction.xa.XAResource;
 
 import org.alfresco.repo.search.IndexerException;
 import org.alfresco.repo.search.impl.lucene.index.TransactionStatus;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
+import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.document.Document;
@@ -41,6 +43,7 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
+import org.springframework.dao.ConcurrencyFailureException;
 
 /**
  * Common support for indexing across implementations
@@ -93,9 +96,25 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
 
     protected enum IndexDeleteMode {REINDEX, DELETE, MOVE};
     
-    protected long docs;
+    protected enum FTSStatus {New, Dirty, Clean};
 
-    // Failure codes to index when problems occur indexing content
+    protected long docs;
+    
+    // An indexer with read through activated can only see already-committed documents in the database. Useful when
+    // reindexing lots of old documents and not wanting to pollute the caches with stale versions of nodes.
+    private boolean isReadThrough;
+    
+    protected TransactionService transactionService;
+
+    public void setReadThrough(boolean isReadThrough)
+    {
+        this.isReadThrough = isReadThrough;
+    }
+    
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
 
     protected static class Command<S>
     {
@@ -157,7 +176,6 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
     /**
      * Logger
      */
-    @SuppressWarnings("unused")
     private static Log    s_logger = LogFactory.getLog(AbstractLuceneIndexerImpl.class);
 
     protected static Set<String> deletePrimary(Collection<String> nodeRefs, IndexReader reader, boolean delete)
@@ -611,9 +629,41 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
 
     protected abstract void doSetRollbackOnly() throws IOException;
 
-    protected abstract List<Document> createDocuments(String stringNodeRef, boolean isNew, boolean indexAllProperties,
+    protected abstract List<Document> createDocuments(String stringNodeRef, FTSStatus ftsStatus, boolean indexAllProperties,
             boolean includeDirectoryDocuments);
     
+    protected List<Document> readDocuments(final String stringNodeRef, final FTSStatus ftsStatus,
+            final boolean indexAllProperties, final boolean includeDirectoryDocuments)
+    {
+        if (isReadThrough)
+        {
+            return transactionService.getRetryingTransactionHelper().doInTransaction(
+                    new RetryingTransactionCallback<List<Document>>()
+                    {
+                        @Override
+                        public List<Document> execute() throws Throwable
+                        {
+                            try
+                            {
+                                return createDocuments(stringNodeRef, ftsStatus, indexAllProperties,
+                                        includeDirectoryDocuments);
+                            }
+                            catch (InvalidNodeRefException e)
+                            {
+                                // Turn InvalidNodeRefExceptions into retryable exceptions.
+                                throw new ConcurrencyFailureException(
+                                        "Possible cache integrity issue during reindexing", e);
+                            }
+
+                        }
+                    }, true, true);
+        }
+        else
+        {
+            return createDocuments(stringNodeRef, ftsStatus, indexAllProperties, includeDirectoryDocuments);
+        }
+    }
+
     protected Set<String> deleteImpl(String nodeRef, IndexDeleteMode mode, boolean cascade,  IndexReader mainReader)
             throws LuceneIndexException, IOException
 
@@ -741,7 +791,7 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
 
         try
         {
-            List<Document> docs = createDocuments(nodeRef, isNew, false, true);
+            List<Document> docs = readDocuments(nodeRef, isNew ? FTSStatus.New : FTSStatus.Dirty, false, true);
             for (Document doc : docs)
             {
                 try
@@ -867,11 +917,18 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase
      */
     public void flushPending() throws LuceneIndexException
     {
-        // Make sure the in flush deletion list is clear at the start
-        deletionsSinceFlush.clear();
         IndexReader mainReader = null;
         try
         {
+            saveDelta();
+            
+            // Make sure the in flush deletion list is clear at the start
+            deletionsSinceFlush.clear();
+            if (commandList.isEmpty())
+            {
+                return;
+            }
+            
             mainReader = getReader();
             Set<String> forIndex = new LinkedHashSet<String>();
 

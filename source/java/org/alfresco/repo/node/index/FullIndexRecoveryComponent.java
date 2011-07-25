@@ -241,12 +241,13 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
         for (Transaction txn : txns)
         {
             count++;
-            if (isTxnPresentInIndex(txn) == InIndex.NO)
+            InIndex inIndex = isTxnPresentInIndex(txn, true);
+            if (inIndex == InIndex.NO)
             {
                 // Missing txn
                 return InIndex.NO;
             }
-            if (isTxnPresentInIndex(txn) == InIndex.YES)
+            if (inIndex == InIndex.YES)
             {
                 yesCount++;
                 if((yesCount > 1) && (count >= 10))
@@ -265,7 +266,7 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
         for (Transaction txn : txns)
         {
             count++;
-            current = isTxnPresentInIndex(txn);
+            current = isTxnPresentInIndex(txn, true);
             if (current == InIndex.NO)
             {
                 // Missing txn

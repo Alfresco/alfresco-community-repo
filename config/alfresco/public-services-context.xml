@@ -66,9 +66,14 @@
                 <value>org.alfresco.service.cmr.repository.NodeService</value>
             </list>
         </property>
-        <property name="target">
-            <ref bean="nodeService"/>
-        </property>
+        <!-- Lazy init to avoid circular dependencies -->
+        <property name="targetSource">
+            <bean class="org.springframework.aop.target.LazyInitTargetSource">
+                <property name="targetBeanName">
+                    <idref bean="nodeService" />
+                </property>
+            </bean>
+        </property> 
         <property name="interceptorNames">
             <list>
                 <idref local="NodeService_transaction"/>

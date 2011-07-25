@@ -29,9 +29,12 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -130,7 +133,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
     /**
      * A list of stuff that requires non atomic indexing
      */
-    private ArrayList<Helper> toFTSIndex = new ArrayList<Helper>();
+    private Map<String, Deque<Helper>> toFTSIndex = Collections.emptyMap();
 
     /**
      * Default construction
@@ -427,11 +430,14 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                 mainSearcher = new IndexSearcher(mainReader);
                 deltaSearcher = new IndexSearcher(deltaReader);
 
-                for (Helper helper : toFTSIndex)
+                for (Map.Entry<String, Deque<Helper>> entry : toFTSIndex.entrySet())
                 {
-                    // Delete both the document and the supplementary FTSSTATUS document (if there is one)
-                    deletions.add(helper.ref);
-                    deletions.add(helper.id);
+                    // Delete both the document and the supplementary FTSSTATUS documents (if there are any)
+                    deletions.add(entry.getKey());
+                    for (Helper helper : entry.getValue())
+                    {
+                        deletions.add(helper.id);
+                    }
                 }
 
             }
@@ -570,7 +576,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         }
     }
 
-    public List<Document> createDocuments(final String stringNodeRef, final boolean isNew, final boolean indexAllProperties, final boolean includeDirectoryDocuments)
+    public List<Document> createDocuments(final String stringNodeRef, final FTSStatus ftsStatus, final boolean indexAllProperties, final boolean includeDirectoryDocuments)
     {
         if (tenantService.isEnabled() && ((AuthenticationUtil.getRunAsUser() == null) || (AuthenticationUtil.isRunAsUserTheSystemUser())))
         {
@@ -580,25 +586,36 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
             {
                 public List<Document> doWork()
                 {
-                    return createDocumentsImpl(stringNodeRef, isNew, indexAllProperties, includeDirectoryDocuments);
+                    return createDocumentsImpl(stringNodeRef, ftsStatus, indexAllProperties, includeDirectoryDocuments);
                 }
             }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantService.getDomain(new NodeRef(stringNodeRef).getStoreRef().getIdentifier())));
         }
         else
         {
-            return createDocumentsImpl(stringNodeRef, isNew, indexAllProperties, includeDirectoryDocuments);
+            return createDocumentsImpl(stringNodeRef, ftsStatus, indexAllProperties, includeDirectoryDocuments);
         }
     }
 
-    private List<Document> createDocumentsImpl(String stringNodeRef, boolean isNew, boolean indexAllProperties, boolean includeDirectoryDocuments)
+    private List<Document> createDocumentsImpl(String stringNodeRef, FTSStatus ftsStatus, boolean indexAllProperties, boolean includeDirectoryDocuments)
     {
         NodeRef nodeRef = new NodeRef(stringNodeRef);
+        NodeRef.Status nodeStatus = nodeService.getNodeStatus(nodeRef);             // DH: Let me know if this field gets dropped (performance)
+        List<Document> docs = new LinkedList<Document>();
+        if (nodeStatus == null)
+        {
+            throw new InvalidNodeRefException("Node does not exist: " + nodeRef, nodeRef);            
+        }
+        else if (nodeStatus.isDeleted())
+        {
+            // If we are being called in non FTS mode on a deleted node, we must still create a new FTS marker
+            // document, in case FTS is currently in progress and about to restore our node!
+            addFtsStatusDoc(docs, ftsStatus, nodeRef, nodeStatus);
+            return docs;
+        }
 
         Map<ChildAssociationRef, Counter> nodeCounts = getNodeCounts(nodeRef);
-        List<Document> docs = new ArrayList<Document>();
         ChildAssociationRef qNameRef = null;
         Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
-        NodeRef.Status nodeStatus = nodeService.getNodeStatus(nodeRef);             // DH: Let me know if this field gets dropped (performance)
 
         Collection<Path> directPaths = new LinkedHashSet<Path>(nodeService.getPaths(nodeRef, false));
         Collection<Pair<Path, QName>> categoryPaths = getCategoryPaths(nodeRef, properties);
@@ -782,19 +799,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
             // forget about it if FTS is already in progress for an earlier transaction!
             if (!isAtomic && !indexAllProperties)
             {
-                Document ftsStatus = new Document();
-                ftsStatus.add(new Field("ID", GUID.generate(), Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
-                ftsStatus.add(new Field("FTSREF", nodeRef.toString(), Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
-                ftsStatus.add(new Field("TX", nodeStatus.getChangeTxnId(), Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
-                if (isNew)
-                {
-                    ftsStatus.add(new Field("FTSSTATUS", "New", Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
-                }
-                else
-                {
-                    ftsStatus.add(new Field("FTSSTATUS", "Dirty", Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
-                }
-                docs.add(ftsStatus);
+                addFtsStatusDoc(docs, ftsStatus, nodeRef, nodeStatus);
             }
 
             // {
@@ -803,6 +808,24 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         }
 
         return docs;
+    }
+
+    private void addFtsStatusDoc(List<Document> docs, FTSStatus ftsStatus, NodeRef nodeRef,
+            NodeRef.Status nodeStatus)
+    {
+        // If we are being called during FTS failover, then don't bother generating a new doc
+        if (ftsStatus == FTSStatus.Clean)
+        {
+            return;
+        }
+        Document doc = new Document();
+        doc.add(new Field("ID", GUID.generate(), Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
+        doc.add(new Field("FTSREF", nodeRef.toString(), Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
+        doc
+                .add(new Field("TX", nodeStatus.getChangeTxnId(), Field.Store.YES, Field.Index.NO_NORMS,
+                        Field.TermVector.NO));
+        doc.add(new Field("FTSSTATUS", ftsStatus.name(), Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
+        docs.add(doc);
     }
 
     private Serializable convertForMT(QName propertyName, Serializable inboundValue)
@@ -1561,9 +1584,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         // }
         try
         {
-            NodeRef lastId = null;
-
-            toFTSIndex = new ArrayList<Helper>(size);
+            toFTSIndex = new LinkedHashMap<String, Deque<Helper>>(size * 2);
             BooleanQuery booleanQuery = new BooleanQuery();
             booleanQuery.add(new TermQuery(new Term("FTSSTATUS", "Dirty")), Occur.SHOULD);
             booleanQuery.add(new TermQuery(new Term("FTSSTATUS", "New")), Occur.SHOULD);
@@ -1596,20 +1617,18 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                     // For backward compatibility with existing indexes, cope with FTSSTATUS being stored directly on
                     // the real document without an FTSREF
                     Field ftsRef = doc.getField("FTSREF");
-                    Field id = doc.getField("ID");
-                    Helper helper;
-                    if (ftsRef == null)
+                    String id = doc.getField("ID").stringValue();
+                    String ref = ftsRef == null ? id : ftsRef.stringValue();
+                    Helper helper = new Helper(id, doc.getField("TX").stringValue());
+                    Deque<Helper> helpers = toFTSIndex.get(ref);
+                    if (helpers == null)
                     {
-                        // Old style - we only have a node ref
-                        helper = new Helper(id.stringValue(), id.stringValue(), doc.getField("TX").stringValue());
+                        helpers = new LinkedList<Helper>();
+                        toFTSIndex.put(ref, helpers);
+                        count++;
                     }
-                    else
-                    {
-                        // New style - we have a unique FTS ID and a noderef
-                        helper = new Helper(id.stringValue(), ftsRef.stringValue(), doc.getField("TX").stringValue());
-                    }
-                    toFTSIndex.add(helper);
-                    if (++count >= size)
+                    helpers.add(helper);
+                    if (count >= size)
                     {
                         break;
                     }
@@ -1640,24 +1659,24 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                 try
                 {
                     writer = getDeltaWriter();
-                    for (Helper helper : toFTSIndex)
+                    int done = 0;
+                    for (Map.Entry<String, Deque<Helper>> entry : toFTSIndex.entrySet())
                     {
                         // Document document = helper.document;
-                        NodeRef ref = new NodeRef(helper.ref);
-                        // bypass nodes that have disappeared
-                        if (!nodeService.exists(ref))
-                        {
-                            continue;
-                        }
-                        
-                        // bypass out of date transactions
-                        NodeRef.Status nodeStatus = nodeService.getNodeStatus(ref);
-                        if (nodeStatus == null || !helper.tx.equals(nodeStatus.getChangeTxnId()))
-                        {
-                            continue;
-                        }
+                        NodeRef ref = new NodeRef(entry.getKey());
+                        done += entry.getValue().size();
 
-                        List<Document> docs = createDocuments(ref.toString(), false, true, false);
+                        List<Document> docs;
+                        try
+                        {
+                            docs = readDocuments(ref.toString(), FTSStatus.Clean, true, false);
+                        }
+                        catch (Throwable t)
+                        {
+                            // Try to recover from failure
+                            s_logger.error("FTS index of " + ref + " failed. Reindexing without FTS", t);
+                            docs = readDocuments(ref.toString(), FTSStatus.Clean, false, false);
+                        }
                         for (Document doc : docs)
                         {
                             try
@@ -1672,23 +1691,12 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                             }
                         }
 
-                        // Need to do all the current id in the TX - should all
-                        // be
-                        // together so skip until id changes
                         if (writer.docCount() > size)
                         {
-                            if (lastId == null)
-                            {
-                                lastId = ref;
-                            }
-                            if (!lastId.equals(ref))
-                            {
-                                break;
-                            }
+                            break;
                         }
                     }
 
-                    int done = writer.docCount();
                     remainingCount = count - done;
                     return done;
                 }
@@ -1726,14 +1734,11 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
     {
         String id;
 
-        String ref;
-
         String tx;
 
-        Helper(String id, String ref, String tx)
+        Helper(String id, String tx)
         {
             this.id = id;
-            this.ref = ref;
             this.tx = tx;
         }
     }
@@ -1747,7 +1752,6 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
 
     protected void doPrepare() throws IOException
     {
-        saveDelta();
         flushPending();
         // prepareToMergeIntoMain();
     }

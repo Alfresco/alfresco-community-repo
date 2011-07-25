@@ -110,5 +110,14 @@ public interface Indexer
     public void deleteIndex(StoreRef storeRef);
 
   
-    public void flushPending();    
+    public void flushPending();
+    
+    /**
+     * Activates 'read through' behaviour for this indexer. Rather than accessing the database through the current
+     * (potentially old) transaction, it will use a discrete read only transaction for each node it indexes. This avoids
+     * 'stale' nodes building up in the caches during long reindex runs.
+     * 
+     * @param isReadThrough
+     */
+    public void setReadThrough(boolean isReadThrough);
 }

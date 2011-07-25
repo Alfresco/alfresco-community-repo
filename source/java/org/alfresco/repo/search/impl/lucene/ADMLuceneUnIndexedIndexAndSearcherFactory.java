@@ -33,6 +33,7 @@ public class ADMLuceneUnIndexedIndexAndSearcherFactory extends ADMLuceneIndexerA
         // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setFullTextSearchIndexer(fullTextSearchIndexer);
         indexer.setContentService(contentService);
+        indexer.setTransactionService(transactionService);
         indexer.setMaxAtomicTransformationTime(getMaxTransformationTime());
         return indexer;
     }

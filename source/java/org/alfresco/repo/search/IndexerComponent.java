@@ -19,6 +19,7 @@
 package org.alfresco.repo.search;
 
 import org.alfresco.repo.service.StoreRedirectorProxyFactory;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -40,6 +41,7 @@ public class IndexerComponent extends AbstractLifecycleBean implements Indexer
 {
     private StoreRedirectorProxyFactory<IndexerAndSearcher> storeRedirectorProxyFactory;
     private IndexerAndSearcher indexerAndSearcherFactory;
+    private static final String KEY_READ_THROUGH = IndexerComponent.class.getName() + "READ_THROUGH";
 
     public void setStoreRedirectorProxyFactory(StoreRedirectorProxyFactory<IndexerAndSearcher> storeRedirectorProxyFactory)
     {
@@ -62,44 +64,58 @@ public class IndexerComponent extends AbstractLifecycleBean implements Indexer
         this.indexerAndSearcherFactory = indexerAndSearcherFactory;
     }
 
+    public void setReadThrough(boolean isReadThrough)
+    {
+        if (isReadThrough)
+        {
+            AlfrescoTransactionSupport.bindResource(KEY_READ_THROUGH, Boolean.TRUE);
+        }
+        else
+        {
+            AlfrescoTransactionSupport.unbindResource(KEY_READ_THROUGH);
+        }    
+    }
+
+    private Indexer getIndexer(StoreRef storeRef)
+    {
+        Indexer indexer = indexerAndSearcherFactory.getIndexer(storeRef);
+        indexer.setReadThrough(AlfrescoTransactionSupport.getResource(KEY_READ_THROUGH) == Boolean.TRUE);
+        return indexer;        
+    }
+
     public void createNode(ChildAssociationRef relationshipRef)
     {
-        Indexer indexer = indexerAndSearcherFactory.getIndexer(
-                relationshipRef.getChildRef().getStoreRef());
+        Indexer indexer = getIndexer(relationshipRef.getChildRef().getStoreRef());
         indexer.createNode(relationshipRef);
     }
 
     public void updateNode(NodeRef nodeRef)
     {
-        Indexer indexer = indexerAndSearcherFactory.getIndexer(nodeRef.getStoreRef());
+        Indexer indexer = getIndexer(nodeRef.getStoreRef());
         indexer.updateNode(nodeRef);
     }
 
     public void deleteNode(ChildAssociationRef relationshipRef)
     {
-        Indexer indexer = indexerAndSearcherFactory.getIndexer(
-                relationshipRef.getChildRef().getStoreRef());
+        Indexer indexer = getIndexer(relationshipRef.getChildRef().getStoreRef());
         indexer.deleteNode(relationshipRef);
     }
 
     public void createChildRelationship(ChildAssociationRef relationshipRef)
     {
-        Indexer indexer = indexerAndSearcherFactory.getIndexer(
-                relationshipRef.getChildRef().getStoreRef());
+        Indexer indexer = getIndexer(relationshipRef.getChildRef().getStoreRef());
         indexer.createChildRelationship(relationshipRef);
     }
 
     public void updateChildRelationship(ChildAssociationRef relationshipBeforeRef, ChildAssociationRef relationshipAfterRef)
     {
-        Indexer indexer = indexerAndSearcherFactory.getIndexer(
-                relationshipBeforeRef.getChildRef().getStoreRef());
+        Indexer indexer = getIndexer(relationshipBeforeRef.getChildRef().getStoreRef());
         indexer.updateChildRelationship(relationshipBeforeRef, relationshipAfterRef);
     }
 
     public void deleteChildRelationship(ChildAssociationRef relationshipRef)
     {
-        Indexer indexer = indexerAndSearcherFactory.getIndexer(
-                relationshipRef.getChildRef().getStoreRef());
+        Indexer indexer = getIndexer(relationshipRef.getChildRef().getStoreRef());
         indexer.deleteChildRelationship(relationshipRef);
     }
 
@@ -108,7 +124,7 @@ public class IndexerComponent extends AbstractLifecycleBean implements Indexer
      */
     public void deleteIndex(StoreRef storeRef)
     {
-        Indexer indexer = indexerAndSearcherFactory.getIndexer(storeRef);
+        Indexer indexer = getIndexer(storeRef);
         indexer.deleteIndex(storeRef);
     }
 

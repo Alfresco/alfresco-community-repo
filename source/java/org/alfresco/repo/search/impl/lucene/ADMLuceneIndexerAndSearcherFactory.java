@@ -20,17 +20,16 @@ package org.alfresco.repo.search.impl.lucene;
 
 import java.util.List;
 
-import org.alfresco.cmis.CMISQueryService;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.SupportsBackgroundIndexing;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
-import org.alfresco.repo.search.impl.querymodel.QueryEngine;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.transaction.TransactionService;
 
 /**
  * Factory for ADM indxers and searchers
@@ -48,6 +47,8 @@ public class ADMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
     protected FullTextSearchIndexer fullTextSearchIndexer;
 
     protected ContentService contentService;
+    
+    protected TransactionService transactionService;
 
     /**
      * Set the dictinary service
@@ -90,6 +91,11 @@ public class ADMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
     {
         this.contentService = contentService;
     }
+    
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
 
     protected LuceneIndexer createIndexer(StoreRef storeRef, String deltaId)
     {
@@ -102,6 +108,7 @@ public class ADMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
         // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setFullTextSearchIndexer(fullTextSearchIndexer);
         indexer.setContentService(contentService);
+        indexer.setTransactionService(transactionService);
         indexer.setMaxAtomicTransformationTime(getMaxTransformationTime());
         return indexer;
     }

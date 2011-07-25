@@ -32,7 +32,7 @@
          <ref bean="search.indexerComponent" />
       </property>
       <property name="ftsIndexer">
-         <ref bean="search.LuceneFullTextSearchIndexer" />
+         <ref bean="search.luceneFullTextSearchIndexer" />
       </property>
       <property name="searcher">
          <ref bean="search.searchService" />

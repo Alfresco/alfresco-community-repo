@@ -26,7 +26,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
@@ -102,30 +101,28 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
 {
     private static final Log logger = LogFactory.getLog(HomeFolderProviderSynchronizer.class);
     
-    private static final String ENABLED_PROPERTY_NAME = "home_folder_provider_synchronizer.enabled";
-    private static final String OVERRIDE_PROPERTY_NAME = "home_folder_provider_synchronizer.override_provider";
-    private static final String KEEP_EMPTY_PARENTS_PROPERTY_NAME = "home_folder_provider_synchronizer.keep_empty_parents";
-    
     private static final String GUEST_HOME_FOLDER_PROVIDER = "guestHomeFolderProvider";
     private static final String BOOTSTRAP_HOME_FOLDER_PROVIDER = "bootstrapHomeFolderProvider";
 
-    private final Properties properties;
     private final TransactionService transactionService;
     private final AuthorityService authorityService;
     private final PersonService personService;
     private final FileFolderService fileFolderService;
     private final NodeService nodeService;
-    private final HomeFolderManager homeFolderManager;
+    private final PortableHomeFolderManager homeFolderManager;
     private final TenantAdminService tenantAdminService;
+
+    private boolean enabled;
+    private String overrideHomeFolderProviderName;
+    private boolean keepEmptyParents;
     
-    public HomeFolderProviderSynchronizer(Properties properties,
+    public HomeFolderProviderSynchronizer(
             TransactionService transactionService,
             AuthorityService authorityService, PersonService personService,
             FileFolderService fileFolderService, NodeService nodeService,
-            HomeFolderManager homeFolderManager,
+            PortableHomeFolderManager homeFolderManager,
             TenantAdminService tenantAdminService)
     {
-        this.properties = properties;
         this.transactionService = transactionService;
         this.authorityService = authorityService;
         this.personService = personService;
@@ -135,19 +132,34 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
         this.tenantAdminService = tenantAdminService;
     }
     
+    public void setEnabled(String enabled)
+    {
+        this.enabled = "true".equalsIgnoreCase(enabled); 
+    }
+    
     private boolean enabled()
     {
-        return "true".equalsIgnoreCase(properties.getProperty(ENABLED_PROPERTY_NAME));
+        return enabled;
+    }
+    
+    public void setOverrideHomeFolderProviderName(String overrideHomeFolderProviderName)
+    {
+        this.overrideHomeFolderProviderName = overrideHomeFolderProviderName; 
     }
     
     private String getOverrideHomeFolderProviderName()
     {
-        return properties.getProperty(OVERRIDE_PROPERTY_NAME);
+        return overrideHomeFolderProviderName;
+    }
+    
+    public void setKeepEmptyParents(String keepEmptyParents)
+    {
+        this.keepEmptyParents = "true".equalsIgnoreCase(keepEmptyParents); 
     }
     
     private boolean keepEmptyParents()
     {
-        return "true".equalsIgnoreCase(properties.getProperty(KEEP_EMPTY_PARENTS_PROPERTY_NAME));
+        return keepEmptyParents;
     }
 
     @Override
@@ -865,7 +877,10 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
         public HomeFolderHandler(NodeRef person, String overrideProviderName)
         {
             this.person = person;
-            this.overrideProviderName = overrideProviderName;
+            this.overrideProviderName =
+                (overrideProviderName == null || overrideProviderName.trim().isEmpty())
+                ? null
+                : overrideProviderName;
         }
         
         public void doWork()

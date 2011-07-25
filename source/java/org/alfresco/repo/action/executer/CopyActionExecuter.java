@@ -54,24 +54,29 @@ public class CopyActionExecuter extends ActionExecuterAbstractBase
     public static final String PARAM_OVERWRITE_COPY = "overwrite-copy";
     
     private CopyService copyService;
-	private NodeService nodeService;
-	private CheckOutCheckInService checkOutCheckInService;
 	
+	/**
+	 * The node service
+	 */
+    private NodeService nodeService;
+	private CheckOutCheckInService checkOutCheckInService;
+    
     /**
      * Sets the node service
      */
-	public void setNodeService(NodeService nodeService) 
-	{
-		this.nodeService = nodeService;
-	}
-	
+    public void setNodeService(NodeService nodeService) 
+    {
+        this.nodeService = nodeService;
+    }
+    
     /**
      * Sets the copy service
      */
-	public void setCopyService(CopyService copyService) 
-	{
-		this.copyService = copyService;
-	}
+    public void setCopyService(CopyService copyService) 
+    {
+        this.copyService = copyService;
+    }
+    
 
 	/**
 	 * Service to determine check-in or check-out status
@@ -82,30 +87,30 @@ public class CopyActionExecuter extends ActionExecuterAbstractBase
     }
 
     @Override
-	protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
-	{
-		paramList.add(new ParameterDefinitionImpl(PARAM_DESTINATION_FOLDER, DataTypeDefinition.NODE_REF, true, getParamDisplayLabel(PARAM_DESTINATION_FOLDER)));
-		paramList.add(new ParameterDefinitionImpl(PARAM_DEEP_COPY, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_DEEP_COPY)));		
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    {
+        paramList.add(new ParameterDefinitionImpl(PARAM_DESTINATION_FOLDER, DataTypeDefinition.NODE_REF, true, getParamDisplayLabel(PARAM_DESTINATION_FOLDER)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_DEEP_COPY, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_DEEP_COPY)));		
         paramList.add(new ParameterDefinitionImpl(PARAM_OVERWRITE_COPY, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_OVERWRITE_COPY)));
-	}
+    }
 
 	@Override
     public void executeImpl(Action ruleAction, NodeRef actionedUponNodeRef)
     {
         if (!nodeService.exists(actionedUponNodeRef))
-    	{
+	{
             return;
     	}
-	    NodeRef destinationParent = (NodeRef)ruleAction.getParameterValue(PARAM_DESTINATION_FOLDER);
-	       
-	    // Get the deep copy value
-	    boolean deepCopy = false;
+            NodeRef destinationParent = (NodeRef)ruleAction.getParameterValue(PARAM_DESTINATION_FOLDER);
+            
+            // Get the deep copy value
+            boolean deepCopy = false;
         Boolean deepCopyValue = (Boolean)ruleAction.getParameterValue(PARAM_DEEP_COPY);
         if (deepCopyValue != null)
         {
             deepCopy = deepCopyValue.booleanValue();
         }
-        
+	        
         // Get the overwirte value
         boolean overwrite = true;
         Boolean overwriteValue = (Boolean)ruleAction.getParameterValue(PARAM_OVERWRITE_COPY);
@@ -154,11 +159,11 @@ public class CopyActionExecuter extends ActionExecuterAbstractBase
             ChildAssociationRef originalAssoc = nodeService.getPrimaryParent(actionedUponNodeRef);
             // Create a new copy of the node
             this.copyService.copyAndRename(
-                actionedUponNodeRef, 
-                destinationParent,
-                originalAssoc.getTypeQName(),
-                originalAssoc.getQName(),
-                deepCopy);
+	                actionedUponNodeRef, 
+	                destinationParent,
+                    originalAssoc.getTypeQName(),
+                    originalAssoc.getQName(),
+	                deepCopy);
         }
-    }
+		}
 }

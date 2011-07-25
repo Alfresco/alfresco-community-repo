@@ -22,7 +22,6 @@ import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-import org.alfresco.repo.audit.access.AccessAuditorTest;
 import org.alfresco.repo.ownable.impl.OwnableServiceTest;
 import org.alfresco.repo.security.authentication.AuthenticationBootstrapTest;
 import org.alfresco.repo.security.authentication.AuthenticationTest;

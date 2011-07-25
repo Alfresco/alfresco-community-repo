@@ -19,8 +19,9 @@
 package org.alfresco.repo.search.impl.lucene;
 
 import java.io.IOException;
-import java.util.BitSet;
 import java.util.Set;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.commons.logging.Log;
@@ -49,9 +50,12 @@ public class FilterIndexReaderByStringId extends FilterIndexReader
 {
     private static Log s_logger = LogFactory.getLog(FilterIndexReaderByStringId.class);
 
-    OpenBitSet deletedDocuments;
+    private OpenBitSet deletedDocuments;
+    private final Set<String> deletions;
+    private final boolean deleteNodesOnly;
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
     
-    private String id;
+    private final String id;
 
     /**
      * Apply the filter
@@ -66,21 +70,44 @@ public class FilterIndexReaderByStringId extends FilterIndexReader
         super(reader);
         reader.incRef();
         this.id = id;
+        this.deletions = deletions;
+        this.deleteNodesOnly = deleteNodesOnly;
         
-        deletedDocuments = new OpenBitSet(reader.maxDoc());
-
         if (s_logger.isDebugEnabled())
         {
             s_logger.debug("Applying deletions FOR "+id +" (the index ito which these are applied is the previous one ...)");
         }
 
+    }
+    
+    public OpenBitSet getDeletedDocuments()
+    {
+        lock.readLock().lock();
         try
         {
+            if (deletedDocuments != null)
+            {
+                return deletedDocuments;
+            }
+        }
+        finally
+        {
+            lock.readLock().unlock();
+        }
+        lock.writeLock().lock();
+        try
+        {
+            if (deletedDocuments != null)
+            {
+                return deletedDocuments;
+            }
+            deletedDocuments = new OpenBitSet(in.maxDoc());
+
             if (!deleteNodesOnly)
             {
                 for (String stringRef : deletions)
                 {
-                    TermDocs td = reader.termDocs(new Term("ID", stringRef));
+                    TermDocs td = in.termDocs(new Term("ID", stringRef));
                     while (td.next())
                     {
                         deletedDocuments.set(td.doc());
@@ -91,7 +118,7 @@ public class FilterIndexReaderByStringId extends FilterIndexReader
             else
             {
 
-                Searcher searcher = new IndexSearcher(reader);
+                Searcher searcher = new IndexSearcher(in);
                 for (String stringRef : deletions)
                 {
                     TermQuery query = new TermQuery(new Term("ID", stringRef));
@@ -112,12 +139,18 @@ public class FilterIndexReaderByStringId extends FilterIndexReader
                 }
                 // searcher does not need to be closed, the reader is live 
             }
+            return deletedDocuments;
         }
         catch (IOException e)
         {
-        	s_logger.error("Error initialising "+id);
-            throw new AlfrescoRuntimeException("Failed to construct filtering index reader", e);
+            s_logger.error("Error initialising "+id, e);
+            throw new AlfrescoRuntimeException("Failed to find deleted documents to filter", e);
         }
+        finally
+        {
+            lock.writeLock().unlock();
+        }
+        
     }
 
     // Prevent from actually setting the closed flag
@@ -133,10 +166,8 @@ public class FilterIndexReaderByStringId extends FilterIndexReader
      * @author andyh
      *
      */
-    public static class FilterTermDocs implements TermDocs
+    public class FilterTermDocs implements TermDocs
     {
-        OpenBitSet deletedDocuments;
-
         protected TermDocs in;
         
         String id;
@@ -146,10 +177,9 @@ public class FilterIndexReaderByStringId extends FilterIndexReader
          * @param in
          * @param deletedDocuments
          */
-        public FilterTermDocs(String id, TermDocs in, OpenBitSet deletedDocuments)
+        public FilterTermDocs(String id, TermDocs in)
         {
             this.in = in;
-            this.deletedDocuments = deletedDocuments;
         }
 
         public void seek(Term term) throws IOException
@@ -180,15 +210,20 @@ public class FilterIndexReaderByStringId extends FilterIndexReader
         {
         	try
         	{
-                while (in.next())
-                {
-                    if (!deletedDocuments.get(in.doc()))
+        	    if (!in.next())
+        	    {
+        	        return false;
+        	    }
+        	    OpenBitSet deletedDocuments = getDeletedDocuments();
+        	    while (deletedDocuments.get(in.doc()))
+        	    {
+                    if (!in.next())
                     {
-                        // Not masked
-                        return true;
-                    }
-                }
-                return false;
+                        return false;
+                    }        	        
+        	    }
+                // Not masked
+                return true;
         	}
         	catch(IOException ioe)
         	{
@@ -209,10 +244,17 @@ public class FilterIndexReaderByStringId extends FilterIndexReader
                 return 0;
             }
 
-            if (allDeleted(innerDocs, count))
+            OpenBitSet deletedDocuments = getDeletedDocuments();
+            while (allDeleted(innerDocs, count, deletedDocuments))
             {
-                // Did not find anything - try again
-                return read(docs, freqs);
+
+                count = in.read(innerDocs, innerFreq);
+
+                // Is the stream exhausted
+                if (count == 0)
+                {
+                    return 0;
+                }
             }
 
             // Add non deleted
@@ -231,7 +273,7 @@ public class FilterIndexReaderByStringId extends FilterIndexReader
             return insertPosition;
         }
 
-        private boolean allDeleted(int[] docs, int fillSize)
+        private boolean allDeleted(int[] docs, int fillSize, OpenBitSet deletedDocuments)
         {
             for (int i = 0; i < fillSize; i++)
             {
@@ -250,6 +292,7 @@ public class FilterIndexReaderByStringId extends FilterIndexReader
                 return false;
             }
 
+            OpenBitSet deletedDocuments = getDeletedDocuments();
             while (deletedDocuments.get(in.doc()))
             {
                 if (!in.next())
@@ -268,7 +311,7 @@ public class FilterIndexReaderByStringId extends FilterIndexReader
     }
 
     /** Base class for filtering {@link TermPositions} implementations. */
-    public static class FilterTermPositions extends FilterTermDocs implements TermPositions
+    public class FilterTermPositions extends FilterTermDocs implements TermPositions
     {
 
         TermPositions tp;
@@ -278,9 +321,9 @@ public class FilterIndexReaderByStringId extends FilterIndexReader
          * @param in
          * @param deletedDocuements
          */
-        public FilterTermPositions(String id, TermPositions in, OpenBitSet deletedDocuements)
+        public FilterTermPositions(String id, TermPositions in)
         {
-            super(id, in, deletedDocuements);
+            super(id, in);
             tp = in;
         }
 
@@ -308,18 +351,18 @@ public class FilterIndexReaderByStringId extends FilterIndexReader
     @Override
     public int numDocs()
     {
-        return super.numDocs() - (int)deletedDocuments.cardinality();
+        return super.numDocs() - (int)getDeletedDocuments().cardinality();
     }
 
     @Override
     public TermDocs termDocs() throws IOException
     {
-        return new FilterTermDocs(id, super.termDocs(), deletedDocuments);
+        return new FilterTermDocs(id, super.termDocs());
     }
 
     @Override
     public TermPositions termPositions() throws IOException
     {
-        return new FilterTermPositions(id, super.termPositions(), deletedDocuments);
+        return new FilterTermPositions(id, super.termPositions());
     }
 }

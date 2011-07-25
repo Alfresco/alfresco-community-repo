@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
 import java.util.WeakHashMap;
@@ -124,6 +125,9 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
 
         private LuceneConfig config;
 
+        private final long creationTime;
+        private final List<Throwable> references;
+
         static
         {
             Class<IndexReader> c = IndexReader.class;
@@ -146,6 +150,9 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
         ReferenceCountingReadOnlyIndexReader(String id, IndexReader indexReader, boolean enableCaching, LuceneConfig config)
         {
             super(indexReader);
+            this.creationTime = System.currentTimeMillis();
+            this.references = new LinkedList<Throwable>();
+            references.add(new Exception(this.refCount + ": " + indexReader.toString()));
             this.id = id;
             if (enableCaching && (config != null))
             {
@@ -154,6 +161,18 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
             this.config = config;
         }
         
+        @Override
+        public synchronized long getCreationTime()
+        {
+            return this.creationTime;
+        }
+
+        @Override
+        public synchronized List<Throwable> getReferences()
+        {
+            return this.references;
+        }
+
         @Override
         public synchronized void incRef()
         {
@@ -184,6 +203,7 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
                     throw new AlfrescoRuntimeException("Failed to mark index as open ..", e);
                 }
             }
+            references.add(new Exception(this.refCount + ": " + in.toString()));
         }
 
         private synchronized void decrementReferenceCount() throws IOException
@@ -198,6 +218,7 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
             {
                 s_logger.error("Invalid reference count for Reader " + id + " is " + refCount + "        ... " + super.toString());
             }
+            references.add(new Exception(this.refCount + ": " + in.toString()));
         }
 
         private void closeIfRequired() throws IOException
@@ -273,6 +294,15 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
             {
                 super.decRef();
             }
+        }
+        
+        /**
+         * We want to avoid setting the closed flag on our wrapped stream, passing on all decrefs.
+         **/
+        @Override
+        protected void doClose() throws IOException
+        {
+            in.decRef();
         }
 
         @Override

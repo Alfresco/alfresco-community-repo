@@ -34,6 +34,10 @@ import org.alfresco.service.cmr.repository.StoreRef;
  */
 public class NoActionIndexer implements Indexer
 {
+    public void setReadThrough(boolean isReadThrough)
+    {
+        return;
+    }
 
     public void createNode(ChildAssociationRef relationshipRef)
     {

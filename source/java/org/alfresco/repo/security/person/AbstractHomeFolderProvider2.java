@@ -27,7 +27,7 @@ import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Abstract class that implements {@link HomeFolderProvider2} which
- * works with the {@link HomeFolderManager} (which performs most of
+ * works with the {@link PortableHomeFolderManager} (which performs most of
  * the work) to create home folders in custom locations.
  * 
  * @author Alan Davis
@@ -43,7 +43,7 @@ public abstract class AbstractHomeFolderProvider2 implements
     /**
      * The home folder manager
      */
-    private HomeFolderManager homeFolderManager;
+    private PortableHomeFolderManager homeFolderManager;
     
     /**
      * The store URL.
@@ -83,7 +83,7 @@ public abstract class AbstractHomeFolderProvider2 implements
     /**
      * Get the home folder manager.
      */
-    protected HomeFolderManager getHomeFolderManager()
+    protected PortableHomeFolderManager getHomeFolderManager()
     {
         return homeFolderManager;
     }
@@ -92,7 +92,7 @@ public abstract class AbstractHomeFolderProvider2 implements
      * Set the home folder manager.
      * @param homeFolderManager
      */
-    public void setHomeFolderManager(HomeFolderManager homeFolderManager)
+    public void setHomeFolderManager(PortableHomeFolderManager homeFolderManager)
     {
         this.homeFolderManager = homeFolderManager;
     }

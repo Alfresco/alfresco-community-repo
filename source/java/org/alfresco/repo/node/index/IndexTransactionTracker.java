@@ -524,7 +524,7 @@ found:
                     {
                         continue;
                     }
-                    else if ((inIndex = isTxnPresentInIndex(txn)) != InIndex.NO)
+                    else if ((inIndex = isTxnPresentInIndex(txn, true)) != InIndex.NO)
                     {
                         if (logger.isDebugEnabled())
                         {
@@ -645,7 +645,7 @@ found:
             
             // Reindex the transaction if we are forcing it or if it isn't in the index already
             InIndex inIndex = InIndex.INDETERMINATE;
-            if (forceReindex || (inIndex = isTxnPresentInIndex(txn)) == InIndex.NO)
+            if (forceReindex || (inIndex = isTxnPresentInIndex(txn, true)) == InIndex.NO)
             {
                 // From this point on, until the tracker has caught up, all transactions need to be indexed
                 forceReindex = true;

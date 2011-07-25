@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -348,6 +348,7 @@ public class IndexInfo implements IndexMonitor
      * Main index reader
      */
     private IndexReader mainIndexReader;
+    private Map<String, IndexReader> mainIndexReaders = new HashMap<String, IndexReader>();
 
     /**
      * Index writers for deltas
@@ -505,6 +506,7 @@ public class IndexInfo implements IndexMonitor
                             }
                         }
                         // Delete entries that are not required
+						invalidateMainReadersFromFirst(deletable);
                         for (String id : deletable)
                         {
                             indexEntries.remove(id);
@@ -845,7 +847,6 @@ public class IndexInfo implements IndexMonitor
                                     }
                                     entry.setStatus(TransactionStatus.COMMITTED);
                                     registerReferenceCountingIndexReader(entry.getName(), buildReferenceCountingIndexReader(entry.getName(), entry.getDocumentCount()));
-                                    mainIndexReader = null;
                                     break;
                                 // States that require no action
                                 case COMMITTED:
@@ -857,6 +858,7 @@ public class IndexInfo implements IndexMonitor
                                 }
                             }
                             // Delete entries that are not required
+                            invalidateMainReadersFromFirst(deletable);
                             for (String id : deletable)
                             {
                                 indexEntries.remove(id);
@@ -1281,6 +1283,36 @@ public class IndexInfo implements IndexMonitor
         }
     }
 
+    private void invalidateMainReadersFromFirst(Set<String> ids) throws IOException
+    {
+        boolean found = false;
+        for (String id : indexEntries.keySet())
+        {
+            if (!found && ids.contains(id))
+            {
+                found = true;
+            }
+            if (found)
+            {
+                IndexReader main = mainIndexReaders.remove(id);
+                if (main != null)
+                {
+                    ((ReferenceCounting) main).setInvalidForReuse();
+                }
+            }
+        }
+
+        if (found)
+        {
+            if(mainIndexReader != null)
+            {
+                ((ReferenceCounting) mainIndexReader).setInvalidForReuse();
+                mainIndexReader = null;
+            }
+        }
+
+    }
+
     /**
      * Get the main reader for committed index data
      * 
@@ -1300,6 +1332,10 @@ public class IndexInfo implements IndexMonitor
                 getWriteLock();
                 try
                 {
+                    if (mainIndexReader != null)
+                    {
+                        ((ReferenceCounting)mainIndexReader).setInvalidForReuse();
+                    }
                     mainIndexReader = null;
                 }
                 finally
@@ -1397,6 +1433,10 @@ public class IndexInfo implements IndexMonitor
                 getWriteLock();
                 try
                 {
+                    if (mainIndexReader != null)
+                    {
+                        ((ReferenceCounting)mainIndexReader).setInvalidForReuse();
+                    }
                     mainIndexReader = null;
                 }
                 finally
@@ -1738,6 +1778,7 @@ public class IndexInfo implements IndexMonitor
                         reordered.put(entry.getName(), entry);
                         reordered.put(current.getName(), current);
                         addedPreparedEntry = true;
+						invalidateMainReadersFromFirst(Collections.singleton(current.getName()));
                     }
                     else if (current.getName().equals(entry.getName()))
                     {
@@ -1843,6 +1884,7 @@ public class IndexInfo implements IndexMonitor
             if (TransactionStatus.COMMITTED.follows(entry.getStatus()))
             {
                 // Do the deletions
+                invalidateMainReadersFromFirst(Collections.singleton(id));
                 if ((entry.getDocumentCount() + entry.getDeletions()) == 0)
                 {
                     registerReferenceCountingIndexReader(id, tl.get());
@@ -2004,6 +2046,7 @@ public class IndexInfo implements IndexMonitor
 
             if (TransactionStatus.DELETABLE.follows(entry.getStatus()))
             {
+                invalidateMainReadersFromFirst(Collections.singleton(id));
                 indexEntries.remove(id);
                 writeStatus();
                 clearOldReaders();
@@ -2147,7 +2190,7 @@ public class IndexInfo implements IndexMonitor
         clearInvalid(inValid);
     }
 
-    private void clearInvalid(HashSet<String> inValid) throws IOException
+    private void clearInvalid(Set<String> inValid) throws IOException
     {
         boolean hasInvalid = false;
         for (String id : inValid)
@@ -2157,13 +2200,24 @@ public class IndexInfo implements IndexMonitor
             {
                 s_logger.debug("... invalidating sub reader " + id);
             }
-            ReferenceCounting referenceCounting = (ReferenceCounting) reader;
-            referenceCounting.setInvalidForReuse();
-            deletableReaders.add(reader);
-            hasInvalid = true;
+            if (reader != null)
+            {
+                ReferenceCounting referenceCounting = (ReferenceCounting) reader;
+                referenceCounting.setInvalidForReuse();
+                deletableReaders.add(reader);
+                hasInvalid = true;
+            }
         }
         if (hasInvalid)
         {
+            for (String id : inValid)
+            {
+                IndexReader main = mainIndexReaders.remove(id);
+                if (main != null)
+                {
+                    ((ReferenceCounting) main).setInvalidForReuse();
+                }
+            }
             if (mainIndexReader != null)
             {
                 if (s_logger.isDebugEnabled())
@@ -2179,6 +2233,7 @@ public class IndexInfo implements IndexMonitor
     private IndexReader createMainIndexReader() throws IOException
     {
         IndexReader reader = null;
+        IndexReader oldReader = null;
         for (String id : indexEntries.keySet())
         {
             IndexEntry entry = indexEntries.get(id);
@@ -2188,33 +2243,35 @@ public class IndexInfo implements IndexMonitor
                 if (reader == null)
                 {
                     reader = subReader;
-                    reader.incRef();
                 }
                 else
                 {
-                    if (entry.getType() == IndexType.INDEX)
+                    boolean oldReaderIsSubReader = oldReader == null;
+                    oldReader = reader;
+                    reader = mainIndexReaders.get(id);
+                    if (reader == null)
                     {
-                        IndexReader oldReader = reader;
-                        reader = new MultiReader(new IndexReader[] { oldReader, subReader }, false);
-                        // Cancel out the incRef on the old reader
-                        oldReader.decRef();
-                    }
-                    else if (entry.getType() == IndexType.DELTA)
-                    {
-                        try
+                        if (entry.getType() == IndexType.INDEX)
                         {
-                            IndexReader oldReader = reader;
-                            IndexReader filterReader = new FilterIndexReaderByStringId(id, oldReader, getDeletions(entry.getName()), entry.isDeletOnlyNodes());
-                            reader = new MultiReader(new IndexReader[] { filterReader, subReader }, false);
-                            // Cancel out the incRef on the old readers
-                            oldReader.decRef();
-                            filterReader.decRef();
+                            reader = new MultiReader(new IndexReader[] { oldReader, subReader }, false);
                         }
-                        catch (IOException ioe)
+                        else if (entry.getType() == IndexType.DELTA)
                         {
-                            s_logger.error("Failed building filter reader beneath " + entry.getName(), ioe);
-                            throw ioe;
+                            try
+                            {
+                                IndexReader filterReader = new FilterIndexReaderByStringId(id, oldReader, getDeletions(entry.getName()), entry.isDeletOnlyNodes());
+                                reader = new MultiReader(new IndexReader[] { filterReader, subReader }, false);
+                                // Cancel out the incRef on the filter reader
+                                filterReader.decRef();
+                            }
+                            catch (IOException ioe)
+                            {
+                                s_logger.error("Failed building filter reader beneath " + entry.getName(), ioe);
+                                throw ioe;
+                            }
                         }
+                        reader = ReferenceCountingReadOnlyIndexReaderFactory.createReader(id+"multi", reader, true, config);
+                        mainIndexReaders.put(id, reader);
                     }
                 }
             }
@@ -2223,6 +2280,12 @@ public class IndexInfo implements IndexMonitor
         {
             reader = IndexReader.open(emptyIndex);
         }
+		else
+		{
+	        // Keep this reader open whilst it is referenced by mainIndexReaders / referenceCountingReadOnlyIndexReaders
+	        reader.incRef();
+	    }
+		
         reader = ReferenceCountingReadOnlyIndexReaderFactory.createReader(MAIN_READER, reader, false, config);
         return reader;
     }
@@ -2237,8 +2300,9 @@ public class IndexInfo implements IndexMonitor
         return reader;
     }
 
-    private void registerReferenceCountingIndexReader(String id, IndexReader reader)
+    private void registerReferenceCountingIndexReader(String id, IndexReader reader) throws IOException
     {
+        clearInvalid(Collections.singleton(id));
         ReferenceCounting referenceCounting = (ReferenceCounting) reader;
         if (!referenceCounting.getId().equals(id))
         {
@@ -3160,6 +3224,14 @@ public class IndexInfo implements IndexMonitor
                     deleteQueue.add(refCounting.getId());
                     i.remove();
                 }
+                else if (s_logger.isTraceEnabled() && refCounting.getCreationTime() < System.currentTimeMillis() - 120000)
+                {
+                    for (Throwable t : refCounting.getReferences())
+                    {
+                        s_logger.trace(t.getMessage(), t);
+                    }
+                }
+                    
             }
 
             Iterator<String> j = deleteQueue.iterator();
@@ -3641,6 +3713,7 @@ public class IndexInfo implements IndexMonitor
                             }
 
                             // Delete entries that are not required
+							invalidateMainReadersFromFirst(deletable);                            
                             for (String id : deletable)
                             {
                                 indexEntries.remove(id);
@@ -3767,96 +3840,100 @@ public class IndexInfo implements IndexMonitor
             }
             // Build readers
 
-            final HashSet<String> invalidIndexes = new HashSet<String>();
+            int size = 2 * (toDelete.size() + indexes.size());
+            final HashSet<String> invalidIndexes = new HashSet<String>(size);
 
-            final HashMap<String, Long> newIndexCounts = new HashMap<String, Long>();
+            final HashMap<String, Long> newIndexCounts = new HashMap<String, Long>(size);
 
-            LinkedHashMap<String, IndexReader> readers = new LinkedHashMap<String, IndexReader>();
-            for (IndexEntry entry : indexes.values())
-            {
-                File location = new File(indexDirectory, entry.getName()).getCanonicalFile();
-                IndexReader reader;
-                if (IndexReader.indexExists(location))
-                {
-                    reader = IndexReader.open(location);
-                }
-                else
-                {
-                    reader = IndexReader.open(emptyIndex);
-                }
-                readers.put(entry.getName(), reader);
-            }
-
+            LinkedHashMap<String, IndexReader> readers = new LinkedHashMap<String, IndexReader>(size);
             for (IndexEntry currentDelete : toDelete.values())
             {
                 Set<String> deletions = getDeletions(currentDelete.getName());
-                for (String key : readers.keySet())
+                if (!deletions.isEmpty())
                 {
-                    IndexReader reader = readers.get(key);
-                    for (String stringRef : deletions)
+                    for (String key : indexes.keySet())
                     {
-                        if (currentDelete.isDeletOnlyNodes())
+                        IndexReader reader = getReferenceCountingIndexReader(key);
+                        Searcher searcher = new IndexSearcher(reader);
+                        try
                         {
-                            Searcher searcher = new IndexSearcher(reader);
-
-                            TermQuery query = new TermQuery(new Term("ID", stringRef));
-                            Hits hits = searcher.search(query);
-                            if (hits.length() > 0)
+                            for (String stringRef : deletions)
                             {
-                                for (int i = 0; i < hits.length(); i++)
+                                TermQuery query = new TermQuery(new Term("ID", stringRef));
+                                Hits hits = searcher.search(query);
+                                if (hits.length() > 0)
                                 {
-                                    Document doc = hits.doc(i);
-                                    if (doc.getField("ISCONTAINER") == null)
+                                    IndexReader writeableReader = readers.get(key);
+                                    if (writeableReader == null)
                                     {
-                                        reader.deleteDocument(hits.id(i));
-                                        invalidIndexes.add(key);
-                                        // There should only be one thing to
-                                        // delete
-                                        // break;
+                                        File location = new File(indexDirectory, key).getCanonicalFile();
+                                        if (IndexReader.indexExists(location))
+                                        {
+                                            writeableReader = IndexReader.open(location);
+                                        }
+                                        else
+                                        {
+                                            continue;
+                                        }
+                                        readers.put(key, writeableReader);
+                                    }
+                                    
+                                    if (currentDelete.isDeletOnlyNodes())
+                                    {
+                                        Searcher writeableSearcher = new IndexSearcher(writeableReader);        
+                                        hits = writeableSearcher.search(query);
+                                        if (hits.length() > 0)
+                                        {
+                                            for (int i = 0; i < hits.length(); i++)
+                                            {
+                                                Document doc = hits.doc(i);
+                                                if (doc.getField("ISCONTAINER") == null)
+                                                {
+                                                    writeableReader.deleteDocument(hits.id(i));
+                                                    invalidIndexes.add(key);
+                                                    // There should only be one thing to
+                                                    // delete
+                                                    // break;
+                                                }
+                                            }
+                                        }
+                                        writeableSearcher.close();
+                                    }
+                                    else
+                                    {
+                                        int deletedCount = 0;
+                                        try
+                                        {
+                                            deletedCount = writeableReader.deleteDocuments(new Term("ID", stringRef));
+                                        }
+                                        catch (IOException ioe)
+                                        {
+                                            if (s_logger.isDebugEnabled())
+                                            {
+                                                s_logger.debug("IO Error for " + key);
+                                                throw ioe;
+                                            }
+                                        }
+                                        if (deletedCount > 0)
+                                        {
+                                            if (s_logger.isDebugEnabled())
+                                            {
+                                                s_logger.debug("Deleted " + deletedCount + " from " + key + " for id " + stringRef + " remaining docs " + writeableReader.numDocs());
+                                            }
+                                            invalidIndexes.add(key);
+                                        }
                                     }
                                 }
                             }
-                            searcher.close();
-
                         }
-                        else
+                        finally
                         {
-                            int deletedCount = 0;
-                            try
-                            {
-                                deletedCount = reader.deleteDocuments(new Term("ID", stringRef));
-                            }
-                            catch (IOException ioe)
-                            {
-                                if (s_logger.isDebugEnabled())
-                                {
-                                    s_logger.debug("IO Error for " + key);
-                                    throw ioe;
-                                }
-                            }
-                            if (deletedCount > 0)
-                            {
-                                if (s_logger.isDebugEnabled())
-                                {
-                                    s_logger.debug("Deleted " + deletedCount + " from " + key + " for id " + stringRef + " remaining docs " + reader.numDocs());
-                                }
-                                invalidIndexes.add(key);
-                            }
-                        }
+                            searcher.close();
+                        }    
                     }
-
                 }
-                File location = new File(indexDirectory, currentDelete.getName()).getCanonicalFile();
-                IndexReader reader;
-                if (IndexReader.indexExists(location))
-                {
-                    reader = IndexReader.open(location);
-                }
-                else
-                {
-                    reader = IndexReader.open(emptyIndex);
-                }
-                readers.put(currentDelete.getName(), reader);
+                // The delta we have just processed now must be included when we process the deletions of its successor
+                indexes.put(currentDelete.getName(), currentDelete);
             }
 
             // Close all readers holding the write lock - so no one tries to
@@ -3929,25 +4006,10 @@ public class IndexInfo implements IndexMonitor
                             IndexReader newReader = newReaders.get(id);
                             registerReferenceCountingIndexReader(id, newReader);
                         }
-                        if (invalidIndexes.size() > 0)
-                        {
-                            if (mainIndexReader != null)
-                            {
-                                if (s_logger.isDebugEnabled())
-                                {
-                                    s_logger.debug("... invalidating main index reader after applying deletions");
-                                }
-                                ((ReferenceCounting) mainIndexReader).setInvalidForReuse();
-                            }
-                            else
-                            {
-                                if (s_logger.isDebugEnabled())
-                                {
-                                    s_logger.debug("... no main index reader to invalidate after applying deletions");
-                                }
-                            }
-                            mainIndexReader = null;
-                        }
+
+                        // Invalidate all main index readers from the first invalid index onwards
+						invalidateMainReadersFromFirst(invalidIndexes);
+
 
                         if (s_logger.isDebugEnabled())
                         {
@@ -4047,6 +4109,7 @@ public class IndexInfo implements IndexMonitor
                             set.put(guid, target);
                             // rebuild merged index elements
                             LinkedHashMap<String, IndexEntry> reordered = new LinkedHashMap<String, IndexEntry>();
+							invalidateMainReadersFromFirst(Collections.singleton(firstMergeId));
                             for (IndexEntry current : indexEntries.values())
                             {
                                 if (current.getName().equals(firstMergeId))
@@ -4215,6 +4278,7 @@ public class IndexInfo implements IndexMonitor
 
                             }
                         }
+                        invalidateMainReadersFromFirst(toDelete);
                         for (String id : toDelete)
                         {
                             indexEntries.remove(id);

@@ -12,7 +12,7 @@
                 <property name="jobDataAsMap">
                     <map>
                         <entry key="bean">
-                            <ref bean="search.LuceneFullTextSearchIndexer" />
+                            <ref bean="search.luceneFullTextSearchIndexer" />
                         </entry>
                     </map>
                 </property>

@@ -519,7 +519,20 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             selectChildAssocs(parentNodeId, null, null, null, null, null, callback);
         }
     }
-    
+
+    /**
+     * Invalidates all cached artefacts for a particular node, forcing a refresh.
+     * 
+     * @param nodeId the node ID
+     */
+    private void invalidateNodeCaches(Long nodeId)
+    {
+        invalidateCachesByNodeId(null, nodeId, nodesCache);
+        invalidateCachesByNodeId(null, nodeId, propertiesCache);
+        invalidateCachesByNodeId(null, nodeId, aspectsCache);
+        invalidateCachesByNodeId(null, nodeId, parentAssocsCache);
+    }
+
     /*
      * Transactions
      */
@@ -792,27 +805,52 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
 
     public Status getNodeRefStatus(NodeRef nodeRef)
     {
-        // First check the cache of live nodes
-        Node node = new NodeEntity(nodeRef);
-        Pair<Long, Node> pair = nodesCache.getByValue(node);
-        if (pair == null)
+        Node node = null;
+
+        // Stage 1: check the cache without reading through
+        Long nodeId = nodesCache.getKey(nodeRef);
+        if (nodeId != null)
         {
-            // It's not there, so select ignoring the 'deleted' flag
-            node = selectNodeByNodeRef(nodeRef, null);
+            node = nodesCache.getValue(nodeId);
+            // If the node isn't for the current transaction, we are probably reindexing. So invalidate the cache,
+            // forcing a read through.
+            if (node == null || AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_READ_WRITE
+                    || !getCurrentTransaction().getId().equals(node.getTransaction().getId())
+                    || !node.getNodeRef().equals(nodeRef))
+            {
+                invalidateNodeCaches(nodeId);
+                node = null;
+            }
         }
-        else
+
+        // Stage 2, read through to the database, caching results if appropriate
+        if (node == null)
         {
-            node = pair.getSecond();
+            Pair<Long, Node> pair = nodesCache.getByValue(new NodeEntity(nodeRef));
+            if (pair == null)
+            {
+                // It's not there, so select ignoring the 'deleted' flag
+                node = selectNodeByNodeRef(nodeRef, null);
+                if (node != null)
+                {
+                    // Invalidate anything cached for this node ID, just in case it has moved store, etc.
+                    invalidateNodeCaches(node.getId());
+                }
+            }
+            else
+            {
+                // We have successfully populated the cache
+                node = pair.getSecond();
+            }            
         }
+        
         if (node == null)
         {
             return null;
         }
-        else
-        {
-            Transaction txn = node.getTransaction();
-            return new NodeRef.Status(nodeRef, txn.getChangeTxnId(), txn.getId(), node.getDeleted());
-        }
+
+        Transaction txn = node.getTransaction();
+        return new NodeRef.Status(nodeRef, txn.getChangeTxnId(), txn.getId(), node.getDeleted());
     }
 
     public Pair<Long, NodeRef> getNodePair(NodeRef nodeRef)
@@ -930,7 +968,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // There will be no other parent assocs
         boolean isRoot = false;
         boolean isStoreRoot = nodeTypeQName.equals(ContentModel.TYPE_STOREROOT);
-        ParentAssocsInfo parentAssocsInfo = new ParentAssocsInfo(isRoot, isStoreRoot, assoc);
+        ParentAssocsInfo parentAssocsInfo = new ParentAssocsInfo(node.getTransaction().getId(), isRoot, isStoreRoot,
+                assoc);
         parentAssocsCache.setValue(nodeId, parentAssocsInfo);
         
         // Ensure that cm:auditable values are propagated, if required
@@ -3156,6 +3195,22 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
 
         if (!hasParents && !parentAssocInfo.isRoot())
         {
+            // We appear to have an orphaned node. But we may just have a temporarily out of sync clustered cache or a
+            // transaction that started ages before the one that committed the cache content!. So double check the node
+            // isn't actually deleted.
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Stale cache detected for Node #" + currentNodeId + ": removing from cache.");
+            }
+            invalidateNodeCaches(currentNodeId);
+            
+            Status currentNodeStatus = getNodeRefStatus(currentNodeRef);
+            if (currentNodeStatus == null || currentNodeStatus.isDeleted())
+            {
+                // Force a retry. The cached node was stale
+                throw new DataIntegrityViolationException("Stale cache detected for Node #" + currentNodeId);
+            }
+            // We have a corrupt repository
             throw new RuntimeException("Node without parents does not have root aspect: " + currentNodeRef);
         }
         // walk up each parent association
@@ -3210,12 +3265,40 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      */
     private ParentAssocsInfo getParentAssocsCached(Long nodeId)
     {
-        Pair<Long, ParentAssocsInfo> cacheEntry = parentAssocsCache.getByKey(nodeId);
-        if (cacheEntry == null)
+        // We try to protect here against 'skew' between a cached node and its parent associations
+		// Unfortunately due to overlapping DB transactions and consistent read behaviour a thread
+		// can end up loading old associations and succeed in committing them to the shared cache
+		// without any conflicts
+		
+	    // Allow for a single retry after cache validation
+        for (int i = 0; i < 2; i++)
         {
-            throw new DataIntegrityViolationException("Invalid node ID: " + nodeId);
+            Pair<Long, ParentAssocsInfo> cacheEntry = parentAssocsCache.getByKey(nodeId);
+            if (cacheEntry == null)
+            {
+                throw new DataIntegrityViolationException("Invalid node ID: " + nodeId);
+            }
+            Node child = getNodeNotNull(nodeId);
+            ParentAssocsInfo parentAssocsInfo = cacheEntry.getSecond();
+            // Validate that we aren't pairing up a cached node with historic parent associations from an old
+            // transaction (or the other way around)
+            Long txnId = parentAssocsInfo.getTxnId();
+            if (txnId != null && !txnId.equals(child.getTransaction().getId()))
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Stale cached node #" + nodeId
+                            + " detected loading parent associations. Cached transaction ID: "
+                            + child.getTransaction().getId() + ", actual transaction ID: " + txnId);
+                }
+                invalidateNodeCaches(nodeId);
+            }
+            else
+            {
+                return parentAssocsInfo;
+            }
         }
-        return cacheEntry.getSecond();
+        throw new DataIntegrityViolationException("Stale cache detected for Node #" + nodeId);
     }
     
     private ParentAssocsInfo getParentAssocsCacheOnly(Long nodeId)
@@ -3253,9 +3336,13 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
 
             // Select all the parent associations
             List<ChildAssocEntity> assocs = selectParentAssocs(nodeId);
+
+            // Retrieve the transaction ID from the DB for validation purposes - prevents skew between a cached node and
+            // its parent assocs
+            Long txnId = assocs.isEmpty() ? null : assocs.get(0).getChildNode().getTransaction().getId();
             
             // Build the cache object
-            ParentAssocsInfo value = new ParentAssocsInfo(isRoot, isStoreRoot, assocs);
+            ParentAssocsInfo value = new ParentAssocsInfo(txnId, isRoot, isStoreRoot, assocs);
             // Done
             return new Pair<Long, ParentAssocsInfo>(nodeId, value);
         }
@@ -3569,6 +3656,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         {
             Long nodeId = node.getId();
             Node cached = nodesCache.getValue(nodeId);
+            ParentAssocsInfo cachedParents = parentAssocsCache.getValue(nodeId);
             if (cached != null && !txnId.equals(cached.getTransaction().getId()))
             {
                 if (logger.isDebugEnabled())
@@ -3577,11 +3665,36 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                             + " detected during transaction tracking. Cached transaction ID: "
                             + cached.getTransaction().getId() + ", actual transaction ID: " + txnId);
                 }
-                invalidateCachesByNodeId(null, nodeId, nodesCache);
-                invalidateCachesByNodeId(null, nodeId, parentAssocsCache);
+                invalidateNodeCaches(nodeId);
             }
+            else if (cachedParents != null && !txnId.equals(cachedParents.getTxnId()))
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Stale cached parent associations for node #" + nodeId
+                            + " detected during transaction tracking. Cached transaction ID: "
+                            + cachedParents.getTxnId() + ", actual transaction ID: " + txnId);
+                }
+                invalidateNodeCaches(nodeId);                
+            }
+
+            // It's possible that a noderef has been remapped (e.g. node moved store) so make sure we don't have a stale
+            // mapping for this noderef either
+            Long oldNodeId = nodesCache.getKey(node.getNodeRef());
+            if (oldNodeId != null && !(oldNodeId.equals(nodeId)))
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Stale cached noderef " + node.getNodeRef()
+                            + " detected during transaction tracking. Cached node ID: "
+                            + oldNodeId + ", actual node ID: " + nodeId);
+                }
+                invalidateNodeCaches(oldNodeId);                
+            }
+                        
             nodeStatuses.add(node.getNodeStatus());
         }
+        
         // Done
         return nodeStatuses;
     }

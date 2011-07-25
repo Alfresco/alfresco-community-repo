@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.transaction.TransactionService;
 
 /**
  * Factory for AVM indexers and searchers
@@ -49,6 +50,8 @@ public class AVMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
     private DictionaryService dictionaryService;
     private NamespaceService nameSpaceService;
     private ContentService contentService;
+    protected TransactionService transactionService;
+
     private AVMService avmService;
     private AVMSyncService avmSyncService;
     private NodeService nodeService;
@@ -83,6 +86,11 @@ public class AVMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
+    }
+
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
     }
 
     /**
@@ -131,6 +139,7 @@ public class AVMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
         AVMLuceneIndexerImpl indexer = AVMLuceneIndexerImpl.getUpdateIndexer(storeRef, deltaId, this);
         indexer.setDictionaryService(dictionaryService);
         indexer.setContentService(contentService);
+        indexer.setTransactionService(transactionService);
         indexer.setMaxAtomicTransformationTime(getMaxTransformationTime());
         indexer.setAvmService(avmService);
         indexer.setAvmSyncService(avmSyncService);

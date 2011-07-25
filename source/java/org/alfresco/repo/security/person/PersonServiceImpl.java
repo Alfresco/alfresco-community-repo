@@ -49,7 +49,6 @@ import org.alfresco.repo.node.getchildren.FilterPropString;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory;
 import org.alfresco.repo.node.getchildren.FilterPropString.FilterTypeString;
-import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.search.SearcherException;
@@ -135,7 +134,6 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     private NamespacePrefixResolver namespacePrefixResolver;
     private HomeFolderManager homeFolderManager;
     private PolicyComponent policyComponent;
-    private BehaviourFilter policyBehaviourFilter;
     private AclDAO aclDao;
     private PermissionsManager permissionsManager;
     private RepoAdminService repoAdminService;
@@ -161,7 +159,9 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     
     private JavaBehaviour beforeCreateNodeValidationBehaviour;
     private JavaBehaviour beforeDeleteNodeValidationBehaviour;
-   
+    
+    private boolean homeFolderCreationEager;
+	
     static
     {
         Set<QName> props = new HashSet<QName>();
@@ -305,11 +305,6 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         this.policyComponent = policyComponent;
     }
     
-    public void setPolicyBehaviourFilter(BehaviourFilter policyBehaviourFilter)
-    {
-        this.policyBehaviourFilter = policyBehaviourFilter;
-    }
-
     public void setStoreUrl(String storeUrl)
     {
         this.storeRef = new StoreRef(storeUrl);
@@ -348,6 +343,15 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     public void setHomeFolderManager(HomeFolderManager homeFolderManager)
     {
         this.homeFolderManager = homeFolderManager;
+    }
+    
+    /**
+     * Indicates if home folders should be created when the person
+     * is created or delayed until first accessed.
+     */
+    public void setHomeFolderCreationEager(boolean homeFolderCreationEager)
+    {
+        this.homeFolderCreationEager = homeFolderCreationEager;
     }
     
     public void setAclDAO(AclDAO aclDao)
@@ -809,16 +813,27 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
                 {
                     public Object execute() throws Throwable
                     {
-                        homeFolderManager.makeHomeFolder(ref);
+                        makeHomeFolderAsSystem(ref);
                         return null;
                     }
                 }, transactionService.isReadOnly(), transactionService.isReadOnly() ? false : AlfrescoTransactionSupport.getTransactionReadState() == TxnReadState.TXN_READ_ONLY);
-                //homeFolder = DefaultTypeConverter.INSTANCE.convert(NodeRef.class, nodeService.getProperty(person, ContentModel.PROP_HOMEFOLDER));
-                //assert(homeFolder != null);
             }
         }
     }
     
+    private void makeHomeFolderAsSystem(final ChildAssociationRef childAssocRef)
+    {
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+        {
+            @Override
+            public Object doWork() throws Exception
+            {
+                homeFolderManager.makeHomeFolder(childAssocRef);
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
+    }
+
     private HashMap<QName, Serializable> getDefaultProperties(String userName)
     {
         HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
@@ -1328,8 +1343,10 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         // Make sure there is an authority entry - with a DB constraint for uniqueness
         // aclDao.createAuthority(username);
         
-        // work around for policy bug ...
-        homeFolderManager.onCreateNode(childAssocRef);
+        if (homeFolderCreationEager)
+        {
+            makeHomeFolderAsSystem(childAssocRef);
+        }
     }
     
     private QName getChildNameLower(String userName)

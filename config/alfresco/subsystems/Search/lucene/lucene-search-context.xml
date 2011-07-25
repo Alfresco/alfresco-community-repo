@@ -317,6 +317,9 @@
         <property name="contentService">
             <ref bean="contentService" />
         </property>
+        <property name="transactionService">
+            <ref bean="transactionService" />
+        </property>
         <property name="queryRegister">
             <ref bean="search.queryRegisterComponent" />
         </property>
@@ -365,6 +368,9 @@
         <property name="contentService">
             <ref bean="contentService" />
         </property>
+        <property name="transactionService">
+            <ref bean="transactionService" />
+        </property>
         <property name="queryRegister">
             <ref bean="search.queryRegisterComponent" />
         </property>
@@ -391,6 +397,9 @@
         </property>
         <property name="contentService">
             <ref bean="contentService" />
+        </property>
+        <property name="transactionService">
+            <ref bean="transactionService" />
         </property>
         <property name="contentStore">
             <ref bean="fileContentStore"/>
@@ -454,27 +463,12 @@
 
     <!-- Bean to support full text search -->
 
-    <bean id="search.LuceneFullTextSearchIndexer"
-        class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean" depends-on="indexerAndSearcherFactory">
-        <property name="proxyInterfaces">
-            <value>org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer</value>
-        </property>
-        <property name="transactionManager">
-            <ref bean="transactionManager" />
-        </property>
-        <property name="target">
-           <ref bean="search.luceneFullTextSearchIndexer" />
-        </property>
-        <property name="transactionAttributes">
-            <props>
-                <prop key="*">${server.transaction.mode.default}</prop>
-            </props>
-        </property>
-    </bean>
-
      <bean id="search.luceneFullTextSearchIndexer" class="org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexerImpl">
         <property name="indexerAndSearcherFactory">
            <ref bean="search.indexerAndSearcherFactory" />
+        </property>
+        <property name="transactionService">
+           <ref bean="transactionService" />
         </property>
         <property name="batchSize">
            <value>${fts.indexer.batchSize}</value>

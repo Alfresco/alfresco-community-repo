@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.node.NodeBulkLoader;
 import org.alfresco.repo.search.AbstractResultSet;
 import org.alfresco.repo.search.ResultSetRowIterator;
@@ -196,8 +197,15 @@ public class LuceneResultSet extends AbstractResultSet
             prefetch.set(next);
             Document doc = hits.doc(next);
             String nodeRefStr = doc.get("ID");
-            NodeRef nodeRef = tenantService.getBaseName(new NodeRef(nodeRefStr));
-            fetchList.add(nodeRef);
+            try
+            {
+                NodeRef nodeRef = tenantService.getBaseName(new NodeRef(nodeRefStr));
+                fetchList.add(nodeRef);
+            }
+            catch (AlfrescoRuntimeException e)
+            {
+                // Ignore IDs that don't parse as NodeRefs, e.g. FTSREF docs
+            }
         }
         // Now bulk fetch
         if (fetchList.size() > 1)

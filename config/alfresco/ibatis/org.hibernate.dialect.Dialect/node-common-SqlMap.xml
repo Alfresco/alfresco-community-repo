@@ -132,6 +132,9 @@
         <result property="isPrimary" column="is_primary" jdbcType="BIT" javaType="java.lang.Boolean" />
         <result property="assocIndex" column="assoc_index" jdbcType="INTEGER" javaType="java.lang.Integer"/>
     </resultMap>
+    <resultMap id="result_ChildAssocTxnId" type="ChildAssoc" extends="result_ChildAssoc">
+        <result property="childNode.transaction.id" column="childNodeTxnId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </resultMap>
     
     <resultMap id="result_FilterSortNode" type="FilterSortNode">
         
@@ -847,6 +850,10 @@
             assoc.is_primary            as is_primary,
             assoc.assoc_index           as assoc_index
     </sql>
+    <sql id="select_ChildAssocTxnId_Results">
+        <include refid="alfresco.node.select_ChildAssoc_Results"/>
+            ,childNode.transaction_id   as childNodeTxnId
+    </sql>
     <sql id="select_ChildAssoc_FromSimple">
         from
             alf_child_assoc assoc
@@ -1070,8 +1077,8 @@
                 )
     </select>
 
-    <select id="select_ParentAssocsOfChild" parameterType="ChildAssoc" resultMap="result_ChildAssoc">
-        <include refid="alfresco.node.select_ChildAssoc_Results"/>
+    <select id="select_ParentAssocsOfChild" parameterType="ChildAssoc" resultMap="result_ChildAssocTxnId">
+        <include refid="alfresco.node.select_ChildAssocTxnId_Results"/>
         <include refid="alfresco.node.select_ChildAssoc_FromSimple"/>
         where
             childNode.id = #{childNode.id}

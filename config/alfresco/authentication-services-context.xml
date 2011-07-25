@@ -1,273 +1,278 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
-<!-- ===================================================================  -->
-<!-- This file contains the bean definitions that support authentication  -->
-<!-- ===================================================================  -->
+<!-- =================================================================== -->
+<!-- This file contains the bean definitions that support authentication -->
+<!-- =================================================================== -->
 
-<!--                                                                        -->
+<!-- -->
 <!-- Acegi is used for authentication and protecting method calls on public -->
-<!-- services. To do this requires our authentication mechanism to work     -->
-<!-- within the acegi framework.                                            -->
-<!--                                                                        -->
-<!-- It is important to decide if user names are case sensitive or not.     -->
-<!-- This is configured in repository.properties.                           -->
-<!--                                                                        -->
-<!--                                                                        -->
-<!-- TODO:                                                                  -->
-<!--                                                                        -->
-<!-- The transactional wrappers should be removed from the beans in this    -->
-<!-- file. This should be done in the public services definitions.          -->
-<!-- This requires some tests to be fixed up.                               -->
-<!--                                                                        -->
+<!-- services. To do this requires our authentication mechanism to work -->
+<!-- within the acegi framework. -->
+<!-- -->
+<!-- It is important to decide if user names are case sensitive or not. -->
+<!-- This is configured in repository.properties. -->
+<!-- -->
+<!-- -->
+<!-- TODO: -->
+<!-- -->
+<!-- The transactional wrappers should be removed from the beans in this -->
+<!-- file. This should be done in the public services definitions. -->
+<!-- This requires some tests to be fixed up. -->
+<!-- -->
 
 
 <beans>
-    <!--                                                                    -->
-    <!-- The Acegi authentication manager.                                  -->
-    <!--                                                                    -->
-    <!-- Provders are asked to authenticate in order.                       -->
-    <!-- First, is a provider that checks if an acegi authentication object -->
-    <!-- is already bound to the executing thread. If it is, and it is set  -->
-    <!-- as authenticated then no further authentication is required. If    -->
-    <!-- this is absent, Acegi validates the password for every method      -->
-    <!-- invocation, which is too CPU expensive. If we set an               -->
-    <!-- authentication based on a ticket etc .... or we want to set the    -->
-    <!-- the system user as the current user ... we do not have the         -->
-    <!-- password. So if we have set an authentication and set it as        -->
-    <!-- authenticated that is sufficient to validate the user.             -->
-    <!--                                                                    -->
-    <!-- If the authentication bound to the current thread is not set as    -->
-    <!-- authenticated the standard Acegi DAO Authentication provider       -->
-    <!-- is used to authenticate.                                           -->
-    <!--                                                                    -->
+	<!-- -->
+	<!-- The Acegi authentication manager. -->
+	<!-- -->
+	<!-- Provders are asked to authenticate in order. -->
+	<!-- First, is a provider that checks if an acegi authentication object -->
+	<!-- is already bound to the executing thread. If it is, and it is set -->
+	<!-- as authenticated then no further authentication is required. If -->
+	<!-- this is absent, Acegi validates the password for every method -->
+	<!-- invocation, which is too CPU expensive. If we set an -->
+	<!-- authentication based on a ticket etc .... or we want to set the -->
+	<!-- the system user as the current user ... we do not have the -->
+	<!-- password. So if we have set an authentication and set it as -->
+	<!-- authenticated that is sufficient to validate the user. -->
+	<!-- -->
+	<!-- If the authentication bound to the current thread is not set as -->
+	<!-- authenticated the standard Acegi DAO Authentication provider -->
+	<!-- is used to authenticate. -->
+	<!-- -->
 
-    <bean id="authenticationManager" class="net.sf.acegisecurity.providers.ProviderManager">
-        <property name="providers">
-            <list>
-                <ref bean="authenticatedAuthenticationPassthroughProvider" />
-            </list>
-        </property>
-    </bean>
-
-
-    <!-- An authentication Provider that just believes authentications      -->
-    <!-- bound to the local thread are valid if they are set as             -->
-    <!-- authenticated.                                                     -->
-
-    <bean id="authenticatedAuthenticationPassthroughProvider" class="org.alfresco.repo.security.authentication.AuthenticatedAuthenticationPassthroughProvider" />
-
-    <!-- The authority DAO implements an interface extended from the Acegi  -->
-    <!-- DAO that supports CRUD.                                            -->
-
-   <!-- The editable authentication chain -->
-   <bean id="Authentication" class="org.alfresco.repo.management.subsystems.DefaultChildApplicationContextManager"
-      parent="abstractPropertyBackedBean">
-      <property name="defaultChain">
-         <value>${authentication.chain}</value>
-      </property>
-   </bean>
-
-   <!-- Acegi providers now proxy to the first authentication DAO in the chain -->
-   <bean id="authenticationDao" class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
-      <property name="applicationContextManager">
-         <ref bean="Authentication" />
-      </property>
-      <property name="interfaces">
-         <list>
-            <value>org.alfresco.repo.security.authentication.MutableAuthenticationDao</value>
-         </list>
-      </property>
-      <!-- A generic fallback implementation, in case the chain doesn't provide one-->
-      <property name="defaultTarget">
-         <bean class="org.alfresco.repo.security.authentication.DefaultMutableAuthenticationDao">
-            <property name="allowSetEnabled" value="true" />
-            <property name="allowGetEnabled" value="true" />
-            <property name="allowDeleteUser" value="true" />
-            <property name="allowCreateUser" value="true" />
-         </bean>
-      </property>
-   </bean>
-
-   <!-- Allow the authentication subsystem to listen for SMB Server session events -->
-   <bean id="SmbSessionListener" class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
-      <property name="applicationContextManager">
-         <ref bean="Authentication" />
-      </property>
-      <property name="interfaces">
-         <list>
-            <value>org.alfresco.jlan.server.SessionListener</value>
-         </list>
-      </property>
-      <!-- A benign fallback implementation, in case the chain isn't interested! -->
-      <property name="defaultTarget">
-         <bean class="org.alfresco.filesys.NullSessionListener" />
-      </property>
-   </bean>
-
-   <bean id="CifsAuthenticator" class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
-      <property name="applicationContextManager">
-         <ref bean="Authentication" />
-      </property>
-      <property name="sourceBeanName">
-         <value>cifsAuthenticator</value>
-      </property>
-      <property name="interfaces">
-         <list>
-            <value>org.alfresco.jlan.server.auth.ICifsAuthenticator</value>
-            <value>org.alfresco.repo.management.subsystems.ActivateableBean</value>
-         </list>
-      </property>
-   </bean>
-
-   <bean id="FtpAuthenticator" class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
-      <property name="applicationContextManager">
-         <ref bean="Authentication" />
-      </property>
-      <property name="sourceBeanName">
-         <value>ftpAuthenticator</value>
-      </property>
-      <property name="interfaces">
-         <list>
-            <value>org.alfresco.jlan.ftp.FTPAuthenticator</value>
-            <value>org.alfresco.repo.management.subsystems.ActivateableBean</value>
-         </list>
-      </property>
-      <!-- A generic fallback implementation, in case the chain doesn't provide one-->
-      <property name="defaultTarget">
-         <bean class="org.alfresco.filesys.auth.ftp.AlfrescoFtpAuthenticator" parent="ftpAuthenticatorBase" />
-      </property>
-   </bean>
-    
-    <!-- Passwords are encoded using MD4                                    -->
-    <!-- This is not ideal and only done to be compatible with NTLM         -->
-    <!-- authentication against the default authentication mechanism.       -->
-
-    <bean id="passwordEncoder" class="org.alfresco.repo.security.authentication.MD4PasswordEncoderImpl"></bean>
+	<bean id="authenticationManager" class="net.sf.acegisecurity.providers.ProviderManager">
+		<property name="providers">
+			<list>
+				<ref bean="authenticatedAuthenticationPassthroughProvider" />
+			</list>
+		</property>
+	</bean>
 
 
-    <!-- The Authentication Service implementation.                         -->
-    <!--                                                                    -->
-    <!-- Each method 'chains' through all AuthenticationService implementations in the authentication chain -->
+	<!-- An authentication Provider that just believes authentications -->
+	<!-- bound to the local thread are valid if they are set as -->
+	<!-- authenticated. -->
 
-    <bean id="authenticationService" class="org.alfresco.repo.security.authentication.subsystems.SubsystemChainingAuthenticationService">
-        <property name="sysAdminParams">
-            <ref bean="sysAdminParams" />
-        </property>
-        <property name="applicationContextManager">
-            <ref bean="Authentication" />
-        </property>
-        <property name="sourceBeanName">
-            <value>localAuthenticationService</value>
-        </property>
-    </bean>
+	<bean id="authenticatedAuthenticationPassthroughProvider"
+		class="org.alfresco.repo.security.authentication.AuthenticatedAuthenticationPassthroughProvider" />
 
-    <!-- The public authentication component.                                      -->
+	<!-- The authority DAO implements an interface extended from the Acegi -->
+	<!-- DAO that supports CRUD. -->
 
-    <bean id="AuthenticationComponent" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
-        <property name="proxyInterfaces">
-            <value>org.alfresco.repo.security.authentication.AuthenticationComponent</value>
-        </property>
-        <property name="transactionManager">
-            <ref bean="transactionManager" />
-        </property>
-        <property name="target">
-            <ref bean="authenticationComponent" />
-        </property>
-        <property name="transactionAttributes">
-            <props>
-                <prop key="*">${server.transaction.mode.default}</prop>
-            </props>
-        </property>
-    </bean>
+	<!-- The editable authentication chain -->
+	<bean id="Authentication"
+		class="org.alfresco.repo.management.subsystems.DefaultChildApplicationContextManager"
+		parent="abstractPropertyBackedBean">
+		<property name="defaultChain">
+			<value>${authentication.chain}</value>
+		</property>
+	</bean>
 
-    <!-- Parent bean for beans derived from AbstractAuthenticationComponent -->
-    <bean id="authenticationComponentBase" abstract="true">
-       <property name="authenticationContext">
-            <ref bean="authenticationContext"/>
-        </property>
-       <property name="userRegistrySynchronizer">
-            <ref bean="userRegistrySynchronizer"/>
-        </property>
-    </bean>
+	<!-- Acegi providers now proxy to the first authentication DAO in the chain -->
+	<bean id="authenticationDao"
+		class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
+		<property name="applicationContextManager">
+			<ref bean="Authentication" />
+		</property>
+		<property name="interfaces">
+			<list>
+				<value>org.alfresco.repo.security.authentication.MutableAuthenticationDao</value>
+			</list>
+		</property>
+		<!-- A generic fallback implementation, in case the chain doesn't provide 
+			one -->
+		<property name="defaultTarget">
+			<bean
+				class="org.alfresco.repo.security.authentication.DefaultMutableAuthenticationDao">
+				<property name="allowSetEnabled" value="true" />
+				<property name="allowGetEnabled" value="true" />
+				<property name="allowDeleteUser" value="true" />
+				<property name="allowCreateUser" value="true" />
+			</bean>
+		</property>
+	</bean>
 
-    <!-- The chaining authentication component -->
-    <bean id="authenticationComponent" class="org.alfresco.repo.security.authentication.subsystems.SubsystemChainingAuthenticationComponent"
-        parent="authenticationComponentBase">
-        <property name="nodeService">
-            <ref bean="nodeService" />
-        </property>
-        <property name="personService">
-            <ref bean="personService" />
-        </property>
-        <property name="transactionService">
-            <ref bean="transactionService" />
-        </property>
-        <property name="applicationContextManager">
-            <ref bean="Authentication" />
-        </property>
-        <property name="sourceBeanName">
-            <value>authenticationComponent</value>
-        </property>
-    </bean>
+	<!-- Allow the authentication subsystem to listen for SMB Server session 
+		events -->
+	<bean id="SmbSessionListener"
+		class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
+		<property name="applicationContextManager">
+			<ref bean="Authentication" />
+		</property>
+		<property name="interfaces">
+			<list>
+				<value>org.alfresco.jlan.server.SessionListener</value>
+			</list>
+		</property>
+		<!-- A benign fallback implementation, in case the chain isn't interested! -->
+		<property name="defaultTarget">
+			<bean class="org.alfresco.filesys.NullSessionListener" />
+		</property>
+	</bean>
 
-   <!-- Import the user registry synchronizer from the synchronization subsystem -->
-   <bean id="userRegistrySynchronizer" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
-      <property name="sourceApplicationContextFactory">
-         <ref bean="Synchronization" />
-      </property>
-      <property name="interfaces">
-         <list>
-            <value>org.alfresco.repo.security.sync.UserRegistrySynchronizer</value>
-         </list>
-      </property>
-   </bean>
+	<bean id="CifsAuthenticator"
+		class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
+		<property name="applicationContextManager">
+			<ref bean="Authentication" />
+		</property>
+		<property name="sourceBeanName">
+			<value>cifsAuthenticator</value>
+		</property>
+		<property name="interfaces">
+			<list>
+				<value>org.alfresco.jlan.server.auth.ICifsAuthenticator</value>
+				<value>org.alfresco.repo.management.subsystems.ActivateableBean</value>
+			</list>
+		</property>
+	</bean>
 
-    <bean id="authenticationContext" class="org.alfresco.repo.security.authentication.AuthenticationContextImpl">
-       <property name="tenantService">
-            <ref bean="tenantService"/>
-        </property>
-    </bean>
+	<bean id="FtpAuthenticator"
+		class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
+		<property name="applicationContextManager">
+			<ref bean="Authentication" />
+		</property>
+		<property name="sourceBeanName">
+			<value>ftpAuthenticator</value>
+		</property>
+		<property name="interfaces">
+			<list>
+				<value>org.alfresco.jlan.ftp.FTPAuthenticator</value>
+				<value>org.alfresco.repo.management.subsystems.ActivateableBean</value>
+			</list>
+		</property>
+		<!-- A generic fallback implementation, in case the chain doesn't provide 
+			one -->
+		<property name="defaultTarget">
+			<bean class="org.alfresco.filesys.auth.ftp.AlfrescoFtpAuthenticator"
+				parent="ftpAuthenticatorBase" />
+		</property>
+	</bean>
 
-    <!-- Simple Authentication component that rejects all authentication requests -->
-    <!-- Use this defintion for Novell IChain integration.                        -->
-    <!-- It should never go to the login screen  so this is not required          -->
+	<!-- Passwords are encoded using MD4 -->
+	<!-- This is not ideal and only done to be compatible with NTLM -->
+	<!-- authentication against the default authentication mechanism. -->
 
-    <!--
-    <bean id="authenticationComponent"
-          class="org.alfresco.repo.security.authentication.SimpleAcceptOrRejectAllAuthenticationComponentImpl"
-          parent="authenticationComponentBase">
-        <property name="accept">
-            <value>true</value>
-        </property>
-        </property>
-        <property name="nodeService">
-            <ref bean="nodeService" />
-        </property>
-        <property name="personService">
-            <ref bean="personService" />
-        </property>
-        <property name="transactionService">
-            <ref bean="transactionService" />
-        </property>    
-    </bean>
-    -->
+	<bean id="passwordEncoder"
+		class="org.alfresco.repo.security.authentication.MD4PasswordEncoderImpl"></bean>
 
-    <!-- support to match user names -->
-    
-    <bean id="userNameMatcher" class="org.alfresco.repo.security.person.UserNameMatcherImpl">
-        <property name="userNamesAreCaseSensitive">
-          <value>${user.name.caseSensitive}</value>
-        </property>
-        <property name="domainNamesAreCaseSensitive">
-          <value>${domain.name.caseSensitive}</value>
-        </property>
-        <property name="domainSeparator">
-          <value>${domain.separator}</value>
-        </property>  
-    </bean>
-    
-    <!-- The person service.                                                -->
+
+	<!-- The Authentication Service implementation. -->
+	<!-- -->
+	<!-- Each method 'chains' through all AuthenticationService implementations 
+		in the authentication chain -->
+
+	<bean id="authenticationService"
+		class="org.alfresco.repo.security.authentication.subsystems.SubsystemChainingAuthenticationService">
+		<property name="sysAdminParams">
+			<ref bean="sysAdminParams" />
+		</property>
+		<property name="applicationContextManager">
+			<ref bean="Authentication" />
+		</property>
+		<property name="sourceBeanName">
+			<value>localAuthenticationService</value>
+		</property>
+	</bean>
+
+	<!-- The public authentication component. -->
+
+	<bean id="AuthenticationComponent"
+		class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+		<property name="proxyInterfaces">
+			<value>org.alfresco.repo.security.authentication.AuthenticationComponent</value>
+		</property>
+		<property name="transactionManager">
+			<ref bean="transactionManager" />
+		</property>
+		<property name="target">
+			<ref bean="authenticationComponent" />
+		</property>
+		<property name="transactionAttributes">
+			<props>
+				<prop key="*">${server.transaction.mode.default}</prop>
+			</props>
+		</property>
+	</bean>
+
+	<!-- Parent bean for beans derived from AbstractAuthenticationComponent -->
+	<bean id="authenticationComponentBase" abstract="true">
+		<property name="authenticationContext">
+			<ref bean="authenticationContext" />
+		</property>
+		<property name="userRegistrySynchronizer">
+			<ref bean="userRegistrySynchronizer" />
+		</property>
+	</bean>
+
+	<!-- The chaining authentication component -->
+	<bean id="authenticationComponent"
+		class="org.alfresco.repo.security.authentication.subsystems.SubsystemChainingAuthenticationComponent"
+		parent="authenticationComponentBase">
+		<property name="nodeService">
+			<ref bean="nodeService" />
+		</property>
+		<property name="personService">
+			<ref bean="personService" />
+		</property>
+		<property name="transactionService">
+			<ref bean="transactionService" />
+		</property>
+		<property name="applicationContextManager">
+			<ref bean="Authentication" />
+		</property>
+		<property name="sourceBeanName">
+			<value>authenticationComponent</value>
+		</property>
+	</bean>
+
+	<!-- Import the user registry synchronizer from the synchronization subsystem -->
+	<bean id="userRegistrySynchronizer"
+		class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+		<property name="sourceApplicationContextFactory">
+			<ref bean="Synchronization" />
+		</property>
+		<property name="interfaces">
+			<list>
+				<value>org.alfresco.repo.security.sync.UserRegistrySynchronizer</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="authenticationContext"
+		class="org.alfresco.repo.security.authentication.AuthenticationContextImpl">
+		<property name="tenantService">
+			<ref bean="tenantService" />
+		</property>
+	</bean>
+
+	<!-- Simple Authentication component that rejects all authentication requests -->
+	<!-- Use this defintion for Novell IChain integration. -->
+	<!-- It should never go to the login screen so this is not required -->
+
+	<!-- <bean id="authenticationComponent" class="org.alfresco.repo.security.authentication.SimpleAcceptOrRejectAllAuthenticationComponentImpl" 
+		parent="authenticationComponentBase"> <property name="accept"> <value>true</value> 
+		</property> </property> <property name="nodeService"> <ref bean="nodeService" 
+		/> </property> <property name="personService"> <ref bean="personService" 
+		/> </property> <property name="transactionService"> <ref bean="transactionService" 
+		/> </property> </bean> -->
+
+	<!-- support to match user names -->
+
+	<bean id="userNameMatcher" class="org.alfresco.repo.security.person.UserNameMatcherImpl">
+		<property name="userNamesAreCaseSensitive">
+			<value>${user.name.caseSensitive}</value>
+		</property>
+		<property name="domainNamesAreCaseSensitive">
+			<value>${domain.name.caseSensitive}</value>
+		</property>
+		<property name="domainSeparator">
+			<value>${domain.separator}</value>
+		</property>
+	</bean>
+
+	<!-- The person service. -->
 
     <bean id="personService" class="org.alfresco.repo.security.person.PersonServiceImpl" init-method="init">
         <property name="transactionService" ref="transactionService" />
@@ -280,54 +285,55 @@
         <property name="dictionaryService" ref="dictionaryService" />
         <property name="namespacePrefixResolver" ref="namespaceService" />
         <property name="policyComponent" ref="policyComponent"/>
-        <property name="policyBehaviourFilter" ref="policyBehaviourFilter" />
         <property name="personCache" ref="personCache" />
         <property name="permissionsManager" ref="personServicePermissionsManager" />
         <property name="cannedQueryRegistry" ref="personServiceCannedQueryRegistry" />
         <property name="aclDAO" ref="aclDAO" />
-        <property name="homeFolderManager" ref="homeFolderManager" />
+        <property name="homeFolderManager" ref="HomeFolderManager" />
         <property name="repoAdminService" ref="repoAdminService" />
         <property name="serviceRegistry" ref="ServiceRegistry"/>
-        
-        <!-- Configurable properties.                                 -->
-        <!--                                                          -->
-        <!-- TODO:                                                    -->
-        <!-- Add support for creating real home spaces adn setting    -->
-        <!-- permissions on the hame space and people created.        -->
-        <!--                                                          -->
-        <!-- The store in which people are persisted.                 -->
-        <property name="storeUrl">
-           <value>${spaces.store}</value>
-        </property>
-        <!-- Some authentication mechanisms may need to create people -->
-        <!-- in the repository on demand. This enables that feature.  -->
-        <!-- If dsiabled an error will be generated for missing       -->
-        <!-- people. If enabled then a person will be created and     -->
-        <!-- persisted.                                               -->
-        <!-- Valid values are                                         -->
-        <!--     ${server.transaction.allow-writes}                   -->
-        <!--     false                                                -->
-        <property name="createMissingPeople">
-           <value>${server.transaction.allow-writes}</value>
-        </property>
-        <property name="userNameMatcher">
-           <ref bean="userNameMatcher" />
-        </property>
-        <!-- New properties after 1.4.0 to deal with duplicate user ids when found -->
-        <property name="processDuplicates">
-            <value>true</value>
-        </property>
-        <!-- one of:  LEAVE, SPLIT, DELETE -->
-        <property name="duplicateMode">
-            <value>SPLIT</value>
-        </property>
-        <property name="lastIsBest">
-            <value>true</value>
-        </property>
-        <property name="includeAutoCreated">
-            <value>false</value>
-        </property>
-    </bean>
+		<!-- Configurable properties. -->
+		<property name="homeFolderCreationEager">
+			<value>${home.folder.creation.eager}</value>
+		</property>
+		<!-- -->
+		<!-- TODO: -->
+		<!-- Add support for creating real home spaces adn setting -->
+		<!-- permissions on the hame space and people created. -->
+		<!-- -->
+		<!-- The store in which people are persisted. -->
+		<property name="storeUrl">
+			<value>${spaces.store}</value>
+		</property>
+		<!-- Some authentication mechanisms may need to create people -->
+		<!-- in the repository on demand. This enables that feature. -->
+		<!-- If dsiabled an error will be generated for missing -->
+		<!-- people. If enabled then a person will be created and -->
+		<!-- persisted. -->
+		<!-- Valid values are -->
+		<!-- ${server.transaction.allow-writes} -->
+		<!-- false -->
+		<property name="createMissingPeople">
+			<value>${server.transaction.allow-writes}</value>
+		</property>
+		<property name="userNameMatcher">
+			<ref bean="userNameMatcher" />
+		</property>
+		<!-- New properties after 1.4.0 to deal with duplicate user ids when found -->
+		<property name="processDuplicates">
+			<value>true</value>
+		</property>
+		<!-- one of: LEAVE, SPLIT, DELETE -->
+		<property name="duplicateMode">
+			<value>SPLIT</value>
+		</property>
+		<property name="lastIsBest">
+			<value>true</value>
+		</property>
+		<property name="includeAutoCreated">
+			<value>false</value>
+		</property>
+	</bean>
     
     <bean id="personServiceCannedQueryRegistry" class="org.alfresco.util.registry.NamedObjectRegistry">
         <property name="storageType" value="org.alfresco.query.CannedQueryFactory"/>
@@ -346,288 +352,310 @@
     </bean>
    
     <bean name="personServicePermissionsManager" class="org.alfresco.repo.security.person.PermissionsManagerImpl" >
-        <property name="permissionService">
-            <ref bean="permissionServiceImpl" />
-        </property>
-        <property name="ownableService">
-            <ref bean="ownableService" />
-        </property>
-        <property name="ownerPermissions">
-            <set>
-                <value>All</value>
-            </set>
-        </property>
-        <property name="userPermissions">
-            <set>
-                <value>All</value>
-            </set>
-        </property>
-    </bean>
-    
-    <bean name="homeFolderManager" class="org.alfresco.repo.security.person.HomeFolderManager" init-method="init">
-        <property name="nodeService">
-            <ref bean="nodeService" />
-        </property>
-        <property name="policyComponent">
-            <ref bean="policyComponent" />
-        </property>
-        <property name="defaultProvider">
-            <ref bean="userHomesHomeFolderProvider" />
-        </property>
-        <property name="enableHomeFolderCreationAsPeopleAreCreated">
-            <value>${home.folder.creation.eager}</value>
-        </property>
-        <!-- Requests services via ServiceRegistry for audit -->
-        <property name="serviceRegistry">
-            <ref bean="ServiceRegistry" />
-        </property>
-        <property name="tenantService">
-            <ref bean="tenantService" />
-        </property>
-    </bean>
+		<property name="permissionService">
+			<ref bean="permissionServiceImpl" />
+		</property>
+		<property name="ownableService">
+			<ref bean="ownableService" />
+		</property>
+		<property name="ownerPermissions">
+			<set>
+				<value>All</value>
+			</set>
+		</property>
+		<property name="userPermissions">
+			<set>
+				<value>All</value>
+			</set>
+		</property>
+	</bean>
 
-    <!-- deprecated use baseHomeFolderProvider2 -->
-    <bean name="baseHomeFolderProvider"
-        class="org.alfresco.repo.security.person.AbstractHomeFolderProvider"
-        abstract="true">
-        <!-- Requests services via ServiceRegistry for audit -->
-        <property name="serviceRegistry">
-            <ref bean="ServiceRegistry" />
-        </property>
-        <property name="homeFolderManager">
-            <ref bean="homeFolderManager" />
-        </property>
-        <property name="tenantService">
-            <ref bean="tenantService" />
-        </property>
-    </bean>
+	<bean name="homeFolderManager"
+		class="org.alfresco.repo.security.person.PortableHomeFolderManager">
+		<property name="nodeService">
+			<ref bean="NodeService" />
+		</property>
+		<property name="defaultProvider">
+			<ref bean="userHomesHomeFolderProvider" />
+		</property>
+		<property name="fileFolderService">
+			<ref bean="FileFolderService" />
+		</property>
+		<property name="searchService">
+			<ref bean="SearchService" />
+		</property>
+		<property name="NamespaceService">
+			<ref bean="NamespaceService" />
+		</property>
+		<property name="tenantService">
+			<ref bean="tenantService" />
+		</property>
+	</bean>
 
-    <bean name="baseHomeFolderProvider2"
-        class="org.alfresco.repo.security.person.AbstractHomeFolderProvider2"
-        abstract="true">
-        <property name="homeFolderManager">
-            <ref bean="homeFolderManager" />
-        </property>
-    </bean>
+	<bean id="HomeFolderManager" class="org.springframework.aop.framework.ProxyFactoryBean">
+		<property name="proxyInterfaces">
+			<list>
+				<value>org.alfresco.repo.security.person.HomeFolderManager</value>
+			</list>
+		</property>
+		<!-- Lazy init to avoid circular dependencies -->
+		<property name="targetSource">
+			<bean class="org.springframework.aop.target.LazyInitTargetSource">
+				<property name="targetBeanName">
+					<idref bean="homeFolderManager" />
+				</property>
+			</bean>
+		</property>
+	</bean>
 
-    <bean name="existingHomeFolderProvider"
-        class="org.alfresco.repo.security.person.ExistingPathBasedHomeFolderProvider2"
-        abstract="true"  parent="baseHomeFolderProvider2">
-    </bean>
+	<!-- deprecated use baseHomeFolderProvider2 -->
+	<bean name="baseHomeFolderProvider"
+		class="org.alfresco.repo.security.person.AbstractHomeFolderProvider"
+		abstract="true">
+		<!-- Requests services via ServiceRegistry for audit -->
+		<property name="serviceRegistry">
+			<ref bean="ServiceRegistry" />
+		</property>
+		<property name="homeFolderManager">
+			<ref bean="homeFolderManager" />
+		</property>
+		<property name="tenantService">
+			<ref bean="tenantService" />
+		</property>
+	</bean>
 
-    <bean name="usernameHomeFolderProvider"
-        class="org.alfresco.repo.security.person.UsernameHomeFolderProvider"
-        abstract="true"  parent="baseHomeFolderProvider2">
-        <property name="onCreatePermissionsManager">
-            <ref bean="defaultOnCreatePermissionsManager" />
-        </property>
-        <property name="onReferencePermissionsManager">
-            <ref bean="defaultOnReferencePermissionsManager" />
-        </property>
-    </bean>
+	<bean name="baseHomeFolderProvider2"
+		class="org.alfresco.repo.security.person.AbstractHomeFolderProvider2"
+		abstract="true">
+		<property name="homeFolderManager">
+			<ref bean="homeFolderManager" />
+		</property>
+	</bean>
 
-    <bean name="regexHomeFolderProvider"
-        class="org.alfresco.repo.security.person.RegexHomeFolderProvider"
-        abstract="true" parent="usernameHomeFolderProvider">
-        <property name="propertyName">
-             <value>${spaces.user_homes.regex.key}</value>
-        </property>
-        <property name="pattern">
-           <value>${spaces.user_homes.regex.pattern}</value>
-        </property>
-        <property name="groupOrder">
-            <value>${spaces.user_homes.regex.group_order}</value>
-        </property>
-    </bean>
+	<bean name="existingHomeFolderProvider"
+		class="org.alfresco.repo.security.person.ExistingPathBasedHomeFolderProvider2"
+		abstract="true" parent="baseHomeFolderProvider2">
+	</bean>
+
+	<bean name="usernameHomeFolderProvider"
+		class="org.alfresco.repo.security.person.UsernameHomeFolderProvider"
+		abstract="true" parent="baseHomeFolderProvider2">
+		<property name="onCreatePermissionsManager">
+			<ref bean="defaultOnCreatePermissionsManager" />
+		</property>
+		<property name="onReferencePermissionsManager">
+			<ref bean="defaultOnReferencePermissionsManager" />
+		</property>
+	</bean>
+
+	<bean name="regexHomeFolderProvider"
+		class="org.alfresco.repo.security.person.RegexHomeFolderProvider"
+		abstract="true" parent="usernameHomeFolderProvider">
+		<property name="propertyName">
+			<value>${spaces.user_homes.regex.key}</value>
+		</property>
+		<property name="pattern">
+			<value>${spaces.user_homes.regex.pattern}</value>
+		</property>
+		<property name="groupOrder">
+			<value>${spaces.user_homes.regex.group_order}</value>
+		</property>
+	</bean>
 
 
-    <bean name="companyHomeFolderProvider" parent="existingHomeFolderProvider">
-        <property name="rootPath">
-           <value>/${spaces.company_home.childname}</value>
-        </property>
-        <property name="storeUrl">
-           <value>${spaces.store}</value>
-        </property>
-    </bean>
+	<bean name="companyHomeFolderProvider" parent="existingHomeFolderProvider">
+		<property name="rootPath">
+			<value>/${spaces.company_home.childname}</value>
+		</property>
+		<property name="storeUrl">
+			<value>${spaces.store}</value>
+		</property>
+	</bean>
 
-    <bean name="guestHomeFolderProviderPermissionsManager"
-        class="org.alfresco.repo.security.person.PermissionsManagerImpl">
-        <property name="permissionService">
-            <ref bean="permissionServiceImpl" />
-        </property>
-        <property name="ownableService">
-            <ref bean="ownableService" />
-        </property>
-         <property name="userPermissions">
-            <set>
-                <value>Consumer</value>
-            </set>
-        </property>
-    </bean>
-         
-    
-    <bean name="guestHomeFolderProvider" parent="existingHomeFolderProvider">
-        <property name="rootPath">
-           <value>/${spaces.company_home.childname}/${spaces.guest_home.childname}</value>
-        </property>
-        <property name="storeUrl">
-           <value>${spaces.store}</value>
-        </property>
-        <property name="onCreatePermissionsManager">
-            <ref bean="guestHomeFolderProviderPermissionsManager" />
-        </property>
-        <property name="onReferencePermissionsManager">
-            <ref bean="guestHomeFolderProviderPermissionsManager" />
-        </property>
-    </bean>
+	<bean name="guestHomeFolderProviderPermissionsManager"
+		class="org.alfresco.repo.security.person.PermissionsManagerImpl">
+		<property name="permissionService">
+			<ref bean="permissionServiceImpl" />
+		</property>
+		<property name="ownableService">
+			<ref bean="ownableService" />
+		</property>
+		<property name="userPermissions">
+			<set>
+				<value>Consumer</value>
+			</set>
+		</property>
+	</bean>
 
-    <bean name="bootstrapHomeFolderProvider"
-        class="org.alfresco.repo.security.person.BootstrapHomeFolderProvider"
-        parent="baseHomeFolderProvider2" />
 
-    <bean name="defaultOnCreatePermissionsManager"
-        class="org.alfresco.repo.security.person.PermissionsManagerImpl" >
-        <property name="permissionService">
-            <ref bean="permissionServiceImpl" />
-        </property>
-        <property name="ownableService">
-            <ref bean="ownableService" />
-        </property>
-        <property name="inheritPermissions">
-            <value>false</value>
-        </property>
-        <property name="ownerPermissions">
-            <set>
-                <value>All</value>
-            </set>
-        </property>
-        <property name="userPermissions">
-            <set>
-                <value>All</value>
-            </set>
-        </property>
-    </bean>
-    
-    <bean name="defaultOnReferencePermissionsManager"
-        class="org.alfresco.repo.security.person.PermissionsManagerImpl" >
-        <property name="permissionService">
-            <ref bean="permissionServiceImpl" />
-        </property>
-        <property name="ownableService">
-            <ref bean="ownableService" />
-        </property>
-        <property name="userPermissions">
-            <set>
-                <value>All</value>
-            </set>
-        </property>
-    </bean>
-    
-    <bean name="personalHomeFolderProvider" parent="usernameHomeFolderProvider">
-        <property name="rootPath">
-           <value>/${spaces.company_home.childname}</value>
-        </property>
-        <property name="storeUrl">
-           <value>${spaces.store}</value>
-        </property>
-    </bean>
+	<bean name="guestHomeFolderProvider" parent="existingHomeFolderProvider">
+		<property name="rootPath">
+			<value>/${spaces.company_home.childname}/${spaces.guest_home.childname}</value>
+		</property>
+		<property name="storeUrl">
+			<value>${spaces.store}</value>
+		</property>
+		<property name="onCreatePermissionsManager">
+			<ref bean="guestHomeFolderProviderPermissionsManager" />
+		</property>
+		<property name="onReferencePermissionsManager">
+			<ref bean="guestHomeFolderProviderPermissionsManager" />
+		</property>
+	</bean>
 
-    <bean name="userHomesHomeFolderProvider" parent="usernameHomeFolderProvider">
-        <property name="rootPath">
-           <value>/${spaces.company_home.childname}/${spaces.user_homes.childname}</value>
-        </property>
-        <property name="storeUrl">
-           <value>${spaces.store}</value>
-        </property>
-    </bean>
-    
-    <bean name="largeHomeFolderProvider" parent="regexHomeFolderProvider">
-        <property name="rootPath">
-           <value>/${spaces.company_home.childname}/${spaces.user_homes.childname}</value>
-        </property>
-        <property name="storeUrl">
-           <value>${spaces.store}</value>
-        </property>
-    </bean>
-    
-    
-    <!-- The ticket component.                                              -->
-    <!-- Used for reauthentication                                          -->
-    <bean id="ticketComponent" class="org.springframework.aop.framework.ProxyFactoryBean">
-        <property name="proxyInterfaces">
-            <value>org.alfresco.repo.security.authentication.TicketComponent</value>
-        </property>
-        <property name="target">
-            <bean class="org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl">
-                <property name="ticketsCache">
-                   <ref bean="ticketsCache"/>
-                </property>
-                <!-- The period for which tickets are valid in XML duration format. -->
-                <!-- The default is PT1H for one hour.                               -->
-                <property name="validDuration">
-                    <value>${authentication.ticket.validDuration}</value>
-                </property>
-                <!-- Do tickets expire or live for ever?                            -->
-                <property name="ticketsExpire">
-                    <value>${authentication.ticket.ticketsExpire}</value>
-                </property>
-                <!-- Are tickets only valid for a single use?                       -->
-                <property name="oneOff">
-                    <value>false</value>
-                </property>
-                <!-- If ticketsEpire is true then how they should expire -->
-                <!-- AFTER_INACTIVITY, AFTER_FIXED_TIME, DO_NOT_EXPIRE  -->
-                <!-- The default is AFTER_FIXED_TIME -->
-                <property name="expiryMode">
-                    <value>${authentication.ticket.expiryMode}</value>
-                </property>
-            </bean>
-        </property>
-        <property name="interceptorNames">
-            <list>
-                <idref bean="AuditMethodInterceptor"/>
-            </list>
-        </property>
-    </bean>
-    
-    <!--  -->
-    <bean id="nameBasedUserNameGenerator" class="org.alfresco.repo.security.authentication.NameBasedUserNameGenerator">
-            <!-- name patterns available:
-       		%lastName%,  lower case last name
-       		%firstName%, lower case first name
-       		%emailAddress% email address
-           	%i% lower case first name inital
-     		-->
-        <property name="namePattern">
-        	<value>%firstName%_%lastName%</value>
-        </property>
-        
-        <property name="userNameLength">
-            <value>10</value>
-        </property>
-    </bean>
-    
-    <!-- Used for generating user names                                     -->
-    <bean id="userNameGenerator" class="org.alfresco.repo.security.authentication.TenantAwareUserNameGenerator">
-        <property name="generator">
-            <ref bean="nameBasedUserNameGenerator"/>
-        </property>
-        <property name="tenantService">
-            <ref bean="tenantService"/>
-        </property>
-    </bean>
-    
-    <!-- Used for generating passwords -->
-    <bean id="passwordGenerator" class="org.alfresco.repo.security.authentication.BasicPasswordGenerator">
-        <property name="passwordLength">
-            <value>8</value>
-        </property>
-    </bean>
-    
-    <!-- Authentication Util initialization -->
-    <bean id="authenticationUtil" class="org.alfresco.repo.security.authentication.AuthenticationUtil">
-        <property name="defaultAdminUserName"><value>${alfresco_user_store.adminusername}</value></property>
-        <property name="defaultGuestUserName"><value>${alfresco_user_store.guestusername}</value></property>
-    </bean>
-    
+	<bean name="bootstrapHomeFolderProvider"
+		class="org.alfresco.repo.security.person.BootstrapHomeFolderProvider"
+		parent="baseHomeFolderProvider2" />
+
+	<bean name="defaultOnCreatePermissionsManager"
+		class="org.alfresco.repo.security.person.PermissionsManagerImpl">
+		<property name="permissionService">
+			<ref bean="permissionServiceImpl" />
+		</property>
+		<property name="ownableService">
+			<ref bean="ownableService" />
+		</property>
+		<property name="inheritPermissions">
+			<value>false</value>
+		</property>
+		<property name="ownerPermissions">
+			<set>
+				<value>All</value>
+			</set>
+		</property>
+		<property name="userPermissions">
+			<set>
+				<value>All</value>
+			</set>
+		</property>
+	</bean>
+
+	<bean name="defaultOnReferencePermissionsManager"
+		class="org.alfresco.repo.security.person.PermissionsManagerImpl">
+		<property name="permissionService">
+			<ref bean="permissionServiceImpl" />
+		</property>
+		<property name="ownableService">
+			<ref bean="ownableService" />
+		</property>
+		<property name="userPermissions">
+			<set>
+				<value>All</value>
+			</set>
+		</property>
+	</bean>
+
+	<bean name="personalHomeFolderProvider" parent="usernameHomeFolderProvider">
+		<property name="rootPath">
+			<value>/${spaces.company_home.childname}</value>
+		</property>
+		<property name="storeUrl">
+			<value>${spaces.store}</value>
+		</property>
+	</bean>
+
+	<bean name="userHomesHomeFolderProvider" parent="usernameHomeFolderProvider">
+		<property name="rootPath">
+			<value>/${spaces.company_home.childname}/${spaces.user_homes.childname}</value>
+		</property>
+		<property name="storeUrl">
+			<value>${spaces.store}</value>
+		</property>
+	</bean>
+
+	<bean name="largeHomeFolderProvider" parent="regexHomeFolderProvider">
+		<property name="rootPath">
+			<value>/${spaces.company_home.childname}/${spaces.user_homes.childname}</value>
+		</property>
+		<property name="storeUrl">
+			<value>${spaces.store}</value>
+		</property>
+	</bean>
+
+
+	<!-- The ticket component. -->
+	<!-- Used for reauthentication -->
+	<bean id="ticketComponent" class="org.springframework.aop.framework.ProxyFactoryBean">
+		<property name="proxyInterfaces">
+			<value>org.alfresco.repo.security.authentication.TicketComponent</value>
+		</property>
+		<property name="target">
+			<bean
+				class="org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl">
+				<property name="ticketsCache">
+					<ref bean="ticketsCache" />
+				</property>
+				<!-- The period for which tickets are valid in XML duration format. -->
+				<!-- The default is PT1H for one hour. -->
+				<property name="validDuration">
+					<value>${authentication.ticket.validDuration}</value>
+				</property>
+				<!-- Do tickets expire or live for ever? -->
+				<property name="ticketsExpire">
+					<value>${authentication.ticket.ticketsExpire}</value>
+				</property>
+				<!-- Are tickets only valid for a single use? -->
+				<property name="oneOff">
+					<value>false</value>
+				</property>
+				<!-- If ticketsEpire is true then how they should expire -->
+				<!-- AFTER_INACTIVITY, AFTER_FIXED_TIME, DO_NOT_EXPIRE -->
+				<!-- The default is AFTER_FIXED_TIME -->
+				<property name="expiryMode">
+					<value>${authentication.ticket.expiryMode}</value>
+				</property>
+			</bean>
+		</property>
+		<property name="interceptorNames">
+			<list>
+				<idref bean="AuditMethodInterceptor" />
+			</list>
+		</property>
+	</bean>
+
+	<!-- -->
+	<bean id="nameBasedUserNameGenerator"
+		class="org.alfresco.repo.security.authentication.NameBasedUserNameGenerator">
+		<!-- name patterns available: %lastName%, lower case last name %firstName%, 
+			lower case first name %emailAddress% email address %i% lower case first name 
+			inital -->
+		<property name="namePattern">
+			<value>%firstName%_%lastName%</value>
+		</property>
+
+		<property name="userNameLength">
+			<value>10</value>
+		</property>
+	</bean>
+
+	<!-- Used for generating user names -->
+	<bean id="userNameGenerator"
+		class="org.alfresco.repo.security.authentication.TenantAwareUserNameGenerator">
+		<property name="generator">
+			<ref bean="nameBasedUserNameGenerator" />
+		</property>
+		<property name="tenantService">
+			<ref bean="tenantService" />
+		</property>
+	</bean>
+
+	<!-- Used for generating passwords -->
+	<bean id="passwordGenerator"
+		class="org.alfresco.repo.security.authentication.BasicPasswordGenerator">
+		<property name="passwordLength">
+			<value>8</value>
+		</property>
+	</bean>
+
+	<!-- Authentication Util initialization -->
+	<bean id="authenticationUtil"
+		class="org.alfresco.repo.security.authentication.AuthenticationUtil">
+		<property name="defaultAdminUserName">
+			<value>${alfresco_user_store.adminusername}</value>
+		</property>
+		<property name="defaultGuestUserName">
+			<value>${alfresco_user_store.guestusername}</value>
+		</property>
+	</bean>
+
 </beans>

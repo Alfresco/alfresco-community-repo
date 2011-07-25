@@ -1863,7 +1863,14 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
      */
     public ScriptNode copy(ScriptNode destination)
     {
-        return copy(destination, false);
+        ScriptNode copy = copy(destination, false);
+
+        // ALF-9517 fix
+        if (copy != null && copy.hasAspect(ContentModel.ASPECT_VERSIONABLE.toString()))
+        {
+            copy.ensureVersioningEnabled(true, true);
+        }
+        return copy;
     }
     
     /**

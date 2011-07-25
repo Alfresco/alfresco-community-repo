@@ -32,7 +32,7 @@ import org.apache.commons.logging.LogFactory;
 public class SOLRAuthenticationFilter implements DependencyInjectedFilter
 {
     // Logger
-    private static Log logger = LogFactory.getLog(Encryptor.class);
+    private static Log logger = LogFactory.getLog(SOLRAuthenticationFilter.class);
 
     private boolean enabled = true;
     private Encryptor encryptor;

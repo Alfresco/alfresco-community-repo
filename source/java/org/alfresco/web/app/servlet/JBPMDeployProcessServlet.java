@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.workflow.jbpm.JBPMEngine;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowDeployment;
@@ -136,7 +137,7 @@ public class JBPMDeployProcessServlet extends HttpServlet
     {
         WebApplicationContext wc = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
         WorkflowService workflowService = (WorkflowService)wc.getBean(ServiceRegistry.WORKFLOW_SERVICE.getLocalName());
-        WorkflowDeployment deployment = workflowService.deployDefinition("jbpm", deploymentArchive, MimetypeMap.MIMETYPE_ZIP); 
+        WorkflowDeployment deployment = workflowService.deployDefinition(JBPMEngine.ENGINE_ID, deploymentArchive, MimetypeMap.MIMETYPE_ZIP); 
         return deployment.definition; 
     }
 

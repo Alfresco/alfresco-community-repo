@@ -77,7 +77,7 @@ public class WCMConcurrentTest extends AbstractWCMServiceImplTest
             
             long start = System.currentTimeMillis();
             
-            System.out.println("Bulk import started ...");
+            logger.debug("Bulk import started ...");
             
             // bulk import
             
@@ -90,11 +90,11 @@ public class WCMConcurrentTest extends AbstractWCMServiceImplTest
             
             int itemCount = assetService.listAssets(SB_ADMIN, ROOT_PATH, false).size();
             
-            System.out.println("Items below ROOT: "+itemCount);
+            logger.debug("Items below ROOT: "+itemCount);
             
             assert(itemCount > 0);
             
-            System.out.println("... bulk import finished in "+(System.currentTimeMillis()-start)+" msecs");
+            logger.debug("... bulk import finished in "+(System.currentTimeMillis()-start)+" msecs");
             
             assertEquals(0, assetService.listAssets(SB_STG, ROOT_PATH, false).size());
             assertEquals(itemCount, assetService.listAssets(SB_ADMIN, ROOT_PATH, false).size());
@@ -105,14 +105,14 @@ public class WCMConcurrentTest extends AbstractWCMServiceImplTest
             
             start = System.currentTimeMillis();
             
-            System.out.println("Submit initiation started ...");
+            logger.debug("Submit initiation started ...");
             
             // submit (from workflow sandbox to staging sandbox and also update user sandbox)
             sbService.submitAll(SB_ADMIN , "s1", "s1");
             
             tx.commit();
             
-            System.out.println("... submit initiation finished in "+(System.currentTimeMillis()-start)+" msecs");
+            logger.debug("... submit initiation finished in "+(System.currentTimeMillis()-start)+" msecs");
             
             
             int threadCount = 1;
@@ -192,17 +192,15 @@ public class WCMConcurrentTest extends AbstractWCMServiceImplTest
                     {
                         tx.begin();
                         
-                        System.out.println("Start: id: "+id+" - loop="+i+" ["+AlfrescoTransactionSupport.getTransactionId()+"]");
+                        logger.debug("Start: id: "+id+" - loop="+i+" ["+AlfrescoTransactionSupport.getTransactionId()+"]");
                         
                         assertEquals(1, wpService.listWebApps(WP).size());
                         
                         Thread.sleep(500);
                         
-                        System.out.println("Finish: id: "+id+" - loop="+i+" ["+AlfrescoTransactionSupport.getTransactionId()+"]");
+                        logger.debug("Finish: id: "+id+" - loop="+i+" ["+AlfrescoTransactionSupport.getTransactionId()+"]");
                         
                         tx.commit();
-                        
-                        //System.out.println("Post-commit: id: "+id+" - loop="+i+" ["+AlfrescoTransactionSupport.getTransactionId()+"]");
                     }
                     catch (Throwable t)
                     {
@@ -220,11 +218,11 @@ public class WCMConcurrentTest extends AbstractWCMServiceImplTest
                     }
                 }
                 
-                System.out.println("id: "+id+" finished (repeated "+repeat+" times) in "+(System.currentTimeMillis()-start)+" msecs");
+                logger.debug("id: "+id+" finished (repeated "+repeat+" times) in "+(System.currentTimeMillis()-start)+" msecs");
             }
             catch (Throwable t)
             {
-                System.out.println(t.getMessage());
+                logger.debug(t.getMessage());
                         
                 if (tx != null) { try { tx.rollback(); } catch(Exception e) { }}
                 

@@ -49,7 +49,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  */
 public class AbstractWCMServiceImplTest extends TestCase
 {
-    private static Log logger = LogFactory.getLog(AbstractWCMServiceImplTest.class);
+    protected static Log logger = LogFactory.getLog(AbstractWCMServiceImplTest.class);
     
     private static final String PREVIEW_CONFIG_LOCATION = "classpath:wcm/wcm-test-preview-context.xml";
     

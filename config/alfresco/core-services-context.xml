@@ -1011,6 +1011,14 @@
         </property>
     </bean>
 
+    <bean id="solrAdminClient" class="org.alfresco.repo.solr.SOLRAdminClient" init-method="init">
+      <property name="solrHost" value="${solr.solrHost}"/>
+      <property name="solrPort" value="${solr.solrAdminPort}"/>
+      <property name="solrUrl" value="${solr.solrUrl}"/>
+      <property name="solrUser" value="${solr.solrUser}"/>
+      <property name="solrPassword" value="${solr.solrPassword}"/>
+      <property name="solrPingTime" value="${solr.pingTime}"/>
+    </bean>
 
     <bean id="solr" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
         <property name="autoStart">

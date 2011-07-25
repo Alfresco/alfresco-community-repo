@@ -1,0 +1,366 @@
+/*
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
+package org.alfresco.repo.solr;
+
+import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
+
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.apache.commons.httpclient.Credentials;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.auth.AuthScope;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.impl.CommonsHttpSolrServer;
+import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.common.params.ModifiableSolrParams;
+import org.apache.solr.common.util.NamedList;
+import org.quartz.CronTrigger;
+import org.quartz.JobDataMap;
+import org.quartz.JobDetail;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.Trigger;
+import org.quartz.impl.StdSchedulerFactory;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
+
+/**
+ * Provides an interface to the Solr admin APIs, used by the Alfresco Enterprise JMX layer.
+ * Also tracks whether Solr is available, sending Spring events when its availability changes.
+ * 
+ * @since 4.0
+ *
+ */
+public class SOLRAdminClient implements ApplicationEventPublisherAware
+{
+	private String solrHost;
+	private int solrPort;
+	private String solrUrl;
+	private String solrUser;
+	private String solrPassword;
+	private int solrPingTime; // s
+	private CommonsHttpSolrServer server;
+
+	private ApplicationEventPublisher applicationEventPublisher;
+	private SolrTracker solrTracker;
+
+	public SOLRAdminClient()
+	{
+	}
+
+	public void setSolrHost(String solrHost)
+	{
+		this.solrHost = solrHost;
+	}
+	
+	public void setSolrPort(String solrPort)
+	{
+		this.solrPort = Integer.parseInt(solrPort);
+	}
+	
+	public void setSolrUrl(String url)
+	{
+		this.solrUrl = url;
+	}
+	
+	public void setSolrUser(String solrUser)
+	{
+		this.solrUser = solrUser;
+	}
+
+	public void setSolrPassword(String solrPassword)
+	{
+		this.solrPassword = solrPassword;
+	}
+
+	@Override
+	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher)
+	{
+		this.applicationEventPublisher = applicationEventPublisher;
+	}
+
+	public void setSolrPingTime(int solrPingTime)
+	{
+		this.solrPingTime = solrPingTime;
+	}
+	
+	public void init()
+	{
+		try
+		{
+			server = new CommonsHttpSolrServer(solrUrl); 
+			Credentials defaultcreds = new UsernamePasswordCredentials(solrUser, solrPassword); 
+			server.getHttpClient().getState().setCredentials(new AuthScope(solrHost, solrPort, AuthScope.ANY_REALM), 
+					defaultcreds);
+			server.setConnectionTimeout(2000);
+
+			this.solrTracker = new SolrTracker();
+		}
+		catch(MalformedURLException e)
+		{
+			throw new AlfrescoRuntimeException("Cannot initialise Solr admin http client", e);
+		}
+	}
+
+	public QueryResponse basicQuery(ModifiableSolrParams params)
+	{
+    	try
+    	{
+		    QueryResponse response = server.query(params);
+		    return response;
+		}
+		catch(SolrServerException e)
+		{
+			return null;
+		}
+	}
+
+	public QueryResponse query(ModifiableSolrParams params) throws SolrServerException
+	{
+    	try
+    	{
+		    QueryResponse response = server.query(params);
+		    if(response.getStatus() != 0)
+		    {
+		    	solrTracker.setSolrActive(false);
+		    }
+
+		    return response;
+		}
+		catch(SolrServerException e)
+		{
+			solrTracker.setSolrActive(false);
+			throw e;
+		}
+	}
+	
+	public List<String> getRegisteredCores()
+	{
+		return solrTracker.getRegisteredCores();
+	}
+	
+	/**
+	 * Tracks the availablity of Solr.
+	 * 
+	 * @since 4.0
+	 *
+	 */
+	public class SolrTracker
+	{
+	    private final WriteLock writeLock;
+		private boolean solrActive = false;
+
+	    private Scheduler scheduler = null;
+	    private Trigger trigger;
+
+	    private List<String> cores;
+
+		public SolrTracker()
+		{
+	        ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+	        writeLock = lock.writeLock();
+	        
+	        cores = new ArrayList<String>(5);
+
+	    	setupTimer();
+//
+//			pingSolr();
+		}
+
+//		protected List<String> getCores()
+//		{
+//			try
+//			{
+//				List<String> cores = new ArrayList<String>(2);
+//		
+//			    ModifiableSolrParams params = new ModifiableSolrParams();
+//			    params.set("qt", "/admin/cores");
+//			    params.set("action", "STATUS");
+//				
+//			    QueryResponse response = query(params);
+//			    
+//			    NamedList<Object> results = response.getResponse();
+//			    NamedList<Object> report = (NamedList<Object>)results.get("status");
+//			    Iterator<Map.Entry<String, Object>> coreIterator = report.iterator();
+//			    while(coreIterator.hasNext())
+//			    {
+//			    	Map.Entry<String, Object> core = coreIterator.next();
+//			    	cores.add(core.getKey());
+//			    }
+//		
+//				return cores;
+//			}
+//			catch(SolrServerException e)
+//			{
+//				setSolrActive(false);
+//				return Collections.emptyList();
+//			}
+//		}
+		
+		protected void pingSolr()
+		{
+		    ModifiableSolrParams params = new ModifiableSolrParams();
+		    params.set("qt", "/admin/cores");
+		    params.set("action", "STATUS");
+			
+		    QueryResponse response = basicQuery(params);
+		    if(response != null && response.getStatus() == 0)
+		    {
+			    NamedList<Object> results = response.getResponse();
+			    NamedList<Object> report = (NamedList<Object>)results.get("status");
+			    Iterator<Map.Entry<String, Object>> coreIterator = report.iterator();
+			    List<String> cores = new ArrayList<String>(report.size());
+			    while(coreIterator.hasNext())
+			    {
+			    	Map.Entry<String, Object> core = coreIterator.next();
+			    	cores.add(core.getKey());
+			    }
+			    
+			    registerCores(cores);
+		    	setSolrActive(true);
+		    }
+		    else
+		    {
+		    	setSolrActive(false);
+		    }
+		}
+		
+		public void setSolrActive(boolean active)
+		{
+			boolean statusChanged = false;
+
+			try
+			{
+		        writeLock.lock();
+		        try
+		        {
+		        	if(solrActive != active)
+		        	{
+			        	solrActive = active;
+			        	statusChanged = true;
+		        	}
+		        }
+		        finally
+		        {
+		            writeLock.unlock();
+		        }
+		        
+		        if(statusChanged)
+		        {
+		        	// do this outside the write lock
+		        	if(solrActive)
+		        	{
+		        		stopTimer();
+		        		applicationEventPublisher.publishEvent(new SolrActiveEvent(this));
+		        	}
+		        	else
+		        	{
+		        		startTimer();
+		        		applicationEventPublisher.publishEvent(new SolrInactiveEvent(this));
+		        	}
+		        }
+			}
+			catch(Exception e)
+			{
+				throw new AlfrescoRuntimeException("", e);
+			}
+		}
+		
+		public boolean isSolrActive()
+		{
+			return solrActive;
+		}
+
+	    protected void setupTimer()
+	    {
+	    	try
+	    	{
+		        StdSchedulerFactory factory = new StdSchedulerFactory();
+		        Properties properties = new Properties();
+		        properties.setProperty("org.quartz.scheduler.instanceName", "SolrWatcherScheduler");
+		        properties.setProperty("org.quartz.threadPool.class", "org.quartz.simpl.SimpleThreadPool");
+		        properties.setProperty("org.quartz.threadPool.threadCount", "3");
+		        properties.setProperty("org.quartz.jobStore.class", "org.quartz.simpl.RAMJobStore");
+		        factory.initialize(properties);
+		        scheduler = factory.getScheduler();
+		
+		        // TODO start and stop as needed?
+		        scheduler.start();
+		
+		        JobDetail job = new JobDetail("SolrWatcher", "Solr", SOLRWatcherJob.class);
+		        JobDataMap jobDataMap = new JobDataMap();
+		        jobDataMap.put("SOLR_TRACKER", this);
+		        job.setJobDataMap(jobDataMap);
+
+	            trigger = new CronTrigger("SolrWatcherTrigger", "Solr", "0/" + solrPingTime + " * * * * ? *");
+	            scheduler.scheduleJob(job, trigger);
+	            //stopTimer();
+	    	}
+	    	catch(Exception e)
+	    	{
+	    		throw new AlfrescoRuntimeException("Unable to set up SOLRTracker timer");
+	    	}
+	    }
+	    
+	    protected void startTimer() throws SchedulerException
+	    {
+	    	scheduler.resumeTrigger(trigger.getName(), trigger.getGroup());
+	    }
+	    
+	    protected void stopTimer() throws SchedulerException
+	    {
+	    	scheduler.pauseTrigger(trigger.getName(), trigger.getGroup());
+	    }
+	    
+	    public void registerCores(List<String> cores)
+	    {
+	        writeLock.lock();
+	        try
+	        {
+	        	this.cores = cores;
+	        }
+	        finally
+	        {
+	            writeLock.unlock();
+	        }
+	    }
+	    
+	    @SuppressWarnings("unchecked")
+		public List<String> getRegisteredCores()
+	    {
+	        writeLock.lock();
+	        try
+	        {
+	        	return (cores != null ? cores : Collections.EMPTY_LIST);
+	        }
+	        finally
+	        {
+	            writeLock.unlock();
+	        }
+	    }
+	}
+
+}

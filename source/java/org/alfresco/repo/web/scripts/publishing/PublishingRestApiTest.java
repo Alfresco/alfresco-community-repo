@@ -113,6 +113,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.surf.util.URLEncoder;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
 /**
@@ -128,10 +129,11 @@ public class PublishingRestApiTest extends BaseWebScriptTest
     private static final int maxStatusLength = 100;
     
     private static final String CHANNELS_URL = "api/publishing/channels";
+    private static final String CHANNEL_URL = "api/publishing/channels/{0}";
     private static final String CHANNELS_NODE_URL = "api/publishing/{0}/{1}/{2}/channels";
     private static final String CHANNEL_TYPES_URL = "api/publishing/channel-types";
     private static final String PUBLISHING_QUEUE_URL = "api/publishing/queue";
-    private static final String PUBLISHING_EVENTS_FOR_NODE_url = "api/publishing/{0}/{1}/{2}/events";
+    private static final String PUBLISHING_EVENTS_URL = "api/publishing/{0}/{1}/{2}/events";
     
     private static final String JSON = "application/json";
     
@@ -208,6 +210,31 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         checkChannels(statusChannels, statusUpdateChannel);
     }
 
+    public void testChannelPut() throws Exception
+    {
+        Channel channel1 = createChannel(publishAnyType);
+        Channel channel2 = createChannel(publishAnyType);
+        
+        String name1 = channel1.getName();
+        String name2 = channel2.getName();
+        
+        String newName = name1 + "Foo";
+        JSONObject json = new JSONObject();
+        json.put(NAME, newName);
+        
+        String jsonStr = json.toString();
+        
+        String channel1Url = MessageFormat.format(CHANNEL_URL, URLEncoder.encode(channel1.getId()));
+        // Post JSON content.
+        sendRequest(new PutRequest(channel1Url, jsonStr, JSON), 200);
+        
+        Channel renamedCH1 = channelService.getChannelById(channel1.getId());
+        assertEquals("Channel1 was not renamed correctly!", newName, renamedCH1.getName());
+        
+        Channel renamedCH2 = channelService.getChannelById(channel2.getId());
+        assertEquals("Channel2 name should not have changed!", name2, renamedCH2.getName());
+    }
+    
     @SuppressWarnings("unchecked")
     public void testPublishingQueuePost() throws Exception
     {
@@ -224,7 +251,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         String comment = "The comment";
         String statusMessage = "The status message";
 
-        JSONObject json = buildJson(textNode, publishChannel, comment, statusMessage, statusChannel);
+        JSONObject json = buildScheduleEventJson(textNode, publishChannel, comment, statusMessage, statusChannel);
         
         String jsonStr = json.toString();
 
@@ -302,7 +329,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         String protocol = textNode1.getStoreRef().getProtocol();
         String storeId = textNode1.getStoreRef().getIdentifier();
         String nodeId1 = textNode1.getId();
-        String textNode1Url = MessageFormat.format(PUBLISHING_EVENTS_FOR_NODE_url, protocol, storeId, nodeId1);
+        String textNode1Url = MessageFormat.format(PUBLISHING_EVENTS_URL, protocol, storeId, nodeId1);
 
         // Get events on textNode1 before any events created.
         Response response = sendRequest(new GetRequest(textNode1Url), 200);
@@ -328,7 +355,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         
         // Query for events on textNode2.
         String nodeId2 = textNode2.getId();
-        String textNode2Url = MessageFormat.format(PUBLISHING_EVENTS_FOR_NODE_url, protocol, storeId, nodeId2);
+        String textNode2Url = MessageFormat.format(PUBLISHING_EVENTS_URL, protocol, storeId, nodeId2);
         response = sendRequest(new GetRequest(textNode2Url), 200);
         data = getDataArray(response);
         assertEquals(0, data.length());
@@ -469,7 +496,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         assertEquals(date, actualDate);
     }
 
-    private JSONObject buildJson(NodeRef node, Channel publishChannel,
+    private JSONObject buildScheduleEventJson(NodeRef node, Channel publishChannel,
             String comment, String statusMessage,
             Channel... statusChannels) throws JSONException
     {
@@ -560,7 +587,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         check(MAX_STATUS_LENGTH, jsonType, channelType.getMaximumStatusLength());
 
         //TODO Implement Icon URL
-        check(ICON, jsonType, "");
+        check(ICON, jsonType, expUrl + "/icon");
     }
 
     private void check(String key, JSONObject json, Object exp)

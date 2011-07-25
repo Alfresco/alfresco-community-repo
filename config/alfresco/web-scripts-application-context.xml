@@ -1110,6 +1110,13 @@
         <property name="urlShortener" ref="urlShortener" />
     </bean>
 
+    <!-- Update Channel web script -->
+    <bean id="webscript.org.alfresco.repository.publishing.channel.put"
+          class="org.alfresco.repo.web.scripts.publishing.ChannelPut"
+          parent="webscript">
+        <property name="channelService" ref="channelService" />
+    </bean>
+
     <!-- Get Channel Types web script -->
     <bean id="webscript.org.alfresco.repository.publishing.channel-types.get"
           class="org.alfresco.repo.web.scripts.publishing.ChannelTypesGet"
@@ -1147,7 +1154,7 @@
 
 
     <!-- Get Publishing Events For Node web script -->
-    <bean id="webscript.org.alfresco.repository.publishing.publishing-events-for-node.get"
+    <bean id="webscript.org.alfresco.repository.publishing.publishing-events.get"
           class="org.alfresco.repo.web.scripts.publishing.PUblishingEventsForNodeGet"
           parent="webscript">
         <property name="publishingService" ref="publishingService" />

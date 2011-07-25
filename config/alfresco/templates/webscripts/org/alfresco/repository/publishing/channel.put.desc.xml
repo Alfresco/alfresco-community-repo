@@ -1,0 +1,27 @@
+<webscript>
+   <shortname>Update Channel</shortname>
+   <description>Updates an existing Channel's name.</description>
+   <url>/api/publishing/channels/{channel_id}</url>
+   <format default="json"/>
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+   <lifecycle>public_api</lifecycle>
+      <args>
+      <arg>
+         <shortname>channel_id</shortname>
+         <description>The URL-encoded id of the channel to be updated.</description>
+      </arg>
+   </args>
+   <requests>
+      <request>
+         <format>json</format>
+         <type>
+            <![CDATA[
+            {
+               "name": string
+            }
+            ]]>
+         </type>
+      </request>
+   </requests>
+</webscript>

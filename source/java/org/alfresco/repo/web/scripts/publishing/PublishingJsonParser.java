@@ -20,15 +20,6 @@
 package org.alfresco.repo.web.scripts.publishing;
 
 import static org.alfresco.repo.web.scripts.WebScriptUtil.getCalendar;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CHANNEL_ID;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CHANNEL_IDS;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.COMMENT;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.MESSAGE;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.NODE_REF;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.PUBLISH_NODES;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.SCHEDULED_TIME;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.STATUS_UPDATE;
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.UNPUBLISH_NODES;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -42,6 +33,8 @@ import org.alfresco.service.cmr.publishing.MutablePublishingPackage;
 import org.alfresco.service.cmr.publishing.PublishingPackage;
 import org.alfresco.service.cmr.publishing.PublishingQueue;
 import org.alfresco.service.cmr.publishing.StatusUpdate;
+import org.alfresco.service.cmr.publishing.channels.Channel;
+import org.alfresco.service.cmr.publishing.channels.ChannelService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.collections.Function;
 import org.alfresco.util.collections.JsonUtils;
@@ -55,7 +48,7 @@ import org.json.JSONTokener;
  * @since 4.0
  *
  */
-public class PublishingJsonParser
+public class PublishingJsonParser implements PublishingWebScriptConstants
 {
 
     public JSONObject getJson(String jsonStr) throws JSONException
@@ -65,6 +58,16 @@ public class PublishingJsonParser
             return new JSONObject(new JSONTokener(jsonStr));
         }
         return new JSONObject();
+    }
+
+    public void updateChannel(Channel channel, String jsonStr, ChannelService channelService) throws JSONException
+    {
+        JSONObject json = getJson(jsonStr);
+        String newName = json.optString(NAME);
+        if(newName != null && newName.isEmpty() == false)
+        {
+            channelService.renameChannel(channel, newName);
+        }
     }
     
     public String schedulePublishingEvent(PublishingQueue queue, String jsonStr) throws ParseException, JSONException

@@ -151,7 +151,7 @@ public class PublishingModelBuilder implements PublishingWebScriptConstants
         model.put(CAN_UNPUBLISH, toString(type.canUnpublish()));
 
         model.put(MAX_STATUS_LENGTH, type.getMaximumStatusLength());
-        model.put(ICON, getUrl(type) + "/icon/");
+        model.put(ICON, getUrl(type) + "/icon");
         return model;
     }
     

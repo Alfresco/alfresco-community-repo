@@ -61,7 +61,7 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware
 	private String solrUrl;
 	private String solrUser;
 	private String solrPassword;
-	private int solrPingTime; // s
+	private String solrPingCronExpression; // s
 	private CommonsHttpSolrServer server;
 
 	private ApplicationEventPublisher applicationEventPublisher;
@@ -101,13 +101,13 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware
 	{
 		this.applicationEventPublisher = applicationEventPublisher;
 	}
-
-	public void setSolrPingTime(int solrPingTime)
-	{
-		this.solrPingTime = solrPingTime;
-	}
 	
-	public void init()
+	public void setSolrPingCronExpression(String solrPingCronExpression)
+    {
+        this.solrPingCronExpression = solrPingCronExpression;
+    }
+
+    public void init()
 	{
 		try
 		{
@@ -315,7 +315,7 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware
 		        jobDataMap.put("SOLR_TRACKER", this);
 		        job.setJobDataMap(jobDataMap);
 
-	            trigger = new CronTrigger("SolrWatcherTrigger", "Solr", "0/" + solrPingTime + " * * * * ? *");
+	            trigger = new CronTrigger("SolrWatcherTrigger", "Solr", solrPingCronExpression);
 	            scheduler.scheduleJob(job, trigger);
 	            //stopTimer();
 	    	}

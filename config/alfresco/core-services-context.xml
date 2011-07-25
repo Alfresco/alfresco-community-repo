@@ -1017,7 +1017,7 @@
       <property name="solrUrl" value="${solr.solrUrl}"/>
       <property name="solrUser" value="${solr.solrUser}"/>
       <property name="solrPassword" value="${solr.solrPassword}"/>
-      <property name="solrPingTime" value="${solr.pingTime}"/>
+      <property name="solrPingCronExpression" value="${solr.solrPingCronExpression}"/>
     </bean>
 
     <bean id="solr" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">

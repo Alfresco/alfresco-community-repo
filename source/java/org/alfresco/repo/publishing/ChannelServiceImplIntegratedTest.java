@@ -94,7 +94,7 @@ public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrat
     {
         String newChannelName = "New Channel Name";
         Channel channel = createChannel();
-        channelService.renameChannel(channelName, newChannelName);
+        channelService.renameChannel(channel, newChannelName);
         
         Channel renamedChannel = channelService.getChannelById(channel.getId());
         assertNotNull(renamedChannel);

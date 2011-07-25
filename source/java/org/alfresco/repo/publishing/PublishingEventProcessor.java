@@ -74,7 +74,6 @@ public class PublishingEventProcessor
             String inProgressStatus = PublishingEvent.Status.IN_PROGRESS.name();
             nodeService.setProperty(eventNode, PublishingModel.PROP_PUBLISHING_EVENT_STATUS, inProgressStatus);
             PublishingEvent event = eventHelper.getPublishingEvent(eventNode);
-            NodeRef environment = eventHelper.getEnvironmentNodeForPublishingEvent(eventNode);
             String channelName = event.getChannelId();
             Channel channel = channelService.getChannelById(channelName);
             if (channel == null)
@@ -84,7 +83,7 @@ public class PublishingEventProcessor
             else
             {
                 publishEvent(channel, event);
-                updateStatus(channel, environment, event.getStatusUpdate());
+                updateStatus(channel, event.getStatusUpdate());
                 String completedStatus = PublishingEvent.Status.COMPLETED.name();
                 nodeService.setProperty(eventNode, PublishingModel.PROP_PUBLISHING_EVENT_STATUS, completedStatus);
             }
@@ -99,7 +98,7 @@ public class PublishingEventProcessor
         }
      }
 
-    public void updateStatus(Channel publishChannel, NodeRef environment, StatusUpdate update)
+    public void updateStatus(Channel publishChannel, StatusUpdate update)
     {
         if(update == null)
         {
@@ -166,7 +165,7 @@ public class PublishingEventProcessor
          {
              updatePublishedNode(publishedNode, entry);
          }
-         eventHelper.linkeToLastEvent(publishedNode, eventNode);
+         eventHelper.linkToLastEvent(publishedNode, eventNode);
          channel.publish(publishedNode);
          return publishedNode; 
      }

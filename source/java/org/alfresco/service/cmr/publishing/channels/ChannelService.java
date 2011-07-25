@@ -70,10 +70,10 @@ public interface ChannelService
     
     /**
      * Rename the specified channel
-     * @param oldName The current name of the channel that is to be renamed.
+     * @param channel The current name of the channel that is to be renamed.
      * @param newName The new name of the channel
      */
-    void renameChannel(String oldName, String newName);
+    void renameChannel(Channel channel, String newName);
     
     /**
      * Update the properties of the specified channel.

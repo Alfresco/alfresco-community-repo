@@ -508,16 +508,8 @@ public class PublishingEventHelper
             //Otherwise this event has already been processed or has already been cancelled. Do nothing.
         }
     }
-
-    public NodeRef getEnvironmentNodeForPublishingEvent(NodeRef publishingEvent)
-    {
-        ChildAssociationRef queueAssoc = nodeService.getPrimaryParent(publishingEvent);
-        ChildAssociationRef environmentAssoc = nodeService.getPrimaryParent(queueAssoc.getParentRef());
-        NodeRef environment = environmentAssoc.getParentRef();
-        return environment;
-    }
     
-    public AssociationRef linkeToLastEvent(NodeRef publishedNode, NodeRef eventNode)
+    public AssociationRef linkToLastEvent(NodeRef publishedNode, NodeRef eventNode)
     {
         List<AssociationRef> assocs = nodeService.getTargetAssocs(publishedNode, ASSOC_LAST_PUBLISHING_EVENT);
         if(isEmpty(assocs)==false)
@@ -528,4 +520,51 @@ public class PublishingEventHelper
         }
         return nodeService.createAssociation(publishedNode, eventNode, ASSOC_LAST_PUBLISHING_EVENT);
     }
+    
+//    public NodePublishStatus checkNodeStatus(NodeRef node, String channelId, NodeRef queue)
+//    {
+//        PublishingEvent queuedEvent = getQueuedPublishingEvent(node, channelId, queue);
+//        PublishingEvent lastEvent= getLastPublishingEvent(node, channelId, queue);
+//        if(queuedEvent != null)
+//        {
+//            if(lastEvent != null)
+//            {
+//                return new NodePublishStatusPublishedAndOnQueue(node, channelId, queuedEvent, lastEvent);
+//            }
+//            else
+//            {
+//                return  new NodePublishStatusOnQueue(node, channelId, queuedEvent);
+//            }
+//        }
+//        else
+//        {
+//            if(lastEvent != null)
+//            {
+//                return new NodePublishStatusPublished(node, channelId, lastEvent);
+//            }
+//            else
+//            {
+//                return new NodePublishStatusNotPublished(node, channelId);
+//            }
+//        }
+//    }
+//
+//    private PublishingEvent getLastPublishingEvent(NodeRef node, String channelId, NodeRef queue)
+//    {
+//        getEventNodesForPublishedNode(queue, node);
+//        return null;
+//    }
+//
+//    private PublishingEvent getQueuedPublishingEvent(NodeRef node, String channelId)
+//    {
+//        return publishingEventHelper.getPublishingEvent(nextEventNode);
+//    }
+//
+//    private boolean isActiveEvent(NodeRef eventNode)
+//    {
+//        String statusStr = (String) nodeService.getProperty( eventNode, PROP_PUBLISHING_EVENT_STATUS);
+//        Status status = Status.valueOf(statusStr);
+//        return status == Status.IN_PROGRESS || status == Status.SCHEDULED;
+//    }
+
 }

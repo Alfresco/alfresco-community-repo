@@ -35,5 +35,5 @@ public interface NodePublishStatus
     
     Status getStatus();
     
-    String getChannelName();
+    String getChannelId();
 }

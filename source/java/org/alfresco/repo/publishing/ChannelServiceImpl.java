@@ -294,14 +294,14 @@ public class ChannelServiceImpl implements ChannelService
     /**
     * {@inheritDoc}
     */
-    public void renameChannel(String oldName, String newName)
+    public void renameChannel(Channel channel, String newName)
     {
-        NodeRef channelContainer = getChannelContainer();
-        NodeRef channel = nodeService.getChildByName(channelContainer, ContentModel.ASSOC_CONTAINS, oldName);
-        if (channel != null)
+        NodeRef channelNode = channel.getNodeRef();
+        if (channelNode != null && nodeService.exists(channelNode))
         {
-            nodeService.setProperty(channel, ContentModel.PROP_NAME, newName);
-            nodeService.moveNode(channel, channelContainer, ContentModel.ASSOC_CONTAINS,
+            NodeRef channelContainer = getChannelContainer();
+            nodeService.setProperty(channelNode, ContentModel.PROP_NAME, newName);
+            nodeService.moveNode(channelNode, channelContainer, ContentModel.ASSOC_CONTAINS,
                     QName.createQName(NamespaceService.APP_MODEL_1_0_URI, newName));
         }
     }
@@ -331,8 +331,7 @@ public class ChannelServiceImpl implements ChannelService
     @Override
     public Channel getChannelById(String id)
     {
-        if(id!=null&& id.isEmpty()==false
-                && NodeRef.isNodeRef(id))
+        if(id!=null&& NodeRef.isNodeRef(id))
         {
             NodeRef node = new NodeRef(id);
             return channelHelper.buildChannelObject(node, this);

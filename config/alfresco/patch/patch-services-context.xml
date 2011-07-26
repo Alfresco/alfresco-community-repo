@@ -2937,6 +2937,8 @@
         <property name="patchDAO" ref="patchDAO" />
         <property name="nodeDAO" ref="nodeDAO" />
         <property name="dictionaryService" ref="dictionaryService" />
+        <property name="behaviourFilter" ref="policyBehaviourFilter" />
+        <property name="ruleService" ref="ruleService" />
         <property name="batchThreads" value="2"/>
         <property name="batchSize" value="1000"/>
         <property name="batchMaxQueryRange" value="5000"/>

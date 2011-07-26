@@ -40,10 +40,12 @@ import org.alfresco.repo.batch.BatchProcessor.BatchProcessWorkerAdaptor;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.NodeDAO.NodeRefQueryCallback;
 import org.alfresco.repo.domain.patch.PatchDAO;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
@@ -87,6 +89,8 @@ public class CopiedFromAspectPatch extends AbstractPatch
     private PatchDAO patchDAO;
     private NodeDAO nodeDAO;
     private DictionaryService dictionaryService;
+    private BehaviourFilter behaviourFilter;
+    private RuleService ruleService;
     
     private int batchThreads = 2;
     private int batchSize = 1000;
@@ -121,6 +125,22 @@ public class CopiedFromAspectPatch extends AbstractPatch
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
+    }
+
+    /**
+     * @param behaviourFilter       used to switch off <b>cm:auditable</b> behaviour
+     */
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
+    }
+
+    /**
+     * @param ruleService           used to disable rules
+     */
+    public void setRuleService(RuleService ruleService)
+    {
+        this.ruleService = ruleService;
     }
 
     /**
@@ -235,12 +255,25 @@ public class CopiedFromAspectPatch extends AbstractPatch
             @Override
             public void beforeProcess() throws Throwable
             {
+                // Run as the correct user
                 AuthenticationUtil.setRunAsUser(user);
             }
             @Override
             public void process(Pair<Long, NodeRef> entry) throws Throwable
             {
-                CopiedFromAspectPatch.this.process(file, entry);
+                // Disable auditable aspect
+                behaviourFilter.disableAllBehaviours();
+                // Disable rules
+                ruleService.disableRules();
+                try
+                {
+                    CopiedFromAspectPatch.this.process(file, entry);
+                }
+                finally
+                {
+                    ruleService.enableRules();
+                    behaviourFilter.enableAllBehaviours();
+                }
             }
             @Override
             public void afterProcess() throws Throwable

@@ -1,11 +1,30 @@
+/*
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.alfresco.encryption;
 
 import java.io.Serializable;
 import java.security.AlgorithmParameters;
+import java.security.KeyException;
 
 import junit.framework.TestCase;
 
-import org.alfresco.encryption.DefaultEncryptor;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.util.Pair;
 import org.bouncycastle.util.Arrays;
 
@@ -66,7 +85,15 @@ public class EncryptorTest extends TestCase
         Serializable testObject = "   This is a string, but will be serialized    ";
 
         Serializable sealedObject = encryptor.sealObject("mykey2", null, testObject);
-        Object output = encryptor.unsealObject("mykey2", sealedObject);
-        assertEquals("Encryption round trip failed. ", testObject, output);
+        try
+        {
+        	Object output = encryptor.unsealObject("mykey2", sealedObject);
+            assertEquals("Encryption round trip failed. ", testObject, output);
+        }
+        catch(KeyException e)
+        {
+        	throw new AlfrescoRuntimeException("", e)
+;        }
+
     }
 }

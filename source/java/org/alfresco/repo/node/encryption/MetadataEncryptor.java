@@ -1,6 +1,7 @@
 package org.alfresco.repo.node.encryption;
 
 import java.io.Serializable;
+import java.security.KeyException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -10,6 +11,7 @@ import javax.crypto.SealedObject;
 
 import org.alfresco.encryption.Encryptor;
 import org.alfresco.encryption.KeyProvider;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -107,9 +109,16 @@ public class MetadataEncryptor
         {
             return inbound;
         }
-        Serializable outbound = encryptor.unsealObject(KeyProvider.ALIAS_METADATA, inbound);
-        // Done
-        return outbound;
+        try
+        {
+	        Serializable outbound = encryptor.unsealObject(KeyProvider.ALIAS_METADATA, inbound);
+	        // Done
+	        return outbound;
+        }
+        catch(KeyException e)
+        {
+        	throw new AlfrescoRuntimeException("Invalid metadata decryption key", e);
+        }
     }
     
     /**
@@ -198,9 +207,16 @@ public class MetadataEncryptor
             // We have already checked for nulls and conversions
             Serializable value = inbound.get(propertyQName);
             // Have to decrypt the value
-            Serializable unencryptedValue = encryptor.unsealObject(KeyProvider.ALIAS_METADATA, value);
-            // Store it back
-            outbound.put(propertyQName, unencryptedValue);
+            try
+            {
+	            Serializable unencryptedValue = encryptor.unsealObject(KeyProvider.ALIAS_METADATA, value);
+	            // Store it back
+	            outbound.put(propertyQName, unencryptedValue);
+            }
+            catch(KeyException e)
+            {
+            	throw new AlfrescoRuntimeException("Invalid metadata decryption key", e);
+            }
         }
         // Done
         return outbound;

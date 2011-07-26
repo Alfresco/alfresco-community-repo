@@ -173,6 +173,18 @@
         </property>
     </bean>
 
+    <bean id="encryptionChecker" class="org.alfresco.encryption.EncryptionChecker">
+        <property name="transactionService" ref="transactionService"/>
+        <property name="attributeService" ref="attributeService"/>
+        <property name="encryptor" ref="encryptor"/>
+        <property name="keyAliases">
+          <list>
+            <value>metadata</value>
+            <value>solr</value>
+          </list>
+        </property>
+    </bean>
+
     <!-- node indexing for ADM -->
     <bean id="nodeIndexer" class="org.alfresco.repo.node.index.NodeIndexer">
         <property name="disabled">

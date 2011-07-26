@@ -9,22 +9,16 @@
         http://code.google.com/p/spring-crypto-utils/schema/crypt
         http://code.google.com/p/spring-crypto-utils/schema/crypt.xsd">
 
-    <bean id="springKeyStoreLoader" class="org.alfresco.encryption.SpringKeyStoreLoader">
+    <bean id="springKeyResourceLoader" class="org.alfresco.encryption.SpringKeyResourceLoader">
     </bean>
 
     <!-- Beans to initilize encryption -->
     <bean id="keyProvider" class="org.alfresco.encryption.KeystoreKeyProvider" init-method="init">
        <property name="location" value="${encryption.keystore.location}"/>
-       <property name="keyStoreLoader" ref="springKeyStoreLoader"/>
+       <property name="keyResourceLoader" ref="springKeyResourceLoader"/>
        <property name="provider" value="${encryption.keystore.provider}"/>
        <property name="type"     value="${encryption.keystore.type}"/>
-       <property name="passwords">
-           <map>
-               <entry key="keystore" value="${encryption.keystore.password}"></entry>
-               <entry key="metadata" value="${encryption.keystore.password.metadata}"></entry>
-               <entry key="solr" value="${encryption.keystore.password.solr}"></entry>
-           </map>
-       </property>
+       <property name="passwordsFileLocation" value="${encryption.keystore.passwordsFile.location}"/>
     </bean>
     
     <bean id="encryptor" class="org.alfresco.encryption.DefaultEncryptor" init-method="init">

@@ -84,13 +84,13 @@ public interface ChannelService
     void updateChannel(Channel channel, Map<QName,Serializable> properties);
     
     /**
-     * Retrieve all the channels contained by the specified Share site.
+     * Retrieve all the channels.
      * @return A list of Channel objects, each one representing a channel that exists within the specified Share site.
      */
     List<Channel> getChannels();
 
     /**
-     * Retrieve the channel with the given channel name contained by the specified Share site.
+     * Retrieve the channel with the given channel name.
      * @param channelName The name of the channel
      * @return The specified Channel objects or <code>null</code> if the specified channel does not exist.
      */

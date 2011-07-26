@@ -8,7 +8,8 @@
   <dt>name</dt><dd>Name of the tag to create. Note tags are created in lowercase.</dd>
   </dl>
   ]]></description>
-  <url>/api/tag/{store_type}/{store_id}</url>
+  <url>/api/tags/{store_type}/{store_id}</url>  
+  <url>/api/tag/{store_type}/{store_id}</url>  <!--  Keep for backwards compatibility -->
   <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction allow="readwrite">required</transaction>

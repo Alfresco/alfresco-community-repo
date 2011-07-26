@@ -5,9 +5,10 @@
   <br />
   <dl>
   <dt>tag_filter</dt><dd>The optional tag filter limits the returned tags to those containing the filter. </dd>
+  <dt>details</dt><dd>The optional boolean parameter indicates whether the details of the tag should be provided in the resulting JSON, otherwise just the tag name is returned.</dd>
   </dl>
   ]]></description>
-  <url>/api/tags/{store_type}/{store_id}?tf={tag_filter?}</url>
+  <url>/api/tags/{store_type}/{store_id}?tf={tag_filter?}&amp;details={details?}</url>
   <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction allow="readonly">required</transaction>

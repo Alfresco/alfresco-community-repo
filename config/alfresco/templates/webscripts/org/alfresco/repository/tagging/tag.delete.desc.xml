@@ -1,0 +1,11 @@
+<webscript>
+  <shortname>Delete existing tag</shortname>
+  <description>Delete the given tag</description>
+  <url>/api/tags/{store_type}/{store_id}/{tagName}</url>
+  <url>/api/tags/{tagName}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readwrite">required</transaction>
+  <lifecycle>draft_public_api</lifecycle>
+  <family>Tagging</family>
+</webscript>

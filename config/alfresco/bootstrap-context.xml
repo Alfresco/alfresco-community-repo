@@ -57,6 +57,11 @@
        <property name="localSessionFactory">
           <ref bean="&amp;sessionFactory"></ref>  <!-- inject the actual factory, not a session -->
        </property>
+       <!--
+       <property name="activitiProcessEngine">
+          <ref bean="activitiProcessEngine" />
+       </property>
+       -->
        <property name="dialect">
           <ref bean="dialect" />
        </property>

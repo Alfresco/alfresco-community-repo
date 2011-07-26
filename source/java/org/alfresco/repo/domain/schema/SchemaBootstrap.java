@@ -41,6 +41,7 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import org.activiti.engine.ProcessEngine;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.ibatis.SerializableTypeHandler;
 import org.alfresco.repo.admin.patch.Patch;
@@ -194,6 +195,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     
     private DataSource dataSource;
     private LocalSessionFactoryBean localSessionFactory;
+    private ProcessEngine activitiProcessEngine;
     private String schemaOuputFilename;
     private boolean updateSchema;
     private boolean stopAfterSchemaBootstrap;
@@ -234,6 +236,11 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     public LocalSessionFactoryBean getLocalSessionFactory()
     {
         return localSessionFactory;
+    }
+    
+    public void setActivitiProcessEngine(ProcessEngine processEngine)
+    {
+        this.activitiProcessEngine = processEngine;
     }
 
     /**
@@ -788,6 +795,9 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             // Execute any post-auto-update scripts
             checkSchemaPatchScripts(cfg, connection, postUpdateScriptPatches, true);
         }
+        
+        // Ask emebedded Activiti to create or update it's schema
+//        activitiProcessEngine.getManagementService().databaseSchemaUpgrade(connection, null, null);
         
         return create;
     }

@@ -9,11 +9,11 @@ function main()
    if (node == null)
    {
       status.setCode(status.STATUS_NOT_FOUND, "The node could not be found");
-	  return;
-   }   
+      return;
+   }
    
    // Get the tags of the node
    model.tags = node.tags;
 }
 
-main();   
+main();

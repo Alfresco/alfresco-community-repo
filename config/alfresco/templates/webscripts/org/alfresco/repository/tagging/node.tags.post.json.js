@@ -9,9 +9,9 @@ function main()
    if (node == null)
    {
       status.setCode(status.STATUS_NOT_FOUND, "The node could not be found");
-	  return;
-   }   
-
+      return;
+   }
+   
    // Get the array of posted tags
    for (var index = 0; index < json.length(); index++)
    {
@@ -25,4 +25,4 @@ function main()
    model.tags = node.tags;
 }
 
-main();   
+main();

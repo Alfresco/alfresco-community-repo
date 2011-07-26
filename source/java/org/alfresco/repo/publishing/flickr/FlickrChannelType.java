@@ -20,13 +20,12 @@ package org.alfresco.repo.publishing.flickr;
 
 import java.io.Serializable;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.publishing.AbstractChannelType;
+import org.alfresco.repo.publishing.AbstractOAuth1ChannelType;
 import org.alfresco.repo.publishing.PublishingModel;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
@@ -34,15 +33,9 @@ import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.ParameterCheck;
-import org.springframework.social.oauth1.AuthorizedRequestToken;
 import org.springframework.social.oauth1.OAuth1Operations;
-import org.springframework.social.oauth1.OAuth1Parameters;
-import org.springframework.social.oauth1.OAuthToken;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
-public class FlickrChannelType extends AbstractChannelType
+public class FlickrChannelType extends AbstractOAuth1ChannelType
 {
     public final static String ID = "flickr";
     private final static Set<String> DEFAULT_SUPPORTED_MIME_TYPES = new TreeSet<String>();
@@ -54,16 +47,10 @@ public class FlickrChannelType extends AbstractChannelType
         DEFAULT_SUPPORTED_MIME_TYPES.add(MimetypeMap.MIMETYPE_IMAGE_PNG);
     }
     
-    private NodeService nodeService;
     private FlickrPublishingHelper publishingHelper;
     private ActionService actionService;
     private Set<String> supportedMimeTypes = Collections.unmodifiableSet(DEFAULT_SUPPORTED_MIME_TYPES);
     
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
-
     public void setPublishingHelper(FlickrPublishingHelper flickrPublishingHelper)
     {
         this.publishingHelper = flickrPublishingHelper;
@@ -143,6 +130,7 @@ public class FlickrChannelType extends AbstractChannelType
     public String getNodeUrl(NodeRef node)
     {
         String url = null;
+        NodeService nodeService = getNodeService();
         if (node != null && nodeService.exists(node) && nodeService.hasAspect(node, FlickrPublishingModel.ASPECT_ASSET))
         {
             url = (String)nodeService.getProperty(node, PublishingModel.PROP_ASSET_URL);
@@ -151,50 +139,9 @@ public class FlickrChannelType extends AbstractChannelType
     }
     
     @Override
-    public String getAuthorisationUrl(Channel channel, String callbackUrl)
+    protected OAuth1Operations getOAuth1Operations()
     {
-        ParameterCheck.mandatory("channel", channel);
-        ParameterCheck.mandatory("callbackUrl", callbackUrl);
-        if (!ID.equals(channel.getChannelType().getId()))
-        {
-            throw new IllegalArgumentException("Invalid channel type: " + channel.getChannelType().getId());
-        }
-        OAuth1Operations oauthOperations = publishingHelper.getConnectionFactory().getOAuthOperations();
-        OAuthToken requestToken = oauthOperations.fetchRequestToken(callbackUrl, null);
-
-        NodeRef channelNodeRef = channel.getNodeRef();
-        nodeService.setProperty(channelNodeRef, PublishingModel.PROP_OAUTH1_TOKEN_SECRET, requestToken.getSecret());
-        nodeService.setProperty(channelNodeRef, PublishingModel.PROP_OAUTH1_TOKEN_VALUE, requestToken.getValue());
-
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<String, String>();
-        params.add("perms", "delete");
-        OAuth1Parameters oauthParams = new OAuth1Parameters(callbackUrl, params);
-        return oauthOperations.buildAuthorizeUrl(requestToken.getValue(), oauthParams);
+        return publishingHelper.getConnectionFactory().getOAuthOperations();
     }
-    
-    @Override
-    protected AuthStatus internalAcceptAuthorisation(Channel channel, Map<String, String[]> callbackHeaders,
-            Map<String, String[]> callbackParams)
-    {
-        AuthStatus authorised = AuthStatus.UNAUTHORISED;
-        String[] verifier = callbackParams.get("oauth_verifier");
-        if (verifier != null)
-        {
-            OAuth1Operations oauthOperations = publishingHelper.getConnectionFactory().getOAuthOperations();
-            NodeRef channelNodeRef = channel.getNodeRef();
 
-            Map<QName, Serializable> currentProps = nodeService.getProperties(channelNodeRef);
-            String tokenValue = (String) currentProps.get(PublishingModel.PROP_OAUTH1_TOKEN_VALUE);
-            String tokenSecret = (String) currentProps.get(PublishingModel.PROP_OAUTH1_TOKEN_SECRET);
-            OAuthToken token = new OAuthToken(tokenValue, tokenSecret);
-            OAuthToken accessToken = oauthOperations.exchangeForAccessToken(new AuthorizedRequestToken(token, verifier[0]), null);
-            
-            Map<QName, Serializable> newProps = new HashMap<QName, Serializable>();
-            newProps.put(PublishingModel.PROP_OAUTH1_TOKEN_VALUE, accessToken.getValue());
-            newProps.put(PublishingModel.PROP_OAUTH1_TOKEN_SECRET, accessToken.getSecret());
-            getChannelService().updateChannel(channel, newProps);
-            authorised = AuthStatus.AUTHORISED;
-        }
-        return authorised;
-    }
 }

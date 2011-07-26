@@ -66,6 +66,7 @@ import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO9075;
+import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -476,6 +477,8 @@ public class TaggingServiceImpl implements TaggingService,
      */
     public List<String> getTags(StoreRef storeRef)
     {
+        ParameterCheck.mandatory("storeRef", storeRef);
+        
         Collection<ChildAssociationRef> rootCategories = this.categoryService.getRootCategories(storeRef, ContentModel.ASPECT_TAGGABLE);
         List<String> result = new ArrayList<String>(rootCategories.size());
         for (ChildAssociationRef rootCategory : rootCategories)
@@ -491,16 +494,27 @@ public class TaggingServiceImpl implements TaggingService,
      */
     public List<String> getTags(StoreRef storeRef, String filter)
     {
-        Collection<ChildAssociationRef> rootCategories = this.categoryService.getRootCategories(storeRef, ContentModel.ASPECT_TAGGABLE);
-        List<String> result = new ArrayList<String>(rootCategories.size());
-        for (ChildAssociationRef rootCategory : rootCategories)
+        ParameterCheck.mandatory("storeRef", storeRef);
+        
+        List<String> result = null;
+        if (filter == null || filter.length() == 0)
         {
-            String name = (String)this.nodeService.getProperty(rootCategory.getChildRef(), ContentModel.PROP_NAME);
-            if (name.contains(filter.toLowerCase()) == true)
+            result = getTags(storeRef);
+        }
+        else
+        {
+            Collection<ChildAssociationRef> rootCategories = this.categoryService.getRootCategories(storeRef, ContentModel.ASPECT_TAGGABLE);
+            result = new ArrayList<String>(rootCategories.size());
+            for (ChildAssociationRef rootCategory : rootCategories)
             {
-                result.add(name);
+                String name = (String)this.nodeService.getProperty(rootCategory.getChildRef(), ContentModel.PROP_NAME);
+                if (name.contains(filter.toLowerCase()) == true)
+                {
+                    result.add(name);
+                }
             }
         }
+        
         return result;
     }
     

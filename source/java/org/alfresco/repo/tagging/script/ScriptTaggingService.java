@@ -87,7 +87,7 @@ public class ScriptTaggingService extends BaseScopableProcessorExtension
         NodeRef result = this.serviceRegistry.getTaggingService().getTagNodeRef(storeRef, tag);
         if (result != null)
         {
-            return new ScriptNode(result, this.serviceRegistry);
+            return new ScriptNode(result, this.serviceRegistry, this.getScope());
         }
         return null;
     }
@@ -108,5 +108,17 @@ public class ScriptTaggingService extends BaseScopableProcessorExtension
             return new ScriptNode(result, this.serviceRegistry);
         }
         return null;
+    }
+    
+    /**
+     * delete tag at the given store
+     * 
+     * @param store     store reference
+     * @param tag       tag name
+     */
+    public void deleteTag(String store, String tag)
+    {
+        StoreRef storeRef = new StoreRef(store);
+        this.serviceRegistry.getTaggingService().deleteTag(storeRef, tag);
     }
 }

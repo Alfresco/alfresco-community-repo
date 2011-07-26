@@ -1,0 +1,7 @@
+<webscript>
+   <shortname>Node details</shortname>
+   <description>Get details for a node</description>
+   <url>/slingshot/node/{protocol}/{store}/{id}</url>
+   <format default="json">extension</format>
+   <authentication>admin</authentication>
+</webscript>

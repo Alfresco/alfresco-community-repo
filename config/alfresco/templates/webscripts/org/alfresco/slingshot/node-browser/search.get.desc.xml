@@ -1,0 +1,7 @@
+<webscript>
+   <shortname>Search nodes</shortname>
+   <description>Execute a search query and return results</description>
+   <url>/slingshot/node/search</url>
+   <format default="json">extension</format>
+   <authentication>admin</authentication>
+</webscript>

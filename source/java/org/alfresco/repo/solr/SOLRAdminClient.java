@@ -186,39 +186,7 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware
 	        cores = new ArrayList<String>(5);
 
 	    	setupTimer();
-//
-//			pingSolr();
 		}
-
-//		protected List<String> getCores()
-//		{
-//			try
-//			{
-//				List<String> cores = new ArrayList<String>(2);
-//		
-//			    ModifiableSolrParams params = new ModifiableSolrParams();
-//			    params.set("qt", "/admin/cores");
-//			    params.set("action", "STATUS");
-//				
-//			    QueryResponse response = query(params);
-//			    
-//			    NamedList<Object> results = response.getResponse();
-//			    NamedList<Object> report = (NamedList<Object>)results.get("status");
-//			    Iterator<Map.Entry<String, Object>> coreIterator = report.iterator();
-//			    while(coreIterator.hasNext())
-//			    {
-//			    	Map.Entry<String, Object> core = coreIterator.next();
-//			    	cores.add(core.getKey());
-//			    }
-//		
-//				return cores;
-//			}
-//			catch(SolrServerException e)
-//			{
-//				setSolrActive(false);
-//				return Collections.emptyList();
-//			}
-//		}
 		
 		protected void pingSolr()
 		{
@@ -230,7 +198,8 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware
 		    if(response != null && response.getStatus() == 0)
 		    {
 			    NamedList<Object> results = response.getResponse();
-			    NamedList<Object> report = (NamedList<Object>)results.get("status");
+			    @SuppressWarnings("unchecked")
+                NamedList<Object> report = (NamedList<Object>)results.get("status");
 			    Iterator<Map.Entry<String, Object>> coreIterator = report.iterator();
 			    List<String> cores = new ArrayList<String>(report.size());
 			    while(coreIterator.hasNext())
@@ -321,7 +290,7 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware
 	    	}
 	    	catch(Exception e)
 	    	{
-	    		throw new AlfrescoRuntimeException("Unable to set up SOLRTracker timer");
+	    		throw new AlfrescoRuntimeException("Unable to set up SOLRTracker timer", e);
 	    	}
 	    }
 	    

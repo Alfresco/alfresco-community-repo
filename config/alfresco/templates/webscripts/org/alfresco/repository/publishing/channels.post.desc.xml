@@ -47,7 +47,6 @@
                "data": 
                {
                   "channelId": string,
-                  "pollUrl": string,
                   "authoriseUrl": string
                   "authCallbackUrl": string
                }

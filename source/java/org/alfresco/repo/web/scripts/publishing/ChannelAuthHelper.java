@@ -18,7 +18,11 @@
  */
 package org.alfresco.repo.web.scripts.publishing;
 
+import java.util.Map;
+import java.util.TreeMap;
+
 import org.alfresco.repo.admin.SysAdminParams;
+import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.UrlUtil;
 
@@ -59,5 +63,24 @@ public class ChannelAuthHelper
     public String getAuthoriseCallbackUrl(NodeRef channelId)
     {
         return getBaseChannelApiUrl(channelId) + "authcallback";
+    }
+    
+    public Map<String, Object> buildAuthorisationModel(Channel channel)
+    {
+        String callbackUrl = getAuthoriseCallbackUrl(channel.getNodeRef());
+        String authoriseUrl = channel.getChannelType().getAuthorisationUrl(channel, callbackUrl);
+        if (authoriseUrl == null)
+        {
+            // If a channel type returns null as the authorise URL then we
+            // assume credentials are to be supplied to us directly. We'll point the 
+            // user at our own credential-gathering form.
+            authoriseUrl = getDefaultAuthoriseUrl(channel.getNodeRef());
+        }
+
+        Map<String, Object> model = new TreeMap<String, Object>();
+        model.put("authoriseUrl", authoriseUrl);
+        model.put("channelId", channel.getId());
+        model.put("authCallbackUrl", callbackUrl);
+        return model;
     }
 }

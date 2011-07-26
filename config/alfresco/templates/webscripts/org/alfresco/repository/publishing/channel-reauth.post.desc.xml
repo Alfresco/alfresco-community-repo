@@ -1,0 +1,56 @@
+<webscript>
+   <shortname>Reauthorise the specified publishing channel</shortname>
+   <description><![CDATA[
+   Initiate an attempt to reauthorise the specified publishing channel.
+   <br />
+   Response status may be:
+   <dl>
+   <dt>200</dt><dd>The body of the response contains the necessary information to continue the reauthorisation process</dd>
+   <dt>400</dt><dd>invalid data received from caller</dd>
+   <dt>404</dt><dd>the specified channel cannot be found</dd>
+   </dl>
+   Returns three pieces of informtation:
+   <br />
+   <dl>
+   <dt>channelId</dt><dd>the identifier of the publishing channel</dd>
+   <dt>authoriseUrl</dt> <dd>The URL to send the user to in order for them to authorise access to the channel</dd>
+   <dt>authCallbackUrl</dt> <dd>The URL to return the channel authorisation details to</dd>
+   </dl>
+   ]]></description>
+   <url>/api/publishing/channels/{store_protocol}/{store_id}/{node_id}/reauthorise</url>
+   <format default="json"/>
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+   <lifecycle>public_api</lifecycle>
+   <args>
+      <arg>
+         <shortname>store_protocol</shortname>
+         <description>The protocol of the store in which the relevant publishing channel lives.</description>
+      </arg>
+      <arg>
+         <shortname>store_id</shortname>
+         <description>The identifier of the store in which the relevant publishing channel lives.</description>
+      </arg>
+      <arg>
+         <shortname>node_id</shortname>
+         <description>The identifier of the node that represents the relevant publishing channel.</description>
+      </arg>
+   </args>
+   <responses>
+      <response>
+         <format>json</format>
+         <type>
+            <![CDATA[
+            {
+               "data": 
+               {
+                  "channelId": string,
+                  "authoriseUrl": string
+                  "authCallbackUrl": string
+               }
+            }
+            ]]>
+         </type>
+      </response>
+   </responses>
+</webscript>

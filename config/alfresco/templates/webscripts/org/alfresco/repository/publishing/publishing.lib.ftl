@@ -138,3 +138,15 @@
    "timeZone": "${calendar.timeZone}"
 }
 </#macro>
+
+<#-- Renders a calendar. -->
+<#macro channelAuthJSON>
+<#escape x as jsonUtils.encodeJSONString(x)>
+   {
+      "channelId" : "${channelId}",
+      "authoriseUrl": "${authoriseUrl}",
+      "authCallbackUrl": "${authCallbackUrl}"
+   }
+</#escape>
+</#macro>
+   

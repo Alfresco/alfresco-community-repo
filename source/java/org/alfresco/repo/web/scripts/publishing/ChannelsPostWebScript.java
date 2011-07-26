@@ -22,11 +22,9 @@ package org.alfresco.repo.web.scripts.publishing;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.util.UrlUtil;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
@@ -35,16 +33,16 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 public class ChannelsPostWebScript extends DeclarativeWebScript
 {
     private ChannelService channelService;
-    private SysAdminParams sysAdminParams;
+    private ChannelAuthHelper channelAuthHelper;
 
     public void setChannelService(ChannelService channelService)
     {
         this.channelService = channelService;
     }
 
-    public void setSysAdminParams(SysAdminParams sysAdminParams)
+    public void setChannelAuthHelper(ChannelAuthHelper channelAuthHelper)
     {
-        this.sysAdminParams = sysAdminParams;
+        this.channelAuthHelper = channelAuthHelper;
     }
 
     @Override
@@ -56,17 +54,8 @@ public class ChannelsPostWebScript extends DeclarativeWebScript
         Channel newChannel = channelService.createChannel(channelType, channelName, null);
 
         NodeRef channelNodeRef = newChannel.getNodeRef();
-        StringBuilder urlBuilder = new StringBuilder(UrlUtil.getShareUrl(sysAdminParams));
-        urlBuilder.append("/proxy/alfresco/api/publishing/channels/");
-        urlBuilder.append(channelNodeRef.getStoreRef().getProtocol());
-        urlBuilder.append('/');
-        urlBuilder.append(channelNodeRef.getStoreRef().getIdentifier());
-        urlBuilder.append('/');
-        urlBuilder.append(channelNodeRef.getId());
-        urlBuilder.append('/');
 
-        String baseUrl = urlBuilder.toString();
-        String callbackUrl = baseUrl + "authcallback";
+        String callbackUrl = channelAuthHelper.getAuthoriseCallbackUrl(channelNodeRef);
 
         String authoriseUrl = channelService.getChannelType(channelType).getAuthorisationUrl(newChannel, callbackUrl);
         if (authoriseUrl == null)
@@ -74,7 +63,7 @@ public class ChannelsPostWebScript extends DeclarativeWebScript
             // If a channel type returns null as the authorise URL then we
             // assume credentials are to be supplied to us directly. We'll point the 
             // user at our own credential-gathering form.
-            authoriseUrl = baseUrl + "authform";
+            authoriseUrl = channelAuthHelper.getDefaultAuthoriseUrl(channelNodeRef);
         }
 
         Map<String, Object> model = new TreeMap<String, Object>();

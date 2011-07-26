@@ -26,54 +26,26 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
-import org.alfresco.service.cmr.publishing.channels.ChannelType;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
-public class AuthCallbackWebScript extends DeclarativeWebScript
+public class AuthFormGetWebScript extends DeclarativeWebScript
 {
-    private final static Log log = LogFactory.getLog(AuthCallbackWebScript.class);
     private ChannelService channelService;
-    private ChannelAuthHelper channelAuthHelper;
 
     public void setChannelService(ChannelService channelService)
     {
         this.channelService = channelService;
     }
 
-    public void setChannelAuthHelper(ChannelAuthHelper channelAuthHelper)
-    {
-        this.channelAuthHelper = channelAuthHelper;
-    }
-
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
-        Map<String,String[]> params = new TreeMap<String, String[]>();
-        Map<String,String[]> headers = new TreeMap<String, String[]>();
-        
-        for (String paramName : req.getParameterNames())
-        {
-            params.put(paramName, req.getParameterValues(paramName));
-        }
-
-        for (String header : req.getHeaderNames())
-        {
-            headers.put(header, req.getHeaderValues(header));
-        }
-
-        if (log.isDebugEnabled())
-        {
-            log.debug("templateVars = " + templateVars);
-            log.debug("params = " + params);
-            log.debug("headers = " + headers);
-        }
 
         String channelNodeUuid = templateVars.get("node_id");
         String channelNodeStoreProtocol = templateVars.get("store_protocol");
@@ -81,21 +53,16 @@ public class AuthCallbackWebScript extends DeclarativeWebScript
 
         NodeRef channelNodeRef = new NodeRef(channelNodeStoreProtocol, channelNodeStoreId, channelNodeUuid);
         Channel channel = channelService.getChannelById(channelNodeRef.toString());
-        
-        ChannelType.AuthStatus authStatus = channel.getChannelType().acceptAuthorisationCallback(channel, headers, params);
-        
-        if (ChannelType.AuthStatus.RETRY.equals(authStatus))
-        {
-            String authoriseUrl = channel.getChannelType().getAuthorisationUrl(channel, channelAuthHelper.getAuthoriseCallbackUrl(channelNodeRef));
-            if (authoriseUrl == null)
-            {
-                authoriseUrl = channelAuthHelper.getDefaultAuthoriseUrl(channelNodeRef);
-            }
-            status.setCode(HttpServletResponse.SC_MOVED_TEMPORARILY);
-            status.setLocation(authoriseUrl);
-        }
         Map<String,Object> model = new TreeMap<String, Object>();
-        model.put("authStatus", authStatus.name());
+
+        if (channel == null)
+        {
+            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Channel not found - " + channelNodeRef); 
+        }
+        else
+        {
+            model.put("channel", channel);
+        }
         return model;
     }
 }

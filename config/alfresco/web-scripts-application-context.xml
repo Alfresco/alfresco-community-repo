@@ -1137,6 +1137,10 @@
           class="org.alfresco.repo.web.scripts.publishing.ChannelsPostWebScript"
           parent="webscript">
         <property name="channelService" ref="channelService" />
+        <property name="channelAuthHelper" ref="channelAuthHelper" />
+    </bean>
+    
+    <bean id="channelAuthHelper" class="org.alfresco.repo.web.scripts.publishing.ChannelAuthHelper">
         <property name="sysAdminParams" ref="sysAdminParams" />
     </bean>
 
@@ -1144,14 +1148,21 @@
             class="org.alfresco.repo.web.scripts.publishing.AuthCallbackWebScript"
             parent="webscript">
         <property name="channelService" ref="channelService" />
+        <property name="channelAuthHelper" ref="channelAuthHelper" />
     </bean>
 
     <bean id="webscript.org.alfresco.repository.publishing.authform.post" 
             class="org.alfresco.repo.web.scripts.publishing.AuthCallbackWebScript"
             parent="webscript">
         <property name="channelService" ref="channelService" />
+        <property name="channelAuthHelper" ref="channelAuthHelper" />
     </bean>
 
+    <bean id="webscript.org.alfresco.repository.publishing.authform.get" 
+            class="org.alfresco.repo.web.scripts.publishing.AuthFormGetWebScript"
+            parent="webscript">
+        <property name="channelService" ref="channelService" />
+    </bean>
 
     <!-- Get Publishing Events For Node web script -->
     <bean id="webscript.org.alfresco.repository.publishing.publishing-events.get"

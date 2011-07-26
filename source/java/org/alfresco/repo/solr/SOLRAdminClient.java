@@ -29,6 +29,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.util.ParameterCheck;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
@@ -61,8 +62,9 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware
 	private String solrUrl;
 	private String solrUser;
 	private String solrPassword;
-	private String solrPingCronExpression; // s
+	private String solrPingCronExpression;
 	private CommonsHttpSolrServer server;
+	private int solrConnectTimeout; // ms
 
 	private ApplicationEventPublisher applicationEventPublisher;
 	private SolrTracker solrTracker;
@@ -95,6 +97,11 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware
 	{
 		this.solrPassword = solrPassword;
 	}
+	
+	public void setSolrConnectTimeout(String solrConnectTimeout)
+	{
+		this.solrConnectTimeout = Integer.parseInt(solrConnectTimeout);
+	}
 
 	@Override
 	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher)
@@ -109,13 +116,21 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware
 
     public void init()
 	{
+    	ParameterCheck.mandatory("solrHost", solrHost);
+    	ParameterCheck.mandatory("solrPort", solrPort);
+    	ParameterCheck.mandatory("solrPassword", solrPassword);
+    	ParameterCheck.mandatory("solrPingCronExpression", solrPingCronExpression);
+    	ParameterCheck.mandatory("solrPort", solrPort);
+    	ParameterCheck.mandatory("solrConnectTimeout", solrConnectTimeout);
+    	ParameterCheck.mandatory("solrUser", solrUser);
+
 		try
 		{
 			server = new CommonsHttpSolrServer(solrUrl); 
 			Credentials defaultcreds = new UsernamePasswordCredentials(solrUser, solrPassword); 
 			server.getHttpClient().getState().setCredentials(new AuthScope(solrHost, solrPort, AuthScope.ANY_REALM), 
 					defaultcreds);
-			server.setConnectionTimeout(2000);
+			server.setConnectionTimeout(solrConnectTimeout);
 
 			this.solrTracker = new SolrTracker();
 		}
@@ -124,6 +139,11 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware
 			throw new AlfrescoRuntimeException("Cannot initialise Solr admin http client", e);
 		}
 	}
+
+    public void shutdown()
+    {
+    	this.solrTracker.shutdown();
+    }
 
 	public QueryResponse basicQuery(ModifiableSolrParams params)
 	{
@@ -163,12 +183,12 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware
 	}
 	
 	/**
-	 * Tracks the availablity of Solr.
+	 * Tracks the availability of Solr.
 	 * 
 	 * @since 4.0
 	 *
 	 */
-	public class SolrTracker
+	class SolrTracker
 	{
 	    private final WriteLock writeLock;
 		private boolean solrActive = false;
@@ -178,7 +198,7 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware
 
 	    private List<String> cores;
 
-		public SolrTracker()
+		SolrTracker()
 		{
 	        ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 	        writeLock = lock.writeLock();
@@ -217,7 +237,7 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware
 		    }
 		}
 		
-		public void setSolrActive(boolean active)
+		void setSolrActive(boolean active)
 		{
 			boolean statusChanged = false;
 
@@ -258,7 +278,7 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware
 			}
 		}
 		
-		public boolean isSolrActive()
+		boolean isSolrActive()
 		{
 			return solrActive;
 		}
@@ -276,7 +296,6 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware
 		        factory.initialize(properties);
 		        scheduler = factory.getScheduler();
 		
-		        // TODO start and stop as needed?
 		        scheduler.start();
 		
 		        JobDetail job = new JobDetail("SolrWatcher", "Solr", SOLRWatcherJob.class);
@@ -286,7 +305,6 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware
 
 	            trigger = new CronTrigger("SolrWatcherTrigger", "Solr", solrPingCronExpression);
 	            scheduler.scheduleJob(job, trigger);
-	            //stopTimer();
 	    	}
 	    	catch(Exception e)
 	    	{
@@ -304,7 +322,19 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware
 	    	scheduler.pauseTrigger(trigger.getName(), trigger.getGroup());
 	    }
 	    
-	    public void registerCores(List<String> cores)
+	    void shutdown()
+	    {
+	    	try
+	    	{
+	    		scheduler.shutdown();
+	    	}
+	    	catch(SchedulerException e)
+	    	{
+	    		throw new AlfrescoRuntimeException("Unable to shut down Solr Tracker cleanly", e);
+	    	}
+	    }
+
+	    void registerCores(List<String> cores)
 	    {
 	        writeLock.lock();
 	        try
@@ -318,7 +348,7 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware
 	    }
 	    
 	    @SuppressWarnings("unchecked")
-		public List<String> getRegisteredCores()
+		List<String> getRegisteredCores()
 	    {
 	        writeLock.lock();
 	        try

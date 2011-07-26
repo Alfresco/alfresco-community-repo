@@ -1012,13 +1012,14 @@
         </property>
     </bean>
 
-    <bean id="solrAdminClient" class="org.alfresco.repo.solr.SOLRAdminClient" init-method="init">
+    <bean id="solrAdminClient" class="org.alfresco.repo.solr.SOLRAdminClient" init-method="init" destroy-method="shutdown">
       <property name="solrHost" value="${solr.solrHost}"/>
       <property name="solrPort" value="${solr.solrAdminPort}"/>
       <property name="solrUrl" value="${solr.solrUrl}"/>
       <property name="solrUser" value="${solr.solrUser}"/>
       <property name="solrPassword" value="${solr.solrPassword}"/>
       <property name="solrPingCronExpression" value="${solr.solrPingCronExpression}"/>
+      <property name="solrConnectTimeout" value="${solr.solrConnectTimeout}"/>
     </bean>
 
     <bean id="solr" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">

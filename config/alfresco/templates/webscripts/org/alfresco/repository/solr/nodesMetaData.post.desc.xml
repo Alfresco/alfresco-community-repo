@@ -3,7 +3,8 @@
   <description>Get the metadata for the specified nodes.</description>
   <url>/api/solr/metadata</url>
   <format default="json">argument</format>
-  <authentication>admin</authentication>
+  <!-- Solr api is protected by a solr-specific authentication mechanism -->
+  <authentication>none</authentication>
   <transaction allow="readonly">required</transaction>
   <lifecycle>internal</lifecycle>
   <family>SOLR</family>

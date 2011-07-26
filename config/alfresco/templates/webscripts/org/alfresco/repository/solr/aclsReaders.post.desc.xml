@@ -3,7 +3,8 @@
   <description>Get the readers for given ACLs.</description>
   <url>/api/solr/aclsReaders</url>
   <format default="json">argument</format>
-  <authentication>admin</authentication>
+  <!-- Solr api is protected by a solr-specific authentication mechanism -->
+  <authentication>none</authentication>
   <transaction allow="readonly">required</transaction>
   <lifecycle>internal</lifecycle>
   <family>SOLR</family>

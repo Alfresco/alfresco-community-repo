@@ -3,7 +3,8 @@
   <description>Get the transactions from the given commit time.</description>
   <url>/api/solr/transactions?fromTxnId={fromTxnId?}&amp;fromCommitTime={fromCommitTime?}&amp;maxResults={maxResults?}</url>
   <format default="json">argument</format>
-  <authentication>admin</authentication>
+  <!-- Solr api is protected by a solr-specific authentication mechanism -->
+  <authentication>none</authentication>
   <transaction allow="readonly">required</transaction>
   <lifecycle>internal</lifecycle>
   <family>SOLR</family>

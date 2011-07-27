@@ -32,16 +32,7 @@
       <aspect name="twitter:AssetAspect">
          <title>Twitter Asset</title>
          <description>Applied to a node that has been published to Twitter</description>
-         <properties>
-            <property name="twitter:assetId">
-               <title>Twitter Status Id</title>
-               <type>d:text</type>
-           </property>
-            <property name="twitter:assetUrl">
-               <title>Twitter Status URL</title>
-               <type>d:text</type>
-           </property>
-        </properties>
+         <parent>pub:AssetAspect</parent>
       </aspect>
    </aspects>
 </model>

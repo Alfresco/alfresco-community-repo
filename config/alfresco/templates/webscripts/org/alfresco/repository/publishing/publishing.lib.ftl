@@ -139,7 +139,7 @@
 }
 </#macro>
 
-<#-- Renders a calendar. -->
+<#-- Renders the info needed about a channel's authorisation -->
 <#macro channelAuthJSON>
 <#escape x as jsonUtils.encodeJSONString(x)>
    {

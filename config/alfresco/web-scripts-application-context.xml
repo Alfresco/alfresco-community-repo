@@ -1185,14 +1185,7 @@
         <property name="channelService" ref="channelService" />
     </bean>
 
-    <bean id="webscript.org.alfresco.repository.publishing.channel-reath.get" 
-            class="org.alfresco.repo.web.scripts.publishing.ChannelReauthWebScript"
-            parent="webscript">
-        <property name="channelService" ref="channelService" />
-        <property name="channelAuthHelper" ref="channelAuthHelper" />
-    </bean>
-
-    <bean id="webscript.org.alfresco.repository.publishing.channel-reath.post" 
+    <bean id="webscript.org.alfresco.repository.publishing.channel-reauth.post" 
             class="org.alfresco.repo.web.scripts.publishing.ChannelReauthWebScript"
             parent="webscript">
         <property name="channelService" ref="channelService" />

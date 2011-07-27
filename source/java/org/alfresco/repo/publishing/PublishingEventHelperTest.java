@@ -48,11 +48,11 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
-import org.alfresco.service.cmr.publishing.PublishingEvent.Status;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
 import org.alfresco.service.cmr.publishing.PublishingPackage;
 import org.alfresco.service.cmr.publishing.PublishingPackageEntry;
+import org.alfresco.service.cmr.publishing.Status;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;

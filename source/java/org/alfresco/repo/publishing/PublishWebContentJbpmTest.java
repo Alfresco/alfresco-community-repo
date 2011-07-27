@@ -46,7 +46,7 @@ import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionDefinition;
-import org.alfresco.service.cmr.publishing.PublishingEvent.Status;
+import org.alfresco.service.cmr.publishing.Status;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;

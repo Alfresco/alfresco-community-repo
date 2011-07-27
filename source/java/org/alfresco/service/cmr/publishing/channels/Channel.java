@@ -31,7 +31,14 @@ import org.alfresco.service.namespace.QName;
  */
 public interface Channel
 {
+    /**
+     * @return a unique identifier for this {@link Channel}.
+     */
     String getId();
+    
+    /**
+     * @return the {@link ChannelType} for this Channel.
+     */
     ChannelType getChannelType();
     
     /**

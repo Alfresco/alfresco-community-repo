@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.publishing.NodeSnapshot;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
 import org.alfresco.service.cmr.publishing.PublishingPackageEntry;
+import org.alfresco.service.cmr.publishing.Status;
 import org.alfresco.service.cmr.publishing.StatusUpdate;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
@@ -71,7 +72,7 @@ public class PublishingEventProcessor
         try
         {
             behaviourFilter.disableAllBehaviours();
-            String inProgressStatus = PublishingEvent.Status.IN_PROGRESS.name();
+            String inProgressStatus = Status.IN_PROGRESS.name();
             nodeService.setProperty(eventNode, PublishingModel.PROP_PUBLISHING_EVENT_STATUS, inProgressStatus);
             PublishingEvent event = eventHelper.getPublishingEvent(eventNode);
             String channelName = event.getChannelId();
@@ -84,7 +85,7 @@ public class PublishingEventProcessor
             {
                 publishEvent(channel, event);
                 updateStatus(channel, event.getStatusUpdate());
-                String completedStatus = PublishingEvent.Status.COMPLETED.name();
+                String completedStatus = Status.COMPLETED.name();
                 nodeService.setProperty(eventNode, PublishingModel.PROP_PUBLISHING_EVENT_STATUS, completedStatus);
             }
         }
@@ -150,7 +151,7 @@ public class PublishingEventProcessor
 
      public void fail(NodeRef eventNode, String msg)
      {
-         String completedStatus = PublishingEvent.Status.FAILED.name();
+         String completedStatus = Status.FAILED.name();
          nodeService.setProperty(eventNode, PublishingModel.PROP_PUBLISHING_EVENT_STATUS, completedStatus);
      }
 

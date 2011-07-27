@@ -134,9 +134,8 @@ public class ChannelImpl implements Channel
         return channelType.getNodeUrl(mappedNode);
     }
 
-    @Override
     public boolean isAuthorised()
     {
-        return channelHelper.isChannelAuthorised(getNodeRef());
+        return channelHelper.isChannelAuthorised(nodeRef);
     }
 }

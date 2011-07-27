@@ -48,9 +48,9 @@ import javax.annotation.Resource;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.publishing.MutablePublishingPackage;
-import org.alfresco.service.cmr.publishing.PublishingEvent;
 import org.alfresco.service.cmr.publishing.PublishingPackage;
 import org.alfresco.service.cmr.publishing.PublishingService;
+import org.alfresco.service.cmr.publishing.Status;
 import org.alfresco.service.cmr.publishing.StatusUpdate;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
@@ -357,13 +357,13 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
         NodeRef eventNode = new NodeRef(eventId);
         assertTrue(nodeService.exists(eventNode));
         Serializable eventStatus = nodeService.getProperty(eventNode, PublishingModel.PROP_PUBLISHING_EVENT_STATUS);
-        assertEquals(PublishingEvent.Status.SCHEDULED.name(), eventStatus);
+        assertEquals(Status.SCHEDULED.name(), eventStatus);
 
         action.executeImpl(null, eventNode);
         
         // Check Status has changed to COMPLETE
         eventStatus = nodeService.getProperty(eventNode, PublishingModel.PROP_PUBLISHING_EVENT_STATUS);
-        assertEquals(PublishingEvent.Status.COMPLETED.name(), eventStatus);
+        assertEquals(Status.COMPLETED.name(), eventStatus);
 
         return eventNode;
     }

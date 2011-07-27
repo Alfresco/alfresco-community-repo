@@ -25,6 +25,7 @@ import java.util.Date;
 import org.alfresco.service.cmr.publishing.MutablePublishingEvent;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
 import org.alfresco.service.cmr.publishing.PublishingPackage;
+import org.alfresco.service.cmr.publishing.Status;
 import org.alfresco.service.cmr.publishing.StatusUpdate;
 
 /**
@@ -79,7 +80,6 @@ public class PublishingEventImpl implements PublishingEvent
     /**
     * {@inheritDoc}
     */
-    @Override
     public String getId()
     {
         return id;
@@ -88,7 +88,6 @@ public class PublishingEventImpl implements PublishingEvent
     /**
     * {@inheritDoc}
     */
-    @Override
     public Status getStatus()
     {
         return status;
@@ -105,7 +104,6 @@ public class PublishingEventImpl implements PublishingEvent
     /**
     * {@inheritDoc}
     */
-    @Override
     public Calendar getScheduledTime()
     {
         return (Calendar) scheduledTime.clone();
@@ -114,7 +112,6 @@ public class PublishingEventImpl implements PublishingEvent
     /**
     * {@inheritDoc}
     */
-    @Override
     public PublishingPackage getPackage()
     {
         return publishingPackage;
@@ -123,7 +120,6 @@ public class PublishingEventImpl implements PublishingEvent
     /**
     * {@inheritDoc}
     */
-    @Override
     public Date getCreatedTime()
     {
         return new Date(createdTime.getTime());
@@ -132,7 +128,6 @@ public class PublishingEventImpl implements PublishingEvent
     /**
     * {@inheritDoc}
     */
-    @Override
     public String getCreator()
     {
         return creator;
@@ -141,7 +136,6 @@ public class PublishingEventImpl implements PublishingEvent
     /**
     * {@inheritDoc}
     */
-    @Override
     public Date getModifiedTime()
     {
         return new Date(modifiedTime.getTime());
@@ -150,7 +144,6 @@ public class PublishingEventImpl implements PublishingEvent
     /**
     * {@inheritDoc}
     */
-    @Override
     public String getModifier()
     {
         return modifier;
@@ -159,7 +152,6 @@ public class PublishingEventImpl implements PublishingEvent
     /**
     * {@inheritDoc}
     */
-    @Override
     public String getComment()
     {
         return comment;
@@ -168,7 +160,6 @@ public class PublishingEventImpl implements PublishingEvent
     /**
     * {@inheritDoc}
     */
-    @Override
     public StatusUpdate getStatusUpdate()
     {
         return statusUpdate;
@@ -177,7 +168,6 @@ public class PublishingEventImpl implements PublishingEvent
     /**
     * {@inheritDoc}
     */
-    @Override
     public MutablePublishingEvent edit()
     {
         return new MutablePublishingEventImpl(this);
@@ -186,7 +176,6 @@ public class PublishingEventImpl implements PublishingEvent
     /**
     * {@inheritDoc}
     */
-    @Override
     public int compareTo(PublishingEvent event)
     {
         if(event == null)

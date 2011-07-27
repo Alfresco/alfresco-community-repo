@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 
@@ -69,11 +70,17 @@ public interface PublishingService
     
     /**
      * Discover the publishing status of each of the specified nodes
-     * @param channelId TODO
-     * @param nodes The identifiers of the nodes whose publishing status is being sought
+     * @param channelId an identifier indicating which {@link Channel} to check the status for.
+     * @param nodes The nodes whose publishing status is being sought
      * @return A map associating a NodePublishStatus object with each of the supplied NodeRef objects
      */
     Map<NodeRef,NodePublishStatus> checkPublishStatus(String channelId, Collection<NodeRef> nodes);
 
+    /**
+     * Discover the publishing status of each of the specified nodes
+     * @param channelId an identifier indicating which {@link Channel} to check the status for.
+     * @param nodes The nodes whose publishing status is being sought
+     * @return A map associating a NodePublishStatus object with each of the supplied NodeRef objects
+     */
     Map<NodeRef,NodePublishStatus> checkPublishStatus(String channelId, NodeRef... nodes);
 }

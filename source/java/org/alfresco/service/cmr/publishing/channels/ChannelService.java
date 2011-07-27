@@ -28,6 +28,7 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * @author Brian
+ * @author Nick Smith
  *
  */
 public interface ChannelService
@@ -70,7 +71,7 @@ public interface ChannelService
     
     /**
      * Rename the specified channel
-     * @param channel The current name of the channel that is to be renamed.
+     * @param channel The channel that is to be renamed.
      * @param newName The new name of the channel
      */
     void renameChannel(Channel channel, String newName);

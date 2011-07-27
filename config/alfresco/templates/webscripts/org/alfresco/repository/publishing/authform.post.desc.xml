@@ -6,7 +6,7 @@
    the last authorisation attempt failed, but the user may retry at least once more.
    ]]></description>
    <url>/api/publishing/channels/{store_protocol}/{store_id}/{node_id}/authform</url>
-   <format default="json"/>
+   <format default="html"/>
    <authentication>user</authentication>
    <transaction>required</transaction>
    <lifecycle>public_api</lifecycle>

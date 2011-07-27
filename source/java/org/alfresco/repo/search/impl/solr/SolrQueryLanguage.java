@@ -18,25 +18,35 @@
  */
 package org.alfresco.repo.search.impl.solr;
 
+import org.alfresco.repo.search.impl.lucene.ADMLuceneSearcherImpl;
 import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryLanguage;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchParameters;
 
 /**
  * @author Andy
  *
  */
-public abstract class AbstractSolrQueryLanguage extends AbstractLuceneQueryLanguage
+public class SolrQueryLanguage extends AbstractLuceneQueryLanguage
 {
-    private String baseUrl;
+    private SolrQueryHTTPClient solrQueryHTTPClient;
 
-    public String getBaseUrl()
-    {
-        return baseUrl;
-    }
-
-    public void setBaseUrl(String baseUrl)
-    {
-        this.baseUrl = baseUrl;
-    }
     
     
+    public void setSolrQueryHTTPClient(SolrQueryHTTPClient solrQueryHTTPClient)
+    {
+        this.solrQueryHTTPClient = solrQueryHTTPClient;
+    }
+
+
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.search.impl.lucene.LuceneQueryLanguageSPI#executeQuery(org.alfresco.service.cmr.search.SearchParameters, org.alfresco.repo.search.impl.lucene.ADMLuceneSearcherImpl)
+     */
+    @Override
+    public ResultSet executeQuery(SearchParameters searchParameters, ADMLuceneSearcherImpl admLuceneSearcher)
+    {
+       return solrQueryHTTPClient.executeQuery(searchParameters, getName());
+    }
+
 }

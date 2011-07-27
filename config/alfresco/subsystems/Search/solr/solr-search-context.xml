@@ -29,21 +29,37 @@
         </property>
     </bean>
 
-
-    <bean id="search.abstract.query.language" abstract="true">
+    <bean id="search.solrQueryHTTPCLient" class="org.alfresco.repo.search.impl.solr.SolrQueryHTTPClient" >
         <property name="baseUrl">
             <value>${solr.base.url}</value>
         </property>
-    </bean>
-
-	<bean id="search.lucene.alfresco" class="org.alfresco.repo.search.impl.solr.SolrAlfrescoQueryLanguage" 
-	      parent="search.abstract.query.language" >
-	    <property name="nodeDAO">
+        <property name="nodeDAO">
             <ref bean="nodeDAO" />
         </property>
         <property name="permissionService">
             <ref bean="permissionService" />
         </property>
+        <property name="languageMappings">
+            <map>
+                <entry key="lucene" value="alfresco" />
+                <entry key="solr-alfresco" value="alfresco" />
+                <entry key="cmis-strict" value="cmis" />
+                <entry key="cmis-alfresco" value="cmis" />
+                <entry key="solr-cmis" value="cmis" />
+                <entry key="fts-alfresco" value="afts" />
+                <entry key="solr-fts-alfresco" value="afts" />
+            </map>
+        </property>
+        <property name="storeMappings">
+            <map>
+                <entry key="workspace://SpacesStore" value="alfresco" />
+                <entry key="archive://SpacesStore" value="archive" />
+            </map>
+        </property>
+    </bean>
+    
+
+	<bean id="search.lucene.alfresco" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage" >
 	    <property name="factories">
 			<list>
 			    <ref bean="search.indexerAndSearcherFactory" />
@@ -52,55 +68,96 @@
         <property name="name">
             <value>lucene</value>
         </property>
+        <property name="solrQueryHTTPClient">
+            <ref bean="search.solrQueryHTTPCLient" />
+        </property>
+        
+    </bean>
+    
+    <bean id="search.solr.alfresco" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage"  >
+	    <property name="factories">
+			<list>
+			    <ref bean="search.indexerAndSearcherFactory" />
+			</list>
+        </property>
+        <property name="name">
+            <value>solr-alfresco</value>
+        </property>
+        <property name="solrQueryHTTPClient">
+            <ref bean="search.solrQueryHTTPCLient" />
+        </property>
+        
     </bean>
    
    <!-- TODO: XPATH -->
 	
-	<bean id="search.lucene.fts.alfresco" class="org.alfresco.repo.search.impl.solr.SolrAlfrescoFTSQueryLanguage" 
-	      parent="search.abstract.query.language" >
-	    <property name="nodeDAO">
-            <ref bean="nodeDAO" />
-        </property>
-        <property name="permissionService">
-            <ref bean="permissionService" />
-        </property>
+	<bean id="search.lucene.fts.alfresco" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage" >
 	    <property name="factories">
 			<list>
-			    <ref bean="search.indexerAndSearcherFactory" />	
+			    <ref bean="search.indexerAndSearcherFactory" />
 			</list>
         </property>
         <property name="name">
             <value>fts-alfresco</value>
         </property>
+        <property name="solrQueryHTTPClient">
+            <ref bean="search.solrQueryHTTPCLient" />
+        </property>
     </bean>
-    
-    <bean id="search.solr.fts.alfresco" class="org.alfresco.repo.search.impl.solr.SolrAlfrescoFTSQueryLanguage" 
-          parent="search.abstract.query.language" >
-        <property name="nodeDAO">
-            <ref bean="nodeDAO" />
-        </property>
-        <property name="permissionService">
-            <ref bean="permissionService" />
-        </property>
+
+    <bean id="search.solr.fts.alfresco" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage"  >
 	    <property name="factories">
 			<list>
 			    <ref bean="search.indexerAndSearcherFactory" />
 			</list>
         </property>
+        <property name="name">
+            <value>solr-fts-alfresco</value>
+        </property>
+        <property name="solrQueryHTTPClient">
+            <ref bean="search.solrQueryHTTPCLient" />
+        </property>
     </bean>
     
-    <bean id="search.solr.cmis" class="org.alfresco.repo.search.impl.solr.SolrCMISQueryLanguage" 
-        parent="search.abstract.query.language" >
-        <property name="nodeDAO">
-            <ref bean="nodeDAO" />
-        </property>
-        <property name="permissionService">
-            <ref bean="permissionService" />
-        </property>
+    <bean id="search.solr.cmis" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage" >
 	    <property name="factories">
 			<list>
 			    <ref bean="search.indexerAndSearcherFactory" />
 			</list>
+        </property>
+        <property name="name">
+            <value>solr-cmis</value>
+        </property>
+        <property name="solrQueryHTTPClient">
+            <ref bean="search.solrQueryHTTPCLient" />
+        </property>
+    </bean>
+    
+    <bean id="search.lucene.sql.alfresco" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage"  >
+	    <property name="factories">
+			<list>
+			    <ref bean="search.indexerAndSearcherFactory" />
+			</list>
+        </property>
+        <property name="name">
+            <value>cmis-alfrecso</value>
+        </property>
+        <property name="solrQueryHTTPClient">
+            <ref bean="search.solrQueryHTTPCLient" />
+        </property>
+    </bean>
+    
+    <bean id="search.lucene.sql.cmis.strict" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage" >
+	    <property name="factories">
+			<list>
+			    <ref bean="search.indexerAndSearcherFactory" />
+			</list>
+        </property>
+        <property name="name">
+            <value>cmis-strict</value>
+        </property>
+        <property name="solrQueryHTTPClient">
+            <ref bean="search.solrQueryHTTPCLient" />
         </property>
     </bean>
  

@@ -139,38 +139,6 @@
         </property>
     </bean>
     
-    <bean id="search.solr.fts.alfresco" class="org.alfresco.repo.search.impl.solr.SolrAlfrescoFTSQueryLanguage" >
-        <property name="nodeDAO">
-            <ref bean="nodeDAO" />
-        </property>
-        <property name="permissionService">
-            <ref bean="permissionService" />
-        </property>
-	    <property name="factories">
-			<list>
-			    <ref bean="search.admLuceneIndexerAndSearcherFactory" />	
-				<ref bean="search.admLuceneUnIndexedIndexerAndSearcherFactory" />	
-				<ref bean="search.avmLuceneIndexerAndSearcherFactory" />	
-			</list>
-        </property>
-    </bean>
-    
-    <bean id="search.solr.cmis" class="org.alfresco.repo.search.impl.solr.SolrCMISQueryLanguage" >
-        <property name="nodeDAO">
-            <ref bean="nodeDAO" />
-        </property>
-        <property name="permissionService">
-            <ref bean="permissionService" />
-        </property>
-	    <property name="factories">
-			<list>
-			    <ref bean="search.admLuceneIndexerAndSearcherFactory" />	
-				<ref bean="search.admLuceneUnIndexedIndexerAndSearcherFactory" />	
-				<ref bean="search.avmLuceneIndexerAndSearcherFactory" />	
-			</list>
-        </property>
-    </bean>
-
     <bean id="search.abstractLuceneIndexerAndSearcherFactory" abstract="true">
         <property name="indexRootLocation">
             <value>${dir.indexes}</value>

@@ -21,8 +21,8 @@ function getDoclist()
 
    // Try to find a filter query based on the passed-in arguments
    var allNodes = [],
-      totalRecords,
-      totalRecordsUpper,
+      totalRecords = 0,
+      totalRecordsUpper = 0,
       paged = false,
       favourites = Common.getFavourites(),
       filterParams = Filters.getFilterParams(filter, parsedArgs,
@@ -119,6 +119,8 @@ function getDoclist()
    if (parsedArgs.type === "documents")
    {
       nodes = documentNodes;
+      totalRecords -= folderNodesCount;
+      totalRecordsUpper -= folderNodesCount;
    }
    else
    {
@@ -133,8 +135,6 @@ function getDoclist()
    
    if (!paged)
    {
-       totalRecords = nodes.length;
-       
        // Trim the nodes array down to the page size
        nodes = nodes.slice(startIndex, pagePos * pageSize);
    }

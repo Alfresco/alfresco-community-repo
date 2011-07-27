@@ -21,8 +21,8 @@ function getDoclist()
 
    // Try to find a filter query based on the passed-in arguments
    var allNodes = [],
-      totalRecords,
-      totalRecordsUpper,
+      totalRecords = 0,
+      totalRecordsUpper = 0,
       paged = false,
       favourites = Common.getFavourites(),
       filterParams = Filters.getFilterParams(filter, parsedArgs,
@@ -40,10 +40,9 @@ function getDoclist()
        var parentNode = parsedArgs.pathNode;
        if (parentNode !== null)
        {
-          var ignoreTypes=["cm:thumbnail", "fm:forums","fm:forum","fm:topic","fm:post"];
-          
-          var skip = -1;
-          var max = -1;
+          var ignoreTypes = Filters.IGNORED_TYPES;
+            skip = -1,
+            max = -1;
           
           if (args.size != null)
           {
@@ -55,8 +54,8 @@ function getDoclist()
              }
           }
           
-          var sortField = (args.sortField == null ? "cm:name" : args.sortField);
-          var sortAsc = (((args.sortAsc == null) || (args.sortAsc == "true")) ? true : false);
+          var sortField = (args.sortField == null ? "cm:name" : args.sortField),
+            sortAsc = (((args.sortAsc == null) || (args.sortAsc == "true")) ? true : false);
 
           // TODO review
           var pagedResult = parentNode.childFileFolders(true, true, ignoreTypes, skip, max, (skip + 1000), sortField, sortAsc, "TODO");
@@ -89,7 +88,6 @@ function getDoclist()
        }
    }
    
-   
    // Ensure folders and folderlinks appear at the top of the list
    var folderNodes = [],
       documentNodes = [];
@@ -98,7 +96,7 @@ function getDoclist()
    {
       try
       {
-         if (node.isContainer || node.typeShort == "app:folderlink")
+         if (node.isContainer || node.isLinkToContainer)
          {
             folderNodes.push(node);
          }
@@ -121,6 +119,8 @@ function getDoclist()
    if (parsedArgs.type === "documents")
    {
       nodes = documentNodes;
+      totalRecords -= folderNodesCount;
+      totalRecordsUpper -= folderNodesCount;
    }
    else
    {
@@ -133,10 +133,8 @@ function getDoclist()
       pagePos = args.pos || "1",
       startIndex = (pagePos - 1) * pageSize;
    
-   if (! paged)
+   if (!paged)
    {
-       totalRecords = nodes.length;
-       
        // Trim the nodes array down to the page size
        nodes = nodes.slice(startIndex, pagePos * pageSize);
    }
@@ -251,7 +249,7 @@ function getDoclist()
                startIndex: startIndex
             };
    
-   if (paged && (! (totalRecords === totalRecordsUpper)))
+   if (paged && (totalRecords != totalRecordsUpper))
    {
       paging.totalRecordsUpper = totalRecordsUpper;
    }

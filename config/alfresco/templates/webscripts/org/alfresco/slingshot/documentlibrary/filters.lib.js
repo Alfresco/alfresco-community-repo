@@ -12,6 +12,21 @@ var Filters =
    },
 
    /**
+    * Types that we want to suppress from the resultset
+    */
+   IGNORED_TYPES:
+   [
+      "cm:thumbnail",
+      "cm:failedThumbnail",
+      "cm:systemfolder",
+      "cm:rating",
+      "fm:forums",
+      "fm:forum",
+      "fm:topic",
+      "fm:post"
+   ],
+
+   /**
     * Encode a path with ISO9075 encoding
     *
     * @method iso9075EncodePath
@@ -86,15 +101,7 @@ var Filters =
          filterQuery = "";
 
       // Common types and aspects to filter from the UI - known subtypes of cm:content and cm:folder
-      var filterQueryDefaults =
-         " -TYPE:\"cm:thumbnail\"" +
-         " -TYPE:\"cm:failedThumbnail\"" +
-         " -TYPE:\"cm:systemfolder\"" +
-         " -TYPE:\"rating\"" +
-         " -TYPE:\"fm:forums\"" +
-         " -TYPE:\"fm:forum\"" +
-         " -TYPE:\"fm:topic\"" +
-         " -TYPE:\"fm:post\"";
+      var filterQueryDefaults = ' -TYPE:"' + Filters.IGNORED_TYPES.join('" -TYPE:"') + '"';
 
       switch (String(filter))
       {

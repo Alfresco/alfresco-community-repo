@@ -63,7 +63,7 @@ public abstract class AbstractOAuth1ChannelType extends AbstractChannelType
         nodeService.setProperty(channelNodeRef, PublishingModel.PROP_OAUTH1_TOKEN_SECRET, requestToken.getSecret());
         nodeService.setProperty(channelNodeRef, PublishingModel.PROP_OAUTH1_TOKEN_VALUE, requestToken.getValue());
 
-        return oauthOperations.buildAuthorizeUrl(requestToken.getValue(), OAuth1Parameters.NONE);
+        return oauthOperations.buildAuthorizeUrl(requestToken.getValue(), getOAuth1Parameters(callbackUrl));
     }
     
     @Override
@@ -93,6 +93,18 @@ public abstract class AbstractOAuth1ChannelType extends AbstractChannelType
     }
     
     protected abstract OAuth1Operations getOAuth1Operations();
+    
+    /**
+     * Override this method to add additonal parameters onto the URL that the user is redirected to 
+     * to authorise access to their account. By default, no parameters are added, but this may be useful to
+     * specify things such as the permissions being sought, and so on.
+     * @param callbackUrl
+     * @return Do not return null. If no parameters are to be added, return {@link OAuth1Parameters#NONE}
+     */
+    protected OAuth1Parameters getOAuth1Parameters(String callbackUrl)
+    {
+        return OAuth1Parameters.NONE;
+    }
     
     protected String getOAuthVerifierParamName()
     {

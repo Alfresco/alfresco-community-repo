@@ -34,6 +34,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.springframework.social.oauth1.OAuth1Operations;
+import org.springframework.social.oauth1.OAuth1Parameters;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 public class FlickrChannelType extends AbstractOAuth1ChannelType
 {
@@ -138,6 +141,14 @@ public class FlickrChannelType extends AbstractOAuth1ChannelType
         return url;
     }
     
+    @Override
+    protected OAuth1Parameters getOAuth1Parameters(String callbackUrl)
+    {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<String, String>();
+        params.add("perms", "delete");
+        return new OAuth1Parameters(callbackUrl, params);
+    }
+
     @Override
     protected OAuth1Operations getOAuth1Operations()
     {

@@ -92,6 +92,7 @@ import org.alfresco.service.cmr.publishing.PublishingPackage;
 import org.alfresco.service.cmr.publishing.PublishingPackageEntry;
 import org.alfresco.service.cmr.publishing.PublishingQueue;
 import org.alfresco.service.cmr.publishing.PublishingService;
+import org.alfresco.service.cmr.publishing.Status;
 import org.alfresco.service.cmr.publishing.StatusUpdate;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
@@ -265,7 +266,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         PublishingEvent event = publishedEvents.get(0);
         assertEquals(publishChannel.getId(), event.getChannelId());
         assertEquals(comment, event.getComment());
-        assertEquals(PublishingEvent.Status.SCHEDULED, event.getStatus());
+        assertEquals(Status.SCHEDULED, event.getStatus());
         
         // Check Package
         PublishingPackage pckg = event.getPackage();
@@ -320,7 +321,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         events.addAll(publishingService.getEventsForPublishedNode(textNode));
     }
 
-    public void testPublishingEventsForNodeGet() throws Exception
+    public void testPublishingEventsGet() throws Exception
     {
         Channel publishChannel = createChannel(publishAnyType);
         NodeRef textNode1 = createContentNode("plain1.txt", "This is some plain text", MimetypeMap.MIMETYPE_TEXT_PLAIN);

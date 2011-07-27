@@ -329,6 +329,9 @@ public class LockMethod extends WebDAVMethod
             
             // update local cache (will be read back when generating the response)
             lockNode.getProperties().put(ContentModel.PROP_LOCK_OWNER, userName);
+            // ALF-3681, we should also cache the expiryDate for correct response generation
+            lockNode.getProperties().put(ContentModel.PROP_EXPIRY_DATE, 
+                    getNodeService().getProperty(lockNode.getNodeRef(), ContentModel.PROP_EXPIRY_DATE));
 
             //this.lockInfo.setToken(lockToken);
             getNodeService().setProperty(lockNode.getNodeRef(), WebDAVModel.PROP_OPAQUE_LOCK_TOKEN, lockToken);

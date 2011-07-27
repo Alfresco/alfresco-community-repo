@@ -236,8 +236,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
      * 
      * <pre>
      * Z1
-     * G1 - U1, U6
-     * G2 - U1
+     * G2 - U1, G1 - U1, U6
      * G3 - U2, G4, G5 - U6
      * 
      * Z2
@@ -257,7 +256,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
             newPerson("U1", "changeofemail@alfresco.com"), newPerson("U6"), newPerson("U7")
         }, new NodeDescription[]
         {
-            newGroup("G1", "U1", "U6", "UDangling"), newGroup("G2", "U1", "GDangling"),
+            newGroup("G1", "U1", "U6", "UDangling", "G2"), newGroup("G2", "U1", "GDangling", "G1"), // test cyclic G2 <-> G1
             newGroupWithDisplayName("G5", "Amazing Group", "U6", "U7", "G4")
         });
         this.applicationContextManager.updateZone("Z2", new NodeDescription[]
@@ -281,7 +280,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
                 assertExists("Z1", "U6");
                 assertExists("Z1", "U7");
                 assertExists("Z1", "G1", "U1", "U6");
-                assertExists("Z1", "G2", "U1");
+                assertExists("Z1", "G2", "U1", "G1");
                 assertExists("Z1", "G3", "U2", "G4", "G5");
                 assertExists("Z1", "G4");
                 assertExists("Z1", "G5", "U6", "U7", "G4");
@@ -307,8 +306,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
      * <pre>
      * Z1
      * G1 - U6
-     * G2 -
-     * G3 - U2, G5 - U6
+     * G3 - U2, G5 - U6, G2 - G1
      * G6 - u3
      * 
      * Z2
@@ -327,7 +325,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
             newPerson("U2"), newPerson("u3"), newPerson("U6")
         }, new NodeDescription[]
         {
-            newGroup("G1", "U6"), newGroup("G2"), newGroup("G3", "U2", "G5"), newGroup("G5", "U6"),
+            newGroup("G1", "U6", "G5"), newGroup("G2", "G1"), newGroup("G3", "U2", "G5"), newGroup("G5", "U6", "G2"), // cycle g1 -> g5 -> g2 -> g1
             newGroup("G6", "u3")
         }), new MockUserRegistry("Z2", new NodeDescription[]
         {
@@ -347,10 +345,10 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
                 assertExists("Z1", "u3");
                 assertExists("Z1", "U6");
                 assertExists("Z1", "G1", "U6");
-                assertExists("Z1", "G2");
+                assertExists("Z1", "G2", "G1");
                 assertExists("Z1", "G3", "U2", "G5");
                 assertNotExists("G4");
-                assertExists("Z1", "G5", "U6");
+                assertExists("Z1", "G5", "U6", "G2");
                 assertExists("Z1", "G6", "u3");
                 assertExists("Z2", "U1");
                 assertEmailEquals("U1", "somenewemail@alfresco.com");

@@ -19,6 +19,7 @@
 package org.alfresco.repo.query;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.alfresco.query.AbstractCannedQueryFactory;
@@ -31,6 +32,7 @@ import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.domain.query.CannedQueryDAO;
 import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.service.cmr.calendar.CalendarEntry;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -151,5 +153,88 @@ public abstract class AbstractQNameAwareCannedQueryFactory<R> extends AbstractCa
             throw new InvalidNodeRefException("Node ref does not exist: " + nodeRef, nodeRef);
         }
         return nodePair.getFirst();
+    }
+    
+    /**
+     * Utility class to sort Entities on the basis of a Comparable property.
+     * Comparisons of two null properties are considered 'equal' by this comparator.
+     * Comparisons involving one null and one non-null property will return the null property as
+     * being 'before' the non-null property.
+     * 
+     * Note that it is the responsibility of the calling code to ensure that the specified
+     * property values actually implement Comparable themselves.
+     */
+    public static abstract class PropertyBasedComparator<R> implements Comparator<R>
+    {
+        protected QName comparableProperty;
+        
+        public PropertyBasedComparator(QName comparableProperty)
+        {
+            this.comparableProperty = comparableProperty;
+        }
+        
+        @SuppressWarnings("unchecked")
+        protected abstract Comparable getProperty(R entity);
+        
+        @SuppressWarnings("unchecked")
+        @Override
+        public int compare(R r1, R r2)
+        {
+            Comparable prop1 = getProperty(r1);
+            Comparable prop2 = getProperty(r2);
+            
+            if (prop1 == null && prop2 == null)
+            {
+                return 0;
+            }
+            else if (prop1 == null && prop2 != null)
+            {
+                return -1;
+            }
+            else if (prop1 != null && prop2 == null)
+            {
+                return 1;
+            }
+            else
+            {
+                return prop1.compareTo(prop2);
+            }
+        }
+    }
+    
+    public static class NestedComparator<R> implements Comparator<R>
+    {
+        private List<Pair<Comparator<R>, SortOrder>> comparators;
+        
+        public NestedComparator(List<Pair<Comparator<R>, SortOrder>> comparators)
+        {
+           this.comparators = comparators;
+        }
+
+        @Override
+        public int compare(R entry1, R entry2) {
+           for(Pair<Comparator<R>, SortOrder> pc : comparators)
+           {
+              int result = pc.getFirst().compare(entry1, entry2);
+              if(result != 0)
+              {
+                 // Sorts differ, return
+                 if(pc.getSecond() == SortOrder.ASCENDING)
+                 {
+                    return result;
+                 }
+                 else
+                 {
+                    return 0 - result;
+                 }
+              }
+              else
+              {
+                 // Sorts are the same, try the next along
+              }
+           }
+           // No difference on any
+           return 0;
+        }
     }
 }

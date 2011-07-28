@@ -20,13 +20,14 @@ package org.alfresco.repo.blog.cannedqueries;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
 import org.alfresco.query.CannedQuery;
 import org.alfresco.query.CannedQueryParameters;
 import org.alfresco.query.CannedQuerySortDetails.SortOrder;
-import org.alfresco.repo.blog.cannedqueries.AbstractBlogPostsCannedQueryFactory.PropertyBasedComparator;
+import org.alfresco.repo.blog.cannedqueries.AbstractBlogPostsCannedQueryFactory.BlogEntityComparator;
 import org.alfresco.repo.domain.query.CannedQueryDAO;
 import org.alfresco.repo.security.permissions.impl.acegi.AbstractCannedQueryPermissions;
 import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean;
@@ -142,12 +143,13 @@ public class DraftsAndPublishedBlogPostsCannedQuery extends AbstractCannedQueryP
             for (Pair<? extends Object, SortOrder> sortPair : sortPairs)
             {
                 QName sortProperty = (QName) sortPair.getFirst();
-                final PropertyBasedComparator comparator = new PropertyBasedComparator(sortProperty);
+                Comparator<BlogEntity> comparator = new BlogEntityComparator(sortProperty);
                 
                 if (sortPair.getSecond() == SortOrder.DESCENDING)
                 {
-                    Collections.sort(filtered, Collections.reverseOrder(comparator));
+                    comparator = Collections.reverseOrder(comparator);
                 }
+                Collections.sort(filtered, comparator);
             }
         }
         

@@ -19,7 +19,6 @@
 package org.alfresco.repo.blog.cannedqueries;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 import org.alfresco.model.BlogIntegrationModel;
@@ -55,57 +54,32 @@ public abstract class AbstractBlogPostsCannedQueryFactory extends AbstractQNameA
      * Note that it is the responsibility of the calling code to ensure that the specified
      * property values actually implement Comparable themselves.
      */
-    protected static class PropertyBasedComparator implements Comparator<BlogEntity>
+    protected static class BlogEntityComparator extends PropertyBasedComparator<BlogEntity>
     {
-        private QName comparableProperty;
-        
-        public PropertyBasedComparator(QName comparableProperty)
+        public BlogEntityComparator(QName comparableProperty)
         {
-            this.comparableProperty = comparableProperty;
+            super(comparableProperty);
         }
         
         @SuppressWarnings("unchecked")
         @Override
-        public int compare(BlogEntity nr1, BlogEntity nr2)
-        {
-            Comparable prop1 = null;
-            Comparable prop2 = null;
-            if (comparableProperty.equals(ContentModel.PROP_PUBLISHED))
-            {
-                prop1 = nr1.getPublishedDate();
-                prop2 = nr2.getPublishedDate();
-            }
-            else if (comparableProperty.equals(ContentModel.PROP_CREATED))
-            {
-                prop1 = nr1.getCreatedDate();
-                prop2 = nr2.getCreatedDate();
-            }
-            else if (comparableProperty.equals(BlogIntegrationModel.PROP_POSTED))
-            {
-                prop1 = nr1.getPostedDate();
-                prop2 = nr2.getPostedDate();
-            }
-            else
-            {
-                throw new IllegalArgumentException("Unsupported blog sort property: "+comparableProperty);
-            }
-            
-            if (prop1 == null && prop2 == null)
-            {
-                return 0;
-            }
-            else if (prop1 == null && prop2 != null)
-            {
-                return -1;
-            }
-            else if (prop1 != null && prop2 == null)
-            {
-                return 1;
-            }
-            else
-            {
-                return prop1.compareTo(prop2);
-            }
+        protected Comparable getProperty(BlogEntity entity) {
+           if (comparableProperty.equals(ContentModel.PROP_PUBLISHED))
+           {
+               return entity.getPublishedDate();
+           }
+           else if (comparableProperty.equals(ContentModel.PROP_CREATED))
+           {
+               return entity.getCreatedDate();
+           }
+           else if (comparableProperty.equals(BlogIntegrationModel.PROP_POSTED))
+           {
+               return entity.getPostedDate();
+           }
+           else
+           {
+               throw new IllegalArgumentException("Unsupported blog sort property: "+comparableProperty);
+           }
         }
     }
 }

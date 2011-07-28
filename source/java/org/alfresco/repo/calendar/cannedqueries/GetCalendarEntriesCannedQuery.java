@@ -30,6 +30,8 @@ import org.alfresco.query.CannedQueryParameters;
 import org.alfresco.query.CannedQuerySortDetails.SortOrder;
 import org.alfresco.repo.calendar.CalendarModel;
 import org.alfresco.repo.domain.query.CannedQueryDAO;
+import org.alfresco.repo.query.AbstractQNameAwareCannedQueryFactory.NestedComparator;
+import org.alfresco.repo.query.AbstractQNameAwareCannedQueryFactory.PropertyBasedComparator;
 import org.alfresco.repo.security.permissions.impl.acegi.AbstractCannedQueryPermissions;
 import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean;
 import org.alfresco.service.cmr.calendar.CalendarEntry;
@@ -198,11 +200,11 @@ public class GetCalendarEntriesCannedQuery extends AbstractCannedQueryPermission
                new ArrayList<Pair<Comparator<CalendarEntity>,SortOrder>>();
             for(Pair<? extends Object, SortOrder> sortPair : sortPairs)
             {
-               QName sortProperty = (QName) sortPair.getFirst();
-               final PropertyBasedComparator comparator = new PropertyBasedComparator(sortProperty);
+               final QName sortProperty = (QName)sortPair.getFirst();
+               final CalendarEntityComparator comparator = new CalendarEntityComparator(sortProperty);
                comparators.add(new Pair<Comparator<CalendarEntity>, SortOrder>(comparator, sortPair.getSecond()));
             }
-            NestedComparator comparator = new NestedComparator(comparators);
+            NestedComparator<CalendarEntity> comparator = new NestedComparator<CalendarEntity>(comparators);
             
             // Sort
             Collections.sort(filtered, comparator); 
@@ -264,93 +266,32 @@ public class GetCalendarEntriesCannedQuery extends AbstractCannedQueryPermission
      * Note that it is the responsibility of the calling code to ensure that the specified
      * property values actually implement Comparable themselves.
      */
-    protected static class PropertyBasedComparator implements Comparator<CalendarEntity>
+    protected static class CalendarEntityComparator extends PropertyBasedComparator<CalendarEntity>
     {
-        private QName comparableProperty;
-        
-        public PropertyBasedComparator(QName comparableProperty)
+        protected CalendarEntityComparator(QName property)
         {
-            this.comparableProperty = comparableProperty;
+           super(property);
         }
-        
+       
         @SuppressWarnings("unchecked")
         @Override
-        public int compare(CalendarEntity nr1, CalendarEntity nr2)
-        {
-            Comparable prop1 = null;
-            Comparable prop2 = null;
+        protected Comparable getProperty(CalendarEntity entity) {
             if (comparableProperty.equals(CalendarModel.PROP_FROM_DATE))
             {
-                prop1 = nr1.getFromDate();
-                prop2 = nr2.getFromDate();
+               return entity.getFromDate();
             }
             else if (comparableProperty.equals(CalendarModel.PROP_TO_DATE))
             {
-                prop1 = nr1.getToDate();
-                prop2 = nr2.getToDate();
+                return entity.getToDate();
             }
             else if (comparableProperty.equals(ContentModel.PROP_CREATED))
             {
-                prop1 = nr1.getCreatedDate();
-                prop2 = nr2.getCreatedDate();
+                return entity.getCreatedDate();
             }
             else
             {
                 throw new IllegalArgumentException("Unsupported calendar sort property: "+comparableProperty);
             }
-            
-            if (prop1 == null && prop2 == null)
-            {
-                return 0;
-            }
-            else if (prop1 == null && prop2 != null)
-            {
-                return -1;
-            }
-            else if (prop1 != null && prop2 == null)
-            {
-                return 1;
-            }
-            else
-            {
-                return prop1.compareTo(prop2);
-            }
-        }
-    }
-    
-    protected static class NestedComparator implements Comparator<CalendarEntity>
-    {
-        private List<Pair<Comparator<CalendarEntity>, SortOrder>> comparators;
-        
-        private NestedComparator(List<Pair<Comparator<CalendarEntity>, SortOrder>> comparators)
-        {
-           this.comparators = comparators;
-        }
-
-        @Override
-        public int compare(CalendarEntity entry1, CalendarEntity entry2) {
-           for(Pair<Comparator<CalendarEntity>, SortOrder> pc : comparators)
-           {
-              int result = pc.getFirst().compare(entry1, entry2);
-              if(result != 0)
-              {
-                 // Sorts differ, return
-                 if(pc.getSecond() == SortOrder.ASCENDING)
-                 {
-                    return result;
-                 }
-                 else
-                 {
-                    return 0 - result;
-                 }
-              }
-              else
-              {
-                 // Sorts are the same, try the next along
-              }
-           }
-           // No difference on any
-           return 0;
         }
     }
 }

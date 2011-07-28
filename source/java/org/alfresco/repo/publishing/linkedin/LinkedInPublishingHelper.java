@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.publishing.twitter;
+package org.alfresco.repo.publishing.linkedin;
 
 import org.alfresco.repo.publishing.PublishingModel;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -26,7 +26,7 @@ import org.springframework.social.oauth1.OAuthToken;
 import org.springframework.social.twitter.api.Twitter;
 import org.springframework.social.twitter.connect.TwitterConnectionFactory;
 
-public class TwitterPublishingHelper
+public class LinkedInPublishingHelper
 {
     private NodeService nodeService;
     private TwitterConnectionFactory connectionFactory;

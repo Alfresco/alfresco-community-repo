@@ -16,7 +16,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.publishing.twitter;
+package org.alfresco.repo.publishing.linkedin;
+
+import static org.alfresco.repo.publishing.linkedin.LinkedInPublishingModel.TYPE_DELIVERY_CHANNEL;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -28,12 +30,19 @@ import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.springframework.social.connect.Connection;
-import org.springframework.social.twitter.api.Twitter;
+import org.springframework.social.linkedin.api.LinkedIn;
+import org.springframework.social.oauth1.OAuth1Parameters;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
-public class TwitterChannelType extends AbstractOAuth1ChannelType<Twitter>
+/**
+ * @author Nick Smith
+ * @since 4.0
+ */
+public class LinkedInChannelType extends AbstractOAuth1ChannelType<LinkedIn>
 {
-    public final static String ID = "twitter";
-
+    public final static String ID = "linkedIn";
+    
     @Override
     public boolean canPublish()
     {
@@ -55,7 +64,7 @@ public class TwitterChannelType extends AbstractOAuth1ChannelType<Twitter>
     @Override
     public QName getChannelNodeType()
     {
-        return TwitterPublishingModel.TYPE_DELIVERY_CHANNEL;
+        return TYPE_DELIVERY_CHANNEL;
     }
 
     @Override
@@ -91,8 +100,9 @@ public class TwitterChannelType extends AbstractOAuth1ChannelType<Twitter>
     @Override
     public void updateStatus(Channel channel, String status, Map<QName, Serializable> properties)
     {
-        Connection<Twitter> connection = getConnectionForChannel(channel.getNodeRef());
-        connection.getApi().timelineOperations().updateStatus(status);
+        NodeRef channelNode = new NodeRef(channel.getId());
+        Connection<LinkedIn> connection = getConnectionForChannel(channelNode);
+        // TODO update status
     }
 
     @Override
@@ -101,4 +111,12 @@ public class TwitterChannelType extends AbstractOAuth1ChannelType<Twitter>
         throw new UnsupportedOperationException();
     }
     
+    @Override
+    protected OAuth1Parameters getOAuth1Parameters(String callbackUrl)
+    {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<String, String>();
+        params.add("perms", "delete");
+        return new OAuth1Parameters(callbackUrl, params);
+    }
+
 }

@@ -27,20 +27,50 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
+import org.springframework.social.connect.Connection;
+import org.springframework.social.connect.support.OAuth1ConnectionFactory;
 import org.springframework.social.oauth1.AuthorizedRequestToken;
 import org.springframework.social.oauth1.OAuth1Operations;
 import org.springframework.social.oauth1.OAuth1Parameters;
 import org.springframework.social.oauth1.OAuthToken;
 
-public abstract class AbstractOAuth1ChannelType extends AbstractChannelType
+/**
+ * @author Brian
+ * @author Nick Smith
+ * @since 4.0
+ *
+ * @param <A> The API type, e.g. Twitter, Flickr, LinkedIn, etc.
+ */
+public abstract class AbstractOAuth1ChannelType<A> extends AbstractChannelType
 {
     private NodeService nodeService;
+    private OAuth1ConnectionFactory<A> connectionFactory;
     
-    public final void setNodeService(NodeService nodeService)
+    public Connection<A> getConnectionForPublishNode(NodeRef publishNode)
     {
-        this.nodeService = nodeService;
+        NodeRef channelNode = nodeService.getPrimaryParent(publishNode).getParentRef();
+        return getConnectionForChannel(channelNode);
     }
-
+    
+    public Connection<A> getConnectionForChannel(NodeRef channelNode)
+    {
+        Connection<A> connection = null;
+        if (nodeService.exists(channelNode)
+                && nodeService.hasAspect(channelNode, PublishingModel.ASPECT_OAUTH1_DELIVERY_CHANNEL))
+        {
+            String tokenValue = (String) nodeService.getProperty(channelNode, PublishingModel.PROP_OAUTH1_TOKEN_VALUE);
+            String tokenSecret = (String) nodeService.getProperty(channelNode, PublishingModel.PROP_OAUTH1_TOKEN_SECRET);
+            Boolean danceComplete = (Boolean) nodeService.getProperty(channelNode, PublishingModel.PROP_AUTHORISATION_COMPLETE);
+            
+            if (danceComplete)
+            {
+                OAuthToken token = new OAuthToken(tokenValue, tokenSecret);
+                connection = connectionFactory.createConnection(token);
+            }
+        }
+        return connection;
+    }
+    
     protected NodeService getNodeService()
     {
         return nodeService;
@@ -92,8 +122,6 @@ public abstract class AbstractOAuth1ChannelType extends AbstractChannelType
         return authorised;
     }
     
-    protected abstract OAuth1Operations getOAuth1Operations();
-    
     /**
      * Override this method to add additonal parameters onto the URL that the user is redirected to 
      * to authorise access to their account. By default, no parameters are added, but this may be useful to
@@ -109,5 +137,26 @@ public abstract class AbstractOAuth1ChannelType extends AbstractChannelType
     protected String getOAuthVerifierParamName()
     {
         return "oauth_verifier";
+    }
+
+    private OAuth1Operations getOAuth1Operations()
+    {
+        return connectionFactory.getOAuthOperations();
+    }
+
+    /**
+     * @param connectionFactory the connectionFactory to set
+     */
+    public void setConnectionFactory(OAuth1ConnectionFactory<A> connectionFactory)
+    {
+        this.connectionFactory = connectionFactory;
+    }
+    
+    /**
+     * @param nodeService the nodeService to set
+     */
+    public final void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
     }
 }

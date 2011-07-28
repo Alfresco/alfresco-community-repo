@@ -27,38 +27,29 @@ import java.util.TreeSet;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.publishing.AbstractOAuth1ChannelType;
 import org.alfresco.repo.publishing.PublishingModel;
+import org.alfresco.repo.publishing.flickr.springsocial.api.Flickr;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
-import org.springframework.social.oauth1.OAuth1Operations;
+import org.alfresco.util.collections.CollectionUtils;
 import org.springframework.social.oauth1.OAuth1Parameters;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-public class FlickrChannelType extends AbstractOAuth1ChannelType
+public class FlickrChannelType extends AbstractOAuth1ChannelType<Flickr>
 {
     public final static String ID = "flickr";
-    private final static Set<String> DEFAULT_SUPPORTED_MIME_TYPES = new TreeSet<String>();
+    private final static Set<String> DEFAULT_SUPPORTED_MIME_TYPES = CollectionUtils.unmodifiableSet(
+            MimetypeMap.MIMETYPE_IMAGE_GIF,
+            MimetypeMap.MIMETYPE_IMAGE_JPEG,
+            MimetypeMap.MIMETYPE_IMAGE_PNG);
     
-    static
-    {
-        DEFAULT_SUPPORTED_MIME_TYPES.add(MimetypeMap.MIMETYPE_IMAGE_GIF);
-        DEFAULT_SUPPORTED_MIME_TYPES.add(MimetypeMap.MIMETYPE_IMAGE_JPEG);
-        DEFAULT_SUPPORTED_MIME_TYPES.add(MimetypeMap.MIMETYPE_IMAGE_PNG);
-    }
-    
-    private FlickrPublishingHelper publishingHelper;
     private ActionService actionService;
-    private Set<String> supportedMimeTypes = Collections.unmodifiableSet(DEFAULT_SUPPORTED_MIME_TYPES);
+    private Set<String> supportedMimeTypes = DEFAULT_SUPPORTED_MIME_TYPES;
     
-    public void setPublishingHelper(FlickrPublishingHelper flickrPublishingHelper)
-    {
-        this.publishingHelper = flickrPublishingHelper;
-    }
-
     public void setActionService(ActionService actionService)
     {
         this.actionService = actionService;
@@ -114,6 +105,10 @@ public class FlickrChannelType extends AbstractOAuth1ChannelType
     @Override
     public void publish(NodeRef nodeToPublish, Map<QName, Serializable> properties)
     {
+        // TODO Nick S: Not sure it is very useful to use an Action hee.
+        // The Action assumes the nodeToPublish is under a properly configured DeliveryChannel.
+        // Ie. the action assumes the node was generated via the Publishing Service.
+        // The Action only really has value if it can be called independant of the Publishing Service IMO.
         Action publishAction = actionService.createAction(FlickrPublishAction.NAME);
         actionService.executeAction(publishAction, nodeToPublish);
     }
@@ -121,6 +116,7 @@ public class FlickrChannelType extends AbstractOAuth1ChannelType
     @Override
     public void unpublish(NodeRef nodeToUnpublish, Map<QName, Serializable> properties)
     {
+        //NOOP
     }
 
     @Override
@@ -140,19 +136,13 @@ public class FlickrChannelType extends AbstractOAuth1ChannelType
         }
         return url;
     }
-    
+
     @Override
     protected OAuth1Parameters getOAuth1Parameters(String callbackUrl)
     {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<String, String>();
         params.add("perms", "delete");
         return new OAuth1Parameters(callbackUrl, params);
-    }
-
-    @Override
-    protected OAuth1Operations getOAuth1Operations()
-    {
-        return publishingHelper.getConnectionFactory().getOAuthOperations();
     }
 
 }

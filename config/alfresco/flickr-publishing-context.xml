@@ -12,18 +12,18 @@
 
     <bean id="flickrDeliveryChannelType" class="org.alfresco.repo.publishing.flickr.FlickrChannelType" parent="baseChannelType" >
         <property name="nodeService" ref="NodeService" />
-        <property name="publishingHelper" ref="flickrPublishingHelper" />
         <property name="actionService" ref="ActionService" />
+        <property name="connectionFactory" ref="flickrConnectionFactory" />
     </bean>
 
     <bean id="flickrPublishingHelper" class="org.alfresco.repo.publishing.flickr.FlickrPublishingHelper">
         <property name="nodeService" ref="NodeService" />
-        <property name="connectionFactory">
-            <bean class="org.alfresco.repo.publishing.flickr.springsocial.connect.FlickrConnectionFactory">
-                <constructor-arg value="cc61f5d37569cec8c04fce8b4db3f37d" />
-                <constructor-arg value="75f29c6fc18a1b0c" />
-            </bean>
-        </property>
+        <property name="connectionFactory" ref="flickrConnectionFactory" />
+    </bean>
+
+    <bean id="flickrConnectionFactory" class="org.alfresco.repo.publishing.flickr.springsocial.connect.FlickrConnectionFactory">
+        <constructor-arg value="cc61f5d37569cec8c04fce8b4db3f37d" />
+        <constructor-arg value="75f29c6fc18a1b0c" />
     </bean>
 
     <bean id="publish_flickr" parent="action-executer" class="org.alfresco.repo.publishing.flickr.FlickrPublishAction">

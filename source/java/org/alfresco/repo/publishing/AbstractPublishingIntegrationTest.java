@@ -94,6 +94,7 @@ public abstract class AbstractPublishingIntegrationTest extends BaseSpringTest
     @After
     public void onTearDown() throws Exception
     {
+        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
         siteService.deleteSite(siteId);
         try
         {

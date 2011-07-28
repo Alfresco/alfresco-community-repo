@@ -55,6 +55,7 @@
       <property name="nodeService" ref="NodeService" />
       <property name="dictionaryService" ref="DictionaryService" />
       <property name="fileFolderService" ref="FileFolderService" />
+      <property name="permissionService" ref="PermissionService" />
    </bean>
 
    <bean id="publishingRootObject" class="org.alfresco.repo.publishing.PublishingRootObject">

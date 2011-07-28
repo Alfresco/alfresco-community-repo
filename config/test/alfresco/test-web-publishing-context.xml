@@ -95,6 +95,11 @@
         <constructor-arg value="org.alfresco.repo.transaction.RetryingTransactionHelper" />
     </bean>
 
+   <!-- Mock Retrying Transaction Helper -->
+    <bean id="PermissionService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.alfresco.service.cmr.security.PermissionService" />
+    </bean>
+
    <bean id="dictionaryBootstrap" class="java.lang.Object" />
    
 </beans>

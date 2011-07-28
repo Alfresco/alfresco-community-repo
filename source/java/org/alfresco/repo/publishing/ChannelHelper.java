@@ -50,6 +50,8 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
@@ -69,6 +71,7 @@ public class ChannelHelper
     private NodeService nodeService;
     private DictionaryService dictionaryService;
     private FileFolderService fileFolderService;
+    private PermissionService permissionService;
     
     public ChannelHelper()
     {
@@ -89,12 +92,16 @@ public class ChannelHelper
         ChildAssociationRef channelAssoc = 
             nodeService.createNode(parent, ASSOC_CONTAINS, channelQName, channelNodeType, props);
         NodeRef channelNode = channelAssoc.getChildRef();
+        // Allow any user to read Channel permissions.
+        permissionService.setPermission(channelNode, PermissionService.ALL_AUTHORITIES, PermissionService.READ_PERMISSIONS, true);
         return channelNode;
     }
 
     public Channel buildChannelObject(NodeRef nodeRef, ChannelService channelService)
     {
-        if(nodeRef == null || nodeService.exists(nodeRef)==false)
+        if(nodeRef == null ||
+                nodeService.exists(nodeRef)==false ||
+                permissionService.hasPermission(nodeRef, PermissionService.ADD_CHILDREN)!= AccessStatus.ALLOWED)
         {
             return null;
         }
@@ -339,6 +346,16 @@ public class ChannelHelper
         };
     }
 
+    public boolean isChannelAuthorised(NodeRef channelNode)
+    {
+        Boolean isAuthorised = Boolean.FALSE;
+        if (nodeService.exists(channelNode))
+        {
+            isAuthorised = (Boolean)nodeService.getProperty(channelNode, PublishingModel.PROP_AUTHORISATION_COMPLETE);
+        }
+        return isAuthorised;
+    }
+
     /**
      * @param nodeService the nodeService to set
      */
@@ -363,13 +380,12 @@ public class ChannelHelper
         this.fileFolderService = fileFolderService;
     }
 
-    public boolean isChannelAuthorised(NodeRef channelNode)
+    /**
+     * @param permissionService the permissionService to set
+     */
+    public void setPermissionService(PermissionService permissionService)
     {
-        Boolean isAuthorised = Boolean.FALSE;
-        if (nodeService.exists(channelNode))
-        {
-            isAuthorised = (Boolean)nodeService.getProperty(channelNode, PublishingModel.PROP_AUTHORISATION_COMPLETE);
-        }
-        return isAuthorised;
+        this.permissionService = permissionService;
     }
+    
 }

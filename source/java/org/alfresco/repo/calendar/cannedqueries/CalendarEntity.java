@@ -18,9 +18,8 @@
  */
 package org.alfresco.repo.calendar.cannedqueries;
 
-import org.alfresco.repo.domain.node.NodeEntity;
+import org.alfresco.repo.query.NodeBackedEntity;
 import org.alfresco.service.cmr.calendar.CalendarEntry;
-import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Calendar Entity - low level representation of parts of a 
@@ -29,14 +28,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Nick Burch
  * @since 4.0
  */
-public class CalendarEntity
+public class CalendarEntity extends NodeBackedEntity
 {
-    private Long id; // node id
-    
-    private NodeEntity node;
-    
-    private String name;
-    
     private String fromDate;
     private String toDate;
     private String recurrenceRule;
@@ -56,12 +49,14 @@ public class CalendarEntity
      */
     public CalendarEntity()
     {
+       super();
     }
     
     public CalendarEntity(Long parentNodeId, Long nameQNameId, Long contentTypeQNameId,
                           Long fromDateQNameId, Long toDateQNameId,
                           Long recurrenceRuleQNameId, Long recurrenceLastMeetingQNameId)
     {
+        super();
         this.parentNodeId = parentNodeId;
         this.nameQNameId = nameQNameId;
         this.contentTypeQNameId = contentTypeQNameId;
@@ -69,54 +64,6 @@ public class CalendarEntity
         this.toDateQNameId = toDateQNameId;
         this.recurrenceRuleQNameId = recurrenceRuleQNameId;
         this.recurrenceLastMeetingQNameId = recurrenceLastMeetingQNameId;
-    }
-    
-    public Long getId()
-    {
-        return id;
-    }
-    
-    public void setId(Long id)
-    {
-        this.id = id;
-    }
-    
-    // helper
-    public NodeRef getNodeRef()
-    {
-        return (node != null ? node.getNodeRef() : null);
-    }
-    
-    // helper (ISO 8061)
-    public String getCreatedDate()
-    {
-        return ((node != null && node.getAuditableProperties() != null) ? node.getAuditableProperties().getAuditCreated() : null);
-    }
-    
-    // helper
-    public String getCreator()
-    {
-        return ((node != null && node.getAuditableProperties() != null) ? node.getAuditableProperties().getAuditCreator() : null);
-    }
-    
-    public NodeEntity getNode()
-    {
-        return node;
-    }
-    
-    public void setNode(NodeEntity childNode)
-    {
-        this.node = childNode;
-    }
-    
-    public String getName()
-    {
-        return name;
-    }
-    
-    public void setName(String name)
-    {
-        this.name = name;
     }
     
     // (ISO-8061)

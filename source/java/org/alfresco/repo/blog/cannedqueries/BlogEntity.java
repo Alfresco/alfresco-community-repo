@@ -18,8 +18,7 @@
  */
 package org.alfresco.repo.blog.cannedqueries;
 
-import org.alfresco.repo.domain.node.NodeEntity;
-import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.repo.query.NodeBackedEntity;
 
 /**
  * Blog Entity - used by GetBlogs CQ
@@ -27,14 +26,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author janv
  * @since 4.0
  */
-public class BlogEntity
+public class BlogEntity extends NodeBackedEntity
 {
-    private Long id; // node id
-    
-    private NodeEntity node;
-    
-    private String name;
-    
     private String publishedDate;
     private String postedDate;
     
@@ -52,10 +45,12 @@ public class BlogEntity
      */
     public BlogEntity()
     {
+        super();
     }
     
     public BlogEntity(Long parentNodeId, Long nameQNameId, Long publishedQNameId, Long contentTypeQNameId, Long blogIntAspectQNameId, Long blogIntPostedQNameId)
     {
+        super();
         this.parentNodeId = parentNodeId;
         this.nameQNameId = nameQNameId;
         this.publishedQNameId = publishedQNameId;
@@ -63,54 +58,6 @@ public class BlogEntity
         
         this.blogIntAspectQNameId = blogIntAspectQNameId;
         this.blogIntPostedQNameId = blogIntPostedQNameId;
-    }
-    
-    public Long getId()
-    {
-        return id;
-    }
-    
-    public void setId(Long id)
-    {
-        this.id = id;
-    }
-    
-    // helper
-    public NodeRef getNodeRef()
-    {
-        return (node != null ? node.getNodeRef() : null);
-    }
-    
-    // helper (ISO 8061)
-    public String getCreatedDate()
-    {
-        return ((node != null && node.getAuditableProperties() != null) ? node.getAuditableProperties().getAuditCreated() : null);
-    }
-    
-    // helper
-    public String getCreator()
-    {
-        return ((node != null && node.getAuditableProperties() != null) ? node.getAuditableProperties().getAuditCreator() : null);
-    }
-    
-    public NodeEntity getNode()
-    {
-        return node;
-    }
-    
-    public void setNode(NodeEntity childNode)
-    {
-        this.node = childNode;
-    }
-    
-    public String getName()
-    {
-        return name;
-    }
-    
-    public void setName(String name)
-    {
-        this.name = name;
     }
     
     // (ISO-8061)

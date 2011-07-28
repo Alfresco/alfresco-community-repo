@@ -24,132 +24,26 @@ import java.util.List;
 
 import org.alfresco.model.BlogIntegrationModel;
 import org.alfresco.model.ContentModel;
-import org.alfresco.query.AbstractCannedQueryFactory;
-import org.alfresco.query.CannedQueryPageDetails;
 import org.alfresco.query.CannedQuerySortDetails;
-import org.alfresco.query.PagingRequest;
 import org.alfresco.query.CannedQuerySortDetails.SortOrder;
-import org.alfresco.repo.domain.node.NodeDAO;
-import org.alfresco.repo.domain.qname.QNameDAO;
-import org.alfresco.repo.domain.query.CannedQueryDAO;
-import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean;
-import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.query.AbstractQNameAwareCannedQueryFactory;
 import org.alfresco.service.cmr.blog.BlogService.BlogPostInfo;
-import org.alfresco.service.cmr.repository.InvalidNodeRefException;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * 
  * @author Neil Mc Erlean, janv
  * @since 4.0
  */
-public abstract class AbstractBlogPostsCannedQueryFactory extends AbstractCannedQueryFactory<BlogPostInfo>
+public abstract class AbstractBlogPostsCannedQueryFactory extends AbstractQNameAwareCannedQueryFactory<BlogPostInfo>
 {
-    private Log logger = LogFactory.getLog(getClass());
-    
-    protected MethodSecurityBean<BlogPostInfo> methodSecurity;
-    protected NodeDAO nodeDAO;
-    protected QNameDAO qnameDAO;
-    protected CannedQueryDAO cannedQueryDAO;
-    protected TenantService tenantService;
-    
-    public void setNodeDAO(NodeDAO nodeDAO)
-    {
-        this.nodeDAO = nodeDAO;
-    }
-    
-    public void setQnameDAO(QNameDAO qnameDAO)
-    {
-        this.qnameDAO = qnameDAO;
-    }
-    
-    public void setCannedQueryDAO(CannedQueryDAO cannedQueryDAO)
-    {
-        this.cannedQueryDAO = cannedQueryDAO;
-    }
-    
-    public void setTenantService(TenantService tenantService)
-    {
-        this.tenantService = tenantService;
-    }
-    
-    public void setMethodSecurity(MethodSecurityBean<BlogPostInfo> methodSecurity)
-    {
-        this.methodSecurity = methodSecurity;
-    }
-    
     protected CannedQuerySortDetails createCQSortDetails(QName sortProp, SortOrder sortOrder)
     {
         List<Pair<? extends Object, SortOrder>> singlePair = new ArrayList<Pair<? extends Object, SortOrder>>(1);
         singlePair.add(new Pair<QName, SortOrder>(sortProp, sortOrder));
         
-        return this.createCQSortDetails(singlePair);
-    }
-    
-    protected CannedQuerySortDetails createCQSortDetails(List<Pair<? extends Object, SortOrder>> sortPairs)
-    {
-        CannedQuerySortDetails cqsd = new CannedQuerySortDetails(sortPairs);
-        return cqsd;
-    }
-    
-    protected CannedQueryPageDetails createCQPageDetails(PagingRequest pagingReq)
-    {
-        int skipCount = pagingReq.getSkipCount();
-        if (skipCount == -1)
-        {
-            skipCount = CannedQueryPageDetails.DEFAULT_SKIP_RESULTS;
-        }
-        
-        int maxItems = pagingReq.getMaxItems();
-        if (maxItems == -1)
-        {
-            maxItems  = CannedQueryPageDetails.DEFAULT_PAGE_SIZE;
-        }
-        
-        // page details
-        CannedQueryPageDetails cqpd = new CannedQueryPageDetails(skipCount, maxItems);
-        return cqpd;
-    }
-    
-    protected Long getQNameId(QName qname)
-    {
-        Pair<Long, QName> qnamePair = qnameDAO.getQName(qname);
-        if (qnamePair == null)
-        {
-            if (logger.isTraceEnabled())
-            {
-                logger.trace("QName does not exist: " + qname); // possible ... eg. blg:blogPost if a blog has never been posted externally
-            }
-            return null;
-        }
-        return qnamePair.getFirst();
-    }
-    
-    protected Long getNodeId(NodeRef nodeRef)
-    {
-        Pair<Long, NodeRef> nodePair = nodeDAO.getNodePair(tenantService.getName(nodeRef));
-        if (nodePair == null)
-        {
-            throw new InvalidNodeRefException("Node ref does not exist: " + nodeRef, nodeRef);
-        }
-        return nodePair.getFirst();
-    }
-    
-    @Override
-    public void afterPropertiesSet() throws Exception
-    {
-        super.afterPropertiesSet();
-        
-        PropertyCheck.mandatory(this, "methodSecurity", methodSecurity);
-        PropertyCheck.mandatory(this, "nodeDAO", nodeDAO);
-        PropertyCheck.mandatory(this, "qnameDAO", qnameDAO);
-        PropertyCheck.mandatory(this, "cannedQueryDAO", cannedQueryDAO);
-        PropertyCheck.mandatory(this, "tenantService", tenantService);
+        return new CannedQuerySortDetails(singlePair);
     }
     
     /**

@@ -42,7 +42,7 @@ public interface PublishingQueue
      * @param channelId The name of the channel that the package is to be published to
      * @param schedule The time at which the new publishing event should be scheduled (optional - <code>null</code> indicates "as soon as possible")
      * @param comment A comment to be stored with this new event (optional - may be <code>null</code>)
-     * @param statusUpdate TODO
+     * @param statusUpdate defines the status update (if any). If <code>null</code> then no status update is sent.
      * @return The identifier of the newly scheduled event
      */
     String scheduleNewEvent(PublishingPackage publishingPackage, String channelId, Calendar schedule, String comment, StatusUpdate statusUpdate);

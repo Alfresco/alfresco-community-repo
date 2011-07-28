@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -62,12 +63,11 @@ public class PublishingRootObject
     private VersionService versionService;
     private TransferManifestNodeFactory transferManifestNodeFactory;
     private RetryingTransactionHelper retryingTransactionHelper;
-//    private TenantAdminService tenantAdminService;
+    private PermissionService permissionService;
     
     private StoreRef publishingStore;
     private String publishingRootPath;
     
-//    private Map<String, Environment> environments = new HashMap<String, Environment>();
     
     /**
      * @return the approprieate {@link Environment} for the current domain.
@@ -75,15 +75,6 @@ public class PublishingRootObject
      */
     public Environment getEnvironment() throws BeansException
     {
-//        String tenantDomain = tenantAdminService.getCurrentUserDomain();
-//        Environment environment = environments.get(tenantDomain);
-//        if(environment != null)
-//        {
-//            return environment;
-//        }
-//        environment = createEnvironment();
-//        environments.put(tenantDomain, environment);
-//        return environment;
         return createEnvironment();
     }
 
@@ -145,6 +136,7 @@ public class PublishingRootObject
                     ASSOC_PUBLISHING_QUEUE,
                     QName.createQName(NAMESPACE, "publishingQueue"),
                     TYPE_PUBLISHING_QUEUE).getChildRef();
+            permissionService.setPermission(queueNode, PermissionService.ALL_AUTHORITIES, PermissionService.ADD_CHILDREN, true);
         }
         return queueNode;
     }
@@ -228,14 +220,6 @@ public class PublishingRootObject
         this.searchService = searchService;
     }
     
-//    /**
-//     * @param tenantAdminService the tenantAdminService to set
-//     */
-//    public void setTenantAdminService(TenantAdminService tenantAdminService)
-//    {
-//        this.tenantAdminService = tenantAdminService;
-//    }
-    
     /**
      * @param transferManifestNodeFactory the transferManifestNodeFactory to set
      */
@@ -250,5 +234,13 @@ public class PublishingRootObject
     public void setVersionService(VersionService versionService)
     {
         this.versionService = versionService;
+    }
+    
+    /**
+     * @param permissionService the permissionService to set
+     */
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
     }
 }

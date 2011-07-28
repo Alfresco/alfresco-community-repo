@@ -62,8 +62,6 @@ public abstract class AbstractPublishingIntegrationTest extends BaseSpringTest
     protected Environment environment;
     protected NodeRef docLib;
 
-    protected UserTransaction transaction;
-
     @Override
     @Before
     public void onSetUp() throws Exception
@@ -76,10 +74,6 @@ public abstract class AbstractPublishingIntegrationTest extends BaseSpringTest
         this.fileFolderService = serviceRegistry.getFileFolderService();
         this.nodeService = serviceRegistry.getNodeService();
         
-        transaction = serviceRegistry.getTransactionService().getUserTransaction();
-        transaction.begin();
-        transaction.setRollbackOnly();
-        
         this.siteId = GUID.generate();
         siteService.createSite("test", siteId,
                 "Site created by publishing test",
@@ -89,30 +83,21 @@ public abstract class AbstractPublishingIntegrationTest extends BaseSpringTest
 
         this.environment = rootObject.getEnvironment();
         this.queue = rootObject.getPublishingQueue();
+        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
     }
     
     @After
     public void onTearDown() throws Exception
     {
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
-        siteService.deleteSite(siteId);
         try
         {
-            if (transaction.getStatus() == Status.STATUS_MARKED_ROLLBACK)
-            {
-                transaction.rollback();
-            }
-            else
-            {
-                transaction.commit();
-            }
+            siteService.deleteSite(siteId);
         }
-        catch (Exception e)
+        finally
         {
-            e.printStackTrace();
-            throw new RuntimeException(e);
+            super.onTearDown();
         }
-        super.onTearDown();
     }
 
     protected ChannelType mockChannelType()

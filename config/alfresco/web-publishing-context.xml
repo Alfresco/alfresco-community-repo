@@ -66,6 +66,7 @@
       <property name="publishingEventHelper" ref="publishingEventHelper" />
       <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
       <property name="transferManifestNodeFactory" ref="transferManifestNodeFactory" />
+      <property name="permissionService" ref="PermissionService" />
       <property name="publishingStore" value="${spaces.store}" />
       <property name="publishingRootPath" value="${publishing.root}" />
    </bean>
@@ -75,6 +76,7 @@
       <property name="contentService" ref="ContentService" />
       <property name="serializer" ref="publishingPackageSerializer" />
       <property name="workflowService" ref="WorkflowService" />
+      <property name="permissionService" ref="PermissionService" />
       <property name="workflowEngineId" value="jbpm" />
    </bean>
         

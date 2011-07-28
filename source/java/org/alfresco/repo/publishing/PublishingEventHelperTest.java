@@ -32,6 +32,7 @@ import static org.alfresco.repo.publishing.PublishingModel.PROP_PUBLISHING_EVENT
 import static org.alfresco.repo.publishing.PublishingModel.TYPE_PUBLISHING_EVENT;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyMap;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -59,6 +60,8 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -83,6 +86,9 @@ public class PublishingEventHelperTest
     
     @Resource(name="ContentService")
     ContentService contentService;
+    
+    @Resource(name="PermissionService")
+    PermissionService permissionService;
     
     @Test
     public void testGetPublishingEventNode() throws Exception
@@ -168,6 +174,7 @@ public class PublishingEventHelperTest
     @Test
     public void testCreateNode() throws Exception
     {
+        when(permissionService.hasPermission(any(NodeRef.class), anyString())).thenReturn(AccessStatus.ALLOWED);
         // Mock serializer since this behaviour is already tested in PublishingPackageSerializerTest.
         ContentWriter writer = mock(ContentWriter.class);
         when(contentService.getWriter(any(NodeRef.class), eq(PROP_PUBLISHING_EVENT_PAYLOAD), eq(true)))
@@ -186,7 +193,7 @@ public class PublishingEventHelperTest
         
         Map<NodeRef, PublishingPackageEntry> entires = Collections.emptyMap();
         PublishingPackage pckg = new PublishingPackageImpl(entires);
-        String channelName = "The channel";
+        String channelName = "test://channel/id";
         Calendar schedule = Calendar.getInstance();
         String comment = "The comment";
         

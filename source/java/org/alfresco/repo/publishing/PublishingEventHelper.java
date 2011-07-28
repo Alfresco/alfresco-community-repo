@@ -59,6 +59,7 @@ import java.util.TimeZone;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeUtils;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
 import org.alfresco.service.cmr.publishing.PublishingEventFilter;
@@ -72,6 +73,8 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
@@ -98,6 +101,7 @@ public class PublishingEventHelper
     private ContentService contentService;
     private WorkflowService workflowService;
     private PublishingPackageSerializer serializer;
+    private PermissionService permissionService;
     
     private String workflowEngineId;
     
@@ -143,6 +147,14 @@ public class PublishingEventHelper
         this.serializer = serializer;
     }
 
+    /**
+     * @param permissionService the permissionService to set
+     */
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
+    }
+    
     public PublishingEvent getPublishingEvent(NodeRef eventNode) throws AlfrescoRuntimeException
     {
         if(eventNode == null)
@@ -198,6 +210,12 @@ public class PublishingEventHelper
     public NodeRef createNode(NodeRef queueNode, PublishingPackage publishingPackage, String channelId, Calendar schedule, String comment, StatusUpdate statusUpdate)
         throws Exception
     {
+        checkChannelAccess(channelId);
+        if(statusUpdate != null && isEmpty(statusUpdate.getChannelIds())==false )
+        for (String statusChannelId : statusUpdate.getChannelIds())
+        {
+            checkChannelAccess(statusChannelId);
+        }
         if (schedule == null)
         {
             schedule = Calendar.getInstance();
@@ -212,6 +230,16 @@ public class PublishingEventHelper
         NodeRef eventNode = newAssoc.getChildRef();
         setPayload(eventNode, publishingPackage);
         return eventNode;
+    }
+
+    private void checkChannelAccess(String channelId)
+    {
+        NodeRef channelNode = new NodeRef(channelId);
+        AccessStatus accessStatus = permissionService.hasPermission(channelNode, PermissionService.ADD_CHILDREN);
+        if(AccessStatus.ALLOWED != accessStatus)
+        {
+            throw new AccessDeniedException("You do not have access to channel: " + channelId);
+        }
     }
 
     private Map<QName, Serializable> buildPublishingEventProperties(PublishingPackage publishingPackage,

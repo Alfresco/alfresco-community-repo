@@ -41,7 +41,6 @@ public class PublishingRootObjectTest extends AbstractPublishingIntegrationTest
     {
         super.onSetUp();
         this.rootObject = (PublishingRootObject) getApplicationContext().getBean(PublishingRootObject.NAME);
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
     }
 
     @Test

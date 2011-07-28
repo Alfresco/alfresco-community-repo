@@ -26,6 +26,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transfer.manifest.TransferManifestNodeFactory;
 import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
 import org.alfresco.service.cmr.publishing.MutablePublishingPackage;
@@ -68,7 +70,20 @@ public class MutablePublishingPackageImpl implements MutablePublishingPackage
     /**
     * {@inheritDoc}
      */
-    public void addNodesToPublish(Collection<NodeRef> nodesToAdd)
+    public void addNodesToPublish(final Collection<NodeRef> nodesToAdd)
+    {
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        {
+            public Void doWork() throws Exception
+            {
+                versionNodes(nodesToAdd);
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
+        nodesToPublish.addAll(nodesToAdd);
+    }
+
+    private void versionNodes(Collection<NodeRef> nodesToAdd)
     {
         for (NodeRef nodeRef : nodesToAdd)
         {
@@ -85,7 +100,6 @@ public class MutablePublishingPackageImpl implements MutablePublishingPackage
                 entryMap.put(nodeRef, publishingPackage);
             }
         }
-        nodesToPublish.addAll(nodesToAdd);
     }
 
     /**

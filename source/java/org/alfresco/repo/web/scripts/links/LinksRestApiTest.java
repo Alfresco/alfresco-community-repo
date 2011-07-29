@@ -18,17 +18,21 @@
  */
 package org.alfresco.repo.web.scripts.links;
 
+import java.util.Date;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
+import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -65,7 +69,7 @@ public class LinksRestApiTest extends BaseWebScriptTest
     
     private static final String LINK_TITLE_ONE   = "TestLinkOne";
     private static final String LINK_TITLE_TWO   = "TestLinkTwo";
-    private static final String LINK_TITLE_THREE = "TestLinkThree";
+    private static final String LINK_TITLE_THREE = "StillTestLinkThree";
     private static final String LINK_URL_ONE   = "http://google.com/";
     private static final String LINK_URL_TWO   = "http://alfresco.com/";
     private static final String LINK_URL_THREE = "http://share.alfresco.com/";
@@ -171,17 +175,20 @@ public class LinksRestApiTest extends BaseWebScriptTest
     
     private JSONObject getLinks(String filter, String username, String from) throws Exception
     {
+       String origUser = this.authenticationComponent.getCurrentUserName();
+       if(username != null)
+       {
+          this.authenticationComponent.setCurrentUser(username);
+          filter = "user";
+       }
+       
        String url = URL_LINKS_LIST;
        if(filter == null)
        {
           filter = "all";
        }
        url += "?filter=" + filter;
-       
-       if(username != null)
-       {
-          url += "&user=" + username;
-       }
+       url += "&startIndex=0&page=1&pageSize=4";
        if(from != null)
        {
           url += "from=" + from;
@@ -189,6 +196,12 @@ public class LinksRestApiTest extends BaseWebScriptTest
        
        Response response = sendRequest(new GetRequest(url), 200);
        JSONObject result = new JSONObject(response.getContentAsString());
+       
+       if(username != null)
+       {
+          this.authenticationComponent.setCurrentUser(origUser);
+       }
+       
        return result;
     }
     
@@ -394,11 +407,22 @@ public class LinksRestApiTest extends BaseWebScriptTest
        assertEquals(true, permissions.getBoolean("edit"));
        assertEquals(true, permissions.getBoolean("delete"));
        
-       // Check the noderef, comments url, created on
-       // TODO
-//       "commentsUrl": "/node/workspace\/SpacesStore\/7a8ea18e-8ff0-4337-b5af-b732d9e8d6e9/comments",
-//       "nodeRef": "workspace://SpacesStore/7a8ea18e-8ff0-4337-b5af-b732d9e8d6e9",
-//       "createdOn": "Jul 28 2011 17:23:20 GMT+0100 (BST)",
+       // Check the noderef
+       NodeRef nodeRef = new NodeRef(link.getString("nodeRef"));
+       assertEquals(true, nodeService.exists(nodeRef));
+       assertEquals(name, nodeService.getProperty(nodeRef, ContentModel.PROP_NAME));
+       
+       // Check the comments url
+       assertEquals(
+             "/node/workspace/" + nodeRef.getStoreRef().getIdentifier() + "/" + nodeRef.getId() + "/comments",
+             link.getString("commentsUrl")
+       );
+       
+       // Check the created date
+       assertEquals(
+             ISO8601DateFormat.format((Date)nodeService.getProperty(nodeRef, ContentModel.PROP_CREATED)),
+             link.getJSONObject("createdOnDate").getString("iso8601")
+       );
 
        
        
@@ -482,14 +506,14 @@ public class LinksRestApiTest extends BaseWebScriptTest
      */
     public void testOverallListing() throws Exception
     {
-       JSONObject dates;
+       JSONObject links;
        JSONArray entries;
-if(1!=0) { return; } // TODO Finish       
        
        // Initially, there are no events
-       dates = getLinks(null, null, null);
-       assertEquals("Incorrect JSON: " + dates.toString(), true, dates.has("total"));
-       assertEquals(0, dates.getInt("total"));
+       links = getLinks(null, null, null);
+       assertEquals("Incorrect JSON: " + links.toString(), true, links.has("total"));
+       assertEquals(0, links.getInt("total"));
+       assertEquals(0, links.getInt("itemCount"));
        
        
        // Add two links to get started with
@@ -497,130 +521,82 @@ if(1!=0) { return; } // TODO Finish
        createLink(LINK_TITLE_TWO, "Thing 2", LINK_URL_TWO, false, Status.STATUS_OK);
        
        // Check again
-       dates = getLinks(null, null, null);
+       links = getLinks(null, null, null);
        
        // Should have two links
-       assertEquals("Incorrect JSON: " + dates.toString(), true, dates.has("total"));
-System.err.println(dates.toString());       
-       assertEquals(2, dates.getInt("total"));
+       assertEquals("Incorrect JSON: " + links.toString(), true, links.has("total"));
+       assertEquals(2, links.getInt("total"));
+       assertEquals(2, links.getInt("itemCount"));
      
-       entries = dates.getJSONArray("6/29/2011");
+       entries = links.getJSONArray("items");
        assertEquals(2, entries.length());
-       assertEquals(LINK_TITLE_ONE, entries.getJSONObject(0).getString("name"));
-       assertEquals(LINK_TITLE_TWO, entries.getJSONObject(1).getString("name"));
+       // Sorted by newest created first
+       assertEquals(LINK_TITLE_TWO, entries.getJSONObject(0).getString("title"));
+       assertEquals(LINK_TITLE_ONE, entries.getJSONObject(1).getString("title"));
        
        
-       // Add a third, which is internal
+       // Add a third, which is internal, and created by the other user
+       this.authenticationComponent.setCurrentUser(USER_TWO);
        JSONObject link3 = createLink(LINK_TITLE_THREE, "Thing 3", LINK_URL_THREE, true, Status.STATUS_OK);
        String name3 = getNameFromLink(link3);
        updateLink(name3, LINK_TITLE_THREE, "More Where 3", LINK_URL_THREE, false, Status.STATUS_OK);
+       this.authenticationComponent.setCurrentUser(USER_ONE);
        
        
        // Check now, should have three links
-       dates = getLinks(null, null, null);
-       assertEquals(2, dates.length());
-       assertEquals("6/29/2011", dates.names().getString(0));
-       assertEquals("6/28/2011", dates.names().getString(1));
+       links = getLinks(null, null, null);
+       assertEquals(3, links.getInt("total"));
+       assertEquals(3, links.getInt("itemCount"));
        
-       entries = dates.getJSONArray("6/29/2011");
+       entries = links.getJSONArray("items");
+       assertEquals(3, entries.length());
+       assertEquals(LINK_TITLE_THREE, entries.getJSONObject(0).getString("title"));
+       assertEquals(LINK_TITLE_TWO, entries.getJSONObject(1).getString("title"));
+       assertEquals(LINK_TITLE_ONE, entries.getJSONObject(2).getString("title"));
+       
+       
+       // Ask for filtering by user
+       links = getLinks(null, USER_ONE, null);
+       assertEquals(2, links.getInt("total"));
+       assertEquals(2, links.getInt("itemCount"));
+       
+       entries = links.getJSONArray("items");
        assertEquals(2, entries.length());
-       assertEquals(LINK_TITLE_ONE, entries.getJSONObject(0).getString("name"));
-       assertEquals(LINK_TITLE_TWO, entries.getJSONObject(1).getString("name"));
-       assertEquals(LINK_TITLE_THREE, entries.getJSONObject(1).getString("name"));
+       assertEquals(LINK_TITLE_TWO, entries.getJSONObject(0).getString("title"));
+       assertEquals(LINK_TITLE_ONE, entries.getJSONObject(1).getString("title"));
        
+       links = getLinks(null, USER_TWO, null);
+       assertEquals(1, links.getInt("total"));
+       assertEquals(1, links.getInt("itemCount"));
        
-       // Ask for filtering
-       // TODO
-       
-       
-       // Ask for paging
-       // TODO
-       
-       
-       // By date
-       // TODO
-    }
-    
-    /**
-     * Listing for a user
-     */
-    public void testUserListing() throws Exception
-    {
-       JSONObject result;
-       JSONArray events;
-if(1!=0) { return; } // TODO Finish       
-       
-       // Initially, there are no events
-       result = getLinks(null, null, null);
-       assertEquals(0, result.length());
-       
-       result = getLinks(null,"admin", null);
-       events = result.getJSONArray("events");
-       assertEquals(0, events.length());
+       entries = links.getJSONArray("items");
+       assertEquals(1, entries.length());
+       assertEquals(LINK_TITLE_THREE, entries.getJSONObject(0).getString("title"));
 
        
-       // Add two links to start with
-       createLink(LINK_TITLE_ONE, "Thing 1", LINK_URL_ONE, false, Status.STATUS_OK);
-       createLink(LINK_TITLE_TWO, "Thing 2", LINK_URL_TWO, false, Status.STATUS_OK);
+       // Ask for filtering by recent docs
+       links = getLinks("recent", null, null);
+       assertEquals(3, links.getInt("total"));
+       assertEquals(3, links.getInt("itemCount"));
        
-       // Check again, should see both
-       result = getLinks(null,"admin", null);
-       assertEquals(1, result.length());
-       
-       result = getLinks(null, "admin", "2000/01/01"); // With a from date
-       events = result.getJSONArray("events");
-       assertEquals(2, events.length());
-       assertEquals(LINK_TITLE_ONE, events.getJSONObject(0).getString("title"));
-       assertEquals(LINK_TITLE_TWO, events.getJSONObject(1).getString("title"));
-       
-       result = getLinks(null, "admin", null); // Without a from date
-       events = result.getJSONArray("events");
-       assertEquals(2, events.length());
-       assertEquals(LINK_TITLE_ONE, events.getJSONObject(0).getString("title"));
-       assertEquals(LINK_TITLE_TWO, events.getJSONObject(1).getString("title"));
+       entries = links.getJSONArray("items");
+       assertEquals(3, entries.length());
+       assertEquals(LINK_TITLE_THREE, entries.getJSONObject(0).getString("title"));
+       assertEquals(LINK_TITLE_TWO, entries.getJSONObject(1).getString("title"));
+       assertEquals(LINK_TITLE_ONE, entries.getJSONObject(2).getString("title"));
        
        
-       // Add a third, on the previous day
-       JSONObject link3 = createLink(LINK_TITLE_THREE, "Thing 3", LINK_URL_THREE, true, Status.STATUS_OK);
-       String name3 = getNameFromLink(link3);
-       pushLinkCreatedDateBack(name3, 2);
+       // Push the 3rd event back, it'll fall off
        
        
-       // Check getting all of them
-       result = getLinks(null,"admin", null);
-       events = result.getJSONArray("events");
-       assertEquals(3, events.length());
-       assertEquals(LINK_TITLE_THREE, events.getJSONObject(0).getString("title"));
-       assertEquals(LINK_TITLE_ONE, events.getJSONObject(1).getString("title"));
-       assertEquals(LINK_TITLE_TWO, events.getJSONObject(2).getString("title"));
-       assertEquals(SITE_SHORT_NAME_LINKS, events.getJSONObject(0).getString("site"));
-       assertEquals(SITE_SHORT_NAME_LINKS, events.getJSONObject(1).getString("site"));
-       assertEquals(SITE_SHORT_NAME_LINKS, events.getJSONObject(2).getString("site"));
        
-
-       // Now set a date filter to constrain
-       result = getLinks(null, "admin", "2011/06/29");
-       events = result.getJSONArray("events");
-       assertEquals(2, events.length());
-       assertEquals(LINK_TITLE_ONE, events.getJSONObject(0).getString("title"));
-       assertEquals(LINK_TITLE_TWO, events.getJSONObject(1).getString("title"));
-       
-       result = getLinks(null, "admin", "2999/01/01"); // Future
-       events = result.getJSONArray("events");
-       assertEquals(0, events.length());
+       // Trigger the paging, by going over our page size of 4
+       // TODO
        
        
-       // Try for a different user
-       result = getLinks(null, USER_ONE, "2011/06/29");
-       events = result.getJSONArray("events");
-       assertEquals(0, events.length());
-       
-       result = getLinks(null, USER_ONE, null);
-       events = result.getJSONArray("events");
-       assertEquals(0, events.length());
        
        
-       // Now hide the site, and remove the user from it, events will go
+       // Now hide the site, and remove the user from it, won't be allowed to see it
        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
        SiteInfo site = siteService.getSite(SITE_SHORT_NAME_LINKS);
        site.setVisibility(SiteVisibility.PRIVATE);
@@ -628,7 +604,6 @@ if(1!=0) { return; } // TODO Finish
        siteService.removeMembership(SITE_SHORT_NAME_LINKS, USER_ONE);
        this.authenticationComponent.setCurrentUser(USER_ONE);
        
-       result = getLinks(null, "admin", null);
-       assertEquals(0, events.length());
+       sendRequest(new GetRequest(URL_LINKS_LIST), Status.STATUS_NOT_FOUND);
     }
 }

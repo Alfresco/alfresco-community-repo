@@ -85,7 +85,7 @@ public class NodeMonitor extends TransactionListenerAdapter
 	
 	// Filesystem driver and context
 	
-	private ContentDiskDriver m_filesysDriver;
+//	private ContentDiskDriver m_filesysDriver;
 	private ContentContext m_filesysCtx;
 	
 	// File state table and change notification handler
@@ -113,9 +113,9 @@ public class NodeMonitor extends TransactionListenerAdapter
 	 * @param filesysDriver ContentDiskDriver
 	 * @param filesysCtx ContentContext
 	 */
-	protected NodeMonitor( ContentDiskDriver filesysDriver, ContentContext filesysCtx, NodeService nodeService, PolicyComponent policyComponent,
+	protected NodeMonitor(ContentContext filesysCtx, NodeService nodeService, PolicyComponent policyComponent,
 			FileFolderService fileFolderService, PermissionService permissionService, TransactionService transService) {
-		m_filesysDriver = filesysDriver;
+//		m_filesysDriver = filesysDriver;
 		m_filesysCtx    = filesysCtx;
 		
 		// Set various services
@@ -544,8 +544,7 @@ public class NodeMonitor extends TransactionListenerAdapter
 		
         // Use the system user as the authenticated context for the node monitor
         
-		AuthenticationContext authenticationContext = m_filesysDriver.getAuthenticationContext();
-        authenticationContext.setSystemUserAsCurrentUser();
+        AuthenticationUtil.setRunAsUserSystem();
 
 		// Loop until shutdown
 		

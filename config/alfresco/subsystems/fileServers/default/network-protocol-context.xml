@@ -5,7 +5,7 @@
    <!-- Note - many beans in this file are not directly used -->
    <!--  within the main context. Instead, they are used by -->
    <!--  beans defined within the fileServer subsystem -->
-
+         
    <!-- File Server Configuration -->
    <bean id="fileServerConfigurationBase"
          abstract="true"
@@ -46,32 +46,207 @@
    </bean>
 
    <!-- Filesystem Interface -->
-   <bean id="contentDiskDriver" class="org.alfresco.filesys.repo.ContentDiskDriver" >
+   <bean id="oldContentDiskDriver" class="org.alfresco.filesys.repo.ContentDiskDriver">
       <constructor-arg>
          <ref bean="cifsHelper" />
       </constructor-arg>
       <property name="transactionService"><ref bean="transactionService" /></property>
       <property name="nodeService"><ref bean="NodeService" /></property>
-      <property name="checkOutCheckInService"><ref bean="CheckoutCheckinService" /></property>
       <property name="searchService"><ref bean="SearchService" /></property>
       <property name="namespaceService"><ref bean="namespaceService" /></property>
       <property name="contentService"><ref bean="ContentService" /></property>
       <property name="mimetypeService"><ref bean="MimetypeService" /></property>
       <property name="permissionService"><ref bean="permissionService"/></property>
       <property name="authenticationContext"><ref bean="authenticationContext"/></property>
-	  <property name="authenticationService"><ref bean="authenticationService"/></property>
+      <property name="authenticationService"><ref bean="authenticationService"/></property>
       <property name="sysAdminParams"><ref bean="sysAdminParams"/></property>
       <property name="fileFolderService"><ref bean="FileFolderService" /></property>
-	  <property name="serviceRegistry"><ref bean="ServiceRegistry"/></property>
+      <property name="serviceRegistry"><ref bean="ServiceRegistry"/></property>
       <property name="nodeMonitorFactory"><ref bean="nodeMonitorFactory"/></property>
       <property name="nodeArchiveService"><ref bean="nodeArchiveService" /></property>
-	  <property name="lockService"><ref bean="lockService" /></property>
+      <property name="lockService"><ref bean="lockService" /></property>
       <property name="policyFilter"><ref bean="policyBehaviourFilter" /></property>
-	  <property name="dictionaryService"><ref bean="dictionaryService" /></property>
-	  <property name="ownableService"><ref bean="ownableService" /></property>
-	  <property name="actionService"><ref bean="actionService" /></property>
+      <property name="dictionaryService"><ref bean="dictionaryService" /></property>
+      <property name="ownableService"><ref bean="ownableService" /></property>
+      <property name="actionService"><ref bean="actionService" /></property>
    </bean>
    
+   <!-- The filesystem command executor -->
+   <bean id="filesystemCommandExecutor" class="org.alfresco.filesys.repo.CommandExecutorImpl" init-method="init">
+      <property name="transactionService"><ref bean="transactionService" /></property>
+      <property name="diskInterface"><ref bean="transactionalContentDiskDriver" /></property>
+      <property name="repositoryDiskInterface"><ref bean="transactionalContentDiskDriver" /></property>
+   </bean>
+   
+   <bean id="filesystemWriteTxnAdvice" class="org.alfresco.filesys.repo.FilesystemTransactionAdvice">
+        <property name="transactionService">
+            <ref bean="transactionService" />
+        </property>
+        <property name="readOnly">
+            <value>false</value>
+        </property>
+    </bean>
+    
+    <bean id="filesystemReadTxnAdvice" class="org.alfresco.filesys.repo.FilesystemTransactionAdvice">
+        <property name="transactionService">
+            <ref bean="transactionService" />
+        </property>
+        <property name="readOnly">
+            <value>true</value>
+        </property>
+    </bean>
+    
+    <bean name="contentDiskDriver.fileInfoCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+      <property name="cache">
+         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheManager">
+               <ref bean="internalEHCacheManager" />
+            </property>
+            <property name="cacheName">
+               <value>org.alfresco.cache.filesys.fileInfo</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
+
+    
+   <!-- Buffered Content Disk Driver - adds performance buffering -->
+   <bean id="contentDiskDriver" class="org.alfresco.filesys.repo.BufferedContentDiskDriver" 
+       init-method="init">
+      <property name="diskInterface"><ref bean="ruleDriver" /></property>
+      <property name="diskSizeInterface"><ref bean="transactionalContentDiskDriver" /></property>
+      <property name="ioctlInterface"><ref bean="transactionalContentDiskDriver" /></property>
+      <property name="fileInfoCache"> <ref bean="contentDiskDriver.fileInfoCache" /></property>
+      <property name="policyComponent"><ref bean="policyComponent"/></property>
+      <property name="opLockInterface"><ref bean="contentDiskDriver2" /></property>
+
+   </bean>
+   
+   <bean id="ruleEvaluator" class="org.alfresco.filesys.repo.rules.RuleEvaluatorImpl" 
+       init-method="init">
+       
+       <property name="scenarios">
+            <list>
+                <!--  Word 2003 -->
+                <bean id="createShuffle2003" class="org.alfresco.filesys.repo.rules.ScenarioCreateShuffle">
+                    <property name="pattern"><value>~WRD.*.TMP</value></property>
+                    <property name="timeout"><value>30000</value></property>
+                    <property name="ranking"><value>HIGH</value></property>
+                </bean>
+                <!--  Word 2007 -->
+                <bean id="createShuffle2007" class="org.alfresco.filesys.repo.rules.ScenarioCreateShuffle">
+                    <property name="pattern"><value>[0-9A-F]*.TMP$</value></property>
+                    <property name="timeout"><value>30000</value></property>
+                    <property name="ranking"><value>HIGH</value></property>
+                </bean>
+                <bean id="renameShuffleScenario" class="org.alfresco.filesys.repo.rules.ScenarioRenameShuffle">
+                    <property name="pattern"><value>.*~$</value></property>
+                    <property name="timeout"><value>30000</value></property>
+                    <property name="ranking"><value>HIGH</value></property>
+                </bean>
+                <bean id="simpleNonBufferedScenario" class="org.alfresco.filesys.repo.rules.ScenarioSimpleNonBuffered">
+                    <property name="ranking"><value>LOW</value></property>
+                </bean>
+                <bean id="openFileScenario" class="org.alfresco.filesys.repo.rules.ScenarioOpenFile">
+                    <property name="pattern"><value>.*</value></property>
+                    <property name="timeout"><value>3000000</value></property>
+                    <property name="ranking"><value>HIGH</value></property>
+                </bean>
+            </list>
+        </property>
+       
+   </bean> 
+   
+   <bean name="fileStateDriver" class="org.alfresco.filesys.repo.LegacyFileStateDriver"
+     init-method="init">
+   </bean>
+   
+   <!-- Shuffle Disk Driver - adds rule evaluation to the disk driver -->
+   <bean id="ruleDriver" class="org.alfresco.filesys.repo.NonTransactionalRuleContentDiskDriver" 
+       init-method="init">
+      <property name="diskInterface"><ref bean="transactionalContentDiskDriver" /></property>
+      <property name="ruleEvaluator"><ref bean="ruleEvaluator" /></property>
+      <property name="repositoryDiskInterface"><ref bean="transactionalContentDiskDriver" /></property>
+      <property name="commandExecutor"><ref bean="filesystemCommandExecutor" /></property>
+      <property name="callbackInterface"><ref bean="fileStateDriver" /></property>
+   </bean>
+    
+   <!-- Content Disk Driver transaction bean -->
+   <bean id="contentDiskDriverWriteTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="advice">
+            <ref bean="filesystemWriteTxnAdvice"/>
+        </property>
+        <property name="mappedNames">
+            <list>
+                <value>closeFile</value>
+                <value>deleteDirectory</value>
+                <value>deleteFile</value>
+                <value>createFile</value>
+                <value>createDirectory</value>
+                <value>renameFile</value>
+                <value>setFileInformation</value>
+                <value>copyContent</value>
+                <value>deleteEmptyFile</value>
+            </list>
+        </property>
+    </bean>
+   
+    <bean id="contentDiskDriverReadTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="advice">
+            <ref bean="filesystemReadTxnAdvice"/>
+        </property>
+        <property name="mappedNames">
+            <list>
+                <value>fileExists</value>
+                <value>openFile</value>
+                <value>getFileInformation</value> 
+                <value>startSearch</value>
+            </list>
+        </property>
+    </bean>
+ 
+    <!--  transactional disk driver -->
+    <bean id="transactionalContentDiskDriver" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <list>
+                <value>org.alfresco.filesys.alfresco.ExtendedDiskInterface</value>
+                <value>org.alfresco.jlan.server.filesys.DiskSizeInterface</value>
+                <value>org.alfresco.jlan.server.filesys.IOCtlInterface</value>
+                <value>org.alfresco.filesys.alfresco.RepositoryDiskInterface</value>
+            </list>
+        </property>
+        <property name="targetName">
+            <value>contentDiskDriver2</value>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <value>contentDiskDriverReadTxnAdvisor</value>
+                <value>contentDiskDriverWriteTxnAdvisor</value>
+            </list>
+        </property>
+    </bean> 
+
+   <!-- Filesystem Interface -->
+   <bean id="contentDiskDriver2" class="org.alfresco.filesys.repo.ContentDiskDriver2" init-method="init">
+      <property name="cifsHelper"><ref bean="cifsHelper" /></property>
+      <property name="transactionService"><ref bean="transactionService" /></property>
+      <property name="nodeService"><ref bean="NodeService" /></property>
+      <property name="searchService"><ref bean="SearchService" /></property>
+      <property name="namespaceService"><ref bean="namespaceService" /></property>
+      <property name="contentService"><ref bean="ContentService" /></property>
+      <property name="mimetypeService"><ref bean="MimetypeService" /></property>
+      <property name="permissionService"><ref bean="permissionService"/></property>
+      <property name="authenticationContext"><ref bean="authenticationContext"/></property>
+      <property name="authenticationService"><ref bean="authenticationService"/></property>
+      <property name="fileFolderService"><ref bean="FileFolderService" /></property>
+      <property name="serviceRegistry"><ref bean="ServiceRegistry"/></property>
+      <property name="nodeMonitorFactory"><ref bean="nodeMonitorFactory"/></property>
+      <property name="lockService"><ref bean="lockService" /></property>
+      <property name="policyFilter"><ref bean="policyBehaviourFilter" /></property>
+      <property name="checkOutCheckInService"><ref bean="CheckoutCheckinService"/></property>
+   </bean>
+
    <bean id="nodeMonitorFactory" class="org.alfresco.filesys.repo.NodeMonitorFactory">
       <property name="transactionService"><ref bean="transactionService" /></property>
       <property name="nodeService"><ref bean="nodeService" /></property>
@@ -86,8 +261,6 @@
       <property name="fileFolderService"><ref bean="FileFolderService" /></property>
       <property name="mimetypeService"><ref bean="mimetypeService" /></property>
       <property name="permissionService"><ref bean="permissionService"/></property>
-      <property name="allowWrites"><value>${server.transaction.allow-writes}</value></property>
-      <property name="setReadOnlyFlagOnFolders"><value>${filesystem.setReadOnlyFlagOnFolders}</value></property>
       <property name="excludedTypes">
           <list>
               <value>{http://www.alfresco.org/model/forum/1.0}forum</value>

@@ -24,6 +24,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.alfresco.AlfrescoContext;
 import org.alfresco.filesys.alfresco.AlfrescoDiskDriver;
 import org.alfresco.filesys.alfresco.IOControlHandler;
+import org.alfresco.filesys.alfresco.PseudoFileOverlay;
 import org.alfresco.filesys.config.acl.AccessControlListBean;
 import org.alfresco.jlan.server.config.CoreServerConfigSection;
 import org.alfresco.jlan.server.core.DeviceContextException;
@@ -72,6 +73,8 @@ public class ContentContext extends AlfrescoContext
     // Node monitor
     
     private NodeMonitor m_nodeMonitor;
+    
+    private PseudoFileOverlay m_PseudoFileOverlay;
 
     // Thread pool
     
@@ -102,11 +105,8 @@ public class ContentContext extends AlfrescoContext
      *            NodeRef
      */
     public ContentContext(String filesysName, String storeName, String rootPath, NodeRef rootNodeRef)
-    {
-        this();
-        
+    {       
         setDeviceName(filesysName);
-
         setStoreName(storeName);
         setRootPath(rootPath);
         setRootNodeRef(rootNodeRef);
@@ -388,5 +388,15 @@ public class ContentContext extends AlfrescoContext
         
         if ( m_nodeMonitor != null)
             m_nodeMonitor.startMonitor();
+    }
+
+    public void setPseudoFileOverlay(PseudoFileOverlay pseudoFileOverlay)
+    {
+        this.m_PseudoFileOverlay = pseudoFileOverlay;
+    }
+
+    public PseudoFileOverlay getPseudoFileOverlay()
+    {
+        return m_PseudoFileOverlay;
     }
 }

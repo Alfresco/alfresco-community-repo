@@ -38,6 +38,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileFolderUtil;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -69,21 +70,16 @@ public class CifsHelper
     private FileFolderService fileFolderService;
     private MimetypeService mimetypeService;
     private PermissionService permissionService;
-    private boolean isReadOnly;
-    private boolean setReadOnlyFlagOnFolders;
-    
-    // Mark locked files as offline
-    
-    private boolean lockedFilesAsOffline;
-    
+       
     private Set<QName> excludedTypes = new HashSet<QName>();
+    
+    private boolean isReadOnlyFlagOnFolders = false;
     
     /**
      * Class constructor
      */
     public CifsHelper()
     {
-        isReadOnly = false;
     }
     
     public void setDictionaryService(DictionaryService dictionaryService)
@@ -127,45 +123,7 @@ public class CifsHelper
             this.excludedTypes.add(QName.createQName(exType));
         }
     }
-    
-    /**
-     * @return Returns true if all files/folders should be treated as read-only
-     */
-    public boolean isReadOnly()
-    {
-        return isReadOnly;
-    }
-
-    /**
-     * Set whether the system allows files to be edited or not.  The default is
-     * to allow writes.
-     * @param allowWrites true to allow writes, otherwise false for read-only mode
-     */
-    public void setAllowWrites(boolean allowWrites)
-    {
-        this.isReadOnly = !allowWrites;
-    }
-
-    /**
-     * Enable marking of locked files as offline
-     * 
-     * @param ena boolean
-     */
-    public final void setMarkLockedFilesAsOffline(boolean ena)
-    {
-        lockedFilesAsOffline = ena;
-    }
-    
-    /**
-     * Check if locked files should be marked as offline
-     * 
-     * @return boolean
-     */
-    public final boolean hasLockedFilesAsOffline()
-    {
-        return lockedFilesAsOffline;
-    }
-    
+   
     /**
      * Controls whether the read only flag is set on folders. This flag, when set, may cause problematic # behaviour in
      * Windows clients and doesn't necessarily mean a folder can't be written to. See ALF-6727. Should we ever set the
@@ -174,9 +132,9 @@ public class CifsHelper
      * @param setReadOnlyFlagOnFolders
      *            the setReadOnlyFlagOnFolders to set
      */
-    public void setSetReadOnlyFlagOnFolders(boolean setReadOnlyFlagOnFolders)
+    public void setReadOnlyFlagOnFolders(boolean setReadOnlyFlagOnFolders)
     {
-        this.setReadOnlyFlagOnFolders = setReadOnlyFlagOnFolders;
+        this.isReadOnlyFlagOnFolders = setReadOnlyFlagOnFolders;
     }
 
     /**
@@ -208,16 +166,16 @@ public class CifsHelper
      * a path relative to an ancestor node.
      * 
      * @param pathRootNodeRef
-     * @param path
+     * @param path the path
      * @return Returns the existing node reference
      * @throws FileNotFoundException
      */
-    public ContentFileInfo getFileInformation(NodeRef pathRootNodeRef, String path) throws FileNotFoundException
+    public ContentFileInfo getFileInformation(NodeRef pathRootNodeRef, String path, boolean readOnly, boolean lockedFilesAsOffline) throws FileNotFoundException
     {
         // get the node being referenced
         NodeRef nodeRef = getNodeRef(pathRootNodeRef, path);
 
-        return getFileInformation(nodeRef);
+        return getFileInformation(nodeRef, readOnly, lockedFilesAsOffline);
     }
 
     /**
@@ -226,19 +184,20 @@ public class CifsHelper
      * This method goes direct to the repo for all information and no data is
      * cached here.
      * 
-     * @param nodeRef the node that the path is relative to
-     * @param path the path to get info for
+     * @param nodeRef the node
+     * @param readOnly
+     * @param lockedFilesAsOffline
+     * 
      * @return Returns the file information pertinent to the node
      * @throws FileNotFoundException if the path refers to a non-existent file
      */
-    public ContentFileInfo getFileInformation(NodeRef nodeRef) throws FileNotFoundException
+    public ContentFileInfo getFileInformation(NodeRef nodeRef, boolean readOnly, boolean lockedFilesAsOffline) throws FileNotFoundException
     {
         // get the file info
         org.alfresco.service.cmr.model.FileInfo fileFolderInfo = fileFolderService.getFileInfo(nodeRef);
         
-        // retrieve required properties and create file info
-        ContentFileInfo fileInfo = new ContentFileInfo();
-        fileInfo.setNodeRef(nodeRef);
+        // retrieve required properties and create new JLAN file info
+        ContentFileInfo fileInfo = new ContentFileInfo(nodeRef);
         
         // unset all attribute flags
         int fileAttributes = 0;
@@ -282,8 +241,10 @@ public class CifsHelper
             	if (( attr & FileAttribute.ReadOnly) == 0)
             		attr += FileAttribute.ReadOnly;
             	
-                if ( hasLockedFilesAsOffline())
+                if ( lockedFilesAsOffline)
+                {
                 	attr += FileAttribute.NTOffline;
+                }
                 
                 fileInfo.setFileAttributes( attr);
             }
@@ -318,10 +279,10 @@ public class CifsHelper
         
         // Read/write access
         
-        if (!fileFolderInfo.isFolder() || setReadOnlyFlagOnFolders)
+        if (!fileFolderInfo.isFolder() || isReadOnlyFlagOnFolders)
         {
             boolean deniedPermission = permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.DENIED; 
-            if (isReadOnly || deniedPermission)
+            if (readOnly || deniedPermission)
             {
                 int attr = fileInfo.getFileAttributes();
                 if (( attr & FileAttribute.ReadOnly) == 0)
@@ -387,7 +348,7 @@ public class CifsHelper
         NodeRef parentFolderNodeRef = rootNodeRef;
         if (folderPathElements.size() > 0)
         {
-            parentFolderNodeRef = FileFolderServiceImpl.makeFolders(
+            parentFolderNodeRef = FileFolderUtil.makeFolders(
                     fileFolderService,
                     rootNodeRef,
                     folderPathElements,
@@ -724,7 +685,9 @@ public class CifsHelper
     	
     	List<FileInfo> files = fileFolderService.listFiles( folderNode);
     	if ( files == null || files.size() == 0)
+    	{
     		return true;
+    	}
     	return false;
     }
 }

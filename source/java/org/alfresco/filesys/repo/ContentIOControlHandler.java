@@ -569,7 +569,7 @@ public class ContentIOControlHandler implements IOControlHandler
         // Get the list of targets for the action
         
         int targetCnt = reqBuf.getInt();
-        DesktopParams deskParams = new DesktopParams(sess, contentDriver, folderNode, netFile);
+        DesktopParams deskParams = new DesktopParams(sess, folderNode, netFile);
         
         while ( reqBuf.getAvailableLength() > 4 && targetCnt > 0)
         {

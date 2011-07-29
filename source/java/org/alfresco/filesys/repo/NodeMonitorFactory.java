@@ -19,9 +19,9 @@
 
 package org.alfresco.filesys.repo;
 
-import javax.transaction.UserTransaction;
-
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -60,52 +60,28 @@ public class NodeMonitorFactory {
 	 * @param filesysDriver ContentDiskDriver
 	 * @param filesysCtx ContentContext
 	 */
-	public NodeMonitor createNodeMonitor( ContentDiskDriver filesysDriver, ContentContext filesysCtx) {
+	public NodeMonitor createNodeMonitor(final ContentContext filesysCtx) 
+	{
 		
 		// Initialization needs a transaction
 		
-        UserTransaction tx = m_transService.getUserTransaction(true);
-        NodeMonitor nodeMonitor = null;
-        
-        try {
-        	
-        	// Start the transaction
-        	
-        	tx.begin();
+	    RetryingTransactionHelper tran = m_transService.getRetryingTransactionHelper();
+	    
+        RetryingTransactionCallback<NodeMonitor> initialiseCB = new RetryingTransactionCallback<NodeMonitor>() {
 
-        	// Create the node monitor
-			
-			nodeMonitor = new NodeMonitor( filesysDriver, filesysCtx, m_nodeService, m_policyComponent, m_fileFolderService,
-					m_permissionService, m_transService);
-			
-			// Commit the transaction
-			
-			tx.commit();
-			tx = null;
-        }
-        catch ( Exception ex) {
-        	logger.error(ex);
-        }
-        finally {
-        	
-            // If there is an active transaction then roll it back
-            
-            if ( tx != null)
-            {
-                try
-                {
-                    tx.rollback();
-                }
-                catch (Exception ex)
-                {
-                    logger.warn("Failed to rollback transaction", ex);
-                }
+            @Override
+            public NodeMonitor execute() throws Throwable
+            {                
+                NodeMonitor nodeMonitor = new NodeMonitor(filesysCtx, m_nodeService, m_policyComponent, m_fileFolderService,
+                        m_permissionService, m_transService);
+                
+                return nodeMonitor;
             }
-        }
-        
-        // Return the node monitor
-        
-        return nodeMonitor;
+        };
+	    
+	    
+        return tran.doInTransaction(initialiseCB); 
+
 	}
 	
     /**

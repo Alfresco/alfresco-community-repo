@@ -32,22 +32,7 @@ import org.alfresco.service.namespace.QName;
  */
 public class FileFolderUtil
 {
-    
-//    /**
-//     * Utility method for deep listings of files/folders
-//     * 
-//     * This method walks down a tree of file/folders and for each file or folder it encounters 
-//     * 
-//     * @param contextNodeRef the starting point for our deep listing.
-//     * @param filter
-//     * @return
-//     */
-//    public List<NodeRef> listDeep(NodeRef contextNodeRef, FileFolderFilter filter)
-//    {
-//    }
-    
-
-    
+        
     /**
      * Checks for the presence of, and creates as necessary, the folder
      * structure in the provided path.

@@ -29,6 +29,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.filesys.alfresco.AlfrescoDiskDriver;
 import org.alfresco.filesys.config.ServerConfigurationBean;
+import org.alfresco.filesys.alfresco.AlfrescoTxDiskDriver;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.auth.ClientInfo;
 import org.alfresco.jlan.server.core.DeviceContext;
@@ -88,7 +89,7 @@ import org.springframework.extensions.config.ConfigElement;
  * 
  * @author GKSpencer
  */
-public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
+public class AVMDiskDriver extends AlfrescoTxDiskDriver implements DiskInterface
 {
     // Logging
 

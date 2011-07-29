@@ -778,6 +778,11 @@ public class FileFolderServiceImpl implements FileFolderService
     */  
     private List<NodeRef> listSimpleDeep(NodeRef contextNodeRef, boolean files, boolean folders, SubFolderFilter folderFilter)
     {
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("searchSimpleDeep contextNodeRef:" + contextNodeRef);
+        }
+
         // To hold the results.
         List<NodeRef> result = new ArrayList<NodeRef>();
         
@@ -843,6 +848,12 @@ public class FileFolderServiceImpl implements FileFolderService
             }
         }
         
+
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("searchSimpleDeep finished size:" + result.size());
+        }
+ 
         // Done
         return result;
     }

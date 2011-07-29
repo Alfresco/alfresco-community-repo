@@ -589,7 +589,7 @@
       <property name="interfaces">
          <list>
             <!--  Allow authentication subsystem to see content disk driver at runtime -->
-            <value>org.alfresco.jlan.server.filesys.DiskInterface</value>
+            <value>org.alfresco.filesys.alfresco.ExtendedDiskInterface</value>
          </list>
       </property>
    </bean>

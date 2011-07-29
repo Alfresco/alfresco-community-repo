@@ -108,7 +108,7 @@ public abstract class DesktopAction {
 	
 	// Filesystem driver and context
 	
-	protected AlfrescoDiskDriver m_filesysDriver;
+	//private AlfrescoDiskDriver m_filesysDriver;
 	private AlfrescoContext m_filesysContext;
 
 	// Webapp URL
@@ -220,15 +220,15 @@ public abstract class DesktopAction {
 		return m_pseudoFile;
 	}
 
-	/**
-	 * Return the filesystem driver
-	 * 
-	 * @return AlfrescoDiskDriver
-	 */
-	public final AlfrescoDiskDriver getDriver()
-	{
-		return m_filesysDriver;
-	}
+//	/**
+//	 * Return the filesystem driver
+//	 * 
+//	 * @return AlfrescoDiskDriver
+//	 */
+//	public final AlfrescoDiskDriver getDriver()
+//	{
+//		return m_filesysDriver;
+//	}
 	
 	/**
 	 * Return the filesystem context
@@ -250,6 +250,8 @@ public abstract class DesktopAction {
 		return null;
 	}
 	
+	ServiceRegistry serviceRegistry;
+	
 	/**
 	 * Return the service registry
 	 * 
@@ -257,7 +259,12 @@ public abstract class DesktopAction {
 	 */
 	public final ServiceRegistry getServiceRegistry()
 	{
-		return m_filesysDriver.getServiceRegistry();
+	    return serviceRegistry;
+	}
+	
+	public final void setServiceRegistry (ServiceRegistry serviceRegistry)
+	{
+	    this.serviceRegistry = serviceRegistry;
 	}
 	
 	/**
@@ -307,8 +314,10 @@ public abstract class DesktopAction {
 		
 		standardInitialize(global, config, fileSys);
 		
+		AlfrescoDiskDriver driver = (AlfrescoDiskDriver)fileSys.getDiskInterface();
+		
         // Complete initialization
-        initializeAction((AlfrescoDiskDriver) fileSys.getDiskInterface(), (AlfrescoContext) fileSys.getDiskContext());       		
+        initializeAction(driver.getServiceRegistry(), (AlfrescoContext) fileSys.getDiskContext());       		
 	}
 	
 	/**
@@ -373,11 +382,11 @@ public abstract class DesktopAction {
      * 
      * @exception DesktopActionException
      */
-    public void initializeAction(AlfrescoDiskDriver filesysDriver, AlfrescoContext filesysContext) throws DesktopActionException
+    public void initializeAction(ServiceRegistry serviceRegistry, AlfrescoContext filesysContext) throws DesktopActionException
     {
-        // Save the filesystem device and I/O handler
+        this.serviceRegistry = serviceRegistry;
         
-        m_filesysDriver  = filesysDriver;
+        // Save the filesystem device and I/O handler
         m_filesysContext = filesysContext;
         
         // Check for standard config values

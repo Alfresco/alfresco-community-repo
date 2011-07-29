@@ -330,8 +330,12 @@
 	  </property>		  
    </bean>
 
-   <!-- Filesystem quota manager -->
-   <bean id="filesystemQuotaManager" class="org.alfresco.filesys.repo.ContentQuotaManager">
+   <!-- Alfresco Filesystem quota manager -->
+   <bean id="filesystemQuotaManager" class="org.alfresco.filesys.repo.ContentQuotaManager"
+       init-method="init">
+       <property name="contentService">
+           <ref bean="ContentService" />
+       </property>
 	   <property name="usageService">
 		   <ref bean="ContentUsageService" />
 	   </property>

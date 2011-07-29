@@ -233,7 +233,7 @@ public class ContentSearchContext extends SearchContext
 
         			// Get the file information and copy across to the callers file info
     	            
-		            nextInfo = cifsHelper.getFileInformation(nextNodeRef, "");
+		            nextInfo = cifsHelper.getFileInformation(nextNodeRef, "", false, false);
 		            info.copyFrom(nextInfo);
 	        	}
 	        	catch ( InvalidNodeRefException ex) {
@@ -358,7 +358,7 @@ public class ContentSearchContext extends SearchContext
         {
             // Get the file information and copy across to the callers file info
             
-            FileInfo nextInfo = cifsHelper.getFileInformation(nextNodeRef, "");
+            FileInfo nextInfo = cifsHelper.getFileInformation(nextNodeRef, "", false, false);
 
             // Keep track of the last file name returned
             

@@ -33,7 +33,9 @@ import org.alfresco.jlan.server.filesys.quota.QuotaManagerException;
 import org.alfresco.jlan.util.MemorySize;
 import org.alfresco.jlan.util.StringList;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.usage.ContentUsageService;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -60,11 +62,13 @@ public class ContentQuotaManager implements QuotaManager, Runnable {
     
     // Associated filesystem driver
     
-    private ContentDiskDriver m_filesys;
+    private DiskInterface m_filesys;
     
     // Content usage service
     
     private ContentUsageService m_usageService;
+    
+    private ContentService contentService;
     
     // Track live usage of users that are writing files
     
@@ -75,6 +79,12 @@ public class ContentQuotaManager implements QuotaManager, Runnable {
     
     private Thread m_thread;
     private boolean m_shutdown;
+    
+    public void init()
+    {
+        PropertyCheck.mandatory(this, "contentService", getContentService());
+        PropertyCheck.mandatory(this, "contentUsageService", m_usageService);
+    }
 
     /**
      * Get the usage service
@@ -103,7 +113,7 @@ public class ContentQuotaManager implements QuotaManager, Runnable {
 
 		// Get the live free space value from the content store, if supported
 		
-		long freeSpace = m_filesys.getContentService().getStoreFreeSpace();
+		long freeSpace = contentService.getStoreFreeSpace();
 		if ( freeSpace == -1L) {
 			
 			// Content store does not support sizing, return a large dummy value
@@ -261,11 +271,12 @@ public class ContentQuotaManager implements QuotaManager, Runnable {
 		throws QuotaManagerException {
 
 	    // Save the filesystem driver details
+	    m_filesys = disk;
 	    
-	    if ( disk instanceof ContentDiskDriver)
-	        m_filesys = (ContentDiskDriver) disk;
-	    else
-	        throw new QuotaManagerException("Invalid filesystem type, " + disk.getClass().getName());
+//	    if ( disk instanceof ContentDiskDriver)
+//	        m_filesys = (ContentDiskDriver) disk;
+//	    else
+//	        throw new QuotaManagerException("Invalid filesystem type, " + disk.getClass().getName());
 	    
 	    // Allocate the live usage table
 	    
@@ -361,7 +372,7 @@ public class ContentQuotaManager implements QuotaManager, Runnable {
 	        
 	        // Start a transaction
 	        
-	        m_filesys.beginReadTransaction(sess);
+//	        m_filesys.beginReadTransaction(sess);
 	        
 	        // Get the usage quota and current usage values for the user
 	        
@@ -505,4 +516,14 @@ public class ContentQuotaManager implements QuotaManager, Runnable {
             }
         }
 	}
+
+    public void setContentService(ContentService contentService)
+    {
+        this.contentService = contentService;
+    }
+
+    public ContentService getContentService()
+    {
+        return contentService;
+    }
 }

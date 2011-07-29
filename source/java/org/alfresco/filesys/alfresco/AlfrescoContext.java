@@ -141,7 +141,7 @@ public abstract class AlfrescoContext extends DiskDeviceContext
                 // Initialize the desktop action
                 try
                 {
-                    desktopAction.initializeAction(filesysDriver, this);
+                    desktopAction.initializeAction(filesysDriver.getServiceRegistry(), this);
                 }
                 catch (DesktopActionException ex)
                 {
@@ -185,7 +185,7 @@ public abstract class AlfrescoContext extends DiskDeviceContext
     /**
      * Enable the pseudo file interface for this filesystem
      */
-    public final void enabledPseudoFileInterface()
+    private final void enabledPseudoFileInterface()
     {
     	if ( m_pseudoFileInterface == null)
     		m_pseudoFileInterface = new PseudoFileImpl();
@@ -367,9 +367,6 @@ public abstract class AlfrescoContext extends DiskDeviceContext
         return m_globalDesktopActionConfig;
     }
     
-    
-
-
     /**
      * Create the I/O control handler for this filesystem type
      * 

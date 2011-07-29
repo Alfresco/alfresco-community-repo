@@ -18,6 +18,7 @@
  */
 package org.alfresco.filesys.repo;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -27,20 +28,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Date;
 
 import javax.transaction.UserTransaction;
 import javax.xml.ws.Holder;
 
 import junit.framework.TestCase;
 
+import org.alfresco.filesys.alfresco.ExtendedDiskInterface;
 import org.alfresco.jlan.server.NetworkServer;
 import org.alfresco.jlan.server.SrvSession;
+import org.alfresco.jlan.server.auth.ClientInfo;
 import org.alfresco.jlan.server.config.ServerConfiguration;
 import org.alfresco.jlan.server.core.DeviceContext;
 import org.alfresco.jlan.server.core.DeviceContextException;
 import org.alfresco.jlan.server.core.SharedDevice;
 import org.alfresco.jlan.server.filesys.AccessDeniedException;
 import org.alfresco.jlan.server.filesys.AccessMode;
+import org.alfresco.jlan.server.filesys.DiskInterface;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
 import org.alfresco.jlan.server.filesys.FileAction;
 import org.alfresco.jlan.server.filesys.FileAttribute;
@@ -72,6 +77,7 @@ import org.alfresco.service.cmr.action.CompositeAction;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MLText;
@@ -94,7 +100,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.extensions.config.element.GenericConfigElement;
 
 /**
  * Unit tests for Alfresco Repository ContentDiskDriver
@@ -109,7 +114,7 @@ public class ContentDiskDriverTest extends TestCase
 
     private Repository repositoryHelper;
     private CifsHelper cifsHelper;
-    private ContentDiskDriver driver;
+    private ExtendedDiskInterface driver;
     private NodeService mlAwareNodeService;
     private NodeService nodeService;
     private TransactionService transactionService;
@@ -140,7 +145,7 @@ public class ContentDiskDriverTest extends TestCase
         repositoryHelper = (Repository)this.applicationContext.getBean("repositoryHelper");
         ApplicationContextFactory fileServers = (ApplicationContextFactory) this.applicationContext.getBean("fileServers");
         cifsHelper = (CifsHelper) fileServers.getApplicationContext().getBean("cifsHelper");
-        driver = (ContentDiskDriver) fileServers.getApplicationContext().getBean("contentDiskDriver");
+        driver = (ExtendedDiskInterface)this.applicationContext.getBean("contentDiskDriver");
         mlAwareNodeService = (NodeService) this.applicationContext.getBean("mlAwareNodeService"); 
         nodeService = (NodeService)applicationContext.getBean("nodeService");
         transactionService = (TransactionService)applicationContext.getBean("transactionService");
@@ -152,7 +157,7 @@ public class ContentDiskDriverTest extends TestCase
         permissionService = (PermissionService) this.applicationContext.getBean("permissionService");
         ownableService = (OwnableService) this.applicationContext.getBean("ownableService");
         fileFolderService = (FileFolderService) this.applicationContext.getBean("fileFolderService");
-        
+       
         assertNotNull("content disk driver is null", driver);
         assertNotNull("repositoryHelper is null", repositoryHelper);
         assertNotNull("mlAwareNodeService is null", mlAwareNodeService);
@@ -161,6 +166,7 @@ public class ContentDiskDriverTest extends TestCase
         assertNotNull("contentService is null", contentService);
         assertNotNull("ruleService is null", ruleService);
         assertNotNull("actionService is null", actionService);
+        assertNotNull("cifsHelper", cifsHelper);
         
         AuthenticationUtil.setRunAsUserSystem();
         
@@ -189,47 +195,14 @@ public class ContentDiskDriverTest extends TestCase
     @Override
     protected void tearDown() throws Exception
     {
-//        UserTransaction txn = transactionService.getUserTransaction();
-//        assertNotNull("transaction leaked", txn);
-//        txn.getStatus();
-//        txn.rollback();
     }
-
 
     private DiskSharedDevice getDiskSharedDevice() throws DeviceContextException
     {
-        ServerConfiguration scfg = new ServerConfiguration("testServer");
-        
-        FilesystemsConfigSection fcfg = new FilesystemsConfigSection(scfg);
-        
-//        TestServer testServer = new TestServer("testServer", scfg);
-//        SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
-//    
-//        GenericConfigElement cfg1 =  new GenericConfigElement("filesystem");
-//           
-//        GenericConfigElement store =  new GenericConfigElement("store");
-//        store.setValue(STORE_NAME);
-//        cfg1.addChild(store);
-//    
-//        GenericConfigElement rootPath =  new GenericConfigElement("rootPath");
-//        rootPath.setValue(ROOT_PATH);
-//        cfg1.addChild(rootPath);
-//    
-//        ContentContext filesysContext = (ContentContext) driver.createContext(STORE_NAME, cfg1);
-//      
-//        DiskSharedDevice share = new DiskSharedDevice("test", driver, filesysContext);
         
         ContentContext ctx = new ContentContext( "testContext", STORE_NAME, ROOT_PATH, repositoryHelper.getCompanyHome());
-        
-        ServerConfigurationBean scb = new ServerConfigurationBean("testServer");
-        
-        scb.addConfigSection(fcfg);
-        ctx.setServerConfigurationBean(scb);
-        ctx.enableStateCache(true);
-        
-        DiskSharedDevice share = new DiskSharedDevice("test", driver, ctx);
-
-        
+      
+        DiskSharedDevice share = new DiskSharedDevice("test", driver, ctx);        
         return share;
     }
 
@@ -241,11 +214,10 @@ public class ContentDiskDriverTest extends TestCase
         logger.debug("testCreatedFile");
         ServerConfiguration scfg = new ServerConfiguration("testServer");
         TestServer testServer = new TestServer("testServer", scfg);
-        SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
+        final SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
         DiskSharedDevice share = getDiskSharedDevice();
         
-        TreeConnection testConnection = testServer.getTreeConnection(share);
-
+        final TreeConnection testConnection = testServer.getTreeConnection(share);
         final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
         
         class TestContext
@@ -260,7 +232,8 @@ public class ContentDiskDriverTest extends TestCase
            */
         int openAction = FileAction.CreateNotExist;
         
-        final String FILE_NAME="testCreateFile2.new";
+
+        final String FILE_NAME="testCreateFile.new";
         final String FILE_PATH="\\"+FILE_NAME;
                   
         FileOpenParams params = new FileOpenParams(FILE_PATH, openAction, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
@@ -275,8 +248,8 @@ public class ContentDiskDriverTest extends TestCase
             public Void execute() throws Throwable
             {
                 byte[] stuff = "Hello World".getBytes();
-                file.writeFile(stuff, stuff.length, 0, 0);
-                file.close();  // needed to actually flush content to node
+                driver.writeFile(testSession, testConnection, file, stuff, stuff.length, 0, 0);
+                driver.closeFile(testSession, testConnection, file); 
                 return null;
             }
         };
@@ -302,7 +275,7 @@ public class ContentDiskDriverTest extends TestCase
         FileInfo info = driver.getFileInformation(testSession, testConnection, FILE_PATH);
         assertNotNull("info is null", info);
         
-        NodeRef n2 = driver.getNodeForPath(testConnection, FILE_PATH);
+        NodeRef n2 = getNodeForPath(testConnection, FILE_PATH);
         assertEquals("get Node For Path returned different node", testContext.testNodeRef, n2);
         
         /**
@@ -348,24 +321,6 @@ public class ContentDiskDriverTest extends TestCase
         SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
         DiskSharedDevice share = getDiskSharedDevice();
 
-        
-//        ServerConfiguration scfg = new ServerConfiguration("testServer");
-//        TestServer testServer = new TestServer("testServer", scfg);
-//        SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
-//        
-//        GenericConfigElement cfg1 =  new GenericConfigElement("filesystem");
-//                
-//        GenericConfigElement store =  new GenericConfigElement("store");
-//        store.setValue(STORE_NAME);
-//        cfg1.addChild(store);
-//        
-//        GenericConfigElement rootPath =  new GenericConfigElement("rootPath");
-//        rootPath.setValue(ROOT_PATH);
-//        cfg1.addChild(rootPath);
-//        
-//        ContentContext filesysContext = (ContentContext) driver.createContext(STORE_NAME, cfg1);
-//        
-//        DiskSharedDevice share = new DiskSharedDevice("test", driver, filesysContext);
         TreeConnection testConnection = testServer.getTreeConnection(share);
         
         final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
@@ -374,7 +329,7 @@ public class ContentDiskDriverTest extends TestCase
          * Step 1 : Create a new file in read/write mode and add some content.
          */
         int openAction = FileAction.CreateNotExist;
-        String FILE_PATH="\\testDeleteFile.new";
+        String FILE_PATH="\\testDeleteFileX.new";
           
         FileOpenParams params = new FileOpenParams(FILE_PATH, openAction, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
                 
@@ -424,169 +379,178 @@ public class ContentDiskDriverTest extends TestCase
      * <li>SetModifyDate</li>
      * </ol>
      */
-    /*
-     * MER : I can't see what DeleteOnClose does.  Test commented out  
-     */
-//    public void testSetFileInfo() throws Exception
-//    {
-//        logger.debug("testSetFileInfo");
-//        ServerConfiguration scfg = new ServerConfiguration("testServer");
-//        TestServer testServer = new TestServer("testServer", scfg);
-//        final SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
-//        DiskSharedDevice share = getDiskSharedDevice();
-//        final TreeConnection testConnection = testServer.getTreeConnection(share);
-//        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
-//        
-//        Date now = new Date();
-//        
-//        // CREATE 6 hours ago
-//        final Date CREATED = new Date(now.getTime() - 1000 * 60 * 60 * 6);
-//        // Modify one hour ago
-//        final Date MODIFIED = new Date(now.getTime() - 1000 * 60 * 60 * 1);
-//        
-//        class TestContext
-//        {     
-//            NodeRef testNodeRef;    
-//        };
-//        
-//        final TestContext testContext = new TestContext();
-//      
-//        /**
-//          * Step 1 : Create a new file in read/write mode and add some content.
-//          * Call SetInfo to set the creation date
-//          */
-//        int openAction = FileAction.CreateNotExist;
-//        
-//        final String FILE_NAME="testSetFileInfo.txt";
-//        final String FILE_PATH="\\"+FILE_NAME;
-//                  
-//        final FileOpenParams params = new FileOpenParams(FILE_PATH, openAction, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
-//                
-//        final NetworkFile file = driver.createFile(testSession, testConnection, params);
-//        assertNotNull("file is null", file);
-//        assertFalse("file is read only, should be read-write", file.isReadOnly());
-//        
-//        RetryingTransactionCallback<Void> writeStuffCB = new RetryingTransactionCallback<Void>() {
-//
-//            @Override
-//            public Void execute() throws Throwable
-//            {
-//                byte[] stuff = "Hello World".getBytes();
-//                file.writeFile(stuff, stuff.length, 0, 0);
-//                file.close();  // needed to actually flush content to node
-//              
-//                FileInfo info = driver.getFileInformation(testSession, testConnection, FILE_PATH);
-//                info.setFileInformationFlags(FileInfo.SetModifyDate);
-//                info.setModifyDateTime(MODIFIED.getTime());
-//                driver.setFileInformation(testSession, testConnection, FILE_PATH, info);
-//                return null;
-//            }
-//        };
-//        tran.doInTransaction(writeStuffCB);
-//        
-//        RetryingTransactionCallback<Void> validateCB = new RetryingTransactionCallback<Void>() {
-//
-//            @Override
-//            public Void execute() throws Throwable
-//            {
-//                NodeRef companyHome = repositoryHelper.getCompanyHome();
-//                NodeRef newNode = nodeService.getChildByName(companyHome, ContentModel.ASSOC_CONTAINS, FILE_NAME);
-//                testContext.testNodeRef = newNode;
-//                assertNotNull("can't find new node", newNode);
-//                Serializable content = nodeService.getProperty(newNode, ContentModel.PROP_CONTENT);
-//                assertNotNull("content is null", content);     
-//                Date modified = (Date)nodeService.getProperty(newNode, ContentModel.PROP_MODIFIED);
-//                assertEquals("modified time not set correctly", MODIFIED, modified);
-//                return null;
-//            }
-//        };
-//        tran.doInTransaction(validateCB);
-//        
-//        /**
-//         * Step 2: Change the created date
-//         */
-//        logger.debug("Step 2: Change the created date");
-//        RetryingTransactionCallback<Void> changeCreatedCB = new RetryingTransactionCallback<Void>() {
-//
-//            @Override
-//            public Void execute() throws Throwable
-//            {
-//                FileInfo info = driver.getFileInformation(testSession, testConnection, FILE_PATH);
-//                info.setFileInformationFlags(FileInfo.SetCreationDate);
-//                info.setCreationDateTime(CREATED.getTime());
-//                driver.setFileInformation(testSession, testConnection, FILE_PATH, info);
-//                return null;
-//            }
-//        };
-//        tran.doInTransaction(changeCreatedCB);
-//  
-//        RetryingTransactionCallback<Void> validateCreatedCB = new RetryingTransactionCallback<Void>() {
-//
-//            @Override
-//            public Void execute() throws Throwable
-//            {
-//                NodeRef companyHome = repositoryHelper.getCompanyHome();
-//                NodeRef newNode = nodeService.getChildByName(companyHome, ContentModel.ASSOC_CONTAINS, FILE_NAME);
-//                testContext.testNodeRef = newNode;
-//                assertNotNull("can't find new node", newNode);
-//                Serializable content = nodeService.getProperty(newNode, ContentModel.PROP_CONTENT);
-//                assertNotNull("content is null", content);     
-//                Date created = (Date)nodeService.getProperty(newNode, ContentModel.PROP_CREATED);
-//                assertEquals("created time not set correctly", CREATED, created);
-//                return null;
-//            }
-//        };
-//        tran.doInTransaction(validateCreatedCB);
-//        
-////        /**
-////         * Step 3: Test 
-////         */
-////        logger.debug("Step 3: test deleteOnClose");
-////        RetryingTransactionCallback<Void> deleteOnCloseCB = new RetryingTransactionCallback<Void>() {
-////
-////            @Override
-////            public Void execute() throws Throwable
-////            {
-////               NetworkFile f2 = driver.openFile(testSession, testConnection, params);
-////                 
-////               FileInfo info = driver.getFileInformation(testSession, testConnection, FILE_PATH);
-////               info.setFileInformationFlags(FileInfo.SetDeleteOnClose);
-////               driver.setFileInformation(testSession, testConnection, FILE_PATH, info);
-////                
-////               byte[] stuff = "Update".getBytes();
-////               f2.writeFile(stuff, stuff.length, 0, 0);
-////               f2.close();  // needed to actually flush content to node
-////     
-////               return null;
-////            }
-////        };
-////        tran.doInTransaction(deleteOnCloseCB);
-////  
-////        RetryingTransactionCallback<Void> validateDeleteOnCloseCB = new RetryingTransactionCallback<Void>() {
-////
-////            @Override
-////            public Void execute() throws Throwable
-////            {
-////                NodeRef companyHome = repositoryHelper.getCompanyHome();
-////                NodeRef newNode = nodeService.getChildByName(companyHome, ContentModel.ASSOC_CONTAINS, FILE_NAME);
-////                assertNull("can still find new node", newNode);
-////                return null;
-////            }
-////        };
-////        tran.doInTransaction(validateDeleteOnCloseCB);
-//        
-//        // clean up so we could run the test again
-//        driver.deleteFile(testSession, testConnection, FILE_PATH);    
-//        
-//    } // test set file info
+    public void testSetFileInfo() throws Exception
+    {
+        logger.debug("testSetFileInfo");
+        ServerConfiguration scfg = new ServerConfiguration("testServer");
+        TestServer testServer = new TestServer("testServer", scfg);
+        final SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
+        DiskSharedDevice share = getDiskSharedDevice();
+        final TreeConnection testConnection = testServer.getTreeConnection(share);
+        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
+        
+        Date now = new Date();
+        
+        // CREATE 6 hours ago
+        final Date CREATED = new Date(now.getTime() - 1000 * 60 * 60 * 6);
+        // Modify one hour ago
+        final Date MODIFIED = new Date(now.getTime() - 1000 * 60 * 60 * 1);
+        
+        class TestContext
+        {     
+            NodeRef testNodeRef;    
+        };
+        
+        final TestContext testContext = new TestContext();
+        
+
+      
+        /**
+          * Step 1 : Create a new file in read/write mode and add some content.
+          * Call SetInfo to set the creation date
+          */
+        int openAction = FileAction.CreateNotExist;
+        
+        final String FILE_NAME="testSetFileInfo.txt";
+        final String FILE_PATH="\\"+FILE_NAME;
+        
+        // Clean up junk if it exists
+        try
+        {
+            driver.deleteFile(testSession, testConnection, FILE_PATH);
+        }
+        catch (IOException ie)
+        {
+           // expect to go here
+        }
+                  
+        final FileOpenParams params = new FileOpenParams(FILE_PATH, openAction, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                
+        final NetworkFile file = driver.createFile(testSession, testConnection, params);
+        assertNotNull("file is null", file);
+        assertFalse("file is read only, should be read-write", file.isReadOnly());
+        
+        RetryingTransactionCallback<Void> writeStuffCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                byte[] stuff = "Hello World".getBytes();
+                
+                driver.writeFile(testSession, testConnection, file, stuff, 0, stuff.length, 0);
+                driver.closeFile(testSession, testConnection, file);
+                              
+                FileInfo info = driver.getFileInformation(testSession, testConnection, FILE_PATH);
+                info.setFileInformationFlags(FileInfo.SetModifyDate);
+                info.setModifyDateTime(MODIFIED.getTime());
+                driver.setFileInformation(testSession, testConnection, FILE_PATH, info);
+                return null;
+            }
+        };
+        tran.doInTransaction(writeStuffCB);
+        
+        RetryingTransactionCallback<Void> validateCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                NodeRef companyHome = repositoryHelper.getCompanyHome();
+                NodeRef newNode = nodeService.getChildByName(companyHome, ContentModel.ASSOC_CONTAINS, FILE_NAME);
+                testContext.testNodeRef = newNode;
+                assertNotNull("can't find new node", newNode);
+                Serializable content = nodeService.getProperty(newNode, ContentModel.PROP_CONTENT);
+                assertNotNull("content is null", content);     
+                Date modified = (Date)nodeService.getProperty(newNode, ContentModel.PROP_MODIFIED);
+                assertEquals("modified time not set correctly", MODIFIED, modified);
+                return null;
+            }
+        };
+        tran.doInTransaction(validateCB);
+        
+        /**
+         * Step 2: Change the created date
+         */
+        logger.debug("Step 2: Change the created date");
+        RetryingTransactionCallback<Void> changeCreatedCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                FileInfo info = driver.getFileInformation(testSession, testConnection, FILE_PATH);
+                info.setFileInformationFlags(FileInfo.SetCreationDate);
+                info.setCreationDateTime(CREATED.getTime());
+                driver.setFileInformation(testSession, testConnection, FILE_PATH, info);
+                return null;
+            }
+        };
+        tran.doInTransaction(changeCreatedCB);
+  
+        RetryingTransactionCallback<Void> validateCreatedCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                NodeRef companyHome = repositoryHelper.getCompanyHome();
+                NodeRef newNode = nodeService.getChildByName(companyHome, ContentModel.ASSOC_CONTAINS, FILE_NAME);
+                testContext.testNodeRef = newNode;
+                assertNotNull("can't find new node", newNode);
+                Serializable content = nodeService.getProperty(newNode, ContentModel.PROP_CONTENT);
+                assertNotNull("content is null", content);     
+                Date created = (Date)nodeService.getProperty(newNode, ContentModel.PROP_CREATED);
+                assertEquals("created time not set correctly", CREATED, created);
+                return null;
+            }
+        };
+        tran.doInTransaction(validateCreatedCB);
+        
+        /**
+         * Step 3: Test 
+         */
+        logger.debug("Step 3: test deleteOnClose");
+        RetryingTransactionCallback<Void> deleteOnCloseCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+               NetworkFile f2 = driver.openFile(testSession, testConnection, params);
+                 
+               FileInfo info = driver.getFileInformation(testSession, testConnection, FILE_PATH);
+               info.setFileInformationFlags(FileInfo.SetDeleteOnClose);
+               driver.setFileInformation(testSession, testConnection, FILE_PATH, info);
+               file.setDeleteOnClose(true);
+               
+               byte[] stuff = "Update".getBytes();              
+               driver.writeFile(testSession, testConnection, file, stuff, 0, stuff.length, 0);
+               driver.closeFile(testSession, testConnection, file);
+             
+               return null;
+            }
+        };
+        tran.doInTransaction(deleteOnCloseCB);
+  
+        RetryingTransactionCallback<Void> validateDeleteOnCloseCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                NodeRef companyHome = repositoryHelper.getCompanyHome();
+                NodeRef newNode = nodeService.getChildByName(companyHome, ContentModel.ASSOC_CONTAINS, FILE_NAME);
+                assertNull("can still find new node", newNode);
+                return null;
+            }
+        };
+        tran.doInTransaction(validateDeleteOnCloseCB);
+        
+        // clean up so we could run the test again
+        //driver.deleteFile(testSession, testConnection, FILE_PATH);    
+        
+    } // test set file info
 
     
     /**
      * Test Open File
-     * 
-     * MER DISABLED TEST 22/03/2011 won't run.
      */
-    public void DISABLED_testOpenFile() throws Exception
+    public void testOpenFile() throws Exception
     {    
         logger.debug("testOpenFile");
         ServerConfiguration scfg = new ServerConfiguration("testServer");
@@ -607,7 +571,7 @@ public class ContentDiskDriverTest extends TestCase
         FileOpenParams dirParams = new FileOpenParams(TEST_ROOT_DOS_PATH, 0, AccessMode.ReadOnly, FileAttribute.NTDirectory, 0);
         driver.createDirectory(testSession, testConnection, dirParams);  
         
-        testContext.testDirNodeRef = driver.getNodeForPath(testConnection, TEST_ROOT_DOS_PATH);
+        testContext.testDirNodeRef = getNodeForPath(testConnection, TEST_ROOT_DOS_PATH);
 
         /**
          * Step 1 : Negative test - try to open a file that does not exist
@@ -644,28 +608,30 @@ public class ContentDiskDriverTest extends TestCase
         NetworkFile file = driver.openFile(testSession, testConnection, params);
         assertNotNull(file);
         
-        //driver.deleteFile(testSession, testConnection, FILE_PATH);
-        // BODGE - there's a dangling transaction that needs getting rid of
-        // Work around for ALF-7674 
-        UserTransaction txn = transactionService.getUserTransaction();
-        assertNotNull("transaction leaked", txn);
-        txn.getStatus();
-        txn.rollback();
+        /**
+         * Step 3: Open the root directory.
+         */
+        logger.debug("Step 3) Open the root directory");
         
+        FileOpenParams rootParams = new FileOpenParams("\\", FileAction.CreateNotExist, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+        NetworkFile file3 = driver.openFile(testSession, testConnection, rootParams);
+        assertNotNull(file3);
+
+                
     } // testOpenFile
 
     
     /**
      * Unit test of file exists
      */
-    public void DISABLED_testFileExists() throws Exception
+    public void testFileExists() throws Exception
     {
         logger.debug("testFileExists");
         ServerConfiguration scfg = new ServerConfiguration("testServer");
         TestServer testServer = new TestServer("testServer", scfg);
-        SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
+        final SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
         DiskSharedDevice share = getDiskSharedDevice();
-        TreeConnection testConnection = testServer.getTreeConnection(share);
+        final TreeConnection testConnection = testServer.getTreeConnection(share);
         final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
         
         final String FILE_PATH= TEST_ROOT_DOS_PATH + "\\testFileExists.new";
@@ -710,7 +676,7 @@ public class ContentDiskDriverTest extends TestCase
             {
                 byte[] stuff = "Hello World".getBytes();
                 file.writeFile(stuff, stuff.length, 0, 0);
-                file.close();
+                driver.closeFile(testSession, testConnection, file);
             
                 return null;
             }
@@ -727,15 +693,7 @@ public class ContentDiskDriverTest extends TestCase
         driver.deleteFile(testSession, testConnection, FILE_PATH);
         
         status = driver.fileExists(testSession, testConnection, FILE_PATH);
-        assertEquals(status, 0); 
-    
-        // BODGE - there's a dangling transaction that needs getting rid of
-        // Work around for ALF-7674 
-        UserTransaction txn = transactionService.getUserTransaction();
-        assertNotNull("transaction leaked", txn);
-        txn.getStatus();
-        txn.rollback();
-    
+        assertEquals(status, 0);  
    
     } // testFileExists
     
@@ -752,7 +710,7 @@ public class ContentDiskDriverTest extends TestCase
         final TreeConnection testConnection = testServer.getTreeConnection(share);
 
         final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
-        
+ 
         final String FILE_PATH1=TEST_ROOT_DOS_PATH + "\\SourceFile1.new";
         final String FILE_NAME2 = "SourceFile2.new";
         final String FILE_PATH2=TEST_ROOT_DOS_PATH +"\\" + FILE_NAME2;
@@ -769,7 +727,7 @@ public class ContentDiskDriverTest extends TestCase
         
         /**
          * Step 1 : Negative test, Call Rename for a file which does not exist
-         */
+        */
         try
         {
             driver.renameFile(testSession, testConnection, "\\Wibble\\wobble", FILE_PATH1);
@@ -816,7 +774,7 @@ public class ContentDiskDriverTest extends TestCase
             @Override
             public Void execute() throws Throwable
             {
-                final NodeRef file1NodeRef = driver.getNodeForPath(testConnection, FILE_PATH1);
+                final NodeRef file1NodeRef = getNodeForPath(testConnection, FILE_PATH1);
                 assertNotNull("node ref not found", file1NodeRef);
                 nodeService.setProperty(file1NodeRef, ContentModel.PROP_LASTNAME, LAST_NAME);
          
@@ -832,7 +790,7 @@ public class ContentDiskDriverTest extends TestCase
             @Override
             public Void execute() throws Throwable
             {
-                NodeRef file2NodeRef = driver.getNodeForPath(testConnection, FILE_PATH2);
+                NodeRef file2NodeRef = getNodeForPath(testConnection, FILE_PATH2);
                 //assertEquals("node ref has changed on a rename", file1NodeRef, file2NodeRef);
                 assertEquals(nodeService.getProperty(file2NodeRef, ContentModel.PROP_LASTNAME), LAST_NAME);
                 ChildAssociationRef parentRef = nodeService.getPrimaryParent(file2NodeRef);
@@ -852,11 +810,11 @@ public class ContentDiskDriverTest extends TestCase
         FileOpenParams params5 = new FileOpenParams(DIR_NEW_PATH, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
         driver.createDirectory(testSession, testConnection, params5);
         
-        NodeRef newDirNodeRef = driver.getNodeForPath(testConnection, DIR_NEW_PATH);
+        NodeRef newDirNodeRef = getNodeForPath(testConnection, DIR_NEW_PATH);
         
         driver.renameFile(testSession, testConnection, FILE_PATH2, NEW_PATH);
         
-        NodeRef file5NodeRef = driver.getNodeForPath(testConnection, NEW_PATH);
+        NodeRef file5NodeRef = getNodeForPath(testConnection, NEW_PATH);
         ChildAssociationRef parentRef5 = nodeService.getPrimaryParent(file5NodeRef);
         
         assertTrue(parentRef5.getParentRef().equals(newDirNodeRef));
@@ -917,7 +875,7 @@ public class ContentDiskDriverTest extends TestCase
             @Override
             public Void execute() throws Throwable
             {
-                NodeRef file1NodeRef = driver.getNodeForPath(testConnection, FILE_PATH1);
+                NodeRef file1NodeRef = getNodeForPath(testConnection, FILE_PATH1);
                 nodeService.addAspect(file1NodeRef, ContentModel.ASPECT_VERSIONABLE, null);
                 
                 ContentWriter contentWriter2 = contentService.getWriter(file1NodeRef, ContentModel.PROP_CONTENT, true);
@@ -942,7 +900,7 @@ public class ContentDiskDriverTest extends TestCase
             @Override
             public Void execute() throws Throwable
             {
-                NodeRef file2NodeRef = driver.getNodeForPath(testConnection, FILE_PATH2);
+                NodeRef file2NodeRef = getNodeForPath(testConnection, FILE_PATH2);
                 assertNotNull("file2 node ref is null", file2NodeRef);
                 //assertEquals(nodeService.getProperty(file2NodeRef, ContentModel.PROP_LASTNAME), LAST_NAME);
                 assertTrue("does not have versionable aspect", nodeService.hasAspect(file2NodeRef, ContentModel.ASPECT_VERSIONABLE));   
@@ -1053,7 +1011,7 @@ public class ContentDiskDriverTest extends TestCase
                 
                 // now load up the node with lots of other stuff that we will test to see if it gets preserved during the
                 // shuffle.
-                testContext.testNodeRef = driver.getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+                testContext.testNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
                 
                 // test non CM namespace property
                 nodeService.setProperty(testContext.testNodeRef, TransferModel.PROP_ENABLED, true);
@@ -1160,6 +1118,7 @@ public class ContentDiskDriverTest extends TestCase
         };
         tran.doInTransaction(validateOldFileGoneCB, false, true);
         
+        logger.debug("Shuffle step next");
         /**
          * Move the new file into place, stuff should get shuffled
          */
@@ -1174,13 +1133,14 @@ public class ContentDiskDriverTest extends TestCase
         };
         
         tran.doInTransaction(moveNewFileCB, false, true);
+        logger.debug("end of shuffle step");
         
         RetryingTransactionCallback<Void> validateCB = new RetryingTransactionCallback<Void>() {
 
             @Override
             public Void execute() throws Throwable
             {
-               NodeRef shuffledNodeRef = driver.getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+               NodeRef shuffledNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
                
                Map<QName, Serializable> props = nodeService.getProperties(shuffledNodeRef);
            
@@ -1194,23 +1154,21 @@ public class ContentDiskDriverTest extends TestCase
                assertEquals("title wrong", FILE_TITLE, nodeService.getProperty(shuffledNodeRef, ContentModel.PROP_TITLE) );
                assertEquals("description wrong", FILE_DESCRIPTION, nodeService.getProperty(shuffledNodeRef, ContentModel.PROP_DESCRIPTION) );
 
-               // commented out due to ALF-7641
-               // CIFS shuffle, does not preseve MLText values.
-               // Map<QName, Serializable> mlProps = mlAwareNodeService.getProperties(shuffledNodeRef);
+               // ALF-7641 - CIFS shuffle, does not preseve MLText values.
+               Map<QName, Serializable> mlProps = mlAwareNodeService.getProperties(shuffledNodeRef);
                
-               // MLText multi = (MLText)mlAwareNodeService.getProperty(shuffledNodeRef, RESIDUAL_MTTEXT) ;
-               // multi.getValues();
+               MLText multi = (MLText)mlAwareNodeService.getProperty(shuffledNodeRef, RESIDUAL_MTTEXT) ;
+               assertTrue("MLText has lost values", multi.getValues().size() > 2);
                
-               // check auditable properties 
-               // commented out due to ALF-7635
-               // assertEquals("creation date not preserved", ((Date)testContext.testCreatedDate).getTime(), ((Date)nodeService.getProperty(shuffledNodeRef, ContentModel.PROP_CREATED)).getTime());
+//               // ALF-7635 check auditable properties 
+               assertEquals("creation date not preserved", ((java.util.Date)testContext.testCreatedDate).getTime(), ((java.util.Date)nodeService.getProperty(shuffledNodeRef, ContentModel.PROP_CREATED)).getTime());
                
-               // commented out due to ALF-7628 
-               // assertEquals("ADDRESSEE PROPERTY Not copied", "Fred", nodeService.getProperty(shuffledNodeRef, ContentModel.PROP_ADDRESSEE));
-               // assertTrue("CLASSIFIABLE aspect not present", nodeService.hasAspect(shuffledNodeRef, ContentModel.ASPECT_CLASSIFIABLE));
+               // ALF-7628 - preserve addressee and classifiable
+               assertEquals("ADDRESSEE PROPERTY Not copied", "Fred", nodeService.getProperty(shuffledNodeRef, ContentModel.PROP_ADDRESSEE));
+               assertTrue("CLASSIFIABLE aspect not present", nodeService.hasAspect(shuffledNodeRef, ContentModel.ASPECT_CLASSIFIABLE));
                
-               // commented out due to ALF-7584.
-               // assertEquals("noderef changed", testContext.testNodeRef, shuffledNodeRef);
+               // ALF-7584 - preserve node ref.
+               assertEquals("noderef changed", testContext.testNodeRef, shuffledNodeRef);
                return null;
             }
         };
@@ -1300,7 +1258,7 @@ public class ContentDiskDriverTest extends TestCase
                 
                 // now load up the node with lots of other stuff that we will test to see if it gets preserved during the
                 // shuffle.
-                testContext.testNodeRef = driver.getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+                testContext.testNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
                 // test non CM namespace property
                 nodeService.setProperty(testContext.testNodeRef, TransferModel.PROP_ENABLED, true);
                 // test CM property not related to an aspect
@@ -1407,7 +1365,7 @@ public class ContentDiskDriverTest extends TestCase
             @Override
             public Void execute() throws Throwable
             {
-               NodeRef shuffledNodeRef = driver.getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+               NodeRef shuffledNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
                
                Map<QName, Serializable> props = nodeService.getProperties(shuffledNodeRef);
                assertTrue("node does not contain shuffled ENABLED property", props.containsKey(TransferModel.PROP_ENABLED));
@@ -1443,8 +1401,8 @@ public class ContentDiskDriverTest extends TestCase
     {
         logger.debug("testScenarioMSWord2007SaveShuffle");
         final String FILE_NAME = "TEST.DOCX";
-        final String FILE_OLD_TEMP = "00000001.TMP";
-        final String FILE_NEW_TEMP = "00000002.TMP";
+        final String FILE_OLD_TEMP = "788A1D3D.tmp";
+        final String FILE_NEW_TEMP = "19ECA1A.tmp";
         
         class TestContext
         {
@@ -1488,7 +1446,7 @@ public class ContentDiskDriverTest extends TestCase
                 assertNotNull(testContext.firstFileHandle);
                 
                 // no need to test lots of different properties, that's already been tested above
-                testContext.testNodeRef = driver.getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+                testContext.testNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
                 nodeService.setProperty(testContext.testNodeRef, TransferModel.PROP_ENABLED, true);
                         
                 return null;
@@ -1580,7 +1538,7 @@ public class ContentDiskDriverTest extends TestCase
             @Override
             public Void execute() throws Throwable
             {
-               NodeRef shuffledNodeRef = driver.getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+               NodeRef shuffledNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
                
                Map<QName, Serializable> props = nodeService.getProperties(shuffledNodeRef);
                assertTrue("node does not contain shuffled ENABLED property", props.containsKey(TransferModel.PROP_ENABLED));
@@ -1650,7 +1608,7 @@ public class ContentDiskDriverTest extends TestCase
                 assertNotNull(testContext.firstFileHandle);
                 
                 // no need to test lots of different properties, that's already been tested above
-                testContext.testNodeRef = driver.getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+                testContext.testNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
                 nodeService.setProperty(testContext.testNodeRef, TransferModel.PROP_ENABLED, true);
                         
                 return null;
@@ -1715,7 +1673,7 @@ public class ContentDiskDriverTest extends TestCase
             @Override
             public Void execute() throws Throwable
             {
-               NodeRef shuffledNodeRef = driver.getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+               NodeRef shuffledNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
                
                Map<QName, Serializable> props = nodeService.getProperties(shuffledNodeRef);
                assertTrue("node does not contain shuffled ENABLED property", props.containsKey(TransferModel.PROP_ENABLED));
@@ -1734,8 +1692,9 @@ public class ContentDiskDriverTest extends TestCase
      * a) viTest.txt
      * b) Rename original file to viTest.txt~
      * c) Create viTest.txt
+     * d) Delete viTest.txt~
      */
-    public void DISABLED_testScenarioViSave() throws Exception
+    public void testScenarioViSave() throws Exception
     {
         logger.debug("testScenarioViSave");
         final String FILE_NAME = "viTest.txt";
@@ -1784,7 +1743,7 @@ public class ContentDiskDriverTest extends TestCase
                 assertNotNull(testContext.firstFileHandle);
                 
                 // no need to test lots of different properties, that's already been tested above
-                testContext.testNodeRef = driver.getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+                testContext.testNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
                 nodeService.setProperty(testContext.testNodeRef, TransferModel.PROP_ENABLED, true);
                         
                 return null;
@@ -1803,7 +1762,7 @@ public class ContentDiskDriverTest extends TestCase
                 String testContent = "Emacs shuffle test";
                 byte[] testContentBytes = testContent.getBytes();
                 testContext.firstFileHandle.writeFile(testContentBytes, testContentBytes.length, 0, 0);
-                testContext.firstFileHandle.close();            
+                driver.closeFile(testSession, testConnection, testContext.firstFileHandle);            
                 return null;
             }
         };
@@ -1834,11 +1793,12 @@ public class ContentDiskDriverTest extends TestCase
                 FileOpenParams createFileParams = new FileOpenParams(TEST_DIR + "\\" + FILE_NAME, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
                 testContext.newFileHandle = driver.createFile(testSession, testConnection, createFileParams);
                 assertNotNull(testContext.newFileHandle);
-                String testContent = "EMACS shuffle test This is new content";
+                String testContent = "Vi shuffle test This is new content";
                 byte[] testContentBytes = testContent.getBytes();
                 testContext.newFileHandle.writeFile(testContentBytes, testContentBytes.length, 0, 0);
-                testContext.newFileHandle.close();
-              
+                driver.closeFile(testSession, testConnection, testContext.newFileHandle);            
+                logger.debug("delete temporary file - which will trigger shuffle");
+                driver.deleteFile(testSession, testConnection, TEST_DIR + "\\" + FILE_OLD_TEMP);
                 return null;
             }
         };
@@ -1849,7 +1809,7 @@ public class ContentDiskDriverTest extends TestCase
             @Override
             public Void execute() throws Throwable
             {
-               NodeRef shuffledNodeRef = driver.getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+               NodeRef shuffledNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
                assertNotNull("shuffledNodeRef is null", shuffledNodeRef);
                
                Map<QName, Serializable> props = nodeService.getProperties(shuffledNodeRef);
@@ -1922,7 +1882,7 @@ public class ContentDiskDriverTest extends TestCase
                 assertNotNull(testContext.firstFileHandle);
                 
                 // no need to test lots of different properties, that's already been tested above
-                testContext.testNodeRef = driver.getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+                testContext.testNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
                 nodeService.setProperty(testContext.testNodeRef, TransferModel.PROP_ENABLED, true);
                         
                 return null;
@@ -2002,7 +1962,7 @@ public class ContentDiskDriverTest extends TestCase
             @Override
             public Void execute() throws Throwable
             {
-               NodeRef shuffledNodeRef = driver.getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+               NodeRef shuffledNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
                
                Map<QName, Serializable> props = nodeService.getProperties(shuffledNodeRef);
                assertTrue("node does not contain shuffled ENABLED property", props.containsKey(TransferModel.PROP_ENABLED));
@@ -2034,6 +1994,7 @@ public class ContentDiskDriverTest extends TestCase
         int openAction = FileAction.CreateNotExist;
         final String FILE_NAME="testDeleteFileViaNodeService.new";
         final String FILE_PATH="\\" + FILE_NAME;
+
           
         FileOpenParams params = new FileOpenParams(FILE_PATH, openAction, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
                 
@@ -2083,7 +2044,7 @@ public class ContentDiskDriverTest extends TestCase
         
         try
         {
-            driver.getNodeForPath(testConnection, FILE_PATH);
+            getNodeForPath(testConnection, FILE_PATH);
             fail("getNode for path unexpectedly succeeded");
         } 
         catch (IOException ie)
@@ -2181,7 +2142,7 @@ public class ContentDiskDriverTest extends TestCase
                 driver.createDirectory(testSession, testConnection, createRootDirParams);
                 driver.createDirectory(testSession, testConnection, createDirParams);
                 
-                testContext.testDirNodeRef = driver.getNodeForPath(testConnection, TEST_DIR);
+                testContext.testDirNodeRef = getNodeForPath(testConnection, TEST_DIR);
                 assertNotNull("testDirNodeRef is null", testContext.testDirNodeRef);   
                 
                 UserTransaction txn = transactionService.getUserTransaction();
@@ -2248,7 +2209,7 @@ public class ContentDiskDriverTest extends TestCase
                 
                 // now load up the node with lots of other stuff that we will test to see if it gets preserved during the
                 // shuffle.
-                testContext.testNodeRef = driver.getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+                testContext.testNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
                 assertNotNull("testContext.testNodeRef is null", testContext.testNodeRef);
                 
                 // test non CM namespace property
@@ -2280,7 +2241,8 @@ public class ContentDiskDriverTest extends TestCase
                     int i = is.read(buffer, 0, buffer.length);
                     while(i > 0)
                     {
-                        testContext.firstFileHandle.writeFile(buffer, i, 0, offset);
+                        // testContext.firstFileHandle.writeFile(buffer, i, 0, offset);
+                        driver.writeFile(testSession, testConnection, testContext.firstFileHandle, buffer, 0, i, offset);
                         offset += i;
                         i = is.read(buffer, 0, buffer.length);
                     }                 
@@ -2290,7 +2252,8 @@ public class ContentDiskDriverTest extends TestCase
                     is.close();
                 }
             
-                testContext.firstFileHandle.close();   
+                logger.debug("close the file, firstFileHandle");
+                driver.closeFile(testSession, testConnection, testContext.firstFileHandle);   
                     
                 return null;
             }
@@ -2310,15 +2273,17 @@ public class ContentDiskDriverTest extends TestCase
                 Map<QName, Serializable> props = nodeService.getProperties(testContext.testNodeRef);
                 
                 assertTrue("Enabled property has been lost", props.containsKey(TransferModel.PROP_ENABLED));
-             
+                
+                ContentData data = (ContentData)props.get(ContentModel.PROP_CONTENT);
+                assertEquals("size is wrong", 11302, data.getSize());
+                assertEquals("mimeType is wrong", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", data.getMimetype());
+                
                 // These metadata values should be extracted.
                 assertEquals("description is not correct", "This is a test file", nodeService.getProperty(testContext.testNodeRef, ContentModel.PROP_DESCRIPTION));
                 assertEquals("title is not correct", "ContentDiskDriverTest", nodeService.getProperty(testContext.testNodeRef, ContentModel.PROP_TITLE));
                 assertEquals("author is not correct", "mrogers", nodeService.getProperty(testContext.testNodeRef, ContentModel.PROP_AUTHOR));
                 
-                ContentData data = (ContentData)props.get(ContentModel.PROP_CONTENT);
-                assertEquals("mimeType is wrong", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", data.getMimetype());
-                assertEquals("size is wrong", 11302, data.getSize());
+    
                         
                 return null;
             }
@@ -2373,7 +2338,7 @@ public class ContentDiskDriverTest extends TestCase
                     is.close();
                 }
             
-                testContext.secondFileHandle.close();   
+                driver.closeFile(testSession, testConnection, testContext.secondFileHandle);
                     
                 return null;
             }
@@ -2462,7 +2427,7 @@ public class ContentDiskDriverTest extends TestCase
             @Override
             public Void execute() throws Throwable
             {
-               NodeRef shuffledNodeRef = driver.getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+               NodeRef shuffledNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
                
                Map<QName, Serializable> props = nodeService.getProperties(shuffledNodeRef);
                
@@ -2551,7 +2516,7 @@ public class ContentDiskDriverTest extends TestCase
         final TreeConnection treeConnection = server.getTreeConnection(device);
 
         // Getting target entity for testing - ContentDiskDriver
-        final ContentDiskDriver deviceInterface = (ContentDiskDriver) treeConnection.getInterface();
+        final ExtendedDiskInterface deviceInterface = (ExtendedDiskInterface) treeConnection.getInterface();
         // Creating mock-session
         final SrvSession session = new TestSrvSession(13, server, ContentDiskDriverTest.TEST_PROTOTYPE_NAME, ContentDiskDriverTest.TEST_REMOTE_NAME);
 
@@ -2825,7 +2790,7 @@ public class ContentDiskDriverTest extends TestCase
                     is.close();
                 }
             
-                testContext.firstFileHandle.close();   
+                driver.closeFile(testSession, testConnection, testContext.firstFileHandle);   
                     
                 return null;
             }
@@ -2872,11 +2837,12 @@ public class ContentDiskDriverTest extends TestCase
             @Override
             public Void execute() throws Throwable
             {
-               NodeRef shuffledNodeRef = driver.getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+               NodeRef shuffledNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
                
                Map<QName, Serializable> props = nodeService.getProperties(shuffledNodeRef);
                
                ContentData data = (ContentData)props.get(ContentModel.PROP_CONTENT);
+               assertNotNull("data is null", data);
                assertEquals("size is wrong", 26112, data.getSize());
                assertEquals("mimeType is wrong", "application/msword",data.getMimetype());
            
@@ -2887,6 +2853,165 @@ public class ContentDiskDriverTest extends TestCase
         tran.doInTransaction(validateCB, true, true);
         
     }
+    
+    /**
+     * Test Open Close File Scenario
+     * 
+     * 1) open(readOnly)
+     * 2) open(readWrite)
+     * 3) open(readWrite) - does nothing.
+     * 4) close - does nothing
+     * 5) close - does nothing
+     * 6) close - updates the repo
+     */
+    public void testScenarioOpenCloseFile() throws Exception
+    {    
+        logger.debug("start of testScenarioOpenCloseFile");
+        ServerConfiguration scfg = new ServerConfiguration("testServer");
+        TestServer testServer = new TestServer("testServer", scfg);
+        final SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
+        DiskSharedDevice share = getDiskSharedDevice();
+        final TreeConnection testConnection = testServer.getTreeConnection(share);
+        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
+        
+        class TestContext
+        {
+            NodeRef testDirNodeRef;
+            NodeRef targetNodeRef;
+        };
+        
+        final TestContext testContext = new TestContext();
+        
+        final String FILE_NAME="testScenarioOpenFile.txt";
+        final String FILE_PATH= TEST_ROOT_DOS_PATH + "\\" + FILE_NAME;
+        
+        FileOpenParams dirParams = new FileOpenParams(TEST_ROOT_DOS_PATH, 0, AccessMode.ReadOnly, FileAttribute.NTDirectory, 0);
+        driver.createDirectory(testSession, testConnection, dirParams);  
+        
+        testContext.testDirNodeRef = getNodeForPath(testConnection, TEST_ROOT_DOS_PATH);
+        
+        /**
+         * Clean up just in case garbage is left from a previous run
+         */
+        RetryingTransactionCallback<Void> deleteGarbageFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                driver.deleteFile(testSession, testConnection, FILE_PATH);
+                return null;
+            }
+        };
+        try
+        {
+            tran.doInTransaction(deleteGarbageFileCB);
+        }
+        catch (Exception e)
+        {
+            // expect to go here
+        }
+       
+        /**
+         * Step 1: Now create the file through the node service and open it.
+         */
+        logger.debug("Step 1) Create File and Open file created by node service");
+        RetryingTransactionCallback<Void> createFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {   
+                logger.debug("create file and close it immediatly");
+                FileOpenParams createFileParams = new FileOpenParams(FILE_PATH, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                NetworkFile dummy = driver.createFile(testSession, testConnection, createFileParams);    
+                driver.closeFile(testSession, testConnection, dummy);
+                logger.debug("after create and close");
+                return null;
+            }
+        };
+        tran.doInTransaction(createFileCB, false, true);
+        
+        testContext.targetNodeRef = getNodeForPath(testConnection, FILE_PATH);
+       
+        FileOpenParams openRO = new FileOpenParams(FILE_PATH, FileAction.CreateNotExist, AccessMode.ReadOnly, FileAttribute.NTNormal, 0);
+        FileOpenParams openRW = new FileOpenParams(FILE_PATH, FileAction.CreateNotExist, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+        
+        /**
+         * First open - read only
+         */
+        logger.debug("open file1 read only");
+        NetworkFile file1 = driver.openFile(testSession, testConnection, openRO);
+        assertNotNull(file1);
+        
+        final String testString = "Yankee doodle went to town";
+        byte[] stuff = testString.getBytes("UTF-8");
+        
+        /**
+         * Negative test - file is open readOnly
+         */
+        try
+        {
+            driver.writeFile(testSession, testConnection, file1, stuff, 0, stuff.length, 0);
+            fail("can write to a read only file!");
+        }
+        catch(Exception e)
+        {
+            // Expect to go here
+        }
+        
+        logger.debug("open file 2 for read write");
+        NetworkFile file2 = driver.openFile(testSession, testConnection, openRW);
+        assertNotNull(file2);
+
+        /**
+         * Write Some Content 
+         */
+        driver.writeFile(testSession, testConnection, file2, stuff, 0, stuff.length, 0);
+            
+        NetworkFile file3 = driver.openFile(testSession, testConnection, openRW);
+        assertNotNull(file3);
+       
+        logger.debug("first close");
+        driver.closeFile(testSession, testConnection, file2);
+        // assertTrue("node does not have no content aspect", nodeService.hasAspect(testContext.targetNodeRef, ContentModel.ASPECT_NO_CONTENT));
+        
+        logger.debug("second close");
+        driver.closeFile(testSession, testConnection, file3);
+//        //assertTrue("node does not have no content aspect", nodeService.hasAspect(testContext.targetNodeRef, ContentModel.ASPECT_NO_CONTENT));
+        
+//        logger.debug("this should be the last close");
+//        driver.closeFile(testSession, testConnection, file1);
+//        assertFalse("node still has no content aspect", nodeService.hasAspect(testContext.targetNodeRef, ContentModel.ASPECT_NO_CONTENT));
+        
+        /**
+         * Step 2: Negative test - Close the file again - should do nothing quietly!
+         */
+//        logger.debug("this is a negative test - should do nothing");
+//        driver.closeFile(testSession, testConnection, file1);
+        
+        logger.debug("now validate");
+         
+        RetryingTransactionCallback<Void> validateCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                Map<QName,Serializable> props = nodeService.getProperties(testContext.targetNodeRef);
+                ContentData data = (ContentData)props.get(ContentModel.PROP_CONTENT);
+                assertNotNull("data is null", data);
+                assertEquals("data wrong length", testString.length(), data.getSize());
+           
+                ContentReader reader = contentService.getReader(testContext.targetNodeRef, ContentModel.PROP_CONTENT);
+                String s = reader.getContentString();
+                assertEquals("content not written", testString, s);
+
+                return null;
+            }
+        };
+        
+        tran.doInTransaction(validateCB, false, true);
+                
+    } // testOpenCloseFileScenario
+
     
     /**
      * Test server
@@ -2928,6 +3053,11 @@ public class ContentDiskDriverTest extends TestCase
                 String remName)
         {
             super(sessId, srv, proto, remName);
+            
+            // Set the client info to user "fred"
+            ClientInfo cinfo = ClientInfo.createInfo("fred", null);
+            setClientInformation(cinfo);
+
         }
 
         @Override
@@ -2941,5 +3071,18 @@ public class ContentDiskDriverTest extends TestCase
         {
             return false;
         }
+    }
+    
+    private NodeRef getNodeForPath(TreeConnection tree, String path)
+    throws FileNotFoundException
+    {
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("getNodeRefForPath:" + path);
+        }
+   
+        ContentContext ctx = (ContentContext) tree.getContext();
+    
+        return cifsHelper.getNodeRef(ctx.getRootNode(), path);
     }
 }

@@ -38,10 +38,6 @@ public class DesktopParams {
 	
 	private SrvSession m_session;
 	
-	// Filesystem driver
-	
-	private AlfrescoDiskDriver m_driver;
-	
 	// Folder node that the actions are working in
 	
 	private NodeRef m_folderNode;
@@ -69,10 +65,9 @@ public class DesktopParams {
 	 * @param folderNode NodeRef
 	 * @param folderFile NetworkFile
 	 */
-	public DesktopParams(SrvSession sess, AlfrescoDiskDriver driver, NodeRef folderNode, NetworkFile folderFile)
+	public DesktopParams(SrvSession sess, NodeRef folderNode, NetworkFile folderFile)
 	{
 		m_session    = sess;
-		m_driver     = driver;
 		m_folderNode = folderNode;
 		m_folderFile = folderFile;
 	}
@@ -130,16 +125,6 @@ public class DesktopParams {
 	public final NetworkFile getFolder()
 	{
 		return m_folderFile;
-	}
-
-	/**
-	 * Return the filesystem driver
-	 * 
-	 * @return AlfrescoDiskDriver
-	 */
-	public final AlfrescoDiskDriver getDriver()
-	{
-	    return m_driver;
 	}
 	
 	/**

@@ -40,6 +40,8 @@ import org.alfresco.filesys.alfresco.AlfrescoContext;
 import org.alfresco.filesys.alfresco.AlfrescoDiskDriver;
 import org.alfresco.filesys.alfresco.AlfrescoNetworkFile;
 import org.alfresco.filesys.config.ServerConfigurationBean;
+import org.alfresco.filesys.alfresco.AlfrescoTxDiskDriver;
+import org.alfresco.filesys.alfresco.ShuffleCache;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.core.DeviceContext;
 import org.alfresco.jlan.server.core.DeviceContextException;
@@ -113,6 +115,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.config.ConfigElement;
@@ -124,7 +127,7 @@ import org.springframework.extensions.config.ConfigElement;
  * 
  * @author gkspencer
  */
-public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterface, FileLockingInterface, OpLockInterface, DiskSizeInterface
+public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInterface, FileLockingInterface, OpLockInterface, DiskSizeInterface
 {
     // Logging
     private static final Log logger = LogFactory.getLog(ContentDiskDriver.class);
@@ -173,6 +176,9 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     protected static final long DiskSizeDefault		= 1 * MemorySize.TERABYTE;
     protected static final long DiskFreeDefault		= DiskSizeDefault / 2;
     
+    private boolean isReadOnly;
+    private boolean isLockedFilesAsOffline;
+    
     // Services and helpers
     
     private CifsHelper cifsHelper;
@@ -206,6 +212,11 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     public ContentDiskDriver(CifsHelper cifsHelper)
     {
         this.cifsHelper = cifsHelper;
+    }
+    
+    public void init()
+    {
+        PropertyCheck.mandatory(this, "nodeService", nodeService);
     }
 
     /**
@@ -759,8 +770,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         if ( context.getOfflineFiles() )
         {
             // Enable marking locked files as offline
-            
-            cifsHelper.setMarkLockedFilesAsOffline( true);
+            isLockedFilesAsOffline = true;
             
             // Logging
             
@@ -782,7 +792,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
             // Create the node monitor
 
-            NodeMonitor nodeMonitor = m_nodeMonitorFactory.createNodeMonitor( this, context);
+            NodeMonitor nodeMonitor = m_nodeMonitorFactory.createNodeMonitor(context);
             context.setNodeMonitor( nodeMonitor);
         }
         
@@ -844,14 +854,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
      */
     public boolean isReadOnly(SrvSession sess, DeviceContext ctx) throws IOException
     {
-        if (cifsHelper.isReadOnly())
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return isReadOnly;
     }
     
     /**
@@ -865,6 +868,10 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
      */
     public FileInfo getFileInformation(SrvSession session, TreeConnection tree, String path) throws IOException
     {
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("getFileInformation:" + path);
+        }
     	// Start a transaction
     	
     	beginReadTransaction( session);
@@ -900,7 +907,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     {
                         // Get the file information for the node
                             
-                        finfo = cifsHelper.getFileInformation(nodeRef);
+                        finfo = cifsHelper.getFileInformation(nodeRef, isReadOnly, isLockedFilesAsOffline);
                     }
                         
               		// Create the file state
@@ -951,7 +958,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                         logger.debug("getInfo using pseudo file info for " + path);
                     
                     FileInfo pseudoFileInfo = pfile.getFileInfo();
-                    if (cifsHelper.isReadOnly())
+                    if (isReadOnly)
                     {
                         int attr = pseudoFileInfo.getFileAttributes();
                         if (( attr & FileAttribute.ReadOnly) == 0)
@@ -972,7 +979,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             {
                 // Get the file information for the node
                 
-                finfo = cifsHelper.getFileInformation(nodeRef);
+                finfo = cifsHelper.getFileInformation(nodeRef, isReadOnly, isLockedFilesAsOffline);
 
                 // DEBUG
                 
@@ -1007,7 +1014,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
                 // Access the repository to get the file information
                 
-                finfo = cifsHelper.getFileInformation(infoParentNodeRef, infoPath);
+                finfo = cifsHelper.getFileInformation(infoParentNodeRef, infoPath, isReadOnly, isLockedFilesAsOffline);
                 
                 // DEBUG
                 
@@ -1106,6 +1113,10 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     public SearchContext startSearch(SrvSession sess, TreeConnection tree, String searchPath, int attributes) throws FileNotFoundException
     {
         // Access the device context
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("startSearch: "+ searchPath);
+        }
         
         ContentContext ctx = (ContentContext) tree.getContext();
 
@@ -1277,7 +1288,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             	{
             		// Get the '.' pseudo entry file details
             	
-            		FileInfo finfo = cifsHelper.getFileInformation((NodeRef) searchFolderState.getFilesystemObject());
+            		FileInfo finfo = cifsHelper.getFileInformation((NodeRef) searchFolderState.getFilesystemObject(), isReadOnly, isLockedFilesAsOffline);
             		
             		// Blend in any cached timestamps
             		
@@ -1332,7 +1343,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
 
             			// Get the file information for the parent folder
             			
-            			finfo = cifsHelper.getFileInformation( parentNode);
+            			finfo = cifsHelper.getFileInformation( parentNode, isReadOnly, isLockedFilesAsOffline);
             			
             			// Blend in any cached timestamps
             			
@@ -1573,7 +1584,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
      * @return NetworkFile
      * @exception IOException
      */
-    public NetworkFile openFile(SrvSession sess, TreeConnection tree, FileOpenParams params) throws IOException
+    public NetworkFile openFile(SrvSession sess, TreeConnection tree, FileOpenParams params ) throws IOException
     {
         // Create the transaction
         
@@ -1904,7 +1915,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 
                 // Get the file information for the link node
                 
-                FileInfo fInfo = cifsHelper.getFileInformation( nodeRef);
+                FileInfo fInfo = cifsHelper.getFileInformation( nodeRef, isReadOnly, isLockedFilesAsOffline);
 
                 // Set the file size to the actual data length
                 
@@ -2301,7 +2312,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
             // Convert to a general I/O exception
             
-            throw new IOException("Create directory " + params.getFullPath());
+            throw new IOException("Create directory " + params.getFullPath(), ex);
         }
     }
 
@@ -3507,7 +3518,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                             if ( fstate != null)
                                 isFolder = fstate.isDirectory();
                             else {
-                                ContentFileInfo cInfo = cifsHelper.getFileInformation( nodeRef);
+                                ContentFileInfo cInfo = cifsHelper.getFileInformation( nodeRef, isReadOnly, isLockedFilesAsOffline);
                                 if ( cInfo != null && cInfo.isDirectory() == false)
                                     isFolder = false;
                             }

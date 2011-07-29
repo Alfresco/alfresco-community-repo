@@ -50,7 +50,7 @@ import org.apache.commons.logging.LogFactory;
  *
  * @author gkspencer
  */
-public abstract class AlfrescoDiskDriver implements IOCtlInterface, TransactionalFilesystemInterface, ExtendedDiskInterface {
+public abstract class AlfrescoDiskDriver implements IOCtlInterface, ExtendedDiskInterface {
 
     // Logging
     
@@ -62,12 +62,8 @@ public abstract class AlfrescoDiskDriver implements IOCtlInterface, Transactiona
     
     //  Transaction service
     
-    private TransactionService m_transactionService;
-    
-    // Remember whether the current thread is already in a retrying transaction
-    
-    private ThreadLocal<Boolean> m_inRetryingTransaction = new ThreadLocal<Boolean>();
-    
+    protected TransactionService m_transactionService;
+        
     /**
      * Return the service registry
      * 
@@ -75,7 +71,7 @@ public abstract class AlfrescoDiskDriver implements IOCtlInterface, Transactiona
      */
     public final ServiceRegistry getServiceRegistry()
     {
-    	return m_serviceRegistry;
+        return m_serviceRegistry;
     }
 
     /**
@@ -95,7 +91,7 @@ public abstract class AlfrescoDiskDriver implements IOCtlInterface, Transactiona
      */
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
-    	m_serviceRegistry = serviceRegistry;
+        m_serviceRegistry = serviceRegistry;
     }
     
     /**
@@ -140,261 +136,6 @@ public abstract class AlfrescoDiskDriver implements IOCtlInterface, Transactiona
     }
     
     /**
-     * Begin a read-only transaction
-     * 
-     * @param sess SrvSession
-     */
-    public void beginReadTransaction(SrvSession sess) {
-      beginTransaction( sess, true);
-    }
-
-    /**
-     * Begin a writeable transaction
-     * 
-     * @param sess SrvSession
-     */
-    public void beginWriteTransaction(SrvSession sess) {
-      beginTransaction( sess, false);
-    }
-    
-    /**
-     * Perform a retryable operation in a write transaction
-     * <p>
-     * WARNING : side effect - that the current transaction, if any, is ended.
-     * 
-     * 
-     * @param sess
-     *            the server session
-     * @param callback
-     *            callback for the retryable operation
-     * @return the result of the operation
-     * @throws Exception
-     */
-    public <T> T doInWriteTransaction(SrvSession sess, final CallableIO<T> callback)
-            throws IOException
-    {
-        Boolean wasInRetryingTransaction = m_inRetryingTransaction.get();
-        try
-        {
-            boolean hadTransaction = sess.hasTransaction();
-            if (hadTransaction)
-            {
-                sess.endTransaction();
-            }
-            m_inRetryingTransaction.set(Boolean.TRUE);
-            T result = m_transactionService.getRetryingTransactionHelper().doInTransaction(
-                    new RetryingTransactionHelper.RetryingTransactionCallback<T>()
-                    {
-                        public T execute() throws Throwable
-                        {
-                            try
-                            {
-                                return callback.call();
-                            }
-                            catch (IOException e)
-                            {
-                                // Ensure original checked IOExceptions get propagated
-                                throw new PropagatingException(e);
-                            }
-                        }
-                    });
-            if (hadTransaction)
-            {
-                beginReadTransaction(sess);
-            }
-            return result;
-        }
-        catch (PropagatingException e)
-        {
-            // Unwrap checked exceptions
-            throw (IOException) e.getCause();
-        }
-        finally
-        {
-            m_inRetryingTransaction.set(wasInRetryingTransaction);
-        }
-    }
-
-    /**
-     * End an active transaction
-     * 
-     * @param sess SrvSession
-     * @param tx Object
-     */
-    public void endTransaction(SrvSession sess, Object tx) {
-
-      // Check that the transaction object is valid
-      
-      if ( tx == null)
-        return;
-      
-      // Get the filesystem transaction
-      
-      FilesysTransaction filesysTx = (FilesysTransaction) tx;
-
-      // Check if there is an active transaction
-      
-      if ( filesysTx != null && filesysTx.hasTransaction())
-      {
-        // Get the active transaction
-        
-          UserTransaction ftx = filesysTx.getTransaction();
-          
-          try
-          {
-              // Commit or rollback the transaction
-              
-              if ( ftx.getStatus() == Status.STATUS_MARKED_ROLLBACK ||
-            	   ftx.getStatus() == Status.STATUS_ROLLEDBACK ||
-            	   ftx.getStatus() == Status.STATUS_ROLLING_BACK)
-              {
-                  // Transaction is marked for rollback
-                  
-                  ftx.rollback();
-                  
-                  // DEBUG
-                  
-                  if ( logger.isDebugEnabled())
-                      logger.debug("End transaction (rollback)");
-              }
-              else
-              {
-            	  // Commit the transaction
-                  
-                  ftx.commit();
-                  
-                  // DEBUG
-                  
-                  if ( logger.isDebugEnabled())
-                      logger.debug("End transaction (commit)");
-              }
-          }
-          catch ( Exception ex)
-          {
-        	  if ( logger.isDebugEnabled())
-        		  logger.debug("Failed to end transaction, " + ex.getMessage());
-//              throw new AlfrescoRuntimeException("Failed to end transaction", ex);
-          }
-          finally
-          {
-              // Clear the current transaction
-              
-              sess.clearTransaction();
-          }
-        }
-    }
-
-    /**
-     * Create and start a transaction, if not already active
-     * 
-     * @param sess SrvSession
-     * @param readOnly boolean
-     * @exception AlfrescoRuntimeException
-     */
-    private final void beginTransaction( SrvSession sess, boolean readOnly)
-        throws AlfrescoRuntimeException
-    {
-        // Do nothing if we are already in a retrying transaction
-        Boolean inRetryingTransaction = m_inRetryingTransaction.get();
-        
-        if (inRetryingTransaction != null && inRetryingTransaction)
-        {
-            return;
-        }
-
-        // Initialize the per session thread local that holds the transaction
-        
-        sess.initializeTransactionObject();
-
-        // Get the filesystem transaction
-        
-        FilesysTransaction filesysTx = (FilesysTransaction) sess.getTransactionObject().get();
-        if ( filesysTx == null)
-        {
-          filesysTx = new FilesysTransaction();
-          sess.getTransactionObject().set( filesysTx);
-        }
-        
-        // If there is an active transaction check that it is the required type
-
-        if ( filesysTx.hasTransaction())
-        {
-        	// Get the active transaction
-          
-            UserTransaction tx = filesysTx.getTransaction();
-            
-            // Check if the current transaction is marked for rollback
-            
-            try
-            {
-                if ( tx.getStatus() == Status.STATUS_MARKED_ROLLBACK ||
-                     tx.getStatus() == Status.STATUS_ROLLEDBACK ||
-                     tx.getStatus() == Status.STATUS_ROLLING_BACK)
-                {
-                    //  Rollback the current transaction
-                    
-                    tx.rollback();
-                }
-            }
-            catch ( Exception ex)
-            {
-            }
-            
-            // Check if the transaction is a write transaction, if write has been requested
-            
-            if ( readOnly == false && filesysTx.isReadOnly() == true)
-            {
-                // Commit the read-only transaction
-                
-                try
-                {
-                    tx.commit();
-                }
-                catch ( Exception ex)
-                {
-                    throw new AlfrescoRuntimeException("Failed to commit read-only transaction, " + ex.getMessage());
-                }
-                finally
-                {
-                    // Clear the active transaction
-
-                	filesysTx.clearTransaction();
-                }
-            }
-        }
-        
-        // Create the transaction
-        
-        if ( filesysTx.hasTransaction() == false)
-        {
-            try
-            {
-            	// Create a new transaction
-            	
-            	UserTransaction userTrans = m_transactionService.getUserTransaction(readOnly);
-                userTrans.begin();
-
-                // Store the transaction
-                
-                filesysTx.setTransaction( userTrans, readOnly);
-                
-                // DEBUG
-                
-                if ( logger.isDebugEnabled())
-                    logger.debug("Created transaction readOnly=" + readOnly);
-            }
-            catch (Exception ex)
-            {
-                throw new AlfrescoRuntimeException("Failed to create transaction, " + ex.getMessage());
-            }
-        }
-        
-        //  Store the transaction callback
-        
-        sess.setTransaction( this);
-    }
-
-    /**
      * Registers a device context object for this instance
      * of the shared device. The same DeviceInterface implementation may be used for multiple
      * shares. In this base class, we initialize all desktop actions.
@@ -412,39 +153,13 @@ public abstract class AlfrescoDiskDriver implements IOCtlInterface, Transactiona
             AlfrescoContext alfCtx = (AlfrescoContext) ctx;
             
             if ( serverConfig != null) {
-	            alfCtx.setServerConfigurationBean( serverConfig);
-	            alfCtx.enableStateCache( true);
+                alfCtx.setServerConfigurationBean( serverConfig);
+                alfCtx.enableStateCache( true);
             }
 
             // Initialize the filesystem
             
             alfCtx.initialize(this);
         }
-    }
-    
-    /**
-     * An extended {@link Callable} that throws {@link IOException}s.
-     *
-     * @param <V>
-     */
-    public interface CallableIO <V> extends Callable<V>
-    {
-        public V call() throws IOException;        
-    }
-
-    /**
-     * A wrapper for checked exceptions to be passed through the retrying transaction handler.
-     */
-    protected static class PropagatingException extends RuntimeException
-    {
-        private static final long serialVersionUID = 1L;
-
-        /**
-         * @param cause
-         */
-        public PropagatingException(Throwable cause)
-        {
-            super(cause);
-        }        
     }
 }

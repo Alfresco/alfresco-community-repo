@@ -26,15 +26,17 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.alfresco.filesys.alfresco.AlfrescoContext;
-import org.alfresco.filesys.alfresco.AlfrescoDiskDriver;
 import org.alfresco.filesys.alfresco.DesktopAction;
 import org.alfresco.filesys.alfresco.DesktopActionException;
 import org.alfresco.filesys.alfresco.DesktopParams;
 import org.alfresco.filesys.alfresco.DesktopResponse;
-import org.alfresco.filesys.alfresco.AlfrescoDiskDriver.CallableIO;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.scripts.ScriptException;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ScriptService;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ResourceFinder;
 import org.springframework.core.io.Resource;
 import org.springframework.extensions.config.ConfigElement;
@@ -130,12 +132,12 @@ public class JavaScriptDesktopAction extends DesktopAction {
 	}
 
 	@Override
-    public void initializeAction(AlfrescoDiskDriver filesysDriver, AlfrescoContext filesysContext)
+    public void initializeAction(ServiceRegistry serviceRegistry, AlfrescoContext filesysContext)
             throws DesktopActionException
     {
         // Perform standard initialization
 
-	    super.initializeAction(filesysDriver, filesysContext);
+	    super.initializeAction(serviceRegistry, filesysContext);
         
         // Get the script file name and check that it exists
         
@@ -217,17 +219,23 @@ public class JavaScriptDesktopAction extends DesktopAction {
             // Add the webapp URL, if valid
             
             if ( hasWebappURL())
-            	model.put("webURL", getWebappURL());
-            
-            try
             {
+            	model.put("webURL", getWebappURL());
+            }
+                
+            TransactionService transactionService = this.getServiceRegistry().getTransactionService();
+                
+            RetryingTransactionHelper tx = transactionService.getRetryingTransactionHelper();
 
-                // Compute the response in a retryable write transaction
-                return params.getDriver().doInWriteTransaction(params.getSession(), new CallableIO<DesktopResponse>()
-                {
-                    public DesktopResponse call() throws IOException
+            RetryingTransactionCallback<DesktopResponse> runScriptCB = new RetryingTransactionCallback<DesktopResponse>() {
+
+               @Override
+               public DesktopResponse execute() throws Throwable
+               {
+                    DesktopResponse response = new DesktopResponse(StsSuccess);
+                        
+                    try
                     {
-                        DesktopResponse response = new DesktopResponse(StsSuccess);
 
                         // Run the script
 
@@ -279,21 +287,21 @@ public class JavaScriptDesktopAction extends DesktopAction {
                                 response.setStatus(sts, msgToken != null ? msgToken : "");
                             }
                         }
-
                         // Return the response
     
                         return response;
                     }
-                });
-            }
-            catch (ScriptException ex)
-            {
-                return new DesktopResponse(StsError, ex.getMessage());
-            }
-            catch (IOException ex)
-            {
-                return new DesktopResponse(StsError, ex.getMessage());
-            }
+                    catch (ScriptException ex)
+                    {
+                            return new DesktopResponse(StsError, ex.getMessage());
+                    }
+               }         
+           };
+                
+                
+           return tx.doInTransaction(runScriptCB, false, false);
+                
+                // Compute the response in a retryable write transaction
         }
         else
         {

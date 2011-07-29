@@ -141,6 +141,8 @@ public class PseudoFileImpl implements PseudoFileInterface
 
     /**
      * Add pseudo files to a folder so that they appear in a folder search
+     * <p>
+     * This implementation populates the file state cache.
      * 
      * @param sess SrvSession
      * @param tree TreeConnection

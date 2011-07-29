@@ -104,7 +104,7 @@ public class ContentNetworkFile extends NodeRefNetworkFile
         
         if ( isMSOfficeSpecialFile(path, sess, nodeService, nodeRef)) {
         	
-        	// Create a file for special processing
+        	// Create a file for special processing for Excel
         	
         	netFile = new MSOfficeContentNetworkFile( nodeService, contentService, mimetypeService, nodeRef, path);
         }
@@ -137,7 +137,7 @@ public class ContentNetworkFile extends NodeRefNetworkFile
         FileInfo fileInfo;
         try
         {
-            fileInfo = cifsHelper.getFileInformation(nodeRef, "");
+            fileInfo = cifsHelper.getFileInformation(nodeRef, "", false, false);
         }
         catch (FileNotFoundException e)
         {
@@ -327,6 +327,10 @@ public class ContentNetworkFile extends NodeRefNetworkFile
         if (write)
         {
         	// Get a writeable channel to the content, along with the original content
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("get writer for content property");
+            }
         	
             content = contentService.getWriter( getNodeRef(), ContentModel.PROP_CONTENT, false);
                         
@@ -349,6 +353,10 @@ public class ContentNetworkFile extends NodeRefNetworkFile
         else
         {
         	// Get a read-only channel to the content
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("get reader for content property");
+            }
         	
             content = contentService.getReader( getNodeRef(), ContentModel.PROP_CONTENT);
             
@@ -370,11 +378,14 @@ public class ContentNetworkFile extends NodeRefNetworkFile
         
         // Update the current file size
         
-        if ( channel != null) {
-            try {
+        if ( channel != null) 
+        {
+            try 
+            {
                 setFileSize(channel.size());
             }
-            catch (IOException ex) {
+            catch (IOException ex) 
+            {
                 logger.error( ex);
             }
             
@@ -393,10 +404,18 @@ public class ContentNetworkFile extends NodeRefNetworkFile
     	throws IOException
     {
     	// Check if this is a directory
+    	if(logger.isDebugEnabled())
+    	{
+    	    logger.debug("closeFile");
+    	}
     	
         if (isDirectory())
         {
         	// Nothing to do
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("file is a directory - nothing to do");
+            }
         	
             setClosed( true);
             return;
@@ -404,6 +423,10 @@ public class ContentNetworkFile extends NodeRefNetworkFile
         else if (!hasContent())
         {
         	// File was not read/written so channel was not opened
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("no content to write - nothing to do");
+            }
         	
             setClosed( true);
             return;
@@ -413,6 +436,10 @@ public class ContentNetworkFile extends NodeRefNetworkFile
         
         if (modified)
         {
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("content has been modified");
+            }
             NodeRef contentNodeRef = getNodeRef();
             ContentWriter writer = (ContentWriter)content;
             
@@ -458,6 +485,10 @@ public class ContentNetworkFile extends NodeRefNetworkFile
             
             if (contentChanged)
             {
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("content has changed - remove ASPECT_NO_CONTENT");
+                }
                 nodeService.removeAspect(contentNodeRef, ContentModel.ASPECT_NO_CONTENT);
                 try
                 {
@@ -485,6 +516,10 @@ public class ContentNetworkFile extends NodeRefNetworkFile
         else if (channel != null)
         {
             // Close it - it was not modified
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("content not modified - simply close the channel");
+            }
         	
             channel.close();
             channel = null;
@@ -500,7 +535,9 @@ public class ContentNetworkFile extends NodeRefNetworkFile
     public void truncateFile(long size)
     	throws IOException
     {
-    	try {
+        logger.debug("truncate file");
+    	try 
+    	{
         	// If the content data channel has not been opened yet and the requested size is zero
             // then this is an open for overwrite so the existing content data is not copied
             

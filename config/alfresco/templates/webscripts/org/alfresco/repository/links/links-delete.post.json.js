@@ -88,6 +88,14 @@ function main()
    {
       return;
    }
+   if (nodes == null || nodes.length == 0)
+   {
+      status.code = 404;
+      var mess = "No valid link names supplied";
+      status.message = mess;
+      model.message = mess;
+      return;
+   }  
 
  for (var i in nodes)
  {

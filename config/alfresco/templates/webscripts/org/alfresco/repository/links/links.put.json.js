@@ -59,6 +59,15 @@ function main()
 {
    // get requested node
    var node = getRequestNode();
+   if (node == null)
+   {
+      status.code = 404;
+      var mes = "Link not found with the supplied name";
+      status.message = mes;
+      model.message = mes;
+      return;
+   }
+
    if (!node.hasPermission("WriteProperties") || !node.hasPermission("WriteContent"))
    {
       status.code = 403;

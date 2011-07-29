@@ -10,7 +10,6 @@
 
         <startEvent id="start"
             activiti:formKey="wf:submitAdhocTask" />
-
         <sequenceFlow id='flow1' 
             sourceRef='start'
             targetRef='adhocTask' />

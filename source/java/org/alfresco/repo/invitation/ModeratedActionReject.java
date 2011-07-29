@@ -39,6 +39,8 @@ import org.springframework.beans.factory.BeanFactory;
  * Note - uses a classpath template, rather than a data dictionary template,
  *  so behaves slightly differently to many other mail actions, and can't
  *  currently be localised easily.
+ *  
+ * <b>Same behaviour as {@link ModerationRejectDelegate}</b>
  */
 public class ModeratedActionReject extends JBPMSpringActionHandler
 {

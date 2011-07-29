@@ -59,6 +59,8 @@ public class LinksRestApiTest extends BaseWebScriptTest
     
     private static final String USER_ONE = "UserOneSecondToo";
     private static final String USER_TWO = "UserTwoSecondToo";
+    private static final String USERDETAILS_FIRSTNAME = "FirstName123";
+    private static final String USERDETAILS_LASTNAME = "LastName123";
     private static final String SITE_SHORT_NAME_LINKS = "LinkSiteShortNameTest";
     
     private static final String LINK_TITLE_ONE   = "TestLinkOne";
@@ -68,11 +70,12 @@ public class LinksRestApiTest extends BaseWebScriptTest
     private static final String LINK_URL_TWO   = "http://alfresco.com/";
     private static final String LINK_URL_THREE = "http://share.alfresco.com/";
 
-    private static final String URL_LINKS_BASE = "/api/links/site/" + SITE_SHORT_NAME_LINKS; 
-    private static final String URL_LINKS_LIST = URL_LINKS_BASE + "/links";
+    private static final String URL_LINKS_BASE = "/api/links/site/" + SITE_SHORT_NAME_LINKS + "/links"; 
+    private static final String URL_LINKS_LIST = URL_LINKS_BASE;
     private static final String URL_LINKS_CREATE = URL_LINKS_BASE + "/posts";
     private static final String URL_LINKS_UPDATE = URL_LINKS_BASE + "/"; // plus path
     private static final String URL_LINKS_DELETE = "/api/links/delete/site/" + SITE_SHORT_NAME_LINKS + "/links";
+    private static final String URL_LINKS_FETCH = "/api/links/link/site/" + SITE_SHORT_NAME_LINKS + "/links/"; // plus path 
     
     
     // General methods
@@ -149,8 +152,8 @@ public class LinksRestApiTest extends BaseWebScriptTest
             // create person properties
             PropertyMap personProps = new PropertyMap();
             personProps.put(ContentModel.PROP_USERNAME, userName);
-            personProps.put(ContentModel.PROP_FIRSTNAME, "FirstName123");
-            personProps.put(ContentModel.PROP_LASTNAME, "LastName123");
+            personProps.put(ContentModel.PROP_FIRSTNAME, USERDETAILS_FIRSTNAME);
+            personProps.put(ContentModel.PROP_LASTNAME, USERDETAILS_LASTNAME);
             personProps.put(ContentModel.PROP_EMAIL, "FirstName123.LastName123@email.com");
             personProps.put(ContentModel.PROP_JOBTITLE, "JobTitle123");
             personProps.put(ContentModel.PROP_JOBTITLE, "Organisation123");
@@ -191,11 +194,14 @@ public class LinksRestApiTest extends BaseWebScriptTest
     
     private JSONObject getLink(String name, int expectedStatus) throws Exception
     {
-       // TODO
-       Response response = sendRequest(new GetRequest(URL_LINKS_LIST + name), expectedStatus);
+       Response response = sendRequest(new GetRequest(URL_LINKS_FETCH + name), expectedStatus);
        if (expectedStatus == Status.STATUS_OK)
        {
           JSONObject result = new JSONObject(response.getContentAsString());
+          if(result.has("item"))
+          {
+             return result.getJSONObject("item");
+          }
           return result;
        }
        else
@@ -215,13 +221,13 @@ public class LinksRestApiTest extends BaseWebScriptTest
        json.put("site", SITE_SHORT_NAME_LINKS);
        json.put("title", title);
        json.put("description", description);
-       json.put("url", "url");
+       json.put("url", url);
        json.put("tags", "");
        if(internal)
        {
           json.put("internal", "true");
        }
-       json.put("page", "links-view");
+       json.put("page", "links-view"); // TODO Is this really needed?
        
        Response response = sendRequest(new PostRequest(URL_LINKS_CREATE, json.toString(), "application/json"), expectedStatus);
        if (expectedStatus == Status.STATUS_OK)
@@ -241,26 +247,18 @@ public class LinksRestApiTest extends BaseWebScriptTest
     
     /**
      * Updates the link with the new details
-     * TODO
      */
     private JSONObject updateLink(String name, String title, String description, String url,
           boolean internal, int expectedStatus) throws Exception
     {
-       String date = "2011/06/28"; // A Tuesday
-       String start = "11:30";
-       String end = "13:30";
-       
        JSONObject json = new JSONObject();
-       json.put("desc", description);
-       json.put("from", date);
-       json.put("to", date);
-//       json.put("fromdate", "Tuesday, 30 June 2011"); // Not needed
-//       json.put("todate", "Tuesday, 30 June 2011"); // Not needed
-       json.put("start", start);
-       json.put("end", end);
+       json.put("site", SITE_SHORT_NAME_LINKS);
+       json.put("title", title);
+       json.put("description", description);
+       json.put("url", url);
        json.put("tags", "");
-       json.put("docfolder", "");
-       json.put("page", "calendar");
+       json.put("internal", Boolean.toString(internal).toLowerCase());
+       json.put("page", "links-view"); // TODO Is this really needed?
        
        Response response = sendRequest(new PutRequest(URL_LINKS_UPDATE + name, json.toString(), "application/json"), expectedStatus);
        if (expectedStatus == Status.STATUS_OK)
@@ -270,6 +268,29 @@ public class LinksRestApiTest extends BaseWebScriptTest
           {
              return result.getJSONObject("links");
           }
+          return result;
+       }
+       else
+       {
+          return null;
+       }
+    }
+    
+    /**
+     * Deletes the link
+     */
+    private JSONObject deleteLink(String name, int expectedStatus) throws Exception
+    {
+       JSONArray items = new JSONArray();
+       items.put(name);
+       
+       JSONObject json = new JSONObject();
+       json.put("items", items);
+       
+       Response response = sendRequest(new PostRequest(URL_LINKS_DELETE, json.toString(), "application/json"), expectedStatus);
+       if (expectedStatus == Status.STATUS_OK)
+       {
+          JSONObject result = new JSONObject(response.getContentAsString());
           return result;
        }
        else
@@ -326,100 +347,134 @@ public class LinksRestApiTest extends BaseWebScriptTest
     public void testCreateEditDeleteEntry() throws Exception
     {
        JSONObject link;
+       JSONObject author;
+       JSONObject permissions;
        String name;
-if(1!=0) { return; } // TODO Finish       
+       
+       
+       // None to start with
+       link = getLinks(null, null, null);
+       assertEquals("Incorrect JSON: " + link.toString(), true, link.has("total"));
+       assertEquals(0, link.getInt("total"));
        
        
        // Won't be there to start with
-       link = getLink(LINK_TITLE_ONE, Status.STATUS_OK);
-       assertEquals(true, link.has("error"));
+       link = getLink(LINK_TITLE_ONE, Status.STATUS_NOT_FOUND);
        
        
        // Create
+       // (We don't get much info back)
        link = createLink(LINK_TITLE_ONE, "Thing 1", LINK_URL_ONE, false, Status.STATUS_OK);
+       assertEquals("Incorrect JSON: " + link.toString(), true, link.has("name"));
        name = getNameFromLink(link);
        
-       assertEquals(LINK_TITLE_ONE, link.getString("name"));
-       assertEquals("Where", link.getString("where"));
-       assertEquals("Thing", link.getString("desc"));
-       assertEquals("2011-06-29", link.getString("from")); // Different format!
-       assertEquals("2011-06-29", link.getString("to")); // Different format!
-       assertEquals("12:00", link.getString("start"));
-       assertEquals("13:00", link.getString("end"));
-       assertEquals("false", link.getString("allday"));
-       
+       assertEquals(name, link.getString("name"));
+       assertEquals(name, link.getString("message"));
+
        
        // Fetch
        link = getLink(name, Status.STATUS_OK);
        
        assertEquals("Error found " + link.toString(), false, link.has("error"));
-       assertEquals(LINK_TITLE_ONE, link.getString("what"));
-       assertEquals(name, link.getString("name"));
-       assertEquals("Where", link.getString("location")); // Not where...
-       assertEquals("Thing", link.getString("description")); // Not desc...
+       assertEquals(LINK_TITLE_ONE, link.getString("title"));
+       assertEquals("Thing 1", link.getString("description"));
+       assertEquals(LINK_URL_ONE, link.getString("url"));
+       assertEquals(false, link.getBoolean("internal"));
+       assertEquals(0, link.getJSONArray("tags").length());
        
-       assertEquals("false", link.getString("isoutlook"));
-       assertEquals("6/29/2011", link.getString("from"));
-       assertEquals("6/29/2011", link.getString("to"));
-       assertEquals("12:00", link.getString("start"));
-       assertEquals("13:00", link.getString("end"));
-       assertEquals("false", link.getString("allday"));
+       assertEquals(true, link.has("author"));
+       author = link.getJSONObject("author");
+       assertEquals(USER_ONE, author.getString("username"));
+       assertEquals(USERDETAILS_FIRSTNAME, author.getString("firstName"));
+       assertEquals(USERDETAILS_LASTNAME, author.getString("lastName"));
        
-       // Check the new style dates too
-//       assertEquals("2011-06-29T12:00:00Z", entry.getJSONObject("startAt").get("iso8601")); // TODO Needs TZ going in
-       assertEquals("6/29/2011", link.getJSONObject("startAt").get("legacyDate"));
-       assertEquals("12:00", link.getJSONObject("startAt").get("legacyTime"));
-//       assertEquals("2011-06-29T13:00:00Z", entry.getJSONObject("endAt").get("iso8601")); // TODO Needs TZ going in
-       assertEquals("6/29/2011", link.getJSONObject("endAt").get("legacyDate"));
-       assertEquals("13:00", link.getJSONObject("endAt").get("legacyTime"));
+       // Check the permissions
+       assertEquals(true, link.has("permissions"));
+       permissions = link.getJSONObject("permissions");
+       assertEquals(true, permissions.getBoolean("edit"));
+       assertEquals(true, permissions.getBoolean("delete"));
+       
+       // Check the noderef, comments url, created on
+       // TODO
+//       "commentsUrl": "/node/workspace\/SpacesStore\/7a8ea18e-8ff0-4337-b5af-b732d9e8d6e9/comments",
+//       "nodeRef": "workspace://SpacesStore/7a8ea18e-8ff0-4337-b5af-b732d9e8d6e9",
+//       "createdOn": "Jul 28 2011 17:23:20 GMT+0100 (BST)",
+
        
        
        // Edit
-       link = updateLink(name, LINK_TITLE_ONE, "More Where 1", LINK_URL_ONE, false, Status.STATUS_OK);
-       assertEquals("Error found " + link.toString(), false, link.has("error"));
-       assertEquals(LINK_TITLE_ONE, link.getString("summary"));
-       assertEquals("More Where", link.getString("location"));
-       assertEquals("More Thing", link.getString("description"));
+       // We should get a simple message
+       link = updateLink(name, LINK_TITLE_ONE, "More Thing 1", LINK_URL_ONE, true, Status.STATUS_OK);
+       assertEquals(
+             "Incorrect JSON: " + link.toString(), 
+             true, link.has("message")
+       );
+       assertEquals(
+             "Incorrect JSON: " + link.toString(), 
+             true, link.getString("message").contains("updated")
+       );
        
-       // No from/to/start/end, does dtstart and dtend instead
-       assertEquals("2011-06-28T11:30", link.getString("dtstart"));
-       assertEquals("2011-06-28T13:30", link.getString("dtend"));
-       assertEquals("false", link.getString("allday"));
-       // No isoutlook on create/edit
        
        
        // Fetch
        link = getLink(name, Status.STATUS_OK);
        
        assertEquals("Error found " + link.toString(), false, link.has("error"));
-       assertEquals(LINK_TITLE_ONE, link.getString("what"));
-       assertEquals(name, link.getString("name"));
-       assertEquals("More Where", link.getString("location")); // Not where...
-       assertEquals("More Thing", link.getString("description"));
+       assertEquals(LINK_TITLE_ONE, link.getString("title"));
+       assertEquals("More Thing 1", link.getString("description"));
+       assertEquals(LINK_URL_ONE, link.getString("url"));
+       assertEquals(true, link.getBoolean("internal"));
+       assertEquals(0, link.getJSONArray("tags").length());
        
-       assertEquals("false", link.getString("isoutlook"));
-       assertEquals("6/28/2011", link.getString("from"));
-       assertEquals("6/28/2011", link.getString("to"));
-       assertEquals("11:30", link.getString("start"));
-       assertEquals("13:30", link.getString("end"));
-       assertEquals("false", link.getString("allday"));
+       assertEquals(true, link.has("author"));
+       author = link.getJSONObject("author");
+       assertEquals(USER_ONE, author.getString("username"));
+       assertEquals(USERDETAILS_FIRSTNAME, author.getString("firstName"));
+       assertEquals(USERDETAILS_LASTNAME, author.getString("lastName"));
+       
+       
+       // Fetch as a different user, permissions different
+       this.authenticationComponent.setCurrentUser(USER_TWO);
+       link = getLink(name, Status.STATUS_OK);
+       
+       // Check the basics
+       assertEquals(LINK_TITLE_ONE, link.getString("title"));
+       assertEquals("More Thing 1", link.getString("description"));
+       assertEquals(LINK_URL_ONE, link.getString("url"));
+       assertEquals(true, link.getBoolean("internal"));
+       assertEquals(0, link.getJSONArray("tags").length());
+       
+       // Different user in the site, can edit but not delete
+       assertEquals(true, link.has("permissions"));
+       permissions = link.getJSONObject("permissions");
+       assertEquals(true, permissions.getBoolean("edit"));
+       assertEquals(false, permissions.getBoolean("delete"));
+       
+       this.authenticationComponent.setCurrentUser(USER_ONE);
 
        
        // Delete
-       sendRequest(new DeleteRequest(URL_LINKS_DELETE + name), Status.STATUS_NO_CONTENT);
+       link = deleteLink(name, Status.STATUS_OK);
+       assertEquals(
+             "Incorrect JSON: " + link.toString(), 
+             true, link.has("message")
+       );
+       assertEquals(
+             "Incorrect JSON: " + link.toString(), 
+             true, link.getString("message").contains("deleted")
+       );
        
        
        // Fetch, will have gone
-       link = getLink(LINK_TITLE_ONE, Status.STATUS_OK);
-       assertEquals(true, link.has("error"));
+       link = getLink(name, Status.STATUS_NOT_FOUND);
        
        
        // Can't delete again
-       sendRequest(new DeleteRequest(URL_LINKS_DELETE + name), Status.STATUS_NOT_FOUND);
+       deleteLink(name, Status.STATUS_NOT_FOUND);
+       
        
        // Can't edit it when it's deleted
-       sendRequest(new PutRequest(URL_LINKS_UPDATE + name, "{}", "application/json"), Status.STATUS_OK);
-       assertEquals(true, link.has("error"));
+       sendRequest(new PutRequest(URL_LINKS_UPDATE + name, "{}", "application/json"), Status.STATUS_NOT_FOUND);
     }
     
     /**

@@ -53,7 +53,7 @@
    </bean>
 
    <bean id="nfsServerNodeMonitor" class="org.alfresco.filesys.NfsServerNodeMonitor">
-      <property name="enabled" value="${nfs.nodeMinitor.enabled}" />
+      <property name="enabled" value="${nfs.nodeMonitor.enabled}" />
 
       <property name="targetDeviceName" value="${filesystem.name}" />
 

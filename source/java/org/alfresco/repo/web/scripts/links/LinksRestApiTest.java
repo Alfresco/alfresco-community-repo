@@ -20,7 +20,10 @@ package org.alfresco.repo.web.scripts.links;
 
 import java.util.Date;
 
+import javax.transaction.UserTransaction;
+
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
@@ -32,6 +35,7 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
@@ -39,7 +43,6 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
@@ -57,8 +60,11 @@ public class LinksRestApiTest extends BaseWebScriptTest
 	
     private MutableAuthenticationService authenticationService;
     private AuthenticationComponent authenticationComponent;
+    private TransactionService transactionService;
+    private BehaviourFilter policyBehaviourFilter;
     private PersonService personService;
     private NodeService nodeService;
+    private NodeService internalNodeService;
     private SiteService siteService;
     
     private static final String USER_ONE = "UserOneSecondToo";
@@ -91,9 +97,12 @@ public class LinksRestApiTest extends BaseWebScriptTest
         
         this.authenticationService = (MutableAuthenticationService)getServer().getApplicationContext().getBean("AuthenticationService");
         this.authenticationComponent = (AuthenticationComponent)getServer().getApplicationContext().getBean("authenticationComponent");
+        this.policyBehaviourFilter = (BehaviourFilter)getServer().getApplicationContext().getBean("policyBehaviourFilter");
+        this.transactionService = (TransactionService)getServer().getApplicationContext().getBean("transactionService");
         this.personService = (PersonService)getServer().getApplicationContext().getBean("PersonService");
         this.nodeService = (NodeService)getServer().getApplicationContext().getBean("NodeService");
         this.siteService = (SiteService)getServer().getApplicationContext().getBean("SiteService");
+        this.internalNodeService = (NodeService)getServer().getApplicationContext().getBean("nodeService");
         
         // Authenticate as user
         this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
@@ -173,7 +182,7 @@ public class LinksRestApiTest extends BaseWebScriptTest
     
     // Test helper methods
     
-    private JSONObject getLinks(String filter, String username, String from) throws Exception
+    private JSONObject getLinks(String filter, String username) throws Exception
     {
        String origUser = this.authenticationComponent.getCurrentUserName();
        if(username != null)
@@ -189,10 +198,6 @@ public class LinksRestApiTest extends BaseWebScriptTest
        }
        url += "?filter=" + filter;
        url += "&startIndex=0&page=1&pageSize=4";
-       if(from != null)
-       {
-          url += "from=" + from;
-       }
        
        Response response = sendRequest(new GetRequest(url), 200);
        JSONObject result = new JSONObject(response.getContentAsString());
@@ -317,7 +322,24 @@ public class LinksRestApiTest extends BaseWebScriptTest
      */
     private void pushLinkCreatedDateBack(String name, int daysAgo) throws Exception
     {
-       // TODO
+       NodeRef container = siteService.getContainer(SITE_SHORT_NAME_LINKS, "links");
+       NodeRef node = nodeService.getChildByName(container, ContentModel.ASSOC_CONTAINS, name);
+       
+       Date created = (Date)nodeService.getProperty(node, ContentModel.PROP_CREATED);
+       Date newCreated = new Date(created.getTime() - daysAgo*24*60*60*1000);
+       
+       UserTransaction txn = transactionService.getUserTransaction();
+       txn.begin();
+
+       this.policyBehaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
+       internalNodeService.setProperty(node, ContentModel.PROP_CREATED, newCreated);
+       this.policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
+       
+       txn.commit();
+       
+       // Now chance something else on the node to have it re-indexed
+       nodeService.setProperty(node, ContentModel.PROP_CREATED, newCreated);
+       nodeService.setProperty(node, ContentModel.PROP_DESCRIPTION, "Forced change");
     }
     
     /**
@@ -325,30 +347,12 @@ public class LinksRestApiTest extends BaseWebScriptTest
      */
     private String getNameFromLink(JSONObject link) throws Exception
     {
-       if(link.has("name"))
+       if(! link.has("name"))
        {
-          return link.getString("name");
+          throw new IllegalArgumentException("No name in " + link.toString());
        }
        
-       if(! link.has("uri"))
-       {
-          throw new IllegalArgumentException("No uri in " + link.toString());
-       }
-    
-// TODO
-       String uri = link.getString("uri");
-       String name = uri.substring( 
-             uri.indexOf(SITE_SHORT_NAME_LINKS) + SITE_SHORT_NAME_LINKS.length() + 1
-       );
-       
-       if(name.indexOf('?') > 0)
-       {
-          return name.substring(0, name.indexOf('?'));
-       }
-       else
-       {
-          return name;
-       }
+       return link.getString("name");
     }
     
     
@@ -366,7 +370,7 @@ public class LinksRestApiTest extends BaseWebScriptTest
        
        
        // None to start with
-       link = getLinks(null, null, null);
+       link = getLinks(null, null);
        assertEquals("Incorrect JSON: " + link.toString(), true, link.has("total"));
        assertEquals(0, link.getInt("total"));
        
@@ -510,7 +514,7 @@ public class LinksRestApiTest extends BaseWebScriptTest
        JSONArray entries;
        
        // Initially, there are no events
-       links = getLinks(null, null, null);
+       links = getLinks(null, null);
        assertEquals("Incorrect JSON: " + links.toString(), true, links.has("total"));
        assertEquals(0, links.getInt("total"));
        assertEquals(0, links.getInt("itemCount"));
@@ -521,7 +525,7 @@ public class LinksRestApiTest extends BaseWebScriptTest
        createLink(LINK_TITLE_TWO, "Thing 2", LINK_URL_TWO, false, Status.STATUS_OK);
        
        // Check again
-       links = getLinks(null, null, null);
+       links = getLinks(null, null);
        
        // Should have two links
        assertEquals("Incorrect JSON: " + links.toString(), true, links.has("total"));
@@ -544,7 +548,7 @@ public class LinksRestApiTest extends BaseWebScriptTest
        
        
        // Check now, should have three links
-       links = getLinks(null, null, null);
+       links = getLinks(null, null);
        assertEquals(3, links.getInt("total"));
        assertEquals(3, links.getInt("itemCount"));
        
@@ -556,7 +560,7 @@ public class LinksRestApiTest extends BaseWebScriptTest
        
        
        // Ask for filtering by user
-       links = getLinks(null, USER_ONE, null);
+       links = getLinks(null, USER_ONE);
        assertEquals(2, links.getInt("total"));
        assertEquals(2, links.getInt("itemCount"));
        
@@ -565,7 +569,7 @@ public class LinksRestApiTest extends BaseWebScriptTest
        assertEquals(LINK_TITLE_TWO, entries.getJSONObject(0).getString("title"));
        assertEquals(LINK_TITLE_ONE, entries.getJSONObject(1).getString("title"));
        
-       links = getLinks(null, USER_TWO, null);
+       links = getLinks(null, USER_TWO);
        assertEquals(1, links.getInt("total"));
        assertEquals(1, links.getInt("itemCount"));
        
@@ -575,7 +579,7 @@ public class LinksRestApiTest extends BaseWebScriptTest
 
        
        // Ask for filtering by recent docs
-       links = getLinks("recent", null, null);
+       links = getLinks("recent", null);
        assertEquals(3, links.getInt("total"));
        assertEquals(3, links.getInt("itemCount"));
        
@@ -587,13 +591,34 @@ public class LinksRestApiTest extends BaseWebScriptTest
        
        
        // Push the 3rd event back, it'll fall off
+       pushLinkCreatedDateBack(name3, 10);
+       
+       links = getLinks("recent", null);
+       assertEquals(2, links.getInt("total"));
+       assertEquals(2, links.getInt("itemCount"));
+       
+       entries = links.getJSONArray("items");
+       assertEquals(2, entries.length());
+       assertEquals(LINK_TITLE_TWO, entries.getJSONObject(0).getString("title"));
+       assertEquals(LINK_TITLE_ONE, entries.getJSONObject(1).getString("title"));
        
        
        
        // Trigger the paging, by going over our page size of 4
-       // TODO
+       createLink(LINK_TITLE_THREE+"a", "Thing 4", LINK_URL_THREE, true, Status.STATUS_OK);
+       createLink(LINK_TITLE_THREE+"z", "Thing 5", LINK_URL_THREE, true, Status.STATUS_OK);
        
+       links = getLinks(null, null);
+       assertEquals(5, links.getInt("total"));
+       assertEquals(4, links.getInt("itemCount"));
        
+       entries = links.getJSONArray("items");
+       assertEquals(4, entries.length());
+       assertEquals(LINK_TITLE_THREE+"z", entries.getJSONObject(0).getString("title"));
+       assertEquals(LINK_TITLE_THREE+"a", entries.getJSONObject(1).getString("title"));
+       assertEquals(LINK_TITLE_TWO, entries.getJSONObject(2).getString("title"));
+       assertEquals(LINK_TITLE_ONE, entries.getJSONObject(3).getString("title"));
+       // THREE is now the oldest, as we pushed it back in time, so it's on page two
        
        
        // Now hide the site, and remove the user from it, won't be allowed to see it

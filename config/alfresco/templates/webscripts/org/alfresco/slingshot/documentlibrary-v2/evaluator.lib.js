@@ -59,7 +59,7 @@ var Evaluator =
                // Working Copy?
                if (node.hasAspect("cm:workingcopy"))
                {
-                  var wcNode = node.properties["source"];
+                  var wcNode = node.assocs["cm:original"][0];
                   workingCopy["isWorkingCopy"] = true;
                   workingCopy["sourceNodeRef"] = wcNode.nodeRef;
                   if (wcNode.hasAspect("cm:versionable") && wcNode.versionHistory !== null && wcNode.versionHistory.length > 0)
@@ -75,27 +75,16 @@ var Evaluator =
                   }
                }
                // Locked?
-               else if (node.isLocked && !node.hasAspect("trx:transferred"))
+               else if (node.isLocked && !node.hasAspect("trx:transferred") && node.hasAspect("cm:checkedOut"))
                {
-                  var srcNodes = search.query(
-                  {
-                     query: "+@cm\\:source:\"" + node.nodeRef + "\" +ISNOTNULL:cm\\:workingCopyOwner",
-                     language: "lucene",
-                     page:
-                     {
-                        maxItems: 1
-                     }
-                  });
-                  if (srcNodes.length == 1)
-                  {
-                     workingCopy["hasWorkingCopy"] = true;
-                     workingCopy["workingCopyNodeRef"] = srcNodes[0].nodeRef;
+                  var srcNode = node.assocs["cm:workingcopylink"][0];
+                  workingCopy["hasWorkingCopy"] = true;
+                  workingCopy["workingCopyNodeRef"] = srcNode.nodeRef;
 
-                     // Google Doc?
-                     if (srcNodes[0].hasAspect("{http://www.alfresco.org/model/googledocs/1.0}googleResource"))
-                     {
-                        workingCopy["googleDocUrl"] = srcNodes[0].properties["gd:url"];
-                     }
+                  // Google Doc?
+                  if (srcNode.hasAspect("{http://www.alfresco.org/model/googledocs/1.0}googleResource"))
+                  {
+                     workingCopy["googleDocUrl"] = srcNode.properties["gd:url"];
                   }
                }
          }

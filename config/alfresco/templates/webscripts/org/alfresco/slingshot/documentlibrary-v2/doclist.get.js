@@ -85,6 +85,8 @@ function getDoclist()
              templates: filterParams.templates,
              namespace: (filterParams.namespace ? filterParams.namespace : null)
           });
+
+          totalRecords = allNodes.length;
        }
    }
    

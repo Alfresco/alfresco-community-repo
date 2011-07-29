@@ -166,7 +166,7 @@ var Evaluator =
                   wcStatus = "locked " + lockedBy.displayName + "|" + lockedBy.userName;
                   actionSet = "locked";
                }
-               var wcNode = node.properties["source"];
+               var wcNode = node.assocs["cm:original"][0];
                custom["isWorkingCopy"] = true;
                custom["workingCopyOriginal"] = wcNode.nodeRef;
                if (wcNode.hasAspect("cm:versionable") && wcNode.versionHistory !== null && wcNode.versionHistory.length > 0)
@@ -210,25 +210,17 @@ var Evaluator =
                   lockStatus = "locked " + lockedBy.displayName + "|" + lockedBy.userName;
                   actionSet = "locked";
                }
-               var srcNodes = search.query(
+               if (node.hasAspect("cm:checkedOut"))
                {
-                  query: "+@cm\\:source:\"" + node.nodeRef + "\" +ISNOTNULL:cm\\:workingCopyOwner",
-                  language: "lucene",
-                  page:
-                  {
-                     maxItems: 1
-                  }
-               });
-               if (srcNodes.length == 1)
-               {
+                  var srcNode = node.assocs["cm:workingcopylink"][0];
                   custom["hasWorkingCopy"] = true;
-                  custom["workingCopyNode"] = srcNodes[0].nodeRef;
+                  custom["workingCopyNode"] = srcNode.nodeRef;
                   permissions["view-working-copy"] = true;
 
                   // Google Doc?
-                  if (srcNodes[0].hasAspect("{http://www.alfresco.org/model/googledocs/1.0}googleResource"))
+                  if (srcNode.hasAspect("{http://www.alfresco.org/model/googledocs/1.0}googleResource"))
                   {
-                     custom["googleDocUrl"] = srcNodes[0].properties["gd:url"];
+                     custom["googleDocUrl"] = srcNode.properties["gd:url"];
                      permissions["view-google-doc"] = true;
                      if (lockOwnerUser == person.properties.userName)
                      {

@@ -85,6 +85,8 @@ function getDoclist()
              templates: filterParams.templates,
              namespace: (filterParams.namespace ? filterParams.namespace : null)
           });
+
+          totalRecords = allNodes.length;
        }
    }
    
@@ -244,10 +246,10 @@ function getDoclist()
    }
    
    var paging =
-            {
-               totalRecords: totalRecords,
-               startIndex: startIndex
-            };
+   {
+      totalRecords: totalRecords,
+      startIndex: startIndex
+   };
    
    if (paged && (totalRecords != totalRecordsUpper))
    {

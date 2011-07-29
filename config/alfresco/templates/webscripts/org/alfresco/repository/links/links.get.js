@@ -44,18 +44,25 @@ function main()
    {
       return;
    }
+   model.links = node;
    
+   // Grab the paging and filtering details
    var pNumber = parseInt(args.page, 10);
    var pSize = parseInt(args.pageSize, 10);
    var filter = args.filter;
    var tag = (args.tag != undefined && args.tag.length > 0) ? args.tag : null;
    
-   if ((pNumber === undefined) || (pSize === undefined))
+   // Paging is required, ensure the parameters were given
+   if ((pNumber === undefined) || (pSize === undefined) ||
+       isNaN(pNumber) || isNaN(pSize))
    {
-      model.error = "Parameters missing!";
+      var message = "Page sizing parameters missing!";
+      status.code = 400; // Bad Request
+      status.message = message;
+      model.message = message;
       return;
    }
-   model.links = node;
+
    model.data = getLinksList(node,filter,tag,7,(pNumber - 1) * pSize,pSize);
 }
 

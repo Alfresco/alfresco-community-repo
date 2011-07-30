@@ -29,8 +29,13 @@ import junit.framework.TestCase;
 /**
  * Shuffle Test
  */
-//public class ShuffleTest extends TestCase
-//{
+public class ShuffleTest extends TestCase
+{
+    public void testNothing()
+    {
+        // TODO remove once another test is uncommented 
+    }
+    
 //    private static Log logger = LogFactory.getLog(ShuffleTest.class);
 //
 //    /**
@@ -343,4 +348,4 @@ import junit.framework.TestCase;
 //            }
 //        }      
 //    }    
-//}
+}

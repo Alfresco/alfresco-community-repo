@@ -241,7 +241,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
      * 
      * Z2
      * G2 - U1, U3, U4, U6
-     * G6 - U3, U4, G7
+     * G6 - U3, U4, G7, G8 - U4, U8
      * </pre>
      * 
      * @throws Exception
@@ -256,15 +256,17 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
             newPerson("U1", "changeofemail@alfresco.com"), newPerson("U6"), newPerson("U7")
         }, new NodeDescription[]
         {
-            newGroup("G1", "U1", "U6", "UDangling", "G2"), newGroup("G2", "U1", "GDangling", "G1"), // test cyclic G2 <-> G1
+            newGroup("G1", "U1", "U6", "UDangling", "G2"), newGroup("G2", "U1", "GDangling", "G1"), // test cyclic G2
+                                                                                                    // <-> G1
             newGroupWithDisplayName("G5", "Amazing Group", "U6", "U7", "G4")
         });
         this.applicationContextManager.updateZone("Z2", new NodeDescription[]
         {
-            newPerson("U1", "shouldbeignored@alfresco.com"), newPerson("U5", "u5email@alfresco.com"), newPerson("U6")
+            newPerson("U1", "shouldbeignored@alfresco.com"), newPerson("U5", "u5email@alfresco.com"), newPerson("U6"),
+            newPerson("U8")
         }, new NodeDescription[]
         {
-            newGroup("G2", "U1", "U3", "U4", "U6"), newGroup("G7")
+            newGroup("G2", "U1", "U3", "U4", "U6"), newGroup("G7"), newGroup("G8", "U4", "U8")
         });
         this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
         {
@@ -289,8 +291,10 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
                 assertExists("Z2", "U4");
                 assertExists("Z2", "U5");
                 assertEmailEquals("U5", "u5email@alfresco.com");
+                assertExists("Z2", "U8");
                 assertExists("Z2", "G6", "U3", "U4", "G7");
                 assertExists("Z2", "G7");
+                assertExists("Z2", "G8", "U4", "U8");
                 return null;
             }
         });
@@ -310,8 +314,9 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
      * G6 - u3
      * 
      * Z2
-     * G2 - U1, U3, U6
+     * G2 - U1
      * G6 - U3, G7
+	 * G8 - U1, U8
      * </pre>
      * 
      * @throws Exception
@@ -329,11 +334,11 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
             newGroup("G6", "u3")
         }), new MockUserRegistry("Z2", new NodeDescription[]
         {
-            newPerson("U1", "somenewemail@alfresco.com"), newPerson("U3"), newPerson("U6")
+            newPerson("U1", "somenewemail@alfresco.com"), newPerson("U3"), newPerson("U6"), newPerson("U8"),
         }, new NodeDescription[]
         {
             newGroup("G2", "U1", "U3", "U4", "U6"), newGroup("G6", "U3", "U4", "G7"),
-            newGroupWithDisplayName("G7", "Late Arrival", "U4", "U5")
+            newGroupWithDisplayName("G7", "Late Arrival", "U4", "U5"), newGroup("G8", "U1", "U8")
         }));
         this.synchronizer.synchronize(true, true, true);
         this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
@@ -354,8 +359,10 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
                 assertEmailEquals("U1", "somenewemail@alfresco.com");
                 assertNotExists("U4");
                 assertNotExists("U5");
-                assertExists("Z2", "G7");
+                assertExists("Z2", "U8");
+				assertExists("Z2", "G7");
                 assertGroupDisplayNameEquals("G7", "Late Arrival");
+                assertExists("Z2", "G8", "U1", "U8");
                 return null;
             }
         }, false, true);

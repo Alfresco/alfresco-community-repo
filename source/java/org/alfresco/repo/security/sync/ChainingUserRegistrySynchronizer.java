@@ -788,9 +788,6 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                     groupDisplayName = ChainingUserRegistrySynchronizer.this.authorityService.getShortName(groupName);
                 }
 
-                // Add an entry for the parent itself, in case it is a root group
-                recordParentAssociationDeletion(groupName, null);
-
                 // Divide the child associations into person and group associations, dealing with case sensitivity
                 Set<String> newChildPersons = newPersonSet();
                 Set<String> newChildGroups = new TreeSet<String>();
@@ -821,7 +818,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                         {
                             if (!newChildPersons.remove(child))
                             {
-                                // Make sure each child features as a key in the creation map
+                                // Make sure each person with association changes features as a key in the creation map
                                 recordParentAssociationCreation(child, null);
                                 recordParentAssociationDeletion(child, groupName);
                             }
@@ -838,6 +835,8 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                 // Mark as created if new
                 else
                 {
+                    // Make sure each group to be created features in the association deletion map (as these are handled in the same phase)
+                    recordParentAssociationDeletion(groupName, null);
                     this.groupsToCreate.put(groupName, groupDisplayName);
                 }
 
@@ -1092,7 +1091,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
             public void processGroups(UserRegistry userRegistry, boolean allowDeletions, boolean splitTxns)
             {
                 // If we got back some groups, we have to cross reference them with the set of known authorities
-                if (allowDeletions || !this.groupParentAssocsToCreate.isEmpty())
+                if (allowDeletions || !this.groupParentAssocsToDelete.isEmpty())
                 {
                     final Set<String> allZonePersons = newPersonSet();
                     final Set<String> allZoneGroups = new TreeSet<String>();
@@ -1141,8 +1140,9 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                     }
 
                     // Prune the group associations now that we have complete information
-                    logRetainParentAssociations(this.groupParentAssocsToCreate, allZoneGroups);
-                    this.groupParentAssocsToDelete.keySet().retainAll(allZoneGroups);
+                    this.groupParentAssocsToCreate.keySet().retainAll(allZoneGroups);
+                    logRetainParentAssociations(this.groupParentAssocsToDelete, allZoneGroups);
+                    this.finalGroupChildAssocs.keySet().retainAll(allZoneGroups);
 
                     // Pruning person associations will have to wait until we have passed over all persons and built up
                     // this set

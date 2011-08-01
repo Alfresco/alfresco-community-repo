@@ -317,7 +317,7 @@ public class FTPServerTest extends TestCase
      *
      * @throws Exception
      */
-    public void testCRUD() throws Exception
+    public void DISABLED_testCRUD() throws Exception
     {
         final String PATH1 = "FTPServerTest";
         final String PATH2 = "Second part";
@@ -413,7 +413,7 @@ public class FTPServerTest extends TestCase
      *       
      *  So we need to check how high characters and problematic are encoded     
      */
-    public void testPathNames() throws Exception
+    public void DISABLED_testPathNames() throws Exception
     {
         
         logger.debug("Start testPathNames");
@@ -491,7 +491,7 @@ public class FTPServerTest extends TestCase
      * 
      * @throws Exception
      */
-    public void testTwoUserUpdate() throws Exception
+    public void DISABLED_testTwoUserUpdate() throws Exception
     {
         logger.debug("Start testFTPConnect");
         

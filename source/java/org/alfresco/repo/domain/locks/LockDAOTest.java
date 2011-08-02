@@ -326,7 +326,7 @@ public class LockDAOTest extends TestCase
     /**
      * Uses a thread lock to ensure that the lock DAO only allows locks through one at a time.
      */
-    public synchronized void testConcurrentLockAcquisition() throws Exception
+    public synchronized void xtestConcurrentLockAcquisition() throws Exception
     {
         ReentrantLock threadLock = new ReentrantLock();
         GetLockThread[] threads = new GetLockThread[5];

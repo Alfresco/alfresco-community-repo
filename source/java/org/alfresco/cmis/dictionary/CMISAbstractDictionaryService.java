@@ -41,7 +41,6 @@ import org.alfresco.repo.dictionary.DictionaryListener;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.ISO9075;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -302,7 +301,7 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
      */
     public CMISTypeDefinition findTypeByQueryName(String queryName)
     {
-        CMISTypeDefinition typeDef = getRegistry().typeDefsByQueryName.get(ISO9075.encodeSQL(queryName.toLowerCase()));
+        CMISTypeDefinition typeDef = getRegistry().typeDefsByQueryName.get(queryName.toLowerCase());
         return typeDef;
     }
 
@@ -312,7 +311,7 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
      */
     public CMISPropertyDefinition findPropertyByQueryName(String queryName)
     {
-       CMISPropertyDefinition propertyDef = getRegistry().propDefsByQueryName.get(ISO9075.encodeSQL(queryName.toLowerCase()));
+        CMISPropertyDefinition propertyDef = getRegistry().propDefsByQueryName.get(queryName.toLowerCase());
         return propertyDef;
     }
 

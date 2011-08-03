@@ -124,53 +124,6 @@ public class CalendarServiceImpl implements CalendarService
              siteShortName, CALENDAR_COMPONENT, create, 
              siteService, transactionService, taggingService);
     }
-    
-    private void handleTags(CalendarEntry entry)
-    {
-       NodeRef nodeRef = entry.getNodeRef();
-       
-       List<String> currentTags = taggingService.getTags(nodeRef);
-       List<String> newTags = entry.getTags();
-       
-       if(currentTags.size() == 0 && newTags.size() == 0)
-       {
-          // No tags, easy
-          return;
-       }
-
-       // Figure out what (if anything) changed
-       Set<String> toAdd = new HashSet<String>(newTags);
-       Set<String> toDel = new HashSet<String>(currentTags);
-       for(String tag : currentTags)
-       {
-          if(toAdd.contains(tag))
-          {
-             toAdd.remove(tag);
-          }
-       }
-       for(String tag : newTags)
-       {
-          if(toDel.contains(tag))
-          {
-             toDel.remove(tag);
-          }
-       }
-       
-       if(toDel.size() == 0 && toAdd.size() == 0)
-       {
-          // No changes
-       }
-       
-       // Make the changes
-       for(String tag : toDel)
-       {
-          taggingService.removeTag(nodeRef, tag);
-       }
-       for(String tag : toAdd)
-       {
-          taggingService.addTag(nodeRef, tag);
-       }
-    }
 
     @Override
     public CalendarEntry getCalendarEntry(String siteShortName, String entryName) 
@@ -237,7 +190,7 @@ public class CalendarServiceImpl implements CalendarService
        }
        
        // Tag it
-       handleTags(entryImpl);
+       taggingService.setTags(nodeRef, entry.getTags());
              
        // All done
        return entryImpl;
@@ -267,7 +220,7 @@ public class CalendarServiceImpl implements CalendarService
        nodeService.setProperties(entry.getNodeRef(), properties);
        
        // Update the tags
-       handleTags(entry);
+       taggingService.setTags(entry.getNodeRef(), entry.getTags());
        
        // Nothing was changed on the entry itself
        return entry;

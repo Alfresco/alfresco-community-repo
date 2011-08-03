@@ -22,10 +22,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQueryFactory;
@@ -136,53 +134,6 @@ public class LinksServiceImpl implements LinksService
        return SiteServiceImpl.getSiteContainer(
              siteShortName, LINKS_COMPONENT, create, 
              siteService, transactionService, taggingService);
-    }
-    
-    private void handleTags(LinkInfo link)
-    {
-       NodeRef nodeRef = link.getNodeRef();
-       
-       List<String> currentTags = taggingService.getTags(nodeRef);
-       List<String> newTags = link.getTags();
-       
-       if(currentTags.size() == 0 && newTags.size() == 0)
-       {
-          // No tags, easy
-          return;
-       }
-
-       // Figure out what (if anything) changed
-       Set<String> toAdd = new HashSet<String>(newTags);
-       Set<String> toDel = new HashSet<String>(currentTags);
-       for(String tag : currentTags)
-       {
-          if(toAdd.contains(tag))
-          {
-             toAdd.remove(tag);
-          }
-       }
-       for(String tag : newTags)
-       {
-          if(toDel.contains(tag))
-          {
-             toDel.remove(tag);
-          }
-       }
-       
-       if(toDel.size() == 0 && toAdd.size() == 0)
-       {
-          // No changes
-       }
-       
-       // Make the changes
-       for(String tag : toDel)
-       {
-          taggingService.removeTag(nodeRef, tag);
-       }
-       for(String tag : toAdd)
-       {
-          taggingService.addTag(nodeRef, tag);
-       }
     }
     
     private LinkInfo buildLink(NodeRef nodeRef, NodeRef container, String name)
@@ -313,7 +264,7 @@ public class LinksServiceImpl implements LinksService
        }
        
        // Now do the tags
-       handleTags(link);
+       taggingService.setTags(nodeRef, link.getTags());
        
        // All done
        return link;

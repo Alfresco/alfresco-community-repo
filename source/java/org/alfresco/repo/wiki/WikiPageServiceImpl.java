@@ -62,7 +62,7 @@ public class WikiPageServiceImpl implements WikiPageService
 {
     public static final String WIKI_COMPONENT = "wiki";
    
-    protected static final String CANNED_QUERY_GET_CHILDREN = "linksGetChildrenCannedQueryFactory";
+    protected static final String CANNED_QUERY_GET_CHILDREN = "wikiGetChildrenCannedQueryFactory";
     
     /**
      * The logger
@@ -126,7 +126,7 @@ public class WikiPageServiceImpl implements WikiPageService
              siteService, transactionService, taggingService);
     }
     
-    private WikiPageInfo buildPage(NodeRef nodeRef, NodeRef container, String name)
+    private WikiPageInfo buildPage(NodeRef nodeRef, NodeRef container, String name, String preLoadedContents)
     {
        WikiPageInfoImpl page = new WikiPageInfoImpl(nodeRef, container, name);
        
@@ -135,13 +135,24 @@ public class WikiPageServiceImpl implements WikiPageService
        
        // Start with the auditable properties
        page.setCreator((String)props.get(ContentModel.PROP_CREATOR));
-       page.setModifier((String)props.get(ContentModel.PROP_MODIFIED));
+       page.setModifier((String)props.get(ContentModel.PROP_MODIFIER));
        page.setCreatedAt((Date)props.get(ContentModel.PROP_CREATED));
        page.setModifiedAt((Date)props.get(ContentModel.PROP_MODIFIED));
        
        // Now the wiki ones
-       ContentReader reader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
-       page.setContents(reader.getContentString());
+       page.setTitle((String)props.get(ContentModel.PROP_TITLE));
+       
+       // Finally, do the content
+       String contents = preLoadedContents;
+       if(contents == null)
+       {
+          ContentReader reader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
+          if(reader != null)
+          {
+             contents = reader.getContentString();
+          }
+       }
+       page.setContents(contents);
        
        // Finally tags
        page.setTags(taggingService.getTags(nodeRef));
@@ -164,7 +175,7 @@ public class WikiPageServiceImpl implements WikiPageService
        NodeRef link = nodeService.getChildByName(container, ContentModel.ASSOC_CONTAINS, pageName);
        if(link != null)
        {
-          return buildPage(link, container, pageName);
+          return buildPage(link, container, pageName, null);
        }
        return null;
     }
@@ -197,7 +208,7 @@ public class WikiPageServiceImpl implements WikiPageService
              
        // Generate the wrapping object for it
        // Build it that way, so creator and created date come through
-       return buildPage(nodeRef, container, title);
+       return buildPage(nodeRef, container, title, content);
     }
 
     @Override
@@ -320,7 +331,7 @@ public class WikiPageServiceImpl implements WikiPageService
                {
                   NodeRef nodeRef = node.getNodeRef();
                   String name = node.getName();
-                  pages.add(buildPage(nodeRef, container, name));
+                  pages.add(buildPage(nodeRef, container, name, null));
                }
                return pages;
            }

@@ -27,8 +27,6 @@ import org.alfresco.service.NotAuditable;
 /**
  * The Calendar service.
  * 
- * TODO Lucene free querying
- * 
  * @author Nick Burch
  * @since 4.0
  */

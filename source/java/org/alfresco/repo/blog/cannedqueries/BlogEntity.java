@@ -32,10 +32,7 @@ public class BlogEntity extends NodeBackedEntity
     private String postedDate;
     
     // Supplemental query-related parameters
-    private Long parentNodeId;
-    private Long nameQNameId;
     private Long publishedQNameId;
-    private Long contentTypeQNameId;
     
     private Long blogIntAspectQNameId;
     private Long blogIntPostedQNameId;
@@ -50,11 +47,8 @@ public class BlogEntity extends NodeBackedEntity
     
     public BlogEntity(Long parentNodeId, Long nameQNameId, Long publishedQNameId, Long contentTypeQNameId, Long blogIntAspectQNameId, Long blogIntPostedQNameId)
     {
-        super();
-        this.parentNodeId = parentNodeId;
-        this.nameQNameId = nameQNameId;
+        super(parentNodeId, nameQNameId, contentTypeQNameId);
         this.publishedQNameId = publishedQNameId;
-        this.contentTypeQNameId = contentTypeQNameId;
         
         this.blogIntAspectQNameId = blogIntAspectQNameId;
         this.blogIntPostedQNameId = blogIntPostedQNameId;
@@ -84,24 +78,9 @@ public class BlogEntity extends NodeBackedEntity
     
     // Supplemental query-related parameters
     
-    public Long getParentNodeId()
-    {
-        return parentNodeId;
-    }
-    
-    public Long getNameQNameId()
-    {
-        return nameQNameId;
-    }
-    
     public Long getPublishedQNameId()
     {
         return publishedQNameId;
-    }
-    
-    public Long getContentTypeQNameId()
-    {
-        return contentTypeQNameId;
     }
     
     public Long getBlogIntAspectQNameId()

@@ -32,6 +32,7 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQuery;
 import org.alfresco.query.CannedQueryFactory;
@@ -77,10 +78,12 @@ import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.PropertyMap;
@@ -2133,6 +2136,118 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
             throw new SiteServiceException(MSG_SITE_CONTAINER_NOT_FOLDER, new Object[]{fileInfo.getName()});
         }
         return fileInfo.getNodeRef();
+    }
+    
+    /**
+     * Helper method to create a container if missing, and mark it as a
+     *  tag scope if it isn't already one
+     */
+    public static NodeRef getSiteContainer(final String siteShortName, 
+          final String componentName, final boolean create, 
+          final SiteService siteService, final TransactionService transactionService,
+          final TaggingService taggingService)
+    {
+       // Does the site exist?
+       if(siteService.getSite(siteShortName) == null) {
+          // Either the site doesn't exist, or you're not allowed to see it
+          if(! create)
+          {
+             // Just say there's no container
+             return null;
+          }
+          else
+          {
+             // We can't create on a non-existant site
+             throw new AlfrescoRuntimeException(
+                   "Unable to create the " + componentName + " container from a hidden or non-existant site"
+             );
+          }
+       }
+       
+       // Check about the container
+       if(! siteService.hasContainer(siteShortName, componentName))
+       {
+          if(create)
+          {
+             if(transactionService.isReadOnly())
+             {
+                throw new AlfrescoRuntimeException(
+                      "Unable to create the " + componentName + " container from a read only transaction"
+                );
+             }
+             
+             // Have the site container created
+             if(logger.isDebugEnabled())
+             {
+                logger.debug("Creating " + componentName + " container in site " + siteShortName);
+             }
+             
+             NodeRef container = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>() 
+                {
+                   public NodeRef doWork() throws Exception
+                   {
+                      // Create the site container
+                      NodeRef container = siteService.createContainer(
+                            siteShortName, componentName, null, null
+                      );
+   
+                      // Done
+                      return container;
+                   }
+                }, AuthenticationUtil.getSystemUserName()
+             );
+             
+             if(logger.isDebugEnabled())
+             {
+                logger.debug("Created " + componentName + " as " + container + " for " + siteShortName);
+             }
+             
+             // Container is setup and ready to use
+             return container;
+          }
+          else
+          {
+             // No container for this site, and not allowed to create
+             // Have the site container created
+             if(logger.isDebugEnabled())
+             {
+                logger.debug("No " + componentName + " component in " + siteShortName + " and not creating");
+             }
+             return null;
+          }
+       }
+       else
+       {
+          // Container is already there
+          final NodeRef container = siteService.getContainer(siteShortName, componentName);
+       
+          // Ensure the calendar container has the tag scope aspect applied to it
+          if(! taggingService.isTagScope(container))
+          {
+             if(logger.isDebugEnabled())
+             {
+                logger.debug("Attaching tag scope to " + componentName + " " + container.toString() + " for " + siteShortName);
+             }
+             AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() {
+                public Void doWork() throws Exception
+                {
+                   transactionService.getRetryingTransactionHelper().doInTransaction(
+                       new RetryingTransactionCallback<Void>() {
+                           public Void execute() throws Throwable {
+                              // Add the tag scope aspect
+                              taggingService.addTagScope(container);
+                              return null;
+                           }
+                       }, false, true
+                   );
+                   return null;
+                }
+             }, AuthenticationUtil.getSystemUserName());
+          }
+          
+          // Container is appropriately setup and configured
+          return container;
+       }
     }
 
     /**

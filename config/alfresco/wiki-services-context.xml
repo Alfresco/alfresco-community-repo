@@ -1,0 +1,63 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <!-- Wiki page Service -->
+   <bean id="WikiPageService" class="org.springframework.aop.framework.ProxyFactoryBean">
+      <property name="proxyInterfaces">
+         <value>org.alfresco.service.cmr.wiki.WikiPageService</value>
+      </property>
+      <property name="target">
+         <ref bean="wikiPageService" />
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref local="WikiPageService_transaction" />
+            <idref bean="AuditMethodInterceptor" />
+            <idref bean="exceptionTranslator" />
+            <idref bean="WikiPageService_security" />
+         </list>
+      </property>
+   </bean>
+
+   <!-- Wiki Page service transaction bean -->
+   <bean id="WikiPageService_transaction"
+      class="org.springframework.transaction.interceptor.TransactionInterceptor">
+      <property name="transactionManager">
+         <ref bean="transactionManager" />
+      </property>
+      <property name="transactionAttributes">
+         <props>
+            <prop key="*">${server.transaction.mode.default}</prop>
+         </props>
+      </property>
+   </bean>
+
+   <!-- List of Wiki Canned queries -->
+   <bean id="wikiCannedQueryRegistry" class="org.alfresco.util.registry.NamedObjectRegistry">
+       <property name="storageType" value="org.alfresco.query.CannedQueryFactory"/>
+   </bean>
+    
+   <!-- The regular GetChildren Auditable Canned Query Factory -->
+   <bean name="wikiGetChildrenCannedQueryFactory" class="org.alfresco.repo.node.getchildren.GetChildrenAuditableCannedQueryFactory">
+       <property name="registry" ref="wikiCannedQueryRegistry"/>
+       <property name="tenantService" ref="tenantService"/>
+       <property name="nodeDAO" ref="nodeDAO"/>
+       <property name="qnameDAO" ref="qnameDAO"/>
+       <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
+       <property name="methodSecurity" ref="WikiPageService_security_listWikiPages"/>
+   </bean>
+
+   <!-- Wiki Page Service base bean -->
+	<bean id="wikiPageService" class="org.alfresco.repo.wiki.WikiPageServiceImpl">
+        <property name="nodeService" ref="NodeService"/>
+        <property name="siteService" ref="SiteService"/>
+        <property name="contentService" ref="ContentService"/>
+        <property name="taggingService" ref="TaggingService"/>
+        <property name="fileFolderService" ref="FileFolderService"/>
+        <property name="transactionService" ref="transactionService" />
+        <property name="cannedQueryRegistry" ref="wikiCannedQueryRegistry" />
+	</bean>
+
+</beans>

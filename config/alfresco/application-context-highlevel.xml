@@ -16,6 +16,7 @@
     <import resource="classpath:alfresco/rendition-services-context.xml"/>
     <import resource="classpath:alfresco/replication-services-context.xml"/>
     <import resource="classpath:alfresco/thumbnail-service-context.xml"/>
+    <import resource="classpath:alfresco/wiki-services-context.xml"/>
     <import resource="classpath:alfresco/preference-service-context.xml"/>
     <import resource="classpath:alfresco/swf-transform-context.xml"/>
     <import resource="classpath:alfresco/form-services-context.xml"/>

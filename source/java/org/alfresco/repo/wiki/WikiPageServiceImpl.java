@@ -202,7 +202,7 @@ public class WikiPageServiceImpl implements WikiPageService
        ).getChildRef();
        
        // Store the content
-       ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, false);
+       ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
        writer.setEncoding("UTF-8");
        writer.putContent(content);
              
@@ -223,11 +223,13 @@ public class WikiPageServiceImpl implements WikiPageService
        NodeRef nodeRef = page.getNodeRef();
        
        // Handle the rename case
+       boolean renamed = false;
        if(! nodeService.getProperty(nodeRef, ContentModel.PROP_NAME).equals(page.getTitle()))
        {
           try
           {
              fileFolderService.rename(nodeRef, page.getTitle());
+             renamed = true;
           }
           catch(FileNotFoundException e)
           {
@@ -244,6 +246,12 @@ public class WikiPageServiceImpl implements WikiPageService
        
        // Now do the tags
        taggingService.setTags(nodeRef, page.getTags());
+       
+       // If we re-named, re-create the object
+       if(renamed)
+       {
+          page = buildPage(nodeRef, page.getContainerNodeRef(), page.getTitle(), page.getContents());
+       }
        
        // All done
        return page;

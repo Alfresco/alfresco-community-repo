@@ -166,65 +166,60 @@ public class WikiPageServiceImplTest
        
        // Fetch it, and check the details
        page = WIKI_PAGE_SERVICE.getWikiPage(WIKI_SITE.getShortName(), page.getSystemName());
-if(1==0) { // TODO Fix this
        assertEquals("Title", page.getTitle());
        assertEquals("This Is Some Content", page.getContents());
        assertEquals(ADMIN_USER, page.getCreator());
        assertEquals(0, page.getTags().size());
-}
        
        
        // Mark it as done with
        testNodesToTidy.add(page.getNodeRef());
     }
     
-//    @Test public void createUpdateDeleteEntry() throws Exception
-//    {
-//       WikiPageInfo page;
-//       
-//       // Run as the test user instead
-//       AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
-//       
-//       
-//       // Create a link
-//       page = WIKI_PAGE_SERVICE.createWikiPage(
-//             WIKI_SITE.getShortName(), "Title", "This Is Some Content"
-//       );
-//       
-//       
-//       // Check it
-//       assertEquals("Title", page.getTitle());
-//       assertEquals("Description", page.getDescription());
-//       assertEquals("http://www.alfresco.com/", page.getURL());
-//       assertEquals(false, page.isInternal());
-//       assertEquals(TEST_USER, page.getCreator());
-//       assertEquals(0, page.getTags().size());
-//       
-//       
-//       // Change it
-//       page.setTitle("New Title");
-//       page.setURL("http://share.alfresco.com/");
-//       page.setInternal(true);
-//       
-//       WIKI_PAGE_SERVICE.updateLink(page);
-//       
-//       
-//       // Fetch, and check
-//       page = WIKI_PAGE_SERVICE.getLink(WIKI_SITE.getShortName(), page.getSystemName());
-//       assertEquals("New Title", page.getTitle());
-//       assertEquals("Description", page.getDescription());
-//       assertEquals("http://share.alfresco.com/", page.getURL());
-//       assertEquals(true, page.isInternal());
-//       assertEquals(TEST_USER, page.getCreator());
-//       assertEquals(0, page.getTags().size());
-//       
-//       
-//       // Delete it
-//       WIKI_PAGE_SERVICE.deleteLink(page);
-//       
-//       // Check it went
-//       assertEquals(null, WIKI_PAGE_SERVICE.getLink(WIKI_SITE.getShortName(), page.getSystemName()));
-//    }
+    @Test public void createUpdateDeleteEntry() throws Exception
+    {
+       WikiPageInfo page;
+       
+       // Run as the test user instead
+       AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
+       
+       
+       // Create a link
+       page = WIKI_PAGE_SERVICE.createWikiPage(
+             WIKI_SITE.getShortName(), "Title", "This Is Some Content"
+       );
+       
+       
+       // Check it
+       assertEquals("Title", page.getSystemName());
+       assertEquals("Title", page.getTitle());
+       assertEquals("This Is Some Content", page.getContents());
+       assertEquals(TEST_USER, page.getCreator());
+       assertEquals(0, page.getTags().size());
+       
+       
+       // Change it
+       page.setTitle("New Title");
+       page.setContents("This is new content");
+       
+       page = WIKI_PAGE_SERVICE.updateWikiPage(page);
+       
+       
+       // Fetch, and check
+       page = WIKI_PAGE_SERVICE.getWikiPage(WIKI_SITE.getShortName(), page.getSystemName());
+       assertEquals("New Title", page.getSystemName());
+       assertEquals("New Title", page.getTitle());
+       assertEquals("This is new content", page.getContents());
+       assertEquals(TEST_USER, page.getCreator());
+       assertEquals(0, page.getTags().size());
+       
+       
+       // Delete it
+       WIKI_PAGE_SERVICE.deleteWikiPage(page);
+       
+       // Check it went
+       assertEquals(null, WIKI_PAGE_SERVICE.getWikiPage(WIKI_SITE.getShortName(), page.getSystemName()));
+    }
     
     /**
      * Ensures that when we try to write an entry to the

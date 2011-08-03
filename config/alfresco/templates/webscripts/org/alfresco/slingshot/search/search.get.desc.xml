@@ -1,9 +1,9 @@
 <webscript>
-   <shortname>search</shortname>
-   <description>Site Search Component Data Webscript</description>
+   <shortname>Share Search</shortname>
+   <description>Share Search Component Data Webscript</description>
    <url>/slingshot/search?term={term?}&amp;tag={tag?}&amp;site={site?}&amp;container={container?}&amp;sort={sort?}&amp;query={query?}&amp;repo={repo?}</url>
    <format default="json">argument</format>
    <authentication>user</authentication>
    <transaction allow="readonly">required</transaction>
-  <lifecycle>internal</lifecycle>
+   <lifecycle>internal</lifecycle>
 </webscript>

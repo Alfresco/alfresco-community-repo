@@ -16,12 +16,11 @@
  * Outputs:
  *  items - Array of objects containing the search results
  */
+
 const DEFAULT_MAX_RESULTS = 250;
 const SITES_SPACE_QNAME_PATH = "/app:company_home/st:sites/";
 const DISCUSSION_QNAMEPATH = "/fm:discussion";
 const COMMENT_QNAMEPATH = DISCUSSION_QNAMEPATH + "/cm:Comments/";
-const QUERY_TEMPLATES = [
-   {field: "keywords", template: "%(cm:name cm:title cm:description ia:whatEvent ia:descriptionEvent lnk:title lnk:description TEXT TAG)"}];
 
 /**
  * Returns site information data structure.
@@ -836,7 +835,7 @@ function getSearchResults(params)
          query: ftsQuery,
          language: "fts-alfresco",
          page: {maxItems: params.maxResults},
-         templates: QUERY_TEMPLATES,
+         templates: getQueryTemplate(),
          defaultField: "keywords",
          onerror: "no-results",
          sort: sortColumns 
@@ -850,4 +849,24 @@ function getSearchResults(params)
    }
    
    return processResults(nodes, params.maxResults);
+}
+
+/**
+ * Return the fts-alfresco query template to use.
+ * The default searches name, title, descripton, calendar, link, full text and tag fields.
+ * It is configurable via the .config.xml attached to this webscript.
+ */
+function getQueryTemplate()
+{
+   var t =
+      [{
+         field: "keywords",
+         template: "%(cm:name cm:title cm:description ia:whatEvent ia:descriptionEvent lnk:title lnk:description TEXT TAG)"
+      }],
+      qt = new XML(config.script)["default-query-template"];
+   if (qt != null && qt.length != 0)
+   {
+      t[0].template = qt.toString();
+   }
+   return t;
 }

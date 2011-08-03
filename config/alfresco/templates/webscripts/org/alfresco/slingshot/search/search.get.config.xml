@@ -1,0 +1,3 @@
+<search>
+   <default-query-template>%(cm:name cm:title cm:description ia:whatEvent ia:descriptionEvent lnk:title lnk:description TEXT TAG)</default-query-template>
+</search>

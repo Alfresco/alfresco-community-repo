@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.query.AbstractCannedQueryFactory;
 import org.alfresco.query.CannedQueryPageDetails;
 import org.alfresco.query.CannedQuerySortDetails;
@@ -32,7 +33,6 @@ import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.domain.query.CannedQueryDAO;
 import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean;
 import org.alfresco.repo.tenant.TenantService;
-import org.alfresco.service.cmr.calendar.CalendarEntry;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -200,6 +200,45 @@ public abstract class AbstractQNameAwareCannedQueryFactory<R> extends AbstractCa
                 return prop1.compareTo(prop2);
             }
         }
+    }
+    
+    /**
+     * An instance of a {@link PropertyBasedComparator} for a {@link NodeBackedEntity}
+     */
+    public static class NodeBackedEntityComparator extends PropertyBasedComparator<NodeBackedEntity>
+    {
+       public NodeBackedEntityComparator(QName comparableProperty)
+       {
+          super(comparableProperty);
+       }
+       
+       @Override
+       protected Comparable getProperty(NodeBackedEntity entity) {
+          if (comparableProperty.equals(ContentModel.PROP_CREATED))
+          {
+             return entity.getCreatedDate();
+          }
+          else if (comparableProperty.equals(ContentModel.PROP_MODIFIED))
+          {
+             return entity.getModifiedDate();
+          }
+          else if (comparableProperty.equals(ContentModel.PROP_CREATOR))
+          {
+             return entity.getCreator();
+          }
+          else if (comparableProperty.equals(ContentModel.PROP_MODIFIER))
+          {
+             return entity.getModifier();
+          }
+          else if (comparableProperty.equals(ContentModel.PROP_NAME))
+          {
+             return entity.getName();
+          }
+          else
+          {
+             throw new IllegalArgumentException("Unsupported calendar sort property: "+comparableProperty);
+          }
+       }
     }
     
     public static class NestedComparator<R> implements Comparator<R>

@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.domain.node;
 
+import org.alfresco.repo.security.permissions.PermissionCheckValue;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.Pair;
 
@@ -27,7 +28,7 @@ import org.alfresco.util.Pair;
  * @author Derek Hulley
  * @since 3.4
  */
-public class NodeEntity implements Node
+public class NodeEntity implements Node, PermissionCheckValue
 {
     private boolean locked;
     

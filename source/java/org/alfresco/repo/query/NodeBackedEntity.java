@@ -19,6 +19,7 @@
 package org.alfresco.repo.query;
 
 import org.alfresco.repo.domain.node.NodeEntity;
+import org.alfresco.repo.security.permissions.PermissionCheckValue;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -28,19 +29,32 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Nick Burch
  * @since 4.0
  */
-public abstract class NodeBackedEntity
+public class NodeBackedEntity implements PermissionCheckValue
 {
     private Long id; // node id
-    
+    private String name;
     private NodeEntity node;
     
-    private String name;
+    // Supplemental query-related parameters
+    private Long parentNodeId;
+    private Long nameQNameId;
+    private Long contentTypeQNameId;
     
     /**
      * Default constructor
      */
     public NodeBackedEntity()
     {
+    }
+    
+    /**
+     * Query constructor
+     */
+    public NodeBackedEntity(Long parentNodeId, Long nameQNameId, Long contentTypeQNameId)
+    {
+       this.parentNodeId = parentNodeId;
+       this.nameQNameId = nameQNameId;
+       this.contentTypeQNameId = contentTypeQNameId;
     }
     
     public Long getId()
@@ -71,6 +85,18 @@ public abstract class NodeBackedEntity
         return ((node != null && node.getAuditableProperties() != null) ? node.getAuditableProperties().getAuditCreator() : null);
     }
     
+    // helper (ISO 8061)
+    public String getModifiedDate()
+    {
+        return ((node != null && node.getAuditableProperties() != null) ? node.getAuditableProperties().getAuditModified() : null);
+    }
+    
+    // helper
+    public String getModifier()
+    {
+        return ((node != null && node.getAuditableProperties() != null) ? node.getAuditableProperties().getAuditModifier() : null);
+    }
+    
     public NodeEntity getNode()
     {
         return node;
@@ -89,5 +115,23 @@ public abstract class NodeBackedEntity
     public void setName(String name)
     {
         this.name = name;
+    }
+    
+    
+    // Supplemental query-related parameters
+    
+    public Long getParentNodeId()
+    {
+        return parentNodeId;
+    }
+    
+    public Long getNameQNameId()
+    {
+        return nameQNameId;
+    }
+
+    public Long getContentTypeQNameId() 
+    {
+       return contentTypeQNameId;
     }
 }

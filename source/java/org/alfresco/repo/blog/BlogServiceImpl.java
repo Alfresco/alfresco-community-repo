@@ -373,57 +373,6 @@ public class BlogServiceImpl implements BlogService
      */
     private String createDateRangeQuery(Date fromDate, Date toDate, QName dateProperty)
     {
-        // Some sanity checking of the date property.
-        if (dateProperty == null)
-        {
-            throw new NullPointerException("dateProperty cannot be null");
-        }
-        PropertyDefinition propDef = dictionaryService.getProperty(dateProperty);
-        if (propDef == null)
-        {
-            throw new NullPointerException("dateProperty '" + dateProperty + "' not recognised.");
-        }
-        else
-        {
-            final QName propDefType = propDef.getDataType().getName();
-            if ( !DataTypeDefinition.DATE.equals(propDefType) &&
-                    !DataTypeDefinition.DATETIME.equals(propDefType))
-            {
-                throw new IllegalArgumentException("Illegal property type '" + dateProperty + "' [" + propDefType + "]");
-            }
-        }
-        
-        QName propertyName = propDef.getName();
-        final String shortFormQName = propertyName.toPrefixString(namespaceService);
-        final String prefix = shortFormQName.substring(0, shortFormQName.indexOf(QName.NAMESPACE_PREFIX));
-        final String localName = propertyName.getLocalName();
-        
-        
-        // I can see potential issues with using 1970 and 3000 as default dates, but this is what the previous
-        // JavaScript controllers/libs did and I'll reproduce it here.
-        final String ZERO_DATE = "1970\\-01\\-01T00:00:00";
-        final String FUTURE_DATE = "3000\\-12\\-31T00:00:00";
-        
-        StringBuilder luceneQuery = new StringBuilder();
-        luceneQuery.append(" +@").append(prefix).append("\\:").append(localName).append(":[");
-        if (fromDate != null)
-        {
-            luceneQuery.append(LuceneUtils.getLuceneDateString(fromDate));
-        }
-        else
-        {
-            luceneQuery.append(ZERO_DATE);
-        }
-        luceneQuery.append(" TO ");
-        if (toDate != null)
-        {
-            luceneQuery.append(LuceneUtils.getLuceneDateString(toDate));
-        }
-        else
-        {
-            luceneQuery.append(FUTURE_DATE);
-        }
-        luceneQuery.append("] ");
-        return luceneQuery.toString();
+       return LuceneUtils.createDateRangeQuery(fromDate, toDate, dateProperty, dictionaryService, namespaceService);
     }
 }

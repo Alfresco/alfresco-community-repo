@@ -1506,6 +1506,28 @@
 
 
    <!--                                        -->
+   <!--          Links REST API                -->
+   <!--                                        -->
+   
+   <!-- abstract links web script -->
+   <bean id="abstractLinksWebScript"
+          class="org.alfresco.repo.web.scripts.calendar.AbstractLinksWebscript"
+          parent="webscript" abstract="true">
+        <property name="nodeService" ref="NodeService"/>
+        <property name="siteService" ref="SiteService"/>
+        <property name="linksService" ref="LinksService"/>
+        <property name="activityService" ref="activityService"/>
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
+   </bean>
+
+   <!-- Lists the Links for a site -->
+   <bean id="webscript.org.alfresco.repository.links.links.get"
+         class="org.alfresco.repo.web.scripts.links.LinksListGet"
+         parent="abstractLinksWebScript">
+   </bean>
+   
+   
+   <!--                                        -->
    <!--      Slingshot Calendar REST API       -->
    <!--                                        -->
    

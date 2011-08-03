@@ -69,6 +69,9 @@ Inbound settings from iBatis
         <!--GetChildren CQ (currently used by FileFolderService.list / PersonService.getPeople) -->
         <typeAlias alias="FilterSortNode" type="org.alfresco.repo.node.getchildren.FilterSortNodeEntity"/>
         
+        <!--GetChildren by Auditable CQ -->
+        <typeAlias alias="NodeBackedEntity" type="org.alfresco.repo.query.NodeBackedEntity"/>
+        
         <!-- Authority CQ -->
         <typeAlias alias="AuthorityInfo" type="org.alfresco.repo.security.authority.AuthorityInfoEntity"/>
         
@@ -191,6 +194,7 @@ Inbound settings from iBatis
         <!-- Canned queries -->
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-test-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-usages-common-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/query-auditable-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-authorities-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-blogs-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-calendar-common-SqlMap.xml"/>

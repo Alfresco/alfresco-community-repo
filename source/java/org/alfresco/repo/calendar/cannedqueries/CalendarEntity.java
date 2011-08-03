@@ -36,9 +36,6 @@ public class CalendarEntity extends NodeBackedEntity
     private String recurrenceLastMeeting;
     
     // Supplemental query-related parameters
-    private Long parentNodeId;
-    private Long nameQNameId;
-    private Long contentTypeQNameId;
     private Long fromDateQNameId;
     private Long toDateQNameId;
     private Long recurrenceRuleQNameId;
@@ -56,10 +53,7 @@ public class CalendarEntity extends NodeBackedEntity
                           Long fromDateQNameId, Long toDateQNameId,
                           Long recurrenceRuleQNameId, Long recurrenceLastMeetingQNameId)
     {
-        super();
-        this.parentNodeId = parentNodeId;
-        this.nameQNameId = nameQNameId;
-        this.contentTypeQNameId = contentTypeQNameId;
+        super(parentNodeId, nameQNameId, contentTypeQNameId);
         this.fromDateQNameId = fromDateQNameId;
         this.toDateQNameId = toDateQNameId;
         this.recurrenceRuleQNameId = recurrenceRuleQNameId;
@@ -118,21 +112,6 @@ public class CalendarEntity extends NodeBackedEntity
     
     // Supplemental query-related parameters
     
-    public Long getParentNodeId()
-    {
-        return parentNodeId;
-    }
-    
-    public Long getNameQNameId()
-    {
-        return nameQNameId;
-    }
-
-    public Long getContentTypeQNameId() 
-    {
-       return contentTypeQNameId;
-    }
-
     public Long getFromDateQNameId() 
     {
        return fromDateQNameId;

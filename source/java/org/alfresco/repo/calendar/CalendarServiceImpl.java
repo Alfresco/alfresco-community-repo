@@ -20,14 +20,12 @@ package org.alfresco.repo.calendar;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQueryFactory;
 import org.alfresco.query.CannedQueryResults;
@@ -38,8 +36,7 @@ import org.alfresco.repo.calendar.cannedqueries.GetCalendarEntriesCannedQuery;
 import org.alfresco.repo.calendar.cannedqueries.GetCalendarEntriesCannedQueryFactory;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.site.SiteServiceImpl;
 import org.alfresco.service.cmr.calendar.CalendarEntry;
 import org.alfresco.service.cmr.calendar.CalendarService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -75,6 +72,7 @@ public class CalendarServiceImpl implements CalendarService
     /**
      * The logger
      */
+    @SuppressWarnings("unused")
     private static Log logger = LogFactory.getLog(CalendarServiceImpl.class);
     
     private NodeService nodeService;
@@ -122,107 +120,9 @@ public class CalendarServiceImpl implements CalendarService
      */
     protected NodeRef getSiteCalendarContainer(final String siteShortName, boolean create)
     {
-       // Does the site exist?
-       if(siteService.getSite(siteShortName) == null) {
-          // Either the site doesn't exist, or you're not allowed to see it
-          if(! create)
-          {
-             // Just say there's no container
-             return null;
-          }
-          else
-          {
-             // We can't create on a non-existant site
-             throw new AlfrescoRuntimeException(
-                   "Unable to create the calendar container from a hidden or non-existant site"
-             );
-          }
-       }
-       
-       // Check about the container
-       if(! siteService.hasContainer(siteShortName, CALENDAR_COMPONENT))
-       {
-          if(create)
-          {
-             if(transactionService.isReadOnly())
-             {
-                throw new AlfrescoRuntimeException(
-                      "Unable to create the calendar container from a read only transaction"
-                );
-             }
-             
-             // Have the site container created
-             if(logger.isDebugEnabled())
-             {
-                logger.debug("Creating " + CALENDAR_COMPONENT + " container in site " + siteShortName);
-             }
-             
-             NodeRef container = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>() 
-                {
-                   public NodeRef doWork() throws Exception
-                   {
-                      // Create the site container
-                      NodeRef container = siteService.createContainer(
-                            siteShortName, CALENDAR_COMPONENT, null, null
-                      );
-   
-                      // Done
-                      return container;
-                   }
-                }, AuthenticationUtil.getSystemUserName()
-             );
-             
-             if(logger.isDebugEnabled())
-             {
-                logger.debug("Created " + CALENDAR_COMPONENT + " as " + container + " for " + siteShortName);
-             }
-             
-             // Container is setup and ready to use
-             return container;
-          }
-          else
-          {
-             // No container for this site, and not allowed to create
-             // Have the site container created
-             if(logger.isDebugEnabled())
-             {
-                logger.debug("No " + CALENDAR_COMPONENT + " component in " + siteShortName + " and not creating");
-             }
-             return null;
-          }
-       }
-       else
-       {
-          // Container is already there
-          final NodeRef container = siteService.getContainer(siteShortName, CALENDAR_COMPONENT);
-       
-          // Ensure the calendar container has the tag scope aspect applied to it
-          if(! taggingService.isTagScope(container))
-          {
-             if(logger.isDebugEnabled())
-             {
-                logger.debug("Attaching tag scope to " + CALENDAR_COMPONENT + " " + container.toString() + " for " + siteShortName);
-             }
-             AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() {
-                public Void doWork() throws Exception
-                {
-                   transactionService.getRetryingTransactionHelper().doInTransaction(
-                       new RetryingTransactionCallback<Void>() {
-                           public Void execute() throws Throwable {
-                              // Add the tag scope aspect
-                              taggingService.addTagScope(container);
-                              return null;
-                           }
-                       }, false, true
-                   );
-                   return null;
-                }
-             }, AuthenticationUtil.getSystemUserName());
-          }
-          
-          // Container is appropriately setup and configured
-          return container;
-       }
+       return SiteServiceImpl.getSiteContainer(
+             siteShortName, CALENDAR_COMPONENT, create, 
+             siteService, transactionService, taggingService);
     }
     
     private void handleTags(CalendarEntry entry)

@@ -22,11 +22,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import org.alfresco.opencmis.CMISConnector;
+import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 
 /**
@@ -43,17 +43,18 @@ public class AllowedChildObjectTypeIdsProperty extends AbstractProperty
      * 
      * @param serviceRegistry
      */
-    public AllowedChildObjectTypeIdsProperty(ServiceRegistry serviceRegistry, CMISMapping cmisMapping)
+    public AllowedChildObjectTypeIdsProperty(ServiceRegistry serviceRegistry, CMISConnector connector,
+            CMISMapping cmisMapping)
     {
-        super(serviceRegistry, PropertyIds.ALLOWED_CHILD_OBJECT_TYPE_IDS);
+        super(serviceRegistry, connector, PropertyIds.ALLOWED_CHILD_OBJECT_TYPE_IDS);
         this.cmisMapping = cmisMapping;
     }
 
     @Override
-    public Serializable getValue(NodeRef nodeRef)
+    public Serializable getValueInternal(CMISNodeInfo nodeInfo)
     {
-        QName typeQName = getServiceRegistry().getNodeService().getType(nodeRef);
-        TypeDefinition type = getServiceRegistry().getDictionaryService().getType(typeQName);
+        TypeDefinition type = getServiceRegistry().getDictionaryService()
+                .getType(nodeInfo.getType().getAlfrescoClass());
         if ((type != null) && (type.getChildAssociations() != null) && (!type.getChildAssociations().isEmpty()))
         {
             ArrayList<String> result = new ArrayList<String>();

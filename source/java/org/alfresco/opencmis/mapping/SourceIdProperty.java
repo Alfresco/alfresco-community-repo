@@ -20,14 +20,15 @@ package org.alfresco.opencmis.mapping;
 
 import java.io.Serializable;
 
+import org.alfresco.opencmis.CMISConnector;
+import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.AssociationRef;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 
 /**
  * Accessor for the Source Id (relationship)
  * 
- * @author davidc
+ * @author florian.mueller
  */
 public class SourceIdProperty extends AbstractProperty
 {
@@ -36,20 +37,13 @@ public class SourceIdProperty extends AbstractProperty
      * 
      * @param serviceRegistry
      */
-    public SourceIdProperty(ServiceRegistry serviceRegistry)
+    public SourceIdProperty(ServiceRegistry serviceRegistry, CMISConnector connector)
     {
-        super(serviceRegistry, PropertyIds.SOURCE_ID);
+        super(serviceRegistry, connector, PropertyIds.SOURCE_ID);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.alfresco.cmis.mapping.AbstractProperty#getValue(org.alfresco.service
-     * .cmr.repository.AssociationRef)
-     */
-    public Serializable getValue(AssociationRef assocRef)
+    public Serializable getValueInternal(CMISNodeInfo nodeInfo)
     {
-        return assocRef.getSourceRef().toString();
+        return createNodeInfo(nodeInfo.getAssociationRef().getSourceRef()).getObjectId();
     }
 }

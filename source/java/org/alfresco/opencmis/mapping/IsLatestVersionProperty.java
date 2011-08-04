@@ -20,58 +20,29 @@ package org.alfresco.opencmis.mapping;
 
 import java.io.Serializable;
 
-import org.alfresco.model.ContentModel;
+import org.alfresco.opencmis.CMISConnector;
+import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.version.Version;
-import org.alfresco.service.cmr.version.VersionHistory;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 
 /**
  * Accesser for CMIS is latest version property
  * 
- * @author dward
+ * @author florian.mueller
  */
-public class IsLatestVersionProperty extends AbstractVersioningProperty
+public class IsLatestVersionProperty extends AbstractProperty
 {
     /**
      * Construct
      */
-    public IsLatestVersionProperty(ServiceRegistry serviceRegistry)
+    public IsLatestVersionProperty(ServiceRegistry serviceRegistry, CMISConnector connector)
     {
-        super(serviceRegistry, PropertyIds.IS_LATEST_VERSION);
+        super(serviceRegistry, connector, PropertyIds.IS_LATEST_VERSION);
     }
 
     @Override
-    public Serializable getValue(NodeRef nodeRef)
+    public Serializable getValueInternal(CMISNodeInfo nodeInfo)
     {
-        if (isWorkingCopy(nodeRef) || getVersionSeries(nodeRef).equals(nodeRef) && !hasWorkingCopy(nodeRef))
-        {
-            return true;
-        }
-        NodeRef versionSeries = getVersionSeries(nodeRef);
-        if (hasWorkingCopy(versionSeries))
-        {
-            return false;
-        }
-
-        ServiceRegistry serviceRegistry = getServiceRegistry();
-        String versionLabel = (String) serviceRegistry.getNodeService().getProperty(nodeRef,
-                ContentModel.PROP_VERSION_LABEL);
-        if (versionLabel == null)
-        {
-            return false;
-        }
-        VersionHistory versionHistory = serviceRegistry.getVersionService().getVersionHistory(versionSeries);
-        if (versionHistory == null)
-        {
-            return false;
-        }
-        Version version = versionHistory.getVersion(versionLabel);
-        if (version == null)
-        {
-            return false;
-        }
-        return versionHistory.getHeadVersion().getFrozenStateNodeRef().equals(version.getFrozenStateNodeRef());
+        return nodeInfo.isLatestVersion();
     }
 }

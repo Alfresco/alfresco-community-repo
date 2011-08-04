@@ -18,9 +18,8 @@
  */
 package org.alfresco.opencmis.mapping;
 
-
+import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.apache.chemistry.opencmis.commons.enums.Action;
@@ -30,7 +29,7 @@ import org.apache.chemistry.opencmis.commons.enums.Action;
  * 
  * @author davidc
  */
-public class PermissionActionEvaluator extends AbstractActionEvaluator<NodeRef>
+public class PermissionActionEvaluator extends AbstractActionEvaluator
 {
     private String[] permissions;
     private PermissionService permissionService;
@@ -48,22 +47,18 @@ public class PermissionActionEvaluator extends AbstractActionEvaluator<NodeRef>
         this.permissionService = serviceRegistry.getPermissionService();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.CMISActionEvaluator#isAllowed(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    public boolean isAllowed(NodeRef nodeRef)
+    public boolean isAllowed(CMISNodeInfo nodeInfo)
     {
         for (String permission : permissions)
         {
-            if (permissionService.hasPermission(nodeRef, permission) == AccessStatus.DENIED)
+            if (permissionService.hasPermission(nodeInfo.getNodeRef(), permission) == AccessStatus.DENIED)
             {
                 return false;
             }
         }
         return true;
     }
-    
+
     @Override
     public String toString()
     {
@@ -77,5 +72,5 @@ public class PermissionActionEvaluator extends AbstractActionEvaluator<NodeRef>
         builder.append("]");
         return builder.toString();
     }
-    
+
 }

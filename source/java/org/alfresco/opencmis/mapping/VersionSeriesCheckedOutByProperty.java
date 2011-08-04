@@ -21,44 +21,43 @@ package org.alfresco.opencmis.mapping;
 import java.io.Serializable;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.opencmis.CMISConnector;
+import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 
 /**
  * Get the CMIS version series checked out by property
  * 
- * @author dward
+ * @author florian.mueller
  */
-public class VersionSeriesCheckedOutByProperty extends AbstractVersioningProperty
+public class VersionSeriesCheckedOutByProperty extends AbstractProperty
 {
     /**
      * Construct
      * 
      * @param serviceRegistry
      */
-    public VersionSeriesCheckedOutByProperty(ServiceRegistry serviceRegistry)
+    public VersionSeriesCheckedOutByProperty(ServiceRegistry serviceRegistry, CMISConnector connector)
     {
-        super(serviceRegistry, PropertyIds.VERSION_SERIES_CHECKED_OUT_BY);
+        super(serviceRegistry, connector, PropertyIds.VERSION_SERIES_CHECKED_OUT_BY);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.alfresco.cmis.property.PropertyAccessor#getValue(org.alfresco.service
-     * .cmr.repository.NodeRef)
-     */
-    public Serializable getValue(NodeRef nodeRef)
+    public Serializable getValueInternal(CMISNodeInfo nodeInfo)
     {
-        NodeRef versionSeries;
-        if (isWorkingCopy(nodeRef))
+        if (!nodeInfo.hasPWC())
         {
-            return getServiceRegistry().getNodeService().getProperty(nodeRef, ContentModel.PROP_WORKING_COPY_OWNER);
-        } else if (hasWorkingCopy((versionSeries = getVersionSeries(nodeRef))))
-        {
-            return getServiceRegistry().getNodeService().getProperty(versionSeries, ContentModel.PROP_LOCK_OWNER);
+            return null;
         }
-        return null;
+
+        if (nodeInfo.isPWC())
+        {
+            return getServiceRegistry().getNodeService().getProperty(nodeInfo.getNodeRef(),
+                    ContentModel.PROP_WORKING_COPY_OWNER);
+        } else
+        {
+            return getServiceRegistry().getNodeService().getProperty(nodeInfo.getCurrentNodeNodeRef(),
+                    ContentModel.PROP_LOCK_OWNER);
+        }
     }
 }

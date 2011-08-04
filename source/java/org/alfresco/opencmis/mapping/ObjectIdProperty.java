@@ -20,75 +20,30 @@ package org.alfresco.opencmis.mapping;
 
 import java.io.Serializable;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.CMISConnector;
+import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.AssociationRef;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 
 /**
  * Get the CMIS object id property.
  * 
- * @author andyh
- * @author dward
+ * @author florian.mueller
  */
-public class ObjectIdProperty extends AbstractVersioningProperty
+public class ObjectIdProperty extends AbstractProperty
 {
     /**
      * Construct
      * 
      * @param serviceRegistry
      */
-    public ObjectIdProperty(ServiceRegistry serviceRegistry)
+    public ObjectIdProperty(ServiceRegistry serviceRegistry, CMISConnector connector)
     {
-        super(serviceRegistry, PropertyIds.OBJECT_ID);
+        super(serviceRegistry, connector, PropertyIds.OBJECT_ID);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.alfresco.cmis.mapping.AbstractProperty#getValue(org.alfresco.service
-     * .cmr.repository.NodeRef)
-     */
-    public Serializable getValue(NodeRef nodeRef)
+    public Serializable getValueInternal(CMISNodeInfo nodeInfo)
     {
-        if (isWorkingCopy(nodeRef))
-        {
-            return nodeRef.toString();
-        }
-
-        QName typeQName = getServiceRegistry().getNodeService().getType(nodeRef);
-        if (typeQName.equals(CMISMapping.DOCUMENT_QNAME)
-                || getServiceRegistry().getDictionaryService().isSubClass(typeQName, ContentModel.TYPE_CONTENT))
-        {
-            Serializable versionLabel = getServiceRegistry().getNodeService().getProperty(nodeRef,
-                    ContentModel.PROP_VERSION_LABEL);
-            if (versionLabel == null)
-            {
-                versionLabel = CMISConnector.UNVERSIONED_VERSION_LABEL;
-            }
-
-            NodeRef versionSeries = getVersionSeries(nodeRef);
-            return new StringBuilder(1024).append(versionSeries.toString()).append(CMISConnector.ID_SEPERATOR)
-                    .append(versionLabel).toString();
-        }
-
-        return nodeRef.toString();
+        return nodeInfo.getObjectId();
     }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.alfresco.cmis.mapping.AbstractProperty#getValue(org.alfresco.service
-     * .cmr.repository.AssociationRef)
-     */
-    public Serializable getValue(AssociationRef assocRef)
-    {
-        return CMISConnector.ASSOC_ID_PREFIX + assocRef.getId();
-    }
-
 }

@@ -18,33 +18,30 @@
  */
 package org.alfresco.opencmis.mapping;
 
-import org.alfresco.opencmis.CMISConnector;
 import org.alfresco.opencmis.dictionary.CMISActionEvaluator;
+import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.NodeRef;
 
-public class RootFolderEvaluator extends AbstractActionEvaluator<NodeRef>
+public class RootFolderEvaluator extends AbstractActionEvaluator
 {
-    private CMISConnector cmisConnector;
-    private CMISActionEvaluator<NodeRef> folderEvaluator;
+    private CMISActionEvaluator folderEvaluator;
     private boolean rootFolderValue;
 
-    protected RootFolderEvaluator(ServiceRegistry serviceRegistry, CMISConnector cmisConnector,
-            CMISActionEvaluator<NodeRef> folderEvaluator, boolean rootFolderValue)
+    protected RootFolderEvaluator(ServiceRegistry serviceRegistry, CMISActionEvaluator folderEvaluator,
+            boolean rootFolderValue)
     {
         super(serviceRegistry, folderEvaluator.getAction());
-        this.cmisConnector = cmisConnector;
         this.folderEvaluator = folderEvaluator;
         this.rootFolderValue = rootFolderValue;
     }
 
-    public boolean isAllowed(NodeRef nodeRef)
+    public boolean isAllowed(CMISNodeInfo nodeInfo)
     {
-        if (cmisConnector.getRootNodeRef().equals(nodeRef))
+        if (nodeInfo.isRootFolder())
         {
             return rootFolderValue;
         }
 
-        return folderEvaluator.isAllowed(nodeRef);
+        return folderEvaluator.isAllowed(nodeInfo);
     }
 }

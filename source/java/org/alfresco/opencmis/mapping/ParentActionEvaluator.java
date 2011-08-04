@@ -18,17 +18,19 @@
  */
 package org.alfresco.opencmis.mapping;
 
+import org.alfresco.opencmis.CMISConnector;
+import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Action Evaluator whose evaluation takes place on parent
  * 
- * @author davidc
+ * @author florian.mueller
  */
-public class ParentActionEvaluator extends AbstractActionEvaluator<NodeRef>
+public class ParentActionEvaluator extends AbstractActionEvaluator
 {
-    private AbstractActionEvaluator<NodeRef> evaluator;
+    private AbstractActionEvaluator evaluator;
+    private CMISConnector cmisConnector;
 
     /**
      * Construct
@@ -36,36 +38,29 @@ public class ParentActionEvaluator extends AbstractActionEvaluator<NodeRef>
      * @param serviceRegistry
      * @param action
      */
-    protected ParentActionEvaluator(AbstractActionEvaluator<NodeRef> evaluator)
+    protected ParentActionEvaluator(CMISConnector cmisConnector, AbstractActionEvaluator evaluator)
     {
         super(evaluator.getServiceRegistry(), evaluator.getAction());
         this.evaluator = evaluator;
+        this.cmisConnector = cmisConnector;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.CMISActionEvaluator#isAllowed(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    public boolean isAllowed(NodeRef nodeRef)
+    public boolean isAllowed(CMISNodeInfo nodeInfo)
     {
-        if (nodeRef.equals(getServiceRegistry().getCMISService().getDefaultRootNodeRef()))
+        if (nodeInfo.isRootFolder())
         {
             return false;
         }
 
-        ChildAssociationRef car = getServiceRegistry().getNodeService().getPrimaryParent(nodeRef);
+        ChildAssociationRef car = getServiceRegistry().getNodeService().getPrimaryParent(nodeInfo.getNodeRef());
         if ((car != null) && (car.getParentRef() != null))
         {
-            return evaluator.isAllowed(car.getParentRef());
+            return evaluator.isAllowed(cmisConnector.createNodeInfo(car.getParentRef()));
         }
-        
+
         return false;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString()
     {
@@ -74,4 +69,3 @@ public class ParentActionEvaluator extends AbstractActionEvaluator<NodeRef>
         return builder.toString();
     }
 }
-

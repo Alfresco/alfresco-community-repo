@@ -20,17 +20,16 @@ package org.alfresco.opencmis.mapping;
 
 import java.io.Serializable;
 
-import org.alfresco.model.ContentModel;
+import org.alfresco.opencmis.CMISConnector;
+import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 
 /**
  * Accessor for CMIS content stream property id
  * 
- * @author andyh
+ * @author florian.mueller
  */
 public class ContentStreamIdProperty extends AbstractProperty
 {
@@ -39,27 +38,19 @@ public class ContentStreamIdProperty extends AbstractProperty
      * 
      * @param serviceRegistry
      */
-    public ContentStreamIdProperty(ServiceRegistry serviceRegistry)
+    public ContentStreamIdProperty(ServiceRegistry serviceRegistry, CMISConnector connector)
     {
-        super(serviceRegistry, PropertyIds.CONTENT_STREAM_ID);
+        super(serviceRegistry, connector, PropertyIds.CONTENT_STREAM_ID);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.alfresco.cmis.property.PropertyAccessor#getValue(org.alfresco.service
-     * .cmr.repository.NodeRef)
-     */
-    public Serializable getValue(NodeRef nodeRef)
+    public Serializable getValueInternal(CMISNodeInfo nodeInfo)
     {
-        Serializable sValue = getServiceRegistry().getNodeService().getProperty(nodeRef, ContentModel.PROP_CONTENT);
-        if (sValue != null)
+        ContentData contentData = getContentData(nodeInfo);
+
+        if (contentData != null)
         {
-            ContentData contentData = DefaultTypeConverter.INSTANCE.convert(ContentData.class, sValue);
             return contentData.getContentUrl();
         }
         return null;
     }
-
 }

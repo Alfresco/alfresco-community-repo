@@ -26,13 +26,13 @@ import org.alfresco.cmis.CMISCardinalityEnum;
 import org.alfresco.cmis.CMISChoice;
 import org.alfresco.cmis.CMISDataTypeEnum;
 import org.alfresco.cmis.CMISDictionaryModel;
+import org.alfresco.cmis.CMISPropertyAccessor;
 import org.alfresco.cmis.CMISPropertyDefinition;
 import org.alfresco.cmis.CMISPropertyId;
 import org.alfresco.cmis.CMISTypeDefinition;
 import org.alfresco.cmis.CMISUpdatabilityEnum;
 import org.alfresco.cmis.mapping.AbstractProperty;
 import org.alfresco.cmis.mapping.CMISMapping;
-import org.alfresco.opencmis.dictionary.CMISPropertyAccessor;
 import org.alfresco.opencmis.dictionary.CMISPropertyLuceneBuilder;
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
@@ -77,9 +77,9 @@ public class CMISBasePropertyDefinition implements CMISPropertyDefinition, Seria
     private CMISCardinalityEnum cardinality;
 
     private Double minValue = null;
-    
-    private Double maxValue = null; 
-    
+
+    private Double maxValue = null;
+
     private int maximumLength = -1;
 
     private Collection<CMISChoice> choices = new HashSet<CMISChoice>();
@@ -106,7 +106,8 @@ public class CMISBasePropertyDefinition implements CMISPropertyDefinition, Seria
      * @param propDef
      * @param typeDef
      */
-    public CMISBasePropertyDefinition(CMISMapping cmisMapping, CMISPropertyId propertyId, PropertyDefinition propDef, CMISTypeDefinition typeDef)
+    public CMISBasePropertyDefinition(CMISMapping cmisMapping, CMISPropertyId propertyId, PropertyDefinition propDef,
+            CMISTypeDefinition typeDef)
     {
         this.propertyId = propertyId;
         this.typeDef = typeDef;
@@ -142,14 +143,13 @@ public class CMISBasePropertyDefinition implements CMISPropertyDefinition, Seria
         }
         required = propDef.isMandatory();
         defaultValue = propDef.getDefaultValue();
-        if (propertyId.getId().equals(CMISDictionaryModel.PROP_OBJECT_TYPE_ID) ||
-            propertyId.getId().equals(CMISDictionaryModel.PROP_SOURCE_ID) ||
-            propertyId.getId().equals(CMISDictionaryModel.PROP_TARGET_ID))
+        if (propertyId.getId().equals(CMISDictionaryModel.PROP_OBJECT_TYPE_ID)
+                || propertyId.getId().equals(CMISDictionaryModel.PROP_SOURCE_ID)
+                || propertyId.getId().equals(CMISDictionaryModel.PROP_TARGET_ID))
         {
             // Fix http://issues.alfresco.com/jira/browse/ALF-2637
             updatability = CMISUpdatabilityEnum.ON_CREATE;
-        }
-        else
+        } else
         {
             updatability = propDef.isProtected() ? CMISUpdatabilityEnum.READ_ONLY : CMISUpdatabilityEnum.READ_AND_WRITE;
         }
@@ -172,30 +172,29 @@ public class CMISBasePropertyDefinition implements CMISPropertyDefinition, Seria
                 case TRUE:
                 default:
                     String analyserClassName = propDef.resolveAnalyserClassName();
-                    if(propDef.getDataType().getName().equals(DataTypeDefinition.BOOLEAN))
+                    if (propDef.getDataType().getName().equals(DataTypeDefinition.BOOLEAN))
                     {
                         orderable = true;
-                    }
-                    else if (analyserClassName.equals(DateTimeAnalyser.class.getCanonicalName())
+                    } else if (analyserClassName.equals(DateTimeAnalyser.class.getCanonicalName())
                             || analyserClassName.equals(DateAnalyser.class.getCanonicalName())
-                            || analyserClassName.equals(DoubleAnalyser.class.getCanonicalName()) || analyserClassName.equals(FloatAnalyser.class.getCanonicalName())
-                            || analyserClassName.equals(IntegerAnalyser.class.getCanonicalName()) || analyserClassName.equals(LongAnalyser.class.getCanonicalName())
-                            || analyserClassName.equals(PathAnalyser.class.getCanonicalName()) || analyserClassName.equals(VerbatimAnalyser.class.getCanonicalName()))
+                            || analyserClassName.equals(DoubleAnalyser.class.getCanonicalName())
+                            || analyserClassName.equals(FloatAnalyser.class.getCanonicalName())
+                            || analyserClassName.equals(IntegerAnalyser.class.getCanonicalName())
+                            || analyserClassName.equals(LongAnalyser.class.getCanonicalName())
+                            || analyserClassName.equals(PathAnalyser.class.getCanonicalName())
+                            || analyserClassName.equals(VerbatimAnalyser.class.getCanonicalName()))
                     {
                         orderable = true;
-                    }
-                    else
+                    } else
                     {
                         orderable = false;
                     }
                 }
-            }
-            else
+            } else
             {
                 orderable = false;
             }
-        }
-        else
+        } else
         {
             orderable = false;
         }
@@ -273,7 +272,8 @@ public class CMISBasePropertyDefinition implements CMISPropertyDefinition, Seria
     }
 
     /**
-     * For variable length properties, get the maximum length allowed. Unsupported.
+     * For variable length properties, get the maximum length allowed.
+     * Unsupported.
      * 
      * @return
      */
@@ -282,24 +282,29 @@ public class CMISBasePropertyDefinition implements CMISPropertyDefinition, Seria
         return maximumLength;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.alfresco.cmis.CMISPropertyDefinition#getMinValue()
      */
     public Double getMinValue()
     {
         return minValue;
     }
-    
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.alfresco.cmis.CMISPropertyDefinition#getMaxValue()
      */
     public Double getMaxValue()
     {
         return maxValue;
     }
-    
+
     /**
-     * Get the choices available as values for this property TODO: not implemented yet
+     * Get the choices available as values for this property TODO: not
+     * implemented yet
      * 
      * @return
      */
@@ -309,7 +314,8 @@ public class CMISBasePropertyDefinition implements CMISPropertyDefinition, Seria
     }
 
     /**
-     * Is this a choice where a user can enter other values (ie a list with common options)
+     * Is this a choice where a user can enter other values (ie a list with
+     * common options)
      * 
      * @return
      */
@@ -390,6 +396,7 @@ public class CMISBasePropertyDefinition implements CMISPropertyDefinition, Seria
 
     /*
      * (non-Javadoc)
+     * 
      * @see java.lang.Object#toString()
      */
     @Override

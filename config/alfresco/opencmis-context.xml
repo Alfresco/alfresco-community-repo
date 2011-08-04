@@ -68,6 +68,7 @@
         <property name="fileFolderService"      ref="FileFolderService" />
         <property name="versionService"         ref="VersionService" />
         <property name="checkOutCheckInService" ref="CheckoutCheckinService" />
+        <property name="lockService"            ref="LockService" />
         <property name="contentService"         ref="ContentService" />
         <property name="renditionService"       ref="RenditionService" />
         <property name="tenantAdminService"     ref="tenantAdminService" />

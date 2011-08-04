@@ -20,56 +20,30 @@ package org.alfresco.opencmis.mapping;
 
 import java.io.Serializable;
 
-import org.alfresco.model.ContentModel;
+import org.alfresco.opencmis.CMISConnector;
+import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.version.VersionHistory;
-import org.alfresco.service.cmr.version.VersionType;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 
 /**
  * Accessor for CMIS is major version property
  * 
- * @author dward
+ * @author florian.mueller
  */
-public class IsMajorVersionProperty extends AbstractVersioningProperty
+public class IsMajorVersionProperty extends AbstractProperty
 {
     /**
      * Construct
      * 
      * @param serviceRegistry
      */
-    public IsMajorVersionProperty(ServiceRegistry serviceRegistry)
+    public IsMajorVersionProperty(ServiceRegistry serviceRegistry, CMISConnector connector)
     {
-        super(serviceRegistry, PropertyIds.IS_MAJOR_VERSION);
+        super(serviceRegistry, connector, PropertyIds.IS_MAJOR_VERSION);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.alfresco.cmis.property.PropertyAccessor#getValue(org.alfresco.service
-     * .cmr.repository.NodeRef)
-     */
-    public Serializable getValue(NodeRef nodeRef)
+    public Serializable getValueInternal(CMISNodeInfo nodeInfo)
     {
-        if (isWorkingCopy(nodeRef))
-        {
-            return false;
-        }
-        ServiceRegistry serviceRegistry = getServiceRegistry();
-        String versionLabel = (String) serviceRegistry.getNodeService().getProperty(nodeRef,
-                ContentModel.PROP_VERSION_LABEL);
-        if (versionLabel == null)
-        {
-            return false;
-        }
-        NodeRef versionSeries = getVersionSeries(nodeRef);
-        VersionHistory versionHistory = serviceRegistry.getVersionService().getVersionHistory(versionSeries);
-        if (versionHistory == null)
-        {
-            return false;
-        }
-        return versionHistory.getVersion(versionLabel).getVersionType() == VersionType.MAJOR;
+        return nodeInfo.isMajorVersion();
     }
 }

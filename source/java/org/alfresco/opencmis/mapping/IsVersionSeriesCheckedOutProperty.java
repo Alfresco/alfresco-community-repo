@@ -20,28 +20,29 @@ package org.alfresco.opencmis.mapping;
 
 import java.io.Serializable;
 
+import org.alfresco.opencmis.CMISConnector;
+import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 
 /**
  * Get the CMIS version series checked out property
  * 
- * @author dward
+ * @author florian.mueller
  */
-public class IsVersionSeriesCheckedOutProperty extends AbstractVersioningProperty
+public class IsVersionSeriesCheckedOutProperty extends AbstractProperty
 {
     /**
      * Construct
      */
-    public IsVersionSeriesCheckedOutProperty(ServiceRegistry serviceRegistry)
+    public IsVersionSeriesCheckedOutProperty(ServiceRegistry serviceRegistry, CMISConnector connector)
     {
-        super(serviceRegistry, PropertyIds.IS_VERSION_SERIES_CHECKED_OUT);
+        super(serviceRegistry, connector, PropertyIds.IS_VERSION_SERIES_CHECKED_OUT);
     }
 
     @Override
-    public Serializable getValue(NodeRef nodeRef)
+    public Serializable getValueInternal(CMISNodeInfo nodeInfo)
     {
-        return isWorkingCopy(nodeRef) || hasWorkingCopy(getVersionSeries(nodeRef));
+        return nodeInfo.hasPWC();
     }
 }

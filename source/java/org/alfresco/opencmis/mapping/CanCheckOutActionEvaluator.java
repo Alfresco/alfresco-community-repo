@@ -18,24 +18,21 @@
  */
 package org.alfresco.opencmis.mapping;
 
-import org.alfresco.model.ContentModel;
+import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockType;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.apache.chemistry.opencmis.commons.enums.Action;
 
 /**
  * Alfresco Permission based Action Evaluator
  * 
- * @author davidc
+ * @author florian.mueller
  */
-public class CanCheckOutActionEvaluator extends AbstractActionEvaluator<NodeRef>
+public class CanCheckOutActionEvaluator extends AbstractActionEvaluator
 {
     private PermissionActionEvaluator permissionEvaluator;
-    private NodeService nodeService;
     private LockService lockService;
 
     /**
@@ -49,18 +46,17 @@ public class CanCheckOutActionEvaluator extends AbstractActionEvaluator<NodeRef>
         super(serviceRegistry, Action.CAN_CHECK_OUT);
         permissionEvaluator = new PermissionActionEvaluator(serviceRegistry, Action.CAN_CHECK_OUT,
                 PermissionService.CHECK_OUT);
-        nodeService = serviceRegistry.getNodeService();
         lockService = serviceRegistry.getLockService();
     }
 
-    public boolean isAllowed(NodeRef nodeRef)
+    public boolean isAllowed(CMISNodeInfo nodeInfo)
     {
-        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY)
-                || lockService.getLockType(nodeRef) == LockType.READ_ONLY_LOCK)
+        if (!nodeInfo.isPWC() || lockService.getLockType(nodeInfo.getNodeRef()) == LockType.READ_ONLY_LOCK)
         {
             return false;
         }
-        return permissionEvaluator.isAllowed(nodeRef);
+
+        return permissionEvaluator.isAllowed(nodeInfo);
     }
 
 }

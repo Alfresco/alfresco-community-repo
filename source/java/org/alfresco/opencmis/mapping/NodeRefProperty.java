@@ -20,14 +20,14 @@ package org.alfresco.opencmis.mapping;
 
 import java.io.Serializable;
 
+import org.alfresco.opencmis.CMISConnector;
+import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.AssociationRef;
-import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Get the CMIS object id property.
  */
-public class NodeRefProperty extends AbstractVersioningProperty
+public class NodeRefProperty extends AbstractProperty
 {
     public static final String NodeRefPropertyId = "alfcmis:nodeRef";
 
@@ -36,20 +36,28 @@ public class NodeRefProperty extends AbstractVersioningProperty
      * 
      * @param serviceRegistry
      */
-    public NodeRefProperty(ServiceRegistry serviceRegistry)
+    public NodeRefProperty(ServiceRegistry serviceRegistry, CMISConnector connector)
     {
-        super(serviceRegistry, NodeRefPropertyId);
+        super(serviceRegistry, connector, NodeRefPropertyId);
     }
 
     @Override
-    public Serializable getValue(NodeRef nodeRef)
+    public Serializable getValueInternal(CMISNodeInfo nodeInfo)
     {
-        return getLiveNodeRef(nodeRef);
-    }
+        if (nodeInfo.getNodeRef() != null)
+        {
+            if (nodeInfo.isCurrentVersion())
+            {
+                return nodeInfo.getCurrentNodeNodeRef().toString();
+            } else
+            {
+                return nodeInfo.getNodeRef().toString();
+            }
+        } else if (nodeInfo.getAssociationRef() != null)
+        {
+            return nodeInfo.getAssociationRef().toString();
+        }
 
-    @Override
-    public Serializable getValue(AssociationRef assocRef)
-    {
-        return "" + assocRef.getId();
+        return null;
     }
 }

@@ -20,21 +20,28 @@ package org.alfresco.opencmis.mapping;
 
 import java.io.Serializable;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.opencmis.CMISConnector;
+import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.opencmis.dictionary.CMISPropertyAccessor;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 
 /**
  * Base class for all property accessors
  * 
  * @author andyh
- *
+ * 
  */
 public abstract class AbstractProperty implements CMISPropertyAccessor
 {
+    private static final String CONTENT_PROPERTY = "::content";
+
     private ServiceRegistry serviceRegistry;
+    private CMISConnector connector;
     private String propertyName;
 
     /**
@@ -43,53 +50,85 @@ public abstract class AbstractProperty implements CMISPropertyAccessor
      * @param serviceRegistry
      * @param propertyName
      */
-    protected AbstractProperty(ServiceRegistry serviceRegistry, String propertyName)
+    protected AbstractProperty(ServiceRegistry serviceRegistry, CMISConnector connector, String propertyName)
     {
         this.serviceRegistry = serviceRegistry;
+        this.connector = connector;
         this.propertyName = propertyName;
     }
 
     /**
-     * @return  service registry
+     * @return service registry
      */
     protected ServiceRegistry getServiceRegistry()
     {
         return serviceRegistry;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.property.PropertyAccessor#getName()
-     */
     public String getName()
     {
         return propertyName;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.property.PropertyAccessor#getMappedProperty()
-     */
     public QName getMappedProperty()
     {
         return null;
     }
 
     @Override
-    public Serializable getValue(NodeRef nodeRef)
-    {
-        throw new UnsupportedOperationException();
-    }
-    
-    @Override
     public void setValue(NodeRef nodeRef, Serializable value)
     {
         throw new UnsupportedOperationException();
     }
-    
-    @Override
-    public Serializable getValue(AssociationRef assocRef)
+
+    public Serializable getValue(NodeRef nodeRef)
     {
-        throw new UnsupportedOperationException();
+        return getValue(createNodeInfo(nodeRef));
+    }
+
+    public Serializable getValue(CMISNodeInfo nodeInfo)
+    {
+        if (nodeInfo.containsPropertyValue(propertyName))
+        {
+            return nodeInfo.getPropertyValue(propertyName);
+        } else
+        {
+            Serializable value = getValueInternal(nodeInfo);
+            nodeInfo.putPropertyValue(propertyName, value);
+            return value;
+        }
+    }
+
+    protected abstract Serializable getValueInternal(CMISNodeInfo nodeInfo);
+
+    protected CMISNodeInfo createNodeInfo(NodeRef nodeRef)
+    {
+        return connector.createNodeInfo(nodeRef);
+    }
+
+    protected ContentData getContentData(CMISNodeInfo nodeInfo)
+    {
+        if (!nodeInfo.isDocument())
+        {
+            return null;
+        }
+
+        if (nodeInfo.containsPropertyValue(CONTENT_PROPERTY))
+        {
+            return (ContentData) nodeInfo.getPropertyValue(CONTENT_PROPERTY);
+        } else
+        {
+            ContentData contentData = null;
+
+            Serializable value = getServiceRegistry().getNodeService().getProperty(nodeInfo.getNodeRef(),
+                    ContentModel.PROP_CONTENT);
+            if (value != null)
+            {
+                contentData = DefaultTypeConverter.INSTANCE.convert(ContentData.class, value);
+            }
+
+            nodeInfo.putPropertyValue(CONTENT_PROPERTY, contentData);
+            return contentData;
+        }
     }
 }

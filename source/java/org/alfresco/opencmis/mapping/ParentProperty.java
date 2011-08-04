@@ -20,15 +20,16 @@ package org.alfresco.opencmis.mapping;
 
 import java.io.Serializable;
 
+import org.alfresco.opencmis.CMISConnector;
+import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 
 /**
  * Get the CMIS parent property
  * 
- * @author andyh
+ * @author florian.mueller
  * 
  */
 public class ParentProperty extends AbstractProperty
@@ -38,32 +39,24 @@ public class ParentProperty extends AbstractProperty
      * 
      * @param serviceRegistry
      */
-    public ParentProperty(ServiceRegistry serviceRegistry)
+    public ParentProperty(ServiceRegistry serviceRegistry, CMISConnector connector)
     {
-        super(serviceRegistry, PropertyIds.PARENT_ID);
+        super(serviceRegistry, connector, PropertyIds.PARENT_ID);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.alfresco.cmis.property.PropertyAccessor#getValue(org.alfresco.service
-     * .cmr.repository.NodeRef)
-     */
-    public Serializable getValue(NodeRef nodeRef)
+    public Serializable getValueInternal(CMISNodeInfo nodeInfo)
     {
-        if (nodeRef.equals(getServiceRegistry().getCMISService().getDefaultRootNodeRef()))
+        if (nodeInfo.isRootFolder())
         {
             return null;
         }
 
-        ChildAssociationRef car = getServiceRegistry().getNodeService().getPrimaryParent(nodeRef);
+        ChildAssociationRef car = getServiceRegistry().getNodeService().getPrimaryParent(nodeInfo.getNodeRef());
         if ((car != null) && (car.getParentRef() != null))
         {
             return car.getParentRef().toString();
-        } else
-        {
-            return null;
         }
+
+        return null;
     }
 }

@@ -20,46 +20,28 @@ package org.alfresco.opencmis.mapping;
 
 import java.io.Serializable;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.CMISConnector;
+import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 
 /**
- * @author dward
+ * @author florian.mueller
  */
-public class VersionLabelProperty extends AbstractVersioningProperty
+public class VersionLabelProperty extends AbstractProperty
 {
     /**
      * Construct
      * 
      * @param serviceRegistry
      */
-    public VersionLabelProperty(ServiceRegistry serviceRegistry)
+    public VersionLabelProperty(ServiceRegistry serviceRegistry, CMISConnector connector)
     {
-        super(serviceRegistry, PropertyIds.VERSION_LABEL);
+        super(serviceRegistry, connector, PropertyIds.VERSION_LABEL);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.alfresco.cmis.property.PropertyAccessor#getValue(org.alfresco.service
-     * .cmr.repository.NodeRef)
-     */
-    public Serializable getValue(NodeRef nodeRef)
+    public Serializable getValueInternal(CMISNodeInfo nodeInfo)
     {
-        if (isWorkingCopy(nodeRef))
-        {
-            return CMISConnector.PWC_VERSION_LABEL;
-        }
-        Serializable versionLabel = getServiceRegistry().getNodeService().getProperty(nodeRef,
-                ContentModel.PROP_VERSION_LABEL);
-        if (versionLabel == null)
-        {
-            return CMISConnector.UNVERSIONED_VERSION_LABEL;
-        }
-        return versionLabel;
+        return nodeInfo.getVersionLabel();
     }
 }

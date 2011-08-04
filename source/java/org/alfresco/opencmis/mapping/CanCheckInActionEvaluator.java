@@ -18,10 +18,8 @@
  */
 package org.alfresco.opencmis.mapping;
 
-import org.alfresco.model.ContentModel;
+import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.apache.chemistry.opencmis.commons.enums.Action;
 
@@ -30,10 +28,9 @@ import org.apache.chemistry.opencmis.commons.enums.Action;
  * 
  * @author davidc
  */
-public class CanCheckInActionEvaluator extends AbstractActionEvaluator<NodeRef>
+public class CanCheckInActionEvaluator extends AbstractActionEvaluator
 {
     private PermissionActionEvaluator permissionEvaluator;
-    private NodeService nodeService;
 
     /**
      * Construct
@@ -46,15 +43,15 @@ public class CanCheckInActionEvaluator extends AbstractActionEvaluator<NodeRef>
         super(serviceRegistry, Action.CAN_CHECK_IN);
         permissionEvaluator = new PermissionActionEvaluator(serviceRegistry, Action.CAN_CHECK_IN,
                 PermissionService.CHECK_IN);
-        nodeService = serviceRegistry.getNodeService();
     }
 
-    public boolean isAllowed(NodeRef nodeRef)
+    public boolean isAllowed(CMISNodeInfo nodeInfo)
     {
-        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
+        if (nodeInfo.isPWC())
         {
-            return permissionEvaluator.isAllowed(nodeRef);
+            return permissionEvaluator.isAllowed(nodeInfo);
         }
+
         return false;
     }
 }

@@ -20,15 +20,16 @@ package org.alfresco.opencmis.mapping;
 
 import java.io.Serializable;
 
+import org.alfresco.opencmis.CMISConnector;
+import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.AssociationRef;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
- * A simple 1-1 property mapping from a CMIS property name to an alfresco property
+ * A simple 1-1 property mapping from a CMIS property name to an alfresco
+ * property
  * 
- * @author andyh
+ * @author florian.mueller
  */
 public class DirectProperty extends AbstractProperty
 {
@@ -41,37 +42,29 @@ public class DirectProperty extends AbstractProperty
      * @param propertyName
      * @param alfrescoName
      */
-    public DirectProperty(ServiceRegistry serviceRegistry, String propertyName, QName alfrescoName)
+    public DirectProperty(ServiceRegistry serviceRegistry, CMISConnector connector, String propertyName,
+            QName alfrescoName)
     {
-        super(serviceRegistry, propertyName);
+        super(serviceRegistry, connector, propertyName);
         this.alfrescoName = alfrescoName;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.property.AbstractPropertyAccessor#getMappedProperty()
-     */
     public QName getMappedProperty()
     {
         return alfrescoName;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.property.PropertyAccessor#getValue(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    public Serializable getValue(NodeRef nodeRef)
+    public Serializable getValueInternal(CMISNodeInfo nodeInfo)
     {
-        return getServiceRegistry().getNodeService().getProperty(nodeRef, alfrescoName);
-    }
+        if (nodeInfo.getNodeRef() != null)
+        {
+            return getServiceRegistry().getNodeService().getProperty(nodeInfo.getNodeRef(), alfrescoName);
+        } else if (nodeInfo.getAssociationRef() != null)
+        {
+            return getServiceRegistry().getNodeService().getProperty(nodeInfo.getAssociationRef().getSourceRef(),
+                    alfrescoName);
+        }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.mapping.AbstractProperty#getValue(org.alfresco.service.cmr.repository.AssociationRef)
-     */
-    public Serializable getValue(AssociationRef assocRef)
-    {
         return null;
     }
-    
 }

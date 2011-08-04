@@ -20,40 +20,34 @@ package org.alfresco.opencmis.mapping;
 
 import java.io.Serializable;
 
+import org.alfresco.opencmis.CMISConnector;
+import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 
 /**
  * Property accessor for CMIS is immutable property
  * 
- * @author dward
+ * @author florian.mueller
  */
-public class IsImmutableProperty extends AbstractVersioningProperty
+public class IsImmutableProperty extends AbstractProperty
 {
     /**
      * Construct
      */
-    public IsImmutableProperty(ServiceRegistry serviceRegistry)
+    public IsImmutableProperty(ServiceRegistry serviceRegistry, CMISConnector connector)
     {
-        super(serviceRegistry, PropertyIds.IS_IMMUTABLE);
+        super(serviceRegistry, connector, PropertyIds.IS_IMMUTABLE);
     }
 
     @Override
-    public Serializable getValue(NodeRef nodeRef)
+    public Serializable getValueInternal(CMISNodeInfo nodeInfo)
     {
-        if (!isCurrentVersion(nodeRef))
+        if (nodeInfo.isVersion())
         {
             return true;
         }
-        if (isWorkingCopy(nodeRef))
-        {
-            return false;
-        }
-        if (getVersionSeries(nodeRef).equals(nodeRef))
-        {
-            return hasWorkingCopy(nodeRef);
-        }
-        return true;
+
+        return false;
     }
 }

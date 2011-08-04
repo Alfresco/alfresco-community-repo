@@ -18,20 +18,14 @@
  */
 package org.alfresco.opencmis.mapping;
 
-import java.io.Serializable;
-
-import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.dictionary.CMISActionEvaluator;
-import org.alfresco.repo.version.VersionBaseModel;
+import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.version.Version;
-import org.alfresco.service.cmr.version.VersionHistory;
 import org.apache.chemistry.opencmis.commons.enums.Action;
 
-public class CurrentVersionEvaluator extends AbstractActionEvaluator<NodeRef>
+public class CurrentVersionEvaluator extends AbstractActionEvaluator
 {
-    private CMISActionEvaluator<NodeRef> currentVersionEvaluator;
+    private CMISActionEvaluator currentVersionEvaluator;
     private boolean currentVersionValue;
     private boolean nonCurrentVersionValue;
 
@@ -53,32 +47,21 @@ public class CurrentVersionEvaluator extends AbstractActionEvaluator<NodeRef>
      * 
      * @param serviceRegistry
      */
-    protected CurrentVersionEvaluator(ServiceRegistry serviceRegistry,
-            CMISActionEvaluator<NodeRef> currentVersionEvaluator, boolean nonCurrentVersionValue)
+    protected CurrentVersionEvaluator(ServiceRegistry serviceRegistry, CMISActionEvaluator currentVersionEvaluator,
+            boolean nonCurrentVersionValue)
     {
         super(serviceRegistry, currentVersionEvaluator.getAction());
         this.currentVersionEvaluator = currentVersionEvaluator;
         this.nonCurrentVersionValue = nonCurrentVersionValue;
     }
 
-    public boolean isAllowed(NodeRef nodeRef)
+    public boolean isAllowed(CMISNodeInfo nodeInfo)
     {
-        if (nodeRef.getStoreRef().getProtocol().equals(VersionBaseModel.STORE_PROTOCOL))
+        if (!nodeInfo.isCurrentVersion())
         {
-            VersionHistory versionHistory = getServiceRegistry().getVersionService().getVersionHistory(nodeRef);
-            if (versionHistory != null)
-            {
-                Version currentVersion = versionHistory.getHeadVersion();
-                Serializable versionLabel = getServiceRegistry().getNodeService().getProperty(nodeRef,
-                        ContentModel.PROP_VERSION_LABEL);
-
-                if (!currentVersion.getVersionLabel().equals(versionLabel))
-                {
-                    return nonCurrentVersionValue;
-                }
-            }
+            return nonCurrentVersionValue;
         }
 
-        return currentVersionEvaluator == null ? currentVersionValue : currentVersionEvaluator.isAllowed(nodeRef);
+        return currentVersionEvaluator == null ? currentVersionValue : currentVersionEvaluator.isAllowed(nodeInfo);
     }
 }

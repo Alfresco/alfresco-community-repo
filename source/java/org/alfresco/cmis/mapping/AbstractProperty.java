@@ -21,7 +21,7 @@ package org.alfresco.cmis.mapping;
 import java.io.Serializable;
 import java.util.Collection;
 
-import org.alfresco.opencmis.dictionary.CMISPropertyAccessor;
+import org.alfresco.cmis.CMISPropertyAccessor;
 import org.alfresco.opencmis.dictionary.CMISPropertyLuceneBuilder;
 import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
 import org.alfresco.repo.search.impl.lucene.LuceneFunction;
@@ -37,7 +37,7 @@ import org.apache.lucene.search.Query;
  * Base class for all property accessors
  * 
  * @author andyh
- *
+ * 
  */
 public abstract class AbstractProperty implements CMISPropertyAccessor, CMISPropertyLuceneBuilder
 {
@@ -57,7 +57,7 @@ public abstract class AbstractProperty implements CMISPropertyAccessor, CMISProp
     }
 
     /**
-     * @return  service registry
+     * @return service registry
      */
     protected ServiceRegistry getServiceRegistry()
     {
@@ -66,6 +66,7 @@ public abstract class AbstractProperty implements CMISPropertyAccessor, CMISProp
 
     /*
      * (non-Javadoc)
+     * 
      * @see org.alfresco.cmis.property.PropertyAccessor#getName()
      */
     public String getName()
@@ -75,6 +76,7 @@ public abstract class AbstractProperty implements CMISPropertyAccessor, CMISProp
 
     /*
      * (non-Javadoc)
+     * 
      * @see org.alfresco.cmis.property.PropertyAccessor#getMappedProperty()
      */
     public QName getMappedProperty()
@@ -82,8 +84,8 @@ public abstract class AbstractProperty implements CMISPropertyAccessor, CMISProp
         return null;
     }
 
-    
-    public Query buildLuceneEquality(AbstractLuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
+    public Query buildLuceneEquality(AbstractLuceneQueryParser lqp, Serializable value, PredicateMode mode,
+            LuceneFunction luceneFunction) throws ParseException
     {
         return null;
     }
@@ -93,32 +95,38 @@ public abstract class AbstractProperty implements CMISPropertyAccessor, CMISProp
         return null;
     }
 
-    public Query buildLuceneGreaterThan(AbstractLuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
+    public Query buildLuceneGreaterThan(AbstractLuceneQueryParser lqp, Serializable value, PredicateMode mode,
+            LuceneFunction luceneFunction) throws ParseException
     {
         return null;
     }
 
-    public Query buildLuceneGreaterThanOrEquals(AbstractLuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
+    public Query buildLuceneGreaterThanOrEquals(AbstractLuceneQueryParser lqp, Serializable value, PredicateMode mode,
+            LuceneFunction luceneFunction) throws ParseException
     {
         return null;
     }
 
-    public Query buildLuceneIn(AbstractLuceneQueryParser lqp, Collection<Serializable> values, Boolean not, PredicateMode mode) throws ParseException
+    public Query buildLuceneIn(AbstractLuceneQueryParser lqp, Collection<Serializable> values, Boolean not,
+            PredicateMode mode) throws ParseException
     {
         return null;
     }
 
-    public Query buildLuceneInequality(AbstractLuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
+    public Query buildLuceneInequality(AbstractLuceneQueryParser lqp, Serializable value, PredicateMode mode,
+            LuceneFunction luceneFunction) throws ParseException
     {
         return null;
     }
 
-    public Query buildLuceneLessThan(AbstractLuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
+    public Query buildLuceneLessThan(AbstractLuceneQueryParser lqp, Serializable value, PredicateMode mode,
+            LuceneFunction luceneFunction) throws ParseException
     {
         return null;
     }
 
-    public Query buildLuceneLessThanOrEquals(AbstractLuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
+    public Query buildLuceneLessThanOrEquals(AbstractLuceneQueryParser lqp, Serializable value, PredicateMode mode,
+            LuceneFunction luceneFunction) throws ParseException
     {
         return null;
     }
@@ -142,12 +150,12 @@ public abstract class AbstractProperty implements CMISPropertyAccessor, CMISProp
     {
         throw new UnsupportedOperationException();
     }
-    
+
     public void setValue(NodeRef nodeRef, Serializable value)
     {
         throw new UnsupportedOperationException();
     }
-    
+
     public Serializable getValue(AssociationRef assocRef)
     {
         throw new UnsupportedOperationException();

@@ -20,50 +20,39 @@ package org.alfresco.opencmis.mapping;
 
 import java.io.Serializable;
 
-import org.alfresco.opencmis.dictionary.CMISDictionaryService;
+import org.alfresco.opencmis.CMISConnector;
+import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.AssociationRef;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
 
 /**
  * Get the CMIS object type id property
  * 
- * @author andyh
+ * @author florian.mueller
  */
 public class BaseTypeIdProperty extends AbstractProperty
 {
-    private CMISDictionaryService dictionaryService;
-    
     /**
      * Construct
      * 
      * @param serviceRegistry
      */
-    public BaseTypeIdProperty(ServiceRegistry serviceRegistry, CMISDictionaryService dictionaryService)
+    public BaseTypeIdProperty(ServiceRegistry serviceRegistry, CMISConnector connector)
     {
-        super(serviceRegistry, PropertyIds.BASE_TYPE_ID);
-        this.dictionaryService = dictionaryService;
+        super(serviceRegistry, connector, PropertyIds.BASE_TYPE_ID);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.mapping.AbstractProperty#getValue(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    public Serializable getValue(NodeRef nodeRef)
+    public Serializable getValueInternal(CMISNodeInfo nodeInfo)
     {
-        QName type = getServiceRegistry().getNodeService().getType(nodeRef);
-        return dictionaryService.findTypeForClass(type).getBaseTypeId().value();
-    }
+        if (nodeInfo.isFolder())
+        {
+            return BaseTypeId.CMIS_FOLDER.value();
+        } else if (nodeInfo.isRelationship())
+        {
+            return BaseTypeId.CMIS_RELATIONSHIP.value();
+        }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.mapping.AbstractProperty#getValue(org.alfresco.service.cmr.repository.AssociationRef)
-     */
-    public Serializable getValue(AssociationRef assocRef)
-    {
-        return BaseTypeId.CMIS_RELATIONSHIP.value();
+        return BaseTypeId.CMIS_DOCUMENT.value();
     }
 }

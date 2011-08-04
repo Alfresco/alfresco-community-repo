@@ -20,9 +20,7 @@ package org.alfresco.cmis;
 
 import java.util.Collection;
 
-import org.alfresco.opencmis.dictionary.CMISPropertyAccessor;
 import org.alfresco.opencmis.dictionary.CMISPropertyLuceneBuilder;
-
 
 /**
  * CMIS Property Definition
@@ -47,10 +45,11 @@ public interface CMISPropertyDefinition
 
     /**
      * Get the query name
+     * 
      * @return
      */
     public String getQueryName();
-    
+
     /**
      * Get the display name
      * 
@@ -80,14 +79,16 @@ public interface CMISPropertyDefinition
     public CMISCardinalityEnum getCardinality();
 
     /**
-     * Get the choices available as values for this property TODO: not implemented yet
+     * Get the choices available as values for this property TODO: not
+     * implemented yet
      * 
      * @return
      */
     public Collection<CMISChoice> getChoices();
 
     /**
-     * Is this a choice where a user can enter other values (ie a list with common options)
+     * Is this a choice where a user can enter other values (ie a list with
+     * common options)
      * 
      * @return
      */
@@ -127,7 +128,7 @@ public interface CMISPropertyDefinition
      * @return
      */
     public boolean isOrderable();
-    
+
     /**
      * For variable length properties, get the maximum length allowed.
      * 
@@ -141,21 +142,21 @@ public interface CMISPropertyDefinition
      * @return
      */
     public Double getMinValue();
-    
+
     /**
      * For Integer and Decimal properties, get the maximum value allowed
      * 
      * @return
      */
     public Double getMaxValue();
-    
+
     /**
      * Gets the property accessor (for reading / writing values)
      * 
      * @return
      */
     public CMISPropertyAccessor getPropertyAccessor();
-    
+
     /**
      * Gets the property Lucene builder
      * 

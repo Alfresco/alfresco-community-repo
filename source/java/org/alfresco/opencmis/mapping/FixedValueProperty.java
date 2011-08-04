@@ -20,19 +20,19 @@ package org.alfresco.opencmis.mapping;
 
 import java.io.Serializable;
 
+import org.alfresco.opencmis.CMISConnector;
+import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.AssociationRef;
-import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Property accessor for fixed value mapping (eg to null, true, etc)
  * 
- * @author andyh
+ * @author florian.mueller
  */
 public class FixedValueProperty extends AbstractProperty
 {
     private Serializable value;
-    
+
     /**
      * Construct
      * 
@@ -40,26 +40,14 @@ public class FixedValueProperty extends AbstractProperty
      * @param propertyName
      * @param value
      */
-    public FixedValueProperty(ServiceRegistry serviceRegistry, String propertyName, Serializable value)
+    public FixedValueProperty(ServiceRegistry serviceRegistry, CMISConnector connector, String propertyName,
+            Serializable value)
     {
-        super(serviceRegistry, propertyName);
+        super(serviceRegistry, connector, propertyName);
         this.value = value;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.property.PropertyAccessor#getValue(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    public Serializable getValue(NodeRef nodeRef)
-    {
-        return value;
-    }
-    
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.mapping.AbstractProperty#getValue(org.alfresco.service.cmr.repository.AssociationRef)
-     */
-    public Serializable getValue(AssociationRef assocRef)
+    public Serializable getValueInternal(CMISNodeInfo nodeInfo)
     {
         return value;
     }

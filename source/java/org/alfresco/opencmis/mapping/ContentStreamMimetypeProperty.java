@@ -21,11 +21,12 @@ package org.alfresco.opencmis.mapping;
 import java.io.Serializable;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.opencmis.CMISConnector;
+import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
@@ -33,7 +34,7 @@ import org.apache.chemistry.opencmis.commons.PropertyIds;
 /**
  * Accessor for CMIS content stream mimetype property
  * 
- * @author andyh
+ * @author florian.mueller
  */
 public class ContentStreamMimetypeProperty extends AbstractProperty
 {
@@ -42,29 +43,20 @@ public class ContentStreamMimetypeProperty extends AbstractProperty
      * 
      * @param serviceRegistry
      */
-    public ContentStreamMimetypeProperty(ServiceRegistry serviceRegistry)
+    public ContentStreamMimetypeProperty(ServiceRegistry serviceRegistry, CMISConnector connector)
     {
-        super(serviceRegistry, PropertyIds.CONTENT_STREAM_MIME_TYPE);
+        super(serviceRegistry, connector, PropertyIds.CONTENT_STREAM_MIME_TYPE);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.alfresco.cmis.property.PropertyAccessor#getValue(org.alfresco.service
-     * .cmr.repository.NodeRef)
-     */
-    public Serializable getValue(NodeRef nodeRef)
+    public Serializable getValueInternal(CMISNodeInfo nodeInfo)
     {
-        Serializable value = getServiceRegistry().getNodeService().getProperty(nodeRef, ContentModel.PROP_CONTENT);
-        if (value != null)
+        ContentData contentData = getContentData(nodeInfo);
+
+        if (contentData != null)
         {
-            ContentData contentData = DefaultTypeConverter.INSTANCE.convert(ContentData.class, value);
             return contentData.getMimetype();
-        } else
-        {
-            return "";
         }
+        return "";
     }
 
     public String getLuceneFieldName()
@@ -75,7 +67,7 @@ public class ContentStreamMimetypeProperty extends AbstractProperty
         field.append(".mimetype");
         return field.toString();
     }
-    
+
     public QName getMappedProperty()
     {
         // spoof

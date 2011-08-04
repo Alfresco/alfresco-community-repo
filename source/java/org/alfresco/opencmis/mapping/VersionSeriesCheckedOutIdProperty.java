@@ -20,48 +20,35 @@ package org.alfresco.opencmis.mapping;
 
 import java.io.Serializable;
 
+import org.alfresco.opencmis.CMISConnector;
+import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 
 /**
  * Get the CMIS version series checked out id property
  * 
- * @author dward
+ * @author florian.mueller
  */
-public class VersionSeriesCheckedOutIdProperty extends AbstractVersioningProperty
+public class VersionSeriesCheckedOutIdProperty extends AbstractProperty
 {
     /**
      * Construct
      * 
      * @param serviceRegistry
      */
-    public VersionSeriesCheckedOutIdProperty(ServiceRegistry serviceRegistry)
+    public VersionSeriesCheckedOutIdProperty(ServiceRegistry serviceRegistry, CMISConnector connector)
     {
-        super(serviceRegistry, PropertyIds.VERSION_SERIES_CHECKED_OUT_ID);
+        super(serviceRegistry, connector, PropertyIds.VERSION_SERIES_CHECKED_OUT_ID);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.alfresco.cmis.property.PropertyAccessor#getValue(org.alfresco.service
-     * .cmr.repository.NodeRef)
-     */
-    public Serializable getValue(NodeRef nodeRef)
+    public Serializable getValueInternal(CMISNodeInfo nodeInfo)
     {
-        NodeRef versionSeries;
-        if (isWorkingCopy(nodeRef))
+        if (!nodeInfo.hasPWC())
         {
-            return nodeRef.toString();
-        } else if (hasWorkingCopy((versionSeries = getVersionSeries(nodeRef))))
-        {
-            NodeRef pwc = getServiceRegistry().getCheckOutCheckInService().getWorkingCopy(versionSeries);
-            if (pwc != null)
-            {
-                return pwc.toString();
-            }
+            return null;
         }
-        return null;
+
+        return nodeInfo.getCurrentNodeId() + CMISConnector.ID_SEPERATOR + CMISConnector.PWC_VERSION_LABEL;
     }
 }

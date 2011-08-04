@@ -28,7 +28,7 @@ import org.apache.chemistry.opencmis.commons.enums.Action;
  * @author davidc
  * 
  */
-public abstract class AbstractActionEvaluator<T> implements CMISActionEvaluator<T>
+public abstract class AbstractActionEvaluator implements CMISActionEvaluator
 {
     private ServiceRegistry serviceRegistry;
     private Action action;

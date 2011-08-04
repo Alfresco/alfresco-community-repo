@@ -21,56 +21,29 @@ package org.alfresco.opencmis.mapping;
 import java.io.Serializable;
 
 import org.alfresco.cmis.CMISDictionaryModel;
-import org.alfresco.model.ContentModel;
+import org.alfresco.opencmis.CMISConnector;
+import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.version.Version;
-import org.alfresco.service.cmr.version.VersionHistory;
 
 /**
  * Accessor for the CMIS Checkin Comment
  * 
- * @author dward
+ * @author florian.mueller
  */
-public class CheckinCommentProperty extends AbstractVersioningProperty
+public class CheckinCommentProperty extends AbstractProperty
 {
     /**
      * Construct
      * 
      * @param serviceRegistry
      */
-    public CheckinCommentProperty(ServiceRegistry serviceRegistry)
+    public CheckinCommentProperty(ServiceRegistry serviceRegistry, CMISConnector connector)
     {
-        super(serviceRegistry, CMISDictionaryModel.PROP_CHECKIN_COMMENT);
+        super(serviceRegistry, connector, CMISDictionaryModel.PROP_CHECKIN_COMMENT);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.property.PropertyAccessor#getValue(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    public Serializable getValue(NodeRef nodeRef)
+    public Serializable getValueInternal(CMISNodeInfo nodeInfo)
     {
-        if (isWorkingCopy(nodeRef))
-        {
-            return null;
-        }
-        ServiceRegistry serviceRegistry = getServiceRegistry();
-        String versionLabel = (String)serviceRegistry.getNodeService().getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
-        if (versionLabel == null)
-        {
-            return null;
-        }
-        NodeRef versionSeries = getVersionSeries(nodeRef);
-        VersionHistory versionHistory = serviceRegistry.getVersionService().getVersionHistory(versionSeries);
-        if (versionHistory == null)
-        {
-            return null;
-        }
-        Version version = versionHistory.getVersion(versionLabel);
-        if (version == null)
-        {
-            return null;
-        }
-        return version.getDescription();
+        return nodeInfo.getCheckinComment();
     }
 }

@@ -45,9 +45,10 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.dictionary.CMISActionEvaluator;
 import org.alfresco.opencmis.dictionary.CMISAllowedActionEnum;
 import org.alfresco.opencmis.dictionary.CMISDictionaryService;
+import org.alfresco.opencmis.dictionary.CMISNodeInfo;
+import org.alfresco.opencmis.dictionary.CMISObjectVariant;
 import org.alfresco.opencmis.dictionary.CMISPropertyAccessor;
 import org.alfresco.opencmis.dictionary.DocumentTypeDefinitionWrapper;
-import org.alfresco.opencmis.dictionary.FolderTypeDefintionWrapper;
 import org.alfresco.opencmis.dictionary.PropertyDefintionWrapper;
 import org.alfresco.opencmis.dictionary.TypeDefinitionWrapper;
 import org.alfresco.opencmis.mapping.DirectProperty;
@@ -59,7 +60,6 @@ import org.alfresco.opencmis.search.CMISResultSetColumn;
 import org.alfresco.opencmis.search.CMISResultSetRow;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.repo.security.permissions.impl.AccessPermissionImpl;
 import org.alfresco.repo.security.permissions.impl.ModelDAO;
@@ -74,17 +74,16 @@ import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.InvalidAspectException;
+import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.rendition.RenditionService;
-import org.alfresco.service.cmr.repository.AspectMissingException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.EntityRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -98,9 +97,6 @@ import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.cmr.version.Version;
-import org.alfresco.service.cmr.version.VersionDoesNotExistException;
-import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.descriptor.Descriptor;
@@ -151,7 +147,6 @@ import org.apache.chemistry.opencmis.commons.exceptions.CmisConstraintException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisContentAlreadyExistsException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisInvalidArgumentException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisPermissionDeniedException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisRuntimeException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisStreamNotSupportedException;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.AbstractPropertyData;
@@ -231,6 +226,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     private NodeService nodeService;
     private VersionService versionService;
     private CheckOutCheckInService checkOutCheckInService;
+    private LockService lockService;
     private ContentService contentService;
     private RenditionService renditionService;
     private FileFolderService fileFolderService;
@@ -390,6 +386,19 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     }
 
     /**
+     * Sets the lock service.
+     */
+    public LockService getLockService()
+    {
+        return lockService;
+    }
+
+    public void setLockService(LockService lockService)
+    {
+        this.lockService = lockService;
+    }
+
+    /**
      * Sets the content service.
      */
     public void setContentService(ContentService contentService)
@@ -478,17 +487,17 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         this.cmisDictionaryService = cmisDictionaryService;
     }
 
+    public CMISDictionaryService getOpenCMISDictionaryService()
+    {
+        return cmisDictionaryService;
+    }
+
     /**
      * Sets the OpenCMIS query service.
      */
     public void setOpenCMISQueryService(CMISQueryService cmisQueryService)
     {
         this.cmisQueryService = cmisQueryService;
-    }
-
-    public CMISDictionaryService getOpenCMISDictionaryService()
-    {
-        return cmisDictionaryService;
     }
 
     /**
@@ -694,312 +703,27 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     }
 
     /**
-     * Returns the variant of the object.
+     * Creates an object info object.
      */
-    public ObjectVariantEnum getObjectVariant(String objectId)
+    public CMISNodeInfoImpl createNodeInfo(String objectId)
     {
-        if (objectId == null)
-        {
-            return ObjectVariantEnum.INVALID_ID;
-        }
-
-        try
-        {
-            String nodeRefString = objectId;
-            String versionString = null;
-
-            // is it a version?
-            int sepIndex = objectId.lastIndexOf(ID_SEPERATOR);
-            if (sepIndex > -1)
-            {
-                nodeRefString = objectId.substring(0, sepIndex);
-                versionString = objectId.substring(sepIndex + 1);
-            }
-
-            if (NodeRef.isNodeRef(nodeRefString))
-            {
-                NodeRef nodeRef = new NodeRef(nodeRefString);
-
-                // check for existence
-                if (!nodeService.exists(nodeRef))
-                {
-                    return ObjectVariantEnum.NOT_EXISTING;
-                }
-
-                // check PWC
-                if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
-                {
-                    return ObjectVariantEnum.PWC;
-                }
-
-                if (versionString == null)
-                {
-                    return ObjectVariantEnum.NODE;
-                }
-
-                // check version
-                VersionHistory versionHistory = versionService.getVersionHistory(nodeRef);
-                if (versionHistory == null)
-                {
-                    if (versionString.equals(UNVERSIONED_VERSION_LABEL))
-                    {
-                        return ObjectVariantEnum.NODE;
-                    }
-                    return ObjectVariantEnum.NOT_EXISTING;
-                }
-
-                try
-                {
-                    versionHistory.getVersion(versionString);
-
-                    if (versionString.equals(versionHistory.getHeadVersion().getVersionLabel()))
-                    {
-                        return ObjectVariantEnum.NODE;
-                    }
-
-                    return ObjectVariantEnum.VERSION;
-                } catch (VersionDoesNotExistException e)
-                {
-                    return ObjectVariantEnum.NOT_EXISTING;
-                }
-            } else if (objectId.startsWith(ASSOC_ID_PREFIX))
-            {
-                // check the association id
-                Long assocId = null;
-                try
-                {
-                    assocId = new Long(objectId.substring(ASSOC_ID_PREFIX.length()));
-                } catch (NumberFormatException nfe)
-                {
-                    return ObjectVariantEnum.INVALID_ID;
-                }
-
-                // check the association
-                AssociationRef associationRef = nodeService.getAssoc(assocId);
-                if (associationRef == null)
-                {
-                    return ObjectVariantEnum.NOT_EXISTING;
-                }
-
-                return ObjectVariantEnum.ASSOC;
-            } else
-            {
-                return ObjectVariantEnum.INVALID_ID;
-            }
-        } catch (AccessDeniedException e)
-        {
-            return ObjectVariantEnum.PERMISSION_DENIED;
-        }
-    }
-
-    public void throwCommonExceptions(ObjectVariantEnum variant, String what, String objectId)
-    {
-        switch (variant)
-        {
-        case INVALID_ID:
-            throw new CmisInvalidArgumentException(what + " id is invalid: " + objectId);
-        case NOT_EXISTING:
-            throw new CmisObjectNotFoundException(what + " not found: " + objectId);
-        case PERMISSION_DENIED:
-            throw new CmisPermissionDeniedException("Permission denied!");
-        }
+        return new CMISNodeInfoImpl(this, objectId);
     }
 
     /**
-     * Returns a node ref from an object id.
+     * Creates an object info object.
      */
-    public NodeRef getNodeRef(String objectId)
+    public CMISNodeInfoImpl createNodeInfo(NodeRef nodeRef)
     {
-        String nodeRefString = objectId;
-        String versionString = null;
-
-        // is it a version?
-        int sepIndex = objectId.lastIndexOf(ID_SEPERATOR);
-        if (sepIndex > -1)
-        {
-            nodeRefString = objectId.substring(0, sepIndex);
-            versionString = objectId.substring(sepIndex + 1);
-        }
-
-        NodeRef nodeRef = new NodeRef(nodeRefString);
-        if (versionString != null)
-        {
-            Version version = versionService.getCurrentVersion(nodeRef);
-            if (version == null)
-            {
-                if (versionString.equals(UNVERSIONED_VERSION_LABEL))
-                {
-                    return nodeRef;
-                } else
-                {
-                    throw new CmisInvalidArgumentException("Invalid version: " + objectId);
-                }
-            } else
-            {
-                if (!versionString.equals(version.getVersionLabel()))
-                {
-                    VersionHistory versionHistory = versionService.getVersionHistory(nodeRef);
-                    version = versionHistory.getVersion(versionString);
-
-                    nodeRef = version.getFrozenStateNodeRef();
-                }
-            }
-        }
-
-        return nodeRef;
+        return new CMISNodeInfoImpl(this, nodeRef);
     }
 
     /**
-     * Returns a node ref from a document id if its the current version.
+     * Creates an object info object.
      */
-    public NodeRef getNodeRefIfCurrent(String what, String objectId)
+    public CMISNodeInfoImpl createNodeInfo(AssociationRef assocRef)
     {
-        String nodeRefString = objectId;
-        String versionString = null;
-
-        // is it a version?
-        int sepIndex = objectId.lastIndexOf(ID_SEPERATOR);
-        if (sepIndex > -1)
-        {
-            nodeRefString = objectId.substring(0, sepIndex);
-            versionString = objectId.substring(sepIndex + 1);
-        }
-
-        NodeRef nodeRef = new NodeRef(nodeRefString);
-        if (versionString != null)
-        {
-            Version version = versionService.getCurrentVersion(nodeRef);
-            if (version == null)
-            {
-                if (versionString.equals(UNVERSIONED_VERSION_LABEL))
-                {
-                    return nodeRef;
-                } else
-                {
-                    throw new CmisInvalidArgumentException(what + " id has an invalid version label: " + objectId);
-                }
-            }
-
-            if (!version.getVersionLabel().equals(versionString))
-            {
-                throw new CmisInvalidArgumentException(what + " id does not refer to the current version: " + objectId);
-            }
-        }
-
-        return nodeRef;
-    }
-
-    /**
-     * Returns an association ref from an object id.
-     */
-    public AssociationRef getAssociationRef(String objectId)
-    {
-        Long assocId = new Long(objectId.substring(ASSOC_ID_PREFIX.length()));
-        return nodeService.getAssoc(assocId);
-    }
-
-    /**
-     * Returns the node ref of the latest version.
-     */
-    public NodeRef getLatestVersionNodeRef(String versionSeriesId, boolean major)
-    {
-        if (!major)
-        {
-            return getNodeRef(getCurrentVersionId(versionSeriesId));
-        }
-
-        NodeRef nodeRef = getNodeRef(versionSeriesId);
-        VersionHistory versionHistory = versionService.getVersionHistory(nodeRef);
-
-        // if there is no history, return the current version
-        if (versionHistory == null)
-        {
-            // there are no versions
-            return getNodeRef(getCurrentVersionId(versionSeriesId));
-        }
-
-        // find the latest major version
-        for (Version version : versionHistory.getAllVersions())
-        {
-            if (version.getVersionType() == VersionType.MAJOR)
-            {
-                return version.getFrozenStateNodeRef();
-            }
-        }
-
-        throw new CmisObjectNotFoundException("There is no major version!");
-    }
-
-    /**
-     * Returns the version to a given object id or <code>null</code> if it isn't
-     * a version.
-     */
-    public Version getVersion(String objectId)
-    {
-        String nodeRefString = objectId;
-        String versionString = null;
-
-        // is it a version?
-        int sepIndex = objectId.lastIndexOf(ID_SEPERATOR);
-        if (sepIndex > -1)
-        {
-            nodeRefString = objectId.substring(0, sepIndex);
-            versionString = objectId.substring(sepIndex + 1);
-        } else
-        {
-            return null;
-        }
-
-        try
-        {
-            NodeRef nodeRef = new NodeRef(nodeRefString);
-            VersionHistory versionHistory = versionService.getVersionHistory(nodeRef);
-            return versionHistory.getVersion(versionString);
-        } catch (Exception e)
-        {
-            return null;
-        }
-    }
-
-    /**
-     * Returns a folder node ref. If the given id is invalid or does no belong
-     * to a folder, an exception will be thrown.
-     */
-    public NodeRef getFolderNodeRef(String what, String folderId)
-    {
-        if ((folderId == null) || (folderId.lastIndexOf(ID_SEPERATOR) > -1) || !NodeRef.isNodeRef(folderId))
-        {
-            throwCommonExceptions(ObjectVariantEnum.INVALID_ID, what, folderId);
-        }
-
-        NodeRef nodeRef = null;
-        try
-        {
-            nodeRef = new NodeRef(folderId);
-
-            // check for existence
-            if (!nodeService.exists(nodeRef))
-            {
-                throwCommonExceptions(ObjectVariantEnum.NOT_EXISTING, what, folderId);
-            }
-
-            // check type
-            TypeDefinitionWrapper type = getType(nodeRef);
-            if (type == null)
-            {
-                throwCommonExceptions(ObjectVariantEnum.NOT_EXISTING, what, folderId);
-            }
-
-            if (!(type instanceof FolderTypeDefintionWrapper))
-            {
-                throw new CmisInvalidArgumentException(what + " is not a folder!");
-            }
-        } catch (AccessDeniedException e)
-        {
-            throwCommonExceptions(ObjectVariantEnum.PERMISSION_DENIED, what, folderId);
-        }
-
-        return nodeRef;
+        return new CMISNodeInfoImpl(this, assocRef);
     }
 
     /**
@@ -1030,21 +754,6 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     private TypeDefinitionWrapper getType(QName typeQName)
     {
         return cmisDictionaryService.findNodeType(typeQName);
-    }
-
-    /**
-     * Returns the type definition of a node or throws a
-     * CmisObjectNotFoundException if no type definition could be found.
-     */
-    public TypeDefinitionWrapper getAndCheckType(NodeRef nodeRef)
-    {
-        TypeDefinitionWrapper type = getType(nodeRef);
-        if (type == null)
-        {
-            throw new CmisObjectNotFoundException("No corresponding type found! Not a CMIS object?");
-        }
-
-        return type;
     }
 
     /**
@@ -1134,13 +843,13 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
      * Checks if a child of a given type can be added to a given folder.
      */
     @SuppressWarnings("unchecked")
-    public void checkChildObjectType(NodeRef folderNodeRef, String childType)
+    public void checkChildObjectType(CMISNodeInfo folderInfo, String childType)
     {
-        TypeDefinitionWrapper targetType = getType(folderNodeRef);
+        TypeDefinitionWrapper targetType = folderInfo.getType();
         PropertyDefintionWrapper allowableChildObjectTypeProperty = targetType
                 .getPropertyById(PropertyIds.ALLOWED_CHILD_OBJECT_TYPE_IDS);
         List<String> childTypes = (List<String>) allowableChildObjectTypeProperty.getPropertyAccessor().getValue(
-                folderNodeRef);
+                folderInfo);
 
         if ((childTypes == null) || childTypes.isEmpty())
         {
@@ -1156,141 +865,48 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     /**
      * Creates the CMIS object for a node.
      */
-    public ObjectData createCMISObject(FileInfo node, String filter, boolean includeAllowableActions,
-            IncludeRelationships includeRelationships, String renditionFilter, boolean includePolicyIds,
-            boolean includeAcl)
+    public ObjectData createCMISObject(CMISNodeInfo info, FileInfo node, String filter,
+            boolean includeAllowableActions, IncludeRelationships includeRelationships, String renditionFilter,
+            boolean includePolicyIds, boolean includeAcl)
     {
-        NodeRef nodeRef = node.getNodeRef();
-        TypeDefinitionWrapper type = getType(node.getType());
-        if (type == null)
+        if (info.getType() == null)
         {
             throw new CmisObjectNotFoundException("No corresponding type found! Not a CMIS object?");
         }
 
-        Properties nodeProps = getNodeProperties(node, filter, type);
+        Properties nodeProps = getNodeProperties(info, node, filter, info.getType());
 
-        return createCMISObjectImpl(nodeRef, type, nodeProps, filter, includeAllowableActions, includeRelationships,
+        return createCMISObjectImpl(info, nodeProps, filter, includeAllowableActions, includeRelationships,
                 renditionFilter, includePolicyIds, includeAcl);
     }
 
-    public ObjectData createCMISObject(NodeRef nodeRef, String filter, boolean includeAllowableActions,
+    public ObjectData createCMISObject(CMISNodeInfo info, String filter, boolean includeAllowableActions,
             IncludeRelationships includeRelationships, String renditionFilter, boolean includePolicyIds,
             boolean includeAcl)
     {
-        TypeDefinitionWrapper type = getType(nodeRef);
-        if (type == null)
+        if (info.getType() == null)
         {
             throw new CmisObjectNotFoundException("No corresponding type found! Not a CMIS object?");
         }
 
-        Properties nodeProps = getNodeProperties(nodeRef, filter, type);
+        Properties nodeProps = (info.isRelationship() ? getAssocProperties(info, filter) : getNodeProperties(info,
+                filter));
 
-        return createCMISObjectImpl(nodeRef, type, nodeProps, filter, includeAllowableActions, includeRelationships,
+        return createCMISObjectImpl(info, nodeProps, filter, includeAllowableActions, includeRelationships,
                 renditionFilter, includePolicyIds, includeAcl);
     }
 
-    private ObjectData createCMISObjectImpl(NodeRef nodeRef, TypeDefinitionWrapper type, Properties nodeProps,
-            String filter, boolean includeAllowableActions, IncludeRelationships includeRelationships,
-            String renditionFilter, boolean includePolicyIds, boolean includeAcl)
-    {
-        // get the current version
-        NodeRef currentVersionNodeRef = nodeRef;
-        if (type instanceof DocumentTypeDefinitionWrapper)
-        {
-            try
-            {
-                VersionHistory versionHistory = versionService.getVersionHistory(nodeRef);
-                if (versionHistory != null)
-                {
-                    Version currentVersion = versionHistory.getHeadVersion();
-                    currentVersionNodeRef = currentVersion.getVersionedNodeRef();
-
-                    Serializable versionLabel = getNodeService().getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
-                    if (currentVersion.getVersionLabel().equals(versionLabel))
-                    {
-                        nodeRef = currentVersionNodeRef;
-                    }
-                }
-            } catch (AspectMissingException e)
-            {
-            }
-        }
-
-        ObjectDataImpl result = new ObjectDataImpl();
-
-        // set properties
-        result.setProperties(nodeProps);
-
-        // set allowable actions
-        if (includeAllowableActions)
-        {
-            result.setAllowableActions(getAllowableActions(type, nodeRef));
-        }
-
-        // set relationships
-        if (includeRelationships != IncludeRelationships.NONE)
-        {
-            result.setRelationships(getRelationships(nodeRef, includeRelationships));
-        }
-
-        // set renditions
-        if (!RENDITION_NONE.equals(renditionFilter))
-        {
-            List<RenditionData> renditions = getRendtions(nodeRef, renditionFilter, null, null);
-            if ((renditions != null) && (!renditions.isEmpty()))
-            {
-                result.setRenditions(renditions);
-            }
-        }
-
-        // set policy ids
-        if (includePolicyIds)
-        {
-            result.setPolicyIds(new PolicyIdListImpl());
-        }
-
-        // set ACL
-        if (includeAcl)
-        {
-            result.setAcl(getACL(currentVersionNodeRef, false));
-        }
-
-        // add aspects
-        List<CmisExtensionElement> extensions = getAspectExtensions(nodeRef, filter, result.getProperties()
-                .getProperties().keySet());
-        if (!extensions.isEmpty())
-        {
-            result.getProperties().setExtensions(
-                    Collections.singletonList((CmisExtensionElement) new CmisExtensionElementImpl(
-                            ALFRESCO_EXTENSION_NAMESPACE, ASPECTS, null, extensions)));
-        }
-
-        return result;
-    }
-
-    /**
-     * Creates the CMIS object for an association.
-     */
     @SuppressWarnings("unchecked")
-    public ObjectData createCMISObject(AssociationRef assocRef, String filter, boolean includeAllowableActions,
-            IncludeRelationships includeRelationships, String renditionFilter, boolean includePolicyIds,
-            boolean includeAcl)
+    private ObjectData createCMISObjectImpl(CMISNodeInfo info, Properties nodeProps, String filter,
+            boolean includeAllowableActions, IncludeRelationships includeRelationships, String renditionFilter,
+            boolean includePolicyIds, boolean includeAcl)
     {
-        TypeDefinitionWrapper type = getType(assocRef);
-        if (type == null)
-        {
-            throw new CmisObjectNotFoundException("No corresponding type found! Not a CMIS object?");
-        }
-
         ObjectDataImpl result = new ObjectDataImpl();
-
-        // set properties
-        result.setProperties(getAssocProperties(assocRef, filter, type));
 
         // set allowable actions
         if (includeAllowableActions)
         {
-            result.setAllowableActions(getAllowableActions(type, assocRef));
+            result.setAllowableActions(getAllowableActions(info));
         }
 
         // set policy ids
@@ -1299,13 +915,54 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             result.setPolicyIds(new PolicyIdListImpl());
         }
 
-        // set ACL
-        if (includeAcl)
+        if (info.isRelationship())
         {
-            // association have no ACL - return an empty list of ACEs
-            result.setAcl(new AccessControlListImpl((List<Ace>) Collections.EMPTY_LIST));
-        }
+            // set properties
+            result.setProperties(getAssocProperties(info, filter));
 
+            // set ACL
+            if (includeAcl)
+            {
+                // association have no ACL - return an empty list of ACEs
+                result.setAcl(new AccessControlListImpl((List<Ace>) Collections.EMPTY_LIST));
+            }
+        } else
+        {
+            // set properties
+            result.setProperties(nodeProps);
+
+            // set relationships
+            if (includeRelationships != IncludeRelationships.NONE)
+            {
+                result.setRelationships(getRelationships(info.getNodeRef(), includeRelationships));
+            }
+
+            // set renditions
+            if (!RENDITION_NONE.equals(renditionFilter))
+            {
+                List<RenditionData> renditions = getRendtions(info.getNodeRef(), renditionFilter, null, null);
+                if ((renditions != null) && (!renditions.isEmpty()))
+                {
+                    result.setRenditions(renditions);
+                }
+            }
+
+            // set ACL
+            if (includeAcl)
+            {
+                result.setAcl(getACL(info.getCurrentNodeNodeRef(), false));
+            }
+
+            // add aspects
+            List<CmisExtensionElement> extensions = getAspectExtensions(info, filter, result.getProperties()
+                    .getProperties().keySet());
+            if (!extensions.isEmpty())
+            {
+                result.getProperties().setExtensions(
+                        Collections.singletonList((CmisExtensionElement) new CmisExtensionElementImpl(
+                                ALFRESCO_EXTENSION_NAMESPACE, ASPECTS, null, extensions)));
+            }
+        }
         return result;
     }
 
@@ -1361,29 +1018,28 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     /**
      * Gets the content from the repository.
      */
-    public ContentStream getContentStream(NodeRef nodeRef, String streamId, BigInteger offset, BigInteger length)
+    public ContentStream getContentStream(CMISNodeInfoImpl info, String streamId, BigInteger offset, BigInteger length)
     {
         // get the type and check if the object can have content
-        TypeDefinitionWrapper type = getType(nodeRef);
+        TypeDefinitionWrapper type = info.getType();
         checkDocumentTypeForContent(type);
 
         // looks like a document, now get the content
         ContentStreamImpl result = new ContentStreamImpl();
-        result.setFileName(getName(nodeRef));
+        result.setFileName(info.getName());
 
         // if streamId is set, fetch other content
-        NodeRef streamNodeRef = nodeRef;
+        NodeRef streamNodeRef = info.getNodeRef();
         if ((streamId != null) && (streamId.length() > 0))
         {
-            ObjectVariantEnum variant = getObjectVariant(streamId);
-            throwCommonExceptions(variant, "Stream", streamId);
-            if (variant != ObjectVariantEnum.NODE)
+            CMISNodeInfo streamInfo = createNodeInfo(streamId);
+            if (!streamInfo.isVariant(CMISObjectVariant.CURRENT_VERSION))
             {
                 throw new CmisInvalidArgumentException("Stream id is invalid: " + streamId);
             }
 
-            streamNodeRef = getNodeRef(streamId);
-            type = getType(streamNodeRef);
+            streamNodeRef = streamInfo.getNodeRef();
+            type = streamInfo.getType();
             checkDocumentTypeForContent(type);
         }
 
@@ -1444,13 +1100,13 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         }
     }
 
-    public Properties getNodeProperties(NodeRef nodeRef, String filter, TypeDefinitionWrapper type)
+    public Properties getNodeProperties(CMISNodeInfo info, String filter)
     {
         PropertiesImpl result = new PropertiesImpl();
 
         Set<String> filterSet = splitFilter(filter);
 
-        for (PropertyDefintionWrapper propDef : type.getProperties())
+        for (PropertyDefintionWrapper propDef : info.getType().getProperties())
         {
             if (!propDef.getPropertyId().equals(PropertyIds.OBJECT_ID))
             {
@@ -1462,14 +1118,14 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 }
             }
 
-            Serializable value = propDef.getPropertyAccessor().getValue(nodeRef);
+            Serializable value = propDef.getPropertyAccessor().getValue(info);
             result.addProperty(getProperty(propDef.getPropertyDefinition().getPropertyType(), propDef, value));
         }
 
         return result;
     }
 
-    public Properties getNodeProperties(FileInfo node, String filter, TypeDefinitionWrapper type)
+    public Properties getNodeProperties(CMISNodeInfo info, FileInfo node, String filter, TypeDefinitionWrapper type)
     {
         PropertiesImpl result = new PropertiesImpl();
 
@@ -1497,7 +1153,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 value = nodeProps.get(accessor.getMappedProperty());
             } else
             {
-                value = propDef.getPropertyAccessor().getValue(node.getNodeRef());
+                value = propDef.getPropertyAccessor().getValue(info);
             }
 
             result.addProperty(getProperty(propDef.getPropertyDefinition().getPropertyType(), propDef, value));
@@ -1506,13 +1162,13 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         return result;
     }
 
-    public Properties getAssocProperties(AssociationRef assocRef, String filter, TypeDefinitionWrapper type)
+    public Properties getAssocProperties(CMISNodeInfo info, String filter)
     {
         PropertiesImpl result = new PropertiesImpl();
 
         Set<String> filterSet = splitFilter(filter);
 
-        for (PropertyDefintionWrapper propDef : type.getProperties())
+        for (PropertyDefintionWrapper propDef : info.getType().getProperties())
         {
             if ((filterSet != null) && (!filterSet.contains(propDef.getPropertyDefinition().getQueryName())))
             {
@@ -1520,7 +1176,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 continue;
             }
 
-            Serializable value = propDef.getPropertyAccessor().getValue(assocRef);
+            Serializable value = propDef.getPropertyAccessor().getValue(info);
             result.addProperty(getProperty(propDef.getPropertyDefinition().getPropertyType(), propDef, value));
         }
 
@@ -1530,14 +1186,14 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     /**
      * Builds aspect extension.
      */
-    public List<CmisExtensionElement> getAspectExtensions(NodeRef nodeRef, String filter,
+    public List<CmisExtensionElement> getAspectExtensions(CMISNodeInfo info, String filter,
             Set<String> alreadySetProperties)
     {
         List<CmisExtensionElement> extensions = new ArrayList<CmisExtensionElement>();
         Set<String> propertyIds = new HashSet<String>(alreadySetProperties);
         Set<String> filterSet = splitFilter(filter);
 
-        Set<QName> aspects = nodeService.getAspects(nodeRef);
+        Set<QName> aspects = nodeService.getAspects(info.getNodeRef());
         for (QName aspect : aspects)
         {
             TypeDefinitionWrapper aspectType = cmisDictionaryService.findNodeType(aspect);
@@ -1564,7 +1220,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                     continue;
                 }
 
-                Serializable value = propDef.getPropertyAccessor().getValue(nodeRef);
+                Serializable value = propDef.getPropertyAccessor().getValue(info);
                 propertyExtensionList.add(createAspectPropertyExtension(propDef.getPropertyDefinition(), value));
 
                 // mark property as 'added'
@@ -1803,17 +1459,15 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         return result;
     }
 
-    @SuppressWarnings("unchecked")
-    public AllowableActions getAllowableActions(TypeDefinitionWrapper type, EntityRef ref)
+    public AllowableActions getAllowableActions(CMISNodeInfo info)
     {
         AllowableActionsImpl result = new AllowableActionsImpl();
         Set<Action> allowableActions = new HashSet<Action>();
         result.setAllowableActions(allowableActions);
 
-        for (@SuppressWarnings("rawtypes")
-        CMISActionEvaluator evaluator : type.getActionEvaluators().values())
+        for (CMISActionEvaluator evaluator : info.getType().getActionEvaluators().values())
         {
-            if (evaluator.isAllowed(ref))
+            if (evaluator.isAllowed(info))
             {
                 allowableActions.add(evaluator.getAction());
             }
@@ -1853,7 +1507,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 continue;
             }
 
-            result.add(createCMISObject(assocRef, null, false, IncludeRelationships.NONE, RENDITION_NONE, false, false));
+            result.add(createCMISObject(createNodeInfo(assocRef), null, false, IncludeRelationships.NONE,
+                    RENDITION_NONE, false, false));
         }
 
         return result;
@@ -1920,8 +1575,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 if (max > 0)
                 {
                     result.getObjects().add(
-                            createCMISObject(assocRef, filter, includeAllowableActions, IncludeRelationships.NONE,
-                                    RENDITION_NONE, false, false));
+                            createCMISObject(createNodeInfo(assocRef), filter, includeAllowableActions,
+                                    IncludeRelationships.NONE, RENDITION_NONE, false, false));
                 } else
                 {
                     hasMore = true;
@@ -2327,7 +1982,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                     // set allowable actions
                     if (includeAllowableActions)
                     {
-                        hit.setAllowableActions(getAllowableActions(type, nodeRef));
+                        hit.setAllowableActions(getAllowableActions(createNodeInfo(nodeRef)));
                     }
 
                     // set relationships
@@ -2553,8 +2208,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
         Updatability updatability = propDef.getPropertyDefinition().getUpdatability();
         if ((updatability == Updatability.READONLY)
-                || (updatability == Updatability.WHENCHECKEDOUT && !nodeService.hasAspect(nodeRef,
-                        ContentModel.ASPECT_WORKING_COPY)))
+                || (updatability == Updatability.WHENCHECKEDOUT && !checkOutCheckInService.isWorkingCopy(nodeRef)))
         {
             throw new CmisInvalidArgumentException("Property " + property.getId() + " is read-only!");
         }
@@ -2904,16 +2558,6 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             params.setForward(false);
             auditService.auditQuery(auditQueryCallback, params, 1);
             latestChangeLogToken = auditQueryCallback.getEntryId();
-        }
-
-        if (repositoryPermissions == null)
-        {
-            repositoryPermissions = getRepositoryPermissions();
-        }
-
-        if (permissionMappings == null)
-        {
-
         }
 
         // compile repository info

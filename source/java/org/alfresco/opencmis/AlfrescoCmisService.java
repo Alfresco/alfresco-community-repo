@@ -40,7 +40,8 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.cmis.CMISInvalidArgumentException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.opencmis.dictionary.DocumentTypeDefinitionWrapper;
+import org.alfresco.opencmis.dictionary.CMISNodeInfo;
+import org.alfresco.opencmis.dictionary.CMISObjectVariant;
 import org.alfresco.opencmis.dictionary.FolderTypeDefintionWrapper;
 import org.alfresco.opencmis.dictionary.PropertyDefintionWrapper;
 import org.alfresco.opencmis.dictionary.TypeDefinitionWrapper;
@@ -64,7 +65,6 @@ import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.EntityRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.QueryParameterDefinition;
@@ -146,10 +146,12 @@ public class AlfrescoCmisService extends AbstractCmisService
     private CMISConnector connector;
     private CallContext context;
     private UserTransaction txn;
+    private Map<String, CMISNodeInfoImpl> nodeInfoMap;
 
     public AlfrescoCmisService(CMISConnector connector)
     {
         this.connector = connector;
+        nodeInfoMap = new HashMap<String, CMISNodeInfoImpl>();
     }
 
     public void beginCall(CallContext context)
@@ -225,6 +227,9 @@ public class AlfrescoCmisService extends AbstractCmisService
         {
             AuthenticationUtil.popAuthentication();
             context = null;
+            nodeInfoMap.clear();
+
+            super.close();
         }
     }
 
@@ -268,6 +273,50 @@ public class AlfrescoCmisService extends AbstractCmisService
         {
             throw new CmisRuntimeException(e.getMessage(), e);
         }
+    }
+
+    protected CMISNodeInfoImpl createNodeInfo(NodeRef nodeRef)
+    {
+        CMISNodeInfoImpl result = connector.createNodeInfo(nodeRef);
+        nodeInfoMap.put(result.getObjectId(), result);
+
+        return result;
+    }
+
+    protected CMISNodeInfo createNodeInfo(AssociationRef assocRef)
+    {
+        CMISNodeInfoImpl result = connector.createNodeInfo(assocRef);
+        nodeInfoMap.put(result.getObjectId(), result);
+
+        return result;
+    }
+
+    protected CMISNodeInfoImpl getOrCreateNodeInfo(String objectId)
+    {
+        CMISNodeInfoImpl result = nodeInfoMap.get(objectId);
+        if (result == null)
+        {
+            result = connector.createNodeInfo(objectId);
+            nodeInfoMap.put(objectId, result);
+        }
+
+        return result;
+    }
+
+    protected CMISNodeInfoImpl getOrCreateNodeInfo(String objectId, String what)
+    {
+        CMISNodeInfoImpl result = getOrCreateNodeInfo(objectId);
+        result.checkIfUseful(what);
+
+        return result;
+    }
+
+    protected CMISNodeInfoImpl getOrCreateFolderInfo(String folderId, String what)
+    {
+        CMISNodeInfoImpl result = getOrCreateNodeInfo(folderId);
+        result.checkIfFolder(what);
+
+        return result;
     }
 
     // --- repository service ---
@@ -436,7 +485,7 @@ public class AlfrescoCmisService extends AbstractCmisService
         result.setObjects(list);
 
         // get the children references
-        NodeRef folderNodeRef = connector.getFolderNodeRef("Folder", folderId);
+        NodeRef folderNodeRef = getOrCreateFolderInfo(folderId, "Folder").getNodeRef();
 
         // lucene part
         QName PARAM_PARENT = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "parent");
@@ -481,9 +530,10 @@ public class AlfrescoCmisService extends AbstractCmisService
             for (int i = skip; i <= lastIndex; i++)
             {
                 NodeRef child = childrenList.get(i);
+                CMISNodeInfo ni = createNodeInfo(child);
 
                 // create a child CMIS object
-                ObjectData object = connector.createCMISObject(child, filter, includeAllowableActions,
+                ObjectData object = connector.createCMISObject(ni, filter, includeAllowableActions,
                         includeRelationships, renditionFilter, false, false);
 
                 ObjectInFolderDataImpl childData = new ObjectInFolderDataImpl();
@@ -523,7 +573,7 @@ public class AlfrescoCmisService extends AbstractCmisService
         result.setObjects(list);
 
         // get the children references
-        NodeRef folderNodeRef = connector.getFolderNodeRef("Folder", folderId);
+        NodeRef folderNodeRef = getOrCreateFolderInfo(folderId, "Folder").getNodeRef();
 
         // convert orderBy to sortProps
         List<Pair<QName, Boolean>> sortProps = null;
@@ -604,7 +654,8 @@ public class AlfrescoCmisService extends AbstractCmisService
                 try
                 {
                     // create a child CMIS object
-                    ObjectData object = connector.createCMISObject(child, filter, includeAllowableActions,
+                    CMISNodeInfo ni = createNodeInfo(child.getNodeRef());
+                    ObjectData object = connector.createCMISObject(ni, child, filter, includeAllowableActions,
                             includeRelationships, renditionFilter, false, false);
 
                     if (context.isObjectInfoRequired())
@@ -662,8 +713,9 @@ public class AlfrescoCmisService extends AbstractCmisService
 
         List<ObjectInFolderContainer> result = new ArrayList<ObjectInFolderContainer>();
 
-        getDescendantsTree(repositoryId, connector.getFolderNodeRef("Folder", folderId), depth.intValue(), filter,
-                includeAllowableActions, includeRelationships, renditionFilter, includePathSegment, false, result);
+        getDescendantsTree(repositoryId, getOrCreateFolderInfo(folderId, "Folder").getNodeRef(), depth.intValue(),
+                filter, includeAllowableActions, includeRelationships, renditionFilter, includePathSegment, false,
+                result);
 
         return result;
     }
@@ -677,8 +729,9 @@ public class AlfrescoCmisService extends AbstractCmisService
 
         List<ObjectInFolderContainer> result = new ArrayList<ObjectInFolderContainer>();
 
-        getDescendantsTree(repositoryId, connector.getFolderNodeRef("Folder", folderId), depth.intValue(), filter,
-                includeAllowableActions, includeRelationships, renditionFilter, includePathSegment, true, result);
+        getDescendantsTree(repositoryId, getOrCreateFolderInfo(folderId, "Folder").getNodeRef(), depth.intValue(),
+                filter, includeAllowableActions, includeRelationships, renditionFilter, includePathSegment, true,
+                result);
 
         return result;
     }
@@ -708,8 +761,9 @@ public class AlfrescoCmisService extends AbstractCmisService
 
                 // create a child CMIS object
                 ObjectInFolderDataImpl object = new ObjectInFolderDataImpl();
-                object.setObject(connector.createCMISObject(child.getChildRef(), filter, includeAllowableActions,
-                        includeRelationships, renditionFilter, false, false));
+                CMISNodeInfo ni = createNodeInfo(child.getChildRef());
+                object.setObject(connector.createCMISObject(ni, filter, includeAllowableActions, includeRelationships,
+                        renditionFilter, false, false));
                 if (context.isObjectInfoRequired())
                 {
                     getObjectInfo(repositoryId, object.getObject().getId());
@@ -747,23 +801,24 @@ public class AlfrescoCmisService extends AbstractCmisService
         checkRepositoryId(repositoryId);
 
         // get the node ref
-        NodeRef nodeRef = connector.getFolderNodeRef("Folder", folderId);
+        CMISNodeInfo info = getOrCreateFolderInfo(folderId, "Folder");
 
         // the root folder has no parent
-        if (nodeRef.equals(connector.getRootNodeRef()))
+        if (info.isRootFolder())
         {
             throw new CmisInvalidArgumentException("Root folder has no parent!");
         }
 
         // get the parent
-        ChildAssociationRef parent = connector.getNodeService().getPrimaryParent(nodeRef);
+        ChildAssociationRef parent = connector.getNodeService().getPrimaryParent(info.getNodeRef());
         if (parent == null)
         {
             throw new CmisRuntimeException("Folder has no parent and is not the root folder?!");
         }
 
         // create parent object
-        ObjectData result = connector.createCMISObject(parent.getParentRef(), filter, false, IncludeRelationships.NONE,
+        CMISNodeInfo ni = createNodeInfo(parent.getParentRef());
+        ObjectData result = connector.createCMISObject(ni, filter, false, IncludeRelationships.NONE,
                 CMISConnector.RENDITION_NONE, false, false);
         if (context.isObjectInfoRequired())
         {
@@ -783,71 +838,64 @@ public class AlfrescoCmisService extends AbstractCmisService
         List<ObjectParentData> result = new ArrayList<ObjectParentData>();
 
         // what kind of object is it?
-        ObjectVariantEnum variant = connector.getObjectVariant(objectId);
-        connector.throwCommonExceptions(variant, "Object", objectId);
+        CMISNodeInfo info = getOrCreateNodeInfo(objectId, "Object");
 
-        if (variant != ObjectVariantEnum.ASSOC)
+        // relationships are not filed
+        if (info.isRelationship())
         {
-            // versions are filed in the same folder -> cut off version suffix
-            String currentVersionId = connector.getCurrentVersionId(objectId);
-            NodeRef nodeRef = connector.getNodeRef(currentVersionId);
+            throw new CmisConstraintException("Relationships are not fileable!");
+        }
 
-            TypeDefinitionWrapper type = connector.getType(nodeRef);
-
-            if (type instanceof FolderTypeDefintionWrapper)
+        if (info.isFolder() && !info.isRootFolder())
+        {
+            ChildAssociationRef parent = connector.getNodeService().getPrimaryParent(info.getNodeRef());
+            if (parent != null)
             {
-                NodeRef rootNodeRef = connector.getRootNodeRef();
-
-                if (!nodeRef.equals(rootNodeRef))
+                CMISNodeInfo ni = createNodeInfo(parent.getParentRef());
+                ObjectData object = connector.createCMISObject(ni, filter, includeAllowableActions,
+                        includeRelationships, renditionFilter, false, false);
+                if (context.isObjectInfoRequired())
                 {
-                    ChildAssociationRef parent = connector.getNodeService().getPrimaryParent(nodeRef);
-                    if (parent != null)
-                    {
-                        ObjectData object = connector.createCMISObject(parent.getParentRef(), filter,
-                                includeAllowableActions, includeRelationships, renditionFilter, false, false);
-                        if (context.isObjectInfoRequired())
-                        {
-                            getObjectInfo(repositoryId, object.getId());
-                        }
-
-                        ObjectParentDataImpl objectParent = new ObjectParentDataImpl();
-                        objectParent.setObject(object);
-
-                        // include relative path segment
-                        if (includeRelativePathSegment)
-                        {
-                            objectParent.setRelativePathSegment(connector.getName(nodeRef));
-                        }
-
-                        result.add(objectParent);
-                    }
+                    getObjectInfo(repositoryId, object.getId());
                 }
-            } else
-            {
-                List<ChildAssociationRef> parents = connector.getNodeService().getParentAssocs(nodeRef,
-                        ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
-                if (parents != null)
+
+                ObjectParentDataImpl objectParent = new ObjectParentDataImpl();
+                objectParent.setObject(object);
+
+                // include relative path segment
+                if (includeRelativePathSegment)
                 {
-                    for (ChildAssociationRef parent : parents)
+                    objectParent.setRelativePathSegment(info.getName());
+                }
+
+                result.add(objectParent);
+            }
+        } else if (info.isCurrentVersion() || info.isPWC())
+        {
+            List<ChildAssociationRef> parents = connector.getNodeService().getParentAssocs(info.getNodeRef(),
+                    ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+            if (parents != null)
+            {
+                for (ChildAssociationRef parent : parents)
+                {
+                    CMISNodeInfo ni = createNodeInfo(parent.getParentRef());
+                    ObjectData object = connector.createCMISObject(ni, filter, includeAllowableActions,
+                            includeRelationships, renditionFilter, false, false);
+                    if (context.isObjectInfoRequired())
                     {
-                        ObjectData object = connector.createCMISObject(parent.getParentRef(), filter,
-                                includeAllowableActions, includeRelationships, renditionFilter, false, false);
-                        if (context.isObjectInfoRequired())
-                        {
-                            getObjectInfo(repositoryId, object.getId());
-                        }
-
-                        ObjectParentDataImpl objectParent = new ObjectParentDataImpl();
-                        objectParent.setObject(object);
-
-                        // include relative path segment
-                        if (includeRelativePathSegment)
-                        {
-                            objectParent.setRelativePathSegment(connector.getName(nodeRef));
-                        }
-
-                        result.add(objectParent);
+                        getObjectInfo(repositoryId, object.getId());
                     }
+
+                    ObjectParentDataImpl objectParent = new ObjectParentDataImpl();
+                    objectParent.setObject(object);
+
+                    // include relative path segment
+                    if (includeRelativePathSegment)
+                    {
+                        objectParent.setRelativePathSegment(info.getName());
+                    }
+
+                    result.add(objectParent);
                 }
             }
         }
@@ -933,14 +981,14 @@ public class AlfrescoCmisService extends AbstractCmisService
         checkRepositoryId(repositoryId);
 
         // get the parent folder node ref
-        final NodeRef parentNodeRef = connector.getFolderNodeRef("Parent folder", folderId);
+        final CMISNodeInfo parentInfo = getOrCreateFolderInfo(folderId, "Folder");
 
         // get name and type
         final String name = connector.getNameProperty(properties);
         final String objectTypeId = connector.getObjectTypeIdProperty(properties);
         final TypeDefinitionWrapper type = connector.getTypeForCreate(objectTypeId, BaseTypeId.CMIS_FOLDER);
 
-        connector.checkChildObjectType(parentNodeRef, type.getTypeId());
+        connector.checkChildObjectType(parentInfo, type.getTypeId());
 
         // run transaction
         endReadOnlyTransaction();
@@ -952,7 +1000,7 @@ public class AlfrescoCmisService extends AbstractCmisService
                         try
                         {
                             NodeRef nodeRef = connector.getFileFolderService()
-                                    .create(parentNodeRef, name, type.getAlfrescoClass()).getNodeRef();
+                                    .create(parentInfo.getNodeRef(), name, type.getAlfrescoClass()).getNodeRef();
 
                             connector.setProperties(nodeRef, type, properties, new String[] { PropertyIds.NAME,
                                     PropertyIds.OBJECT_TYPE_ID });
@@ -985,14 +1033,14 @@ public class AlfrescoCmisService extends AbstractCmisService
         checkRepositoryId(repositoryId);
 
         // get the parent folder node ref
-        final NodeRef parentNodeRef = connector.getFolderNodeRef("Parent folder", folderId);
+        final CMISNodeInfo parentInfo = getOrCreateFolderInfo(folderId, "Parent folder");
 
         // get name and type
         final String name = connector.getNameProperty(properties);
         final String objectTypeId = connector.getObjectTypeIdProperty(properties);
         final TypeDefinitionWrapper type = connector.getTypeForCreate(objectTypeId, BaseTypeId.CMIS_DOCUMENT);
 
-        connector.checkChildObjectType(parentNodeRef, type.getTypeId());
+        connector.checkChildObjectType(parentInfo, type.getTypeId());
 
         DocumentTypeDefinition docType = (DocumentTypeDefinition) type.getTypeDefinition(false);
 
@@ -1030,7 +1078,7 @@ public class AlfrescoCmisService extends AbstractCmisService
                         try
                         {
                             NodeRef nodeRef = connector.getFileFolderService()
-                                    .create(parentNodeRef, name, type.getAlfrescoClass()).getNodeRef();
+                                    .create(parentInfo.getNodeRef(), name, type.getAlfrescoClass()).getNodeRef();
 
                             connector.setProperties(nodeRef, type, properties, new String[] { PropertyIds.NAME,
                                     PropertyIds.OBJECT_TYPE_ID });
@@ -1080,30 +1128,28 @@ public class AlfrescoCmisService extends AbstractCmisService
         checkRepositoryId(repositoryId);
 
         // get the parent folder node ref
-        final NodeRef parentNodeRef = connector.getFolderNodeRef("Parent folder", folderId);
+        final CMISNodeInfo parentInfo = getOrCreateFolderInfo(folderId, "Parent folder");
 
         // get name and type
         final String name = connector.getNameProperty(properties);
 
         // get source
-        ObjectVariantEnum variant = connector.getObjectVariant(sourceId);
-        connector.throwCommonExceptions(variant, "Source", sourceId);
+        CMISNodeInfo info = getOrCreateNodeInfo(sourceId, "Source");
 
         // check source
-        if (variant == ObjectVariantEnum.ASSOC)
+        if (info.isVariant(CMISObjectVariant.ASSOC))
         {
             throw new CmisConstraintException("Source object is not a document!");
         }
 
-        final NodeRef sourceNodeRef = connector.getNodeRef(sourceId);
-        final TypeDefinitionWrapper type = connector.getAndCheckType(sourceNodeRef);
-
-        if (!(type instanceof DocumentTypeDefinitionWrapper))
+        final NodeRef sourceNodeRef = info.getNodeRef();
+        if (!info.isDocument())
         {
             throw new CmisConstraintException("Source object is not a document!");
         }
 
-        connector.checkChildObjectType(parentNodeRef, type.getTypeId());
+        final TypeDefinitionWrapper type = info.getType();
+        connector.checkChildObjectType(parentInfo, type.getTypeId());
 
         // run transaction
         endReadOnlyTransaction();
@@ -1115,7 +1161,7 @@ public class AlfrescoCmisService extends AbstractCmisService
                         try
                         {
                             NodeRef newDocumentNodeRef = connector.getFileFolderService()
-                                    .copy(sourceNodeRef, parentNodeRef, name).getNodeRef();
+                                    .copy(sourceNodeRef, parentInfo.getNodeRef(), name).getNodeRef();
 
                             connector.setProperties(newDocumentNodeRef, type, properties, new String[] {
                                     PropertyIds.NAME, PropertyIds.OBJECT_TYPE_ID });
@@ -1147,8 +1193,8 @@ public class AlfrescoCmisService extends AbstractCmisService
     {
         checkRepositoryId(repositoryId);
 
-        // get the parent folder node ref
-        connector.getFolderNodeRef("Parent folder", folderId);
+        // get the parent folder
+        getOrCreateFolderInfo(folderId, "Parent Folder");
 
         String objectTypeId = connector.getObjectTypeIdProperty(properties);
         connector.getTypeForCreate(objectTypeId, BaseTypeId.CMIS_POLICY);
@@ -1169,27 +1215,26 @@ public class AlfrescoCmisService extends AbstractCmisService
 
         // get source object
         String sourceId = connector.getSourceIdProperty(properties);
-        ObjectVariantEnum sourceVariant = connector.getObjectVariant(sourceId);
-        connector.throwCommonExceptions(sourceVariant, "Source", sourceId);
+        CMISNodeInfo sourceInfo = getOrCreateNodeInfo(sourceId, "Source");
 
-        if (sourceVariant != ObjectVariantEnum.NODE)
+        if (!sourceInfo.isVariant(CMISObjectVariant.CURRENT_VERSION) && !sourceInfo.isVariant(CMISObjectVariant.FOLDER))
         {
-            throw new CmisInvalidArgumentException("Source is not a document or folder object!");
+            throw new CmisInvalidArgumentException("Source is not the latest version of a document or a folder object!");
         }
 
-        final NodeRef sourceNodeRef = connector.getNodeRefIfCurrent("Source", sourceId);
+        final NodeRef sourceNodeRef = sourceInfo.getNodeRef();
 
         // get target object
         String targetId = connector.getTargetIdProperty(properties);
-        ObjectVariantEnum targetVariant = connector.getObjectVariant(targetId);
-        connector.throwCommonExceptions(targetVariant, "Target", sourceId);
+        CMISNodeInfo targetInfo = getOrCreateNodeInfo(targetId, "Target");
 
-        if (targetVariant != ObjectVariantEnum.NODE)
+        if (!targetInfo.isVariant(CMISObjectVariant.CURRENT_VERSION) && !targetInfo.isVariant(CMISObjectVariant.FOLDER))
         {
-            throw new CmisInvalidArgumentException("Target is not a document or folder object!");
+            throw new CmisInvalidArgumentException(
+                    "Target is not the latest version of a document or a folder object!!");
         }
 
-        final NodeRef targetNodeRef = connector.getNodeRefIfCurrent("Target", targetId);
+        final NodeRef targetNodeRef = targetInfo.getNodeRef();
 
         // check policies and ACLs
         if ((policies != null) && (!policies.isEmpty()))
@@ -1238,23 +1283,16 @@ public class AlfrescoCmisService extends AbstractCmisService
     {
         checkRepositoryId(repositoryId);
 
-        ObjectVariantEnum variant = connector.getObjectVariant(objectId.getValue());
-        connector.throwCommonExceptions(variant, "Object", objectId.getValue());
+        CMISNodeInfo info = getOrCreateNodeInfo(objectId.getValue(), "Object");
 
-        if (variant == ObjectVariantEnum.ASSOC)
+        if (!info.isVariant(CMISObjectVariant.CURRENT_VERSION) && !info.isVariant(CMISObjectVariant.PWC))
         {
-            throw new CmisStreamNotSupportedException("Relationships don't support content!");
+            throw new CmisStreamNotSupportedException("Content can only be set ondocuments!");
         }
 
-        final NodeRef nodeRef = connector.getNodeRefIfCurrent("Object", objectId.getValue());
-        TypeDefinitionWrapper type = connector.getAndCheckType(nodeRef);
+        final NodeRef nodeRef = info.getNodeRef();
 
-        if (!(type instanceof DocumentTypeDefinitionWrapper))
-        {
-            throw new CmisStreamNotSupportedException("Object type doesn't support content!");
-        }
-
-        if (((DocumentTypeDefinition) type.getTypeDefinition(false)).getContentStreamAllowed() == ContentStreamAllowed.NOTALLOWED)
+        if (((DocumentTypeDefinition) info.getType().getTypeDefinition(false)).getContentStreamAllowed() == ContentStreamAllowed.NOTALLOWED)
         {
             throw new CmisStreamNotSupportedException("Document type doesn't allow content!");
         }
@@ -1312,23 +1350,16 @@ public class AlfrescoCmisService extends AbstractCmisService
     {
         checkRepositoryId(repositoryId);
 
-        ObjectVariantEnum variant = connector.getObjectVariant(objectId.getValue());
-        connector.throwCommonExceptions(variant, "Object", objectId.getValue());
+        CMISNodeInfo info = getOrCreateNodeInfo(objectId.getValue(), "Object");
 
-        if (variant == ObjectVariantEnum.ASSOC)
+        if (!info.isVariant(CMISObjectVariant.CURRENT_VERSION) && !info.isVariant(CMISObjectVariant.PWC))
         {
-            throw new CmisStreamNotSupportedException("Relationships don't support content!");
+            throw new CmisStreamNotSupportedException("Content can only be deleted from ondocuments!");
         }
 
-        final NodeRef nodeRef = connector.getNodeRefIfCurrent("Object", objectId.getValue());
-        TypeDefinitionWrapper type = connector.getAndCheckType(nodeRef);
+        final NodeRef nodeRef = info.getNodeRef();
 
-        if (!(type instanceof DocumentTypeDefinitionWrapper))
-        {
-            throw new CmisStreamNotSupportedException("Object type doesn't support content!");
-        }
-
-        if (((DocumentTypeDefinition) type.getTypeDefinition(false)).getContentStreamAllowed() == ContentStreamAllowed.REQUIRED)
+        if (((DocumentTypeDefinition) info.getType().getTypeDefinition(false)).getContentStreamAllowed() == ContentStreamAllowed.REQUIRED)
         {
             throw new CmisInvalidArgumentException("Document type requires content!");
         }
@@ -1364,15 +1395,13 @@ public class AlfrescoCmisService extends AbstractCmisService
         checkRepositoryId(repositoryId);
 
         // get object and source and target parent
-        ObjectVariantEnum variant = connector.getObjectVariant(objectId.getValue());
-        connector.throwCommonExceptions(variant, "Object", objectId.getValue());
+        CMISNodeInfo info = getOrCreateNodeInfo(objectId.getValue(), "Object");
 
-        final NodeRef nodeRef = connector.getNodeRefIfCurrent("Object", objectId.getValue());
-        final NodeRef sourceNodeRef = connector.getFolderNodeRef("Source folder", sourceFolderId);
-        final NodeRef targetNodeRef = connector.getFolderNodeRef("Target folder", targetFolderId);
+        final NodeRef nodeRef = info.getCurrentNodeNodeRef();
+        final CMISNodeInfo sourceInfo = getOrCreateFolderInfo(sourceFolderId, "Source Folder");
+        final CMISNodeInfo targetInfo = getOrCreateFolderInfo(targetFolderId, "Target Folder");
 
-        TypeDefinitionWrapper type = connector.getAndCheckType(nodeRef);
-        connector.checkChildObjectType(targetNodeRef, type.getTypeId());
+        connector.checkChildObjectType(targetInfo, info.getType().getTypeId());
 
         endReadOnlyTransaction();
         connector.getTransactionService().getRetryingTransactionHelper()
@@ -1384,9 +1413,9 @@ public class AlfrescoCmisService extends AbstractCmisService
                         {
                             ChildAssociationRef primaryParentRef = connector.getNodeService().getPrimaryParent(nodeRef);
                             // if this is a primary child node, move it
-                            if (primaryParentRef.getParentRef().equals(sourceNodeRef))
+                            if (primaryParentRef.getParentRef().equals(sourceInfo.getNodeRef()))
                             {
-                                connector.getNodeService().moveNode(nodeRef, targetNodeRef,
+                                connector.getNodeService().moveNode(nodeRef, targetInfo.getNodeRef(),
                                         primaryParentRef.getTypeQName(), primaryParentRef.getQName());
                             } else
                             {
@@ -1394,10 +1423,10 @@ public class AlfrescoCmisService extends AbstractCmisService
                                 for (ChildAssociationRef parent : connector.getNodeService().getParentAssocs(nodeRef,
                                         ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL))
                                 {
-                                    if (parent.getParentRef().equals(sourceNodeRef))
+                                    if (parent.getParentRef().equals(sourceInfo.getNodeRef()))
                                     {
                                         connector.getNodeService().removeChildAssociation(parent);
-                                        connector.getNodeService().addChild(targetNodeRef, nodeRef,
+                                        connector.getNodeService().addChild(targetInfo.getNodeRef(), nodeRef,
                                                 ContentModel.ASSOC_CONTAINS, parent.getQName());
                                         return null;
                                     }
@@ -1425,16 +1454,19 @@ public class AlfrescoCmisService extends AbstractCmisService
     {
         checkRepositoryId(repositoryId);
 
-        final ObjectVariantEnum variant = connector.getObjectVariant(objectId.getValue());
-        connector.throwCommonExceptions(variant, "Object", objectId.getValue());
+        final CMISNodeInfo info = getOrCreateNodeInfo(objectId.getValue(), "Object");
 
-        if (variant == ObjectVariantEnum.ASSOC)
+        if (info.isVariant(CMISObjectVariant.ASSOC))
         {
             throw new CmisInvalidArgumentException("Relationship properties cannot be updated!");
         } else
         {
-            final NodeRef nodeRef = connector.getNodeRefIfCurrent("Object", objectId.getValue());
-            final TypeDefinitionWrapper type = connector.getAndCheckType(nodeRef);
+            if (info.isVariant(CMISObjectVariant.VERSION))
+            {
+                throw new CmisInvalidArgumentException("Document is not the latest version!");
+            }
+
+            final NodeRef nodeRef = info.getNodeRef();
 
             // run transaction
             endReadOnlyTransaction();
@@ -1445,7 +1477,7 @@ public class AlfrescoCmisService extends AbstractCmisService
                         {
                             try
                             {
-                                connector.setProperties(nodeRef, type, properties, new String[0]);
+                                connector.setProperties(nodeRef, info.getType(), properties, new String[0]);
                                 return null;
                             } catch (IntegrityException ie)
                             {
@@ -1475,8 +1507,7 @@ public class AlfrescoCmisService extends AbstractCmisService
         checkRepositoryId(repositoryId);
 
         // what kind of object is it?
-        final ObjectVariantEnum variant = connector.getObjectVariant(objectId);
-        connector.throwCommonExceptions(variant, "Object", objectId);
+        final CMISNodeInfoImpl info = getOrCreateNodeInfo(objectId, "Object");
 
         // run transaction
         endReadOnlyTransaction();
@@ -1488,27 +1519,25 @@ public class AlfrescoCmisService extends AbstractCmisService
                         try
                         {
                             // handle relationships
-                            if (variant == ObjectVariantEnum.ASSOC)
+                            if (info.isVariant(CMISObjectVariant.ASSOC))
                             {
-                                AssociationRef assocRef = connector.getAssociationRef(objectId);
+                                AssociationRef assocRef = info.getAssociationRef();
                                 connector.getNodeService().removeAssociation(assocRef.getSourceRef(),
                                         assocRef.getTargetRef(), assocRef.getTypeQName());
                                 return true;
                             }
 
-                            NodeRef nodeRef = connector.getNodeRef(objectId);
+                            NodeRef nodeRef = info.getNodeRef();
 
                             // handle PWC
-                            if (variant == ObjectVariantEnum.PWC)
+                            if (info.isVariant(CMISObjectVariant.PWC))
                             {
                                 connector.getCheckOutCheckInService().cancelCheckout(nodeRef);
                                 return true;
                             }
 
-                            TypeDefinitionWrapper type = connector.getType(nodeRef);
-
                             // handle folders
-                            if (type instanceof FolderTypeDefintionWrapper)
+                            if (info.isFolder())
                             {
                                 if (connector.getNodeService().getChildAssocs(nodeRef).size() > 0)
                                 {
@@ -1528,16 +1557,16 @@ public class AlfrescoCmisService extends AbstractCmisService
                                 {
                                     connector.getCheckOutCheckInService().cancelCheckout(workingCopy);
                                 }
-                            } else if (variant == ObjectVariantEnum.VERSION)
+                            } else if (info.isVariant(CMISObjectVariant.VERSION))
                             {
-                                Version version = connector.getVersion(objectId);
+                                Version version = info.getVersion();
                                 connector.getVersionService().deleteVersion(nodeRef, version);
                                 return true;
                             }
 
-                            if (variant == ObjectVariantEnum.VERSION)
+                            if (info.isVariant(CMISObjectVariant.VERSION))
                             {
-                                nodeRef = connector.getNodeRef(connector.getCurrentVersionId(objectId));
+                                nodeRef = info.getCurrentNodeNodeRef();
                             }
 
                             // remove not primary parent associations
@@ -1582,7 +1611,7 @@ public class AlfrescoCmisService extends AbstractCmisService
             throw new CmisInvalidArgumentException("Unfiling not supported!");
         }
 
-        final NodeRef folderNodeRef = connector.getFolderNodeRef("Folder", folderId);
+        final NodeRef folderNodeRef = getOrCreateFolderInfo(folderId, "Folder").getNodeRef();
         final FailedToDeleteDataImpl result = new FailedToDeleteDataImpl();
 
         // run transaction
@@ -1655,21 +1684,11 @@ public class AlfrescoCmisService extends AbstractCmisService
         checkRepositoryId(repositoryId);
 
         // what kind of object is it?
-        ObjectVariantEnum variant = connector.getObjectVariant(objectId);
-        connector.throwCommonExceptions(variant, "Object", objectId);
+        CMISNodeInfo info = getOrCreateNodeInfo(objectId, "Object");
 
         // create a CMIS object
-        if (variant == ObjectVariantEnum.ASSOC)
-        {
-            AssociationRef assocRef = connector.getAssociationRef(objectId);
-            return connector.createCMISObject(assocRef, filter, includeAllowableActions, includeRelationships,
-                    renditionFilter, includePolicyIds, includeAcl);
-        } else
-        {
-            NodeRef nodeRef = connector.getNodeRef(objectId);
-            return connector.createCMISObject(nodeRef, filter, includeAllowableActions, includeRelationships,
-                    renditionFilter, includePolicyIds, includeAcl);
-        }
+        return connector.createCMISObject(info, filter, includeAllowableActions, includeRelationships, renditionFilter,
+                includePolicyIds, includeAcl);
     }
 
     @Override
@@ -1681,28 +1700,26 @@ public class AlfrescoCmisService extends AbstractCmisService
 
         // start at the root node
         NodeRef rootNodeRef = connector.getRootNodeRef();
-        NodeRef nodeRef = null;
 
         if (path.equals("/"))
         {
-            nodeRef = rootNodeRef;
+            return connector.createCMISObject(createNodeInfo(rootNodeRef), filter, includeAllowableActions,
+                    includeRelationships, renditionFilter, includePolicyIds, includeAcl);
         } else
         {
             try
             {
                 // resolve path and get the node ref
-                FileInfo info = connector.getFileFolderService().resolveNamePath(rootNodeRef,
+                FileInfo fileInfo = connector.getFileFolderService().resolveNamePath(rootNodeRef,
                         Arrays.asList(path.substring(1).split("/")));
-                nodeRef = info.getNodeRef();
+
+                return connector.createCMISObject(createNodeInfo(fileInfo.getNodeRef()), fileInfo, filter,
+                        includeAllowableActions, includeRelationships, renditionFilter, includePolicyIds, includeAcl);
             } catch (FileNotFoundException e)
             {
                 throw new CmisObjectNotFoundException("Object not found: " + path);
             }
         }
-
-        // create the CMIS object
-        return connector.createCMISObject(nodeRef, filter, includeAllowableActions, includeRelationships,
-                renditionFilter, includePolicyIds, includeAcl);
     }
 
     @Override
@@ -1711,25 +1728,14 @@ public class AlfrescoCmisService extends AbstractCmisService
         checkRepositoryId(repositoryId);
 
         // what kind of object is it?
-        ObjectVariantEnum variant = connector.getObjectVariant(objectId);
-        connector.throwCommonExceptions(variant, "Object", objectId);
+        CMISNodeInfo info = getOrCreateNodeInfo(objectId, "Object");
 
-        if (variant == ObjectVariantEnum.ASSOC)
+        if (info.isVariant(CMISObjectVariant.ASSOC))
         {
-            AssociationRef assocRef = connector.getAssociationRef(objectId);
-            TypeDefinitionWrapper type = connector.getType(assocRef);
-            if (type == null)
-            {
-                throw new CmisObjectNotFoundException("No corresponding type found! Not a CMIS object?");
-            }
-
-            return connector.getAssocProperties(assocRef, filter, type);
+            return connector.getAssocProperties(info, filter);
         } else
         {
-            NodeRef nodeRef = connector.getNodeRef(objectId);
-            TypeDefinitionWrapper type = connector.getAndCheckType(nodeRef);
-
-            return connector.getNodeProperties(nodeRef, filter, type);
+            return connector.getNodeProperties(info, filter);
         }
     }
 
@@ -1739,30 +1745,9 @@ public class AlfrescoCmisService extends AbstractCmisService
         checkRepositoryId(repositoryId);
 
         // what kind of object is it?
-        ObjectVariantEnum variant = connector.getObjectVariant(objectId);
-        connector.throwCommonExceptions(variant, "Object", objectId);
+        CMISNodeInfo info = getOrCreateNodeInfo(objectId, "Object");
 
-        TypeDefinitionWrapper type = null;
-        EntityRef ref = null;
-
-        if (variant == ObjectVariantEnum.ASSOC)
-        {
-            AssociationRef assocRef = connector.getAssociationRef(objectId);
-            type = connector.getType(assocRef);
-            ref = assocRef;
-        } else
-        {
-            NodeRef nodeRef = connector.getNodeRef(objectId);
-            type = connector.getType(nodeRef);
-            ref = nodeRef;
-        }
-
-        if (type == null)
-        {
-            throw new CmisObjectNotFoundException("No corresponding type found! Not a CMIS object?");
-        }
-
-        return connector.getAllowableActions(type, ref);
+        return connector.getAllowableActions(info);
     }
 
     @Override
@@ -1772,18 +1757,16 @@ public class AlfrescoCmisService extends AbstractCmisService
         checkRepositoryId(repositoryId);
 
         // what kind of object is it?
-        ObjectVariantEnum variant = connector.getObjectVariant(objectId);
-        connector.throwCommonExceptions(variant, "Object", objectId);
+        CMISNodeInfoImpl info = getOrCreateNodeInfo(objectId, "Object");
 
         // relationships cannot have content
-        if (variant == ObjectVariantEnum.ASSOC)
+        if (info.isVariant(CMISObjectVariant.ASSOC))
         {
             throw new CmisInvalidArgumentException("Object is a relationship and cannot have content!");
         }
 
         // now get it
-        NodeRef nodeRef = connector.getNodeRef(objectId);
-        return connector.getContentStream(nodeRef, streamId, offset, length);
+        return connector.getContentStream(info, streamId, offset, length);
     }
 
     @Override
@@ -1793,16 +1776,14 @@ public class AlfrescoCmisService extends AbstractCmisService
         checkRepositoryId(repositoryId);
 
         // what kind of object is it?
-        ObjectVariantEnum variant = connector.getObjectVariant(objectId);
-        connector.throwCommonExceptions(variant, "Object", objectId);
+        CMISNodeInfo info = getOrCreateNodeInfo(objectId, "Object");
 
-        if (variant == ObjectVariantEnum.ASSOC)
+        if (info.isVariant(CMISObjectVariant.ASSOC))
         {
             return Collections.emptyList();
         } else
         {
-            NodeRef nodeRef = connector.getNodeRef(objectId);
-            return connector.getRendtions(nodeRef, renditionFilter, maxItems, skipCount);
+            return connector.getRendtions(info.getNodeRef(), renditionFilter, maxItems, skipCount);
         }
     }
 
@@ -1814,24 +1795,18 @@ public class AlfrescoCmisService extends AbstractCmisService
     {
         checkRepositoryId(repositoryId);
 
-        ObjectVariantEnum variant = connector.getObjectVariant(objectId.getValue());
-        connector.throwCommonExceptions(variant, "Object", objectId.getValue());
+        CMISNodeInfo info = getOrCreateNodeInfo(objectId.getValue(), "Object");
 
-        // relationships cannot be checked out
-        if (variant == ObjectVariantEnum.ASSOC)
+        // check for current version
+        if (!info.isVariant(CMISObjectVariant.CURRENT_VERSION))
         {
-            throw new CmisInvalidArgumentException("Unable to check-out a relationship!");
+            throw new CmisInvalidArgumentException("Only documents can be checked out!");
         }
 
         // get object
-        final NodeRef nodeRef = connector.getNodeRefIfCurrent("Document", objectId.getValue());
-        TypeDefinitionWrapper type = connector.getAndCheckType(nodeRef);
-        if (!(type instanceof DocumentTypeDefinitionWrapper))
-        {
-            throw new CmisInvalidArgumentException("Object is not a document!");
-        }
+        final NodeRef nodeRef = info.getNodeRef();
 
-        if (!((DocumentTypeDefinition) type.getTypeDefinition(false)).isVersionable())
+        if (!((DocumentTypeDefinition) info.getType().getTypeDefinition(false)).isVersionable())
         {
             throw new CmisConstraintException("Document is not versionable!");
         }
@@ -1870,17 +1845,16 @@ public class AlfrescoCmisService extends AbstractCmisService
     {
         checkRepositoryId(repositoryId);
 
-        ObjectVariantEnum variant = connector.getObjectVariant(objectId);
-        connector.throwCommonExceptions(variant, "Object", objectId);
+        CMISNodeInfo info = getOrCreateNodeInfo(objectId, "Object");
 
         // only accept a PWC
-        if (variant != ObjectVariantEnum.PWC)
+        if (info.isVariant(CMISObjectVariant.PWC))
         {
             throw new CmisVersioningException("Object is not a PWC!");
         }
 
         // get object
-        final NodeRef nodeRef = connector.getNodeRef(objectId);
+        final NodeRef nodeRef = info.getNodeRef();
 
         // cancel check out
         endReadOnlyTransaction();
@@ -1913,18 +1887,17 @@ public class AlfrescoCmisService extends AbstractCmisService
     {
         checkRepositoryId(repositoryId);
 
-        ObjectVariantEnum variant = connector.getObjectVariant(objectId.getValue());
-        connector.throwCommonExceptions(variant, "Object", objectId.getValue());
+        CMISNodeInfo info = getOrCreateNodeInfo(objectId.getValue(), "Object");
 
         // only accept a PWC
-        if (variant != ObjectVariantEnum.PWC)
+        if (!info.isVariant(CMISObjectVariant.PWC))
         {
             throw new CmisVersioningException("Object is not a PWC!");
         }
 
         // get object
-        final NodeRef nodeRef = connector.getNodeRef(objectId.getValue());
-        final TypeDefinitionWrapper type = connector.getAndCheckType(nodeRef);
+        final NodeRef nodeRef = info.getNodeRef();
+        final TypeDefinitionWrapper type = info.getType();
 
         // copy stream to temp file
         final File tempFile = copyToTempFile(contentStream);
@@ -2025,46 +1998,39 @@ public class AlfrescoCmisService extends AbstractCmisService
         List<ObjectData> result = new ArrayList<ObjectData>();
 
         // what kind of object is it?
-        ObjectVariantEnum variant = connector.getObjectVariant(versionSeriesId);
-        connector.throwCommonExceptions(variant, "Version Series", versionSeriesId);
+        CMISNodeInfo info = getOrCreateNodeInfo(versionSeriesId, "Version Series");
 
-        if (variant == ObjectVariantEnum.ASSOC)
-        {
-            // the relationship history is always empty
-            return result;
-        }
-
-        if (variant != ObjectVariantEnum.NODE)
+        if (!info.isVariant(CMISObjectVariant.CURRENT_VERSION))
         {
             // the version series id is the id of current version, which is a
-            // node
+            // document
             throw new CmisInvalidArgumentException("Version Series does not exist!");
         }
 
         // get current version and it's history
-        NodeRef nodeRef = connector.getNodeRef(versionSeriesId);
+        NodeRef nodeRef = info.getNodeRef();
 
         VersionHistory versionHistory = connector.getVersionService().getVersionHistory(nodeRef);
 
         if (versionHistory == null)
         {
             // add current version
-            result.add(connector.createCMISObject(nodeRef, filter, includeAllowableActions, IncludeRelationships.NONE,
+            result.add(connector.createCMISObject(info, filter, includeAllowableActions, IncludeRelationships.NONE,
                     CMISConnector.RENDITION_NONE, false, false));
         } else
         {
             NodeRef pwcNodeRef = connector.getCheckOutCheckInService().getWorkingCopy(nodeRef);
             if (pwcNodeRef != null)
             {
-                result.add(connector.createCMISObject(pwcNodeRef, filter, includeAllowableActions,
+                result.add(connector.createCMISObject(createNodeInfo(pwcNodeRef), filter, includeAllowableActions,
                         IncludeRelationships.NONE, CMISConnector.RENDITION_NONE, false, false));
             }
 
             // convert the version history
             for (Version version : versionHistory.getAllVersions())
             {
-                result.add(connector.createCMISObject(version.getFrozenStateNodeRef(), filter, includeAllowableActions,
-                        IncludeRelationships.NONE, CMISConnector.RENDITION_NONE, false, false));
+                result.add(connector.createCMISObject(createNodeInfo(version.getFrozenStateNodeRef()), filter,
+                        includeAllowableActions, IncludeRelationships.NONE, CMISConnector.RENDITION_NONE, false, false));
             }
         }
 
@@ -2085,21 +2051,10 @@ public class AlfrescoCmisService extends AbstractCmisService
         }
 
         // what kind of object is it?
-        ObjectVariantEnum variant = connector.getObjectVariant(versionSeriesId);
-        connector.throwCommonExceptions(variant, "Version series", versionSeriesId);
+        CMISNodeInfoImpl info = getOrCreateNodeInfo(versionSeriesId, "Version Series");
 
-        // create a CMIS object
-        if (variant == ObjectVariantEnum.ASSOC)
-        {
-            AssociationRef assocRef = connector.getAssociationRef(versionSeriesId);
-            return connector.createCMISObject(assocRef, filter, includeAllowableActions, includeRelationships,
-                    renditionFilter, includePolicyIds, includeAcl);
-        } else
-        {
-            NodeRef nodeRef = connector.getLatestVersionNodeRef(versionSeriesId, major);
-            return connector.createCMISObject(nodeRef, filter, includeAllowableActions, includeRelationships,
-                    renditionFilter, includePolicyIds, includeAcl);
-        }
+        return connector.createCMISObject(createNodeInfo(info.getLatestVersionNodeRef(major)), filter,
+                includeAllowableActions, includeRelationships, renditionFilter, includePolicyIds, includeAcl);
     }
 
     @Override
@@ -2115,25 +2070,14 @@ public class AlfrescoCmisService extends AbstractCmisService
         }
 
         // what kind of object is it?
-        ObjectVariantEnum variant = connector.getObjectVariant(versionSeriesId);
-        connector.throwCommonExceptions(variant, "Version series", versionSeriesId);
+        CMISNodeInfoImpl info = getOrCreateNodeInfo(versionSeriesId, "Version Series");
 
-        if (variant == ObjectVariantEnum.ASSOC)
+        if (info.isVariant(CMISObjectVariant.ASSOC))
         {
-            AssociationRef assocRef = connector.getAssociationRef(versionSeriesId);
-            TypeDefinitionWrapper type = connector.getType(assocRef);
-            if (type == null)
-            {
-                throw new CmisObjectNotFoundException("No corresponding type found! Not a CMIS object?");
-            }
-
-            return connector.getAssocProperties(assocRef, filter, type);
+            return connector.getAssocProperties(info, filter);
         } else
         {
-            NodeRef nodeRef = connector.getLatestVersionNodeRef(versionSeriesId, major);
-            TypeDefinitionWrapper type = connector.getAndCheckType(nodeRef);
-
-            return connector.getNodeProperties(nodeRef, filter, type);
+            return connector.getNodeProperties(createNodeInfo(info.getLatestVersionNodeRef(major)), filter);
         }
     }
 
@@ -2151,26 +2095,19 @@ public class AlfrescoCmisService extends AbstractCmisService
         }
 
         // get node ref
-        ObjectVariantEnum variant = connector.getObjectVariant(objectId);
-        connector.throwCommonExceptions(variant, "Object", objectId);
+        CMISNodeInfo info = getOrCreateNodeInfo(objectId, "Object");
 
-        if (variant != ObjectVariantEnum.NODE)
-        {
-            throw new CmisInvalidArgumentException("Object is not a current version of a document!");
-        }
-
-        final NodeRef nodeRef = connector.getNodeRefIfCurrent("Object", objectId);
-        TypeDefinitionWrapper type = connector.getAndCheckType(nodeRef);
-
-        if (!(type instanceof DocumentTypeDefinitionWrapper))
+        if (!info.isDocument())
         {
             throw new CmisInvalidArgumentException("Object is not a document!");
         }
 
-        // get the folder node ref
-        final NodeRef folderNodeRef = connector.getFolderNodeRef("Folder", folderId);
+        final NodeRef nodeRef = info.getNodeRef();
 
-        connector.checkChildObjectType(folderNodeRef, type.getTypeId());
+        // get the folder node ref
+        final CMISNodeInfo folderInfo = getOrCreateFolderInfo(folderId, "Folder");
+
+        connector.checkChildObjectType(folderInfo, info.getType().getTypeId());
 
         final QName name = QName.createQName(
                 NamespaceService.CONTENT_MODEL_1_0_URI,
@@ -2185,8 +2122,8 @@ public class AlfrescoCmisService extends AbstractCmisService
                     {
                         try
                         {
-                            connector.getNodeService().addChild(folderNodeRef, nodeRef, ContentModel.ASSOC_CONTAINS,
-                                    name);
+                            connector.getNodeService().addChild(folderInfo.getNodeRef(), nodeRef,
+                                    ContentModel.ASSOC_CONTAINS, name);
                             return null;
                         } catch (IntegrityException ie)
                         {
@@ -2206,24 +2143,17 @@ public class AlfrescoCmisService extends AbstractCmisService
         checkRepositoryId(repositoryId);
 
         // get node ref
-        ObjectVariantEnum variant = connector.getObjectVariant(objectId);
-        connector.throwCommonExceptions(variant, "Object", objectId);
+        CMISNodeInfo info = getOrCreateNodeInfo(objectId, "Object");
 
-        if (variant != ObjectVariantEnum.NODE)
-        {
-            throw new CmisInvalidArgumentException("Object is not a current version of a document!");
-        }
-
-        final NodeRef nodeRef = connector.getNodeRefIfCurrent("Object", objectId);
-        TypeDefinitionWrapper type = connector.getAndCheckType(nodeRef);
-
-        if (!(type instanceof DocumentTypeDefinitionWrapper))
+        if (!info.isDocument())
         {
             throw new CmisInvalidArgumentException("Object is not a document!");
         }
 
+        final NodeRef nodeRef = info.getNodeRef();
+
         // get the folder node ref
-        final NodeRef folderNodeRef = connector.getFolderNodeRef("Folder", folderId);
+        final NodeRef folderNodeRef = getOrCreateFolderInfo(folderId, "Folder").getNodeRef();
 
         // check primary parent
         if (connector.getNodeService().getPrimaryParent(nodeRef).getParentRef().equals(folderNodeRef))
@@ -2291,13 +2221,16 @@ public class AlfrescoCmisService extends AbstractCmisService
         checkRepositoryId(repositoryId);
 
         // what kind of object is it?
-        ObjectVariantEnum variant = connector.getObjectVariant(objectId);
-        connector.throwCommonExceptions(variant, "Object", objectId);
+        CMISNodeInfo info = getOrCreateNodeInfo(objectId, "Object");
 
-        // create a CMIS object
-        if (variant == ObjectVariantEnum.ASSOC)
+        if (info.isVariant(CMISObjectVariant.ASSOC))
         {
             throw new CmisInvalidArgumentException("Object is a relationship!");
+        }
+
+        if (info.isVariant(CMISObjectVariant.VERSION))
+        {
+            throw new CmisInvalidArgumentException("Object is a document version!");
         }
 
         // check if the relationship base type is requested
@@ -2321,8 +2254,7 @@ public class AlfrescoCmisService extends AbstractCmisService
             }
         }
 
-        NodeRef nodeRef = connector.getNodeRefIfCurrent("Object", objectId);
-        return connector.getObjectRelationships(nodeRef, relationshipDirection, typeId, filter,
+        return connector.getObjectRelationships(info.getNodeRef(), relationshipDirection, typeId, filter,
                 includeAllowableActions, maxItems, skipCount);
     }
 
@@ -2334,13 +2266,15 @@ public class AlfrescoCmisService extends AbstractCmisService
         checkRepositoryId(repositoryId);
 
         // what kind of object is it?
-        ObjectVariantEnum variant = connector.getObjectVariant(objectId);
-        connector.throwCommonExceptions(variant, "Object", objectId);
+        CMISNodeInfo info = getOrCreateNodeInfo(objectId, "Object");
 
-        NodeRef nodeRef = connector.getNodeRefIfCurrent("Object", objectId);
-        TypeDefinitionWrapper type = connector.getAndCheckType(nodeRef);
+        TypeDefinitionWrapper type = info.getType();
+        if (type == null)
+        {
+            throw new CmisObjectNotFoundException("No corresponding type found! Not a CMIS object?");
+        }
 
-        connector.applyPolicies(nodeRef, type, Collections.singletonList(policyId));
+        connector.applyPolicies(info.getNodeRef(), type, Collections.singletonList(policyId));
     }
 
     @Override
@@ -2349,11 +2283,13 @@ public class AlfrescoCmisService extends AbstractCmisService
         checkRepositoryId(repositoryId);
 
         // what kind of object is it?
-        ObjectVariantEnum variant = connector.getObjectVariant(objectId);
-        connector.throwCommonExceptions(variant, "Object", objectId);
+        CMISNodeInfo info = getOrCreateNodeInfo(objectId, "Object");
 
-        NodeRef nodeRef = connector.getNodeRefIfCurrent("Object", objectId);
-        connector.getAndCheckType(nodeRef);
+        TypeDefinitionWrapper type = info.getType();
+        if (type == null)
+        {
+            throw new CmisObjectNotFoundException("No corresponding type found! Not a CMIS object?");
+        }
 
         throw new CmisConstraintException("Object is not policy controllable!");
     }
@@ -2365,11 +2301,7 @@ public class AlfrescoCmisService extends AbstractCmisService
         checkRepositoryId(repositoryId);
 
         // what kind of object is it?
-        ObjectVariantEnum variant = connector.getObjectVariant(objectId);
-        connector.throwCommonExceptions(variant, "Object", objectId);
-
-        NodeRef nodeRef = connector.getNodeRef(objectId);
-        connector.getAndCheckType(nodeRef);
+        getOrCreateNodeInfo(objectId, "Object");
 
         // policies are not supported -> return empty list
         return Collections.emptyList();
@@ -2388,17 +2320,16 @@ public class AlfrescoCmisService extends AbstractCmisService
             throw new CmisInvalidArgumentException("ACL propagation 'objectonly' is not supported!");
         }
 
-        ObjectVariantEnum variant = connector.getObjectVariant(objectId);
-        connector.throwCommonExceptions(variant, "Object", objectId);
+        CMISNodeInfo info = getOrCreateNodeInfo(objectId, "Object");
 
         // relationships don't have ACLs
-        if (variant == ObjectVariantEnum.ASSOC)
+        if (info.isVariant(CMISObjectVariant.ASSOC))
         {
             throw new CmisConstraintException("Relationships are not ACL controllable!");
         }
 
-        final NodeRef nodeRef = connector.getNodeRefIfCurrent("Object id", objectId);
-        final TypeDefinitionWrapper type = connector.getAndCheckType(nodeRef);
+        final NodeRef nodeRef = info.getCurrentNodeNodeRef();
+        final TypeDefinitionWrapper type = info.getType();
 
         endReadOnlyTransaction();
         connector.getTransactionService().getRetryingTransactionHelper()
@@ -2434,17 +2365,16 @@ public class AlfrescoCmisService extends AbstractCmisService
             throw new CmisInvalidArgumentException("ACL propagation 'objectonly' is not supported!");
         }
 
-        ObjectVariantEnum variant = connector.getObjectVariant(objectId);
-        connector.throwCommonExceptions(variant, "Object", objectId);
+        CMISNodeInfo info = getOrCreateNodeInfo(objectId, "Object");
 
         // relationships don't have ACLs
-        if (variant == ObjectVariantEnum.ASSOC)
+        if (info.isVariant(CMISObjectVariant.ASSOC))
         {
             throw new CmisConstraintException("Relationships are not ACL controllable!");
         }
 
-        final NodeRef nodeRef = connector.getNodeRefIfCurrent("Object", objectId);
-        final TypeDefinitionWrapper type = connector.getAndCheckType(nodeRef);
+        final NodeRef nodeRef = info.getCurrentNodeNodeRef();
+        final TypeDefinitionWrapper type = info.getType();
 
         endReadOnlyTransaction();
         connector.getTransactionService().getRetryingTransactionHelper()
@@ -2476,19 +2406,16 @@ public class AlfrescoCmisService extends AbstractCmisService
     {
         checkRepositoryId(repositoryId);
 
-        ObjectVariantEnum variant = connector.getObjectVariant(objectId);
-        connector.throwCommonExceptions(variant, "Object", objectId);
+        CMISNodeInfo info = getOrCreateNodeInfo(objectId, "Object");
 
         // relationships don't have ACLs
-        if (variant == ObjectVariantEnum.ASSOC)
+        if (info.isVariant(CMISObjectVariant.ASSOC))
         {
             return new AccessControlListImpl(Collections.EMPTY_LIST);
         }
 
         // get the ACL
-        String currentVersionId = connector.getCurrentVersionId(objectId);
-        NodeRef nodeRef = connector.getNodeRef(currentVersionId);
-        return connector.getACL(nodeRef, onlyBasicPermissions);
+        return connector.getACL(info.getCurrentNodeNodeRef(), onlyBasicPermissions);
     }
 
     // --------------------------------------------------------
@@ -2498,6 +2425,7 @@ public class AlfrescoCmisService extends AbstractCmisService
      * 
      * (Provided by OpenCMIS, but optimized for Alfresco.)
      */
+    @Override
     protected ObjectInfo getObjectInfoIntern(String repositoryId, ObjectData object)
     {
         // if the object has no properties, stop here
@@ -2505,6 +2433,8 @@ public class AlfrescoCmisService extends AbstractCmisService
         {
             throw new CmisRuntimeException("No properties!");
         }
+
+        CMISNodeInfo ni = getOrCreateNodeInfo(object.getId());
 
         ObjectInfoImpl info = new ObjectInfoImpl();
 
@@ -2518,14 +2448,13 @@ public class AlfrescoCmisService extends AbstractCmisService
         info.setTypeId(getIdProperty(object, PropertyIds.OBJECT_TYPE_ID));
         info.setBaseType(object.getBaseTypeId());
 
-        if (object.getBaseTypeId() == BaseTypeId.CMIS_RELATIONSHIP)
+        if (ni.isRelationship())
         {
             // versioning
-            info.setIsCurrentVersion(false);
             info.setWorkingCopyId(null);
             info.setWorkingCopyOriginalId(null);
 
-            info.setVersionSeriesId(getIdProperty(object, PropertyIds.VERSION_SERIES_ID));
+            info.setVersionSeriesId(null);
             info.setIsCurrentVersion(true);
             info.setWorkingCopyId(null);
             info.setWorkingCopyOriginalId(null);
@@ -2553,83 +2482,24 @@ public class AlfrescoCmisService extends AbstractCmisService
             info.setHasAcl(false);
             info.setSupportsDescendants(false);
             info.setSupportsFolderTree(false);
-        } else
+        } else if (ni.isFolder())
         {
             // versioning
-            info.setIsCurrentVersion(object.getBaseTypeId() == BaseTypeId.CMIS_DOCUMENT);
             info.setWorkingCopyId(null);
             info.setWorkingCopyOriginalId(null);
+
             info.setVersionSeriesId(null);
-
-            if (object.getBaseTypeId() == BaseTypeId.CMIS_DOCUMENT)
-            {
-                info.setVersionSeriesId(getIdProperty(object, PropertyIds.VERSION_SERIES_ID));
-                if (info.getVersionSeriesId() != null)
-                {
-                    String versionLabel = getStringProperty(object, PropertyIds.VERSION_LABEL);
-                    if (CMISConnector.PWC_VERSION_LABEL.equals(versionLabel))
-                    {
-                        info.setIsCurrentVersion(false);
-                        info.setWorkingCopyId(object.getId());
-
-                        // get latest version
-                        List<ObjectData> versions = getAllVersions(repositoryId, null, info.getVersionSeriesId(), null,
-                                Boolean.FALSE, null);
-                        if (versions != null && versions.size() > 0)
-                        {
-                            info.setWorkingCopyOriginalId(versions.get(0).getId());
-                        }
-                    } else
-                    {
-                        Boolean isLatest = getBooleanProperty(object, PropertyIds.IS_LATEST_VERSION);
-                        info.setIsCurrentVersion(isLatest == null ? true : isLatest.booleanValue());
-
-                        Boolean isCheckedOut = getBooleanProperty(object, PropertyIds.IS_VERSION_SERIES_CHECKED_OUT);
-                        if (isCheckedOut != null && isCheckedOut.booleanValue())
-                        {
-                            info.setWorkingCopyId(getIdProperty(object, PropertyIds.VERSION_SERIES_CHECKED_OUT_ID));
-
-                            // get latest version
-                            List<ObjectData> versions = getAllVersions(repositoryId, object.getId(),
-                                    info.getVersionSeriesId(), null, Boolean.FALSE, null);
-                            if (versions != null && versions.size() > 0)
-                            {
-                                info.setWorkingCopyOriginalId(versions.get(0).getId());
-                            }
-                        }
-                    }
-                }
-            }
+            info.setIsCurrentVersion(true);
+            info.setWorkingCopyId(null);
+            info.setWorkingCopyOriginalId(null);
 
             // content
             info.setHasContent(false);
             info.setContentType(null);
             info.setFileName(null);
 
-            if (object.getBaseTypeId() == BaseTypeId.CMIS_DOCUMENT)
-            {
-                String fileName = getStringProperty(object, PropertyIds.CONTENT_STREAM_FILE_NAME);
-                String mimeType = getStringProperty(object, PropertyIds.CONTENT_STREAM_MIME_TYPE);
-                String streamId = getIdProperty(object, PropertyIds.CONTENT_STREAM_ID);
-                BigInteger length = getIntegerProperty(object, PropertyIds.CONTENT_STREAM_LENGTH);
-                boolean hasContent = fileName != null || mimeType != null || streamId != null || length != null;
-                if (hasContent)
-                {
-                    info.setHasContent(hasContent);
-                    info.setContentType(mimeType);
-                    info.setFileName(fileName);
-                }
-            }
-
             // parent
-            info.setHasParent(true);
-
-            if (object.getBaseTypeId() == BaseTypeId.CMIS_FOLDER)
-            {
-                List<ObjectParentData> parents = getObjectParents(repositoryId, object.getId(), null, Boolean.FALSE,
-                        IncludeRelationships.NONE, "cmis:none", Boolean.FALSE, null);
-                info.setHasParent(parents.size() > 0);
-            }
+            info.setHasParent(!connector.getRootNodeRef().equals(object.getId()));
 
             // policies and relationships
             info.setSupportsRelationships(true);
@@ -2638,56 +2508,88 @@ public class AlfrescoCmisService extends AbstractCmisService
             // renditions
             info.setRenditionInfos(null);
 
-            if (object.getBaseTypeId() == BaseTypeId.CMIS_DOCUMENT)
+            // relationships
+            setRelaionshipsToObjectInfo(object, info);
+
+            // global settings
+            info.setHasAcl(true);
+            info.setSupportsDescendants(true);
+            info.setSupportsFolderTree(true);
+        } else if (ni.isDocument())
+        {
+            // versioning
+            info.setWorkingCopyId(null);
+            info.setWorkingCopyOriginalId(null);
+
+            info.setVersionSeriesId(getIdProperty(object, PropertyIds.VERSION_SERIES_ID));
+
+            if (ni.isVariant(CMISObjectVariant.PWC))
             {
-                List<RenditionData> renditions = object.getRenditions();
-                if (renditions != null && renditions.size() > 0)
+                info.setIsCurrentVersion(false);
+                info.setWorkingCopyId(object.getId());
+                info.setWorkingCopyOriginalId(ni.getCurrentObjectId());
+            } else
+            {
+                info.setIsCurrentVersion(ni.isCurrentVersion());
+
+                Boolean isCheckedOut = getBooleanProperty(object, PropertyIds.IS_VERSION_SERIES_CHECKED_OUT);
+                if (Boolean.TRUE.equals(isCheckedOut))
                 {
-                    List<RenditionInfo> renditionInfos = new ArrayList<RenditionInfo>();
-                    for (RenditionData rendition : renditions)
-                    {
-                        RenditionInfoImpl renditionInfo = new RenditionInfoImpl();
-                        renditionInfo.setId(rendition.getStreamId());
-                        renditionInfo.setKind(rendition.getKind());
-                        renditionInfo.setContentType(rendition.getMimeType());
-                        renditionInfo.setTitle(rendition.getTitle());
-                        renditionInfo.setLength(rendition.getBigLength());
-                        renditionInfos.add(renditionInfo);
-                    }
-                    info.setRenditionInfos(renditionInfos);
+                    info.setWorkingCopyId(getIdProperty(object, PropertyIds.VERSION_SERIES_CHECKED_OUT_ID));
+                    info.setWorkingCopyOriginalId(ni.getCurrentObjectId());
+                } else
+                {
+                    info.setWorkingCopyId(null);
+                    info.setWorkingCopyOriginalId(null);
                 }
             }
 
-            // relationships
-            info.setRelationshipSourceIds(null);
-            info.setRelationshipTargetIds(null);
-            List<ObjectData> relationships = object.getRelationships();
-            if (relationships != null && relationships.size() > 0)
+            // content
+            String fileName = getStringProperty(object, PropertyIds.CONTENT_STREAM_FILE_NAME);
+            String mimeType = getStringProperty(object, PropertyIds.CONTENT_STREAM_MIME_TYPE);
+            String streamId = getIdProperty(object, PropertyIds.CONTENT_STREAM_ID);
+            BigInteger length = getIntegerProperty(object, PropertyIds.CONTENT_STREAM_LENGTH);
+            boolean hasContent = fileName != null || mimeType != null || streamId != null || length != null;
+            if (hasContent)
             {
-                List<String> sourceIds = new ArrayList<String>();
-                List<String> targetIds = new ArrayList<String>();
-                for (ObjectData relationship : relationships)
-                {
-                    String sourceId = getIdProperty(relationship, PropertyIds.SOURCE_ID);
-                    String targetId = getIdProperty(relationship, PropertyIds.TARGET_ID);
-                    if (object.getId().equals(sourceId))
-                    {
-                        sourceIds.add(relationship.getId());
-                    }
-                    if (object.getId().equals(targetId))
-                    {
-                        targetIds.add(relationship.getId());
-                    }
-                }
-                if (sourceIds.size() > 0)
-                {
-                    info.setRelationshipSourceIds(sourceIds);
-                }
-                if (targetIds.size() > 0)
-                {
-                    info.setRelationshipTargetIds(targetIds);
-                }
+                info.setHasContent(hasContent);
+                info.setContentType(mimeType);
+                info.setFileName(fileName);
+            } else
+            {
+                info.setHasContent(false);
+                info.setContentType(null);
+                info.setFileName(null);
             }
+
+            // parent
+            info.setHasParent(true);
+
+            // policies and relationships
+            info.setSupportsRelationships(true);
+            info.setSupportsPolicies(true);
+
+            // renditions
+            info.setRenditionInfos(null);
+            List<RenditionData> renditions = object.getRenditions();
+            if (renditions != null && renditions.size() > 0)
+            {
+                List<RenditionInfo> renditionInfos = new ArrayList<RenditionInfo>();
+                for (RenditionData rendition : renditions)
+                {
+                    RenditionInfoImpl renditionInfo = new RenditionInfoImpl();
+                    renditionInfo.setId(rendition.getStreamId());
+                    renditionInfo.setKind(rendition.getKind());
+                    renditionInfo.setContentType(rendition.getMimeType());
+                    renditionInfo.setTitle(rendition.getTitle());
+                    renditionInfo.setLength(rendition.getBigLength());
+                    renditionInfos.add(renditionInfo);
+                }
+                info.setRenditionInfos(renditionInfos);
+            }
+
+            // relationships
+            setRelaionshipsToObjectInfo(object, info);
 
             // global settings
             info.setHasAcl(true);
@@ -2696,6 +2598,40 @@ public class AlfrescoCmisService extends AbstractCmisService
         }
 
         return info;
+    }
+
+    private void setRelaionshipsToObjectInfo(ObjectData object, ObjectInfoImpl info)
+    {
+        info.setRelationshipSourceIds(null);
+        info.setRelationshipTargetIds(null);
+
+        List<ObjectData> relationships = object.getRelationships();
+        if (relationships != null && relationships.size() > 0)
+        {
+            List<String> sourceIds = new ArrayList<String>();
+            List<String> targetIds = new ArrayList<String>();
+            for (ObjectData relationship : relationships)
+            {
+                String sourceId = getIdProperty(relationship, PropertyIds.SOURCE_ID);
+                String targetId = getIdProperty(relationship, PropertyIds.TARGET_ID);
+                if (object.getId().equals(sourceId))
+                {
+                    sourceIds.add(relationship.getId());
+                }
+                if (object.getId().equals(targetId))
+                {
+                    targetIds.add(relationship.getId());
+                }
+            }
+            if (sourceIds.size() > 0)
+            {
+                info.setRelationshipSourceIds(sourceIds);
+            }
+            if (targetIds.size() > 0)
+            {
+                info.setRelationshipTargetIds(targetIds);
+            }
+        }
     }
 
     // --------------------------------------------------------

@@ -5,7 +5,7 @@
    <#escape x as jsonUtils.encodeJSONString(x)>
    "version": "${version}",
    "webdavUrl": "${node.webdavUrl}",
-   <#if item.activeWorkflows?? && (item.activeWorkflows?size > 0)>"activeWorkflows": "<#list item.activeWorkflows as aw>${aw}<#if aw_has_next>,</#if></#list>",</#if>
+   <#if item.activeWorkflows?? && (item.activeWorkflows?size > 0)>"activeWorkflows": ${item.activeWorkflows?size?c},</#if>
    <#if item.isFavourite??>"isFavourite": ${item.isFavourite?string},</#if>
    <#if (item.workingCopyJSON?length > 2)>"workingCopy": <#noescape>${item.workingCopyJSON}</#noescape>,</#if>
    <#if item.likes??>"likes":

@@ -211,7 +211,8 @@ function getDoclist()
       }
       else
       {
-         totalRecords -= 1;
+         --totalRecords;
+         --totalRecordsUpper;
       }
    }
 
@@ -239,6 +240,7 @@ function getDoclist()
             {
                fnArrayRemove(items, i);
                --totalRecords;
+               --totalRecordsUpper;
                break;
             }
          }

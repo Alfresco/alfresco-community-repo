@@ -61,19 +61,19 @@ public class ChannelsGet extends DeclarativeWebScript
         List<Channel> statusUpdateChannels;
         if (node == null)
         {
-            publishingChannels = channelService.getPublishingChannels();
-            statusUpdateChannels = channelService.getStatusUpdateChannels();
+            publishingChannels = channelService.getPublishingChannels(false);
+            statusUpdateChannels = channelService.getStatusUpdateChannels(false);
         }
         else
         {
             publishingChannels = channelService.getRelevantPublishingChannels(node);
-            statusUpdateChannels = channelService.getStatusUpdateChannels();
+            statusUpdateChannels = channelService.getStatusUpdateChannels(true);
         }
 
         Map<String, Object> model = new HashMap<String, Object>();
         
         //TODO Implement URL shortening.
-        model.put(URL_LENGTH, urlShortener.getUrlLength());
+        model.put(URL_LENGTH, urlShortener.getUrlLength()+1);
         
         model.put(PUBLISHING_CHANNELS, builder.buildChannels(publishingChannels));
         model.put(STATUS_UPDATE_CHANNELS, builder.buildChannels(statusUpdateChannels));

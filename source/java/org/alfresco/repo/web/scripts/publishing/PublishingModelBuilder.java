@@ -93,7 +93,8 @@ public class PublishingModelBuilder implements PublishingWebScriptConstants
         }
         else
         {
-            model.put(CHANNEL_TYPE, channelId);
+            // Channel may have been deleted!
+            model.put(CHANNEL_ID, channelId);
         }
         return model;
     }    
@@ -118,6 +119,11 @@ public class PublishingModelBuilder implements PublishingWebScriptConstants
         model.put(NAME, channel.getName());
         //TODO Localize the title.
         model.put(TITLE, channel.getName());
+
+        model.put(CAN_PUBLISH, toString(channel.canPublish()));
+        model.put(CAN_UNPUBLISH, toString(channel.canUnpublish()));
+        model.put(CAN_PUBLISH_STATUS_UPDATES, toString(channel.canPublishStatusUpdates()));
+        
         model.put(CHANNEL_TYPE, buildChannelType(channel.getChannelType()));
         model.put(CHANNEL_AUTH_STATUS, toString(channel.isAuthorised()));
         return model;

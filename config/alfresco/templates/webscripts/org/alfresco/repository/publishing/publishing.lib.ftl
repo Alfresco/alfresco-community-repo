@@ -32,8 +32,12 @@
    <@publishNodesJSON nodes=event.publishNodes/>,
    "unpublishNodes":
    <@publishNodesJSON nodes=event.unpublishNodes/>,
+   <#if event.channel?? >
    "channel":
    <@channelJSON channel=event.channel/>
+   <#elseif event.channelId?? >
+   "channelId": "${event.channelId}"
+   </#if>
 }
 </#macro>
 
@@ -79,7 +83,10 @@
    "id": "${channel.id}",
    "name": "${channel.name}",
    "title": "${channel.title}",
-   "authorised": "${channel.authorised}",
+   "authorised": ${channel.authorised},
+   "canPublish": ${channel.canPublish},
+   "canPublishStatusUpdates": ${channel.canPublishStatusUpdates},
+   "canUnpublish": ${channel.canUnpublish},
    "channelType":
    <@channelTypeJSON type=channel.channelType />
 }

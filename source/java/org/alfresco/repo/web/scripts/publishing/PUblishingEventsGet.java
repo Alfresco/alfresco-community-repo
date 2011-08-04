@@ -39,7 +39,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * @since 4.0
  *
  */
-public class PUblishingEventsForNodeGet extends PublishingWebScript
+public class PUblishingEventsGet extends PublishingWebScript
 {
     /**
     * {@inheritDoc}

@@ -1166,7 +1166,7 @@
 
     <!-- Get Publishing Events For Node web script -->
     <bean id="webscript.org.alfresco.repository.publishing.publishing-events.get"
-          class="org.alfresco.repo.web.scripts.publishing.PUblishingEventsForNodeGet"
+          class="org.alfresco.repo.web.scripts.publishing.PUblishingEventsGet"
           parent="webscript">
         <property name="publishingService" ref="publishingService" />
         <property name="channelService" ref="channelService" />

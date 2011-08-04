@@ -38,6 +38,9 @@
                         "name": string,
                         "title": string,
                         "authorised": boolean,
+                        "canPublish": boolean,
+                        "canPublishStatusUpdates": boolean,
+                        "canUnpublish": boolean,
                         "channelType":
                         {
                            "id": string,
@@ -60,8 +63,13 @@
                   [
                      {
                         "url": string,
+                        "id": string,
                         "name": string,
                         "title": string,
+                        "authorised": boolean,
+                        "canPublish": boolean,
+                        "canPublishStatusUpdates": boolean,
+                        "canUnpublish": boolean,
                         "channelType":
                         {
                            "id": string,

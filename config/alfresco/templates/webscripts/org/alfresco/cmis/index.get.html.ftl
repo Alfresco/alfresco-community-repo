@@ -94,34 +94,20 @@
       </ul>
 
       <a name="testatompub"></a>
-      <h3>Apache Chemistry CMIS AtomPub TCK</h3>
-      <p>Point the TCK (Test Compatibility Kit) at your CMIS Repository AtomPub Service Document. Provide credentials (or leave blank, if authentication not required) and adjust options as necessary. Hit the '<strong>Start TCK</strong>' button for a test report.</p>
-
-      <form action="${url.serviceContext}/cmis/test" method="post" class="hform">
-      <fieldset>
-        <legend>CMIS Repository</legend>
-        <p><label>Service Document</label><input type="text" name="chemistry.tck.serviceUrl" size="50" value="${absurl(url.context)}/cmisatom"></p>
-        <p><label>Username</label><input type="text" name="chemistry.tck.user" value="admin"></p>
-        <p><label>Password</label><input type="text" name="chemistry.tck.password" value="admin"></p>
-      </fieldset>
-      <fieldset>
-        <legend>Test Suite</legend>
-        <p><label><span id="availtests" class="toggle" onclick="return toggleDisplay(this)">[+]</span> Tests (${tckTests?size})</label><input name="chemistry.tck.tests" value="RepositoryServiceTest.testRepository"></p>
-        <span id="availtests_body" style="display: none;"><p><label>&nbsp;</label><table>
-        <tr><td><i>Note: Use wildcard * to execute multiple tests e.g. *.*, TypeDefinition.*</i></td></tr>
-        [#list tckTests as test]<tr><td>${test}</td></tr>[/#list]
-        </table></p></span>
-      </fieldset>
-      <fieldset>
-        <legend>Options</legend>
-        <p class="checkbox"><label>Validate Responses</label><input type="checkbox" name="chemistry.tck.validate" value="true"[#if tckOptions.validate] checked="checked"[/#if]></p>
-        <p class="checkbox"><label>Fail on Validation Error</label><input type="checkbox" name="chemistry.tck.failOnValidationError" value="true"[#if tckOptions.failOnValidationError] checked="checked"[/#if]></p>
-        <p class="checkbox"><label>Trace Reqs/Responses</label><input type="checkbox" name="chemistry.tck.traceRequests" value="true"[#if tckOptions.traceRequests] checked="checked"[/#if]><p>
-        <p><label>Folder Type</label><input type="text" name="chemistry.tck.type.folder" value="cmis:folder"></p>
-        <p><label>Document Type</label><input type="text" name="chemistry.tck.type.document" value="D:cmiscustom:document"></p>
-        <p><label>Relationship Type</label><input type="text" name="chemistry.tck.type.relationship" value="R:cmiscustom:assoc"></p>
-      </fieldset>
-      <p><input type="submit" name="submit" value="Start TCK" class="button"></p>
+       <h3>OpenCMIS TCK</h3>
+       <p>Point the OpenCMIS TCK (Test Compatibility Kit) at your CMIS Repository AtomPub Service Document. Provide credentials (or leave blank, if authentication not required) and hit the '<strong>Start TCK</strong>' button for a test report.</p>
+       <form action="${url.context}/cmistck" method="POST"> 
+       <input type="hidden" name="org.apache.chemistry.opencmis.binding.spi.type" value="atompub">
+       <fieldset> 
+         <legend>CMIS Repository</legend> 
+         <table> 
+           <tr><td>AtomPub URL:</td><td><input type="text" name="org.apache.chemistry.opencmis.binding.atompub.url" value="${absurl(url.context)}/cmisatom" size="50"></td></tr> 
+           <tr><td>Username:</td><td><input type="text" name="org.apache.chemistry.opencmis.user" value="admin" size="50"></td></tr> 
+           <tr><td>Password:</td><td><input type="password" name="org.apache.chemistry.opencmis.password"  value="admin" size="50"></td></tr> 
+           <tr><td>Repository Id:</td><td><input type="text" name="org.apache.chemistry.opencmis.session.repository.id" size="50"></td></tr> 
+          </table>
+        </fieldset>
+        <p><input type="submit" name="submit" value="Start TCK" class="button"></p>
       </form>
    </div>
 

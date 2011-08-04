@@ -31,6 +31,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.extensions.surf.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -564,8 +565,7 @@ public class MultiTServiceImpl implements TenantService
             int idx = username.lastIndexOf(SEPARATOR);
             if ((idx > 0) && (idx < (username.length()-1)))
             {
-               String tenantDomain = username.substring(idx+1);
-               
+               String tenantDomain = getTenantDomain(username.substring(idx+1));
                checkTenantEnabled(tenantDomain);
                
                return tenantDomain;
@@ -592,6 +592,7 @@ public class MultiTServiceImpl implements TenantService
         // Check that all the passed values are not null
         ParameterCheck.mandatory("name", name);
 
+    	name = getTenantDomain(name);
         String tenantDomain = getCurrentUserDomain();
         
         String nameDomain = DEFAULT_DOMAIN;
@@ -634,7 +635,8 @@ public class MultiTServiceImpl implements TenantService
             {
                 throw new AlfrescoRuntimeException("Invalid tenant domain: " + tenantDomain);
             }
-            
+        
+            tenantDomain = getTenantDomain(tenantDomain);
             return baseUsername + SEPARATOR + tenantDomain;
         }
     }
@@ -653,6 +655,7 @@ public class MultiTServiceImpl implements TenantService
      */
     public Tenant getTenant(String tenantDomain)
     {
+    	tenantDomain = getTenantDomain(tenantDomain);
         Tenant tenant = tenantsCache.get(tenantDomain);
         if (tenant == null)
         {
@@ -706,6 +709,12 @@ public class MultiTServiceImpl implements TenantService
             logger.debug("removeTenant " + tenantDomain);
         }
         tenantsCache.remove(tenantDomain);
+    }
+
+    protected String getTenantDomain(String tenantDomain)
+    {
+        ParameterCheck.mandatory("tenantDomain", tenantDomain);
+        return tenantDomain.toLowerCase(I18NUtil.getLocale());
     }
 
 }

@@ -41,6 +41,7 @@ import org.alfresco.repo.dictionary.DictionaryComponent;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.repo.node.db.DbNodeServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
+import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.site.SiteAVMBootstrap;
@@ -71,7 +72,6 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  * MT Admin Service Implementation.
  * 
  */
-    
 public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationContextAware, InitializingBean
 {
     // Logger
@@ -343,10 +343,12 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     /**
      * @see TenantAdminService.createTenant()
      */
-    public void createTenant(final String tenantDomain, final char[] tenantAdminRawPassword, String rootContentStoreDir)
+    public void createTenant(String tenantDomain, final char[] tenantAdminRawPassword, String rootContentStoreDir)
     {
         ParameterCheck.mandatory("tenantAdminRawPassword", tenantAdminRawPassword);
         
+        tenantDomain = getTenantDomain(tenantDomain);
+
         initTenant(tenantDomain, rootContentStoreDir);
 
         try
@@ -406,13 +408,15 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     /**
      * Export tenant - equivalent to the tenant admin running a 'complete repo' export from the Web Client Admin
      */
-    public void exportTenant(final String tenantDomain, final File directoryDestination)
+    public void exportTenant(String tenantDomain, final File directoryDestination)
     {
+    	final String lowerTenantDomain = getTenantDomain(tenantDomain);
+
         AuthenticationUtil.runAs(new RunAsWork<Object>()
                 {
                     public Object doWork()
                     {           
-                    	repositoryExporterService.export(directoryDestination, tenantDomain);
+                    	repositoryExporterService.export(directoryDestination, lowerTenantDomain);
                         return null;
                     }                               
                 }, getSystemUser(tenantDomain));
@@ -423,8 +427,10 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     /**
      * Create tenant by restoring from a complete repository export. This is equivalent to a bootstrap import using restore-context.xml.
      */
-    public void importTenant(final String tenantDomain, final File directorySource, String rootContentStoreDir)
-    {             
+    public void importTenant(String tenantDomain, final File directorySource, String rootContentStoreDir)
+    {   
+    	tenantDomain = getTenantDomain(tenantDomain);
+
         initTenant(tenantDomain, rootContentStoreDir);      
         
         try
@@ -472,6 +478,8 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         // Check that all the passed values are not null
         ParameterCheck.mandatory("tenantDomain", tenantDomain);
 
+        tenantDomain = getTenantDomain(tenantDomain);
+
         return (getTenantAttributes(tenantDomain) != null);
     }
     
@@ -510,9 +518,11 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     
     public void enableTenant(String tenantDomain)
     { 
+    	tenantDomain = getTenantDomain(tenantDomain);
+
         if (! existsTenant(tenantDomain))
         {
-            throw new AlfrescoRuntimeException("Tenant does not exist: " + tenantDomain);
+            throw new AuthenticationException("Tenant does not exist: " + tenantDomain);
         }
         
         if (isEnabledTenant(tenantDomain))
@@ -553,9 +563,11 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     
     public void disableTenant(String tenantDomain)
     { 
+    	tenantDomain = getTenantDomain(tenantDomain);
+
         if (! existsTenant(tenantDomain))
         {
-            throw new AlfrescoRuntimeException("Tenant does not exist: " + tenantDomain);
+            throw new AuthenticationException("Tenant does not exist: " + tenantDomain);
         }
         
         if (! isEnabledTenant(tenantDomain))
@@ -567,7 +579,9 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     }
     
     public void disableTenant(String tenantDomain, boolean notifyTenantDeployers)
-    {     
+    {
+    	tenantDomain = getTenantDomain(tenantDomain);
+
         if (notifyTenantDeployers)
         {
             // notify listeners that tenant has been disabled
@@ -596,6 +610,8 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     {       
         // Check that all the passed values are not null
         ParameterCheck.mandatory("tenantDomain", tenantDomain);
+
+        tenantDomain = getTenantDomain(tenantDomain);
 
         Tenant tenant = getTenantAttributes(tenantDomain);
         if (tenant != null)
@@ -629,9 +645,10 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     
     public Tenant getTenant(String tenantDomain)
     {
+    	tenantDomain = getTenantDomain(tenantDomain);
         if (! existsTenant(tenantDomain))
         {
-            throw new AlfrescoRuntimeException("Tenant does not exist: " + tenantDomain);
+            throw new AuthenticationException("Tenant does not exist: " + tenantDomain);
         }
         
         return new Tenant(tenantDomain, isEnabledTenant(tenantDomain), getRootContentStoreDir(tenantDomain));
@@ -642,9 +659,11 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
      */
     public void deleteTenant(String tenantDomain)
     {
+    	tenantDomain = getTenantDomain(tenantDomain);
+
         if (! existsTenant(tenantDomain))
         {
-            throw new AlfrescoRuntimeException("Tenant does not exist: " + tenantDomain);
+            throw new AuthenticationException("Tenant does not exist: " + tenantDomain);
         }
         else
         {                        
@@ -1151,7 +1170,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         }
         else
         {
-            throw new AlfrescoRuntimeException("No such tenant " + tenantDomain);
+            throw new AuthenticationException("No such tenant " + tenantDomain);
         }
     }
     
@@ -1240,11 +1259,13 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     
     public String getDomainUser(String baseUsername, String tenantDomain)
     {
+    	tenantDomain = getTenantDomain(tenantDomain);
         return tenantService.getDomainUser(baseUsername, tenantDomain);
     }
     
     public String getDomain(String name)
     {
+    	name = getTenantDomain(name);
     	return tenantService.getDomain(name);
     }
     
@@ -1274,5 +1295,11 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     private String getTenantGuestUser(String tenantDomain)
     {
         return authenticationContext.getGuestUserName(tenantDomain);
+    }
+    
+    protected String getTenantDomain(String tenantDomain)
+    {
+        ParameterCheck.mandatory("tenantDomain", tenantDomain);
+        return tenantDomain.toLowerCase(I18NUtil.getLocale());
     }
 }

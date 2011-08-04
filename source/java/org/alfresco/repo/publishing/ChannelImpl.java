@@ -29,7 +29,8 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * @author Brian
- *
+ * @author Nick Smith
+ * @since 4.0
  */
 public class ChannelImpl implements Channel
 {
@@ -38,11 +39,6 @@ public class ChannelImpl implements Channel
     private final String name;
     private final ChannelHelper channelHelper;
 
-    /**
-     * @param channelType
-     * @param name
-     * @param channelService
-     */
     public ChannelImpl(ChannelType channelType, NodeRef nodeRef, String name, ChannelHelper channelHelper)
     {
         this.nodeRef = nodeRef;
@@ -57,7 +53,6 @@ public class ChannelImpl implements Channel
     @Override
     public String getId()
     {
-        // TODO Auto-generated method stub
         return nodeRef.toString();
     }
     
@@ -134,8 +129,41 @@ public class ChannelImpl implements Channel
         return channelType.getNodeUrl(mappedNode);
     }
 
+    /**
+    * {@inheritDoc}
+     */
     public boolean isAuthorised()
     {
         return channelHelper.isChannelAuthorised(nodeRef);
+    }
+
+    /**
+    * {@inheritDoc}
+    */
+    public boolean canPublish()
+    {
+        return channelType.canPublish() &&
+            isAuthorised() &&
+            channelHelper.hasPublishPermissions(nodeRef);
+    }
+
+    /**
+    * {@inheritDoc}
+    */
+    public boolean canUnpublish()
+    {
+        return channelType.canPublish() &&
+            isAuthorised() &&
+            channelHelper.hasPublishPermissions(nodeRef);
+    }
+
+    /**
+    * {@inheritDoc}
+    */
+    public boolean canPublishStatusUpdates()
+    {
+        return channelType.canPublish() &&
+            isAuthorised() &&
+            channelHelper.hasPublishPermissions(nodeRef);
     }
 }

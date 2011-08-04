@@ -33,11 +33,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.permissions.AccessDeniedException;
-import org.alfresco.repo.security.person.TestPersonManager;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.publishing.MutablePublishingPackage;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
 import org.alfresco.service.cmr.publishing.PublishingPackage;
@@ -48,9 +44,7 @@ import org.alfresco.service.cmr.publishing.StatusUpdate;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelType;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
@@ -70,11 +64,6 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
     
     private PublishingService publishingService;
     private WorkflowService workflowService;
-    private PermissionService permissionService;
-    private TestPersonManager personManager;
-    private ChannelServiceImpl channelService;
-    
-    private String eventId;
     
     @Test
     public void testScheduleNewPublishingEvent() throws Exception
@@ -84,7 +73,7 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         
         assertNull(nodeService.getProperty(firstNode, PROP_VERSION_LABEL));
         assertNull(nodeService.getProperty(firstNode, PROP_VERSION_LABEL));
-        MutablePublishingPackage publishingPackage = queue.createPublishingPackage();
+        MutablePublishingPackage publishingPackage = publishingService.getPublishingQueue().createPublishingPackage();
         publishingPackage.addNodesToPublish(firstNode, secondNode);
 
         //TODO Implement Unpublish
@@ -94,7 +83,7 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         Calendar schedule = Calendar.getInstance();
         schedule.add(Calendar.HOUR, 2);
         
-        this.eventId = queue.scheduleNewEvent(publishingPackage, channelId, schedule, comment, null);
+        String eventId = publishingService.getPublishingQueue().scheduleNewEvent(publishingPackage, channelId, schedule, comment, null);
         
         //Check schedule triggered versioning.
         Serializable version = nodeService.getProperty(firstNode, PROP_VERSION_LABEL);
@@ -156,14 +145,14 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         
         List<String> channelNames = Arrays.asList("test://channel/Channel1", "test://channel/Channel2", "test://channel/Channel3" );
         String message = "The message";
-        StatusUpdate update = queue.createStatusUpdate(message, secondNode, channelNames);
+        StatusUpdate update = publishingService.getPublishingQueue().createStatusUpdate(message, secondNode, channelNames);
         
         // Publish an event with the StatusUpdate
-        MutablePublishingPackage publishingPackage = queue.createPublishingPackage();
+        MutablePublishingPackage publishingPackage = publishingService.getPublishingQueue().createPublishingPackage();
         publishingPackage.addNodesToPublish(firstNode, secondNode);
         Calendar schedule = Calendar.getInstance();
         schedule.add(Calendar.HOUR, 2);
-        this.eventId = queue.scheduleNewEvent(publishingPackage, channelId, schedule, comment, update);
+        String eventId = testHelper.scheduleEvent1Year(publishingPackage, channelId, comment, update);
 
         PublishingEvent event = publishingService.getPublishingEvent(eventId);
         StatusUpdate actualUpdate = event.getStatusUpdate();
@@ -178,12 +167,9 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
     public void testScheduleNewEventPermissions() throws Exception
     {
         // Create Channels as Admin
-        ChannelType channelType = mockChannelType();
-        channelService.register(channelType);
-        Channel publishChannel = channelService.createChannel(channelType.getId(), "Channel1", null);
-        NodeRef publishChannelNode = new NodeRef(publishChannel.getId());
-        Channel statusChannel = channelService.createChannel(channelType.getId(), "Channel2", null);
-        NodeRef statusChannelNode = new NodeRef(statusChannel.getId());
+        ChannelType channelType = testHelper.mockChannelType(channelTypeId);
+        Channel publishChannel = testHelper.createChannel(channelTypeId);
+        Channel statusChannel = testHelper.createChannel(channelTypeId);
         
         NodeRef firstNode = createContent("First");
         NodeRef secondNode = createContent("Second");
@@ -191,18 +177,16 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         // Create User1, add read permissions and set as current user.
         String user1 = GUID.generate();
         personManager.createPerson(user1);
-        permissionService.setPermission(publishChannelNode, user1, PermissionService.READ, true);
-        permissionService.setPermission(statusChannelNode, user1, PermissionService.READ, true);
+        testHelper.setChannelPermission(user1, publishChannel.getId(), PermissionService.READ);
+        testHelper.setChannelPermission(user1, statusChannel.getId(), PermissionService.READ);
         personManager.setUser(user1);
 
         // Publish an event
-        MutablePublishingPackage publishingPackage = queue.createPublishingPackage();
+        MutablePublishingPackage publishingPackage = publishingService.getPublishingQueue().createPublishingPackage();
         publishingPackage.addNodesToPublish(firstNode, secondNode);
-        Calendar schedule = Calendar.getInstance();
-        schedule.add(Calendar.HOUR, 2);
         try
         {
-            this.eventId = queue.scheduleNewEvent(publishingPackage, publishChannel.getId(), schedule, comment, null);
+            testHelper.scheduleEvent1Year(publishingPackage, publishChannel.getId(), null, null);
             fail("shceduleNewEvent should have thrown an AccessDeniedException!");
         }
         catch(AlfrescoRuntimeException e)
@@ -211,20 +195,17 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         }
         
         // Set Add Child permission on publish channel.
-        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
-        permissionService.setPermission(publishChannelNode, user1, PermissionService.ADD_CHILDREN, true);
-        personManager.setUser(user1);
+        testHelper.allowChannelAccess(user1, publishChannel.getId());
         
         // Check publish works now.
-        this.eventId = queue.scheduleNewEvent(publishingPackage, publishChannel.getId(), schedule, comment, null);
+        String eventId = testHelper.scheduleEvent1Year(publishingPackage, publishChannel.getId(), null, null);
         assertNotNull(eventId);
-        publishingService.cancelPublishingEvent(eventId);
         
         String message = "The message";
-        StatusUpdate update = queue.createStatusUpdate(message, secondNode, statusChannel.getId());
+        StatusUpdate update = publishingService.getPublishingQueue().createStatusUpdate(message, secondNode, statusChannel.getId());
         try
         {
-            this.eventId = queue.scheduleNewEvent(publishingPackage, publishChannel.getId(), schedule, comment, update);
+            eventId = testHelper.scheduleEvent1Year(publishingPackage, publishChannel.getId(), null, update);
             fail("shceduleNewEvent with status update should have thrown an AccessDeniedException!");
         }
         catch(AlfrescoRuntimeException e)
@@ -233,18 +214,16 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         }
         
         // Set Add Child permission on status channel.
-        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
-        permissionService.setPermission(statusChannelNode, user1, PermissionService.ADD_CHILDREN, true);
-        personManager.setUser(user1);
-        
+        testHelper.allowChannelAccess(user1, statusChannel.getId());
+
         // Check publish works now.
-        this.eventId = queue.scheduleNewEvent(publishingPackage, publishChannel.getId(), schedule, comment, null);
+        eventId = testHelper.scheduleEvent1Year(publishingPackage, publishChannel.getId(), null, update);
         assertNotNull(eventId);
     }
 
     private NodeRef createContent(String name)
     {
-        return fileFolderService.create(docLib, name, ContentModel.TYPE_CONTENT).getNodeRef();
+        return testHelper.createContentNode(name);
     }
     
     /**
@@ -256,34 +235,6 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         super.onSetUp();
         this.workflowService = serviceRegistry.getWorkflowService();
         this.publishingService = (PublishingService) getApplicationContext().getBean("publishingService");
-        this.channelService = (ChannelServiceImpl) getApplicationContext().getBean("channelService");
-
-        this.permissionService = (PermissionService) getApplicationContext().getBean(ServiceRegistry.PERMISSIONS_SERVICE.getLocalName());
-        MutableAuthenticationService authenticationService= (MutableAuthenticationService) getApplicationContext().getBean(ServiceRegistry.AUTHENTICATION_SERVICE.getLocalName());
-        PersonService personService= (PersonService) getApplicationContext().getBean(ServiceRegistry.PERSON_SERVICE.getLocalName());
-        
-        this.personManager = new TestPersonManager(authenticationService, personService, nodeService);
     }
     
-    /**
-    * {@inheritDoc}
-     * @throws Exception 
-    */
-    @Override
-    public void onTearDown() throws Exception
-    {
-        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
-        if(eventId!=null)
-        {
-            try
-            {
-                publishingService.cancelPublishingEvent(eventId);
-            }
-            catch(Exception e)
-            {
-                //NOOP
-            }
-        }
-        super.onTearDown();
-    }
 }

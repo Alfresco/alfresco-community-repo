@@ -97,6 +97,12 @@ public class JaxbHttpMessageConverter extends AbstractXmlHttpMessageConverter<Ob
     }
 
     @Override
+    protected boolean canWrite(MediaType mediaType)
+    {
+        return super.canWrite(mediaType) || MediaType.TEXT_XML.equals(mediaType);
+    }
+
+    @Override
     protected Object readFromSource(Class<?> clazz, HttpHeaders headers, Source source) throws IOException
     {
         try

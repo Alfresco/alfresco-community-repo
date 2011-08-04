@@ -73,7 +73,6 @@ public class FlickrUnpublishAction extends ActionExecuterAbstractBase
     @Override
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
-        // TODO Auto-generated method stub
-        
+        //Deliberately empty
     }
 }

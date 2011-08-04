@@ -46,7 +46,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.collections.CollectionUtils;
 import org.alfresco.util.collections.Filter;
-import org.alfresco.util.collections.Function;
 
 /**
  * @author Nick Smith
@@ -159,7 +158,7 @@ public class ChannelServiceImpl implements ChannelService
     public List<Channel> getChannels()
     {
         NodeRef channelContainer = getChannelContainer();
-        return channelHelper.getChannels(channelContainer, this);
+        return channelHelper.getAllChannels(channelContainer, this);
     }
 
     /**
@@ -201,13 +200,14 @@ public class ChannelServiceImpl implements ChannelService
     {
         NodeRef containerNode = getChannelContainer();
         List<ChannelType> types = channelHelper.getReleventChannelTypes(nodeToPublish, channelTypes.values());
-        return getChannelsForTypes(containerNode, types);
+        List<Channel> channels = channelHelper.getChannelsForTypes(containerNode, types, this, true);
+        return channelHelper.filterAuthorisedChannels(channels);
     }
     
     /**
     * {@inheritDoc}
     */
-    public List<Channel> getPublishingChannels()
+    public List<Channel> getPublishingChannels(boolean filterByPublishPermission)
     {
         final NodeRef containerNode = getChannelContainer();
         if(containerNode != null)
@@ -219,7 +219,7 @@ public class ChannelServiceImpl implements ChannelService
                     return type.canPublish();
                 }
             });
-            return getChannelsForTypes(containerNode, types);
+            return channelHelper.getChannelsForTypes(containerNode, types, this, filterByPublishPermission);
         }
         return Collections.emptyList();
     }
@@ -227,16 +227,24 @@ public class ChannelServiceImpl implements ChannelService
     /**
      * {@inheritDoc}
      */
-    public List<Channel> getStatusUpdateChannels()
+    public List<Channel> getStatusUpdateChannels(boolean filterByPublishPermission)
     {
         final NodeRef containerNode = getChannelContainer();
         if (containerNode != null)
         {
             List<ChannelType> types = channelHelper.getStatusUpdateChannelTypes(channelTypes.values());
-            return getChannelsForTypes(containerNode, types);
+            return channelHelper.getChannelsForTypes(containerNode, types, this, filterByPublishPermission);
         }
         return Collections.emptyList();
     }    
+
+    /**
+     * {@inheritDoc}
+     */
+    public List<Channel> getAuthorisedStatusUpdateChannels()
+    {
+        return channelHelper.filterAuthorisedChannels(getStatusUpdateChannels(false));
+    }
     
     /**
     * {@inheritDoc}
@@ -246,20 +254,9 @@ public class ChannelServiceImpl implements ChannelService
         SiteInfo site = siteService.getSite(nodeToPublish);
         if(site!=null)
         {
-            return getStatusUpdateChannels();
+            return getStatusUpdateChannels(false);
         }
         return Collections.emptyList();
-    }
-    
-    private List<Channel> getChannelsForTypes(final NodeRef containerNode, List<ChannelType> types)
-    {
-        return CollectionUtils.transformFlat(types, new Function<ChannelType, List<Channel>>()
-        {
-            public List<Channel> apply(ChannelType channelType)
-            {
-                return channelHelper.getChannelsByType(containerNode, channelType.getId(), ChannelServiceImpl.this);
-            }
-        });
     }
 
     private NodeRef getChannelContainer()
@@ -306,14 +303,9 @@ public class ChannelServiceImpl implements ChannelService
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.alfresco.service.cmr.publishing.channels.ChannelService#updateChannel
-     * (java.lang.String, java.lang.String, java.util.Map)
+    /**
+    * {@inheritDoc}
      */
-    @Override
     public void updateChannel(Channel channel, Map<QName, Serializable> properties)
     {
         HashMap<QName, Serializable> actualProps = new HashMap<QName, Serializable>(properties);
@@ -328,7 +320,6 @@ public class ChannelServiceImpl implements ChannelService
     /**
     * {@inheritDoc}
     */
-    @Override
     public Channel getChannelById(String id)
     {
         if(id!=null&& NodeRef.isNodeRef(id))
@@ -338,5 +329,5 @@ public class ChannelServiceImpl implements ChannelService
         }
         return null;
     }
-
+    
 }

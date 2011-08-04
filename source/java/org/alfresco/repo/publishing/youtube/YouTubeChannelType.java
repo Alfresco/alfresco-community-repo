@@ -22,7 +22,9 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.publishing.AbstractChannelType;
 import org.alfresco.repo.publishing.PublishingModel;
 import org.alfresco.service.cmr.action.Action;
@@ -31,9 +33,22 @@ import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.collections.CollectionUtils;
 
 public class YouTubeChannelType extends AbstractChannelType
 {
+    private final static Set<String> DEFAULT_SUPPORTED_MIME_TYPES = CollectionUtils.unmodifiableSet(
+            MimetypeMap.MIMETYPE_VIDEO_MPG,
+            MimetypeMap.MIMETYPE_VIDEO_MP4,
+            MimetypeMap.MIMETYPE_VIDEO_FLV,
+            MimetypeMap.MIMETYPE_VIDEO_3GP,
+            MimetypeMap.MIMETYPE_VIDEO_AVI,
+            MimetypeMap.MIMETYPE_VIDEO_QUICKTIME,
+            MimetypeMap.MIMETYPE_VIDEO_WMV
+            );
+    
+    private Set<String> supportedMimeTypes = DEFAULT_SUPPORTED_MIME_TYPES;
+
     public final static String ID = "youtube";
     private NodeService nodeService;
     private ActionService actionService;
@@ -46,6 +61,11 @@ public class YouTubeChannelType extends AbstractChannelType
     public void setActionService(ActionService actionService)
     {
         this.actionService = actionService;
+    }
+
+    public void setSupportedMimeTypes(Set<String> supportedMimeTypes)
+    {
+        this.supportedMimeTypes = Collections.unmodifiableSet(new TreeSet<String>(supportedMimeTypes));
     }
 
     @Override
@@ -87,7 +107,7 @@ public class YouTubeChannelType extends AbstractChannelType
     @Override
     public Set<String> getSupportedMimeTypes()
     {
-        return Collections.emptySet();
+        return supportedMimeTypes;
     }
 
     @Override

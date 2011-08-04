@@ -19,22 +19,17 @@
 
 package org.alfresco.repo.publishing;
 
-import static org.alfresco.repo.publishing.PublishingModel.TYPE_DELIVERY_CHANNEL;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import javax.transaction.Status;
-import javax.transaction.UserTransaction;
-
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.person.TestPersonManager;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.publishing.channels.ChannelType;
-import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.publishing.PublishingService;
+import org.alfresco.service.cmr.publishing.channels.ChannelService;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteService;
-import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.junit.After;
@@ -49,68 +44,47 @@ public abstract class AbstractPublishingIntegrationTest extends BaseSpringTest
 {
     protected static final String channelTypeId = "MockChannelType";
     
-    protected PublishingRootObject rootObject;
-    
     protected ServiceRegistry serviceRegistry;
-    
-    protected SiteService siteService;
-    protected FileFolderService fileFolderService;
     protected NodeService nodeService;
+    protected PublishingTestHelper testHelper;
+    protected TestPersonManager personManager;
     
-    protected String siteId;
-    protected PublishingQueueImpl queue;
-    protected Environment environment;
-    protected NodeRef docLib;
-
+    protected String username;
+    
     @Override
     @Before
     public void onSetUp() throws Exception
     {
         super.onSetUp();
-        this.rootObject = (PublishingRootObject) getApplicationContext().getBean("publishingRootObject");
-        serviceRegistry = (ServiceRegistry) getApplicationContext().getBean("ServiceRegistry");
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-        this.siteService = serviceRegistry.getSiteService();
-        this.fileFolderService = serviceRegistry.getFileFolderService();
-        this.nodeService = serviceRegistry.getNodeService();
-        
-        this.siteId = GUID.generate();
-        siteService.createSite("test", siteId,
-                "Site created by publishing test",
-                "Site created by publishing test",
-                SiteVisibility.PUBLIC);
-        this.docLib = siteService.createContainer(siteId, SiteService.DOCUMENT_LIBRARY, ContentModel.TYPE_FOLDER, null);
-
-        this.environment = rootObject.getEnvironment();
-        this.queue = rootObject.getPublishingQueue();
+        serviceRegistry = (ServiceRegistry) getApplicationContext().getBean(ServiceRegistry.SERVICE_REGISTRY);
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
+        SiteService siteService = serviceRegistry.getSiteService();
+        FileFolderService fileFolderService = serviceRegistry.getFileFolderService();
+        PermissionService permissionService = serviceRegistry.getPermissionService();
+        this.nodeService = serviceRegistry.getNodeService();
+        ChannelService channelService = (ChannelService) getApplicationContext().getBean(ChannelServiceImpl.NAME);
+        PublishingService publishingService = (PublishingService) getApplicationContext().getBean(PublishServiceImpl.NAME);
+        MutableAuthenticationService authenticationService= (MutableAuthenticationService) getApplicationContext().getBean(ServiceRegistry.AUTHENTICATION_SERVICE.getLocalName());
+        PersonService personService= (PersonService) getApplicationContext().getBean(ServiceRegistry.PERSON_SERVICE.getLocalName());
+        
+        this.personManager = new TestPersonManager(authenticationService, personService, nodeService);
+        this.testHelper = new PublishingTestHelper(channelService, publishingService, siteService, fileFolderService, permissionService);
+        
+        this.username = GUID.generate();
+        personManager.createPerson(username);
     }
     
     @After
     public void onTearDown() throws Exception
     {
-        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
         try
         {
-            siteService.deleteSite(siteId);
+            testHelper.tearDown();
         }
         finally
         {
             super.onTearDown();
         }
-    }
-
-    protected ChannelType mockChannelType()
-    {
-        ChannelType channelType = mock(ChannelType.class);
-        mockChannelTypeBehaviour(channelType);
-        return channelType;
-    }
-
-    protected void mockChannelTypeBehaviour(ChannelType channelType)
-    {
-        when(channelType.getId()).thenReturn(channelTypeId);
-        when(channelType.getChannelNodeType()).thenReturn(TYPE_DELIVERY_CHANNEL);
     }
 
 }

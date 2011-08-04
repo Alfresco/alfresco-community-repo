@@ -19,9 +19,6 @@
 
 package org.alfresco.repo.publishing;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
@@ -32,14 +29,10 @@ import javax.annotation.Resource;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.person.TestPersonManager;
-import org.alfresco.service.ServiceRegistry;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.publishing.channels.Channel;
-import org.alfresco.service.cmr.publishing.channels.ChannelType;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.collections.CollectionUtils;
@@ -54,29 +47,51 @@ import org.junit.Test;
 public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrationTest
 {
     private static final String channelName = GUID.generate();
-    private static final String channelTypeName = "MockedChannelType";
-    private static boolean channelTypeRegistered = false;
 
     @Resource(name="channelService")
     private ChannelServiceImpl channelService;
-    private PermissionService permissionService;
-    private TestPersonManager personManager;
     
-    private ChannelType mockedChannelType = mock(ChannelType.class);
-
     @Test
     public void testCreateChannel() throws Exception
     {
+        personManager.setUser(username);
+        try
+        {
+            createChannel();
+            fail("Only Admin user can create channels!");
+        }
+        catch(AccessDeniedException e)
+        {
+            // NOOP
+        }
+        
+        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
         Channel channel = createChannel();
-        assertEquals(channelTypeName, channel.getChannelType().getId());
-        assertEquals(channelName, channel.getName());
-        assertTrue(nodeService.exists(channel.getNodeRef()));
+        assertEquals(channelTypeId, channel.getChannelType().getId());
+        assertNotNull(channelName, channel.getName());
+        NodeRef channelNode = new NodeRef(channel.getId());
+        assertTrue(nodeService.exists(channelNode));
     }
 
     @Test
     public void testDeleteChannel() throws Exception
     {
         Channel channel = createChannel();
+        assertNotNull("The channel should exist! Id: "+channel.getId(), channelService.getChannelById(channel.getId()));
+        assertNotNull("The channel should exist! Name: "+channelName, channelService.getChannelByName(channelName));
+
+        personManager.setUser(username);
+        try
+        {
+            channelService.deleteChannel(channel);
+            fail("Only Admin users should be able to delete channels.");
+        }
+        catch(AccessDeniedException e)
+        {
+            //NOOP
+        }
+
+        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
         channelService.deleteChannel(channel);
         
         assertNull("The channel should have been deleed! Id: "+channel.getId(), channelService.getChannelById(channel.getId()));
@@ -88,11 +103,26 @@ public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrat
     {
         String newChannelName = "New Channel Name";
         Channel channel = createChannel();
-        channelService.renameChannel(channel, newChannelName);
         
+        personManager.setUser(username);
+        try
+        {
+            channelService.renameChannel(channel, newChannelName);
+            fail("Only Admin user can rename Channel.");
+        }
+        catch(AccessDeniedException e)
+        {
+            //NOOP
+        }
+        
+        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
+        channelService.renameChannel(channel, newChannelName);
         Channel renamedChannel = channelService.getChannelById(channel.getId());
         assertNotNull(renamedChannel);
         assertEquals(newChannelName, renamedChannel.getName());
+        assertNotNull(channelService.getChannelByName(newChannelName));
+        assertNotNull(channelService.getChannelById(channel.getId()));
+        assertNull(channelService.getChannelByName(channelName));
     }
 
     @Test
@@ -105,8 +135,20 @@ public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrat
         assertNull(props.get(ContentModel.PROP_TITLE));
         
         props.put(ContentModel.PROP_TITLE, newTitle);
-        channelService.updateChannel(channel, props);
         
+        
+        personManager.setUser(username);
+        try
+        {
+            channelService.updateChannel(channel, props);
+            fail("Only Admin user can rename Channel.");
+        }
+        catch(AccessDeniedException e)
+        {
+            //NOOP
+        }
+        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
+        channelService.updateChannel(channel, props);
         Channel updatedChannel = channelService.getChannelById(channel.getId());
         Serializable title = updatedChannel.getProperties().get(ContentModel.PROP_TITLE); 
         assertNotNull(title);
@@ -119,21 +161,20 @@ public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrat
         int startingSize = channelService.getChannels().size();
         
         int channelCount = 7;
-        Set<String> channelNames = new HashSet<String>();
+        Set<String> ids = new HashSet<String>();
         for (int i = 0; i < channelCount; ++i)
         {
-            String name = GUID.generate();
-            channelNames.add(name);
-            channelService.createChannel(channelTypeName, name, null);
-
+            Channel newChannel = testHelper.createChannel(channelTypeId);
+            ids.add(newChannel.getId());
+            
             List<Channel> channels = channelService.getChannels();
             assertEquals(i + 1 + startingSize, channels.size());
-            Set<String> names = new HashSet<String>(channelNames);
+            Set<String> idsToCheck = new HashSet<String>(ids);
             for (Channel channel : channels)
             {
-                names.remove(channel.getName());
+                idsToCheck.remove(channel.getId());
             }
-            assertTrue(names.isEmpty());
+            assertTrue(idsToCheck.isEmpty());
         }
     }
     
@@ -142,7 +183,6 @@ public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrat
     {
         // Create Channel as Admin user.
         Channel channel = createChannel();
-        NodeRef channelNode = new NodeRef(channel.getId());
         
         // Create User1 and set as FullyAuthenticatedUser.
         String user1 = GUID.generate();
@@ -155,12 +195,8 @@ public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrat
         List<Channel> channels = channelService.getChannels();
         assertFalse("Result of getChannels() should not contain the channel!", checkContainsChannel(channel.getId(), channels));
         
-        // Set authentication to Admin
-        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
         //Add Read permissions to User1.
-        permissionService.setPermission(channelNode, user1, PermissionService.READ, true);
-        // Set authentication to User1
-        personManager.setUser(user1);
+        testHelper.setChannelPermission(user1, channel.getId(), PermissionService.READ);
         
         // Read permissions should not allow access to the Channel.
         channelById = channelService.getChannelById(channel.getId());
@@ -168,12 +204,8 @@ public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrat
         channels = channelService.getChannels();
         assertFalse("Result of getChannels() should not contain the channel!", checkContainsChannel(channel.getId(), channels));
         
-        // Set authentication to Admin
-        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
         //Add ADD_CHILD permissions to User1.
-        permissionService.setPermission(channelNode, user1, PermissionService.ADD_CHILDREN, true);
-        // Set authentication to User1
-        personManager.setUser(user1);
+        testHelper.setChannelPermission(user1, channel.getId(), PermissionService.ADD_CHILDREN);
         
         // Add Child permissions should allow access to the Channel.
         channelById = channelService.getChannelById(channel.getId());
@@ -183,18 +215,13 @@ public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrat
     }
 
     @Test
-    public void testGetChannel() throws Exception
+    public void testGetChannelByName() throws Exception
     {
-        try
-        {
-            channelService.getChannelByName(null);
-            fail("Should throw an Exception if channelName is null!");
-        }
-        catch (IllegalArgumentException e) {
-            // NOOP
-        }
-        Channel channel = channelService.getChannelByName(channelName);
+        Channel channel = channelService.getChannelById(null);
         assertNull("Should return null if unknown channelName", channel);
+        
+        channel = channelService.getChannelByName(channelName);
+        assertNull("Should return null if null channelName", channel);
         
         Channel createdChannel = createChannel();
         
@@ -202,7 +229,25 @@ public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrat
         assertNotNull("Should return created channel!", channel);
         assertEquals(channelName, channel.getName());
         assertEquals(createdChannel.getChannelType().getId(), channel.getChannelType().getId());
-        assertEquals(createdChannel.getNodeRef(), channel.getNodeRef());
+        assertEquals(createdChannel.getId(), channel.getId());
+    }
+    
+    @Test
+    public void testGetChannelById() throws Exception
+    {
+        Channel channel = channelService.getChannelById(null);
+        assertNull("Should return null if null channelId", channel);
+
+        channel = channelService.getChannelById("test://channel/id");
+        assertNull("Should return null if unknown channelId", channel);
+        
+        Channel createdChannel = createChannel();
+        
+        channel = channelService.getChannelById(createdChannel.getId());
+        assertNotNull("Should return created channel!", channel);
+        assertEquals(createdChannel.getId(), channel.getId());
+        assertEquals(channelName, channel.getName());
+        assertEquals(createdChannel.getChannelType().getId(), channel.getChannelType().getId());
     }
     
     private boolean checkContainsChannel(final String id, List<Channel> channels)
@@ -217,12 +262,11 @@ public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrat
         Channel result = CollectionUtils.findFirst(channels, acceptor);
         return result != null;
     }
-
+    
     private Channel createChannel()
     {
-        return channelService.createChannel(channelTypeName, channelName, null);
+        return testHelper.createChannel(channelTypeId, channelName);
     }
-    
     
     @Before
     @Override
@@ -230,41 +274,6 @@ public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrat
     {
         super.onSetUp();
         this.channelService = (ChannelServiceImpl) getApplicationContext().getBean("channelService");
-        this.permissionService = (PermissionService) getApplicationContext().getBean(ServiceRegistry.PERMISSIONS_SERVICE.getLocalName());
-        MutableAuthenticationService authenticationService= (MutableAuthenticationService) getApplicationContext().getBean(ServiceRegistry.AUTHENTICATION_SERVICE.getLocalName());
-        PersonService personService= (PersonService) getApplicationContext().getBean(ServiceRegistry.PERSON_SERVICE.getLocalName());
-        
-        this.personManager = new TestPersonManager(authenticationService, personService, nodeService);
-        
-        when(mockedChannelType.getId()).thenReturn(channelTypeName);
-        when(mockedChannelType.getChannelNodeType()).thenReturn(PublishingModel.TYPE_DELIVERY_CHANNEL);
-
-        if (!channelTypeRegistered)
-        {
-            channelService.register(mockedChannelType);
-            channelTypeRegistered = true;
-        }
-
-    }
-
-    /**
-    * {@inheritDoc}
-    */
-    @Override
-    public void onTearDown() throws Exception
-    {
-        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
-        try
-        {
-            Channel channel = channelService.getChannelByName(channelName);
-            if (channel != null)
-            {
-                channelService.deleteChannel(channel);
-            }
-        }
-        finally
-        {
-            super.onTearDown();
-        }
+        testHelper.mockChannelType(channelTypeId);
     }
 }

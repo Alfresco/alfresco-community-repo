@@ -113,14 +113,16 @@ public interface ChannelService
     
     /**
      * Returns a list of all the channels that are capable of publishing in the specified Share site.
+     * @param filterByPublishPermission TODO
      * @return
      */
-    List<Channel> getPublishingChannels();
+    List<Channel> getPublishingChannels(boolean filterByPublishPermission);
     
     /**
      * Returns all {@link Channel}s cpaable of performing a status update for the given Share Site.
+     * @param filterByPublishPermission TODO
      * @return
      */
-    List<Channel> getStatusUpdateChannels();
-    
+    List<Channel> getStatusUpdateChannels(boolean filterByPublishPermission);
+
 }

@@ -28,20 +28,13 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.junit.Test;
 
 /**
- * @author Brian
+ * @author Nick Smith
  * 
  */
 public class PublishingRootObjectTest extends AbstractPublishingIntegrationTest
 {
     @Resource(name="publishingRootObject")
     private PublishingRootObject rootObject;
-
-    @Override
-    public void onSetUp() throws Exception
-    {
-        super.onSetUp();
-        this.rootObject = (PublishingRootObject) getApplicationContext().getBean(PublishingRootObject.NAME);
-    }
 
     @Test
     public void testGetEnvironment() throws Exception
@@ -75,6 +68,13 @@ public class PublishingRootObjectTest extends AbstractPublishingIntegrationTest
         ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(channels);
         assertEquals(PublishingRootObject.CHANNELS_QNAME, parentAssoc.getQName());
         assertEquals(rootObject.getEnvironment().getNodeRef(), parentAssoc.getParentRef());
+    }
+
+    @Override
+    public void onSetUp() throws Exception
+    {
+        super.onSetUp();
+        this.rootObject = (PublishingRootObject) getApplicationContext().getBean(PublishingRootObject.NAME);
     }
 
 }

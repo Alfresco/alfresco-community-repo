@@ -93,15 +93,14 @@ public class ChannelHelper
             nodeService.createNode(parent, ASSOC_CONTAINS, channelQName, channelNodeType, props);
         NodeRef channelNode = channelAssoc.getChildRef();
         // Allow any user to read Channel permissions.
-        permissionService.setPermission(channelNode, PermissionService.ALL_AUTHORITIES, PermissionService.READ_PERMISSIONS, true);
+        permissionService.setPermission(channelNode, PermissionService.ALL_AUTHORITIES, PermissionService.READ_ASSOCIATIONS, true);
         return channelNode;
     }
 
     public Channel buildChannelObject(NodeRef nodeRef, ChannelService channelService)
     {
         if(nodeRef == null ||
-                nodeService.exists(nodeRef)==false ||
-                permissionService.hasPermission(nodeRef, PermissionService.ADD_CHILDREN)!= AccessStatus.ALLOWED)
+                nodeService.exists(nodeRef)==false)
         {
             return null;
         }
@@ -259,16 +258,40 @@ public class ChannelHelper
         return null;
     }
 
-    public List<Channel> getChannels(NodeRef channelContainer, final ChannelService channelService)
+    public List<Channel> getAllChannels(NodeRef channelContainer, final ChannelService channelService)
     {
         List<ChildAssociationRef> channelAssocs = getChannelAssocs(channelContainer);
-        return CollectionUtils.transform(channelAssocs, getChannelTransformer(channelService));
+        return CollectionUtils.transform(channelAssocs, getChannelTransformer(channelService, false));
     }
 
-    public List<Channel> getChannelsByType(NodeRef containerNode, String channelTypeId, ChannelService channelService)
+    
+    public List<Channel> getChannelsForTypes(final NodeRef containerNode, List<ChannelType> types, final ChannelService channelService, final boolean checkPermissions)
+    {
+        return CollectionUtils.transformFlat(types, new Function<ChannelType, List<Channel>>()
+        {
+            public List<Channel> apply(ChannelType channelType)
+            {
+                return getChannelsByType(containerNode, channelType.getId(), channelService, checkPermissions);
+            }
+        });
+    }
+
+    public List<Channel> getChannelsByType(NodeRef containerNode, String channelTypeId, ChannelService channelService, boolean checkPermissions)
     {
         List<ChildAssociationRef> channelAssocs = getChannelAssocsByType(containerNode, channelTypeId);
-        return CollectionUtils.transform(channelAssocs, getChannelTransformer(channelService));
+        return CollectionUtils.transform(channelAssocs, getChannelTransformer(channelService, checkPermissions));
+    }
+    
+    public List<Channel> filterAuthorisedChannels(Collection<Channel> channels)
+    {
+        return CollectionUtils.filter(channels, new Filter<Channel>()
+        {
+            @Override
+            public Boolean apply(Channel value)
+            {
+                return value.isAuthorised();
+            }
+        });
     }
     
     public List<ChannelType> getReleventChannelTypes(final NodeRef nodeToPublish, Collection<ChannelType> channelTypes)
@@ -334,18 +357,28 @@ public class ChannelHelper
         return null;
     }
     
-    private Function<ChildAssociationRef, Channel> getChannelTransformer(final ChannelService channelService)
+    private Function<ChildAssociationRef, Channel> getChannelTransformer(final ChannelService channelService, final boolean checkPermissions)
     {
         return new Function<ChildAssociationRef, Channel>()
         {
             public Channel apply(ChildAssociationRef value)
             {
                 NodeRef channelNode = value.getChildRef();
+                if(checkPermissions && hasPublishPermissions(channelNode)==false)
+                {
+                    return null;
+                }
                 return buildChannelObject(channelNode, channelService);
             }
         };
     }
 
+    public boolean hasPublishPermissions(NodeRef channelNode)
+    {
+        AccessStatus access = permissionService.hasPermission(channelNode, PermissionService.ADD_CHILDREN);
+        return AccessStatus.ALLOWED == access;
+    }
+    
     public boolean isChannelAuthorised(NodeRef channelNode)
     {
         Boolean isAuthorised = Boolean.FALSE;

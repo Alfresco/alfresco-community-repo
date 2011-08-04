@@ -76,4 +76,26 @@ public interface Channel
      * @return true if this channel has been authorised and is ready for use.
      */
     boolean isAuthorised();
+    
+    /**
+     * Returns <code>true</code> only if the currently authenticated user can publish content to this {@link Channel}.
+     * If the {@link ChannelType} does not support publishing, if the {@link Channel} is not authorised or if the currently authenticated user does not have permission to publish to this {@link Channel} then this method will return <code>false</code>.
+     * @return 
+     */
+    boolean canPublish();
+
+    /**
+     * Returns <code>true</code> only if the currently authenticated user can unpublish content from this {@link Channel}.
+     * If the {@link ChannelType} does not support unpublishing, if the {@link Channel} is not authorised or if the currently authenticated user does not have permission to publish to this {@link Channel} then this method will return <code>false</code>.
+     * @return 
+     */
+    boolean canUnpublish();
+
+    /**
+     * Returns <code>true</code> only if the currently authenticated user can unpublish status updates to this {@link Channel}.
+     * If the {@link ChannelType} does not support publishing of status updates, if the {@link Channel} is not authorised or if the currently authenticated user does not have permission to publish to this {@link Channel} then this method will return <code>false</code>.
+     * @return 
+     */
+    boolean canPublishStatusUpdates();
+
 }

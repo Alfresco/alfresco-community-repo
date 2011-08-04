@@ -16,21 +16,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
+package org.alfresco.repo.publishing.linkedin.springsocial.connect;
 
-package org.alfresco.repo.publishing.linkedin;
+import org.alfresco.repo.publishing.linkedin.springsocial.api.AlfrescoLinkedIn;
+import org.springframework.social.connect.support.OAuth1ConnectionFactory;
 
-import org.alfresco.service.namespace.QName;
+public class LinkedInConnectionFactory extends OAuth1ConnectionFactory<AlfrescoLinkedIn>{
 
-/**
- * @author Nick Smith
- * @since 4.0
- */
-public interface LinkedInPublishingModel
-{
-    public static final String NAMESPACE = "http://www.alfresco.org/model/publishing/linkedin/1.0";
-    public static final String PREFIX = "linkedin";
-    
-    public static final QName TYPE_DELIVERY_CHANNEL = QName.createQName(NAMESPACE, "DeliveryChannel");
+    public LinkedInConnectionFactory(String consumerKey, String consumerSecret) {
+        super("linkedin", new LinkedInServiceProvider(consumerKey, consumerSecret), new LinkedInAdapter());
+    }
 
-    public static final QName ASPECT_ASSET = QName.createQName(NAMESPACE, "AssetAspect");
 }

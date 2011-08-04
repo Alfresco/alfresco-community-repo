@@ -139,7 +139,7 @@ public abstract class AbstractChannelType implements ChannelType, InitializingBe
     @Override
     public int getMaximumStatusLength()
     {
-        return -1;
+        return 0;
     }
 
     @Override

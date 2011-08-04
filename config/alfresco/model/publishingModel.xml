@@ -282,23 +282,23 @@
                 <association name="pub:lastPublishingEvent">
                     <source>
                         <mandatory>false</mandatory>
-                        <many>false</many>
+                        <many>true</many>
                     </source>
                     <target>
                         <class>pub:PublishingEvent</class>
                         <mandatory>false</mandatory>
-                        <many>true</many>
+                        <many>false</many>
                     </target>
                 </association>
                 <association name="pub:publishedChannel">
                     <source>
                         <mandatory>false</mandatory>
-                        <many>false</many>
+                        <many>true</many>
                     </source>
                     <target>
                         <class>pub:DeliveryChannel</class>
                         <mandatory>false</mandatory>
-                        <many>true</many>
+                        <many>false</many>
                     </target>
                 </association>
             </associations>

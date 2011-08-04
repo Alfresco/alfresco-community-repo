@@ -36,7 +36,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -48,22 +47,17 @@ import javax.annotation.Resource;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.publishing.MutablePublishingPackage;
-import org.alfresco.service.cmr.publishing.PublishingPackage;
 import org.alfresco.service.cmr.publishing.PublishingService;
 import org.alfresco.service.cmr.publishing.Status;
 import org.alfresco.service.cmr.publishing.StatusUpdate;
 import org.alfresco.service.cmr.publishing.channels.Channel;
-import org.alfresco.service.cmr.publishing.channels.ChannelService;
 import org.alfresco.service.cmr.publishing.channels.ChannelType;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.GUID;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -79,9 +73,6 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
     @Resource(name="publishingService")
     private PublishingService publishingService;
     
-    @Resource(name="channelService")
-    private ChannelService channelService;
-    
     @Resource(name="contentService")
     private ContentService contentService;
     
@@ -93,14 +84,13 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
 
     private Channel channel;
     private NodeRef channelNode;
-    private String eventId;
     private ChannelType channelType;
-
+    
     @Test
     public void testPublishNodes() throws Exception
     {
         // Create content node with appropriate aspects added.
-        NodeRef source = createContentNode(contentNodeName, content);
+        NodeRef source = testHelper.createContentNode(contentNodeName, content, MimetypeMap.MIMETYPE_TEXT_PLAIN);
         
         double lattitude = 0.25;
         double longtitude = 0.75;
@@ -139,9 +129,9 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
     public void testUpdatePublishedNode() throws Exception
     {
         // Create content node without aspects
-        NodeRef source = createContentNode(contentNodeName, content);
+        NodeRef source = testHelper.createContentNode(contentNodeName, content, MimetypeMap.MIMETYPE_TEXT_PLAIN);
         NodeRef publishEventNode = publishNode(source);
-
+        
         // Check published node exists
         NodeRef publishedNode = channelHelper.mapSourceToEnvironment(source, channelNode);
         assertNotNull(publishedNode);
@@ -170,7 +160,7 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
         String newName = "NewName";
         nodeService.setProperty(source, PROP_NAME, newName);
         String newContent = "The new content";
-        writeContent(source, newContent);
+        testHelper.writeContent(source, newContent, MimetypeMap.MIMETYPE_TEXT_PLAIN);
         
         // Update published node.
         publishEventNode = publishNode(source);
@@ -219,7 +209,7 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
     public void testChannelTypePublishIsCalledOnPublish() throws Exception
     {
         // Create content node with appropriate aspects added.
-        NodeRef source = createContentNode(contentNodeName, content);
+        NodeRef source = testHelper.createContentNode(contentNodeName, content, MimetypeMap.MIMETYPE_TEXT_PLAIN);
         
         // Enable publishing on ChannelType.
         when(channelType.canPublish()).thenReturn(true);
@@ -235,7 +225,7 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
     public void testChannelTypePublishIsCalledOnUpdate() throws Exception
     {
         // Create content node with appropriate aspects added.
-        NodeRef source = createContentNode(contentNodeName, content);
+        NodeRef source = testHelper.createContentNode(contentNodeName, content, MimetypeMap.MIMETYPE_TEXT_PLAIN);
         
         // Publish source node but dont' call ChannelType.publish().
         publishNode(source);
@@ -259,7 +249,7 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
     public void testSupportedContentTypes() throws Exception
     {
         // Create content node with appropriate aspects added.
-        NodeRef source = createContentNode(contentNodeName, content);
+        NodeRef source = testHelper.createContentNode(contentNodeName, content, MimetypeMap.MIMETYPE_TEXT_PLAIN);
         
         // Enable publishing on ChannelType.
         when(channelType.canPublish()).thenReturn(true);
@@ -298,7 +288,7 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
     public void testSupportedMimeTypes() throws Exception
     {
         // Create content node with appropriate aspects added.
-        NodeRef source = createContentNode(contentNodeName, content);
+        NodeRef source = testHelper.createContentNode(contentNodeName, content, MimetypeMap.MIMETYPE_TEXT_PLAIN);
         
         // Enable publishing on ChannelType.
         when(channelType.canPublish()).thenReturn(true);
@@ -326,11 +316,11 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
     @SuppressWarnings("unchecked")
     public void testStatusUpdate() throws Exception
     {
-        NodeRef source = createContentNode(contentNodeName, content);
+        NodeRef source = testHelper.createContentNode(contentNodeName, content, MimetypeMap.MIMETYPE_TEXT_PLAIN);
         
         // Create Status Update
         String message = "Here is the message ";
-        StatusUpdate status = queue.createStatusUpdate(message, source, channel.getId());
+        StatusUpdate status = publishingService.getPublishingQueue().createStatusUpdate(message, source, channel.getId());
         
         String url = "http://test/url";
         when(channelType.getNodeUrl(any(NodeRef.class))).thenReturn(url);
@@ -349,9 +339,9 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
     
     private NodeRef publishNode(NodeRef source, StatusUpdate statusUpdate)
     {
-        MutablePublishingPackage pckg = queue.createPublishingPackage();
+        MutablePublishingPackage pckg = publishingService.getPublishingQueue().createPublishingPackage();
         pckg.addNodesToPublish(source);
-        scheduleEvent(pckg, statusUpdate);
+        String eventId = testHelper.scheduleEvent1Year(pckg, channel.getId(), null, statusUpdate);
         
         assertNotNull(eventId);
         NodeRef eventNode = new NodeRef(eventId);
@@ -368,36 +358,14 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
         return eventNode;
     }
 
-    private void scheduleEvent(PublishingPackage publishPckg, StatusUpdate statusUpdate)
-    {
-        Calendar schedule = Calendar.getInstance();
-        schedule.add(Calendar.YEAR, 1);
-        this.eventId = queue.scheduleNewEvent(publishPckg, channel.getId(), schedule, null, statusUpdate);
-    }
-
     private void addGeographicAspect(NodeRef source, double lattitude, double longtitude)
     {
         Map<QName, Serializable> props = new HashMap<QName, Serializable>();
         props.put(PROP_LATITUDE, lattitude);
         props.put(PROP_LONGITUDE, longtitude);
-        nodeService.addAspect(source, ASPECT_GEOGRAPHIC, props);
+        serviceRegistry.getNodeService().addAspect(source, ASPECT_GEOGRAPHIC, props);
     }
 
-    private NodeRef createContentNode(String name, String theContent)
-    {
-        NodeRef source = fileFolderService.create(docLib, name, TYPE_CONTENT).getNodeRef();
-        writeContent(source, theContent);
-        return source;
-    }
-
-    private void writeContent(NodeRef source, String theContent)
-    {
-        ContentWriter writer = contentService.getWriter(source, PROP_CONTENT, true);
-        writer.setEncoding("UTF-8");
-        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        writer.putContent(theContent);
-    }
-    
     private String readContent(NodeRef source)
     {
         ContentReader reader = contentService.getReader(source, PROP_CONTENT);
@@ -409,33 +377,13 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
     {
         super.onSetUp();
         this.publishingService = (PublishingService) getApplicationContext().getBean("publishingService");
-        channelService = (ChannelServiceImpl) getApplicationContext().getBean("channelService");
-        contentService = (ContentService) getApplicationContext().getBean("ContentService");
-        channelHelper = (ChannelHelper) getApplicationContext().getBean("channelHelper");
-        action = (PublishEventAction) getApplicationContext().getBean("pub_publishEvent");
-        
-        this.channelType = channelService.getChannelType(channelTypeId);
-        if(channelType == null)
-        {
-            this.channelType = mockChannelType();
-            channelService.register(channelType);
-        }
-        else
-        {
-            Mockito.reset(channelType);
-            mockChannelTypeBehaviour(channelType);
-        }
-        this.channel = channelService.createChannel(channelTypeId, GUID.generate(), null);
-        this.channelNode = channel.getNodeRef();
+        this.contentService = (ContentService) getApplicationContext().getBean("ContentService");
+        this.channelHelper = (ChannelHelper) getApplicationContext().getBean("channelHelper");
+        this.action = (PublishEventAction) getApplicationContext().getBean("pub_publishEvent");
+
+        this.channelType = testHelper.mockChannelType(channelTypeId);
+        this.channel = testHelper.createChannel(channelTypeId);
+        this.channelNode = new NodeRef(channel.getId());
     }
 
-    @Override
-    public void onTearDown() throws Exception
-    {
-        if(eventId !=null)
-        {
-            publishingService.cancelPublishingEvent(eventId);
-        }
-        super.onTearDown();
-    }
 }

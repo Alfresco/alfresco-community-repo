@@ -26,22 +26,22 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.repo.publishing.AbstractOAuth1ChannelType;
+import org.alfresco.repo.publishing.linkedin.springsocial.api.AlfrescoLinkedIn;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.social.connect.Connection;
-import org.springframework.social.linkedin.api.LinkedIn;
-import org.springframework.social.oauth1.OAuth1Parameters;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
 /**
  * @author Nick Smith
  * @since 4.0
  */
-public class LinkedInChannelType extends AbstractOAuth1ChannelType<LinkedIn>
+public class LinkedInChannelType extends AbstractOAuth1ChannelType<AlfrescoLinkedIn>
 {
-    public final static String ID = "linkedIn";
+    private final static Log log = LogFactory.getLog(LinkedInChannelType.class);
+    public final static String ID = "linkedin";
     
     @Override
     public boolean canPublish()
@@ -98,11 +98,21 @@ public class LinkedInChannelType extends AbstractOAuth1ChannelType<LinkedIn>
     }
 
     @Override
+    public int getMaximumStatusLength()
+    {
+        return 700;
+    }
+
+    @Override
     public void updateStatus(Channel channel, String status, Map<QName, Serializable> properties)
     {
         NodeRef channelNode = new NodeRef(channel.getId());
-        Connection<LinkedIn> connection = getConnectionForChannel(channelNode);
-        // TODO update status
+        Connection<AlfrescoLinkedIn> connection = getConnectionForChannel(channelNode);
+        if (log.isInfoEnabled())
+        {
+            log.info("Posting update to LinkedIn channel " + channel.getName() + ": " + status);
+        }
+        connection.getApi().shareComment(status);
     }
 
     @Override
@@ -110,13 +120,4 @@ public class LinkedInChannelType extends AbstractOAuth1ChannelType<LinkedIn>
     {
         throw new UnsupportedOperationException();
     }
-    
-    @Override
-    protected OAuth1Parameters getOAuth1Parameters(String callbackUrl)
-    {
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<String, String>();
-        params.add("perms", "delete");
-        return new OAuth1Parameters(callbackUrl, params);
-    }
-
 }

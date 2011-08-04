@@ -13,7 +13,7 @@
     <bean id="linkedInDeliveryChannelType" class="org.alfresco.repo.publishing.linkedin.LinkedInChannelType" parent="baseChannelType" >
         <property name="nodeService" ref="NodeService" />
         <property name="connectionFactory">
-            <bean class="org.springframework.social.linkedin.connect.LinkedInConnectionFactory">
+            <bean class="org.alfresco.repo.publishing.linkedin.springsocial.connect.LinkedInConnectionFactory">
                 <constructor-arg value="l0a39tvf6v4x" />
                 <constructor-arg value="veWjLwlnJmu7IyFs" />
             </bean>

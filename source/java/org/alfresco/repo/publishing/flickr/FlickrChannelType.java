@@ -105,10 +105,6 @@ public class FlickrChannelType extends AbstractOAuth1ChannelType<Flickr>
     @Override
     public void publish(NodeRef nodeToPublish, Map<QName, Serializable> properties)
     {
-        // TODO Nick S: Not sure it is very useful to use an Action hee.
-        // The Action assumes the nodeToPublish is under a properly configured DeliveryChannel.
-        // Ie. the action assumes the node was generated via the Publishing Service.
-        // The Action only really has value if it can be called independant of the Publishing Service IMO.
         Action publishAction = actionService.createAction(FlickrPublishAction.NAME);
         actionService.executeAction(publishAction, nodeToPublish);
     }
@@ -116,7 +112,8 @@ public class FlickrChannelType extends AbstractOAuth1ChannelType<Flickr>
     @Override
     public void unpublish(NodeRef nodeToUnpublish, Map<QName, Serializable> properties)
     {
-        //NOOP
+        Action action = actionService.createAction(FlickrUnpublishAction.NAME);
+        actionService.executeAction(action, nodeToUnpublish);
     }
 
     @Override

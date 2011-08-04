@@ -50,6 +50,8 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
 import org.alfresco.util.ParameterCheck;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * @author Nick Smith
@@ -58,6 +60,8 @@ import org.alfresco.util.ParameterCheck;
  */
 public class PublishingEventProcessor
 {
+    private static final Log log = LogFactory.getLog(PublishingEventProcessor.class);
+    
     private PublishingEventHelper eventHelper;
     private ChannelHelper channelHelper;
     private ChannelService channelService;
@@ -91,6 +95,7 @@ public class PublishingEventProcessor
         }
         catch(Exception e)
         {
+            log.error("Caught exception while processing publishing event " + eventNode, e);
             fail(eventNode, e.getMessage());
         }
         finally
@@ -112,7 +117,7 @@ public class PublishingEventProcessor
             String nodeUrl = publishChannel.getUrl(node);
             if(nodeUrl != null)
             {
-                message += urlShortener.shortenUrl(nodeUrl);
+                message += " " + urlShortener.shortenUrl(nodeUrl);
             }
         }
         Set<String> channels = update.getChannelIds();
@@ -148,9 +153,9 @@ public class PublishingEventProcessor
          
      }
 
-
      public void fail(NodeRef eventNode, String msg)
      {
+         log.error("Failed to process publishing event " + eventNode + ": " + msg);
          String completedStatus = Status.FAILED.name();
          nodeService.setProperty(eventNode, PublishingModel.PROP_PUBLISHING_EVENT_STATUS, completedStatus);
      }

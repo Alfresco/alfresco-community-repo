@@ -27,11 +27,14 @@ import org.alfresco.repo.publishing.AbstractOAuth1ChannelType;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.social.connect.Connection;
 import org.springframework.social.twitter.api.Twitter;
 
 public class TwitterChannelType extends AbstractOAuth1ChannelType<Twitter>
 {
+    private final static Log log = LogFactory.getLog(TwitterChannelType.class);
     public final static String ID = "twitter";
 
     @Override
@@ -89,9 +92,19 @@ public class TwitterChannelType extends AbstractOAuth1ChannelType<Twitter>
     }
 
     @Override
+    public int getMaximumStatusLength()
+    {
+        return 140;
+    }
+
+    @Override
     public void updateStatus(Channel channel, String status, Map<QName, Serializable> properties)
     {
         Connection<Twitter> connection = getConnectionForChannel(channel.getNodeRef());
+        if (log.isInfoEnabled())
+        {
+            log.info("Posting update to Twitter channel " + channel.getName() + ": " + status);
+        }
         connection.getApi().timelineOperations().updateStatus(status);
     }
 

@@ -123,7 +123,7 @@ public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<No
      * 
      * @return                   an implementation that will execute the query
      */
-    public CannedQuery<NodeRef> getCannedQuery(NodeRef parentRef, Set<QName> childTypeQNames, List<FilterProp> filterProps, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
+    public CannedQuery<NodeRef> getCannedQuery(NodeRef parentRef, String pattern, Set<QName> childTypeQNames, List<FilterProp> filterProps, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
     {
         ParameterCheck.mandatory("parentRef", parentRef);
         ParameterCheck.mandatory("pagingRequest", pagingRequest);
@@ -131,8 +131,8 @@ public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<No
         int requestTotalCountMax = pagingRequest.getRequestTotalCountMax();
         
         // specific query params - context (parent) and inclusive filters (child types, property values)
-        GetChildrenCannedQueryParams paramBean = new GetChildrenCannedQueryParams(tenantService.getName(parentRef), childTypeQNames, filterProps);
-        
+        GetChildrenCannedQueryParams paramBean = new GetChildrenCannedQueryParams(tenantService.getName(parentRef), childTypeQNames, filterProps, pattern);
+
         // page details
         CannedQueryPageDetails cqpd = new CannedQueryPageDetails(pagingRequest.getSkipCount(), pagingRequest.getMaxItems(), CannedQueryPageDetails.DEFAULT_PAGE_NUMBER, CannedQueryPageDetails.DEFAULT_PAGE_COUNT);
         
@@ -165,9 +165,9 @@ public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<No
      * 
      * @return                   an implementation that will execute the query
      */
-    public CannedQuery<NodeRef> getCannedQuery(NodeRef parentRef, Set<QName> childTypeQNames, PagingRequest pagingRequest)
+    public CannedQuery<NodeRef> getCannedQuery(NodeRef parentRef, String pattern,Set<QName> childTypeQNames, PagingRequest pagingRequest)
     {
-        return getCannedQuery(parentRef, childTypeQNames, null, null, pagingRequest);
+        return getCannedQuery(parentRef, pattern, childTypeQNames, null, null, pagingRequest);
     }
     
     @Override

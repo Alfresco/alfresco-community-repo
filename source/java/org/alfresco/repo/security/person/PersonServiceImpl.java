@@ -1214,7 +1214,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             }
         }
         
-        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(contextNodeRef, childTypeQNames, filterProps, sortProps, pagingRequest);
+        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(contextNodeRef, null, childTypeQNames, filterProps, sortProps, pagingRequest);
         
         // execute canned query
         final CannedQueryResults<NodeRef> results = cq.execute();

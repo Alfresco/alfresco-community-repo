@@ -259,7 +259,7 @@ public class CalendarServiceImpl implements CalendarService
        // Run the canned query
        GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_GET_CHILDREN);
        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(
-             container, types, null, sort, paging);
+             container, null, types, null, sort, paging);
        
        // Execute the canned query
        CannedQueryResults<NodeRef> results = cq.execute();

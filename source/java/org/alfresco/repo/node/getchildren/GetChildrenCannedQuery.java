@@ -153,6 +153,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
         // Get filter details
         Set<QName> childNodeTypeQNames = paramBean.getChildTypeQNames();
         final List<FilterProp> filterProps = paramBean.getFilterProps();
+        String pattern = paramBean.getPattern();
         
         // Get sort details
         CannedQuerySortDetails sortDetails = parameters.getSortDetails();
@@ -188,6 +189,19 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
             {
                 params.setChildNodeTypeQNameIds(new ArrayList<Long>(childNodeTypeQNameIds));
             }
+        }
+        
+        if (pattern != null)
+        {
+        	// TODO, check that we should be tied to the content model in this way. Perhaps a configurable property
+        	// name against which compare the pattern?
+        	Pair<Long, QName> nameQName = qnameDAO.getQName(ContentModel.PROP_NAME);
+        	if(nameQName == null)
+        	{
+        		throw new AlfrescoRuntimeException("Unable to determine qname id of name property");
+        	}
+        	params.setNamePropertyQNameId(nameQName.getFirst());
+        	params.setPattern(pattern);
         }
         
         final List<NodeRef> result;

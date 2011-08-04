@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -37,13 +38,18 @@ public class GetChildrenCannedQueryParams
     
     private Set<QName> childTypeQNames = Collections.emptySet();
     private List<FilterProp> filterProps = Collections.emptyList();
+    private String pattern = null;
     
-    public GetChildrenCannedQueryParams(NodeRef parentRef, Set<QName> childTypeQNames, List<FilterProp> filterProps)
+    public GetChildrenCannedQueryParams(NodeRef parentRef, Set<QName> childTypeQNames, List<FilterProp> filterProps, String pattern)
     {
         this.parentRef = parentRef;
-        
+
         if (childTypeQNames != null) { this.childTypeQNames = childTypeQNames; }
         if (filterProps != null) { this.filterProps = filterProps; }
+        if (pattern != null)
+        {
+        	this.pattern = pattern;
+        } 
     }
     
     public NodeRef getParentRef()
@@ -60,4 +66,9 @@ public class GetChildrenCannedQueryParams
     {
         return filterProps;
     }
+
+	public String getPattern()
+	{
+		return pattern;
+	}
 }

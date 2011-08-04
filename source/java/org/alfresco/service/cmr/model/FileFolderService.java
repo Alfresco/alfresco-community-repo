@@ -70,6 +70,23 @@ public interface FileFolderService
                                       PagingRequest pagingRequest);
     
     /**
+     * Lists page of immediate child files and/or folders of the given context node
+     * with pattern matching and optional filtering (exclusion of certain child file/folder subtypes) and sorting
+     * 
+     * Pattern uses '%' as a wildcard
+     * 
+     * @since 4.0
+     */
+    @Auditable(parameters = {"contextNodeRef", "files", "folders", "ignoreTypeQNames", "sortProps", "pagingRequest"})
+    public PagingResults<FileInfo> list(NodeRef contextNodeRef,
+                                      boolean files,
+                                      boolean folders,
+                                      String pattern,
+                                      Set<QName> ignoreTypeQNames,
+                                      List<Pair<QName, Boolean>> sortProps,
+                                      PagingRequest pagingRequest);
+    
+    /**
      * Lists all immediate child files of the given context node
      * 
      * Note: this could be a long list (and will be trimmed at a pre-configured maximum).  You should consider using a paging request.

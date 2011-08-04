@@ -944,6 +944,10 @@
             <if test="prop1qnameId != null and prop2qnameId != null and prop3qnameId != null">
             left join alf_node_properties prop3 on (prop3.node_id = childNode.id and prop3.qname_id = #{prop3qnameId})
             </if>
+            <if test="pattern != null">
+            join alf_node_properties prop4 on (prop4.node_id = childNode.id)
+            join alf_qname qname on (prop4.qname_id = qname.id and qname.id = #{namePropertyQNameId})
+            </if>
         where
             assoc.parent_node_id = #{parentNodeId}
             <if test="childNodeTypeQNameIds != null">
@@ -951,6 +955,9 @@
                 <foreach item="item" index="index" collection="childNodeTypeQNameIds" open="(" separator="," close=")">
                     #{item}
                 </foreach>
+            </if>
+            <if test="pattern != null">
+            and prop4.string_value like #{pattern}
             </if>
         <if test="prop1qnameId == null and auditableProps == false">
             <include refid="alfresco.node.select_ChildAssoc_OrderBy"/>
@@ -968,6 +975,10 @@
             alf_child_assoc assoc
             join alf_node childNode on (childNode.id = assoc.child_node_id)
             join alf_store childStore on (childStore.id = childNode.store_id)
+            <if test="pattern != null">
+            join alf_node_properties prop4 on (prop4.node_id = childNode.id)
+            join alf_qname qname on (prop4.qname_id = qname.id and qname.id = #{namePropertyQNameId})
+            </if>
         where
             assoc.parent_node_id = #{parentNodeId}
             <if test="childNodeTypeQNameIds != null">
@@ -975,6 +986,9 @@
                 <foreach item="item" index="index" collection="childNodeTypeQNameIds" open="(" separator="," close=")">
                     #{item}
                 </foreach>
+            </if>
+            <if test="pattern != null">
+            and prop4.string_value like #{pattern}
             </if>
         <include refid="alfresco.node.select_ChildAssoc_OrderBy"/>
     </select>

@@ -141,7 +141,7 @@ public class GetChildrenCannedQueryTest extends TestCase
         getChildrenCannedQueryFactory.setMethodSecurity((MethodSecurityBean<NodeRef>)ctx.getBean("FileFolderService_security_list"));
         
         getChildrenCannedQueryFactory.afterPropertiesSet();
-            
+
         if (! setupTestData)
         {
             AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
@@ -177,7 +177,7 @@ public class GetChildrenCannedQueryTest extends TestCase
             loadContent(testParentFolder, "quick.xml", "ZZ title" +TEST_RUN, "BB description", canRead, permMisses);
             
             setupTestData = true;
-            
+
             // double-check permissions - see testPermissions
             
             AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
@@ -529,6 +529,87 @@ public class GetChildrenCannedQueryTest extends TestCase
         }
     }
     
+    public void testPatterns() throws Exception
+    {
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
+        NodeRef parentNodeRef = nodeService.createNode(
+        		repositoryHelper.getCompanyHome(),
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, getName()),
+                ContentModel.TYPE_FOLDER, null).getChildRef();
+        
+        // set up some nodes to test patterns
+        NodeRef nodeRef1 = createContent(parentNodeRef, "page.component-1-2.user~admin~dashboard.xml", ContentModel.TYPE_CONTENT);
+        NodeRef nodeRef2 = createContent(parentNodeRef, "page.component-1-4.user~admin~dashboard.xml", ContentModel.TYPE_CONTENT);
+        NodeRef nodeRef3 = createContent(parentNodeRef, "page.xml", ContentModel.TYPE_CONTENT);
+        NodeRef nodeRef4 = createContent(parentNodeRef, "page.component-1-4.user~admin~panel.xml", ContentModel.TYPE_CONTENT);
+        
+        AuthenticationUtil.popAuthentication();
+        
+        String pattern = "page.%.user~admin~dashboard.xml";
+        PagingResults<NodeRef> results = list(parentNodeRef, -1, -1, 0, pattern, null);
+        assertFalse(results.hasMoreItems());
+
+        int totalCnt = results.getPage().size();
+        assertTrue(totalCnt == 2);
+        assertEquals(nodeRef1, results.getPage().get(0));
+        assertEquals(nodeRef2, results.getPage().get(1));
+        
+        pattern = "%";
+        results = list(parentNodeRef, -1, -1, 0, pattern, null);
+        assertFalse(results.hasMoreItems());
+        totalCnt = results.getPage().size();
+        assertTrue(totalCnt == 4);
+        assertEquals(nodeRef1, results.getPage().get(0));
+        assertEquals(nodeRef2, results.getPage().get(1));
+        assertEquals(nodeRef3, results.getPage().get(2));
+        assertEquals(nodeRef4, results.getPage().get(3));
+        
+        pattern = "foo%bar";
+        results = list(parentNodeRef, -1, -1, 0, pattern, null);
+        assertFalse(results.hasMoreItems());
+        totalCnt = results.getPage().size();
+        assertTrue(totalCnt == 0);
+        
+        pattern = "page.%.admin~dashboard.xml";
+        results = list(parentNodeRef, -1, -1, 0, pattern, null);
+        assertFalse(results.hasMoreItems());
+        totalCnt = results.getPage().size();
+        assertTrue(totalCnt == 0);
+        
+        pattern = "page.%.user~admin~%.xml";
+        results = list(parentNodeRef, -1, -1, 0, pattern, null);
+        assertFalse(results.hasMoreItems());
+        totalCnt = results.getPage().size();
+        assertTrue(totalCnt == 3);
+    }
+    
+    // test helper method - optional filtering/sorting
+    private PagingResults<NodeRef> list(NodeRef parentNodeRef, final int skipCount, final int maxItems, final int requestTotalCountMax, String pattern, List<Pair<QName, Boolean>> sortProps)
+    {
+        PagingRequest pagingRequest = new PagingRequest(skipCount, maxItems, null);
+        pagingRequest.setRequestTotalCountMax(requestTotalCountMax);
+        
+        // get canned query
+        GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject("getChildrenCannedQueryFactory");
+        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(parentNodeRef, pattern, null, null, sortProps, pagingRequest);
+        
+        // execute canned query
+        CannedQueryResults<NodeRef> results = cq.execute();
+        
+        List<NodeRef> nodeRefs = results.getPages().get(0);
+        
+        Integer totalCount = null;
+        if (requestTotalCountMax > 0)
+        {
+            totalCount = results.getTotalResultCount().getFirst();
+        }
+        
+        return new PagingNodeRefResultsImpl(nodeRefs, results.hasMoreItems(), totalCount, false);
+    }
+    
     private void filterByTypeAndCheck(NodeRef parentNodeRef, Set<QName> childTypeQNames, Set<QName> antiChildTypeQNames)
     {
         // belts-and-braces
@@ -752,7 +833,7 @@ public class GetChildrenCannedQueryTest extends TestCase
         
         // get canned query
         GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject("getChildrenCannedQueryFactory");
-        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(parentNodeRef, childTypeQNames, filterProps, sortProps, pagingRequest);
+        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(parentNodeRef, null, childTypeQNames, filterProps, sortProps, pagingRequest);
         
         // execute canned query
         CannedQueryResults<NodeRef> results = cq.execute();
@@ -824,7 +905,7 @@ public class GetChildrenCannedQueryTest extends TestCase
                                          properties).getChildRef();
     }
     
-    private void createContent(NodeRef parentNodeRef, String fileName, QName contentType) throws IOException
+    private NodeRef createContent(NodeRef parentNodeRef, String fileName, QName contentType) throws IOException
     {
         Map<QName,Serializable> properties = new HashMap<QName,Serializable>();
         properties.put(ContentModel.PROP_NAME, fileName);
@@ -846,6 +927,8 @@ public class GetChildrenCannedQueryTest extends TestCase
         ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
         writer.setMimetype(mimetypeService.guessMimetype(fileName));
         writer.putContent("my text content");
+
+        return nodeRef;
     }
     
     private void loadContent(NodeRef parentNodeRef, String inFileName, String title, String description, boolean readAllowed, Set<NodeRef> results) throws IOException

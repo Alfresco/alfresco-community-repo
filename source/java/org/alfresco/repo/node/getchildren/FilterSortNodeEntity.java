@@ -46,6 +46,8 @@ public class FilterSortNodeEntity
     private Long prop2qnameId;
     private Long prop3qnameId;
     private List<Long> childNodeTypeQNameIds;
+    private String pattern;
+    private Long namePropertyQNameId;
     private boolean auditableProps;
     private boolean nodeType;
     
@@ -67,7 +69,27 @@ public class FilterSortNodeEntity
         this.id = id;
     }
     
-    public NodePropertyEntity getProp1()
+    public String getPattern()
+	{
+		return pattern;
+	}
+
+	public void setPattern(String pattern)
+	{
+		this.pattern = pattern;
+	}
+
+	public Long getNamePropertyQNameId()
+	{
+		return namePropertyQNameId;
+	}
+
+	public void setNamePropertyQNameId(Long namePropertyQNameId)
+	{
+		this.namePropertyQNameId = namePropertyQNameId;
+	}
+
+	public NodePropertyEntity getProp1()
     {
         return prop1;
     }

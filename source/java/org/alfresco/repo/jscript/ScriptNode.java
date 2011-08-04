@@ -641,7 +641,7 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
         PagingRequest pageRequest = new PagingRequest(skipOffset, maxItems, queryExecutionId);
         pageRequest.setRequestTotalCountMax(requestTotalCountMax);
         
-        PagingResults<FileInfo> pageOfNodeInfos = this.fileFolderService.list(this.nodeRef, files, folders, ignoreTypeQNames, sortProps, pageRequest);
+        PagingResults<FileInfo> pageOfNodeInfos = this.fileFolderService.list(this.nodeRef, files, folders, null, ignoreTypeQNames, sortProps, pageRequest);
         
         List<FileInfo> nodeInfos = pageOfNodeInfos.getPage();
         

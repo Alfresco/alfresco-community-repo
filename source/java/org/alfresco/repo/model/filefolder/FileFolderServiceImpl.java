@@ -43,6 +43,7 @@ import org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.security.permissions.PermissionCheckedCollection.PermissionCheckedCollectionMixin;
 import org.alfresco.repo.security.permissions.PermissionCheckedValue.PermissionCheckedValueMixin;
+import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileExistsException;
@@ -348,19 +349,8 @@ public class FileFolderServiceImpl implements FileFolderService
         return results;
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.model.FileFolderService#list(org.alfresco.service.cmr.repository.NodeRef, boolean, boolean, java.util.Set, org.alfresco.service.cmr.model.PagingSortRequest)
-     */
-    public PagingResults<FileInfo> list(NodeRef contextNodeRef, boolean files, boolean folders, Set<QName> ignoreQNameTypes, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
+    private PagingResults<FileInfo> getPagingResults(PagingRequest pagingRequest, final CannedQueryResults<NodeRef> results)
     {
-        ParameterCheck.mandatory("contextNodeRef", contextNodeRef);
-        ParameterCheck.mandatory("pagingRequest", pagingRequest);
-        
-        Set<QName> searchTypeQNames = buildTypes(files, folders, ignoreQNameTypes);
-        
-        // execute query
-        final CannedQueryResults<NodeRef> results = listImpl(contextNodeRef, searchTypeQNames, sortProps, pagingRequest);
-        
         List<NodeRef> nodeRefs = null;
         if (results.getPageCount() > 0)
         {
@@ -411,7 +401,43 @@ public class FileFolderServiceImpl implements FileFolderService
             {
                 return totalCount;
             }
-        };
+        };    	
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.model.FileFolderService#list(org.alfresco.service.cmr.repository.NodeRef, boolean, boolean, java.util.Set, org.alfresco.service.cmr.model.PagingSortRequest)
+     */
+    @Auditable(parameters = {"contextNodeRef", "files", "folders", "ignoreTypeQNames", "sortProps", "pagingRequest"})
+    public PagingResults<FileInfo> list(NodeRef contextNodeRef,
+                                      boolean files,
+                                      boolean folders,
+                                      Set<QName> ignoreTypeQNames,
+                                      List<Pair<QName, Boolean>> sortProps,
+                                      PagingRequest pagingRequest)
+    {
+        ParameterCheck.mandatory("contextNodeRef", contextNodeRef);
+        ParameterCheck.mandatory("pagingRequest", pagingRequest);
+        
+        Set<QName> searchTypeQNames = buildTypes(files, folders, ignoreTypeQNames);
+        
+        // execute query
+        final CannedQueryResults<NodeRef> results = listImpl(contextNodeRef, null, searchTypeQNames, sortProps, pagingRequest);
+        return getPagingResults(pagingRequest, results);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.model.FileFolderService#list(org.alfresco.service.cmr.repository.NodeRef, boolean, boolean, String, java.util.Set, org.alfresco.service.cmr.model.PagingSortRequest)
+     */
+    public PagingResults<FileInfo> list(NodeRef contextNodeRef, boolean files, boolean folders, String pattern, Set<QName> ignoreQNameTypes, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
+    {
+        ParameterCheck.mandatory("contextNodeRef", contextNodeRef);
+        ParameterCheck.mandatory("pagingRequest", pagingRequest);
+        
+        Set<QName> searchTypeQNames = buildTypes(files, folders, ignoreQNameTypes);
+        
+        // execute query
+        final CannedQueryResults<NodeRef> results = listImpl(contextNodeRef, pattern, searchTypeQNames, sortProps, pagingRequest);
+        return getPagingResults(pagingRequest, results);
     }
     
     private CannedQueryResults<NodeRef> listImpl(NodeRef contextNodeRef, boolean files, boolean folders)
@@ -422,18 +448,18 @@ public class FileFolderServiceImpl implements FileFolderService
     
     private CannedQueryResults<NodeRef> listImpl(NodeRef contextNodeRef, Set<QName> searchTypeQNames)
     {
-        return listImpl(contextNodeRef, searchTypeQNames, null, new PagingRequest(defaultListMaxResults, null));
+        return listImpl(contextNodeRef, null, searchTypeQNames, null, new PagingRequest(defaultListMaxResults, null));
     }
     
     // note: similar to getChildAssocs(contextNodeRef, searchTypeQNames) but enables paging features, including max items, sorting etc (with permissions per-applied)
-    private CannedQueryResults<NodeRef> listImpl(NodeRef contextNodeRef, Set<QName> searchTypeQNames, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
+    private CannedQueryResults<NodeRef> listImpl(NodeRef contextNodeRef, String pattern, Set<QName> searchTypeQNames, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
     {
         Long start = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
         
         // get canned query
         GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_FILEFOLDER_LIST);
         
-        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(contextNodeRef, searchTypeQNames, null, sortProps, pagingRequest);
+        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(contextNodeRef, pattern, searchTypeQNames, null, sortProps, pagingRequest);
         
         // execute canned query
         CannedQueryResults<NodeRef> results = cq.execute();
@@ -452,6 +478,33 @@ public class FileFolderServiceImpl implements FileFolderService
         
         return results;
     }
+    
+//    private CannedQueryResults<NodeRef> listImpl(NodeRef contextNodeRef, String pattern, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
+//    {
+//        Long start = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
+//        
+//        // get canned query
+//        GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_FILEFOLDER_LIST);
+//        
+//        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(contextNodeRef, null, pattern, null, sortProps, pagingRequest);
+//        
+//        // execute canned query
+//        CannedQueryResults<NodeRef> results = cq.execute();
+//        
+//        if (start != null)
+//        {
+//            int cnt = results.getPagedResultCount();
+//            int skipCount = pagingRequest.getSkipCount();
+//            int maxItems = pagingRequest.getMaxItems();
+//            boolean hasMoreItems = results.hasMoreItems();
+//            Pair<Integer, Integer> totalCount = (pagingRequest.getRequestTotalCountMax() > 0 ? results.getTotalResultCount() : null);
+//            int pageNum = (skipCount / maxItems) + 1;
+//            
+//            logger.debug("List: "+cnt+" items in "+(System.currentTimeMillis()-start)+" msecs [pageNum="+pageNum+",skip="+skipCount+",max="+maxItems+",hasMorePages="+hasMoreItems+",totalCount="+totalCount+",parentNodeRef="+contextNodeRef+"]");
+//        }
+//        
+//        return results;
+//    }
     
     public List<FileInfo> listFiles(NodeRef contextNodeRef)
     {

@@ -218,7 +218,7 @@ public class FileFolderServiceImplTest extends TestCase
         // sanity checks only (see also GetChildrenCannedQueryTest)
         
         PagingRequest pagingRequest = new PagingRequest(100, null);
-        PagingResults<FileInfo> pagingResults = fileFolderService.list(workingRootNodeRef, true, true, null, null, pagingRequest);
+        PagingResults<FileInfo> pagingResults = fileFolderService.list(workingRootNodeRef, true, true, null, null, null, pagingRequest);
         
         assertNotNull(pagingResults);
         assertFalse(pagingResults.hasMoreItems());
@@ -235,7 +235,7 @@ public class FileFolderServiceImplTest extends TestCase
         
         // empty list if skip count greater than number of results (ALF-7884)
         pagingRequest = new PagingRequest(1000, 3, null);
-        pagingResults = fileFolderService.list(workingRootNodeRef, true, true, null, null, pagingRequest);
+        pagingResults = fileFolderService.list(workingRootNodeRef, true, true, null, null, null, pagingRequest);
         
         assertNotNull(pagingResults);
         assertFalse(pagingResults.hasMoreItems());
@@ -899,9 +899,17 @@ public class FileFolderServiceImplTest extends TestCase
      */
     public void testGetType() throws Exception
     {
-        I18NUtil.setContentLocale(Locale.CANADA);
-        FileFolderServiceType type = fileFolderService.getType(ContentModel.TYPE_FOLDER);
-        assertEquals("Type incorrect for folder", FileFolderServiceType.FOLDER, type);
+    	Locale savedLocale = I18NUtil.getContentLocaleOrNull();
+    	try
+    	{
+	        I18NUtil.setContentLocale(Locale.CANADA);
+	        FileFolderServiceType type = fileFolderService.getType(ContentModel.TYPE_FOLDER);
+	        assertEquals("Type incorrect for folder", FileFolderServiceType.FOLDER, type);
+    	}
+    	finally
+    	{
+            I18NUtil.setContentLocale(savedLocale);
+    	}
     }
     
     public void testETHREEOH_3088_MoveIntoSelf() throws Exception
@@ -1129,5 +1137,56 @@ public class FileFolderServiceImplTest extends TestCase
         assertEquals("cm:modified should not have changed (level too high)",
                 modifiedTooHigh,
                 nodeService.getProperty(workingRootNodeRef, ContentModel.PROP_MODIFIED));
-    }	
+    }
+    
+    public void testPatterns()
+    {
+        // sanity checks only (see also GetChildrenCannedQueryTest)
+        
+    	I18NUtil.setContentLocale(Locale.CANADA);
+
+        // test 1
+        PagingRequest pagingRequest = new PagingRequest(100, null);
+        PagingResults<FileInfo> pagingResults = fileFolderService.list(workingRootNodeRef, true, true, "L0%", null, null, pagingRequest);
+        
+        assertNotNull(pagingResults);
+        assertFalse(pagingResults.hasMoreItems());
+        assertNull(pagingResults.getTotalResultCount());
+        
+        List<FileInfo> files = pagingResults.getPage();
+        
+        // check
+        String[] expectedNames = new String[]
+        { NAME_L0_FILE_A, NAME_L0_FILE_B, NAME_L0_FOLDER_A, NAME_L0_FOLDER_B, NAME_L0_FOLDER_C };
+        checkFileList(files, 2, 3, expectedNames);
+       
+        // test 2
+        pagingResults = fileFolderService.list(workingRootNodeRef, true, true, "L1%", null, null, pagingRequest);
+        
+        assertNotNull(pagingResults);
+        assertFalse(pagingResults.hasMoreItems());
+        assertNull(pagingResults.getTotalResultCount());
+        
+        files = pagingResults.getPage();
+        
+        // check
+        expectedNames = new String[]
+        { };
+        checkFileList(files, 0, 0, expectedNames);
+
+        // test 3
+        pagingResults = fileFolderService.list(workingRootNodeRef, true, true, "L0%File%", null, null, pagingRequest);
+        
+        assertNotNull(pagingResults);
+        assertFalse(pagingResults.hasMoreItems());
+        assertNull(pagingResults.getTotalResultCount());
+        
+        files = pagingResults.getPage();
+        
+        // check
+        expectedNames = new String[]
+        { NAME_L0_FILE_A, NAME_L0_FILE_B };
+        checkFileList(files, 2, 0, expectedNames);
+
+    }
 }

@@ -892,7 +892,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         final String cQBeanName = "siteGetChildrenCannedQueryFactory";
         GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject(cQBeanName);
         
-        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(getSiteRoot(), searchTypeQNames,
+        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(getSiteRoot(), null, searchTypeQNames,
                                                                                                          filterProps, sortProps, pagingRequest);
         
         // execute canned query

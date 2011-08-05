@@ -233,7 +233,7 @@ public class ContentDiskDriverTest extends TestCase
         int openAction = FileAction.CreateNotExist;
         
 
-        final String FILE_NAME="testCreateFile.new";
+        final String FILE_NAME="testCreateFileA.new";
         final String FILE_PATH="\\"+FILE_NAME;
                   
         FileOpenParams params = new FileOpenParams(FILE_PATH, openAction, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
@@ -248,7 +248,7 @@ public class ContentDiskDriverTest extends TestCase
             public Void execute() throws Throwable
             {
                 byte[] stuff = "Hello World".getBytes();
-                driver.writeFile(testSession, testConnection, file, stuff, stuff.length, 0, 0);
+                driver.writeFile(testSession, testConnection, file, stuff, 0, stuff.length, 0);
                 driver.closeFile(testSession, testConnection, file); 
                 return null;
             }
@@ -3011,6 +3011,127 @@ public class ContentDiskDriverTest extends TestCase
         tran.doInTransaction(validateCB, false, true);
                 
     } // testOpenCloseFileScenario
+
+    
+    
+    /**
+     * Unit test of open read/write close versionable file - should not do anything.
+     * <p>
+     * This is done with a CIFS shuffle from word.  Basically Word holds the file open with a read/write lock while the 
+     * shuffle is going on.
+     * <p>
+     * Create a file.
+     * Apply versionable aspect
+     * Open the file ReadWrite + OpLocks
+     * Close the file
+     * Check Version has not incremented.
+     */
+    public void testOpenCloseVersionableFile() throws Exception
+    {  
+        logger.debug("testOpenCloseVersionableFile");
+        
+        ServerConfiguration scfg = new ServerConfiguration("testServer");
+        TestServer testServer = new TestServer("testServer", scfg);
+        SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
+        DiskSharedDevice share = getDiskSharedDevice();
+        final TreeConnection testConnection = testServer.getTreeConnection(share);
+        
+        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
+
+        final String FILE_PATH1=TEST_ROOT_DOS_PATH + "\\OpenCloseFile.new";
+        
+        class TestContext
+        {
+        };
+        
+        final TestContext testContext = new TestContext();
+   
+        FileOpenParams dirParams = new FileOpenParams(TEST_ROOT_DOS_PATH, 0, AccessMode.ReadOnly, FileAttribute.NTDirectory, 0);
+        driver.createDirectory(testSession, testConnection, dirParams);
+
+        FileOpenParams params1 = new FileOpenParams(FILE_PATH1, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+        NetworkFile file1 = driver.createFile(testSession, testConnection, params1);
+        driver.closeFile(testSession, testConnection, file1);
+        
+        /**
+         * Make Node 1 versionable
+         */   
+        RetryingTransactionCallback<Void> makeVersionableCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                NodeRef file1NodeRef = getNodeForPath(testConnection, FILE_PATH1);
+                nodeService.addAspect(file1NodeRef, ContentModel.ASPECT_VERSIONABLE, null);
+                
+                ContentWriter contentWriter2 = contentService.getWriter(file1NodeRef, ContentModel.PROP_CONTENT, true);
+                contentWriter2.putContent("test open close versionable node");
+                
+                return null;
+            }
+        };
+        tran.doInTransaction(makeVersionableCB, false, true);
+        
+        
+        RetryingTransactionCallback<String> readVersionCB = new RetryingTransactionCallback<String>() {
+
+            @Override
+            public String execute() throws Throwable
+            {
+                NodeRef shuffledNodeRef = getNodeForPath(testConnection, FILE_PATH1);
+                
+                Map<QName,Serializable> props = nodeService.getProperties(shuffledNodeRef);
+                
+                assertTrue("versionable aspect not present", nodeService.hasAspect(shuffledNodeRef, ContentModel.ASPECT_VERSIONABLE));
+                props.get(ContentModel.PROP_VERSION_LABEL);
+
+
+                return (String)props.get(ContentModel.PROP_VERSION_LABEL);
+            }
+        };
+        
+        String version = tran.doInTransaction(readVersionCB, false, true);
+  
+        /**
+         * Step 1: Open The file Read/Write 
+         * TODO Check primary assoc, peer assocs, child assocs, modified date, created date, nodeid, permissions.
+         */
+        NetworkFile file = driver.openFile(testSession, testConnection, params1);
+
+        assertNotNull( "file is null", file);
+        
+        /**
+         * Step 2: Close the file
+         */
+        driver.closeFile(testSession, testConnection, file);
+        
+        /**
+         * Validate that there is no version increment.
+         */
+        String version2 = tran.doInTransaction(readVersionCB, false, true);
+       
+        assertEquals("version has incremented", version, version2);
+        
+        /**
+         * Now do an update and check the version increments
+         */
+        file = driver.openFile(testSession, testConnection, params1);
+
+        assertNotNull( "file is null", file);
+        
+        byte[] stuff = "Hello World".getBytes();
+        driver.writeFile(testSession, testConnection, file, stuff, 0, stuff.length, 0);
+        
+        /**
+         * Step 2: Close the file
+         */
+        driver.closeFile(testSession, testConnection, file);
+        
+        String version3 = tran.doInTransaction(readVersionCB, false, true);
+        
+        assertFalse("version not incremented", version.equals(version3));
+         
+    } // OpenCloseVersionableFile
 
     
     /**

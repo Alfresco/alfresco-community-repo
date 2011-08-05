@@ -1336,17 +1336,32 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         
         try
         {
-            // get the device root
-
-            NodeRef deviceRootNodeRef = ctx.getRootNode();
-
+            NodeRef dirNodeRef;
+            String folderName;
+            
             String path = params.getPath();
-            String parentPath = null;
 
-            // If the state table is available then try to find the parent folder node for the new folder
-            // to save having to walk the path
+            String[] paths = FileName.splitPath(path);
+            
+            if (paths[0] != null && paths[0].length() > 1)
+            {  
+                // lookup parent directory
+                dirNodeRef = getNodeForPath(tree, paths[0]);
+                folderName = paths[1];
+            }
+            else
+            {
+                dirNodeRef =  ctx.getRootNode();
+                folderName = path;  
+            }
+            
+            if(dirNodeRef == null)
+            {
+                throw new IOException("Create directory parent folder not found" + params.getFullPath());
+            }
+            
+            NodeRef nodeRef = getCifsHelper().createNode(dirNodeRef, folderName, ContentModel.TYPE_FOLDER);
 
-            NodeRef nodeRef = getCifsHelper().createNode(deviceRootNodeRef, path, ContentModel.TYPE_FOLDER);
                 
             if (logger.isDebugEnabled())
             {
@@ -2037,14 +2052,13 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         
         if (logger.isDebugEnabled())
         {
-            logger.debug("truncateFile file=" + file);
+            logger.debug("truncateFile file:" + file + ", size: "+ size);
         }
         
         long allocSize   = 0L;
         long releaseSize = 0L;
         
         //  Check if there is a quota manager
-
         QuotaManager quotaMgr = ctx.getQuotaManager();
               
         if ( ctx.hasQuotaManager()) {
@@ -2058,6 +2072,10 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 {
                     contentFile.openContent( false, false);
                 }
+            }
+            else if( file instanceof TempNetworkFile)
+            {
+                
             }
             else
             {
@@ -2079,10 +2097,9 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             else 
             {
             
-              //  Calculate the space to be released as the file is to be truncated, release the space if
-              //  the file truncation is successful
-            
-              releaseSize = file.getFileSize() - size;
+                //  Calculate the space to be released as the file is to be truncated, release the space if
+                //  the file truncation is successful
+                releaseSize = file.getFileSize() - size;
             }
         }
         
@@ -2091,11 +2108,22 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         if ( file instanceof ContentNetworkFile) {
             
             // Get the cached state for the file
-        
             ContentNetworkFile contentFile = (ContentNetworkFile) file;
             FileState fstate = contentFile.getFileState();
             if ( fstate != null && size > fstate.getAllocationSize())
-                fstate.setAllocationSize( size);
+            {
+                fstate.setAllocationSize(size);
+            }
+        }
+        
+        if( file instanceof TempNetworkFile)
+        {
+            TempNetworkFile contentFile = (TempNetworkFile) file;
+            FileState fstate = contentFile.getFileState();
+            if ( fstate != null && size > fstate.getAllocationSize())
+            {
+                fstate.setAllocationSize(size);
+            }            
         }
         
         //  Set the file length
@@ -2106,14 +2134,14 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         }
         catch (IOException ex) 
         {
-          
             //  Check if we allocated space to the file
           
             if ( allocSize > 0 && quotaMgr != null)
+            {
                 quotaMgr.releaseSpace(sess, tree, file.getFileId(), null, allocSize);
+            }
 
-            //  Rethrow the exception
-          
+            //  Rethrow the exception 
             throw ex;       
         }
         
@@ -2303,14 +2331,8 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
      */
     private NodeRef getNodeForPath(TreeConnection tree, String path)
         throws FileNotFoundException
-    {
-        if(logger.isDebugEnabled())
-        {
-            logger.debug("getNodeRefForPath:" + path);
-        }
-       
-        ContentContext ctx = (ContentContext) tree.getContext();
-        
+    {   
+        ContentContext ctx = (ContentContext) tree.getContext();   
         return getCifsHelper().getNodeRef(ctx.getRootNode(), path);
     }
     
@@ -3156,11 +3178,24 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         
         try
         {
-            // Get the device root
-
-            NodeRef deviceRootNodeRef = rootNode;
-                    
-            NodeRef nodeRef = cifsHelper.createNode(deviceRootNodeRef, path, ContentModel.TYPE_CONTENT);
+            NodeRef dirNodeRef;
+            String folderName;
+            
+            String[] paths = FileName.splitPath(path);
+            
+            if (paths[0] != null && paths[0].length() > 1)
+            {  
+                // lookup parent directory
+                dirNodeRef = getNodeForPath(rootNode, paths[0]);
+                folderName = paths[1];
+            }
+            else
+            {
+                dirNodeRef =  rootNode;
+                folderName = path;  
+            }
+                             
+            NodeRef nodeRef = cifsHelper.createNode(dirNodeRef, folderName, ContentModel.TYPE_CONTENT);
 
             nodeService.addAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT, null);
                         
@@ -3302,44 +3337,48 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             
             TempNetworkFile tempFile =(TempNetworkFile)file;
             
-            tempFile.flushFile();
-            tempFile.close();
-            
-            // Take an initial guess at the mimetype (if it has not been set by something already)
-            String mimetype = mimetypeService.guessMimetype(tempFile.getFullName(), new FileContentReader(tempFile.getFile()));
-            logger.debug("guesssed mimetype:" + mimetype);
-            
-            String encoding;
-            // Take a guess at the locale
-            InputStream is = new BufferedInputStream(new FileInputStream(tempFile.getFile()));
-            try
+            if(tempFile.getWriteCount() > 0) 
             {
-                ContentCharsetFinder charsetFinder = mimetypeService.getContentCharsetFinder();
-                Charset charset = charsetFinder.getCharset(is, mimetype);
-                encoding = charset.name();
-            }
-            finally
-            {
-                if(is != null)
+                // Some content was written to the temp file.
+                tempFile.flushFile();
+                tempFile.close();
+            
+                // Take an initial guess at the mimetype (if it has not been set by something already)
+                String mimetype = mimetypeService.guessMimetype(tempFile.getFullName(), new FileContentReader(tempFile.getFile()));
+                logger.debug("guesssed mimetype:" + mimetype);
+            
+                String encoding;
+                // Take a guess at the locale
+                InputStream is = new BufferedInputStream(new FileInputStream(tempFile.getFile()));
+                try
                 {
-                    is.close();
+                    ContentCharsetFinder charsetFinder = mimetypeService.getContentCharsetFinder();
+                    Charset charset = charsetFinder.getCharset(is, mimetype);
+                    encoding = charset.name();
                 }
-            }
+                finally
+                {
+                    if(is != null)
+                    {
+                        is.close();
+                    }
+                }
      
-            NodeRef target = getCifsHelper().getNodeRef(rootNode, tempFile.getFullName());
-            ContentWriter writer = contentService.getWriter(target, ContentModel.PROP_CONTENT, true);
-            writer.setMimetype(mimetype);
-            writer.setEncoding(encoding);
-            writer.putContent(tempFile.getFile());
+                NodeRef target = getCifsHelper().getNodeRef(rootNode, tempFile.getFullName());
+                ContentWriter writer = contentService.getWriter(target, ContentModel.PROP_CONTENT, true);
+                writer.setMimetype(mimetype);
+                writer.setEncoding(encoding);
+                writer.putContent(tempFile.getFile());
             
-            long size = writer.getSize();
-            if(nodeService.hasAspect(target, ContentModel.ASPECT_NO_CONTENT) && size > 0)
-            {
-                if(logger.isDebugEnabled())
+                long size = writer.getSize();
+                if(nodeService.hasAspect(target, ContentModel.ASPECT_NO_CONTENT) && size > 0)
                 {
-                    logger.debug("removed no content aspect");
+                    if(logger.isDebugEnabled())
+                    {
+                        logger.debug("removed no content aspect");
+                    }
+                    nodeService.removeAspect(target, ContentModel.ASPECT_NO_CONTENT);
                 }
-                nodeService.removeAspect(target, ContentModel.ASPECT_NO_CONTENT);
             }
         }
         
@@ -3362,20 +3401,19 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 }
             }
         }
-        // Make sure we clean up before propagating exceptions
         catch (IOException e)
         {
             if ( logger.isDebugEnabled())
             {   
-                logger.debug("Exception in closeFile - ", e);
+                logger.debug("Exception in closeFile - path:" + path, e);
             }
-            throw e;
+            throw new IOException("Unable to closeFile :" + path + e.toString(), e);
         }
         catch (Error e)
         {
             if ( logger.isDebugEnabled())
             {   
-                logger.debug("Exception in closeFile - ", e);
+                logger.debug("Exception in closeFile - path:" + path, e);
             }
             
             throw e;

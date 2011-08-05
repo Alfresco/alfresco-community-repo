@@ -142,8 +142,9 @@ public class ContentQuotaManager implements QuotaManager, Runnable {
 	    
 	    UserQuotaDetails userQuota = getQuotaDetails(sess, true);
 	    if ( userQuota != null)
+	    {
 	        return userQuota.getAvailableSpace();
-	    
+	    }
 	    // No quota details available
 	    
 		return 0L;
@@ -268,22 +269,22 @@ public class ContentQuotaManager implements QuotaManager, Runnable {
      * @exception QuotaManagerException
      */
 	public void startManager(DiskInterface disk, DiskDeviceContext ctx)
-		throws QuotaManagerException {
+		throws QuotaManagerException 
+	{
 
+	    if(logger.isDebugEnabled())
+	    {
+	        logger.debug("Start Quota Manager");
+	    }
+	    
 	    // Save the filesystem driver details
 	    m_filesys = disk;
-	    
-//	    if ( disk instanceof ContentDiskDriver)
-//	        m_filesys = (ContentDiskDriver) disk;
-//	    else
-//	        throw new QuotaManagerException("Invalid filesystem type, " + disk.getClass().getName());
 	    
 	    // Allocate the live usage table
 	    
 	    m_liveUsage = new HashMap<String, UserQuotaDetails>();
 	    
-        // Create the inactivity checker thread
-        
+        // Create the inactivity checker thread        
         m_thread = new Thread(this);
         m_thread.setDaemon(true);
         m_thread.setName("ContentQuotaManagerChecker");
@@ -298,7 +299,13 @@ public class ContentQuotaManager implements QuotaManager, Runnable {
      * @exception QuotaManagerException
      */
 	public void stopManager(DiskInterface disk, DiskDeviceContext ctx)
-		throws QuotaManagerException {
+		throws QuotaManagerException 
+    {
+	    
+	    if(logger.isDebugEnabled())
+	    {
+	        logger.debug("Stop Quota Manager");
+	    }
 
 	    // Clear out the live usage details
 	    
@@ -315,26 +322,34 @@ public class ContentQuotaManager implements QuotaManager, Runnable {
 	 * 
 	 * @param sess SrvSession
 	 * @param loadDetails boolean
-	 * @return UserQuotaDetails
+	 * @return UserQuotaDetails or null
 	 */
 	private UserQuotaDetails getQuotaDetails(SrvSession sess, boolean loadDetails) {
 	    
         UserQuotaDetails userQuota = null;
-        if ( sess != null && sess.hasClientInformation()) {
-            
+        
+        String userName = AuthenticationUtil.getFullyAuthenticatedUser();
+        
+        if ( sess != null && userName != null) 
+        {        
             // Get the live usage values
 
-            userQuota = m_liveUsage.get( AuthenticationUtil.getFullyAuthenticatedUser() );
-            if ( userQuota == null && loadDetails == true) {
-                
+            userQuota = m_liveUsage.get(userName);
+            
+            if ( userQuota == null && loadDetails == true) 
+            {
                 // User is not in the live tracking table, load details for the user
-                
-                try {
-                    userQuota = loadUsageDetails( sess);
+                try 
+                {
+                    logger.debug("user is not in cache - load details");
+                    userQuota = loadUsageDetails(userName);
                 }
-                catch ( QuotaManagerException ex) {
+                catch ( QuotaManagerException ex) 
+                {
                     if ( logger.isDebugEnabled())
-                        logger.debug( ex);
+                    {
+                        logger.debug("Unable to load usage details", ex);
+                    }
                 }
             }
         }
@@ -347,33 +362,25 @@ public class ContentQuotaManager implements QuotaManager, Runnable {
 	/**
 	 * Load the user quota details
 	 * 
-	 * @param sess SrvSession
+	 * @param user - name of the user.
 	 * @return UserQuotaDetails
 	 * @throws QuotaManagerException
 	 */
-	private UserQuotaDetails loadUsageDetails(SrvSession sess)
+	private UserQuotaDetails loadUsageDetails(String userName)
 	    throws QuotaManagerException {
 	    
 	    // Check if the user name is available
 	    
-	    if ( sess == null || sess.hasClientInformation() == false)
-	        throw new QuotaManagerException("No session/client information");
-	    
 	    UserQuotaDetails quotaDetails = null;
-	    String userName = null;
-	    
-	    try {
-	        
-	        // Get the user name
-	        
-	        userName = AuthenticationUtil.getFullyAuthenticatedUser();
+   
+	    try 
+	    {
 	        if ( userName == null || userName.length() == 0)
+	        {
+	            logger.debug("user name is null or empty - throw QuotaManagerException");
 	            throw new QuotaManagerException("No user name for client");
-	        
-	        // Start a transaction
-	        
-//	        m_filesys.beginReadTransaction(sess);
-	        
+	        }
+	        	        
 	        // Get the usage quota and current usage values for the user
 	        
 	        long userQuota = m_usageService.getUserQuota( userName);
@@ -383,7 +390,9 @@ public class ContentQuotaManager implements QuotaManager, Runnable {
 	        
 	        quotaDetails = new UserQuotaDetails( userName, userQuota);
 	        if ( userUsage > 0L)
+	        {
 	            quotaDetails.setCurrentUsage( userUsage);
+	        }
 	        
 	        // Add the details to the live tracking table
 	        
@@ -393,23 +402,31 @@ public class ContentQuotaManager implements QuotaManager, Runnable {
 	            
 	            UserQuotaDetails details = m_liveUsage.get( userName);
 	            if ( details != null)
+	            {
 	                quotaDetails = details;
+	            }
 	            else
+	            {
 	                m_liveUsage.put( userName, quotaDetails);
+	            }
             }
 	        
 	        // DEBUG
 	        
 	        if ( logger.isDebugEnabled())
+	        {
 	            logger.debug( "Added live usage tracking " + quotaDetails);
+	        }
 	    }
-	    catch ( Exception ex) {
+	    catch ( Exception ex) 
+	    {
 
 	        // Log the error
 	        
-	        if ( logger.isErrorEnabled())
-	            logger.error( ex);
-	        
+	        if ( logger.isDebugEnabled())
+	        {
+	            logger.debug("Failed to load usage for" + userName, ex);
+	        }
 	        // Failed to load usage details
 	        
 	        throw new QuotaManagerException("Failed to load usage for " + userName + ", " + ex);
@@ -493,7 +510,8 @@ public class ContentQuotaManager implements QuotaManager, Runnable {
                     
                     // Remove inactive records from the live quota tracking
                     
-                    while ( removeNameList.numberOfStrings() > 0) {
+                    while ( removeNameList.numberOfStrings() > 0) 
+                    {
                         
                         // Get the current user name and remove the record
                         

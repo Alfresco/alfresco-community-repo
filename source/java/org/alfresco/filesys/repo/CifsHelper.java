@@ -515,6 +515,9 @@ public class CifsHelper
     
     /**
      * Attempts to fetch a specific single node at the given path.
+     * <p>
+     * The path may contain wild cards
+     * <p>
      * 
      * @throws FileNotFoundException if the path can't be resolved to a node
      * 

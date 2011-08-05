@@ -156,7 +156,7 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
     {
         if(logger.isDebugEnabled())
         {
-            logger.debug("closeFile");
+            logger.debug("closeFile:" + param.getFullName());
         }
         
         ContentContext tctx = (ContentContext) tree.getContext();
@@ -208,7 +208,42 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
     {
         if(logger.isDebugEnabled())
         {
-            logger.debug("createFile");
+          
+                int sharedAccess = params.getSharedAccess();
+                String strSharedAccess = "none"; 
+                
+                switch(sharedAccess)
+                {
+                    case SharingMode.NOSHARING:
+                        strSharedAccess = "nosharing"; 
+                        break;
+                    case SharingMode.READ: 
+                        strSharedAccess = "read"; 
+                        break;
+                    case SharingMode.WRITE:
+                        strSharedAccess = "write"; 
+                        break;
+                    case SharingMode.READWRITE: 
+                        strSharedAccess = "read-write"; 
+                        break;
+                    case SharingMode.DELETE: 
+                        strSharedAccess = "delete"; 
+                        break;
+                }
+                
+            logger.debug("createFile:" + params.getPath() 
+                    + ", isDirectory: " + params.isDirectory()
+                    + ", isStream: " + params.isStream()
+                    + ", readOnlyAccess: " + params.isReadOnlyAccess()
+                    + ", readWriteAccess: " + params.isReadWriteAccess()
+                    + ", writeOnlyAccess:" +params.isWriteOnlyAccess()
+                    + ", attributesOnlyAccess:" +params.isAttributesOnlyAccess()
+                    + ", sequentialAccessOnly:" + params.isSequentialAccessOnly()
+                    + ", requestBatchOpLock:" +params.requestBatchOpLock()
+                    + ", requestExclusiveOpLock:" +params.requestExclusiveOpLock()  
+                    + ", isDeleteOnClose:" +params.isDeleteOnClose()
+                    + ", sharedAccess: " + strSharedAccess
+                    + " allocationSize: " + params.getAllocationSize());
         }
         
         ContentContext tctx = (ContentContext) tree.getContext();

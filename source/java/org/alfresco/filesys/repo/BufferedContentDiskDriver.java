@@ -47,10 +47,8 @@ import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -160,8 +158,9 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
     public FileInfo getFileInformation(SrvSession sess, TreeConnection tree,
             String path) throws IOException
     {
-        String userName = sess.getClientInformation().getUserName();
-
+               
+        String userName = AuthenticationUtil.getFullyAuthenticatedUser();
+       
         if(logger.isDebugEnabled())
         {
             logger.debug("getFileInformation userName:" + userName + ", path:" + path);
@@ -208,8 +207,9 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
     @Override
     public int fileExists(SrvSession sess, TreeConnection tree, String path)
     {
-        String userName = sess.getClientInformation().getUserName();
-
+       
+        String userName = AuthenticationUtil.getFullyAuthenticatedUser();
+        
         if(logger.isDebugEnabled())
         {
             logger.debug("fileExists userName:" + userName + ", path:" + path);

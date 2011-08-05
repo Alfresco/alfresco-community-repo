@@ -128,6 +128,12 @@ class ScenarioOpenFileInstance implements ScenarioInstance
         if(operation instanceof DeleteFileOperation)
         {
             DeleteFileOperation d = (DeleteFileOperation)operation;
+            
+            if(d.getName() == null)
+            {
+                return null;
+            }
+            
             if(name.equalsIgnoreCase(d.getName()))
             {
                 logger.debug("Anti-Pattern - delete of the open file, scenario:" + this);
@@ -169,6 +175,12 @@ class ScenarioOpenFileInstance implements ScenarioInstance
                 if(operation instanceof CloseFileOperation)
                 {
                     CloseFileOperation c = (CloseFileOperation)operation;
+                    
+                    if(c.getName() == null)
+                    {
+                        return null;
+                    }
+                    
                     if(name.equalsIgnoreCase(c.getName()))
                     {
                         NetworkFile file = c.getNetworkFile();
@@ -278,6 +290,11 @@ class ScenarioOpenFileInstance implements ScenarioInstance
                 else if(operation instanceof OpenFileOperation)
                 {
                     OpenFileOperation o = (OpenFileOperation)operation;
+                    
+                    if(o.getName() == null)
+                    {
+                        return null;
+                    }
                     
                     if(name.equalsIgnoreCase(o.getName()))
                     {
@@ -413,5 +430,7 @@ class ScenarioOpenFileInstance implements ScenarioInstance
             }   
         };
     }
+    
+
 }
 

@@ -127,6 +127,13 @@ public class WikiServiceImpl implements WikiService
              siteService, transactionService, taggingService);
     }
     
+    private String buildName(String title)
+    {
+       // The name is based on the title, but with underscores
+       String name = title.replace(' ', '_');
+       return name;
+    }
+    
     private WikiPageInfo buildPage(NodeRef nodeRef, NodeRef container, String name, String preLoadedContents)
     {
        WikiPageInfoImpl page = new WikiPageInfoImpl(nodeRef, container, name);
@@ -188,16 +195,19 @@ public class WikiServiceImpl implements WikiService
        // Grab the location to store in
        NodeRef container = getSiteWikiContainer(siteShortName, true);
        
+       // Build the name
+       String name = buildName(title);
+       
        // Get the properties for the node
        Map<QName, Serializable> props = new HashMap<QName, Serializable>();
-       props.put(ContentModel.PROP_NAME,  title);
+       props.put(ContentModel.PROP_NAME,  name);
        props.put(ContentModel.PROP_TITLE, title);
        
        // Build the node
        NodeRef nodeRef = nodeService.createNode(
              container,
              ContentModel.ASSOC_CONTAINS,
-             QName.createQName(title),
+             QName.createQName(name),
              ContentModel.TYPE_CONTENT,
              props
        ).getChildRef();
@@ -209,7 +219,7 @@ public class WikiServiceImpl implements WikiService
              
        // Generate the wrapping object for it
        // Build it that way, so creator and created date come through
-       return buildPage(nodeRef, container, title, content);
+       return buildPage(nodeRef, container, name, content);
     }
 
     @Override
@@ -222,21 +232,22 @@ public class WikiServiceImpl implements WikiService
        }
        
        NodeRef nodeRef = page.getNodeRef();
+       String nodeName = buildName(page.getTitle());
        
        // Handle the rename case
        boolean renamed = false;
-       if(! nodeService.getProperty(nodeRef, ContentModel.PROP_NAME).equals(page.getTitle()))
+       if(! nodeService.getProperty(nodeRef, ContentModel.PROP_TITLE).equals(page.getTitle()))
        {
           try
           {
-             fileFolderService.rename(nodeRef, page.getTitle());
+             fileFolderService.rename(nodeRef, nodeName);
              renamed = true;
           }
           catch(FileNotFoundException e)
           {
              throw new AlfrescoRuntimeException("Invalid node state - wiki page no longer found");
           }
-          nodeService.setProperty(nodeRef, ContentModel.PROP_NAME,  page.getTitle());
+          nodeService.setProperty(nodeRef, ContentModel.PROP_NAME,  nodeName);
           nodeService.setProperty(nodeRef, ContentModel.PROP_TITLE, page.getTitle());
        }
        
@@ -251,7 +262,7 @@ public class WikiServiceImpl implements WikiService
        // If we re-named, re-create the object
        if(renamed)
        {
-          page = buildPage(nodeRef, page.getContainerNodeRef(), page.getTitle(), page.getContents());
+          page = buildPage(nodeRef, page.getContainerNodeRef(), nodeName, page.getContents());
        }
        
        // All done

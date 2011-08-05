@@ -186,6 +186,7 @@ public class WikiServiceImplTest
        page = WIKI_SERVICE.createWikiPage(
              WIKI_SITE.getShortName(), "Title", "This Is Some Content"
        );
+       testNodesToTidy.add(page.getNodeRef());
        
        
        // Check it
@@ -201,11 +202,13 @@ public class WikiServiceImplTest
        page.setContents("This is new content");
        
        page = WIKI_SERVICE.updateWikiPage(page);
+       assertEquals("New_Title", page.getSystemName()); // Name has underscores
+       assertEquals("New Title", page.getTitle());
        
        
        // Fetch, and check
        page = WIKI_SERVICE.getWikiPage(WIKI_SITE.getShortName(), page.getSystemName());
-       assertEquals("New Title", page.getSystemName());
+       assertEquals("New_Title", page.getSystemName()); // Name has underscores
        assertEquals("New Title", page.getTitle());
        assertEquals("This is new content", page.getContents());
        assertEquals(TEST_USER, page.getCreator());
@@ -217,6 +220,46 @@ public class WikiServiceImplTest
        
        // Check it went
        assertEquals(null, WIKI_SERVICE.getWikiPage(WIKI_SITE.getShortName(), page.getSystemName()));
+       
+       
+       // Create a new node with spaces in title
+       page = WIKI_SERVICE.createWikiPage(
+             WIKI_SITE.getShortName(), "Title Space", "This Is Some Content"
+       );
+       testNodesToTidy.add(page.getNodeRef());
+       
+       // Check it
+       assertEquals("Title_Space", page.getSystemName());
+       assertEquals("Title Space", page.getTitle());
+       assertEquals("This Is Some Content", page.getContents());
+       assertEquals(TEST_USER, page.getCreator());
+       assertEquals(0, page.getTags().size());
+
+       
+       // Edit it without renaming
+       page.setContents("Changed contents");
+       page = WIKI_SERVICE.updateWikiPage(page);
+       
+       // Check
+       page = WIKI_SERVICE.getWikiPage(WIKI_SITE.getShortName(), page.getSystemName());
+       assertEquals("Title_Space", page.getSystemName());
+       assertEquals("Title Space", page.getTitle());
+       assertEquals("Changed contents", page.getContents());
+       assertEquals(TEST_USER, page.getCreator());
+       assertEquals(0, page.getTags().size());
+       
+       
+       // Now edit with renaming
+       page.setTitle("Alternate Title");
+       page = WIKI_SERVICE.updateWikiPage(page);
+       
+       // Check
+       page = WIKI_SERVICE.getWikiPage(WIKI_SITE.getShortName(), page.getSystemName());
+       assertEquals("Alternate_Title", page.getSystemName());
+       assertEquals("Alternate Title", page.getTitle());
+       assertEquals("Changed contents", page.getContents());
+       assertEquals(TEST_USER, page.getCreator());
+       assertEquals(0, page.getTags().size());
     }
     
     /**
@@ -503,7 +546,7 @@ public class WikiServiceImplTest
      * Checks that the correct permission checking occurs on fetching
      *  links listings (which go through canned queries)
      */
-    @Test public void linksListingPermissionsChecking() throws Exception
+    @Test public void pagesListingPermissionsChecking() throws Exception
     {
        PagingRequest paging = new PagingRequest(10);
        PagingResults<WikiPageInfo> results;

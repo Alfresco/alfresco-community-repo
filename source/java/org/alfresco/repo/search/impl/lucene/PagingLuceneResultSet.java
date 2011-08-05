@@ -20,6 +20,7 @@ package org.alfresco.repo.search.impl.lucene;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -33,6 +34,7 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetMetaData;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.util.Pair;
 
 /**
  * @author andyh
@@ -232,5 +234,11 @@ public class PagingLuceneResultSet implements ResultSet, Serializable
     public int getBulkFetchSize()
     {
         return wrapped.getBulkFetchSize();
+    }
+    
+    @Override
+    public List<Pair<String, Integer>> getFieldFacet(String field)
+    {
+        return wrapped.getFieldFacet(field);
     }
 }

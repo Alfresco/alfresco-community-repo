@@ -19,6 +19,8 @@
 package org.alfresco.repo.search.impl.lucene;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -26,6 +28,7 @@ import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.search.SimpleResultSetMetaData;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.PermissionEvaluationMode;
 import org.alfresco.service.cmr.search.ResultSet;
@@ -33,6 +36,7 @@ import org.alfresco.service.cmr.search.ResultSetMetaData;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.util.Pair;
+import org.apache.solr.client.solrj.response.FacetField;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -59,6 +63,8 @@ public class SolrJSONResultSet implements ResultSet
     private Float maxScore;
 
     private SimpleResultSetMetaData resultSetMetaData;
+    
+    private HashMap<String, List<Pair<String, Integer>>> fieldFacets = new HashMap<String, List<Pair<String, Integer>>>(1);
     
     /**
      * Detached result set based on that provided
@@ -95,6 +101,30 @@ public class SolrJSONResultSet implements ResultSet
                 for(Iterator it = doc.keys(); it.hasNext(); /* */)
                 {
                     String key = (String)it.next();
+                }
+            }
+            
+            if(json.has("facet_counts"))
+            {
+                JSONObject facet_counts = json.getJSONObject("facet_counts");
+                if(facet_counts.has("facet_fields"))
+                {
+                    JSONObject facet_fields = facet_counts.getJSONObject("facet_fields");
+                    for(Iterator it = facet_fields.keys(); it.hasNext(); /**/)
+                    {
+                        String fieldName = (String)it.next();
+                        JSONArray facets = facet_fields.getJSONArray(fieldName);
+                        int facetArraySize = facets.length();
+                        ArrayList<Pair<String, Integer>> facetValues = new ArrayList<Pair<String, Integer>>(facetArraySize/2);
+                        for(int i = 0; i < facetArraySize; i+=2)
+                        {
+                            String facetEntryName = facets.getString(i);
+                            Integer facetEntryCount = Integer.parseInt(facets.getString(i+1));
+                            Pair<String, Integer> pair = new Pair<String, Integer>(facetEntryName, facetEntryCount);
+                            facetValues.add(pair);
+                        }
+                        fieldFacets.put(fieldName, facetValues);
+                    }
                 }
             }
             
@@ -147,7 +177,7 @@ public class SolrJSONResultSet implements ResultSet
         Pair<Long, ChildAssociationRef> primaryParentAssoc = nodeDAO.getPrimaryParentAssoc(page.get(n).getFirst());
         if(primaryParentAssoc != null)
         {
-            return nodeDAO.getPrimaryParentAssoc(page.get(n).getFirst()).getSecond();
+            return primaryParentAssoc.getSecond();
         }
         else
         {
@@ -179,7 +209,15 @@ public class SolrJSONResultSet implements ResultSet
     public NodeRef getNodeRef(int n)
     {
         // TODO: lost nodes?
-        return nodeDAO.getNodePair(page.get(n).getFirst()).getSecond();
+        Pair<Long, NodeRef> nodePair = nodeDAO.getNodePair(page.get(n).getFirst());
+        if(nodePair != null)
+        {
+            return nodePair.getSecond();
+        }
+        else
+        {
+            return new NodeRef(new StoreRef("missing", "missing"), "missing");
+        }
     }
 
     /*
@@ -305,5 +343,17 @@ public class SolrJSONResultSet implements ResultSet
         return numberFound;
     }
 
-    
+    @Override
+    public List<Pair<String, Integer>> getFieldFacet(String field)
+    {
+        List<Pair<String, Integer>> answer = fieldFacets.get(field);
+        if(answer != null)
+        {
+            return answer;
+        }
+        else
+        {
+            return Collections.<Pair<String, Integer>>emptyList();
+        }
+    }
 }

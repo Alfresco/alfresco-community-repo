@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.search.SearchParameters.SortDefinition;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 
 /**
  * Sorted results
@@ -342,6 +343,12 @@ public class SortedResultSet implements ResultSet
     public int getBulkFetchSize()
     {
         return resultSet.getBulkFetchSize();
+    }
+    
+    @Override
+    public List<Pair<String, Integer>> getFieldFacet(String field)
+    {
+        return resultSet.getFieldFacet(field);
     }
 
 }

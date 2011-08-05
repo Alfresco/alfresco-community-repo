@@ -31,6 +31,7 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetMetaData;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.util.Pair;
 
 /**
  * An empty result set
@@ -147,5 +148,11 @@ public class EmptyResultSet implements ResultSet
     public boolean hasMore()
     {
         return false;
+    }
+    
+    @Override
+    public List<Pair<String, Integer>> getFieldFacet(String field)
+    {
+        return Collections.<Pair<String, Integer>>emptyList();
     }
 }

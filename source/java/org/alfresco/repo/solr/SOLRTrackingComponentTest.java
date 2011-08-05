@@ -267,7 +267,7 @@ public class SOLRTrackingComponentTest extends TestCase
         NodeMetaDataParameters nodeMetaDataParams = new NodeMetaDataParameters();
         nodeMetaDataParams.setNodeIds(st.getNodeIds());
         MetaDataResultsFilter filter = new MetaDataResultsFilter();
-        filter.setIncludeAssociations(false);
+        filter.setIncludeParentAssociations(false);
         //filter.setIncludePaths(false);
         filter.setIncludeChildAssociations(false);
         getNodeMetaData(nodeMetaDataParams, filter, st);

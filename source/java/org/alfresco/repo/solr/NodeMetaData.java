@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.zip.CRC32;
 
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -43,9 +44,10 @@ public class NodeMetaData
     private Long aclId;
     private Map<QName, Serializable> properties;
     private Set<QName> aspects;
-//    private List<Path> paths;
     private Collection<Pair<Path, QName>> paths;
     private List<ChildAssociationRef> childAssocs;
+    private List<ChildAssociationRef> parentAssocs;
+    private Long parentAssocsCrc;
     
     public String getOwner()
     {
@@ -119,6 +121,23 @@ public class NodeMetaData
     {
         this.childAssocs = childAssocs;
     }
-    
+    /**
+     * @param parentAssocs
+     * @param crc
+     */
+    public void setParentAssocs(List<ChildAssociationRef> parentAssocs, Long parentAssocsCrc)
+    {
+        this.parentAssocs = parentAssocs;
+        this.parentAssocsCrc = parentAssocsCrc;
+        
+    }
+    public List<ChildAssociationRef> getParentAssocs()
+    {
+        return parentAssocs;
+    }
+    public Long getParentAssocsCrc()
+    {
+        return parentAssocsCrc;
+    } 
     
 }

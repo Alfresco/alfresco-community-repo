@@ -219,7 +219,7 @@
         </property>
     </bean>
     
-    <bean id="search.luceneCategoryService" class="org.alfresco.repo.search.impl.lucene.LuceneCategoryServiceImpl">
+    <bean id="search.luceneCategoryService" class="org.alfresco.repo.search.impl.solr.SolrCategoryServiceImpl">
         <property name="nodeService">
             <ref bean="nodeService" />
         </property>

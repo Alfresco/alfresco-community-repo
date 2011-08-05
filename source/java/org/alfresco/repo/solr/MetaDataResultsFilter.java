@@ -32,7 +32,7 @@ public class MetaDataResultsFilter
     private boolean includeAclId = true;
     private boolean includeOwner = true;
     private boolean includePaths = true;
-    private boolean includeAssociations = false;
+    private boolean includeParentAssociations = true;
     private boolean includeChildAssociations = true;
     private boolean includeNodeRef = true;
     
@@ -52,13 +52,13 @@ public class MetaDataResultsFilter
     {
         this.includeNodeRef = includeNodeRef;
     }
-    public boolean getIncludeAssociations()
+    public boolean getIncludeParentAssociations()
     {
-        return includeAssociations;
+        return includeParentAssociations;
     }
-    public void setIncludeAssociations(boolean includeAssociations)
+    public void setIncludeParentAssociations(boolean includeParentAssociations)
     {
-        this.includeAssociations = includeAssociations;
+        this.includeParentAssociations = includeParentAssociations;
     }
     public boolean getIncludeProperties()
     {

@@ -20,6 +20,7 @@ package org.alfresco.opencmis.search;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -37,6 +38,7 @@ import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.ResultSetSPI;
+import org.alfresco.util.Pair;
 
 /**
  * @author andyh
@@ -327,5 +329,11 @@ public class CMISResultSet implements ResultSetSPI<CMISResultSetRow, CMISResultS
     public int getBulkFetchSize()
     {
         return 0;
+    }
+    
+    @Override
+    public List<Pair<String, Integer>> getFieldFacet(String field)
+    {
+        return Collections.<Pair<String, Integer>>emptyList();
     }
 }

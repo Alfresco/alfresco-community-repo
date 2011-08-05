@@ -20,6 +20,7 @@ package org.alfresco.repo.security.permissions.impl.acegi;
 
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -29,6 +30,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetMetaData;
 import org.alfresco.service.cmr.search.ResultSetRow;
+import org.alfresco.util.Pair;
 
 /**
  * Filtering result set to support permission checks
@@ -318,5 +320,11 @@ public class FilteringResultSet extends ACLEntryAfterInvocationProvider implemen
     public int getBulkFetchSize()
     {
         return unfiltered.getBulkFetchSize();
+    }
+    
+    @Override
+    public List<Pair<String, Integer>> getFieldFacet(String field)
+    {
+       return unfiltered.getFieldFacet(field);
     }
 }

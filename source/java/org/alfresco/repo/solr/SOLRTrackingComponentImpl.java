@@ -23,6 +23,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,11 +32,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.zip.CRC32;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.CompiledModel;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.DictionaryDAOImpl;
+import org.alfresco.repo.domain.CrcHelper;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.NodeDAO.ChildAssocRefQueryCallback;
@@ -465,7 +468,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
         boolean includeAspects = (resultFilter == null ? true : resultFilter.getIncludeAspects());
         boolean includePaths = (resultFilter == null ? true : resultFilter.getIncludePaths());
         boolean includeNodeRef = (resultFilter == null ? true : resultFilter.getIncludeNodeRef());
-        boolean includeAssociations = (resultFilter == null ? true : resultFilter.getIncludeAssociations());
+        boolean includeParentAssociations = (resultFilter == null ? true : resultFilter.getIncludeParentAssociations());
         boolean includeChildAssociations = (resultFilter == null ? true : resultFilter.getIncludeChildAssociations());
         boolean includeOwner = (resultFilter == null ? true : resultFilter.getIncludeOwner());
         
@@ -554,7 +557,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                 nodeMetaData.setChildAssocs(childAssocs);
             }
 
-            if(includeAssociations)
+            if(includeParentAssociations)
             {
                 final List<ChildAssociationRef> parentAssocs = new ArrayList<ChildAssociationRef>(100);
                 nodeDAO.getParentAssocs(nodeId, null, null, null, new ChildAssocRefQueryCallback()
@@ -578,6 +581,20 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                     {
                     }
                 });
+                
+                CRC32 crc = new CRC32();
+                for(ChildAssociationRef car : parentAssocs)
+                {
+                    try
+                    {
+                        crc.update(car.toString().getBytes("UTF-8"));
+                    }
+                    catch (UnsupportedEncodingException e)
+                    {
+                        throw new RuntimeException("UTF-8 encoding is not supported");
+                    }
+                }
+                nodeMetaData.setParentAssocs(parentAssocs, crc.getValue());
                         
                 // TODO non-child associations
 //                Collection<Pair<Long, AssociationRef>> sourceAssocs = nodeDAO.getSourceNodeAssocs(nodeId);

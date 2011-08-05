@@ -19,12 +19,14 @@
 package org.alfresco.repo.search;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
+import org.alfresco.util.Pair;
 import org.apache.lucene.search.HitCollector;
 
 /**
@@ -113,4 +115,12 @@ public abstract class AbstractResultSet implements ResultSet
     {
         return 0;
     }
+
+    @Override
+    public List<Pair<String, Integer>> getFieldFacet(String field)
+    {
+        return Collections.<Pair<String, Integer>>emptyList();
+    }
+    
+    
 }

@@ -59,17 +59,17 @@ import org.alfresco.util.Pair;
  */
 public class LuceneCategoryServiceImpl implements CategoryService
 {
-    private NodeService nodeService;
+    protected NodeService nodeService;
     
-    private NodeService publicNodeService;
+    protected NodeService publicNodeService;
 
-    private TenantService tenantService;
+    protected TenantService tenantService;
 
-    private NamespacePrefixResolver namespacePrefixResolver;
+    protected NamespacePrefixResolver namespacePrefixResolver;
 
-    private DictionaryService dictionaryService;
+    protected DictionaryService dictionaryService;
 
-    private IndexerAndSearcher indexerAndSearcher;
+    protected IndexerAndSearcher indexerAndSearcher;
 
     /**
      * 

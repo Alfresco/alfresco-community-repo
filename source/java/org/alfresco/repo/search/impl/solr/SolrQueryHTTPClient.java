@@ -29,12 +29,14 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParserException;
 import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.service.cmr.search.SearchParameters.FieldFacet;
 import org.alfresco.service.cmr.search.SearchParameters.SortDefinition;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.apache.commons.codec.net.URLCodec;
@@ -107,7 +109,7 @@ public class SolrQueryHTTPClient
     }
 
     public ResultSet executeQuery(SearchParameters searchParameters, String language)
-    {
+    {   
         try
         {
 
@@ -189,7 +191,7 @@ public class SolrQueryHTTPClient
                 {
                     authQuery.append(" ");
                 }
-                authQuery.append("AUTHORITY:\"").append(authority).append("\"");
+                authQuery.append("|AUTHORITY:\"").append(authority).append("\"");
             }
 
             // url.append("&fq=");
@@ -200,6 +202,18 @@ public class SolrQueryHTTPClient
 
             // facets would go on url?
 
+            if(searchParameters.getFieldFacets().size() > 0)
+            {
+                url.append("&facet=").append(encoder.encode("true", "UTF-8"));
+                for(FieldFacet facet : searchParameters.getFieldFacets())
+                {
+                    url.append("&facet.field=").append(encoder.encode(facet.getField(), "UTF-8"));
+                    url.append("&").append(encoder.encode("f."+facet.getField()+".limit", "UTF-8")).append("=").append(encoder.encode(""+facet.getLimit(), "UTF-8"));
+                }
+            }
+            
+            // end of field factes
+            
             JSONObject body = new JSONObject();
             body.put("query", searchParameters.getQuery());
             // body.put("defaultField", searchParameters.getDefaultFieldName());

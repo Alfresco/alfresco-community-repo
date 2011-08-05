@@ -73,7 +73,7 @@ public interface FileFolderService
      * Lists page of immediate child files and/or folders of the given context node
      * with pattern matching and optional filtering (exclusion of certain child file/folder subtypes) and sorting
      * 
-     * Pattern uses '%' as a wildcard
+     * Pattern uses '*' as a wildcard
      * 
      * @since 4.0
      */

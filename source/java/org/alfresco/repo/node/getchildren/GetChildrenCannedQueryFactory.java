@@ -116,6 +116,7 @@ public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<No
      * Note: if both filtering and sorting is required then the combined total of unique QName properties should be the 0 to 3.
      *
      * @param parentRef          parent node ref
+     * @param pattern			 the pattern to use to filter children (wildcard character is '*')
      * @param childTypeQNames    type qnames of children nodes (pre-filter)
      * @param filterProps        filter properties
      * @param sortProps          sort property pairs (QName and Boolean - true if ascending)

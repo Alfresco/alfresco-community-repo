@@ -479,33 +479,6 @@ public class FileFolderServiceImpl implements FileFolderService
         return results;
     }
     
-//    private CannedQueryResults<NodeRef> listImpl(NodeRef contextNodeRef, String pattern, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
-//    {
-//        Long start = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
-//        
-//        // get canned query
-//        GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_FILEFOLDER_LIST);
-//        
-//        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(contextNodeRef, null, pattern, null, sortProps, pagingRequest);
-//        
-//        // execute canned query
-//        CannedQueryResults<NodeRef> results = cq.execute();
-//        
-//        if (start != null)
-//        {
-//            int cnt = results.getPagedResultCount();
-//            int skipCount = pagingRequest.getSkipCount();
-//            int maxItems = pagingRequest.getMaxItems();
-//            boolean hasMoreItems = results.hasMoreItems();
-//            Pair<Integer, Integer> totalCount = (pagingRequest.getRequestTotalCountMax() > 0 ? results.getTotalResultCount() : null);
-//            int pageNum = (skipCount / maxItems) + 1;
-//            
-//            logger.debug("List: "+cnt+" items in "+(System.currentTimeMillis()-start)+" msecs [pageNum="+pageNum+",skip="+skipCount+",max="+maxItems+",hasMorePages="+hasMoreItems+",totalCount="+totalCount+",parentNodeRef="+contextNodeRef+"]");
-//        }
-//        
-//        return results;
-//    }
-    
     public List<FileInfo> listFiles(NodeRef contextNodeRef)
     {
         // execute the query

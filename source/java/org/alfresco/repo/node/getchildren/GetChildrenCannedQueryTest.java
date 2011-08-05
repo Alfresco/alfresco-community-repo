@@ -545,45 +545,79 @@ public class GetChildrenCannedQueryTest extends TestCase
         NodeRef nodeRef2 = createContent(parentNodeRef, "page.component-1-4.user~admin~dashboard.xml", ContentModel.TYPE_CONTENT);
         NodeRef nodeRef3 = createContent(parentNodeRef, "page.xml", ContentModel.TYPE_CONTENT);
         NodeRef nodeRef4 = createContent(parentNodeRef, "page.component-1-4.user~admin~panel.xml", ContentModel.TYPE_CONTENT);
+        NodeRef nodeRef5 = createContent(parentNodeRef, "page.component-1-4.user~admin~%dashboard.xml", ContentModel.TYPE_CONTENT);
         
         AuthenticationUtil.popAuthentication();
-        
-        String pattern = "page.%.user~admin~dashboard.xml";
+
+        String pattern = "page.*.user~admin~%dashboard.xml";
         PagingResults<NodeRef> results = list(parentNodeRef, -1, -1, 0, pattern, null);
         assertFalse(results.hasMoreItems());
 
         int totalCnt = results.getPage().size();
+        assertTrue(totalCnt == 1);
+        assertEquals(nodeRef5, results.getPage().get(0));
+        
+        pattern = "page.*.user~admin~dashboard.xml";
+        results = list(parentNodeRef, -1, -1, 0, pattern, null);
+        assertFalse(results.hasMoreItems());
+
+        totalCnt = results.getPage().size();
         assertTrue(totalCnt == 2);
         assertEquals(nodeRef1, results.getPage().get(0));
         assertEquals(nodeRef2, results.getPage().get(1));
         
-        pattern = "%";
+        pattern = "*";
         results = list(parentNodeRef, -1, -1, 0, pattern, null);
         assertFalse(results.hasMoreItems());
         totalCnt = results.getPage().size();
-        assertTrue(totalCnt == 4);
+        assertTrue(totalCnt == 5);
         assertEquals(nodeRef1, results.getPage().get(0));
         assertEquals(nodeRef2, results.getPage().get(1));
         assertEquals(nodeRef3, results.getPage().get(2));
         assertEquals(nodeRef4, results.getPage().get(3));
+        assertEquals(nodeRef5, results.getPage().get(4));
         
-        pattern = "foo%bar";
+        pattern = "foo*bar";
         results = list(parentNodeRef, -1, -1, 0, pattern, null);
         assertFalse(results.hasMoreItems());
         totalCnt = results.getPage().size();
-        assertTrue(totalCnt == 0);
+        assertEquals("", 0, totalCnt);
         
-        pattern = "page.%.admin~dashboard.xml";
+        pattern = "page.*.admin~dashboard.xml";
         results = list(parentNodeRef, -1, -1, 0, pattern, null);
         assertFalse(results.hasMoreItems());
         totalCnt = results.getPage().size();
-        assertTrue(totalCnt == 0);
+        assertEquals("", 0, totalCnt);
         
+        pattern = "page.*.user~admin~*.xml";
+        results = list(parentNodeRef, -1, -1, 0, pattern, null);
+        assertFalse(results.hasMoreItems());
+        totalCnt = results.getPage().size();
+        assertEquals("", 4, totalCnt);
+        
+        pattern = "page.*.user~admin~%*.xml";
+        results = list(parentNodeRef, -1, -1, 0, pattern, null);
+        assertFalse(results.hasMoreItems());
+        totalCnt = results.getPage().size();
+        assertEquals("", 1, totalCnt);
+        
+        pattern = "page.*.user~admin~%dashboard.xml";
+        results = list(parentNodeRef, -1, -1, 0, pattern, null);
+        assertFalse(results.hasMoreItems());
+        totalCnt = results.getPage().size();
+        assertEquals("", 1, totalCnt);
+
+        pattern = "page.component-1-4.user~admin~%dashboard.xml";
+        results = list(parentNodeRef, -1, -1, 0, pattern, null);
+        assertFalse(results.hasMoreItems());
+        totalCnt = results.getPage().size();
+        assertEquals("", 1, totalCnt);
+
         pattern = "page.%.user~admin~%.xml";
         results = list(parentNodeRef, -1, -1, 0, pattern, null);
         assertFalse(results.hasMoreItems());
         totalCnt = results.getPage().size();
-        assertTrue(totalCnt == 3);
+        assertEquals("", 0, totalCnt);
     }
     
     // test helper method - optional filtering/sorting

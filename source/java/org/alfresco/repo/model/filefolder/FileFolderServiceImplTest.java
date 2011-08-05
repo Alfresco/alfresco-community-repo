@@ -1147,7 +1147,7 @@ public class FileFolderServiceImplTest extends TestCase
 
         // test 1
         PagingRequest pagingRequest = new PagingRequest(100, null);
-        PagingResults<FileInfo> pagingResults = fileFolderService.list(workingRootNodeRef, true, true, "L0%", null, null, pagingRequest);
+        PagingResults<FileInfo> pagingResults = fileFolderService.list(workingRootNodeRef, true, true, "L0*", null, null, pagingRequest);
         
         assertNotNull(pagingResults);
         assertFalse(pagingResults.hasMoreItems());
@@ -1161,7 +1161,7 @@ public class FileFolderServiceImplTest extends TestCase
         checkFileList(files, 2, 3, expectedNames);
        
         // test 2
-        pagingResults = fileFolderService.list(workingRootNodeRef, true, true, "L1%", null, null, pagingRequest);
+        pagingResults = fileFolderService.list(workingRootNodeRef, true, true, "L1*", null, null, pagingRequest);
         
         assertNotNull(pagingResults);
         assertFalse(pagingResults.hasMoreItems());
@@ -1175,7 +1175,7 @@ public class FileFolderServiceImplTest extends TestCase
         checkFileList(files, 0, 0, expectedNames);
 
         // test 3
-        pagingResults = fileFolderService.list(workingRootNodeRef, true, true, "L0%File%", null, null, pagingRequest);
+        pagingResults = fileFolderService.list(workingRootNodeRef, true, true, "L0*File*", null, null, pagingRequest);
         
         assertNotNull(pagingResults);
         assertFalse(pagingResults.hasMoreItems());

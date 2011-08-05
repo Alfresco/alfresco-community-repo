@@ -74,9 +74,36 @@ public class FilterSortNodeEntity
 		return pattern;
 	}
 
+	protected String escape(String s, char escapeChar)
+	{
+		StringBuilder sb = new StringBuilder();
+		int idx = -1;
+		int offset = 0;
+		do
+		{
+			idx = s.indexOf(escapeChar, offset);
+			if(idx != -1)
+			{
+				sb.append(s.substring(offset, idx));
+				sb.append("\\");
+				sb.append(escapeChar);
+				offset = idx + 1;
+			}
+		}
+		while(idx != -1);
+		sb.append(s.substring(offset));
+		return sb.toString();
+	}
+	
 	public void setPattern(String pattern)
 	{
-		this.pattern = pattern;
+		if(pattern != null)
+		{
+			// escape the '%' character with '\' (standard SQL escape character)
+			pattern = escape(pattern, '%');
+			// replace the wildcard character '*' with the one used in database queries i.e. '%'
+			this.pattern = pattern.replace('*', '%');
+		}
 	}
 
 	public Long getNamePropertyQNameId()

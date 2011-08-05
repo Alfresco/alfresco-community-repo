@@ -154,9 +154,9 @@ public class NodesMetaDataGet extends DeclarativeWebScript
             {
                 filter.setIncludeType(o.getBoolean("includeType"));
             }
-            if(o.has("includeAssociations"))
+            if(o.has("includeParentAssociations"))
             {
-                filter.setIncludeAssociations(o.getBoolean("includeAssociations"));
+                filter.setIncludeParentAssociations(o.getBoolean("includeParentAssociations"));
             }
             
             final ArrayList<FreemarkerNodeMetaData> nodesMetaData = 
@@ -233,6 +233,8 @@ public class NodesMetaDataGet extends DeclarativeWebScript
         private Set<QName> aspects;
         private List<String> paths;
         private List<ChildAssociationRef> childAssocs;
+        private List<ChildAssociationRef> parentAssocs;
+        private Long parentAssocsCrc;
 
         public FreemarkerNodeMetaData(SOLRSerializer solrSerializer, NodeMetaData nodeMetaData) throws IOException, JSONException
         {
@@ -253,6 +255,8 @@ public class NodesMetaDataGet extends DeclarativeWebScript
             setPaths(paths);
 
             setChildAssocs(nodeMetaData.getChildAssocs());
+            setParentAssocs(nodeMetaData.getParentAssocs());
+            setParentAssocsCrc(nodeMetaData.getParentAssocsCrc());
             setAspects(nodeMetaData.getAspects());
             Map<QName, Serializable> props = nodeMetaData.getProperties();
             Map<String, PropertyValue> properties = (props != null ? new HashMap<String, PropertyValue>(props.size()) : null);
@@ -328,6 +332,22 @@ public class NodesMetaDataGet extends DeclarativeWebScript
         public void setChildAssocs(List<ChildAssociationRef> childAssocs)
         {
             this.childAssocs = childAssocs;
+        }
+        public List<ChildAssociationRef> getParentAssocs()
+        {
+            return parentAssocs;
+        }
+        public void setParentAssocs(List<ChildAssociationRef> parentAssocs)
+        {
+            this.parentAssocs = parentAssocs;
+        }
+        public Long getParentAssocsCrc()
+        {
+            return parentAssocsCrc;
+        }
+        public void setParentAssocsCrc(Long parentAssocsCrc)
+        {
+            this.parentAssocsCrc = parentAssocsCrc;
         }
     }
 

@@ -25,6 +25,7 @@ import org.alfresco.opencmis.CMISConnector;
 import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.opencmis.dictionary.CMISPropertyAccessor;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -86,6 +87,11 @@ public abstract class AbstractProperty implements CMISPropertyAccessor
         return getValue(createNodeInfo(nodeRef));
     }
 
+    public Serializable getValue(AssociationRef assocRef)
+    {
+        return getValue(createNodeInfo(assocRef));
+    }
+
     public Serializable getValue(CMISNodeInfo nodeInfo)
     {
         if (nodeInfo.containsPropertyValue(propertyName))
@@ -104,6 +110,11 @@ public abstract class AbstractProperty implements CMISPropertyAccessor
     protected CMISNodeInfo createNodeInfo(NodeRef nodeRef)
     {
         return connector.createNodeInfo(nodeRef);
+    }
+
+    protected CMISNodeInfo createNodeInfo(AssociationRef assocRef)
+    {
+        return connector.createNodeInfo(assocRef);
     }
 
     protected ContentData getContentData(CMISNodeInfo nodeInfo)

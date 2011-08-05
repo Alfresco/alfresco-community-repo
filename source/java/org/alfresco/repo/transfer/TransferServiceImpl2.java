@@ -1189,36 +1189,29 @@ public class TransferServiceImpl2 implements TransferService2
     protected NodeRef getTransferHome()
     {
         String tenantDomain = tenantService.getUserDomain(AuthenticationUtil.getRunAsUser());
-        NodeRef transferHome = transferHomeMap.get(tenantDomain);
-        if(transferHome == null)
-        {
-            String query = transferSpaceQuery;
-    
-            ResultSet result = null;
-            try
-            {
-                result = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, query);
 
-                if (result.length() == 0)
+        synchronized (transferHomeMap)
+        {
+            NodeRef transferHome = transferHomeMap.get(tenantDomain);
+            if(transferHome == null)
+            {
+                String query = transferSpaceQuery;
+
+                List<NodeRef> refs = searchService.selectNodes(nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE), query, null, namespaceService, false);
+
+                if (refs.size() == 0)
                 {
                     // No transfer home.
                     throw new TransferException(MSG_NO_HOME, new Object[] { query });
                 }
-                if (result.getNodeRefs().size() != 0)
+                if (refs.size() != 0)
                 {
-                    transferHome = result.getNodeRef(0);
+                    transferHome = refs.get(0);
                     transferHomeMap.put(tenantDomain, transferHome);
                 }
             }
-            finally
-            {
-                if (result != null)
-                {
-                    result.close();
-                }
-            }
+            return transferHome;
         }
-        return transferHome;
     }
     
     private char[] encrypt(char[] text)

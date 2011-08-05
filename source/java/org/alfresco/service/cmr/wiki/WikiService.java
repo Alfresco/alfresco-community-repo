@@ -25,12 +25,12 @@ import org.alfresco.query.PagingResults;
 import org.alfresco.service.NotAuditable;
 
 /**
- * The Wiki Page service.
+ * The Wiki service.
  * 
  * @author Nick Burch
  * @since 4.0
  */
-public interface WikiPageService {
+public interface WikiService {
    /**
     * Creates a new {@link WikiPageInfo} in the given site, with the
     *  specified contents

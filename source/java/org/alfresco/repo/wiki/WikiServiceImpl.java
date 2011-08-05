@@ -29,6 +29,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQueryFactory;
 import org.alfresco.query.CannedQueryResults;
+import org.alfresco.query.CannedQuerySortDetails;
 import org.alfresco.query.EmptyPagingResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
@@ -46,7 +47,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.cmr.wiki.WikiPageInfo;
-import org.alfresco.service.cmr.wiki.WikiPageService;
+import org.alfresco.service.cmr.wiki.WikiService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.Pair;
@@ -58,7 +59,7 @@ import org.apache.commons.logging.LogFactory;
  * @author Nick Burch (based on existing webscript controllers in the REST API)
  * @since 4.0
  */
-public class WikiPageServiceImpl implements WikiPageService
+public class WikiServiceImpl implements WikiService
 {
     public static final String WIKI_COMPONENT = "wiki";
    
@@ -68,7 +69,7 @@ public class WikiPageServiceImpl implements WikiPageService
      * The logger
      */
     @SuppressWarnings("unused")
-    private static Log logger = LogFactory.getLog(WikiPageServiceImpl.class);
+    private static Log logger = LogFactory.getLog(WikiServiceImpl.class);
     
     private NodeService nodeService;
     private SiteService siteService;
@@ -305,11 +306,16 @@ public class WikiPageServiceImpl implements WikiPageService
           return new EmptyPagingResults<WikiPageInfo>();
        }
        
-       // Run the canned query
+       // Grab the factory
        GetChildrenAuditableCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenAuditableCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_GET_CHILDREN);
+       
+       // Do the sorting, newest first by created date
+       CannedQuerySortDetails sorting = getChildrenCannedQueryFactory.createDateDescendingCQSortDetails();
+       
+       // Run the canned query
        GetChildrenAuditableCannedQuery cq = (GetChildrenAuditableCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(
              container, ContentModel.TYPE_CONTENT, username, createdFrom, createdTo, null,
-             modifiedFrom, modifiedTo, getChildrenCannedQueryFactory.createDateDescendingCQSortDetails(), paging);
+             modifiedFrom, modifiedTo, sorting, paging);
        
        // Execute the canned query
        CannedQueryResults<NodeBackedEntity> results = cq.execute();

@@ -3,26 +3,26 @@
 
 <beans>
 
-   <!-- Wiki page Service -->
-   <bean id="WikiPageService" class="org.springframework.aop.framework.ProxyFactoryBean">
+   <!-- Wiki Service -->
+   <bean id="WikiService" class="org.springframework.aop.framework.ProxyFactoryBean">
       <property name="proxyInterfaces">
-         <value>org.alfresco.service.cmr.wiki.WikiPageService</value>
+         <value>org.alfresco.service.cmr.wiki.WikiService</value>
       </property>
       <property name="target">
-         <ref bean="wikiPageService" />
+         <ref bean="wikiService" />
       </property>
       <property name="interceptorNames">
          <list>
-            <idref local="WikiPageService_transaction" />
+            <idref local="WikiService_transaction" />
             <idref bean="AuditMethodInterceptor" />
             <idref bean="exceptionTranslator" />
-            <idref bean="WikiPageService_security" />
+            <idref bean="WikiService_security" />
          </list>
       </property>
    </bean>
 
-   <!-- Wiki Page service transaction bean -->
-   <bean id="WikiPageService_transaction"
+   <!-- Wiki service transaction bean -->
+   <bean id="WikiService_transaction"
       class="org.springframework.transaction.interceptor.TransactionInterceptor">
       <property name="transactionManager">
          <ref bean="transactionManager" />
@@ -46,11 +46,11 @@
        <property name="nodeDAO" ref="nodeDAO"/>
        <property name="qnameDAO" ref="qnameDAO"/>
        <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
-       <property name="methodSecurity" ref="WikiPageService_security_listWikiPages"/>
+       <property name="methodSecurity" ref="WikiService_security_listWikiPages"/>
    </bean>
 
-   <!-- Wiki Page Service base bean -->
-	<bean id="wikiPageService" class="org.alfresco.repo.wiki.WikiPageServiceImpl">
+   <!-- Wiki Service base bean -->
+	<bean id="wikiService" class="org.alfresco.repo.wiki.WikiServiceImpl">
         <property name="nodeService" ref="NodeService"/>
         <property name="siteService" ref="SiteService"/>
         <property name="contentService" ref="ContentService"/>

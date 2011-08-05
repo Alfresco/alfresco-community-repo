@@ -1034,25 +1034,25 @@
     <!-- The Wiki Services    -->
     <!-- ==================== -->
 
-    <!-- The wiki page service itself does not require any security restrictions, -->
+    <!-- The wiki service itself does not require any security restrictions, -->
     <!--  they are imposed by the node and site services it uses to do its work. -->
-    <bean id="WikiPageService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+    <bean id="WikiService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
     
     <!-- The canned queries that the wiki services use do however need to check -->
-    <bean id="WikiPageService_CannedQuery_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
+    <bean id="WikiService_CannedQuery_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
         <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
         <property name="objectDefinitionSource">
             <value>
-               org.alfresco.service.cmr.wiki.WikiPageService.listWikiPages=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
+               org.alfresco.service.cmr.wiki.WikiService.listWikiPages=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
             </value>
         </property>
     </bean>
 
-    <bean id="WikiPageService_security_listWikiPages" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean">
-        <property name="methodSecurityInterceptor" ref="LinksService_CannedQuery_security" />
-        <property name="service" value="org.alfresco.service.cmr.wiki.WikiPageService" />
+    <bean id="WikiService_security_listWikiPages" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean">
+        <property name="methodSecurityInterceptor" ref="WikiService_CannedQuery_security" />
+        <property name="service" value="org.alfresco.service.cmr.wiki.WikiService" />
         <property name="methodName" value="listWikiPages" />
     </bean>
 

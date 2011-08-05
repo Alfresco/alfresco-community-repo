@@ -2,6 +2,7 @@
 {
 <#if result.page??>
    <#assign page = result.page>
+   "name": "${page.name}",
    "title": "<#if page.properties.title?exists>${page.properties.title}<#else>${page.name?replace("_", " ")}</#if>",
    "pagetext": "${page.content}",
    "tags": [

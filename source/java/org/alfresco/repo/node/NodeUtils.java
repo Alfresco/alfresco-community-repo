@@ -118,6 +118,11 @@ public abstract class NodeUtils
         };
     }
     
+    public static boolean exists(NodeRef node, NodeService nodeService)
+    {
+        return node != null && nodeService.exists(node);
+    }
+    
     public static NodeRef getSingleChildAssocNode(Collection<ChildAssociationRef> assocs, boolean getChild)
     {
         if(assocs != null && assocs.size()==1 )

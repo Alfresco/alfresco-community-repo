@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.node.NodeUtils;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.publishing.NodeSnapshot;
@@ -149,8 +150,12 @@ public class PublishingEventProcessor
      
      public void unpublishEntry(Channel channel, PublishingPackageEntry entry)
      {
-         // TODO Auto-generated method stub
-         
+         NodeRef publishedNode = channelHelper.mapSourceToEnvironment(entry.getNodeRef(), channel.getNodeRef());
+         if(NodeUtils.exists(publishedNode, nodeService))
+         {
+             channel.unPublish(publishedNode);
+             nodeService.deleteNode(publishedNode);
+         }
      }
 
      public void fail(NodeRef eventNode, String msg)

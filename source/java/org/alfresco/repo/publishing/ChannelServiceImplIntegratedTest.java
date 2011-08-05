@@ -19,7 +19,11 @@
 
 package org.alfresco.repo.publishing;
 
+import static org.mockito.Mockito.when;
+
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -31,17 +35,17 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.publishing.channels.Channel;
+import org.alfresco.service.cmr.publishing.channels.ChannelType;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
-import org.alfresco.util.collections.CollectionUtils;
-import org.alfresco.util.collections.Filter;
 import org.junit.Before;
 import org.junit.Test;
 
 /**
  * @author Brian
+ * @author Nick Smith
  * 
  */
 public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrationTest
@@ -54,16 +58,16 @@ public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrat
     @Test
     public void testCreateChannel() throws Exception
     {
-        personManager.setUser(username);
-        try
-        {
-            createChannel();
-            fail("Only Admin user can create channels!");
-        }
-        catch(AccessDeniedException e)
-        {
-            // NOOP
-        }
+//        personManager.setUser(username);
+//        try
+//        {
+//            createChannel();
+//            fail("Only Admin user can create channels!");
+//        }
+//        catch(AccessDeniedException e)
+//        {
+//            // NOOP
+//        }
         
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
         Channel channel = createChannel();
@@ -181,39 +185,56 @@ public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrat
     @Test
     public void testGetChannelsPermissions() throws Exception
     {
-        // Create Channel as Admin user.
-        Channel channel = createChannel();
+        ChannelType publishType = testHelper.mockChannelType(GUID.generate());
+        when(publishType.canPublish()).thenReturn(true);
+        ChannelType statusType = testHelper.mockChannelType(GUID.generate());
+        when(statusType.canPublishStatusUpdates()).thenReturn(true);
+        
+        Channel publishChannel = testHelper.createChannel(publishType.getId());
+        Channel statusChannel = testHelper.createChannel(statusType.getId());
         
         // Create User1 and set as FullyAuthenticatedUser.
         String user1 = GUID.generate();
         personManager.createPerson(user1);
         personManager.setUser(user1);
         
-        // User1 should not have access to Channel.
-        Channel channelById = channelService.getChannelById(channel.getId());
-        assertNull("User1 should not have access to the channel!", channelById);
+        // User1 should have access to Channel with no permissions filtering.
+        Channel channelById = channelService.getChannelById(publishChannel.getId());
+        assertNotNull("User1 should have access to the channel!", channelById);
         List<Channel> channels = channelService.getChannels();
-        assertFalse("Result of getChannels() should not contain the channel!", checkContainsChannel(channel.getId(), channels));
+        assertTrue("Result of getChannels() should contain the channel!", checkContainsChannel(channels, publishChannel.getId(), statusChannel.getId()));
+        channels = channelService.getPublishingChannels(false);
+        assertTrue("User1 should have access to unfiltered publishing channels", checkContainsChannel(channels, publishChannel.getId()));
+        channels = channelService.getStatusUpdateChannels(false);
+        assertTrue("User1 should have access to unfiltered status update channels", checkContainsChannel(channels, statusChannel.getId()));
+        
+        // User1 should not have access if permissions are filtered.
+        channels = channelService.getPublishingChannels(true);
+        assertFalse("User1 should not have access to filtered publishing channels", checkContainsChannel(channels, publishChannel.getId()));
+        channels = channelService.getStatusUpdateChannels(true);
+        assertFalse("User1 should not have access to filtered status update channels", checkContainsChannel(channels, statusChannel.getId()));
         
         //Add Read permissions to User1.
-        testHelper.setChannelPermission(user1, channel.getId(), PermissionService.READ);
+        testHelper.setChannelPermission(user1, publishChannel.getId(), PermissionService.READ);
+        testHelper.setChannelPermission(user1, statusChannel.getId(), PermissionService.READ);
         
-        // Read permissions should not allow access to the Channel.
-        channelById = channelService.getChannelById(channel.getId());
-        assertNull("User1 should not have access to the channel!", channelById);
-        channels = channelService.getChannels();
-        assertFalse("Result of getChannels() should not contain the channel!", checkContainsChannel(channel.getId(), channels));
+        // Read permissions should not allow access to filtered channels.
+        channels = channelService.getPublishingChannels(true);
+        assertFalse("User1 should not have access to filtered publishing channels", checkContainsChannel(channels, publishChannel.getId()));
+        channels = channelService.getStatusUpdateChannels(true);
+        assertFalse("User1 should not have access to filtered status update channels", checkContainsChannel(channels, statusChannel.getId()));
         
         //Add ADD_CHILD permissions to User1.
-        testHelper.setChannelPermission(user1, channel.getId(), PermissionService.ADD_CHILDREN);
+        testHelper.setChannelPermission(user1, publishChannel.getId(), PermissionService.ADD_CHILDREN);
+        testHelper.setChannelPermission(user1, statusChannel.getId(), PermissionService.ADD_CHILDREN);
         
-        // Add Child permissions should allow access to the Channel.
-        channelById = channelService.getChannelById(channel.getId());
-        assertNotNull("User1 should have access to the channel!", channelById);
-        channels = channelService.getChannels();
-        assertTrue("Result of getChannels() should contain the channel!", checkContainsChannel(channel.getId(), channels));
+        // Add Child permissions should allow access to filtered channels.
+        channels = channelService.getPublishingChannels(true);
+        assertTrue("User1 should have access to filtered publishing channels", checkContainsChannel(channels, publishChannel.getId()));
+        channels = channelService.getStatusUpdateChannels(true);
+        assertTrue("User1 should have access to filtered status update channels", checkContainsChannel(channels, statusChannel.getId()));
     }
-
+    
     @Test
     public void testGetChannelByName() throws Exception
     {
@@ -250,17 +271,18 @@ public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrat
         assertEquals(createdChannel.getChannelType().getId(), channel.getChannelType().getId());
     }
     
-    private boolean checkContainsChannel(final String id, List<Channel> channels)
+    private boolean checkContainsChannel(List<Channel> channels, final String... ids)
     {
-        Filter<Channel> acceptor = new Filter<Channel>()
+        ArrayList<String> remainingIds = new ArrayList<String>(Arrays.asList(ids));
+        for (Channel channel : channels)
         {
-            public Boolean apply(Channel value)
+            remainingIds.remove(channel.getId());
+            if(remainingIds.isEmpty())
             {
-                return id.equals(value.getId());
+                return true;
             }
-        };
-        Channel result = CollectionUtils.findFirst(channels, acceptor);
-        return result != null;
+        }
+        return false;
     }
     
     private Channel createChannel()

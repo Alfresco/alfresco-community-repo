@@ -328,7 +328,7 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
         
         publishNode(source, status);
         
-        String expMessage = message + url;
+        String expMessage = message + " " + url;
         verify(channelType, times(1)).updateStatus(any(Channel.class), eq(expMessage), anyMap());
     }
 

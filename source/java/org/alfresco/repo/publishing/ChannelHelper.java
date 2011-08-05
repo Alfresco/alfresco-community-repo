@@ -50,6 +50,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -87,6 +88,8 @@ public class ChannelHelper
     public NodeRef createChannelNode(NodeRef parent, ChannelType channelType, String channelName,
             Map<QName, Serializable> props)
     {
+        Set<AccessPermission> permissions = permissionService.getPermissions(parent);
+        
         QName channelQName = getChannelQName(channelName);
         QName channelNodeType = channelType.getChannelNodeType();
         ChildAssociationRef channelAssoc = 

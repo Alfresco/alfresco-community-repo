@@ -58,7 +58,6 @@ public class ChannelServiceImpl implements ChannelService
     public static final String NAME = "channelService";
 
     private final Map<String, ChannelType> channelTypes = new TreeMap<String, ChannelType>();
-    private SiteService siteService;
     private NodeService nodeService;
     private DictionaryService dictionaryService;
     private ChannelHelper channelHelper;
@@ -246,19 +245,6 @@ public class ChannelServiceImpl implements ChannelService
         return channelHelper.filterAuthorisedChannels(getStatusUpdateChannels(false));
     }
     
-    /**
-    * {@inheritDoc}
-    */
-    public List<Channel> getStatusUpdateChannels(NodeRef nodeToPublish)
-    {
-        SiteInfo site = siteService.getSite(nodeToPublish);
-        if(site!=null)
-        {
-            return getStatusUpdateChannels(false);
-        }
-        return Collections.emptyList();
-    }
-
     private NodeRef getChannelContainer()
     {
         return rootObject.getChannelContainer();

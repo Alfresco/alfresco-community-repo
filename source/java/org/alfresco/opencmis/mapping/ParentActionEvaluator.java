@@ -18,9 +18,9 @@
  */
 package org.alfresco.opencmis.mapping;
 
-import org.alfresco.opencmis.CMISConnector;
+import java.util.List;
+
 import org.alfresco.opencmis.dictionary.CMISNodeInfo;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 
 /**
  * Action Evaluator whose evaluation takes place on parent
@@ -30,7 +30,6 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 public class ParentActionEvaluator extends AbstractActionEvaluator
 {
     private AbstractActionEvaluator evaluator;
-    private CMISConnector cmisConnector;
 
     /**
      * Construct
@@ -38,11 +37,10 @@ public class ParentActionEvaluator extends AbstractActionEvaluator
      * @param serviceRegistry
      * @param action
      */
-    protected ParentActionEvaluator(CMISConnector cmisConnector, AbstractActionEvaluator evaluator)
+    protected ParentActionEvaluator(AbstractActionEvaluator evaluator)
     {
         super(evaluator.getServiceRegistry(), evaluator.getAction());
         this.evaluator = evaluator;
-        this.cmisConnector = cmisConnector;
     }
 
     public boolean isAllowed(CMISNodeInfo nodeInfo)
@@ -52,10 +50,10 @@ public class ParentActionEvaluator extends AbstractActionEvaluator
             return false;
         }
 
-        ChildAssociationRef car = getServiceRegistry().getNodeService().getPrimaryParent(nodeInfo.getNodeRef());
-        if ((car != null) && (car.getParentRef() != null))
+        List<CMISNodeInfo> parents = nodeInfo.getParents();
+        if (!parents.isEmpty())
         {
-            return evaluator.isAllowed(cmisConnector.createNodeInfo(car.getParentRef()));
+            return evaluator.isAllowed(parents.get(0));
         }
 
         return false;

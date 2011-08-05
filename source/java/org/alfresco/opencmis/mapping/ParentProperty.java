@@ -19,11 +19,11 @@
 package org.alfresco.opencmis.mapping;
 
 import java.io.Serializable;
+import java.util.List;
 
 import org.alfresco.opencmis.CMISConnector;
 import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 
 /**
@@ -51,10 +51,10 @@ public class ParentProperty extends AbstractProperty
             return null;
         }
 
-        ChildAssociationRef car = getServiceRegistry().getNodeService().getPrimaryParent(nodeInfo.getNodeRef());
-        if ((car != null) && (car.getParentRef() != null))
+        List<CMISNodeInfo> parents = nodeInfo.getParents();
+        if (!parents.isEmpty())
         {
-            return car.getParentRef().toString();
+            return parents.get(0).getObjectId();
         }
 
         return null;

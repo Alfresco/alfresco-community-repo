@@ -146,12 +146,14 @@ public class AlfrescoCmisService extends AbstractCmisService
     private CMISConnector connector;
     private CallContext context;
     private UserTransaction txn;
-    private Map<String, CMISNodeInfoImpl> nodeInfoMap;
+    private Map<String, CMISNodeInfo> nodeInfoMap;
+    private Map<String, ObjectInfo> objectInfoMap;
 
     public AlfrescoCmisService(CMISConnector connector)
     {
         this.connector = connector;
-        nodeInfoMap = new HashMap<String, CMISNodeInfoImpl>();
+        nodeInfoMap = new HashMap<String, CMISNodeInfo>();
+        objectInfoMap = new HashMap<String, ObjectInfo>();
     }
 
     public void beginCall(CallContext context)
@@ -228,8 +230,7 @@ public class AlfrescoCmisService extends AbstractCmisService
             AuthenticationUtil.popAuthentication();
             context = null;
             nodeInfoMap.clear();
-
-            super.close();
+            objectInfoMap.clear();
         }
     }
 
@@ -291,9 +292,9 @@ public class AlfrescoCmisService extends AbstractCmisService
         return result;
     }
 
-    protected CMISNodeInfoImpl getOrCreateNodeInfo(String objectId)
+    protected CMISNodeInfo getOrCreateNodeInfo(String objectId)
     {
-        CMISNodeInfoImpl result = nodeInfoMap.get(objectId);
+        CMISNodeInfo result = nodeInfoMap.get(objectId);
         if (result == null)
         {
             result = connector.createNodeInfo(objectId);
@@ -303,20 +304,31 @@ public class AlfrescoCmisService extends AbstractCmisService
         return result;
     }
 
-    protected CMISNodeInfoImpl getOrCreateNodeInfo(String objectId, String what)
+    protected CMISNodeInfo getOrCreateNodeInfo(String objectId, String what)
     {
-        CMISNodeInfoImpl result = getOrCreateNodeInfo(objectId);
-        result.checkIfUseful(what);
+        CMISNodeInfo result = getOrCreateNodeInfo(objectId);
+        if (result instanceof CMISNodeInfoImpl)
+        {
+            ((CMISNodeInfoImpl) result).checkIfUseful(what);
+        }
 
         return result;
     }
 
-    protected CMISNodeInfoImpl getOrCreateFolderInfo(String folderId, String what)
+    protected CMISNodeInfo getOrCreateFolderInfo(String folderId, String what)
     {
-        CMISNodeInfoImpl result = getOrCreateNodeInfo(folderId);
-        result.checkIfFolder(what);
+        CMISNodeInfo result = getOrCreateNodeInfo(folderId);
+        if (result instanceof CMISNodeInfoImpl)
+        {
+            ((CMISNodeInfoImpl) result).checkIfFolder(what);
+        }
 
         return result;
+    }
+
+    protected void addNodeInfo(CMISNodeInfo info)
+    {
+        nodeInfoMap.put(info.getObjectId(), info);
     }
 
     // --- repository service ---
@@ -810,15 +822,16 @@ public class AlfrescoCmisService extends AbstractCmisService
         }
 
         // get the parent
-        ChildAssociationRef parent = connector.getNodeService().getPrimaryParent(info.getNodeRef());
-        if (parent == null)
+        List<CMISNodeInfo> parentInfos = info.getParents();
+        if (parentInfos.isEmpty())
         {
             throw new CmisRuntimeException("Folder has no parent and is not the root folder?!");
         }
 
-        // create parent object
-        CMISNodeInfo ni = createNodeInfo(parent.getParentRef());
-        ObjectData result = connector.createCMISObject(ni, filter, false, IncludeRelationships.NONE,
+        CMISNodeInfo parentInfo = parentInfos.get(0);
+        addNodeInfo(parentInfo);
+
+        ObjectData result = connector.createCMISObject(parentInfo, filter, false, IncludeRelationships.NONE,
                 CMISConnector.RENDITION_NONE, false, false);
         if (context.isObjectInfoRequired())
         {
@@ -848,11 +861,13 @@ public class AlfrescoCmisService extends AbstractCmisService
 
         if (info.isFolder() && !info.isRootFolder())
         {
-            ChildAssociationRef parent = connector.getNodeService().getPrimaryParent(info.getNodeRef());
-            if (parent != null)
+            List<CMISNodeInfo> parentInfos = info.getParents();
+            if (!parentInfos.isEmpty())
             {
-                CMISNodeInfo ni = createNodeInfo(parent.getParentRef());
-                ObjectData object = connector.createCMISObject(ni, filter, includeAllowableActions,
+                CMISNodeInfo parentInfo = parentInfos.get(0);
+                addNodeInfo(parentInfo);
+
+                ObjectData object = connector.createCMISObject(parentInfo, filter, includeAllowableActions,
                         includeRelationships, renditionFilter, false, false);
                 if (context.isObjectInfoRequired())
                 {
@@ -872,31 +887,28 @@ public class AlfrescoCmisService extends AbstractCmisService
             }
         } else if (info.isCurrentVersion() || info.isPWC())
         {
-            List<ChildAssociationRef> parents = connector.getNodeService().getParentAssocs(info.getNodeRef(),
-                    ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
-            if (parents != null)
+            List<CMISNodeInfo> parentInfos = info.getParents();
+            for (CMISNodeInfo parentInfo : parentInfos)
             {
-                for (ChildAssociationRef parent : parents)
+                addNodeInfo(parentInfo);
+
+                ObjectData object = connector.createCMISObject(parentInfo, filter, includeAllowableActions,
+                        includeRelationships, renditionFilter, false, false);
+                if (context.isObjectInfoRequired())
                 {
-                    CMISNodeInfo ni = createNodeInfo(parent.getParentRef());
-                    ObjectData object = connector.createCMISObject(ni, filter, includeAllowableActions,
-                            includeRelationships, renditionFilter, false, false);
-                    if (context.isObjectInfoRequired())
-                    {
-                        getObjectInfo(repositoryId, object.getId());
-                    }
-
-                    ObjectParentDataImpl objectParent = new ObjectParentDataImpl();
-                    objectParent.setObject(object);
-
-                    // include relative path segment
-                    if (includeRelativePathSegment)
-                    {
-                        objectParent.setRelativePathSegment(info.getName());
-                    }
-
-                    result.add(objectParent);
+                    getObjectInfo(repositoryId, object.getId());
                 }
+
+                ObjectParentDataImpl objectParent = new ObjectParentDataImpl();
+                objectParent.setObject(object);
+
+                // include relative path segment
+                if (includeRelativePathSegment)
+                {
+                    objectParent.setRelativePathSegment(info.getName());
+                }
+
+                result.add(objectParent);
             }
         }
 
@@ -1507,7 +1519,7 @@ public class AlfrescoCmisService extends AbstractCmisService
         checkRepositoryId(repositoryId);
 
         // what kind of object is it?
-        final CMISNodeInfoImpl info = getOrCreateNodeInfo(objectId, "Object");
+        final CMISNodeInfo info = getOrCreateNodeInfo(objectId, "Object");
 
         // run transaction
         endReadOnlyTransaction();
@@ -1559,7 +1571,7 @@ public class AlfrescoCmisService extends AbstractCmisService
                                 }
                             } else if (info.isVariant(CMISObjectVariant.VERSION))
                             {
-                                Version version = info.getVersion();
+                                Version version = ((CMISNodeInfoImpl) info).getVersion();
                                 connector.getVersionService().deleteVersion(nodeRef, version);
                                 return true;
                             }
@@ -1757,7 +1769,7 @@ public class AlfrescoCmisService extends AbstractCmisService
         checkRepositoryId(repositoryId);
 
         // what kind of object is it?
-        CMISNodeInfoImpl info = getOrCreateNodeInfo(objectId, "Object");
+        CMISNodeInfo info = getOrCreateNodeInfo(objectId, "Object");
 
         // relationships cannot have content
         if (info.isVariant(CMISObjectVariant.ASSOC))
@@ -2051,10 +2063,12 @@ public class AlfrescoCmisService extends AbstractCmisService
         }
 
         // what kind of object is it?
-        CMISNodeInfoImpl info = getOrCreateNodeInfo(versionSeriesId, "Version Series");
+        CMISNodeInfo info = getOrCreateNodeInfo(versionSeriesId, "Version Series");
+        CMISNodeInfo versionInfo = createNodeInfo(((CMISNodeInfoImpl) info).getLatestVersionNodeRef(major));
+        addNodeInfo(versionInfo);
 
-        return connector.createCMISObject(createNodeInfo(info.getLatestVersionNodeRef(major)), filter,
-                includeAllowableActions, includeRelationships, renditionFilter, includePolicyIds, includeAcl);
+        return connector.createCMISObject(versionInfo, filter, includeAllowableActions, includeRelationships,
+                renditionFilter, includePolicyIds, includeAcl);
     }
 
     @Override
@@ -2070,14 +2084,16 @@ public class AlfrescoCmisService extends AbstractCmisService
         }
 
         // what kind of object is it?
-        CMISNodeInfoImpl info = getOrCreateNodeInfo(versionSeriesId, "Version Series");
+        CMISNodeInfo info = getOrCreateNodeInfo(versionSeriesId, "Version Series");
 
         if (info.isVariant(CMISObjectVariant.ASSOC))
         {
             return connector.getAssocProperties(info, filter);
         } else
         {
-            return connector.getNodeProperties(createNodeInfo(info.getLatestVersionNodeRef(major)), filter);
+            CMISNodeInfo versionInfo = createNodeInfo(((CMISNodeInfoImpl) info).getLatestVersionNodeRef(major));
+            addNodeInfo(versionInfo);
+            return connector.getNodeProperties(versionInfo, filter);
         }
     }
 
@@ -2426,6 +2442,39 @@ public class AlfrescoCmisService extends AbstractCmisService
      * (Provided by OpenCMIS, but optimized for Alfresco.)
      */
     @Override
+    public ObjectInfo getObjectInfo(String repositoryId, String objectId)
+    {
+        ObjectInfo info = objectInfoMap.get(objectId);
+        if (info == null)
+        {
+            CMISNodeInfo nodeInfo = getOrCreateNodeInfo(objectId);
+
+            // object info has not been found -> create one
+            try
+            {
+                // get the object and its info
+                ObjectData object = connector.createCMISObject(nodeInfo, null, false, IncludeRelationships.BOTH, null,
+                        false, false);
+
+                info = getObjectInfoIntern(repositoryId, object);
+
+                // add object info
+                objectInfoMap.put(objectId, info);
+            } catch (Exception e)
+            {
+                e.printStackTrace();
+                info = null;
+            }
+        }
+        return info;
+    }
+
+    /**
+     * Collects the {@link ObjectInfo} about an object.
+     * 
+     * (Provided by OpenCMIS, but optimized for Alfresco.)
+     */
+    @Override
     protected ObjectInfo getObjectInfoIntern(String repositoryId, ObjectData object)
     {
         // if the object has no properties, stop here
@@ -2499,7 +2548,7 @@ public class AlfrescoCmisService extends AbstractCmisService
             info.setFileName(null);
 
             // parent
-            info.setHasParent(!connector.getRootNodeRef().equals(object.getId()));
+            info.setHasParent(!ni.isRootFolder());
 
             // policies and relationships
             info.setSupportsRelationships(true);
@@ -2563,7 +2612,7 @@ public class AlfrescoCmisService extends AbstractCmisService
             }
 
             // parent
-            info.setHasParent(true);
+            info.setHasParent(ni.isCurrentVersion() || ni.isPWC());
 
             // policies and relationships
             info.setSupportsRelationships(true);

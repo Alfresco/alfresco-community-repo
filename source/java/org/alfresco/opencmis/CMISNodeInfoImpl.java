@@ -19,8 +19,10 @@
 package org.alfresco.opencmis;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
@@ -43,6 +45,7 @@ import org.alfresco.service.cmr.version.VersionDoesNotExistException;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisInvalidArgumentException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisPermissionDeniedException;
@@ -68,6 +71,7 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
     private Version version;
     private Boolean isLatestMajorVersion;
     private Map<String, Serializable> properties;
+    private List<CMISNodeInfo> parents;
 
     public CMISNodeInfoImpl(CMISConnector connector, String objectId)
     {
@@ -765,5 +769,26 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
     public String toString()
     {
         return getObjectId() + " (" + getNodeRef() + ")";
+    }
+
+    @Override
+    public List<CMISNodeInfo> getParents()
+    {
+        if (parents == null)
+        {
+            parents = new ArrayList<CMISNodeInfo>();
+
+            List<ChildAssociationRef> nodeParents = connector.getNodeService().getParentAssocs(nodeRef,
+                    ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+            if (nodeParents != null)
+            {
+                for (ChildAssociationRef parent : nodeParents)
+                {
+                    parents.add(new CMISNodeInfoImpl(connector, parent.getParentRef()));
+                }
+            }
+        }
+
+        return parents;
     }
 }

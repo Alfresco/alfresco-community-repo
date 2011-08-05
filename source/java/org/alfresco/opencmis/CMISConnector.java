@@ -1018,7 +1018,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     /**
      * Gets the content from the repository.
      */
-    public ContentStream getContentStream(CMISNodeInfoImpl info, String streamId, BigInteger offset, BigInteger length)
+    public ContentStream getContentStream(CMISNodeInfo info, String streamId, BigInteger offset, BigInteger length)
     {
         // get the type and check if the object can have content
         TypeDefinitionWrapper type = info.getType();

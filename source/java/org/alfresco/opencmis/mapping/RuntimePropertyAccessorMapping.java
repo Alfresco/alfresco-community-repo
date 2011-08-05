@@ -159,9 +159,8 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
                 Action.CAN_GET_PROPERTIES, PermissionService.READ_PROPERTIES));
         registerEvaluator(BaseTypeId.CMIS_DOCUMENT, new FixedValueActionEvaluator(serviceRegistry,
                 Action.CAN_GET_OBJECT_RELATIONSHIPS, true));
-        registerEvaluator(BaseTypeId.CMIS_DOCUMENT, new ParentActionEvaluator(cmisConnector,
-                new PermissionActionEvaluator(serviceRegistry, Action.CAN_GET_OBJECT_PARENTS,
-                        PermissionService.READ_PERMISSIONS)));
+        registerEvaluator(BaseTypeId.CMIS_DOCUMENT, new ParentActionEvaluator(new PermissionActionEvaluator(
+                serviceRegistry, Action.CAN_GET_OBJECT_PARENTS, PermissionService.READ_PERMISSIONS)));
         // Is CAN_MOVE correct mapping?
         registerEvaluator(BaseTypeId.CMIS_DOCUMENT, new CurrentVersionEvaluator(serviceRegistry,
                 new PermissionActionEvaluator(serviceRegistry, Action.CAN_MOVE_OBJECT, PermissionService.DELETE_NODE),
@@ -213,11 +212,10 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
                 Action.CAN_GET_PROPERTIES, PermissionService.READ_PROPERTIES));
         registerEvaluator(BaseTypeId.CMIS_FOLDER, new FixedValueActionEvaluator(serviceRegistry,
                 Action.CAN_GET_OBJECT_RELATIONSHIPS, true));
-        registerEvaluator(BaseTypeId.CMIS_FOLDER, new ParentActionEvaluator(cmisConnector,
-                new PermissionActionEvaluator(serviceRegistry, Action.CAN_GET_OBJECT_PARENTS,
-                        PermissionService.READ_PERMISSIONS)));
+        registerEvaluator(BaseTypeId.CMIS_FOLDER, new ParentActionEvaluator(new PermissionActionEvaluator(
+                serviceRegistry, Action.CAN_GET_OBJECT_PARENTS, PermissionService.READ_PERMISSIONS)));
         registerEvaluator(BaseTypeId.CMIS_FOLDER, new RootFolderEvaluator(serviceRegistry, new ParentActionEvaluator(
-                cmisConnector, new PermissionActionEvaluator(serviceRegistry, Action.CAN_GET_FOLDER_PARENT,
+                new PermissionActionEvaluator(serviceRegistry, Action.CAN_GET_FOLDER_PARENT,
                         PermissionService.READ_PERMISSIONS)), false));
         registerEvaluator(BaseTypeId.CMIS_FOLDER, new PermissionActionEvaluator(serviceRegistry,
                 Action.CAN_GET_DESCENDANTS, PermissionService.READ_CHILDREN));

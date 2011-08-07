@@ -30,6 +30,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transfer.manifest.TransferManifestNodeFactory;
 import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
+import org.alfresco.service.cmr.publishing.PublishingPackage;
 import org.alfresco.service.cmr.publishing.MutablePublishingPackage;
 import org.alfresco.service.cmr.publishing.PublishingPackageEntry;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -40,6 +41,7 @@ import org.alfresco.service.cmr.version.VersionService;
  * @author Brian
  * @author Nick Smith
  * 
+ * @since 4.0
  */
 public class MutablePublishingPackageImpl implements MutablePublishingPackage
 {
@@ -62,15 +64,15 @@ public class MutablePublishingPackageImpl implements MutablePublishingPackage
     /**
     * {@inheritDoc}
      */
-    public void addNodesToPublish(NodeRef... nodesToAdd)
+    public MutablePublishingPackage addNodesToPublish(NodeRef... nodesToAdd)
     {
-        addNodesToPublish(Arrays.asList(nodesToAdd));
+        return addNodesToPublish(Arrays.asList(nodesToAdd));
     }
 
     /**
     * {@inheritDoc}
      */
-    public void addNodesToPublish(final Collection<NodeRef> nodesToAdd)
+    public MutablePublishingPackage addNodesToPublish(final Collection<NodeRef> nodesToAdd)
     {
         AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
@@ -81,6 +83,7 @@ public class MutablePublishingPackageImpl implements MutablePublishingPackage
             }
         }, AuthenticationUtil.getSystemUserName());
         nodesToPublish.addAll(nodesToAdd);
+        return this;
     }
 
     private void versionNodes(Collection<NodeRef> nodesToAdd)
@@ -105,27 +108,27 @@ public class MutablePublishingPackageImpl implements MutablePublishingPackage
     /**
     * {@inheritDoc}
      */
-    public void addNodesToUnpublish(NodeRef... nodesToRemove)
+    public MutablePublishingPackage addNodesToUnpublish(NodeRef... nodesToRemove)
     {
-        addNodesToUnpublish(Arrays.asList(nodesToRemove));
+        return addNodesToUnpublish(Arrays.asList(nodesToRemove));
     }
 
     /**
     * {@inheritDoc}
      */
-    public void addNodesToUnpublish(Collection<NodeRef> nodesToRemove)
+    public MutablePublishingPackage addNodesToUnpublish(Collection<NodeRef> nodesToRemove)
     {
         for (NodeRef nodeRef : nodesToRemove)
         {
             entryMap.put(nodeRef, new PublishingPackageEntryImpl(false, nodeRef, null, null));
         }
         nodesToUnpublish.addAll(nodesToRemove);
+        return this;
     }
 
     /**
     * {@inheritDoc}
     */
-    @Override
     public Collection<PublishingPackageEntry> getEntries()
     {
         return entryMap.values();
@@ -134,7 +137,6 @@ public class MutablePublishingPackageImpl implements MutablePublishingPackage
     /**
     * {@inheritDoc}
     */
-    @Override
     public Set<NodeRef> getNodesToPublish()
     {
         return nodesToPublish;
@@ -143,7 +145,6 @@ public class MutablePublishingPackageImpl implements MutablePublishingPackage
     /**
     * {@inheritDoc}
     */
-    @Override
     public Set<NodeRef> getNodesToUnpublish()
     {
         return nodesToUnpublish;
@@ -152,9 +153,16 @@ public class MutablePublishingPackageImpl implements MutablePublishingPackage
     /**
     * {@inheritDoc}
     */
-    @Override
     public Map<NodeRef, PublishingPackageEntry> getEntryMap()
     {
         return entryMap;
+    }
+    
+    /**
+    * {@inheritDoc}
+    */
+    public PublishingPackage build()
+    {
+        return new PublishingPackageImpl(entryMap);
     }
 }

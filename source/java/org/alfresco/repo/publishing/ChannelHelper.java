@@ -21,7 +21,6 @@ package org.alfresco.repo.publishing;
 
 import static org.alfresco.model.ContentModel.ASSOC_CONTAINS;
 import static org.alfresco.repo.publishing.PublishingModel.ASPECT_PUBLISHED;
-import static org.alfresco.repo.publishing.PublishingModel.ASSOC_PUBLISHED_CHANNEL;
 import static org.alfresco.repo.publishing.PublishingModel.ASSOC_SOURCE;
 import static org.alfresco.repo.publishing.PublishingModel.PROP_CHANNEL;
 import static org.alfresco.repo.publishing.PublishingModel.PROP_CHANNEL_TYPE;
@@ -132,13 +131,8 @@ public class ChannelHelper
             public Boolean apply(AssociationRef assoc)
             {
                 NodeRef publishedNode = assoc.getSourceRef();
-                List<AssociationRef> channelAssoc = nodeService.getTargetAssocs(publishedNode, ASSOC_PUBLISHED_CHANNEL);
-                if(CollectionUtils.isEmpty(channelAssoc))
-                {
-                    return false;
-                }
-                NodeRef target = channelAssoc.get(0).getTargetRef();
-                return target.equals(channelNode);
+                NodeRef parent = nodeService.getPrimaryParent(publishedNode).getParentRef();
+                return channelNode.equals(parent);
             }
         };
         AssociationRef assoc = CollectionUtils.findFirst(sourceAssocs, acceptor);
@@ -322,11 +316,6 @@ public class ChannelHelper
     public void addPublishedAspect(NodeRef publishedNode, NodeRef channelNode)
     {
         nodeService.addAspect(publishedNode, ASPECT_PUBLISHED, null);
-        List<AssociationRef> channelAssoc = nodeService.getTargetAssocs(publishedNode, ASSOC_PUBLISHED_CHANNEL);
-        if(CollectionUtils.isEmpty(channelAssoc))
-        {
-            nodeService.createAssociation(publishedNode, channelNode, ASSOC_PUBLISHED_CHANNEL);
-        }
     }
 
     private List<ChildAssociationRef> getChannelAssocs(NodeRef channelContainer)

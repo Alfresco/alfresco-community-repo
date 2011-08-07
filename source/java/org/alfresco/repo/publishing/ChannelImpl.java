@@ -50,7 +50,6 @@ public class ChannelImpl implements Channel
     /**
     * {@inheritDoc}
     */
-    @Override
     public String getId()
     {
         return nodeRef.toString();
@@ -91,7 +90,6 @@ public class ChannelImpl implements Channel
     /**
     * {@inheritDoc}
     */
-    @Override
     public void publish(NodeRef nodeToPublish)
     {
         channelHelper.addPublishedAspect(nodeToPublish, nodeRef);
@@ -104,17 +102,17 @@ public class ChannelImpl implements Channel
     /**
     * {@inheritDoc}
     */
-    @Override
     public void unPublish(NodeRef nodeToUnpublish)
     {
-        // TODO Auto-generated method stub
-        
+        if(channelType.canUnpublish())
+        {
+            channelType.unpublish(nodeToUnpublish, getProperties());
+        }
     }
 
     /**
     * {@inheritDoc}
     */
-    @Override
     public void updateStatus(String status)
     {
         channelType.updateStatus(this, status, getProperties());

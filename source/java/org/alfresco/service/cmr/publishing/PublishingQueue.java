@@ -31,7 +31,7 @@ public interface PublishingQueue
      * a call to the {@link PublishingQueue#scheduleNewEvent(PublishingPackage, String, Calendar, String, StatusUpdate)} operation.
      * @return A publishing package that can be populated before being placed on the publishing queue.
      */
-    MutablePublishingPackage createPublishingPackage();
+    MutablePublishingPackage createPublishingPackageBuilder();
     
     StatusUpdate createStatusUpdate(String message, NodeRef nodeToLinkTo, String... channelIds);
     StatusUpdate createStatusUpdate(String message, NodeRef nodeToLinkTo, Collection<String> channelIds);

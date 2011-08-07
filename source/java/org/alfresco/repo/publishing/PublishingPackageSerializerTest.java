@@ -19,8 +19,6 @@
 
 package org.alfresco.repo.publishing;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -144,8 +142,7 @@ public class PublishingPackageSerializerTest extends AbstractPublishingIntegrati
         byte[] output = os.toByteArray();
         
         ByteArrayInputStream is = new ByteArrayInputStream(output);
-        PublishingPackageImpl deserializedPublishingPackage = (PublishingPackageImpl) serializer.deserialize(is);
-        Map<NodeRef,PublishingPackageEntry> entryMap = deserializedPublishingPackage.getEntryMap();
+        Map<NodeRef, PublishingPackageEntry> entryMap = serializer.deserialize(is);
         assertEquals(1, entryMap.size());
         assertTrue(entryMap.containsKey(normalNode1.getNodeRef()));
         PublishingPackageEntryImpl entry = (PublishingPackageEntryImpl) entryMap.get(normalNode1.getNodeRef());

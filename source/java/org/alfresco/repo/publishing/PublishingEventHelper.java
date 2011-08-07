@@ -42,6 +42,7 @@ import static org.alfresco.util.collections.CollectionUtils.isEmpty;
 import static org.alfresco.util.collections.CollectionUtils.toListOfStrings;
 import static org.alfresco.util.collections.CollectionUtils.transform;
 import static org.alfresco.util.collections.CollectionUtils.transformFlat;
+import static org.alfresco.util.collections.CollectionUtils.transformToMap;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -64,6 +65,7 @@ import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
 import org.alfresco.service.cmr.publishing.PublishingEventFilter;
 import org.alfresco.service.cmr.publishing.PublishingPackage;
+import org.alfresco.service.cmr.publishing.PublishingPackageEntry;
 import org.alfresco.service.cmr.publishing.Status;
 import org.alfresco.service.cmr.publishing.StatusUpdate;
 import org.alfresco.service.cmr.repository.AssociationRef;
@@ -82,6 +84,7 @@ import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
+import org.alfresco.util.collections.CollectionUtils;
 import org.alfresco.util.collections.Filter;
 import org.alfresco.util.collections.Function;
 import org.apache.commons.logging.Log;
@@ -498,13 +501,38 @@ public class PublishingEventHelper
         InputStream input = contentReader.getContentInputStream();
         try
         {
-            return serializer.deserialize(input);
+            Map<NodeRef, PublishingPackageEntry> publishEntires = serializer.deserialize(input);
+            Map<NodeRef, PublishingPackageEntry> allEntries = getUnpublishPackageEntries(eventNode);
+            allEntries.putAll(publishEntires);
+            return new PublishingPackageImpl(allEntries);
         }
         catch (Exception ex)
         {
             String msg ="Failed to deserialize publishing package for PublishingEvent: " +eventNode;
             throw new AlfrescoRuntimeException(msg, ex);
         }
+    }
+
+    private Map<NodeRef, PublishingPackageEntry> getUnpublishPackageEntries(NodeRef eventNode)
+    {
+        @SuppressWarnings("unchecked")
+        List<String> entries= (List<String>) nodeService.getProperty(eventNode, PROP_PUBLISHING_EVENT_NODES_TO_UNPUBLISH);
+        if(CollectionUtils.isEmpty(entries))
+        {
+            return new HashMap<NodeRef, PublishingPackageEntry>();
+        }
+        List<NodeRef> nodes = NodeUtils.toNodeRefs(entries);
+        return transformToMap(nodes, new Function<NodeRef, PublishingPackageEntry>()
+        {
+            public PublishingPackageEntry apply(NodeRef node)
+            {
+                if(NodeUtils.exists(node, nodeService))
+                {
+                    return new PublishingPackageEntryImpl(false, node, null, null);
+                }
+                return null;
+            }
+        });
     }
 
     public void cancelEvent(String id)

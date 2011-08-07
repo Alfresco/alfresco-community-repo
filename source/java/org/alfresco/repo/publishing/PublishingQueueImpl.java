@@ -60,7 +60,7 @@ public class PublishingQueueImpl implements PublishingQueue
     /**
      * {@inheritDoc}
     */
-        public MutablePublishingPackage createPublishingPackage()
+        public MutablePublishingPackage createPublishingPackageBuilder()
     {
         return new MutablePublishingPackageImpl(transferManifestNodeFactory, versionService);
     }

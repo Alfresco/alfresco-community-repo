@@ -204,6 +204,26 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
         assertFalse(publishedProps.containsKey(PROP_LONGITUDE));
     }
     
+    public void testUnpublishNode() throws Exception
+    {
+        // Create content node and publish.
+        NodeRef source = testHelper.createContentNode(contentNodeName, content, MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        publishNode(source);
+        
+        // Check published node exists
+        NodeRef publishedNode = channelHelper.mapSourceToEnvironment(source, channelNode);
+        assertNotNull(publishedNode);
+        assertTrue(nodeService.exists(publishedNode));
+        
+        // Unpublish source node.
+        publishNode(source, null, false);
+        
+        // Check the published node no longer exists.
+        assertFalse(nodeService.exists(publishedNode));
+        publishedNode = channelHelper.mapSourceToEnvironment(source, channelNode);
+        assertNull(publishedNode);
+    }
+    
     @SuppressWarnings("unchecked")
     @Test
     public void testChannelTypePublishIsCalledOnPublish() throws Exception
@@ -242,6 +262,28 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
         
         // Check publish was called on update
         verify(channelType, times(1)).publish(eq(publishedNode), anyMap());
+        
+        // Unpublish node.
+        publishNode(source, null, false);
+        
+        // Check unpublish was not called, since ChannelType doesn't support it.
+        verify(channelType, never()).unpublish(eq(publishedNode), anyMap());
+
+        // Enable unpublishing on ChannelType.
+        when(channelType.canUnpublish()).thenReturn(true);
+
+        // Re-publish the node.
+        publishNode(source);
+        
+        // Get the newly published node.
+        publishedNode = channelHelper.mapSourceToEnvironment(source, channelNode);
+        assertNotNull(publishedNode);
+        
+        // Unpublish the node
+        publishNode(source, null, false);
+
+        // Check unpublish was called on update
+        verify(channelType, times(1)).unpublish(eq(publishedNode), anyMap());
     }
     
     @Test
@@ -339,8 +381,20 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
     
     private NodeRef publishNode(NodeRef source, StatusUpdate statusUpdate)
     {
-        MutablePublishingPackage pckg = publishingService.getPublishingQueue().createPublishingPackage();
-        pckg.addNodesToPublish(source);
+        return publishNode(source, statusUpdate, true);
+    }
+    
+    private NodeRef publishNode(NodeRef source, StatusUpdate statusUpdate, boolean publish)
+    {
+        MutablePublishingPackage pckg = publishingService.getPublishingQueue().createPublishingPackageBuilder();
+        if(publish)
+        {
+            pckg.addNodesToPublish(source);
+        }
+        else
+        {
+            pckg.addNodesToUnpublish(source);
+        }
         String eventId = testHelper.scheduleEvent1Year(pckg, channel.getId(), null, statusUpdate);
         
         assertNotNull(eventId);

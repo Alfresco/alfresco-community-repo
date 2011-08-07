@@ -25,10 +25,10 @@ import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -54,8 +54,9 @@ public class StandardPublishingPackageSerializer implements PublishingPackageSer
 {
     /**
      * {@inheritDoc}
+     * @return 
       */
-    public PublishingPackage deserialize(InputStream input) throws Exception
+    public Map<NodeRef, PublishingPackageEntry> deserialize(InputStream input) throws Exception
     {
         SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
         SAXParser parser = saxParserFactory.newSAXParser();
@@ -63,8 +64,7 @@ public class StandardPublishingPackageSerializer implements PublishingPackageSer
 
         XMLTransferManifestReader xmlReader = new XMLTransferManifestReader(processor);
         parser.parse(input, xmlReader);
-        PublishingPackageImpl publishingPackage = new PublishingPackageImpl(processor.getEntries());
-        return publishingPackage;
+        return processor.getEntries();
     }
 
     /**
@@ -74,11 +74,10 @@ public class StandardPublishingPackageSerializer implements PublishingPackageSer
     {
         try
         {
-            Collection<PublishingPackageEntry> entries = publishingPackage.getEntries();
-
+            Set<NodeRef> nodesToPublish = publishingPackage.getNodesToPublish();
             TransferManifestHeader header = new TransferManifestHeader();
             header.setCreatedDate(new Date());
-            header.setNodeCount(entries.size());
+            header.setNodeCount(nodesToPublish.size());
             header.setReadOnly(false);
             header.setSync(false);
             
@@ -87,8 +86,12 @@ public class StandardPublishingPackageSerializer implements PublishingPackageSer
             XMLTransferManifestWriter transferManifestWriter = new XMLTransferManifestWriter();
             transferManifestWriter.startTransferManifest(writer);
             transferManifestWriter.writeTransferManifestHeader(header);
-            for (PublishingPackageEntry entry : entries)
+
+            // Iterate over NodesToPublish and Serialize.
+            Map<NodeRef, PublishingPackageEntry> entryMap = publishingPackage.getEntryMap();
+            for (NodeRef publishNode: nodesToPublish)
             {
+                PublishingPackageEntry entry = entryMap.get(publishNode);
                 if (entry instanceof PublishingPackageEntryImpl)
                 {
                     PublishingPackageEntryImpl entryImpl = (PublishingPackageEntryImpl)entry;

@@ -85,7 +85,7 @@ public class PublishingIntegratedTest extends BaseSpringTest
         }
 
         PublishingQueue liveQueue = publishingService.getPublishingQueue();
-        MutablePublishingPackage publishingPackage = liveQueue.createPublishingPackage();
+        MutablePublishingPackage publishingPackage = liveQueue.createPublishingPackageBuilder();
         publishingPackage.addNodesToPublish(nodes);
 
         Calendar scheduleTime = Calendar.getInstance();
@@ -118,7 +118,7 @@ public class PublishingIntegratedTest extends BaseSpringTest
                     NamespaceService.CONTENT_MODEL_1_0_URI, Integer.toString(i)), ContentModel.TYPE_CONTENT).getChildRef());
         }
         PublishingQueue liveQueue = publishingService.getPublishingQueue();
-        MutablePublishingPackage publishingPackage = liveQueue.createPublishingPackage();
+        MutablePublishingPackage publishingPackage = liveQueue.createPublishingPackageBuilder();
         publishingPackage.addNodesToPublish(nodes);
 
         Calendar scheduleTime = Calendar.getInstance();

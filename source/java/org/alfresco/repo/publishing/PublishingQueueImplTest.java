@@ -42,7 +42,6 @@ import org.alfresco.service.cmr.publishing.PublishingService;
 import org.alfresco.service.cmr.publishing.Status;
 import org.alfresco.service.cmr.publishing.StatusUpdate;
 import org.alfresco.service.cmr.publishing.channels.Channel;
-import org.alfresco.service.cmr.publishing.channels.ChannelType;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
@@ -73,12 +72,11 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         
         assertNull(nodeService.getProperty(firstNode, PROP_VERSION_LABEL));
         assertNull(nodeService.getProperty(firstNode, PROP_VERSION_LABEL));
-        MutablePublishingPackage publishingPackage = publishingService.getPublishingQueue().createPublishingPackage();
+        MutablePublishingPackage publishingPackage = publishingService.getPublishingQueue().createPublishingPackageBuilder();
         publishingPackage.addNodesToPublish(firstNode, secondNode);
 
-        //TODO Implement Unpublish
-//        NodeRef thirdNode = fileFolderService.create(docLib, "third", ContentModel.TYPE_CONTENT).getNodeRef();
-//        publishingPackage.addNodesToUnpublish(thirdNode);
+        NodeRef thirdNode = createContent("third");
+        publishingPackage.addNodesToUnpublish(thirdNode);
         
         Calendar schedule = Calendar.getInstance();
         schedule.add(Calendar.HOUR, 2);
@@ -103,9 +101,9 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         ArrayList<NodeRef> toUnpublish = new ArrayList<NodeRef>(1);
         for (PublishingPackageEntry entry : pckg.getEntries())
         {
-            assertNotNull(entry.getSnapshot());
             if(entry.isPublish())
             {
+                assertNotNull(entry.getSnapshot());
                 toPublish.add(entry.getNodeRef());
             }
             else
@@ -118,8 +116,8 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         assertTrue(toPublish.contains(firstNode));
         assertTrue(toPublish.contains(secondNode));
 
-//        assertEquals(1, toUnpublish.size());
-//        assertTrue(toUnpublish.contains(thirdNode));
+        assertEquals(1, toUnpublish.size());
+        assertTrue(toUnpublish.contains(thirdNode));
         
         // Check the correct version is recorded in the entry.
         PublishingPackageEntry entry = publishingPackage.getEntryMap().get(firstNode);
@@ -148,7 +146,7 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         StatusUpdate update = publishingService.getPublishingQueue().createStatusUpdate(message, secondNode, channelNames);
         
         // Publish an event with the StatusUpdate
-        MutablePublishingPackage publishingPackage = publishingService.getPublishingQueue().createPublishingPackage();
+        MutablePublishingPackage publishingPackage = publishingService.getPublishingQueue().createPublishingPackageBuilder();
         publishingPackage.addNodesToPublish(firstNode, secondNode);
         Calendar schedule = Calendar.getInstance();
         schedule.add(Calendar.HOUR, 2);
@@ -167,7 +165,7 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
     public void testScheduleNewEventPermissions() throws Exception
     {
         // Create Channels as Admin
-        ChannelType channelType = testHelper.mockChannelType(channelTypeId);
+        testHelper.mockChannelType(channelTypeId);
         Channel publishChannel = testHelper.createChannel(channelTypeId);
         Channel statusChannel = testHelper.createChannel(channelTypeId);
         
@@ -182,7 +180,7 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         personManager.setUser(user1);
 
         // Publish an event
-        MutablePublishingPackage publishingPackage = publishingService.getPublishingQueue().createPublishingPackage();
+        MutablePublishingPackage publishingPackage = publishingService.getPublishingQueue().createPublishingPackageBuilder();
         publishingPackage.addNodesToPublish(firstNode, secondNode);
         try
         {

@@ -369,7 +369,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         assertEquals(0, data.length());
         
         // Create publishing event for textNode1.
-        MutablePublishingPackage pckg1 = publishingService.getPublishingQueue().createPublishingPackage();
+        MutablePublishingPackage pckg1 = publishingService.getPublishingQueue().createPublishingPackageBuilder();
         pckg1.addNodesToPublish(textNode1);
         StatusUpdate statusUpdate = null;
         String comment = "This is a comment";

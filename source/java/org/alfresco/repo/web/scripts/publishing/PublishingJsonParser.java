@@ -100,7 +100,7 @@ public class PublishingJsonParser implements PublishingWebScriptConstants
     
     public PublishingPackage getPublishingPackage(PublishingQueue queue, JSONObject json)
     {
-        MutablePublishingPackage pckg = queue.createPublishingPackage();
+        MutablePublishingPackage pckg = queue.createPublishingPackageBuilder();
         List<NodeRef> publishNodes = toNodes(json.optJSONArray(PUBLISH_NODES));
         List<NodeRef> unpublishNodes = toNodes(json.optJSONArray(UNPUBLISH_NODES));
         pckg.addNodesToPublish(publishNodes);

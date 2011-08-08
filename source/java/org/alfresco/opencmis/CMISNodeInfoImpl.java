@@ -781,13 +781,18 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
         {
             parents = new ArrayList<CMISNodeInfo>();
 
-            List<ChildAssociationRef> nodeParents = connector.getNodeService().getParentAssocs(nodeRef,
+            NodeRef nodeRefForParent = (isCurrentVersion() ? getCurrentNodeNodeRef() : nodeRef);
+
+            List<ChildAssociationRef> nodeParents = connector.getNodeService().getParentAssocs(nodeRefForParent,
                     ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
             if (nodeParents != null)
             {
                 for (ChildAssociationRef parent : nodeParents)
                 {
-                    parents.add(new CMISNodeInfoImpl(connector, parent.getParentRef()));
+                    if (connector.getType(parent.getParentRef()) instanceof FolderTypeDefintionWrapper)
+                    {
+                        parents.add(new CMISNodeInfoImpl(connector, parent.getParentRef()));
+                    }
                 }
             }
         }

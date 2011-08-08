@@ -32,6 +32,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.query.CannedQueryPageDetails;
+import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -780,7 +783,7 @@ public class ADMRemoteStore extends BaseRemoteStore
      * @param out       Writer for output - relative paths separated by newline characters
      * @param surfConfigRef Surf-Config folder
      * @param fileInfo  The FileInfo node to use as the parent
-     * @param pattern   Optional pattern to match filenames against
+     * @param pattern   Optional pattern to match filenames against ("*" is match all)
      * @param recurse   True to recurse sub-directories
      * 
      * @throws IOException
@@ -790,12 +793,14 @@ public class ADMRemoteStore extends BaseRemoteStore
     {
         final boolean debug = logger.isDebugEnabled();
         final Map<NodeRef, String> nameCache = new HashMap<NodeRef, String>();
-        final List<FileInfo> files = fileFolderService.search(fileInfo.getNodeRef(), pattern, true, false, recurse);
-        for (final FileInfo file : files)
+        PagingResults<FileInfo> files = fileFolderService.list(
+                fileInfo.getNodeRef(), true, false, pattern, null, null,
+                new PagingRequest(CannedQueryPageDetails.DEFAULT_PAGE_SIZE));
+        for (final FileInfo file : files.getPage())
         {
             // walking up the parent tree manually until the "surf-config" parent is hit
             // and manually appending the rest of the cm:name path down to the node.
-            StringBuilder displayPath = new StringBuilder(64);
+            final StringBuilder displayPath = new StringBuilder(64);
             NodeRef ref = unprotNodeService.getPrimaryParent(file.getNodeRef()).getParentRef();
             while (!ref.equals(surfConfigRef))
             {

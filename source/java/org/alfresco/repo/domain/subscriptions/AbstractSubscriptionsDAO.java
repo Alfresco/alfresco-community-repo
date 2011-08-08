@@ -21,6 +21,7 @@ package org.alfresco.repo.domain.subscriptions;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.subscriptions.PagingFollowingResults;
 import org.alfresco.service.cmr.subscriptions.PagingSubscriptionResults;
@@ -65,6 +66,12 @@ public abstract class AbstractSubscriptionsDAO implements SubscriptionsDAO
 
     protected NodeRef getUserNodeRef(String userId)
     {
-        return personService.getPerson(userId, false);
+        try
+        {
+            return personService.getPerson(userId, false);
+        } catch (NoSuchPersonException nspe)
+        {
+            return null;
+        }
     }
 }

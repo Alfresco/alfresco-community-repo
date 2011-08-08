@@ -69,6 +69,11 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
         }
 
         NodeRef userNodeRef = getUserNodeRef(userId);
+        if (userNodeRef == null)
+        {
+            throw new IllegalArgumentException("User does not exist!");
+        }
+
         Pair<Long, NodeRef> userPair = nodeDAO.getNodePair(userNodeRef);
 
         Map<String, Object> map = new HashMap<String, Object>();
@@ -118,6 +123,11 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
         }
 
         NodeRef userNodeRef = getUserNodeRef(userId);
+        if (userNodeRef == null)
+        {
+            return 0;
+        }
+
         Pair<Long, NodeRef> userPair = nodeDAO.getNodePair(userNodeRef);
 
         Map<String, Object> map = new HashMap<String, Object>();
@@ -143,6 +153,11 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
         }
 
         NodeRef userNodeRef = getUserNodeRef(userId);
+        if (userNodeRef == null)
+        {
+            throw new IllegalArgumentException("User does not exist!");
+        }
+
         Pair<Long, NodeRef> userPair = nodeDAO.getNodePair(userNodeRef);
         Pair<Long, NodeRef> nodePair = nodeDAO.getNodePair(node);
 
@@ -170,6 +185,11 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
         }
 
         NodeRef userNodeRef = getUserNodeRef(userId);
+        if (userNodeRef == null)
+        {
+            throw new IllegalArgumentException("User does not exist!");
+        }
+
         Pair<Long, NodeRef> userPair = nodeDAO.getNodePair(userNodeRef);
         Pair<Long, NodeRef> nodePair = nodeDAO.getNodePair(node);
 
@@ -194,6 +214,11 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
         }
 
         NodeRef userNodeRef = getUserNodeRef(userId);
+        if (userNodeRef == null)
+        {
+            throw new IllegalArgumentException("User does not exist!");
+        }
+
         Pair<Long, NodeRef> userPair = nodeDAO.getNodePair(userNodeRef);
         Pair<Long, NodeRef> nodePair = nodeDAO.getNodePair(node);
 
@@ -213,6 +238,11 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
         }
 
         NodeRef userNodeRef = getUserNodeRef(userId);
+        if (userNodeRef == null)
+        {
+            throw new IllegalArgumentException("User does not exist!");
+        }
+
         Pair<Long, NodeRef> userPair = nodeDAO.getNodePair(userNodeRef);
 
         Map<String, Object> map = new HashMap<String, Object>();
@@ -251,6 +281,11 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
         }
 
         NodeRef userNodeRef = getUserNodeRef(userId);
+        if (userNodeRef == null)
+        {
+            throw new IllegalArgumentException("User does not exist!");
+        }
+
         Pair<Long, NodeRef> userPair = nodeDAO.getNodePair(userNodeRef);
 
         Map<String, Object> map = new HashMap<String, Object>();
@@ -289,6 +324,11 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
         }
 
         NodeRef userNodeRef = getUserNodeRef(userId);
+        if (userNodeRef == null)
+        {
+            return 0;
+        }
+
         Pair<Long, NodeRef> userPair = nodeDAO.getNodePair(userNodeRef);
 
         Map<String, Object> map = new HashMap<String, Object>();

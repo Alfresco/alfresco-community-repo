@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.springframework.extensions.surf.util.I18NUtil;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingResults;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
@@ -196,6 +197,62 @@ public class MLTranslationInterceptor implements MethodInterceptor
         return translatedFileInfo;
     }
     
+    private List<FileInfo> processList(List<FileInfo> fileInfos)
+    {
+        // Compile a set to ensure we don't get duplicates
+        Map<FileInfo, FileInfo> translatedFileInfos = new HashMap<FileInfo, FileInfo>(17);
+        for (FileInfo fileInfo : fileInfos)
+        {
+            FileInfo translatedFileInfo = getTranslatedFileInfo(fileInfo);
+            // Add this to the set
+            translatedFileInfos.put(fileInfo, translatedFileInfo);
+        }
+        // Convert the set back to a list
+        List<FileInfo> orderedResults = new ArrayList<FileInfo>(fileInfos.size());
+        Set<FileInfo> alreadyPresent = new HashSet<FileInfo>(fileInfos.size() * 2 + 1);
+        for (FileInfo info : fileInfos)
+        {
+            FileInfo translatedFileInfo = translatedFileInfos.get(info);
+            if (alreadyPresent.contains(translatedFileInfo))
+            {
+                // We've done this one
+                continue;
+            }
+            alreadyPresent.add(translatedFileInfo);
+            orderedResults.add(translatedFileInfo);
+        }
+        return orderedResults;  	
+    }
+    
+    private PagingResults<FileInfo> processPagingResults(final PagingResults<FileInfo> fileInfos)
+    {
+        final List<FileInfo> orderedResults = processList(fileInfos.getPage());
+        PagingResults<FileInfo> orderedPagingResults = new PagingResults<FileInfo>()
+        {
+            @Override
+            public String getQueryExecutionId()
+            {
+                return fileInfos.getQueryExecutionId();
+            }
+            @Override
+            public List<FileInfo> getPage()
+            {
+                return orderedResults;
+            }
+            @Override
+            public boolean hasMoreItems()
+            {
+                return fileInfos.hasMoreItems();
+            }
+            @Override
+            public Pair<Integer, Integer> getTotalResultCount()
+            {
+                return fileInfos.getTotalResultCount();
+            }
+        };
+        return orderedPagingResults;
+    }
+
     @SuppressWarnings("unchecked")
     public Object invoke(MethodInvocation invocation) throws Throwable
     {
@@ -209,53 +266,19 @@ public class MLTranslationInterceptor implements MethodInterceptor
         }
         else if (METHOD_NAMES_LIST.contains(methodName))
         {
-        	final PagingResults<FileInfo> fileInfos = (PagingResults<FileInfo>) invocation.proceed();
-            // Compile a set to ensure we don't get duplicates
-            Map<FileInfo, FileInfo> translatedFileInfos = new HashMap<FileInfo, FileInfo>(17);
-            for (FileInfo fileInfo : fileInfos.getPage())
-            {
-                FileInfo translatedFileInfo = getTranslatedFileInfo(fileInfo);
-                // Add this to the set
-                translatedFileInfos.put(fileInfo, translatedFileInfo);
-            }
-            // Convert the set back to a PagingResults
-            final List<FileInfo> orderedResults = new ArrayList<FileInfo>(fileInfos.getPage().size());
-            PagingResults<FileInfo> orderedPagingResults = new PagingResults<FileInfo>()
-            {
-                @Override
-                public String getQueryExecutionId()
-                {
-                    return fileInfos.getQueryExecutionId();
-                }
-                @Override
-                public List<FileInfo> getPage()
-                {
-                    return orderedResults;
-                }
-                @Override
-                public boolean hasMoreItems()
-                {
-                    return fileInfos.hasMoreItems();
-                }
-                @Override
-                public Pair<Integer, Integer> getTotalResultCount()
-                {
-                    return fileInfos.getTotalResultCount();
-                }
-            };
-            Set<FileInfo> alreadyPresent = new HashSet<FileInfo>(fileInfos.getPage().size() * 2 + 1);
-            for (FileInfo info : fileInfos.getPage())
-            {
-                FileInfo translatedFileInfo = translatedFileInfos.get(info);
-                if (alreadyPresent.contains(translatedFileInfo))
-                {
-                    // We've done this one
-                    continue;
-                }
-                alreadyPresent.add(translatedFileInfo);
-                orderedResults.add(translatedFileInfo);
-            }
-            ret = orderedPagingResults;
+        	Object result = invocation.proceed();
+        	if(result instanceof List)
+        	{
+        		return processList((List<FileInfo>)result);
+        	}
+        	else if(result instanceof PagingResults)
+        	{
+        		return processPagingResults((PagingResults<FileInfo>)result);
+        	}
+        	else
+        	{
+        		throw new ClassCastException("Unexpected return type from method " + methodName + " in " + this);
+        	}
         }
         else if (METHOD_NAMES_SINGLE.contains(methodName))
         {

@@ -212,6 +212,24 @@ public class FileFolderServiceImplTest extends TestCase
         { NAME_L0_FILE_A, NAME_L0_FILE_B, NAME_L0_FOLDER_A, NAME_L0_FOLDER_B, NAME_L0_FOLDER_C };
         checkFileList(files, 2, 3, expectedNames);
     }
+
+    public void testShallowFilesAndFoldersListWithLocale() throws Exception
+    {
+		Locale savedLocale = I18NUtil.getContentLocaleOrNull();
+		try
+		{
+			I18NUtil.setContentLocale(Locale.CANADA);
+	        List<FileInfo> files = fileFolderService.list(workingRootNodeRef);
+	        // check
+	        String[] expectedNames = new String[]
+	        { NAME_L0_FILE_A, NAME_L0_FILE_B, NAME_L0_FOLDER_A, NAME_L0_FOLDER_B, NAME_L0_FOLDER_C };
+	        checkFileList(files, 2, 3, expectedNames);
+		}
+		finally
+		{
+	        I18NUtil.setContentLocale(savedLocale);
+		}
+    }
     
     public void testListPage() throws Exception
     {

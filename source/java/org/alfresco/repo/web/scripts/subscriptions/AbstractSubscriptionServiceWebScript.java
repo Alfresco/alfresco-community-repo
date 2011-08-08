@@ -20,6 +20,7 @@ package org.alfresco.repo.web.scripts.subscriptions;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.List;
 
@@ -77,7 +78,7 @@ public abstract class AbstractSubscriptionServiceWebScript extends AbstractWebSc
 
             if (obj instanceof JSONObject || obj instanceof JSONArray)
             {
-                res.setContentEncoding("UTF-8");
+                res.setContentEncoding(Charset.defaultCharset().displayName());
                 
                 Writer writer = res.getWriter();
                 if (obj instanceof JSONObject)

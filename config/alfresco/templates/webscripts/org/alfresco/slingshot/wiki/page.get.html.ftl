@@ -1,1 +1,1 @@
-${page.contents}
+${result.page.contents}

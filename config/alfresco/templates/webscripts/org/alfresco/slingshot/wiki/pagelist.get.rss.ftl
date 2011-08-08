@@ -11,12 +11,13 @@
       <url>${absurl(url.context)?replace("alfresco", "share/proxy/alfresco")}/images/logo/AlfrescoLogo200.png</url>
    </image>
    <#list wiki.pages?sort_by(['modified'])?reverse as p>
+   <#assign node = p.node>
    <#assign page = p.page>
    <item>
-      <title>${(page.properties.title!"")?html}</title>
-      <link>${absurl(url.context)?replace("alfresco", "share/page/site/${siteId}/wiki-page?title=${page.name}")}</link>
-      <pubDate>${page.properties.modified?string("EEE, dd MMM yyyy HH:mm:ss zzz")}</pubDate>
-      <guid isPermaLink="false">${page.id}</guid>
+      <title>${(page.title!"")?html}</title>
+      <link>${absurl(url.context)?replace("alfresco", "share/page/site/${siteId}/wiki-page?title=${page.systemName}")}</link>
+      <pubDate>${page.modifiedAt?string("EEE, dd MMM yyyy HH:mm:ss zzz")}</pubDate>
+      <guid isPermaLink="false">${node.id}</guid>
    </item>
 </#list>
 </channel>

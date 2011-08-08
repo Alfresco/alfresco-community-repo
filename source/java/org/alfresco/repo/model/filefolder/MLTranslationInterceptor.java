@@ -28,11 +28,13 @@ import java.util.Set;
 
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
+import org.alfresco.query.PagingResults;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.util.Pair;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
@@ -207,19 +209,42 @@ public class MLTranslationInterceptor implements MethodInterceptor
         }
         else if (METHOD_NAMES_LIST.contains(methodName))
         {
-            List<FileInfo> fileInfos = (List<FileInfo>) invocation.proceed();
+        	final PagingResults<FileInfo> fileInfos = (PagingResults<FileInfo>) invocation.proceed();
             // Compile a set to ensure we don't get duplicates
             Map<FileInfo, FileInfo> translatedFileInfos = new HashMap<FileInfo, FileInfo>(17);
-            for (FileInfo fileInfo : fileInfos)
+            for (FileInfo fileInfo : fileInfos.getPage())
             {
                 FileInfo translatedFileInfo = getTranslatedFileInfo(fileInfo);
                 // Add this to the set
                 translatedFileInfos.put(fileInfo, translatedFileInfo);
             }
-            // Convert the set back to a list
-            List<FileInfo> orderedResults = new ArrayList<FileInfo>(fileInfos.size());
-            Set<FileInfo> alreadyPresent = new HashSet<FileInfo>(fileInfos.size() * 2 + 1);
-            for (FileInfo info : fileInfos)
+            // Convert the set back to a PagingResults
+            final List<FileInfo> orderedResults = new ArrayList<FileInfo>(fileInfos.getPage().size());
+            PagingResults<FileInfo> orderedPagingResults = new PagingResults<FileInfo>()
+            {
+                @Override
+                public String getQueryExecutionId()
+                {
+                    return fileInfos.getQueryExecutionId();
+                }
+                @Override
+                public List<FileInfo> getPage()
+                {
+                    return orderedResults;
+                }
+                @Override
+                public boolean hasMoreItems()
+                {
+                    return fileInfos.hasMoreItems();
+                }
+                @Override
+                public Pair<Integer, Integer> getTotalResultCount()
+                {
+                    return fileInfos.getTotalResultCount();
+                }
+            };
+            Set<FileInfo> alreadyPresent = new HashSet<FileInfo>(fileInfos.getPage().size() * 2 + 1);
+            for (FileInfo info : fileInfos.getPage())
             {
                 FileInfo translatedFileInfo = translatedFileInfos.get(info);
                 if (alreadyPresent.contains(translatedFileInfo))
@@ -230,7 +255,7 @@ public class MLTranslationInterceptor implements MethodInterceptor
                 alreadyPresent.add(translatedFileInfo);
                 orderedResults.add(translatedFileInfo);
             }
-            ret = orderedResults;
+            ret = orderedPagingResults;
         }
         else if (METHOD_NAMES_SINGLE.contains(methodName))
         {

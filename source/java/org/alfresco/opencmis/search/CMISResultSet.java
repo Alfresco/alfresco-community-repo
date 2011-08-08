@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.opencmis.dictionary.CMISDictionaryService;
+import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.repo.search.impl.querymodel.Query;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -48,6 +49,8 @@ public class CMISResultSet implements ResultSetSPI<CMISResultSetRow, CMISResultS
     private static final long serialVersionUID = 2014688399588268994L;
 
     private Map<String, ResultSet> wrapped;
+    
+    private Map<NodeRef, CMISNodeInfo> nodeInfos;
 
     private LimitBy limitBy;
 
@@ -72,6 +75,7 @@ public class CMISResultSet implements ResultSetSPI<CMISResultSetRow, CMISResultS
         this.query = query;
         this.cmisDictionaryService = cmisDictionaryService;
         this.alfrescoDictionaryService = alfrescoDictionaryService;
+        this.nodeInfos = new HashMap<NodeRef, CMISNodeInfo>();
     }
 
     /*
@@ -111,7 +115,7 @@ public class CMISResultSet implements ResultSetSPI<CMISResultSetRow, CMISResultS
      */
     public CMISResultSetRow getRow(int i)
     {
-        return new CMISResultSetRow(this, i, getScores(i), nodeService, getNodeRefs(i), query, cmisDictionaryService);
+        return new CMISResultSetRow(this, i, getScores(i), nodeService, getNodeRefs(i), nodeInfos, query, cmisDictionaryService);
     }
 
     /*

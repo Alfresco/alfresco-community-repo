@@ -107,12 +107,12 @@ public abstract class AbstractProperty implements CMISPropertyAccessor
 
     protected abstract Serializable getValueInternal(CMISNodeInfo nodeInfo);
 
-    protected CMISNodeInfo createNodeInfo(NodeRef nodeRef)
+    public CMISNodeInfo createNodeInfo(NodeRef nodeRef)
     {
         return connector.createNodeInfo(nodeRef);
     }
 
-    protected CMISNodeInfo createNodeInfo(AssociationRef assocRef)
+    public CMISNodeInfo createNodeInfo(AssociationRef assocRef)
     {
         return connector.createNodeInfo(assocRef);
     }

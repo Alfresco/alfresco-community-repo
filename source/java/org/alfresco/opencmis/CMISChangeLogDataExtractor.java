@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 
 import org.alfresco.opencmis.dictionary.CMISDictionaryService;
+import org.alfresco.opencmis.dictionary.CMISPropertyAccessor;
 import org.alfresco.opencmis.dictionary.TypeDefinitionWrapper;
 import org.alfresco.repo.audit.extractor.AbstractDataExtractor;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -61,7 +62,8 @@ public class CMISChangeLogDataExtractor extends AbstractDataExtractor
         HashMap<String, Serializable> result = new HashMap<String, Serializable>(5);
         result.put(KEY_NODE_REF, nodeRef);
         // Support version nodes by recording the object ID
-        result.put(KEY_OBJECT_ID, type.getPropertyById(PropertyIds.OBJECT_ID).getPropertyAccessor().getValue(nodeRef));
+        CMISPropertyAccessor accessor = type.getPropertyById(PropertyIds.OBJECT_ID).getPropertyAccessor();
+        result.put(KEY_OBJECT_ID, accessor.getValue(accessor.createNodeInfo(nodeRef)));
         
         return result;
     }

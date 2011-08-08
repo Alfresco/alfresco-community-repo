@@ -59,7 +59,7 @@ public interface WikiService {
     * Retrieves an existing {@link WikiPageInfo} from the repository
     */
    @NotAuditable
-   WikiPageInfo getWikiPage(String siteShortName, String pageTitle);
+   WikiPageInfo getWikiPage(String siteShortName, String pageName);
 
    /**
     * Retrieves all {@link WikiPageInfo} instances in the repository

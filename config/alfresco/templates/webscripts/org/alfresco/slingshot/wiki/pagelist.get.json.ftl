@@ -9,18 +9,19 @@
    "pages":
    [
    <#list wiki.pages?sort_by(['modified'])?reverse as p>
+      <#assign node = p.node>
       <#assign page = p.page>
       {
-         "name" : "${page.name}",
-         "title" : "<#if page.properties.title?exists>${page.properties.title}<#else>${page.name?replace("_", " ")}</#if>",
+         "name" : "${p.name}",
+         "title" : "<#if p.title?has_content>${p.title}<#else>${p.name?replace("_", " ")}</#if>",
          <#-- Strip out any HTML tags -->
-         "text" : "${page.content}",
+         "text" : "${page.contents}",
          "tags" : [
              <#list p.tags as tag>
                 "${tag}"<#if tag_has_next>,</#if>
              </#list>  
            ],
-         "createdOn": "<@dateFormat page.properties.created />",
+         "createdOn": "<@dateFormat p.created />",
          <#if p.createdBy??>
             <#assign createdBy = (p.createdBy.properties.firstName!"" + " " + p.createdBy.properties.lastName!"")?trim>
             <#assign createdByUser = p.createdBy.properties.userName>
@@ -30,7 +31,7 @@
          </#if>
          "createdBy": "${createdBy}",
          "createdByUser": "${createdByUser}",
-         "modifiedOn": "<@dateFormat page.properties.modified />",
+         "modifiedOn": "<@dateFormat p.modified />",
          <#if p.modifiedBy??>
             <#assign modifiedBy = (p.modifiedBy.properties.firstName!"" + " " + p.modifiedBy.properties.lastName!"")?trim>
             <#assign modifiedByUser = p.modifiedBy.properties.userName>
@@ -42,8 +43,8 @@
          "modifiedByUser": "${modifiedByUser}",
          "permissions":
          {
-            "edit": ${page.hasPermission("Write")?string},
-            "delete": ${page.hasPermission("Delete")?string}
+            "edit": ${node.hasPermission("Write")?string},
+            "delete": ${node.hasPermission("Delete")?string}
          }
       }<#if p_has_next>,</#if>
    </#list>

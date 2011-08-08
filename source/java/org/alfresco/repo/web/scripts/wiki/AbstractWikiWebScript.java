@@ -203,14 +203,18 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
     protected Map<String, Object> renderWikiPage(WikiPageInfo page)
     {
        Map<String, Object> res = new HashMap<String, Object>();
+       res.put("page", page);
        res.put("node", page.getNodeRef());
-       res.put("page", new ScriptNode(page.getNodeRef(), serviceRegistry));
        res.put("name", page.getSystemName());
        res.put("title", page.getTitle());
        res.put("contents", page.getContents());
+       res.put("tags", page.getTags());
+       
+       // Both forms used for dates
        res.put("createdOn", page.getCreatedAt());
        res.put("modifiedOn", page.getModifiedAt());
-       res.put("tags", page.getTags());
+       res.put("created", page.getCreatedAt());
+       res.put("modified", page.getModifiedAt());
        
        // FTL needs a script node of the people
        res.put("createdBy", buildPerson(page.getCreator()));
@@ -265,7 +269,7 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
        
        
        // Get the site short name. Try quite hard to do so...
-       String siteName = templateVars.get("site");
+       String siteName = templateVars.get("siteId");
        if(siteName == null)
        {
           siteName = req.getParameter("site");
@@ -277,6 +281,10 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
              if(json.has("siteid"))
              {
                 siteName = json.getString("siteid");
+             }
+             else if(json.has("siteId"))
+             {
+                siteName = json.getString("siteId");
              }
              else if(json.has("site"))
              {
@@ -299,11 +307,12 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
           throw new WebScriptException(Status.STATUS_NOT_FOUND, error);
        }
        
-       // Link name is optional
-       String linkName = templateVars.get("path");
+       // Page name is optional
+       // Note - it's really the Name, even if it's called "Title"
+       String pageName = templateVars.get("pageTitle");
        
        // Have the real work done
-       return executeImpl(site, linkName, req, json, status, cache); 
+       return executeImpl(site, pageName, req, json, status, cache); 
     }
     
     protected abstract Map<String, Object> executeImpl(SiteInfo site, 

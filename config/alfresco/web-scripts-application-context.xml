@@ -1528,6 +1528,34 @@
    
    
    <!--                                        -->
+   <!--          Wiki Pages REST API           -->
+   <!--                                        -->
+   
+   <!-- abstract wiki web script -->
+   <bean id="abstractWikiWebScript"
+          class="org.alfresco.repo.web.scripts.wiki.AbstractWikiWebscript"
+          parent="webscript" abstract="true">
+        <property name="nodeService" ref="NodeService"/>
+        <property name="siteService" ref="SiteService"/>
+        <property name="wikiService" ref="WikiService"/>
+        <property name="activityService" ref="activityService"/>
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
+   </bean>
+
+   <!-- Fetches the details of one wiki page -->
+   <bean id="webscript.org.alfresco.slingshot.wiki.page.get"
+         class="org.alfresco.repo.web.scripts.wiki.WikiPageGet"
+         parent="abstractWikiWebScript">
+   </bean>
+   
+   <!-- Lists the Wiki Pages for a site -->
+   <bean id="webscript.org.alfresco.slingshot.wiki.pagelist.get"
+         class="org.alfresco.repo.web.scripts.wiki.WikiPageListGet"
+         parent="abstractWikiWebScript">
+   </bean>
+   
+   
+   <!--                                        -->
    <!--      Slingshot Calendar REST API       -->
    <!--                                        -->
    

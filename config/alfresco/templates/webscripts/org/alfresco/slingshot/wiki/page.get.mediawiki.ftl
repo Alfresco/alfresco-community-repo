@@ -1,5 +1,5 @@
 <#if result.page??>
-${result.page.content}
+${result.page.contents}
 <#else>
 <#-- An error occured -->
 ${result.error!""}

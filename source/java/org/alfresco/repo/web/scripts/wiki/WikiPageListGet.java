@@ -26,7 +26,6 @@ import java.util.Map;
 
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
-import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.wiki.WikiServiceImpl;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -80,7 +79,7 @@ public class WikiPageListGet extends AbstractWikiWebScript
          
          int days = RECENT_SEARCH_PERIOD_DAYS;
          String daysS = req.getParameter("days");
-         if(daysS != null || daysS.length() > 0)
+         if(daysS != null && daysS.length() > 0)
          {
             days = Integer.parseInt(daysS);
          }
@@ -149,10 +148,13 @@ public class WikiPageListGet extends AbstractWikiWebScript
       }
       
       // All done
+      Map<String, Object> wiki = new HashMap<String, Object>();
+      wiki.put("pages", items); // Old style
+      wiki.put("container", container);
+      
       Map<String, Object> model = new HashMap<String, Object>();
       model.put("data", data); // New style
-      model.put("pages", items); // Old style
-      model.put("container", new ScriptNode(container, serviceRegistry)); 
+      model.put("wiki", wiki);
       model.put("siteId", site.getShortName());
       model.put("site", site);
       return model;

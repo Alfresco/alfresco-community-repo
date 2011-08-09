@@ -222,7 +222,7 @@ public class PublishingModelBuilder implements PublishingWebScriptConstants
     {
         Map<String, Object> model = new HashMap<String, Object>();
         NodeSnapshot snapshot = entry.getSnapshot();
-        model.put(NODEREF, snapshot.getNodeRef().toString());
+        model.put(NODEREF, entry.getNodeRef().toString());
         String version = snapshot.getVersion();
         if(version!=null && version.isEmpty()==false)
         {

@@ -19,11 +19,11 @@
 
 package org.alfresco.repo.web.scripts.publishing;
 
-import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CHANNEL_AUTH_STATUS;
 import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CAN_PUBLISH;
 import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CAN_PUBLISH_STATUS_UPDATES;
 import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CAN_UNPUBLISH;
 import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CHANNEL;
+import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CHANNEL_AUTH_STATUS;
 import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CHANNEL_ID;
 import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CHANNEL_IDS;
 import static org.alfresco.repo.web.scripts.publishing.PublishingWebScriptConstants.CHANNEL_NODE_TYPE;
@@ -82,7 +82,7 @@ import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.repo.web.scripts.WebScriptUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.publishing.MutablePublishingPackage;
+import org.alfresco.service.cmr.publishing.PublishingDetails;
 import org.alfresco.service.cmr.publishing.NodeSnapshot;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
 import org.alfresco.service.cmr.publishing.PublishingPackage;
@@ -136,6 +136,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
     
     private static final String JSON = "application/json";
     
+    private NodeService nodeService;
     private PermissionService permissionService;
     private ChannelService channelService;
     private PublishingService publishingService;
@@ -144,6 +145,34 @@ public class PublishingRestApiTest extends BaseWebScriptTest
     TestPersonManager personManager;
     private String userName = GUID.generate();
     
+
+    public void testGetChannels() throws Exception
+    {
+        Channel publishAnyChannel = testHelper.createChannel(publishAnyType);
+        Channel publishPdfChannel = testHelper.createChannel(publishPdfType);
+        Channel statusUpdateChannel=testHelper. createChannel(statusUpdateType);
+        
+        // Call channels defined.
+        Response response = sendRequest(new GetRequest(CHANNELS_URL), 200);
+        JSONObject data = getJsonData(response);
+        
+        assertEquals(21, data.getInt(URL_LENGTH));
+        JSONArray publishingChannels = data.getJSONArray(PUBLISHING_CHANNELS);
+        JSONArray statusChannels = data.getJSONArray(STATUS_UPDATE_CHANNELS);
+        
+        checkChannels(publishingChannels, publishAnyChannel, publishPdfChannel);
+        checkChannels(statusChannels, statusUpdateChannel);
+        
+        personManager.setUser(userName);
+        response = sendRequest(new GetRequest(CHANNELS_URL), 200);
+        data = getJsonData(response);
+        publishingChannels = data.getJSONArray(PUBLISHING_CHANNELS);
+        statusChannels = data.getJSONArray(STATUS_UPDATE_CHANNELS);
+        
+        checkChannels(publishingChannels, publishAnyChannel, publishPdfChannel);
+        checkChannels(statusChannels, statusUpdateChannel);
+    }
+
     public void testGetChannelsForNode() throws Exception
     {
         NodeRef textNode = testHelper.createContentNode("plainContent", "Some plain text", MimetypeMap.MIMETYPE_TEXT_PLAIN);
@@ -206,33 +235,6 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         checkChannels(statusChannels, statusUpdateChannel);
     }
     
-    public void testGetChannels() throws Exception
-    {
-        Channel publishAnyChannel = testHelper.createChannel(publishAnyType);
-        Channel publishPdfChannel = testHelper.createChannel(publishPdfType);
-        Channel statusUpdateChannel=testHelper. createChannel(statusUpdateType);
-        
-        // Call channels defined.
-        Response response = sendRequest(new GetRequest(CHANNELS_URL), 200);
-        JSONObject data = getJsonData(response);
-        
-        assertEquals(21, data.getInt(URL_LENGTH));
-        JSONArray publishingChannels = data.getJSONArray(PUBLISHING_CHANNELS);
-        JSONArray statusChannels = data.getJSONArray(STATUS_UPDATE_CHANNELS);
-        
-        checkChannels(publishingChannels, publishAnyChannel, publishPdfChannel);
-        checkChannels(statusChannels, statusUpdateChannel);
-        
-        personManager.setUser(userName);
-        response = sendRequest(new GetRequest(CHANNELS_URL), 200);
-        data = getJsonData(response);
-        publishingChannels = data.getJSONArray(PUBLISHING_CHANNELS);
-        statusChannels = data.getJSONArray(STATUS_UPDATE_CHANNELS);
-        
-        checkChannels(publishingChannels, publishAnyChannel, publishPdfChannel);
-        checkChannels(statusChannels, statusUpdateChannel);
-    }
-
     public void testChannelPut() throws Exception
     {
         Channel channel1 = testHelper.createChannel(publishAnyType);
@@ -274,7 +276,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         String comment = "The comment";
         String statusMessage = "The status message";
 
-        JSONObject json = buildScheduleEventJson(textNode, publishChannel, comment, statusMessage, statusChannel);
+        JSONObject json = buildScheduleEventJson(textNode, publishChannel, comment, statusMessage, true, statusChannel);
         
         String jsonStr = json.toString();
 
@@ -306,7 +308,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         assertTrue(channelIds.contains(statusChannel.getId()));
         
         // Wait for Publishing Event to execute asynchronously
-        Thread.sleep(3000);
+        Thread.sleep(5000);
         
         ChannelType publishAnyChannelType = channelService.getChannelType(publishAnyType);
         ChannelType statusUpdateChannelType = channelService.getChannelType(statusUpdateType);
@@ -339,7 +341,36 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         
         // Post JSON without Status Update.
         sendRequest(new PostRequest(PUBLISHING_QUEUE_URL, jsonStr, JSON), 200);
+
+        // Wait for Publishing Events to execute asynchronously
+        Thread.sleep(5000);
+
+        // Check published node still exists.
+        assertTrue(nodeService.exists(mappedTextNode));
+
+        // Check unpublish hasn't been called yet.
+        verify(publishAnyChannelType, never())
+            .unpublish(eq(mappedTextNode), anyMap());
+
+        // Create unpublish Json
+        json = buildScheduleEventJson(textNode, publishChannel, comment, null, false);
+        jsonStr = json.toString();
         
+        // Post Unpublish JSON.
+        sendRequest(new PostRequest(PUBLISHING_QUEUE_URL, jsonStr, JSON), 200);
+
+        // Wait for unpublishing Event to execute asynchronously
+        Thread.sleep(5000);
+
+        // Check published node has been deleted.
+        assertFalse(nodeService.exists(mappedTextNode));
+        NodeRef remappedTextNode = channelHelper.mapSourceToEnvironment(textNode, publishChannel.getNodeRef());
+        assertNull(remappedTextNode);
+        
+        // Check unpublish was called
+        verify(publishAnyChannelType)
+            .unpublish(eq(mappedTextNode), anyMap());
+
         // Clean up events
         List<PublishingEvent> events= publishingService.getEventsForPublishedNode(textNode);
         List<String> ids = CollectionUtils.transform(events, new Function<PublishingEvent, String>()
@@ -369,13 +400,13 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         assertEquals(0, data.length());
         
         // Create publishing event for textNode1.
-        MutablePublishingPackage pckg1 = publishingService.getPublishingQueue().createPublishingPackageBuilder();
-        pckg1.addNodesToPublish(textNode1);
-        StatusUpdate statusUpdate = null;
         String comment = "This is a comment";
+        PublishingDetails details = publishingService.getPublishingQueue().createPublishingDetails()
+            .setPublishChannel(publishChannel.getId())
+            .addNodesToPublish(textNode1)
+            .setComment(comment);
         
-        String event1Id = testHelper.scheduleEvent1Year(pckg1, publishChannel.getId(), comment, statusUpdate);
-        testHelper.addEvent(event1Id);
+        String event1Id = testHelper.scheduleEvent1Year(details);
         
         // Query for events on textNode1.
         response = sendRequest(new GetRequest(textNode1Url), 200);
@@ -539,17 +570,27 @@ public class PublishingRestApiTest extends BaseWebScriptTest
 
     private JSONObject buildScheduleEventJson(NodeRef node, Channel publishChannel,
             String comment, String statusMessage,
-            Channel... statusChannels) throws JSONException
+            boolean publish, Channel... statusChannels) throws JSONException
     {
         JSONObject json = new JSONObject();
         json.put(CHANNEL_ID, publishChannel.getId());
         json.put(COMMENT, comment);
-        Calendar schedule = Calendar.getInstance();
-        schedule.add(Calendar.SECOND, 1);
-        json.put(SCHEDULED_TIME, WebScriptUtil.buildCalendarModel(schedule));
+//        Calendar schedule = Calendar.getInstance();
+//        schedule.add(Calendar.SECOND, 1);
+//        json.put(SCHEDULED_TIME, WebScriptUtil.buildCalendarModel(schedule));
         Collection<String> publishNodes = Collections.singleton(node.toString());
-        json.put(PUBLISH_NODES, publishNodes);
-        json.put(STATUS_UPDATE, buildStatusUpdate(statusMessage, node, statusChannels));
+        if(publish)
+        {
+            json.put(PUBLISH_NODES, publishNodes);
+        }
+        else
+        {
+            json.put(UNPUBLISH_NODES, publishNodes);
+        }
+        if(statusMessage != null)
+        {
+            json.put(STATUS_UPDATE, buildStatusUpdate(statusMessage, node, statusChannels));
+        }
         return json;
     }
 
@@ -694,6 +735,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         SiteService siteService = serviceRegistry.getSiteService();
         FileFolderService fileFolderService = serviceRegistry.getFileFolderService();
+        this.nodeService = serviceRegistry.getNodeService();
         this.permissionService= serviceRegistry.getPermissionService();
         this.channelService = (ChannelService) ctx.getBean(ChannelServiceImpl.NAME);
         this.publishingService= (PublishingService) ctx.getBean(PublishServiceImpl.NAME);
@@ -701,7 +743,6 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         this.testHelper = new PublishingTestHelper(channelService, publishingService, siteService, fileFolderService, permissionService);
         
         MutableAuthenticationService authenticationService = serviceRegistry.getAuthenticationService();
-        NodeService nodeService = serviceRegistry.getNodeService();
         PersonService personService = serviceRegistry.getPersonService();
         this.personManager = new TestPersonManager(authenticationService, personService, nodeService);
 
@@ -710,6 +751,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
 
         ChannelType publishAny = testHelper.mockChannelType(publishAnyType);
         when(publishAny.canPublish()).thenReturn(true);
+        when(publishAny.canUnpublish()).thenReturn(true);
         
         ChannelType publishPdf= testHelper.mockChannelType(publishPdfType);
         when(publishPdf.canPublish()).thenReturn(true);

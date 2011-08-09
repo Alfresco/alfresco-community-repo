@@ -23,16 +23,12 @@ import static org.alfresco.repo.web.scripts.WebScriptUtil.getCalendar;
 
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import org.alfresco.repo.node.NodeUtils;
-import org.alfresco.service.cmr.publishing.MutablePublishingPackage;
-import org.alfresco.service.cmr.publishing.PublishingPackage;
+import org.alfresco.service.cmr.publishing.PublishingDetails;
 import org.alfresco.service.cmr.publishing.PublishingQueue;
-import org.alfresco.service.cmr.publishing.StatusUpdate;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -73,39 +69,30 @@ public class PublishingJsonParser implements PublishingWebScriptConstants
     public String schedulePublishingEvent(PublishingQueue queue, String jsonStr) throws ParseException, JSONException
     {
         JSONObject json = getJson(jsonStr);
-        String channelId= json.optString(CHANNEL_ID);
-        String comment = json.optString(COMMENT);
-        Calendar schedule = getCalendar(json.optJSONObject(SCHEDULED_TIME));
-        PublishingPackage publishingPackage = getPublishingPackage(queue, json);
-        StatusUpdate statusUpdate = getStatusUpdate(queue, json.optJSONObject(STATUS_UPDATE));
-        return queue.scheduleNewEvent(publishingPackage, channelId, schedule, comment, statusUpdate);
+        PublishingDetails details = queue.createPublishingDetails()
+            .setPublishChannel(json.optString(CHANNEL_ID))
+            .setComment(json.optString(COMMENT))
+            .setSchedule(getCalendar(json.optJSONObject(SCHEDULED_TIME)))
+            .addNodesToPublish(toNodes(json.optJSONArray(PUBLISH_NODES)))
+            .addNodesToUnpublish(toNodes(json.optJSONArray(UNPUBLISH_NODES)));
+
+        details = setStatusUpdate(details, json.optJSONObject(STATUS_UPDATE));
+        return queue.scheduleNewEvent(details);
     }
     
-    public StatusUpdate getStatusUpdate(PublishingQueue queue, JSONObject json)
+    public PublishingDetails setStatusUpdate(PublishingDetails details, JSONObject json)
     {
-        if(json == null)
+        if(json != null)
         {
-            return null;
+            details.setStatusMessage(json.optString(MESSAGE));
+            String nodeStr = json.optString(NODE_REF);
+            if (nodeStr != null && nodeStr.isEmpty() == false)
+            {
+                details.setStatusNodeToLinkTo(new NodeRef(nodeStr));
+            }
+            details.addStatusUpdateChannels(toStrings(json.optJSONArray(CHANNEL_IDS)));
         }
-        String message = json.optString(MESSAGE);
-        NodeRef nodeToLinkTo = null;
-        String nodeStr = json.optString(NODE_REF);
-        if(nodeStr!=null && nodeStr.isEmpty() == false)
-        {
-            nodeToLinkTo = new NodeRef(nodeStr);
-        }
-        Collection<String> channelNames = toStrings(json.optJSONArray(CHANNEL_IDS));
-        return queue.createStatusUpdate(message, nodeToLinkTo, channelNames);
-    }
-    
-    public PublishingPackage getPublishingPackage(PublishingQueue queue, JSONObject json)
-    {
-        MutablePublishingPackage pckg = queue.createPublishingPackageBuilder();
-        List<NodeRef> publishNodes = toNodes(json.optJSONArray(PUBLISH_NODES));
-        List<NodeRef> unpublishNodes = toNodes(json.optJSONArray(UNPUBLISH_NODES));
-        pckg.addNodesToPublish(publishNodes);
-        pckg.addNodesToUnpublish(unpublishNodes);
-        return pckg;
+        return details;
     }
     
     public List<NodeRef> toNodes(JSONArray json)

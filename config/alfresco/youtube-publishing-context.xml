@@ -19,11 +19,13 @@
         <property name="taggingService" ref="TaggingService" />
         <property name="contentService" ref="ContentService" />
         <property name="youTubeHelper" ref="youtubePublishingHelper" />
+        <property name="publicAction" value="false" />
     </bean>
 
     <bean id="unpublish_youtube" parent="action-executer" class="org.alfresco.repo.publishing.youtube.YouTubeUnpublishAction">
         <property name="nodeService" ref="NodeService" />
         <property name="youTubeHelper" ref="youtubePublishingHelper" />
+        <property name="publicAction" value="false" />
     </bean>
 
     <bean id="youtubeDeliveryChannelType" class="org.alfresco.repo.publishing.youtube.YouTubeChannelType" parent="baseChannelType" >

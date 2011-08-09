@@ -31,10 +31,12 @@
         <property name="taggingService" ref="TaggingService" />
         <property name="contentService" ref="ContentService" />
         <property name="flickrHelper" ref="flickrPublishingHelper" />
+        <property name="publicAction" value="false" />
     </bean>
 
     <bean id="unpublish_flickr" parent="action-executer" class="org.alfresco.repo.publishing.flickr.FlickrUnpublishAction">
         <property name="nodeService" ref="NodeService" />
         <property name="flickrHelper" ref="flickrPublishingHelper" />
+        <property name="publicAction" value="false" />
     </bean>
 </beans>

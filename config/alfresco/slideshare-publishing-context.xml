@@ -25,6 +25,7 @@
         <property name="taggingService" ref="TaggingService" />
         <property name="contentService" ref="ContentService" />
         <property name="slideShareHelper" ref="slidesharePublishingHelper" />
+        <property name="publicAction" value="false" />
     </bean>
 
     <bean id="slideshareDeliveryChannelType" class="org.alfresco.repo.publishing.slideshare.SlideShareChannelType" parent="baseChannelType" >

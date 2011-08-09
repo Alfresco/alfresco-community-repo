@@ -120,8 +120,8 @@ public class ForumPostBehaviours implements NodeServicePolicies.OnCreateNodePoli
                     log.debug("Triggering a comment recount...");
                 }
                 
-                final int realCommentTotal = calculateCommentTotalByNodeCounting(commentsRollupNode);
-                if (realCommentTotal != -1)
+                final Integer realCommentTotal = calculateCommentTotalByNodeCounting(commentsRollupNode);
+                if (realCommentTotal != null && realCommentTotal != -1)
                 {
                     nodeService.setProperty(commentsRollupNode, ForumModel.PROP_COMMENT_COUNT, realCommentTotal);
                 }
@@ -130,48 +130,48 @@ public class ForumPostBehaviours implements NodeServicePolicies.OnCreateNodePoli
     }
 
     /**
+     * Calculate the comment total for the specified node.
      * 
      * @param discussableNode discussable node.
-     * @return
+     * @return the recount value or <tt>null</tt> if it is not possible to calculate the total.
      */
-    private int calculateCommentTotalByNodeCounting(NodeRef discussableNode)
+    private Integer calculateCommentTotalByNodeCounting(NodeRef discussableNode)
     {
-        if ( !nodeService.hasAspect(discussableNode, ForumModel.ASPECT_DISCUSSABLE))
-        {
-            throw new IllegalArgumentException("Node did not have " + ForumModel.ASPECT_DISCUSSABLE + " aspect.");
-        }
+        // This method only counts "Share comments" and not Explorer comments or other fm:post nodes.
+        Integer result = null;
         
-        NodeRef topicNode = commentService.getShareCommentsTopic(discussableNode);
-        
-        if (log.isDebugEnabled())
+        if (nodeService.hasAspect(discussableNode, ForumModel.ASPECT_DISCUSSABLE))
         {
-            StringBuilder msg = new StringBuilder();
-            msg.append("Recounting comments for node ").append(discussableNode);
-            log.debug(msg.toString());
+            NodeRef topicNode = commentService.getShareCommentsTopic(discussableNode);
             
-            msg = new StringBuilder();
-            msg.append("Topic node: ").append(topicNode);
-            log.debug(msg.toString());
+            if (log.isDebugEnabled())
+            {
+                StringBuilder msg = new StringBuilder();
+                msg.append("Recounting comments for node ").append(discussableNode);
+                log.debug(msg.toString());
+                
+                msg = new StringBuilder();
+                msg.append("Topic node: ").append(topicNode);
+                log.debug(msg.toString());
+            }
+            
+            // We'll ignore discussable nodes which do not have an fm:topic in the correct
+            // location - as used by "Share comments" - as opposed to e.g. Explorer client discussion fm:posts.
+            if (topicNode != null)
+            {
+                // Need to recalculate by hand.
+                
+                //TODO This could be replaced with a GetChildrenCannedQuery.
+                // Look for fm:post nodes only.
+                Set<QName> childNodeTypeQNames = new HashSet<QName>();
+                childNodeTypeQNames.add(ForumModel.TYPE_POST);
+                
+                // We'll use the raw, small 'n' nodeService as the big 'N' NodeService's interceptors would limit results.
+                List<ChildAssociationRef> fmPostChildren = rawNodeService.getChildAssocs(topicNode, childNodeTypeQNames);
+                result = new Integer(fmPostChildren.size());
+            }
         }
-        
-        if (topicNode == null)
-        {
-            throw new NullPointerException("Topic node was null");
-        }
-        
-        // Can't ask the commentService for a count, as it will give us -1.
-        // Need to recalculate by hand.
-        
-        //TODO This could be replaced with a GetChildrenCannedQuery.
-        // Look for fm:post nodes only.
-        Set<QName> childNodeTypeQNames = new HashSet<QName>(1);
-        childNodeTypeQNames.add(ForumModel.TYPE_POST);
-        
-        // We'll use the raw, small 'n' nodeService as the big 'N' NodeService's interceptors would limit results.
-        List<ChildAssociationRef> fmPostChildren = rawNodeService.getChildAssocs(topicNode, childNodeTypeQNames);
-        final int commentTotal = fmPostChildren.size();
-        
-        return commentTotal;
+        return result;
     }
     
     @Override
@@ -195,30 +195,34 @@ public class ForumPostBehaviours implements NodeServicePolicies.OnCreateNodePoli
     private void adjustCommentCount(NodeRef fmPostNode, boolean incrementing)
     {
         // We have a new or a deleted comment under a discussable node.
-        // We need to find the fm:commentsCount ancestor to this comment node and adjust its commentCount
+        // We need to find the fm:commentsCount ancestor to this comment node (if there is one) and adjust its commentCount
         NodeRef discussableAncestor = commentService.getDiscussableAncestor(fmPostNode);
         
         if (discussableAncestor != null)
         {
             if (discussableNodeRequiresFullRecount(discussableAncestor))
             {
-                int recount = calculateCommentTotalByNodeCounting(discussableAncestor);
+                Integer recount = calculateCommentTotalByNodeCounting(discussableAncestor);
                 
-                nodeService.addAspect(discussableAncestor, ForumModel.ASPECT_COMMENTS_ROLLUP, null);
-                int newCountValue = recount;
-                // If the node is being deleted then the above node-count will include the to-be-deleted node.
-                // This is because the policies are onCreateNode and *before*DeleteNode
-                if ( !incrementing)
+                if (recount != null)
                 {
-                    newCountValue--;
+                    nodeService.addAspect(discussableAncestor, ForumModel.ASPECT_COMMENTS_ROLLUP, null);
+                    int newCountValue = recount;
+                    // If the node is being deleted then the above node-count will include the to-be-deleted node.
+                    // This is because the policies are onCreateNode and *before*DeleteNode
+                    if ( !incrementing)
+                    {
+                        newCountValue--;
+                    }
+                    
+                    if (log.isDebugEnabled())
+                    {
+                        log.debug(discussableAncestor + " newCountValue: " + newCountValue);
+                    }
+                    
+                    nodeService.setProperty(discussableAncestor, ForumModel.PROP_COMMENT_COUNT, newCountValue);
                 }
                 
-                if (log.isDebugEnabled())
-                {
-                    log.debug(discussableAncestor + " newCountValue: " + newCountValue);
-                }
-                
-                nodeService.setProperty(discussableAncestor, ForumModel.PROP_COMMENT_COUNT, newCountValue);
             }
             else
             {

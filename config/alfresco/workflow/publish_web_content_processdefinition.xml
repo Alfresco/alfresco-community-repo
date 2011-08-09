@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- Workflow to support direct submit to staging sandbox -->
+<!-- Workflow to support publishing of content to social sites. -->
 
 <process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="publishWebContent">
 

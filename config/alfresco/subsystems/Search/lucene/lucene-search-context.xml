@@ -385,7 +385,7 @@
             <ref bean="search.indexThreadPoolExecutor"></ref>
         </property>
         <property name="avmSnapShotTriggeredIndexingMethodInterceptor">
-            <ref bean="avmSnapShotTriggeredIndexingMethodInterceptor" />
+            <ref bean="search.avmSnapShotTriggeredIndexingMethodInterceptor" />
         </property>
     </bean>
 
@@ -474,10 +474,10 @@
            <ref bean="nodeService"/>
        </property>
        <property name="searchService">
-           <ref bean="searchService"/>
+           <ref bean="search.searchService"/>
        </property>
        <property name="avmSnapShotTriggeredIndexingMethodInterceptor">
-           <ref bean="avmSnapShotTriggeredIndexingMethodInterceptor"/>
+           <ref bean="search.avmSnapShotTriggeredIndexingMethodInterceptor"/>
        </property>
     </bean>
 </beans>

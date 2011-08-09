@@ -89,7 +89,7 @@
           <ref bean="avmService" />
       </property>
 	   <property name="avmSnapShotTriggeredIndexingMethodInterceptor">
-		   <ref bean="avmSnapShotTriggeredIndexingMethodInterceptor" />
+		   <ref bean="search.avmSnapShotTriggeredIndexingMethodInterceptor" />
       </property>
    </bean>
 	
@@ -162,7 +162,7 @@
           <ref bean="avmService" />
       </property>
 	   <property name="avmSnapShotTriggeredIndexingMethodInterceptor">
-		   <ref bean="avmSnapShotTriggeredIndexingMethodInterceptor" />
+		   <ref bean="search.avmSnapShotTriggeredIndexingMethodInterceptor" />
       </property>
     </bean>
 

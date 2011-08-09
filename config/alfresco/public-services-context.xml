@@ -1012,31 +1012,16 @@
         </property>
     </bean>
 
-    <bean id="avmSnapShotTriggeredIndexingMethodInterceptor" class="org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor">
-        <property name="avmService">
-            <ref bean="avmService" />
+    <bean id="avmSnapShotTriggeredIndexingMethodInterceptor" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+        <property name="sourceApplicationContextFactory">
+            <ref bean="Search" />
         </property>
-        <property name="indexerAndSearcher">
-            <ref bean="avmLuceneIndexerAndSearcherFactory" />
+        <property name="sourceBeanName">
+            <value>search.avmSnapShotTriggeredIndexingMethodInterceptor</value>
         </property>
-        <property name="enableIndexing">
-            <value>true</value>
-        </property>
-        <property name="defaultMode">
-            <value>SYNCHRONOUS</value>
-        </property>
-        <property name="indexingDefinitions">
+        <property name="interfaces">
             <list>
-                <value>SYNCHRONOUS:TYPE:STAGING</value>
-                <value>UNINDEXED:TYPE:STAGING_PREVIEW</value>
-                <value>UNINDEXED:TYPE:AUTHOR</value>
-                <value>UNINDEXED:TYPE:AUTHOR_PREVIEW</value>
-                <value>UNINDEXED:TYPE:WORKFLOW</value>
-                <value>UNINDEXED:TYPE:WORKFLOW_PREVIEW</value>
-                <value>UNINDEXED:TYPE:AUTHOR_WORKFLOW</value>
-                <value>UNINDEXED:TYPE:AUTHOR_WORKFLOW_PREVIEW</value>
-                <value>ASYNCHRONOUS:NAME:avmAsynchronousTest</value>
-                <value>SYNCHRONOUS:NAME:.*</value>
+                <value>org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor</value>
             </list>
         </property>
     </bean>

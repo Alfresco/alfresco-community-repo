@@ -38,7 +38,7 @@ import org.alfresco.repo.domain.permissions.AclEntity;
 import org.alfresco.repo.domain.permissions.AclUpdateEntity;
 import org.alfresco.repo.domain.permissions.Authority;
 import org.alfresco.repo.domain.permissions.Permission;
-import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor.StoreType;
+import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptorImpl.StoreType;
 import org.alfresco.repo.security.permissions.ACEType;
 import org.alfresco.repo.security.permissions.ACLType;
 import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;

@@ -37,6 +37,8 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchParameters.FieldFacet;
+import org.alfresco.service.cmr.search.SearchParameters.FieldFacetMethod;
+import org.alfresco.service.cmr.search.SearchParameters.FieldFacetSort;
 import org.alfresco.service.cmr.search.SearchParameters.SortDefinition;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.apache.commons.codec.net.URLCodec;
@@ -112,7 +114,11 @@ public class SolrQueryHTTPClient
     {   
         try
         {
-
+//            Simple demo
+//            FieldFacet ff = new FieldFacet("@"+ContentModel.PROP_NAME);
+//            ff.setLimit(2);
+//            searchParameters.addFieldFacet(ff);
+            
             URLCodec encoder = new URLCodec();
             StringBuilder url = new StringBuilder();
             url.append(baseUrl);
@@ -208,7 +214,32 @@ public class SolrQueryHTTPClient
                 for(FieldFacet facet : searchParameters.getFieldFacets())
                 {
                     url.append("&facet.field=").append(encoder.encode(facet.getField(), "UTF-8"));
-                    url.append("&").append(encoder.encode("f."+facet.getField()+".limit", "UTF-8")).append("=").append(encoder.encode(""+facet.getLimit(), "UTF-8"));
+                    if(facet.getEnumMethodCacheMinDF() != 0)
+                    {
+                        url.append("&").append(encoder.encode("f."+facet.getField()+".facet.enum.cache.minDf", "UTF-8")).append("=").append(encoder.encode(""+facet.getEnumMethodCacheMinDF(), "UTF-8"));
+                    }
+                    url.append("&").append(encoder.encode("f."+facet.getField()+".facet.limit", "UTF-8")).append("=").append(encoder.encode(""+facet.getLimit(), "UTF-8"));
+                    if(facet.getMethod() != null)
+                    {
+                        url.append("&").append(encoder.encode("f."+facet.getField()+".facet.method", "UTF-8")).append("=").append(encoder.encode(facet.getMethod()==FieldFacetMethod.ENUM ?  "enum" : "fc", "UTF-8"));
+                    }
+                    if(facet.getMinCount() != 0)
+                    {
+                        url.append("&").append(encoder.encode("f."+facet.getField()+".facet.mincount", "UTF-8")).append("=").append(encoder.encode(""+facet.getMinCount(), "UTF-8"));
+                    }
+                    if(facet.getOffset() != 0)
+                    {
+                        url.append("&").append(encoder.encode("f."+facet.getField()+".facet.offset", "UTF-8")).append("=").append(encoder.encode(""+facet.getOffset(), "UTF-8"));
+                    }
+                    if(facet.getPrefix() != null)
+                    {
+                        url.append("&").append(encoder.encode("f."+facet.getField()+".facet.prefix", "UTF-8")).append("=").append(encoder.encode(""+facet.getPrefix(), "UTF-8"));
+                    }
+                    if(facet.getSort() != null)
+                    {
+                        url.append("&").append(encoder.encode("f."+facet.getField()+".facet.sort", "UTF-8")).append("=").append(encoder.encode(facet.getSort() == FieldFacetSort.COUNT ? "count" : "index", "UTF-8"));
+                    }
+                    
                 }
             }
             

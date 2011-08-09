@@ -33,7 +33,7 @@ import org.alfresco.repo.avm.util.AVMUtil;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.domain.avm.AVMNodeDAO;
 import org.alfresco.repo.domain.avm.AVMNodeEntity;
-import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor.StoreType;
+import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptorImpl.StoreType;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.ACLType;

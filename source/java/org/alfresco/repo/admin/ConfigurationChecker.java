@@ -28,7 +28,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.repo.node.index.FullIndexRecoveryComponent.RecoveryMode;
-import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor;
+import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptorImpl;
 import org.alfresco.repo.search.IndexMode;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ContentReader;

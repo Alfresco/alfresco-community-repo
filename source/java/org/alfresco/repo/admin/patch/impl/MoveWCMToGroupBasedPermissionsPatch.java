@@ -27,7 +27,7 @@ import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor;
-import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor.StoreType;
+import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptorImpl.StoreType;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;

@@ -18,12 +18,15 @@
  */
 package org.alfresco.filesys.repo;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import org.alfresco.filesys.alfresco.ExtendedDiskInterface;
 import org.alfresco.filesys.config.ServerConfigurationBean;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.core.DeviceContext;
 import org.alfresco.jlan.server.core.DeviceContextException;
+import org.alfresco.jlan.server.filesys.FileAccessToken;
 import org.alfresco.jlan.server.filesys.FileInfo;
 import org.alfresco.jlan.server.filesys.FileOpenParams;
 import org.alfresco.jlan.server.filesys.FileStatus;
@@ -31,249 +34,370 @@ import org.alfresco.jlan.server.filesys.NetworkFile;
 import org.alfresco.jlan.server.filesys.SearchContext;
 import org.alfresco.jlan.server.filesys.TreeConnection;
 import org.alfresco.jlan.server.filesys.cache.FileState;
+import org.alfresco.jlan.server.filesys.cache.FileStateCache;
 import org.alfresco.jlan.smb.SharingMode;
+import org.alfresco.util.PropertyCheck;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.config.ConfigElement;
 
 /**
  * The Legacy file state driver is used to update JLAN's file state cache.
  * <p>
- * This class contains odds and ends to keep JLan happy.    In particular it
- * cannot contain any code that requires access to the alfresco repository.
+ * This class decorates an ExtendedDiskInterface with odds and ends to keep JLan happy.  
+ * <p>
+ * In particular this implementation cannot contain any code that requires access to the 
+ * alfresco repository.
  * 
  */
-public class LegacyFileStateDriver implements ContentDiskCallback
+public class LegacyFileStateDriver implements ExtendedDiskInterface
 {
+    private ExtendedDiskInterface diskInterface;
           
     public void init()
     {
+        PropertyCheck.mandatory(this, "diskInterface", diskInterface);
     }
-
-    @Override
-    public void getFileInformation(SrvSession sess, TreeConnection tree,
-            String path, FileInfo info)
-    {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void fileExists(SrvSession sess, TreeConnection tree, String path,
-            int fileExists)
-    {
-        // TODO Auto-generated method stub
-        
-    }
+    
+    private static final Log logger = LogFactory.getLog(NonTransactionalRuleContentDiskDriver.class);
 
     @Override
     public void treeOpened(SrvSession sess, TreeConnection tree)
     {
-        // TODO Auto-generated method stub
+        diskInterface.treeOpened(sess, tree);
         
     }
 
     @Override
     public void treeClosed(SrvSession sess, TreeConnection tree)
     {
-        // TODO Auto-generated method stub
-        
+        diskInterface.treeClosed(sess, tree);
     }
 
+    @Override
+    public NetworkFile createFile(SrvSession sess, TreeConnection tree,
+            FileOpenParams params) throws IOException
+    {
+        ContentContext tctx = (ContentContext) tree.getContext();
+        
+        FileAccessToken token = null;
+        
+        if(tctx.hasStateCache())
+        {
+            FileStateCache cache = tctx.getStateCache();
+            FileState fstate = tctx.getStateCache().findFileState( params.getPath(), true);
+            token = cache.grantFileAccess(params, fstate, FileStatus.NotExist);
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("create file created lock token:" + token);
+            }
+        }
+        
+        try
+        {
+            NetworkFile newFile = diskInterface.createFile(sess, tree, params);
+            
+            if (newFile instanceof NodeRefNetworkFile)
+            {
+                NodeRefNetworkFile x = (NodeRefNetworkFile)newFile;
+                x.setProcessId( params.getProcessId());
+                x.setAccessToken(token);
+            }
+            
+            if (newFile instanceof TempNetworkFile)
+            {
+                TempNetworkFile x = (TempNetworkFile)newFile;
+                x.setAccessToken(token);
+            }
+            
+            if(tctx.hasStateCache())
+            {
+                FileState fstate = tctx.getStateCache().findFileState( params.getPath(), true);
+                fstate.incrementOpenCount();
+                fstate.setProcessId(params.getProcessId());
+                fstate.setSharedAccess( params.getSharedAccess());
+                fstate.setProcessId( params.getProcessId());
+            
+                // Indicate that the file is open
+                fstate.setFileStatus(newFile.isDirectory()? FileStatus.DirectoryExists : FileStatus.FileExists);
+                fstate.setAllocationSize( params.getAllocationSize());
+            }
+            
+            return newFile;
+            
+        }
+        catch(IOException ie)
+        {
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("create file exception caught", ie);   
+            }    
+            if(tctx.hasStateCache() && token != null)
+            {
+                FileStateCache cache = tctx.getStateCache();
+                FileState fstate = tctx.getStateCache().findFileState( params.getPath(), false);
+                if(fstate != null && token != null)
+                {
+                    if(logger.isDebugEnabled())
+                    {
+                        logger.debug("create file release lock token:" + token);
+                    }
+                    cache.releaseFileAccess(fstate, token);
+                }
+            }
+            throw ie;
+        }
+    }
+
+    @Override
+    public NetworkFile openFile(SrvSession sess, TreeConnection tree,
+            FileOpenParams params) throws IOException
+    {
+        ContentContext tctx = (ContentContext) tree.getContext();
+        String path = params.getPath();
+
+        FileAccessToken token = null;
+
+        if(tctx.hasStateCache())
+        {
+            if(!params.isDirectory())
+            {
+                FileStateCache cache = tctx.getStateCache();
+                FileState fstate = tctx.getStateCache().findFileState( params.getPath(), true);
+                token = cache.grantFileAccess(params, fstate, FileStatus.Unknown);
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("open file created lock token:" + token);
+                }
+            }
+        }
+
+        try
+        {
+            NetworkFile openFile = diskInterface.openFile(sess, tree, params);
+
+            if (openFile instanceof ContentNetworkFile)
+            {
+                ContentNetworkFile x = (ContentNetworkFile)openFile;
+                x.setProcessId( params.getProcessId());
+                x.setAccessToken(token);
+                if(tctx.hasStateCache())
+                {
+                    FileState fstate = tctx.getStateCache().findFileState( path, true);
+                    x.setFileState(fstate);
+                    fstate.setProcessId(params.getProcessId());
+                    fstate.setFileStatus(FileStatus.FileExists);
+                }
+            }
+
+            if (openFile instanceof TempNetworkFile)
+            {
+                TempNetworkFile x = (TempNetworkFile)openFile;
+                x.setAccessToken(token);
+                // x.setProcessId( params.getProcessId());
+                if(tctx.hasStateCache())
+                {
+                    FileState fstate = tctx.getStateCache().findFileState( path, true);
+                    x.setFileState(fstate);
+                    fstate.setFileStatus(FileStatus.FileExists);
+                }
+            }
+
+            if (openFile instanceof AlfrescoFolder)
+            {
+                AlfrescoFolder x = (AlfrescoFolder)openFile;
+                //x.setProcessId( param.getProcessId());
+                if(tctx.hasStateCache())
+                {
+                    FileState fstate = tctx.getStateCache().findFileState( path, true);
+                    x.setFileState(fstate);
+                    fstate.setFileStatus(FileStatus.DirectoryExists);
+                }
+            }
+
+            return openFile;
+        }
+        catch(IOException ie)
+        {
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("open file exception caught", ie);   
+            }  
+            if(tctx.hasStateCache() && token != null)
+            {
+                FileStateCache cache = tctx.getStateCache();
+                FileState fstate = tctx.getStateCache().findFileState( params.getPath(), false);
+                if(fstate != null)
+                {
+                    if(logger.isDebugEnabled())
+                    {
+                        logger.debug("open file release lock token:" + token);
+                    }
+                    cache.releaseFileAccess(fstate, token);
+                }
+            }
+            throw ie;
+        }
+
+    }
+    
     @Override
     public void closeFile(SrvSession sess, TreeConnection tree,
-            NetworkFile param)
-    {
-        ContentContext tctx = (ContentContext) tree.getContext();
-
-        if(tctx.hasStateCache())
-        {
-            FileState fstate = tctx.getStateCache().findFileState( param.getFullName(), true);
-            if ( fstate.decrementOpenCount() == 0)
-            {
-                fstate.setSharedAccess( SharingMode.READWRITE + SharingMode.DELETE);
-            }
-        }
-        
-    }
-
-    @Override
-    public void createDirectory(SrvSession sess, TreeConnection tree,
-            FileOpenParams params)
-    {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void createFile(SrvSession sess, TreeConnection tree,
-            FileOpenParams params, NetworkFile newFile)
+            NetworkFile param) throws IOException
     {
         ContentContext tctx = (ContentContext) tree.getContext();
         
-        // TODO temp code - not of interest to the repo
-        if (newFile instanceof NodeRefNetworkFile)
+        try
         {
-            NodeRefNetworkFile x = (NodeRefNetworkFile)newFile;
-            x.setProcessId( params.getProcessId());
-        }
-        
-        if(tctx.hasStateCache())
-        {
-            FileState fstate = tctx.getStateCache().findFileState( params.getPath(), true);
-            fstate.incrementOpenCount();
-            fstate.setProcessId(params.getProcessId());
-            fstate.setSharedAccess( params.getSharedAccess());
-            fstate.setProcessId( params.getProcessId());
-        
-            // Indicate that the file is open
-            fstate.setFileStatus(FileStatus.FileExists);
-            fstate.incrementOpenCount();
-            //fstate.setFilesystemObject(result.getSecond());
-            fstate.setAllocationSize( params.getAllocationSize());
-        }        
-    }
+            diskInterface.closeFile(sess, tree, param);
 
-    @Override
-    public void deleteDirectory(SrvSession sess, TreeConnection tree, String dir)
-    {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void deleteFile(SrvSession sess, TreeConnection tree, String name)
-    {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void flushFile(SrvSession sess, TreeConnection tree, NetworkFile file)
-    {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void isReadOnly(SrvSession sess, DeviceContext ctx,
-            boolean isReadOnly)
-    {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void openFile(SrvSession sess, TreeConnection tree,
-            FileOpenParams param, NetworkFile openFile)
-    {
-        ContentContext tctx = (ContentContext) tree.getContext();
-        String path = param.getPath();
-        
-        // Stuff to keep JLAN working - of no interest to the repo.
-        if (openFile instanceof ContentNetworkFile)
-        {
-            ContentNetworkFile x = (ContentNetworkFile)openFile;
-            x.setProcessId( param.getProcessId());
             if(tctx.hasStateCache())
             {
-                FileState fstate = tctx.getStateCache().findFileState( path, true);
-                x.setFileState(fstate);
-                fstate.incrementOpenCount();
-                fstate.setProcessId(param.getProcessId());
+                FileStateCache cache = tctx.getStateCache();
+                FileState fstate = cache.findFileState( param.getFullName(), true);
+                if(fstate != null && param.getAccessToken() != null)
+                {
+                    FileAccessToken token = param.getAccessToken();
+                    if(logger.isDebugEnabled() && token != null)
+                    {
+                        logger.debug("close file release lock token:" + token);
+                    }
+                    cache.releaseFileAccess(fstate, token);
+                }
             }
         }
-        
-        if (openFile instanceof TempNetworkFile)
+        catch(IOException ie)
         {
-            TempNetworkFile x = (TempNetworkFile)openFile;
-            //x.setProcessId( param.getProcessId());
-            if(tctx.hasStateCache())
+            if(logger.isDebugEnabled())
             {
-                FileState fstate = tctx.getStateCache().findFileState( path, true);
-                x.setFileState(fstate);
-            }
-        }
-        
-        if (openFile instanceof AlfrescoFolder)
-        {
-            AlfrescoFolder x = (AlfrescoFolder)openFile;
-            //x.setProcessId( param.getProcessId());
-            if(tctx.hasStateCache())
-            {
-                FileState fstate = tctx.getStateCache().findFileState( path, true);
-                x.setFileState(fstate);
-                fstate.setFileStatus(FileStatus.DirectoryExists);
-            }
-        }
-    }
-
-    @Override
-    public void readFile(SrvSession sess, TreeConnection tree,
-            NetworkFile file, byte[] buf, int bufPos, int siz, long filePos,
-            int readSize)
-    {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void renameFile(SrvSession sess, TreeConnection tree,
-            String oldPath, String newPath)
-    {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void seekFile(SrvSession sess, TreeConnection tree,
-            NetworkFile file, long pos, int typ) throws IOException
-    {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void setFileInformation(SrvSession sess, TreeConnection tree,
-            String name, FileInfo info) throws IOException
-    {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void startSearch(SrvSession sess, TreeConnection tree,
-            String searchPath, int attrib, SearchContext context)
-    {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void truncateFile(SrvSession sess, TreeConnection tree,
-            NetworkFile file, long siz)
-    {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void writeFile(SrvSession sess, TreeConnection tree,
-            NetworkFile file, byte[] buf, int bufoff, int siz, long fileoff,
-            int writeSize)
-    {
-        // TODO Auto-generated method stub
-        
+                logger.debug("close file exception caught", ie);   
+            }  
+            throw ie;
+        }    
     }
 
     @Override
     public void registerContext(DeviceContext ctx,
             ServerConfigurationBean serverConfig) throws DeviceContextException
     {
-        // TODO Auto-generated method stub
-        
+        diskInterface.registerContext(ctx, serverConfig);
     }
     
-  
+    public void setDiskInterface(ExtendedDiskInterface diskInterface)
+    {
+        this.diskInterface = diskInterface;
+    }
 
- 
- 
+    public ExtendedDiskInterface getDiskInterface()
+    {
+        return diskInterface;
+    }
+
+    @Override
+    public void createDirectory(SrvSession sess, TreeConnection tree,
+            FileOpenParams params) throws IOException
+    {
+        diskInterface.createDirectory(sess, tree, params);
+    }
+
+    @Override
+    public void deleteDirectory(SrvSession sess, TreeConnection tree, String dir)
+            throws IOException
+    {
+        diskInterface.deleteDirectory(sess, tree, dir);
+    }
+
+    @Override
+    public void deleteFile(SrvSession sess, TreeConnection tree, String name)
+            throws IOException
+    {
+        diskInterface.deleteFile(sess, tree, name);
+    }
+
+    @Override
+    public int fileExists(SrvSession sess, TreeConnection tree, String name)
+    {
+        return diskInterface.fileExists(sess, tree, name);
+    }
+
+    @Override
+    public void flushFile(SrvSession sess, TreeConnection tree, NetworkFile file)
+            throws IOException
+    {
+        diskInterface.flushFile(sess, tree, file);        
+    }
+
+    @Override
+    public FileInfo getFileInformation(SrvSession sess, TreeConnection tree,
+            String name) throws IOException
+    {
+        return diskInterface.getFileInformation(sess, tree, name);
+    }
+
+    @Override
+    public boolean isReadOnly(SrvSession sess, DeviceContext ctx)
+            throws IOException
+    {
+        return diskInterface.isReadOnly(sess, ctx);
+    }
+
+    @Override
+    public int readFile(SrvSession sess, TreeConnection tree, NetworkFile file,
+            byte[] buf, int bufPos, int siz, long filePos) throws IOException
+    {
+        return diskInterface.readFile(sess, tree, file, buf, bufPos, siz, filePos);
+    }
+
+    @Override
+    public void renameFile(SrvSession sess, TreeConnection tree,
+            String oldName, String newName) throws IOException
+    {
+        diskInterface.renameFile(sess, tree, oldName, newName);        
+    }
+
+    @Override
+    public long seekFile(SrvSession sess, TreeConnection tree,
+            NetworkFile file, long pos, int typ) throws IOException
+    {
+        return diskInterface.seekFile(sess, tree, file, pos, typ);
+    }
+
+    @Override
+    public void setFileInformation(SrvSession sess, TreeConnection tree,
+            String name, FileInfo info) throws IOException
+    {
+        diskInterface.setFileInformation(sess, tree, name, info);        
+    }
+
+    @Override
+    public SearchContext startSearch(SrvSession sess, TreeConnection tree,
+            String searchPath, int attrib) throws FileNotFoundException
+    {
+        return diskInterface.startSearch(sess, tree, searchPath, attrib);
+
+    }
+
+    @Override
+    public void truncateFile(SrvSession sess, TreeConnection tree,
+            NetworkFile file, long siz) throws IOException
+    {
+        diskInterface.truncateFile(sess, tree, file, siz);
+    }
+
+    @Override
+    public int writeFile(SrvSession sess, TreeConnection tree,
+            NetworkFile file, byte[] buf, int bufoff, int siz, long fileoff)
+            throws IOException
+    {
+        return diskInterface.writeFile(sess, tree, file, buf, bufoff, siz, fileoff);
+    }
+
+    @Override
+    public DeviceContext createContext(String shareName, ConfigElement args)
+            throws DeviceContextException
+    {
+        
+        return diskInterface.createContext(shareName, args);
+    }
 }
   

@@ -27,38 +27,29 @@ import org.alfresco.filesys.alfresco.ExtendedDiskInterface;
 import org.alfresco.filesys.alfresco.RepositoryDiskInterface;
 import org.alfresco.filesys.config.ServerConfigurationBean;
 import org.alfresco.filesys.repo.rules.Command;
+import org.alfresco.filesys.repo.rules.EvaluatorContext;
 import org.alfresco.filesys.repo.rules.Operation;
 import org.alfresco.filesys.repo.rules.RuleEvaluator;
+import org.alfresco.filesys.repo.rules.operations.CloseFileOperation;
+import org.alfresco.filesys.repo.rules.operations.CreateFileOperation;
+import org.alfresco.filesys.repo.rules.operations.DeleteFileOperation;
+import org.alfresco.filesys.repo.rules.operations.OpenFileOperation;
+import org.alfresco.filesys.repo.rules.operations.RenameFileOperation;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.core.DeviceContext;
 import org.alfresco.jlan.server.core.DeviceContextException;
-import org.alfresco.jlan.server.filesys.AccessMode;
 import org.alfresco.jlan.server.filesys.FileInfo;
 import org.alfresco.jlan.server.filesys.FileName;
 import org.alfresco.jlan.server.filesys.FileOpenParams;
-import org.alfresco.jlan.server.filesys.FileStatus;
 import org.alfresco.jlan.server.filesys.NetworkFile;
 import org.alfresco.jlan.server.filesys.SearchContext;
 import org.alfresco.jlan.server.filesys.TreeConnection;
-import org.alfresco.jlan.server.filesys.cache.FileState;
-import org.alfresco.jlan.server.filesys.cache.NetworkFileStateInterface;
 import org.alfresco.jlan.smb.SharingMode;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.ibatis.annotations.Case;
 import org.springframework.extensions.config.ConfigElement;
-import org.alfresco.filesys.repo.rules.EvaluatorContext;
-import org.alfresco.filesys.repo.rules.commands.CompoundCommand;
-import org.alfresco.filesys.repo.rules.commands.CopyContentCommand;
-import org.alfresco.filesys.repo.rules.commands.RenameFileCommand;
-import org.alfresco.filesys.repo.rules.operations.CloseFileOperation;
-import org.alfresco.filesys.repo.rules.operations.CreateFileOperation;
-import org.alfresco.filesys.repo.rules.operations.DeleteFileOperation;
-import org.alfresco.filesys.repo.rules.operations.MoveFileOperation;
-import org.alfresco.filesys.repo.rules.operations.OpenFileOperation;
-import org.alfresco.filesys.repo.rules.operations.RenameFileOperation;
 
 /**
  * Non Transactional DiskDriver with rules engine.
@@ -80,15 +71,13 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
          */
         Map<String, EvaluatorContext> contextMap = new ConcurrentHashMap<String, EvaluatorContext>();
     }
-    
-    // Logging
+
     private static final Log logger = LogFactory.getLog(NonTransactionalRuleContentDiskDriver.class);
     
     private ExtendedDiskInterface diskInterface;
     private RuleEvaluator ruleEvaluator;
     private RepositoryDiskInterface repositoryDiskInterface;
     private CommandExecutor commandExecutor;
-    private ContentDiskCallback callbackInterface;
           
     public void init()
     {
@@ -102,12 +91,12 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
     public FileInfo getFileInformation(SrvSession sess, TreeConnection tree,
             String path) throws IOException
     {
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("getFileInformation:" + path);
+        }
         FileInfo info = diskInterface.getFileInformation(sess, tree, path);
         
-        if(getCallbackInterface() != null)
-        {
-            getCallbackInterface().getFileInformation(sess, tree, path, info);
-        }
         return info;
     }
     
@@ -115,10 +104,7 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
     public int fileExists(SrvSession sess, TreeConnection tree, String path)
     {
         int fileExists = diskInterface.fileExists(sess, tree, path);
-        if(getCallbackInterface() != null)
-        {
-            getCallbackInterface().fileExists(sess, tree, path, fileExists);
-        }
+
         return fileExists;
     }
   
@@ -133,10 +119,6 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
     public void treeOpened(SrvSession sess, TreeConnection tree)
     {
         diskInterface.treeOpened(sess, tree);
-        if(getCallbackInterface() != null)
-        {
-            getCallbackInterface().treeOpened(sess, tree);
-        }
     }
 
     @Override
@@ -144,10 +126,6 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
     {
         diskInterface.treeClosed(sess, tree);
         
-        if(getCallbackInterface() != null)
-        {
-            getCallbackInterface().treeClosed(sess, tree);
-        }
     }
 
     @Override
@@ -184,10 +162,6 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
         
         commandExecutor.execute(sess, tree, c);
 
-        if(getCallbackInterface() != null)
-        {
-            getCallbackInterface().closeFile(sess, tree, param);
-        }
     }
 
     @Override
@@ -196,10 +170,6 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
     {
         diskInterface.createDirectory(sess, tree, params);
         
-        if(getCallbackInterface() != null)
-        {
-            getCallbackInterface().createDirectory(sess, tree, params);
-        }
     }
 
     @Override
@@ -249,6 +219,8 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
         ContentContext tctx = (ContentContext) tree.getContext();
         NodeRef rootNode = tctx.getRootNode();
         
+
+        
         String[] paths = FileName.splitPath(params.getPath());
         String folder = paths[0];
         String file = paths[1];
@@ -263,10 +235,6 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
         
         if(ret != null && ret instanceof NetworkFile)
         {   
-            if(getCallbackInterface() != null)
-            {
-                getCallbackInterface().createFile(sess, tree, params, (NetworkFile)ret);
-            }
             
             return (NetworkFile)ret;
         }
@@ -284,11 +252,6 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
     {
               
         diskInterface.deleteDirectory(sess, tree, dir);
-        
-        if(getCallbackInterface() != null)
-        {
-            getCallbackInterface().deleteDirectory(sess, tree, dir);
-        }
     
         
     }
@@ -317,10 +280,6 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
         Command c = ruleEvaluator.evaluate(ctx, o);
         commandExecutor.execute(sess, tree, c);
         
-        if(getCallbackInterface() != null)
-        {
-            getCallbackInterface().deleteFile(sess, tree, name);
-        }
     
     } // End of deleteFile
 
@@ -329,10 +288,7 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
             throws IOException
     {
         diskInterface.flushFile(sess, tree, file);   
-        if(getCallbackInterface() != null)
-        {
-            getCallbackInterface().flushFile(sess, tree, file);
-        }
+
     }
 
     @Override
@@ -340,10 +296,6 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
             throws IOException
     {
         boolean isReadOnly = diskInterface.isReadOnly(sess, ctx);
-        if(getCallbackInterface() != null)
-        {
-            getCallbackInterface().isReadOnly(sess, ctx, isReadOnly);
-        }
         
         return isReadOnly;
     }
@@ -407,17 +359,13 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
               
         boolean writeAccess = param.isReadWriteAccess();
         boolean truncate = param.isOverwrite();
-
+        
         Operation o = new OpenFileOperation(file, writeAccess, truncate, rootNode, path);
         Command c = ruleEvaluator.evaluate(ctx, o);
         Object ret = commandExecutor.execute(sess, tree, c);
 
         if(ret != null && ret instanceof NetworkFile)
         {
-            if(getCallbackInterface() != null)
-            {
-                getCallbackInterface().openFile(sess, tree, param, (NetworkFile)ret);
-            }
              
             if(logger.isDebugEnabled())
             {
@@ -440,12 +388,6 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
             byte[] buf, int bufPos, int siz, long filePos) throws IOException
     {
         int readSize = diskInterface.readFile(sess, tree, file, buf, bufPos, siz, filePos);
-        
-        if(getCallbackInterface() != null)
-        {
-            getCallbackInterface().readFile(sess, tree, file, buf, bufPos, siz, filePos, readSize);
-        }
-        
         return readSize;
     }
 
@@ -498,10 +440,7 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
               diskInterface.renameFile(sess, tree, oldPath, newPath);
 
         }
-        if(getCallbackInterface() != null)
-        {
-            getCallbackInterface().renameFile(sess, tree, oldPath, newPath);
-        }
+
     }
 
     @Override
@@ -509,10 +448,7 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
             NetworkFile file, long pos, int typ) throws IOException
     {
         long ret = diskInterface.seekFile(sess, tree, file, pos, typ);
-        if(getCallbackInterface() != null)
-        {
-            getCallbackInterface().seekFile(sess, tree, file, pos, typ);
-        }
+
         
         return ret;
     }
@@ -522,10 +458,7 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
             String name, FileInfo info) throws IOException
     {
         diskInterface.setFileInformation(sess, tree, name, info);
-        if(getCallbackInterface() != null)
-        {
-            getCallbackInterface().setFileInformation(sess, tree, name, info);
-        }
+
     }
 
     @Override
@@ -533,10 +466,7 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
             String searchPath, int attrib) throws FileNotFoundException
     {
         SearchContext context = diskInterface.startSearch(sess, tree, searchPath, attrib);
-        if(getCallbackInterface() != null)
-        {
-            getCallbackInterface().startSearch(sess, tree, searchPath, attrib, context);
-        }
+
         return context;
     }
 
@@ -545,10 +475,7 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
             NetworkFile file, long siz) throws IOException
     {
         diskInterface.truncateFile(sess, tree, file, siz);
-        if(getCallbackInterface() != null)
-        {
-            getCallbackInterface().truncateFile(sess, tree, file, siz);
-        }
+
     }
 
     @Override
@@ -557,10 +484,6 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
             throws IOException
     {
         int writeSize = diskInterface.writeFile(sess, tree, file, buf, bufoff, siz, fileoff);
-        if(getCallbackInterface() != null)
-        {
-            getCallbackInterface().writeFile(sess, tree, file, buf, bufoff, siz, fileoff, writeSize);
-        }
         
         return writeSize;
     }
@@ -620,7 +543,6 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
      */
     private DriverState getDriverState(SrvSession sess)
     {
-    
         synchronized (sess)
         {
             // Get the driver state
@@ -662,16 +584,6 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
             }
             return ctx;
         }
-    }
-
-    public void setCallbackInterface(ContentDiskCallback callbackInterface)
-    {
-        this.callbackInterface = callbackInterface;
-    }
-
-    public ContentDiskCallback getCallbackInterface()
-    {
-        return callbackInterface;
     }
 
 

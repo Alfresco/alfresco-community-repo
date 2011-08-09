@@ -114,7 +114,7 @@
    <!-- Buffered Content Disk Driver - adds performance buffering -->
    <bean id="contentDiskDriver" class="org.alfresco.filesys.repo.BufferedContentDiskDriver" 
        init-method="init">
-      <property name="diskInterface"><ref bean="ruleDriver" /></property>
+      <property name="diskInterface"><ref bean="fileStateDriver" /></property>
       <property name="diskSizeInterface"><ref bean="transactionalContentDiskDriver" /></property>
       <property name="ioctlInterface"><ref bean="transactionalContentDiskDriver" /></property>
       <property name="fileInfoCache"> <ref bean="contentDiskDriver.fileInfoCache" /></property>
@@ -158,9 +158,12 @@
        
    </bean> 
    
+
+    <!-- File State Driver - adds JLAN'S file state stuff -->   
    <bean name="fileStateDriver" class="org.alfresco.filesys.repo.LegacyFileStateDriver"
      init-method="init">
-   </bean>
+         <property name="diskInterface"><ref bean="ruleDriver" /></property>
+   </bean> 
    
    <!-- Shuffle Disk Driver - adds rule evaluation to the disk driver -->
    <bean id="ruleDriver" class="org.alfresco.filesys.repo.NonTransactionalRuleContentDiskDriver" 
@@ -169,7 +172,6 @@
       <property name="ruleEvaluator"><ref bean="ruleEvaluator" /></property>
       <property name="repositoryDiskInterface"><ref bean="transactionalContentDiskDriver" /></property>
       <property name="commandExecutor"><ref bean="filesystemCommandExecutor" /></property>
-      <property name="callbackInterface"><ref bean="fileStateDriver" /></property>
    </bean>
     
    <!-- Content Disk Driver transaction bean -->

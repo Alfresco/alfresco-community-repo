@@ -22,7 +22,7 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * Transfer Model Constants
- * 
+ *
  * @author Mark Rogers
  * @author Brian Remmington
  */
@@ -32,7 +32,7 @@ public interface TransferModel
 
     static final QName ASPECT_ENABLEABLE = QName.createQName(TRANSFER_MODEL_1_0_URI, "enableable");
 //  static final QName ASSOC_IMAP_ATTACHMENTS_FOLDER = QName.createQName(IMAP_MODEL_1_0_URI, "attachmentsFolder");
-    
+
     /**
      * Aspect : transferred
      */
@@ -47,11 +47,17 @@ public interface TransferModel
     static final QName ASPECT_ALIEN = QName.createQName(TRANSFER_MODEL_1_0_URI, "alien");
     static final QName PROP_INVADED_BY = QName.createQName(TRANSFER_MODEL_1_0_URI, "invadedBy");
 
+    /**
+     * Aspect : fileTransferTarget
+     */
+    static final QName ASPECT_FILE_TRANSFER_TARGET = QName.createQName(TRANSFER_MODEL_1_0_URI, "fileTransferTarget");
+    static final QName ASSOC_ROOT_FILE_TRANSFER = QName.createQName(TRANSFER_MODEL_1_0_URI, "rootFileTransfer");
+
     /*
      * Type : Transfer Group
      */
     static final QName TYPE_TRANSFER_GROUP = QName.createQName(TRANSFER_MODEL_1_0_URI, "transferGroup");
-    
+
     /*
      * Type : Transfer Target
      */
@@ -62,7 +68,7 @@ public interface TransferModel
     static final QName PROP_ENDPOINT_PATH = QName.createQName(TRANSFER_MODEL_1_0_URI, "endpointpath");
     static final QName PROP_USERNAME = QName.createQName(TRANSFER_MODEL_1_0_URI, "username");
     static final QName PROP_PASSWORD = QName.createQName(TRANSFER_MODEL_1_0_URI, "password");
-    
+
     static final QName PROP_ENABLED = QName.createQName(TRANSFER_MODEL_1_0_URI, "enabled");
 
     /*
@@ -79,7 +85,7 @@ public interface TransferModel
     static final QName PROP_PROGRESS_ENDPOINT = QName.createQName(TRANSFER_MODEL_1_0_URI, "progressEndpoint");
     static final QName PROP_TRANSFER_STATUS = QName.createQName(TRANSFER_MODEL_1_0_URI, "transferStatus");
     static final QName PROP_TRANSFER_ERROR = QName.createQName(TRANSFER_MODEL_1_0_URI, "transferError");
-     
+
     /*
      * Type : Transfer report
      */
@@ -91,5 +97,6 @@ public interface TransferModel
      */
     static final QName TYPE_TEMP_TRANSFER_STORE = QName.createQName(TRANSFER_MODEL_1_0_URI, "tempTransferStore");
     static final QName ASSOC_TRANSFER_ORPHAN = QName.createQName(TRANSFER_MODEL_1_0_URI, "orphan");
-    
+
+
 }

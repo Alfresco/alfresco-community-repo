@@ -27,9 +27,9 @@ public class TransferVersionImpl implements TransferVersion
     private String versionMinor;
     private String versionRevision;
     private String edition;
-    
+
     /**
-     * 
+     *
      * @param versionMajor
      * @param versionMinor
      * @param versionRevision
@@ -42,7 +42,7 @@ public class TransferVersionImpl implements TransferVersion
         this.versionRevision = versionRevision;
         this.edition = edition;
     }
- 
+
     /**
      * Construct a transferVersion from a system descriptor
      * @param d the system descriptor
@@ -54,7 +54,7 @@ public class TransferVersionImpl implements TransferVersion
         this.versionRevision = d.getVersionRevision();
         this.edition = d.getEdition();
     }
-    
+
     @Override
     public String getVersionMajor()
     {
@@ -78,7 +78,7 @@ public class TransferVersionImpl implements TransferVersion
     {
         return edition;
     }
-    
+
     public String toString()
     {
         StringBuilder version = new StringBuilder();
@@ -89,10 +89,10 @@ public class TransferVersionImpl implements TransferVersion
         version.append(getVersionMinor());
         version.append(".");
         version.append(getVersionRevision());
-        
+
         return version.toString();
     }
-    
+
     public int hashCode()
     {
         if(edition != null && versionMinor != null)
@@ -104,18 +104,18 @@ public class TransferVersionImpl implements TransferVersion
             return 1;
         }
     }
-    
+
     public boolean equals(Object other)
     {
         if(other == null)
         {
             return false;
         }
-        
+
         if (other instanceof TransferVersion)
         {
             TransferVersion v = (TransferVersion)other;
-            
+
             if(!edition.equalsIgnoreCase(v.getEdition()))
             {
                 return false;

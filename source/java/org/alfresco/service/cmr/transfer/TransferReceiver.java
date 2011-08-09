@@ -33,19 +33,19 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public interface TransferReceiver
 {
     /**
-     * 
+     *
      * @param transferId
      * @return
      */
     File getStagingFolder(String transferId);
-    
+
     /**
-     * 
+     *
      * @param transferId
      * @return
      */
     NodeRef getTempFolder(String transferId);
-    
+
     /**
      * Asks the receiver to setup a new transfer.
      * @param fromRepositoryId the repositoryId of the sending system
@@ -66,14 +66,14 @@ public interface TransferReceiver
     /**
      * Store the specified snapshot file into the transfer staging area.
      * The specified transfer must currently be the holder of the transfer lock, otherwise an exception is thrown.
-     * This operation does not close the supplied stream, so the caller must do it as appropriate. The caller 
+     * This operation does not close the supplied stream, so the caller must do it as appropriate. The caller
      * should assume that the supplied stream has been fully read when this operation returns.
      * @param transferId The identifier of the transfer with which this snapshot is associated
      * @param snapshotStream The open stream that holds the snapshot file.
      * @throws TransferException If an error occurs while saving the snapshot file.
      */
     void saveSnapshot(String transferId, InputStream snapshotStream) throws TransferException;
-    
+
     /**
      * Save a content item
      * @param transferId
@@ -82,28 +82,28 @@ public interface TransferReceiver
      * @throws TransferException
      */
     void saveContent(String transferId, String contentId, InputStream contentStream) throws TransferException;
-    
+
     /**
      * Write the requsite (the bits required to support the Manifest) to the output stream.
      * @param requsiteStream an open stream to receive the requisite
      * @throws TransferException
      */
     void generateRequsite(String transferId, OutputStream requsiteStream) throws TransferException;
-    
+
     /**
-     * Prepare 
+     * Prepare
      * @param transferId
      * @throws TransferException
      */
     void prepare(String transferId) throws TransferException;
-    
+
     /**
      * Abort
      * @param transferId
      * @throws TransferException
      */
     void cancel(String transferId) throws TransferException;
-    
+
     /**
      * Commit asynchronously
      * @param transferId
@@ -117,29 +117,35 @@ public interface TransferReceiver
      * @throws TransferException
      */
     void commit(String transferId) throws TransferException;
-    
+
     /**
-     * 
+     *
      * @param transferId
      * @return the trabsfer progress
      * @throws TransferException
      */
     TransferProgress getStatus(String transferId) throws TransferException;
-    
+
     /**
      * Get the version that we are transfering to.
      */
     TransferVersion getVersion();
-    
+
     /**
-     * 
+     *
      * @return
      */
     TransferProgressMonitor getProgressMonitor();
-    
+
     /**
      * get the transfer report for the specified transfer
      * @param transferId
      */
     InputStream getTransferReport(String transferId);
+
+    /**
+     * set the root node for the file system receiver
+     * @param rootFileSystem
+     */
+    void setFileTransferRootNodeFileFileSystem(String rootFileSystem);
 }

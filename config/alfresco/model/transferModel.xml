@@ -96,6 +96,9 @@
 			</properties>
 		</type>
 
+
+
+
 		<type name="trx:transferLock">
 			<title>Transfer Lock</title>
 			<description>Node type used to represent the transfer lock node
@@ -160,7 +163,7 @@
 			<description>Transfer Report</description>
 			<parent>cm:content</parent>
 		</type>
-		
+
 		<type name="trx:transferReportDest">
             <title>Transfer Report From Destination</title>
             <description>Transfer Report (Destination)</description>
@@ -182,6 +185,24 @@
 			</properties>
 		</aspect>
 
+		<aspect name="trx:fileTransferTarget">
+            <title>File Transfer Target</title>
+            <description>Aspect used to model a receiving root for file transfer</description>
+         <associations>
+            <association name="trx:rootFileTransfer">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>cm:folder</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </association>
+         </associations>
+        </aspect>
+
 		<aspect name="trx:transferRelated">
 			<title>Nodes with this aspect are related to a particular transfer.
 			</title>
@@ -194,7 +215,7 @@
 				</property>
 			</properties>
 		</aspect>
-		
+
 		<aspect name="trx:transferred">
             <title>Transferred Node</title>
             <description>Nodes with this aspect have been transferred from one repository to another</description>
@@ -220,7 +241,7 @@
                 </property>
             </properties>
         </aspect>
-        
+
         <aspect name="trx:alien">
             <title>Alien Node</title>
             <description>Nodes with this aspect are either alien nodes or have been invaded by other alien nodes</description>
@@ -235,7 +256,7 @@
                 </property>
             </properties>
         </aspect>
-        
+
 	</aspects>
 
 </model>

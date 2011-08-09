@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -39,6 +40,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -276,10 +278,24 @@ public class SetPermissionsDialog extends UpdatePermissionsDialog
             }
             else
             {
-                // groups - text search match on supplied name
-                String term = "*" + contains.trim() + "*";
                 Set<String> groups;
-                groups = getAuthorityService().findAuthorities(AuthorityType.GROUP, null, false, term, AuthorityService.ZONE_APP_DEFAULT);
+                
+                if (contains != null && contains.startsWith("*"))
+                {
+                   // if the search term starts with a wildcard use Lucene based search to find groups (results will be inconsistent)
+                   String term = contains.trim() + "*";
+                   groups = getAuthorityService().findAuthorities(AuthorityType.GROUP, null, false, term,
+                               AuthorityService.ZONE_APP_DEFAULT);
+                }
+                else
+                {
+                   // all other searches use the canned query so search results are consistent
+                   PagingResults<String> pagedResults = getAuthorityService().getAuthorities(AuthorityType.GROUP, 
+                               AuthorityService.ZONE_APP_DEFAULT, contains, true, true, new PagingRequest(10000));
+                   groups = new LinkedHashSet<String>(pagedResults.getPage());
+                }
+                
+                // add the EVERYONE group to the results
                 groups.addAll(getAuthorityService().getAllAuthorities(AuthorityType.EVERYONE));
 
                 String groupDisplayName;

@@ -24,10 +24,12 @@ import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.faces.component.UISelectOne;
 import javax.faces.context.FacesContext;
@@ -39,6 +41,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -548,13 +551,35 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
    
    protected Set<String> getGroups(String search)
    {
-       // groups - text search match on supplied name
-       String term = "*" + search + "*";
-       Set<String> groups;
-       groups = getAuthorityService().findAuthorities(AuthorityType.GROUP, null, false, term,
-                AuthorityService.ZONE_APP_DEFAULT);
-       groups.addAll(getAuthorityService().getAllAuthorities(AuthorityType.EVERYONE));
-       return groups;
+      return getGroups(search, true);
+   }
+   
+   protected Set<String> getGroups(String search, boolean includeEveryone)
+   {
+      Set<String> groups;
+      
+      if (search != null && search.startsWith("*"))
+      {
+         // if the search term starts with a wildcard use Lucene based search to find groups (results will be inconsistent)
+         String term = search.trim() + "*";
+         groups = getAuthorityService().findAuthorities(AuthorityType.GROUP, null, false, term,
+                     AuthorityService.ZONE_APP_DEFAULT);
+      }
+      else
+      {
+         // all other searches use the canned query so search results are consistent
+         PagingResults<String> pagedResults = getAuthorityService().getAuthorities(AuthorityType.GROUP, 
+                     AuthorityService.ZONE_APP_DEFAULT, search, true, true, new PagingRequest(10000));
+         groups = new LinkedHashSet<String>(pagedResults.getPage());
+      }
+      
+      if (includeEveryone)
+      {
+          // add the EVERYONE group to the results
+          groups.addAll(getAuthorityService().getAllAuthorities(AuthorityType.EVERYONE));
+      }
+      
+      return groups;
    }
    
    /**

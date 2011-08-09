@@ -32,6 +32,8 @@ import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
@@ -448,8 +450,23 @@ public class GroupsDialog extends BaseDialogBean
       }
       else
       {
-         boolean immediate = (this.filterMode.equals(FILTER_CHILDREN));
-         Set<String> authorities = this.authService.findAuthorities(AuthorityType.GROUP, this.group, immediate, search, AuthorityService.ZONE_APP_DEFAULT);
+         List<String> authorities;
+         
+         if (search != null && search.startsWith("*"))
+         {
+            // if the search term starts with a wildcard use Lucene based search to find groups (results will be inconsistent)
+            boolean immediate = (this.filterMode.equals(FILTER_CHILDREN));
+            Set<String> results = this.authService.findAuthorities(AuthorityType.GROUP, this.group, immediate, search, AuthorityService.ZONE_APP_DEFAULT);
+            authorities = new ArrayList<String>(results);
+         }
+         else
+         {
+            // all other searches use the canned query so search results are consistent
+            PagingResults<String> pagedResults = this.authService.getAuthorities(AuthorityType.GROUP, 
+                        AuthorityService.ZONE_APP_DEFAULT, search, true, true, new PagingRequest(10000));
+            authorities = pagedResults.getPage();
+         }
+         
          groups = new ArrayList<Map<String,String>>(authorities.size());
          for (String authority : authorities)
          {

@@ -20,8 +20,6 @@ package org.alfresco.web.bean.users;
 
 import java.util.Set;
 
-import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.web.bean.spaces.InviteSpaceUsersWizard;
 
 /**
@@ -30,14 +28,12 @@ import org.alfresco.web.bean.spaces.InviteSpaceUsersWizard;
  */
 public class MailInviteSpaceUsersWizard extends InviteSpaceUsersWizard
 {
+    private static final long serialVersionUID = -68947308160920434L;
+
     @Override
     protected Set<String> getGroups(String search)
     {
-        // groups - text search match on supplied name
-        String term = "*" + search + "*";
-        Set<String> groups;
-        groups = getAuthorityService().findAuthorities(AuthorityType.GROUP, null, false, term,
-                AuthorityService.ZONE_APP_DEFAULT);
-        return groups;
+        // get the groups without the EVERYONE group
+        return super.getGroups(search, false);
     }
 }

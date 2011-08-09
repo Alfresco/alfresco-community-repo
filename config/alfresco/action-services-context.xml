@@ -202,6 +202,8 @@
       <property name="dictionaryService" ref="dictionaryService"/>
       <property name="searchService" ref="searchService"/>
       <property name="nodeService" ref="nodeService"/>
+      <property name="namespaceService" ref="namespaceService" />
+      <property name="repository" ref="repositoryHelper" />
       <property name="searchPath" value="/app:company_home/app:dictionary/app:email_templates/app:notify_email_templates"/>
       <property name="cacheAllowableValues" value="false" />
       <property name="nodeInclusionFilter">
@@ -215,6 +217,8 @@
       <property name="dictionaryService" ref="dictionaryService"/>
       <property name="searchService" ref="searchService"/>
       <property name="nodeService" ref="nodeService"/>
+      <property name="namespaceService" ref="namespaceService" />
+      <property name="repository" ref="repositoryHelper" />
       <property name="searchPath" value="/app:company_home/app:dictionary/app:scripts"/>
       <property name="cacheAllowableValues" value="false" />
       <property name="nodeInclusionFilter">

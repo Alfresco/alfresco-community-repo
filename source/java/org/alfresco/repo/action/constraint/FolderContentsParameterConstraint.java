@@ -27,13 +27,13 @@ import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 
@@ -49,6 +49,10 @@ public class FolderContentsParameterConstraint extends BaseParameterConstraint
     private SearchService searchService;
     
     private DictionaryService dictionaryService;
+    
+    private NamespaceService namespaceService;
+    
+    private Repository repository;
     
     private String searchPath;
     
@@ -72,6 +76,16 @@ public class FolderContentsParameterConstraint extends BaseParameterConstraint
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
+    }
+    
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
+    }
+    
+    public void setRepository(Repository repository)
+    {
+        this.repository = repository;
     }
     
     /**
@@ -102,19 +116,18 @@ public class FolderContentsParameterConstraint extends BaseParameterConstraint
      * @see org.alfresco.service.cmr.action.ParameterConstraint#getAllowableValues()
      */
     protected Map<String, String> getAllowableValuesImpl()
-    {   
-        ResultSet resultSet = searchService.query(
-                StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, 
-                SearchService.LANGUAGE_LUCENE, 
-                "PATH:\"" + searchPath + "\"");
+    {
+        List<NodeRef> nodeRefs = searchService.selectNodes(repository.getRootHome(), 
+                    this.searchPath, null, this.namespaceService, false);
+        
         NodeRef rootFolder = null;
-        if (resultSet.length() == 0)
+        if (nodeRefs.size() == 0)
         {
             throw new AlfrescoRuntimeException("The path '" + searchPath + "' did not return any results.");
         }
         else
         {
-            rootFolder = resultSet.getNodeRef(0);
+            rootFolder = nodeRefs.get(0);
         }
         
         Map<String, String> result = new HashMap<String, String>(23);

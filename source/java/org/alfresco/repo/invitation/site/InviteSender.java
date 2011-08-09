@@ -42,7 +42,6 @@ import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.model.Repository;
-import org.alfresco.repo.search.SearcherException;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
@@ -51,16 +50,13 @@ import org.alfresco.service.cmr.invitation.InvitationException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateService;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.util.ModelUtil;
-import org.alfresco.util.UrlUtil;
 import org.springframework.extensions.surf.util.ParameterCheck;
 import org.springframework.extensions.surf.util.URLEncoder;
 
@@ -98,6 +94,7 @@ public class InviteSender
     private final FileFolderService fileFolderService;
     private final SysAdminParams sysAdminParams;
     private final RepoAdminService repoAdminService;
+    private final NamespaceService namespaceService;
     
     public InviteSender(ServiceRegistry services, Repository repository, MessageService messageService)
     {
@@ -109,6 +106,7 @@ public class InviteSender
         this.fileFolderService = services.getFileFolderService();
         this.sysAdminParams = services.getSysAdminParams();
         this.repoAdminService = services.getRepoAdminService();
+        this.namespaceService = services.getNamespaceService();
         this.repository = repository;
         this.messageService = messageService;
     }
@@ -216,36 +214,20 @@ public class InviteSender
 
     private NodeRef getEmailTemplateNodeRef()
     {
-        StoreRef spacesStore = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
-        String query = " PATH:\"app:company_home/app:dictionary/app:email_templates/cm:invite/cm:invite-email.html.ftl\"";
-
-        SearchParameters searchParams = new SearchParameters();
-        searchParams.addStore(spacesStore);
-        searchParams.setLanguage(SearchService.LANGUAGE_LUCENE);
-        searchParams.setQuery(query);
-
-        ResultSet results = null;
-        try
+        List<NodeRef> nodeRefs = searchService.selectNodes(repository.getRootHome(), 
+                    "app:company_home/app:dictionary/app:email_templates/cm:invite/cm:invite-email.html.ftl", null, 
+                    this.namespaceService, false);
+        
+        if (nodeRefs.size() == 1) 
         {
-            results = searchService.query(searchParams);
-            List<NodeRef> nodeRefs = results.getNodeRefs();
-            if (nodeRefs.size() == 1) {
-                // Now localise this
-                NodeRef base = nodeRefs.get(0);
-                NodeRef local = fileFolderService.getLocalizedSibling(base);
-                return local;
-            }
-            else
-                throw new InvitationException("Cannot find the email template!");
+            // Now localise this
+            NodeRef base = nodeRefs.get(0);
+            NodeRef local = fileFolderService.getLocalizedSibling(base);
+            return local;
         }
-        catch (SearcherException e)
+        else
         {
-            throw new InvitationException("Cannot find the email template!", e);
-        }
-        finally
-        {
-            if (results != null)
-                results.close();
+            throw new InvitationException("Cannot find the email template!");
         }
     }
 

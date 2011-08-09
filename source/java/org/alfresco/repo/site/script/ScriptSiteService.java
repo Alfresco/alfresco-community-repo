@@ -155,6 +155,43 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
     }
     
     /**
+     * Retrieves the sites available in the repository. The returned list can optionally be filtered by name and site
+     * preset. If no filters are specified then all the available sites are returned.
+     * 
+     * NOTE: If the filter starts with a * a Lucene based search will be performed, this may discover a wider range
+     * of results i.e. those sites that contain the search term as opposed to those that start with the search term,
+     * but newly created sites may not be found until the underlying search indexes are updated.
+     * 
+     * @param filter            inclusion filter for returned sites. Only sites whose cm:name OR cm:title
+     *                          OR cm:description start with the filter string will be returned.
+     * @param sitePresetFilter  site preset filter
+     * @param size              max results size crop if >0
+     * @return Site[]           a list of the site filtered as appropriate
+     */
+    public Site[] getSites(String filter, String sitePresetFilter, int size)
+    {
+        // reset filter if necessary
+        if (filter != null && (filter.length() == 0 || filter.equals("*")))
+        {
+            filter = null;
+        }
+        
+        if (filter != null && (filter.startsWith("*")))
+        {
+            // findSites will add the wildcard so remove here
+            filter = filter.substring(1, filter.length());
+            
+            // use findSites to do a "contains" search
+            return findSites(filter, sitePresetFilter, size);
+        }
+        else
+        {
+            // use listSites to do a canned query (will provide consistent results)
+            return listSites(filter, sitePresetFilter, size);
+        }
+    }
+    
+    /**
      * List the sites available in the repository.  The returned list can optionally be filtered by name and site
      * preset.
      * <p>

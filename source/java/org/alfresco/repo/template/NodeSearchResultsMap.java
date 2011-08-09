@@ -18,10 +18,8 @@
  */
 package org.alfresco.repo.template;
 
-import java.util.List;
-
-import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Provides functionality to execute a Lucene search for a single node by NodeRef.
@@ -49,14 +47,8 @@ public class NodeSearchResultsMap extends BaseSearchResultsMap
         TemplateNode result = null;
         if (key != null)
         {
-            String ref = "ID:" + AbstractLuceneQueryParser.escape(key.toString());
-            
-            List<TemplateNode> results = query(ref);
-            
-            if (results.size() != 0)
-            {
-                result = results.get(0);
-            }
+            NodeRef nodeRef = new NodeRef((String)key);
+            result = new TemplateNode(nodeRef, services, this.parent.getImageResolver());
         }
         return result;
     }

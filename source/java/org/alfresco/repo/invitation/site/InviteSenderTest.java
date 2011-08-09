@@ -59,12 +59,14 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -349,6 +351,9 @@ public class InviteSenderTest extends TestCase
         List<NodeRef> nodeRefs = Arrays.asList(template);
         when(results.getNodeRefs()).thenReturn(nodeRefs);
         when(searchService.query((SearchParameters) any())).thenReturn(results);
+        when(searchService.selectNodes(any(NodeRef.class), any(String.class),
+                    any(QueryParameterDefinition[].class), any(NamespacePrefixResolver.class), eq(false)))
+                    .thenReturn(nodeRefs);
         return searchService;
     }
 

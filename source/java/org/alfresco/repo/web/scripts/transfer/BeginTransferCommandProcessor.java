@@ -37,21 +37,21 @@ import org.springframework.extensions.webscripts.json.JSONWriter;
 /**
  * This command processor is used to record the start a transfer. No other transfer can be started after this command
  * has executed until the started transfer terminates.
- * 
+ *
  * @author brian
- * 
+ *
  */
 public class BeginTransferCommandProcessor implements CommandProcessor
 {
     private static final String MSG_CAUGHT_UNEXPECTED_EXCEPTION = "transfer_service.receiver.caught_unexpected_exception";
 
     private TransferReceiver receiver;
-    
+
     private final static Log logger = LogFactory.getLog(BeginTransferCommandProcessor.class);
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.alfresco.repo.web.scripts.transfer.CommandProcessor#process(org.alfresco .web.scripts.WebScriptRequest,
      * org.alfresco.web.scripts.WebScriptResponse)
      */
@@ -64,15 +64,16 @@ public class BeginTransferCommandProcessor implements CommandProcessor
             String [] transferToSelfValues = req.getParameterValues(TransferCommons.PARAM_ALLOW_TRANSFER_TO_SELF);
             String [] editionValues = req.getParameterValues(TransferCommons.PARAM_VERSION_EDITION);
             String [] majorValues = req.getParameterValues(TransferCommons.PARAM_VERSION_MAJOR);
-            String [] minorValues = req.getParameterValues(TransferCommons.PARAM_VERSION_MINOR); 
+            String [] minorValues = req.getParameterValues(TransferCommons.PARAM_VERSION_MINOR);
             String [] revisionValues = req.getParameterValues(TransferCommons.PARAM_VERSION_REVISION);
-                          
+            String [] rootFileTransfer = req.getParameterValues(TransferCommons.PARAM_ROOT_FILE_TRANSFER);
+
             String fromRepositoryId = null;
             if(fromRepositoryIdValues != null && fromRepositoryIdValues.length > 0)
             {
                 fromRepositoryId = fromRepositoryIdValues[0];
             }
-            
+
             boolean transferToSelf = false;
             if(transferToSelfValues != null && transferToSelfValues.length > 0)
             {
@@ -81,7 +82,7 @@ public class BeginTransferCommandProcessor implements CommandProcessor
                     transferToSelf = true;
                 }
             }
-            
+
             String edition = "Unknown";
             if(editionValues != null && editionValues.length > 0)
             {
@@ -102,47 +103,54 @@ public class BeginTransferCommandProcessor implements CommandProcessor
             {
                 revision = revisionValues[0];
             }
-            
+
             TransferVersion fromVersion = new TransferVersionImpl(major, minor, revision, edition);
-            
+
+            //set the root for the root node for the file transfer receiver
+            //It replaces the root node if transfers on file system
+            if(rootFileTransfer != null && rootFileTransfer.length > 0 )
+            {
+                receiver.setFileTransferRootNodeFileFileSystem(rootFileTransfer[0]);
+            }
+
             // attempt to start the transfer
             transferId = receiver.start(fromRepositoryId, transferToSelf, fromVersion);
 
             // Create a temporary folder into which we can place transferred files
             receiver.getStagingFolder(transferId);
-            
+
             TransferVersion version = receiver.getVersion();
 
             // return the unique transfer id (the lock id)
             StringWriter stringWriter = new StringWriter(1000);
             JSONWriter jsonWriter = new JSONWriter(stringWriter);
             jsonWriter.startObject();
-            
+
             jsonWriter.writeValue(TransferCommons.PARAM_TRANSFER_ID, transferId);
-            
+
             if(version != null)
             {
                 jsonWriter.writeValue(TransferCommons.PARAM_VERSION_EDITION, version.getEdition());
                 jsonWriter.writeValue(TransferCommons.PARAM_VERSION_MAJOR, version.getVersionMajor());
-                jsonWriter.writeValue(TransferCommons.PARAM_VERSION_MINOR, version.getVersionMinor()); 
+                jsonWriter.writeValue(TransferCommons.PARAM_VERSION_MINOR, version.getVersionMinor());
                 jsonWriter.writeValue(TransferCommons.PARAM_VERSION_REVISION, version.getVersionRevision());
             }
             jsonWriter.endObject();
-            
+
             String response = stringWriter.toString();
-            
+
             resp.setContentType("application/json");
             resp.setContentEncoding("UTF-8");
             int length = response.getBytes("UTF-8").length;
             resp.addHeader("Content-Length", "" + length);
             resp.setStatus(Status.STATUS_OK);
             resp.getWriter().write(response);
-            
+
             logger.debug("transfer started" + transferId);
-            
+
             return Status.STATUS_OK;
 
-        } 
+        }
         catch (Exception ex)
         {
             logger.debug("exception caught", ex);
@@ -167,5 +175,5 @@ public class BeginTransferCommandProcessor implements CommandProcessor
         this.receiver = receiver;
     }
 
-    
+
 }

@@ -62,10 +62,8 @@
       <property name="nodeService" ref="NodeService" />
       <property name="namespaceService" ref="NamespaceService" />
       <property name="searchService" ref="SearchService" />
-      <property name="versionService" ref="VersionService" />
       <property name="publishingEventHelper" ref="publishingEventHelper" />
       <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
-      <property name="transferManifestNodeFactory" ref="transferManifestNodeFactory" />
       <property name="permissionService" ref="PermissionService" />
       <property name="publishingStore" value="${spaces.store}" />
       <property name="publishingRootPath" value="${publishing.root}" />
@@ -77,6 +75,8 @@
       <property name="serializer" ref="publishingPackageSerializer" />
       <property name="workflowService" ref="WorkflowService" />
       <property name="permissionService" ref="PermissionService" />
+      <property name="transferManifestNodeFactory" ref="transferManifestNodeFactory" />
+      <property name="versionService" ref="VersionService" />
       <property name="workflowEngineId" value="jbpm" />
    </bean>
         

@@ -34,7 +34,7 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.service.cmr.publishing.MutablePublishingPackage;
+import org.alfresco.service.cmr.publishing.PublishingDetails;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
 import org.alfresco.service.cmr.publishing.PublishingPackage;
 import org.alfresco.service.cmr.publishing.PublishingPackageEntry;
@@ -69,19 +69,22 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
     {
         NodeRef firstNode = createContent("First");
         NodeRef secondNode = createContent("second");
-        
-        assertNull(nodeService.getProperty(firstNode, PROP_VERSION_LABEL));
-        assertNull(nodeService.getProperty(firstNode, PROP_VERSION_LABEL));
-        MutablePublishingPackage publishingPackage = publishingService.getPublishingQueue().createPublishingPackageBuilder();
-        publishingPackage.addNodesToPublish(firstNode, secondNode);
-
         NodeRef thirdNode = createContent("third");
-        publishingPackage.addNodesToUnpublish(thirdNode);
         
+        assertNull(nodeService.getProperty(firstNode, PROP_VERSION_LABEL));
+        assertNull(nodeService.getProperty(firstNode, PROP_VERSION_LABEL));
+
         Calendar schedule = Calendar.getInstance();
         schedule.add(Calendar.HOUR, 2);
         
-        String eventId = publishingService.getPublishingQueue().scheduleNewEvent(publishingPackage, channelId, schedule, comment, null);
+        PublishingDetails details = publishingService.getPublishingQueue().createPublishingDetails()
+            .addNodesToPublish(firstNode, secondNode)
+            .addNodesToUnpublish(thirdNode)
+            .setPublishChannel(channelId)
+            .setSchedule(schedule)
+            .setComment(comment);
+        
+        String eventId = testHelper.scheduleEvent(details);
         
         //Check schedule triggered versioning.
         Serializable version = nodeService.getProperty(firstNode, PROP_VERSION_LABEL);
@@ -120,7 +123,7 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         assertTrue(toUnpublish.contains(thirdNode));
         
         // Check the correct version is recorded in the entry.
-        PublishingPackageEntry entry = publishingPackage.getEntryMap().get(firstNode);
+        PublishingPackageEntry entry = pckg.getEntryMap().get(firstNode);
         assertEquals(version, entry.getSnapshot().getVersion());
         
         NodeRef eventNode = new NodeRef(eventId);
@@ -141,16 +144,17 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         NodeRef firstNode = createContent("First");
         NodeRef secondNode = createContent("Second");
         
-        List<String> channelNames = Arrays.asList("test://channel/Channel1", "test://channel/Channel2", "test://channel/Channel3" );
+        List<String> statusChannels = Arrays.asList("test://channel/Channel1", "test://channel/Channel2", "test://channel/Channel3" );
         String message = "The message";
-        StatusUpdate update = publishingService.getPublishingQueue().createStatusUpdate(message, secondNode, channelNames);
+        PublishingDetails details = publishingService.getPublishingQueue().createPublishingDetails()
+            .setPublishChannel(channelId)
+            .addNodesToPublish(firstNode, secondNode)
+            .setStatusMessage(message)
+            .setStatusNodeToLinkTo(secondNode)
+            .addStatusUpdateChannels(statusChannels);
         
         // Publish an event with the StatusUpdate
-        MutablePublishingPackage publishingPackage = publishingService.getPublishingQueue().createPublishingPackageBuilder();
-        publishingPackage.addNodesToPublish(firstNode, secondNode);
-        Calendar schedule = Calendar.getInstance();
-        schedule.add(Calendar.HOUR, 2);
-        String eventId = testHelper.scheduleEvent1Year(publishingPackage, channelId, comment, update);
+        String eventId = testHelper.scheduleEvent1Year(details);
 
         PublishingEvent event = publishingService.getPublishingEvent(eventId);
         StatusUpdate actualUpdate = event.getStatusUpdate();
@@ -158,7 +162,7 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         assertEquals(secondNode, actualUpdate.getNodeToLinkTo());
         Set<String> names = actualUpdate.getChannelIds();
         assertEquals(3, names.size());
-        assertTrue(names.containsAll(channelNames));
+        assertTrue(names.containsAll(statusChannels));
     }
     
     @Test
@@ -180,11 +184,12 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         personManager.setUser(user1);
 
         // Publish an event
-        MutablePublishingPackage publishingPackage = publishingService.getPublishingQueue().createPublishingPackageBuilder();
-        publishingPackage.addNodesToPublish(firstNode, secondNode);
+        PublishingDetails details = publishingService.getPublishingQueue().createPublishingDetails();
+        details.addNodesToPublish(firstNode, secondNode);
+        details.setPublishChannel(publishChannel.getId());
         try
         {
-            testHelper.scheduleEvent1Year(publishingPackage, publishChannel.getId(), null, null);
+            testHelper.scheduleEvent1Year(details);
             fail("shceduleNewEvent should have thrown an AccessDeniedException!");
         }
         catch(AlfrescoRuntimeException e)
@@ -196,14 +201,16 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         testHelper.allowChannelAccess(user1, publishChannel.getId());
         
         // Check publish works now.
-        String eventId = testHelper.scheduleEvent1Year(publishingPackage, publishChannel.getId(), null, null);
+        String eventId = testHelper.scheduleEvent1Year(details);
         assertNotNull(eventId);
         
         String message = "The message";
-        StatusUpdate update = publishingService.getPublishingQueue().createStatusUpdate(message, secondNode, statusChannel.getId());
+        details.setStatusMessage(message)
+            .setStatusNodeToLinkTo(secondNode)
+            .addStatusUpdateChannels(statusChannel.getId());
         try
         {
-            eventId = testHelper.scheduleEvent1Year(publishingPackage, publishChannel.getId(), null, update);
+            eventId = testHelper.scheduleEvent1Year(details);
             fail("shceduleNewEvent with status update should have thrown an AccessDeniedException!");
         }
         catch(AlfrescoRuntimeException e)
@@ -215,7 +222,7 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         testHelper.allowChannelAccess(user1, statusChannel.getId());
 
         // Check publish works now.
-        eventId = testHelper.scheduleEvent1Year(publishingPackage, publishChannel.getId(), null, update);
+        eventId = testHelper.scheduleEvent1Year(details);
         assertNotNull(eventId);
     }
 

@@ -16,28 +16,29 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.service.cmr.publishing;
 
+package org.alfresco.repo.publishing;
+
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
+import org.alfresco.service.cmr.publishing.NodeSnapshot;
+import org.alfresco.service.cmr.publishing.PublishingPackage;
+import org.alfresco.service.cmr.publishing.PublishingPackageEntry;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * An extendsion of the {@link PublishingPackage} interface which allows values to be modified.
  * @author Brian
  * @author Nick Smith
  *
  * @since 4.0
  */
-public interface MutablePublishingPackage extends PublishingPackage
+public interface NodeSnapshotSerializer
 {
-    MutablePublishingPackage addNodesToUnpublish(NodeRef... nodesToRemove);
-
-    MutablePublishingPackage addNodesToUnpublish(Collection<NodeRef> nodesToRemove);
-
-    MutablePublishingPackage addNodesToPublish(NodeRef... nodesToPublish);
+    void serialize(Collection<NodeSnapshot> snapshots, OutputStream output) throws Exception;
     
-    MutablePublishingPackage addNodesToPublish(Collection<NodeRef> nodesToPublish);
-    
-    PublishingPackage build();
+    List<NodeSnapshot> deserialize(InputStream input) throws Exception;
 }

@@ -150,7 +150,8 @@ public class PublishingEventProcessor
      
      public void unpublishEntry(Channel channel, PublishingPackageEntry entry)
      {
-         NodeRef publishedNode = channelHelper.mapSourceToEnvironment(entry.getNodeRef(), channel.getNodeRef());
+         NodeRef channelNode = new NodeRef(channel.getId());
+         NodeRef publishedNode = channelHelper.mapSourceToEnvironment(entry.getNodeRef(), channelNode);
          if(NodeUtils.exists(publishedNode, nodeService))
          {
              channel.unPublish(publishedNode);

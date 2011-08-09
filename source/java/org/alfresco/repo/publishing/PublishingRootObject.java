@@ -32,14 +32,12 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.repo.transfer.manifest.TransferManifestNodeFactory;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -60,8 +58,6 @@ public class PublishingRootObject
     private PublishingEventHelper publishingEventHelper;
     private NamespaceService namespaceService;
     private SearchService searchService;
-    private VersionService versionService;
-    private TransferManifestNodeFactory transferManifestNodeFactory;
     private RetryingTransactionHelper retryingTransactionHelper;
     private PermissionService permissionService;
     
@@ -122,7 +118,7 @@ public class PublishingRootObject
     private PublishingQueueImpl createPublishingQueue(NodeRef environmentNode)
     {
         NodeRef queueNode = getPublishingQueueNode(environmentNode);
-        return new PublishingQueueImpl(queueNode, publishingEventHelper, versionService, transferManifestNodeFactory);
+        return new PublishingQueueImpl(queueNode, publishingEventHelper);
     }
 
     private NodeRef getPublishingQueueNode(NodeRef environmentNode)
@@ -218,22 +214,6 @@ public class PublishingRootObject
     public void setSearchService(SearchService searchService)
     {
         this.searchService = searchService;
-    }
-    
-    /**
-     * @param transferManifestNodeFactory the transferManifestNodeFactory to set
-     */
-    public void setTransferManifestNodeFactory(TransferManifestNodeFactory transferManifestNodeFactory)
-    {
-        this.transferManifestNodeFactory = transferManifestNodeFactory;
-    }
-    
-    /**
-     * @param versionService the versionService to set
-     */
-    public void setVersionService(VersionService versionService)
-    {
-        this.versionService = versionService;
     }
     
     /**

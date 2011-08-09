@@ -19,23 +19,12 @@
 
 package org.alfresco.repo.publishing;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Map;
-
-import org.alfresco.service.cmr.publishing.PublishingPackage;
-import org.alfresco.service.cmr.publishing.PublishingPackageEntry;
-import org.alfresco.service.cmr.repository.NodeRef;
-
 /**
- * @author Brian
  * @author Nick Smith
- *
  * @since 4.0
+ *
  */
-public interface PublishingPackageSerializer
+public class NodeSnapshotFactory
 {
-    void serialize(PublishingPackage publishingPackage, OutputStream output) throws Exception;
-    
-    Map<NodeRef, PublishingPackageEntry> deserialize(InputStream input) throws Exception;
+
 }

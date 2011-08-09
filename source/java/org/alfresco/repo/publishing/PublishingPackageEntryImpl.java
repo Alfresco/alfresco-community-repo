@@ -19,8 +19,6 @@
 
 package org.alfresco.repo.publishing;
 
-import org.alfresco.repo.transfer.manifest.TransferManifestNode;
-import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
 import org.alfresco.service.cmr.publishing.NodeSnapshot;
 import org.alfresco.service.cmr.publishing.PublishingPackageEntry;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -36,17 +34,13 @@ class PublishingPackageEntryImpl implements PublishingPackageEntry
 {
     private final boolean publish; 
     private final NodeRef nodeRef;
-    private final TransferManifestNormalNode payload;
-    private final String version;
+    private final NodeSnapshot snapshot;
     
-    public PublishingPackageEntryImpl(boolean publish,
-            NodeRef nodeRef, TransferManifestNormalNode payload,
-            String version)
+    public PublishingPackageEntryImpl(boolean publish, NodeRef nodeRef, NodeSnapshot snapshot)
     {
         this.publish = publish;
         this.nodeRef = nodeRef;
-        this.payload = payload;
-        this.version = version;
+        this.snapshot= snapshot;
     }
     
     /**
@@ -66,19 +60,10 @@ class PublishingPackageEntryImpl implements PublishingPackageEntry
     }
 
     /**
-     * @return the payload
-     */
-    public TransferManifestNode getPayload()
-    {
-        return payload;
-    }
-
-    /**
      * {@inheritDoc}
       */
     public NodeSnapshot getSnapshot()
     {
-        //TODO Add versioning information.
-        return new NodeSnapshotTransferImpl(payload, version);
+        return snapshot;
     }
 }

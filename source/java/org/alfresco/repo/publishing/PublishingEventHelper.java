@@ -60,8 +60,13 @@ import java.util.TimeZone;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeUtils;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.transfer.manifest.TransferManifestNodeFactory;
+import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
 import org.alfresco.repo.workflow.WorkflowModel;
+import org.alfresco.service.cmr.publishing.NodeSnapshot;
+import org.alfresco.service.cmr.publishing.PublishingDetails;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
 import org.alfresco.service.cmr.publishing.PublishingEventFilter;
 import org.alfresco.service.cmr.publishing.PublishingPackage;
@@ -77,6 +82,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
@@ -93,6 +99,7 @@ import org.apache.commons.logging.LogFactory;
 /**
  * @author Brian
  * @author Nick Smith
+ * @since 4.0
  *
  */
 public class PublishingEventHelper
@@ -102,10 +109,12 @@ public class PublishingEventHelper
 
     private NodeService nodeService;
     private ContentService contentService;
+    private VersionService versionService;
     private WorkflowService workflowService;
-    private PublishingPackageSerializer serializer;
+    private NodeSnapshotSerializer serializer;
     private PermissionService permissionService;
-    
+    private TransferManifestNodeFactory transferManifestNodeFactory;
+
     private String workflowEngineId;
     
     /**
@@ -127,6 +136,22 @@ public class PublishingEventHelper
     }
 
     /**
+     * @param transferManifestNodeFactory the transferManifestNodeFactory to set
+     */
+    public void setTransferManifestNodeFactory(TransferManifestNodeFactory transferManifestNodeFactory)
+    {
+        this.transferManifestNodeFactory = transferManifestNodeFactory;
+    }
+    
+    /**
+     * @param versionService the versionService to set
+     */
+    public void setVersionService(VersionService versionService)
+    {
+        this.versionService = versionService;
+    }
+    
+    /**
      * @param workflowService the workflowService to set
      */
     public void setWorkflowService(WorkflowService workflowService)
@@ -145,7 +170,7 @@ public class PublishingEventHelper
     /**
      * @param serializer the serializer to set
      */
-    public void setSerializer(PublishingPackageSerializer serializer)
+    public void setSerializer(NodeSnapshotSerializer serializer)
     {
         this.serializer = serializer;
     }
@@ -168,15 +193,15 @@ public class PublishingEventHelper
         Map<QName, Serializable> props = nodeService.getProperties(eventNode);
         String statusStr = (String) props.get(PROP_PUBLISHING_EVENT_STATUS);
         Status status = Status.valueOf(statusStr);
-        PublishingPackage publishingPackage = getPayLoad(eventNode);
+        String channel = (String) props.get(PROP_PUBLISHING_EVENT_CHANNEL);
         Date createdTime = (Date) props.get(ContentModel.PROP_CREATED);
         String creator = (String) props.get(ContentModel.PROP_CREATOR);
         Date modifiedTime = (Date) props.get(ContentModel.PROP_MODIFIED);
         String modifier = (String) props.get(ContentModel.PROP_MODIFIER);
         String comment = (String) props.get(PROP_PUBLISHING_EVENT_COMMENT);
         Calendar scheduledTime = getScheduledTime(props);
+        PublishingPackage publishingPackage = getPublishingPackage(eventNode, channel);
 
-        String channel = (String) props.get(PROP_PUBLISHING_EVENT_CHANNEL);
         StatusUpdate statusUpdate = buildStatusUpdate(props);
         return new PublishingEventImpl(eventNode.toString(),
                 status, channel,
@@ -210,28 +235,23 @@ public class PublishingEventHelper
                 });
     }
     
-    public NodeRef createNode(NodeRef queueNode, PublishingPackage publishingPackage, String channelId, Calendar schedule, String comment, StatusUpdate statusUpdate)
-        throws Exception
+    public NodeRef createNode(NodeRef queueNode, PublishingDetails details) throws Exception
     {
-        checkChannelAccess(channelId);
-        if(statusUpdate != null && isEmpty(statusUpdate.getChannelIds())==false )
-        for (String statusChannelId : statusUpdate.getChannelIds())
+        checkChannelAccess(details.getPublishChannelId());
+        Set<String> statusChannelIds = details.getStatusUpdateChannels();
+        if(isEmpty(statusChannelIds)==false )
+        for (String statusChannelId : statusChannelIds)
         {
             checkChannelAccess(statusChannelId);
         }
-        if (schedule == null)
-        {
-            schedule = Calendar.getInstance();
-        }
         String name = GUID.generate();
-        Map<QName, Serializable> props = 
-            buildPublishingEventProperties(publishingPackage, channelId, schedule, comment, statusUpdate, name);
+        Map<QName, Serializable> props = buildPublishingEventProperties(details, name);
         ChildAssociationRef newAssoc = nodeService.createNode(queueNode, 
                 ASSOC_PUBLISHING_EVENT,
                 QName.createQName(NAMESPACE, name),
                 TYPE_PUBLISHING_EVENT, props);
         NodeRef eventNode = newAssoc.getChildRef();
-        setPayload(eventNode, publishingPackage);
+        serializePublishNodes(eventNode, details);
         return eventNode;
     }
 
@@ -245,33 +265,40 @@ public class PublishingEventHelper
         }
     }
 
-    private Map<QName, Serializable> buildPublishingEventProperties(PublishingPackage publishingPackage,
-            String channelId, Calendar schedule, String comment, StatusUpdate statusUpdate, String name)
+    private Map<QName, Serializable> buildPublishingEventProperties(PublishingDetails details, String name)
     {
+        Calendar schedule = details.getSchedule();
+        if (schedule == null)
+        {
+            schedule = Calendar.getInstance();
+        }
         Map<QName, Serializable> props = new HashMap<QName, Serializable>();
         props.put(ContentModel.PROP_NAME, name);
         props.put(PROP_PUBLISHING_EVENT_STATUS, Status.IN_PROGRESS.name());
         props.put(PROP_PUBLISHING_EVENT_TIME, schedule.getTime());
         props.put(PublishingModel.PROP_PUBLISHING_EVENT_TIME_ZONE, schedule.getTimeZone().getID());
-        props.put(PublishingModel.PROP_PUBLISHING_EVENT_CHANNEL, channelId);
+        props.put(PublishingModel.PROP_PUBLISHING_EVENT_CHANNEL, details.getPublishChannelId());
         props.put(PublishingModel.PROP_PUBLISHING_EVENT_STATUS, PublishingModel.PROPVAL_PUBLISHING_EVENT_STATUS_SCHEDULED);
+        String comment = details.getComment();
         if (comment != null)
         {
             props.put(PROP_PUBLISHING_EVENT_COMMENT, comment);
         }
-        Collection<String> publshStrings = mapNodesToStrings(publishingPackage.getNodesToPublish());
+        Collection<String> publshStrings = mapNodesToStrings(details.getNodesToPublish());
         props.put(PROP_PUBLISHING_EVENT_NODES_TO_PUBLISH, (Serializable) publshStrings);
-        Collection<String> unpublshStrings = mapNodesToStrings(publishingPackage.getNodesToUnpublish());
+        Collection<String> unpublshStrings = mapNodesToStrings(details.getNodesToUnpublish());
         props.put(PROP_PUBLISHING_EVENT_NODES_TO_UNPUBLISH, (Serializable) unpublshStrings);
-        if(statusUpdate != null)
+        String message = details.getStatusMessage();
+        Set<String> statusChannels = details.getStatusUpdateChannels();
+        if(message != null && isEmpty(statusChannels)==false)
         {
-            props.put(PROP_STATUS_UPDATE_MESSAGE, statusUpdate.getMessage());
-            NodeRef statusNode = statusUpdate.getNodeToLinkTo();
+            props.put(PROP_STATUS_UPDATE_MESSAGE, message);
+            NodeRef statusNode = details.getNodeToLinkTo();
             if(statusNode != null)
             {
                 props.put(PROP_STATUS_UPDATE_NODE_REF, statusNode.toString());
             }
-            props.put(PROP_STATUS_UPDATE_CHANNEL_NAMES, (Serializable) statusUpdate.getChannelIds());
+            props.put(PROP_STATUS_UPDATE_CHANNEL_NAMES, (Serializable) statusChannels);
         }
         return props;
     }
@@ -476,15 +503,16 @@ public class PublishingEventHelper
         return scheduledTime;
     }
     
-    private void setPayload(NodeRef eventNode, PublishingPackage publishingPackage) throws Exception
+    private void serializePublishNodes(NodeRef eventNode, PublishingDetails details) throws Exception
     {
         try
         {
+            List<NodeSnapshot> snapshots = createPublishSnapshots(details.getNodesToPublish());
             ContentWriter contentWriter = contentService.getWriter(eventNode,
                     PROP_PUBLISHING_EVENT_PAYLOAD, true);
             contentWriter.setEncoding("UTF-8");
             OutputStream os = contentWriter.getContentOutputStream();
-            serializer.serialize(publishingPackage, os);
+            serializer.serialize(snapshots, os);
             os.flush();
             os.close();
         }
@@ -495,16 +523,71 @@ public class PublishingEventHelper
         }
     }
     
-    private PublishingPackage getPayLoad(NodeRef eventNode) throws AlfrescoRuntimeException
+    private PublishingPackage getPublishingPackage(NodeRef eventNode, String channelId) throws AlfrescoRuntimeException
+    {
+        Map<NodeRef, PublishingPackageEntry> publishEntires = getPublishEntries(eventNode);
+        Map<NodeRef, PublishingPackageEntry> allEntries = getUnpublishEntries(eventNode, channelId);
+        allEntries.putAll(publishEntires);
+        return new PublishingPackageImpl(allEntries);
+    }
+
+    public Map<NodeRef, PublishingPackageEntry> createPublishEntries(Collection<NodeRef> nodesToAdd)
+    {
+        return transformToMap(nodesToAdd, new Function<NodeRef, PublishingPackageEntry>()
+        {
+            public PublishingPackageEntry apply(NodeRef node)
+            {
+                return createPublishEntry(node);
+            }
+        });
+    }
+
+    private PublishingPackageEntry createPublishEntry(NodeRef node)
+    {
+        NodeSnapshotTransferImpl snapshot = createPublishSnapshot(node);
+        return new PublishingPackageEntryImpl(true, node, snapshot);
+    }
+
+    private List<NodeSnapshot> createPublishSnapshots(final Collection<NodeRef> nodes)
+    {
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<List<NodeSnapshot>>()
+        {
+            public List<NodeSnapshot> doWork() throws Exception
+            {
+                return transform(nodes, new Function<NodeRef, NodeSnapshot>()
+                        {
+                            public NodeSnapshot apply(NodeRef node)
+                            {
+                                return createPublishSnapshot(node);
+                            }
+                        });
+            }
+        }, AuthenticationUtil.getSystemUserName());
+    }
+    
+    private NodeSnapshotTransferImpl createPublishSnapshot(NodeRef node)
+    {
+        versionService.createVersion(node, null);
+        TransferManifestNormalNode payload = (TransferManifestNormalNode) transferManifestNodeFactory.createTransferManifestNode(node, null);
+        NodeSnapshotTransferImpl snapshot = new NodeSnapshotTransferImpl(payload);
+        return snapshot;
+    }
+
+    private Map<NodeRef, PublishingPackageEntry> getPublishEntries(NodeRef eventNode)
     {
         ContentReader contentReader = contentService.getReader(eventNode, PROP_PUBLISHING_EVENT_PAYLOAD);
         InputStream input = contentReader.getContentInputStream();
         try
         {
-            Map<NodeRef, PublishingPackageEntry> publishEntires = serializer.deserialize(input);
-            Map<NodeRef, PublishingPackageEntry> allEntries = getUnpublishPackageEntries(eventNode);
-            allEntries.putAll(publishEntires);
-            return new PublishingPackageImpl(allEntries);
+            List<NodeSnapshot> snapshots = serializer.deserialize(input);
+            Map<NodeRef, PublishingPackageEntry> entries = new HashMap<NodeRef, PublishingPackageEntry>(snapshots.size());
+            for (NodeSnapshot snapshot : snapshots)
+            {
+                NodeRef node = snapshot.getNodeRef();
+                PublishingPackageEntryImpl entry = new PublishingPackageEntryImpl(true, node, snapshot);
+                entries.put(node, entry);
+            }
+            return entries;
         }
         catch (Exception ex)
         {
@@ -513,7 +596,7 @@ public class PublishingEventHelper
         }
     }
 
-    private Map<NodeRef, PublishingPackageEntry> getUnpublishPackageEntries(NodeRef eventNode)
+    public Map<NodeRef, PublishingPackageEntry> getUnpublishEntries(NodeRef eventNode, String channelId)
     {
         @SuppressWarnings("unchecked")
         List<String> entries= (List<String>) nodeService.getProperty(eventNode, PROP_PUBLISHING_EVENT_NODES_TO_UNPUBLISH);
@@ -521,6 +604,7 @@ public class PublishingEventHelper
         {
             return new HashMap<NodeRef, PublishingPackageEntry>();
         }
+        final NodeRef channelNode = new NodeRef(channelId);
         List<NodeRef> nodes = NodeUtils.toNodeRefs(entries);
         return transformToMap(nodes, new Function<NodeRef, PublishingPackageEntry>()
         {
@@ -528,13 +612,37 @@ public class PublishingEventHelper
             {
                 if(NodeUtils.exists(node, nodeService))
                 {
-                    return new PublishingPackageEntryImpl(false, node, null, null);
+                    return makeUnpublishEntry(node, channelNode);
                 }
                 return null;
             }
         });
     }
 
+    private PublishingPackageEntry makeUnpublishEntry(NodeRef source, NodeRef channelNode)
+    {
+        NodeRef lastEvent = getLastPublishEvent(source, channelNode);
+        NodeSnapshot snapshot = null;
+        if(lastEvent!=null)
+        {
+            Map<NodeRef, PublishingPackageEntry> entries = getPublishEntries(lastEvent);
+            PublishingPackageEntry entry = entries.get(source);
+            snapshot = entry.getSnapshot();
+        }
+        return new PublishingPackageEntryImpl(false, source, snapshot);
+    }
+    
+    public NodeRef getLastPublishEvent(NodeRef source, NodeRef channelNode)
+    {
+        NodeRef publishedNode = ChannelHelper.mapSourceToEnvironment(source, channelNode, nodeService);
+        if(publishedNode == null)
+        {
+            return null;
+        }
+        List<AssociationRef> assocs = nodeService.getTargetAssocs(publishedNode, ASSOC_LAST_PUBLISHING_EVENT);
+        return NodeUtils.getSingleAssocNode(assocs, true);
+    }
+    
     public void cancelEvent(String id)
     {
         NodeRef eventNode = getPublishingEventNode(id);
@@ -575,6 +683,11 @@ public class PublishingEventHelper
             nodeService.removeAssociation(assoc.getSourceRef(), assoc.getTargetRef(), assoc.getTypeQName());
         }
         return nodeService.createAssociation(publishedNode, eventNode, ASSOC_LAST_PUBLISHING_EVENT);
+    }
+
+    public PublishingDetails createPublishingPackageBuilder()
+    {
+        return new PublishingDetailsImpl();
     }
     
 //    public NodePublishStatus checkNodeStatus(NodeRef node, String channelId, NodeRef queue)

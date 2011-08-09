@@ -20,8 +20,8 @@
 package org.alfresco.repo.publishing;
 
 import static org.alfresco.model.ContentModel.TYPE_CONTENT;
-import static org.alfresco.repo.publishing.PublishingModel.TYPE_DELIVERY_CHANNEL;
 import static org.alfresco.repo.publishing.PublishingModel.PROP_AUTHORISATION_COMPLETE;
+import static org.alfresco.repo.publishing.PublishingModel.TYPE_DELIVERY_CHANNEL;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
@@ -39,10 +39,9 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.publishing.PublishingPackage;
+import org.alfresco.service.cmr.publishing.PublishingDetails;
 import org.alfresco.service.cmr.publishing.PublishingQueue;
 import org.alfresco.service.cmr.publishing.PublishingService;
-import org.alfresco.service.cmr.publishing.StatusUpdate;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
 import org.alfresco.service.cmr.publishing.channels.ChannelType;
@@ -53,7 +52,6 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
-import org.alfresco.util.collections.CollectionUtils;
 
 /**
  * @author Nick Smith
@@ -213,17 +211,18 @@ public class PublishingTestHelper
         }, AuthenticationUtil.getSystemUserName());
     }
 
-    public String scheduleEvent1Year(PublishingPackage pckg, String channelId, String comment, StatusUpdate statusUpdate)
+    public String scheduleEvent1Year(PublishingDetails details)
     {
         Calendar schedule = Calendar.getInstance();
         schedule.add(Calendar.YEAR, 1);
-        return scheduleEvent(pckg, channelId, schedule, comment, statusUpdate);
+        details.setSchedule(schedule);
+        return scheduleEvent(details);
     }
     
-    public String scheduleEvent(PublishingPackage pckg, String channelId, Calendar schedule, String comment, StatusUpdate statusUpdate)
+    public String scheduleEvent(PublishingDetails details)
     {
         PublishingQueue queue = publishingService.getPublishingQueue();
-        String eventId = queue.scheduleNewEvent(pckg, channelId, schedule, comment, statusUpdate);
+        String eventId = queue.scheduleNewEvent(details);
         events.add(eventId);
         return eventId;
     }

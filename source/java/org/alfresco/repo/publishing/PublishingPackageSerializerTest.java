@@ -19,14 +19,11 @@
 
 package org.alfresco.repo.publishing;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -36,33 +33,27 @@ import java.util.Set;
 import javax.annotation.Resource;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transfer.manifest.TransferManifestNodeFactory;
 import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
-import org.alfresco.service.cmr.publishing.PublishingPackageEntry;
+import org.alfresco.service.cmr.publishing.NodeSnapshot;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.transfer.TransferDefinition;
-import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author Brian
+ * @author Nick Smith
+ * @since 4.0
  * 
  */
 public class PublishingPackageSerializerTest extends AbstractPublishingIntegrationTest
 {
-    @Autowired
-    protected RetryingTransactionHelper retryingTransactionHelper;
-
     @Resource(name="publishingPackageSerializer")
     private StandardPublishingPackageSerializer serializer;
 
@@ -126,28 +117,20 @@ public class PublishingPackageSerializerTest extends AbstractPublishingIntegrati
     @Test
     public void testSerializer() throws Exception
     {
-        TransferManifestNodeFactory mockTMNFactory = mock(TransferManifestNodeFactory.class);
-        VersionService mockVersionService = mock(VersionService.class);
-        MutablePublishingPackageImpl packageImpl = new MutablePublishingPackageImpl(mockTMNFactory, mockVersionService);
-
-       when(mockTMNFactory.createTransferManifestNode(any(NodeRef.class), any(TransferDefinition.class)))
-               .thenReturn(normalNode1);
-
-        packageImpl.addNodesToPublish(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,"Hello"));
-
+        NodeSnapshotTransferImpl transferSnapshot = new NodeSnapshotTransferImpl(normalNode1);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        serializer.serialize(packageImpl, os);
+        serializer.serialize(Collections.<NodeSnapshot>singleton(transferSnapshot), os);
         os.close();
         
         byte[] output = os.toByteArray();
         
         ByteArrayInputStream is = new ByteArrayInputStream(output);
-        Map<NodeRef, PublishingPackageEntry> entryMap = serializer.deserialize(is);
-        assertEquals(1, entryMap.size());
-        assertTrue(entryMap.containsKey(normalNode1.getNodeRef()));
-        PublishingPackageEntryImpl entry = (PublishingPackageEntryImpl) entryMap.get(normalNode1.getNodeRef());
-        assertEquals(TransferManifestNormalNode.class, entry.getPayload().getClass());
-        TransferManifestNormalNode deserializedNode = (TransferManifestNormalNode) entry.getPayload();
-        assertEquals(normalNode1.getType(), deserializedNode.getType());
+        List<NodeSnapshot> snapshots = serializer.deserialize(is);
+        assertEquals(1, snapshots.size());
+        NodeSnapshot snapshot = snapshots.get(0);
+        assertEquals(normalNode1.getNodeRef(), snapshot.getNodeRef());
+        assertEquals(normalNode1.getType(), snapshot.getType());
+        assertEquals(normalNode1.getAspects(), snapshot.getAspects());
+        assertEquals(normalNode1.getProperties(), snapshot.getProperties());
     }
 }

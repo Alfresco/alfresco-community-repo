@@ -49,7 +49,6 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -87,8 +86,6 @@ public class ChannelHelper
     public NodeRef createChannelNode(NodeRef parent, ChannelType channelType, String channelName,
             Map<QName, Serializable> props)
     {
-        Set<AccessPermission> permissions = permissionService.getPermissions(parent);
-        
         QName channelQName = getChannelQName(channelName);
         QName channelNodeType = channelType.getChannelNodeType();
         ChildAssociationRef channelAssoc = 
@@ -121,6 +118,18 @@ public class ChannelHelper
      */
     public NodeRef mapSourceToEnvironment(NodeRef source, final NodeRef channelNode)
     {
+        return mapSourceToEnvironment(source, channelNode, nodeService);
+    }
+    
+    /**
+     * Given a noderef from the editorial space (e.g. the doclib), this returns the corresponding noderef published to the specified channel.
+     * @param source
+     * @param channelNode
+     * @param nodeService
+     * @return
+     */
+    public static NodeRef mapSourceToEnvironment(NodeRef source, final NodeRef channelNode, final NodeService nodeService)
+    {
         if(source == null || channelNode == null)
         {
             return null;
@@ -145,6 +154,16 @@ public class ChannelHelper
      * @return
      */
     public NodeRef mapEnvironmentToSource(NodeRef publishedNode)
+    {
+        return mapEnvironmentToSource(publishedNode, nodeService);
+    }
+    
+    /**
+     * Given a published noderef, this returns the corresponding source noderef in the editorial space (doclib).
+     * @param publishedNode
+     * @return
+     */
+    public static NodeRef mapEnvironmentToSource(NodeRef publishedNode, NodeService nodeService)
     {
         List<AssociationRef> assocs = nodeService.getTargetAssocs(publishedNode, ASSOC_SOURCE);
         return NodeUtils.getSingleAssocNode(assocs, true);

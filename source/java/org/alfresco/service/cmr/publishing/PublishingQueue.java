@@ -19,31 +19,20 @@
 
 package org.alfresco.service.cmr.publishing;
 
-import java.util.Calendar;
-import java.util.Collection;
-
-import org.alfresco.service.cmr.repository.NodeRef;
 
 public interface PublishingQueue
 {
     /**
      * A factory method to create an empty publishing package that can be populated before being passed into
-     * a call to the {@link PublishingQueue#scheduleNewEvent(PublishingPackage, String, Calendar, String, StatusUpdate)} operation.
+     * a call to the {@link PublishingQueue#scheduleNewEvent(PublishingDetails)} operation.
      * @return A publishing package that can be populated before being placed on the publishing queue.
      */
-    MutablePublishingPackage createPublishingPackageBuilder();
+    PublishingDetails createPublishingDetails();
     
-    StatusUpdate createStatusUpdate(String message, NodeRef nodeToLinkTo, String... channelIds);
-    StatusUpdate createStatusUpdate(String message, NodeRef nodeToLinkTo, Collection<String> channelIds);
-
     /**
      * Adds the supplied publishing package onto the queue.
-     * @param publishingPackage The publishing package that is to be enqueued
-     * @param channelId The name of the channel that the package is to be published to
-     * @param schedule The time at which the new publishing event should be scheduled (optional - <code>null</code> indicates "as soon as possible")
-     * @param comment A comment to be stored with this new event (optional - may be <code>null</code>)
-     * @param statusUpdate defines the status update (if any). If <code>null</code> then no status update is sent.
+     * @param publishingDetails The publishing package that is to be enqueued
      * @return The identifier of the newly scheduled event
      */
-    String scheduleNewEvent(PublishingPackage publishingPackage, String channelId, Calendar schedule, String comment, StatusUpdate statusUpdate);
+    String scheduleNewEvent(PublishingDetails publishingDetails);
 }

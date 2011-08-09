@@ -46,10 +46,9 @@ import javax.annotation.Resource;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.service.cmr.publishing.MutablePublishingPackage;
+import org.alfresco.service.cmr.publishing.PublishingDetails;
 import org.alfresco.service.cmr.publishing.PublishingService;
 import org.alfresco.service.cmr.publishing.Status;
-import org.alfresco.service.cmr.publishing.StatusUpdate;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelType;
 import org.alfresco.service.cmr.repository.AssociationRef;
@@ -362,13 +361,12 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
         
         // Create Status Update
         String message = "Here is the message ";
-        StatusUpdate status = publishingService.getPublishingQueue().createStatusUpdate(message, source, channel.getId());
         
         String url = "http://test/url";
         when(channelType.getNodeUrl(any(NodeRef.class))).thenReturn(url);
         when(channelType.canPublishStatusUpdates()).thenReturn(true);
         
-        publishNode(source, status);
+        publishNode(source, message);
         
         String expMessage = message + " " + url;
         verify(channelType, times(1)).updateStatus(any(Channel.class), eq(expMessage), anyMap());
@@ -379,23 +377,30 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
         return publishNode(source, null);
     }
     
-    private NodeRef publishNode(NodeRef source, StatusUpdate statusUpdate)
+    private NodeRef publishNode(NodeRef source, String message)
     {
-        return publishNode(source, statusUpdate, true);
+        return publishNode(source, message, true);
     }
     
-    private NodeRef publishNode(NodeRef source, StatusUpdate statusUpdate, boolean publish)
+    private NodeRef publishNode(NodeRef source, String message, boolean publish)
     {
-        MutablePublishingPackage pckg = publishingService.getPublishingQueue().createPublishingPackageBuilder();
+        PublishingDetails details = publishingService.getPublishingQueue().createPublishingDetails();
+        details.setPublishChannel(channel.getId());
         if(publish)
         {
-            pckg.addNodesToPublish(source);
+            details.addNodesToPublish(source);
         }
         else
         {
-            pckg.addNodesToUnpublish(source);
+            details.addNodesToUnpublish(source);
         }
-        String eventId = testHelper.scheduleEvent1Year(pckg, channel.getId(), null, statusUpdate);
+        if(message!=null)
+        {
+            details.setStatusMessage(message)
+                .setStatusNodeToLinkTo(source)
+                .addStatusUpdateChannels(channel.getId());
+        }
+        String eventId = testHelper.scheduleEvent1Year(details);
         
         assertNotNull(eventId);
         NodeRef eventNode = new NodeRef(eventId);

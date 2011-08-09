@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
 import org.alfresco.service.cmr.publishing.NodeSnapshot;
 import org.alfresco.service.cmr.repository.AssociationRef;
@@ -34,6 +35,8 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * @author Brian
+ * @author Nick Smith
+ * @since 4.0
  *
  */
 public class NodeSnapshotTransferImpl implements NodeSnapshot
@@ -44,16 +47,16 @@ public class NodeSnapshotTransferImpl implements NodeSnapshot
     /**
      * @param transferNode
      */
-    public NodeSnapshotTransferImpl(TransferManifestNormalNode transferNode, String version)
+    public NodeSnapshotTransferImpl(TransferManifestNormalNode transferNode)
     {
         this.transferNode = transferNode;
-        this.version = version;
+        Map<QName, Serializable> props = transferNode.getProperties();
+        this.version = (String) props.get(ContentModel.PROP_VERSION_LABEL);
     }
 
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.publishing.NodeSnapshot#getAllParentAssocs()
      */
-    @Override
     public List<ChildAssociationRef> getAllParentAssocs()
     {
         return transferNode.getParentAssocs();
@@ -62,7 +65,7 @@ public class NodeSnapshotTransferImpl implements NodeSnapshot
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.publishing.NodeSnapshot#getAspects()
      */
-    @Override
+    
     public Set<QName> getAspects()
     {
         return transferNode.getAspects();
@@ -71,7 +74,7 @@ public class NodeSnapshotTransferImpl implements NodeSnapshot
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.publishing.NodeSnapshot#getNodeRef()
      */
-    @Override
+    
     public NodeRef getNodeRef()
     {
         return transferNode.getNodeRef();
@@ -80,7 +83,7 @@ public class NodeSnapshotTransferImpl implements NodeSnapshot
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.publishing.NodeSnapshot#getOutboundPeerAssociations()
      */
-    @Override
+    
     public List<AssociationRef> getOutboundPeerAssociations()
     {
         return transferNode.getTargetAssocs();
@@ -89,7 +92,7 @@ public class NodeSnapshotTransferImpl implements NodeSnapshot
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.publishing.NodeSnapshot#getPrimaryParentAssoc()
      */
-    @Override
+    
     public ChildAssociationRef getPrimaryParentAssoc()
     {
         return transferNode.getPrimaryParentAssoc();
@@ -98,7 +101,7 @@ public class NodeSnapshotTransferImpl implements NodeSnapshot
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.publishing.NodeSnapshot#getPrimaryPath()
      */
-    @Override
+    
     public Path getPrimaryPath()
     {
         return transferNode.getParentPath();
@@ -107,7 +110,7 @@ public class NodeSnapshotTransferImpl implements NodeSnapshot
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.publishing.NodeSnapshot#getProperties()
      */
-    @Override
+    
     public Map<QName, Serializable> getProperties()
     {
         return transferNode.getProperties();
@@ -116,7 +119,7 @@ public class NodeSnapshotTransferImpl implements NodeSnapshot
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.publishing.NodeSnapshot#getType()
      */
-    @Override
+    
     public QName getType()
     {
         return transferNode.getType();
@@ -125,9 +128,17 @@ public class NodeSnapshotTransferImpl implements NodeSnapshot
     /**
     * {@inheritDoc}
     */
-    @Override
+    
     public String getVersion()
     {
         return version;
+    }
+    
+    /**
+     * @return the transferNode
+     */
+    public TransferManifestNormalNode getTransferNode()
+    {
+        return transferNode;
     }
 }

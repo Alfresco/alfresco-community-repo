@@ -20,20 +20,16 @@
 package org.alfresco.repo.publishing;
 
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.transfer.manifest.TransferManifestNodeFactory;
-import org.alfresco.service.cmr.publishing.MutablePublishingPackage;
+import org.alfresco.service.cmr.publishing.PublishingDetails;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
 import org.alfresco.service.cmr.publishing.PublishingEventFilter;
-import org.alfresco.service.cmr.publishing.PublishingPackage;
 import org.alfresco.service.cmr.publishing.PublishingQueue;
 import org.alfresco.service.cmr.publishing.StatusUpdate;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.version.VersionService;
 
 /**
  * @author Brian
@@ -44,25 +40,20 @@ public class PublishingQueueImpl implements PublishingQueue
 {
     private final static String MSG_FAILED_TO_CREATE_PUBLISHING_EVENT = "publishing-create-event-failed";
     private final NodeRef nodeRef;
-    private final TransferManifestNodeFactory transferManifestNodeFactory;
-    private final VersionService versionService;
     private final PublishingEventHelper publishingEventHelper;
     
-    public PublishingQueueImpl(NodeRef nodeRef, PublishingEventHelper publishingEventHelper,
-            VersionService versionService, TransferManifestNodeFactory transferManifestNodeFactory)
+    public PublishingQueueImpl(NodeRef nodeRef, PublishingEventHelper publishingEventHelper)
     {
         this.nodeRef = nodeRef;
         this.publishingEventHelper = publishingEventHelper;
-        this.versionService = versionService;
-        this.transferManifestNodeFactory = transferManifestNodeFactory;
     }
 
     /**
      * {@inheritDoc}
     */
-        public MutablePublishingPackage createPublishingPackageBuilder()
+        public PublishingDetails createPublishingDetails()
     {
-        return new MutablePublishingPackageImpl(transferManifestNodeFactory, versionService);
+        return publishingEventHelper.createPublishingPackageBuilder();
     }
 
     /**
@@ -100,12 +91,12 @@ public class PublishingQueueImpl implements PublishingQueue
       /**
      * {@inheritDoc}
     */
-    public String scheduleNewEvent(PublishingPackage publishingPackage, String channelId, Calendar schedule, String comment, StatusUpdate statusUpdate)
+    public String scheduleNewEvent(PublishingDetails publishingDetails)
     {
         try
         {
-            NodeRef eventNode = publishingEventHelper.createNode(nodeRef, publishingPackage, channelId, schedule, comment, statusUpdate);
-            publishingEventHelper.startPublishingWorkflow(eventNode, schedule);
+            NodeRef eventNode = publishingEventHelper.createNode(nodeRef, publishingDetails);
+            publishingEventHelper.startPublishingWorkflow(eventNode, publishingDetails.getSchedule());
             return eventNode.toString();
         }
         catch (Exception ex)

@@ -34,7 +34,7 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.publishing.MutablePublishingPackage;
+import org.alfresco.service.cmr.publishing.PublishingDetails;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
 import org.alfresco.service.cmr.publishing.PublishingPackageEntry;
 import org.alfresco.service.cmr.publishing.PublishingQueue;
@@ -85,16 +85,20 @@ public class PublishingIntegratedTest extends BaseSpringTest
         }
 
         PublishingQueue liveQueue = publishingService.getPublishingQueue();
-        MutablePublishingPackage publishingPackage = liveQueue.createPublishingPackageBuilder();
-        publishingPackage.addNodesToPublish(nodes);
 
-        Calendar scheduleTime = Calendar.getInstance();
-        scheduleTime.add(Calendar.HOUR, 1);
-        String eventId = liveQueue.scheduleNewEvent(publishingPackage, channel.getId(), scheduleTime, null, null);
+        Calendar schedule = Calendar.getInstance();
+        schedule.add(Calendar.HOUR, 1);
+        
+        PublishingDetails details = liveQueue.createPublishingDetails()
+            .addNodesToPublish(nodes)
+            .setPublishChannel(channel.getId())
+            .setSchedule(schedule);
+
+        String eventId = liveQueue.scheduleNewEvent(details);
         
         PublishingEvent event = publishingService.getPublishingEvent(eventId);
         
-        Assert.assertEquals(scheduleTime, event.getScheduledTime());
+        Assert.assertEquals(schedule, event.getScheduledTime());
         Assert.assertEquals(eventId, event.getId());
         Collection<PublishingPackageEntry> entries = event.getPackage().getEntries();
         Assert.assertEquals(4, entries.size());
@@ -118,12 +122,14 @@ public class PublishingIntegratedTest extends BaseSpringTest
                     NamespaceService.CONTENT_MODEL_1_0_URI, Integer.toString(i)), ContentModel.TYPE_CONTENT).getChildRef());
         }
         PublishingQueue liveQueue = publishingService.getPublishingQueue();
-        MutablePublishingPackage publishingPackage = liveQueue.createPublishingPackageBuilder();
-        publishingPackage.addNodesToPublish(nodes);
+        Calendar schedule = Calendar.getInstance();
+        schedule.add(Calendar.HOUR, 1);
 
-        Calendar scheduleTime = Calendar.getInstance();
-        scheduleTime.add(Calendar.HOUR, 1);
-        String eventId = liveQueue.scheduleNewEvent(publishingPackage, channel.getId(), scheduleTime, null, null);
+        PublishingDetails details = liveQueue.createPublishingDetails()
+            .addNodesToPublish(nodes)
+            .setPublishChannel(channel.getId())
+            .setSchedule(schedule);
+        String eventId = liveQueue.scheduleNewEvent(details);
         PublishingEvent event = publishingService.getPublishingEvent(eventId);
         Assert.assertNotNull(event);
         publishingService.cancelPublishingEvent(eventId);

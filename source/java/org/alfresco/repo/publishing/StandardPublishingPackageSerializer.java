@@ -22,62 +22,57 @@ package org.alfresco.repo.publishing;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.List;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.transfer.manifest.TransferManifestDeletedNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestHeader;
 import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestProcessor;
 import org.alfresco.repo.transfer.manifest.XMLTransferManifestReader;
 import org.alfresco.repo.transfer.manifest.XMLTransferManifestWriter;
-import org.alfresco.service.cmr.publishing.PublishingPackage;
-import org.alfresco.service.cmr.publishing.PublishingPackageEntry;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
+import org.alfresco.service.cmr.publishing.NodeSnapshot;
 import org.xml.sax.SAXException;
 
 /**
  * @author Brian
  * @author Nick Smith
  */
-public class StandardPublishingPackageSerializer implements PublishingPackageSerializer
+public class StandardPublishingPackageSerializer implements NodeSnapshotSerializer
 {
     /**
-     * {@inheritDoc}
-     * @return 
-      */
-    public Map<NodeRef, PublishingPackageEntry> deserialize(InputStream input) throws Exception
+    * {@inheritDoc}
+    */
+    @Override
+    public List<NodeSnapshot> deserialize(InputStream input) throws Exception
     {
         SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
         SAXParser parser = saxParserFactory.newSAXParser();
-        PublishingPackageDeserializer processor = new PublishingPackageDeserializer();
+        NodeSnapshotDeserializer processor = new NodeSnapshotDeserializer();
 
         XMLTransferManifestReader xmlReader = new XMLTransferManifestReader(processor);
         parser.parse(input, xmlReader);
-        return processor.getEntries();
+        return processor.getSnapshots();
     }
 
     /**
      * {@inheritDoc}
-      */
-    public void serialize(PublishingPackage publishingPackage, OutputStream output) throws Exception
-    {
+     */
+     public void serialize(Collection<NodeSnapshot> snapshots, OutputStream output) throws Exception
+     {
         try
         {
-            Set<NodeRef> nodesToPublish = publishingPackage.getNodesToPublish();
+            
             TransferManifestHeader header = new TransferManifestHeader();
             header.setCreatedDate(new Date());
-            header.setNodeCount(nodesToPublish.size());
+            header.setNodeCount(snapshots.size());
             header.setReadOnly(false);
             header.setSync(false);
             
@@ -88,14 +83,12 @@ public class StandardPublishingPackageSerializer implements PublishingPackageSer
             transferManifestWriter.writeTransferManifestHeader(header);
 
             // Iterate over NodesToPublish and Serialize.
-            Map<NodeRef, PublishingPackageEntry> entryMap = publishingPackage.getEntryMap();
-            for (NodeRef publishNode: nodesToPublish)
+            for (NodeSnapshot snapshot: snapshots)
             {
-                PublishingPackageEntry entry = entryMap.get(publishNode);
-                if (entry instanceof PublishingPackageEntryImpl)
+                if (snapshot instanceof NodeSnapshotTransferImpl)
                 {
-                    PublishingPackageEntryImpl entryImpl = (PublishingPackageEntryImpl)entry;
-                    transferManifestWriter.writeTransferManifestNode(entryImpl.getPayload());
+                    NodeSnapshotTransferImpl snapshotImpl = (NodeSnapshotTransferImpl)snapshot;
+                    transferManifestWriter.writeTransferManifestNode(snapshotImpl.getTransferNode());
                 }
             }
             transferManifestWriter.endTransferManifest();
@@ -117,18 +110,19 @@ public class StandardPublishingPackageSerializer implements PublishingPackageSer
      * @author Nick Smith
      *
      */
-    public static class PublishingPackageDeserializer implements TransferManifestProcessor
+    public static class NodeSnapshotDeserializer implements TransferManifestProcessor
     {
-        Map<NodeRef,PublishingPackageEntry> entries = new HashMap<NodeRef,PublishingPackageEntry>();
+        private List<NodeSnapshot> snapshots = new ArrayList<NodeSnapshot>();
         
-        /**
-         * @return the entries
-         */
-        public Map<NodeRef,PublishingPackageEntry> getEntries()
-        {
-            return entries;
-        }
 
+        /**
+         * @return the snapshots
+         */
+        public List<NodeSnapshot> getSnapshots()
+        {
+            return snapshots;
+        }
+        
         /**
         * {@inheritDoc}
          */
@@ -142,9 +136,8 @@ public class StandardPublishingPackageSerializer implements PublishingPackageSer
           */
         public void processTransferManifestNode(TransferManifestNormalNode node)
         {
-            Map<QName, Serializable> props = node.getProperties();
-            String version = (String) props.get(ContentModel.PROP_VERSION_LABEL);
-            entries.put(node.getNodeRef(), new PublishingPackageEntryImpl(true, node.getNodeRef(), node, version));
+            NodeSnapshotTransferImpl snapshot = new NodeSnapshotTransferImpl(node);
+            snapshots.add(snapshot);
         }
 
         /**
@@ -152,7 +145,7 @@ public class StandardPublishingPackageSerializer implements PublishingPackageSer
           */
         public void processTransferManifestNode(TransferManifestDeletedNode node)
         {
-            entries.put(node.getNodeRef(), new PublishingPackageEntryImpl(false, node.getNodeRef(), null, null));
+            //NOOP
         }
 
         /**

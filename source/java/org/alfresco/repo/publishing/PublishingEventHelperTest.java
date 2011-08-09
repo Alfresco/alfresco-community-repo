@@ -42,7 +42,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,9 +49,8 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.publishing.PublishingDetails;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
-import org.alfresco.service.cmr.publishing.PublishingPackage;
-import org.alfresco.service.cmr.publishing.PublishingPackageEntry;
 import org.alfresco.service.cmr.publishing.Status;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -128,7 +126,7 @@ public class PublishingEventHelperTest
         when(reader.getContentInputStream()).thenReturn(inputStream);
         when(contentService.getReader(any(NodeRef.class), any(QName.class)))
             .thenReturn(reader);
-        PublishingPackageSerializer serializer = mock(PublishingPackageSerializer.class);
+        NodeSnapshotSerializer serializer = mock(NodeSnapshotSerializer.class);
         helper.setSerializer(serializer);
         
         PublishingEvent result = helper.getPublishingEvent((NodeRef)null);
@@ -181,7 +179,7 @@ public class PublishingEventHelperTest
             .thenReturn(writer);
         OutputStream outputStream = mock(OutputStream.class);
         when(writer.getContentOutputStream()).thenReturn(outputStream);
-        PublishingPackageSerializer serializer = mock(PublishingPackageSerializer.class);
+        NodeSnapshotSerializer serializer = mock(NodeSnapshotSerializer.class);
         helper.setSerializer(serializer);
         
         NodeRef queue = new NodeRef("foo://bar/queue");
@@ -191,13 +189,16 @@ public class PublishingEventHelperTest
         when(nodeService.createNode(any(NodeRef.class), any(QName.class), any(QName.class), any(QName.class), anyMap()))
             .thenReturn(childAssoc);
         
-        Map<NodeRef, PublishingPackageEntry> entires = Collections.emptyMap();
-        PublishingPackage pckg = new PublishingPackageImpl(entires);
-        String channelName = "test://channel/id";
+        String channelId = "test://channel/id";
         Calendar schedule = Calendar.getInstance();
         String comment = "The comment";
         
-        NodeRef result = helper.createNode(queue, pckg, channelName, schedule, comment, null);
+        PublishingDetails details = new PublishingDetailsImpl()
+            .setSchedule(schedule)
+            .setPublishChannel(channelId)
+            .setComment(comment);
+        
+        NodeRef result = helper.createNode(queue, details);
         assertEquals(event, result);
         
         ArgumentCaptor<Map> argument = ArgumentCaptor.forClass(Map.class);
@@ -208,7 +209,7 @@ public class PublishingEventHelperTest
         Map<QName, Serializable> props = argument.getValue();
         
         assertNotNull(props.get(ContentModel.PROP_NAME));
-        assertEquals(channelName, props.get(PROP_PUBLISHING_EVENT_CHANNEL));
+        assertEquals(channelId, props.get(PROP_PUBLISHING_EVENT_CHANNEL));
         assertEquals(comment, props.get(PROP_PUBLISHING_EVENT_COMMENT));
         assertEquals(schedule.getTime(), props.get(PROP_PUBLISHING_EVENT_TIME));
         assertEquals(schedule.getTimeZone().getID(), props.get(PROP_PUBLISHING_EVENT_TIME_ZONE));

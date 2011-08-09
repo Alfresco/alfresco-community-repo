@@ -24,13 +24,12 @@ import java.util.Map;
 
 import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.jscript.ScriptNode;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.links.LinkInfo;
 import org.alfresco.service.cmr.links.LinksService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.apache.commons.logging.Log;
@@ -58,8 +57,8 @@ public abstract class AbstractLinksWebScript extends DeclarativeWebScript
     protected NodeService nodeService;
     protected SiteService siteService;
     protected LinksService linksService;
+    protected PersonService personService;
     protected ActivityService activityService;
-    protected ServiceRegistry serviceRegistry;
     
     public void setNodeService(NodeService nodeService)
     {
@@ -76,14 +75,14 @@ public abstract class AbstractLinksWebScript extends DeclarativeWebScript
         this.linksService = linksService;
     }
     
+    public void setPersonService(PersonService personService)
+    {
+        this.personService = personService;
+    }
+    
     public void setActivityService(ActivityService activityService)
     {
         this.activityService = activityService;
-    }
-    
-    public void setServiceRegistry(ServiceRegistry serviceRegistry) 
-    {
-        this.serviceRegistry = serviceRegistry;
     }
     
     
@@ -193,8 +192,8 @@ public abstract class AbstractLinksWebScript extends DeclarativeWebScript
        }
        else
        {
-          NodeRef person = serviceRegistry.getPersonService().getPerson(creator);
-          creatorO = new ScriptNode(person, serviceRegistry);
+          NodeRef person = personService.getPerson(creator);
+          creatorO = person;
        }
        res.put("creator", creatorO);
        

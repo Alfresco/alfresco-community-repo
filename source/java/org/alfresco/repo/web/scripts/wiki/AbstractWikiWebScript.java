@@ -24,12 +24,11 @@ import java.util.Map;
 
 import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.jscript.ScriptNode;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.links.LinkInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.wiki.WikiPageInfo;
@@ -64,8 +63,8 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
     protected NodeService nodeService;
     protected SiteService siteService;
     protected WikiService wikiService;
+    protected PersonService personService;
     protected ActivityService activityService;
-    protected ServiceRegistry serviceRegistry;
     
     public void setNodeService(NodeService nodeService)
     {
@@ -82,14 +81,14 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
         this.wikiService = wikiService;
     }
     
+    public void setPersonService(PersonService personService)
+    {
+        this.personService = personService;
+    }
+    
     public void setActivityService(ActivityService activityService)
     {
         this.activityService = activityService;
-    }
-    
-    public void setServiceRegistry(ServiceRegistry serviceRegistry) 
-    {
-        this.serviceRegistry = serviceRegistry;
     }
     
     
@@ -195,9 +194,9 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
           return "";
        }
        
-       // Script Node needed of the person
-       NodeRef person = serviceRegistry.getPersonService().getPerson(username);
-       return new ScriptNode(person, serviceRegistry);
+       // Will turn into a Script Node needed of the person
+       NodeRef person = personService.getPerson(username);
+       return person;
     }
     
     protected Map<String, Object> renderWikiPage(WikiPageInfo page)

@@ -1516,8 +1516,8 @@
         <property name="nodeService" ref="NodeService"/>
         <property name="siteService" ref="SiteService"/>
         <property name="linksService" ref="LinksService"/>
+        <property name="personService" ref="PersonService"/>
         <property name="activityService" ref="activityService"/>
-        <property name="serviceRegistry" ref="ServiceRegistry"/>
    </bean>
 
    <!-- Lists the Links for a site -->
@@ -1538,8 +1538,8 @@
         <property name="nodeService" ref="NodeService"/>
         <property name="siteService" ref="SiteService"/>
         <property name="wikiService" ref="WikiService"/>
+        <property name="personService" ref="PersonService"/>
         <property name="activityService" ref="activityService"/>
-        <property name="serviceRegistry" ref="ServiceRegistry"/>
    </bean>
 
    <!-- Fetches the details of one wiki page -->

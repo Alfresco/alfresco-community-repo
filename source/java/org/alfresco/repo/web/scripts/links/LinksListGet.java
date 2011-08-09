@@ -26,13 +26,11 @@ import java.util.Map;
 
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
-import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.links.LinksServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.links.LinkInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteInfo;
-import org.alfresco.util.ScriptPagingDetails;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
@@ -137,15 +135,24 @@ public class LinksListGet extends AbstractLinksWebScript
       }
       else
       {
+         // Find the container (if it's been created yet)
          container = siteService.getContainer(
                site.getShortName(), LinksServiceImpl.LINKS_COMPONENT
          );
+         
+         if(container == null)
+         {
+            // Brand new site, no write operations on links have happened
+            // Fudge it for now with the site itself, the first write call
+            //  will have the container created
+            container = site.getNodeRef();
+         }
       }
       
       // All done
       Map<String, Object> model = new HashMap<String, Object>();
       model.put("data", data);
-      model.put("links", new ScriptNode(container, serviceRegistry)); 
+      model.put("links", container); 
       model.put("siteId", site.getShortName());
       model.put("site", site);
       return model;

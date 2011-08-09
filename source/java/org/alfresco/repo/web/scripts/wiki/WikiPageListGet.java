@@ -142,9 +142,18 @@ public class WikiPageListGet extends AbstractWikiWebScript
       }
       else
       {
+         // Find the container (if it's been created yet)
          container = siteService.getContainer(
                site.getShortName(), WikiServiceImpl.WIKI_COMPONENT
          );
+         
+         if(container == null)
+         {
+            // Brand new site, no write operations on links have happened
+            // Fudge it for now with the site itself, the first write call
+            //  will have the container created
+            container = site.getNodeRef();
+         }
       }
       
       // All done

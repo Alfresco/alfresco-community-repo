@@ -29,9 +29,12 @@ import java.util.Arrays;
 
 import junit.framework.TestCase;
 
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferProgress;
 import org.alfresco.service.cmr.transfer.TransferProgress.Status;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.json.ExceptionJsonSerializer;
 import org.apache.commons.httpclient.ConnectTimeoutException;
 import org.apache.commons.httpclient.HostConfiguration;
@@ -68,6 +71,7 @@ public class HttpClientTransmitterImplTest extends TestCase
     private HttpClient mockedHttpClient;
     private TransferTargetImpl target;
     private MockableHttpMethodFactory mockedHttpMethodFactory;
+    private NodeService mockedNodeService;
 
     /* (non-Javadoc)
      * @see junit.framework.TestCase#setUp()
@@ -83,6 +87,11 @@ public class HttpClientTransmitterImplTest extends TestCase
         transmitter.setHttpClient(mockedHttpClient);
         transmitter.setHttpMethodFactory(mockedHttpMethodFactory);
 
+        this.mockedNodeService = mock(NodeService.class);
+        when(mockedNodeService.hasAspect(any(NodeRef.class), 
+                eq(TransferModel.ASPECT_FILE_TRANSFER_TARGET))).thenReturn(false);
+        transmitter.setNodeService(mockedNodeService);
+        
         this.target = new TransferTargetImpl();
         target.setEndpointHost(TARGET_HOST);
         target.setEndpointProtocol(HTTP_PROTOCOL);

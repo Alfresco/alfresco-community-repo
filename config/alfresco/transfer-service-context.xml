@@ -54,7 +54,7 @@
 	<bean id="transferTransmitter" class="org.alfresco.repo.transfer.HttpClientTransmitterImpl"
 		init-method="init">
 		<property name="contentService" ref="ContentService" />
-		<property name="nodeService" ref="nodeService" />
+		<property name="nodeService" ref="NodeService" />
 	</bean>
 	
     <bean id="transferVersionChecker" class="org.alfresco.repo.transfer.TransferVersionCheckerImpl">

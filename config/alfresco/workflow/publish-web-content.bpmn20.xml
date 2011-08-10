@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:activiti="http://activiti.org/bpmn"
+   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+   xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema"
+   expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://alfresco.org">
+
+    <process id="activitiPublishWebContent" name="Publish Web Content Activiti Process">
+
+        <startEvent id="start"
+            activiti:formKey="pubwf:startPublish" />
+
+        <sequenceFlow id='flow1' 
+            sourceRef='start'
+            targetRef='checkForScheduledTime'>
+             <extensionElements>
+               <!-- If the schedule date is null, publish should be performed immediatly. Gateway used the 'schedule' boolean -->
+               <activiti:executionListener class="org.alfresco.repo.workflow.activiti.listener.ScriptExecutionListener">
+                  <activiti:field name="script">
+                     <activiti:string>
+                        // Check if the publish should be scheduled or performed immediatly
+                        if (typeof pubwf_scheduledPublishDate != 'undefined') {
+                           execution.setVariable("schedule", true);
+                        } else {
+                           execution.setVariable("schedule", false);
+                        } 
+                     </activiti:string>
+                  </activiti:field>
+               </activiti:executionListener>
+               
+               <!-- Timer expects an ISO-8601 date, publish time should be converted (if present) -->
+               <activiti:executionListener class="org.alfresco.repo.workflow.activiti.listener.ConvertDateToISO8601">
+                  <activiti:field name="source" stringValue="pubwf_scheduledPublishDate" />
+                  <activiti:field name="target" stringValue="iso8601PublishDate" />
+               </activiti:executionListener>
+             </extensionElements>
+        </sequenceFlow>
+
+        <exclusiveGateway  id="checkForScheduledTime" name="Check Schedule" /> 
+
+        <sequenceFlow id='flow3' sourceRef='checkForScheduledTime' targetRef='schedulePublish' >
+            <conditionExpression xsi:type="tFormalExpression">${schedule}</conditionExpression>
+        </sequenceFlow>
+
+        <sequenceFlow id='flow4' 
+        sourceRef='checkForScheduledTime'
+            targetRef='publish' />
+            
+        <serviceTask id="publish" 
+             name="My Java Service Task" 
+             activiti:class="org.alfresco.repo.workflow.activiti.script.AlfrescoScriptDelegate">
+              <extensionElements>
+                  <activiti:field name="script">
+                     <activiti:string>
+                        var publishEventAction = actions.create("pub_publishEvent");
+                        publishEventAction.executeAsynchronously(pubwf_publishingEvent);
+                     </activiti:string>
+                  </activiti:field>
+              </extensionElements>
+         </serviceTask>
+         
+         <receiveTask id="schedulePublish" name="Wait for publish time" />
+         
+         <boundaryEvent id="publishTimer" cancelActivity="true" attachedToRef="schedulePublish">
+             <timerEventDefinition>
+                 <timeDate>${iso8601PublishDate}</timeDate>
+             </timerEventDefinition>
+         </boundaryEvent>    
+         
+         <sequenceFlow id='flow5' sourceRef='schedulePublish'
+            targetRef='end' />
+            
+         <sequenceFlow id='flow6' sourceRef='publishTimer'
+            targetRef='publish' /> 
+        
+        <sequenceFlow id='flow7' sourceRef='publish'
+            targetRef='end' />
+
+        <endEvent id="end" />
+
+    </process>
+</definitions>

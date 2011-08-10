@@ -35,6 +35,11 @@ function updatePost(topic, post)
    
    // update the topic title
    post.properties["cm:title"] = title;
+   if(title != undefined && title.length > 0 && topic != undefined)
+   {
+       topic.properties["cm:title"] = title;
+       topic.save();
+   }
 
    // make sure the syndication aspect has been added
    if (! post.hasAspect(ASPECT_SYNDICATION))
@@ -72,13 +77,18 @@ function main()
    // find the post node if this is a topic node
    var topicNode = null;
    var postNode = null;
+   var updatedTopic = false;
    if (node.type == "{http://www.alfresco.org/model/forum/1.0}post")
    {
       postNode = node;
+      topicNode = node.parent;
+      updatedTopic = false;
    }
    else if (node.type == "{http://www.alfresco.org/model/forum/1.0}topic")
    {
       topicNode = node;
+      updatedTopic = true;
+
       var nodes = getOrderedPosts(node);
       if (nodes.length > 0)
       {
@@ -103,7 +113,7 @@ function main()
    // we have to reuse the search results from before altering the nodes,
    // that's why we don't use the function fetchPostData here (which would
    // do another lucene search in case of a topic post
-   if (topicNode == null)
+   if (! updatedTopic)
    {
       model.postData = getReplyPostData(postNode);
       

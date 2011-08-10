@@ -28,7 +28,7 @@ function createPost(forumNode)
       title = json.get("title");
    }
    var content = "";
-   if (json.has("title"))
+   if (json.has("content"))
    {
       content = json.get("content");
    }
@@ -49,6 +49,8 @@ function createPost(forumNode)
    //       clashes.
    var name = getUniqueChildName(forumNode, "post");
    var topicNode = forumNode.createNode(name, "fm:topic");
+   topicNode.properties.title = title;
+   topicNode.save();
 
    // We use twice the same name for the topic and the post in it
    var contentNode = topicNode.createNode(name, "fm:post");

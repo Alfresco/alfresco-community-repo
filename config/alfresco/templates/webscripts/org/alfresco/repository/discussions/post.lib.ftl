@@ -59,6 +59,8 @@
          </#if>
 		</#if>
 		"tags": [<#list postData.tags as x>"${x}"<#if x_has_next>, </#if></#list>],
+   <#else>
+		"name": "${post.name}",
 	</#if>
 
 	<#-- data using refNode which might be the topic or the post node -->

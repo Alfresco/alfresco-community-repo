@@ -54,23 +54,26 @@ public class PseudoFileOverlayImpl implements PseudoFileOverlay
         PropertyCheck.mandatory(this, "context", context);
     
         DesktopActionTable actions = context.getDesktopActions();
-        
-        Enumeration<String> actionNames = actions.enumerateActionNames();
-  
-        while(actionNames.hasMoreElements())
+
+        if(actions != null)
         {
-            // Get the current desktop action      
-            String name = actionNames.nextElement();
-            DesktopAction action = actions.getAction(name);
+            Enumeration<String> actionNames = actions.enumerateActionNames();
+  
+            while(actionNames.hasMoreElements())
+            {
+                // Get the current desktop action      
+                String name = actionNames.nextElement();
+                DesktopAction action = actions.getAction(name);
       
-           // Add the pseudo file for the desktop action
+                // Add the pseudo file for the desktop action
       
-           if ( action.hasPseudoFile())
-           {
-               PseudoFile file = action.getPseudoFile();
-               pl.addFile(file);
-           }
-       }
+                if ( action.hasPseudoFile())
+                {
+                    PseudoFile file = action.getPseudoFile();
+                    pl.addFile(file);
+                }
+            }
+        }
     }
     
     private PseudoFile generateURLShortcut(NodeRef nodeRef)

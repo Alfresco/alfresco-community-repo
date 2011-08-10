@@ -35,6 +35,7 @@ import org.alfresco.jlan.server.filesys.SearchContext;
 import org.alfresco.jlan.server.filesys.TreeConnection;
 import org.alfresco.jlan.server.filesys.cache.FileState;
 import org.alfresco.jlan.server.filesys.cache.FileStateCache;
+import org.alfresco.jlan.server.filesys.cache.NetworkFileStateInterface;
 import org.alfresco.jlan.smb.SharingMode;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
@@ -59,7 +60,7 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
         PropertyCheck.mandatory(this, "diskInterface", diskInterface);
     }
     
-    private static final Log logger = LogFactory.getLog(NonTransactionalRuleContentDiskDriver.class);
+    private static final Log logger = LogFactory.getLog(LegacyFileStateDriver.class);
 
     @Override
     public void treeOpened(SrvSession sess, TreeConnection tree)
@@ -96,6 +97,30 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
         try
         {
             NetworkFile newFile = diskInterface.createFile(sess, tree, params);
+          
+            if(tctx.hasStateCache())
+            {
+                FileState fstate = tctx.getStateCache().findFileState( params.getPath(), true);
+                fstate.incrementOpenCount();
+                fstate.setProcessId(params.getProcessId());
+                fstate.setSharedAccess( params.getSharedAccess());
+            
+                // Indicate that the file is open
+                fstate.setFileStatus(newFile.isDirectory()? FileStatus.DirectoryExists : FileStatus.FileExists);
+                fstate.setAllocationSize( params.getAllocationSize());
+                
+                if (newFile instanceof NodeRefNetworkFile)
+                {
+                    NodeRefNetworkFile x = (NodeRefNetworkFile)newFile;
+                    x.setFileState(fstate);
+                }
+                
+                if (newFile instanceof TempNetworkFile)
+                {
+                    TempNetworkFile x = (TempNetworkFile)newFile;
+                    x.setFileState(fstate);
+                }   
+            }
             
             if (newFile instanceof NodeRefNetworkFile)
             {
@@ -108,19 +133,6 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
             {
                 TempNetworkFile x = (TempNetworkFile)newFile;
                 x.setAccessToken(token);
-            }
-            
-            if(tctx.hasStateCache())
-            {
-                FileState fstate = tctx.getStateCache().findFileState( params.getPath(), true);
-                fstate.incrementOpenCount();
-                fstate.setProcessId(params.getProcessId());
-                fstate.setSharedAccess( params.getSharedAccess());
-                fstate.setProcessId( params.getProcessId());
-            
-                // Indicate that the file is open
-                fstate.setFileStatus(newFile.isDirectory()? FileStatus.DirectoryExists : FileStatus.FileExists);
-                fstate.setAllocationSize( params.getAllocationSize());
             }
             
             return newFile;
@@ -255,6 +267,7 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
             {
                 FileStateCache cache = tctx.getStateCache();
                 FileState fstate = cache.findFileState( param.getFullName(), true);
+                
                 if(fstate != null && param.getAccessToken() != null)
                 {
                     FileAccessToken token = param.getAccessToken();

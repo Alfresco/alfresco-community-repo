@@ -156,8 +156,8 @@ public class ContentQuotaManager implements QuotaManager, Runnable {
      * @param sess SrvSession
      * @param tree TreeConnection
      * @param file NetworkFile
-     * @param alloc long
-     * @return long
+     * @param alloc long requested allocation size
+     * @return long granted allocation size
      * @exception IOException
      */
     public long allocateSpace(SrvSession sess, TreeConnection tree, NetworkFile file, long alloc)

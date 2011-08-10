@@ -148,6 +148,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
     private static final Log logger = LogFactory.getLog(ContentDiskDriver2.class);
     
     private static final Log readLogger = LogFactory.getLog("org.alfresco.filesys.repo.ContentDiskDriver2.Read");
+    private static final Log writeLogger = LogFactory.getLog("org.alfresco.filesys.repo.ContentDiskDriver2.Write");
         
     // Services and helpers
     private CifsHelper cifsHelper;
@@ -1960,6 +1961,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                     boolean isFolder = true;
                             
                     ContentFileInfo cInfo = getCifsHelper().getFileInformation(nodeRef, false, isLockedFilesAsOffline);
+                    
                     if ( cInfo != null && cInfo.isDirectory() == false)
                     {
                         isFolder = false;
@@ -1976,6 +1978,15 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                         logger.debug("Set deleteOnClose=true file=" + name);
                     }
                 }
+            }
+            
+            if( info.hasSetFlag(FileInfo.SetAllocationSize))
+            {
+                if ( logger.isDebugEnabled())
+                {
+                    logger.debug("Set allocation size" + name + info.getAllocationSize());
+                }
+                // Not yet implemented
             }
                     
             // Set the creation and modified date/time
@@ -2181,13 +2192,16 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
          
         if(readLogger.isDebugEnabled())
         {
-            readLogger.debug("read File" + file);
+            readLogger.debug("read File:" + file + ", size" + size);
         }
         
         if(file.isDirectory())
         {
-            logger.debug("read file called for a directory - throw AccessDeniedException");
-            throw new AccessDeniedException();
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("read file called for a directory - throw AccessDeniedException");
+            }
+            throw new AccessDeniedException("read called for a directory");
         }
         
         // Read a block of data from the file
@@ -2259,9 +2273,9 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
     public int writeFile(SrvSession sess, TreeConnection tree, NetworkFile file,
             byte[] buffer, int bufferOffset, int size, long fileOffset) throws IOException
     {
-        if(logger.isDebugEnabled())
+        if(writeLogger.isDebugEnabled())
         {
-            logger.debug("write File:" + file);
+            writeLogger.debug("write File:" + file + " size:" + size);
         }
     	
         //  Check if there is a quota manager
@@ -2286,8 +2300,23 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 extendSize = endOfWrite - file.getFileSize();
             
                 //  Allocate space for the file extend
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("writeFile: allocate more space fileName:" + file.getName());
+                }
+               
             
-                quotaMgr.allocateSpace(sess, tree, file, extendSize);
+                long alloc = quotaMgr.allocateSpace(sess, tree, file, extendSize);
+                
+                if(file instanceof TempNetworkFile)
+                {
+                    TempNetworkFile tnf = (TempNetworkFile)file;
+                    FileState fstate = tnf.getFileState();
+                    if(fstate != null)
+                    {
+                        fstate.setAllocationSize(alloc);
+                    }     
+                }
              }
         }
     	
@@ -2313,9 +2342,9 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         
         // Debug
 
-        if (logger.isDebugEnabled())
+        if (writeLogger.isDebugEnabled())
         {
-            logger.debug("Wrote bytes to file: network file=" + file + " buffer size=" + buffer.length + " size=" + size + " file offset=" + fileOffset);
+            writeLogger.debug("Wrote bytes to file: network file=" + file + " buffer size=" + buffer.length + " size=" + size + " file offset=" + fileOffset);
         }
         
         return size;
@@ -3209,6 +3238,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             
             // Always allow write access to a newly created file
             netFile.setGrantedAccess(NetworkFile.READWRITE);
+            
                       
             // Truncate the file so that the content stream is created
             //netFile.truncateFile( 0L);

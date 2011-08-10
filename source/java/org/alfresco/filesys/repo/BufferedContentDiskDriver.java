@@ -30,6 +30,7 @@ import org.alfresco.jlan.server.core.DeviceContextException;
 import org.alfresco.jlan.server.filesys.DiskDeviceContext;
 import org.alfresco.jlan.server.filesys.DiskInterface;
 import org.alfresco.jlan.server.filesys.DiskSizeInterface;
+import org.alfresco.jlan.server.filesys.FileAccessToken;
 import org.alfresco.jlan.server.filesys.FileInfo;
 import org.alfresco.jlan.server.filesys.FileOpenParams;
 import org.alfresco.jlan.server.filesys.FileStatus;
@@ -39,6 +40,8 @@ import org.alfresco.jlan.server.filesys.NetworkFile;
 import org.alfresco.jlan.server.filesys.SearchContext;
 import org.alfresco.jlan.server.filesys.SrvDiskInfo;
 import org.alfresco.jlan.server.filesys.TreeConnection;
+import org.alfresco.jlan.server.filesys.cache.FileState;
+import org.alfresco.jlan.server.filesys.cache.FileStateCache;
 import org.alfresco.jlan.server.locking.OpLockInterface;
 import org.alfresco.jlan.server.locking.OpLockManager;
 import org.alfresco.jlan.smb.SMBException;
@@ -154,8 +157,7 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
         }
     }
     
-    @Override
-    public FileInfo getFileInformation(SrvSession sess, TreeConnection tree,
+    private FileInfo getFileInformationInternal(SrvSession sess, TreeConnection tree,
             String path) throws IOException
     {
                
@@ -191,6 +193,11 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
             fileInfoCache.put(key, info);
         }
         
+        /**
+         * Some information is not persisted by the repo
+         */
+        
+        
         /*
          * Dual Key the cache so it can be looked up by NodeRef or Path
          */
@@ -202,6 +209,56 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
         }
         
         return info;
+    }
+
+    
+    @Override
+    public FileInfo getFileInformation(SrvSession sess, TreeConnection tree,
+            String path) throws IOException
+    {
+        ContentContext tctx = (ContentContext) tree.getContext();
+        
+        FileInfo info = getFileInformationInternal(sess, tree, path);
+        
+        /*
+         *  Some information is not maintained by the repo
+         */        
+        if(tctx.hasStateCache())
+        {
+            FileStateCache cache = tctx.getStateCache();
+            FileState fstate = tctx.getStateCache().findFileState(path, false);
+            if(fstate != null)
+            {
+                FileInfo finfo = new FileInfo();
+                finfo.copyFrom(info);
+                
+                if(fstate.hasFileSize())
+                {
+                    finfo.setFileSize(fstate.getFileSize());
+                }
+                if ( fstate.hasAccessDateTime())
+                {
+                    finfo.setAccessDateTime(fstate.getAccessDateTime());
+                }
+                if ( fstate.hasChangeDateTime())
+                {
+                    finfo.setChangeDateTime(fstate.getChangeDateTime());
+                }
+                if ( fstate.hasModifyDateTime())
+                {
+                    finfo.setModifyDateTime(fstate.getModifyDateTime());
+                }
+                if ( fstate.hasAllocationSize() && fstate.getAllocationSize() > info.getAllocationSize())
+                {
+                    finfo.setAllocationSize( fstate.getAllocationSize());
+                }
+                
+                return finfo;
+            }
+        }
+
+        return info;
+        
     }
     
     @Override
@@ -238,7 +295,7 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
         {
             try 
             {
-                FileInfo lookup = getFileInformation(sess, tree, path);
+                FileInfo lookup = getFileInformationInternal(sess, tree, path);
                 
                 if(logger.isDebugEnabled())
                 {
@@ -258,9 +315,6 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
                 return FileStatus.NotExist;
             }
         }
-        
-        // Not in cache - use the repo directly
-        //return diskInterface.fileExists(sess, tree, path);
     }
   
     @Override

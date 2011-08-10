@@ -1,6 +1,7 @@
 package org.alfresco.filesys.repo;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Reader;
 
 import org.alfresco.jlan.server.filesys.cache.FileState;
@@ -52,6 +53,55 @@ public class TempNetworkFile extends JavaNetworkFile implements NetworkFileState
         return "TempNetworkFile:" + getFullName() + " path: " + m_file.getAbsolutePath();
     }
     
+    @Override
+    public int readFile(byte[] buf, int len, int pos, long fileOff)
+    throws java.io.IOException
+    {
+        if(fileState != null)
+        {
+            fileState.updateAccessDateTime();
+        }
+        return super.readFile(buf, len, pos, fileOff);
+    }
+    
+    @Override
+    public void writeFile(byte[] buf, int len, int pos) throws IOException
+    {
+        if(fileState != null)
+        {
+            fileState.updateModifyDateTime();
+        }
+        super.writeFile(buf, len, pos);
+             
+        setFileSize(m_io.length());
+    }
+    
+    @Override
+    public void writeFile(byte[] buffer, int length, int position, long fileOffset)
+    throws IOException
+    {
+        if(fileState != null)
+        {
+            fileState.updateModifyDateTime();
+        }
+        
+        super.writeFile(buffer, length, position, fileOffset);
+        
+        setFileSize(m_io.length());
+    }
+    
+    @Override
+    public void truncateFile(long size) throws IOException
+    {
+        if(fileState != null)
+        {
+            fileState.updateModifyDateTime();
+        }
+        super.truncateFile(size);
+        
+        setFileSize(size);
+    }
+    
     // For JLAN file state lock manager
     public void setFileState(FileState fileState)
     {
@@ -62,7 +112,8 @@ public class TempNetworkFile extends JavaNetworkFile implements NetworkFileState
     public FileState getFileState()
     {
         return fileState;
-
     }
+    
+    
     private FileState fileState;
 }

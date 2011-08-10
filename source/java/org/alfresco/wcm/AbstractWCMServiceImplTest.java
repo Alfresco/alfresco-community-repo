@@ -57,7 +57,7 @@ public class AbstractWCMServiceImplTest extends TestCase
     private static final String SUBMIT_CONFIG_LOCATION = "classpath:wcm/wcm-jbpm-context.xml";
     
     protected static final long POLL_DELAY = 1500L; // (in millis) 1.5s
-    protected static final int POLL_MAX_ATTEMPTS = 20;
+    protected static final int POLL_MAX_ATTEMPTS = 200;
     
     // note: all tests share same context (when run via WCMTestSuite)
     protected static ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] {ApplicationContextHelper.CONFIG_LOCATIONS[0], SUBMIT_CONFIG_LOCATION, PREVIEW_CONFIG_LOCATION});;

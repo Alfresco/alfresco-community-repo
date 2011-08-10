@@ -18,6 +18,7 @@
  */
 package org.alfresco.service.cmr.discussion;
 
+import org.alfresco.model.ForumModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.service.NotAuditable;
@@ -31,94 +32,102 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public interface DiscussionService {
    /**
-    * Creates a new {@link ForumPostInfo} in the given topic,
-    *  specified settings
+    * Creates a new {@link PostInfo} in the given topic,
+    *  specified contents
     *  
-    * @return The newly created {@link ForumPostInfo}
+    * @return The newly created {@link PostInfo}
     */
    @NotAuditable
-   ForumPostInfo createForumPost(ForumTopicInfo topic, String title,
-         String contents);
+   PostInfo createPost(TopicInfo topic, String contents);
    
    /**
-    * Creates a new {@link ForumTopicInfo} in the given site
+    * Creates a new {@link TopicInfo} in the given site
     */
    @NotAuditable
-   ForumTopicInfo createForumTopic(String siteShortName);
+   TopicInfo createTopic(String siteShortName);
    
    /**
-    * Creates a new {@link ForumTopicInfo} attached to the
-    *  specified Node
+    * Creates a new {@link TopicInfo} attached to the specified Node. 
+    * The parent Node should normally either be a Site Container, or a 
+    * {@link ForumModel#TYPE_FORUM}
     */
    @NotAuditable
-   ForumTopicInfo createForumTopic(NodeRef nodeRef);
+   TopicInfo createTopic(NodeRef nodeRef, String title);
    
    /**
-    * Updates an existing {@link ForumPostInfo} in the repository.
+    * Updates an existing {@link PostInfo} in the repository.
     *  
-    * @return The updated {@link ForumPostInfo}
+    * @return The updated {@link PostInfo}
     */
    @NotAuditable
-   ForumPostInfo updateForumPost(ForumPostInfo post);
+   PostInfo updatePost(PostInfo post);
    
    /**
-    * Deletes an existing {@link ForumPostInfo} from the repository
+    * Deletes an existing {@link PostInfo} from the repository
     */
    @NotAuditable
-   void deleteForumPost(ForumPostInfo post);
+   void deletePost(PostInfo post);
    
    /**
-    * Deletes an existing {@link ForumTopicInfo} from the repository
+    * Deletes an existing {@link TopicInfo} from the repository
     */
    @NotAuditable
-   void deleteForumTopic(ForumTopicInfo topic);
+   void deleteTopic(TopicInfo topic);
    
    /**
-    * Retrieves an existing {@link ForumPostInfo} from the repository
+    * Retrieves an existing {@link PostInfo} from the repository
     */
    @NotAuditable
-   ForumPostInfo getForumPost(ForumTopicInfo topic, String linkName);
+   PostInfo getPost(TopicInfo topic, String linkName);
 
    /**
-    * Retrieves an existing {@link ForumTopicInfo} from the repository,
+    * Retrieves the Primary (Root) Post in a topic, to which all
+    *  replies belong.
+    * Returns null if the topic currently has no posts
+    */
+   @NotAuditable
+   PostInfo getPrimaryPost(TopicInfo topic);
+   
+   /**
+    * Retrieves an existing {@link TopicInfo} from the repository,
     *  which is within a site
     */
    @NotAuditable
-   ForumTopicInfo getForumTopic(String siteShortName, String linkName);
+   TopicInfo getTopic(String siteShortName, String linkName);
    
    /**
-    * Retrieves an existing {@link ForumTopicInfo} from the repository,
-    *  which is attached to the specified Node
+    * Retrieves an existing {@link TopicInfo} from the repository,
+    *  which is attached to the specified Node.
+    * The parent Node should normally either be a Site Container, or a 
+    *  {@link ForumModel#TYPE_FORUM}
     */
    @NotAuditable
-   ForumTopicInfo getForumTopic(NodeRef nodeRef, String linkName);
-   
-   // TODO Decide about the primary post on a topic
+   TopicInfo getTopic(NodeRef nodeRef, String linkName);
    
    
    /**
     * Retrieves all replies on a Topic
     */
    @NotAuditable
-   PagingResults<ForumPostInfo> listForumPostReplies(ForumTopicInfo forum, int levels, PagingRequest paging);
+   PagingResults<PostInfo> listPostReplies(TopicInfo forum, int levels, PagingRequest paging);
 
    /**
     * Retrieves all replies to a Post
     */
    @NotAuditable
-   PagingResults<ForumPostInfo> listForumPostReplies(ForumPostInfo primaryPost, int levels, PagingRequest paging);
+   PagingResults<PostInfo> listPostReplies(PostInfo primaryPost, int levels, PagingRequest paging);
    
    /**
     * Retrieves all posts in a site
     */
    @NotAuditable
-   PagingResults<ForumPostInfo> listForumPosts(String siteShortName, PagingRequest paging);
+   PagingResults<PostInfo> listPosts(String siteShortName, PagingRequest paging);
 
    /**
     * Retrieves all posts attached to the specified Node
     */
    @NotAuditable
-   PagingResults<ForumPostInfo> listForumPosts(NodeRef nodeRef, PagingRequest paging);
+   PagingResults<PostInfo> listPosts(NodeRef nodeRef, PagingRequest paging);
 
    // TODO Hot, New and Mine listing support
 }

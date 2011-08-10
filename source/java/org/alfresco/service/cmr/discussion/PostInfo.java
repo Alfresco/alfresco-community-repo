@@ -25,21 +25,24 @@ import org.alfresco.repo.security.permissions.PermissionCheckValue;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * This class represents a Post in a Forum Topic 
+ * This class represents a Post in a Forum Topic.
+ * 
+ * To retrieve replies to this, see 
+ *  {@link DiscussionService#listPostReplies(PostInfo, int, org.alfresco.query.PagingRequest)}
  * 
  * @author Nick Burch
  * @since 4.0
  */
-public interface ForumPostInfo extends Serializable, PermissionCheckValue {
+public interface PostInfo extends Serializable, PermissionCheckValue {
    /**
     * @return the NodeRef of the underlying post
     */
    NodeRef getNodeRef();
    
    /**
-    * @return the NodeRef of the topic this belongs to
+    * @return the {@link TopicInfo} representing the topic this belongs to
     */
-   NodeRef getTopicNodeRef();
+   TopicInfo getTopic();
    
    /**
     * @return the System generated name for the post
@@ -47,12 +50,13 @@ public interface ForumPostInfo extends Serializable, PermissionCheckValue {
    String getSystemName();
    
    /**
-    * @return the Title of the post
+    * @return the Title of the post (if set)
     */
    String getTitle();
    
    /**
-    * Sets the Title of the post
+    * Sets the Title of the post. Normally only the Primary Post
+    *  in a Topic has a Title set.
     */
    void setTitle(String title);
    

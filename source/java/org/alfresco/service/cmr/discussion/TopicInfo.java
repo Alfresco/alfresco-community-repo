@@ -26,14 +26,16 @@ import org.alfresco.repo.security.permissions.PermissionCheckValue;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * This class represents a Topic in a forum
- *
- * TODO Decide about the primary post on a topic
+ * This class represents a Topic in a forum.
  * 
+ * To retrieve either the Primary Post, or all Posts,
+ *  use {@link DiscussionService#getPrimaryPost(TopicInfo)}
+ *  and {@link DiscussionService#listPostReplies(TopicInfo, int, org.alfresco.query.PagingRequest)}
+ *
  * @author Nick Burch
  * @since 4.0
  */
-public interface ForumTopicInfo extends Serializable, PermissionCheckValue {
+public interface TopicInfo extends Serializable, PermissionCheckValue {
    /**
     * @return the NodeRef of the underlying topic
     */
@@ -48,6 +50,17 @@ public interface ForumTopicInfo extends Serializable, PermissionCheckValue {
     * @return the System generated name for the topic
     */
    String getSystemName();
+   
+   /**
+    * @return the Title of the topic.
+    */
+   String getTitle();
+   
+   /**
+    * Sets the Title of the topic. The Title of the
+    *  topic will be shared with the Primary Post
+    */
+   void setTitle(String title);
    
    /**
     * @return the creator of the topic

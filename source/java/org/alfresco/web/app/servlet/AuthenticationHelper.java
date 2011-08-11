@@ -436,7 +436,30 @@ public final class AuthenticationHelper
       }
       return null;
    }
-   
+
+   /**
+    * Uses the remote user mapper, if one is configured, to extract a user ID from the request
+    * 
+    * @param sc
+    *           the servlet context
+    * @param httpRequest
+    *           The HTTP request
+    * @return the user ID if a user has been externally authenticated or <code>null</code> otherwise.
+    */
+   public static String getRemoteUser(final ServletContext sc, final HttpServletRequest httpRequest)
+   {
+      String userId = null;
+
+      // If the remote user mapper is configured, we may be able to map in an externally authenticated user
+      final WebApplicationContext wc = WebApplicationContextUtils.getRequiredWebApplicationContext(sc);
+      RemoteUserMapper remoteUserMapper = (RemoteUserMapper) wc.getBean(REMOTE_USER_MAPPER);
+      if (!(remoteUserMapper instanceof ActivateableBean) || ((ActivateableBean) remoteUserMapper).isActive())
+      {
+         userId = remoteUserMapper.getRemoteUser(httpRequest);
+      }
+      return userId;
+   }
+
    /**
      * Attempts to retrieve the User object stored in the current session.
      * 
@@ -450,16 +473,10 @@ public final class AuthenticationHelper
      */
    public static User getUser(final ServletContext sc, final HttpServletRequest httpRequest, HttpServletResponse httpResponse)
    {
-      String userId = null;
-
       // If the remote user mapper is configured, we may be able to map in an externally authenticated user
-      final WebApplicationContext wc = WebApplicationContextUtils.getRequiredWebApplicationContext(sc);
-      RemoteUserMapper remoteUserMapper = (RemoteUserMapper) wc.getBean(REMOTE_USER_MAPPER);
-      if (!(remoteUserMapper instanceof ActivateableBean) || ((ActivateableBean) remoteUserMapper).isActive())
-      {
-         userId = remoteUserMapper.getRemoteUser(httpRequest);
-      }
+      String userId = getRemoteUser(sc, httpRequest);
 
+      final WebApplicationContext wc = WebApplicationContextUtils.getRequiredWebApplicationContext(sc);
       HttpSession session = httpRequest.getSession();
       User user = null;
 
@@ -513,9 +530,21 @@ public final class AuthenticationHelper
             // If we have been authenticated by other means, just propagate through the user identity
             AuthenticationComponent authenticationComponent = (AuthenticationComponent) wc
                   .getBean(AUTHENTICATION_COMPONENT);
-            authenticationComponent.setCurrentUser(userId);
-            AuthenticationService authenticationService = (AuthenticationService) wc.getBean(AUTHENTICATION_SERVICE);
-            user = setUser(sc, httpRequest, userId, authenticationService.getCurrentTicket(), true);
+            try
+            {
+               authenticationComponent.setCurrentUser(userId);
+               AuthenticationService authenticationService = (AuthenticationService) wc.getBean(AUTHENTICATION_SERVICE);
+               user = setUser(sc, httpRequest, userId, authenticationService.getCurrentTicket(), true);
+            }
+            catch (AuthenticationException authErr)
+            {
+               // Allow for an invalid external user ID to be indicated
+               session.removeAttribute(AUTHENTICATION_USER);
+               if (!Application.inPortalServer())
+               {
+                  session.invalidate();
+               }
+            }            
          }
       }
       return user;

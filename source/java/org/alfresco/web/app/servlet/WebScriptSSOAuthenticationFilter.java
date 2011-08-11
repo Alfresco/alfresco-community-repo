@@ -60,6 +60,11 @@ public class WebScriptSSOAuthenticationFilter extends BaseAuthenticationFilter i
     private boolean isActive = true;
     
     
+    public WebScriptSSOAuthenticationFilter()
+    {
+        setUserAttributeName(AuthenticationHelper.AUTHENTICATION_USER);                
+    }
+
     /**
      * @param container the container to set
      */
@@ -95,8 +100,6 @@ public class WebScriptSSOAuthenticationFilter extends BaseAuthenticationFilter i
     public void doFilter(ServletContext context, ServletRequest sreq, ServletResponse sresp, FilterChain chain)
             throws IOException, ServletException
     {
-        setUserAttributeName(AuthenticationHelper.AUTHENTICATION_USER);
-        
         // Get the HTTP request/response
         HttpServletRequest req = (HttpServletRequest)sreq;
         HttpServletResponse res = (HttpServletResponse)sresp;

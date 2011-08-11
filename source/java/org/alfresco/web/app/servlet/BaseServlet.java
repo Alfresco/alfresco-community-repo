@@ -19,6 +19,7 @@
 package org.alfresco.web.app.servlet;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -264,7 +265,26 @@ public abstract class BaseServlet extends HttpServlet
          }
          redirectURL.append(URLEncoder.encode(url, "UTF-8"));
       }
-      res.sendRedirect(redirectURL.toString());
+      
+      // If external authentication isn't in use (e.g. proxied share authentication), it's safe to return a redirect to the client
+      if (AuthenticationHelper.getRemoteUser(sc, req) == null)
+      {
+         res.sendRedirect(redirectURL.toString());
+      }
+      // Otherwise, we must signal to the client with an unauthorized status code and rely on a browser refresh to do
+      // the redirect for failover login (as we do with NTLM, Kerberos)
+      else
+      {
+         res.setContentType("text/html; charset=UTF-8");
+         res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
+         final PrintWriter out = res.getWriter();
+         out.println("<html><head>");
+         out.println("<meta http-equiv=\"Refresh\" content=\"0; url=" + redirectURL + "\">");
+         out.println("</head><body><p>Please <a href=\"" + redirectURL + "\">log in</a>.</p>");
+         out.println("</body></html>");
+         out.close();
+      }      
    }
    
    /**

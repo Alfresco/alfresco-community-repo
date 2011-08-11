@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -799,39 +799,7 @@ public class CreateUserWizard extends BaseWizardBean
             {
                 // create properties for Person type from submitted Form data
                 Map<QName, Serializable> props = new HashMap<QName, Serializable>(7, 1.0f);
-                props.put(ContentModel.PROP_USERNAME, this.userName);
-                props.put(ContentModel.PROP_FIRSTNAME, this.firstName);
-                props.put(ContentModel.PROP_LASTNAME, this.lastName);
-                NodeRef homeSpaceNodeRef;
-                if (this.homeSpaceLocation != null && this.homeSpaceName.length() != 0)
-                {
-                    // create new
-                    homeSpaceNodeRef = createHomeSpace(this.homeSpaceLocation.getId(), this.homeSpaceName, true);
-                }
-                else if (this.homeSpaceLocation != null)
-                {
-                    // set to existing - first ensure it is NOT "User Homes" space!
-                    if (this.defaultHomeSpaceRef.equals(this.homeSpaceLocation))
-                    {
-                        throw new AlfrescoRuntimeException(Application.getMessage(context, MSG_ERROR_NEWUSER_HOME_SPACE));
-                    }
-                    homeSpaceNodeRef = this.homeSpaceLocation;
-                    setupHomeSpacePermissions(homeSpaceNodeRef);
-                }
-                else
-                {
-                    // default to Company Home
-                    homeSpaceNodeRef = getCompanyHomeSpace();
-                }
-
-                props.put(ContentModel.PROP_HOMEFOLDER, homeSpaceNodeRef);
-                props.put(ContentModel.PROP_EMAIL, this.email);
-                props.put(ContentModel.PROP_ORGID, this.companyId);
-                props.put(ContentModel.PROP_ORGANIZATION, this.organisation);
-                props.put(ContentModel.PROP_JOBTITLE, this.jobtitle);
-                props.put(ContentModel.PROP_LOCATION, this.location);
-                props.put(ContentModel.PROP_PRESENCEPROVIDER, this.presenceProvider);
-                props.put(ContentModel.PROP_PRESENCEUSERNAME, this.presenceUsername);
+                setPersonPropertiesAndCreateHomeSpaceIfNeeded(props, context);
 
                 // create the node to represent the Person
                 getPersonService().createPerson(props);
@@ -875,6 +843,47 @@ public class CreateUserWizard extends BaseWizardBean
         }
         
         return outcome;
+    }
+
+    protected void setPersonPropertiesAndCreateHomeSpaceIfNeeded(
+            Map<QName, Serializable> props, FacesContext context)
+    {
+        props.put(ContentModel.PROP_USERNAME, this.userName);
+        props.put(ContentModel.PROP_FIRSTNAME, this.firstName);
+        props.put(ContentModel.PROP_LASTNAME, this.lastName);
+        NodeRef homeSpaceNodeRef;
+        if (this.homeSpaceLocation != null && this.homeSpaceName.length() != 0)
+        {
+            // create new
+            props.put(ContentModel.PROP_HOME_FOLDER_PROVIDER, "userHomesHomeFolderProvider");
+            homeSpaceNodeRef = createHomeSpace(this.homeSpaceLocation.getId(), this.homeSpaceName, true);
+        }
+        else if (this.homeSpaceLocation != null)
+        {
+            // set to existing - first ensure it is NOT "User Homes" space!
+            if (this.defaultHomeSpaceRef.equals(this.homeSpaceLocation))
+            {
+                throw new AlfrescoRuntimeException(Application.getMessage(context, MSG_ERROR_NEWUSER_HOME_SPACE));
+            }
+            props.put(ContentModel.PROP_HOME_FOLDER_PROVIDER, "companyHomeFolderProvider"); // shared folder
+            homeSpaceNodeRef = this.homeSpaceLocation;
+            setupHomeSpacePermissions(homeSpaceNodeRef);
+        }
+        else
+        {
+            // default to Company Home
+            props.put(ContentModel.PROP_HOME_FOLDER_PROVIDER, "companyHomeFolderProvider"); // shared folder
+            homeSpaceNodeRef = getCompanyHomeSpace();
+        }
+
+        props.put(ContentModel.PROP_HOMEFOLDER, homeSpaceNodeRef);
+        props.put(ContentModel.PROP_EMAIL, this.email);
+        props.put(ContentModel.PROP_ORGID, this.companyId);
+        props.put(ContentModel.PROP_ORGANIZATION, this.organisation);
+        props.put(ContentModel.PROP_JOBTITLE, this.jobtitle);
+        props.put(ContentModel.PROP_LOCATION, this.location);
+        props.put(ContentModel.PROP_PRESENCEPROVIDER, this.presenceProvider);
+        props.put(ContentModel.PROP_PRESENCEUSERNAME, this.presenceUsername);
     }
 
     @Override

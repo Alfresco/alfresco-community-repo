@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -60,6 +60,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.commons.validator.EmailValidator;
 
 /**
+ * @deprecated Replaced by CreateUserWizard.
  * @author Kevin Roast
  */
 public class NewUserWizard extends AbstractWizardBean

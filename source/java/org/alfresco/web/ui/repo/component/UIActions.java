@@ -21,7 +21,6 @@ package org.alfresco.web.ui.repo.component;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
-import java.nio.charset.Charset;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -650,20 +649,14 @@ public class UIActions extends SelfRenderingComponent
     */
    private static String createUniqueId()
    {
-      String guidString = GUID.generate();
-      byte[] guidBytes = null;
       try
       {
-          guidBytes = guidString.getBytes("ISO8859_1");
+         return "id_" + new BigInteger(GUID.generate().getBytes("8859_1")).toString(Character.MAX_RADIX);
       }
       catch (UnsupportedEncodingException e)
       {
-          //probably unreachable block, so just in case 
-          Charset defaultCharset = Charset.defaultCharset();
-          logger.warn("Can't get GUID bytes for encoding ISO8859_1, use default " + defaultCharset);
-          guidBytes = guidString.getBytes(defaultCharset);
+	      throw new RuntimeException(e);
       }
-      return "id_" + new BigInteger(guidBytes).toString(Character.MAX_RADIX);
    }
    
    // ------------------------------------------------------------------------------
@@ -680,6 +673,4 @@ public class UIActions extends SelfRenderingComponent
    
    /** Vertical layout spacing */
    private Integer verticalSpacing = null;
-   
-   private static short id = 0;
 }

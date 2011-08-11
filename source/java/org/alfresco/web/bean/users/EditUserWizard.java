@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -24,7 +24,6 @@ import java.util.Map;
 
 import javax.faces.context.FacesContext;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -118,86 +117,16 @@ public class EditUserWizard extends CreateUserWizard
             // update the existing node in the repository
             NodeRef nodeRef = properties.getPerson().getNodeRef();
 
+            // Note: The previous approach was to try a move the home folder if changed,
+            // but this was problematic as other users that shared the same folder
+            // moved too. We cannot tell if it is shared. Decided it is better to just
+            // create a new folder or reuse the folder pointed to just like the initial
+            // creation in CreateUserWizard. It is always possible to move the contents
+            // of the old home folder by hand later.
             Map<QName, Serializable> props = this.getNodeService().getProperties(nodeRef);
-            props.put(ContentModel.PROP_USERNAME, this.userName);
-            props.put(ContentModel.PROP_FIRSTNAME, this.firstName);
-            props.put(ContentModel.PROP_LASTNAME, this.lastName);
+            setPersonPropertiesAndCreateHomeSpaceIfNeeded(props, context);
 
-            // calculate whether we need to move the old home space or create new
-            NodeRef newHomeFolderRef;
-            NodeRef oldHomeFolderRef = (NodeRef) this.getNodeService().getProperty(nodeRef, ContentModel.PROP_HOMEFOLDER);
-            boolean moveHomeSpace = false;
-            boolean renameHomeSpace = false;
-            if (oldHomeFolderRef != null && this.getNodeService().exists(oldHomeFolderRef) == true)
-            {
-                // the original home folder ref exists so may need moving if it has been changed
-                ChildAssociationRef childAssocRef = this.getNodeService().getPrimaryParent(oldHomeFolderRef);
-                NodeRef currentHomeSpaceLocation = childAssocRef.getParentRef();
-                if (this.homeSpaceName.length() != 0)
-                {
-                    if (currentHomeSpaceLocation.equals(this.homeSpaceLocation) == false && oldHomeFolderRef.equals(this.homeSpaceLocation) == false
-                            && currentHomeSpaceLocation.equals(getCompanyHomeSpace()) == false && currentHomeSpaceLocation.equals(getDefaultHomeSpace()) == false)
-                    {
-                        moveHomeSpace = true;
-                    }
-
-                    String oldHomeSpaceName = Repository.getNameForNode(getNodeService(), oldHomeFolderRef);
-                    if (oldHomeSpaceName.equals(this.homeSpaceName) == false && oldHomeFolderRef.equals(this.homeSpaceLocation) == false)
-                    {
-                        renameHomeSpace = true;
-                    }
-                }
-            }
-
-            if (logger.isDebugEnabled())
-                logger.debug("Moving space: " + moveHomeSpace + "  and renaming space: " + renameHomeSpace);
-
-            if (moveHomeSpace == false && renameHomeSpace == false)
-            {
-                if (this.homeSpaceLocation != null && this.homeSpaceName.length() != 0)
-                {
-                    newHomeFolderRef = createHomeSpace(this.homeSpaceLocation.getId(), this.homeSpaceName, false);
-                }
-                else if (this.homeSpaceLocation != null)
-                {
-                    // location selected but no home space name entered,
-                    // so the home ref should be set to the newly selected space
-                    newHomeFolderRef = this.homeSpaceLocation;
-
-                    // set the permissions for this space so the user can access it
-
-                }
-                else
-                {
-                    // nothing selected - use Company Home by default
-                    newHomeFolderRef = getCompanyHomeSpace();
-                }
-            }
-            else
-            {
-                // either move, rename or both required
-                if (moveHomeSpace == true)
-                {
-                    this.getNodeService()
-                            .moveNode(oldHomeFolderRef, this.homeSpaceLocation, ContentModel.ASSOC_CONTAINS, this.getNodeService().getPrimaryParent(oldHomeFolderRef).getQName());
-                }
-                newHomeFolderRef = oldHomeFolderRef; // ref ID doesn't change
-
-                if (renameHomeSpace == true)
-                {
-                    // change HomeSpace node name
-                    this.getNodeService().setProperty(newHomeFolderRef, ContentModel.PROP_NAME, this.homeSpaceName);
-                }
-            }
-
-            props.put(ContentModel.PROP_HOMEFOLDER, newHomeFolderRef);
-            props.put(ContentModel.PROP_EMAIL, this.email);
-            props.put(ContentModel.PROP_ORGID, this.companyId);
-            props.put(ContentModel.PROP_ORGANIZATION, this.organisation);
-            props.put(ContentModel.PROP_JOBTITLE, this.jobtitle);
-            props.put(ContentModel.PROP_LOCATION, this.location);
-            props.put(ContentModel.PROP_PRESENCEPROVIDER, this.presenceProvider);
-            props.put(ContentModel.PROP_PRESENCEUSERNAME, this.presenceUsername);
+            // update the node that represents the Person
             this.getNodeService().setProperties(nodeRef, props);
 
             // TODO: RESET HomeSpace Ref found in top-level navigation bar!

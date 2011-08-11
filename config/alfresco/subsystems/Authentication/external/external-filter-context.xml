@@ -21,4 +21,29 @@
       </property>
    </bean>
 
+   <!-- Enable cookie-based handling of webscript logins. We must assume cookie based client authentication when external auth is in the chain. -->
+   <bean id="webscriptAuthenticationFilter" class="org.alfresco.web.app.servlet.WebScriptSSOAuthenticationFilter">
+      <property name="active">
+         <value>true</value>
+      </property>
+      <property name="authenticationService">
+         <ref bean="AuthenticationService" />
+      </property>
+      <property name="authenticationComponent">
+         <ref bean="AuthenticationComponent" />
+      </property>
+      <property name="personService">
+         <ref bean="personService" />
+      </property>
+      <property name="nodeService">
+         <ref bean="NodeService" />
+      </property>
+      <property name="transactionService">
+         <ref bean="TransactionService" />
+      </property>
+      <property name="container">
+         <ref bean="webscripts.container" />
+      </property>
+   </bean>
+
 </beans>

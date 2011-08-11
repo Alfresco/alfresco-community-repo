@@ -35,7 +35,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.links.LinkInfo;
 import org.alfresco.service.cmr.links.LinksService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -47,7 +46,6 @@ import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.tagging.TaggingService;
-import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
 import org.junit.After;
@@ -74,12 +72,10 @@ public class LinksServiceImplTest
     private static MutableAuthenticationService AUTHENTICATION_SERVICE;
     private static BehaviourFilter              BEHAVIOUR_FILTER;
     private static LinksService                 LINKS_SERVICE;
-    private static DictionaryService            DICTIONARY_SERVICE;
     private static NodeService                  NODE_SERVICE;
     private static NodeService                  PUBLIC_NODE_SERVICE;
     private static PersonService                PERSON_SERVICE;
     private static RetryingTransactionHelper    TRANSACTION_HELPER;
-    private static TransactionService           TRANSACTION_SERVICE;
     private static PermissionService            PERMISSION_SERVICE;
     private static SiteService                  SITE_SERVICE;
     private static TaggingService               TAGGING_SERVICE;
@@ -104,12 +100,10 @@ public class LinksServiceImplTest
         AUTHENTICATION_SERVICE = (MutableAuthenticationService)testContext.getBean("authenticationService");
         BEHAVIOUR_FILTER       = (BehaviourFilter)testContext.getBean("policyBehaviourFilter");
         LINKS_SERVICE          = (LinksService)testContext.getBean("LinksService");
-        DICTIONARY_SERVICE     = (DictionaryService)testContext.getBean("dictionaryService");
         NODE_SERVICE           = (NodeService)testContext.getBean("nodeService");
         PUBLIC_NODE_SERVICE    = (NodeService)testContext.getBean("NodeService");
         PERSON_SERVICE         = (PersonService)testContext.getBean("personService");
         TRANSACTION_HELPER     = (RetryingTransactionHelper)testContext.getBean("retryingTransactionHelper");
-        TRANSACTION_SERVICE    = (TransactionService)testContext.getBean("TransactionService");
         PERMISSION_SERVICE     = (PermissionService)testContext.getBean("permissionService");
         SITE_SERVICE           = (SiteService)testContext.getBean("siteService");
         TAGGING_SERVICE        = (TaggingService)testContext.getBean("TaggingService");
@@ -681,7 +675,8 @@ public class LinksServiceImplTest
        pushCreatedDateBack(linkPrivB, 10);
        pushCreatedDateBack(linkPrivC, 100);
        
-       // Force a new transaction
+       // Wait for everything to catch up (lucene indexing etc)
+       Thread.sleep(100);
        
        
        // Add tags and another entry

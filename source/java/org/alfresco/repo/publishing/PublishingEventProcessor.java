@@ -112,24 +112,36 @@ public class PublishingEventProcessor
             return;
         }
         String message = update.getMessage();
-        NodeRef node = update.getNodeToLinkTo();
-        if(node!= null)
-        {
-            String nodeUrl = publishChannel.getUrl(node);
-            if(nodeUrl != null)
-            {
-                message += " " + urlShortener.shortenUrl(nodeUrl);
-            }
-        }
+        String nodeUrl = getNodeUrl(publishChannel, update);
         Set<String> channels = update.getChannelIds();
         for (String channelId : channels)
         {
             Channel channel = channelService.getChannelById(channelId);
-            if(channel != null && channel.getChannelType().canPublishStatusUpdates())
+            if(channel != null)
             {
-                channel.updateStatus(message);
+                channel.updateStatus(message, nodeUrl);
             }
         }
+    }
+
+    /**
+     * @param publishChannel
+     * @param update
+     * @return
+     */
+    private String getNodeUrl(Channel publishChannel, StatusUpdate update)
+    {
+        NodeRef node = update.getNodeToLinkTo();
+        String nodeUrl = null;
+        if(node!= null)
+        {
+            nodeUrl = publishChannel.getUrl(node);
+            if(nodeUrl != null)
+            {
+                nodeUrl = " " + urlShortener.shortenUrl(nodeUrl);
+            }
+        }
+        return nodeUrl;
     }
 
     public void publishEvent(Channel channel, PublishingEvent event)
@@ -155,6 +167,8 @@ public class PublishingEventProcessor
          if(NodeUtils.exists(publishedNode, nodeService))
          {
              channel.unPublish(publishedNode);
+             // Need to set as temporary to delete node instead of archiving.
+             nodeService.addAspect(publishedNode, ContentModel.ASPECT_TEMPORARY, null);
              nodeService.deleteNode(publishedNode);
          }
      }

@@ -35,7 +35,7 @@ import org.springframework.core.io.Resource;
  */
 public interface ChannelType
 {
-    enum  AuthStatus {AUTHORISED, RETRY, UNAUTHORISED};
+    enum  AuthStatus {AUTHORISED, RETRY, UNAUTHORISED}
     
     String getId();
     QName getChannelNodeType();

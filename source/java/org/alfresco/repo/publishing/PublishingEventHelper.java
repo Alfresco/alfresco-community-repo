@@ -466,8 +466,7 @@ public class PublishingEventHelper
         
         //End the start task.
         //TODO Replace with endStartTask() call after merge to HEAD.
-        List<WorkflowTask> tasks = workflowService.getTasksForWorkflowPath(path.getId());
-        WorkflowTask startTask = tasks.get(0);
+        WorkflowTask startTask = workflowService.getStartTask(instanceId);
         workflowService.endTask(startTask.getId(), null);
         return instanceId;
     }

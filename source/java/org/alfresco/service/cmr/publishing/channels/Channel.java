@@ -57,7 +57,7 @@ public interface Channel
     
     void publish(NodeRef nodeToPublish);
     void unPublish(NodeRef nodeToUnpublish);
-    void updateStatus(String status);
+    void updateStatus(String status, String nodeUrl);
     
     /**
      * Returns the URL for some published content given the content node in the editorial environment.

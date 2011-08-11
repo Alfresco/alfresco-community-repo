@@ -113,9 +113,20 @@ public class ChannelImpl implements Channel
     /**
     * {@inheritDoc}
     */
-    public void updateStatus(String status)
+    public void updateStatus(String status, String nodeUrl)
     {
-        channelType.updateStatus(this, status, getProperties());
+        if(channelType.canPublishStatusUpdates())
+        {
+            int urlLength = nodeUrl == null ? 0 : nodeUrl.length();
+            int maxLength = channelType.getMaximumStatusLength() - urlLength;
+            if (maxLength > 0)
+            {
+                int endpoint = Math.min(maxLength, status.length());
+                status = status.substring(0, endpoint );
+            }
+            String msg = nodeUrl==null ? status : status + nodeUrl;
+            channelType.updateStatus(this, msg, getProperties());
+        }
     }
 
     /**

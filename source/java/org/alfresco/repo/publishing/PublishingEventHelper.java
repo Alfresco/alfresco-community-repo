@@ -42,7 +42,6 @@ import static org.alfresco.util.collections.CollectionUtils.isEmpty;
 import static org.alfresco.util.collections.CollectionUtils.toListOfStrings;
 import static org.alfresco.util.collections.CollectionUtils.transform;
 import static org.alfresco.util.collections.CollectionUtils.transformFlat;
-import static org.alfresco.util.collections.CollectionUtils.transformToMap;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -90,7 +89,6 @@ import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
-import org.alfresco.util.collections.CollectionUtils;
 import org.alfresco.util.collections.Filter;
 import org.alfresco.util.collections.Function;
 import org.apache.commons.logging.Log;
@@ -506,7 +504,9 @@ public class PublishingEventHelper
     {
         try
         {
+            NodeRef channelNode = new NodeRef(details.getPublishChannelId());
             List<NodeSnapshot> snapshots = createPublishSnapshots(details.getNodesToPublish());
+            snapshots.addAll(createUnpublishSnapshots(details.getNodesToUnpublish(), channelNode));
             ContentWriter contentWriter = contentService.getWriter(eventNode,
                     PROP_PUBLISHING_EVENT_PAYLOAD, true);
             contentWriter.setEncoding("UTF-8");
@@ -522,30 +522,23 @@ public class PublishingEventHelper
         }
     }
     
-    private PublishingPackage getPublishingPackage(NodeRef eventNode, String channelId) throws AlfrescoRuntimeException
+    private List<NodeSnapshot> createUnpublishSnapshots(Set<NodeRef> nodes, final NodeRef channelNode)
     {
-        Map<NodeRef, PublishingPackageEntry> publishEntires = getPublishEntries(eventNode);
-        Map<NodeRef, PublishingPackageEntry> allEntries = getUnpublishEntries(eventNode, channelId);
-        allEntries.putAll(publishEntires);
-        return new PublishingPackageImpl(allEntries);
-    }
-
-    public Map<NodeRef, PublishingPackageEntry> createPublishEntries(Collection<NodeRef> nodesToAdd)
-    {
-        return transformToMap(nodesToAdd, new Function<NodeRef, PublishingPackageEntry>()
+        return transform(nodes, new Function<NodeRef, NodeSnapshot>()
         {
-            public PublishingPackageEntry apply(NodeRef node)
+            public NodeSnapshot apply(NodeRef node)
             {
-                return createPublishEntry(node);
+                return createUnpublishSnapshot(node, channelNode);
             }
         });
     }
 
-    private PublishingPackageEntry createPublishEntry(NodeRef node)
+    private PublishingPackage getPublishingPackage(NodeRef eventNode, String channelId) throws AlfrescoRuntimeException
     {
-        NodeSnapshotTransferImpl snapshot = createPublishSnapshot(node);
-        return new PublishingPackageEntryImpl(true, node, snapshot);
+        Map<NodeRef, PublishingPackageEntry> entries = getPublishingPackageEntries(eventNode);
+        return new PublishingPackageImpl(entries);
     }
+
 
     private List<NodeSnapshot> createPublishSnapshots(final Collection<NodeRef> nodes)
     {
@@ -572,8 +565,11 @@ public class PublishingEventHelper
         return snapshot;
     }
 
-    private Map<NodeRef, PublishingPackageEntry> getPublishEntries(NodeRef eventNode)
+    @SuppressWarnings("unchecked")
+    private Map<NodeRef, PublishingPackageEntry> getPublishingPackageEntries(NodeRef eventNode)
     {
+        List<String> idsToUnpublish = (List<String>) nodeService.getProperty(eventNode, PROP_PUBLISHING_EVENT_NODES_TO_UNPUBLISH);
+        List<NodeRef> nodesToUnpublish = NodeUtils.toNodeRefs(idsToUnpublish);
         ContentReader contentReader = contentService.getReader(eventNode, PROP_PUBLISHING_EVENT_PAYLOAD);
         InputStream input = contentReader.getContentInputStream();
         try
@@ -583,7 +579,8 @@ public class PublishingEventHelper
             for (NodeSnapshot snapshot : snapshots)
             {
                 NodeRef node = snapshot.getNodeRef();
-                PublishingPackageEntryImpl entry = new PublishingPackageEntryImpl(true, node, snapshot);
+                boolean isPublish = false == nodesToUnpublish.contains(node);
+                PublishingPackageEntryImpl entry = new PublishingPackageEntryImpl(isPublish, node, snapshot);
                 entries.put(node, entry);
             }
             return entries;
@@ -595,40 +592,18 @@ public class PublishingEventHelper
         }
     }
 
-    public Map<NodeRef, PublishingPackageEntry> getUnpublishEntries(NodeRef eventNode, String channelId)
-    {
-        @SuppressWarnings("unchecked")
-        List<String> entries= (List<String>) nodeService.getProperty(eventNode, PROP_PUBLISHING_EVENT_NODES_TO_UNPUBLISH);
-        if(CollectionUtils.isEmpty(entries))
-        {
-            return new HashMap<NodeRef, PublishingPackageEntry>();
-        }
-        final NodeRef channelNode = new NodeRef(channelId);
-        List<NodeRef> nodes = NodeUtils.toNodeRefs(entries);
-        return transformToMap(nodes, new Function<NodeRef, PublishingPackageEntry>()
-        {
-            public PublishingPackageEntry apply(NodeRef node)
-            {
-                if(NodeUtils.exists(node, nodeService))
-                {
-                    return makeUnpublishEntry(node, channelNode);
-                }
-                return null;
-            }
-        });
-    }
 
-    private PublishingPackageEntry makeUnpublishEntry(NodeRef source, NodeRef channelNode)
+    private NodeSnapshot createUnpublishSnapshot(NodeRef source, NodeRef channelNode)
     {
         NodeRef lastEvent = getLastPublishEvent(source, channelNode);
-        NodeSnapshot snapshot = null;
-        if(lastEvent!=null)
+        if(lastEvent==null)
         {
-            Map<NodeRef, PublishingPackageEntry> entries = getPublishEntries(lastEvent);
-            PublishingPackageEntry entry = entries.get(source);
-            snapshot = entry.getSnapshot();
+            String msg = "Cannot create unpublish snapshot as last publishing event does not exist! Source node: "+ source + " channelId: "+channelNode;
+            throw new AlfrescoRuntimeException(msg);
         }
-        return new PublishingPackageEntryImpl(false, source, snapshot);
+        Map<NodeRef, PublishingPackageEntry> entries = getPublishingPackageEntries(lastEvent);
+        PublishingPackageEntry entry = entries.get(source);
+        return entry.getSnapshot();
     }
     
     public NodeRef getLastPublishEvent(NodeRef source, NodeRef channelNode)
@@ -684,55 +659,8 @@ public class PublishingEventHelper
         return nodeService.createAssociation(publishedNode, eventNode, ASSOC_LAST_PUBLISHING_EVENT);
     }
 
-    public PublishingDetails createPublishingPackageBuilder()
+    public PublishingDetails createPublishingDetails()
     {
         return new PublishingDetailsImpl();
     }
-    
-//    public NodePublishStatus checkNodeStatus(NodeRef node, String channelId, NodeRef queue)
-//    {
-//        PublishingEvent queuedEvent = getQueuedPublishingEvent(node, channelId, queue);
-//        PublishingEvent lastEvent= getLastPublishingEvent(node, channelId, queue);
-//        if(queuedEvent != null)
-//        {
-//            if(lastEvent != null)
-//            {
-//                return new NodePublishStatusPublishedAndOnQueue(node, channelId, queuedEvent, lastEvent);
-//            }
-//            else
-//            {
-//                return  new NodePublishStatusOnQueue(node, channelId, queuedEvent);
-//            }
-//        }
-//        else
-//        {
-//            if(lastEvent != null)
-//            {
-//                return new NodePublishStatusPublished(node, channelId, lastEvent);
-//            }
-//            else
-//            {
-//                return new NodePublishStatusNotPublished(node, channelId);
-//            }
-//        }
-//    }
-//
-//    private PublishingEvent getLastPublishingEvent(NodeRef node, String channelId, NodeRef queue)
-//    {
-//        getEventNodesForPublishedNode(queue, node);
-//        return null;
-//    }
-//
-//    private PublishingEvent getQueuedPublishingEvent(NodeRef node, String channelId)
-//    {
-//        return publishingEventHelper.getPublishingEvent(nextEventNode);
-//    }
-//
-//    private boolean isActiveEvent(NodeRef eventNode)
-//    {
-//        String statusStr = (String) nodeService.getProperty( eventNode, PROP_PUBLISHING_EVENT_STATUS);
-//        Status status = Status.valueOf(statusStr);
-//        return status == Status.IN_PROGRESS || status == Status.SCHEDULED;
-//    }
-
 }

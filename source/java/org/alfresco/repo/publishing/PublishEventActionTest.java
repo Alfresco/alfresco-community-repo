@@ -46,7 +46,12 @@ import javax.annotation.Resource;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.service.cmr.publishing.NodeSnapshot;
 import org.alfresco.service.cmr.publishing.PublishingDetails;
+import org.alfresco.service.cmr.publishing.PublishingEvent;
+import org.alfresco.service.cmr.publishing.PublishingPackage;
+import org.alfresco.service.cmr.publishing.PublishingPackageEntry;
 import org.alfresco.service.cmr.publishing.PublishingService;
 import org.alfresco.service.cmr.publishing.Status;
 import org.alfresco.service.cmr.publishing.channels.Channel;
@@ -215,12 +220,30 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
         assertTrue(nodeService.exists(publishedNode));
         
         // Unpublish source node.
-        publishNode(source, null, false);
+        NodeRef eventNode = publishNode(source, null, false);
         
         // Check the published node no longer exists.
         assertFalse(nodeService.exists(publishedNode));
         publishedNode = channelHelper.mapSourceToEnvironment(source, channelNode);
         assertNull(publishedNode);
+        
+        // Check can generate a valid snapshot for the unpublish entry.
+        PublishingEvent event = publishingService.getPublishingEvent(eventNode.toString());
+        PublishingPackage packg = event.getPackage();
+
+        Set<NodeRef> toUnpublish = packg.getNodesToUnpublish();
+        assertEquals(1, toUnpublish.size());
+        assertTrue(toUnpublish.contains(source));
+
+        PublishingPackageEntry entry = packg.getEntryMap().get(source);
+        assertEquals(false, entry.isPublish());
+
+        NodeSnapshot snapshot = entry.getSnapshot();
+        assertEquals(source, snapshot.getNodeRef());
+        assertEquals(ContentModel.TYPE_CONTENT, snapshot.getType());
+        Serializable name = nodeService.getProperty(source, ContentModel.PROP_NAME);
+        assertEquals(name, snapshot.getProperties().get(ContentModel.PROP_NAME));
+        
     }
     
     @SuppressWarnings("unchecked")

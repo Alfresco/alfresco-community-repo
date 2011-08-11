@@ -20,6 +20,7 @@
 package org.alfresco.repo.publishing;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -42,7 +43,6 @@ import org.alfresco.service.namespace.QName;
 public class NodeSnapshotTransferImpl implements NodeSnapshot
 {
     private final TransferManifestNormalNode transferNode; 
-    private final String version;
     
     /**
      * @param transferNode
@@ -50,88 +50,107 @@ public class NodeSnapshotTransferImpl implements NodeSnapshot
     public NodeSnapshotTransferImpl(TransferManifestNormalNode transferNode)
     {
         this.transferNode = transferNode;
-        Map<QName, Serializable> props = transferNode.getProperties();
-        this.version = (String) props.get(ContentModel.PROP_VERSION_LABEL);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.publishing.NodeSnapshot#getAllParentAssocs()
-     */
     public List<ChildAssociationRef> getAllParentAssocs()
     {
+        if(transferNode==null)
+        {
+            return Collections.emptyList();
+        }
         return transferNode.getParentAssocs();
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.publishing.NodeSnapshot#getAspects()
+    /**
+    * {@inheritDoc}
      */
-    
     public Set<QName> getAspects()
     {
+        if(transferNode==null)
+        {
+            return Collections.emptySet();
+        }
         return transferNode.getAspects();
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.publishing.NodeSnapshot#getNodeRef()
-     */
-    
+    /**
+     * {@inheritDoc}
+      */
     public NodeRef getNodeRef()
     {
+        if(transferNode==null)
+        {
+            return null;
+        }
         return transferNode.getNodeRef();
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.publishing.NodeSnapshot#getOutboundPeerAssociations()
+    /**
+     * @return
      */
-    
     public List<AssociationRef> getOutboundPeerAssociations()
     {
+        if(transferNode==null)
+        {
+            return Collections.emptyList();
+        }
         return transferNode.getTargetAssocs();
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.publishing.NodeSnapshot#getPrimaryParentAssoc()
+    /**
+     * @return
      */
-    
     public ChildAssociationRef getPrimaryParentAssoc()
     {
+        if(transferNode==null)
+        {
+            return null;
+        }
         return transferNode.getPrimaryParentAssoc();
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.publishing.NodeSnapshot#getPrimaryPath()
+    /**
+     * @return
      */
-    
     public Path getPrimaryPath()
     {
+        if(transferNode==null)
+        {
+            return null;
+        }
         return transferNode.getParentPath();
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.publishing.NodeSnapshot#getProperties()
+    /**
+     * {@inheritDoc}
      */
-    
     public Map<QName, Serializable> getProperties()
     {
+        if(transferNode==null)
+        {
+            return Collections.emptyMap();
+        }
         return transferNode.getProperties();
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.publishing.NodeSnapshot#getType()
+    /**
+     * {@inheritDoc}
      */
-    
     public QName getType()
     {
+        if(transferNode==null)
+        {
+            return null;
+        }
         return transferNode.getType();
     }
 
     /**
     * {@inheritDoc}
     */
-    
     public String getVersion()
     {
-        return version;
+        return (String) getProperties().get(ContentModel.PROP_VERSION_LABEL);
     }
     
     /**

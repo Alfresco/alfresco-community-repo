@@ -55,7 +55,7 @@ import org.junit.Test;
 public class PublishingPackageSerializerTest extends AbstractPublishingIntegrationTest
 {
     @Resource(name="publishingPackageSerializer")
-    private StandardPublishingPackageSerializer serializer;
+    private StandardNodeSnapshotSerializer serializer;
 
     private TransferManifestNormalNode normalNode1;
 
@@ -67,7 +67,7 @@ public class PublishingPackageSerializerTest extends AbstractPublishingIntegrati
     public void onSetUp() throws Exception
     {
         super.onSetUp();
-        serializer = (StandardPublishingPackageSerializer) getApplicationContext().getBean("publishingPackageSerializer");
+        serializer = (StandardNodeSnapshotSerializer) getApplicationContext().getBean("publishingPackageSerializer");
         normalNode1 = new TransferManifestNormalNode();
         normalNode1.setAccessControl(null);
 

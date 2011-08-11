@@ -103,7 +103,7 @@
       <property name="publishingEventHelper" ref="publishingEventHelper" />
    </bean>
    
-   <bean id="publishingPackageSerializer" class="org.alfresco.repo.publishing.StandardPublishingPackageSerializer" />
+   <bean id="publishingPackageSerializer" class="org.alfresco.repo.publishing.StandardNodeSnapshotSerializer" />
 
    <bean id="urlShortener" class="org.alfresco.repo.urlshortening.BitlyUrlShortenerImpl"  >
       <property name="username" value="${urlshortening.bitly.username}" />

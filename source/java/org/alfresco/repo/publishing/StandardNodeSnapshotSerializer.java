@@ -22,7 +22,6 @@ package org.alfresco.repo.publishing;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,6 +31,7 @@ import java.util.List;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.transfer.manifest.TransferManifestDeletedNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestHeader;
 import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
@@ -39,13 +39,12 @@ import org.alfresco.repo.transfer.manifest.TransferManifestProcessor;
 import org.alfresco.repo.transfer.manifest.XMLTransferManifestReader;
 import org.alfresco.repo.transfer.manifest.XMLTransferManifestWriter;
 import org.alfresco.service.cmr.publishing.NodeSnapshot;
-import org.xml.sax.SAXException;
 
 /**
  * @author Brian
  * @author Nick Smith
  */
-public class StandardPublishingPackageSerializer implements NodeSnapshotSerializer
+public class StandardNodeSnapshotSerializer implements NodeSnapshotSerializer
 {
     /**
     * {@inheritDoc}
@@ -94,14 +93,9 @@ public class StandardPublishingPackageSerializer implements NodeSnapshotSerializ
             transferManifestWriter.endTransferManifest();
             writer.flush();
         }
-        catch (SAXException e)
+        catch (Exception e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        catch (UnsupportedEncodingException e)
-        {
-            //UTF-8 must be supported, so this is not going to happen
+            throw new AlfrescoRuntimeException("Failed to serialize node snapshots.", e);
         }
     }
 

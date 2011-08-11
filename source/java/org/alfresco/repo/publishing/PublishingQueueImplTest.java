@@ -33,7 +33,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.service.cmr.publishing.NodeSnapshot;
 import org.alfresco.service.cmr.publishing.PublishingDetails;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
 import org.alfresco.service.cmr.publishing.PublishingPackage;
@@ -69,7 +72,6 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
     {
         NodeRef firstNode = createContent("First");
         NodeRef secondNode = createContent("second");
-        NodeRef thirdNode = createContent("third");
         
         assertNull(nodeService.getProperty(firstNode, PROP_VERSION_LABEL));
         assertNull(nodeService.getProperty(firstNode, PROP_VERSION_LABEL));
@@ -79,7 +81,6 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         
         PublishingDetails details = publishingService.getPublishingQueue().createPublishingDetails()
             .addNodesToPublish(firstNode, secondNode)
-            .addNodesToUnpublish(thirdNode)
             .setPublishChannel(channelId)
             .setSchedule(schedule)
             .setComment(comment);
@@ -119,8 +120,7 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         assertTrue(toPublish.contains(firstNode));
         assertTrue(toPublish.contains(secondNode));
 
-        assertEquals(1, toUnpublish.size());
-        assertTrue(toUnpublish.contains(thirdNode));
+        assertEquals(0, toUnpublish.size());
         
         // Check the correct version is recorded in the entry.
         PublishingPackageEntry entry = pckg.getEntryMap().get(firstNode);

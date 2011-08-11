@@ -53,7 +53,7 @@ public class PublishingQueueImpl implements PublishingQueue
     */
         public PublishingDetails createPublishingDetails()
     {
-        return publishingEventHelper.createPublishingPackageBuilder();
+        return publishingEventHelper.createPublishingDetails();
     }
 
     /**

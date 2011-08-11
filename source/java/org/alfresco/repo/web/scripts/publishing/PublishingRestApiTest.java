@@ -82,8 +82,8 @@ import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.repo.web.scripts.WebScriptUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.publishing.PublishingDetails;
 import org.alfresco.service.cmr.publishing.NodeSnapshot;
+import org.alfresco.service.cmr.publishing.PublishingDetails;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
 import org.alfresco.service.cmr.publishing.PublishingPackage;
 import org.alfresco.service.cmr.publishing.PublishingPackageEntry;
@@ -260,15 +260,35 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         assertEquals("Channel2 name should not have changed!", name2, renamedCH2.getName());
     }
     
-    @SuppressWarnings("unchecked")
     public void testPublishingQueuePost() throws Exception
+    {
+        // Create some content.
+        NodeRef textNode = testHelper.createContentNode("plainContent", "Some plain text", MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        try
+        {
+            checkPublishingQueuePost(textNode);
+        }
+        finally
+        {
+            // Clean up events
+            List<PublishingEvent> events = publishingService.getEventsForPublishedNode(textNode);
+            List<String> ids = CollectionUtils.transform(events, new Function<PublishingEvent, String>()
+            {
+                public String apply(PublishingEvent value)
+                {
+                    return value.getId();
+                }
+            });
+            testHelper.addEvents(ids);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void checkPublishingQueuePost(NodeRef textNode) throws Exception
     {
         // Create publish and status update channels.
         Channel publishChannel = testHelper.createChannel(publishAnyType);
         Channel statusChannel = testHelper.createChannel(statusUpdateType);
-
-        // Create some content.
-        NodeRef textNode = testHelper.createContentNode("plainContent", "Some plain text", MimetypeMap.MIMETYPE_TEXT_PLAIN);
 
         // Post empty content.
         sendRequest(new PostRequest(PUBLISHING_QUEUE_URL, "", JSON), 400);
@@ -370,17 +390,22 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         // Check unpublish was called
         verify(publishAnyChannelType)
             .unpublish(eq(mappedTextNode), anyMap());
+        
+        // Check can get unpublish event.
+        String protocol = textNode.getStoreRef().getProtocol();
+        String storeId = textNode.getStoreRef().getIdentifier();
+        String nodeId = textNode.getId();
+        String textNodeUrl = MessageFormat.format(PUBLISHING_EVENTS_URL, protocol, storeId, nodeId);
 
-        // Clean up events
-        List<PublishingEvent> events= publishingService.getEventsForPublishedNode(textNode);
-        List<String> ids = CollectionUtils.transform(events, new Function<PublishingEvent, String>()
-        {
-            public String apply(PublishingEvent value)
-            {
-                return value.getId();
-            }
-        });
-        testHelper.addEvents(ids);
+        // Get events on textNode1 before any events created.
+        Response response = sendRequest(new GetRequest(textNodeUrl), 200);
+        JSONArray data = getDataArray(response);
+
+        List<PublishingEvent> unpublishEvents = publishingService.getEventsForUnpublishedNode(textNode);
+        assertEquals(1, unpublishEvents.size());
+        PublishingEvent unpublishedEvent = unpublishEvents.get(0);
+        
+        checkContainsEvent(data, unpublishedEvent.getId());
     }
 
     public void testPublishingEventsGet() throws Exception
@@ -431,6 +456,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         response = sendRequest(new GetRequest(textNode2Url), 200);
         data = getDataArray(response);
         assertEquals(0, data.length());
+        
     }
     
     public void testChannelTypesGet() throws Exception
@@ -575,9 +601,6 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         JSONObject json = new JSONObject();
         json.put(CHANNEL_ID, publishChannel.getId());
         json.put(COMMENT, comment);
-//        Calendar schedule = Calendar.getInstance();
-//        schedule.add(Calendar.SECOND, 1);
-//        json.put(SCHEDULED_TIME, WebScriptUtil.buildCalendarModel(schedule));
         Collection<String> publishNodes = Collections.singleton(node.toString());
         if(publish)
         {

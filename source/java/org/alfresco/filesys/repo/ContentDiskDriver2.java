@@ -3185,6 +3185,28 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         Serializable prop = nodeService.getProperty(sourceNodeRef, ContentModel.PROP_CONTENT);
         if(prop != null)
         { 
+            if(prop instanceof ContentData)
+            {
+                ContentData data = (ContentData)prop;
+                if(data.getMimetype().equalsIgnoreCase(MimetypeMap.MIMETYPE_BINARY))
+                {
+                    if(logger.isDebugEnabled())
+                    {
+                        logger.debug("mimetype is binary - guess mimetype has failed");
+                    }
+                    Serializable targetProp = nodeService.getProperty(targetNodeRef, ContentModel.PROP_CONTENT);
+                    
+                    if(targetProp != null && targetProp instanceof ContentData)
+                    {
+                        ContentData targetData = (ContentData)targetProp;
+                        logger.debug("copy the existing mimetype");
+                        prop = ContentData.setMimetype(data, targetData.getMimetype());
+                    }
+               
+                    
+                }
+            }
+            
             nodeService.setProperty(targetNodeRef, ContentModel.PROP_CONTENT, prop);
         }
         else

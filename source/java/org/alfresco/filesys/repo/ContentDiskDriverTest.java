@@ -2232,25 +2232,7 @@ public class ContentDiskDriverTest extends TestCase
             {
                 ClassPathResource fileResource = new ClassPathResource("filesys/ContentDiskDriverTest1.docx");
                 assertNotNull("unable to find test resource filesys/ContentDiskDriverTest1.docx", fileResource);
-
-                byte[] buffer= new byte[1000];
-                InputStream is = fileResource.getInputStream();
-                try
-                {
-                    long offset = 0;
-                    int i = is.read(buffer, 0, buffer.length);
-                    while(i > 0)
-                    {
-                        // testContext.firstFileHandle.writeFile(buffer, i, 0, offset);
-                        driver.writeFile(testSession, testConnection, testContext.firstFileHandle, buffer, 0, i, offset);
-                        offset += i;
-                        i = is.read(buffer, 0, buffer.length);
-                    }                 
-                }
-                finally
-                {
-                    is.close();
-                }
+                writeResourceToNetworkFile(fileResource, testContext.firstFileHandle);
             
                 logger.debug("close the file, firstFileHandle");
                 driver.closeFile(testSession, testConnection, testContext.firstFileHandle);   
@@ -3132,7 +3114,204 @@ public class ContentDiskDriverTest extends TestCase
         assertFalse("version not incremented", version.equals(version3));
          
     } // OpenCloseVersionableFile
+    
+    /**
+    * Frame maker save
+    * a) Lock File Created    (X.fm.lck)
+    * b) Create new file (X.fm.C29)
+    * c) Existing file rename out of the way.   (X.backup.fm)
+    * d) New file rename into place. (X.fm.C29)
+    * e) Old file deleted (open with delete on close)
+    * f) Lock file deleted (open with delete on close)
+    */
+    public void testScenarioFrameMakerShuffle() throws Exception
+    {  
+        logger.debug("testScenarioFramemakerShuffle");
+        
+        final String LOCK_FILE = "X.fm.lck";
+        final String FILE_NAME = "X.fm";
+        final String FILE_OLD_TEMP = "X.backup.fm";
+        final String FILE_NEW_TEMP = "X.fm.C29";
+        
+        class TestContext
+        {
+            NetworkFile firstFileHandle;
+            String mimetype;
+        };
+        
+        final TestContext testContext = new TestContext();
+        
+        final String TEST_DIR = TEST_ROOT_DOS_PATH + "\\testScenarioFramemakerShuffle";
+        
+        ServerConfiguration scfg = new ServerConfiguration("testServer");
+        TestServer testServer = new TestServer("testServer", scfg);
+        final SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
+        DiskSharedDevice share = getDiskSharedDevice();
+        final TreeConnection testConnection = testServer.getTreeConnection(share);
+        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();        
 
+        /**
+         * Clean up just in case garbage is left from a previous run
+         */
+        RetryingTransactionCallback<Void> deleteGarbageFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                driver.deleteFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NAME);
+                return null;
+            }
+        };
+        
+        try
+        {
+            tran.doInTransaction(deleteGarbageFileCB);
+        }
+        catch (Exception e)
+        {
+            // expect to go here
+        }
+        
+        logger.debug("a) create new file");
+        RetryingTransactionCallback<Void> createFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                /**
+                 * Create the test directory we are going to use 
+                 */
+                FileOpenParams createRootDirParams = new FileOpenParams(TEST_ROOT_DOS_PATH, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                FileOpenParams createDirParams = new FileOpenParams(TEST_DIR, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                driver.createDirectory(testSession, testConnection, createRootDirParams);
+                driver.createDirectory(testSession, testConnection, createDirParams);
+                
+                /**
+                 * Create the file we are going to test
+                 */
+                FileOpenParams createFileParams = new FileOpenParams(TEST_DIR + "\\" + FILE_NAME, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                testContext.firstFileHandle = driver.createFile(testSession, testConnection, createFileParams);
+                assertNotNull(testContext.firstFileHandle);
+                ClassPathResource fileResource = new ClassPathResource("filesys/X1.fm");
+                assertNotNull("unable to find test resource filesys/X1.fm", fileResource);
+                writeResourceToNetworkFile(fileResource, testContext.firstFileHandle);
+                driver.closeFile(testSession, testConnection, testContext.firstFileHandle); 
+                NodeRef file1NodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+                nodeService.addAspect(file1NodeRef, ContentModel.ASPECT_VERSIONABLE, null);
+
+                return null;
+            }
+        };
+        tran.doInTransaction(createFileCB, false, true);
+             
+        /**
+         * b) Save the new file
+         * Write X2.fm to the test file,
+         */
+        logger.debug("b) move new file into place");
+        RetryingTransactionCallback<Void> writeFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                FileOpenParams createFileParams = new FileOpenParams(TEST_DIR + "\\" + FILE_NEW_TEMP, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                testContext.firstFileHandle = driver.createFile(testSession, testConnection, createFileParams);    
+         
+                ClassPathResource fileResource = new ClassPathResource("filesys/X2.fm");
+                assertNotNull("unable to find test resource filesys/X2.fm", fileResource);
+                writeResourceToNetworkFile(fileResource, testContext.firstFileHandle);
+                driver.closeFile(testSession, testConnection, testContext.firstFileHandle);   
+                
+                
+                NodeRef file1NodeRef = getNodeForPath(testConnection,  TEST_DIR + "\\" + FILE_NAME);
+                Map<QName, Serializable> props = nodeService.getProperties(file1NodeRef);
+                ContentData data = (ContentData)props.get(ContentModel.PROP_CONTENT);
+                assertNotNull("data is null", data);
+                assertEquals("size is wrong", 166912, data.getSize());
+                testContext.mimetype = data.getMimetype();
+                
+                return null;
+            }
+        };
+        tran.doInTransaction(writeFileCB, false, true);
+        
+        /**
+         * c) rename the old file
+         */
+        logger.debug("c) rename old file");
+        RetryingTransactionCallback<Void> renameOldFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                driver.renameFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NAME, TEST_DIR + "\\" + FILE_OLD_TEMP);
+                return null;
+            }
+        };
+        tran.doInTransaction(renameOldFileCB, false, true);
+           
+        /**
+         * d) Move the new file into place, stuff should get shuffled
+         */
+        logger.debug("d) move new file into place");
+        RetryingTransactionCallback<Void> moveNewFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                driver.renameFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NEW_TEMP, TEST_DIR + "\\" + FILE_NAME); 
+                return null;
+            }
+        };
+        
+        tran.doInTransaction(moveNewFileCB, false, true);
+        
+        /**
+         * d) Delete the old file
+         */
+        logger.debug("d) move new file into place");
+        RetryingTransactionCallback<Void> deleteOldFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                driver.deleteFile(testSession, testConnection, TEST_DIR + "\\" + FILE_OLD_TEMP);
+                return null;
+            }
+        };
+        
+        tran.doInTransaction(deleteOldFileCB, false, true);
+        
+        logger.debug("e) validate results");
+        
+        /**
+         * Now validate everything is correct
+         */
+        RetryingTransactionCallback<Void> validateCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+               NodeRef shuffledNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+               
+               Map<QName, Serializable> props = nodeService.getProperties(shuffledNodeRef);
+               
+               ContentData data = (ContentData)props.get(ContentModel.PROP_CONTENT);
+               assertNotNull("data is null", data);
+               assertEquals("size is wrong", 123904, data.getSize());
+               
+               NodeRef file1NodeRef = getNodeForPath(testConnection,  TEST_DIR + "\\" + FILE_NAME); 
+               assertTrue("file has lost versionable aspect", nodeService.hasAspect(file1NodeRef, ContentModel.ASPECT_VERSIONABLE));
+
+               assertEquals("mimeType is wrong", testContext.mimetype, data.getMimetype());
+               
+           
+               return null;
+            }
+        };
+        
+        tran.doInTransaction(validateCB, true, true);
+    }  // Scenario frame maker save
     
     /**
      * Test server
@@ -3205,5 +3384,33 @@ public class ContentDiskDriverTest extends TestCase
         ContentContext ctx = (ContentContext) tree.getContext();
     
         return cifsHelper.getNodeRef(ctx.getRootNode(), path);
+    }
+
+    /**
+     * Write the resource to the specified NetworkFile
+     * @param resource
+     * @param file
+     * @throws IOException
+     */
+    private void writeResourceToNetworkFile(ClassPathResource resource, NetworkFile file) throws IOException
+    {
+ 
+        byte[] buffer= new byte[1000];
+        InputStream is = resource.getInputStream();
+        try
+        {
+            long offset = 0;
+            int i = is.read(buffer, 0, buffer.length);
+            while(i > 0)
+            {
+                file.writeFile(buffer, i, 0, offset);
+                offset += i;
+                i = is.read(buffer, 0, buffer.length);
+            }                 
+        }
+        finally
+        {
+            is.close();
+        }
     }
 }

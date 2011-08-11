@@ -23,22 +23,20 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.alfresco.filesys.repo.rules.ScenarioInstance.Ranking;
+import org.alfresco.filesys.repo.rules.operations.CreateFileOperation;
 import org.alfresco.filesys.repo.rules.operations.RenameFileOperation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * The "Vi" rename shuffle is a sequence where a file is moved out of the way
- * and then a new copy of the file put into place.
+ * A double rename shuffle
  * 
- * a) Rename File to File~
- * b) Create File
- * c) Delete File~
- *
+ * a) Existing file renamed out of the way.  X.fm to X.backup.fm
+ * b) New file moved renamed into place. X.fm.C29
  */
-public class ScenarioRenameShuffle implements Scenario
+public class ScenarioDoubleRenameShuffle implements Scenario
 {
-    private static Log logger = LogFactory.getLog(ScenarioRenameShuffle.class);
+    private static Log logger = LogFactory.getLog(ScenarioDoubleRenameShuffle.class);
 
     /**
      * The regex pattern of a create that will trigger a new instance of
@@ -47,7 +45,10 @@ public class ScenarioRenameShuffle implements Scenario
     private Pattern pattern;
     private String strPattern;
     
+    
     private long timeout = 30000;
+    
+    private Ranking ranking = Ranking.HIGH;
     
     @Override
     public ScenarioInstance createInstance(final List<ScenarioInstance> currentInstances, Operation operation)
@@ -65,9 +66,9 @@ public class ScenarioRenameShuffle implements Scenario
             {
                 if(logger.isDebugEnabled())
                 {
-                    logger.debug("New Scenario Rename Shuffle Instance strPattern:" + pattern);
+                    logger.debug("New Scenario Double Rename Shuffle Instance strPattern:" + pattern + " matches" + r.getTo() );
                 }
-                ScenarioRenameShuffleInstance instance = new ScenarioRenameShuffleInstance();
+                ScenarioDoubleRenameShuffleInstance instance = new ScenarioDoubleRenameShuffleInstance();
                 instance.setTimeout(timeout);
                 instance.setRanking(ranking);
                 return instance;
@@ -76,6 +77,18 @@ public class ScenarioRenameShuffle implements Scenario
         
         // No not interested.
         return null;
+       
+    }
+
+    public void setPattern(String pattern)
+    {
+        this.pattern = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
+        this.strPattern = pattern;
+    }
+    
+    public String getPattern()
+    {
+        return this.strPattern;
     }
     
     public void setTimeout(long timeout)
@@ -87,20 +100,7 @@ public class ScenarioRenameShuffle implements Scenario
     {
         return timeout;
     }
-    
-    public void setPattern(String pattern)
-    {
-        this.pattern = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
-        this.strPattern = pattern;
-    }
 
-    public String getPattern()
-    {
-        return strPattern;
-    }    
-    
-    private Ranking ranking = Ranking.HIGH;
-    
     public void setRanking(Ranking ranking)
     {
         this.ranking = ranking;

@@ -341,6 +341,7 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
             + ", requestBatchOpLock:" +param.requestBatchOpLock()
             + ", requestExclusiveOpLock:" +param.requestExclusiveOpLock()  
             + ", isDeleteOnClose:" +param.isDeleteOnClose()
+            + ", allocationSize:" + param.getAllocationSize()
             + ", sharedAccess: " + strSharedAccess
 
             );
@@ -356,8 +357,19 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
         String file = paths[1];
         
         EvaluatorContext ctx = getEvaluatorContext(driverState, folder);
-              
-        boolean writeAccess = param.isReadWriteAccess();
+        
+        // Todo what about attributes only and writeOnly ?
+        OpenFileMode writeAccess = param.isReadWriteAccess() ? OpenFileMode.WRITE : OpenFileMode.READ ;
+        
+        if(param.isDeleteOnClose())
+        {
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("open file has delete on close");
+            }
+            writeAccess = OpenFileMode.DELETE;
+        }
+            
         boolean truncate = param.isOverwrite();
         
         Operation o = new OpenFileOperation(file, writeAccess, truncate, rootNode, path);

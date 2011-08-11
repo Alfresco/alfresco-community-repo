@@ -18,22 +18,23 @@
  */
 package org.alfresco.filesys.repo.rules.operations;
 
+import org.alfresco.filesys.repo.OpenFileMode;
 import org.alfresco.filesys.repo.rules.Operation;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * Create File Operation.
+ * Open File Operation.
  * <p>
- * Create a file with the given name.
+ * Open a file with the given name.
  */
 public class OpenFileOperation implements Operation
 {
     private String name;
-    private boolean writeAccess = false;
+    private OpenFileMode mode;
     private boolean truncate = false;
     private String path;
     private NodeRef rootNode;
-    
+        
     /**
      * 
      * @param name the name of the file to open
@@ -41,13 +42,13 @@ public class OpenFileOperation implements Operation
      * @param rootNode
      * @param path the full path/name to open
      */
-    public OpenFileOperation(String name, boolean writeAccess, boolean truncate, NodeRef rootNode, String path)
+    public OpenFileOperation(String name, OpenFileMode mode, boolean truncate, NodeRef rootNode, String path)
     {
         this.name = name;
         this.rootNode = rootNode;
         this.truncate = truncate;
         this.path = path;
-        this.writeAccess = writeAccess;
+        this.mode = mode;
     }
 
     public String getName()
@@ -65,14 +66,15 @@ public class OpenFileOperation implements Operation
         return rootNode;
     }
     
-    public boolean isWriteAccess()
+    
+    public OpenFileMode getMode()
     {
-        return writeAccess;
+        return mode;
     }
     
     public boolean isTruncate()
     {
-        return writeAccess;
+        return truncate;
     }
     
     public String toString()

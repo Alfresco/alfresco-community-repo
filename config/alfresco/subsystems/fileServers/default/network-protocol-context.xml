@@ -140,6 +140,7 @@
                     <property name="timeout"><value>30000</value></property>
                     <property name="ranking"><value>HIGH</value></property>
                 </bean>
+                <!--  Vi -->
                 <bean id="renameShuffleScenario" class="org.alfresco.filesys.repo.rules.ScenarioRenameShuffle">
                     <property name="pattern"><value>.*~$</value></property>
                     <property name="timeout"><value>30000</value></property>
@@ -153,6 +154,11 @@
                     <property name="timeout"><value>3000000</value></property>
                     <property name="ranking"><value>HIGH</value></property>
                 </bean>
+                <bean id="framemakerFileScenario" class="org.alfresco.filesys.repo.rules.ScenarioDoubleRenameShuffle">
+                    <property name="pattern"><value>.*.backup.fm$</value></property>
+                    <property name="timeout"><value>60000</value></property>
+                    <property name="ranking"><value>HIGH</value></property>
+                </bean>                
             </list>
         </property>
        

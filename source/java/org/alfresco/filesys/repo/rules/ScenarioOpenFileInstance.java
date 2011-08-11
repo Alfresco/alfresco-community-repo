@@ -21,6 +21,7 @@ package org.alfresco.filesys.repo.rules;
 import java.util.ArrayList;
 import java.util.Date;
 
+import org.alfresco.filesys.repo.OpenFileMode;
 import org.alfresco.filesys.repo.ResultCallback;
 import org.alfresco.filesys.repo.TempNetworkFile;
 import org.alfresco.filesys.repo.rules.ScenarioInstance.Ranking;
@@ -160,7 +161,7 @@ class ScenarioOpenFileInstance implements ScenarioInstance
                     OpenFileOperation o = (OpenFileOperation)operation;
                     name = o.getName();
                     ArrayList<Command> commands = new ArrayList<Command>();
-                    commands.add(new OpenFileCommand(o.getName(), o.isWriteAccess(), o.isTruncate(), o.getRootNodeRef(), o.getPath()));
+                    commands.add(new OpenFileCommand(o.getName(), o.getMode(), o.isTruncate(), o.getRootNodeRef(), o.getPath()));
                     ArrayList<Command> postCommitCommands = new ArrayList<Command>();
                     postCommitCommands.add(newOpenFileCallbackCommand());
                     return new CompoundCommand(commands, postCommitCommands);
@@ -298,14 +299,14 @@ class ScenarioOpenFileInstance implements ScenarioInstance
                     
                     if(name.equalsIgnoreCase(o.getName()))
                     {
-                        if(o.isWriteAccess())
+                        if(o.getMode() == OpenFileMode.WRITE)
                         {
                             // This is an open of a read write access
                             if(openReadWriteCount == 0)
                             {
                                 logger.debug("Open first read/write from scenario:" + this);
                                 ArrayList<Command> commands = new ArrayList<Command>();
-                                commands.add(new OpenFileCommand(o.getName(), o.isWriteAccess(), o.isTruncate(), o.getRootNodeRef(), o.getPath()));
+                                commands.add(new OpenFileCommand(o.getName(), o.getMode(), o.isTruncate(), o.getRootNodeRef(), o.getPath()));
                                 ArrayList<Command> postCommitCommands = new ArrayList<Command>();
                                 postCommitCommands.add(newOpenFileCallbackCommand());
                                 return new CompoundCommand(commands, postCommitCommands);
@@ -324,7 +325,7 @@ class ScenarioOpenFileInstance implements ScenarioInstance
                             {
                                 logger.debug("Open first read only from scenario:" + this);
                                 ArrayList<Command> commands = new ArrayList<Command>();
-                                commands.add(new OpenFileCommand(o.getName(), o.isWriteAccess(), o.isTruncate(), o.getRootNodeRef(), o.getPath()));
+                                commands.add(new OpenFileCommand(o.getName(), o.getMode(), o.isTruncate(), o.getRootNodeRef(), o.getPath()));
                                 ArrayList<Command> postCommitCommands = new ArrayList<Command>();
                                 postCommitCommands.add(newOpenFileCallbackCommand());
                                 return new CompoundCommand(commands, postCommitCommands);

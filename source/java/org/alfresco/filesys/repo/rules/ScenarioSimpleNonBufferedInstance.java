@@ -76,7 +76,7 @@ public class ScenarioSimpleNonBufferedInstance implements ScenarioInstance
         else if(operation instanceof OpenFileOperation)
         {
             OpenFileOperation o = (OpenFileOperation)operation;
-            return new OpenFileCommand(o.getName(), o.isWriteAccess(), o.isTruncate(), o.getRootNodeRef(), o.getPath());
+            return new OpenFileCommand(o.getName(), o.getMode(), o.isTruncate(), o.getRootNodeRef(), o.getPath());
         }
         else if(operation instanceof CloseFileOperation)
         {

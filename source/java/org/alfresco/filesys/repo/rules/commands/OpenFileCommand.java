@@ -20,6 +20,7 @@ package org.alfresco.filesys.repo.rules.commands;
 
 import java.util.List;
 
+import org.alfresco.filesys.repo.OpenFileMode;
 import org.alfresco.filesys.repo.rules.Command;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -30,7 +31,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public class OpenFileCommand implements Command
 {
     private String name;
-    private boolean writeAccess = false;
+    private OpenFileMode mode = OpenFileMode.READ;
     private boolean truncate = false;
     private String path;
     private NodeRef rootNode;
@@ -43,10 +44,10 @@ public class OpenFileCommand implements Command
      * @param truncate
      * @param path
      */
-    public OpenFileCommand(String name, boolean writeAccess, boolean truncate, NodeRef rootNode, String path)
+    public OpenFileCommand(String name, OpenFileMode mode, boolean truncate, NodeRef rootNode, String path)
     {
         this.name = name;
-        this.writeAccess = writeAccess;
+        this.mode = mode;
         this.truncate = truncate;
         this.rootNode = rootNode;
         this.path = path;
@@ -67,9 +68,9 @@ public class OpenFileCommand implements Command
         return rootNode;
     }
     
-    public boolean isWriteAccess()
+    public OpenFileMode getMode()
     {
-        return writeAccess;
+        return mode;
     }
     
     public boolean isTruncate()

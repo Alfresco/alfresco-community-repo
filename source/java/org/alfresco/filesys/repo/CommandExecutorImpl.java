@@ -146,7 +146,7 @@ public class CommandExecutorImpl implements CommandExecutor
          */
         if(command instanceof CompoundCommand)
         {
-            logger.debug("post Commit");
+            logger.debug("post commit of compound command");
             CompoundCommand c = (CompoundCommand)command;
             List<Command> commands = c.getPostCommitCommands();
             
@@ -210,7 +210,8 @@ public class CommandExecutorImpl implements CommandExecutor
             int openAction = FileAction.OpenIfExists;
             
             // TODO Open Action FileAction.NTOverwrite o.truncate
-            FileOpenParams params = new FileOpenParams(o.getPath(), openAction, o.isWriteAccess() ? AccessMode.ReadWrite : AccessMode.ReadOnly, FileAttribute.NTNormal, 0);
+            // TODO ATTRIBUTES ONLY and DELETE ONLY
+            FileOpenParams params = new FileOpenParams(o.getPath(), openAction, o.getMode() == OpenFileMode.WRITE ? AccessMode.ReadWrite : AccessMode.ReadOnly, FileAttribute.NTNormal, 0);
           
             return diskInterface.openFile(sess, tree, params);
         }

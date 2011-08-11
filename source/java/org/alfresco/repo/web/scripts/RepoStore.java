@@ -247,6 +247,16 @@ public class RepoStore extends AbstractStore implements TenantDeployer
     	return baseNodeRef;
     }
     
+    private boolean isContentPresent(NodeRef nodeRef)
+    {
+        ContentReader reader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT); 
+        if ((reader != null && reader.exists()))
+        {
+            return true;
+        }
+        return false;
+    }
+    
     private String getBaseDir()
     {
     	return getPath(getBaseNodeRef());
@@ -342,12 +352,15 @@ public class RepoStore extends AbstractStore implements TenantDeployer
                                     SearchService.LANGUAGE_XPATH);
                           for (NodeRef nodeRef : nodeRefs)
                           {
-                              String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-                              if (name.startsWith(id))
+                              if (isContentPresent(nodeRef))
                               {
-                                  String nodeDir = getPath(nodeRef);
-                                  String documentPath = nodeDir.substring(baseDirLength);
-                                  documentPaths.add(documentPath);
+                                    String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+                                    if (name.startsWith(id))
+                                    {
+                                        String nodeDir = getPath(nodeRef);
+                                        String documentPath = nodeDir.substring(baseDirLength);
+                                        documentPaths.add(documentPath);
+                                    }
                               }
                           }
                             
@@ -432,12 +445,15 @@ public class RepoStore extends AbstractStore implements TenantDeployer
                         documentPaths = new ArrayList<String>(nodeRefs.size());
                       for (NodeRef nodeRef : nodeRefs)
                       {
-                          String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-                          if (pattern.matcher(name).matches())
+                          if (isContentPresent(nodeRef))
                           {
-                              String nodeDir = getPath(nodeRef);
-                              String documentPath = nodeDir.substring(baseDirLength);
-                              documentPaths.add(documentPath);
+                                String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+                                if (pattern.matcher(name).matches())
+                                {
+                                    String nodeDir = getPath(nodeRef);
+                                    String documentPath = nodeDir.substring(baseDirLength);
+                                    documentPaths.add(documentPath);
+                                }
                           }
                       }
 //                        ResultSet resultSet = searchService.query(repoStore, SearchService.LANGUAGE_LUCENE, query.toString());
@@ -577,8 +593,11 @@ public class RepoStore extends AbstractStore implements TenantDeployer
                         documentPaths = new ArrayList<String>(nodeRefs.size());
                       for (NodeRef nodeRef : nodeRefs)
                       {
-                          String nodeDir = getPath(nodeRef);
-                          documentPaths.add(nodeDir.substring(baseDirLength));
+                          if (isContentPresent(nodeRef))
+                          {
+                                String nodeDir = getPath(nodeRef);
+                                documentPaths.add(nodeDir.substring(baseDirLength));
+                          }
                       }
                         
 //                        String query = "+PATH:\"" + repoPath +

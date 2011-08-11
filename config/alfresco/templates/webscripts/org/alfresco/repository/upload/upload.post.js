@@ -30,6 +30,12 @@ function main()
          return field.value.length() > 0 && field.value != "null" ? field.value : null;
       };
 
+      // allow the locale to be set via an argument
+      if (args["lang"] != null)
+      {
+         utils.setLocale(args["lang"]);
+      }
+
       // Parse file attributes
       for each (field in formdata.fields)
       {

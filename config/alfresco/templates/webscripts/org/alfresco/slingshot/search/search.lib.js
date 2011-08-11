@@ -613,7 +613,7 @@ function processResults(nodes, maxResults)
 }
 
 /**
- * Helper to escape the localname part of a QName string so it is valid inside an fts-alfresco query.
+ * Helper to escape the QName string so it is valid inside an fts-alfresco query.
  * The language supports the SQL92 identifier standard.
  * 
  * @param qname   The QName string to escape
@@ -622,11 +622,19 @@ function processResults(nodes, maxResults)
 function escapeQName(qname)
 {
    var separator = qname.indexOf(':'),
-       result = qname.substring(0, separator + 1),
+       namespace = qname.substring(0, separator),
        localname = qname.substring(separator + 1);
-   for (var i=0,c; i<localname.length; i++)
+
+   return escapeString(namespace) + ':' + escapeString(localname);
+}
+
+function escapeString(value)
+{
+   var result = "";
+
+   for (var i=0,c; i<value.length; i++)
    {
-      c = localname.charAt(i);
+      c = value.charAt(i);
       if (i == 0)
       {
          if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_'))

@@ -30,6 +30,7 @@ import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
@@ -49,16 +50,17 @@ import org.json.JSONObject;
 
 /**
  * Unit Test to test Discussions Web Script API
- * 
- * @author mruflin
  */
 public class DiscussionServiceTest extends BaseWebScriptTest
 {
+    @SuppressWarnings("unused")
     private static Log logger = LogFactory.getLog(DiscussionServiceTest.class);
+    
     private static final String DELETED_REPLY_POST_MARKER = "[[deleted]]";
 	
     private MutableAuthenticationService authenticationService;
     private AuthenticationComponent authenticationComponent;
+    private PermissionService permissionService;
     private PersonService personService;
     private SiteService siteService;
     private NodeService nodeService;
@@ -89,6 +91,7 @@ public class DiscussionServiceTest extends BaseWebScriptTest
         this.personService = (PersonService)getServer().getApplicationContext().getBean("PersonService");
         this.siteService = (SiteService)getServer().getApplicationContext().getBean("SiteService");
         this.nodeService = (NodeService)getServer().getApplicationContext().getBean("NodeService");
+        this.permissionService = (PermissionService)getServer().getApplicationContext().getBean("PermissionService");
         
         // Authenticate as user
         this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
@@ -112,7 +115,7 @@ public class DiscussionServiceTest extends BaseWebScriptTest
                  QName.createQName(forumNodeName), ForumModel.TYPE_FORUM
            ).getChildRef();
            nodeService.setProperty(FORUM_NODE, ContentModel.PROP_NAME, forumNodeName); 
-           nodeService.setProperty(FORUM_NODE, ContentModel.PROP_TITLE, forumNodeName); 
+           nodeService.setProperty(FORUM_NODE, ContentModel.PROP_TITLE, forumNodeName);
         }
         
         // Create users
@@ -174,6 +177,13 @@ public class DiscussionServiceTest extends BaseWebScriptTest
         
         // add the user as a member with the given role
         this.siteService.setMembership(SITE_SHORT_NAME_DISCUSSION, userName, role);
+        
+        // Give them access to the test node
+        // TODO This shouldn't be needed when the webscripts use the service properly
+        // (We only need it because they go about adding tag scopes and aspects)
+        permissionService.setPermission(FORUM_NODE, userName, PermissionService.READ, true);
+        permissionService.setPermission(FORUM_NODE, userName, PermissionService.WRITE, true);
+        permissionService.setPermission(FORUM_NODE, userName, PermissionService.CREATE_CHILDREN, true);
     }
     
     
@@ -265,6 +275,72 @@ public class DiscussionServiceTest extends BaseWebScriptTest
        }
     }
     
+    private JSONObject getReplies(String name, int expectedStatus) throws Exception
+    {
+       return doGetReplies(getRepliesUrl(name), expectedStatus);
+    }
+    private JSONObject getReplies(NodeRef nodeRef, int expectedStatus) throws Exception
+    {
+       return doGetReplies(getRepliesUrl(nodeRef), expectedStatus);
+    }
+    private JSONObject doGetReplies(String url, int expectedStatus) throws Exception
+    {
+       Response response = sendRequest(new GetRequest(url), expectedStatus);
+       if (expectedStatus == Status.STATUS_OK)
+       {
+          JSONObject result = new JSONObject(response.getContentAsString());
+          return result;
+       }
+       else
+       {
+          return null;
+       }
+    }
+    
+    private JSONObject getPosts(String type, int expectedStatus) throws Exception
+    {
+       return doGetPosts(URL_FORUM_SITE_POSTS, type, expectedStatus);
+    }
+    private JSONObject getPosts(NodeRef nodeRef, String type, int expectedStatus) throws Exception
+    {
+       return doGetPosts(getPostsUrl(nodeRef), type, expectedStatus);
+    }
+    private JSONObject doGetPosts(String baseUrl, String type, int expectedStatus) throws Exception
+    {
+       String url = null;
+       if(type == null)
+       {
+          url = baseUrl;
+       }
+       else if(type == "hot")
+       {
+          url = baseUrl + "/hot";
+       }
+       else if(type == "mine")
+       {
+          url = baseUrl + "/myposts";
+       }
+       else if(type.startsWith("new"))
+       {
+          url = baseUrl + "/" + type;
+       }
+       else
+       {
+          throw new IllegalArgumentException("Invalid search type " + type);
+       }
+       
+       Response response = sendRequest(new GetRequest(url), expectedStatus);
+       if (expectedStatus == Status.STATUS_OK)
+       {
+          JSONObject result = new JSONObject(response.getContentAsString());
+          return result;
+       }
+       else
+       {
+          return null;
+       }
+    }
+    
     private JSONObject deletePost(String name, int expectedStatus) throws Exception
     {
        return doDeletePost(URL_FORUM_SITE_POST + name, expectedStatus);
@@ -286,8 +362,6 @@ public class DiscussionServiceTest extends BaseWebScriptTest
        }
     }
 
-    // TODO Method to get replies
-    
     private String getRepliesUrl(NodeRef nodeRef)
     {
        return getPostUrl(nodeRef) + "/replies";
@@ -323,23 +397,22 @@ public class DiscussionServiceTest extends BaseWebScriptTest
        return result.getJSONObject("item");
     }
     
-    // TODO Non NodeRef version
     private JSONObject updateComment(NodeRef nodeRef, String title, String content, 
           int expectedStatus) throws Exception
     {
-    	JSONObject comment = new JSONObject();
-        comment.put("title", title);
-        comment.put("content", content);
-	    Response response = sendRequest(new PutRequest(getPostUrl(nodeRef), comment.toString(), "application/json"), expectedStatus);
-	    
-	    if (expectedStatus != 200)
-	    {
-	    	return null;
-	    }
-	    
-	    //logger.debug("Comment updated: " + response.getContentAsString());
-    	JSONObject result = new JSONObject(response.getContentAsString());
-    	return result.getJSONObject("item");
+       JSONObject comment = new JSONObject();
+       comment.put("title", title);
+       comment.put("content", content);
+       Response response = sendRequest(new PutRequest(getPostUrl(nodeRef), comment.toString(), "application/json"), expectedStatus);
+
+       if (expectedStatus != Status.STATUS_OK)
+       {
+          return null;
+       }
+
+       //logger.debug("Comment updated: " + response.getContentAsString());
+       JSONObject result = new JSONObject(response.getContentAsString());
+       return result.getJSONObject("item");
     }
 
     
@@ -547,7 +620,7 @@ public class DiscussionServiceTest extends BaseWebScriptTest
     {
     	// Create a root post
     	JSONObject item = createSitePost("test", "test", Status.STATUS_OK);
-    	String postName = item.getString("name");
+    	String topicName = item.getString("name");
     	NodeRef topicNodeRef = new NodeRef(item.getString("nodeRef"));
     	
     	// Add a reply
@@ -582,14 +655,18 @@ public class DiscussionServiceTest extends BaseWebScriptTest
 
       
     	// Fetch all replies for the post
-    	Response response = sendRequest(new GetRequest(getRepliesUrl(topicNodeRef)), 200);
-    	logger.debug(response.getContentAsString());
-    	JSONObject result = new JSONObject(response.getContentAsString());
+    	JSONObject result = getReplies(topicNodeRef, Status.STATUS_OK);
     	// check the number of replies
     	assertEquals(1, result.getJSONArray("items").length());
     	
-    	// fetch again the top level post
-    	item = getPost(postName, 200);
+    	// Check the replies by name too
+    	result = getReplies(topicName, Status.STATUS_OK);
+      assertEquals(1, result.getJSONArray("items").length());
+    	
+    	
+    	// Fetch the top level post again, and check the counts there
+      // That post should have one direct reply, and one reply to it's reply
+    	item = getPost(topicName, Status.STATUS_OK);
     	assertEquals(2, item.getInt("totalReplyCount"));
     	assertEquals(1, item.getInt("replyCount"));
     }
@@ -726,14 +803,197 @@ public class DiscussionServiceTest extends BaseWebScriptTest
      */
     public void testListings() throws Exception
     {
-      String url = URL_FORUM_SITE_POSTS;
-      Response response = sendRequest(new GetRequest(url), 200);
-      JSONObject result = new JSONObject(response.getContentAsString());
+      JSONObject result;
+      JSONObject item;
       
-      // TODO Expand
       
-      // we should have posts.size + drafts.size together
-      assertEquals(this.posts.size(), result.getInt("total"));
+      // Check all of the listings, none should have anything yet
+      result = getPosts(null, Status.STATUS_OK);
+      assertEquals(0, result.getInt("total"));
+      assertEquals(0, result.getInt("itemCount"));
+      assertEquals(0, result.getJSONArray("items").length());
+      
+      result = getPosts("hot", Status.STATUS_OK);
+      assertEquals(0, result.getInt("total"));
+      assertEquals(0, result.getInt("itemCount"));
+      assertEquals(0, result.getJSONArray("items").length());
+
+      result = getPosts("mine", Status.STATUS_OK);
+      assertEquals(0, result.getInt("total"));
+      assertEquals(0, result.getInt("itemCount"));
+      assertEquals(0, result.getJSONArray("items").length());
+
+      result = getPosts("new?numdays=100", Status.STATUS_OK);
+      assertEquals(0, result.getInt("total"));
+      assertEquals(0, result.getInt("itemCount"));
+      assertEquals(0, result.getJSONArray("items").length());
+
+      
+      // Check with a noderef too
+      result = getPosts(FORUM_NODE, null, Status.STATUS_OK);
+      assertEquals(0, result.getInt("total"));
+      assertEquals(0, result.getInt("itemCount"));
+      assertEquals(0, result.getJSONArray("items").length());
+      
+      result = getPosts(FORUM_NODE, "hot", Status.STATUS_OK);
+      assertEquals(0, result.getInt("total"));
+      assertEquals(0, result.getInt("itemCount"));
+      assertEquals(0, result.getJSONArray("items").length());
+
+      result = getPosts(FORUM_NODE, "mine", Status.STATUS_OK);
+      assertEquals(0, result.getInt("total"));
+      assertEquals(0, result.getInt("itemCount"));
+      assertEquals(0, result.getJSONArray("items").length());
+
+      result = getPosts(FORUM_NODE, "new?numdays=100", Status.STATUS_OK);
+      assertEquals(0, result.getInt("total"));
+      assertEquals(0, result.getInt("itemCount"));
+      assertEquals(0, result.getJSONArray("items").length());
+      
+      
+      // Now add a few topics with replies
+      // Some of these will be created as different users
+      item = createSitePost("SiteTitle1", "Content", Status.STATUS_OK);
+      NodeRef siteTopic1 = new NodeRef(item.getString("nodeRef"));
+      this.authenticationComponent.setCurrentUser(USER_TWO);
+      item = createSitePost("SiteTitle2", "Content", Status.STATUS_OK);
+      NodeRef siteTopic2 = new NodeRef(item.getString("nodeRef"));
+      
+      item = createNodePost(FORUM_NODE, "NodeTitle1", "Content", Status.STATUS_OK);
+      NodeRef nodeTopic1 = new NodeRef(item.getString("nodeRef"));
+      this.authenticationComponent.setCurrentUser(USER_ONE);
+      item = createNodePost(FORUM_NODE, "NodeTitle2", "Content", Status.STATUS_OK);
+      NodeRef nodeTopic2 = new NodeRef(item.getString("nodeRef"));
+      item = createNodePost(FORUM_NODE, "NodeTitle3", "Content", Status.STATUS_OK);
+      NodeRef nodeTopic3 = new NodeRef(item.getString("nodeRef"));
+      
+      item = createReply(siteTopic1, "Reply1a", "Content", Status.STATUS_OK);
+      NodeRef siteReply1A = new NodeRef(item.getString("nodeRef"));
+      item = createReply(siteTopic1, "Reply1b", "Content", Status.STATUS_OK);
+      NodeRef siteReply1B = new NodeRef(item.getString("nodeRef"));
+      
+      this.authenticationComponent.setCurrentUser(USER_TWO);
+      item = createReply(siteTopic2, "Reply2a", "Content", Status.STATUS_OK);
+      NodeRef siteReply2A = new NodeRef(item.getString("nodeRef"));
+      item = createReply(siteTopic2, "Reply2b", "Content", Status.STATUS_OK);
+      NodeRef siteReply2B = new NodeRef(item.getString("nodeRef"));
+      item = createReply(siteTopic2, "Reply2c", "Content", Status.STATUS_OK);
+      NodeRef siteReply2C = new NodeRef(item.getString("nodeRef"));
+
+      item = createReply(siteReply2A, "Reply2aa", "Content", Status.STATUS_OK);
+      NodeRef siteReply2AA = new NodeRef(item.getString("nodeRef"));
+      item = createReply(siteReply2A, "Reply2ab", "Content", Status.STATUS_OK);
+      NodeRef siteReply2AB = new NodeRef(item.getString("nodeRef"));
+      this.authenticationComponent.setCurrentUser(USER_ONE);
+      item = createReply(siteReply2AA, "Reply2aaa", "Content", Status.STATUS_OK);
+      NodeRef siteReply2AAA = new NodeRef(item.getString("nodeRef"));
+      
+      item = createReply(nodeTopic1, "ReplyN1a", "Content", Status.STATUS_OK);
+      NodeRef nodeReply1A = new NodeRef(item.getString("nodeRef"));
+      item = createReply(nodeReply1A, "ReplyN1aa", "Content", Status.STATUS_OK);
+      NodeRef nodeReply1AA = new NodeRef(item.getString("nodeRef"));
+      item = createReply(nodeReply1AA, "ReplyN1aaa", "Content", Status.STATUS_OK);
+      NodeRef nodeReply1AAA = new NodeRef(item.getString("nodeRef"));
+      
+      
+      // Check for totals
+      // We should get all the topics
+      result = getPosts(null, Status.STATUS_OK);
+      assertEquals(2, result.getInt("total"));
+      assertEquals(2, result.getInt("itemCount"));
+      assertEquals(2, result.getJSONArray("items").length());
+      assertEquals("SiteTitle1", result.getJSONArray("items").getJSONObject(0).getString("title"));
+      assertEquals("SiteTitle2", result.getJSONArray("items").getJSONObject(1).getString("title"));
+      assertEquals(2, result.getJSONArray("items").getJSONObject(0).getInt("replyCount"));
+      assertEquals(3, result.getJSONArray("items").getJSONObject(1).getInt("replyCount"));
+      
+      result = getPosts(FORUM_NODE, null, Status.STATUS_OK);
+      assertEquals(3, result.getInt("total"));
+      assertEquals(3, result.getInt("itemCount"));
+      assertEquals(3, result.getJSONArray("items").length());
+      assertEquals("NodeTitle1", result.getJSONArray("items").getJSONObject(0).getString("title"));
+      assertEquals("NodeTitle2", result.getJSONArray("items").getJSONObject(1).getString("title"));
+      assertEquals("NodeTitle3", result.getJSONArray("items").getJSONObject(2).getString("title"));
+      assertEquals(1, result.getJSONArray("items").getJSONObject(0).getInt("replyCount"));
+      assertEquals(0, result.getJSONArray("items").getJSONObject(1).getInt("replyCount"));
+      assertEquals(0, result.getJSONArray("items").getJSONObject(2).getInt("replyCount"));
+      
+      
+      // Check for "mine"
+      // User 1 has Site 1, and Nodes 2 + 3
+      result = getPosts("mine", Status.STATUS_OK);
+      assertEquals(1, result.getInt("total"));
+      assertEquals(1, result.getInt("itemCount"));
+      assertEquals(1, result.getJSONArray("items").length());
+      assertEquals("SiteTitle1", result.getJSONArray("items").getJSONObject(0).getString("title"));
+      assertEquals(2, result.getJSONArray("items").getJSONObject(0).getInt("replyCount"));
+      
+      result = getPosts(FORUM_NODE, "mine", Status.STATUS_OK);
+      assertEquals(2, result.getInt("total"));
+      assertEquals(2, result.getInt("itemCount"));
+      assertEquals(2, result.getJSONArray("items").length());
+      assertEquals("NodeTitle2", result.getJSONArray("items").getJSONObject(0).getString("title"));
+      assertEquals("NodeTitle3", result.getJSONArray("items").getJSONObject(1).getString("title"));
+      assertEquals(0, result.getJSONArray("items").getJSONObject(0).getInt("replyCount"));
+      assertEquals(0, result.getJSONArray("items").getJSONObject(1).getInt("replyCount"));
+      
+      
+      // Check for recent (new)
+      // We should get all the topics
+      result = getPosts("new?numdays=2", Status.STATUS_OK);
+      assertEquals(2, result.getInt("total"));
+      assertEquals(2, result.getInt("itemCount"));
+      assertEquals(2, result.getJSONArray("items").length());
+      assertEquals("SiteTitle1", result.getJSONArray("items").getJSONObject(0).getString("title"));
+      assertEquals("SiteTitle2", result.getJSONArray("items").getJSONObject(1).getString("title"));
+      assertEquals(2, result.getJSONArray("items").getJSONObject(0).getInt("replyCount"));
+      assertEquals(3, result.getJSONArray("items").getJSONObject(1).getInt("replyCount"));
+      
+      result = getPosts(FORUM_NODE, "new?numdays=2", Status.STATUS_OK);
+      assertEquals(3, result.getInt("total"));
+      assertEquals(3, result.getInt("itemCount"));
+      assertEquals(3, result.getJSONArray("items").length());
+      assertEquals("NodeTitle1", result.getJSONArray("items").getJSONObject(0).getString("title"));
+      assertEquals("NodeTitle2", result.getJSONArray("items").getJSONObject(1).getString("title"));
+      assertEquals("NodeTitle3", result.getJSONArray("items").getJSONObject(2).getString("title"));
+      assertEquals(1, result.getJSONArray("items").getJSONObject(0).getInt("replyCount"));
+      assertEquals(0, result.getJSONArray("items").getJSONObject(1).getInt("replyCount"));
+      assertEquals(0, result.getJSONArray("items").getJSONObject(2).getInt("replyCount"));
+      
+      
+      // Check for hot
+      // Will only show topics with replies. Sorting is by replies, not date
+      result = getPosts("hot", Status.STATUS_OK);
+      assertEquals(2, result.getInt("total"));
+      assertEquals(2, result.getInt("itemCount"));
+      assertEquals(2, result.getJSONArray("items").length());
+      assertEquals("SiteTitle2", result.getJSONArray("items").getJSONObject(0).getString("title"));
+      assertEquals("SiteTitle1", result.getJSONArray("items").getJSONObject(1).getString("title"));
+      assertEquals(3, result.getJSONArray("items").getJSONObject(0).getInt("replyCount"));
+      assertEquals(2, result.getJSONArray("items").getJSONObject(1).getInt("replyCount"));
+      
+      result = getPosts(FORUM_NODE, "hot", Status.STATUS_OK);
+      assertEquals(1, result.getInt("total"));
+      assertEquals(1, result.getInt("itemCount"));
+      assertEquals(1, result.getJSONArray("items").length());
+      assertEquals("NodeTitle1", result.getJSONArray("items").getJSONObject(0).getString("title"));
+      assertEquals(1, result.getJSONArray("items").getJSONObject(0).getInt("replyCount"));
+      
+      
+      // Shift some of the posts into the past
+      // (Update the created and published dates)
+      
+      
+      // Re-check totals, no change
+      
+      // Re-check recent, old ones vanish
+      
+      // Re-check "mine", no change
+      
+      // Re-check hot, some old ones vanish
+      
+      
+      // TODO Check paging
     }
     
 }

@@ -18,6 +18,9 @@
  */
 package org.alfresco.repo.audit.access;
 
+import java.io.Serializable;
+import java.util.Map;
+
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -117,5 +120,10 @@ public class NodeInfoFactory
         }
         
         return type;
+    }
+    
+    public Map<QName, Serializable> getProperties(NodeRef nodeRef)
+    {
+        return nodeService.getProperties(nodeRef);
     }
 }

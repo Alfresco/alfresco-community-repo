@@ -82,6 +82,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
+import org.alfresco.service.cmr.version.VersionServiceException;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowService;
@@ -1900,6 +1901,65 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
         }
         
         return copy;
+    }
+    
+    /**
+     * Revert this Node to the specified version. Note this is not a deep revert of
+     * associations.
+     * This node must have the cm:versionable aspect. It will be checked out if required
+     * but will be checked in after the call.
+     * 
+     * @param versionLabel to revert from
+     * 
+     * @return the original Node that was checked out if reverted, {@code null} otherwise
+     *         (if the version does not exist).
+     */
+    public ScriptNode revert(String history, boolean majorVersion, String versionLabel)
+    {
+        return revert(history, majorVersion, versionLabel, false);
+    }
+    
+    /**
+     * Revert this Node to the specified version and potentially all child nodes.
+     * This node must have the cm:versionable aspect. It will be checked out if required
+     * but will be checked in after the call.
+     * 
+     * @param history       Version history note
+     * @param majorVersion  True to save as a major version increment, false for minor version.
+     * @param versionLabel to revert from
+     * @param deep          {@code true} for a deep revert, {@code false} otherwise.
+     * 
+     * @return the original Node that was checked out if reverted, {@code null} otherwise
+     *         (if the version does not exist).
+     */
+    public ScriptNode revert(String history, boolean majorVersion, String versionLabel, boolean deep)
+    {
+        if (!getIsVersioned())
+        {
+            return null;
+        }
+        
+        // Get the Version - needed to do the revert
+        Version version = services.getVersionService().getVersionHistory(nodeRef).getVersion(versionLabel);
+        if (version == null)
+        {
+            return null;
+        }
+
+        // Checkout the node if required
+        ScriptNode workingCopy = this;
+        if (!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
+        {
+            workingCopy = checkout();
+        }
+        
+        // Checkin the node - to get the new version
+        workingCopy = workingCopy.checkin(history, majorVersion);
+        
+        // Revert the new (current) version of the node
+        services.getVersionService().revert(workingCopy.nodeRef, version, deep);
+        
+        return workingCopy;
     }
     
     /**

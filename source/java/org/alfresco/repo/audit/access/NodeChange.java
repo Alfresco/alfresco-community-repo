@@ -22,6 +22,7 @@ import static org.alfresco.repo.audit.model.AuditApplication.AUDIT_PATH_SEPARATO
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -111,7 +112,7 @@ import org.alfresco.service.namespace.QName;
     
     private final NodeInfoFactory nodeInfoFactory;
     private final NamespaceService namespaceService;
-    private final NodeInfo nodeInfo;
+    private NodeInfo nodeInfo;
 
     private String action;
     
@@ -122,7 +123,6 @@ import org.alfresco.service.namespace.QName;
     private NodeInfo copyFrom;
     
     private NodeInfo moveFrom;
-    private NodeInfo moveTo;
 
     private Map<QName, Serializable> fromProperties;
     private Map<QName, Serializable> toProperties;
@@ -248,21 +248,20 @@ import org.alfresco.service.namespace.QName;
     private NodeChange setMoveFrom(ChildAssociationRef childAssocRef)
     {
         // Don't overwrite original value if multiple calls.
-        if (this.moveFrom == null)
+        if (moveFrom == null)
         {
-            this.moveFrom = nodeInfoFactory.newNodeInfo(childAssocRef);
+            moveFrom = nodeInfoFactory.newNodeInfo(childAssocRef);
         }
         return this;
     }
 
     private NodeChange setMoveTo(ChildAssociationRef childAssocRef)
     {
-        this.moveTo = nodeInfoFactory.newNodeInfo(childAssocRef);
+        nodeInfo = nodeInfoFactory.newNodeInfo(childAssocRef);
         
         // Clear values if we are back to where we started.
-        if (this.moveTo.equals(moveFrom))
+        if (nodeInfo.equals(moveFrom))
         {
-            this.moveTo = null;
             moveFrom = null;
         }
         return this;
@@ -359,8 +358,17 @@ import org.alfresco.service.namespace.QName;
     @Override
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
-        appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, childAssocRef.getChildRef()).
-                setAction(CREATE_NODE));
+        NodeRef nodeRef = childAssocRef.getChildRef();
+        Map<QName, Serializable> fromProperties = Collections.<QName, Serializable>emptyMap();
+        Map<QName, Serializable> toProperties = nodeInfoFactory.getProperties(nodeRef);
+        this.fromProperties = null; // Sometimes onCreateNode policy is out of order (e.g. create a person)
+        setFromProperties(fromProperties);
+        setToProperties(toProperties);
+
+        appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, nodeRef).
+                setAction(CREATE_NODE).
+                setFromProperties(fromProperties).
+                setToProperties(toProperties));
     }
 
     @Override
@@ -381,6 +389,12 @@ import org.alfresco.service.namespace.QName;
     public void onUpdateProperties(NodeRef nodeRef,
             Map<QName, Serializable> fromProperties, Map<QName, Serializable> toProperties)
     {
+        // Sometime we don't get the fromProperties, so just use the latest we have
+        if (fromProperties.isEmpty() && this.toProperties != null)
+        {
+            fromProperties = this.toProperties;
+        }
+        
         setFromProperties(fromProperties);
         setToProperties(toProperties);
         

@@ -80,12 +80,33 @@
                 <idref local="AuditMethodInterceptor"/>
                 <idref local="exceptionTranslator"/>
                 <idref bean="NodeService_security"/>
+                <idref bean="disableAuditablePolicySetPropertyInterceptor"/>
+				
                 <!-- Bug prevents use.
                      Also, the interception of this sort will lead to issues with other clients
                 <idref bean="mlTranslationInterceptor"/>
                 -->
             </list>
         </property>
+    </bean>
+
+    <bean id="disableAuditablePolicySetPropertyInterceptor" class="org.alfresco.repo.audit.DisableAuditableBehaviourInterceptor">
+        <property name="methodNames">
+            <list>
+                <value>setProperty</value>
+            </list>
+        </property>
+        <property name="argumentValues">
+            <list>
+                <value>{http://www.alfresco.org/model/webdav/1.0}opaquelocktoken</value>
+                <value>{http://www.alfresco.org/model/webdav/1.0}lockDepth</value>
+                <value>{http://www.alfresco.org/model/webdav/1.0}lockScope</value>
+                <value>{http://www.alfresco.org/model/webdav/1.0}sharedLockTokens</value>
+            </list>
+        </property>
+        <property name="behaviourFilter">
+            <ref bean="policyBehaviourFilter"/>
+        </property>             
     </bean>
 
     <bean id="NodeService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
@@ -263,8 +284,21 @@
                 <idref local="AuditMethodInterceptor"/>
                 <idref local="exceptionTranslator"/>
                 <idref bean="LockService_security"/>
+                <idref bean="lockServiceDisableAuditablePolicyInterceptor"/>
             </list>
         </property>
+    </bean>
+
+    <bean id="lockServiceDisableAuditablePolicyInterceptor" class="org.alfresco.repo.audit.DisableAuditableBehaviourInterceptor">
+        <property name="methodNames">
+            <list>
+                <value>lock</value>
+                <value>unlock</value>
+            </list>
+        </property>
+        <property name="behaviourFilter">
+            <ref bean="policyBehaviourFilter"/>
+        </property>             
     </bean>
 
     <bean id="LockService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">

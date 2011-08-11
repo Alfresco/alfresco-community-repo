@@ -210,6 +210,10 @@
          <value>${ftp.port}</value>
       </property>
 
+      <property name="bindTo">
+         <value>${ftp.bindto}</value>
+      </property>
+
       <!-- FTP authentication -->
       <property name="authenticator">
          <ref bean="FtpAuthenticator" />

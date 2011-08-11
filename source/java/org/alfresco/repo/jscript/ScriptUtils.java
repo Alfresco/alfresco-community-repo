@@ -19,6 +19,7 @@
 package org.alfresco.repo.jscript;
 
 import java.util.Date;
+import java.util.Locale;
 import java.util.Map;
 
 import org.alfresco.service.ServiceRegistry;
@@ -276,5 +277,21 @@ public final class ScriptUtils extends BaseScopableProcessorExtension
     public void enableRules()
     {
         services.getRuleService().enableRules();
+    }
+    
+    /**
+     * Sets current Locale from string
+     */
+    public void setLocale(String language)
+    {
+        I18NUtil.setLocale(new Locale(language));
+    }
+    
+    /**
+     * Returns current thread's locale
+     */
+    public String getLocale()
+    {
+        return I18NUtil.getLocale().toString();
     }
 }

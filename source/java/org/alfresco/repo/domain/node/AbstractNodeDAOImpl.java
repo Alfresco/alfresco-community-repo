@@ -813,7 +813,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         {
             node = nodesCache.getValue(nodeId);
             // If the node isn't for the current transaction, we are probably reindexing. So invalidate the cache,
-            // forcing a read through.
+            // forcing a read through and a repeatable read on this noderef
             if (node == null || AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_READ_WRITE
                     || !getCurrentTransaction().getId().equals(node.getTransaction().getId())
                     || !node.getNodeRef().equals(nodeRef))
@@ -826,7 +826,10 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // Stage 2, read through to the database, caching results if appropriate
         if (node == null)
         {
-            Pair<Long, Node> pair = nodesCache.getByValue(new NodeEntity(nodeRef));
+            Node nodeEntity = new NodeEntity(nodeRef);
+            // Explicitly remove this noderef from the cache, forcing a 'repeatable read' on this noderef from now on.
+            nodesCache.removeByValue(nodeEntity);
+            Pair<Long, Node> pair = nodesCache.getByValue(nodeEntity);
             if (pair == null)
             {
                 // It's not there, so select ignoring the 'deleted' flag

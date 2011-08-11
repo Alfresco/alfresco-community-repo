@@ -698,18 +698,12 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
             if (valueKey != null)
             {
                 CacheRegionValueKey valueCacheKey = new CacheRegionValueKey(cacheRegion, valueKey);
-                if (cache.contains(valueCacheKey))
-                {
-                    cache.remove(valueCacheKey);
-                }
+                cache.remove(valueCacheKey);
             }
         }
         if (removeKey)
         {
-            if (cache.contains(keyCacheKey))
-            {
-                cache.remove(keyCacheKey);
-            }
+            cache.remove(keyCacheKey);
         }
     }
     

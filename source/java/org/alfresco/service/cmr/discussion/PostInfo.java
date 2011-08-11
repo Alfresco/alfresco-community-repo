@@ -76,7 +76,7 @@ public interface PostInfo extends Serializable, PermissionCheckValue {
    String getCreator();
    
    /**
-    * @return the modifier of the post
+    * @return the modifier of the wiki page
     */
    String getModifier();
    

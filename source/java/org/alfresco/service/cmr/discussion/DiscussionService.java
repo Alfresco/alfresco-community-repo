@@ -44,7 +44,7 @@ public interface DiscussionService {
     * Creates a new {@link TopicInfo} in the given site
     */
    @NotAuditable
-   TopicInfo createTopic(String siteShortName);
+   TopicInfo createTopic(String siteShortName, String title);
    
    /**
     * Creates a new {@link TopicInfo} attached to the specified Node. 
@@ -52,7 +52,7 @@ public interface DiscussionService {
     * {@link ForumModel#TYPE_FORUM}
     */
    @NotAuditable
-   TopicInfo createTopic(NodeRef nodeRef, String title);
+   TopicInfo createTopic(NodeRef parentNodeRef, String title);
    
    /**
     * Updates an existing {@link PostInfo} in the repository.
@@ -61,6 +61,14 @@ public interface DiscussionService {
     */
    @NotAuditable
    PostInfo updatePost(PostInfo post);
+   
+   /**
+    * Updates an existing {@link TopicInfo} in the repository.
+    *  
+    * @return The updated {@link TopicInfo}
+    */
+   @NotAuditable
+   TopicInfo updateTopic(TopicInfo topic);
    
    /**
     * Deletes an existing {@link PostInfo} from the repository
@@ -78,7 +86,7 @@ public interface DiscussionService {
     * Retrieves an existing {@link PostInfo} from the repository
     */
    @NotAuditable
-   PostInfo getPost(TopicInfo topic, String linkName);
+   PostInfo getPost(TopicInfo topic, String postName);
 
    /**
     * Retrieves the Primary (Root) Post in a topic, to which all
@@ -102,7 +110,7 @@ public interface DiscussionService {
     *  {@link ForumModel#TYPE_FORUM}
     */
    @NotAuditable
-   TopicInfo getTopic(NodeRef nodeRef, String linkName);
+   TopicInfo getTopic(NodeRef parentNodeRef, String topicName);
    
    
    /**

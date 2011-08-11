@@ -68,6 +68,11 @@ public interface TopicInfo extends Serializable, PermissionCheckValue {
    String getCreator();
    
    /**
+    * @return the modifier of the wiki page
+    */
+   String getModifier();
+   
+   /**
     * @return the creation date and time
     */
    Date getCreatedAt();

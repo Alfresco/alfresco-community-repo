@@ -42,6 +42,7 @@ import java.util.Properties;
 import javax.sql.DataSource;
 
 import org.activiti.engine.ProcessEngine;
+import org.activiti.engine.ProcessEngineConfiguration;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.ibatis.SerializableTypeHandler;
 import org.alfresco.repo.admin.patch.Patch;
@@ -195,7 +196,6 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     
     private DataSource dataSource;
     private LocalSessionFactoryBean localSessionFactory;
-    private ProcessEngine activitiProcessEngine;
     private String schemaOuputFilename;
     private boolean updateSchema;
     private boolean stopAfterSchemaBootstrap;
@@ -236,11 +236,6 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     public LocalSessionFactoryBean getLocalSessionFactory()
     {
         return localSessionFactory;
-    }
-    
-    public void setActivitiProcessEngine(ProcessEngine processEngine)
-    {
-        this.activitiProcessEngine = processEngine;
     }
 
     /**
@@ -796,10 +791,42 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             checkSchemaPatchScripts(cfg, connection, postUpdateScriptPatches, true);
         }
         
-        // Ask emebedded Activiti to create or update it's schema
-//        activitiProcessEngine.getManagementService().databaseSchemaUpgrade(connection, null, null);
+        // initialise Activiti
+//        initialiseActivitiDBSchema(connection);
         
         return create;
+    }
+    
+    /**
+     * Initialises the Activiti DB schema, if not present it's created, if
+     * present it is upgraded appropriately if necessary.
+     * 
+     * @param connection Connection to use the initialise DB schema
+     */
+    private void initialiseActivitiDBSchema(Connection connection)
+    {
+        // create instance of activiti engine to initialise schema
+        ProcessEngine engine = null;
+        ProcessEngineConfiguration engineConfig = ProcessEngineConfiguration.createStandaloneProcessEngineConfiguration();
+        try
+        {
+            // build the engine
+            engine = engineConfig.setDataSource(dataSource).
+                setDatabaseSchemaUpdate("none").
+                setJobExecutorActivate(false).
+                buildProcessEngine();
+        
+            // create or upgrade the DB schema
+            engine.getManagementService().databaseSchemaUpgrade(connection, null, null);
+        }
+        finally
+        {
+            if (engine != null)
+            {
+                // close the process engine
+                engine.close();
+            }
+        }
     }
     
     /**

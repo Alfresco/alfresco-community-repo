@@ -1556,6 +1556,44 @@
    
    
    <!--                                        -->
+   <!--      Discussions Pages REST API        -->
+   <!--                                        -->
+   
+   <!-- abstract discussions web script -->
+   <bean id="abstractDiscussionWebScript"
+          class="org.alfresco.repo.web.scripts.discussion.AbstractDiscussionWebscript"
+          parent="webscript" abstract="true">
+        <property name="nodeService" ref="NodeService"/>
+        <property name="siteService" ref="SiteService"/>
+        <property name="personService" ref="PersonService"/>
+        <property name="activityService" ref="activityService"/>
+        <property name="discussionService" ref="DiscussionService"/>
+   </bean>
+
+   <!-- Fetches the details of one discussions post or topic -->
+<!--
+   <bean id="webscript.org.alfresco.repository.discussions.posts.forum-post.get"
+         class="org.alfresco.repo.web.scripts.discussion.ForumPostGet"
+         parent="abstractDiscussionWebScript">
+   </bean>
+-->
+   
+   <!-- Deletes a discussion post or topic -->
+   <bean id="webscript.org.alfresco.repository.discussions.posts.forum-post.delete"
+         class="org.alfresco.repo.web.scripts.discussion.ForumPostDelete"
+         parent="abstractDiscussionWebScript">
+   </bean>
+   
+   <!-- Lists the Discussions for a site -->
+<!--
+   <bean id="webscript.org.alfresco.repository.discussions.forum.forum-posts.get"
+         class="org.alfresco.repo.web.scripts.discussions.ForumPostsGet"
+         parent="abstractDiscussionWebScript">
+   </bean>
+-->
+   
+   
+   <!--                                        -->
    <!--      Slingshot Calendar REST API       -->
    <!--                                        -->
    

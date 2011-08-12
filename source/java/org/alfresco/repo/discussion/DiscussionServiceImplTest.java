@@ -49,10 +49,10 @@ import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.tagging.TaggingService;
-import org.alfresco.service.cmr.wiki.WikiPageInfo;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -214,6 +214,7 @@ public class DiscussionServiceImplTest
        PostInfo post;
        PostInfo reply1;
        PostInfo reply2;
+       Pair<TopicInfo,PostInfo> objects;
        
        // Nothing to start with
        PagingResults<TopicInfo> results = 
@@ -335,6 +336,26 @@ public class DiscussionServiceImplTest
           assertEquals(reply2Contents, reply2.getContents());
           assertEquals(TEST_USER, reply2.getCreator());
           
+          
+          // Ensure that by noderef, we get the correct things
+          objects = DISCUSSION_SERVICE.getForNodeRef(FORUM_NODE);
+          assertEquals(null, objects);
+          
+          objects = DISCUSSION_SERVICE.getForNodeRef(topic.getNodeRef());
+          assertNotNull(objects);
+          assertEquals(topic.getNodeRef(), objects.getFirst().getNodeRef());
+          assertEquals(null, objects.getSecond());
+          
+          objects = DISCUSSION_SERVICE.getForNodeRef(post.getNodeRef());
+          assertNotNull(objects);
+          assertEquals(topic.getNodeRef(), objects.getFirst().getNodeRef());
+          assertEquals(post.getNodeRef(), objects.getSecond().getNodeRef());
+          
+          objects = DISCUSSION_SERVICE.getForNodeRef(reply1.getNodeRef());
+          assertNotNull(objects);
+          assertEquals(topic.getNodeRef(), objects.getFirst().getNodeRef());
+          assertEquals(reply1.getNodeRef(), objects.getSecond().getNodeRef());
+
           
           // Check the overall count now
           posts = DISCUSSION_SERVICE.listPosts(topic, new PagingRequest(10));

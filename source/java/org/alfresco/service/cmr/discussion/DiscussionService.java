@@ -23,6 +23,7 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.service.NotAuditable;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.Pair;
 
 /**
  * The Discussions service.
@@ -96,6 +97,18 @@ public interface DiscussionService {
     */
    @NotAuditable
    void deleteTopic(TopicInfo topic);
+   
+   /**
+    * For a given NodeRef corresponding to either a 
+    *  {@link TopicInfo} or a {@link PostInfo}, returns
+    *  the objects wrapping the Node.
+    *  
+    * For a Topic, the 2nd half of the pair is null.
+    * For a Post, both halves of the pair are set.
+    * For anything else, the response is null.
+    */
+   @NotAuditable
+   Pair<TopicInfo,PostInfo> getForNodeRef(NodeRef nodeRef);
    
    /**
     * Retrieves an existing {@link PostInfo} from the repository

@@ -426,30 +426,64 @@ public class DiscussionServiceImpl implements DiscussionService
        nodeService.deleteNode(post.getNodeRef());
     }
 
+    
+    @Override
+    public Pair<TopicInfo,PostInfo> getForNodeRef(NodeRef nodeRef)
+    {
+       QName type = nodeService.getType(nodeRef);
+       TopicInfo topic = null;
+       PostInfo post = null;
+       
+       if(type.equals(ForumModel.TYPE_TOPIC))
+       {
+          ChildAssociationRef ref = nodeService.getPrimaryParent(nodeRef);
+          String topicName = ref.getQName().getLocalName();
+          topic = getTopic(ref.getParentRef(), topicName);
+       }
+       else if(type.equals(ForumModel.TYPE_POST))
+       {
+          ChildAssociationRef toTopic = nodeService.getPrimaryParent(nodeRef);
+          String postName = toTopic.getQName().getLocalName();
+          NodeRef topicNodeRef = toTopic.getParentRef();
+          
+          ChildAssociationRef toParent = nodeService.getPrimaryParent(topicNodeRef);
+          String topicName = toParent.getQName().getLocalName();
+          topic = getTopic(toParent.getParentRef(), topicName);
+          post = getPost(topic, postName);
+       }
+       else
+       {
+          logger.debug("Invalid type " + type + " found");
+          return null;
+       }
+       
+       // Return what we found
+       return new Pair<TopicInfo, PostInfo>(topic, post);
+    }
 
-   @Override
-   public PostInfo getPrimaryPost(TopicInfo topic) {
-      // First up, see if there is a post with the same name as the topic
-      // (That's the normal Share case)
-      PostInfo post = getPost(topic, topic.getSystemName());
-      if(post != null)
-      {
-         return post;
-      }
-      
-      // Cater for the explorer case, we want the first child
-      List<ChildAssociationRef> children = nodeService.getChildAssocs(topic.getNodeRef());
-      if(children.size() == 0)
-      {
-         // No child posts yet
-         return null;
-      }
-      
-      // We want the first one in the list
-      NodeRef postNodeRef = children.get(0).getChildRef();
-      String postName = children.get(0).getQName().getLocalName();
-      return buildPost(postNodeRef, topic, postName, null);
-   }
+    @Override
+    public PostInfo getPrimaryPost(TopicInfo topic) {
+       // First up, see if there is a post with the same name as the topic
+       // (That's the normal Share case)
+       PostInfo post = getPost(topic, topic.getSystemName());
+       if(post != null)
+       {
+          return post;
+       }
+
+       // Cater for the explorer case, we want the first child
+       List<ChildAssociationRef> children = nodeService.getChildAssocs(topic.getNodeRef());
+       if(children.size() == 0)
+       {
+          // No child posts yet
+          return null;
+       }
+
+       // We want the first one in the list
+       NodeRef postNodeRef = children.get(0).getChildRef();
+       String postName = children.get(0).getQName().getLocalName();
+       return buildPost(postNodeRef, topic, postName, null);
+    }
 
    
    @Override

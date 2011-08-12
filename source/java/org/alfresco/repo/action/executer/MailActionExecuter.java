@@ -580,7 +580,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
       if (fromPerson != null)
       {
           model.put("person", new TemplateNode(fromPerson, serviceRegistry, null));
-      }
+      }      
       
       if (ref != null)
       {

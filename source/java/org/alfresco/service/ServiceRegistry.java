@@ -48,6 +48,7 @@ import org.alfresco.service.cmr.ml.ContentFilterLanguagesService;
 import org.alfresco.service.cmr.ml.EditionService;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.notification.NotificationService;
 import org.alfresco.service.cmr.rating.RatingService;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -142,6 +143,7 @@ public interface ServiceRegistry
     static final QName NODE_LOCATOR_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "nodeLocatorService");
     static final QName BLOG_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "BlogService");
     static final QName CALENDAR_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "CalendarService");
+    static final QName NOTIFICATION_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "NotificationService");
     
     // WCM / AVM
     static final QName AVM_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AVMService");
@@ -353,6 +355,12 @@ public interface ServiceRegistry
      */
     @NotAuditable
     WorkflowService getWorkflowService();
+    
+    /**
+     * @return the notification service (or null if on is not provided)
+     */
+    @NotAuditable
+    NotificationService getNotificationService();
 
     /**
      * @return the audit service (or null if one is not provided)

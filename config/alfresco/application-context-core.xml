@@ -39,6 +39,7 @@
     <import resource="classpath:alfresco/attributes-service-context.xml"/>
     <import resource="classpath:alfresco/deployment-service-context.xml"/>
     <import resource="classpath:alfresco/site-services-context.xml"/>
+    <import resource="classpath:alfresco/notification-services-context.xml"/>
     <import resource="classpath:alfresco/activities/activities-feed-context.xml" />
     <import resource="classpath:alfresco/tagging-services-context.xml"/>
     <import resource="classpath:alfresco/invitation-service-context.xml"/>

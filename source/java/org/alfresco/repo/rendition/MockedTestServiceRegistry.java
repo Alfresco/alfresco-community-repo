@@ -51,6 +51,7 @@ import org.alfresco.service.cmr.ml.ContentFilterLanguagesService;
 import org.alfresco.service.cmr.ml.EditionService;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.notification.NotificationService;
 import org.alfresco.service.cmr.rating.RatingService;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -103,6 +104,12 @@ public class MockedTestServiceRegistry implements ServiceRegistry
     
     
     public WorkflowService getWorkflowService()
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    public NotificationService getNotificationService()
     {
         // TODO Auto-generated method stub
         return null;

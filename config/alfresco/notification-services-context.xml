@@ -1,0 +1,63 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+	<!-- Notification service bean -->
+    <bean id="NotificationService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.service.cmr.notification.NotificationService</value>
+        </property>
+        <property name="target">
+            <ref bean="notificationService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="NotificationService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
+                <idref bean="NotificationService_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <!-- Notification service transaction bean -->
+    <bean id="NotificationService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <!--  This service has no security restrictions -->
+    <bean id="NotificationService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+    
+     <!-- I18N -->   
+    <bean id="notificationServiceResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+       <property name="resourceBundles">
+          <list>
+             <value>alfresco.messages.notification-service</value>
+          </list>
+       </property>
+    </bean>
+    
+    <!--  Notification service implementation bean -->
+    <bean id="notificationService" class="org.alfresco.repo.notification.NotificationServiceImpl" >       
+    </bean>
+    
+    <!--  EMail notification provider -->
+    <bean id="emailNotificationProvider" class="org.alfresco.repo.notification.EMailNotificationProvider" init-method="init">
+    	<property name="notificationService" ref="notificationService"/>
+    	<property name="nodeService" ref="NodeService"/>
+    	<property name="actionService" ref="ActionService"/>
+    	<property name="personService" ref="PersonService"/>
+    	<property name="repository" ref="repositoryHelper"/>
+    	<property name="fileFolderService" ref="FileFolderService"/>
+    	<property name="repoAdminService" ref="RepoAdminService"/>
+    </bean>
+        
+</beans>

@@ -53,6 +53,17 @@ public abstract class TestWithUserUtils
             NodeService nodeService,
             MutableAuthenticationService authenticationService)
     {
+        createUser(userName, password, null, rootNodeRef, nodeService, authenticationService);
+    }
+    
+    public static void createUser(
+            String userName, 
+            String password, 
+            String email,
+            NodeRef rootNodeRef,
+            NodeService nodeService,
+            MutableAuthenticationService authenticationService)
+    {    
         // ignore if the user's authentication already exists
         if (authenticationService.authenticationExists(userName))
         {
@@ -69,10 +80,13 @@ public abstract class TestWithUserUtils
         
         HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
         properties.put(ContentModel.PROP_USERNAME, userName);
+        if (email != null && email.length() != 0)
+        {
+            properties.put(ContentModel.PROP_EMAIL, email);
+        }
         nodeService.createNode(typesNodeRef, children, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, userName) , container, properties);
         
-        // Create the  users
-
+        // Create the users
         authenticationService.createAuthentication(userName, password.toCharArray()); 
     }
 

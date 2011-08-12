@@ -20,7 +20,9 @@ package org.alfresco.util;
 
 
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -83,6 +85,14 @@ public abstract class BaseAlfrescoTestCase extends RetryingTransactionHelperTest
     }
     
     /**
+     * @return  true if using spaces store, otherwise creates own store
+     */
+    protected boolean useSpacesStore()
+    {
+        return false;
+    }
+    
+    /**
      * @see junit.framework.TestCase#setUp()
      */
     @Override
@@ -102,13 +112,31 @@ public abstract class BaseAlfrescoTestCase extends RetryingTransactionHelperTest
         this.transactionService = serviceRegistry.getTransactionService();
         this.retryingTransactionHelper = (RetryingTransactionHelper)ctx.getBean("retryingTransactionHelper");
         
-        // Authenticate as the system user - this must be done before we create the store
-        authenticationComponent.setSystemUserAsCurrentUser();
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            @Override
+            public Object execute() throws Throwable
+            {
+                // As system user
+                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
         
-        // Create the store and get the root node
-        this.storeRef = this.nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
-        this.rootNodeRef = this.nodeService.getRootNode(this.storeRef);
-
+                if (useSpacesStore() == false)
+                {
+                    // Create the store and get the root node
+                    storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());            
+                }
+                else
+                {
+                    // Use the spaces store
+                    storeRef = StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
+                }
+                
+                // Get the root node reference
+                rootNodeRef = nodeService.getRootNode(storeRef);
+                
+                return null;
+            }
+        });
     }
     
     /**
@@ -126,15 +154,24 @@ public abstract class BaseAlfrescoTestCase extends RetryingTransactionHelperTest
     @Override
     protected void tearDown() throws Exception
     {
-        try
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
         {
-            authenticationComponent.clearCurrentSecurityContext();
-        }
-        catch (Throwable e)
-        {
-            e.printStackTrace();
-            // Don't let this mask any previous exceptions
-        }
+            @Override
+            public Object execute() throws Throwable
+            {
+                // As system user
+                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+                
+                if (useSpacesStore() == false)
+                {
+                    // Delete the created store
+                    nodeService.deleteStore(storeRef);
+                }
+                
+                return null;
+            }
+        });
+        
         super.tearDown();
     }       
 }

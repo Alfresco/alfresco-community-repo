@@ -307,11 +307,16 @@
 
                 <!--  Priority for the workflow as a whole -->
                 <property name="bpm:workflowPriority">
-                    <type>d:int</type>
+                    <type>d:int</type>RW
                     <default>2</default>
                     <constraints>
                         <constraint ref="bpm:allowedPriority" />
                     </constraints>
+                </property>
+                
+                <property name="bpm:sendEMailNotifications">
+                   <type>d:boolean</type>
+                   <default>false</default>
                 </property>
 
             </properties>

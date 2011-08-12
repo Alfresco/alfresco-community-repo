@@ -2944,4 +2944,32 @@
         <property name="batchMaxQueryRange" value="5000"/>
     </bean>
     
+    <!--  TODO .. update to install workflow email folder ... -->
+    <bean id="patch.workflowNotification" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+        <property name="id"><value>patch.workflowNotification</value></property>
+        <property name="description"><value>patch.workflowNotification.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>5014</value></property>
+        <property name="targetSchema"><value>5015</value></property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.updateDmPermissions" />
+                <ref bean="patch.emailTemplatesFolder" />
+            </list>
+        </property>
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+                <property name="checkPath">
+            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}/${spaces.templates.email.workflowemailnotification.childname}</value>
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}</prop>
+                <prop key="location">alfresco/bootstrap/notification/workflow-email-notification.xml</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+            </props>
+        </property>
+    </bean>
+    
 </beans>

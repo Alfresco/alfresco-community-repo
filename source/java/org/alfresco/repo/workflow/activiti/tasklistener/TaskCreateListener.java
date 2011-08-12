@@ -23,9 +23,12 @@ import org.activiti.engine.delegate.DelegateTask;
 import org.activiti.engine.delegate.TaskListener;
 import org.activiti.engine.form.FormData;
 import org.activiti.engine.impl.form.TaskFormHandler;
+import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.activiti.engine.impl.persistence.entity.TaskEntity;
+import org.alfresco.repo.workflow.WorkflowNotificationUtils;
 import org.alfresco.repo.workflow.activiti.ActivitiConstants;
 import org.alfresco.repo.workflow.activiti.properties.ActivitiPropertyConverter;
+import org.alfresco.service.ServiceRegistry;
 
 /**
  * Tasklistener that is notified when a task is created. This will set all
@@ -37,6 +40,17 @@ import org.alfresco.repo.workflow.activiti.properties.ActivitiPropertyConverter;
 public class TaskCreateListener implements TaskListener
 {
     private ActivitiPropertyConverter propertyConverter;
+    
+    /** Service Registry */
+    private ServiceRegistry services;
+    
+    /**
+     * @param services  the service registry
+     */
+    public void setServices(ServiceRegistry services)
+    {
+        this.services = services;
+    }
     
     @Override
     public void notify(DelegateTask task)
@@ -50,6 +64,19 @@ public class TaskCreateListener implements TaskListener
         if (taskFormKey != null)
         {
             task.setVariableLocal(ActivitiConstants.PROP_TASK_FORM_KEY, taskFormKey);
+        }
+     
+        // Determine whether we need to send the workflow notification or not
+        ExecutionEntity executionEntity = ((ExecutionEntity)task.getExecution()).getProcessInstance();
+        Boolean value = (Boolean)executionEntity.getVariable(WorkflowNotificationUtils.PROP_SEND_EMAIL_NOTIFICATIONS);
+        if (Boolean.TRUE.equals(value) == true)
+        {    
+            // Send email notification
+            WorkflowNotificationUtils.sendWorkflowAssignedNotificationEMail(
+                    services,
+                    "activiti$" + task.getId(),
+                    task.getAssignee(),
+                    false);
         }
     }
 

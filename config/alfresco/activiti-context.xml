@@ -166,6 +166,7 @@
         class="org.alfresco.repo.workflow.activiti.tasklistener.TaskCreateListener"
         depends-on="activitiWorkflowManager">
         <property name="propertyConverter" ref="activitiPropertyConverter" />
+        <property name="services" ref="ServiceRegistry" />
     </bean>
 
     <bean id="activitiRepositoryService" factory-bean="activitiProcessEngine"

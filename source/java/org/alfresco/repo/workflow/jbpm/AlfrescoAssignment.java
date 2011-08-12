@@ -25,6 +25,7 @@ import java.util.List;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.security.authority.AuthorityDAO;
+import org.alfresco.repo.workflow.WorkflowNotificationUtils;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.workflow.WorkflowException;
@@ -195,17 +196,41 @@ public class AlfrescoAssignment extends JBPMSpringAssignmentHandler
             }
         }
         
+        //Determine whether we need to send email notifications of not
+        Boolean sendEMailNotification = (Boolean)executionContext.getVariable(WorkflowNotificationUtils.PROP_SEND_EMAIL_NOTIFICATIONS);
+               
         //
         // make the assignment
         //
         if (assignedActor != null)
         {
             assignable.setActorId(assignedActor);
+            
+            if (Boolean.TRUE.equals(sendEMailNotification) == true)
+            {
+                // Send the notification
+                WorkflowNotificationUtils.sendWorkflowAssignedNotificationEMail(
+                            services, 
+                            JBPMEngine.ENGINE_ID + "$" + executionContext.getTaskInstance().getId(),
+                            assignedActor,
+                            false);
+            }
+            
         }
         if (assignedPooledActors != null)
         {
             assignable.setPooledActors(assignedPooledActors);
-        }
+            
+            if (Boolean.TRUE.equals(sendEMailNotification) == true)
+            {
+                // Send the notification
+                WorkflowNotificationUtils.sendWorkflowAssignedNotificationEMail(
+                        services, 
+                        JBPMEngine.ENGINE_ID + "$" + executionContext.getTaskInstance().getId(),
+                        assignedPooledActors,
+                        true);
+            }
+        }         
     }
 
     

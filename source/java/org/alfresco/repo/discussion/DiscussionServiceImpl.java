@@ -68,8 +68,7 @@ public class DiscussionServiceImpl implements DiscussionService
 {
     public static final String DISCUSSION_COMPONENT = "discussion";
    
-    // TODO Correct CQ
-    protected static final String CANNED_QUERY_GET_CHILDREN = "wikiGetChildrenCannedQueryFactory";
+    protected static final String CANNED_QUERY_GET_CHILDREN = "discussionGetChildrenCannedQueryFactory";
     
     /**
      * The logger
@@ -126,7 +125,7 @@ public class DiscussionServiceImpl implements DiscussionService
     /**
      * Fetches the Discussions Container on a site, creating as required if requested.
      */
-    protected NodeRef getSiteWikiContainer(final String siteShortName, boolean create)
+    protected NodeRef getSiteDiscussionsContainer(final String siteShortName, boolean create)
     {
        return SiteServiceImpl.getSiteContainer(
              siteShortName, DISCUSSION_COMPONENT, create, 
@@ -213,7 +212,7 @@ public class DiscussionServiceImpl implements DiscussionService
     @Override
     public TopicInfo getTopic(String siteShortName, String topicName) 
     {
-       NodeRef container = getSiteWikiContainer(siteShortName, false);
+       NodeRef container = getSiteDiscussionsContainer(siteShortName, false);
        if(container == null)
        {
           // No discussions
@@ -258,7 +257,7 @@ public class DiscussionServiceImpl implements DiscussionService
     public TopicInfo createTopic(String siteShortName, String title) 
     {
        // Grab the location to store in
-       NodeRef container = getSiteWikiContainer(siteShortName, true);
+       NodeRef container = getSiteDiscussionsContainer(siteShortName, true);
        
        // Add by Parent NodeRef
        return createTopic(container, title);
@@ -435,7 +434,7 @@ public class DiscussionServiceImpl implements DiscussionService
     public PagingResults<WikiPageInfo> listWikiPages(String siteShortName, String username, 
           Date createdFrom, Date createdTo, Date modifiedFrom, Date modifiedTo, PagingRequest paging) 
     {
-       NodeRef container = getSiteWikiContainer(siteShortName, false);
+       NodeRef container = getSiteDiscussionsContainer(siteShortName, false);
        if(container == null)
        {
           // No events
@@ -526,7 +525,7 @@ public class DiscussionServiceImpl implements DiscussionService
    @Override
    public PagingResults<TopicInfo> listTopics(String siteShortName,
          PagingRequest paging) {
-      NodeRef container = getSiteWikiContainer(siteShortName, false);
+      NodeRef container = getSiteDiscussionsContainer(siteShortName, false);
       if(container == null)
       {
          // No topics

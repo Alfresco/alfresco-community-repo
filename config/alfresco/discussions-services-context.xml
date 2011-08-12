@@ -57,7 +57,7 @@
         <property name="taggingService" ref="TaggingService"/>
         <property name="fileFolderService" ref="FileFolderService"/>
         <property name="transactionService" ref="transactionService" />
-        <property name="cannedQueryRegistry" ref="wikiCannedQueryRegistry" />
+        <property name="cannedQueryRegistry" ref="discussionCannedQueryRegistry" />
 	</bean>
 
 </beans>

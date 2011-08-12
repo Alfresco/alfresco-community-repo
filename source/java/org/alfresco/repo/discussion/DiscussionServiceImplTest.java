@@ -227,6 +227,9 @@ public class DiscussionServiceImplTest
        // Create two topics, one node and one site based
        siteTopic = DISCUSSION_SERVICE.createTopic(DISCUSSION_SITE.getShortName(), "Site Title");
        nodeTopic = DISCUSSION_SERVICE.createTopic(FORUM_NODE, "Node Title");
+       
+       testNodesToTidy.add(siteTopic.getNodeRef());
+       testNodesToTidy.add(nodeTopic.getNodeRef());
 
        
        // Check these actions in turn
@@ -288,7 +291,7 @@ public class DiscussionServiceImplTest
           
           // Topic will now have one post listed
           posts = DISCUSSION_SERVICE.listPosts(topic, new PagingRequest(10));
-          //assertEquals(1, posts.getPage().size()); // TODO Fix
+          assertEquals(1, posts.getPage().size());
           
           
           // Add a reply
@@ -335,99 +338,287 @@ public class DiscussionServiceImplTest
           
           // Check the overall count now
           posts = DISCUSSION_SERVICE.listPosts(topic, new PagingRequest(10));
-          //assertEquals(3, posts.getPage().size()); // TODO Fix
+          assertEquals(3, posts.getPage().size());
        }
     }
     
-/*    
     @Test public void createUpdateDeleteEntries() throws Exception
     {
-       WikiPageInfo page;
+       TopicInfo siteTopic;
+       TopicInfo nodeTopic;
+       PostInfo post;
+       PostInfo reply;
        
        // Run as the test user instead
        AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
        
        
-       // Create a page
-       page = DISCUSSION_SERVICE.createWikiPage(
-             DISCUSSION_SITE.getShortName(), "Title", "This Is Some Content"
-       );
-       testNodesToTidy.add(page.getNodeRef());
+       // Create two topics
+       siteTopic = DISCUSSION_SERVICE.createTopic(DISCUSSION_SITE.getShortName(), "Site Title");
+       nodeTopic = DISCUSSION_SERVICE.createTopic(FORUM_NODE, "Node Title");
+       testNodesToTidy.add(siteTopic.getNodeRef());
+       testNodesToTidy.add(nodeTopic.getNodeRef());
        
        
-       // Check it
-       assertEquals("Title", page.getSystemName());
-       assertEquals("Title", page.getTitle());
-       assertEquals("This Is Some Content", page.getContents());
-       assertEquals(TEST_USER, page.getCreator());
-       assertEquals(0, page.getTags().size());
+       // Check them
+       assertEquals("Site Title", siteTopic.getTitle());
+       assertEquals(TEST_USER,    siteTopic.getCreator());
+       assertEquals(0,            siteTopic.getTags().size());
+       
+       assertEquals("Node Title", nodeTopic.getTitle());
+       assertEquals(TEST_USER,    nodeTopic.getCreator());
+       assertEquals(0,            nodeTopic.getTags().size());
        
        
-       // Change it
-       page.setTitle("New Title");
-       page.setContents("This is new content");
+       // Change them
+       siteTopic.setTitle("Site Changed");
+       nodeTopic.setTitle("Node Changed");
        
-       page = DISCUSSION_SERVICE.updateWikiPage(page);
-       assertEquals("New_Title", page.getSystemName()); // Name has underscores
-       assertEquals("New Title", page.getTitle());
+       siteTopic = DISCUSSION_SERVICE.updateTopic(siteTopic);
+       nodeTopic = DISCUSSION_SERVICE.updateTopic(nodeTopic);
        
        
        // Fetch, and check
-       page = DISCUSSION_SERVICE.getWikiPage(DISCUSSION_SITE.getShortName(), page.getSystemName());
-       assertEquals("New_Title", page.getSystemName()); // Name has underscores
-       assertEquals("New Title", page.getTitle());
-       assertEquals("This is new content", page.getContents());
-       assertEquals(TEST_USER, page.getCreator());
-       assertEquals(0, page.getTags().size());
+       siteTopic = DISCUSSION_SERVICE.getTopic(DISCUSSION_SITE.getShortName(), siteTopic.getSystemName());
+       nodeTopic = DISCUSSION_SERVICE.getTopic(FORUM_NODE, nodeTopic.getSystemName());
+       
+       assertEquals("Site Changed", siteTopic.getTitle());
+       assertEquals(TEST_USER,      siteTopic.getCreator());
+       assertEquals(0,              siteTopic.getTags().size());
+       
+       assertEquals("Node Changed", nodeTopic.getTitle());
+       assertEquals(TEST_USER,      nodeTopic.getCreator());
+       assertEquals(0,              nodeTopic.getTags().size());
        
        
-       // Delete it
-       DISCUSSION_SERVICE.deleteWikiPage(page);
+       // For each, create and edit some posts
+       for(TopicInfo topic : new TopicInfo[] {siteTopic, nodeTopic})
+       {
+          // Create a post and a reply
+          String contents = "This Is Some Content";
+          post = DISCUSSION_SERVICE.createPost(topic, contents);
+          
+          String replyContents = "Reply Contents";
+          reply = DISCUSSION_SERVICE.createReply(post, replyContents);
+          
+          
+          // Check them
+          assertEquals(topic.getTitle(), post.getTitle());
+          assertEquals(contents, post.getContents());
+          
+          assertEquals(null, reply.getTitle());
+          assertEquals(replyContents, reply.getContents());
+
+          
+          // Fetch and re-check
+          post = DISCUSSION_SERVICE.getPost(topic, post.getSystemName());
+          reply = DISCUSSION_SERVICE.getPost(topic, reply.getSystemName());
+          
+          assertEquals(topic.getTitle(), post.getTitle());
+          assertEquals(contents, post.getContents());
+          
+          assertEquals(null, reply.getTitle());
+          assertEquals(replyContents, reply.getContents());
+          
+          
+          // Edit them
+          String pTitle = "Title on the Post";
+          String rTitle = "Title on the Reply";
+          String pContents = "Changed! Changed!";
+          String rContents = "Reply was changed...";
+          post.setTitle(pTitle);
+          post.setContents(pContents);
+          reply.setTitle(rTitle);
+          reply.setContents(rContents);
+          
+          post = DISCUSSION_SERVICE.updatePost(post);
+          reply = DISCUSSION_SERVICE.updatePost(reply);
+          
+          assertEquals(pTitle, post.getTitle());
+          assertEquals(pContents, post.getContents());
+          
+          assertEquals(rTitle, reply.getTitle());
+          assertEquals(rContents, reply.getContents());
+
+          
+          // Check the changes were taken
+          post = DISCUSSION_SERVICE.getPost(topic, post.getSystemName());
+          reply = DISCUSSION_SERVICE.getPost(topic, reply.getSystemName());
+          
+          assertEquals(pTitle, post.getTitle());
+          assertEquals(pContents, post.getContents());
+          
+          assertEquals(rTitle, reply.getTitle());
+          assertEquals(rContents, reply.getContents());
+
+          
+          // Remove the title from the topic manually
+          String oldTitle = topic.getTitle(); 
+          PUBLIC_NODE_SERVICE.setProperty(topic.getNodeRef(), ContentModel.PROP_TITLE, null);
+          
+          // Check that we pick it up from the primary post instead
+          // (That's the pre-swift Share fallback case)
+          assertEquals(oldTitle, topic.getTitle());
+          topic = DISCUSSION_SERVICE.getTopic(topic.getContainerNodeRef(), topic.getSystemName());
+          assertEquals(pTitle, topic.getTitle());
+          
+          
+          // Delete the reply and the post
+          DISCUSSION_SERVICE.deletePost(reply);
+          DISCUSSION_SERVICE.deletePost(post);
+          
+          // Check they went
+          post = DISCUSSION_SERVICE.getPost(topic, post.getSystemName());
+          reply = DISCUSSION_SERVICE.getPost(topic, reply.getSystemName());
+          
+          assertEquals(null, post);
+          assertEquals(null, reply);
+       }
        
-       // Check it went
-       assertEquals(null, DISCUSSION_SERVICE.getWikiPage(DISCUSSION_SITE.getShortName(), page.getSystemName()));
+       // Delete the topics
+       DISCUSSION_SERVICE.deleteTopic(siteTopic);
+       DISCUSSION_SERVICE.deleteTopic(nodeTopic);
+       
+       // Check they went
+       siteTopic = DISCUSSION_SERVICE.getTopic(DISCUSSION_SITE.getShortName(), siteTopic.getSystemName());
+       nodeTopic = DISCUSSION_SERVICE.getTopic(FORUM_NODE, nodeTopic.getSystemName());
+       assertEquals(null, siteTopic);
+       assertEquals(null, nodeTopic);
+    }
+    
+    /**
+     * Tests listing of topics in a site/node, and posts in a topic
+     */
+    @Test public void basicListings() throws Exception
+    {
+       PagingResults<TopicInfo> topics;
+       PagingResults<PostInfo> posts;
        
        
-       // Create a new node with spaces in title
-       page = DISCUSSION_SERVICE.createWikiPage(
-             DISCUSSION_SITE.getShortName(), "Title Space", "This Is Some Content"
-       );
-       testNodesToTidy.add(page.getNodeRef());
+       // To start with, there will be no topics
+       topics = DISCUSSION_SERVICE.listTopics(DISCUSSION_SITE.getShortName(), new PagingRequest(10));
+       assertEquals(0, topics.getPage().size());
        
-       // Check it
-       assertEquals("Title_Space", page.getSystemName());
-       assertEquals("Title Space", page.getTitle());
-       assertEquals("This Is Some Content", page.getContents());
-       assertEquals(TEST_USER, page.getCreator());
-       assertEquals(0, page.getTags().size());
+       topics = DISCUSSION_SERVICE.listTopics(FORUM_NODE, new PagingRequest(10));
+       assertEquals(0, topics.getPage().size());
 
        
-       // Edit it without renaming
-       page.setContents("Changed contents");
-       page = DISCUSSION_SERVICE.updateWikiPage(page);
+       // Create several
+       TopicInfo siteT1 = DISCUSSION_SERVICE.createTopic(DISCUSSION_SITE.getShortName(), "ST1");
+       TopicInfo siteT2 = DISCUSSION_SERVICE.createTopic(DISCUSSION_SITE.getShortName(), "ST2");
+       TopicInfo nodeT1 = DISCUSSION_SERVICE.createTopic(FORUM_NODE, "NT1");
+       TopicInfo nodeT2 = DISCUSSION_SERVICE.createTopic(FORUM_NODE, "NT2");
+       TopicInfo nodeT3 = DISCUSSION_SERVICE.createTopic(FORUM_NODE, "NT3");
+       testNodesToTidy.add(siteT1.getNodeRef());
+       testNodesToTidy.add(siteT2.getNodeRef());
+       testNodesToTidy.add(nodeT1.getNodeRef());
+       testNodesToTidy.add(nodeT2.getNodeRef());
+       testNodesToTidy.add(nodeT3.getNodeRef());
        
-       // Check
-       page = DISCUSSION_SERVICE.getWikiPage(DISCUSSION_SITE.getShortName(), page.getSystemName());
-       assertEquals("Title_Space", page.getSystemName());
-       assertEquals("Title Space", page.getTitle());
-       assertEquals("Changed contents", page.getContents());
-       assertEquals(TEST_USER, page.getCreator());
-       assertEquals(0, page.getTags().size());
+       
+       // Check now, will order by creation date
+       topics = DISCUSSION_SERVICE.listTopics(DISCUSSION_SITE.getShortName(), new PagingRequest(10));
+       assertEquals(2, topics.getPage().size());
+       assertEquals("ST1", topics.getPage().get(0).getTitle());
+       assertEquals("ST2", topics.getPage().get(1).getTitle());
+       
+       topics = DISCUSSION_SERVICE.listTopics(FORUM_NODE, new PagingRequest(10));
+       assertEquals(3, topics.getPage().size());
+       assertEquals("NT1", topics.getPage().get(0).getTitle());
+       assertEquals("NT2", topics.getPage().get(1).getTitle());
+       assertEquals("NT3", topics.getPage().get(2).getTitle());
        
        
-       // Now edit with renaming
-       page.setTitle("Alternate Title");
-       page = DISCUSSION_SERVICE.updateWikiPage(page);
+       // Alter the creation date on a couple, see the ordering change
+       pushAuditableDatesBack(siteT2, 2, 2);
+       pushAuditableDatesBack(nodeT3, 3, 3);
+       pushAuditableDatesBack(nodeT1, 1, 1);
        
-       // Check
-       page = DISCUSSION_SERVICE.getWikiPage(DISCUSSION_SITE.getShortName(), page.getSystemName());
-       assertEquals("Alternate_Title", page.getSystemName());
-       assertEquals("Alternate Title", page.getTitle());
-       assertEquals("Changed contents", page.getContents());
-       assertEquals(TEST_USER, page.getCreator());
-       assertEquals(0, page.getTags().size());
+       topics = DISCUSSION_SERVICE.listTopics(DISCUSSION_SITE.getShortName(), new PagingRequest(10));
+       assertEquals(2, topics.getPage().size());
+       assertEquals("ST2", topics.getPage().get(0).getTitle());
+       assertEquals("ST1", topics.getPage().get(1).getTitle());
+       
+       topics = DISCUSSION_SERVICE.listTopics(FORUM_NODE, new PagingRequest(10));
+       assertEquals(3, topics.getPage().size());
+       assertEquals("NT3", topics.getPage().get(0).getTitle());
+       assertEquals("NT1", topics.getPage().get(1).getTitle());
+       assertEquals("NT2", topics.getPage().get(2).getTitle());
+       
+       
+       // Now create a couple of check posts
+       PostInfo siteCP1 = DISCUSSION_SERVICE.createPost(siteT2, "Check");
+       PostInfo nodeCP1 = DISCUSSION_SERVICE.createPost(nodeT2, "Check");
+       testNodesToTidy.add(siteCP1.getNodeRef());
+       testNodesToTidy.add(nodeCP1.getNodeRef());
+       
+       
+       // For both site and node based topics, check adding and
+       //  removing posts correctly affects counts
+       for(TopicInfo topic : new TopicInfo[] {siteT1, nodeT1})
+       {
+          // None to start with
+          posts = DISCUSSION_SERVICE.listPosts(topic, new PagingRequest(10));
+          assertEquals(0, posts.getPage().size());
+          
+          // Create one post
+          PostInfo post = DISCUSSION_SERVICE.createPost(topic, "Post");
+          assertEquals(post.getNodeRef(), DISCUSSION_SERVICE.getPrimaryPost(topic).getNodeRef());
+          
+          // Check the count
+          posts = DISCUSSION_SERVICE.listPosts(topic, new PagingRequest(10));
+          assertEquals(1, posts.getPage().size());
+          assertEquals("Post", posts.getPage().get(0).getContents());
+          
+          // Add two replies
+          PostInfo reply1 = DISCUSSION_SERVICE.createReply(post, "R1");
+          PostInfo reply2 = DISCUSSION_SERVICE.createReply(post, "R2");
+          
+          // Check
+          posts = DISCUSSION_SERVICE.listPosts(topic, new PagingRequest(10));
+          assertEquals(3, posts.getPage().size());
+          assertEquals("Post", posts.getPage().get(0).getContents());
+          assertEquals("R1", posts.getPage().get(1).getContents());
+          assertEquals("R2", posts.getPage().get(2).getContents());
+          
+          
+          // Alter the date of one, order changes
+          pushAuditableDatesBack(reply1, -1, -1);
+          
+          posts = DISCUSSION_SERVICE.listPosts(topic, new PagingRequest(10));
+          assertEquals(3, posts.getPage().size());
+          assertEquals("Post", posts.getPage().get(0).getContents());
+          assertEquals("R2", posts.getPage().get(1).getContents());
+          assertEquals("R1", posts.getPage().get(2).getContents());
+
+          
+          // Delete one reply
+          DISCUSSION_SERVICE.deletePost(reply1);
+          
+          posts = DISCUSSION_SERVICE.listPosts(topic, new PagingRequest(10));
+          assertEquals(2, posts.getPage().size());
+          assertEquals("Post", posts.getPage().get(0).getContents());
+          assertEquals("R2", posts.getPage().get(1).getContents());
+          
+          
+          // Delete the main post
+          DISCUSSION_SERVICE.deletePost(post);
+          
+          posts = DISCUSSION_SERVICE.listPosts(topic, new PagingRequest(10));
+          assertEquals(1, posts.getPage().size());
+          assertEquals("R2", posts.getPage().get(0).getContents());
+          
+          
+          // Check the last reply now counts as the "primary"
+          assertEquals(reply2.getNodeRef(), DISCUSSION_SERVICE.getPrimaryPost(topic).getNodeRef());
+
+          
+          // Zap the last one
+          DISCUSSION_SERVICE.deletePost(reply2);
+          posts = DISCUSSION_SERVICE.listPosts(topic, new PagingRequest(10));
+          assertEquals(0, posts.getPage().size());
+       }
     }
-*/
     
     /**
      * Ensures that when we try to write an entry to the
@@ -838,13 +1029,30 @@ public class DiscussionServiceImplTest
     /**
      * Alters the created date on a wiki page for testing
      */
-    private void pushAuditableDatesBack(WikiPageInfo page, int createdDaysAgo, int modifiedDaysAgo) throws Exception
+    private void pushAuditableDatesBack(final Object thing, final int createdDaysAgo, final int modifiedDaysAgo) throws Exception
     {
-       final NodeRef node = page.getNodeRef();
+       NodeRef tmpNodeRef;
+       if(thing instanceof NodeRef)
+       {
+          tmpNodeRef = (NodeRef)thing;
+       }
+       else if(thing instanceof TopicInfo)
+       {
+          tmpNodeRef = ((TopicInfo)thing).getNodeRef();
+       }
+       else if(thing instanceof PostInfo)
+       {
+          tmpNodeRef = ((PostInfo)thing).getNodeRef();
+       }
+       else
+       {
+          throw new IllegalArgumentException("Unknown thing " + thing);
+       }
+       final NodeRef node = tmpNodeRef;
        
-       final Date created = page.getCreatedAt();
+       final Date created = (Date)PUBLIC_NODE_SERVICE.getProperty(node, ContentModel.PROP_CREATED);
        final Date newCreated = new Date(created.getTime() - createdDaysAgo*ONE_DAY_MS);
-       final Date modified = page.getModifiedAt();
+       final Date modified = (Date)PUBLIC_NODE_SERVICE.getProperty(node, ContentModel.PROP_MODIFIED);
        final Date newModified = new Date(modified.getTime() - modifiedDaysAgo*ONE_DAY_MS);
        
        // Update the created date
@@ -879,10 +1087,18 @@ public class DiscussionServiceImplTest
              return null;
           }
        }, false, true);
-       
+
        // Update the object itself
-       ((TopicInfoImpl)page).setCreatedAt(newCreated);
-       ((TopicInfoImpl)page).setModifiedAt(newModified);
+       if(thing instanceof TopicInfo)
+       {
+          ((TopicInfoImpl)thing).setCreatedAt(newCreated);
+          ((TopicInfoImpl)thing).setModifiedAt(newModified);
+       }
+       if(thing instanceof PostInfo)
+       {
+          ((PostInfoImpl)thing).setCreatedAt(newCreated);
+          ((PostInfoImpl)thing).setModifiedAt(newModified);
+       }
     }
     
     private static void createTestSites() throws Exception

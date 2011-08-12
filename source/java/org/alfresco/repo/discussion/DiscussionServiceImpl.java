@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
 import org.alfresco.query.CannedQueryFactory;
@@ -42,7 +41,6 @@ import org.alfresco.service.cmr.discussion.DiscussionService;
 import org.alfresco.service.cmr.discussion.PostInfo;
 import org.alfresco.service.cmr.discussion.TopicInfo;
 import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -51,8 +49,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.tagging.TaggingService;
-import org.alfresco.service.cmr.wiki.WikiPageInfo;
-import org.alfresco.service.cmr.wiki.WikiService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.Pair;
@@ -430,72 +426,6 @@ public class DiscussionServiceImpl implements DiscussionService
        nodeService.deleteNode(post.getNodeRef());
     }
 
-    
-    public PagingResults<WikiPageInfo> listWikiPages(String siteShortName, String username, 
-          Date createdFrom, Date createdTo, Date modifiedFrom, Date modifiedTo, PagingRequest paging) 
-    {
-       NodeRef container = getSiteDiscussionsContainer(siteShortName, false);
-       if(container == null)
-       {
-          // No events
-          return new EmptyPagingResults<WikiPageInfo>();
-       }
-       
-       // Grab the factory
-       GetChildrenAuditableCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenAuditableCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_GET_CHILDREN);
-       
-       // Do the sorting, newest first by created date
-       CannedQuerySortDetails sorting = getChildrenCannedQueryFactory.createDateDescendingCQSortDetails();
-       
-       // Run the canned query
-       GetChildrenAuditableCannedQuery cq = (GetChildrenAuditableCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(
-             container, ContentModel.TYPE_CONTENT, username, createdFrom, createdTo, null,
-             modifiedFrom, modifiedTo, sorting, paging);
-       
-       // Execute the canned query
-       CannedQueryResults<NodeBackedEntity> results = cq.execute();
-       
-       // Convert to Link objects
-       return wrap(results, container);
-    }
-    
-    /**
-     * Our class to wrap up paged results of NodeBackedEntities as
-     *  WikiPageInfo instances
-     */
-    private PagingResults<WikiPageInfo> wrap(final PagingResults<NodeBackedEntity> results, final NodeRef container)
-    {
-       return new PagingResults<WikiPageInfo>()
-       {
-           @Override
-           public String getQueryExecutionId()
-           {
-               return results.getQueryExecutionId();
-           }
-           @Override
-           public List<WikiPageInfo> getPage()
-           {
-               List<WikiPageInfo> pages = new ArrayList<WikiPageInfo>();
-               for(NodeBackedEntity node : results.getPage())
-               {
-                  NodeRef nodeRef = node.getNodeRef();
-                  String name = node.getName();
-                  //pages.add(buildPage(nodeRef, container, name, null));
-               }
-               return pages;
-           }
-           @Override
-           public boolean hasMoreItems()
-           {
-               return results.hasMoreItems();
-           }
-           @Override
-           public Pair<Integer, Integer> getTotalResultCount()
-           {
-               return results.getTotalResultCount();
-           }
-       };
-    }
 
    @Override
    public PostInfo getPrimaryPost(TopicInfo topic) {
@@ -539,15 +469,23 @@ public class DiscussionServiceImpl implements DiscussionService
    @Override
    public PagingResults<TopicInfo> listTopics(NodeRef nodeRef,
          PagingRequest paging) {
-      // TODO
-      return new EmptyPagingResults<TopicInfo>();
+      // Do the listing
+      CannedQueryResults<NodeBackedEntity> nodes = 
+         listEntries(nodeRef, ForumModel.TYPE_TOPIC, null, paging);
+      
+      // Wrap and return
+      return wrap(nodes, nodeRef);
    }
    
    @Override
    public PagingResults<PostInfo> listPosts(TopicInfo topic, PagingRequest paging)
    {
-      // TODO
-      return new EmptyPagingResults<PostInfo>();
+      // Do the listing
+      CannedQueryResults<NodeBackedEntity> nodes = 
+         listEntries(topic.getNodeRef(), ForumModel.TYPE_POST, null, paging);
+      
+      // Wrap and return
+      return wrap(nodes, topic);
    }
 
 
@@ -577,5 +515,106 @@ public class DiscussionServiceImpl implements DiscussionService
          PagingRequest paging) {
       // TODO Auto-generated method stub
       return null;
+   }
+   
+   /**
+    * Finds nodes in the specified parent container, with the given
+    *  type, optionally filtered by creator
+    */
+   private CannedQueryResults<NodeBackedEntity> listEntries(NodeRef parent, 
+         QName nodeType, String creatorUsername, PagingRequest paging) 
+   {
+      // Grab the factory
+      GetChildrenAuditableCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenAuditableCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_GET_CHILDREN);
+      
+      // Do the sorting, newest first by created date
+      CannedQuerySortDetails sorting = getChildrenCannedQueryFactory.createDateAscendingCQSortDetails();
+      
+      // Run the canned query
+      GetChildrenAuditableCannedQuery cq = (GetChildrenAuditableCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(
+            parent, nodeType, creatorUsername, null, null, null,
+            null, null, sorting, paging);
+      
+      // Execute the canned query
+      CannedQueryResults<NodeBackedEntity> results = cq.execute();
+      
+      // Return for wrapping
+      return results;
+   }
+   
+   /**
+    * Our class to wrap up paged results of NodeBackedEntities as
+    *  {@link TopicInfo} instances
+    */
+   private PagingResults<TopicInfo> wrap(final PagingResults<NodeBackedEntity> results, final NodeRef container)
+   {
+      return new PagingResults<TopicInfo>()
+      {
+          @Override
+          public String getQueryExecutionId()
+          {
+              return results.getQueryExecutionId();
+          }
+          @Override
+          public List<TopicInfo> getPage()
+          {
+              List<TopicInfo> topics = new ArrayList<TopicInfo>();
+              for(NodeBackedEntity node : results.getPage())
+              {
+                 NodeRef nodeRef = node.getNodeRef();
+                 String name = node.getName();
+                 topics.add(buildTopic(nodeRef, container, name));
+              }
+              return topics;
+          }
+          @Override
+          public boolean hasMoreItems()
+          {
+              return results.hasMoreItems();
+          }
+          @Override
+          public Pair<Integer, Integer> getTotalResultCount()
+          {
+              return results.getTotalResultCount();
+          }
+      };
+   }
+   
+   /**
+    * Our class to wrap up paged results of NodeBackedEntities as
+    *  {@link PostInfo} instances
+    */
+   private PagingResults<PostInfo> wrap(final PagingResults<NodeBackedEntity> results, final TopicInfo topic)
+   {
+      return new PagingResults<PostInfo>()
+      {
+          @Override
+          public String getQueryExecutionId()
+          {
+              return results.getQueryExecutionId();
+          }
+          @Override
+          public List<PostInfo> getPage()
+          {
+              List<PostInfo> posts = new ArrayList<PostInfo>();
+              for(NodeBackedEntity node : results.getPage())
+              {
+                 NodeRef nodeRef = node.getNodeRef();
+                 String name = node.getName();
+                 posts.add(buildPost(nodeRef, topic, name, null));
+              }
+              return posts;
+          }
+          @Override
+          public boolean hasMoreItems()
+          {
+              return results.hasMoreItems();
+          }
+          @Override
+          public Pair<Integer, Integer> getTotalResultCount()
+          {
+              return results.getTotalResultCount();
+          }
+      };
    }
 }

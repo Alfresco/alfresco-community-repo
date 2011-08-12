@@ -33,12 +33,27 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public interface DiscussionService {
    /**
     * Creates a new {@link PostInfo} in the given topic,
-    *  specified contents
+    *  with the specified contents.
+    * Normally only one post is created this way on a topic,
+    *  and the remainder of the posts are created as
+    *  replies to the {@link #getPrimaryPost(TopicInfo)}
+    *  primary post.
     *  
     * @return The newly created {@link PostInfo}
     */
    @NotAuditable
    PostInfo createPost(TopicInfo topic, String contents);
+   
+   /**
+    * Creates a new {@link PostInfo} which is a reply to
+    *  the specified other post, with the given contents.
+    * The link between the parent post and the reply is
+    *  created as part of this. 
+    *  
+    * @return The newly created {@link PostInfo}
+    */
+   @NotAuditable
+   PostInfo createReply(PostInfo parentPost, String contents);
    
    /**
     * Creates a new {@link TopicInfo} in the given site
@@ -114,6 +129,24 @@ public interface DiscussionService {
    
    
    /**
+    * Retrieves all topics in a site
+    */
+   @NotAuditable
+   PagingResults<TopicInfo> listTopics(String siteShortName, PagingRequest paging);
+
+   /**
+    * Retrieves all topics attached to the specified Node
+    */
+   @NotAuditable
+   PagingResults<TopicInfo> listTopics(NodeRef nodeRef, PagingRequest paging);
+   
+   /**
+    * Retrieves all posts in a topic, ordered by creation date
+    */
+   @NotAuditable
+   PagingResults<PostInfo> listPosts(TopicInfo topic, PagingRequest paging);
+
+   /**
     * Retrieves all replies on a Topic
     */
    @NotAuditable
@@ -126,13 +159,13 @@ public interface DiscussionService {
    PagingResults<PostInfo> listPostReplies(PostInfo primaryPost, int levels, PagingRequest paging);
    
    /**
-    * Retrieves all posts in a site
+    * Retrieves all posts in a site, across all topics
     */
    @NotAuditable
    PagingResults<PostInfo> listPosts(String siteShortName, PagingRequest paging);
 
    /**
-    * Retrieves all posts attached to the specified Node
+    * Retrieves all posts attached to the specified Node, across all topics
     */
    @NotAuditable
    PagingResults<PostInfo> listPosts(NodeRef nodeRef, PagingRequest paging);

@@ -298,18 +298,31 @@ public class DiscussionServiceImpl implements DiscussionService
           throw new IllegalArgumentException("Can't create posts for a topic that was never persisted!");
        }
        
+       // Are we going to be the primary post?
+       boolean isPrimary = false;
+       if(getPrimaryPost(topic) == null)
+       {
+          isPrimary = true;
+       }
+       
        // Decide on the name. If this is the first post in a topic,
        //  it should share the topic's name, otherwise needs a new one
        String name = generateName();
-       if(getPrimaryPost(topic) == null)
+       if(isPrimary)
        {
           name = topic.getSystemName();
        }
        
-       // Get the properties for the node
+       // Create the properties for the node
        Map<QName, Serializable> props = new HashMap<QName, Serializable>();
        props.put(ContentModel.PROP_NAME,  name);
-       props.put(ContentModel.PROP_TITLE, topic.getTitle());
+       
+       // Do we want a title? By default, primary posts share a title
+       //  with the topic, but replies are title-free
+       if(isPrimary)
+       {
+          props.put(ContentModel.PROP_TITLE, topic.getTitle());
+       }
        
        // Build the node
        NodeRef nodeRef = nodeService.createNode(
@@ -328,6 +341,31 @@ public class DiscussionServiceImpl implements DiscussionService
        // Generate the wrapping object for it
        // Build it that way, so creator and created date come through
        return buildPost(nodeRef, topic, name, contents);
+    }
+    
+    @Override
+    public PostInfo createReply(PostInfo parentPost, String contents)
+    {
+       // Sanity check what we were given
+       if(parentPost.getNodeRef() == null)
+       {
+          throw new IllegalArgumentException("Can't reply to a post that was never persisted");
+       }
+       if(parentPost.getTopic() == null)
+       {
+          throw new IllegalArgumentException("Can't reply to a post with no attached topic");
+       }
+       
+       // Have the post created
+       PostInfo reply = createPost(parentPost.getTopic(), contents);
+       
+       // Now make it a reply
+       nodeService.createAssociation(
+             reply.getNodeRef(), parentPost.getNodeRef(), ContentModel.ASSOC_REFERENCES
+       );
+       
+       // All done
+       return reply;
     }
 
     
@@ -467,7 +505,7 @@ public class DiscussionServiceImpl implements DiscussionService
       PostInfo post = getPost(topic, topic.getSystemName());
       if(post != null)
       {
-         return null;
+         return post;
       }
       
       // Cater for the explorer case, we want the first child
@@ -482,6 +520,35 @@ public class DiscussionServiceImpl implements DiscussionService
       NodeRef postNodeRef = children.get(0).getChildRef();
       String postName = children.get(0).getQName().getLocalName();
       return buildPost(postNodeRef, topic, postName, null);
+   }
+
+   
+   @Override
+   public PagingResults<TopicInfo> listTopics(String siteShortName,
+         PagingRequest paging) {
+      NodeRef container = getSiteWikiContainer(siteShortName, false);
+      if(container == null)
+      {
+         // No topics
+         return new EmptyPagingResults<TopicInfo>();
+      }
+      
+      // We can now fetch by parent nodeRef
+      return listTopics(container, paging);
+   }
+
+   @Override
+   public PagingResults<TopicInfo> listTopics(NodeRef nodeRef,
+         PagingRequest paging) {
+      // TODO
+      return new EmptyPagingResults<TopicInfo>();
+   }
+   
+   @Override
+   public PagingResults<PostInfo> listPosts(TopicInfo topic, PagingRequest paging)
+   {
+      // TODO
+      return new EmptyPagingResults<PostInfo>();
    }
 
 

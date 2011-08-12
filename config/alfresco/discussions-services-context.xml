@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <!-- Discussions Service -->
+   <bean id="DiscussionService" class="org.springframework.aop.framework.ProxyFactoryBean">
+      <property name="proxyInterfaces">
+         <value>org.alfresco.service.cmr.discussion.DiscussionService</value>
+      </property>
+      <property name="target">
+         <ref bean="discussionService" />
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref local="DiscussionService_transaction" />
+            <idref bean="AuditMethodInterceptor" />
+            <idref bean="exceptionTranslator" />
+            <idref bean="DiscussionService_security" />
+         </list>
+      </property>
+   </bean>
+
+   <!-- Discussions service transaction bean -->
+   <bean id="DiscussionService_transaction"
+      class="org.springframework.transaction.interceptor.TransactionInterceptor">
+      <property name="transactionManager">
+         <ref bean="transactionManager" />
+      </property>
+      <property name="transactionAttributes">
+         <props>
+            <prop key="*">${server.transaction.mode.default}</prop>
+         </props>
+      </property>
+   </bean>
+
+   <!-- List of Discussion Canned queries -->
+   <bean id="discussionCannedQueryRegistry" class="org.alfresco.util.registry.NamedObjectRegistry">
+       <property name="storageType" value="org.alfresco.query.CannedQueryFactory"/>
+   </bean>
+    
+   <!-- The regular GetChildren Auditable Canned Query Factory -->
+<!--
+   <bean name="discussionGetChildrenCannedQueryFactory" class="org.alfresco.repo.node.getchildren.GetChildrenAuditableCannedQueryFactory">
+       <property name="registry" ref="discussionCannedQueryRegistry"/>
+       <property name="tenantService" ref="tenantService"/>
+       <property name="nodeDAO" ref="nodeDAO"/>
+       <property name="qnameDAO" ref="qnameDAO"/>
+       <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
+       <property name="methodSecurity" ref="DiscussionService_security_listPosts"/>
+   </bean>
+-->
+
+   <!-- Discussion Service base bean -->
+	<bean id="discussionService" class="org.alfresco.repo.discussion.DiscussionServiceImpl">
+        <property name="nodeService" ref="NodeService"/>
+        <property name="siteService" ref="SiteService"/>
+        <property name="contentService" ref="ContentService"/>
+        <property name="taggingService" ref="TaggingService"/>
+        <property name="fileFolderService" ref="FileFolderService"/>
+        <property name="transactionService" ref="transactionService" />
+        <property name="cannedQueryRegistry" ref="wikiCannedQueryRegistry" />
+	</bean>
+
+</beans>

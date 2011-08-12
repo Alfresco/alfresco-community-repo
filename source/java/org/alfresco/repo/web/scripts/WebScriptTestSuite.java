@@ -27,7 +27,7 @@ import org.alfresco.repo.web.scripts.admin.AdminWebScriptTest;
 import org.alfresco.repo.web.scripts.audit.AuditWebScriptTest;
 import org.alfresco.repo.web.scripts.blogs.BlogServiceTest;
 import org.alfresco.repo.web.scripts.dictionary.DictionaryRestApiTest;
-import org.alfresco.repo.web.scripts.discussion.DiscussionServiceTest;
+import org.alfresco.repo.web.scripts.discussion.DiscussionRestApiTest;
 import org.alfresco.repo.web.scripts.forms.FormRestApiGet_Test;
 import org.alfresco.repo.web.scripts.forms.FormRestApiJsonPost_Test;
 import org.alfresco.repo.web.scripts.groups.GroupsTest;
@@ -68,7 +68,7 @@ public class WebScriptTestSuite extends TestSuite
         suite.addTestSuite( AuditWebScriptTest.class );
         suite.addTestSuite( BlogServiceTest.class );
         suite.addTestSuite( DictionaryRestApiTest.class );
-        suite.addTestSuite( DiscussionServiceTest.class );
+        suite.addTestSuite( DiscussionRestApiTest.class );
         suite.addTestSuite( FeedControlTest.class );
         suite.addTestSuite( FormRestApiGet_Test.class );
         suite.addTestSuite( FormRestApiJsonPost_Test.class );

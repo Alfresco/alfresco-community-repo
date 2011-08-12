@@ -57,10 +57,10 @@ import org.json.JSONObject;
 /**
  * Unit Test to test Discussions Web Script API
  */
-public class DiscussionServiceTest extends BaseWebScriptTest
+public class DiscussionRestApiTest extends BaseWebScriptTest
 {
     @SuppressWarnings("unused")
-    private static Log logger = LogFactory.getLog(DiscussionServiceTest.class);
+    private static Log logger = LogFactory.getLog(DiscussionRestApiTest.class);
     
     private static final String DELETED_REPLY_POST_MARKER = "[[deleted]]";
 	

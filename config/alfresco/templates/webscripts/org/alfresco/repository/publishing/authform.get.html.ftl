@@ -13,8 +13,8 @@
    </head>
    <body>
       <img src="http://www.alfresco.com/images/alfresco-logo.png" alt="Alfresco" />
-      <div class="header"><h1>${msg("authForm.heading", "channel-title")}</h1></div>
-		<p>${msg("authForm.directions")} {channelType.icon}</p>
+      <div class="header"><h1>${msg("authForm.heading", channel.name)}</h1></div>
+		<p>${msg("authForm.directions", channel.name)}</p>
 		<form id="loginform" action="#" method="post" accept-charset="UTF-8">
 			<div>
 				<label id="txt-username" for="username">${msg("authForm.user")}</label>

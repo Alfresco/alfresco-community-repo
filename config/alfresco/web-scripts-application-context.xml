@@ -1577,6 +1577,12 @@
          parent="abstractDiscussionWebScript">
    </bean>
    
+   <!-- Updates a discussions post or topic -->
+   <bean id="webscript.org.alfresco.repository.discussions.posts.forum-post.put"
+         class="org.alfresco.repo.web.scripts.discussion.ForumPostPut"
+         parent="abstractDiscussionWebScript">
+   </bean>
+   
    <!-- Deletes a discussion post or topic -->
    <bean id="webscript.org.alfresco.repository.discussions.posts.forum-post.delete"
          class="org.alfresco.repo.web.scripts.discussion.ForumPostDelete"

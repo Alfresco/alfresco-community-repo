@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0">
+   <cm:folder xmlns:view="http://www.alfresco.org/view/repository/1.0" xmlns:app="http://www.alfresco.org/model/application/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0" xmlns="" view:childName="app:node_templates">
+      <view:aspects>
+         <app:uifacets/>
+      </view:aspects>
+      <view:properties>
+         <cm:name>${spaces.nodeTemplatesSpace.name}</cm:name>
+         <app:icon>space-icon-default</app:icon>
+         <cm:title>${spaces.nodeTemplatesSpace.name}</cm:title>
+         <cm:description>${spaces.nodeTemplatesSpace.description}</cm:description>
+      </view:properties>
+   </cm:folder>
+</view:view>

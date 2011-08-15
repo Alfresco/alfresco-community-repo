@@ -1568,15 +1568,14 @@
         <property name="personService" ref="PersonService"/>
         <property name="activityService" ref="activityService"/>
         <property name="discussionService" ref="DiscussionService"/>
+        <property name="permissionService" ref="PermissionService" />
    </bean>
 
    <!-- Fetches the details of one discussions post or topic -->
-<!--
    <bean id="webscript.org.alfresco.repository.discussions.posts.forum-post.get"
          class="org.alfresco.repo.web.scripts.discussion.ForumPostGet"
          parent="abstractDiscussionWebScript">
    </bean>
--->
    
    <!-- Deletes a discussion post or topic -->
    <bean id="webscript.org.alfresco.repository.discussions.posts.forum-post.delete"

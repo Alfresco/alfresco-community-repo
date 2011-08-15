@@ -23,7 +23,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.site.SiteServiceImpl;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.discussion.DiscussionService;
 import org.alfresco.service.cmr.discussion.PostInfo;
@@ -31,6 +34,8 @@ import org.alfresco.service.cmr.discussion.TopicInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
@@ -61,12 +66,19 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
     
     private static Log logger = LogFactory.getLog(AbstractDiscussionWebScript.class);
     
+    protected static final String KEY_IS_TOPIC_POST = "isTopicPost";
+    protected static final String KEY_TOPIC = "topic";
+    protected static final String KEY_POST = "post";
+    protected static final String KEY_CAN_EDIT = "canEdit";
+    protected static final String KEY_AUTHOR = "author";
+    
     // Injected services
     protected NodeService nodeService;
     protected SiteService siteService;
     protected PersonService personService;
     protected ActivityService activityService;
     protected DiscussionService discussionService;
+    protected PermissionService permissionService;
     
     public void setNodeService(NodeService nodeService)
     {
@@ -78,11 +90,6 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
         this.siteService = siteService;
     }
     
-    public void setDiscussionService(DiscussionService discussionService)
-    {
-        this.discussionService = discussionService;
-    }
-    
     public void setPersonService(PersonService personService)
     {
         this.personService = personService;
@@ -91,6 +98,16 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
     public void setActivityService(ActivityService activityService)
     {
         this.activityService = activityService;
+    }
+    
+    public void setDiscussionService(DiscussionService discussionService)
+    {
+        this.discussionService = discussionService;
+    }
+    
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
     }
     
     
@@ -206,7 +223,41 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
        }
     }
     
-    // TODO Is this needed?
+    /**
+     * Is the current user allowed to edit this post?
+     * In order to be deemed allowed, you first need write
+     *  permissions on the underlying node of the post.
+     * You then also need to either be the cm:creator of
+     *  the post node, or a site manager
+     */
+    protected boolean canUserEditPost(PostInfo post, SiteInfo site)
+    {
+       // Are they OK on the node?
+       AccessStatus canEdit = permissionService.hasPermission(post.getNodeRef(), PermissionService.WRITE); 
+       if(canEdit == AccessStatus.ALLOWED)
+       {
+          // Only the creator and site managers may edit
+          String user = AuthenticationUtil.getFullyAuthenticatedUser();
+          if(post.getCreator().equals(user))
+          {
+             // It's their post
+             return true;
+          }
+          if(site != null)
+          {
+             String role = siteService.getMembersRole(site.getShortName(), user);
+             if(SiteServiceImpl.SITE_MANAGER.equals(role))
+             {
+                // Managers may edit
+                return true;
+             }
+          }
+       }
+       
+       // If in doubt, you may not edit
+       return false;
+    }
+    
     protected Object buildPerson(String username)
     {
        if(username == null || username.length() == 0)
@@ -220,36 +271,105 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
        return person;
     }
     
-    // TODO Match JS
-    protected Map<String, Object> renderTopic(TopicInfo topic)
+    /*
+     * Was topicpost.lib.js getReplyPostData
+     * 
+     * TODO Switch the FTL to prefer the Info object rather than the ScriptNode
+     */
+    protected Map<String, Object> renderPost(PostInfo post, SiteInfo site)
     {
-       Map<String, Object> res = new HashMap<String, Object>();
-       res.put("topic", topic);
-       res.put("node", topic.getNodeRef());
-       res.put("name", topic.getSystemName());
-       res.put("title", topic.getTitle());
-       res.put("tags", topic.getTags());
+       Map<String, Object> item = new HashMap<String, Object>();
+       item.put(KEY_IS_TOPIC_POST, false);
+       item.put(KEY_POST, post.getNodeRef());
+       item.put(KEY_CAN_EDIT, canUserEditPost(post, site));
+       item.put(KEY_AUTHOR, buildPerson(post.getCreator()));
+       return item;
+    }
+    
+    /*
+     * Was topicpost.lib.js getTopicPostData / getTopicPostDataFromTopicAndPosts
+     * 
+     * TODO Switch the FTL to prefer the Info object rather than the ScriptNode
+     */
+    protected Map<String, Object> renderTopic(TopicInfo topic, SiteInfo site)
+    {
+       // Fetch all the posts for the topic
+       // TODO We actually only need the count, the first and the last
+       // In the interest of keeping our life simply, get all of them
+       PagingRequest paging = new PagingRequest(MAX_QUERY_ENTRY_COUNT);
+       paging.setRequestTotalCountMax(MAX_QUERY_ENTRY_COUNT);
+       PagingResults<PostInfo> posts = discussionService.listPosts(topic, paging);
        
-       // Both forms used for dates
-       res.put("createdOn", topic.getCreatedAt());
-       res.put("modifiedOn", topic.getModifiedAt());
-       res.put("created", topic.getCreatedAt());
-       res.put("modified", topic.getModifiedAt());
-       
-       // FTL needs a script node of the people
-       res.put("createdBy", buildPerson(topic.getCreator()));
-       res.put("modifiedBY", buildPerson(topic.getModifier()));
-       
-       // We want blank instead of null
-       for(String key : res.keySet())
+       // Ensure we got a primary post
+       if(posts.getPage().size() == 0)
        {
-          if(res.get(key) == null)
-          {
-             res.put(key, "");
-          }
+          throw new WebScriptException(Status.STATUS_PRECONDITION_FAILED,
+                "First (primary) post was missing from the topic, can't fetch");
        }
        
-       return res;
+       // Grab the posts of interest
+       PostInfo primaryPost = posts.getPage().get(0);
+       // The posts in a topic listing are ordered by created date
+       PostInfo mostRecentPost = posts.getPage().get(posts.getPage().size()-1);
+       
+       // Build the details
+       Map<String, Object> item = new HashMap<String, Object>();
+       item.put(KEY_IS_TOPIC_POST, true);
+       item.put(KEY_TOPIC, topic.getNodeRef());
+       item.put(KEY_POST, primaryPost.getNodeRef());
+       item.put(KEY_CAN_EDIT, canUserEditPost(primaryPost, site));
+       item.put(KEY_AUTHOR, buildPerson(topic.getCreator()));
+       
+       // The reply count is one less than all posts (first is the primary one)
+       item.put("totalReplyCount", posts.getTotalResultCount().getFirst() - 1);
+       
+       // We want details on the most recent post
+       if(posts.getPage().size() > 1)
+       {
+          item.put("lastReply", mostRecentPost.getNodeRef());
+          item.put("lastReplyBy", buildPerson(mostRecentPost.getCreator()));
+       }
+       
+       // Include the tags
+       item.put("tags", topic.getTags());
+       
+       // All done
+       return item;
+    }
+    
+    protected Map<String, Object> buildCommonModel(SiteInfo site, TopicInfo topic, 
+          PostInfo post, WebScriptRequest req)
+    {
+       // Build the common model parts
+       Map<String, Object> model = new HashMap<String, Object>();
+       model.put(KEY_TOPIC, topic);
+       model.put(KEY_POST, post);
+       
+       // Capture the site details only if site based
+       if(site != null)
+       {
+          model.put("siteId", site.getShortName());
+          model.put("site", site);
+       }
+       
+       // The limit on the length of the content to be returned
+       int contentLength = -1;
+       String contentLengthS = req.getParameter("contentLength");
+       if(contentLengthS != null)
+       {
+          try
+          {
+             contentLength = Integer.parseInt(contentLengthS);
+          }
+          catch(NumberFormatException e)
+          {
+             logger.info("Skipping invalid length " + contentLengthS); 
+          }
+       }
+       model.put("contentLength", contentLength);
+       
+       // All done
+       return model;
     }
     
     @Override
@@ -310,6 +430,13 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
           {
              String name = templateVars.get("path");
              topic = discussionService.getTopic(site.getShortName(), name);
+             
+             if(topic == null)
+             {
+                String error = "Could not find topic: " + name;
+                throw new WebScriptException(Status.STATUS_NOT_FOUND, error);
+             }
+             nodeRef = topic.getNodeRef();
           }
        }
        else if(templateVars.containsKey("store_type") && 

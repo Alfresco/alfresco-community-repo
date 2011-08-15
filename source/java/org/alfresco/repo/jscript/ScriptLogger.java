@@ -32,12 +32,32 @@ public final class ScriptLogger extends BaseProcessorExtension
     
     public boolean isLoggingEnabled()
     {
-        return logger.isDebugEnabled();
+        return isDebugLoggingEnabled();
     }
     
     public void log(String str)
     {
+        debug(str);
+    }
+    
+    public boolean isDebugLoggingEnabled()
+    {
+        return logger.isDebugEnabled();
+    }
+    
+    public void debug(String str)
+    {
         logger.debug(str);
+    }
+    
+    public boolean isInfoLoggingEnabled()
+    {
+        return logger.isInfoEnabled();
+    }
+    
+    public void info(String str)
+    {
+        logger.info(str);
     }
     
     public boolean isWarnLoggingEnabled()
@@ -48,6 +68,16 @@ public final class ScriptLogger extends BaseProcessorExtension
     public void warn(String str)
     {
         logger.warn(str);
+    }
+    
+    public boolean isErrorLoggingEnabled()
+    {
+        return logger.isErrorEnabled();
+    }
+    
+    public void error(String str)
+    {
+        logger.error(str);
     }
 
     public SystemOut getSystem()
@@ -62,5 +92,4 @@ public final class ScriptLogger extends BaseProcessorExtension
             System.out.println(str);
         }
     }
-
 }

@@ -90,9 +90,8 @@ public interface PostInfo extends Serializable, PermissionCheckValue {
     */
    Date getModifiedAt();
    
-//   /**
-//    * @return the Tags associated with the post
-//    * TODO Are posts ever tagged, or only ever topics?
-//    */
-//   List<String> getTags();
+   /**
+    * @return the updated-at date and time
+    */
+   Date getUpdatedAt();
 }

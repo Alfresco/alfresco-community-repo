@@ -426,9 +426,11 @@ public class DiscussionServiceImplTest
           // Check them
           assertEquals(topic.getTitle(), post.getTitle());
           assertEquals(contents, post.getContents());
+          assertEquals(null, post.getUpdatedAt());
           
           assertEquals(null, reply.getTitle());
           assertEquals(replyContents, reply.getContents());
+          assertEquals(null, reply.getUpdatedAt());
 
           
           // Fetch and re-check
@@ -437,9 +439,11 @@ public class DiscussionServiceImplTest
           
           assertEquals(topic.getTitle(), post.getTitle());
           assertEquals(contents, post.getContents());
+          assertEquals(null, post.getUpdatedAt());
           
           assertEquals(null, reply.getTitle());
           assertEquals(replyContents, reply.getContents());
+          assertEquals(null, reply.getUpdatedAt());
           
           
           // Edit them
@@ -461,6 +465,12 @@ public class DiscussionServiceImplTest
           assertEquals(rTitle, reply.getTitle());
           assertEquals(rContents, reply.getContents());
 
+          // Check that the modified and updated dates were set
+          assertNotNull(post.getUpdatedAt());
+          assertNotNull(post.getModifiedAt());
+          assertNotNull(reply.getUpdatedAt());
+          assertNotNull(reply.getModifiedAt());
+          
           
           // Check the changes were taken
           post = DISCUSSION_SERVICE.getPost(topic, post.getSystemName());
@@ -471,6 +481,12 @@ public class DiscussionServiceImplTest
           
           assertEquals(rTitle, reply.getTitle());
           assertEquals(rContents, reply.getContents());
+
+          // Check that the modified and updated dates were set
+          assertNotNull(post.getUpdatedAt());
+          assertNotNull(post.getModifiedAt());
+          assertNotNull(reply.getUpdatedAt());
+          assertNotNull(reply.getModifiedAt());
 
           
           // Remove the title from the topic manually

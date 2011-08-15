@@ -184,6 +184,7 @@ public class DiscussionServiceImpl implements DiscussionService
        post.setModifier((String)props.get(ContentModel.PROP_MODIFIER));
        post.setCreatedAt((Date)props.get(ContentModel.PROP_CREATED));
        post.setModifiedAt((Date)props.get(ContentModel.PROP_MODIFIED));
+       post.setUpdatedAt((Date)props.get(ContentModel.PROP_UPDATED));
        
        // Now do the discussion ones
        post.setTitle((String)props.get(ContentModel.PROP_TITLE));
@@ -400,6 +401,20 @@ public class DiscussionServiceImpl implements DiscussionService
        ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
        writer.setEncoding("UTF-8");
        writer.putContent(post.getContents());
+       
+       // Mark it as having been updated
+       Date updatedAt = new Date();
+       nodeService.setProperty(nodeRef, ContentModel.PROP_UPDATED, updatedAt);
+       if(post instanceof PostInfoImpl)
+       {
+          ((PostInfoImpl)post).setUpdatedAt(updatedAt);
+          ((PostInfoImpl)post).setModifiedAt(updatedAt);
+       }
+       else
+       {
+          // Re-create to get the updated date
+          post = buildPost(nodeRef, post.getTopic(), post.getSystemName(), post.getContents()); 
+       }
        
        // All done
        return post;

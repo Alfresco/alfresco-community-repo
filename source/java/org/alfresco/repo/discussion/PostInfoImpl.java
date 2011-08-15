@@ -41,6 +41,7 @@ public class PostInfoImpl implements PostInfo
    private String modifier;
    private Date createdAt;
    private Date modifiedAt;
+   private Date updatedAt;
 
    /**
     * Creates a new, empty {@link PostInfo}
@@ -114,6 +115,12 @@ public class PostInfoImpl implements PostInfo
    }
 
    @Override
+   public Date getUpdatedAt() 
+   {
+      return updatedAt;
+   }
+
+   @Override
    public void setTitle(String title) 
    {
       this.title = title;
@@ -143,5 +150,10 @@ public class PostInfoImpl implements PostInfo
    public void setModifiedAt(Date modifiedAt) 
    {
       this.modifiedAt = modifiedAt;
+   }
+
+   public void setUpdatedAt(Date updatedAt) 
+   {
+      this.updatedAt = updatedAt;
    }
 }

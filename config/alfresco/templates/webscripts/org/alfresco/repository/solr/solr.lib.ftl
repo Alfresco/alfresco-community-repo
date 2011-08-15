@@ -45,52 +45,74 @@
 
 <#macro nodeMetaDataJSON nodeMetaData filter>
       {
-         "id": ${nodeMetaData.nodeId?c},
-         "nodeRef": <#if filter.includeNodeRef??>"${nodeMetaData.nodeRef.toString()}",</#if>
-         "type": <#if filter.includeType??><@qNameJSON qName=nodeMetaData.nodeType/>,</#if>
-         "aclId": <#if filter.includeAclId??><#if nodeMetaData.aclId??>${nodeMetaData.aclId?c}<#else>null</#if>,</#if>
+         "id": ${nodeMetaData.nodeId?c}
+         <#if filter.includeNodeRef??><#if nodeMetaData.nodeRef??>, "nodeRef": "${nodeMetaData.nodeRef.toString()}"</#if></#if>
+         <#if filter.includeType??><#if nodeMetaData.nodeType??>, "type": <@qNameJSON qName=nodeMetaData.nodeType/></#if></#if>
+         <#if filter.includeAclId??><#if nodeMetaData.aclId??>, "aclId": ${nodeMetaData.aclId?c}</#if></#if>
          <#if filter.includeProperties??>
-         "properties": {
+         <#if nodeMetaData.properties??>
+         , "properties": {
            <#list nodeMetaData.properties?keys as propName>
                "${propName}": ${nodeMetaData.properties[propName]}<#if propName_has_next>,</#if>
            </#list>
-         },
+         }
+         </#if>
          </#if>
          <#if filter.includeAspects??>
-         "aspects": [
+         <#if nodeMetaData.aspects??>
+         , "aspects": [
            <#list nodeMetaData.aspects as aspectQName>
                <@nodeAspectJSON aspectQName=aspectQName indent=""/><#if aspectQName_has_next>,</#if>
            </#list>
-         ],
+         ]
+         </#if>
          </#if>
          <#if filter.includePaths??>
-         "paths": [
+         <#if nodeMetaData.paths??>
+         , "paths": [
            <#list nodeMetaData.paths as path>
            ${path}<#if path_has_next>,</#if>
            </#list>
-         ],
+         ]
+         </#if>
          </#if>
          <#if filter.includeParentAssociations??>
          <#if nodeMetaData.parentAssocs??>
          <#if (nodeMetaData.parentAssocs?size > 0)>
-         "parentAssocs": [
+         , "parentAssocs": [
            <#list nodeMetaData.parentAssocs as pa>
            "${pa}"<#if pa_has_next>,</#if>
            </#list>
-         ],
-         "parentAssocsCrc": <#if nodeMetaData.parentAssocsCrc??>${nodeMetaData.parentAssocsCrc?c}<#else>null</#if>,
+         ]
+         ,"parentAssocsCrc": <#if nodeMetaData.parentAssocsCrc??>${nodeMetaData.parentAssocsCrc?c}<#else>null</#if>
          </#if>
          </#if>
          </#if>
          <#if filter.includeChildAssociations??>
          <#if nodeMetaData.childAssocs??>
          <#if (nodeMetaData.childAssocs?size > 0)>
-         "childAssocs": [
+         , "childAssocs": [
            <#list nodeMetaData.childAssocs as ca>
            "${ca}"<#if ca_has_next>,</#if>
            </#list>
          ]
          </#if>
+         </#if>
+         </#if>
+         <#if filter.includeChildIds??>
+         <#if nodeMetaData.childIds??>
+         <#if (nodeMetaData.childIds?size > 0)>
+         , "childIds": [
+           <#list nodeMetaData.childIds as ci>
+           ${ci?c}<#if ci_has_next>,</#if>
+           </#list>
+         ]
+         </#if>
+         </#if>
+         </#if>
+         <#if filter.includeOwner??>
+         <#if nodeMetaData.owner??>
+         , "owner": "${nodeMetaData.owner}"
          </#if>
          </#if>
       }

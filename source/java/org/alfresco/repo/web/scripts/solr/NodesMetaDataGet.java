@@ -156,7 +156,11 @@ public class NodesMetaDataGet extends DeclarativeWebScript
             }
             if(o.has("includeParentAssociations"))
             {
-                filter.setIncludeParentAssociations(o.getBoolean("includeParentAssociations"));
+                filter.setIncludeParentAssociations(o.getBoolean("includeChildIds"));
+            }
+            if(o.has("includeChildIds"))
+            {
+                filter.setIncludeChildIds(o.getBoolean("includeChildIds"));
             }
             
             final ArrayList<FreemarkerNodeMetaData> nodesMetaData = 
@@ -235,6 +239,8 @@ public class NodesMetaDataGet extends DeclarativeWebScript
         private List<ChildAssociationRef> childAssocs;
         private List<ChildAssociationRef> parentAssocs;
         private Long parentAssocsCrc;
+        private List<Long> childIds;
+        private String owner;
 
         public FreemarkerNodeMetaData(SOLRSerializer solrSerializer, NodeMetaData nodeMetaData) throws IOException, JSONException
         {
@@ -255,18 +261,23 @@ public class NodesMetaDataGet extends DeclarativeWebScript
             setPaths(paths);
 
             setChildAssocs(nodeMetaData.getChildAssocs());
+            setChildIds(nodeMetaData.getChildIds());
             setParentAssocs(nodeMetaData.getParentAssocs());
             setParentAssocsCrc(nodeMetaData.getParentAssocsCrc());
             setAspects(nodeMetaData.getAspects());
             Map<QName, Serializable> props = nodeMetaData.getProperties();
-            Map<String, PropertyValue> properties = (props != null ? new HashMap<String, PropertyValue>(props.size()) : null);
-            for(QName propName : props.keySet())
+            if(props != null)
             {
-                Serializable value = props.get(propName);
-                properties.put(solrSerializer.serializeValue(String.class, propName),
-                        solrSerializer.serialize(propName, value));
+                Map<String, PropertyValue> properties = (props != null ? new HashMap<String, PropertyValue>(props.size()) : null);
+                for(QName propName : props.keySet())
+                {
+                    Serializable value = props.get(propName);
+                    properties.put(solrSerializer.serializeValue(String.class, propName),
+                            solrSerializer.serialize(propName, value));
+                }
+                setProperties(properties);
             }
-            setProperties(properties);
+            setOwner(nodeMetaData.getOwner());
         }
         
         public NodeRef getNodeRef()
@@ -349,6 +360,27 @@ public class NodesMetaDataGet extends DeclarativeWebScript
         {
             this.parentAssocsCrc = parentAssocsCrc;
         }
+
+        public List<Long> getChildIds()
+        {
+            return childIds;
+        }
+
+        public void setChildIds(List<Long> childIds)
+        {
+            this.childIds = childIds;
+        }
+
+        public String getOwner()
+        {
+            return owner;
+        }
+
+        public void setOwner(String owner)
+        {
+            this.owner = owner;
+        }
+        
     }
 
 }

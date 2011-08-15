@@ -673,12 +673,12 @@ function getSearchResults(params)
    // Simple keyword search and tag specific search
    if (term !== null && term.length !== 0)
    {
-	  // TAG is now part of the default macro
+      // TAG is now part of the default macro
       ftsQuery = term + " ";
    }
    else if (tag !== null && tag.length !== 0)
    {
-	  // Just look for tag
+      // Just look for tag
       ftsQuery = "TAG:" + tag +" ";
    }
    
@@ -774,10 +774,6 @@ function getSearchResults(params)
                         {
                            catQuery += (firstCat ? '' : ' OR ') + "PATH:\"" + catNode.qnamePath + (useSubCats ? "//*\"" : "/member\"" );
                            firstCat = false;
-                        }
-                        else if (logger.isWarnLoggingEnabled())
-                        {
-                           logger.warn("Search : category noderef " + cat + " not found");
                         }
                      }
                      
@@ -885,8 +881,8 @@ function getSearchResults(params)
          });
       }
       
-      if (logger.isWarnLoggingEnabled())
-         logger.warn("Search query: " + ftsQuery);
+      if (logger.isLoggingEnabled())
+         logger.log("Search query: " + ftsQuery);
       
       // perform fts-alfresco language query
       var queryDef = {

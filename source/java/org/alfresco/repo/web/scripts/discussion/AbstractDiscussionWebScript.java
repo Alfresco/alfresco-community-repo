@@ -293,24 +293,36 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
      */
     protected Map<String, Object> renderTopic(TopicInfo topic, SiteInfo site)
     {
-       // Fetch all the posts for the topic
-       // TODO We actually only need the count, the first and the last
-       // In the interest of keeping our life simply, get all of them
-       PagingRequest paging = new PagingRequest(MAX_QUERY_ENTRY_COUNT);
-       paging.setRequestTotalCountMax(MAX_QUERY_ENTRY_COUNT);
-       PagingResults<PostInfo> posts = discussionService.listPosts(topic, paging);
-       
-       // Ensure we got a primary post
-       if(posts.getPage().size() == 0)
+       // Fetch the primary post
+       PostInfo primaryPost = discussionService.getPrimaryPost(topic);
+       if(primaryPost == null)
        {
           throw new WebScriptException(Status.STATUS_PRECONDITION_FAILED,
-                "First (primary) post was missing from the topic, can't fetch");
+                 "First (primary) post was missing from the topic, can't fetch");
        }
        
-       // Grab the posts of interest
-       PostInfo primaryPost = posts.getPage().get(0);
-       // The posts in a topic listing are ordered by created date
-       PostInfo mostRecentPost = posts.getPage().get(posts.getPage().size()-1);
+       // Fetch the most recent reply
+       PostInfo mostRecentPost = discussionService.getMostRecentPost(topic);
+       
+       // Find out how many replies there are
+       int numReplies;
+       if(mostRecentPost.getNodeRef().equals( primaryPost.getNodeRef() ))
+       {
+          // Only the one post in the topic
+          mostRecentPost = null;
+          numReplies = 0;
+       }
+       else
+       {
+          // Use this trick to get the number of posts in the topic, 
+          //  but without needing to get lots of data and objects
+          PagingRequest paging = new PagingRequest(1);
+          paging.setRequestTotalCountMax(MAX_QUERY_ENTRY_COUNT);
+          PagingResults<PostInfo> posts = discussionService.listPosts(topic, paging);
+          
+          // The primary post is in the list, so exclude from the reply count 
+          numReplies = posts.getTotalResultCount().getFirst() - 1;
+       }
        
        // Build the details
        Map<String, Object> item = new HashMap<String, Object>();
@@ -321,10 +333,10 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
        item.put(KEY_AUTHOR, buildPerson(topic.getCreator()));
        
        // The reply count is one less than all posts (first is the primary one)
-       item.put("totalReplyCount", posts.getTotalResultCount().getFirst() - 1);
+       item.put("totalReplyCount", numReplies);
        
        // We want details on the most recent post
-       if(posts.getPage().size() > 1)
+       if(mostRecentPost != null)
        {
           item.put("lastReply", mostRecentPost.getNodeRef());
           item.put("lastReplyBy", buildPerson(mostRecentPost.getCreator()));

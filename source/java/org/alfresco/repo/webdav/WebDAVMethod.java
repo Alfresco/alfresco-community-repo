@@ -25,6 +25,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -884,7 +885,21 @@ public abstract class WebDAVMethod
             }
             else
             {
-                throw new WebDAVServerException(WebDAV.WEBDAV_SC_LOCKED);
+                // ALF-3681 fix. WebDrive 10 client doesn't send If header when locked resource is updated so check the node by lockOwner.
+                if (m_userAgent != null && m_userAgent.equals(WebDAV.AGENT_MICROSOFT_DATA_ACCESS_INTERNET_PUBLISHING_PROVIDER_DAV))
+                {
+                    String currentUser = getAuthenticationService().getCurrentUserName();
+                    Serializable lockOwner = fileInfo.getProperties().get(ContentModel.PROP_LOCK_OWNER);
+                    
+                    if (lockOwner.equals(currentUser))
+                    {
+                        return nodeLockInfo;
+                    }
+                }
+                else
+                {
+                    throw new WebDAVServerException(WebDAV.WEBDAV_SC_LOCKED);
+                }
             }
         }
 

@@ -198,6 +198,7 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
                     FileState fstate = tctx.getStateCache().findFileState( path, true);
                     x.setFileState(fstate);
                     fstate.setProcessId(params.getProcessId());
+                    fstate.setSharedAccess( params.getSharedAccess());
                     fstate.setFileStatus(FileStatus.FileExists);
                 }
             }
@@ -212,6 +213,8 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
                     FileState fstate = tctx.getStateCache().findFileState( path, true);
                     x.setFileState(fstate);
                     fstate.setFileStatus(FileStatus.FileExists);
+                    fstate.setProcessId(params.getProcessId());
+                    fstate.setSharedAccess( params.getSharedAccess());
                 }
             }
 
@@ -224,6 +227,8 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
                     FileState fstate = tctx.getStateCache().findFileState( path, true);
                     x.setFileState(fstate);
                     fstate.setFileStatus(FileStatus.DirectoryExists);
+                    fstate.setProcessId(params.getProcessId());
+                    fstate.setSharedAccess( params.getSharedAccess());
                 }
             }
 

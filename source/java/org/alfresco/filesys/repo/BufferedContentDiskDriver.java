@@ -226,12 +226,13 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
         if(tctx.hasStateCache())
         {
             FileStateCache cache = tctx.getStateCache();
-            FileState fstate = tctx.getStateCache().findFileState(path, false);
+            FileState fstate = cache.findFileState(path, false);
             if(fstate != null)
             {
                 FileInfo finfo = new FileInfo();
                 finfo.copyFrom(info);
-                
+
+                // TODO what if file state cache is stale or wrong?  We are over-writing the "real" value.
                 if(fstate.hasFileSize())
                 {
                     finfo.setFileSize(fstate.getFileSize());
@@ -253,8 +254,22 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
                     finfo.setAllocationSize( fstate.getAllocationSize());
                 }
                 
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("getFileInformation path" + path + ", returning:" + finfo  + 
+                            ", readOnly:"+info.isReadOnly() +
+                            ", fileId:"+info.getFileId() +
+                            ", directoryId:" + info.getDirectoryId() + 
+                            ", mode" + info.getMode());
+                }
+                
                 return finfo;
             }
+        }
+        
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("getFileInformation returning:" + path + " returning" + info);
         }
 
         return info;

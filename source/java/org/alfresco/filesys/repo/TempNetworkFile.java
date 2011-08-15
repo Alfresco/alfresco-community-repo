@@ -67,39 +67,46 @@ public class TempNetworkFile extends JavaNetworkFile implements NetworkFileState
     @Override
     public void writeFile(byte[] buf, int len, int pos) throws IOException
     {
+
+        super.writeFile(buf, len, pos);
+        
+        long size = m_io.length();
+             
+        setFileSize(size);
         if(fileState != null)
         {
             fileState.updateModifyDateTime();
+            fileState.setFileSize(size);
         }
-        super.writeFile(buf, len, pos);
-             
-        setFileSize(m_io.length());
     }
     
     @Override
     public void writeFile(byte[] buffer, int length, int position, long fileOffset)
     throws IOException
     {
-        if(fileState != null)
-        {
-            fileState.updateModifyDateTime();
-        }
         
         super.writeFile(buffer, length, position, fileOffset);
         
-        setFileSize(m_io.length());
+        long size = m_io.length();
+        setFileSize(size);
+        if(fileState != null)
+        {
+            fileState.updateModifyDateTime();
+            fileState.setFileSize(size);
+        }
     }
     
     @Override
     public void truncateFile(long size) throws IOException
     {
-        if(fileState != null)
-        {
-            fileState.updateModifyDateTime();
-        }
         super.truncateFile(size);
         
         setFileSize(size);
+        if(fileState != null)
+        {
+            fileState.updateModifyDateTime();
+            fileState.setFileSize(size);
+        }
     }
     
     // For JLAN file state lock manager

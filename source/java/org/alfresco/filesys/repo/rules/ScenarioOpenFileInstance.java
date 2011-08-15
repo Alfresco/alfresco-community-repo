@@ -150,21 +150,28 @@ class ScenarioOpenFileInstance implements ScenarioInstance
                 {
                     CreateFileOperation c = (CreateFileOperation)operation;
                     name = c.getName();
-                    ArrayList<Command> commands = new ArrayList<Command>();
-                    ArrayList<Command> postCommitCommands = new ArrayList<Command>();
-                    commands.add(new CreateFileCommand(c.getName(), c.getRootNodeRef(), c.getPath()));
-                    postCommitCommands.add(newOpenFileCallbackCommand());
-                    return new CompoundCommand(commands, postCommitCommands);
+                    
+                    if(name != null)
+                    {
+                        ArrayList<Command> commands = new ArrayList<Command>();
+                        ArrayList<Command> postCommitCommands = new ArrayList<Command>();
+                        commands.add(new CreateFileCommand(c.getName(), c.getRootNodeRef(), c.getPath()));
+                        postCommitCommands.add(newOpenFileCallbackCommand());
+                        return new CompoundCommand(commands, postCommitCommands);
+                    }
                 }
                 else if(operation instanceof OpenFileOperation)
                 {
                     OpenFileOperation o = (OpenFileOperation)operation;
                     name = o.getName();
-                    ArrayList<Command> commands = new ArrayList<Command>();
-                    commands.add(new OpenFileCommand(o.getName(), o.getMode(), o.isTruncate(), o.getRootNodeRef(), o.getPath()));
-                    ArrayList<Command> postCommitCommands = new ArrayList<Command>();
-                    postCommitCommands.add(newOpenFileCallbackCommand());
-                    return new CompoundCommand(commands, postCommitCommands);
+                    if(name != null)
+                    {
+                        ArrayList<Command> commands = new ArrayList<Command>();
+                        commands.add(new OpenFileCommand(o.getName(), o.getMode(), o.isTruncate(), o.getRootNodeRef(), o.getPath()));
+                        ArrayList<Command> postCommitCommands = new ArrayList<Command>();
+                        postCommitCommands.add(newOpenFileCallbackCommand());
+                        return new CompoundCommand(commands, postCommitCommands);
+                    }
                 }
                 
                 // Scenario Not Started
@@ -297,7 +304,7 @@ class ScenarioOpenFileInstance implements ScenarioInstance
                         return null;
                     }
                     
-                    if(name.equalsIgnoreCase(o.getName()))
+                    if(name != null && name.equalsIgnoreCase(o.getName()))
                     {
                         if(o.getMode() == OpenFileMode.WRITE)
                         {
@@ -313,6 +320,7 @@ class ScenarioOpenFileInstance implements ScenarioInstance
                             }
                             else
                             {
+                                // TODO Need a permission check here and increment post check
                                 openReadWriteCount++;
                                 logger.debug("Return already open read/write file handle from scenario:" + this);
                                 return new ReturnValueCommand(fileHandleReadWrite);

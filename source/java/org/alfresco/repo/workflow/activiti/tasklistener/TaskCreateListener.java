@@ -27,8 +27,10 @@ import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.activiti.engine.impl.persistence.entity.TaskEntity;
 import org.alfresco.repo.workflow.WorkflowNotificationUtils;
 import org.alfresco.repo.workflow.activiti.ActivitiConstants;
+import org.alfresco.repo.workflow.activiti.ActivitiScriptNode;
 import org.alfresco.repo.workflow.activiti.properties.ActivitiPropertyConverter;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Tasklistener that is notified when a task is created. This will set all
@@ -65,18 +67,33 @@ public class TaskCreateListener implements TaskListener
         {
             task.setVariableLocal(ActivitiConstants.PROP_TASK_FORM_KEY, taskFormKey);
         }
-     
+        
         // Determine whether we need to send the workflow notification or not
         ExecutionEntity executionEntity = ((ExecutionEntity)task.getExecution()).getProcessInstance();
         Boolean value = (Boolean)executionEntity.getVariable(WorkflowNotificationUtils.PROP_SEND_EMAIL_NOTIFICATIONS);
         if (Boolean.TRUE.equals(value) == true)
         {    
+            NodeRef workflowPackage = null;
+            ActivitiScriptNode scriptNode = (ActivitiScriptNode)executionEntity.getVariable(WorkflowNotificationUtils.PROP_PACKAGE);
+            if (scriptNode != null)
+            {
+                workflowPackage = scriptNode.getNodeRef();
+            }
+            
+            // TODO how do we identify a pooled task?
+            boolean pooled = false;
+            
             // Send email notification
             WorkflowNotificationUtils.sendWorkflowAssignedNotificationEMail(
                     services,
                     "activiti$" + task.getId(),
-                    task.getAssignee(),
-                    false);
+                    task.getName(),
+                    task.getDescription(),
+                    task.getDueDate(),
+                    Integer.valueOf(task.getPriority()),
+                    workflowPackage,
+                    new String[]{task.getAssignee()},
+                    pooled);
         }
     }
 

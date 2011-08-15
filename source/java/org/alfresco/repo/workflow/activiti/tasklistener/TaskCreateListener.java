@@ -80,20 +80,17 @@ public class TaskCreateListener implements TaskListener
                 workflowPackage = scriptNode.getNodeRef();
             }
             
-            // TODO how do we identify a pooled task?
-            boolean pooled = false;
-            
             // Send email notification
             WorkflowNotificationUtils.sendWorkflowAssignedNotificationEMail(
                     services,
-                    "activiti$" + task.getId(),
+                    ActivitiConstants.ENGINE_ID + "$" + task.getId(),
                     task.getName(),
                     task.getDescription(),
                     task.getDueDate(),
                     Integer.valueOf(task.getPriority()),
                     workflowPackage,
                     new String[]{task.getAssignee()},
-                    pooled);
+                    (task.getAssignee() == null));
         }
     }
 

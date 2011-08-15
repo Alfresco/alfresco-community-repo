@@ -307,7 +307,7 @@
 
                 <!--  Priority for the workflow as a whole -->
                 <property name="bpm:workflowPriority">
-                    <type>d:int</type>RW
+                    <type>d:int</type>
                     <default>2</default>
                     <constraints>
                         <constraint ref="bpm:allowedPriority" />

@@ -1,5 +1,20 @@
-/**
- * 
+/*
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
 package org.alfresco.repo.workflow;
 
@@ -21,8 +36,6 @@ import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Utility class containing methods to help when sending workflow notifications.
- * 
- * TODO? Move to workflow serivce??
  * 
  * @author Roy Wetherall
  */
@@ -88,7 +101,7 @@ public abstract class WorkflowNotificationUtils
         notificationContext.setBodyTemplate(WF_ASSIGNED_TEMPLATE);    
         
         // Build the template args
-        Map<String, Serializable>templateArgs = new HashMap<String, Serializable>(7);        
+        Map<String, Serializable>templateArgs = new HashMap<String, Serializable>(7);
         templateArgs.put(ARG_WF_ID, taskId);
         templateArgs.put(ARG_WF_TITLE, title);
         templateArgs.put(ARG_WF_DESCRIPTION, description);
@@ -122,7 +135,7 @@ public abstract class WorkflowNotificationUtils
         }
         
         // Set the template args
-        notificationContext.setTemplateArgs(templateArgs);            
+        notificationContext.setTemplateArgs(templateArgs);
         
         // Set the notification recipients
        for (String assignedAuthority : assignedAuthorites)
@@ -131,7 +144,7 @@ public abstract class WorkflowNotificationUtils
        }
         
         // Send email notification
-        services.getNotificationService().sendNotification(EMailNotificationProvider.NAME, notificationContext);        
+        services.getNotificationService().sendNotification(EMailNotificationProvider.NAME, notificationContext);
     }
     
     /**
@@ -151,10 +164,10 @@ public abstract class WorkflowNotificationUtils
         WorkflowTask workflowTask = services.getWorkflowService().getTaskById(taskId);
         
         // Get the workflow properties
-        Map<QName, Serializable> props = workflowTask.getProperties();        
+        Map<QName, Serializable> props = workflowTask.getProperties();
         
         // Get the title and description
-        String title = workflowTask.getTitle();        
+        String title = workflowTask.getTitle();
         String description = (String)props.get(WorkflowModel.PROP_DESCRIPTION);
         if (description == null)
         {
@@ -162,8 +175,8 @@ public abstract class WorkflowNotificationUtils
         }
         
         // Get the duedate, priority and workflow package
-        Date dueDate = (Date)props.get(WorkflowModel.PROP_DUE_DATE);        
-        Integer priority = (Integer)props.get(WorkflowModel.PROP_PRIORITY);       
+        Date dueDate = (Date)props.get(WorkflowModel.PROP_DUE_DATE);
+        Integer priority = (Integer)props.get(WorkflowModel.PROP_PRIORITY);
         NodeRef workflowPackage = workflowTask.getPath().getInstance().getWorkflowPackage();
 
         // Send notification

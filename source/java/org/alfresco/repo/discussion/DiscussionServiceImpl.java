@@ -477,7 +477,8 @@ public class DiscussionServiceImpl implements DiscussionService
     }
 
     @Override
-    public PostInfo getPrimaryPost(TopicInfo topic) {
+    public PostInfo getPrimaryPost(TopicInfo topic) 
+    {
        // First up, see if there is a post with the same name as the topic
        // (That's the normal Share case)
        PostInfo post = getPost(topic, topic.getSystemName());
@@ -498,6 +499,41 @@ public class DiscussionServiceImpl implements DiscussionService
        NodeRef postNodeRef = children.get(0).getChildRef();
        String postName = children.get(0).getQName().getLocalName();
        return buildPost(postNodeRef, topic, postName, null);
+    }
+    
+    @Override
+    public PostInfo getMostRecentPost(TopicInfo topic)
+    {
+       // Do a listing at the Node level, ordered by created date
+       //  to get the most recent nodes
+       NodeBackedEntity node = null;
+       int skip = 0;
+       int pageSize = 10000;
+       while(node == null)
+       {
+          PagingRequest paging = new PagingRequest(skip, pageSize);
+          paging.setRequestTotalCountMax(skip+pageSize+10);
+          CannedQueryResults<NodeBackedEntity> results = 
+             listEntries(topic.getNodeRef(), ForumModel.TYPE_POST, null, paging);
+          
+          // Move to the next page if we're not at the end
+          if(results.hasMoreItems())
+          {
+             skip += pageSize;
+             continue;
+          }
+          // Bail if the topic lacks posts
+          if(results.getPage().size() == 0)
+          {
+             // No posts in the topic
+             return null;
+          }
+          // Grab the last node
+          node = results.getPage().get(results.getPage().size()-1);
+       }
+       
+       // Wrap and return
+       return buildPost(node.getNodeRef(), topic, node.getName(), null);
     }
 
    

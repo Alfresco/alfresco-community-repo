@@ -246,6 +246,8 @@ public class DiscussionServiceImplTest
           
           // The topic has no primary post
           assertEquals(null, DISCUSSION_SERVICE.getPrimaryPost(topic));
+          // Which means no recent post
+          assertEquals(null, DISCUSSION_SERVICE.getMostRecentPost(topic));
           
           
           // Get with an arbitrary name gives nothing
@@ -288,6 +290,10 @@ public class DiscussionServiceImplTest
           // Topic will now have a primary post
           assertNotNull(DISCUSSION_SERVICE.getPrimaryPost(topic));
           assertEquals(post.getNodeRef(), DISCUSSION_SERVICE.getPrimaryPost(topic).getNodeRef());
+          
+          // The new post will be the most recent one
+          assertNotNull(DISCUSSION_SERVICE.getMostRecentPost(topic));
+          assertEquals(post.getNodeRef(), DISCUSSION_SERVICE.getMostRecentPost(topic).getNodeRef());
 
           
           // Topic will now have one post listed
@@ -355,6 +361,15 @@ public class DiscussionServiceImplTest
           assertNotNull(objects);
           assertEquals(topic.getNodeRef(), objects.getFirst().getNodeRef());
           assertEquals(reply1.getNodeRef(), objects.getSecond().getNodeRef());
+          
+          
+          // The primary post will be unchanged
+          assertNotNull(DISCUSSION_SERVICE.getPrimaryPost(topic));
+          assertEquals(post.getNodeRef(), DISCUSSION_SERVICE.getPrimaryPost(topic).getNodeRef());
+          
+          // But the most recent will be the newest reply
+          assertNotNull(DISCUSSION_SERVICE.getMostRecentPost(topic));
+          assertEquals(reply2.getNodeRef(), DISCUSSION_SERVICE.getMostRecentPost(topic).getNodeRef());
 
           
           // Check the overall count now

@@ -125,6 +125,17 @@ public interface DiscussionService {
    PostInfo getPrimaryPost(TopicInfo topic);
    
    /**
+    * Retrieves the newest (most recent) Post in a topic, be that 
+    *  the Primary Post or a Reply.
+    * This is typically used when identifying if a topic has had
+    *  new posts added to it since the user last saw it.
+    * Note that this works on Created Date, and not Modified/Updated,
+    *  so edits to an existing post will not change this.
+    */
+   @NotAuditable
+   PostInfo getMostRecentPost(TopicInfo topic);
+   
+   /**
     * Retrieves an existing {@link TopicInfo} from the repository,
     *  which is within a site
     */

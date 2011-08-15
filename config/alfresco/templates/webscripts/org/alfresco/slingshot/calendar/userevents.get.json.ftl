@@ -14,11 +14,11 @@
 
       "startAt": {
           "iso8601": "${xmldate(event.start)}",
-		    "legacyTime": "${event.start?string("HH:mm")}",
+		    "legacyTime": "${event.start?string("HH:mm")}"
       },
       "endAt": {
           "iso8601": "${xmldate(event.end)}",
-		    "legacyTime": "${event.end?string("HH:mm")}",
+		    "legacyTime": "${event.end?string("HH:mm")}"
       },
 		"when": "${xmldate(event.start)}",
       "endDate" : "${xmldate(event.end)}",

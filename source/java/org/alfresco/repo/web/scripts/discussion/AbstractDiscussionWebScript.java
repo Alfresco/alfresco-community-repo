@@ -66,6 +66,7 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
     
     private static Log logger = LogFactory.getLog(AbstractDiscussionWebScript.class);
     
+    protected static final String KEY_POSTDATA = "postData";
     protected static final String KEY_IS_TOPIC_POST = "isTopicPost";
     protected static final String KEY_TOPIC = "topic";
     protected static final String KEY_POST = "post";

@@ -1589,6 +1589,12 @@
          parent="abstractDiscussionWebScript">
    </bean>
    
+   <!-- Creates a new discussions reply post for a topic -->
+   <bean id="webscript.org.alfresco.repository.discussions.posts.forum-post-replies.post"
+         class="org.alfresco.repo.web.scripts.discussion.ForumPostRepliesPost"
+         parent="abstractDiscussionWebScript">
+   </bean>
+   
    <!-- Lists the Discussions for a site -->
 <!--
    <bean id="webscript.org.alfresco.repository.discussions.forum.forum-posts.get"

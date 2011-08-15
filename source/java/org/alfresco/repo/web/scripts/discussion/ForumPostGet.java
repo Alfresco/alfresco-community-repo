@@ -38,8 +38,6 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class ForumPostGet extends AbstractDiscussionWebScript
 {
-   private static final String KEY_POSTDATA = "postData";
-   
    @Override
    protected Map<String, Object> executeImpl(SiteInfo site, NodeRef nodeRef,
          TopicInfo topic, PostInfo post, WebScriptRequest req, JSONObject json,

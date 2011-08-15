@@ -38,6 +38,7 @@ function getOrderedPosts(topic)
    var query = " +TYPE:\"{http://www.alfresco.org/model/forum/1.0}post\"" +
                " +PATH:\"" + topic.qnamePath + "/*\" ";
    var sortAttribute = "@{http://www.alfresco.org/model/content/1.0}published";
+   //var sortAttribute = "@{http://www.alfresco.org/model/content/1.0}created"; // TODO Switch to this
    return search.luceneSearch(topic.nodeRef.storeRef.toString(), query, sortAttribute, true) ;
 }
 

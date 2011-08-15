@@ -471,6 +471,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
         boolean includeParentAssociations = (resultFilter == null ? true : resultFilter.getIncludeParentAssociations());
         boolean includeChildAssociations = (resultFilter == null ? true : resultFilter.getIncludeChildAssociations());
         boolean includeOwner = (resultFilter == null ? true : resultFilter.getIncludeOwner());
+        boolean includeChildIds = (resultFilter == null ? true : resultFilter.getIncludeChildIds());
         
         List<Long> nodeIds = preCacheNodes(nodeMetaDataParameters);
 
@@ -497,19 +498,18 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                 nodeMetaData.setNodeType(nodeType);
             }
 
-            if(includePaths || includeProperties)
+            if(includeProperties)
             {
                 props = nodeDAO.getNodeProperties(nodeId);
             }
             nodeMetaData.setProperties(props);
 
-            if(includePaths || includeAspects)
+            if(includeAspects)
             {
                 aspects = nodeDAO.getNodeAspects(nodeId);
             }
             nodeMetaData.setAspects(aspects);
-
-            // TODO paths may change during get i.e. node moved around in the graph
+            
             if(includePaths)
             {
                 Collection<Pair<Path, QName>> categoryPaths = getCategoryPaths(pair.getSecond(), aspects, props);
@@ -555,6 +555,33 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                     }
                 });
                 nodeMetaData.setChildAssocs(childAssocs);
+            }
+            
+            if(includeChildIds)
+            {
+                final List<Long> childIds = new ArrayList<Long>(100);
+                nodeDAO.getChildAssocs(nodeId, null, null, null, null, null, new ChildAssocRefQueryCallback()
+                {
+                    @Override
+                    public boolean preLoadNodes()
+                    {
+                        return false;
+                    }
+                    
+                    @Override
+                    public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair, Pair<Long, NodeRef> parentNodePair,
+                            Pair<Long, NodeRef> childNodePair)
+                    {
+                        childIds.add(childNodePair.getFirst());
+                        return true;
+                    }
+                    
+                    @Override
+                    public void done()
+                    {
+                    }
+                });
+                nodeMetaData.setChildIds(childIds);
             }
 
             if(includeParentAssociations)

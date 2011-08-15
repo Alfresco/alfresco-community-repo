@@ -48,6 +48,7 @@ public class NodeMetaData
     private List<ChildAssociationRef> childAssocs;
     private List<ChildAssociationRef> parentAssocs;
     private Long parentAssocsCrc;
+    private List<Long> childIds;
     
     public String getOwner()
     {
@@ -138,6 +139,13 @@ public class NodeMetaData
     public Long getParentAssocsCrc()
     {
         return parentAssocsCrc;
+    }
+    public List<Long> getChildIds()
+    {
+        return childIds;
+    }
+    public void setChildIds(List<Long> childIds)
+    {
+        this.childIds = childIds;
     } 
-    
 }

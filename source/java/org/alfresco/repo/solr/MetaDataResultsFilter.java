@@ -35,6 +35,7 @@ public class MetaDataResultsFilter
     private boolean includeParentAssociations = true;
     private boolean includeChildAssociations = true;
     private boolean includeNodeRef = true;
+    private boolean includeChildIds = true;
     
     public boolean getIncludeChildAssociations()
     {
@@ -107,6 +108,14 @@ public class MetaDataResultsFilter
     public void setIncludePaths(boolean includePaths)
     {
         this.includePaths = includePaths;
+    }
+    public boolean getIncludeChildIds()
+    {
+        return includeChildIds;
+    }
+    public void setIncludeChildIds(boolean includeChildIds)
+    {
+        this.includeChildIds = includeChildIds;
     }    
     
 }

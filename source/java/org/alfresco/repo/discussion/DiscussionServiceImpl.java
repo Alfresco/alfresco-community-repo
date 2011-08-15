@@ -313,6 +313,10 @@ public class DiscussionServiceImpl implements DiscussionService
        Map<QName, Serializable> props = new HashMap<QName, Serializable>();
        props.put(ContentModel.PROP_NAME,  name);
        
+       // TODO Remove this shortly, when the webscripts have been
+       //  fixed up to avoid their current broken-ness
+       props.put(ContentModel.PROP_PUBLISHED, new Date());
+       
        // Do we want a title? By default, primary posts share a title
        //  with the topic, but replies are title-free
        if(isPrimary)

@@ -77,7 +77,7 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
     private static final String USER_ONE = "UserOneThird";
     private static final String USER_TWO = "UserTwoThird";
     private static final String SITE_SHORT_NAME_DISCUSSION = "DiscussionSiteShortNameThree";
-    private static final String COMPONENT_DISCUSSION = "discussion";
+    private static final String COMPONENT_DISCUSSION = "discussions";
 
     private static final String URL_FORUM_SITE_POST = "/api/forum/post/site/" + SITE_SHORT_NAME_DISCUSSION + "/" + COMPONENT_DISCUSSION + "/";
     private static final String URL_FORUM_SITE_POSTS = "/api/forum/site/" + SITE_SHORT_NAME_DISCUSSION + "/" + COMPONENT_DISCUSSION + "/posts";

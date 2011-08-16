@@ -446,7 +446,8 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
              
              if(topic == null)
              {
-                String error = "Could not find topic: " + name;
+                String error = "Could not find topic '" + name + "' for site '" + 
+                               site.getShortName() + "'";
                 throw new WebScriptException(Status.STATUS_NOT_FOUND, error);
              }
              nodeRef = topic.getNodeRef();

@@ -231,5 +231,34 @@
       	<value>true</value>
       </property>
    </bean>
+   
+   <!-- Node browser web script -->
+   <bean id="webscript.org.alfresco.slingshot.node-browser.node-browser.get" parent="webscript"
+   	class="org.alfresco.slingshot.web.scripts.NodeBrowserScript">
+      <property name="transactionService">
+         <ref bean="TransactionService" />
+      </property>
+      <property name="nodeService">
+         <ref bean="NodeService" />
+      </property>
+      <property name="dictionaryService">
+         <ref bean="DictionaryService" />
+      </property>
+      <property name="searchService">
+         <ref bean="SearchService" />
+      </property>
+      <property name="namespaceService">
+         <ref bean="NamespaceService" />
+      </property>
+      <property name="permissionService">
+         <ref bean="PermissionService" />
+      </property>
+      <property name="ownableService">
+         <ref bean="OwnableService" />
+      </property>
+      <property name="AVMService">
+         <ref bean="AVMService" />
+      </property>
+   </bean>
  
 </beans>

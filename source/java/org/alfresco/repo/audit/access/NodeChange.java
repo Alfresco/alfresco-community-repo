@@ -22,6 +22,7 @@ import static org.alfresco.repo.audit.model.AuditApplication.AUDIT_PATH_SEPARATO
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -89,7 +90,7 @@ import org.alfresco.service.namespace.QName;
     private static final String PROPERTIES = "properties";
     private static final String ASPECTS = "aspects";
     private static final String VERSION_PROPERTIES = "version-properties";
-    private static final String SUB_ACTION = "sub-action";
+    public static final String SUB_ACTION = "sub-action";
 
     private static final String DELETE_NODE = "deleteNode";
     private static final String CREATE_NODE = "createNode";
@@ -109,6 +110,19 @@ import org.alfresco.service.namespace.QName;
     private static final String INVALID_PATH_CHAR_REPLACEMENT = "-";
     private static final Pattern INVALID_PATH_COMP_CHAR_PATTERN =
         Pattern.compile(AuditApplication.AUDIT_INVALID_PATH_COMP_CHAR_REGEX);
+    
+    public static Collection<String> SUMMARY_KEYS = new ArrayList<String>();
+    static
+    {
+        SUMMARY_KEYS.add(buildPath(PROPERTIES, ADD));
+        SUMMARY_KEYS.add(buildPath(PROPERTIES, DELETE));
+        SUMMARY_KEYS.add(buildPath(PROPERTIES, FROM));
+        SUMMARY_KEYS.add(buildPath(PROPERTIES, TO));
+        SUMMARY_KEYS.add(buildPath(ASPECTS, ADD));
+        SUMMARY_KEYS.add(buildPath(ASPECTS, DELETE));
+    }
+
+    public static final String SUB_ACTION_PREFIX = SUB_ACTION + AUDIT_PATH_SEPARATOR;
     
     private final NodeInfoFactory nodeInfoFactory;
     private final NamespaceService namespaceService;
@@ -749,7 +763,7 @@ import org.alfresco.service.namespace.QName;
      * @param components String.. components of the path.
      * @return a component path of the supplied values.
      */
-    private String buildPath(String... components)
+    private static String buildPath(String... components)
     {
         StringBuilder sb = new StringBuilder();
         for (String component: components)

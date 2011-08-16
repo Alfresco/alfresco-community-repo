@@ -152,6 +152,14 @@ import org.springframework.beans.factory.InitializingBean;
  *    /alfresco-access/transaction/sub-action/00/move/from/type=cm:folder
  *    /alfresco-access/transaction/sub-action/01/action=readContent
  * </pre>
+ * The trace output from this class may be useful to developers as it logs method
+ * calls grouped by transaction. The debug output is of the audit records written
+ * and full inbound audit data. However for developers trace will provide a more
+ * readable form. Setting the following dev-log4j.properties:
+ * <pre>
+ *    log4j.appender.File.Threshold=trace
+ *    log4j.logger.org.alfresco.repo.audit.access.AccessAuditor=trace
+ * </pre>
  * 
  * @author Alan Davis
  */
@@ -434,21 +442,48 @@ public class AccessAuditor implements InitializingBean,
         {
             if (logger.isDebugEnabled())
             {
-                StringBuilder sb = new StringBuilder("\n\tAudit data:");
-                for (String key : new TreeSet<String>(recordedAuditMap.keySet()))
+                // Trace is used by a developer to produce a cut down log output that is simpler
+                // to read (no audit data section or summary keys)
+                boolean devOutput = logger.isTraceEnabled();
+                
+                StringBuilder sb = new StringBuilder();
+                StringBuilder subActions = new StringBuilder("");
+                if (!devOutput)
                 {
-                    sb.append("\n\t\t").append(key).append('=');
-                    appendAuditMapValue(sb, recordedAuditMap.get(key));
+                    sb.append("\n\tAudit data:");
+                    for (String key : new TreeSet<String>(recordedAuditMap.keySet()))
+                    {
+                        sb.append("\n\t\t").append(key).append('=');
+                        appendAuditMapValue(sb, recordedAuditMap.get(key));
+                    }
+
+                    sb.append("\n\n\tInbound audit values: ");
                 }
 
-                sb.append('\n');
-                sb.append("\n\tInbound audit values: ");
                 for (String key : new TreeSet<String>(auditMap.keySet()))
                 {
-                    sb.append("\n\t\t").append(rootPath).append('/').append(key).append('=');
-                    appendAuditMapValue(sb, auditMap.get(key));
+                    if (!devOutput || !NodeChange.SUMMARY_KEYS.contains(key))
+                    {
+                        StringBuilder output = (key.startsWith(NodeChange.SUB_ACTION_PREFIX))
+                            ? subActions : sb;
+                        
+                        output.append("\n\t\t").append(rootPath).append('/').append(key).append('=');
+                        appendAuditMapValue(output, auditMap.get(key));
+                    }
                 }
-                logger.debug(sb.toString());
+                if (subActions.length() > 0)
+                {
+                    sb.append("\n\t\t--- sub actions ---");
+                    sb.append(subActions.toString());
+                }
+                if (devOutput)
+                {
+                    logger.trace(sb.toString());
+                }
+                else
+                {
+                    logger.debug(sb.toString());
+                }
             }
             return true;
         }

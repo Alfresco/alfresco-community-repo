@@ -214,6 +214,63 @@ public class Search extends BaseScopableProcessorExtension
             return Context.getCurrentContext().newArray(getScope(), 0);
         }
     }
+    
+    /**
+     * Execute a SelectNodes XPath search
+     * 
+     * @param search        SelectNodes XPath search string to execute
+     * 
+     * @return JavaScript array of Node results from the search - can be empty but not null
+     */
+    public Scriptable selectNodes(String search)
+    {
+        return selectNodes(null, search);
+    }
+    
+    /**
+     * Execute a SelectNodes XPath search
+     * 
+     * @param store         Store reference to search against i.e. workspace://SpacesStore
+     * @param search        SelectNodes XPath search string to execute
+     * 
+     * @return JavaScript array of Node results from the search - can be empty but not null
+     */
+    public Scriptable selectNodes(String store, String search)
+    {
+        if (search != null && search.length() != 0)
+        {
+            Object[] nodeArray = new Object[0];
+            if (store == null)
+            {
+                store = "workspace://SpacesStore";
+            }
+            try
+            {
+                NodeService nodeService = this.services.getNodeService();
+                List<NodeRef> nodes = this.services.getSearchService().selectNodes(
+                        nodeService.getRootNode(new StoreRef(store)), search, null, this.services.getNamespaceService(), false);
+                if (nodes.size() != 0)
+                {
+                    int index = 0;
+                    nodeArray = new Object[nodes.size()];
+                    for (NodeRef node: nodes)
+                    {
+                        nodeArray[index++] = new ScriptNode(node, this.services, getScope());
+                    }
+                }
+            }
+            catch (Throwable err)
+            {
+                throw new AlfrescoRuntimeException("Failed to execute search: " + search, err);
+            }
+            
+            return Context.getCurrentContext().newArray(getScope(), nodeArray);
+        }
+        else
+        {
+            return Context.getCurrentContext().newArray(getScope(), 0);
+        }
+    }
 
     /**
      * Validation Xpath query

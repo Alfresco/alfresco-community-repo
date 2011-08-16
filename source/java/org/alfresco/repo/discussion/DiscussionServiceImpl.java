@@ -62,7 +62,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class DiscussionServiceImpl implements DiscussionService
 {
-    public static final String DISCUSSION_COMPONENT = "discussion";
+    public static final String DISCUSSION_COMPONENT = "discussions";
    
     protected static final String CANNED_QUERY_GET_CHILDREN = "discussionGetChildrenCannedQueryFactory";
     
@@ -510,31 +510,19 @@ public class DiscussionServiceImpl implements DiscussionService
     {
        // Do a listing at the Node level, ordered by created date
        //  to get the most recent nodes
-       NodeBackedEntity node = null;
-       int skip = 0;
-       int pageSize = 10000;
-       while(node == null)
-       {
-          PagingRequest paging = new PagingRequest(skip, pageSize);
-          paging.setRequestTotalCountMax(skip+pageSize+10);
-          CannedQueryResults<NodeBackedEntity> results = 
-             listEntries(topic.getNodeRef(), ForumModel.TYPE_POST, null, paging);
+       PagingRequest paging = new PagingRequest(0, 1);
+       CannedQueryResults<NodeBackedEntity> results = 
+           listEntries(topic.getNodeRef(), ForumModel.TYPE_POST, null, false, paging);
           
-          // Move to the next page if we're not at the end
-          if(results.hasMoreItems())
-          {
-             skip += pageSize;
-             continue;
-          }
-          // Bail if the topic lacks posts
-          if(results.getPage().size() == 0)
-          {
-             // No posts in the topic
-             return null;
-          }
-          // Grab the last node
-          node = results.getPage().get(results.getPage().size()-1);
+       // Bail if the topic lacks posts
+       if(results.getPage().size() == 0)
+       {
+          // No posts in the topic
+          return null;
        }
+       
+       // Grab the newest node
+       NodeBackedEntity node = results.getPage().get(0);
        
        // Wrap and return
        return buildPost(node.getNodeRef(), topic, node.getName(), null);
@@ -558,9 +546,9 @@ public class DiscussionServiceImpl implements DiscussionService
    @Override
    public PagingResults<TopicInfo> listTopics(NodeRef nodeRef,
          PagingRequest paging) {
-      // Do the listing
+      // Do the listing, oldest first
       CannedQueryResults<NodeBackedEntity> nodes = 
-         listEntries(nodeRef, ForumModel.TYPE_TOPIC, null, paging);
+         listEntries(nodeRef, ForumModel.TYPE_TOPIC, null, true, paging);
       
       // Wrap and return
       return wrap(nodes, nodeRef);
@@ -569,9 +557,9 @@ public class DiscussionServiceImpl implements DiscussionService
    @Override
    public PagingResults<PostInfo> listPosts(TopicInfo topic, PagingRequest paging)
    {
-      // Do the listing
+      // Do the listing, oldest first
       CannedQueryResults<NodeBackedEntity> nodes = 
-         listEntries(topic.getNodeRef(), ForumModel.TYPE_POST, null, paging);
+         listEntries(topic.getNodeRef(), ForumModel.TYPE_POST, null, true, paging);
       
       // Wrap and return
       return wrap(nodes, topic);
@@ -611,13 +599,21 @@ public class DiscussionServiceImpl implements DiscussionService
     *  type, optionally filtered by creator
     */
    private CannedQueryResults<NodeBackedEntity> listEntries(NodeRef parent, 
-         QName nodeType, String creatorUsername, PagingRequest paging) 
+         QName nodeType, String creatorUsername, boolean oldestFirst, PagingRequest paging) 
    {
       // Grab the factory
       GetChildrenAuditableCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenAuditableCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_GET_CHILDREN);
       
-      // Do the sorting, newest first by created date
-      CannedQuerySortDetails sorting = getChildrenCannedQueryFactory.createDateAscendingCQSortDetails();
+      // Do the sorting, newest first or last by created date (as requested)
+      CannedQuerySortDetails sorting = null;
+      if(oldestFirst)
+      {
+         sorting = getChildrenCannedQueryFactory.createDateAscendingCQSortDetails();
+      }
+      else
+      {
+         sorting = getChildrenCannedQueryFactory.createDateDescendingCQSortDetails();
+      }
       
       // Run the canned query
       GetChildrenAuditableCannedQuery cq = (GetChildrenAuditableCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(

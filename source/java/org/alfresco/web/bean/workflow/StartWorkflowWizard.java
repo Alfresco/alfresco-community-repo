@@ -37,7 +37,10 @@ import javax.transaction.UserTransaction;
 import org.springframework.extensions.config.ConfigElement;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.publishing.PublishingEventHelper;
 import org.alfresco.repo.workflow.WorkflowModel;
+import org.alfresco.repo.workflow.activiti.ActivitiConstants;
+import org.alfresco.repo.workflow.jbpm.JBPMEngine;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.invitation.InvitationService;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -83,6 +86,7 @@ public class StartWorkflowWizard extends BaseWizardBean
    
    protected List<String> wcmWorkflows;
    protected List<String> invitationWorkflows;
+   protected List<String> publishingWorkflows;
    
    transient private WorkflowService workflowService;
    transient private InvitationService invitationService;
@@ -569,6 +573,7 @@ public class StartWorkflowWizard extends BaseWizardBean
       // the list as these workflows are specific to WCM functionality and AVM stores
       List<String> configuredWcmWorkflows = this.getWCMWorkflowNames();
       List<String> configuredInvitationWorkflows = this.getInvitationServiceWorkflowNames();
+      List<String> publishingWorkflows = this.getPublishingWorkflowNames();
       
       List<WorkflowDefinition> workflowDefs =  this.getWorkflowService().getDefinitions();
       for (WorkflowDefinition workflowDef : workflowDefs)
@@ -576,7 +581,8 @@ public class StartWorkflowWizard extends BaseWizardBean
          String name = workflowDef.name;
          
          if (configuredWcmWorkflows.contains(name) == false &&
-        	 configuredInvitationWorkflows.contains(name) == false)
+        	 configuredInvitationWorkflows.contains(name) == false &&
+        	 publishingWorkflows.contains(name) == false)
          {
             // add the workflow if it is not a WCM specific workflow
             String label = workflowDef.title;
@@ -790,23 +796,41 @@ public class StartWorkflowWizard extends BaseWizardBean
     */
    protected List<String> getInvitationServiceWorkflowNames()   
    {
-	   if( invitationWorkflows == null )
-	   {
-		   if (invitationService != null)
-		   {
-		   		invitationWorkflows = invitationService.getInvitationServiceWorkflowNames();
-		   }
-	   }
-	   return invitationWorkflows;
+      if( invitationWorkflows == null )
+      {
+         if (invitationService != null)
+         {
+            invitationWorkflows = invitationService.getInvitationServiceWorkflowNames();
+         }
+      }
+      return invitationWorkflows;
+   }
+   
+   /**
+    * Get the names of the publishing workflows
+    * 
+    * @return The names of the publishing workflows
+    */
+   protected List<String> getPublishingWorkflowNames()   
+   {
+      if (publishingWorkflows == null)
+      {
+         publishingWorkflows = new ArrayList<String>(2);
+         
+         publishingWorkflows.add(JBPMEngine.ENGINE_ID + "$" + PublishingEventHelper.WORKFLOW_DEFINITION_NAME);
+         publishingWorkflows.add(ActivitiConstants.ENGINE_ID + "$" + PublishingEventHelper.WORKFLOW_DEFINITION_NAME);
+      }
+      
+      return publishingWorkflows;
    }
 
    public void setInvitationService(InvitationService invitationService) 
    {
-	   this.invitationService = invitationService;
+      this.invitationService = invitationService;
    }
 
-	public  InvitationService getInvitationService() 
-	{
-		return invitationService;
-	}
+   public  InvitationService getInvitationService() 
+   {
+      return invitationService;
+   }
 }

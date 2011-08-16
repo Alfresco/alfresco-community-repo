@@ -26,6 +26,7 @@ import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentStreamListener;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.springframework.beans.factory.annotation.Required;
 
 /**
  * Implementation of ContentStore that wraps any other ContentStore (the backing store)
@@ -41,10 +42,14 @@ import org.alfresco.service.cmr.repository.ContentWriter;
  */
 public class CachingContentStore implements ContentStore
 {
-    private final ContentStore backingStore;
-    private final ContentCache cache;
-    private final boolean cacheOnInbound;
+    private ContentStore backingStore;
+    private ContentCache cache;
+    private boolean cacheOnInbound;
     
+
+    public CachingContentStore()
+    {
+    }
     
     public CachingContentStore(ContentStore backingStore, ContentCache cache, boolean cacheOnInbound)
     {
@@ -158,19 +163,23 @@ public class CachingContentStore implements ContentStore
             final ContentWriter bsWriter = backingStore.getWriter(context);
                         
             // write to cache
-            final ContentWriter writer = cache.getWriter(bsWriter.getContentUrl());
+            final ContentWriter cacheWriter = cache.getWriter(bsWriter.getContentUrl());
             
-            writer.addListener(new ContentStreamListener()
+            cacheWriter.addListener(new ContentStreamListener()
             {
                 @Override
                 public void contentStreamClosed() throws ContentIOException
                 {
-                    // copy from the cache to the backing store
-                    bsWriter.putContent(writer.getReader());
+                    // Finished writing to the cache, so copy to the backing store -
+                    // ensuring that the encoding attributes are set to the same as for the cache writer.
+                    bsWriter.setEncoding(cacheWriter.getEncoding());
+                    bsWriter.setLocale(cacheWriter.getLocale());
+                    bsWriter.setMimetype(cacheWriter.getMimetype());
+                    bsWriter.putContent(cacheWriter.getReader());
                 }
             });
             
-            return writer;
+            return cacheWriter;
         }
         else
         {
@@ -186,7 +195,8 @@ public class CachingContentStore implements ContentStore
     @Override
     public ContentWriter getWriter(ContentReader existingContentReader, String newContentUrl)
     {
-        return backingStore.getWriter(existingContentReader, newContentUrl);
+        ContentContext ctx = new ContentContext(existingContentReader, newContentUrl);
+        return getWriter(ctx);
     }
 
     /*
@@ -219,4 +229,24 @@ public class CachingContentStore implements ContentStore
         
         return backingStore.delete(contentUrl);
     }
+
+    
+    @Required
+    public void setBackingStore(ContentStore backingStore)
+    {
+        this.backingStore = backingStore;
+    }
+
+    @Required
+    public void setCache(ContentCache cache)
+    {
+        this.cache = cache;
+    }
+
+    public void setCacheOnInbound(boolean cacheOnInbound)
+    {
+        this.cacheOnInbound = cacheOnInbound;
+    }
+    
+    
 }

@@ -20,9 +20,8 @@ package org.alfresco.repo.content.caching;
 
 import java.io.File;
 
-import net.sf.ehcache.CacheManager;
-
 import org.alfresco.repo.cache.EhCacheAdapter;
+import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -45,33 +44,9 @@ public class ContentCacheImpl implements ContentCache
 {
     private static final String CACHE_DIR = "caching_cs";
     private static final String TMP_FILE_EXTENSION = ".tmp";
-    private static final String EHCACHE_NAME = "contentStoreCache";
-    private static final long T24_HOURS = 86400;
     private final File cacheRoot = TempFileProvider.getLongLifeTempDir(CACHE_DIR);
     private EhCacheAdapter<String, String> memoryStore;
     
-    public ContentCacheImpl()
-    {
-        // TODO: Configuration to be moved out into Spring
-        memoryStore = new EhCacheAdapter<String, String>();
-        configureMemoryStore();   
-    }
-
-    private void configureMemoryStore()
-    {
-        CacheManager manager = CacheManager.getInstance();
-        
-        // Create the cache if it hasn't already been created.
-        if (!manager.cacheExists(EHCACHE_NAME))
-        {
-            net.sf.ehcache.Cache memoryOnlyCache = 
-                new net.sf.ehcache.Cache(EHCACHE_NAME, 10000, false, false, T24_HOURS, T24_HOURS);
-            
-            manager.addCache(memoryOnlyCache);
-        }
-        
-        memoryStore.setCache(manager.getCache(EHCACHE_NAME));
-    }
     
     
     @Override
@@ -153,7 +128,7 @@ public class ContentCacheImpl implements ContentCache
     {
         // Get a writer to a cache file.
         final File cacheFile = createCacheFile(url);
-        ContentWriter writer = new FileContentWriter(cacheFile);
+        ContentWriter writer = new FileContentWriter(cacheFile, url, null);
         
         // Attach a listener to populate the in-memory store when done writing.
         writer.addListener(new ContentStreamListener()
@@ -184,6 +159,18 @@ public class ContentCacheImpl implements ContentCache
      */
     private String pathFromUrl(String contentUrl)
     {
-        return contentUrl.replaceFirst("://", "/");
+        return contentUrl.replaceFirst(ContentStore.PROTOCOL_DELIMITER, "/");
+    }
+
+
+
+    /**
+     * Configure ContentCache with a memory store - an EhCacheAdapter.
+     * 
+     * @param memoryStore the memoryStore to set
+     */
+    public void setMemoryStore(EhCacheAdapter<String, String> memoryStore)
+    {
+        this.memoryStore = memoryStore;
     }
 }

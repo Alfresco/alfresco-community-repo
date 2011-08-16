@@ -31,6 +31,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.Locale;
 
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
@@ -137,6 +138,35 @@ public class CachingContentStoreTest
     }
 
     
+    @Test
+    public void encodingAttrsCopiedToBackingStoreWriter()
+    {
+        cachingStore = new CachingContentStore(backingStore, cache, true);
+        ContentContext ctx = ContentContext.NULL_CONTEXT;
+        ContentWriter bsWriter = mock(ContentWriter.class);
+        when(backingStore.getWriter(ctx)).thenReturn(bsWriter);
+        when(bsWriter.getContentUrl()).thenReturn("url");
+        ContentWriter cacheWriter = mock(ContentWriter.class);
+        when(cache.getWriter("url")).thenReturn(cacheWriter);
+        ContentReader readerFromCacheWriter = mock(ContentReader.class);
+        when(cacheWriter.getReader()).thenReturn(readerFromCacheWriter);
+        
+        when(cacheWriter.getEncoding()).thenReturn("UTF-8");
+        when(cacheWriter.getLocale()).thenReturn(Locale.UK);
+        when(cacheWriter.getMimetype()).thenReturn("not/real/mimetype");       
+        
+        cachingStore.getWriter(ctx);
+ 
+        // Get the stream listener and trigger it
+        ArgumentCaptor<ContentStreamListener> arg = ArgumentCaptor.forClass(ContentStreamListener.class);
+        verify(cacheWriter).addListener(arg.capture());
+        // Simulate a stream close
+        arg.getValue().contentStreamClosed();
+ 
+        verify(bsWriter).setEncoding("UTF-8");
+        verify(bsWriter).setLocale(Locale.UK);
+        verify(bsWriter).setMimetype("not/real/mimetype");
+    }
     
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Tests for delegated methods follow...

@@ -37,7 +37,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
  * <p>
  * Content URLs must consist of a prefix or protocol followed by an
  * implementation-specific identifier.  For example, the content URL format
- * for file stores is <b>store://year/month/day/GUID.bin</b> <br>
+ * for file stores is <b>store://year/month/day/hour/minute/GUID.bin</b> <br>
  * <ul>
  *   <li> <b>store://</b>: prefix identifying an Alfresco content stores
  *                         regardless of the persistence mechanism. </li>

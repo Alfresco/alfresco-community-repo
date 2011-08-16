@@ -1,0 +1,39 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+    <import resource="classpath:alfresco/application-context.xml" />
+    
+    <bean id="cachingContentStoreCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+        <property name="cache">
+            <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+                <property name="cacheManager">
+                    <ref bean="internalEHCacheManager" />
+                </property>
+                <property name="cacheName">
+                    <value>org.alfresco.cache.cachingContentStoreCache</value>
+                </property>
+            </bean>
+        </property>
+    </bean>
+
+
+    <bean id="backingStore" class="org.alfresco.repo.content.filestore.FileContentStore">
+        <constructor-arg>
+            <value>${dir.contentstore}</value>
+        </constructor-arg>
+    </bean>
+
+
+    <bean id="contentCache" class="org.alfresco.repo.content.caching.ContentCacheImpl">
+        <property name="memoryStore" ref="cachingContentStoreCache"/>
+    </bean>
+
+
+    <bean id="cachingContentStore" class="org.alfresco.repo.content.caching.CachingContentStore">
+        <property name="backingStore" ref="backingStore"/>
+        <property name="cache" ref="contentCache"/>
+        <property name="cacheOnInbound" value="true"/>
+    </bean>
+</beans>

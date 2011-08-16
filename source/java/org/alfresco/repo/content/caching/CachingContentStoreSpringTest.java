@@ -20,6 +20,9 @@ package org.alfresco.repo.content.caching;
 
 import java.io.File;
 
+import net.sf.ehcache.CacheManager;
+
+import org.alfresco.repo.cache.EhCacheAdapter;
 import org.alfresco.repo.content.AbstractWritableContentStoreTest;
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
@@ -28,15 +31,18 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.TempFileProvider;
 
 /**
- * Tests for the CachingContentStore that use a full spring context.
+ * Tests for the CachingContentStore that benefit from a full set of tests
+ * defined in AbstractWritableContentStoreTest.
  * 
  * @author Matt Ward
  */
 public class CachingContentStoreSpringTest extends AbstractWritableContentStoreTest
 {
+    private static final String EHCACHE_NAME = "cache.test.cachingContentStoreCache";
+    private static final int T24_HOURS = 86400;
     private CachingContentStore store;
     private FileContentStore backingStore;
-    private ContentCache cache;
+    private ContentCacheImpl cache;
     
     @Override
     public void setUp() throws Exception
@@ -51,10 +57,31 @@ public class CachingContentStoreSpringTest extends AbstractWritableContentStoreT
                 getName());
         
         cache = new ContentCacheImpl();
+        cache.setMemoryStore(createMemoryStore());
         store = new CachingContentStore(backingStore, cache, false);
     }
     
     
+    private EhCacheAdapter<String, String> createMemoryStore()
+    {
+        CacheManager manager = CacheManager.getInstance();
+        
+        // Create the cache if it hasn't already been created.
+        if (!manager.cacheExists(EHCACHE_NAME))
+        {
+            net.sf.ehcache.Cache memoryOnlyCache = 
+                new net.sf.ehcache.Cache(EHCACHE_NAME, 50, false, false, T24_HOURS, T24_HOURS);
+            
+            manager.addCache(memoryOnlyCache);
+        }
+        
+        EhCacheAdapter<String, String> memoryStore = new EhCacheAdapter<String, String>();
+        memoryStore.setCache(manager.getCache(EHCACHE_NAME));
+        
+        return memoryStore;
+    }
+
+
     public void testStoreWillReadFromCacheWhenAvailable()
     {
         final String content = "Content for " + getName() + " test.";

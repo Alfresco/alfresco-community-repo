@@ -148,6 +148,8 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         List<String> ret = new ArrayList<String>(3);
         ret.add(WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME);
         ret.add(WorkflowModelModeratedInvitation.WORKFLOW_DEFINITION_NAME);
+        ret.add(WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI);
+        ret.add(WorkflowModelModeratedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI);
         // old deprecated invitation workflow.
         ret.add("jbpm$wf:invite");
         return ret;

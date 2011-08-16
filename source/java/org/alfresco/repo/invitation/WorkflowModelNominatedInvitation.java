@@ -34,6 +34,7 @@ public interface WorkflowModelNominatedInvitation
 
     // workflow definition name
     public static final String WORKFLOW_DEFINITION_NAME = "jbpm$inwf:invitation-nominated";
+    public static final String WORKFLOW_DEFINITION_NAME_ACTIVITI = "activiti$activitiInvitationNominated";
 
     // tasks
     public static final QName WF_INVITE_TASK_INVITE_TO_SITE = QName.createQName(NAMESPACE_URI, "inviteToSiteTask");

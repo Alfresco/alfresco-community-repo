@@ -36,6 +36,7 @@ public interface WorkflowModelModeratedInvitation
 
     // workflow definition name
     public static final String WORKFLOW_DEFINITION_NAME = "jbpm$imwf:invitation-moderated";
+    public static final String WORKFLOW_DEFINITION_NAME_ACTIVITI = "activiti$activitiInvitationModerated";
     
     // tasks
     public static final QName WF_START_TASK = QName.createQName(NAMESPACE_URI, "moderatedInvitationSubmitTask");

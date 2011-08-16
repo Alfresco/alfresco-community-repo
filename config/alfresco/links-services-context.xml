@@ -51,6 +51,7 @@
 
    <!-- Links Service base bean -->
 	<bean id="linksService" class="org.alfresco.repo.links.LinksServiceImpl">
+        <property name="nodeDAO" ref="nodeDAO" />
         <property name="nodeService" ref="NodeService"/>
         <property name="siteService" ref="SiteService"/>
         <property name="searchService" ref="SearchService"/>

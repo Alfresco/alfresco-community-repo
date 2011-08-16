@@ -33,12 +33,14 @@ import org.alfresco.query.CannedQuerySortDetails;
 import org.alfresco.query.EmptyPagingResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.node.getchildren.GetChildrenAuditableCannedQuery;
 import org.alfresco.repo.node.getchildren.GetChildrenAuditableCannedQueryFactory;
 import org.alfresco.repo.query.NodeBackedEntity;
 import org.alfresco.repo.site.SiteServiceImpl;
 import org.alfresco.service.cmr.discussion.DiscussionService;
 import org.alfresco.service.cmr.discussion.PostInfo;
+import org.alfresco.service.cmr.discussion.PostWithReplies;
 import org.alfresco.service.cmr.discussion.TopicInfo;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -72,6 +74,7 @@ public class DiscussionServiceImpl implements DiscussionService
     @SuppressWarnings("unused")
     private static Log logger = LogFactory.getLog(DiscussionServiceImpl.class);
     
+    private NodeDAO nodeDAO;
     private NodeService nodeService;
     private SiteService siteService;
     private ContentService contentService;
@@ -79,6 +82,11 @@ public class DiscussionServiceImpl implements DiscussionService
     private FileFolderService fileFolderService;
     private TransactionService transactionService;
     private NamedObjectRegistry<CannedQueryFactory<? extends Object>> cannedQueryRegistry;
+    
+    public void setNodeDAO(NodeDAO nodeDAO)
+    {
+        this.nodeDAO = nodeDAO;
+    }
     
     public void setNodeService(NodeService nodeService)
     {
@@ -567,19 +575,24 @@ public class DiscussionServiceImpl implements DiscussionService
 
 
    @Override
-   public PagingResults<PostInfo> listPostReplies(PostInfo primaryPost,
-         int levels, PagingRequest paging) {
-      // TODO Auto-generated method stub
-      return null;
+   public PostWithReplies listPostReplies(TopicInfo topic, int levels)
+   {
+       PostInfo primaryPost = getPrimaryPost(topic);
+       if(primaryPost == null)
+       {
+          return null;
+       }
+       return listPostReplies(primaryPost, levels);
    }
-
+   
    @Override
-   public PagingResults<PostInfo> listPostReplies(TopicInfo forum, int levels,
-         PagingRequest paging) {
+   public PostWithReplies listPostReplies(PostInfo primaryPost, int levels)
+   {
       // TODO Auto-generated method stub
       return null;
    }
 
+   
    @Override
    public PagingResults<PostInfo> listPosts(NodeRef nodeRef,
          PagingRequest paging) {
@@ -633,6 +646,15 @@ public class DiscussionServiceImpl implements DiscussionService
     */
    private PagingResults<TopicInfo> wrap(final PagingResults<NodeBackedEntity> results, final NodeRef container)
    {
+      // Pre-load the nodes before we create them
+      List<Long> ids = new ArrayList<Long>();
+      for(NodeBackedEntity node : results.getPage())
+      {
+         ids.add(node.getId());
+      }
+      nodeDAO.cacheNodesById(ids);
+      
+      // Wrap
       return new PagingResults<TopicInfo>()
       {
           @Override
@@ -671,6 +693,15 @@ public class DiscussionServiceImpl implements DiscussionService
     */
    private PagingResults<PostInfo> wrap(final PagingResults<NodeBackedEntity> results, final TopicInfo topic)
    {
+      // Pre-load the nodes before we create them
+      List<Long> ids = new ArrayList<Long>();
+      for(NodeBackedEntity node : results.getPage())
+      {
+         ids.add(node.getId());
+      }
+      nodeDAO.cacheNodesById(ids);
+      
+      // Wrap
       return new PagingResults<PostInfo>()
       {
           @Override

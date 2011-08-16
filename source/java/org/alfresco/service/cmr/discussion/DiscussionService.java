@@ -174,13 +174,13 @@ public interface DiscussionService {
     * Retrieves all replies on a Topic
     */
    @NotAuditable
-   PagingResults<PostInfo> listPostReplies(TopicInfo forum, int levels, PagingRequest paging);
+   PostWithReplies listPostReplies(TopicInfo forum, int levels);
 
    /**
     * Retrieves all replies to a Post
     */
    @NotAuditable
-   PagingResults<PostInfo> listPostReplies(PostInfo primaryPost, int levels, PagingRequest paging);
+   PostWithReplies listPostReplies(PostInfo primaryPost, int levels);
    
    /**
     * Retrieves all posts in a site, across all topics

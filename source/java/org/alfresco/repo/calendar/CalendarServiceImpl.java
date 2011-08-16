@@ -34,6 +34,7 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.calendar.cannedqueries.GetCalendarEntriesCannedQuery;
 import org.alfresco.repo.calendar.cannedqueries.GetCalendarEntriesCannedQueryFactory;
+import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory;
 import org.alfresco.repo.site.SiteServiceImpl;
@@ -75,12 +76,18 @@ public class CalendarServiceImpl implements CalendarService
     @SuppressWarnings("unused")
     private static Log logger = LogFactory.getLog(CalendarServiceImpl.class);
     
+    private NodeDAO nodeDAO;
     private NodeService nodeService;
     private SiteService siteService;
     private TaggingService taggingService;
     private PermissionService permissionService;
     private TransactionService transactionService;
     private NamedObjectRegistry<CannedQueryFactory<? extends Object>> cannedQueryRegistry;
+    
+    public void setNodeDAO(NodeDAO nodeDAO)
+    {
+        this.nodeDAO = nodeDAO;
+    }
     
     public void setNodeService(NodeService nodeService)
     {
@@ -320,6 +327,10 @@ public class CalendarServiceImpl implements CalendarService
      */
     private PagingResults<CalendarEntry> wrap(final PagingResults<NodeRef> results, final NodeRef container)
     {
+       // Pre-load the nodes before we create them
+       nodeDAO.cacheNodes(results.getPage());
+       
+       // Wrap
        return new PagingResults<CalendarEntry>()
        {
            @Override

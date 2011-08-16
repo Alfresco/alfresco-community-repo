@@ -66,6 +66,7 @@
 
    <!-- Calendar Service base bean -->
 	<bean id="calendarService" class="org.alfresco.repo.calendar.CalendarServiceImpl">
+        <property name="nodeDAO" ref="nodeDAO" />
         <property name="nodeService" ref="NodeService"/>
         <property name="siteService" ref="SiteService"/>
         <property name="taggingService" ref="TaggingService"/>

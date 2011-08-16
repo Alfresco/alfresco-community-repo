@@ -51,6 +51,7 @@
 
    <!-- Wiki Service base bean -->
 	<bean id="wikiService" class="org.alfresco.repo.wiki.WikiServiceImpl">
+        <property name="nodeDAO" ref="nodeDAO" />
         <property name="nodeService" ref="NodeService"/>
         <property name="siteService" ref="SiteService"/>
         <property name="contentService" ref="ContentService"/>

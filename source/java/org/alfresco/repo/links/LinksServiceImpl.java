@@ -31,6 +31,7 @@ import org.alfresco.query.CannedQueryResults;
 import org.alfresco.query.EmptyPagingResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.node.getchildren.GetChildrenAuditableCannedQuery;
 import org.alfresco.repo.node.getchildren.GetChildrenAuditableCannedQueryFactory;
 import org.alfresco.repo.query.NodeBackedEntity;
@@ -74,6 +75,7 @@ public class LinksServiceImpl implements LinksService
     @SuppressWarnings("unused")
     private static Log logger = LogFactory.getLog(LinksServiceImpl.class);
     
+    private NodeDAO nodeDAO;
     private NodeService nodeService;
     private SiteService siteService;
     private SearchService searchService;
@@ -82,6 +84,11 @@ public class LinksServiceImpl implements LinksService
     private DictionaryService dictionaryService;
     private TransactionService transactionService;
     private NamedObjectRegistry<CannedQueryFactory<? extends Object>> cannedQueryRegistry;
+    
+    public void setNodeDAO(NodeDAO nodeDAO)
+    {
+        this.nodeDAO = nodeDAO;
+    }
     
     public void setNodeService(NodeService nodeService)
     {
@@ -446,6 +453,15 @@ public class LinksServiceImpl implements LinksService
      */
     private PagingResults<LinkInfo> wrap(final PagingResults<NodeBackedEntity> results, final NodeRef container)
     {
+       // Pre-load the nodes before we create them
+       List<Long> ids = new ArrayList<Long>();
+       for(NodeBackedEntity node : results.getPage())
+       {
+          ids.add(node.getId());
+       }
+       nodeDAO.cacheNodesById(ids);
+       
+       // Wrap
        return new PagingResults<LinkInfo>()
        {
            @Override

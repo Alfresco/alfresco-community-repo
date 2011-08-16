@@ -38,7 +38,7 @@
                                                       <#if args.workflowPooled == true>
                                                          New Pooled Task
                                                       <#else>
-                                                      	 You been assigned a task
+                                                         You have been assigned a task
                                                       </#if>
                                                    </div>
                                                    <div style="font-size: 13px;">

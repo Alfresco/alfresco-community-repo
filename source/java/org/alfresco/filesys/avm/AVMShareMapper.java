@@ -21,6 +21,7 @@ package org.alfresco.filesys.avm;
 import java.util.Enumeration;
 
 import org.springframework.extensions.config.ConfigElement;
+import org.alfresco.filesys.config.ServerConfigurationBean;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.config.InvalidConfigurationException;
 import org.alfresco.jlan.server.config.ServerConfiguration;
@@ -60,6 +61,8 @@ public class AVMShareMapper implements ShareMapper, InitializingBean {
 
     private ServerConfiguration m_config;
     private FilesystemsConfigSection m_filesysConfig;
+    
+    private ServerConfigurationBean serverConfigurationBean;
 
     // List of available AVM shares
     
@@ -284,7 +287,7 @@ public class AVMShareMapper implements ShareMapper, InitializingBean {
 	                	// Create a dynamic share mapped to the AVM store/version
 	                	
 		                AVMContext avmCtx = new AVMContext( name, storePath, storeVersion);
-		                avmCtx.enableStateCache( true);
+		                avmCtx.enableStateCache(serverConfigurationBean, true);
 		
 		                //  Create a dynamic shared device for the store version
 		                
@@ -374,5 +377,15 @@ public class AVMShareMapper implements ShareMapper, InitializingBean {
     {
         // TODO Auto-generated method stub
 
+    }
+
+    public void setServerConfigurationBean(ServerConfigurationBean serverConfigurationBean)
+    {
+        this.serverConfigurationBean = serverConfigurationBean;
+    }
+
+    public ServerConfigurationBean getServerConfigurationBean()
+    {
+        return serverConfigurationBean;
     }
 }

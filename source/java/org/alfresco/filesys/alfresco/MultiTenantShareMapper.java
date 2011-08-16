@@ -24,7 +24,6 @@ import java.util.Hashtable;
 import org.springframework.extensions.config.ConfigElement;
 import org.alfresco.filesys.AlfrescoConfigSection;
 import org.alfresco.filesys.repo.ContentContext;
-import org.alfresco.filesys.repo.ContentDiskDriver;
 import org.alfresco.jlan.debug.Debug;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.auth.InvalidUserException;
@@ -36,6 +35,7 @@ import org.alfresco.jlan.server.core.ShareMapper;
 import org.alfresco.jlan.server.core.ShareType;
 import org.alfresco.jlan.server.core.SharedDevice;
 import org.alfresco.jlan.server.core.SharedDeviceList;
+import org.alfresco.jlan.server.filesys.DiskInterface;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
 import org.alfresco.jlan.server.filesys.FilesystemsConfigSection;
 import org.alfresco.jlan.server.filesys.SrvDiskInfo;
@@ -43,6 +43,7 @@ import org.alfresco.jlan.server.filesys.quota.QuotaManager;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.springframework.beans.factory.InitializingBean;
+import org.alfresco.filesys.config.ServerConfigurationBean;
 
 /**
  * Multi Tenant Share Mapper Class
@@ -54,8 +55,12 @@ public class MultiTenantShareMapper implements ShareMapper, ConfigurationListene
 	//	Server configuration and configuration sections
 	
 	private ServerConfiguration m_config;
+	
+	
 	private FilesystemsConfigSection m_filesysConfig;
 	private AlfrescoConfigSection m_alfrescoConfig;
+	
+    private ServerConfigurationBean serverConfigurationBean;
   
 	//  Share name for multi-tenant connections
 	
@@ -89,6 +94,8 @@ public class MultiTenantShareMapper implements ShareMapper, ConfigurationListene
     {
         this.m_config = config;
     }
+	
+	
 
     public void setTenantShareName(String shareName)
     {
@@ -430,22 +437,18 @@ public class MultiTenantShareMapper implements ShareMapper, ConfigurationListene
 
         //  Create the disk driver and context
 
-        ContentDiskDriver diskDrv = (ContentDiskDriver) m_alfrescoConfig.getRepoDiskInterface();
+        DiskInterface diskDrv = m_alfrescoConfig.getRepoDiskInterface();
         ContentContext diskCtx = new ContentContext(m_tenantShareName, "", m_rootPath, rootNodeRef);
         
         // Set a quota manager for the share, if enabled
         
         if ( m_quotaManager != null)
+        {
         	diskCtx.setQuotaManager( m_quotaManager);
+        }
         
-        // Enable file state caching
-        
-        diskCtx.enableStateCache( true);
-        
-        // Initialize the I/O control handler
-        
-        if ( diskCtx.hasIOHandler())
-        	diskCtx.getIOHandler().initialize( diskDrv, diskCtx);
+        // Enable file state caching          
+        diskCtx.enableStateCache(serverConfigurationBean, true);
         
         //  Default the filesystem to look like an 80Gb sized disk with 90% free space
 
@@ -492,4 +495,16 @@ public class MultiTenantShareMapper implements ShareMapper, ConfigurationListene
  			}
  		}
 	}
+
+
+    public void setServerConfigurationBean(ServerConfigurationBean serverConfigurationBean)
+    {
+        this.serverConfigurationBean = serverConfigurationBean;
+    }
+
+
+    public ServerConfigurationBean getServerConfigurationBean()
+    {
+        return serverConfigurationBean;
+    }
 }

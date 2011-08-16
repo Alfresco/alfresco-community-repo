@@ -19,20 +19,37 @@
 
 package org.alfresco.filesys.alfresco;
 
-import org.alfresco.jlan.server.filesys.IOCtlInterface;
+import org.alfresco.filesys.repo.ContentContext;
+import org.alfresco.filesys.repo.ContentDiskDriver;
+import org.alfresco.jlan.server.SrvSession;
+import org.alfresco.jlan.server.filesys.IOControlNotImplementedException;
+import org.alfresco.jlan.server.filesys.TreeConnection;
+import org.alfresco.jlan.smb.SMBException;
+import org.alfresco.jlan.util.DataBuffer;
 
 /**
  * I/O Control Handler Interface
  * 
  * @author gkspencer
  */
-public interface IOControlHandler extends IOCtlInterface
+public interface IOControlHandler
 {
     /**
-     * Initialize the I/O control handler
-     *
-     * @param filesysDriver AlfrescoDiskDriver
-     * @param filesysContext AlfrescoContext
+     * ProcessIOControl
+     * 
+     * @param sess
+     * @param tree
+     * @param ctrlCode
+     * @param fid
+     * @param dataBuf
+     * @param isFSCtrl
+     * @param filter
+     * @param contentDriver
+     * @param contentContext
+     * @return
      */
-    public void initialize( AlfrescoDiskDriver filesysDriver, AlfrescoContext filesysContext);
+    public org.alfresco.jlan.util.DataBuffer processIOControl(SrvSession sess, TreeConnection tree, int ctrlCode, int fid, DataBuffer dataBuf,
+            boolean isFSCtrl, int filter, Object contentDriver, ContentContext contentContext)
+        throws IOControlNotImplementedException, SMBException;
+    
 }

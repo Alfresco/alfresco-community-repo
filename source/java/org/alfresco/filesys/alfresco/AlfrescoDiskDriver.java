@@ -26,6 +26,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.config.ServerConfigurationBean;
+import org.alfresco.filesys.repo.ContentContext;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.core.DeviceContext;
 import org.alfresco.jlan.server.core.DeviceContextException;
@@ -63,6 +64,18 @@ public abstract class AlfrescoDiskDriver implements IOCtlInterface, ExtendedDisk
     //  Transaction service
     
     protected TransactionService m_transactionService;
+    
+    protected IOControlHandler ioControlHandler;
+    
+    public void setIoControlHandler(IOControlHandler ioControlHandler)
+    {
+        this.ioControlHandler = ioControlHandler;
+    }
+
+    public IOControlHandler getIoControlHandler()
+    {
+        return ioControlHandler;
+    }
         
     /**
      * Return the service registry
@@ -127,12 +140,22 @@ public abstract class AlfrescoDiskDriver implements IOCtlInterface, ExtendedDisk
             throw new SMBException(SMBStatus.NTErr, SMBStatus.NTInvalidParameter);
         
         // Check if the I/O control handler is enabled
+        // Not enabled for AVM
         
-        AlfrescoContext ctx = (AlfrescoContext) tree.getContext();
-        if ( ctx.hasIOHandler())
-            return ctx.getIOHandler().processIOControl( sess, tree, ctrlCode, fid, dataBuf, isFSCtrl, filter);
-        else
-            throw new IOControlNotImplementedException();
+        if(tree.getContext() instanceof ContentContext)
+        {
+            ContentContext ctx = (ContentContext) tree.getContext();
+        
+            if(ioControlHandler != null)
+            {
+                return ioControlHandler.processIOControl(sess, tree, ctrlCode, fid, dataBuf, isFSCtrl, filter, this, ctx);
+            }
+            else
+            {
+                throw new IOControlNotImplementedException();
+            }
+        }
+        return null;
     }
     
     /**
@@ -152,9 +175,9 @@ public abstract class AlfrescoDiskDriver implements IOCtlInterface, ExtendedDisk
             
             AlfrescoContext alfCtx = (AlfrescoContext) ctx;
             
-            if ( serverConfig != null) {
-                alfCtx.setServerConfigurationBean( serverConfig);
-                alfCtx.enableStateCache( true);
+            if ( serverConfig != null) 
+            {
+                alfCtx.enableStateCache(serverConfig, true);
             }
 
             // Initialize the filesystem

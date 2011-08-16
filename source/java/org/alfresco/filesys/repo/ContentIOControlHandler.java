@@ -33,6 +33,7 @@ import org.alfresco.filesys.alfresco.IOControlHandler;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.filesys.IOControlNotImplementedException;
 import org.alfresco.jlan.server.filesys.NetworkFile;
+import org.alfresco.jlan.server.filesys.TransactionalFilesystemInterface;
 import org.alfresco.jlan.server.filesys.TreeConnection;
 import org.alfresco.jlan.smb.SMBException;
 import org.alfresco.jlan.smb.SMBStatus;
@@ -47,6 +48,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -60,13 +62,7 @@ import org.apache.commons.logging.LogFactory;
 public class ContentIOControlHandler implements IOControlHandler
 {
     // Logging
-    
     private static final Log logger = LogFactory.getLog(ContentIOControlHandler.class);
-    
-    // Filesystem driver and context
-    
-    private ContentDiskDriver contentDriver;
-    private ContentContext contentContext;
     
     /**
      * Default constructor
@@ -75,46 +71,28 @@ public class ContentIOControlHandler implements IOControlHandler
     {
     }
     
-    /**
-     * Initalize the I/O control handler
-     *
-     * @param filesysDriver AlfrescoDiskDriver
-     * @param context AlfrescoContext
-     */
-    public void initialize( AlfrescoDiskDriver filesysDriver, AlfrescoContext context)
-    {
-        this.contentDriver  = (ContentDiskDriver) filesysDriver;
-        this.contentContext = (ContentContext) context;
-    }
-
-    /**
-     * Return the CIFS helper
-     * 
-     * @return CifsHelper
-     */
-    public final CifsHelper getCifsHelper()
-    {
-    	return contentDriver.getCifsHelper();
-    }
+    private CifsHelper cifsHelper;
+    private NodeService nodeService;
+    private AuthenticationService authService;
+    private CheckOutCheckInService checkOutCheckInService;
     
-    /**
-     * Return the authentication service
-     * 
-     * @return AuthenticationService
-     */
-    public final AuthenticationService getAuthenticationService()
-    {
-    	return contentDriver.getAuthenticationService();
-    }
     
-    /**
-     * Return the transaction service
-     * 
-     * @return TransactionService
-     */
-    public final TransactionService getTransactionService()
+    public void init()
     {
-    	return contentDriver.getTransactionService();
+        PropertyCheck.mandatory(this, "nodeService", nodeService);
+        PropertyCheck.mandatory(this, "cifsHelper", cifsHelper);
+        PropertyCheck.mandatory(this, "authService", authService);
+        PropertyCheck.mandatory(this, "checkOutCheckInService", authService);
+    }
+        
+    /**
+     * Return the node service
+     * 
+     * @return NodeService
+     */
+    public final void setNodeService( NodeService nodeService)
+    {
+        this.nodeService = nodeService;
     }
     
     /**
@@ -124,36 +102,9 @@ public class ContentIOControlHandler implements IOControlHandler
      */
     public final NodeService getNodeService()
     {
-    	return contentDriver.getNodeService();
+    	return nodeService;
     }
     
-    /**
-     * @return              the service to provide check-in and check-out data
-     */
-    public final CheckOutCheckInService getCheckOutCheckInService()
-    {
-        return contentDriver.getCheckOutCheckInService();
-    }
-    
-    /**
-     * Return the filesystem driver
-     * 
-     * @return ContentDiskDriver
-     */
-    public final ContentDiskDriver getContentDriver()
-    {
-    	return contentDriver;
-    }
-    
-    /**
-     * Return the filesystem context
-     * 
-     * @return ContentContext
-     */
-    public final ContentContext getContentContext()
-    {
-    	return contentContext;
-    }
     
     /**
      * Process a filesystem I/O control request
@@ -170,7 +121,7 @@ public class ContentIOControlHandler implements IOControlHandler
      * @exception SMBException
      */
     public org.alfresco.jlan.util.DataBuffer processIOControl(SrvSession sess, TreeConnection tree, int ctrlCode, int fid, DataBuffer dataBuf,
-            boolean isFSCtrl, int filter)
+            boolean isFSCtrl, int filter, Object contentDriver, ContentContext contentContext)
         throws IOControlNotImplementedException, SMBException
     {
         // Validate the file id
@@ -217,7 +168,7 @@ public class ContentIOControlHandler implements IOControlHandler
         
         try
         {
-            folderNode = contentDriver.getNodeForPath(tree, netFile.getFullName());
+            folderNode = getNodeForPath(tree, netFile.getFullName());
             
             if ( getCifsHelper().isDirectory( folderNode) == false)
                 folderNode = null;
@@ -263,7 +214,7 @@ public class ContentIOControlHandler implements IOControlHandler
 	
 	            // Process the file status request
 	            
-	            retBuffer = procIOFileStatus( sess, tree, dataBuf, folderNode);
+	            retBuffer = procIOFileStatus( sess, tree, dataBuf, folderNode, contentDriver, contentContext);
 	            break;
 	
 	        // Get action information for the specified executable path
@@ -272,7 +223,7 @@ public class ContentIOControlHandler implements IOControlHandler
 	        	
 	        	// Process the get action information request
 	        	
-	        	retBuffer = procGetActionInfo(sess, tree, dataBuf, folderNode, netFile);
+	        	retBuffer = procGetActionInfo(sess, tree, dataBuf, folderNode, netFile, contentDriver, contentContext);
 	        	break;
 	        	
 	        // Run the named action
@@ -281,7 +232,7 @@ public class ContentIOControlHandler implements IOControlHandler
 	
 	        	// Process the run action request
 	        	
-	        	retBuffer = procRunAction(sess, tree, dataBuf, folderNode, netFile);
+	        	retBuffer = procRunAction(sess, tree, dataBuf, folderNode, netFile, contentDriver, contentContext);
 	        	break;
 
 	        // Return the authentication ticket
@@ -290,7 +241,7 @@ public class ContentIOControlHandler implements IOControlHandler
 	        	
 	        	// Process the get auth ticket request
 	        	
-	        	retBuffer = procGetAuthTicket(sess, tree, dataBuf, folderNode, netFile);
+	        	retBuffer = procGetAuthTicket(sess, tree, dataBuf, folderNode, netFile, contentDriver, contentContext);
 	        	break;
 	        	
 	        // Unknown I/O control code
@@ -313,11 +264,14 @@ public class ContentIOControlHandler implements IOControlHandler
      * @param folderNode NodeRef of parent folder
      * @return DataBuffer
      */
-    private final DataBuffer procIOFileStatus( SrvSession sess, TreeConnection tree, DataBuffer reqBuf, NodeRef folderNode)
+    private final DataBuffer procIOFileStatus( SrvSession sess, TreeConnection tree, DataBuffer reqBuf, NodeRef folderNode, Object contentDriver, AlfrescoContext contentContext)
     {
         // Start a transaction
-        
-        contentDriver.beginReadTransaction( sess);
+        if(contentDriver instanceof TransactionalFilesystemInterface)
+        {
+            TransactionalFilesystemInterface tx = (TransactionalFilesystemInterface)contentDriver;
+            tx.beginReadTransaction( sess);
+        }
         
         // Get the file name from the request
         
@@ -470,7 +424,7 @@ public class ContentIOControlHandler implements IOControlHandler
      * @return DataBuffer
      */
     private final DataBuffer procGetActionInfo( SrvSession sess, TreeConnection tree, DataBuffer reqBuf, NodeRef folderNode,
-            NetworkFile netFile)
+            NetworkFile netFile, Object contentDriver, AlfrescoContext contentContext)
     {
         // Get the executable file name from the request
         
@@ -528,7 +482,7 @@ public class ContentIOControlHandler implements IOControlHandler
      * @return DataBuffer
      */
     private final DataBuffer procRunAction( SrvSession sess, TreeConnection tree, DataBuffer reqBuf, NodeRef folderNode,
-            NetworkFile netFile)
+            NetworkFile netFile, Object contentDriver, ContentContext contentContext)
     {
     	// Get the name of the action to run
     	
@@ -558,8 +512,11 @@ public class ContentIOControlHandler implements IOControlHandler
         }
 
         // Start a transaction
-        
-        contentDriver.beginReadTransaction( sess);
+        if(contentDriver instanceof TransactionalFilesystemInterface)
+        {
+            TransactionalFilesystemInterface tx = (TransactionalFilesystemInterface)contentDriver;
+            tx.beginReadTransaction( sess);
+        }
 
         // Get an authentication ticket for the client, or validate the existing ticket. The ticket can be used when
         // generating URLs for the client-side application so that the user does not have to re-authenticate
@@ -690,7 +647,7 @@ public class ContentIOControlHandler implements IOControlHandler
      * @return DataBuffer
      */
     private final DataBuffer procGetAuthTicket( SrvSession sess, TreeConnection tree, DataBuffer reqBuf, NodeRef folderNode,
-            NetworkFile netFile)
+            NetworkFile netFile, Object contentDriver, AlfrescoContext contentContext)
     {
     	// DEBUG
     	
@@ -702,9 +659,12 @@ public class ContentIOControlHandler implements IOControlHandler
         DataBuffer respBuf = new DataBuffer(256);
         respBuf.putFixedString(IOControl.Signature, IOControl.Signature.length());
         
-        // Start a transaction
-        
-        contentDriver.beginReadTransaction( sess);
+        if(contentDriver instanceof TransactionalFilesystemInterface)
+        {
+            TransactionalFilesystemInterface tx = (TransactionalFilesystemInterface)contentDriver;
+            tx.beginReadTransaction( sess);
+        }
+     
 
         // Get an authentication ticket for the client, or validate the existing ticket. The ticket can be used when
         // generating URLs for the client-side application so that the user does not have to re-authenticate
@@ -788,5 +748,48 @@ public class ContentIOControlHandler implements IOControlHandler
    			String ticket = getAuthenticationService().getCurrentTicket();
    			cInfo.setAuthenticationTicket( ticket);
     	}
+    }
+
+    public void setCifsHelper(CifsHelper cifsHelper)
+    {
+        this.cifsHelper = cifsHelper;
+    }
+
+    public CifsHelper getCifsHelper()
+    {
+        return cifsHelper;
+    }
+
+    public void setAuthenticationService(AuthenticationService authService)
+    {
+        this.authService = authService;
+    }
+
+    public AuthenticationService getAuthenticationService()
+    {
+        return authService;
+    }
+
+    public void setCheckOutCheckInService(CheckOutCheckInService checkOutCheckInService)
+    {
+        this.checkOutCheckInService = checkOutCheckInService;
+    }
+
+    public CheckOutCheckInService getCheckOutCheckInService()
+    {
+        return checkOutCheckInService;
+    }
+    
+    private NodeRef getNodeForPath(TreeConnection tree, String path)
+    throws FileNotFoundException
+    {
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("getNodeRefForPath:" + path);
+        }
+   
+        ContentContext ctx = (ContentContext) tree.getContext();
+    
+        return cifsHelper.getNodeRef(ctx.getRootNode(), path);
     }
 }

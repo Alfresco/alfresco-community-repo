@@ -38,6 +38,7 @@ import org.springframework.extensions.config.element.GenericConfigElement;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.AbstractServerConfigurationBean;
 import org.alfresco.filesys.alfresco.ExtendedDiskInterface;
+import org.alfresco.filesys.alfresco.MultiTenantShareMapper;
 import org.alfresco.filesys.avm.AVMContext;
 import org.alfresco.filesys.avm.AVMDiskDriver;
 import org.alfresco.filesys.config.acl.AccessControlListBean;
@@ -83,7 +84,6 @@ import org.alfresco.repo.management.subsystems.ActivateableBean;
  */
 public class ServerConfigurationBean extends AbstractServerConfigurationBean
 {
-
     private CIFSConfigBean cifsConfigBean;
     private FTPConfigBean ftpConfigBean;
     private NFSConfigBean nfsConfigBean;
@@ -1748,7 +1748,7 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean
                         // Create the new share for the store
 
                         AVMContext avmContext = new AVMContext(storeName, storeName + ":/", AVMContext.VERSION_HEAD);
-                        avmContext.enableStateCache(true);
+                        avmContext.enableStateCache(this, true);
 
                         // Create the shared filesystem
 
@@ -1829,6 +1829,14 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean
 
                     secConfig.setShareMapper("org.alfresco.filesys.alfresco.MultiTenantShareMapper",
                             new GenericConfigElement("shareMapper"));
+                    
+                    ShareMapper mapper = secConfig.getShareMapper();
+                    
+                    if(mapper instanceof MultiTenantShareMapper)
+                    {
+                        MultiTenantShareMapper mtsm = (MultiTenantShareMapper)mapper;
+                        mtsm.setServerConfigurationBean(this);
+                    }
                 }
             }
 

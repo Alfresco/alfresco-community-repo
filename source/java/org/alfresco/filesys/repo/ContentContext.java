@@ -87,9 +87,9 @@ public class ContentContext extends AlfrescoContext
      */
     public ContentContext()
     {
-        // Create the I/O control handler
+//        // Create the I/O control handler
         
-        setIOHandler( createIOHandler( null));
+//        setIOHandler( createIOHandler( null));
     }
     
     /**
@@ -342,16 +342,16 @@ public class ContentContext extends AlfrescoContext
         super.CloseContext();
     }
     
-    /**
-     * Create the I/O control handler for this filesystem type
-     * 
-     * @param filesysDriver DiskInterface
-     * @return IOControlHandler
-     */
-    protected IOControlHandler createIOHandler( DiskInterface filesysDriver)
-    {
-        return new ContentIOControlHandler();
-    }
+//    /**
+//     * Create the I/O control handler for this filesystem type
+//     * 
+//     * @param filesysDriver DiskInterface
+//     * @return IOControlHandler
+//     */
+//    protected IOControlHandler createIOHandler( DiskInterface filesysDriver)
+//    {
+//        return new ContentIOControlHandler();
+//    }
     
     /**
      * Set the node monitor
@@ -370,6 +370,7 @@ public class ContentContext extends AlfrescoContext
      */
     public void startFilesystem(DiskSharedDevice share)
         throws DeviceContextException {
+        
 
         // Call the base class
         

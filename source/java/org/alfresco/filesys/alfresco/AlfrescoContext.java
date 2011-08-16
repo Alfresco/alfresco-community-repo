@@ -85,7 +85,7 @@ public abstract class AlfrescoContext extends DiskDeviceContext
 
     // Server configuration
     
-    private ServerConfigurationBean m_serverConfig;
+//    private ServerConfigurationBean m_serverConfig;
     
     // Debug flags
     //
@@ -118,15 +118,6 @@ public abstract class AlfrescoContext extends DiskDeviceContext
     public void setDisableChangeNotification(boolean disableChangeNotification)
     {
         enableChangeHandler(!disableChangeNotification);
-    }
-    
-    /**
-     * Set the server configuration
-     * 
-     * @param srvConfig ServerConfigurationBean
-     */
-    public void setServerConfigurationBean( ServerConfigurationBean srvConfig) {
-    	m_serverConfig = srvConfig;
     }
     
     /**
@@ -333,16 +324,16 @@ public abstract class AlfrescoContext extends DiskDeviceContext
     		addDesktopAction( desktopActions.getAction(names.nextElement()));
     	}
     	
-    	// If there are desktop actions then create the custom I/O control handler
-    	
-    	if ( numberOfDesktopActions() > 0)
-    	{
-    		// Create the custom I/O control handler
-    	
-    		m_ioHandler = createIOHandler( filesysDriver);
-    		if ( m_ioHandler != null)
-    			m_ioHandler.initialize(( AlfrescoDiskDriver) filesysDriver, this);
-    	}
+//    	// If there are desktop actions then create the custom I/O control handler
+//    	
+//    	if ( numberOfDesktopActions() > 0)
+//    	{
+//    		// Create the custom I/O control handler
+//    	
+//    		m_ioHandler = createIOHandler( filesysDriver);
+//    		if ( m_ioHandler != null)
+//    			m_ioHandler.initialize(( AlfrescoDiskDriver) filesysDriver, this);
+//    	}
     }
     
 
@@ -367,13 +358,13 @@ public abstract class AlfrescoContext extends DiskDeviceContext
         return m_globalDesktopActionConfig;
     }
     
-    /**
-     * Create the I/O control handler for this filesystem type
-     * 
-     * @param filesysDriver DiskInterface
-     * @return IOControlHandler
-     */
-    protected abstract IOControlHandler createIOHandler( DiskInterface filesysDriver);
+//    /**
+//     * Create the I/O control handler for this filesystem type
+//     * 
+//     * @param filesysDriver DiskInterface
+//     * @return IOControlHandler
+//     */
+//    protected abstract IOControlHandler createIOHandler( DiskInterface filesysDriver);
     
     /**
      * Set the I/O control handler
@@ -463,11 +454,11 @@ public abstract class AlfrescoContext extends DiskDeviceContext
      * 
      * @param ena boolean
      */
-    public void enableStateCache( boolean ena) {
+    public void enableStateCache( ServerConfigurationBean srvConfig, boolean ena) {
 
     	// Check if the server configuration has been set
     	
-    	if ( m_serverConfig == null)
+    	if ( srvConfig == null)
         	throw new AlfrescoRuntimeException( "Failed to set standalone file state cache for share " + getShareName());
     	
     	// Check if we are enabling the state cache
@@ -476,7 +467,7 @@ public abstract class AlfrescoContext extends DiskDeviceContext
     		
 	        // Set the state cache, use a hard coded standalone cache for now
 	
-	        FilesystemsConfigSection filesysConfig = (FilesystemsConfigSection) m_serverConfig.getConfigSection( FilesystemsConfigSection.SectionName);
+	        FilesystemsConfigSection filesysConfig = (FilesystemsConfigSection) srvConfig.getConfigSection( FilesystemsConfigSection.SectionName);
 	
 	        if ( filesysConfig != null) {
 	        	
@@ -485,7 +476,7 @@ public abstract class AlfrescoContext extends DiskDeviceContext
 		        	// Create a standalone state cache
 		        	
 		        	StandaloneFileStateCache standaloneCache = new StandaloneFileStateCache();
-		        	standaloneCache.initializeCache( new GenericConfigElement( ""), m_serverConfig);
+		        	standaloneCache.initializeCache( new GenericConfigElement( ""), srvConfig);
 		        	
 		        	filesysConfig.addFileStateCache( getDeviceName(), standaloneCache);
 		        	setStateCache( standaloneCache);

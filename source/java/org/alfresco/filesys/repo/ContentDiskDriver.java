@@ -779,13 +779,8 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
         
         // Enable file state caching
         
-        context.enableStateCache( true);
-        
-        // Initialize the I/O control handler
-        
-        if ( context.hasIOHandler())
-            context.getIOHandler().initialize( this, context);
-        
+        context.enableStateCache(serverConfig, true);
+               
         // Install the node service monitor
         
         if ( !context.getDisableNodeMonitor() && m_nodeMonitorFactory != null) {

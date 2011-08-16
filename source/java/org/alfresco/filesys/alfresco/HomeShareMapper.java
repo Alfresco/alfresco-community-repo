@@ -23,6 +23,7 @@ import java.util.Enumeration;
 
 import org.springframework.extensions.config.ConfigElement;
 import org.alfresco.filesys.AlfrescoConfigSection;
+import org.alfresco.filesys.config.ServerConfigurationBean;
 import org.alfresco.filesys.repo.ContentContext;
 import org.alfresco.filesys.repo.ContentDiskDriver;
 import org.alfresco.jlan.server.SrvSession;
@@ -61,6 +62,8 @@ public class HomeShareMapper implements ShareMapper
     // Server configuration
 
     private ServerConfigurationAccessor m_config;
+    
+    private ServerConfigurationBean serverConfigurationBean;
     
     private DiskInterface m_repoDiskInterface;
     
@@ -349,10 +352,14 @@ public class HomeShareMapper implements ShareMapper
     {
         //  Create the disk driver and context
         
-        ContentDiskDriver diskDrv = ( ContentDiskDriver) getRepoDiskInterface();
+        ExtendedDiskInterface diskDrv = (ExtendedDiskInterface) getRepoDiskInterface();
         ContentContext diskCtx = new ContentContext( getHomeFolderName(), "", "", client.getHomeFolder());
         
-        diskCtx.enableStateCache( true);
+        if(diskDrv instanceof ExtendedDiskInterface)
+        {
+            diskCtx.enableStateCache(serverConfigurationBean, true);
+        }
+      
 
         //  Create a temporary shared device for the users home directory
         
@@ -367,5 +374,15 @@ public class HomeShareMapper implements ShareMapper
     protected FilesystemsConfigSection getFilesystemsConfigSection()
     {
         return (FilesystemsConfigSection)m_config.getConfigSection(FilesystemsConfigSection.SectionName);
+    }
+
+    public void setServerConfigurationBean(ServerConfigurationBean serverConfigurationBean)
+    {
+        this.serverConfigurationBean = serverConfigurationBean;
+    }
+
+    public ServerConfigurationBean getServerConfigurationBean()
+    {
+        return serverConfigurationBean;
     }
 }

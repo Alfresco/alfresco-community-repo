@@ -35,6 +35,7 @@ import org.alfresco.jlan.server.filesys.DiskSharedDevice;
 import org.alfresco.jlan.server.filesys.FilesystemsConfigSection;
 import org.springframework.extensions.config.ConfigElement;
 import org.alfresco.filesys.alfresco.AlfrescoClientInfo;
+import org.alfresco.filesys.config.ServerConfigurationBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -61,6 +62,8 @@ public class HomeShareMapper implements ShareMapper, InitializingBean
 
     private ServerConfiguration m_config;
     private FilesystemsConfigSection m_filesysConfig;
+    
+    private ServerConfigurationBean serverConfigurationBean;
 
     // Filesystem driver to be used to create home shares
     
@@ -389,7 +392,7 @@ public class HomeShareMapper implements ShareMapper, InitializingBean
           //  Create the disk driver and context
           
           ContentContext diskCtx = new ContentContext( getHomeFolderName(), "", "", alfClient.getHomeFolder());
-          diskCtx.enableStateCache( true);
+          diskCtx.enableStateCache(getServerConfigurationBean(), true);
   
           //  Create a temporary shared device for the users home directory
           
@@ -399,5 +402,17 @@ public class HomeShareMapper implements ShareMapper, InitializingBean
         //  Invalid client type
         
         return null;
+    }
+
+
+    public void setServerConfigurationBean(ServerConfigurationBean serverConfigurationBean)
+    {
+        this.serverConfigurationBean = serverConfigurationBean;
+    }
+
+
+    public ServerConfigurationBean getServerConfigurationBean()
+    {
+        return serverConfigurationBean;
     }
 }

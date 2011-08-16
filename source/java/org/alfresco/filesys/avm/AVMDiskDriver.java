@@ -405,7 +405,7 @@ public class AVMDiskDriver extends AlfrescoTxDiskDriver implements DiskInterface
 
                 // Enable file state caching
 
-                context.enableStateCache( true);
+                //context.enableStateCache( true);
             }
 
         }
@@ -464,7 +464,7 @@ public class AVMDiskDriver extends AlfrescoTxDiskDriver implements DiskInterface
                 {
                     // Enable file state caching
 
-                    context.enableStateCache(true);
+                    context.enableStateCache(serverConfig, true);
 
                     // Plug the virtualization view context into the various store/version call back listeners
                     // so that store/version pseudo folders can be kept in sync with AVM
@@ -596,7 +596,7 @@ public class AVMDiskDriver extends AlfrescoTxDiskDriver implements DiskInterface
 
                     // Enable file state caching
 
-                    context.enableStateCache(true);
+                    context.enableStateCache(serverConfig, true);
                 }
 
                 // Commit the transaction

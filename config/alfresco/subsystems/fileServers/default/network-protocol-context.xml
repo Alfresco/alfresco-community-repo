@@ -44,6 +44,16 @@
          <ref bean="avmDiskDriver"/>
       </property>
    </bean>
+   
+   <!-- IO Handler -->
+   <bean id="contentIOHandler" class="org.alfresco.filesys.repo.ContentIOControlHandler"
+       init-method="init">
+       <property name="nodeService"><ref bean="NodeService" /></property>
+       <property name="cifsHelper"><ref bean="cifsHelper" /></property>
+       <property name="authenticationService"><ref bean="authenticationService"/></property>
+       <property name="checkOutCheckInService"><ref bean="CheckoutCheckinService"/></property>
+   </bean>
+   
 
    <!-- Filesystem Interface -->
    <bean id="oldContentDiskDriver" class="org.alfresco.filesys.repo.ContentDiskDriver">
@@ -69,6 +79,7 @@
       <property name="dictionaryService"><ref bean="dictionaryService" /></property>
       <property name="ownableService"><ref bean="ownableService" /></property>
       <property name="actionService"><ref bean="actionService" /></property>
+      <property name="ioControlHandler"><ref bean="contentIOHandler"/></property>
    </bean>
    
    <!-- The filesystem command executor -->
@@ -253,6 +264,8 @@
       <property name="lockService"><ref bean="lockService" /></property>
       <property name="policyFilter"><ref bean="policyBehaviourFilter" /></property>
       <property name="checkOutCheckInService"><ref bean="CheckoutCheckinService"/></property>
+      <property name="ioControlHandler"><ref bean="contentIOHandler"/></property>
+
    </bean>
 
    <bean id="nodeMonitorFactory" class="org.alfresco.filesys.repo.NodeMonitorFactory">

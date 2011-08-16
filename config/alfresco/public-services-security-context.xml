@@ -22,9 +22,6 @@
         <property name="model">
             <value>alfresco/model/permissionDefinitions.xml</value>
         </property>
-        <property name="dtdSchema">
-            <value>alfresco/model/permissionSchema.dtd</value>
-        </property>
         <property name="nodeService">
             <ref bean="nodeService" />
         </property>

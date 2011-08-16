@@ -20,11 +20,6 @@
           "iso8601": "${xmldate(event.end)}",
 		    "legacyTime": "${event.end?string("HH:mm")}"
       },
-		"when": "${xmldate(event.start)}",
-      "endDate" : "${xmldate(event.end)}",
-		"start": "${event.start?string("HH:mm")}",
-		"end": "${event.end?string("HH:mm")}",
-
 		"site": "${event.siteName}",
 		"siteTitle": "${event.siteTitle}",
 		"allday": "${event.allday?string}",

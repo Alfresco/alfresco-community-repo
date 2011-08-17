@@ -4,7 +4,7 @@
                 xmlns:emailserver="http://www.alfresco.org/model/emailserver/1.0">
 	
 	<!-- NOTE: all replaced properties referenced from repository.properties file must also be
-	     mapped in the bootstrap-context.xml spacesBootstrap/configuration section -->
+	     mapped in the import-export-context.xml spacesStoreImporter/configuration section -->
 	<cm:folder view:childName="${spaces.company_home.childname}">
 		<view:acl view:inherit="false">
 			<view:ace view:access="ALLOWED">

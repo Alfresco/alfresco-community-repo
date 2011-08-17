@@ -398,6 +398,7 @@
                 <prop key="spaces.replication.replication_actions.childname">${spaces.replication.replication_actions.childname}</prop>
                 <prop key="spaces.wcm_deployed.childname">${spaces.wcm_deployed.childname}</prop>
                 <prop key="spaces.publishing.root.childname">${spaces.publishing.root.childname}</prop>
+                <prop key="spaces.nodetemplates.childname">${spaces.nodetemplates.childname}</prop>
             </props>
         </property>
     </bean>

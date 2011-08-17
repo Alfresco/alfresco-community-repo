@@ -139,15 +139,28 @@ public class CannedQueryDAOImpl extends AbstractCannedQueryDAOImpl
         String query = makeQueryName(sqlNamespace, queryName);
         try
         {
+            List<R> result;
             if ((offset == 0) && (limit == Integer.MAX_VALUE))
             {
-                return (List<R>) template.selectList(query, parameterObj);
+                result = (List<R>) template.selectList(query, parameterObj);
             }
             else
             {
                 RowBounds bounds = new RowBounds(offset, limit);
-                return (List<R>) template.selectList(query, parameterObj, bounds);
+                result = (List<R>) template.selectList(query, parameterObj, bounds);
             }
+            
+
+            // Done
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(
+                        "Executed query: \n" +
+                        "   Query:  " + query + "\n" +
+                        "   Params: " + parameterObj + "\n" +
+                        "   Result: " + result);
+            }
+            return result;
         }
         catch (ClassCastException e)
         {

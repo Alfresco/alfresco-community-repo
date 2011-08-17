@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <bean id="doclibCustomVtiProperties" parent="common-placeholder-configurer">
+       <property name="locations">
+           <list>
+               <value>classpath*:alfresco/module/org.alfresco.module.vti/context/vti.properties</value>
+               <!-- Override -->
+               <value>classpath*:alfresco/extension/custom-vti.properties</value>
+           </list>
+       </property>
+       <property name="nullValue" value="null" />
+       <property name="properties">
+           <props>
+               <prop key="vti.server.external.port">0</prop>
+               <prop key="vti.server.external.host">null</prop>
+           </props>
+       </property>
+   </bean>
+
+   <bean id="doclibCustomVtiServer" class="org.alfresco.repo.jscript.app.CustomResponseVtiServer">
+       <property name="port">
+           <value>${vti.server.external.port}</value>
+       </property>
+       <property name="host">
+           <value>${vti.server.external.host}</value>
+       </property>
+       <property name="sysAdminParams">
+           <ref bean="sysAdminParams" />
+       </property>
+   </bean>
+
+   <bean id="slingshotDocLibCustomResponse" parent="baseJavaScriptExtension" class="org.alfresco.repo.jscript.SlingshotDocLibCustomResponse">
+       <property name="extensionName">
+           <value>slingshotDocLib</value>
+       </property>
+       <property name="customResponses">
+           <map>
+               <entry key="vtiServer">
+                   <ref bean="doclibCustomVtiServer"/>
+               </entry>
+           </map>
+       </property>
+   </bean>
+
+</beans>

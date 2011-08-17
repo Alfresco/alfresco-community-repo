@@ -19,7 +19,7 @@
 package org.alfresco.repo.jscript;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.jscript.app.JSONPropertyDecorator;
+import org.alfresco.repo.jscript.app.PropertyDecorator;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -237,7 +237,7 @@ public final class ApplicationScriptUtils extends BaseScopableProcessorExtension
                     // Has a decorator has been registered for this property?
                     if (this.decoratedProperties.containsKey(shortQName))
                     {
-                        json.put(key, ((JSONPropertyDecorator) this.decoratedProperties.get(shortQName)).decorate(nodeRef, shortQName, value));
+                        json.put(key, ((PropertyDecorator) this.decoratedProperties.get(shortQName)).decorate(nodeRef, shortQName, value));
                     }
                     else
                     {

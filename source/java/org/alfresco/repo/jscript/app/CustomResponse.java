@@ -16,17 +16,20 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.alfresco.repo.jscript.app;
 
-import org.alfresco.service.cmr.repository.NodeRef;
 import java.io.Serializable;
 
 /**
- * Interface for property decorators used by ApplicationScriptUtils.toJSON()
+ * Interface for custom properties used by SlingshotDocLibCustomResponse
  *
- * @author Mike Hatfield
+ * @author: mikeh
  */
-public interface JSONPropertyDecorator
+public interface CustomResponse
 {
-    Serializable decorate(NodeRef nodeRef, String propertyName, Serializable value);
+    /**
+     * Populates the DocLib webscript response with custom metadata
+     */
+    Serializable populate();
 }

@@ -34,7 +34,7 @@ import java.util.Map;
  *
  * @author Mike Hatfield
  */
-public class UsernamePropertyDecorator implements JSONPropertyDecorator
+public class UsernamePropertyDecorator implements PropertyDecorator
 {
     private ServiceRegistry services;
     private NodeService nodeService = null;

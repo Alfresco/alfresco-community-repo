@@ -36,7 +36,7 @@ import java.util.Map;
  *
  * @author Mike Hatfield
  */
-public class TagPropertyDecorator implements JSONPropertyDecorator
+public class TagPropertyDecorator implements PropertyDecorator
 {
     private static Log logger = LogFactory.getLog(TagPropertyDecorator.class);
 

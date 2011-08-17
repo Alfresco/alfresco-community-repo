@@ -101,6 +101,13 @@
                   <cm:title>${spaces.scripts.name}</cm:title>
                   <cm:description>${spaces.scripts.description}</cm:description>
                </cm:folder>
+               <cm:folder view:childName="${spaces.nodetemplates.childname}">
+                  <app:uifacets/>
+                  <cm:name>${spaces.nodeTemplatesSpace.name}</cm:name>
+                  <app:icon>space-icon-default</app:icon>
+                  <cm:title>${spaces.nodeTemplatesSpace.name}</cm:title>
+                  <cm:description>${spaces.nodeTemplatesSpace.description}</cm:description>
+               </cm:folder>
             </cm:contains>
          </cm:folder>
          <cm:folder view:childName="${spaces.guest_home.childname}">

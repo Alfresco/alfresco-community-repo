@@ -142,6 +142,9 @@ public abstract class WorkflowNotificationUtils
        {
           notificationContext.addTo(assignedAuthority);
        }
+       
+       // Indicate that we want to execute the notification asynchronously
+       notificationContext.setAsyncNotification(true);
         
         // Send email notification
         services.getNotificationService().sendNotification(EMailNotificationProvider.NAME, notificationContext);

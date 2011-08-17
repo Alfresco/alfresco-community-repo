@@ -19,11 +19,15 @@
 
 package org.alfresco.repo.workflow.activiti.tasklistener;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.activiti.engine.delegate.DelegateTask;
 import org.activiti.engine.delegate.TaskListener;
 import org.activiti.engine.form.FormData;
 import org.activiti.engine.impl.form.TaskFormHandler;
 import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
+import org.activiti.engine.impl.persistence.entity.IdentityLinkEntity;
 import org.activiti.engine.impl.persistence.entity.TaskEntity;
 import org.alfresco.repo.workflow.WorkflowNotificationUtils;
 import org.alfresco.repo.workflow.activiti.ActivitiConstants;
@@ -73,11 +77,44 @@ public class TaskCreateListener implements TaskListener
         Boolean value = (Boolean)executionEntity.getVariable(WorkflowNotificationUtils.PROP_SEND_EMAIL_NOTIFICATIONS);
         if (Boolean.TRUE.equals(value) == true)
         {    
+            // Get the workflow package node
             NodeRef workflowPackage = null;
             ActivitiScriptNode scriptNode = (ActivitiScriptNode)executionEntity.getVariable(WorkflowNotificationUtils.PROP_PACKAGE);
             if (scriptNode != null)
             {
                 workflowPackage = scriptNode.getNodeRef();
+            }
+            
+            // Determine whether the task is pooled or not
+            String[] authorities = null;
+            boolean isPooled = false;
+            if (task.getAssignee() == null)
+            {
+                // Task is pooled
+                isPooled = true;
+                
+                // Get the pool of user/groups for this task
+                List<IdentityLinkEntity> identities = ((TaskEntity)task).getIdentityLinks();
+                List<String> temp = new ArrayList<String>(identities.size());
+                for (IdentityLinkEntity item : identities)
+                {
+                    String group = item.getGroupId();
+                    if (group != null)
+                    {
+                        temp.add(group);
+                    }
+                    String user = item.getUserId();
+                    if (user != null)
+                    {
+                        temp.add(user);
+                    }
+                }
+                authorities = temp.toArray(new String[temp.size()]);
+            }
+            else
+            {
+                // Get the assigned user or group
+                authorities = new String[]{task.getAssignee()};
             }
             
             // Send email notification
@@ -89,8 +126,8 @@ public class TaskCreateListener implements TaskListener
                     task.getDueDate(),
                     Integer.valueOf(task.getPriority()),
                     workflowPackage,
-                    new String[]{task.getAssignee()},
-                    (task.getAssignee() == null));
+                    authorities,
+                    isPooled);
         }
     }
 

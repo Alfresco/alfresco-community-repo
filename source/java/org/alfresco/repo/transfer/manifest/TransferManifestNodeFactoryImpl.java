@@ -54,16 +54,16 @@ public class TransferManifestNodeFactoryImpl implements TransferManifestNodeFact
     private NodeService mlAwareNodeService;
     private PermissionService permissionService;
     private DictionaryService dictionaryService;
-    
+
     public void init()
     {
         //NOOP
     }
-    
+
     public TransferManifestNode createTransferManifestNode(NodeRef nodeRef, TransferDefinition definition)
     {
         NodeRef.Status status = nodeService.getNodeStatus(nodeRef);
-        
+
         if(status == null)
         {
             throw new TransferException("Unable to get node status for node : " + nodeRef);
@@ -75,13 +75,13 @@ public class TransferManifestNodeFactoryImpl implements TransferManifestNodeFact
         if (status.isDeleted())
         {
             //This node used to exist but doesn't any more. We can't discover anything about its original parentage
-            //so we will create a dummy record that contains the correct noderef but dummy parent association and 
-            //parent path. This will keep the target side happy, and will result in the node being deleted 
+            //so we will create a dummy record that contains the correct noderef but dummy parent association and
+            //parent path. This will keep the target side happy, and will result in the node being deleted
             //if a node with the same noderef exists on the target.
             TransferManifestDeletedNode deletedNode = new TransferManifestDeletedNode();
             deletedNode.setNodeRef(nodeRef);
-            ChildAssociationRef dummyPrimaryParent = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, 
-                    nodeRef, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "dummy"), 
+            ChildAssociationRef dummyPrimaryParent = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS,
+                    nodeRef, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "dummy"),
                     nodeRef, true, -1);
             deletedNode.setPrimaryParentAssoc(dummyPrimaryParent);
             deletedNode.setParentPath(new Path());
@@ -92,50 +92,66 @@ public class TransferManifestNodeFactoryImpl implements TransferManifestNodeFact
             if(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_ARCHIVED))
             {
                 // Yes we have an archived aspect
-                ChildAssociationRef car = (ChildAssociationRef)nodeService.getProperty(nodeRef, 
+                ChildAssociationRef car = (ChildAssociationRef)nodeService.getProperty(nodeRef,
                       ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
-                
+
                 TransferManifestDeletedNode node = new TransferManifestDeletedNode();
                 NodeRef parentNodeRef = car.getParentRef();
                 node.setNodeRef(car.getChildRef());
                 node.setPrimaryParentAssoc(car);
-                
+
                 if(nodeService.exists(parentNodeRef))
                 {
                     // The parent node still exists so it still has a path.
                     Path parentPath = nodeService.getPath(parentNodeRef);
                     node.setParentPath(parentPath);
                 }
-                
+
                 return node;
             }
-            
+
             // No we don't have an archived aspect - maybe we are not yet committed
             TransferManifestDeletedNode node = new TransferManifestDeletedNode();
             node.setNodeRef(nodeRef);
             ChildAssociationRef parentAssocRef = nodeService.getPrimaryParent(nodeRef);
             if(parentAssocRef != null && parentAssocRef.getParentRef() != null)
-            {   
+            {
                 NodeRef parentNodeRef = parentAssocRef.getParentRef();
                 node.setPrimaryParentAssoc(parentAssocRef);
                 Path parentPath = nodeService.getPath(parentNodeRef);
                 node.setParentPath(parentPath);
             }
-            
+
             return node;
         }
         else
         {
             // This is a "normal" node
-        
+
             TransferManifestNormalNode node = new TransferManifestNormalNode();
             node.setNodeRef(nodeRef);
             node.setProperties(getNodeProperties(nodeRef, definition == null ? null : definition.getExcludedAspects()));
             node.setAspects(getNodeAspects(nodeRef, definition == null ? null : definition.getExcludedAspects()));
             node.setType(nodeService.getType(nodeRef));
+            // For File Transfer Receiver, becaus FTS does not has access to the DictionaryService
+            if(dictionaryService.isSubClass(node.getType(),ContentModel.TYPE_CONTENT))
+            {
+                node.setAncestorType(ContentModel.TYPE_CONTENT);
+            }
+            else
+            {
+                if(dictionaryService.isSubClass(node.getType(),ContentModel.TYPE_FOLDER))
+                {
+                    node.setAncestorType(ContentModel.TYPE_FOLDER);
+                }
+                else
+                {
+                    node.setAncestorType(ContentModel.TYPE_BASE);
+                }
+            }
             ChildAssociationRef parentAssocRef = nodeService.getPrimaryParent(nodeRef);
             if(parentAssocRef != null && parentAssocRef.getParentRef() != null)
-            {   
+            {
                 NodeRef parentNodeRef = parentAssocRef.getParentRef();
                 node.setPrimaryParentAssoc(parentAssocRef);
                 Path parentPath = nodeService.getPath(parentNodeRef);
@@ -145,16 +161,16 @@ public class TransferManifestNodeFactoryImpl implements TransferManifestNodeFact
             node.setParentAssocs(nodeService.getParentAssocs(nodeRef));
             node.setTargetAssocs(nodeService.getTargetAssocs(nodeRef, RegexQNamePattern.MATCH_ALL ));
             node.setSourceAssocs(nodeService.getSourceAssocs(nodeRef, RegexQNamePattern.MATCH_ALL));
-        
+
             boolean inherit = permissionService.getInheritParentPermissions(nodeRef);
-            
+
             ManifestAccessControl acl = new ManifestAccessControl();
             acl.setInherited(inherit);
             node.setAccessControl(acl);
-            
+
             Set<AccessPermission> permissions = permissionService.getAllSetPermissions(nodeRef);
-                
-            List<ManifestPermission> mps = new ArrayList<ManifestPermission>(permissions.size()); 
+
+            List<ManifestPermission> mps = new ArrayList<ManifestPermission>(permissions.size());
             for(AccessPermission permission : permissions)
             {
                if(permission.isSetDirectly())
@@ -165,16 +181,16 @@ public class TransferManifestNodeFactoryImpl implements TransferManifestNodeFact
                    mp.setPermission(permission.getPermission());
                    mps.add(mp);
                }
-            }   
+            }
             acl.setPermissions(mps);
-            
+
             return node;
         }
     }
-    
+
     /**
      * Gets the aspects of the specified node, minus those that have been explicitly excluded
-     * 
+     *
      * @param nodeRef  node to get aspects for
      * @param excludedAspects  aspects to exluce
      * @return  set of aspects minus those excluded
@@ -202,7 +218,7 @@ public class TransferManifestNodeFactoryImpl implements TransferManifestNodeFact
 
     /**
      * Gets the properties of the specified node, minus those that have been explicitly excluded
-     * 
+     *
      * @param nodeRef  node to get aspects for
      * @param excludedAspects  aspects to exluce
      * @return  map of properties minus those excluded
@@ -243,7 +259,7 @@ public class TransferManifestNodeFactoryImpl implements TransferManifestNodeFact
     {
         this.permissionService = permissionService;
     }
-    
+
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;

@@ -31,24 +31,25 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * Data value object - part of the transfer manifest
- * 
+ *
  * Represents a single node and either a create or an update.
  *
  * @author Mark Rogers
  */
 public class TransferManifestNormalNode implements TransferManifestNode
 {
-    private NodeRef nodeRef;   
+    private NodeRef nodeRef;
     private ChildAssociationRef primaryParentAssoc;
     private String uuid;
     private QName type;
+    private QName ancestorType;
     private Map<QName,Serializable> properties;
     private Set<QName> aspects;
     private List<ChildAssociationRef> childAssocs;
     private List<ChildAssociationRef> parentAssocs;
     private List<AssociationRef> sourceAssocs;
-    private List<AssociationRef> targetAssocs; 
-    private Path parentPath; 
+    private List<AssociationRef> targetAssocs;
+    private Path parentPath;
     private ManifestAccessControl accessControl;
 
     public void setNodeRef(NodeRef nodeRef)
@@ -70,10 +71,10 @@ public class TransferManifestNormalNode implements TransferManifestNode
     {
         return uuid;
     }
-       
+
     /**
      * Gets all properties for the node
-     * 
+     *
      * @return the properties
      */
     public Map<QName,Serializable> getProperties()
@@ -174,6 +175,16 @@ public class TransferManifestNormalNode implements TransferManifestNode
     public ManifestAccessControl getAccessControl()
     {
         return accessControl;
+    }
+
+    public QName getAncestorType()
+    {
+        return ancestorType;
+    }
+
+    public void setAncestorType(QName ancestorType)
+    {
+        this.ancestorType = ancestorType;
     }
 
 }

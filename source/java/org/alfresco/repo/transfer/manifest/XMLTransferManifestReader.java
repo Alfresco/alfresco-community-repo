@@ -57,45 +57,45 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- * SAX XML Content Handler to read a transfer manifest XML Stream and 
+ * SAX XML Content Handler to read a transfer manifest XML Stream and
  * delegate processing of the manifest to the specified TransferManifestProcessor
  *
  * @author Mark Rogers
  */
-public class XMLTransferManifestReader extends DefaultHandler implements ContentHandler, NamespacePrefixResolver 
+public class XMLTransferManifestReader extends DefaultHandler implements ContentHandler, NamespacePrefixResolver
 {
     private  TransferManifestProcessor processor;
-    
+
     private static final String MSG_NO_ENCODING = "transfer_service.no_encoding";
     private static final String MSG_UNABLE_DESERIALIZE = "transfer_service.unable_to_deserialise";
-    
+
     /**
-     * These are the namespaces used within the document - there may be a different mapping to 
+     * These are the namespaces used within the document - there may be a different mapping to
      * the namespaces of the Data Dictionary.
-     */ 
+     */
     LinkedList<HashMap<String, String>> namespaces = new LinkedList<HashMap<String, String>>();
     final String TRANSFER_URI = ManifestModel.TRANSFER_MODEL_1_0_URI;
-    final String XMLNS_URI = "http://www.w3.org/XML/1998/namespace"; 
-   
+    final String XMLNS_URI = "http://www.w3.org/XML/1998/namespace";
+
     public XMLTransferManifestReader(TransferManifestProcessor snapshotProcessor)
     {
         this.processor = snapshotProcessor;
-        
+
         // prefix to uri map
         HashMap<String, String> namespace = new HashMap<String, String>();
         namespace.put("xmlns", XMLNS_URI);
-        namespaces.add(namespace); 
+        namespaces.add(namespace);
     }
-    
+
     public void startDocument() throws SAXException
     {
         processor.startTransferManifest();
     }
-    
+
     public void endDocument() throws SAXException
     {
         processor.endTransferManifest();
-    } 
+    }
 
     public void characters(char[] ch, int start, int length) throws SAXException
     {
@@ -104,13 +104,13 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
             buffer.append(ch, start, length);
         }
     }
-    
+
     /*
      *  Current State of the parser
      */
     private StringBuffer buffer;
     private Map<String, Object>props = new HashMap<String, Object>();
-    
+
     /**
      * Start Element
      */
@@ -118,10 +118,10 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
     throws SAXException
     {
         QName elementQName = QName.resolveToQName(this, prefixName);
-        
+
         HashMap<String, String> namespace = new HashMap<String, String>();
         namespaces.addFirst(namespace);
-                
+
         /**
          * Look for any namespace attributes
          */
@@ -133,17 +133,17 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
                 namespace.put(attributeQName.getLocalName(), atts.getValue(i));
             }
         }
-        
+
         if(elementQName == null)
         {
             return;
         }
-        
+
         if(elementQName.getNamespaceURI().equals(TRANSFER_URI));
         {
             // This is one of the transfer manifest elements
             String elementName = elementQName.getLocalName();
-            
+
             // Simple and stupid parser for now
             if(elementName.equals(ManifestModel.LOCALNAME_TRANSFER_MAINIFEST))
             {
@@ -168,12 +168,14 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
                 QName type = QName.createQName(atts.getValue("", "nodeType"));
                 node.setNodeRef(nodeRef);
                 node.setType(type);
+                QName ancestorType = QName.createQName(atts.getValue("", "ancestorType"));
+                node.setAncestorType(ancestorType);
                 props.put("node", node);
             }
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_ASPECTS))
             {
                 TransferManifestNormalNode node = (TransferManifestNormalNode)props.get("node");
-                node.setAspects(new HashSet<QName>());    
+                node.setAspects(new HashSet<QName>());
             }
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_ASPECT))
             {
@@ -216,7 +218,7 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_CHILD_ASSOCS))
             {
                 TransferManifestNormalNode node = (TransferManifestNormalNode)props.get("node");
-                node.setChildAssocs(new ArrayList<ChildAssociationRef>());   
+                node.setChildAssocs(new ArrayList<ChildAssociationRef>());
             }
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_CHILD_ASSOC))
             {
@@ -224,7 +226,7 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
                 NodeRef to = new NodeRef(atts.getValue("", "to"));
                 QName type = QName.createQName(atts.getValue("", "type"));
                 Boolean isPrimary = Boolean.parseBoolean(atts.getValue("", "isPrimary"));
-                
+
                 props.put("to", to);
                 props.put("type", type);
                 props.put("isPrimary", isPrimary);
@@ -243,14 +245,14 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
             {
                 TransferManifestNormalNode node = (TransferManifestNormalNode)props.get("node");
                 List<AssociationRef> assocs = new ArrayList<AssociationRef>();
-                node.setTargetAssocs(assocs);    
+                node.setTargetAssocs(assocs);
                 props.put("assocs", assocs);
             }
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_SOURCE_ASSOCS))
             {
                 TransferManifestNormalNode node = (TransferManifestNormalNode)props.get("node");
                 List<AssociationRef> assocs = new ArrayList<AssociationRef>();
-                node.setSourceAssocs(assocs);    
+                node.setSourceAssocs(assocs);
                 props.put("assocs", assocs);
             }
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_ASSOC))
@@ -265,8 +267,8 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
             }
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_PRIMARY_PARENT))
             {
-                buffer = new StringBuffer();   
-                
+                buffer = new StringBuffer();
+
                 ArrayList<ChildAssociationRef> parentAssocs = new ArrayList<ChildAssociationRef>();
                 // Synthetic element - To receive the primary parent assoc.
                 props.put("parentAssocs", parentAssocs);
@@ -279,7 +281,7 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_VALUE_STRING))
             {
                 props.put("className", atts.getValue("", "className"));
-                buffer = new StringBuffer();   
+                buffer = new StringBuffer();
             }
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_VALUE_NULL))
             {
@@ -287,7 +289,7 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_VALUE_SERIALIZED))
             {
                 props.put("encoding", atts.getValue("", "encoding"));
-                buffer = new StringBuffer();   
+                buffer = new StringBuffer();
             }
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_MLVALUE))
             {
@@ -318,7 +320,7 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
             {
                 String isInherited = (String)atts.getValue("", "isInherited");
                 ManifestAccessControl acl = new ManifestAccessControl();
-                
+
                 if("TRUE".equalsIgnoreCase(isInherited))
                 {
                     acl.setInherited(true);
@@ -331,14 +333,14 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
                 String versionMinor = (String)atts.getValue("", "versionMinor");
                 String versionRevision = (String)atts.getValue("", "versionRevision");
                 String edition = (String)atts.getValue("", "edition");
-                
+
                 props.put("headerVersion", new TransferVersionImpl(versionMajor, versionMinor, versionRevision, edition));
             }
-  
+
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_ACL_PERMISSION))
             {
 
-                String authority = (String)atts.getValue("", "authority");   
+                String authority = (String)atts.getValue("", "authority");
                 String permission = (String)atts.getValue("", "permission");
                 String status = (String)atts.getValue("", "status");
                 ManifestPermission perm = new ManifestPermission();
@@ -347,7 +349,7 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
                 perm.setStatus(status);
                 props.put("permission", perm);
             }
-        } // if transfer URI       
+        } // if transfer URI
     } // startElement
 
     /**
@@ -357,19 +359,19 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
     public void endElement(String uri, String localName, String prefixName) throws SAXException
     {
         namespaces.removeFirst();
-        
+
         QName elementQName = QName.resolveToQName(this, prefixName);
-        
+
         if(elementQName == null)
         {
             return;
         }
-                
+
         if(elementQName.getNamespaceURI().equals(TRANSFER_URI));
         {
             // This is one of the transfer manifest elements
             String elementName = elementQName.getLocalName();
-            
+
             if(elementName.equals(ManifestModel.LOCALNAME_TRANSFER_MAINIFEST))
             {
             }
@@ -383,7 +385,7 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
             {
                 TransferManifestNormalNode node = (TransferManifestNormalNode)props.get("node");
                 processor.processTransferManifestNode(node);
-            }            
+            }
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_DELETED_NODE))
             {
                 TransferManifestDeletedNode node = (TransferManifestDeletedNode)props.get("node");
@@ -391,7 +393,7 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
             }
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_ASPECTS))
             {
-                
+
             }
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_ASPECT))
             {
@@ -411,24 +413,24 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
                 node.getProperties().put(name, value);
             }
             else if(elementName.equals(ManifestModel.LOCALNAME_HEADER_CREATED_DATE))
-            { 
+            {
                 TransferManifestHeader header =  (TransferManifestHeader)props.get("header");
                 header.setCreatedDate(ISO8601DateFormat.parse(buffer.toString()));
                 buffer = null;
             }
             else if(elementName.equals(ManifestModel.LOCALNAME_HEADER_NODE_COUNT))
-            { 
+            {
                 TransferManifestHeader header =  (TransferManifestHeader)props.get("header");
                 header.setNodeCount(Integer.parseInt(buffer.toString()));
                 buffer = null;
             }
             else if(elementName.equals(ManifestModel.LOCALNAME_HEADER_SYNC))
-            { 
+            {
                 TransferManifestHeader header =  (TransferManifestHeader)props.get("header");
                 header.setSync(true);
             }
             else if(elementName.equals(ManifestModel.LOCALNAME_HEADER_RONLY))
-            { 
+            {
                 TransferManifestHeader header =  (TransferManifestHeader)props.get("header");
                 header.setReadOnly(true);
             }
@@ -454,10 +456,10 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
                 QName type = (QName) props.get("type");
                 Boolean isPrimary = (Boolean)props.get("isPrimary");
                 TransferManifestNormalNode node = (TransferManifestNormalNode)props.get("node");
-                  
+
                 ChildAssociationRef childAssociationRef = new ChildAssociationRef(type, node.getNodeRef(), name, to, isPrimary, -1);
                 node.getChildAssocs().add(childAssociationRef);
-                
+
             }
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_PARENT_ASSOC))
             {
@@ -467,7 +469,7 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
                 QName type = (QName) props.get("type");
                 Boolean isPrimary = (Boolean)props.get("isPrimary");
                 TransferManifestNode node = (TransferManifestNode)props.get("node");
-                List<ChildAssociationRef> parentAssocs =    (List<ChildAssociationRef>)props.get("parentAssocs");              
+                List<ChildAssociationRef> parentAssocs =    (List<ChildAssociationRef>)props.get("parentAssocs");
                 ChildAssociationRef childAssociationRef = new ChildAssociationRef(type, from, name, node.getNodeRef(), isPrimary, -1);
                 parentAssocs.add(childAssociationRef);
             }
@@ -486,7 +488,7 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
                 NodeRef source =  (NodeRef)props.get("source");
                 NodeRef target =  (NodeRef)props.get("target");
                 QName type =  (QName) props.get("type");
-                List<AssociationRef> assocs = (List<AssociationRef>)props.get("assocs"); 
+                List<AssociationRef> assocs = (List<AssociationRef>)props.get("assocs");
                 AssociationRef assoc = new AssociationRef(null, source, type, target);
                 assocs.add(assoc);
                 props.put("assoc", new AssociationRef(null, source, type, target));
@@ -517,9 +519,9 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
             {
                 Collection<Serializable> values =  (Collection<Serializable>)props.get("values");
                 String className = (String)props.get("className");
-                
+
                 Serializable value = buffer.toString();
-                
+
                 if(className != null && !className.equals("java.lang.String"))
                 {
                     // value is not a string and needs to be converted
@@ -536,10 +538,10 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
                         // leave value as string
                     }
                 }
-                
+
                 if(values != null)
                 {
-                    values.add(value);   
+                    values.add(value);
                 }
                 else
                 {
@@ -549,10 +551,10 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_VALUE_NULL))
             {
                 Collection<Serializable> values =  (Collection<Serializable>)props.get("values");
-                
+
                 if(values != null)
                 {
-                    values.add(null);   
+                    values.add(null);
                 }
                 else
                 {
@@ -563,17 +565,17 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
             {
                 Collection<Serializable> values =  (Collection<Serializable>)props.get("values");
                 String encoding = (String)props.get("encoding");
-                
+
                 String strValue = buffer.toString();
                 Object value = null;
-                
+
                 if(encoding.equalsIgnoreCase("base64/ObjectOutputStream"))
                 {
                     try
                     {
-                        byte[] data = Base64.decode(strValue.getBytes("UTF-8"));             
+                        byte[] data = Base64.decode(strValue.getBytes("UTF-8"));
                         ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
-                        value = ois.readObject();    
+                        value = ois.readObject();
                     }
                     catch (IOException error)
                     {
@@ -588,18 +590,18 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
                 {
                     throw new TransferException(MSG_NO_ENCODING, new Object[]{encoding});
                 }
-                
+
                 if(values != null)
                 {
                     // This is a values array
-                    values.add((Serializable)value);   
+                    values.add((Serializable)value);
                 }
                 else
                 {
                     // This is a single value
                     props.put("value", value);
                 }
-            }            
+            }
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_MLVALUE))
             {
                 MLText mltext = (MLText)props.get("mlvalues");
@@ -607,7 +609,7 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
                 String value = buffer.toString();
                 mltext.addValue(locale, value);
                 props.put("value", mltext);
-                      
+
             }
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_CONTENT_HEADER))
             {
@@ -618,7 +620,7 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
             {
                 TransferManifestHeader header =  (TransferManifestHeader)props.get("header");
                 TransferVersion version = (TransferVersion)props.get("headerVersion");
-                header.setTransferVersion(version);   
+                header.setTransferVersion(version);
             }
             else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_ACL))
             {
@@ -632,8 +634,8 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
                 ManifestPermission permission = (ManifestPermission)props.get("permission");
                 acl.addPermission(permission);
             }
-     
-          
+
+
         } // if transfer URI
     } // end element
 
@@ -665,21 +667,21 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
         // prefix is key, URI is value
         namespace.put(prefix, uri);
     }
-    
+
     public void endPrefixMapping(String prefix) throws SAXException
     {
         HashMap<String, String> namespace = namespaces.get(0);
         // prefix is key, URI is value
         namespace.remove(prefix);
     }
-    
+
     // Namespace Prefix Resolver implementation below
-    
+
     /**
     * lookup the prefix for a URI e.g. TRANSFER_URI for xfer
     */
     public String getNamespaceURI(String prefix) throws NamespaceException
-    { 
+    {
         for(HashMap<String, String> namespace : namespaces)
         {
             String uri = namespace.get(prefix);
@@ -690,7 +692,7 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
         }
         return null;
     }
-    
+
     /**
      * @param uri
      * @return the prefix
@@ -698,7 +700,7 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
     public Collection<String> getPrefixes(String namespaceURI) throws NamespaceException
     {
         Collection<String> prefixes = new HashSet<String>();
-        
+
         for(HashMap<String, String> namespace : namespaces)
         {
             for(Entry<String, String> entry : namespace.entrySet())
@@ -706,34 +708,34 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
                 if (namespaceURI.equals(entry.getValue()))
                 {
                     prefixes.add(entry.getKey());
-                }           
+                }
             }
         }
- 
+
         return prefixes;
     }
 
     public Collection<String> getPrefixes()
     {
         Collection<String> prefixes = new HashSet<String>();
-        
+
         for(HashMap<String, String> namespace : namespaces)
         {
             prefixes.addAll(namespace.keySet());
-        }            
-        
+        }
+
         return prefixes;
     }
 
     public Collection<String> getURIs()
     {
         Collection<String> uris = new HashSet<String>();
-        
+
         for(HashMap<String, String> namespace : namespaces)
         {
             uris.addAll(namespace.values());
-        }            
-        
+        }
+
         return uris;
-    }    
+    }
 }

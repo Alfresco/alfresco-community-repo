@@ -52,11 +52,11 @@ import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * Writes the transfer manifest out in XML format to the specified writer.
- *  
- * XMLTransferManifestWriter is a statefull object used for writing out a single transfer manifest 
+ *
+ * XMLTransferManifestWriter is a statefull object used for writing out a single transfer manifest
  * file in XML format to the writer passed in via startTransferManifest.
- * 
- * Call startTransferManifest, writeTransferManifestHeader, writeTransferManifestNode (0 to many), 
+ *
+ * Call startTransferManifest, writeTransferManifestHeader, writeTransferManifestNode (0 to many),
  * endTransferManifest.
  *
  * @author Mark Rogers
@@ -132,7 +132,7 @@ public class XMLTransferManifestWriter implements TransferManifestWriter
                     ManifestModel.LOCALNAME_HEADER_CREATED_DATE, PREFIX + ":"
                     + ManifestModel.LOCALNAME_HEADER_CREATED_DATE);
         }
-        
+
         if(header.getNodeCount() > 0)
         {
             // Node count
@@ -145,7 +145,7 @@ public class XMLTransferManifestWriter implements TransferManifestWriter
                 ManifestModel.LOCALNAME_HEADER_NODE_COUNT, PREFIX + ":"
                 + ManifestModel.LOCALNAME_HEADER_NODE_COUNT);
         }
-        
+
         if(header.getRepositoryId() != null)
         {
             // Repository Id
@@ -158,7 +158,7 @@ public class XMLTransferManifestWriter implements TransferManifestWriter
                     ManifestModel.LOCALNAME_HEADER_REPOSITORY_ID, PREFIX + ":"
                     + ManifestModel.LOCALNAME_HEADER_REPOSITORY_ID);
         }
-        
+
         if(header.isSync())
         {
             // Is this a complete transfer
@@ -169,7 +169,7 @@ public class XMLTransferManifestWriter implements TransferManifestWriter
                     ManifestModel.LOCALNAME_HEADER_SYNC, PREFIX + ":"
                     + ManifestModel.LOCALNAME_HEADER_SYNC);
         }
-        
+
         if(header.isReadOnly())
         {
             // Is this a read only transfer
@@ -180,21 +180,21 @@ public class XMLTransferManifestWriter implements TransferManifestWriter
                     ManifestModel.LOCALNAME_HEADER_RONLY, PREFIX + ":"
                     + ManifestModel.LOCALNAME_HEADER_RONLY);
         }
-        
+
         TransferVersion version = header.getTransferVersion();
         if(version != null)
         {
-            
+
             AttributesImpl attributes = new AttributesImpl();
             attributes.addAttribute("uri", "versionMajor", "versionMajor", "String", version.getVersionMajor());
             attributes.addAttribute("uri", "versionMinor", "versionMinor", "String", version.getVersionMinor());
             attributes.addAttribute("uri", "versionRevision", "versionRevision", "String", version.getVersionRevision());
             attributes.addAttribute("uri", "edition", "edition", "String", version.getEdition());
-            
+
             writer.startElement(TransferModel.TRANSFER_MODEL_1_0_URI,
                     ManifestModel.LOCALNAME_HEADER_VERSION, PREFIX + ":"
                     + ManifestModel.LOCALNAME_HEADER_VERSION, attributes);
-            
+
             writer.endElement(TransferModel.TRANSFER_MODEL_1_0_URI,
                     ManifestModel.LOCALNAME_HEADER_VERSION, PREFIX + ":"
                     + ManifestModel.LOCALNAME_HEADER_VERSION);
@@ -210,7 +210,7 @@ public class XMLTransferManifestWriter implements TransferManifestWriter
 
     /**
      * Write a deleted node to the manifest file
-     * 
+     *
      * @param node
      * @throws SAXException
      */
@@ -257,7 +257,7 @@ public class XMLTransferManifestWriter implements TransferManifestWriter
 
     /**
      * Write a normal transfer manifest node
-     * 
+     *
      * @param nodeRef
      * @throws SAXException
      */
@@ -269,6 +269,9 @@ public class XMLTransferManifestWriter implements TransferManifestWriter
                                 .toString());
         attributes.addAttribute("uri", "nodeType", "nodeType", "String",
                     formatQName(node.getType()));
+
+        attributes.addAttribute("uri", "ancestorType", "ancestorType", "String",
+                formatQName(node.getType()));
 
         writer.startElement(TransferModel.TRANSFER_MODEL_1_0_URI,
                     ManifestModel.LOCALNAME_ELEMENT_NODE, PREFIX + ":"
@@ -290,7 +293,7 @@ public class XMLTransferManifestWriter implements TransferManifestWriter
         writeTargetAssocs(node.getTargetAssocs());
 
         writeSourceAssocs(node.getSourceAssocs());
-        
+
         writeAccessControl(node.getAccessControl());
 
         writer.endElement(TransferModel.TRANSFER_MODEL_1_0_URI,
@@ -393,9 +396,9 @@ public class XMLTransferManifestWriter implements TransferManifestWriter
             AttributesImpl valueAttributes = new AttributesImpl();
             valueAttributes.addAttribute(TransferModel.TRANSFER_MODEL_1_0_URI, "className",
                         "className", "String", value.getClass().getName());
-            
+
             String strValue = (String) DefaultTypeConverter.INSTANCE.convert(String.class, value);
-            
+
             writer.startElement(TransferModel.TRANSFER_MODEL_1_0_URI,
                         ManifestModel.LOCALNAME_ELEMENT_VALUE_STRING, PREFIX + ":"
                                     + ManifestModel.LOCALNAME_ELEMENT_VALUE_STRING,
@@ -690,7 +693,7 @@ public class XMLTransferManifestWriter implements TransferManifestWriter
                     ManifestModel.LOCALNAME_ELEMENT_ASSOC, PREFIX + ":"
                                 + ManifestModel.LOCALNAME_ELEMENT_ASSOC);
     }
-    
+
     private void writeAccessControl(ManifestAccessControl acl) throws SAXException
     {
         if(acl != null)
@@ -702,7 +705,7 @@ public class XMLTransferManifestWriter implements TransferManifestWriter
             writer.startElement(TransferModel.TRANSFER_MODEL_1_0_URI,
                         ManifestModel.LOCALNAME_ELEMENT_ACL, PREFIX + ":"
                                     + ManifestModel.LOCALNAME_ELEMENT_ACL, attributes);
-            
+
             if(acl.getPermissions() != null)
             {
                 for(ManifestPermission permission : acl.getPermissions())
@@ -710,13 +713,13 @@ public class XMLTransferManifestWriter implements TransferManifestWriter
                     writePermission(permission);
                 }
             }
-            
+
             writer.endElement(TransferModel.TRANSFER_MODEL_1_0_URI,
                         ManifestModel.LOCALNAME_ELEMENT_ACL, PREFIX + ":"
                                     + ManifestModel.LOCALNAME_ELEMENT_ACL);
         }
     }
-    
+
     private void writePermission(ManifestPermission permission) throws SAXException
     {
         AttributesImpl attributes = new AttributesImpl();
@@ -730,7 +733,7 @@ public class XMLTransferManifestWriter implements TransferManifestWriter
         writer.startElement(TransferModel.TRANSFER_MODEL_1_0_URI,
                 ManifestModel.LOCALNAME_ELEMENT_ACL_PERMISSION, PREFIX + ":"
                             + ManifestModel.LOCALNAME_ELEMENT_ACL_PERMISSION, attributes);
-        
+
         writer.endElement(TransferModel.TRANSFER_MODEL_1_0_URI,
                 ManifestModel.LOCALNAME_ELEMENT_ACL_PERMISSION, PREFIX + ":"
                             + ManifestModel.LOCALNAME_ELEMENT_ACL_PERMISSION);

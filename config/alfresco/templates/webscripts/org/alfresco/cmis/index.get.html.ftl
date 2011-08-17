@@ -83,39 +83,21 @@
         <tr><td>PermissionPropagation</td><td>${aclPropagation}</td></tr>
       </table>
 
-      <p>You can also browse this repository via the <a href="${url.context}/cmisbrowse?url=${absurl(url.context)}/cmisatom">OpenCMIS Browser</a>.</p>
+      <p>You can also browse this repository via the <a href="${url.context}/cmisbrowse?url=${absurl(url.context)}/cmisatom">OpenCMIS Browser</a> or 
+         the <a href="${url.context}/service/cmis-browser-app/connections">Web Scripts CMIS Browser</a>.</p>
 
       <h3>Alfresco 3.x CMIS Content Repository (obsolete)</h3>
       <p>The Alfresco 3.x CMIS URLs are still available but should not be used.</p>
       <ul>
         <li>CMIS AtomPub Binding: <a href="${url.serviceContext}/cmis">AtomPub Service Document</a> (<a href="${absurl(url.serviceContext)}/index/package/org/alfresco/cmis/doc">API reference</a>)</li>
-        </li>
         <li>CMIS Web Services Binding: <a href="${url.context}/cmis">WSDL Documents</a></li>
       </ul>
-
-      <a name="testatompub"></a>
-       <h3>OpenCMIS TCK</h3>
-       <p>Point the OpenCMIS TCK (Test Compatibility Kit) at your CMIS Repository AtomPub Service Document. Provide credentials (or leave blank, if authentication not required) and hit the '<strong>Start TCK</strong>' button for a test report.</p>
-       <form action="${url.context}/cmistck" method="POST"> 
-       <input type="hidden" name="org.apache.chemistry.opencmis.binding.spi.type" value="atompub">
-       <fieldset> 
-         <legend>CMIS Repository</legend> 
-         <table> 
-           <tr><td>AtomPub URL:</td><td><input type="text" name="org.apache.chemistry.opencmis.binding.atompub.url" value="${absurl(url.context)}/cmisatom" size="50"></td></tr> 
-           <tr><td>Username:</td><td><input type="text" name="org.apache.chemistry.opencmis.user" value="admin" size="50"></td></tr> 
-           <tr><td>Password:</td><td><input type="password" name="org.apache.chemistry.opencmis.password"  value="admin" size="50"></td></tr> 
-           <tr><td>Repository Id:</td><td><input type="text" name="org.apache.chemistry.opencmis.session.repository.id" size="50"></td></tr> 
-          </table>
-        </fieldset>
-        <p><input type="submit" name="submit" value="Start TCK" class="button"></p>
-      </form>
    </div>
 
    <div id="resources">
       <h3>CMIS Resources</h3>
       <ul>
         <li><a href="http://www.oasis-open.org/committees/cmis">OASIS Technical Committee</a></li>
-        <li><a href="http://xml.coverpages.org/cmis.html">Cover Pages</a></li>
       </ul>
       <h3>CMIS v1.0</h3>
       <ul>
@@ -124,7 +106,11 @@
         <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/os/cmis-spec-v1.0.html">cmis-spec-v1.0.html</a></li>
         <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/os/CMIS-Core.xsd">CMIS-Core.xsd</a></li>
         <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/os/CMIS-Messaging.xsd">CMIS-Messaging.xsd</a></li>
-        <li><a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/os/CMIS-RestAtom.xsd">CMIS-RestAtom.xsd</a></li>
+        <li><a href="http://cmis.alfresco.com/cmis-cheatsheet.pdf">CMIS Cheat Sheet</a></li>
+      </ul>
+      <h3>CMIS v1.1</h3>
+      <ul>
+        <li><a href="http://tools.oasis-open.org/version-control/browse/wsvn/cmis/trunk/cmis-v1.1/">CMIS 1.1 specification drafts</a></li>
       </ul>
       <h3>Alfresco Resources</h3>
       <ul>
@@ -132,18 +118,18 @@
         <li><a href="http://blogs.alfresco.com/cmis/">CMIS Blog</a></li>
         <li><a href="http://wiki.alfresco.com/wiki/Download_Community_Edition">Download</a> Repository</a></li>
         <li><a href="http://wiki.alfresco.com/wiki/Alfresco_SVN_Development_Environment">Source Code</a> for Repository</li>
+        <li><a href="http://apache-extras.org/p/alfresco-opencmis-extension">Alfresco OpenCMIS Extension</a></li>
       </ul>
       <h3>Apache Chemistry</h3>
       <ul>
         <li><a href="http://chemistry.apache.org/">Home Page</a></li>
-        <li><a href="http://svn.apache.org/viewvc/chemistry/tck/trunk/">Source Code</a> for TCK</li>
-        <li><a href="http://svn.apache.org/viewvc/chemistry/opencmis/trunk/chemistry-opencmis-test/chemistry-opencmis-test-browser/">Source Code</a> for Browser</li>
+        <li><a href="http://chemistry.apache.org/java/developing/guide.html">OpenCMIS Client API Developer's Guide</a></li>
+
       </ul>
       <h3>Provide Feedback</h3>
       <ul>
         <li><a href="http://forums.alfresco.com/en/viewforum.php?f=45">CMIS Forum</a></li>
-        <li><a href="https://issues.alfresco.com/jira/secure/IssueNavigator.jspa?reset=true&jqlQuery=project+%3D+ALF+AND+resolution+%3D+Unresolved+AND+component+%3D+CMIS+ORDER+BY+priority+DESC&mode=hide">Find / Raise Issues</li>
-        <li><a href="http://groups.google.com/group/cmis-interop">CMIS Interop Group</a></li>
+        <li><a href="https://issues.alfresco.com/jira/secure/IssueNavigator.jspa?reset=true&mode=hide&jqlQuery=project+%3D+ALF+AND+resolution+%3D+Unresolved+AND+component+%3D+CMIS+ORDER+BY+priority+DESC">Find / Raise Issues</a></li>
       </ul>
     </div>
   </div>

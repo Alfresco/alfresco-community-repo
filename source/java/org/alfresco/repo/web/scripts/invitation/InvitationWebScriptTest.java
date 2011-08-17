@@ -56,7 +56,7 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
  * 
  * @author Mark Rogers
  */
-public class InvitationTest extends BaseWebScriptTest
+public class InvitationWebScriptTest extends BaseWebScriptTest
 {
     private final static QName avatarQName = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "test");
 

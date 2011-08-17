@@ -25,9 +25,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.invitation.InvitationSearchCriteriaImpl;
+import org.alfresco.repo.invitation.InviteHelper;
 import org.alfresco.service.cmr.invitation.InvitationSearchCriteria;
 import org.alfresco.repo.invitation.WorkflowModelNominatedInvitation;
-import org.alfresco.repo.invitation.site.InviteHelper;
 import org.alfresco.repo.invitation.site.InviteInfo;
 import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.service.ServiceRegistry;

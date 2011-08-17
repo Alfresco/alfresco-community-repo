@@ -31,7 +31,7 @@ import org.alfresco.repo.web.scripts.discussion.DiscussionRestApiTest;
 import org.alfresco.repo.web.scripts.forms.FormRestApiGet_Test;
 import org.alfresco.repo.web.scripts.forms.FormRestApiJsonPost_Test;
 import org.alfresco.repo.web.scripts.groups.GroupsTest;
-import org.alfresco.repo.web.scripts.invitation.InvitationTest;
+import org.alfresco.repo.web.scripts.invitation.InvitationWebScriptTest;
 import org.alfresco.repo.web.scripts.invite.InviteServiceTest;
 import org.alfresco.repo.web.scripts.person.PersonServiceTest;
 import org.alfresco.repo.web.scripts.preference.PreferenceServiceTest;
@@ -73,7 +73,7 @@ public class WebScriptTestSuite extends TestSuite
         suite.addTestSuite( FormRestApiGet_Test.class );
         suite.addTestSuite( FormRestApiJsonPost_Test.class );
         suite.addTestSuite( GroupsTest.class );
-        suite.addTestSuite( InvitationTest.class );
+        suite.addTestSuite( InvitationWebScriptTest.class );
         suite.addTestSuite( InviteServiceTest.class );
         suite.addTestSuite( LoginTest.class );
         suite.addTestSuite( PersonSearchTest.class );

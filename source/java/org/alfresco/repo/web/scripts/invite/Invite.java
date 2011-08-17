@@ -21,8 +21,8 @@ package org.alfresco.repo.web.scripts.invite;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.repo.invitation.InviteHelper;
 import org.alfresco.repo.invitation.WorkflowModelNominatedInvitation;
-import org.alfresco.repo.invitation.site.InviteHelper;
 import org.alfresco.service.cmr.invitation.Invitation;
 import org.alfresco.service.cmr.invitation.InvitationExceptionForbidden;
 import org.alfresco.service.cmr.invitation.InvitationExceptionUserError;
@@ -35,8 +35,6 @@ import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Web Script invoked by a Site Manager (Inviter) to either send

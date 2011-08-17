@@ -31,8 +31,7 @@ import org.alfresco.repo.domain.node.NodeEntity;
  */
 public class NodeWithTargetsEntity extends NodeBackedEntity
 {
-    private List<Long> targetIds;
-    private List<Long> targetAssocTypeIds;
+    private List<TargetAndTypeId> targets;
     
     // Supplemental query-related parameters
     private Long assocTypeId;
@@ -53,24 +52,17 @@ public class NodeWithTargetsEntity extends NodeBackedEntity
        this.assocTypeId = assocTypeId;
     }
 
-    public List<Long> getTargetIds() 
+    /**
+     * @return Pairs of (Target Node, Assoc Type)
+     */
+    public List<TargetAndTypeId> getTargetIds() 
     {
-       return targetIds;
+       return targets;
     }
 
-    public void setTargetIds(List<Long> targetIds) 
+    public void setTargets(List<TargetAndTypeId> targets) 
     {
-       this.targetIds = targetIds;
-    }
-
-    public List<Long> getTargetAssocTypeIds() 
-    {
-       return targetAssocTypeIds;
-    }
-
-    public void setTargetAssocTypeIds(List<Long> targetAssocTypeIds) 
-    {
-       this.targetAssocTypeIds = targetAssocTypeIds;
+       this.targets = targets;
     }
 
     /**
@@ -80,5 +72,27 @@ public class NodeWithTargetsEntity extends NodeBackedEntity
     public Long getAssocTypeId() 
     {
        return assocTypeId;
+    }
+    
+    public static class TargetAndTypeId
+    {
+       private final Long targetId;
+       private final Long assocTypeId;
+       
+       public TargetAndTypeId(Long targetId, Long assocTypeId)
+       {
+          this.targetId = targetId;
+          this.assocTypeId = assocTypeId;
+       }
+
+       public Long getTargetId() 
+       {
+          return targetId;
+       }
+
+       public Long getAssocTypeId() 
+       {
+          return assocTypeId;
+       }
     }
 }

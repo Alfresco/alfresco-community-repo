@@ -39,6 +39,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.discussion.DiscussionService;
 import org.alfresco.service.cmr.discussion.PostInfo;
+import org.alfresco.service.cmr.discussion.PostWithReplies;
 import org.alfresco.service.cmr.discussion.TopicInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -686,7 +687,56 @@ public class DiscussionServiceImplTest
        for(TopicInfo topic : new TopicInfo[] {siteT1, nodeT1})
        {
           // Listing initially gives nothing
+          PostWithReplies pr = DISCUSSION_SERVICE.listPostReplies(topic, 1);
+          assertEquals(null, pr);
           
+          // Add the first post
+          PostInfo post = DISCUSSION_SERVICE.createPost(topic, "Post");
+          
+          // Should come back with no replies
+          pr = DISCUSSION_SERVICE.listPostReplies(topic, 1);
+          assertNotNull(pr);
+          assertEquals(post.getNodeRef(), pr.getNodeRef());
+          assertEquals(0, pr.getReplies().size());
+          
+          
+          // Add two replies
+          PostInfo reply1 = DISCUSSION_SERVICE.createReply(post, "R1");
+          PostInfo reply2 = DISCUSSION_SERVICE.createReply(post, "R2");
+          
+          
+          // Ask for the replies to the post
+          pr = DISCUSSION_SERVICE.listPostReplies(topic, 1);
+          assertNotNull(pr);
+          assertEquals(post.getNodeRef(), pr.getNodeRef());
+          assertEquals(2, pr.getReplies().size());
+          
+          assertEquals(reply1.getNodeRef(), pr.getReplies().get(0).getNodeRef());
+          assertEquals(reply2.getNodeRef(), pr.getReplies().get(1).getNodeRef());
+          assertEquals(0, pr.getReplies().get(0).getReplies().size());
+          assertEquals(0, pr.getReplies().get(1).getReplies().size());
+          
+          
+          // Check at other levels too:
+          // Level 0 will mean no replies were fetched
+          pr = DISCUSSION_SERVICE.listPostReplies(topic, 0);
+          assertNotNull(pr);
+          assertEquals(post.getNodeRef(), pr.getNodeRef());
+          assertEquals(0, pr.getReplies().size());
+          
+          // Level 5 won't affect things, as there are only 2
+          pr = DISCUSSION_SERVICE.listPostReplies(topic, 5);
+          assertNotNull(pr);
+          assertEquals(post.getNodeRef(), pr.getNodeRef());
+          assertEquals(2, pr.getReplies().size());
+          
+          assertEquals(reply1.getNodeRef(), pr.getReplies().get(0).getNodeRef());
+          assertEquals(reply2.getNodeRef(), pr.getReplies().get(1).getNodeRef());
+          assertEquals(0, pr.getReplies().get(0).getReplies().size());
+          assertEquals(0, pr.getReplies().get(1).getReplies().size());
+          
+          
+          // Add a nesting of replies 
        }
     }
     

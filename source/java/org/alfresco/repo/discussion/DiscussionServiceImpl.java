@@ -40,6 +40,7 @@ import org.alfresco.repo.node.getchildren.GetChildrenWithTargetAssocsAuditableCa
 import org.alfresco.repo.node.getchildren.GetChildrenWithTargetAssocsAuditableCannedQueryFactory;
 import org.alfresco.repo.query.NodeBackedEntity;
 import org.alfresco.repo.query.NodeWithTargetsEntity;
+import org.alfresco.repo.query.NodeWithTargetsEntity.TargetAndTypeId;
 import org.alfresco.repo.site.SiteServiceImpl;
 import org.alfresco.service.cmr.discussion.DiscussionService;
 import org.alfresco.service.cmr.discussion.PostInfo;
@@ -608,11 +609,77 @@ public class DiscussionServiceImpl implements DiscussionService
       CannedQueryResults<NodeWithTargetsEntity> results = cq.execute();
       
       // Prepare to invert
-      // TODO
-      Map<Long,NodeRef> idToNode = new HashMap<Long, NodeRef>();
-
-      // All done
-      return null;
+      Map<Long,NodeRef> idToNodeRef = new HashMap<Long, NodeRef>();
+      for(NodeWithTargetsEntity e : results.getPage())
+      {
+         idToNodeRef.put(e.getId(), e.getNodeRef());
+      }
+      
+      Map<NodeRef,List<NodeWithTargetsEntity>> idToReplies = new HashMap<NodeRef, List<NodeWithTargetsEntity>>();
+      for(NodeWithTargetsEntity e : results.getPage())
+      {
+         for(TargetAndTypeId idP : e.getTargetIds())
+         {
+            Long id = idP.getTargetId();
+            NodeRef nodeRef = idToNodeRef.get(id);
+            if(nodeRef == null)
+            {
+               // References a node outside of this topic
+               continue;
+            }
+            if(id.equals(e.getId()))
+            {
+               // Self reference
+               continue;
+            }
+            if(! idToReplies.containsKey(nodeRef))
+            {
+               idToReplies.put(nodeRef, new ArrayList<NodeWithTargetsEntity>());
+            }
+            idToReplies.get(nodeRef).add(e);
+         }
+      }
+      
+      // Grab the list of NodeRefs to pre-load, and pre-load them
+      List<NodeRef> preLoad = new ArrayList<NodeRef>();
+      calculateRepliesPreLoad(primaryPost.getNodeRef(), preLoad, idToReplies, levels);
+      nodeDAO.cacheNodes(preLoad);
+      
+      // Wrap
+      return wrap(primaryPost, idToReplies, levels);
+   }
+   private void calculateRepliesPreLoad(NodeRef nodeRef, List<NodeRef> preLoad, 
+         Map<NodeRef,List<NodeWithTargetsEntity>> idToReplies, int levels)
+   {
+      preLoad.add(nodeRef);
+      if(levels > 0)
+      {
+         List<NodeWithTargetsEntity> replies = idToReplies.get(nodeRef);
+         if(replies != null && replies.size() > 0)
+         {
+            for(NodeWithTargetsEntity entity : replies)
+            {
+               calculateRepliesPreLoad(entity.getNodeRef(), preLoad, idToReplies, levels-1);
+            }
+         }
+      }
+   }
+   private PostWithReplies wrap(PostInfo post, Map<NodeRef,List<NodeWithTargetsEntity>> idToReplies, int levels)
+   {
+      List<PostWithReplies> replies = new ArrayList<PostWithReplies>();
+      if(levels > 0)
+      {
+         List<NodeWithTargetsEntity> replyEntities = idToReplies.get(post.getNodeRef());
+         if(replyEntities != null && replyEntities.size() > 0)
+         {
+            for(NodeWithTargetsEntity entity : replyEntities)
+            {
+               PostInfo replyPost = buildPost(entity.getNodeRef(), post.getTopic(), entity.getName(), null);
+               replies.add(wrap(replyPost, idToReplies, levels-1));
+            }
+         }
+      }
+      return new PostWithReplies(post, replies);
    }
 
    

@@ -18,8 +18,12 @@
         <id property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="name" column="name" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <association property="node" resultMap="alfresco.node.result_Node"/>
-        <collection property="targetIds" column="target_node_id" jdbcType="BIGINT" javaType="ArrayList" ofType="java.lang.Long"/>
-        <collection property="targetAssocTypeIds" column="target_assoc_type_id" jdbcType="BIGINT" javaType="ArrayList" ofType="java.lang.Long"/>
+        <collection property="targets" javaType="ArrayList" ofType="org.alfresco.repo.query.NodeWithTargetsEntity$TargetAndTypeId">
+           <constructor>
+              <idArg column="target_node_id" javaType="Long" jdbcType="BIGINT"/>
+              <idArg column="target_assoc_type_id" javaType="Long" jdbcType="BIGINT"/>
+           </constructor>
+        </collection>
     </resultMap>
     
 
@@ -60,19 +64,21 @@
             childNode.audit_modified   as audit_modified,
             childNode.audit_modifier   as audit_modifier,
             prop_name.string_value     as name,
-            targetAssoc.parent_node_id as target_node_id,
+            targetAssoc.target_node_id as target_node_id,
             targetAssoc.type_qname_id  as target_assoc_type_id
         from
             alf_child_assoc assoc
             join alf_node childNode on (childNode.id = assoc.child_node_id)
             join alf_store childStore on (childStore.id = childNode.store_id)
             left join alf_node_properties prop_name on (prop_name.node_id = childNode.id and prop_name.qname_id = #{nameQNameId})
-            left join alf_child_assoc targetAssoc on (childNode.id = targetAssoc.child_node_id)
+            left join alf_node_assoc targetAssoc on (
+                childNode.id = targetAssoc.source_node_id
+              <if test="assocTypeId != null">
+                and targetAssoc.type_qname_id = #{assocTypeId}
+             </if>
+            )
         where
             assoc.parent_node_id = #{parentNodeId}
             and childNode.type_qname_id = #{contentTypeQNameId}
-         <if test="assocTypeId != null">
-            and targetAssoc.type_qname_id = #{assocTypeId}
-         </if>
     </select>
 </mapper>

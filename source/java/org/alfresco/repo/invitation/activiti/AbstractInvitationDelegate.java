@@ -16,31 +16,26 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.invitation.site;
 
-import java.util.Map;
+package org.alfresco.repo.invitation.activiti;
 
-import org.jbpm.graph.exe.ExecutionContext;
+import org.alfresco.repo.invitation.InviteHelper;
+import org.alfresco.repo.workflow.activiti.BaseJavaDelegate;
 
 /**
- * This class contains logic that gets executed when
- * the wf:invitePendingTask in the invite workflow gets completed
- * along the "accept" transition
- * 
- * @author glen johnson at alfresco com
  * @author Nick Smith
+ * @since 4.0
+ *
  */
-public class AcceptInviteAction extends AbstractInvitationAction
+public abstract class AbstractInvitationDelegate extends BaseJavaDelegate
 {
-    private static final long serialVersionUID = 8133039174866049136L;
-
+    protected InviteHelper inviteHelper;
+    
     /**
-    * {@inheritDoc}
+     * @param inviteHelper the inviteHelper to set
      */
-    @SuppressWarnings("unchecked")
-    public void execute(final ExecutionContext executionContext) throws Exception
+    public void setInviteHelper(InviteHelper inviteHelper)
     {
-        Map<String, Object> executionVariables = executionContext.getContextInstance().getVariables();
-        inviteHelper.acceptNominatedInvitation(executionVariables);
+        this.inviteHelper = inviteHelper;
     }
 }

@@ -66,5 +66,5 @@ public class AlfrescoProcessEngineConfiguration extends SpringProcessEngineConfi
     {
         this.customTypes = customTypes;
     }
-    
+
 }

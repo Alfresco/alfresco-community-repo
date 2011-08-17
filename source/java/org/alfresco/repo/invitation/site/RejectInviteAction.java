@@ -19,9 +19,9 @@
 package org.alfresco.repo.invitation.site;
 
 import org.alfresco.repo.invitation.WorkflowModelNominatedInvitation;
-import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.workflow.jbpm.JBPMSpringActionHandler;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.jbpm.graph.exe.ExecutionContext;
@@ -32,41 +32,19 @@ import org.springframework.beans.factory.BeanFactory;
  * the wf:invitePendingTask in the invite workflow gets completed
  * along the "reject" transition
  * 
- * @author glen johnson at alfresco com
+ * @author Nick Smith
  */
-public class RejectInviteAction extends JBPMSpringActionHandler
+public class RejectInviteAction extends AbstractInvitationAction
 {
     private static final long serialVersionUID = 4377660284993206875L;
-    
-    private MutableAuthenticationDao mutableAuthenticationDao;
-    private PersonService personService;
-    private WorkflowService workflowService;
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.jbpm.JBPMSpringActionHandler#initialiseHandler(org.springframework.beans.factory.BeanFactory)
+    /**
+    * {@inheritDoc}
      */
-    @Override
-    protected void initialiseHandler(BeanFactory factory)
-    {
-        ServiceRegistry services = (ServiceRegistry)factory.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        mutableAuthenticationDao = (MutableAuthenticationDao) factory.getBean("authenticationDao");
-        personService = (PersonService) services.getPersonService();
-        workflowService = (WorkflowService) services.getWorkflowService();
-    }
-
-    /* (non-Javadoc)
-     * @see org.jbpm.graph.def.ActionHandler#execute(org.jbpm.graph.exe.ExecutionContext)
-     */
-    @SuppressWarnings("unchecked")
     public void execute(final ExecutionContext executionContext) throws Exception
     {
         // get the invitee user name
-        final String inviteeUserName = (String) executionContext.getVariable(WorkflowModelNominatedInvitation.wfVarInviteeUserName);
-
-        // clean up invitee's user account and person node if they are not in use i.e.
-        // account is still disabled and there are no pending invites outstanding for the
-        // invitee
-        InviteHelper.cleanUpStaleInviteeResources(inviteeUserName, mutableAuthenticationDao, personService,
-                workflowService);
+        String inviteeUserName = (String) executionContext.getVariable(WorkflowModelNominatedInvitation.wfVarInviteeUserName);
+        inviteHelper.deleteAuthenticationIfUnused(inviteeUserName);
     }
 }

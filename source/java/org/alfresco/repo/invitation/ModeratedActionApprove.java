@@ -19,57 +19,22 @@
 package org.alfresco.repo.invitation;
 
 
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.workflow.jbpm.JBPMSpringActionHandler;
-import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.site.SiteService;
-import org.jbpm.graph.exe.ExecutionContext;
-import org.springframework.beans.factory.BeanFactory;
+import java.util.Map;
 
-/**
- *
- */
-public class ModeratedActionApprove extends JBPMSpringActionHandler
+import org.alfresco.repo.invitation.site.AbstractInvitationAction;
+import org.jbpm.graph.exe.ExecutionContext;
+
+public class ModeratedActionApprove extends AbstractInvitationAction
 {
     private static final long serialVersionUID = 4377660284993206875L;
     
-    private SiteService siteService;
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void initialiseHandler(BeanFactory factory)
-    {
-        ServiceRegistry services = (ServiceRegistry)factory.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        siteService = services.getSiteService();
-    }
-
     /**
      * {@inheritDoc}
      **/
-    public void execute(final ExecutionContext executionContext) throws Exception
+    @SuppressWarnings("unchecked")
+    public void execute(ExecutionContext executionContext) throws Exception
     {
-        final String resourceName = (String)executionContext.getVariable(WorkflowModelModeratedInvitation.wfVarResourceName);
-        final String inviteeUserName = (String)executionContext.getVariable(WorkflowModelModeratedInvitation.wfVarInviteeUserName);
-        final String inviteeRole = (String)executionContext.getVariable(WorkflowModelModeratedInvitation.wfVarInviteeRole);
-        final String reviewer = (String)executionContext.getVariable(WorkflowModelModeratedInvitation.wfVarReviewer);
-    	
-        /**
-         * Add invitee to the site
-         */
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-        {
-            public Object doWork() throws Exception
-            {
-            	// Add the new user to the web site
-            	siteService.setMembership(resourceName, inviteeUserName, inviteeRole);
-            	
-                return null;
-            }
-            
-        }, reviewer);
-        
+        Map<String, Object> variables = executionContext.getContextInstance().getVariables();
+        inviteHelper.approveModeratedInvitation(variables);
     }
 }

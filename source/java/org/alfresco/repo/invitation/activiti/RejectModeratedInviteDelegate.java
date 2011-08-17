@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.invitation;
+package org.alfresco.repo.invitation.activiti;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -24,6 +24,8 @@ import java.util.Map;
 
 import org.activiti.engine.delegate.DelegateExecution;
 import org.alfresco.repo.action.executer.MailActionExecuter;
+import org.alfresco.repo.invitation.ModeratedActionReject;
+import org.alfresco.repo.invitation.WorkflowModelModeratedInvitation;
 import org.alfresco.repo.workflow.activiti.BaseJavaDelegate;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
@@ -38,12 +40,14 @@ import org.apache.commons.logging.LogFactory;
  * 
  * <b>Same behaviour as {@link ModeratedActionReject}</b>
  *
+ * @author Nick Smith
  * @author Frederik Heremans
+ * @since 4.0
  */
-public class ModerationRejectDelegate extends BaseJavaDelegate
+public class RejectModeratedInviteDelegate extends BaseJavaDelegate
 {
     private static final String REJECT_TEMPLATE = "/alfresco/bootstrap/invite/moderated-reject-email.ftl";
-    private static final Log logger = LogFactory.getLog(ModerationRejectDelegate.class);
+    private static final Log logger = LogFactory.getLog(RejectModeratedInviteDelegate.class);
     
     @Override
     public void execute(DelegateExecution execution) throws Exception

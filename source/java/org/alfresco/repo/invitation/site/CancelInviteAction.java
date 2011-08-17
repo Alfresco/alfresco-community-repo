@@ -18,13 +18,17 @@
  */
 package org.alfresco.repo.invitation.site;
 
-import org.alfresco.repo.invitation.WorkflowModelNominatedInvitation;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarInviteeUserName;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarResourceName;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarWorkflowInstanceId;
+
+import java.util.Map;
+
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.workflow.jbpm.JBPMSpringActionHandler;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.invitation.InvitationExceptionForbidden;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
@@ -38,56 +42,17 @@ import org.springframework.beans.factory.BeanFactory;
  * 
  * @author glen johnson at alfresco com
  */
-public class CancelInviteAction extends JBPMSpringActionHandler
+public class CancelInviteAction extends AbstractInvitationAction
 {
-    private static final long serialVersionUID = 776961141883350908L;
-    
-    private MutableAuthenticationDao mutableAuthenticationDao;
-    private PersonService personService;
-    private WorkflowService workflowService;
-    private SiteService siteService;
-
-    private final String MSG_NOT_SITE_MANAGER = "invitation.cancel.not_site_manager";
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.jbpm.JBPMSpringActionHandler#initialiseHandler(org.springframework.beans.factory.BeanFactory)
-     */
-    @Override
-    protected void initialiseHandler(BeanFactory factory)
-    {
-        ServiceRegistry services = (ServiceRegistry)factory.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        mutableAuthenticationDao = (MutableAuthenticationDao) factory.getBean("authenticationDao");
-        personService = services.getPersonService();
-        workflowService = services.getWorkflowService();
-        siteService = services.getSiteService();
-    }
+    private static final long serialVersionUID = -7603494389312553072L;
 
     /**
      * {@inheritDoc}
      */
-    public void execute(final ExecutionContext executionContext) throws Exception
+    @SuppressWarnings("unchecked")
+    public void execute(ExecutionContext executionContext) throws Exception
     {
-        // get the invitee user name and site short name variables off the execution context
-        final String inviteeUserName = (String) executionContext.getVariable(
-                WorkflowModelNominatedInvitation.wfVarInviteeUserName);
-        final String siteShortName = (String) executionContext.getVariable(
-                WorkflowModelNominatedInvitation.wfVarResourceName);
-        final String inviteId = (String) executionContext.getVariable(
-                WorkflowModelNominatedInvitation.wfVarWorkflowInstanceId);
-        
-        String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
-        String currentUserSiteRole = this.siteService.getMembersRole(siteShortName, currentUserName);
-        if ((currentUserSiteRole == null) || (currentUserSiteRole.equals(SiteModel.SITE_MANAGER) == false))
-        {
-        	// The current user is not the site manager
-        	Object[] args = {currentUserName, inviteId, siteShortName};
-            throw new InvitationExceptionForbidden(MSG_NOT_SITE_MANAGER, args);
-        }
-        
-        // clean up invitee's user account and person node if they are not in use i.e.
-        // account is still disabled and there are no pending invites outstanding for the
-        // invitee
-        InviteHelper.cleanUpStaleInviteeResources(inviteeUserName, mutableAuthenticationDao, personService,
-                workflowService);
+        Map<String, Object> executionVariables = executionContext.getContextInstance().getVariables();
+        inviteHelper.cancelInvitation(executionVariables);
     }
 }

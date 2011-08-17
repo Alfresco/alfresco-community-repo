@@ -18,9 +18,9 @@
  */
 package org.alfresco.repo.workflow.activiti;
 
+import java.util.Map;
+
 import org.activiti.engine.delegate.JavaDelegate;
-import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
-import org.activiti.engine.impl.context.Context;
 import org.alfresco.service.ServiceRegistry;
 
 /**
@@ -30,6 +30,7 @@ import org.alfresco.service.ServiceRegistry;
  */
 public abstract class BaseJavaDelegate implements JavaDelegate
 {
+    private ServiceRegistry serviceRegistry;
     /**
      * Get the service-registry from the current Activiti-context.
      * 
@@ -37,20 +38,28 @@ public abstract class BaseJavaDelegate implements JavaDelegate
      */
     protected ServiceRegistry getServiceRegistry()
     {
-        ProcessEngineConfigurationImpl config = Context.getProcessEngineConfiguration();
-        if(config != null) 
-        {
-            // Fetch the registry that is injected in the activiti spring-configuration
-            ServiceRegistry registry = (ServiceRegistry) config.getBeans().get(ActivitiConstants.SERVICE_REGISTRY_BEAN_KEY);
-            if(registry == null)
-            {
-                throw new RuntimeException(
-                        "Service-registry not present in ProcessEngineConfiguration beans, expected ServiceRegistry with key" + 
-                        ActivitiConstants.SERVICE_REGISTRY_BEAN_KEY);
-            }
-            return registry;
-        }
-        throw new IllegalStateException("No ProcessEngineCOnfiguration found in active context");
+        return serviceRegistry;
     }
 
+    /**
+     * @param serviceRegistry the serviceRegistry to set
+     */
+    public void setServiceRegistry(ServiceRegistry serviceRegistry)
+    {
+        this.serviceRegistry = serviceRegistry;
+    }
+    
+    public void setBeanRegistry(Map<Object, Object> beanRegistry)
+    {
+        beanRegistry.put(getName(), this);
+    }
+    
+    /**
+     * Defaults to the full {@link Class} Name.
+     * @return
+     */
+    protected String getName()
+    {
+        return getClass().getName();
+    }
 }

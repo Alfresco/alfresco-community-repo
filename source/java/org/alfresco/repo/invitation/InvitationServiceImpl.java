@@ -36,6 +36,7 @@ import org.alfresco.repo.security.authentication.PasswordGenerator;
 import org.alfresco.repo.security.authentication.UserNameGenerator;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.site.SiteModel;
+import org.alfresco.repo.workflow.WorkflowConstants;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.invitation.Invitation;
@@ -148,8 +149,6 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         List<String> ret = new ArrayList<String>(3);
         ret.add(WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME);
         ret.add(WorkflowModelModeratedInvitation.WORKFLOW_DEFINITION_NAME);
-        ret.add(WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI);
-        ret.add(WorkflowModelModeratedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI);
         // old deprecated invitation workflow.
         ret.add("jbpm$wf:invite");
         return ret;
@@ -531,7 +530,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
             Object objs[] = { invitationId };
             throw new InvitationExceptionNotFound("invitation.error.not_found", objs);
         }
-        String workflowName = wi.definition.getName();
+        String workflowName = wi.getDefinition().getName();
 
         if (workflowName.equals(WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME))
         {
@@ -549,14 +548,13 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
             // should also be 0 or 1
             if (inviteStartTasks.size() < 1)
             {
-                Object objs[] = { invitationId };
-                throw new InvitationExceptionNotFound("invitation.error.not_found", objs);
+                throw new InvitationExceptionNotFound("invitation.error.not_found", invitationId);
             }
             else
             {
                 WorkflowTask task = inviteStartTasks.get(0);
-                NominatedInvitationImpl result = new NominatedInvitationImpl(task.properties);
-                result.setSentInviteDate(task.path.instance.startDate);
+                NominatedInvitationImpl result = new NominatedInvitationImpl(task.getProperties());
+                result.setSentInviteDate(task.getPath().getInstance().getStartDate());
                 result.setInviteId(invitationId);
                 return result;
             }

@@ -24,7 +24,7 @@ package org.alfresco.service.cmr.invitation;
 public class InvitationExceptionNotFound extends InvitationException
 {
 
-	public InvitationExceptionNotFound(String msgId, Object[] args) 
+	public InvitationExceptionNotFound(String msgId, Object... args) 
 	{
 		super(msgId, args);
 	}

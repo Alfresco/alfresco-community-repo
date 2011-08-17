@@ -55,6 +55,8 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
     private PersonService personService;
     private InvitationService invitationService;
     private MailActionExecuter mailService;
+    private boolean startSendEmails;
+    private InvitationServiceImpl invitationServiceImpl;
  
     private final static String SITE_SHORT_NAME_INVITE = "InvitationTest";
     private final static String SITE_SHORT_NAME_RED = "InvitationTestRed";
@@ -89,6 +91,10 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
         this.personService = (PersonService) this.applicationContext.getBean("PersonService");
         this.authenticationComponent = (AuthenticationComponent) this.applicationContext
                     .getBean("authenticationComponent");
+        this.invitationServiceImpl = (InvitationServiceImpl) this.applicationContext.getBean("invitationService");
+        
+        this.startSendEmails = invitationServiceImpl.isSendEmails();
+        invitationServiceImpl.setSendEmails(true);
         
         // TODO MER 20/11/2009 Bodge - turn off email sending to prevent errors
         // during unit testing
@@ -96,7 +102,8 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
         mailService = (MailActionExecuter) ((ApplicationContextFactory) this.applicationContext
                 .getBean("OutboundSMTP")).getApplicationContext().getBean("mail");
         mailService.setTestMode(true);
-
+        
+        
         createPerson(USER_MANAGER, USER_MANAGER + "@alfrescotesting.com", PERSON_FIRSTNAME, PERSON_LASTNAME);
         createPerson(USER_ONE, USER_ONE_EMAIL, USER_ONE_FIRSTNAME, USER_ONE_LASTNAME);
         createPerson(USER_TWO, USER_TWO + "@alfrescotesting.com", PERSON_FIRSTNAME, PERSON_LASTNAME);
@@ -132,8 +139,8 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
     @Override
     protected void onTearDownInTransaction() throws Exception
     {
-        super.onTearDownInTransaction();
         this.authenticationComponent.setSystemUserAsCurrentUser();
+        invitationServiceImpl.setSendEmails(startSendEmails);
         siteService.deleteSite(SITE_SHORT_NAME_INVITE);
         siteService.deleteSite(SITE_SHORT_NAME_RED);
         siteService.deleteSite(SITE_SHORT_NAME_BLUE);
@@ -141,6 +148,7 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
         deletePersonByUserName(USER_TWO);
         deletePersonByUserName(USER_EVE);
         deletePersonByUserName(USER_MANAGER);
+        super.onTearDownInTransaction();
     }
 
     /*

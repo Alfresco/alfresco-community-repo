@@ -16,31 +16,29 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.alfresco.repo.invitation.site;
 
-import java.util.Map;
-
-import org.jbpm.graph.exe.ExecutionContext;
+import org.alfresco.repo.invitation.InviteHelper;
+import org.alfresco.repo.workflow.jbpm.JBPMSpringActionHandler;
+import org.springframework.beans.factory.BeanFactory;
 
 /**
- * This class contains logic that gets executed when
- * the wf:invitePendingTask in the invite workflow gets completed
- * along the "accept" transition
- * 
- * @author glen johnson at alfresco com
  * @author Nick Smith
+ * @since 4.0
+ *
  */
-public class AcceptInviteAction extends AbstractInvitationAction
+public abstract class AbstractInvitationAction extends JBPMSpringActionHandler
 {
-    private static final long serialVersionUID = 8133039174866049136L;
+    private static final long serialVersionUID = -6497378327090711383L;
+    protected InviteHelper inviteHelper;
 
     /**
     * {@inheritDoc}
      */
-    @SuppressWarnings("unchecked")
-    public void execute(final ExecutionContext executionContext) throws Exception
+    @Override
+    protected void initialiseHandler(BeanFactory factory)
     {
-        Map<String, Object> executionVariables = executionContext.getContextInstance().getVariables();
-        inviteHelper.acceptNominatedInvitation(executionVariables);
+        this.inviteHelper= (InviteHelper)factory.getBean(InviteHelper.NAME);
     }
 }

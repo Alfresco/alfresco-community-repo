@@ -16,31 +16,26 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.invitation.site;
+package org.alfresco.repo.invitation.activiti;
 
-import java.util.Map;
-
-import org.jbpm.graph.exe.ExecutionContext;
+import org.activiti.engine.delegate.DelegateExecution;
+import org.alfresco.repo.invitation.WorkflowModelNominatedInvitation;
 
 /**
- * This class contains logic that gets executed when
- * the wf:invitePendingTask in the invite workflow gets completed
- * along the "accept" transition
- * 
- * @author glen johnson at alfresco com
+ * Activiti delegate that is executed when a invitation request has
+ * been rejected.
+ *
  * @author Nick Smith
+ * @author Frederik Heremans
+ * @since 4.0
  */
-public class AcceptInviteAction extends AbstractInvitationAction
+public class RejectNominatedInviteDelegate extends AbstractInvitationDelegate
 {
-    private static final long serialVersionUID = 8133039174866049136L;
-
-    /**
-    * {@inheritDoc}
-     */
-    @SuppressWarnings("unchecked")
-    public void execute(final ExecutionContext executionContext) throws Exception
+    @Override
+    public void execute(DelegateExecution execution) throws Exception
     {
-        Map<String, Object> executionVariables = executionContext.getContextInstance().getVariables();
-        inviteHelper.acceptNominatedInvitation(executionVariables);
+        // Get the invitee user name
+        String inviteeUserName = (String) execution.getVariable(WorkflowModelNominatedInvitation.wfVarInviteeUserName);
+        inviteHelper.deleteAuthenticationIfUnused(inviteeUserName);
     }
 }

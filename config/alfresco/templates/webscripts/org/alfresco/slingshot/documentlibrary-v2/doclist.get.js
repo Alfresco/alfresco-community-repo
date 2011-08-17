@@ -268,7 +268,8 @@ function getDoclist()
          folders: folderNodesCount,
          documents: documentNodesCount
       },
-      items: items
+      items: items,
+      customJSON: slingshotDocLib.getJSON()
    });
 }
 

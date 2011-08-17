@@ -64,7 +64,8 @@ function getDoclist()
    return (
    {
       onlineEditing: utils.moduleInstalled("org.alfresco.module.vti"),
-      item: item
+      item: item,
+      customJSON: slingshotDocLib.getJSON()
    });
 }
 

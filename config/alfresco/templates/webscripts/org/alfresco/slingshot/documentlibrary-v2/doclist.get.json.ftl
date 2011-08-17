@@ -12,12 +12,14 @@
       "repositoryId": "${server.id}",
       <#if doclist.container??>"container": "${doclist.container.nodeRef}",</#if>
       <#if doclist.parent??>"parent": <#noescape>${doclist.parent.nodeJSON},</#noescape></#if>
+      <#if doclist.customJSON??>"custom": <#noescape>${doclist.customJSON},</#noescape></#if>
       "onlineEditing": ${doclist.onlineEditing?string},
       "itemCounts":
       {
          "folders": ${(doclist.itemCount.folders!0)?c},
          "documents": ${(doclist.itemCount.documents!0)?c}
       },
+
       "workingCopyLabel": "${workingCopyLabel}"
    },
    "items":

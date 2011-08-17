@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.action.executer.ActionExecuter;
 import org.alfresco.repo.forms.Field;
 import org.alfresco.repo.forms.FormData;
 import org.alfresco.repo.forms.FormException;
@@ -56,7 +57,7 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
  * @author Neil Mc Erlean
  * @since 4.0
  */
-public class ActionFormProcessor extends FilteredFormProcessor<ActionDefinition, Action>
+public class ActionFormProcessor extends FilteredFormProcessor<ActionDefinition, ActionFormResult>
 {
     public static final String ITEM_KIND = "action";
     
@@ -140,7 +141,7 @@ public class ActionFormProcessor extends FilteredFormProcessor<ActionDefinition,
      * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#internalPersist(java.lang.Object, org.alfresco.repo.forms.FormData)
      */
     @Override
-    protected Action internalPersist(ActionDefinition item, FormData data)
+    protected ActionFormResult internalPersist(ActionDefinition item, FormData data)
     {
         if (logger.isDebugEnabled()) 
             logger.debug("Persisting form for: " + item);
@@ -149,9 +150,13 @@ public class ActionFormProcessor extends FilteredFormProcessor<ActionDefinition,
         final NodeRef actionedUponNodeRef = getActionedUponNodeRef(item, data);
         final boolean isAsync = isAsynchronousActionRequest(item, data);
         
+        // execute the action
         actionService.executeAction(actionToExecute, actionedUponNodeRef, true, isAsync);
         
-        return actionToExecute;
+        // extract the result
+        Object result = actionToExecute.getParameterValue(ActionExecuter.PARAM_RESULT);
+        
+        return new ActionFormResult(actionToExecute, result);
     }
     
     /**

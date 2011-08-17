@@ -71,6 +71,7 @@ Inbound settings from iBatis
         
         <!--GetChildren by Auditable CQ -->
         <typeAlias alias="NodeBackedEntity" type="org.alfresco.repo.query.NodeBackedEntity"/>
+        <typeAlias alias="NodeWithTargetsEntity" type="org.alfresco.repo.query.NodeWithTargetsEntity"/>
         
         <!-- Authority CQ -->
         <typeAlias alias="AuthorityInfo" type="org.alfresco.repo.security.authority.AuthorityInfoEntity"/>

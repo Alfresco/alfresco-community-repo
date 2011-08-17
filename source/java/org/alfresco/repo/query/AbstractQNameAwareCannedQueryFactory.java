@@ -155,6 +155,24 @@ public abstract class AbstractQNameAwareCannedQueryFactory<R> extends AbstractCa
         return nodePair.getFirst();
     }
     
+    public CannedQuerySortDetails createDateAscendingCQSortDetails()
+    {
+        List<Pair<? extends Object,SortOrder>> sort = new ArrayList<Pair<? extends Object, SortOrder>>();
+        sort.add(new Pair<QName, SortOrder>(ContentModel.PROP_CREATED, SortOrder.ASCENDING)); 
+        sort.add(new Pair<QName, SortOrder>(ContentModel.PROP_MODIFIED, SortOrder.ASCENDING));
+        
+        return new CannedQuerySortDetails(sort);
+    }
+    
+    public CannedQuerySortDetails createDateDescendingCQSortDetails()
+    {
+        List<Pair<? extends Object,SortOrder>> sort = new ArrayList<Pair<? extends Object, SortOrder>>();
+        sort.add(new Pair<QName, SortOrder>(ContentModel.PROP_CREATED, SortOrder.DESCENDING)); 
+        sort.add(new Pair<QName, SortOrder>(ContentModel.PROP_MODIFIED, SortOrder.DESCENDING));
+        
+        return new CannedQuerySortDetails(sort);
+    }
+    
     /**
      * Utility class to sort Entities on the basis of a Comparable property.
      * Comparisons of two null properties are considered 'equal' by this comparator.
@@ -212,6 +230,7 @@ public abstract class AbstractQNameAwareCannedQueryFactory<R> extends AbstractCa
           super(comparableProperty);
        }
        
+       @SuppressWarnings("unchecked")
        @Override
        protected Comparable getProperty(NodeBackedEntity entity) {
           if (comparableProperty.equals(ContentModel.PROP_CREATED))

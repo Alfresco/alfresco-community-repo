@@ -673,6 +673,24 @@ public class DiscussionServiceImplTest
     }
     
     /**
+     * Ensures that the listing / nesting of replies is correct
+     */
+    @Test public void replyListing() throws Exception
+    {
+       // Create two sites and test
+       TopicInfo siteT1 = DISCUSSION_SERVICE.createTopic(DISCUSSION_SITE.getShortName(), "ST1");
+       TopicInfo nodeT1 = DISCUSSION_SERVICE.createTopic(FORUM_NODE, "NT1");
+       testNodesToTidy.add(siteT1.getNodeRef());
+       testNodesToTidy.add(nodeT1.getNodeRef());
+       
+       for(TopicInfo topic : new TopicInfo[] {siteT1, nodeT1})
+       {
+          // Listing initially gives nothing
+          
+       }
+    }
+    
+    /**
      * Ensures that when we try to write an entry to the
      *  container of a new site, it is correctly setup for us.
      * This test does it's own transactions

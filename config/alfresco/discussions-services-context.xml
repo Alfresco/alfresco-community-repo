@@ -49,8 +49,19 @@
        <property name="methodSecurity" ref="DiscussionService_security_listPosts"/>
    </bean>
 
+   <!-- The GetChildren Auditable with Target Assocs Canned Query Factory -->
+   <bean name="discussionGetChildrenWithTargetAssocsAuditableCannedQueryFactory" class="org.alfresco.repo.node.getchildren.GetChildrenWithTargetAssocsAuditableCannedQueryFactory">
+       <property name="registry" ref="discussionCannedQueryRegistry"/>
+       <property name="tenantService" ref="tenantService"/>
+       <property name="nodeDAO" ref="nodeDAO"/>
+       <property name="qnameDAO" ref="qnameDAO"/>
+       <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
+       <property name="methodSecurity" ref="DiscussionService_security_listPosts"/>
+   </bean>
+
    <!-- Discussion Service base bean -->
 	<bean id="discussionService" class="org.alfresco.repo.discussion.DiscussionServiceImpl">
+        <property name="nodeDAO" ref="nodeDAO" />
         <property name="nodeService" ref="NodeService"/>
         <property name="siteService" ref="SiteService"/>
         <property name="contentService" ref="ContentService"/>

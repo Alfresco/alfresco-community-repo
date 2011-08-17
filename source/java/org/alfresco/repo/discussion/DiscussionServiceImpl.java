@@ -36,7 +36,10 @@ import org.alfresco.query.PagingResults;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.node.getchildren.GetChildrenAuditableCannedQuery;
 import org.alfresco.repo.node.getchildren.GetChildrenAuditableCannedQueryFactory;
+import org.alfresco.repo.node.getchildren.GetChildrenWithTargetAssocsAuditableCannedQuery;
+import org.alfresco.repo.node.getchildren.GetChildrenWithTargetAssocsAuditableCannedQueryFactory;
 import org.alfresco.repo.query.NodeBackedEntity;
+import org.alfresco.repo.query.NodeWithTargetsEntity;
 import org.alfresco.repo.site.SiteServiceImpl;
 import org.alfresco.service.cmr.discussion.DiscussionService;
 import org.alfresco.service.cmr.discussion.PostInfo;
@@ -67,6 +70,8 @@ public class DiscussionServiceImpl implements DiscussionService
     public static final String DISCUSSION_COMPONENT = "discussions";
    
     protected static final String CANNED_QUERY_GET_CHILDREN = "discussionGetChildrenCannedQueryFactory";
+    protected static final String CANNED_QUERY_GET_CHILDREN_TARGETS = "discussionGetChildrenWithTargetAssocsAuditableCannedQueryFactory";
+    protected static final int MAX_REPLIES_FETCH_SIZE = 1000; 
     
     /**
      * The logger
@@ -588,7 +593,25 @@ public class DiscussionServiceImpl implements DiscussionService
    @Override
    public PostWithReplies listPostReplies(PostInfo primaryPost, int levels)
    {
-      // TODO Auto-generated method stub
+      // Grab the factory
+      GetChildrenWithTargetAssocsAuditableCannedQueryFactory cqFactory = (GetChildrenWithTargetAssocsAuditableCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_GET_CHILDREN_TARGETS);
+      
+      // Sort by date
+      CannedQuerySortDetails sorting = cqFactory.createDateAscendingCQSortDetails();
+      
+      // Run the canned query
+      GetChildrenWithTargetAssocsAuditableCannedQuery cq = (GetChildrenWithTargetAssocsAuditableCannedQuery)cqFactory.getCannedQuery(
+            primaryPost.getTopic().getNodeRef(), ForumModel.TYPE_POST,
+            ContentModel.ASSOC_REFERENCES, sorting, new PagingRequest(MAX_REPLIES_FETCH_SIZE));
+      
+      // Execute the canned query
+      CannedQueryResults<NodeWithTargetsEntity> results = cq.execute();
+      
+      // Prepare to invert
+      // TODO
+      Map<Long,NodeRef> idToNode = new HashMap<Long, NodeRef>();
+
+      // All done
       return null;
    }
 

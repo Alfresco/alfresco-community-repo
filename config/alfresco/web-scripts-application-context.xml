@@ -1608,13 +1608,11 @@
    </bean>
    
    
-   <!-- Lists the Discussions for a site -->
-<!--
+   <!-- Lists the discussion topics for a site -->
    <bean id="webscript.org.alfresco.repository.discussions.forum.forum-posts.get"
-         class="org.alfresco.repo.web.scripts.discussions.ForumPostsGet"
+         class="org.alfresco.repo.web.scripts.discussion.ForumTopicsGet"
          parent="abstractDiscussionWebScript">
    </bean>
--->
    
    
    <!--                                        -->

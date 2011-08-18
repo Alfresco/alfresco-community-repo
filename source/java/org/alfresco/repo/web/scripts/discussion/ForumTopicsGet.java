@@ -18,16 +18,14 @@
  */
 package org.alfresco.repo.web.scripts.discussion;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
+import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.service.cmr.discussion.PostInfo;
 import org.alfresco.service.cmr.discussion.TopicInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteInfo;
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
@@ -35,86 +33,74 @@ import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
- * This class is the controller for the discussions page editing forum-posts.post webscript.
+ * This class is the controller for the discussions topics fetching forum-posts.get webscript.
  * 
  * @author Nick Burch
  * @since 4.0
  */
-public class ForumTopicPost extends AbstractDiscussionWebScript
+public class ForumTopicsGet extends AbstractDiscussionWebScript
 {
    @Override
    protected Map<String, Object> executeImpl(SiteInfo site, NodeRef nodeRef,
          TopicInfo topic, PostInfo post, WebScriptRequest req, JSONObject json,
          Status status, Cache cache) 
    {
-      // They shouldn't be adding to an existing Post or Topic
+      // They shouldn't be trying to list of an existing Post or Topic
       if(topic != null || post != null)
       {
-         String error = "Can't create a new Topic inside an existing Topic or Post";
+         String error = "Can't list Topics inside an existing Topic or Post";
          throw new WebScriptException(Status.STATUS_BAD_REQUEST, error);
       }
       
-      
-      // Grab the details of the new Topic and Post
-      String title = "";
-      String contents = "";
-      List<String> tags = null;
-      try
+      // Do we need to list or search?
+      boolean tagSearch = false;
+      String tag = req.getParameter("tag");
+      if(tag != null && tag.length() > 0)
       {
-         if(json.has("title"))
-         {
-            title = json.getString("title");
-         }
-         if(json.has("content"))
-         {
-            contents = json.getString("content");
-         }
-         if(json.has("tags"))
-         {
-            tags = new ArrayList<String>();
-            JSONArray jsTags = json.getJSONArray("tags");
-            for(int i=0; i<jsTags.length(); i++)
-            {
-               tags.add( jsTags.getString(i) );
-            }
-         }
-      }
-      catch(JSONException e)
-      {
-         throw new WebScriptException("Invalid JSON: " + e.getMessage());
+         tagSearch = true;
       }
       
-      
-      // Have the topic created
-      if(site != null)
+      // Get the topics
+      PagingResults<TopicInfo> topics = null;
+      PagingRequest paging = buildPagingRequest(req);
+      if(tagSearch)
       {
-         topic = discussionService.createTopic(site.getShortName(), title);
+         if(site != null)
+         {
+            topics = discussionService.findTopics(site.getShortName(), tag, paging);
+         }
+         else
+         {
+            topics = discussionService.findTopics(nodeRef, tag, paging);
+         }
       }
       else
       {
-         topic = discussionService.createTopic(nodeRef, title);
+         if(site != null)
+         {
+            topics = discussionService.listTopics(site.getShortName(), paging);
+         }
+         else
+         {
+            topics = discussionService.listTopics(nodeRef, buildPagingRequest(req));
+         }
       }
-      if(tags != null && tags.size() > 0)
+      
+      
+      // If they did a site based search, and the component hasn't
+      //  been created yet, use the site for the permissions checking
+      if(site != null && nodeRef == null)
       {
-         topic.getTags().clear();
-         topic.getTags().addAll(tags);
-         discussionService.updateTopic(topic);
+         nodeRef = site.getNodeRef();
       }
-      
-      
-      // Have the primary post created
-      post = discussionService.createPost(topic, contents);
-      
-      
-      // Record the activity
-      addActivityEntry("post", "created", topic, post, site, req, json);
       
       
       // Build the common model parts
       Map<String, Object> model = buildCommonModel(site, topic, post, req);
+      model.put("forum", nodeRef);
       
-      // Build the JSON for the whole topic
-      model.put(KEY_POSTDATA, renderTopic(topic, site));
+      // Have the topics rendered
+      model.put("data", renderTopics(topics, paging, site));
       
       // All done
       return model;

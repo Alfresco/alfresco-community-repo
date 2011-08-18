@@ -19,12 +19,15 @@
 package org.alfresco.repo.web.scripts.discussion;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.discussion.DiscussionServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteServiceImpl;
 import org.alfresco.service.cmr.activities.ActivityService;
@@ -157,7 +160,7 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
        }
 
        PagingRequest paging = new PagingRequest( startIndex, pageSize );
-       paging.setRequestTotalCountMax( Math.max(10,startIndex+1) * pageSize );
+       paging.setRequestTotalCountMax( Math.max(10*pageSize,startIndex+2*pageSize) );
        return paging;
     }
     
@@ -350,6 +353,33 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
        return item;
     }
     
+    /*
+     * Renders out the list of topics
+     * TODO Fetch the post data in one go, rather than one at a time
+     */
+    protected Map<String, Object> renderTopics(PagingResults<TopicInfo> topics,
+          PagingRequest paging, SiteInfo site)
+    {
+       Map<String, Object> model = new HashMap<String, Object>();
+       
+       // Paging info
+       model.put("total", topics.getTotalResultCount().getFirst());
+       model.put("pageSize", paging.getMaxItems());
+       model.put("startIndex", paging.getSkipCount());
+       model.put("itemCount", topics.getPage().size());
+       
+       // Data
+       List<Map<String,Object>> items = new ArrayList<Map<String,Object>>();
+       for(TopicInfo topic : topics.getPage())
+       {
+          items.add(renderTopic(topic, site));
+       }
+       model.put("items", items);
+       
+       // All done
+       return model;
+    }
+    
     protected Map<String, Object> buildCommonModel(SiteInfo site, TopicInfo topic, 
           PostInfo post, WebScriptRequest req)
     {
@@ -451,6 +481,14 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
                 throw new WebScriptException(Status.STATUS_NOT_FOUND, error);
              }
              nodeRef = topic.getNodeRef();
+          }
+          else
+          {
+             // The NodeRef is the container (if it exists)
+             if(siteService.hasContainer(siteName, DiscussionServiceImpl.DISCUSSION_COMPONENT))
+             {
+                nodeRef = siteService.getContainer(siteName, DiscussionServiceImpl.DISCUSSION_COMPONENT);
+             }
           }
        }
        else if(templateVars.containsKey("store_type") && 

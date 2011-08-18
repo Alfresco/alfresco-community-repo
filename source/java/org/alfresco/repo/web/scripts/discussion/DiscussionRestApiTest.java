@@ -1054,11 +1054,8 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
       assertEquals(3, result.getInt("total"));
       assertEquals(3, result.getInt("itemCount"));
       assertEquals(3, result.getJSONArray("items").length());
-      // TODO This appears to be incorrect... 
-      assertEquals("NodeTitle3", result.getJSONArray("items").getJSONObject(0).getString("title"));
-      assertEquals("NodeTitle2", result.getJSONArray("items").getJSONObject(1).getString("title"));
-//      assertEquals("NodeTitle2", result.getJSONArray("items").getJSONObject(0).getString("title"));
-//      assertEquals("NodeTitle3", result.getJSONArray("items").getJSONObject(1).getString("title"));
+      assertEquals("NodeTitle2", result.getJSONArray("items").getJSONObject(0).getString("title"));
+      assertEquals("NodeTitle3", result.getJSONArray("items").getJSONObject(1).getString("title"));
       assertEquals("NodeTitle1", result.getJSONArray("items").getJSONObject(2).getString("title"));
       assertEquals(0, result.getJSONArray("items").getJSONObject(0).getInt("replyCount"));
       assertEquals(0, result.getJSONArray("items").getJSONObject(1).getInt("replyCount"));
@@ -1141,9 +1138,7 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
       assertEquals(3, result.getInt("total"));
       assertEquals(1, result.getInt("itemCount"));
       assertEquals(1, result.getJSONArray("items").length());
-      // TODO This appears to be incorrect... 
-      assertEquals("NodeTitle3", result.getJSONArray("items").getJSONObject(0).getString("title"));
-//      assertEquals("NodeTitle2", result.getJSONArray("items").getJSONObject(0).getString("title"));
+      assertEquals("NodeTitle2", result.getJSONArray("items").getJSONObject(0).getString("title"));
       assertEquals(0, result.getJSONArray("items").getJSONObject(0).getInt("replyCount"));
     }
     

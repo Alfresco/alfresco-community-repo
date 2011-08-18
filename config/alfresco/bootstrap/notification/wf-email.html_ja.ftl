@@ -1,4 +1,4 @@
-<html>
+﻿<html>
    <head>
       <style type="text/css"><!--
       body
@@ -36,9 +36,9 @@
                                                 <td>
                                                    <div style="font-size: 22px; padding-bottom: 4px;">
                                                       <#if args.workflowPooled == true>
-                                                         New Pooled Task
+                                                         新たな タスクプール
                                                       <#else>
-                                                      	 You been assigned a task
+                                                         タスクがアサインされました
                                                       </#if>
                                                    </div>
                                                    <div style="font-size: 13px;">
@@ -48,13 +48,13 @@
                                              </tr>
                                           </table>
                                           <div style="font-size: 14px; margin: 12px 0px 24px 0px; padding-top: 10px; border-top: 1px solid #aaaaaa;">
-                                             <p>Hi,</p>
+                                             <p>様,</p>
 
                                              <p>
                                                 <#if args.workflowPooled == true>
-                                                   The following pooled task is available to be claimed:
+                                                   以下のタスクプールは申請できます:
                                                 <#else>
-                                                   You have been assigned the following task:
+                                                   以下のタスクがアサインされています:
                                                 </#if>
                                              </p>
                                              
@@ -63,14 +63,14 @@
                                              <p>
                                                 <#if (args.workflowDueDate)??>Due:&nbsp;&nbsp;<b>${args.workflowDueDate?date?string.full}</b><br></#if>
                                                 <#if (args.workflowPriority)??>
-                                                   Priority:&nbsp;&nbsp;
+                                                   優先:&nbsp;&nbsp;
                                                    <b>
                                                    <#if args.workflowPriority == 3>
-                                                      Low
+                                                      低
                                                    <#elseif args.workflowPriority == 2>
-                                                      Medium
+                                                      中
                                                    <#else>
-                                                      High
+                                                      高
                                                    </#if>
                                                    </b>
                                                 </#if>
@@ -92,7 +92,7 @@
                                                                            <td><b>${doc.name}</b></td>
                                                                         </tr>
                                                                         <tr>
-                                                                           <td>Click on this link to download the document:</td>
+                                                                           <td>このリンクからドキュメントをダウンロードします:</td>
                                                                         </tr>
                                                                         <tr>
                                                                            <td>
@@ -114,10 +114,10 @@
                                              </#if>
                                              
                                              <#if args.workflowPooled == true>
-                                                <p>Click this link to view the task:</p>
+                                                <p>このリンクをクリックしてタスクを表示します:</p>
                                                 <p><a href="${shareUrl}/page/task-details?taskId=${args.workflowId}">${shareUrl}/page/task-details?taskId=${args.workflowId}</a>
                                              <#else>
-                                                <p>Click this link to edit the task:</p>
+                                                <p>このリンクをクリックしてタスクを編集します:</p>
                                                 <p><a href="${shareUrl}/page/task-edit?taskId=${args.workflowId}">${shareUrl}/page/task-edit?taskId=${args.workflowId}</a>
                                              </#if>
                                              
@@ -135,8 +135,8 @@
                               </td>
                            </tr>
                            <tr>
-                              <td style="padding: 0px 30px; font-size: 13px;">
-                                 To find out more about Alfresco ${productName!""} visit <a href="http://www.alfresco.com">http://www.alfresco.com</a>
+                              <td style="padding: 0px 30px; font-size: 13px;">                           
+								 Alfresco ${productName!""}の詳細については、<a href="http://www.alfresco.com">http://www.alfresco.com</a>にアクセスしてください
                               </td>
                            </tr>
                            <tr>

@@ -692,6 +692,7 @@ public class DiscussionServiceImplTest
           
           // Add the first post
           PostInfo post = DISCUSSION_SERVICE.createPost(topic, "Post");
+          testNodesToTidy.add(post.getNodeRef());
           
           // Should come back with no replies
           pr = DISCUSSION_SERVICE.listPostReplies(topic, 1);
@@ -703,6 +704,8 @@ public class DiscussionServiceImplTest
           // Add two replies
           PostInfo reply1 = DISCUSSION_SERVICE.createReply(post, "R1");
           PostInfo reply2 = DISCUSSION_SERVICE.createReply(post, "R2");
+          testNodesToTidy.add(reply1.getNodeRef());
+          testNodesToTidy.add(reply2.getNodeRef());
           
           
           // Ask for the replies to the post
@@ -736,7 +739,156 @@ public class DiscussionServiceImplTest
           assertEquals(0, pr.getReplies().get(1).getReplies().size());
           
           
-          // Add a nesting of replies 
+          // Add a nesting of replies on only one 
+          PostInfo reply1_1 = DISCUSSION_SERVICE.createReply(reply1, "R1_1");
+          PostInfo reply1_2 = DISCUSSION_SERVICE.createReply(reply1, "R1_2");
+          PostInfo reply1_3 = DISCUSSION_SERVICE.createReply(reply1, "R1_3");
+          PostInfo reply1_2_1 = DISCUSSION_SERVICE.createReply(reply1_2, "R1_2_1");
+          PostInfo reply1_2_2 = DISCUSSION_SERVICE.createReply(reply1_2, "R1_2_2");
+          PostInfo reply1_3_1 = DISCUSSION_SERVICE.createReply(reply1_3, "R1_3_1");
+          PostInfo reply1_3_1_1 = DISCUSSION_SERVICE.createReply(reply1_3_1, "R1_3_1_1");
+          PostInfo reply1_3_1_1_1 = DISCUSSION_SERVICE.createReply(reply1_3_1_1, "R1_3_1_1_1");
+          
+          // Mark them for tidy
+          testNodesToTidy.add(reply1_1.getNodeRef());
+          testNodesToTidy.add(reply1_2.getNodeRef());
+          testNodesToTidy.add(reply1_3.getNodeRef());
+          testNodesToTidy.add(reply1_2_1.getNodeRef());
+          testNodesToTidy.add(reply1_2_2.getNodeRef());
+          testNodesToTidy.add(reply1_3_1.getNodeRef());
+          testNodesToTidy.add(reply1_3_1_1.getNodeRef());
+          testNodesToTidy.add(reply1_3_1_1_1.getNodeRef());
+
+          
+          // Check with various levels:
+          // Level 0 will get the primary post but no replies
+          pr = DISCUSSION_SERVICE.listPostReplies(topic, 0);
+          assertNotNull(pr);
+          assertEquals(post.getNodeRef(), pr.getNodeRef());
+          assertEquals(0, pr.getReplies().size());
+          
+          // Level 1 will get the post, it's replies, but nothing further
+          pr = DISCUSSION_SERVICE.listPostReplies(topic, 1);
+          assertNotNull(pr);
+          assertEquals(post.getNodeRef(), pr.getNodeRef());
+          assertEquals(2, pr.getReplies().size());
+          
+          assertEquals(reply1.getNodeRef(), pr.getReplies().get(0).getNodeRef());
+          assertEquals(reply2.getNodeRef(), pr.getReplies().get(1).getNodeRef());
+          assertEquals(0, pr.getReplies().get(0).getReplies().size());
+          assertEquals(0, pr.getReplies().get(1).getReplies().size());
+          
+          // Level 1 on the primary post is the same
+          pr = DISCUSSION_SERVICE.listPostReplies(post, 1);
+          assertNotNull(pr);
+          assertEquals(post.getNodeRef(), pr.getNodeRef());
+          assertEquals(2, pr.getReplies().size());
+          
+          assertEquals(reply1.getNodeRef(), pr.getReplies().get(0).getNodeRef());
+          assertEquals(reply2.getNodeRef(), pr.getReplies().get(1).getNodeRef());
+          assertEquals(0, pr.getReplies().get(0).getReplies().size());
+          assertEquals(0, pr.getReplies().get(1).getReplies().size());
+          
+          // Level 2 gets the next bit
+          // Reply 1 has 3 children, Reply 2 has none
+          pr = DISCUSSION_SERVICE.listPostReplies(topic, 2);
+          assertNotNull(pr);
+          assertEquals(post.getNodeRef(), pr.getNodeRef());
+          assertEquals(2, pr.getReplies().size());
+          
+          assertEquals(reply1.getNodeRef(), pr.getReplies().get(0).getNodeRef());
+          assertEquals(reply2.getNodeRef(), pr.getReplies().get(1).getNodeRef());
+          assertEquals(3, pr.getReplies().get(0).getReplies().size());
+          assertEquals(0, pr.getReplies().get(1).getReplies().size());
+          
+          assertEquals(reply1_1.getNodeRef(), pr.getReplies().get(0).getReplies().get(0).getNodeRef());
+          assertEquals(reply1_2.getNodeRef(), pr.getReplies().get(0).getReplies().get(1).getNodeRef());
+          assertEquals(reply1_3.getNodeRef(), pr.getReplies().get(0).getReplies().get(2).getNodeRef());
+          assertEquals(0, pr.getReplies().get(0).getReplies().get(0).getReplies().size());
+          assertEquals(0, pr.getReplies().get(0).getReplies().get(1).getReplies().size());
+          assertEquals(0, pr.getReplies().get(0).getReplies().get(2).getReplies().size());
+          
+          
+          // Level 3 nests further
+          // Reply 1 has 3 children, 1 has 0, 2 has 2, 3 has 1 but nested
+          pr = DISCUSSION_SERVICE.listPostReplies(topic, 3);
+          assertNotNull(pr);
+          assertEquals(post.getNodeRef(), pr.getNodeRef());
+          assertEquals(2, pr.getReplies().size());
+          
+          assertEquals(reply1.getNodeRef(), pr.getReplies().get(0).getNodeRef());
+          assertEquals(reply2.getNodeRef(), pr.getReplies().get(1).getNodeRef());
+          assertEquals(3, pr.getReplies().get(0).getReplies().size());
+          assertEquals(0, pr.getReplies().get(1).getReplies().size());
+          
+          PostWithReplies pr1 = pr.getReplies().get(0);
+          assertEquals(reply1_1.getNodeRef(), pr1.getReplies().get(0).getNodeRef());
+          assertEquals(reply1_2.getNodeRef(), pr1.getReplies().get(1).getNodeRef());
+          assertEquals(reply1_3.getNodeRef(), pr1.getReplies().get(2).getNodeRef());
+          assertEquals(0, pr1.getReplies().get(0).getReplies().size());
+          assertEquals(2, pr1.getReplies().get(1).getReplies().size());
+          assertEquals(1, pr1.getReplies().get(2).getReplies().size());
+          
+          assertEquals(reply1_2_1.getNodeRef(), pr1.getReplies().get(1).getReplies().get(0).getNodeRef());
+          assertEquals(reply1_2_2.getNodeRef(), pr1.getReplies().get(1).getReplies().get(1).getNodeRef());
+          assertEquals(reply1_3_1.getNodeRef(), pr1.getReplies().get(2).getReplies().get(0).getNodeRef());
+          assertEquals(0, pr1.getReplies().get(1).getReplies().get(0).getReplies().size());
+          assertEquals(0, pr1.getReplies().get(2).getReplies().get(0).getReplies().size());
+          
+          
+          // Level 10 gets everything it can (there aren't 10 levels though) 
+          pr = DISCUSSION_SERVICE.listPostReplies(topic, 10);
+          assertNotNull(pr);
+          assertEquals(post.getNodeRef(), pr.getNodeRef());
+          assertEquals(2, pr.getReplies().size());
+          
+          assertEquals(reply1.getNodeRef(), pr.getReplies().get(0).getNodeRef());
+          assertEquals(reply2.getNodeRef(), pr.getReplies().get(1).getNodeRef());
+          assertEquals(3, pr.getReplies().get(0).getReplies().size());
+          assertEquals(0, pr.getReplies().get(1).getReplies().size());
+          
+          pr1 = pr.getReplies().get(0);
+          assertEquals(reply1_1.getNodeRef(), pr1.getReplies().get(0).getNodeRef());
+          assertEquals(reply1_2.getNodeRef(), pr1.getReplies().get(1).getNodeRef());
+          assertEquals(reply1_3.getNodeRef(), pr1.getReplies().get(2).getNodeRef());
+          assertEquals(0, pr1.getReplies().get(0).getReplies().size());
+          assertEquals(2, pr1.getReplies().get(1).getReplies().size());
+          assertEquals(1, pr1.getReplies().get(2).getReplies().size());
+          
+          assertEquals(reply1_2_1.getNodeRef(), pr1.getReplies().get(1).getReplies().get(0).getNodeRef());
+          assertEquals(reply1_2_2.getNodeRef(), pr1.getReplies().get(1).getReplies().get(1).getNodeRef());
+          assertEquals(reply1_3_1.getNodeRef(), pr1.getReplies().get(2).getReplies().get(0).getNodeRef());
+          assertEquals(0, pr1.getReplies().get(1).getReplies().get(0).getReplies().size());
+          assertEquals(1, pr1.getReplies().get(2).getReplies().get(0).getReplies().size());
+          
+          PostWithReplies rp1_3_1 = pr1.getReplies().get(2).getReplies().get(0);
+          assertEquals(reply1_3_1.getNodeRef(), rp1_3_1.getNodeRef());
+          assertEquals(1, rp1_3_1.getReplies().size());
+          
+          assertEquals(reply1_3_1_1.getNodeRef(), rp1_3_1.getReplies().get(0).getNodeRef());
+          assertEquals(1, rp1_3_1.getReplies().get(0).getReplies().size());
+
+          assertEquals(reply1_3_1_1_1.getNodeRef(), rp1_3_1.getReplies().get(0).getReplies().get(0).getNodeRef());
+          assertEquals(0, rp1_3_1.getReplies().get(0).getReplies().get(0).getReplies().size());
+
+          
+          // Now check for nodes part way down
+          pr = DISCUSSION_SERVICE.listPostReplies(reply2, 10);
+          assertNotNull(pr);
+          assertEquals(reply2.getNodeRef(), pr.getNodeRef());
+          assertEquals(0, pr.getReplies().size());
+          
+          
+          pr = DISCUSSION_SERVICE.listPostReplies(reply1_3_1, 10);
+          assertNotNull(pr);
+          assertEquals(reply1_3_1.getNodeRef(), pr.getNodeRef());
+          assertEquals(1, pr.getReplies().size());
+          
+          assertEquals(reply1_3_1_1.getNodeRef(), pr.getReplies().get(0).getNodeRef());
+          assertEquals(1, pr.getReplies().get(0).getReplies().size());
+          
+          assertEquals(reply1_3_1_1_1.getNodeRef(), pr.getReplies().get(0).getReplies().get(0).getNodeRef());
+          assertEquals(0, pr.getReplies().get(0).getReplies().get(0).getReplies().size());
        }
     }
     

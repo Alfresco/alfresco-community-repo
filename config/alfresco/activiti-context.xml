@@ -42,9 +42,11 @@
         class="org.alfresco.repo.workflow.activiti.AlfrescoProcessEngineConfiguration">
         <property name="dataSource" ref="wrappedDataSource" />
         <property name="transactionManager" ref="transactionManager" />
-        <property name="databaseSchemaUpdate" value="${db.schema.update}" />
+        <property name="databaseSchemaUpdate" value="none" />
         <property name="history" value="full" />
-        <property name="jobExecutorActivate" value="true" />
+        
+        <!-- Job-executor will be enabled once has been SchemaAvailableEvent fired  -->
+        <property name="jobExecutorActivate" value="false" />
 
     <!-- Limit the visible beans in expressions -->
     <property name="beans" ref="activitiBeanRegistry" />
@@ -185,5 +187,10 @@
         factory-method="getManagementService" />
     <bean id="activitiHistoryService" factory-bean="activitiProcessEngine"
         factory-method="getHistoryService" />
+        
+    <!-- Starting job-executor, after SchemaAvailableEvent has been broadcasted -->
+    <bean id="activitiEngineInitializer" class="org.alfresco.repo.workflow.activiti.ActivitiEngineInitializer">
+      <property name="processEngine" ref="activitiProcessEngine" />
+    </bean>
 
 </beans>

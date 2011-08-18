@@ -64,8 +64,10 @@
         <property name="nodeDAO" ref="nodeDAO" />
         <property name="nodeService" ref="NodeService"/>
         <property name="siteService" ref="SiteService"/>
+        <property name="searchService" ref="SearchService"/>
         <property name="contentService" ref="ContentService"/>
         <property name="taggingService" ref="TaggingService"/>
+        <property name="namespaceService" ref="NamespaceService"/>
         <property name="fileFolderService" ref="FileFolderService"/>
         <property name="transactionService" ref="transactionService" />
         <property name="cannedQueryRegistry" ref="discussionCannedQueryRegistry" />

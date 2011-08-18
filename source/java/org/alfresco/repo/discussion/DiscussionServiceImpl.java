@@ -53,10 +53,17 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.search.LimitBy;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.ResultSetRow;
+import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.tagging.TaggingService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.ISO9075;
 import org.alfresco.util.Pair;
 import org.alfresco.util.registry.NamedObjectRegistry;
 import org.apache.commons.logging.Log;
@@ -77,14 +84,15 @@ public class DiscussionServiceImpl implements DiscussionService
     /**
      * The logger
      */
-    @SuppressWarnings("unused")
     private static Log logger = LogFactory.getLog(DiscussionServiceImpl.class);
     
     private NodeDAO nodeDAO;
     private NodeService nodeService;
     private SiteService siteService;
+    private SearchService searchService;
     private ContentService contentService;
     private TaggingService taggingService;
+    private NamespaceService namespaceService;
     private FileFolderService fileFolderService;
     private TransactionService transactionService;
     private NamedObjectRegistry<CannedQueryFactory<? extends Object>> cannedQueryRegistry;
@@ -104,6 +112,11 @@ public class DiscussionServiceImpl implements DiscussionService
         this.siteService = siteService;
     }
     
+    public void setSearchService(SearchService searchService)
+    {
+        this.searchService = searchService;
+    }
+    
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
@@ -112,6 +125,11 @@ public class DiscussionServiceImpl implements DiscussionService
     public void setTaggingService(TaggingService taggingService)
     {
         this.taggingService = taggingService;
+    }
+    
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
     }
     
     public void setFileFolderService(FileFolderService fileFolderService)
@@ -569,6 +587,79 @@ public class DiscussionServiceImpl implements DiscussionService
    }
    
    @Override
+   public PagingResults<TopicInfo> findTopics(String siteShortName,
+         String tag, PagingRequest paging) {
+      NodeRef container = getSiteDiscussionsContainer(siteShortName, false);
+      if(container == null)
+      {
+         // No topics
+         return new EmptyPagingResults<TopicInfo>();
+      }
+      
+      // We can now search by parent nodeRef
+      return findTopics(container, tag, paging);
+   }
+
+   @Override
+   public PagingResults<TopicInfo> findTopics(NodeRef nodeRef,
+         String tag, PagingRequest paging) {
+      // Build the query
+      StringBuilder luceneQuery = new StringBuilder();
+      luceneQuery.append(
+           " +TYPE:\"" + ForumModel.TYPE_TOPIC + "\""
+      );
+      luceneQuery.append(
+           " +PATH:\"" + nodeService.getPath(nodeRef).toPrefixString(namespaceService) + "/*\""
+      );
+
+      if(tag != null)
+      {
+         luceneQuery.append(
+               " +PATH:\"/cm:taggable/cm:" + ISO9075.encode(tag) + "/member\"" 
+         );
+      }
+      
+      String sortOn = "@{http://www.alfresco.org/model/content/1.0}created";
+
+      // Query
+      SearchParameters sp = new SearchParameters();
+      sp.addStore(nodeRef.getStoreRef());
+      sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+      sp.setQuery(luceneQuery.toString());
+      sp.addSort(sortOn, true);
+      if (paging.getMaxItems() > 0)
+      {
+          sp.setLimit(paging.getMaxItems());
+          sp.setLimitBy(LimitBy.FINAL_SIZE);
+      }
+      if (paging.getSkipCount() > 0)
+      {
+          sp.setSkipCount(paging.getSkipCount());
+      }
+      
+      
+      // Build the results
+      PagingResults<TopicInfo> pagedResults = new EmptyPagingResults<TopicInfo>();
+      ResultSet results = null;
+      
+      try 
+      {
+         results = searchService.query(sp);
+         pagedResults = wrap(results, nodeRef);
+      }
+      finally
+      {
+         if(results != null)
+         {
+            results.close();
+         }
+      }
+      
+      return pagedResults;
+   }
+
+   
+   @Override
    public PagingResults<PostInfo> listPosts(TopicInfo topic, PagingRequest paging)
    {
       // Do the listing, oldest first
@@ -728,6 +819,47 @@ public class DiscussionServiceImpl implements DiscussionService
       
       // Return for wrapping
       return results;
+   }
+   
+   /**
+    * Our class to wrap up search results as {@link TopicInfo} instances
+    */
+   private PagingResults<TopicInfo> wrap(final ResultSet finalLuceneResults, final NodeRef container)
+   {
+      final List<TopicInfo> topics = new ArrayList<TopicInfo>();
+      for(ResultSetRow row : finalLuceneResults)
+      {
+         TopicInfo topic = buildTopic(
+               row.getNodeRef(), container, row.getQName().getLocalName()
+         );
+         topics.add(topic);
+      }
+      
+      // Wrap
+      return new PagingResults<TopicInfo>() {
+         @Override
+         public boolean hasMoreItems() {
+            return finalLuceneResults.hasMore();
+         }
+
+         @Override
+         public Pair<Integer, Integer> getTotalResultCount() {
+            int skipCount = finalLuceneResults.getStart();
+            int itemsRemainingAfterThisPage = finalLuceneResults.length();
+            final int totalItemsInUnpagedResultSet = skipCount + itemsRemainingAfterThisPage;
+            return new Pair<Integer, Integer>(totalItemsInUnpagedResultSet, totalItemsInUnpagedResultSet);
+         }
+
+         @Override
+         public List<TopicInfo> getPage() {
+            return topics;
+         }
+
+         @Override
+         public String getQueryExecutionId() {
+            return null;
+         }
+     };
    }
    
    /**

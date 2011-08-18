@@ -165,6 +165,19 @@ public interface DiscussionService {
    PagingResults<TopicInfo> listTopics(NodeRef nodeRef, PagingRequest paging);
    
    /**
+    * Searches for all topics in a site, filtered by tag
+    */
+   @NotAuditable
+   PagingResults<TopicInfo> findTopics(String siteShortName, String tag, PagingRequest paging);
+
+   /**
+    * Searches for all topics attached to the specified Node, filtered by tag
+    */
+   @NotAuditable
+   PagingResults<TopicInfo> findTopics(NodeRef nodeRef, String tag, PagingRequest paging);
+
+   
+   /**
     * Retrieves all posts in a topic, ordered by creation date
     */
    @NotAuditable

@@ -546,6 +546,8 @@ public class DiscussionServiceImplTest
     {
        PagingResults<TopicInfo> topics;
        PagingResults<PostInfo> posts;
+       final String TAG_1 = "topic_tag_one";
+       final String TAG_2 = "topic_tag_two";
        
        
        // To start with, there will be no topics
@@ -580,6 +582,46 @@ public class DiscussionServiceImplTest
        assertEquals("NT1", topics.getPage().get(0).getTitle());
        assertEquals("NT2", topics.getPage().get(1).getTitle());
        assertEquals("NT3", topics.getPage().get(2).getTitle());
+       
+
+       // Add tags to a few
+       siteT2.getTags().add(TAG_1);
+       nodeT2.getTags().add(TAG_1);
+       nodeT2.getTags().add(TAG_2);
+       nodeT3.getTags().add(TAG_1);
+       DISCUSSION_SERVICE.updateTopic(siteT2);
+       DISCUSSION_SERVICE.updateTopic(nodeT2);
+       DISCUSSION_SERVICE.updateTopic(nodeT3);
+
+       
+       // Find without tags
+       topics = DISCUSSION_SERVICE.findTopics(DISCUSSION_SITE.getShortName(), null, new PagingRequest(10));
+       assertEquals(2, topics.getPage().size());
+       assertEquals("ST1", topics.getPage().get(0).getTitle());
+       assertEquals("ST2", topics.getPage().get(1).getTitle());
+       
+       topics = DISCUSSION_SERVICE.findTopics(FORUM_NODE, null, new PagingRequest(10));
+       assertEquals(3, topics.getPage().size());
+       assertEquals("NT1", topics.getPage().get(0).getTitle());
+       assertEquals("NT2", topics.getPage().get(1).getTitle());
+       assertEquals("NT3", topics.getPage().get(2).getTitle());
+       
+       // Find with tags
+       topics = DISCUSSION_SERVICE.findTopics(DISCUSSION_SITE.getShortName(), TAG_1, new PagingRequest(10));
+       assertEquals(1, topics.getPage().size());
+       assertEquals("ST2", topics.getPage().get(0).getTitle());
+       
+       topics = DISCUSSION_SERVICE.findTopics(FORUM_NODE, TAG_1, new PagingRequest(10));
+       assertEquals(2, topics.getPage().size());
+       assertEquals("NT2", topics.getPage().get(0).getTitle());
+       assertEquals("NT3", topics.getPage().get(1).getTitle());
+       
+       topics = DISCUSSION_SERVICE.findTopics(DISCUSSION_SITE.getShortName(), TAG_2, new PagingRequest(10));
+       assertEquals(0, topics.getPage().size());
+       
+       topics = DISCUSSION_SERVICE.findTopics(FORUM_NODE, TAG_2, new PagingRequest(10));
+       assertEquals(1, topics.getPage().size());
+       assertEquals("NT2", topics.getPage().get(0).getTitle());
        
        
        // Alter the creation date on a couple, see the ordering change

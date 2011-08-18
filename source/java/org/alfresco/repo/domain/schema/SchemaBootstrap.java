@@ -1697,14 +1697,15 @@ public class SchemaBootstrap extends AbstractLifecycleBean
      *
      * @author Frederik Heremans
      */
-    public class UnclosableConnection implements Connection {
-
+    public class UnclosableConnection implements Connection 
+    {
         private Connection wrapped;
         
         public UnclosableConnection(Connection wrappedConnection)
         {
             this.wrapped = wrappedConnection;
         }
+        
         @Override
         public boolean isWrapperFor(Class<?> iface) throws SQLException
         {
@@ -2007,6 +2008,5 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         {
             wrapped.setTypeMap(map);
         }
-        
     }
 }

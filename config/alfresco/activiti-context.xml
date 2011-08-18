@@ -2,10 +2,10 @@
 
 <beans xmlns="http://www.springframework.org/schema/beans"
     xmlns:context="http://www.springframework.org/schema/context"
-	xmlns:tx="http://www.springframework.org/schema/tx"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-   xmlns:util="http://www.springframework.org/schema/util"
-   xsi:schemaLocation="http://www.springframework.org/schema/beans   http://www.springframework.org/schema/beans/spring-beans.xsd
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans   http://www.springframework.org/schema/beans/spring-beans.xsd
                            http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.5.xsd 
                            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
                            http://www.springframework.org/schema/tx      http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
@@ -45,11 +45,11 @@
         <property name="databaseSchemaUpdate" value="none" />
         <property name="history" value="full" />
         
-        <!-- Job-executor will be enabled once has been SchemaAvailableEvent fired  -->
+        <!-- Job-executor will be enabled once the SchemaAvailableEvent has been fired -->
         <property name="jobExecutorActivate" value="false" />
 
-    <!-- Limit the visible beans in expressions -->
-    <property name="beans" ref="activitiBeanRegistry" />
+        <!-- Limit the visible beans in expressions -->
+        <property name="beans" ref="activitiBeanRegistry" />
     
         <property name="customTypes">
             <list>
@@ -190,7 +190,8 @@
         
     <!-- Starting job-executor, after SchemaAvailableEvent has been broadcasted -->
     <bean id="activitiEngineInitializer" class="org.alfresco.repo.workflow.activiti.ActivitiEngineInitializer">
-      <property name="processEngine" ref="activitiProcessEngine" />
+        <property name="processEngine" ref="activitiProcessEngine" />
+        <property name="workflowAdminService" ref="workflowAdminService" />
     </bean>
 
 </beans>

@@ -71,6 +71,7 @@ public class FileContentStore
     private boolean allowRandomAccess;
     private boolean readOnly;
     private ApplicationContext applicationContext;
+    private boolean deleteEmptyDirs = true;
 
     /**
      * Private: for Spring-constructed instances only.
@@ -608,6 +609,12 @@ public class FileContentStore
         {
             deleted = file.delete();
         }
+        
+        // Delete empty parents regardless of whether the file was ignore above.
+        if (deleteEmptyDirs && deleted)
+        {
+            deleteEmptyParents(file);
+        }
 
         // done
         if (logger.isDebugEnabled())
@@ -617,6 +624,39 @@ public class FileContentStore
                     "   url: " + contentUrl);
         }
         return deleted;
+    }
+
+    /**
+     * Deletes the parents of the specified file. The file itself must have been
+     * deleted before calling this method - since only empty directories can be deleted.
+     * 
+     * @param file
+     */
+    private void deleteEmptyParents(File file)
+    {
+        String root = getRootLocation();
+        File parent = file.getParentFile();
+        boolean deleted = false;
+        do
+        {
+            try
+            {
+                if (parent.isDirectory() && !parent.getCanonicalPath().equals(root))
+                {
+                    // Only an empty directory will successfully be deleted.
+                    deleted = parent.delete();
+                }
+            }
+            catch (IOException error)
+            {
+                logger.error("Unable to construct canonical path for " + parent.getAbsolutePath());
+                break;
+            }
+            
+            parent = parent.getParentFile();
+        }
+        while(deleted);
+
     }
 
     /**
@@ -668,5 +708,15 @@ public class FileContentStore
         {
             publishEvent(((ContextRefreshedEvent) event).getApplicationContext());
         }
+    }
+
+    /**
+     * Configure the FileContentStore to delete empty parent directories upon deleting a content URL.
+     * 
+     * @param deleteEmptyDirs the deleteEmptyDirs to set
+     */
+    public void setDeleteEmptyDirs(boolean deleteEmptyDirs)
+    {
+        this.deleteEmptyDirs = deleteEmptyDirs;
     }
 }

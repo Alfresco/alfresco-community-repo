@@ -70,8 +70,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
-import com.aetrion.flickr.auth.AuthUtilities;
-
 /**
  * Helper class to house utility methods common to 
  * more than one Invite Service Web Script
@@ -145,7 +143,7 @@ public class InviteHelper implements InitializingBean
                 return null;
             }
         });
-        addSiteMembership(invitee, siteShortName, role, inviter);
+        addSiteMembership(invitee, siteShortName, role, inviter, false);
     }
     
     /**
@@ -268,14 +266,18 @@ public class InviteHelper implements InitializingBean
      * @param role
      * @param runAsUser
      * @param siteService
+     * @param overrideExisting
      */
-    public void addSiteMembership(final String invitee, final String siteName, final String role, final String runAsUser)
+    public void addSiteMembership(final String invitee, final String siteName, final String role, final String runAsUser, final boolean overrideExisting)
     {
         AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
             public Void doWork() throws Exception
             {
-                siteService.setMembership(siteName, invitee, role);
+                if (overrideExisting || !siteService.isMember(siteName, invitee))
+                {
+                    siteService.setMembership(siteName, invitee, role);
+                }
                 return null;
             }
             
@@ -415,7 +417,7 @@ public class InviteHelper implements InitializingBean
         String reviewer = (String)executionVariables.get(WorkflowModelModeratedInvitation.wfVarReviewer);
         
         // Add invitee to the site
-        addSiteMembership(invitee, siteName, role, reviewer);
+        addSiteMembership(invitee, siteName, role, reviewer, true);
     }
     
     @SuppressWarnings("unchecked")

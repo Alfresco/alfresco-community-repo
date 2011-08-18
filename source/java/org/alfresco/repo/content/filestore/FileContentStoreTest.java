@@ -50,6 +50,8 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
                 tempDir.getAbsolutePath() +
                 File.separatorChar +
                 getName());
+        
+        store.setDeleteEmptyDirs(true);
     }
 
     @Override
@@ -127,5 +129,102 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
         long size = store.getSpaceTotal();
         assertTrue("Size must be positive", size > 0L);
         assertTrue("Size must not be Long.MAX_VALUE", size < Long.MAX_VALUE);
+    }
+    
+    
+    /**
+     * Empty parent directories should be removed when a URL is removed.
+     */
+    public void testDeleteRemovesEmptyDirs() throws Exception
+    {
+        ContentStore store = getStore();
+        String url = "store://1965/12/1/13/12/file.bin";
+        
+        // Ensure clean test data
+        if (store.exists(url)) store.delete(url);
+        
+        String content = "Content for test: " + getName();
+        store.getWriter(new ContentContext(null, url)).putContent(content);
+        
+        File root = new File(store.getRootLocation());
+        
+        assertDirExists(root, "");
+        assertDirExists(root, "1965/12/1/13/12");
+        
+        store.delete(url);
+        
+        assertDirNotExists(root, "1965");
+        // root should be untouched.
+        assertDirExists(root, "");
+    }
+    
+    /**
+     * Only non-empty directories should be deleted.
+     */
+    public void testDeleteLeavesNonEmptyDirs()
+    {
+        ContentStore store = getStore();
+        String url = "store://1965/12/1/13/12/file.bin";
+        
+        // Ensure clean test data
+        if (store.exists(url)) store.delete(url);
+        
+        String content = "Content for test: " + getName();
+        store.getWriter(new ContentContext(null, url)).putContent(content);
+        
+        File root = new File(store.getRootLocation());
+        
+        assertDirExists(root, "");
+        assertDirExists(root, "1965/12/1/13/12");
+        
+        // Make a directory non-empty
+        String anotherUrl = "store://1965/12/3/another.bin";
+        if (store.exists(anotherUrl)) store.delete(anotherUrl);
+        store.getWriter(new ContentContext(null, anotherUrl));
+        
+        store.delete(url);
+        
+        // Parents of another.bin cannot be deleted
+        assertDirExists(root, "1965");
+        assertDirExists(root, "1965/12");
+        // Non-parents of another.bin could be deleted
+        assertDirNotExists(root, "1965/12/1");
+        
+        // root should be untouched.
+        assertDirExists(root, "");
+    }
+    
+    
+    /**
+     * Empty parent directories are not deleted if the store is configured not to.
+     */
+    public void testNoParentDirsDeleted() throws Exception
+    {
+        store.setDeleteEmptyDirs(false);
+        FileContentStore store = (FileContentStore) getStore();
+        String url = "store://1965/12/1/13/12/file.bin";
+        // Ensure clean test data
+        if (store.exists(url)) store.delete(url);
+        String content = "Content for test: " + getName();
+        store.getWriter(new ContentContext(null, url)).putContent(content);
+        File root = new File(store.getRootLocation());
+        
+        store.delete(url);
+        
+        assertDirExists(root, "1965/12/1/13/12");
+        // root should be untouched.
+        assertDirExists(root, "");
+    }
+    
+    
+    private void assertDirExists(File root, String dir)
+    {
+        assertTrue("Directory [" + dir + "] should exist", new File(root, dir).exists());
+    }
+    
+    
+    private void assertDirNotExists(File root, String dir)
+    {
+        assertFalse("Directory [" + dir + "] should NOT exist", new File(root, dir).exists());
     }
 }

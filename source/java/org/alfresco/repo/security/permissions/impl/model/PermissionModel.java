@@ -18,8 +18,11 @@
  */
 package org.alfresco.repo.security.permissions.impl.model;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -36,8 +39,8 @@ import org.alfresco.repo.security.permissions.PermissionEntry;
 import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.repo.security.permissions.impl.ModelDAO;
 import org.alfresco.repo.security.permissions.impl.RequiredPermission;
-import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
 import org.alfresco.repo.security.permissions.impl.RequiredPermission.On;
+import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -53,8 +56,12 @@ import org.alfresco.util.Pair;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
+import org.dom4j.DocumentType;
 import org.dom4j.Element;
+import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
+import org.dom4j.io.XMLWriter;
+import org.dom4j.tree.DefaultDocumentType;
 
 /**
  * The implementation of the model DAO Reads and stores the top level model information Encapsulates access to this
@@ -93,6 +100,8 @@ public class PermissionModel implements ModelDAO
     // Instance variables
 
     private String model;
+    private String dtdSchema;
+    private boolean validate = true;
 
     /*
      * (non-Javadoc)
@@ -1143,6 +1152,26 @@ public class PermissionModel implements ModelDAO
     }
 
     /**
+     * Set the dtd schema that is used to validate permission model
+     * 
+     * @param dtdSchema
+     */
+    public void setDtdSchema(String dtdSchema)
+    {
+        this.dtdSchema = dtdSchema;
+    }
+    
+    /**
+     * Indicates whether model should be validated on initialization against specified dtd
+     * 
+     * @param validate
+     */
+    public void setValidate(boolean validate)
+    {
+        this.validate = validate;
+    }
+
+    /**
      * Set the dictionary service
      * 
      * @param dictionaryService
@@ -1261,6 +1290,9 @@ public class PermissionModel implements ModelDAO
     private Document createDocument(String model)
     {
         InputStream is = this.getClass().getClassLoader().getResourceAsStream(model);
+        URL dtdSchemaUrl = (dtdSchema == null)
+            ? null
+            : this.getClass().getClassLoader().getResource(dtdSchema); 
         if (is == null)
         {
             throw new PermissionModelException("File not found: " + model);
@@ -1268,21 +1300,156 @@ public class PermissionModel implements ModelDAO
         SAXReader reader = new SAXReader();
         try
         {
+            if (validate)
+            {
+                if (dtdSchemaUrl != null)
+                {
+                    is = processModelDocType(is, dtdSchemaUrl.toString());
+                    reader.setValidation(true);
+                }
+                else
+                {
+                    throw new PermissionModelException("Couldn't obtain DTD schema to validate permission model.");
+                }
+            }
+            
             Document document = reader.read(is);
             is.close();
             return document;
         }
         catch (DocumentException e)
         {
-            throw new PermissionModelException("Failed to create permission model document ", e);
+            throw new PermissionModelException("Failed to create permission model document: " + model, e);
         }
         catch (IOException e)
         {
-            throw new PermissionModelException("Failed to close permission model document ", e);
+            throw new PermissionModelException("Failed to close permission model document: " + model, e);
         }
-
+        
+// TODO Do something like the following so that we don't need to modify the source xml
+//      to validate it. The following does not work for DTDs.
+        
+//        InputStream is = this.getClass().getClassLoader().getResourceAsStream(model);
+//        if (is == null)
+//        {
+//            throw new PermissionModelException("File not found: " + model);
+//        }
+//        
+//        InputStream dtdSchemaIs = (dtdSchema == null)
+//            ? null
+//            : this.getClass().getClassLoader().getResourceAsStream(dtdSchema);
+//        
+//        try
+//        {
+//            Document document;
+//            SAXReader reader;
+//            if (validate)
+//            {
+//                if (dtdSchemaIs != null)
+//                {
+//                    SAXParserFactory factory = SAXParserFactory.newInstance();
+//
+//                    SchemaFactory schemaFactory = 
+//                        SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
+//
+//                    try
+//                    {
+//                        factory.setSchema(schemaFactory.newSchema(
+//                            new Source[] {new StreamSource(dtdSchemaIs)}));
+//                        SAXParser parser = factory.newSAXParser();
+//                        reader = new SAXReader(parser.getXMLReader());
+//                        reader.setValidation(false);
+//                        reader.setErrorHandler(new XMLErrorHandler());
+//                    }
+//                    catch (SAXException e)
+//                    {
+//                        throw new PermissionModelException("Failed to read DTD/schema: " + dtdSchema, e);
+//                    }
+//                    catch (ParserConfigurationException e)
+//                    {
+//                        throw new PermissionModelException("Failed to configure DTD/schema: " + dtdSchema, e);
+//                    }
+//                }
+//                else
+//                {
+//                    throw new PermissionModelException("Couldn't obtain DTD/schema to validate permission model.");
+//                }
+//            }
+//            else
+//            {
+//                reader = new SAXReader();
+//            }
+//            document = reader.read(is);
+//            return document;
+//        }
+//        catch (DocumentException e)
+//        {
+//            throw new PermissionModelException("Failed to create permission model document: " + model, e);
+//        }
+//        finally
+//        {
+//            if (is != null)
+//            {
+//                try
+//                {
+//                    is.close();
+//                }
+//                catch (IOException e)
+//                {
+//                    throw new PermissionModelException("Failed to close permission model document: " + model, e);
+//                }
+//            }
+//            if (dtdSchemaIs != null)
+//            {
+//                try
+//                {
+//                    dtdSchemaIs.close();
+//                }
+//                catch (IOException e)
+//                {
+//                    throw new PermissionModelException("Couldn't close DTD/schema to validate permission model.");
+//                }
+//            }
+//        }
     }
 
+    /*
+     * Replace or add correct DOCTYPE to the xml to allow validation against dtd
+     */
+    private InputStream processModelDocType(InputStream is, String dtdSchemaUrl) throws DocumentException, IOException
+    {
+        SAXReader reader = new SAXReader();
+        // read document without validation
+        Document doc = reader.read(is);
+        DocumentType docType = doc.getDocType();
+        if (docType != null)
+        {
+            // replace DOCTYPE setting the full path to the xsd
+            docType.setSystemID(dtdSchemaUrl);
+        }
+        else
+        {
+            // add the DOCTYPE
+            docType = new DefaultDocumentType(doc.getRootElement().getName(), dtdSchemaUrl);
+            doc.setDocType(docType);
+        }
+
+        ByteArrayOutputStream fos = new ByteArrayOutputStream();
+        try
+        {
+            OutputFormat format = OutputFormat.createPrettyPrint(); // uses UTF-8
+            XMLWriter writer = new XMLWriter(fos, format);
+            writer.write(doc);
+            writer.flush();
+        }
+        finally
+        {
+            fos.close();
+        }
+        
+        return new ByteArrayInputStream(fos.toByteArray());
+    }
+    
     /**
      * Set the default access status
      * 

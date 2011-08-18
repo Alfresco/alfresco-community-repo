@@ -79,13 +79,13 @@ import org.springframework.beans.factory.InitializingBean;
  * 
  * The following properties are set by default to discard events where the user is
  * 'null' or 'System', the node path is '/sys:archivedItem' or under '/ver:' or 
- * the node type is not 'cm:folder' or 'cm:content'. These values result in events
- * only being recorded if they are initiated by users of the system. These vales may
- * be overridden if required.
+ * the node type is not 'cm:folder', 'cm:content' or 'st:site'. These values result
+ * in events only being recorded for common actions initiated by users of the system.
+ * These vales may be overridden if required.
  * <pre>
  *    audit.filter.alfresco-access.default.enabled=true
  *    audit.filter.alfresco-access.transaction.user=~System;~null;.*
- *    audit.filter.alfresco-access.transaction.type=cm:folder;cm:content
+ *    audit.filter.alfresco-access.transaction.type=cm:folder;cm:content;st:site
  *    audit.filter.alfresco-access.transaction.path=~/sys:archivedItem;~/ver:;.*
  * </pre>
  * 

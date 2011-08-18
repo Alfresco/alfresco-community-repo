@@ -135,8 +135,7 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
         map.put("false", Boolean.FALSE);
 
         Number count = (Number) template.selectOne("alfresco.subscriptions.select_countSubscriptions", map);
-
-        return count.intValue();
+        return count == null ? 0 : count.intValue();
     }
 
     @Override
@@ -165,7 +164,8 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
         se.setUserNodeId(userPair.getFirst());
         se.setNodeId(nodePair.getFirst());
 
-        if (((Number) template.selectOne("alfresco.subscriptions.select_hasSubscribed", se)).intValue() == 0)
+        Number count = (Number) template.selectOne("alfresco.subscriptions.select_hasSubscribed", se);
+        if (count == null || count.intValue() == 0)
         {
             template.insert("alfresco.subscriptions.insert_Subscription", se);
         }
@@ -226,7 +226,8 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
         se.setUserNodeId(userPair.getFirst());
         se.setNodeId(nodePair.getFirst());
 
-        return ((Number) template.selectOne("alfresco.subscriptions.select_hasSubscribed", se)).intValue() == 1;
+        Number count = (Number) template.selectOne("alfresco.subscriptions.select_hasSubscribed", se);
+        return count == null ? false : count.intValue() > 0;
     }
 
     @Override
@@ -336,7 +337,6 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
         map.put("false", Boolean.FALSE);
 
         Number count = (Number) template.selectOne("alfresco.subscriptions.select_countFollowers", map);
-
-        return count.intValue();
+        return count == null ? 0 : count.intValue();
     }
 }

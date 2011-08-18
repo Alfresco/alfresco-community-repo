@@ -31,7 +31,7 @@ const COMMENT_QNAMEPATH = DISCUSSION_QNAMEPATH + "/cm:Comments/";
 var siteDataCache = [];
 function getSiteData(siteId)
 {
-   if (siteDataCache[siteId] !== undefined)
+   if (typeof siteDataCache[siteId] === "object")
    {
       return siteDataCache[siteId];
    }
@@ -53,7 +53,7 @@ function getSiteData(siteId)
 var personDataCache = [];
 function getPersonDisplayName(userId)
 {
-   if (personDataCache[userId] != undefined)
+   if (typeof personDataCache[userId] === "object")
    {
       return personDataCache[userId];
    }

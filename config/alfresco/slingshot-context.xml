@@ -20,7 +20,7 @@
        </property>
    </bean>
 
-   <bean id="doclibCustomVtiServer" class="org.alfresco.repo.jscript.app.CustomResponseVtiServer">
+   <bean id="doclibCustomVtiServer" class="org.alfresco.repo.jscript.app.VtiServerCustomResponse">
        <property name="port">
            <value>${vti.server.external.port}</value>
        </property>

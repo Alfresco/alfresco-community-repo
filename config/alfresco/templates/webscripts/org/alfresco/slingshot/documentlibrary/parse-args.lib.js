@@ -24,7 +24,7 @@ var Common =
          return null;
       }
 
-      if (typeof Common.PeopleCache[username] == "undefined")
+      if (typeof Common.PeopleCache[username] != "object")
       {
          var person = people.getPerson(username);
          if (person == null)
@@ -91,7 +91,7 @@ var Common =
          return null;
       }
 
-      if (typeof Common.GroupCache[groupname] == "undefined")
+      if (typeof Common.GroupCache[groupname] != "object")
       {
          var group = groups.getGroupForFullAuthorityName(groupname);
          if (group == null && groupname == "GROUP_EVERYONE")
@@ -121,7 +121,7 @@ var Common =
     */
    getSite: function Common_getSite(siteId)
    {
-      if (typeof Common.SiteCache[siteId] == "undefined")
+      if (typeof Common.SiteCache[siteId] != "object")
       {
          Common.SiteCache[siteId] = siteService.getSite(siteId);
       }

@@ -28,7 +28,7 @@ const COMMENT_QNAMEPATH = DISCUSSION_QNAMEPATH + "/cm:Comments/";
  * 
  * Caches the data to avoid repeatedly querying the repository.
  */
-var siteDataCache = [];
+var siteDataCache = {};
 function getSiteData(siteId)
 {
    if (typeof siteDataCache[siteId] === "object")
@@ -50,7 +50,7 @@ function getSiteData(siteId)
  * 
  * Caches the person full name to avoid repeatedly querying the repository.
  */
-var personDataCache = [];
+var personDataCache = {};
 function getPersonDisplayName(userId)
 {
    if (typeof personDataCache[userId] === "object")
@@ -76,7 +76,7 @@ var processedCache = {};
 function addToProcessed(category, key)
 {
    var cat = processedCache[category];
-   if (cat === undefined)
+   if (typeof cat !== "object")
    {
       processedCache[category] = [];
       cat = processedCache[category];
@@ -86,7 +86,7 @@ function addToProcessed(category, key)
 function checkProcessed(category, key)
 {
    var cat = processedCache[category];
-   if (cat !== undefined)
+   if (typeof cat === "object")
    {
       for (var x in cat)
       {

@@ -19,7 +19,7 @@ var Common =
     */
    getSite: function Common_getSite(siteId)
    {
-      if (typeof Common.SiteCache[siteId] == "undefined")
+      if (typeof Common.SiteCache[siteId] != "object")
       {
          Common.SiteCache[siteId] = siteService.getSite(siteId);
       }

@@ -37,7 +37,7 @@ var Common =
          return null;
       }
 
-      if (typeof Common.PeopleCache[username] == "undefined")
+      if (typeof Common.PeopleCache[username] != "object")
       {
          var person = people.getPerson(username);
          if (person == null)

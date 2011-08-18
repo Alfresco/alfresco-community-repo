@@ -1600,6 +1600,13 @@
          class="org.alfresco.repo.web.scripts.discussion.ForumPostRepliesGet"
          parent="abstractDiscussionWebScript">
    </bean>
+
+   <!-- Creates a new discussions topic and primary post -->
+   <bean id="webscript.org.alfresco.repository.discussions.forum.forum-posts.post"
+         class="org.alfresco.repo.web.scripts.discussion.ForumTopicPost"
+         parent="abstractDiscussionWebScript">
+   </bean>
+   
    
    <!-- Lists the Discussions for a site -->
 <!--

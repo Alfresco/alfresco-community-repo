@@ -33,6 +33,81 @@
                         <cm:content>contentUrl=classpath:alfresco\bootstrap\notification\wf-email.html.ftl|mimetype=text/plain|size=1455|encoding=UTF-8</cm:content>
                     </view:properties>
                 </cm:content>
+                <cm:content view:childName="cm:invite-email.html_de.ftl">
+                    <view:aspects>
+                        <cm:auditable></cm:auditable>
+                        <sys:referenceable></sys:referenceable>
+                        <app:inlineeditable></app:inlineeditable>
+                    </view:aspects>
+                    <view:acl></view:acl>
+                    <view:properties>
+                        <app:editInline>true</app:editInline>	  
+                        <cm:name>wf-email.html_de.ftl</cm:name>
+                        <cm:title>wf-email.html_de.ftl</cm:title>
+                        <cm:description>${spaces.templates.email.generate_the_wf_notification_email.description} - ${version.default}</cm:description>
+                        <cm:content>contentUrl=classpath:alfresco\bootstrap\notification\wf-email.html_de.ftl|mimetype=text/plain|size=1455|encoding=UTF-8</cm:content>
+                    </view:properties>
+                </cm:content>
+                <cm:content view:childName="cm:invite-email.html_es.ftl">
+                    <view:aspects>
+                        <cm:auditable></cm:auditable>
+                        <sys:referenceable></sys:referenceable>
+                        <app:inlineeditable></app:inlineeditable>
+                    </view:aspects>
+                    <view:acl></view:acl>
+                    <view:properties>
+                        <app:editInline>true</app:editInline>	  
+                        <cm:name>wf-email.html_es.ftl</cm:name>
+                        <cm:title>wf-email.html_es.ftl</cm:title>
+                        <cm:description>${spaces.templates.email.generate_the_wf_notification_email.description} - ${version.default}</cm:description>
+                        <cm:content>contentUrl=classpath:alfresco\bootstrap\notification\wf-email.html_es.ftl|mimetype=text/plain|size=1455|encoding=UTF-8</cm:content>
+                    </view:properties>
+                </cm:content>
+                <cm:content view:childName="cm:invite-email.html_fr.ftl">
+                    <view:aspects>
+                        <cm:auditable></cm:auditable>
+                        <sys:referenceable></sys:referenceable>
+                        <app:inlineeditable></app:inlineeditable>
+                    </view:aspects>
+                    <view:acl></view:acl>
+                    <view:properties>
+                        <app:editInline>true</app:editInline>	  
+                        <cm:name>wf-email.html_fr.ftl</cm:name>
+                        <cm:title>wf-email.html_fr.ftl</cm:title>
+                        <cm:description>${spaces.templates.email.generate_the_wf_notification_email.description} - ${version.default}</cm:description>
+                        <cm:content>contentUrl=classpath:alfresco\bootstrap\notification\wf-email.html_fr.ftl|mimetype=text/plain|size=1455|encoding=UTF-8</cm:content>
+                    </view:properties>
+                </cm:content>
+                <cm:content view:childName="cm:invite-email.html_it.ftl">
+                    <view:aspects>
+                        <cm:auditable></cm:auditable>
+                        <sys:referenceable></sys:referenceable>
+                        <app:inlineeditable></app:inlineeditable>
+                    </view:aspects>
+                    <view:acl></view:acl>
+                    <view:properties>
+                        <app:editInline>true</app:editInline>	  
+                        <cm:name>wf-email.html_it.ftl</cm:name>
+                        <cm:title>wf-email.html_it.ftl</cm:title>
+                        <cm:description>${spaces.templates.email.generate_the_wf_notification_email.description} - ${version.default}</cm:description>
+                        <cm:content>contentUrl=classpath:alfresco\bootstrap\notification\wf-email.html_it.ftl|mimetype=text/plain|size=1455|encoding=UTF-8</cm:content>
+                    </view:properties>
+                </cm:content>
+                <cm:content view:childName="cm:invite-email.html_ja.ftl">
+                    <view:aspects>
+                        <cm:auditable></cm:auditable>
+                        <sys:referenceable></sys:referenceable>
+                        <app:inlineeditable></app:inlineeditable>
+                    </view:aspects>
+                    <view:acl></view:acl>
+                    <view:properties>
+                        <app:editInline>true</app:editInline>	  
+                        <cm:name>wf-email.html_ja.ftl</cm:name>
+                        <cm:title>wf-email.html_ja.ftl</cm:title>
+                        <cm:description>${spaces.templates.email.generate_the_wf_notification_email.description} - ${version.default}</cm:description>
+                        <cm:content>contentUrl=classpath:alfresco\bootstrap\notification\wf-email.html_ja.ftl|mimetype=text/plain|size=1455|encoding=UTF-8</cm:content>
+                    </view:properties>
+                </cm:content>
             </cm:contains>
         </view:associations>
     </cm:folder>

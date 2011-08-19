@@ -44,7 +44,7 @@
    <bean id="subscriptionsDAO" class="org.alfresco.repo.domain.subscriptions.ibatis.SubscriptionsDAOImpl">
       <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>
       <property name="personService" ref="personService"/>
-      <property name="nodeDAO" ref="nodeDAO"/>
+      <property name="nodeService" ref="nodeService"/>
       <property name="QNameDAO" ref="qnameDAO"/>
    </bean>
    

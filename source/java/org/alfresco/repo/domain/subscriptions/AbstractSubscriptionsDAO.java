@@ -19,8 +19,8 @@
 package org.alfresco.repo.domain.subscriptions;
 
 import org.alfresco.query.PagingRequest;
-import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.subscriptions.PagingFollowingResults;
@@ -29,12 +29,12 @@ import org.alfresco.service.cmr.subscriptions.SubscriptionItemTypeEnum;
 
 public abstract class AbstractSubscriptionsDAO implements SubscriptionsDAO
 {
-    protected NodeDAO nodeDAO;
+    protected NodeService nodeService;
     protected PersonService personService;
 
-    public final void setNodeDAO(NodeDAO nodeDAO)
+    public final void setNodeService(NodeService nodeService)
     {
-        this.nodeDAO = nodeDAO;
+        this.nodeService = nodeService;
     }
 
     public final void setPersonService(PersonService personService)

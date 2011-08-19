@@ -35,12 +35,15 @@ import org.alfresco.service.cmr.subscriptions.PagingFollowingResultsImpl;
 import org.alfresco.service.cmr.subscriptions.PagingSubscriptionResults;
 import org.alfresco.service.cmr.subscriptions.PagingSubscriptionResultsImpl;
 import org.alfresco.service.cmr.subscriptions.SubscriptionItemTypeEnum;
-import org.alfresco.util.Pair;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.apache.ibatis.session.RowBounds;
 import org.mybatis.spring.SqlSessionTemplate;
 
 public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
 {
+    private static final QName PROP_SYS_NODE_DBID = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "node-dbid");
+
     private SqlSessionTemplate template;
     private QNameDAO qnameDAO;
 
@@ -74,10 +77,10 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
             throw new IllegalArgumentException("User does not exist!");
         }
 
-        Pair<Long, NodeRef> userPair = nodeDAO.getNodePair(userNodeRef);
+        Long dbid = (Long) nodeService.getProperty(userNodeRef, PROP_SYS_NODE_DBID);
 
         Map<String, Object> map = new HashMap<String, Object>();
-        map.put("userNodeId", userPair.getFirst());
+        map.put("userNodeId", dbid);
         map.put("false", Boolean.FALSE);
 
         int maxItems = (pagingRequest.getMaxItems() < 0 || pagingRequest.getMaxItems() > Integer.MAX_VALUE - 1 ? Integer.MAX_VALUE - 1
@@ -128,10 +131,10 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
             return 0;
         }
 
-        Pair<Long, NodeRef> userPair = nodeDAO.getNodePair(userNodeRef);
+        Long dbid = (Long) nodeService.getProperty(userNodeRef, PROP_SYS_NODE_DBID);
 
         Map<String, Object> map = new HashMap<String, Object>();
-        map.put("userNodeId", userPair.getFirst());
+        map.put("userNodeId", dbid);
         map.put("false", Boolean.FALSE);
 
         Number count = (Number) template.selectOne("alfresco.subscriptions.select_countSubscriptions", map);
@@ -157,12 +160,12 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
             throw new IllegalArgumentException("User does not exist!");
         }
 
-        Pair<Long, NodeRef> userPair = nodeDAO.getNodePair(userNodeRef);
-        Pair<Long, NodeRef> nodePair = nodeDAO.getNodePair(node);
+        Long dbid = (Long) nodeService.getProperty(userNodeRef, PROP_SYS_NODE_DBID);
+        Long nodedbid = (Long) nodeService.getProperty(node, PROP_SYS_NODE_DBID);
 
         SubscriptionEntity se = new SubscriptionEntity();
-        se.setUserNodeId(userPair.getFirst());
-        se.setNodeId(nodePair.getFirst());
+        se.setUserNodeId(dbid);
+        se.setNodeId(nodedbid);
 
         Number count = (Number) template.selectOne("alfresco.subscriptions.select_hasSubscribed", se);
         if (count == null || count.intValue() == 0)
@@ -190,12 +193,12 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
             throw new IllegalArgumentException("User does not exist!");
         }
 
-        Pair<Long, NodeRef> userPair = nodeDAO.getNodePair(userNodeRef);
-        Pair<Long, NodeRef> nodePair = nodeDAO.getNodePair(node);
+        Long dbid = (Long) nodeService.getProperty(userNodeRef, PROP_SYS_NODE_DBID);
+        Long nodedbid = (Long) nodeService.getProperty(node, PROP_SYS_NODE_DBID);
 
         SubscriptionEntity se = new SubscriptionEntity();
-        se.setUserNodeId(userPair.getFirst());
-        se.setNodeId(nodePair.getFirst());
+        se.setUserNodeId(dbid);
+        se.setNodeId(nodedbid);
 
         template.delete("alfresco.subscriptions.delete_Subscription", se);
     }
@@ -219,12 +222,12 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
             throw new IllegalArgumentException("User does not exist!");
         }
 
-        Pair<Long, NodeRef> userPair = nodeDAO.getNodePair(userNodeRef);
-        Pair<Long, NodeRef> nodePair = nodeDAO.getNodePair(node);
+        Long dbid = (Long) nodeService.getProperty(userNodeRef, PROP_SYS_NODE_DBID);
+        Long nodedbid = (Long) nodeService.getProperty(node, PROP_SYS_NODE_DBID);
 
         SubscriptionEntity se = new SubscriptionEntity();
-        se.setUserNodeId(userPair.getFirst());
-        se.setNodeId(nodePair.getFirst());
+        se.setUserNodeId(dbid);
+        se.setNodeId(nodedbid);
 
         Number count = (Number) template.selectOne("alfresco.subscriptions.select_hasSubscribed", se);
         return count == null ? false : count.intValue() > 0;
@@ -244,11 +247,11 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
             throw new IllegalArgumentException("User does not exist!");
         }
 
-        Pair<Long, NodeRef> userPair = nodeDAO.getNodePair(userNodeRef);
+        Long dbid = (Long) nodeService.getProperty(userNodeRef, PROP_SYS_NODE_DBID);
 
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("userIdQname", qnameDAO.getQName(ContentModel.PROP_USERNAME).getFirst());
-        map.put("userNodeId", userPair.getFirst());
+        map.put("userNodeId", dbid);
         map.put("false", Boolean.FALSE);
 
         int maxItems = (pagingRequest.getMaxItems() < 0 || pagingRequest.getMaxItems() > Integer.MAX_VALUE - 1 ? Integer.MAX_VALUE - 1
@@ -287,11 +290,11 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
             throw new IllegalArgumentException("User does not exist!");
         }
 
-        Pair<Long, NodeRef> userPair = nodeDAO.getNodePair(userNodeRef);
+        Long dbid = (Long) nodeService.getProperty(userNodeRef, PROP_SYS_NODE_DBID);
 
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("userIdQname", qnameDAO.getQName(ContentModel.PROP_USERNAME).getFirst());
-        map.put("userNodeId", userPair.getFirst());
+        map.put("userNodeId", dbid);
         map.put("false", Boolean.FALSE);
 
         int maxItems = (pagingRequest.getMaxItems() < 0 || pagingRequest.getMaxItems() > Integer.MAX_VALUE - 1 ? Integer.MAX_VALUE - 1
@@ -330,10 +333,10 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
             return 0;
         }
 
-        Pair<Long, NodeRef> userPair = nodeDAO.getNodePair(userNodeRef);
+        Long dbid = (Long) nodeService.getProperty(userNodeRef, PROP_SYS_NODE_DBID);
 
         Map<String, Object> map = new HashMap<String, Object>();
-        map.put("userNodeId", userPair.getFirst());
+        map.put("userNodeId", dbid);
         map.put("false", Boolean.FALSE);
 
         Number count = (Number) template.selectOne("alfresco.subscriptions.select_countFollowers", map);

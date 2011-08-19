@@ -424,7 +424,7 @@ public abstract class AlfrescoContext extends DiskDeviceContext
     }
     
     public LockManager getLockManager() {
-        return null;
+        return lockManager;
     }
     
     OpLockManager opLockManager;

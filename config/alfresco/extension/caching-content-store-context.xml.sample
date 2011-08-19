@@ -1,0 +1,55 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+ 
+<beans>
+   <!--
+    This file is not included in the application context by default.
+    If you include this file, please ensure that you review the sample
+    beans contained here.
+    -->
+
+    <bean id="contentService" parent="baseContentService">
+      <property name="store">
+          <ref bean="cachingContentStore" />
+      </property>
+    </bean>
+    
+    
+    <bean id="cachingContentStore" class="org.alfresco.repo.content.caching.CachingContentStore">
+        <property name="backingStore" ref="backingStore"/>
+        <property name="cache" ref="contentCache"/>
+        <property name="cacheOnInbound" value="true"/>
+    </bean>
+
+    <!--
+        The backingStore should NOT be a FileContentStore. If using a FileContentStore there
+        is no need to use a CachingContentStore and therefore no need for the backingStore.
+        
+        This should be configured with a slow ContentStore that might benefit from caching
+        such as the S3ContentStore or the XAMContentStore.   
+     -->
+    <bean id="backingStore" class="org.alfresco.repo.content.filestore.FileContentStore">
+        <constructor-arg>
+            <value>${dir.contentstore}</value>
+        </constructor-arg>
+    </bean>
+
+
+    <bean id="contentCache" class="org.alfresco.repo.content.caching.ContentCacheImpl">
+        <property name="memoryStore" ref="cachingContentStoreCache"/>
+    </bean>
+    
+    
+    <bean id="cachingContentStoreCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+        <property name="cache">
+            <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+                <property name="cacheManager">
+                    <ref bean="internalEHCacheManager" />
+                </property>
+                <property name="cacheName">
+                    <value>org.alfresco.cache.cachingContentStoreCache</value>
+                </property>
+            </bean>
+        </property>
+    </bean>
+</beans>

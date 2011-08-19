@@ -42,10 +42,20 @@ import org.springframework.beans.factory.annotation.Required;
  */
 public class CachingContentStore implements ContentStore
 {
+    // NUM_LOCKS absolutely must be a power of 2 for the use of locks to be evenly balanced
+    private final static int numLocks = 32;
+    private final static Object[] locks; 
     private ContentStore backingStore;
     private ContentCache cache;
     private boolean cacheOnInbound;
     
+    static {
+        locks = new Object[numLocks];
+        for (int i = 0; i < numLocks; i++)
+        {
+            locks[i] = new Object();
+        }
+    }
 
     public CachingContentStore()
     {
@@ -136,17 +146,23 @@ public class CachingContentStore implements ContentStore
      */
     @Override
     public ContentReader getReader(String contentUrl)
-    { 
-        if (!cache.contains(contentUrl))
+    {
+        // Synchronise on one of a pool of locks - which one is determined by a hash of the URL.
+        // This will stop the content from being read multiple times from the backing store
+        // when it should only be read once and cached versions should be returned after that.
+        synchronized(lock(contentUrl))
         {
-            ContentReader bsReader = backingStore.getReader(contentUrl);
-            if (!cache.put(contentUrl, bsReader))
+            if (!cache.contains(contentUrl))
             {
-                // Content wasn't put into cache successfully.
-                return bsReader.getReader();
-            }
+                ContentReader bsReader = backingStore.getReader(contentUrl);
+                if (!cache.put(contentUrl, bsReader))
+                {
+                    // Content wasn't put into cache successfully.
+                    return bsReader.getReader();
+                }
+            }           
         }
-        
+ 
         // TODO: what if, in the meantime this item has been deleted from the disk cache?
         return cache.getReader(contentUrl);
     }
@@ -230,6 +246,17 @@ public class CachingContentStore implements ContentStore
         return backingStore.delete(contentUrl);
     }
 
+    
+    private Object lock(String s)
+    {
+        return locks[lockIndex(s)];
+    }
+    
+    private int lockIndex(String s)
+    {
+        return s.hashCode() & (numLocks - 1);
+    }
+    
     
     @Required
     public void setBackingStore(ContentStore backingStore)

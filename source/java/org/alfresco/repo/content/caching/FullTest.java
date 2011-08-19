@@ -22,14 +22,9 @@ package org.alfresco.repo.content.caching;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-import java.util.Locale;
-
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.filestore.FileContentStore;
-import org.alfresco.service.cmr.repository.ContentAccessor;
-import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentStreamListener;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.ApplicationContextHelper;
 import org.junit.Before;

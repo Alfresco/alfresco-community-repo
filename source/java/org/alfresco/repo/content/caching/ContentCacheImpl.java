@@ -20,7 +20,7 @@ package org.alfresco.repo.content.caching;
 
 import java.io.File;
 
-import org.alfresco.repo.cache.EhCacheAdapter;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.content.filestore.FileContentWriter;
@@ -45,7 +45,7 @@ public class ContentCacheImpl implements ContentCache
     private static final String CACHE_DIR = "caching_cs";
     private static final String TMP_FILE_EXTENSION = ".tmp";
     private final File cacheRoot = TempFileProvider.getLongLifeTempDir(CACHE_DIR);
-    private EhCacheAdapter<String, String> memoryStore;
+    private SimpleCache<String, String> memoryStore;
     
     
     
@@ -169,7 +169,7 @@ public class ContentCacheImpl implements ContentCache
      * 
      * @param memoryStore the memoryStore to set
      */
-    public void setMemoryStore(EhCacheAdapter<String, String> memoryStore)
+    public void setMemoryStore(SimpleCache<String, String> memoryStore)
     {
         this.memoryStore = memoryStore;
     }

@@ -23,6 +23,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.alfresco.repo.content.AbstractContentReader;
 import org.alfresco.repo.content.AbstractContentStore;
@@ -39,7 +42,8 @@ import org.alfresco.service.cmr.repository.ContentWriter;
  */
 class SlowContentStore extends AbstractContentStore
 {
-
+    private ConcurrentMap<String, AtomicLong> urlHits = new ConcurrentHashMap<String, AtomicLong>();
+    
     /*
      * @see org.alfresco.repo.content.ContentStore#isWriteSupported()
      */
@@ -55,6 +59,9 @@ class SlowContentStore extends AbstractContentStore
     @Override
     public ContentReader getReader(String contentUrl)
     {
+        urlHits.putIfAbsent(contentUrl, new AtomicLong(0));
+        urlHits.get(contentUrl).incrementAndGet();
+        
         return new SlowReader(contentUrl);
     }
 
@@ -217,7 +224,16 @@ class SlowContentStore extends AbstractContentStore
         
     }
     
-    
+    /**
+     * Get statistics for which URLs have been asked for and the frequencies.
+     * 
+     * @return Map of URL to frequency
+     */
+    public ConcurrentMap<String, AtomicLong> getUrlHits()
+    {
+        return this.urlHits;
+    }
+
     public static void main(String[] args)
     {
         SlowContentStore scs = new SlowContentStore();

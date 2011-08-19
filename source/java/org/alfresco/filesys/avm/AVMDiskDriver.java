@@ -419,7 +419,7 @@ public class AVMDiskDriver extends AlfrescoTxDiskDriver implements DiskInterface
         }
         
         // Register the context bean
-        registerContext(context, null);
+        registerContext(context);
         
         // Return the context for this shared filesystem            
         return context;
@@ -434,10 +434,10 @@ public class AVMDiskDriver extends AlfrescoTxDiskDriver implements DiskInterface
      * @exception DeviceContextException
      */
     @Override
-    public void registerContext(DeviceContext ctx, ServerConfigurationBean serverConfig)
+    public void registerContext(DeviceContext ctx)
             throws DeviceContextException
     {
-        super.registerContext(ctx, serverConfig);        
+        super.registerContext(ctx);        
 
         AVMContext context = (AVMContext)ctx;
         // Use the system user as the authenticated context for the filesystem initialization
@@ -464,7 +464,7 @@ public class AVMDiskDriver extends AlfrescoTxDiskDriver implements DiskInterface
                 {
                     // Enable file state caching
 
-                    context.enableStateCache(serverConfig, true);
+//                    context.enableStateCache(serverConfig, true);
 
                     // Plug the virtualization view context into the various store/version call back listeners
                     // so that store/version pseudo folders can be kept in sync with AVM
@@ -596,7 +596,7 @@ public class AVMDiskDriver extends AlfrescoTxDiskDriver implements DiskInterface
 
                     // Enable file state caching
 
-                    context.enableStateCache(serverConfig, true);
+//                    context.enableStateCache(serverConfig, true);
                 }
 
                 // Commit the transaction

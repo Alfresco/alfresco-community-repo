@@ -35,8 +35,12 @@ import org.alfresco.jlan.server.filesys.FileSystem;
 import org.alfresco.jlan.server.filesys.FilesystemsConfigSection;
 import org.alfresco.jlan.server.filesys.SrvDiskInfo;
 import org.alfresco.jlan.server.filesys.cache.FileStateCache;
+import org.alfresco.jlan.server.filesys.cache.FileStateLockManager;
 import org.alfresco.jlan.server.filesys.cache.StandaloneFileStateCache;
+import org.alfresco.jlan.server.filesys.cache.hazelcast.HazelCastClusterFileStateCache;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoFileInterface;
+import org.alfresco.jlan.server.locking.LockManager;
+import org.alfresco.jlan.server.locking.OpLockManager;
 import org.alfresco.repo.admin.SysAdminParams;
 import org.springframework.extensions.config.element.GenericConfigElement;
 
@@ -78,14 +82,6 @@ public abstract class AlfrescoContext extends DiskDeviceContext
     private GlobalDesktopActionConfigBean m_globalDesktopActionConfig = new GlobalDesktopActionConfigBean();
     private DesktopActionTable m_desktopActions;
     private List<DesktopAction> m_desktopActionsToInitialize;
-    
-    // I/O control handler
-    
-    private IOControlHandler m_ioHandler;
-
-    // Server configuration
-    
-//    private ServerConfigurationBean m_serverConfig;
     
     // Debug flags
     //
@@ -236,25 +232,6 @@ public abstract class AlfrescoContext extends DiskDeviceContext
     	return m_desktopActions.addAction(action);
     }
 
-    /**
-     * Determine if custom I/O control handling is enabled for this filesystem
-     * 
-     * @return boolean
-     */
-    public final boolean hasIOHandler()
-    {
-    	return m_ioHandler != null;
-    }
-    
-    /**
-     * Return the custom I/O control handler
-     * 
-     * @return IOControlHandler
-     */
-    public final IOControlHandler getIOHandler()
-    {
-    	return m_ioHandler;
-    }
     
     /**
      * Determine if the URL pseudo file is enabled
@@ -358,23 +335,6 @@ public abstract class AlfrescoContext extends DiskDeviceContext
         return m_globalDesktopActionConfig;
     }
     
-//    /**
-//     * Create the I/O control handler for this filesystem type
-//     * 
-//     * @param filesysDriver DiskInterface
-//     * @return IOControlHandler
-//     */
-//    protected abstract IOControlHandler createIOHandler( DiskInterface filesysDriver);
-    
-    /**
-     * Set the I/O control handler
-     * 
-     * @param ioctlHandler IOControlHandler
-     */
-    protected void setIOHandler( IOControlHandler ioctlHandler)
-    {
-    	m_ioHandler = ioctlHandler;
-    }
     
     /**
      * Set the debug flags, also requires the logger to be enabled for debug output
@@ -443,48 +403,45 @@ public abstract class AlfrescoContext extends DiskDeviceContext
      */
     public void startFilesystem(DiskSharedDevice share)
         throws DeviceContextException {
+        
+      
 
         // Call the base class
         
         super.startFilesystem(share);
-    }    
+    }
 
     /**
-     * Enable the state cache
+     * Return the lock manager, if enabled
      * 
-     * @param ena boolean
+     * @return LockManager
      */
-    public void enableStateCache( ServerConfigurationBean srvConfig, boolean ena) {
-
-    	// Check if the server configuration has been set
-    	
-    	if ( srvConfig == null)
-        	throw new AlfrescoRuntimeException( "Failed to set standalone file state cache for share " + getShareName());
-    	
-    	// Check if we are enabling the state cache
-    	
-    	if ( ena == true && getStateCache() == null) {
-    		
-	        // Set the state cache, use a hard coded standalone cache for now
-	
-	        FilesystemsConfigSection filesysConfig = (FilesystemsConfigSection) srvConfig.getConfigSection( FilesystemsConfigSection.SectionName);
-	
-	        if ( filesysConfig != null) {
-	        	
-	        	try {
-	        		
-		        	// Create a standalone state cache
-		        	
-		        	StandaloneFileStateCache standaloneCache = new StandaloneFileStateCache();
-		        	standaloneCache.initializeCache( new GenericConfigElement( ""), srvConfig);
-		        	
-		        	filesysConfig.addFileStateCache( getDeviceName(), standaloneCache);
-		        	setStateCache( standaloneCache);
-	        	}
-	        	catch ( InvalidConfigurationException ex) {
-	        		throw new AlfrescoRuntimeException( "Failed to initialize standalone state cache for " + getDeviceName());
-	        	}
-	        }
-    	}
+    LockManager lockManager;
+    
+    public void setLockManager(LockManager lockManager) 
+    {
+        this.lockManager = lockManager;
     }
+    
+    public LockManager getLockManager() {
+        return null;
+    }
+    
+    OpLockManager opLockManager;
+    
+    /**
+     * Return the oplock manager, if enabled
+     * 
+     * @return OpLockManager
+     */
+    public OpLockManager getOpLockManager() 
+    {
+        return opLockManager;
+    }
+    
+    public void setOpLockManager(OpLockManager opLockManager) 
+    {
+        this.opLockManager = opLockManager;
+    }
+
 }

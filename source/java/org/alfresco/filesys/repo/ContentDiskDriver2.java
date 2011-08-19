@@ -81,6 +81,7 @@ import org.alfresco.jlan.server.filesys.pseudo.PseudoFileList;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoNetworkFile;
 import org.alfresco.jlan.server.filesys.quota.QuotaManager;
 import org.alfresco.jlan.server.filesys.quota.QuotaManagerException;
+import org.alfresco.jlan.server.locking.FileLockingInterface;
 import org.alfresco.jlan.server.locking.LockManager;
 import org.alfresco.jlan.server.locking.OpLockInterface;
 import org.alfresco.jlan.server.locking.OpLockManager;
@@ -143,7 +144,12 @@ import org.springframework.extensions.config.ConfigElement;
  *
  */
 public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedDiskInterface, 
-    DiskInterface, DiskSizeInterface, IOCtlInterface, RepositoryDiskInterface, OpLockInterface 
+    DiskInterface, 
+    DiskSizeInterface, 
+    IOCtlInterface, 
+    RepositoryDiskInterface, 
+    OpLockInterface, 
+    FileLockingInterface
 {
     // Logging
     private static final Log logger = LogFactory.getLog(ContentDiskDriver2.class);
@@ -166,9 +172,6 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
     private AuthenticationService authService;
     private BehaviourFilter policyBehaviourFilter;
     private NodeMonitorFactory m_nodeMonitorFactory;
-    //private IOControlHandler ioControlHandler;
-
-    private FileStateLockManager lockManager;
 
 	private boolean isLockedFilesAsOffline;
 	
@@ -439,10 +442,10 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
      * There's a load of initialisation that needs to be moved out of this method, like the 
      * instantiation of the lock manager, quota manager and node monitor.
      */
-    public void registerContext(DeviceContext ctx,  ServerConfigurationBean serverConfig) throws DeviceContextException
+    public void registerContext(DeviceContext ctx) throws DeviceContextException
     {
         logger.debug("registerContext");
-        super.registerContext(ctx, serverConfig);
+        super.registerContext(ctx);
         
         final ContentContext context = (ContentContext)ctx;
         
@@ -558,8 +561,8 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             
          // Enable file state caching
             
-         context.enableStateCache(serverConfig, true);
-         context.getStateCache().setCaseSensitive( false);
+//         context.enableStateCache(serverConfig, true);
+//         context.getStateCache().setCaseSensitive( false);
          
          logger.debug("initialise the node monitor");
          // Install the node service monitor   
@@ -571,9 +574,6 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
          
          logger.debug("initialise the file state lock manager");
             
-         // Create the lock manager
-            
-         lockManager = new FileStateLockManager(context.getStateCache());
             
          // Check if oplocks are enabled
             
@@ -2440,7 +2440,8 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
 	 */
 	public LockManager getLockManager(SrvSession sess, TreeConnection tree) 
 	{
-		return lockManager;
+        AlfrescoContext alfCtx = (AlfrescoContext) tree.getContext();
+        return alfCtx.getLockManager();  
 	}	
 	
 	/**
@@ -2535,18 +2536,35 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         // Validate the file id
         if(logger.isDebugEnabled())
         {
-            logger.debug("processIOControl ctrlCode:" + ctrlCode + ", fid:" + fid);
+            logger.debug("processIOControl ctrlCode: 0x" + Integer.toHexString(ctrlCode) + ", fid:" + fid);
         }
         
         NetworkFile netFile = tree.findFile(fid);
         if ( netFile == null || netFile.isDirectory() == false)
         {
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("net file is null or not a directory");
+            }
             throw new SMBException(SMBStatus.NTErr, SMBStatus.NTInvalidParameter);
         }
         
         final ContentContext ctx = (ContentContext) tree.getContext();
-        org.alfresco.jlan.util.DataBuffer buff = ioControlHandler.processIOControl(sess, tree, ctrlCode, fid, dataBuf, isFSCtrl, filter, this, ctx);
-        return buff;
+        try
+        {
+            org.alfresco.jlan.util.DataBuffer buff = ioControlHandler.processIOControl(sess, tree, ctrlCode, fid, dataBuf, isFSCtrl, filter, this, ctx);
+            
+            return buff;
+        }
+        catch(SMBException smbException)
+        {
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("SMB Exception fid:" + fid, smbException);
+            }
+            throw smbException;
+        }
+    
     }
         
           
@@ -2924,12 +2942,17 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
     @Override
     public OpLockManager getOpLockManager(SrvSession sess, TreeConnection tree)
     {
-        return lockManager;
+        AlfrescoContext alfCtx = (AlfrescoContext) tree.getContext();
+        return alfCtx.getOpLockManager();        
     }
 
     @Override
     public boolean isOpLocksEnabled(SrvSession sess, TreeConnection tree)
     {
-        return true;
+        if(getOpLockManager(sess, tree) != null) 
+        {
+            return true;
+        }
+        return false;
     }        
 }

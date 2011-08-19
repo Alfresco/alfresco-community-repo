@@ -620,7 +620,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
         
         // Register the device context
         
-        registerContext(context, null);
+        registerContext(context);
         
         // Return the context for this shared filesystem
         
@@ -641,9 +641,9 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
      */
     //  MER TODO - transaction handling in registerContext needs changing
     @Override
-    public void registerContext(DeviceContext ctx, ServerConfigurationBean serverConfig) throws DeviceContextException
+    public void registerContext(DeviceContext ctx) throws DeviceContextException
     {
-        super.registerContext(ctx, serverConfig);
+        super.registerContext(ctx);
 
         ContentContext context = (ContentContext)ctx;
 
@@ -777,9 +777,9 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
             logger.info("Locked files will be marked as offline");
         }
         
-        // Enable file state caching
-        
-        context.enableStateCache(serverConfig, true);
+//        // Enable file state caching
+//        
+//        context.enableStateCache(serverConfig, true);
                
         // Install the node service monitor
         

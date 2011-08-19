@@ -42,6 +42,8 @@ import org.alfresco.jlan.server.filesys.SrvDiskInfo;
 import org.alfresco.jlan.server.filesys.TreeConnection;
 import org.alfresco.jlan.server.filesys.cache.FileState;
 import org.alfresco.jlan.server.filesys.cache.FileStateCache;
+import org.alfresco.jlan.server.locking.FileLockingInterface;
+import org.alfresco.jlan.server.locking.LockManager;
 import org.alfresco.jlan.server.locking.OpLockInterface;
 import org.alfresco.jlan.server.locking.OpLockManager;
 import org.alfresco.jlan.smb.SMBException;
@@ -63,8 +65,18 @@ import org.springframework.extensions.config.ConfigElement;
  * Decorates ContentDiskDriver with a performance cache of some frequently used 
  * results.   In particular for getFileInformation and fileExists
  */
+/*
+ * MER - this class is also acting as a proxy to gather together the different interfaces 
+ * and present them to JLAN.   This was not the intention and is a short term hack.   It 
+ * should be possible to un-spring the buffering, however that's not possible at the moment. 
+ */
 public class BufferedContentDiskDriver implements ExtendedDiskInterface, 
-    DiskInterface, DiskSizeInterface, IOCtlInterface, OpLockInterface, NodeServicePolicies.OnDeleteNodePolicy,
+    DiskInterface, 
+    DiskSizeInterface, 
+    IOCtlInterface, 
+    OpLockInterface, 
+    FileLockingInterface,
+    NodeServicePolicies.OnDeleteNodePolicy,
     NodeServicePolicies.OnMoveNodePolicy 
 {
     // Logging
@@ -78,6 +90,8 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
     
     private OpLockInterface opLockInterface;
     
+    private FileLockingInterface fileLockingInterface; 
+    
     private PolicyComponent policyComponent;
         
     public void init()
@@ -86,7 +100,9 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
         PropertyCheck.mandatory(this, "diskSizeInterface", diskSizeInterface);
         PropertyCheck.mandatory(this, "ioctltInterface", ioctlInterface);
         PropertyCheck.mandatory(this, "fileInfoCache", fileInfoCache);
+        PropertyCheck.mandatory(this, "fileLockingInterface", getFileLockingInterface());
         PropertyCheck.mandatory(this, "opLockInterface", getOpLockInterface());
+        PropertyCheck.mandatory(this, "fileLockingInterface", fileLockingInterface);
         PropertyCheck.mandatory(this, "policyComponent", getPolicyComponent());
         
         getPolicyComponent().bindClassBehaviour( NodeServicePolicies.OnDeleteNodePolicy.QNAME,
@@ -94,8 +110,6 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
         getPolicyComponent().bindClassBehaviour( NodeServicePolicies.OnMoveNodePolicy.QNAME,
                 this, new JavaBehaviour(this, "onMoveNode"));
     }
-    
-
     
     /**
      * FileInfo Cache for path to FileInfo
@@ -477,10 +491,10 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
     }
 
     @Override
-    public void registerContext(DeviceContext ctx, ServerConfigurationBean scb)
+    public void registerContext(DeviceContext ctx)
             throws DeviceContextException
     {
-        diskInterface.registerContext(ctx, scb);        
+        diskInterface.registerContext(ctx);        
     }
 
     public void setDiskInterface(ExtendedDiskInterface diskInterface)
@@ -564,6 +578,24 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
     public boolean isOpLocksEnabled(SrvSession sess, TreeConnection tree)
     {
         return opLockInterface.isOpLocksEnabled(sess, tree);
+    }
+
+    @Override
+    public LockManager getLockManager(SrvSession sess, TreeConnection tree)
+    {
+        return getFileLockingInterface().getLockManager(sess, tree);
+    }
+
+
+    public void setFileLockingInterface(FileLockingInterface fileLockingInterface)
+    {
+        this.fileLockingInterface = fileLockingInterface;
+    }
+
+
+    public FileLockingInterface getFileLockingInterface()
+    {
+        return fileLockingInterface;
     }
 }
   

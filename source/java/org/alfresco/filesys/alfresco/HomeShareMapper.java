@@ -22,6 +22,7 @@ package org.alfresco.filesys.alfresco;
 import java.util.Enumeration;
 
 import org.springframework.extensions.config.ConfigElement;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.AlfrescoConfigSection;
 import org.alfresco.filesys.config.ServerConfigurationBean;
 import org.alfresco.filesys.repo.ContentContext;
@@ -62,8 +63,6 @@ public class HomeShareMapper implements ShareMapper
     // Server configuration
 
     private ServerConfigurationAccessor m_config;
-    
-    private ServerConfigurationBean serverConfigurationBean;
     
     private DiskInterface m_repoDiskInterface;
     
@@ -355,11 +354,19 @@ public class HomeShareMapper implements ShareMapper
         ExtendedDiskInterface diskDrv = (ExtendedDiskInterface) getRepoDiskInterface();
         ContentContext diskCtx = new ContentContext( getHomeFolderName(), "", "", client.getHomeFolder());
         
-        if(diskDrv instanceof ExtendedDiskInterface)
+        if(m_config instanceof ServerConfigurationBean)
         {
-            diskCtx.enableStateCache(serverConfigurationBean, true);
+            ServerConfigurationBean config = (ServerConfigurationBean)m_config;
+            
+            config.initialiseRuntimeContext(diskCtx);
+            
+            // Enable file state caching          
+            // diskCtx.enableStateCache(serverConfigurationBean, true);
         }
-      
+        else
+        {
+            throw new AlfrescoRuntimeException("configuration error, unknown configuration bean");
+        }
 
         //  Create a temporary shared device for the users home directory
         
@@ -374,15 +381,5 @@ public class HomeShareMapper implements ShareMapper
     protected FilesystemsConfigSection getFilesystemsConfigSection()
     {
         return (FilesystemsConfigSection)m_config.getConfigSection(FilesystemsConfigSection.SectionName);
-    }
-
-    public void setServerConfigurationBean(ServerConfigurationBean serverConfigurationBean)
-    {
-        this.serverConfigurationBean = serverConfigurationBean;
-    }
-
-    public ServerConfigurationBean getServerConfigurationBean()
-    {
-        return serverConfigurationBean;
     }
 }

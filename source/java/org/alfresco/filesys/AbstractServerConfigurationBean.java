@@ -444,6 +444,22 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
       
       try
       {
+          // Process the Cluster  configuration
+          processClusterConfig();
+          
+          // Log the successful startup
+          
+          // logger.info("JLAN Cluster started");
+      }
+      catch (Exception ex)
+      {
+          // Configuration error
+        
+          logger.error("Cluster configuration error, " + ex.getMessage(), ex);
+      }  
+      
+      try
+      {
     	  // Process the core server configuration
     	  processCoreServerConfig();
     	  
@@ -541,6 +557,8 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
   protected abstract void processNFSServerConfig();
 
   protected abstract void processFTPServerConfig();
+  
+  protected abstract void processClusterConfig() throws InvalidConfigurationException;
   
   protected void processWINSServerConfig() {}
 

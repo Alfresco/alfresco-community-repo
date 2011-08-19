@@ -295,10 +295,9 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
     }
 
     @Override
-    public void registerContext(DeviceContext ctx,
-            ServerConfigurationBean serverConfig) throws DeviceContextException
+    public void registerContext(DeviceContext ctx) throws DeviceContextException
     {
-        diskInterface.registerContext(ctx, serverConfig);
+        diskInterface.registerContext(ctx);
     }
     
     public void setDiskInterface(ExtendedDiskInterface diskInterface)

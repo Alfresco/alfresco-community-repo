@@ -19,6 +19,9 @@
       <property name="securityConfigBean">
          <ref bean="fileSecurityConfig" />
       </property>
+      <property name="clusterConfigBean">
+         <ref bean="fileSystemClusterConfig" />
+      </property>
    </bean>
 
    <!-- CIFS Server -->
@@ -79,6 +82,8 @@
          <ref bean="nfsServer" />
       </property>
    </bean>
+   
+
 
    <bean id="cifsServerConfig" class="org.alfresco.filesys.config.CIFSConfigBean">
       <property name="serverEnabled">
@@ -271,6 +276,19 @@
                </property>
             </bean>
          </list>
+      </property>
+   </bean>
+   
+   <!-- Cluster Configuration -->
+   <bean id="fileSystemClusterConfig" class="org.alfresco.filesys.config.ClusterConfigBean">
+      <property name="clusterEnabled">
+         <value>${filesystem.cluster.enabled}</value>
+      </property>
+      <property name="clusterName">
+         <value>${filesystem.cluster.name}</value>
+      </property>
+      <property name="configFile">
+         <value>${filesystem.cluster.config}</value>
       </property>
    </bean>
 

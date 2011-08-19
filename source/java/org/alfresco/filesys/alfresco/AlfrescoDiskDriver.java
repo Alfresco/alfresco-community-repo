@@ -167,7 +167,7 @@ public abstract class AlfrescoDiskDriver implements IOCtlInterface, ExtendedDisk
      * @param serverConfig ServerConfigurationBean
      * @exception DeviceContextException
      */
-    public void registerContext(DeviceContext ctx, ServerConfigurationBean serverConfig) throws DeviceContextException
+    public void registerContext(DeviceContext ctx) throws DeviceContextException
     {
         if (ctx instanceof AlfrescoContext)
         {
@@ -175,11 +175,6 @@ public abstract class AlfrescoDiskDriver implements IOCtlInterface, ExtendedDisk
             
             AlfrescoContext alfCtx = (AlfrescoContext) ctx;
             
-            if ( serverConfig != null) 
-            {
-                alfCtx.enableStateCache(serverConfig, true);
-            }
-
             // Initialize the filesystem
             
             alfCtx.initialize(this);

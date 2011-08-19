@@ -131,6 +131,7 @@
       <property name="fileInfoCache"> <ref bean="contentDiskDriver.fileInfoCache" /></property>
       <property name="policyComponent"><ref bean="policyComponent"/></property>
       <property name="opLockInterface"><ref bean="contentDiskDriver2" /></property>
+      <property name="fileLockingInterface"><ref bean="contentDiskDriver2" /></property>
 
    </bean>
    
@@ -221,6 +222,7 @@
                 <value>openFile</value>
                 <value>getFileInformation</value> 
                 <value>startSearch</value>
+                <value>processIOControl</value>
             </list>
         </property>
     </bean>

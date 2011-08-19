@@ -21,6 +21,7 @@ package org.alfresco.filesys.avm;
 import java.util.Enumeration;
 
 import org.springframework.extensions.config.ConfigElement;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.config.ServerConfigurationBean;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.config.InvalidConfigurationException;
@@ -61,8 +62,6 @@ public class AVMShareMapper implements ShareMapper, InitializingBean {
 
     private ServerConfiguration m_config;
     private FilesystemsConfigSection m_filesysConfig;
-    
-    private ServerConfigurationBean serverConfigurationBean;
 
     // List of available AVM shares
     
@@ -287,7 +286,20 @@ public class AVMShareMapper implements ShareMapper, InitializingBean {
 	                	// Create a dynamic share mapped to the AVM store/version
 	                	
 		                AVMContext avmCtx = new AVMContext( name, storePath, storeVersion);
-		                avmCtx.enableStateCache(serverConfigurationBean, true);
+		                
+		                if(m_config instanceof ServerConfigurationBean)
+		                {
+		                    ServerConfigurationBean config = (ServerConfigurationBean)m_config;
+		                    
+		                    config.initialiseRuntimeContext(avmCtx);
+		                    
+		                    // Enable file state caching          
+		                    // diskCtx.enableStateCache(serverConfigurationBean, true);
+		                }
+		                else
+		                {
+		                    throw new AlfrescoRuntimeException("configuration error, unknown configuration bean");
+		                }
 		
 		                //  Create a dynamic shared device for the store version
 		                
@@ -377,15 +389,5 @@ public class AVMShareMapper implements ShareMapper, InitializingBean {
     {
         // TODO Auto-generated method stub
 
-    }
-
-    public void setServerConfigurationBean(ServerConfigurationBean serverConfigurationBean)
-    {
-        this.serverConfigurationBean = serverConfigurationBean;
-    }
-
-    public ServerConfigurationBean getServerConfigurationBean()
-    {
-        return serverConfigurationBean;
     }
 }

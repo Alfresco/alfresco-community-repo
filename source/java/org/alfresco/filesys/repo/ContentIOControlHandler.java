@@ -185,7 +185,8 @@ public class ContentIOControlHandler implements IOControlHandler
         
         // Debug
         
-        if ( logger.isDebugEnabled()) {
+        if ( logger.isDebugEnabled()) 
+        {
             logger.debug("IO control func=0x" + Integer.toHexString(ioFunc) + ", fid=" + fid + ", buffer=" + dataBuf);
             logger.debug("  Folder nodeRef=" + folderNode);
         }
@@ -200,6 +201,11 @@ public class ContentIOControlHandler implements IOControlHandler
 	        
 	        case IOControl.CmdProbe:
 	            
+	            if(logger.isDebugEnabled())
+	            {
+	                logger.debug("CmdProbe");
+	            }
+	            
 	            // Return a buffer with the signature and protocol version
 	            
 	            retBuffer = new DataBuffer(IOControl.Signature.length());
@@ -211,6 +217,7 @@ public class ContentIOControlHandler implements IOControlHandler
 	        // Get file information for a file within the current folder
 	            
 	        case IOControl.CmdFileStatus:
+
 	
 	            // Process the file status request
 	            
@@ -247,7 +254,11 @@ public class ContentIOControlHandler implements IOControlHandler
 	        // Unknown I/O control code
 	            
 	        default:
-	            throw new IOControlNotImplementedException();
+	            if(logger.isDebugEnabled())
+	            {
+	                logger.debug("throwing IOControl not implemented exception :iofunc" + Integer.toHexString(ioFunc));
+	            }
+	            throw new IOControlNotImplementedException("IO func not implemented" + Integer.toHexString(ioFunc));
         }
         
         // Return the reply buffer, may be null
@@ -302,6 +313,10 @@ public class ContentIOControlHandler implements IOControlHandler
         if ( childNode == null)
         {
             // Return an error response
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("FileStatusProbe StsFileNotFound");
+            }
             
             respBuf.putInt(DesktopAction.StsFileNotFound);
             return respBuf;
@@ -312,6 +327,11 @@ public class ContentIOControlHandler implements IOControlHandler
         if ( getCifsHelper().isDirectory( childNode))
         {
             // Only return the status and node type for folders
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("FileStatusProbe StsSuccess type folder");
+            }
+
             
             respBuf.putInt(DesktopAction.StsSuccess);
             respBuf.putInt(IOControl.TypeFolder);
@@ -319,6 +339,11 @@ public class ContentIOControlHandler implements IOControlHandler
         else
         {
             // Indicate that this is a file node
+            
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("FileStatusProbe StsSuccess type file");
+            }
             
             respBuf.putInt(DesktopAction.StsSuccess);
             respBuf.putInt(IOControl.TypeFile);
@@ -652,8 +677,10 @@ public class ContentIOControlHandler implements IOControlHandler
     	// DEBUG
     	
     	if ( logger.isDebugEnabled())
+    	{
     		logger.debug("  Get Auth Ticket");
-
+    	}
+    	
         // Create a response buffer
         
         DataBuffer respBuf = new DataBuffer(256);
@@ -729,13 +756,18 @@ public class ContentIOControlHandler implements IOControlHandler
     				// DEBUG
     				
     				if ( logger.isDebugEnabled())
+    				{
     					logger.debug("Error during invalidate ticket", ex2);
+    			
+    				}
     			}
     			
     			// DEBUG
     			
     			if ( logger.isDebugEnabled())
+    			{
     				logger.debug("Auth ticket expired or invalid");
+    			}
     		}
     	}
     	

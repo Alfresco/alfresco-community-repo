@@ -521,10 +521,10 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
     }
 
     @Override
-    public void registerContext(DeviceContext ctx, ServerConfigurationBean serverConfig)
+    public void registerContext(DeviceContext ctx)
             throws DeviceContextException
     {
-        diskInterface.registerContext(ctx, serverConfig); 
+        diskInterface.registerContext(ctx); 
     }
 
     public void setRepositoryDiskInterface(RepositoryDiskInterface repositoryDiskInterface)

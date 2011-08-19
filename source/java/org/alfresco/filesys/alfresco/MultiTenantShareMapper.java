@@ -22,6 +22,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 
 import org.springframework.extensions.config.ConfigElement;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.AlfrescoConfigSection;
 import org.alfresco.filesys.repo.ContentContext;
 import org.alfresco.jlan.debug.Debug;
@@ -56,12 +57,9 @@ public class MultiTenantShareMapper implements ShareMapper, ConfigurationListene
 	
 	private ServerConfiguration m_config;
 	
-	
 	private FilesystemsConfigSection m_filesysConfig;
 	private AlfrescoConfigSection m_alfrescoConfig;
 	
-    private ServerConfigurationBean serverConfigurationBean;
-  
 	//  Share name for multi-tenant connections
 	
 	private String m_tenantShareName;
@@ -447,8 +445,19 @@ public class MultiTenantShareMapper implements ShareMapper, ConfigurationListene
         	diskCtx.setQuotaManager( m_quotaManager);
         }
         
-        // Enable file state caching          
-        diskCtx.enableStateCache(serverConfigurationBean, true);
+        if(m_config instanceof ServerConfigurationBean)
+        {
+            ServerConfigurationBean config = (ServerConfigurationBean)m_config;
+            
+            config.initialiseRuntimeContext(diskCtx);
+            
+            // Enable file state caching          
+            // diskCtx.enableStateCache(serverConfigurationBean, true);
+        }
+        else
+        {
+            throw new AlfrescoRuntimeException("configuration error, unknown configuration bean");
+        }
         
         //  Default the filesystem to look like an 80Gb sized disk with 90% free space
 
@@ -495,16 +504,4 @@ public class MultiTenantShareMapper implements ShareMapper, ConfigurationListene
  			}
  		}
 	}
-
-
-    public void setServerConfigurationBean(ServerConfigurationBean serverConfigurationBean)
-    {
-        this.serverConfigurationBean = serverConfigurationBean;
-    }
-
-
-    public ServerConfigurationBean getServerConfigurationBean()
-    {
-        return serverConfigurationBean;
-    }
 }

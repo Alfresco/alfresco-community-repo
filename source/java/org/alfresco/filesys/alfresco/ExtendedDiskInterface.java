@@ -37,6 +37,6 @@ public interface ExtendedDiskInterface extends DiskInterface
      * @param serverConfig ServerConfigurationBean
      * @exception DeviceContextException
      */
-    public void registerContext(DeviceContext ctx, ServerConfigurationBean serverConfig) throws DeviceContextException;
+    public void registerContext(DeviceContext ctx) throws DeviceContextException;
     
 }

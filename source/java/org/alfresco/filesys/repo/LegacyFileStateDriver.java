@@ -101,7 +101,6 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
             if(tctx.hasStateCache())
             {
                 FileState fstate = tctx.getStateCache().findFileState( params.getPath(), true);
-                fstate.incrementOpenCount();
                 fstate.setProcessId(params.getProcessId());
                 fstate.setSharedAccess( params.getSharedAccess());
             

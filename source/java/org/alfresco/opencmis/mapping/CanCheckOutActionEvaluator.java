@@ -51,7 +51,7 @@ public class CanCheckOutActionEvaluator extends AbstractActionEvaluator
 
     public boolean isAllowed(CMISNodeInfo nodeInfo)
     {
-        if (!nodeInfo.isPWC() || lockService.getLockType(nodeInfo.getNodeRef()) == LockType.READ_ONLY_LOCK)
+        if (nodeInfo.hasPWC() || lockService.getLockType(nodeInfo.getNodeRef()) == LockType.READ_ONLY_LOCK)
         {
             return false;
         }

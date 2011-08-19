@@ -15,6 +15,7 @@
         <property name="qnameDAO" ref="qnameDAO"/>
         <property name="solrDAO" ref="solrDAO" />
         <property name="dictionaryDAO" ref="dictionaryDAO" />
+        <property name="aclDAO" ref="aclDAO" />
         <property name="enabled">
             <value>${search.solrTrackingSupport.enabled}</value>
         </property>

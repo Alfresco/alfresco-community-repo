@@ -30,13 +30,13 @@ public class AclReaders
 {
     private Long aclId;
     private Set<String> readers;
-
+    private long aclChangeSetId;
+    
     @Override
     public String toString()
     {
-        return "AclReaders [aclId=" + aclId + ", readers=" + readers + "]";
+        return "AclReaders [aclId=" + aclId + ", readers=" + readers + ", aclChangeSetId=" + aclChangeSetId + "]";
     }
-    
     public Long getAclId()
     {
         return aclId;
@@ -53,4 +53,13 @@ public class AclReaders
     {
         this.readers = aclReaders;
     }
+    public long getAclChangeSetId()
+    {
+        return aclChangeSetId;
+    }
+    public void setAclChangeSetId(long aclChangeSetId)
+    {
+        this.aclChangeSetId = aclChangeSetId;
+    }
+    
 }

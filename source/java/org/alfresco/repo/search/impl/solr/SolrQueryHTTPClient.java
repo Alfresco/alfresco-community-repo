@@ -81,7 +81,10 @@ public class SolrQueryHTTPClient
     {
         MultiThreadedHttpConnectionManager connectionManager = new MultiThreadedHttpConnectionManager();
         httpClient = new HttpClient(connectionManager);
-        httpClient.getParams().setBooleanParameter(HttpClientParams.PREEMPTIVE_AUTHENTICATION, true);
+        HttpClientParams params = httpClient.getParams();
+        params.setBooleanParameter("http.tcp.nodelay", true);
+        params.setBooleanParameter("http.connection.stalecheck", false);
+        params.setBooleanParameter(HttpClientParams.PREEMPTIVE_AUTHENTICATION, true);
         httpClient.getState().setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), new UsernamePasswordCredentials("admin", "admin"));
     }
 

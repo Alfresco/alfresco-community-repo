@@ -75,4 +75,10 @@ public interface AccessControlListProperties
      * @return the id
      */
     public Long getId();
+    
+    /**
+     * Get the acl change set
+     * @return - the id of the change set
+     */
+    public Long getAclChangeSetId();
 }

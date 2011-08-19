@@ -42,6 +42,7 @@ import org.alfresco.repo.domain.CrcHelper;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.NodeDAO.ChildAssocRefQueryCallback;
+import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.domain.solr.SOLRDAO;
 import org.alfresco.repo.solr.AlfrescoModelDiff.TYPE;
@@ -76,6 +77,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
     private SOLRDAO solrDAO;
     private DictionaryDAO dictionaryDAO;
     private PermissionService permissionService;
+    private AclDAO aclDAO;
     private OwnableService ownableService;
     private TenantService tenantService;
     private DictionaryService dictionaryService;
@@ -128,9 +130,12 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
     {
         this.dictionaryService = dictionaryService;
     }
+    
+    public void setAclDAO(AclDAO aclDAO)
+    {
+        this.aclDAO = aclDAO;
+    }
 
-    
-    
     public void setDictionaryDAO(DictionaryDAO dictionaryDAO)
     {
         this.dictionaryDAO = dictionaryDAO;
@@ -149,6 +154,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
         PropertyCheck.mandatory(this, "tenantService", tenantService);
         PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
         PropertyCheck.mandatory(this, "dictionaryDAO", dictionaryDAO);
+        PropertyCheck.mandatory(this, "aclDAO", aclDAO);
     }
     
     @Override
@@ -195,6 +201,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                 AclReaders readers = new AclReaders();
                 readers.setAclId(aclId);
                 readers.setReaders(readersSet);
+                readers.setAclChangeSetId(aclDAO.getAccessControlList(aclId).getProperties().getAclChangeSetId());
                 aclsReaders.add(readers);
             }
 
@@ -472,6 +479,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
         boolean includeChildAssociations = (resultFilter == null ? true : resultFilter.getIncludeChildAssociations());
         boolean includeOwner = (resultFilter == null ? true : resultFilter.getIncludeOwner());
         boolean includeChildIds = (resultFilter == null ? true : resultFilter.getIncludeChildIds());
+        boolean includeTxnId = (resultFilter == null ? true : resultFilter.getIncludeTxnId());
         
         List<Long> nodeIds = preCacheNodes(nodeMetaDataParameters);
 
@@ -492,6 +500,11 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
             Pair<Long, NodeRef> pair = nodeDAO.getNodePair(nodeId);
             nodeMetaData.setAclId(nodeDAO.getNodeAclId(nodeId));
 
+            if(includeTxnId)
+            {
+                nodeMetaData.setTxnId(nodeDAO.getNodeRefStatus(pair.getSecond()).getDbTxnId());
+            }
+            
             if(includeType)
             {
                 QName nodeType = nodeDAO.getNodeType(nodeId);

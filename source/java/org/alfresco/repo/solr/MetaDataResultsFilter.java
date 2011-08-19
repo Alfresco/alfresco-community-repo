@@ -36,6 +36,7 @@ public class MetaDataResultsFilter
     private boolean includeChildAssociations = true;
     private boolean includeNodeRef = true;
     private boolean includeChildIds = true;
+    private boolean includeTxnId = true;
     
     public boolean getIncludeChildAssociations()
     {
@@ -117,5 +118,12 @@ public class MetaDataResultsFilter
     {
         this.includeChildIds = includeChildIds;
     }    
-    
+    public boolean getIncludeTxnId()
+    {
+        return includeTxnId;
+    }
+    public void setIncludeTxnId(boolean includeTxnId)
+    {
+        this.includeTxnId = includeTxnId;
+    }  
 }

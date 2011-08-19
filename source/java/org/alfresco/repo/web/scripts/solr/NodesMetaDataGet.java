@@ -162,6 +162,10 @@ public class NodesMetaDataGet extends DeclarativeWebScript
             {
                 filter.setIncludeChildIds(o.getBoolean("includeChildIds"));
             }
+            if(o.has("includeTxnId"))
+            {
+                filter.setIncludeTxnId(o.getBoolean("includeTxnId"));
+            }
             
             final ArrayList<FreemarkerNodeMetaData> nodesMetaData = 
                 new ArrayList<FreemarkerNodeMetaData>(size > 0 ? size : INITIAL_DEFAULT_SIZE);
@@ -241,6 +245,7 @@ public class NodesMetaDataGet extends DeclarativeWebScript
         private Long parentAssocsCrc;
         private List<Long> childIds;
         private String owner;
+        private Long txnId;
 
         public FreemarkerNodeMetaData(SOLRSerializer solrSerializer, NodeMetaData nodeMetaData) throws IOException, JSONException
         {
@@ -248,6 +253,7 @@ public class NodesMetaDataGet extends DeclarativeWebScript
             setAclId(nodeMetaData.getAclId());
             setNodeRef(nodeMetaData.getNodeRef());
             setNodeType(nodeMetaData.getNodeType());
+            setTxnId(nodeMetaData.getTxnId());
             
             // convert Paths to Strings
             List<String> paths = new ArrayList<String>();
@@ -379,6 +385,16 @@ public class NodesMetaDataGet extends DeclarativeWebScript
         public void setOwner(String owner)
         {
             this.owner = owner;
+        }
+
+        public Long getTxnId()
+        {
+            return txnId;
+        }
+
+        public void setTxnId(Long txnId)
+        {
+            this.txnId = txnId;
         }
         
     }

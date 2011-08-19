@@ -16,6 +16,7 @@
 <#macro aclReadersJSON aclReaders>
       {
          "aclId": ${aclReaders.aclId?c},
+         "aclChangeSetId": ${aclReaders.aclChangeSetId?c},
          "readers" :
          [
             <#list aclReaders.readers as reader>
@@ -49,6 +50,7 @@
          <#if filter.includeNodeRef??><#if nodeMetaData.nodeRef??>, "nodeRef": "${nodeMetaData.nodeRef.toString()}"</#if></#if>
          <#if filter.includeType??><#if nodeMetaData.nodeType??>, "type": <@qNameJSON qName=nodeMetaData.nodeType/></#if></#if>
          <#if filter.includeAclId??><#if nodeMetaData.aclId??>, "aclId": ${nodeMetaData.aclId?c}</#if></#if>
+         <#if filter.includeTxnId??><#if nodeMetaData.txnId??>, "txnId": ${nodeMetaData.txnId?c}</#if></#if>
          <#if filter.includeProperties??>
          <#if nodeMetaData.properties??>
          , "properties": {

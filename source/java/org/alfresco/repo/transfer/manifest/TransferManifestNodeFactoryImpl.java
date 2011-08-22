@@ -133,7 +133,7 @@ public class TransferManifestNodeFactoryImpl implements TransferManifestNodeFact
             node.setProperties(getNodeProperties(nodeRef, definition == null ? null : definition.getExcludedAspects()));
             node.setAspects(getNodeAspects(nodeRef, definition == null ? null : definition.getExcludedAspects()));
             node.setType(nodeService.getType(nodeRef));
-            // For File Transfer Receiver, becaus FTS does not has access to the DictionaryService
+            // For File Transfer Receiver, because FTS does not has access to the DictionaryService
             if(dictionaryService.isSubClass(node.getType(),ContentModel.TYPE_CONTENT))
             {
                 node.setAncestorType(ContentModel.TYPE_CONTENT);

@@ -444,27 +444,14 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
       
       try
       {
-          // Process the Cluster  configuration
-          processClusterConfig();
-          
-          // Log the successful startup
-          
-          // logger.info("JLAN Cluster started");
-      }
-      catch (Exception ex)
-      {
-          // Configuration error
-        
-          logger.error("Cluster configuration error, " + ex.getMessage(), ex);
-      }  
-      
-      try
-      {
     	  // Process the core server configuration
     	  processCoreServerConfig();
     	  
           // Process the security configuration
           processSecurityConfig();
+          
+          // Process the Cluster  configuration
+          processClusterConfig();
 
           // Process the filesystems configuration
           processFilesystemsConfig();

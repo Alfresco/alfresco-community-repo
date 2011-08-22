@@ -288,7 +288,10 @@
          <value>${filesystem.cluster.name}</value>
       </property>
       <property name="configFile">
-         <value>${filesystem.cluster.config}</value>
+         <value>${filesystem.cluster.configFile}</value>
+      </property>
+      <property name="debugFlags">
+          <value>${filesystem.cluster.debugFlags}</value>
       </property>
    </bean>
 

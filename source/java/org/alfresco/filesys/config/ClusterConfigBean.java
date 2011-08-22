@@ -29,6 +29,8 @@ public class ClusterConfigBean
     private boolean isClusterEnabled = false;
     private String configFile;
     private String clusterName;
+    private String debugFlags;
+    private int nearCacheTimeout;
     
     public void setClusterEnabled(boolean clusterEnabled)
     {
@@ -58,5 +60,25 @@ public class ClusterConfigBean
     public String getConfigFile()
     {
         return configFile;
+    }
+
+    public void setDebugFlags(String debugFlags)
+    {
+        this.debugFlags = debugFlags;
+    }
+
+    public String getDebugFlags()
+    {
+        return debugFlags;
+    }
+
+    public void setNearCacheTimeout(int nearCacheTimeout)
+    {
+        this.nearCacheTimeout = nearCacheTimeout;
+    }
+
+    public int getNearCacheTimeout()
+    {
+        return nearCacheTimeout;
     }
 }

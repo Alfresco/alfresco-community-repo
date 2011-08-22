@@ -35,13 +35,11 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.springframework.extensions.config.ConfigElement;
 import org.springframework.extensions.config.element.GenericConfigElement;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.AbstractServerConfigurationBean;
 import org.alfresco.filesys.alfresco.AlfrescoContext;
 import org.alfresco.filesys.alfresco.ExtendedDiskInterface;
-import org.alfresco.filesys.alfresco.MultiTenantShareMapper;
 import org.alfresco.filesys.avm.AVMContext;
 import org.alfresco.filesys.avm.AVMDiskDriver;
 import org.alfresco.filesys.config.acl.AccessControlListBean;
@@ -1650,12 +1648,24 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean
                         ExtendedDiskInterface filesysDriver = getAvmDiskInterface();
                         DiskDeviceContext diskCtx = (DiskDeviceContext) filesystem;
                         
-                        
-                        // Check if the filesystem uses the file state cache, if so then add to the file state reaper
-                        StandaloneFileStateCache standaloneCache = new StandaloneFileStateCache();
-                        standaloneCache.initializeCache( new GenericConfigElement( ""), this);
-                        diskCtx.setStateCache(standaloneCache);                  
-                        
+                        if(clusterConfigBean != null && clusterConfigBean.getClusterEnabled())
+                        {
+                            if(logger.isDebugEnabled())
+                            {
+                                logger.debug("start hazelcast cache : " + clusterConfigBean.getClusterName() + ", shareName: "+ diskCtx.getShareName());
+                            }
+                            GenericConfigElement hazelConfig = createClusterConfig(diskCtx.getShareName()); 
+                            HazelCastClusterFileStateCache hazel = new HazelCastClusterFileStateCache();
+                            hazel.initializeCache(hazelConfig, this);   
+                            diskCtx.setStateCache(hazel);
+                        }
+                        else
+                        {
+                            // Check if the filesystem uses the file state cache, if so then add to the file state reaper
+                            StandaloneFileStateCache standaloneCache = new StandaloneFileStateCache();
+                            standaloneCache.initializeCache( new GenericConfigElement( ""), this);
+                            diskCtx.setStateCache(standaloneCache);                  
+                        }
                         if ( diskCtx.hasStateCache()) {
                             
                             // Register the state cache with the reaper thread
@@ -1687,28 +1697,9 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean
                             {
                                 logger.debug("start hazelcast cache : " + clusterConfigBean.getClusterName() + ", shareName: "+ filesysContext.getShareName());
                             }
-                            
-                            // initialise the hazelcast cache for this filesystem
+                            GenericConfigElement hazelConfig = createClusterConfig(filesysContext.getShareName()); 
                             HazelCastClusterFileStateCache hazel = new HazelCastClusterFileStateCache();
-                            GenericConfigElement config = new GenericConfigElement("hazelcastStateCache");
-                            GenericConfigElement clusterNameCfg = new GenericConfigElement("clusterName");
-                            clusterNameCfg.setValue(clusterConfigBean.getClusterName());
-                            config.addChild(clusterNameCfg);
-                            
-                            GenericConfigElement topicNameCfg = new GenericConfigElement("clusterTopic");
-                            String topicName = filesysContext.getShareName();
-                            if(topicName == null || topicName.isEmpty())
-                            {
-                                topicName="default";
-                            }
-                            topicNameCfg.setValue(topicName);
-                            config.addChild(topicNameCfg);
-                            
-                            GenericConfigElement debugCfg = new GenericConfigElement("cacheDebug");
-                            debugCfg.addAttribute("flags", "StateCache,Rename");
-                            config.addChild(debugCfg);
-                            
-                            hazel.initializeCache(config, this);   
+                            hazel.initializeCache(hazelConfig, this);   
                             filesysContext.setStateCache(hazel);
                         }
                         else
@@ -2175,17 +2166,32 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean
           // Set the state cache, use a hard coded standalone cache for now
           FilesystemsConfigSection filesysConfig = (FilesystemsConfigSection) this.getConfigSection( FilesystemsConfigSection.SectionName);
   
-          if ( filesysConfig != null) {
+          if ( filesysConfig != null) 
+          {
               
-              try {
-                            
-                  // Create a standalone state cache
-                  StandaloneFileStateCache standaloneCache = new StandaloneFileStateCache();
-                  standaloneCache.initializeCache( new GenericConfigElement( ""), this); 
-                  filesysConfig.addFileStateCache( diskCtx.getDeviceName(), standaloneCache);
-                  diskCtx.setStateCache( standaloneCache);
+              try 
+              {
+                  if(clusterConfigBean != null && clusterConfigBean.getClusterEnabled())
+                  {
+                      if(logger.isDebugEnabled())
+                      {
+                          logger.debug("start hazelcast cache : " + clusterConfigBean.getClusterName() + ", shareName: "+ diskCtx.getShareName());
+                      }
+                      GenericConfigElement hazelConfig = createClusterConfig(diskCtx.getShareName()); 
+                      HazelCastClusterFileStateCache hazel = new HazelCastClusterFileStateCache();
+                      hazel.initializeCache(hazelConfig, this);   
+                      diskCtx.setStateCache(hazel);
+                  }
+                  else
+                  {          
+                      // Create a standalone state cache
+                      StandaloneFileStateCache standaloneCache = new StandaloneFileStateCache();
+                      standaloneCache.initializeCache( new GenericConfigElement( ""), this); 
+                      filesysConfig.addFileStateCache( diskCtx.getDeviceName(), standaloneCache);
+                      diskCtx.setStateCache( standaloneCache);
+                  }
                   
-                  FileStateLockManager lockMgr = new FileStateLockManager(standaloneCache);
+                  FileStateLockManager lockMgr = new FileStateLockManager(diskCtx.getStateCache());
                   diskCtx.setLockManager(lockMgr); 
                   diskCtx.setOpLockManager(lockMgr); 
               }
@@ -2197,43 +2203,22 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean
       }
     }
     
-    /**
-     * Initialise a runtime context - AVM
-     * 
-     * TODO - what about desktop actions etc?
-     * 
-     * @param diskCtx
-     */
-    public void initialiseRuntimeContext(AVMContext diskCtx)
-    {
-        if (diskCtx.getStateCache() == null) {
-            
-            // Set the state cache, use a hard coded standalone cache for now
-            FilesystemsConfigSection filesysConfig = (FilesystemsConfigSection) this.getConfigSection( FilesystemsConfigSection.SectionName);
-    
-            if ( filesysConfig != null) {
-                
-                try {
-                              
-                    // Create a standalone state cache
-                    StandaloneFileStateCache standaloneCache = new StandaloneFileStateCache();
-                    standaloneCache.initializeCache( new GenericConfigElement( ""), this); 
-                    filesysConfig.addFileStateCache( diskCtx.getDeviceName(), standaloneCache);
-                    diskCtx.setStateCache( standaloneCache);
-                }
-                catch ( InvalidConfigurationException ex) {
-                    throw new AlfrescoRuntimeException( "Failed to initialize standalone state cache for " + diskCtx.getDeviceName());
-                }
-            }
-        }
-    }
-    
 
     @Override
     protected void processClusterConfig() throws InvalidConfigurationException
     {
-        
-        // TODO - when should we close the config ? jlanClusterConfig.closeConfig();
+
+// Done by org.alfresco.jlan.server.config.ServerConfiguration.closeConfiguration        
+//        /**
+//         * Close the old hazelcast configuration
+//         */
+//        ClusterConfigSection secConfig = (ClusterConfigSection) getConfigSection(ClusterConfigSection.SectionName);
+//        {
+//            if(secConfig != null)
+//            {
+//                secConfig.closeConfig();
+//            }
+//        }
         
         if (clusterConfigBean  == null || !clusterConfigBean.getClusterEnabled())
         {
@@ -2268,4 +2253,38 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean
             throw new InvalidConfigurationException("Unable to start filsystem cluster", e);
         }        
     }
+    
+    
+    private  GenericConfigElement createClusterConfig(String topicName) throws InvalidConfigurationException 
+    {
+        GenericConfigElement config = new GenericConfigElement("hazelcastStateCache");
+        GenericConfigElement clusterNameCfg = new GenericConfigElement("clusterName");
+        clusterNameCfg.setValue(clusterConfigBean.getClusterName());
+        config.addChild(clusterNameCfg);
+    
+        GenericConfigElement topicNameCfg = new GenericConfigElement("clusterTopic");
+        if(topicName == null || topicName.isEmpty())
+        {
+            topicName="default";
+        }
+        topicNameCfg.setValue(topicName);
+        config.addChild(topicNameCfg);
+    
+        if(clusterConfigBean.getDebugFlags() != null)
+        {
+            GenericConfigElement debugCfg = new GenericConfigElement("cacheDebug");
+            debugCfg.addAttribute("flags", clusterConfigBean.getDebugFlags());
+            config.addChild(debugCfg);
+        }
+    
+        if(clusterConfigBean.getNearCacheTimeout() > 0)
+        {
+            GenericConfigElement nearCacheCfg = new GenericConfigElement("nearCache");
+            nearCacheCfg.addAttribute("disable", Boolean.FALSE.toString());
+            nearCacheCfg.addAttribute("timeout", Integer.toString(clusterConfigBean.getNearCacheTimeout()));
+            config.addChild(nearCacheCfg);
+        }
+        return config;
+    }
+
 }

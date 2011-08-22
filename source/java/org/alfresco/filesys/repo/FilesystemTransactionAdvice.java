@@ -20,8 +20,9 @@ package org.alfresco.filesys.repo;
 
 import java.io.IOException;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.jlan.server.SrvSession;
+import org.alfresco.jlan.server.core.DeviceContextException;
+import org.alfresco.jlan.server.filesys.IOControlNotImplementedException;
+import org.alfresco.jlan.smb.SMBException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.transaction.TransactionService;
@@ -29,7 +30,16 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 
 /**
- * An advice wrapper for an AlfrescoDiskDriver.
+ * An advice wrapper for an AlfrescoDiskDriver.   Wraps the method call with a 
+ * RetryingTransactionHandler.
+ * <p>
+ * Needs to let the checked exceptions that are specified on the JLAN interfaces through.  
+ * In particular must avoid wrapping JLAN's checked exceptions with an AlfrescoRuntimeException 
+ * (so must throw IOException etc)
+ * <p>
+ * @See DiskInterface
+ * @See IOControlHandler
+ * 
  */
 public class FilesystemTransactionAdvice implements MethodInterceptor
 {
@@ -68,9 +78,21 @@ public class FilesystemTransactionAdvice implements MethodInterceptor
                 {
                     return methodInvocation.proceed();
                 }
+                catch (SMBException e)
+                {
+                    throw new PropagatingException(e);
+                }
+                catch (IOControlNotImplementedException e)
+                {
+                    throw new PropagatingException(e);
+                }
                 catch (IOException e)
                 {
                     // Ensure original checked IOExceptions get propagated
+                    throw new PropagatingException(e);
+                }
+                catch (DeviceContextException e)
+                {
                     throw new PropagatingException(e);
                 }
             }
@@ -85,8 +107,17 @@ public class FilesystemTransactionAdvice implements MethodInterceptor
             }
             catch(PropagatingException pe)
             {
-                // Unwrap checked exceptions
-                throw (IOException) pe.getCause();
+                Throwable t = pe.getCause();
+                if(t != null)
+                {
+                    if(t instanceof IOException)
+                    {
+                        // Unwrap checked exceptions
+                        throw (IOException) pe.getCause();
+                    }
+                    throw t;
+                }
+                throw pe;
             }
         }
         else
@@ -104,16 +135,6 @@ public class FilesystemTransactionAdvice implements MethodInterceptor
             
         }
     }
-
-//    public void setDriver(AlfrescoDiskDriver driver)
-//    {
-//        this.driver = driver;
-//    }
-//
-//    public AlfrescoDiskDriver getDriver()
-//    {
-//        return driver;
-//    }
 
     public void setTransactionService(TransactionService transactionService)
     {

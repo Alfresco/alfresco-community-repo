@@ -560,7 +560,7 @@ public class DiscussionServiceImpl implements DiscussionService
        //  to get the most recent nodes
        PagingRequest paging = new PagingRequest(0, 1);
        CannedQueryResults<NodeBackedEntity> results = 
-           listEntries(topic.getNodeRef(), ForumModel.TYPE_POST, null, false, paging);
+           listEntries(topic.getNodeRef(), ForumModel.TYPE_POST, null, null, null, false, paging);
           
        // Bail if the topic lacks posts
        if(results.getPage().size() == 0)
@@ -596,7 +596,7 @@ public class DiscussionServiceImpl implements DiscussionService
          PagingRequest paging) {
       // Do the listing, oldest first
       CannedQueryResults<NodeBackedEntity> nodes = 
-         listEntries(nodeRef, ForumModel.TYPE_TOPIC, null, true, paging);
+         listEntries(nodeRef, ForumModel.TYPE_TOPIC, null, null, null, true, paging);
       
       // Wrap and return
       return wrap(nodes, nodeRef);
@@ -621,7 +621,32 @@ public class DiscussionServiceImpl implements DiscussionService
          String username, PagingRequest paging) {
       // Do the listing, oldest first
       CannedQueryResults<NodeBackedEntity> nodes = 
-         listEntries(nodeRef, ForumModel.TYPE_TOPIC, username, true, paging);
+         listEntries(nodeRef, ForumModel.TYPE_TOPIC, username, null, null, true, paging);
+      
+      // Wrap and return
+      return wrap(nodes, nodeRef);
+   }
+   
+   @Override
+   public PagingResults<TopicInfo> listTopics(String siteShortName,
+         Date from, Date to, PagingRequest paging) {
+      NodeRef container = getSiteDiscussionsContainer(siteShortName, false);
+      if(container == null)
+      {
+         // No topics
+         return new EmptyPagingResults<TopicInfo>();
+      }
+      
+      // We can now fetch by parent nodeRef
+      return listTopics(container, from, to, paging);
+   }
+
+   @Override
+   public PagingResults<TopicInfo> listTopics(NodeRef nodeRef,
+         Date from, Date to, PagingRequest paging) {
+      // Do the listing, oldest first
+      CannedQueryResults<NodeBackedEntity> nodes = 
+         listEntries(nodeRef, ForumModel.TYPE_TOPIC, null, from, to, true, paging);
       
       // Wrap and return
       return wrap(nodes, nodeRef);
@@ -711,7 +736,7 @@ public class DiscussionServiceImpl implements DiscussionService
    {
       // Do the listing, oldest first
       CannedQueryResults<NodeBackedEntity> nodes = 
-         listEntries(topic.getNodeRef(), ForumModel.TYPE_POST, null, true, paging);
+         listEntries(topic.getNodeRef(), ForumModel.TYPE_POST, null, null, null, true, paging);
       
       // Wrap and return
       return wrap(nodes, topic);
@@ -840,7 +865,8 @@ public class DiscussionServiceImpl implements DiscussionService
     *  type, optionally filtered by creator
     */
    private CannedQueryResults<NodeBackedEntity> listEntries(NodeRef parent, 
-         QName nodeType, String creatorUsername, boolean oldestFirst, PagingRequest paging) 
+         QName nodeType, String creatorUsername, Date from, Date to, 
+         boolean oldestFirst, PagingRequest paging) 
    {
       // Grab the factory
       GetChildrenAuditableCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenAuditableCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_GET_CHILDREN);
@@ -858,7 +884,7 @@ public class DiscussionServiceImpl implements DiscussionService
       
       // Run the canned query
       GetChildrenAuditableCannedQuery cq = (GetChildrenAuditableCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(
-            parent, nodeType, creatorUsername, null, null, null,
+            parent, nodeType, creatorUsername, from, to, null,
             null, null, sorting, paging);
       
       // Execute the canned query

@@ -18,6 +18,8 @@
  */
 package org.alfresco.service.cmr.discussion;
 
+import java.util.Date;
+
 import org.alfresco.model.ForumModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
@@ -177,6 +179,19 @@ public interface DiscussionService {
    PagingResults<TopicInfo> listTopics(NodeRef nodeRef, String username, PagingRequest paging);
    
    /**
+    * Retrieves all topics in a site, created in the given date range
+    */
+   @NotAuditable
+   PagingResults<TopicInfo> listTopics(String siteShortName, Date from, Date to, PagingRequest paging);
+
+   /**
+    * Retrieves all topics attached to the specified Node, created in the 
+    *  given date range
+    */
+   @NotAuditable
+   PagingResults<TopicInfo> listTopics(NodeRef nodeRef, Date from, Date to, PagingRequest paging);
+   
+   /**
     * Searches for all topics in a site, filtered by username or tag
     */
    @NotAuditable
@@ -210,15 +225,17 @@ public interface DiscussionService {
    
    /**
     * Retrieves all posts in a site, across all topics
+    * TODO Is this needed?
     */
    @NotAuditable
    PagingResults<PostInfo> listPosts(String siteShortName, PagingRequest paging);
 
    /**
     * Retrieves all posts attached to the specified Node, across all topics
+    * TODO Is this needed?
     */
    @NotAuditable
    PagingResults<PostInfo> listPosts(NodeRef nodeRef, PagingRequest paging);
 
-   // TODO Hot, New and Mine listing support
+   // TODO Hot topics support
 }

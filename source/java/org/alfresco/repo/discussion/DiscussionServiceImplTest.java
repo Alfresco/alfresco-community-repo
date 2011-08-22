@@ -604,7 +604,36 @@ public class DiscussionServiceImplTest
        assertEquals(1, topics.getPage().size());
        assertEquals("NT1", topics.getPage().get(0).getTitle());
        
+       
+       // Check by created date, everything was just created
+       Date now = new Date();
+       Date yesterday = new Date(now.getTime()-ONE_DAY_MS-60000);
+       Date tomorrow = new Date(now.getTime()+ONE_DAY_MS);
+       Date future = new Date(now.getTime()+10*ONE_DAY_MS);
+       Date fourDaysAgo = new Date(now.getTime()-4*ONE_DAY_MS);
+       
+       topics = DISCUSSION_SERVICE.listTopics(DISCUSSION_SITE.getShortName(), yesterday, tomorrow, new PagingRequest(10));
+       assertEquals(2, topics.getPage().size());
+       assertEquals("ST1", topics.getPage().get(0).getTitle());
+       assertEquals("ST2", topics.getPage().get(1).getTitle());
+       
+       topics = DISCUSSION_SERVICE.listTopics(FORUM_NODE, yesterday, tomorrow, new PagingRequest(10));
+       assertEquals(3, topics.getPage().size());
+       assertEquals("NT1", topics.getPage().get(0).getTitle());
+       assertEquals("NT2", topics.getPage().get(1).getTitle());
+       assertEquals("NT3", topics.getPage().get(2).getTitle());
 
+       topics = DISCUSSION_SERVICE.listTopics(DISCUSSION_SITE.getShortName(), fourDaysAgo, yesterday, new PagingRequest(10));
+       assertEquals(0, topics.getPage().size());
+       topics = DISCUSSION_SERVICE.listTopics(FORUM_NODE, fourDaysAgo, yesterday, new PagingRequest(10));
+       assertEquals(0, topics.getPage().size());
+
+       topics = DISCUSSION_SERVICE.listTopics(DISCUSSION_SITE.getShortName(), tomorrow, future, new PagingRequest(10));
+       assertEquals(0, topics.getPage().size());
+       topics = DISCUSSION_SERVICE.listTopics(FORUM_NODE, tomorrow, future, new PagingRequest(10));
+       assertEquals(0, topics.getPage().size());
+
+       
        // Add tags to a few
        siteT2.getTags().add(TAG_1);
        nodeT2.getTags().add(TAG_1);
@@ -696,6 +725,26 @@ public class DiscussionServiceImplTest
        assertEquals("NT3", topics.getPage().get(0).getTitle());
        assertEquals("NT1", topics.getPage().get(1).getTitle());
        assertEquals("NT2", topics.getPage().get(2).getTitle());
+       
+       
+       // Try listing by date range
+       // Only Site1 and Node2 are still created today, Node1 was a day ago 
+       topics = DISCUSSION_SERVICE.listTopics(DISCUSSION_SITE.getShortName(), yesterday, tomorrow, new PagingRequest(10));
+       assertEquals(1, topics.getPage().size());
+       assertEquals("ST1", topics.getPage().get(0).getTitle());
+       
+       topics = DISCUSSION_SERVICE.listTopics(FORUM_NODE, yesterday, tomorrow, new PagingRequest(10));
+       assertEquals(2, topics.getPage().size());
+       assertEquals("NT1", topics.getPage().get(0).getTitle());
+       assertEquals("NT2", topics.getPage().get(1).getTitle());
+
+       topics = DISCUSSION_SERVICE.listTopics(DISCUSSION_SITE.getShortName(), fourDaysAgo, yesterday, new PagingRequest(10));
+       assertEquals(1, topics.getPage().size());
+       assertEquals("ST2", topics.getPage().get(0).getTitle());
+       
+       topics = DISCUSSION_SERVICE.listTopics(FORUM_NODE, fourDaysAgo, yesterday, new PagingRequest(10));
+       assertEquals(1, topics.getPage().size());
+       assertEquals("NT3", topics.getPage().get(0).getTitle());
        
        
        // Now create a couple of check posts

@@ -31,6 +31,7 @@ import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -77,6 +78,7 @@ public class WorkflowServiceImpl implements WorkflowService
     private AVMSyncService avmSyncService;
     private DictionaryService dictionaryService;
     private NodeService protectedNodeService;
+    private ServiceRegistry services;
 
     /**
      * Sets the Authority Service
@@ -156,6 +158,16 @@ public class WorkflowServiceImpl implements WorkflowService
     public void setProtectedNodeService(NodeService protectedNodeService)
     {
         this.protectedNodeService = protectedNodeService;
+    }
+    
+    /**
+     * Set the service registry
+     * 
+     * @param services  service registry
+     */
+    public void setServices(ServiceRegistry services)
+    {
+        this.services = services;
     }
 
     /*
@@ -693,6 +705,27 @@ public class WorkflowServiceImpl implements WorkflowService
             WorkflowInstance instance = task.getPath().getInstance();
             workflowPackageComponent.setWorkflowForPackage(instance);
         }
+        
+        // Get the start task
+        String instanceId = task.getPath().getInstance().getId();
+        WorkflowTask startTask = component.getStartTask(instanceId);
+        
+        // Get the email notification flag
+        Boolean sendEMailNotification = (Boolean) startTask.getProperties().get(WorkflowModel.PROP_SEND_EMAIL_NOTIFICATIONS);
+        
+        // Get the 'new' assignee
+        String assignee = (String)properties.get(ContentModel.PROP_OWNER);
+        if (assignee != null && assignee.length() != 0 &&
+            Boolean.TRUE.equals(sendEMailNotification) == true)
+        {
+            // Send the notification
+            WorkflowNotificationUtils.sendWorkflowAssignedNotificationEMail(
+                        services, 
+                        taskId,
+                        assignee,
+                        false);
+        }
+        
         return task;
     }
 

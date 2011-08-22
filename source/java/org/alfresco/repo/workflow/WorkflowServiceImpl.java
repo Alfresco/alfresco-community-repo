@@ -699,31 +699,40 @@ public class WorkflowServiceImpl implements WorkflowService
     {
         String engineId = BPMEngineRegistry.getEngineId(taskId);
         TaskComponent component = getTaskComponent(engineId);
+        // get the current assignee before updating the task
+        String originalAsignee = (String)component.getTaskById(taskId).getProperties().get(ContentModel.PROP_OWNER);
         WorkflowTask task = component.updateTask(taskId, properties, add, remove);
-        if(add!=null && add.containsKey(WorkflowModel.ASSOC_PACKAGE))
+        if (add != null && add.containsKey(WorkflowModel.ASSOC_PACKAGE))
         {
             WorkflowInstance instance = task.getPath().getInstance();
             workflowPackageComponent.setWorkflowForPackage(instance);
         }
         
-        // Get the start task
-        String instanceId = task.getPath().getInstance().getId();
-        WorkflowTask startTask = component.getStartTask(instanceId);
-        
-        // Get the email notification flag
-        Boolean sendEMailNotification = (Boolean) startTask.getProperties().get(WorkflowModel.PROP_SEND_EMAIL_NOTIFICATIONS);
-        
         // Get the 'new' assignee
         String assignee = (String)properties.get(ContentModel.PROP_OWNER);
-        if (assignee != null && assignee.length() != 0 &&
-            Boolean.TRUE.equals(sendEMailNotification) == true)
+        if (assignee != null && assignee.length() != 0)
         {
-            // Send the notification
-            WorkflowNotificationUtils.sendWorkflowAssignedNotificationEMail(
-                        services, 
-                        taskId,
-                        assignee,
-                        false);
+            // if the assignee has changed get the start task
+            if (!assignee.equals(originalAsignee))
+            {
+                String instanceId = task.getPath().getInstance().getId();
+                WorkflowTask startTask = component.getStartTask(instanceId);
+                
+                if (startTask != null)
+                {
+                    // Get the email notification flag
+                    Boolean sendEMailNotification = (Boolean) startTask.getProperties().get(WorkflowModel.PROP_SEND_EMAIL_NOTIFICATIONS);
+                    if (Boolean.TRUE.equals(sendEMailNotification) == true)
+                    {
+                        // Send the notification
+                        WorkflowNotificationUtils.sendWorkflowAssignedNotificationEMail(
+                                    services, 
+                                    taskId,
+                                    assignee,
+                                    false);
+                    }
+                }
+            }
         }
         
         return task;

@@ -267,17 +267,11 @@ function findUsers(searchTerm, maxResults, results)
 
 function findGroups(searchTerm, maxResults, results)
 {
-   var searchTermPattern = "*";
-   
-   if (searchTerm != null && searchTerm.length > 0)
-   {
-      searchTermPattern = searchTermPattern + searchTerm;
-   }
-   
    if (logger.isLoggingEnabled())
-      logger.log("Finding groups matching pattern: " + searchTermPattern);
+      logger.log("Finding groups matching pattern: " + searchTerm);
    
-   var searchResults = groups.searchGroupsInZone(searchTermPattern, "APP.DEFAULT");
+   var paging = utils.createPaging(maxResults, 0);
+   var searchResults = groups.getGroupsInZone(searchTerm, "APP.DEFAULT", paging, "displayName");
    for each(var group in searchResults)
    {
       if (logger.isLoggingEnabled())

@@ -80,6 +80,7 @@
         <property name="auditService"           ref="auditService" />
         <property name="namespaceService"       ref="namespaceService" />
         <property name="searchService"          ref="SearchService" />
+        <property name="dictionaryService"      ref="DictionaryService" />
     </bean>
     
     <bean id="OpenCMISQueryService" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">

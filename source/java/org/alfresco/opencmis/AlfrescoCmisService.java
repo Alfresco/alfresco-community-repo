@@ -143,6 +143,11 @@ public class AlfrescoCmisService extends AbstractCmisService
 {
     private static Log logger = LogFactory.getLog(AlfrescoCmisService.class);
 
+    private static final QName PARAM_PARENT = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "parent");
+    private static final QName PARAM_USERNAME = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "username");
+    private static final String LUCENE_QUERY_CHECKEDOUT = "+@cm\\:workingCopyOwner:${cm:username}";
+    private static final String LUCENE_QUERY_CHECKEDOUT_IN_FOLDER = "+@cm\\:workingCopyOwner:${cm:username} +PARENT:\"${cm:parent}\"";
+
     private static final String MIN_FILTER = "cmis:name,cmis:baseTypeId,cmis:objectTypeId,"
             + "cmis:createdBy,cmis:creationDate,cmis:lastModifiedBy,cmis:lastModificationDate,"
             + "cmis:contentStreamLength,cmis:contentStreamMimeType,cmis:contentStreamFileName,"
@@ -629,7 +634,7 @@ public class AlfrescoCmisService extends AbstractCmisService
                             QName sortProp = propDef.getPropertyAccessor().getMappedProperty();
                             if (sortProp != null)
                             {
-                                boolean sortAsc = ((sort.length == 1) || (sortAsc = (sort[1].equalsIgnoreCase("asc"))));
+                                boolean sortAsc = (sort.length == 1) || sort[1].equalsIgnoreCase("asc");
                                 sortProps.add(new Pair<QName, Boolean>(sortProp, sortAsc));
                             } else
                             {
@@ -700,7 +705,7 @@ public class AlfrescoCmisService extends AbstractCmisService
             }
         }
 
-        // / has more ?
+        // has more ?
         result.setHasMoreItems(pageOfNodeInfos.hasMoreItems());
 
         // total count ?
@@ -927,7 +932,143 @@ public class AlfrescoCmisService extends AbstractCmisService
     {
         checkRepositoryId(repositoryId);
 
-        return new ObjectListImpl();
+        // convert BigIntegers to int
+        int max = (maxItems == null ? Integer.MAX_VALUE : maxItems.intValue());
+        int skip = (skipCount == null || skipCount.intValue() < 0 ? 0 : skipCount.intValue());
+
+        // prepare query
+        SearchParameters params = new SearchParameters();
+        params.setLanguage(SearchService.LANGUAGE_LUCENE);
+        QueryParameterDefinition usernameDef = new QueryParameterDefImpl(PARAM_USERNAME, connector
+                .getDictionaryService().getDataType(DataTypeDefinition.TEXT), true,
+                AuthenticationUtil.getFullyAuthenticatedUser());
+        params.addQueryParameterDefinition(usernameDef);
+
+        if (folderId == null)
+        {
+            params.setQuery(LUCENE_QUERY_CHECKEDOUT);
+            params.addStore(connector.getRootStoreRef());
+        } else
+        {
+            CMISNodeInfo folderInfo = getOrCreateFolderInfo(folderId, "Folder");
+
+            params.setQuery(LUCENE_QUERY_CHECKEDOUT_IN_FOLDER);
+            params.addStore(folderInfo.getNodeRef().getStoreRef());
+            QueryParameterDefinition parentDef = new QueryParameterDefImpl(PARAM_PARENT, connector
+                    .getDictionaryService().getDataType(DataTypeDefinition.NODE_REF), true, folderInfo.getNodeRef()
+                    .toString());
+            params.addQueryParameterDefinition(parentDef);
+        }
+
+        // set up order
+        if (orderBy != null)
+        {
+            String[] parts = orderBy.split(",");
+            for (int i = 0; i < parts.length; i++)
+            {
+                String[] sort = parts[i].split(" +");
+
+                if (sort.length < 1)
+                {
+                    continue;
+                }
+
+                PropertyDefintionWrapper propDef = connector.getOpenCMISDictionaryService().findPropertyByQueryName(
+                        sort[0]);
+                if (propDef != null)
+                {
+                    if (propDef.getPropertyDefinition().isOrderable())
+                    {
+                        QName sortProp = propDef.getPropertyAccessor().getMappedProperty();
+                        if (sortProp != null)
+                        {
+                            boolean sortAsc = (sort.length == 1) || sort[1].equalsIgnoreCase("asc");
+                            params.addSort(propDef.getPropertyLuceneBuilder().getLuceneFieldName(), sortAsc);
+                        } else
+                        {
+                            if (logger.isDebugEnabled())
+                            {
+                                logger.debug("Ignore sort property '" + sort[0] + " - mapping not found");
+                            }
+                        }
+                    } else
+                    {
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("Ignore sort property '" + sort[0] + " - not orderable");
+                        }
+                    }
+                } else
+                {
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Ignore sort property '" + sort[0] + " - query name not found");
+                    }
+                }
+            }
+        }
+
+        // execute query
+        ResultSet resultSet = null;
+        List<NodeRef> nodeRefs;
+        try
+        {
+            resultSet = connector.getSearchService().query(params);
+            nodeRefs = resultSet.getNodeRefs();
+        } finally
+        {
+            if (resultSet != null)
+            {
+                resultSet.close();
+            }
+        }
+
+        // collect results
+        ObjectListImpl result = new ObjectListImpl();
+        List<ObjectData> list = new ArrayList<ObjectData>();
+        result.setObjects(list);
+
+        int skipCounter = skip;
+        if (max > 0)
+        {
+            for (NodeRef nodeRef : nodeRefs)
+            {
+                if (skipCounter > 0)
+                {
+                    skipCounter--;
+                    continue;
+                }
+
+                if (list.size() == max)
+                {
+                    break;
+                }
+
+                try
+                {
+                    // create a CMIS object
+                    CMISNodeInfo ni = createNodeInfo(nodeRef);
+                    ObjectData object = connector.createCMISObject(ni, filter, includeAllowableActions,
+                            includeRelationships, renditionFilter, false, false);
+
+                    if (context.isObjectInfoRequired())
+                    {
+                        getObjectInfo(repositoryId, ni.getObjectId(), includeRelationships);
+                    }
+
+                    // add it
+                    list.add(object);
+                } catch (InvalidNodeRefException e)
+                {
+                    // ignore invalid objects
+                }
+            }
+        }
+
+        // has more ?
+        result.setHasMoreItems(nodeRefs.size() - skip > list.size());
+
+        return result;
     }
 
     // --- object service ---

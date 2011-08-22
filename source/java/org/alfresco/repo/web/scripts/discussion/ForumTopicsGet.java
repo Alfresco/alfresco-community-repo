@@ -67,11 +67,11 @@ public class ForumTopicsGet extends AbstractDiscussionWebScript
       {
          if(site != null)
          {
-            topics = discussionService.findTopics(site.getShortName(), tag, paging);
+            topics = discussionService.findTopics(site.getShortName(), null, tag, paging);
          }
          else
          {
-            topics = discussionService.findTopics(nodeRef, tag, paging);
+            topics = discussionService.findTopics(nodeRef, null, tag, paging);
          }
       }
       else

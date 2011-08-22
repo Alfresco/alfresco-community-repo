@@ -19,6 +19,7 @@
 package org.alfresco.repo.content.caching;
 
 import java.io.File;
+import java.io.FilenameFilter;
 
 import net.sf.ehcache.CacheManager;
 
@@ -136,6 +137,30 @@ public class CachingContentStoreSpringTest extends AbstractWritableContentStoreT
         assertEquals(content, contentAfterDelete);
     }
     
+    
+    public void testStoreWillRecoverFromDeletedCacheFile()
+    {
+        final String content = "Content for " + getName() + " test.";
+        
+        // Write some content to the backing store.
+        ContentWriter writer = backingStore.getWriter(ContentContext.NULL_CONTEXT);
+        writer.putContent(content);
+        final String contentUrl = writer.getContentUrl();
+        
+        // Read content using the CachingContentStore - will cause content to be cached.
+        String retrievedContent = store.getReader(contentUrl).getContentString();
+        assertEquals(content, retrievedContent);
+        
+        // Remove the cached disk file
+        File cacheFile = new File(cache.cacheFileLocation(contentUrl));
+        cacheFile.delete();   
+        assertTrue("Cached content should have been deleted", !cacheFile.exists());
+      
+        // Should still be able to ask for this content, even though the cache file was
+        // deleted and the record of the cache is still in the in-memory cache/lookup.
+        String contentAfterDelete = store.getReader(contentUrl).getContentString();
+        assertEquals(content, contentAfterDelete);
+    }
     
     
     /*

@@ -63,7 +63,11 @@ public class ContentCacheImpl implements ContentCache
         if (memoryStore.contains(contentUrl))
         {
             String path = memoryStore.get(contentUrl);
-            return new FileContentReader(new File(path), contentUrl);
+            File cacheFile = new File(path);
+            if (cacheFile.exists())
+            {
+                return new FileContentReader(cacheFile, contentUrl);
+            }
         }
         
         throw new CacheMissException(contentUrl);
@@ -172,5 +176,14 @@ public class ContentCacheImpl implements ContentCache
     public void setMemoryStore(SimpleCache<String, String> memoryStore)
     {
         this.memoryStore = memoryStore;
+    }
+    
+    
+    // Not part of the ContentCache interface as this breaks encapsulation.
+    // Handy method for tests though, since it allows us to find out where
+    // the content was cached.
+    protected String cacheFileLocation(String url)
+    {
+        return memoryStore.get(url);
     }
 }

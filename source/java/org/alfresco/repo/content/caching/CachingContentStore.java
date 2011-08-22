@@ -49,7 +49,8 @@ public class CachingContentStore implements ContentStore
     private ContentCache cache;
     private boolean cacheOnInbound;
     
-    static {
+    static
+    {
         locks = new Object[numLocks];
         for (int i = 0; i < numLocks; i++)
         {
@@ -152,22 +153,42 @@ public class CachingContentStore implements ContentStore
         // when it should only be read once and cached versions should be returned after that.
         synchronized(lock(contentUrl))
         {
-            if (!cache.contains(contentUrl))
+            return retryingCacheRead(contentUrl);
+        }
+    }    
+    
+    private ContentReader retryingCacheRead(String url)
+    {
+        int triesLeft = 15;
+        
+        while (triesLeft > 0)
+        {
+            try
             {
-                ContentReader bsReader = backingStore.getReader(contentUrl);
-                if (!cache.put(contentUrl, bsReader))
+                return cache.getReader(url);
+            }
+            catch (CacheMissException e)
+            {
+                // Cached content is missing either from memory or disk
+                // so try and populate it and retry reading it.
+                ContentReader bsReader = backingStore.getReader(url);
+                if (!cache.put(url, bsReader))
                 {
-                    // Content wasn't put into cache successfully.
+                    // Content was empty - probably hasn't been written yet.
                     return bsReader.getReader();
                 }
-            }           
+                else
+                {
+                    triesLeft--;
+                }
+            }
         }
- 
-        // TODO: what if, in the meantime this item has been deleted from the disk cache?
-        return cache.getReader(contentUrl);
+        
+        // Give up and use the backing store directly
+        return backingStore.getReader(url);
     }
-
-
+    
+    
     /*
      * @see org.alfresco.repo.content.ContentStore#getWriter(org.alfresco.repo.content.ContentContext)
      */

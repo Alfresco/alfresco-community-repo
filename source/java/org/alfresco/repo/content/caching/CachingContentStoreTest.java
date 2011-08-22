@@ -75,7 +75,6 @@ public class CachingContentStoreTest
     public void getReaderForItemInCache()
     {
         ContentReader cachedContentReader = mock(ContentReader.class);
-        when(cache.contains("url")).thenReturn(true);
         when(cache.getReader("url")).thenReturn(cachedContentReader);
         
         ContentReader returnedReader = cachingStore.getReader("url");
@@ -86,16 +85,25 @@ public class CachingContentStoreTest
     
     
     @Test
-    public void getReadForItemMissingFromCache()
+    public void getReaderForItemMissingFromCache()
     {
         ContentReader sourceContent = mock(ContentReader.class);
-        when(cache.contains("url")).thenReturn(false);
+        when(cache.getReader("url")).thenThrow(new CacheMissException("url"));
         when(backingStore.getReader("url")).thenReturn(sourceContent);
+        when(cache.put("url", sourceContent)).thenReturn(true);
         
         cachingStore.getReader("url");
+    }
+    
+    @Test
+    public void getReaderForItemMissingFromCacheButNoContentToCache()
+    {
+        ContentReader sourceContent = mock(ContentReader.class);
+        when(cache.getReader("url")).thenThrow(new CacheMissException("url"));
+        when(backingStore.getReader("url")).thenReturn(sourceContent);
+        when(cache.put("url", sourceContent)).thenReturn(false);
         
-        verify(backingStore).getReader("url");
-        verify(cache).put("url", sourceContent);
+        cachingStore.getReader("url");
     }
     
     

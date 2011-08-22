@@ -587,8 +587,33 @@ public class DiscussionServiceImpl implements DiscussionService
    }
    
    @Override
+   public PagingResults<TopicInfo> listTopics(String siteShortName,
+         String username, PagingRequest paging) {
+      NodeRef container = getSiteDiscussionsContainer(siteShortName, false);
+      if(container == null)
+      {
+         // No topics
+         return new EmptyPagingResults<TopicInfo>();
+      }
+      
+      // We can now fetch by parent nodeRef
+      return listTopics(container, username, paging);
+   }
+
+   @Override
+   public PagingResults<TopicInfo> listTopics(NodeRef nodeRef,
+         String username, PagingRequest paging) {
+      // Do the listing, oldest first
+      CannedQueryResults<NodeBackedEntity> nodes = 
+         listEntries(nodeRef, ForumModel.TYPE_TOPIC, username, true, paging);
+      
+      // Wrap and return
+      return wrap(nodes, nodeRef);
+   }
+   
+   @Override
    public PagingResults<TopicInfo> findTopics(String siteShortName,
-         String tag, PagingRequest paging) {
+         String username, String tag, PagingRequest paging) {
       NodeRef container = getSiteDiscussionsContainer(siteShortName, false);
       if(container == null)
       {
@@ -597,12 +622,12 @@ public class DiscussionServiceImpl implements DiscussionService
       }
       
       // We can now search by parent nodeRef
-      return findTopics(container, tag, paging);
+      return findTopics(container, username, tag, paging);
    }
 
    @Override
    public PagingResults<TopicInfo> findTopics(NodeRef nodeRef,
-         String tag, PagingRequest paging) {
+         String username, String tag, PagingRequest paging) {
       // Build the query
       StringBuilder luceneQuery = new StringBuilder();
       luceneQuery.append(
@@ -612,6 +637,12 @@ public class DiscussionServiceImpl implements DiscussionService
            " +PATH:\"" + nodeService.getPath(nodeRef).toPrefixString(namespaceService) + "/*\""
       );
 
+      if(username != null)
+      {
+         luceneQuery.append(
+               " +@cm\\:creator:\"" + username + "\""
+         );
+      }
       if(tag != null)
       {
          luceneQuery.append(

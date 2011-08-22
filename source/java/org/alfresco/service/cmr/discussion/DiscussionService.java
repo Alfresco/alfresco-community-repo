@@ -165,16 +165,29 @@ public interface DiscussionService {
    PagingResults<TopicInfo> listTopics(NodeRef nodeRef, PagingRequest paging);
    
    /**
-    * Searches for all topics in a site, filtered by tag
+    * Retrieves all topics in a site, filtered by username
     */
    @NotAuditable
-   PagingResults<TopicInfo> findTopics(String siteShortName, String tag, PagingRequest paging);
+   PagingResults<TopicInfo> listTopics(String siteShortName, String username, PagingRequest paging);
 
    /**
-    * Searches for all topics attached to the specified Node, filtered by tag
+    * Retrieves all topics attached to the specified Node, filtered by username
     */
    @NotAuditable
-   PagingResults<TopicInfo> findTopics(NodeRef nodeRef, String tag, PagingRequest paging);
+   PagingResults<TopicInfo> listTopics(NodeRef nodeRef, String username, PagingRequest paging);
+   
+   /**
+    * Searches for all topics in a site, filtered by username or tag
+    */
+   @NotAuditable
+   PagingResults<TopicInfo> findTopics(String siteShortName, String username, String tag, PagingRequest paging);
+
+   /**
+    * Searches for all topics attached to the specified Node, filtered 
+    *  by username or tag
+    */
+   @NotAuditable
+   PagingResults<TopicInfo> findTopics(NodeRef nodeRef, String username, String tag, PagingRequest paging);
 
    
    /**

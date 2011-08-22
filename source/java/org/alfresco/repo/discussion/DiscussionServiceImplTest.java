@@ -558,10 +558,12 @@ public class DiscussionServiceImplTest
        assertEquals(0, topics.getPage().size());
 
        
-       // Create several
+       // Create several, some as Admin and some as the Test User
        TopicInfo siteT1 = DISCUSSION_SERVICE.createTopic(DISCUSSION_SITE.getShortName(), "ST1");
+       AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
        TopicInfo siteT2 = DISCUSSION_SERVICE.createTopic(DISCUSSION_SITE.getShortName(), "ST2");
        TopicInfo nodeT1 = DISCUSSION_SERVICE.createTopic(FORUM_NODE, "NT1");
+       AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
        TopicInfo nodeT2 = DISCUSSION_SERVICE.createTopic(FORUM_NODE, "NT2");
        TopicInfo nodeT3 = DISCUSSION_SERVICE.createTopic(FORUM_NODE, "NT3");
        testNodesToTidy.add(siteT1.getNodeRef());
@@ -584,6 +586,25 @@ public class DiscussionServiceImplTest
        assertEquals("NT3", topics.getPage().get(2).getTitle());
        
 
+       // Check by user
+       topics = DISCUSSION_SERVICE.listTopics(DISCUSSION_SITE.getShortName(), ADMIN_USER, new PagingRequest(10));
+       assertEquals(1, topics.getPage().size());
+       assertEquals("ST1", topics.getPage().get(0).getTitle());
+       
+       topics = DISCUSSION_SERVICE.listTopics(FORUM_NODE, ADMIN_USER, new PagingRequest(10));
+       assertEquals(2, topics.getPage().size());
+       assertEquals("NT2", topics.getPage().get(0).getTitle());
+       assertEquals("NT3", topics.getPage().get(1).getTitle());
+       
+       topics = DISCUSSION_SERVICE.listTopics(DISCUSSION_SITE.getShortName(), TEST_USER, new PagingRequest(10));
+       assertEquals(1, topics.getPage().size());
+       assertEquals("ST2", topics.getPage().get(0).getTitle());
+       
+       topics = DISCUSSION_SERVICE.listTopics(FORUM_NODE, TEST_USER, new PagingRequest(10));
+       assertEquals(1, topics.getPage().size());
+       assertEquals("NT1", topics.getPage().get(0).getTitle());
+       
+
        // Add tags to a few
        siteT2.getTags().add(TAG_1);
        nodeT2.getTags().add(TAG_1);
@@ -595,33 +616,69 @@ public class DiscussionServiceImplTest
 
        
        // Find without tags
-       topics = DISCUSSION_SERVICE.findTopics(DISCUSSION_SITE.getShortName(), null, new PagingRequest(10));
+       topics = DISCUSSION_SERVICE.findTopics(DISCUSSION_SITE.getShortName(), null, null, new PagingRequest(10));
        assertEquals(2, topics.getPage().size());
        assertEquals("ST1", topics.getPage().get(0).getTitle());
        assertEquals("ST2", topics.getPage().get(1).getTitle());
        
-       topics = DISCUSSION_SERVICE.findTopics(FORUM_NODE, null, new PagingRequest(10));
+       topics = DISCUSSION_SERVICE.findTopics(FORUM_NODE, null, null, new PagingRequest(10));
        assertEquals(3, topics.getPage().size());
        assertEquals("NT1", topics.getPage().get(0).getTitle());
        assertEquals("NT2", topics.getPage().get(1).getTitle());
        assertEquals("NT3", topics.getPage().get(2).getTitle());
+
        
        // Find with tags
-       topics = DISCUSSION_SERVICE.findTopics(DISCUSSION_SITE.getShortName(), TAG_1, new PagingRequest(10));
+       topics = DISCUSSION_SERVICE.findTopics(DISCUSSION_SITE.getShortName(), null, TAG_1, new PagingRequest(10));
        assertEquals(1, topics.getPage().size());
        assertEquals("ST2", topics.getPage().get(0).getTitle());
        
-       topics = DISCUSSION_SERVICE.findTopics(FORUM_NODE, TAG_1, new PagingRequest(10));
+       topics = DISCUSSION_SERVICE.findTopics(FORUM_NODE, null, TAG_1, new PagingRequest(10));
        assertEquals(2, topics.getPage().size());
        assertEquals("NT2", topics.getPage().get(0).getTitle());
        assertEquals("NT3", topics.getPage().get(1).getTitle());
        
-       topics = DISCUSSION_SERVICE.findTopics(DISCUSSION_SITE.getShortName(), TAG_2, new PagingRequest(10));
+       topics = DISCUSSION_SERVICE.findTopics(DISCUSSION_SITE.getShortName(), null, TAG_2, new PagingRequest(10));
        assertEquals(0, topics.getPage().size());
        
-       topics = DISCUSSION_SERVICE.findTopics(FORUM_NODE, TAG_2, new PagingRequest(10));
+       topics = DISCUSSION_SERVICE.findTopics(FORUM_NODE, null, TAG_2, new PagingRequest(10));
        assertEquals(1, topics.getPage().size());
        assertEquals("NT2", topics.getPage().get(0).getTitle());
+       
+       
+       // Find by user but not by tag
+       topics = DISCUSSION_SERVICE.findTopics(DISCUSSION_SITE.getShortName(), ADMIN_USER, null, new PagingRequest(10));
+       assertEquals(1, topics.getPage().size());
+       assertEquals("ST1", topics.getPage().get(0).getTitle());
+       
+       topics = DISCUSSION_SERVICE.findTopics(FORUM_NODE, ADMIN_USER, null, new PagingRequest(10));
+       assertEquals(2, topics.getPage().size());
+       assertEquals("NT2", topics.getPage().get(0).getTitle());
+       assertEquals("NT3", topics.getPage().get(1).getTitle());
+       
+       topics = DISCUSSION_SERVICE.findTopics(DISCUSSION_SITE.getShortName(), TEST_USER, null, new PagingRequest(10));
+       assertEquals(1, topics.getPage().size());
+       assertEquals("ST2", topics.getPage().get(0).getTitle());
+       
+       topics = DISCUSSION_SERVICE.findTopics(FORUM_NODE, TEST_USER, null, new PagingRequest(10));
+       assertEquals(1, topics.getPage().size());
+       assertEquals("NT1", topics.getPage().get(0).getTitle());
+
+       
+       // Find by user and tag together
+       topics = DISCUSSION_SERVICE.findTopics(DISCUSSION_SITE.getShortName(), ADMIN_USER, TAG_1, new PagingRequest(10));
+       assertEquals(0, topics.getPage().size());
+       
+       topics = DISCUSSION_SERVICE.findTopics(DISCUSSION_SITE.getShortName(), TEST_USER, TAG_1, new PagingRequest(10));
+       assertEquals(1, topics.getPage().size());
+       assertEquals("ST2", topics.getPage().get(0).getTitle());
+       
+       topics = DISCUSSION_SERVICE.findTopics(FORUM_NODE, ADMIN_USER, TAG_2, new PagingRequest(10));
+       assertEquals(1, topics.getPage().size());
+       assertEquals("NT2", topics.getPage().get(0).getTitle());
+       
+       topics = DISCUSSION_SERVICE.findTopics(FORUM_NODE, TEST_USER, TAG_2, new PagingRequest(10));
+       assertEquals(0, topics.getPage().size());
        
        
        // Alter the creation date on a couple, see the ordering change
@@ -1056,168 +1113,12 @@ public class DiscussionServiceImplTest
     }
     
     /**
-     * Tests for listing the wiki pages of a site, possibly by user or date range
-     */
-/*
-    @Test public void pagesListing() throws Exception
-    {
-       PagingRequest paging = new PagingRequest(10);
-       AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
-       
-       // Nothing to start with
-       PagingResults<WikiPageInfo> results = 
-          DISCUSSION_SERVICE.listWikiPages(DISCUSSION_SITE.getShortName(), paging);
-       assertEquals(0, results.getPage().size());
-       
-       // Add a few
-       WikiPageInfo pageA = DISCUSSION_SERVICE.createWikiPage(
-             DISCUSSION_SITE.getShortName(), "TitleA", "ContentA"
-       );
-       WikiPageInfo pageB = DISCUSSION_SERVICE.createWikiPage(
-             DISCUSSION_SITE.getShortName(), "TitleB", "ContentB"
-       );
-       WikiPageInfo pageC = DISCUSSION_SERVICE.createWikiPage(
-             DISCUSSION_SITE.getShortName(), "TitleC", "ContentC"
-       );
-       testNodesToTidy.add(pageA.getNodeRef());
-       testNodesToTidy.add(pageB.getNodeRef());
-       testNodesToTidy.add(pageC.getNodeRef());
-       
-       // Check now, should be newest first
-       results = DISCUSSION_SERVICE.listWikiPages(DISCUSSION_SITE.getShortName(), paging);
-       assertEquals(3, results.getPage().size());
-       assertEquals("TitleC", results.getPage().get(0).getTitle());
-       assertEquals("TitleB", results.getPage().get(1).getTitle());
-       assertEquals("TitleA", results.getPage().get(2).getTitle());
-       
-       // Add one more, as a different user, and drop the page size
-       AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
-       WikiPageInfo pageD = DISCUSSION_SERVICE.createWikiPage(
-             DISCUSSION_SITE.getShortName(), "TitleD", "ContentD"
-       );
-       testNodesToTidy.add(pageD.getNodeRef());
-       AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
-       
-       paging = new PagingRequest(3);
-       results = DISCUSSION_SERVICE.listWikiPages(DISCUSSION_SITE.getShortName(), paging);
-       assertEquals(3, results.getPage().size());
-       assertEquals("TitleD", results.getPage().get(0).getTitle());
-       assertEquals("TitleC", results.getPage().get(1).getTitle());
-       assertEquals("TitleB", results.getPage().get(2).getTitle());
-       
-       paging = new PagingRequest(3, 3);
-       results = DISCUSSION_SERVICE.listWikiPages(DISCUSSION_SITE.getShortName(), paging);
-       assertEquals(1, results.getPage().size());
-       assertEquals("TitleA", results.getPage().get(0).getTitle());
-       
-       
-       // Now check filtering by user
-       paging = new PagingRequest(10);
-       
-       results = DISCUSSION_SERVICE.listWikiPages(DISCUSSION_SITE.getShortName(), TEST_USER, paging);
-       assertEquals(3, results.getPage().size());
-       assertEquals("TitleC", results.getPage().get(0).getTitle());
-       assertEquals("TitleB", results.getPage().get(1).getTitle());
-       assertEquals("TitleA", results.getPage().get(2).getTitle());
-       
-       results = DISCUSSION_SERVICE.listWikiPages(DISCUSSION_SITE.getShortName(), ADMIN_USER, paging);
-       assertEquals(1, results.getPage().size());
-       assertEquals("TitleD", results.getPage().get(0).getTitle());
-
-       
-       // Now check filtering by date range
-       // Arrange it so that the orders are:
-       //   Created ->  C B A D
-       //   Modified -> D C B A
-       pushAuditableDatesBack(pageB, 10, 0);
-       pushAuditableDatesBack(pageC, 100, 10);
-       pushAuditableDatesBack(pageD, 0, 100);
-       pageA.setContents("UpdatedContentsA");
-       pageA = DISCUSSION_SERVICE.updateWikiPage(pageA);
-       
-       
-       Date today = new Date();
-       Date tomorrow = new Date(today.getTime()+ONE_DAY_MS);
-       Date yesterday = new Date(today.getTime()-ONE_DAY_MS);
-       Date twoWeeksAgo = new Date(today.getTime()-14*ONE_DAY_MS);
-       
-       
-       // Check by created date
-       
-       // Very recent ones
-       results = DISCUSSION_SERVICE.listWikiPagesByCreated(DISCUSSION_SITE.getShortName(), yesterday, tomorrow, paging);
-       assertEquals(2, results.getPage().size());
-       assertEquals("TitleD", results.getPage().get(0).getTitle());
-       assertEquals("TitleA", results.getPage().get(1).getTitle());
-       
-       // Fairly old ones
-       results = DISCUSSION_SERVICE.listWikiPagesByCreated(DISCUSSION_SITE.getShortName(), twoWeeksAgo, yesterday, paging);
-       assertEquals(1, results.getPage().size());
-       assertEquals("TitleB", results.getPage().get(0).getTitle());
-       
-       // Fairly old to current
-       results = DISCUSSION_SERVICE.listWikiPagesByCreated(DISCUSSION_SITE.getShortName(), twoWeeksAgo, tomorrow, paging);
-       assertEquals(3, results.getPage().size());
-       assertEquals("TitleD", results.getPage().get(0).getTitle());
-       assertEquals("TitleA", results.getPage().get(1).getTitle());
-       assertEquals("TitleB", results.getPage().get(2).getTitle());
-
-       
-       // Check by modified date
-       
-       // Very recent ones
-       results = DISCUSSION_SERVICE.listWikiPagesByModified(DISCUSSION_SITE.getShortName(), yesterday, tomorrow, paging);
-       assertEquals(2, results.getPage().size());
-       assertEquals("TitleA", results.getPage().get(0).getTitle());
-       assertEquals("TitleB", results.getPage().get(1).getTitle());
-       
-       // Fairly old ones
-       results = DISCUSSION_SERVICE.listWikiPagesByModified(DISCUSSION_SITE.getShortName(), twoWeeksAgo, yesterday, paging);
-       assertEquals(1, results.getPage().size());
-       assertEquals("TitleC", results.getPage().get(0).getTitle());
-       
-       // Fairly old to current
-       results = DISCUSSION_SERVICE.listWikiPagesByModified(DISCUSSION_SITE.getShortName(), twoWeeksAgo, tomorrow, paging);
-       assertEquals(3, results.getPage().size());
-       assertEquals("TitleA", results.getPage().get(0).getTitle());
-       assertEquals("TitleB", results.getPage().get(1).getTitle());
-       assertEquals("TitleC", results.getPage().get(2).getTitle());
-       
-       
-       // Bring C back to current and re-check
-       pageC.setContents("Changed C");
-       pageC = DISCUSSION_SERVICE.updateWikiPage(pageC);
-       
-       // Order doesn't change, sorting is by created date not modified date
-       results = DISCUSSION_SERVICE.listWikiPagesByModified(DISCUSSION_SITE.getShortName(), twoWeeksAgo, tomorrow, paging);
-       assertEquals(3, results.getPage().size());
-       assertEquals("TitleA", results.getPage().get(0).getTitle());
-       assertEquals("TitleB", results.getPage().get(1).getTitle());
-       assertEquals("TitleC", results.getPage().get(2).getTitle());
-       
-       
-       // Tidy
-       paging = new PagingRequest(10);
-       AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
-       results = DISCUSSION_SERVICE.listWikiPages(DISCUSSION_SITE.getShortName(), paging);
-       for(WikiPageInfo link : results.getPage())
-       {
-          PUBLIC_NODE_SERVICE.deleteNode(link.getNodeRef());
-       }
-       results = DISCUSSION_SERVICE.listWikiPages(ALTERNATE_DISCUSSION_SITE.getShortName(), paging);
-       for(WikiPageInfo link : results.getPage())
-       {
-          PUBLIC_NODE_SERVICE.deleteNode(link.getNodeRef());
-       }
-    }
-*/
-
-    /**
      * Checks that the correct permission checking occurs on fetching
      *  links listings (which go through canned queries)
+     * TODO
      */
 /*    
-    @Test public void pagesListingPermissionsChecking() throws Exception
+    @Test public void discussionsListingPermissionsChecking() throws Exception
     {
        PagingRequest paging = new PagingRequest(10);
        PagingResults<WikiPageInfo> results;

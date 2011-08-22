@@ -190,11 +190,9 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
         // add the user as a member with the given role
         this.siteService.setMembership(SITE_SHORT_NAME_DISCUSSION, userName, role);
         
-        // Give them access to the test node
-        // TODO This shouldn't be needed when the webscripts use the service properly
-        // (We only need it because they go about adding tag scopes and aspects)
+        // Give the test user access to the test node
+        // They need to be able to read it, and create children of it
         permissionService.setPermission(FORUM_NODE, userName, PermissionService.READ, true);
-        permissionService.setPermission(FORUM_NODE, userName, PermissionService.WRITE, true);
         permissionService.setPermission(FORUM_NODE, userName, PermissionService.CREATE_CHILDREN, true);
     }
     
@@ -1099,11 +1097,8 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
       assertEquals(2, result.getInt("total"));
       assertEquals(2, result.getInt("itemCount"));
       assertEquals(2, result.getJSONArray("items").length());
-      // TODO This appears to be incorrect... 
-      assertEquals("NodeTitle3", result.getJSONArray("items").getJSONObject(0).getString("title"));
-      assertEquals("NodeTitle2", result.getJSONArray("items").getJSONObject(1).getString("title"));
-//      assertEquals("NodeTitle2", result.getJSONArray("items").getJSONObject(0).getString("title"));
-//      assertEquals("NodeTitle3", result.getJSONArray("items").getJSONObject(1).getString("title"));
+      assertEquals("NodeTitle2", result.getJSONArray("items").getJSONObject(0).getString("title"));
+      assertEquals("NodeTitle3", result.getJSONArray("items").getJSONObject(1).getString("title"));
       assertEquals(0, result.getJSONArray("items").getJSONObject(0).getInt("replyCount"));
       assertEquals(0, result.getJSONArray("items").getJSONObject(1).getInt("replyCount"));
       

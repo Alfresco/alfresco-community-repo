@@ -1,3 +1,6 @@
+<#escape x as jsonUtils.encodeJSONString(x)>
 {
-   "success": true
+   "success": true,
+   "name": "${name}"
 }
+</#escape>

@@ -25,7 +25,7 @@ function main()
    {
       status.setCode(status.STATUS_NOT_FOUND, "Source or destination node is missing for copy operation.");
    }
-   sourceNode.copy(parentNode);
+   model.name = sourceNode.copy(parentNode).name;
 }
 
 main();

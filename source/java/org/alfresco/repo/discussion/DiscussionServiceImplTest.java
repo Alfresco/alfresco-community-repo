@@ -1114,20 +1114,21 @@ public class DiscussionServiceImplTest
     
     /**
      * Checks that the correct permission checking occurs on fetching
-     *  links listings (which go through canned queries)
-     * TODO
+     *  topic and post listings (which go through canned queries)
      */
-/*    
     @Test public void discussionsListingPermissionsChecking() throws Exception
     {
        PagingRequest paging = new PagingRequest(10);
-       PagingResults<WikiPageInfo> results;
+       PagingResults<TopicInfo> topics;
+       PagingResults<PostInfo> posts;
      
-       // Nothing to start with in either site
-       results = DISCUSSION_SERVICE.listWikiPages(DISCUSSION_SITE.getShortName(), paging);
-       assertEquals(0, results.getPage().size());
-       results = DISCUSSION_SERVICE.listWikiPages(ALTERNATE_DISCUSSION_SITE.getShortName(), paging);
-       assertEquals(0, results.getPage().size());
+       // Nothing to start with in either site or on the node
+       topics = DISCUSSION_SERVICE.listTopics(DISCUSSION_SITE.getShortName(), paging);
+       assertEquals(0, topics.getPage().size());
+       topics = DISCUSSION_SERVICE.listTopics(ALTERNATE_DISCUSSION_SITE.getShortName(), paging);
+       assertEquals(0, topics.getPage().size());
+       topics = DISCUSSION_SERVICE.listTopics(FORUM_NODE, paging);
+       assertEquals(0, topics.getPage().size());
 
        // Double check that we're only allowed to see the 1st site
        assertEquals(true,  SITE_SERVICE.isMember(DISCUSSION_SITE.getShortName(), TEST_USER));
@@ -1138,39 +1139,51 @@ public class DiscussionServiceImplTest
        AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
 
        
-       // Add two events to one site and three to the other
+       // Add Topics to the two sites and the test node
        // Note - add the events as a different user for the site that the
        //  test user isn't a member of!
-       WikiPageInfo pageA = DISCUSSION_SERVICE.createWikiPage(
-             DISCUSSION_SITE.getShortName(), "TitleA", "ContentA"
+       TopicInfo topicSA = DISCUSSION_SERVICE.createTopic(
+             DISCUSSION_SITE.getShortName(), "Title1A"
        );
-       WikiPageInfo pageB = DISCUSSION_SERVICE.createWikiPage(
-             DISCUSSION_SITE.getShortName(), "TitleB", "ContentB"
+       TopicInfo topicSB = DISCUSSION_SERVICE.createTopic(
+             DISCUSSION_SITE.getShortName(), "Title1B"
        );
-       testNodesToTidy.add(pageA.getNodeRef());
-       testNodesToTidy.add(pageB.getNodeRef());
+       testNodesToTidy.add(topicSA.getNodeRef());
+       testNodesToTidy.add(topicSB.getNodeRef());
        
        AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
-       WikiPageInfo pagePrivA = DISCUSSION_SERVICE.createWikiPage(
-             ALTERNATE_DISCUSSION_SITE.getShortName(), "PrivTitleA", "Contents A"
+       TopicInfo topicPrivA = DISCUSSION_SERVICE.createTopic(
+             ALTERNATE_DISCUSSION_SITE.getShortName(), "PrivTitleA"
        );
-       WikiPageInfo pagePrivB = DISCUSSION_SERVICE.createWikiPage(
-             ALTERNATE_DISCUSSION_SITE.getShortName(), "PrivTitleB", "Contents B"
+       TopicInfo topicPrivB = DISCUSSION_SERVICE.createTopic(
+             ALTERNATE_DISCUSSION_SITE.getShortName(), "PrivTitleB"
        );
-       WikiPageInfo pagePrivC = DISCUSSION_SERVICE.createWikiPage(
-             ALTERNATE_DISCUSSION_SITE.getShortName(), "PrivTitleC", "Contents C"
+       TopicInfo topicPrivC = DISCUSSION_SERVICE.createTopic(
+             ALTERNATE_DISCUSSION_SITE.getShortName(), "PrivTitleC"
        );
-       testNodesToTidy.add(pagePrivA.getNodeRef());
-       testNodesToTidy.add(pagePrivB.getNodeRef());
-       testNodesToTidy.add(pagePrivC.getNodeRef());
+       testNodesToTidy.add(topicPrivA.getNodeRef());
+       testNodesToTidy.add(topicPrivB.getNodeRef());
+       testNodesToTidy.add(topicPrivC.getNodeRef());
        AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
        
+       TopicInfo topicNA = DISCUSSION_SERVICE.createTopic(
+             FORUM_NODE, "TitleNA"
+       );
+       AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
+       TopicInfo topicNB = DISCUSSION_SERVICE.createTopic(
+             FORUM_NODE, "TitleNB"
+       );
+       AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
+       testNodesToTidy.add(topicNA.getNodeRef());
+       testNodesToTidy.add(topicNB.getNodeRef());
        
        // Check again, as we're not in the 2nd site won't see any there
-       results = DISCUSSION_SERVICE.listWikiPages(DISCUSSION_SITE.getShortName(), paging);
-       assertEquals(2, results.getPage().size());
-       results = DISCUSSION_SERVICE.listWikiPages(ALTERNATE_DISCUSSION_SITE.getShortName(), paging);
-       assertEquals(0, results.getPage().size());
+       topics = DISCUSSION_SERVICE.listTopics(DISCUSSION_SITE.getShortName(), paging);
+       assertEquals(2, topics.getPage().size());
+       topics = DISCUSSION_SERVICE.listTopics(ALTERNATE_DISCUSSION_SITE.getShortName(), paging);
+       assertEquals(0, topics.getPage().size());
+       topics = DISCUSSION_SERVICE.listTopics(FORUM_NODE, paging);
+       assertEquals(2, topics.getPage().size());
        
        
        // Join the site, now we can see both
@@ -1186,23 +1199,90 @@ public class DiscussionServiceImplTest
           }
        });
        
-       results = DISCUSSION_SERVICE.listWikiPages(DISCUSSION_SITE.getShortName(), paging);
-       assertEquals(2, results.getPage().size());
-       results = DISCUSSION_SERVICE.listWikiPages(ALTERNATE_DISCUSSION_SITE.getShortName(), paging);
-       assertEquals(3, results.getPage().size());
+       topics = DISCUSSION_SERVICE.listTopics(DISCUSSION_SITE.getShortName(), paging);
+       assertEquals(2, topics.getPage().size());
+       topics = DISCUSSION_SERVICE.listTopics(ALTERNATE_DISCUSSION_SITE.getShortName(), paging);
+       assertEquals(3, topics.getPage().size());
+       topics = DISCUSSION_SERVICE.listTopics(FORUM_NODE, paging);
+       assertEquals(2, topics.getPage().size());
        
        
-       // Explicitly remove their permissions from one node, check it vanishes from the list
-       PERMISSION_SERVICE.setInheritParentPermissions(pagePrivC.getNodeRef(), false);
-       PERMISSION_SERVICE.clearPermission(pagePrivC.getNodeRef(), TEST_USER);
+       // Explicitly remove their permissions from one node on each, 
+       //  check it vanishes from the list
+       PERMISSION_SERVICE.setInheritParentPermissions(topicPrivC.getNodeRef(), false);
+       PERMISSION_SERVICE.clearPermission(topicPrivC.getNodeRef(), TEST_USER);
+       PERMISSION_SERVICE.setInheritParentPermissions(topicNB.getNodeRef(), false);
+       PERMISSION_SERVICE.clearPermission(topicNB.getNodeRef(), TEST_USER);
        
-       results = DISCUSSION_SERVICE.listWikiPages(DISCUSSION_SITE.getShortName(), paging);
-       assertEquals(2, results.getPage().size());
-       results = DISCUSSION_SERVICE.listWikiPages(ALTERNATE_DISCUSSION_SITE.getShortName(), paging);
-       assertEquals(2, results.getPage().size());
+       topics = DISCUSSION_SERVICE.listTopics(DISCUSSION_SITE.getShortName(), paging);
+       assertEquals(2, topics.getPage().size());
+       topics = DISCUSSION_SERVICE.listTopics(ALTERNATE_DISCUSSION_SITE.getShortName(), paging);
+       assertEquals(2, topics.getPage().size());
+       topics = DISCUSSION_SERVICE.listTopics(FORUM_NODE, paging);
+       assertEquals(1, topics.getPage().size());
        
        
-       // Leave, they go away again
+       // Create a primary post on each topic
+       AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
+       DISCUSSION_SERVICE.createPost(topicSA, "Test S Post");
+       DISCUSSION_SERVICE.createPost(topicSB, "Test S Post");
+       DISCUSSION_SERVICE.createPost(topicPrivA, "Test P Post");
+       DISCUSSION_SERVICE.createPost(topicPrivB, "Test P Post");
+       DISCUSSION_SERVICE.createPost(topicPrivC, "Test P Post");
+       DISCUSSION_SERVICE.createPost(topicNA, "Test N Post");
+       DISCUSSION_SERVICE.createPost(topicNB, "Test N Post");
+       AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
+       
+       
+       // Check we see the primary post everywhere we can see the node
+       posts = DISCUSSION_SERVICE.listPosts(topicSA, paging);
+       assertEquals(1, posts.getPage().size());
+       posts = DISCUSSION_SERVICE.listPosts(topicSB, paging);
+       assertEquals(1, posts.getPage().size());
+       
+       posts = DISCUSSION_SERVICE.listPosts(topicPrivA, paging);
+       assertEquals(1, posts.getPage().size());
+       posts = DISCUSSION_SERVICE.listPosts(topicPrivB, paging);
+       assertEquals(1, posts.getPage().size());
+       posts = DISCUSSION_SERVICE.listPosts(topicPrivC, paging);
+       assertEquals(0, posts.getPage().size()); // Topic hidden
+       
+       posts = DISCUSSION_SERVICE.listPosts(topicNA, paging);
+       assertEquals(1, posts.getPage().size());
+       posts = DISCUSSION_SERVICE.listPosts(topicNB, paging);
+       assertEquals(0, posts.getPage().size()); // Topic hidden
+       
+       
+       // Remove permissions from some posts, check they vanish
+       PostInfo ppSA = DISCUSSION_SERVICE.getPrimaryPost(topicSA);
+       PERMISSION_SERVICE.setInheritParentPermissions(ppSA.getNodeRef(), false);
+       PERMISSION_SERVICE.clearPermission(ppSA.getNodeRef(), TEST_USER);
+       PostInfo ppPA = DISCUSSION_SERVICE.getPrimaryPost(topicPrivA);
+       PERMISSION_SERVICE.setInheritParentPermissions(ppPA.getNodeRef(), false);
+       PERMISSION_SERVICE.clearPermission(ppPA.getNodeRef(), TEST_USER);
+       PostInfo ppNA = DISCUSSION_SERVICE.getPrimaryPost(topicNA);
+       PERMISSION_SERVICE.setInheritParentPermissions(ppNA.getNodeRef(), false);
+       PERMISSION_SERVICE.clearPermission(ppNA.getNodeRef(), TEST_USER);
+       
+       posts = DISCUSSION_SERVICE.listPosts(topicSA, paging);
+       assertEquals(0, posts.getPage().size());
+       posts = DISCUSSION_SERVICE.listPosts(topicSB, paging);
+       assertEquals(1, posts.getPage().size());
+       
+       posts = DISCUSSION_SERVICE.listPosts(topicPrivA, paging);
+       assertEquals(0, posts.getPage().size());
+       posts = DISCUSSION_SERVICE.listPosts(topicPrivB, paging);
+       assertEquals(1, posts.getPage().size());
+       posts = DISCUSSION_SERVICE.listPosts(topicPrivC, paging);
+       assertEquals(0, posts.getPage().size());
+       
+       posts = DISCUSSION_SERVICE.listPosts(topicNA, paging);
+       assertEquals(0, posts.getPage().size());
+       posts = DISCUSSION_SERVICE.listPosts(topicNB, paging);
+       assertEquals(0, posts.getPage().size());
+       
+       
+       // Leave, the site, they go away again
        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
        {
           @Override
@@ -1215,27 +1295,33 @@ public class DiscussionServiceImplTest
           }
        });
        
-       results = DISCUSSION_SERVICE.listWikiPages(DISCUSSION_SITE.getShortName(), paging);
-       assertEquals(2, results.getPage().size());
-       results = DISCUSSION_SERVICE.listWikiPages(ALTERNATE_DISCUSSION_SITE.getShortName(), paging);
-       assertEquals(0, results.getPage().size());
-
-
+       topics = DISCUSSION_SERVICE.listTopics(DISCUSSION_SITE.getShortName(), paging);
+       assertEquals(2, topics.getPage().size());
+       topics = DISCUSSION_SERVICE.listTopics(ALTERNATE_DISCUSSION_SITE.getShortName(), paging);
+       assertEquals(0, topics.getPage().size());
+       topics = DISCUSSION_SERVICE.listTopics(FORUM_NODE, paging);
+       assertEquals(1, topics.getPage().size());
+       
+       
        // Tidy
        paging = new PagingRequest(10);
        AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
-       results = DISCUSSION_SERVICE.listWikiPages(DISCUSSION_SITE.getShortName(), paging);
-       for(WikiPageInfo link : results.getPage())
+       topics = DISCUSSION_SERVICE.listTopics(DISCUSSION_SITE.getShortName(), paging);
+       for(TopicInfo topic : topics.getPage())
        {
-          PUBLIC_NODE_SERVICE.deleteNode(link.getNodeRef());
+          PUBLIC_NODE_SERVICE.deleteNode(topic.getNodeRef());
        }
-       results = DISCUSSION_SERVICE.listWikiPages(ALTERNATE_DISCUSSION_SITE.getShortName(), paging);
-       for(WikiPageInfo link : results.getPage())
+       topics = DISCUSSION_SERVICE.listTopics(ALTERNATE_DISCUSSION_SITE.getShortName(), paging);
+       for(TopicInfo topic : topics.getPage())
        {
-          PUBLIC_NODE_SERVICE.deleteNode(link.getNodeRef());
+          PUBLIC_NODE_SERVICE.deleteNode(topic.getNodeRef());
+       }
+       topics = DISCUSSION_SERVICE.listTopics(FORUM_NODE, paging);
+       for(TopicInfo topic : topics.getPage())
+       {
+          PUBLIC_NODE_SERVICE.deleteNode(topic.getNodeRef());
        }
     }
-*/
     
     
     // --------------------------------------------------------------------------------

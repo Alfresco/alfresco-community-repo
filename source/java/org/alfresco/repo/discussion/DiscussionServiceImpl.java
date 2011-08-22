@@ -41,6 +41,7 @@ import org.alfresco.repo.node.getchildren.GetChildrenWithTargetAssocsAuditableCa
 import org.alfresco.repo.query.NodeBackedEntity;
 import org.alfresco.repo.query.NodeWithTargetsEntity;
 import org.alfresco.repo.query.NodeWithTargetsEntity.TargetAndTypeId;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteServiceImpl;
 import org.alfresco.service.cmr.discussion.DiscussionService;
 import org.alfresco.service.cmr.discussion.PostInfo;
@@ -283,7 +284,7 @@ public class DiscussionServiceImpl implements DiscussionService
 
     
     @Override
-    public TopicInfo createTopic(String siteShortName, String title) 
+    public TopicInfo createTopic(final String siteShortName, final String title) 
     {
        // Grab the location to store in
        NodeRef container = getSiteDiscussionsContainer(siteShortName, true);
@@ -293,7 +294,7 @@ public class DiscussionServiceImpl implements DiscussionService
     }
 
     @Override
-    public TopicInfo createTopic(NodeRef parentNodeRef, String title) 
+    public TopicInfo createTopic(final NodeRef parentNodeRef, final String title) 
     {
        // Build the name
        String name = generateName();
@@ -311,6 +312,21 @@ public class DiscussionServiceImpl implements DiscussionService
              ForumModel.TYPE_TOPIC,
              props
        ).getChildRef();
+       
+       // We require that the parent container of the topic
+       //  is always a tag scope. This should always be the case
+       //  for site containers, but perhaps not others
+       if(! taggingService.isTagScope(parentNodeRef))
+       {
+          AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() {
+             public Void doWork() throws Exception
+             {
+                // Add the tag scope aspect
+                taggingService.addTagScope(parentNodeRef);
+                return null;
+             }
+          }, AuthenticationUtil.getSystemUserName());
+       }
        
        // Generate the wrapping object for it
        // Build it that way, so creator and created date come through
@@ -875,8 +891,15 @@ public class DiscussionServiceImpl implements DiscussionService
 
          @Override
          public Pair<Integer, Integer> getTotalResultCount() {
-            int skipCount = finalLuceneResults.getStart();
-            int itemsRemainingAfterThisPage = finalLuceneResults.length();
+            int skipCount = 0;
+            int itemsRemainingAfterThisPage = 0;
+            try
+            {
+               skipCount = finalLuceneResults.getStart();
+               itemsRemainingAfterThisPage = finalLuceneResults.length();
+            }
+            catch(UnsupportedOperationException e) {}
+            
             final int totalItemsInUnpagedResultSet = skipCount + itemsRemainingAfterThisPage;
             return new Pair<Integer, Integer>(totalItemsInUnpagedResultSet, totalItemsInUnpagedResultSet);
          }

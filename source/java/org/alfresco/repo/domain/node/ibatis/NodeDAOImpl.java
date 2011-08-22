@@ -120,6 +120,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
             "alfresco.node.select_ChildAssocsOfParentWithoutParentAssocsOfType";
     private static final String SELECT_PARENT_ASSOCS_OF_CHILD = "alfresco.node.select_ParentAssocsOfChild";
     private static final String UPDATE_PARENT_ASSOCS_OF_CHILD = "alfresco.node.update_ParentAssocsOfChild";
+    private static final String DELETE_SUBSCRIPTIONS = "alfresco.node.delete_Subscriptions";
     private static final String SELECT_TXN_LAST = "alfresco.node.select_TxnLast";
     private static final String SELECT_TXN_NODES = "alfresco.node.select_TxnNodes";
     private static final String SELECT_TXNS = "alfresco.node.select_Txns";
@@ -134,7 +135,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
 
     private SqlSessionTemplate template;
     
-    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
+    public void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
     {
         this.template = sqlSessionTemplate;
     }
@@ -1312,6 +1313,15 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         return template.update(UPDATE_PARENT_ASSOCS_OF_CHILD, assoc);
     }
 
+    /**
+     * The default implementation relies on <b>ON DELETE CASCADE</b> and the
+     * subscriptions avoiding deleted nodes - NoOp.
+     */
+    @Override
+    protected void deleteSubscriptions(Long nodeId)
+    {
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     protected Transaction selectLastTxnBeforeCommitTime(Long maxCommitTime)
@@ -1469,6 +1479,32 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
             ChildAssocResultHandler resultHandler = new ChildAssocResultHandler(resultsCallback);
             template.select(SELECT_CHILD_ASSOCS_BY_PROPERTY_VALUE, assocProp, resultHandler);
             resultsCallback.done();
+        }
+    }
+    
+    /*
+     * DAO OVERRIDES
+     */
+    
+    /**
+     * MSSQL requires some overrides to handle specific behaviour.
+     */
+    public static class MSSQL extends NodeDAOImpl
+    {
+        private SqlSessionTemplate template;
+        
+        public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
+        {
+            this.template = sqlSessionTemplate;
+        }
+
+        /**
+         * Overrides the super class's NO-OP to cascade-delete subscriptions in code.
+         */
+        @Override
+        protected void deleteSubscriptions(Long nodeId)
+        {
+            template.delete(DELETE_SUBSCRIPTIONS, nodeId);
         }
     }
 }

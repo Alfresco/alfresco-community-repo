@@ -85,7 +85,24 @@
       <property name="qnameCache" ref="immutableEntityCache"/>
    </bean>
 
-   <bean id="nodeDAO" class="org.alfresco.repo.domain.node.ibatis.NodeDAOImpl" init-method="init">
+   <bean id="nodeDAO" class="org.alfresco.util.bean.HierarchicalBeanLoader">
+      <property name="targetBeanName">
+         <value>nodeDAO.#bean.dialect#</value>
+      </property>
+      <property name="targetClass">
+         <value>org.alfresco.repo.domain.node.NodeDAO</value>
+      </property>
+        <property name="dialectBaseClass">
+            <value>org.hibernate.dialect.Dialect</value>
+        </property>
+        <property name="dialectClass">
+            <bean class="org.springframework.beans.factory.config.PropertyPathFactoryBean">
+                <property name="targetBeanName" value="dialect" />
+                <property name="propertyPath" value="class.name" />
+            </bean>
+        </property>
+   </bean>
+   <bean id="nodeDAObase" abstract="true" init-method="init">
       <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>
       <property name="enableTimestampPropagation" value="${system.enableTimestampPropagation}" />
       <property name="transactionService" ref="transactionService" />
@@ -104,6 +121,8 @@
       <property name="propertiesCache" ref="node.propertiesCache"/>
       <property name="parentAssocsCache" ref="node.parentAssocsCache"/>
    </bean>
+   <bean id="nodeDAO.org.hibernate.dialect.Dialect" class="org.alfresco.repo.domain.node.ibatis.NodeDAOImpl" parent="nodeDAObase" />
+   <bean id="nodeDAO.org.alfresco.repo.domain.hibernate.dialect.AlfrescoSQLServerDialect" class="org.alfresco.repo.domain.node.ibatis.NodeDAOImpl$MSSQL" parent="nodeDAO.org.hibernate.dialect.Dialect" />
    
    <bean id="lockDAO" class="org.alfresco.repo.domain.locks.ibatis.LockDAOImpl">
       <property name="sqlSessionTemplate" ref="locksSqlSessionTemplate"/>

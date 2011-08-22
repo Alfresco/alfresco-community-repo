@@ -539,6 +539,13 @@
             </foreach>
     </delete>
     
+    <delete id="delete_NodeSubscriptions" parameterType="java.lang.Long">
+        delete from alf_subscriptions
+        where
+            user_node_id = #{idOne} or
+            node_id = #{idOne}
+    </delete>
+    
     <delete id="delete_ChildAssocById" parameterType="ChildAssoc">
         delete from alf_child_assoc
         where

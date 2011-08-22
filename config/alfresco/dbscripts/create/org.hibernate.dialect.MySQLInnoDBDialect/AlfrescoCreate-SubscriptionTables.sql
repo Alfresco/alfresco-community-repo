@@ -7,7 +7,8 @@
 -- Please contact support@alfresco.com if you need assistance with the upgrade.
 --
 
-CREATE TABLE alf_subscriptions (
+CREATE TABLE alf_subscriptions
+(
   user_node_id BIGINT NOT NULL,
   node_id BIGINT NOT NULL,
   PRIMARY KEY (user_node_id, node_id),

@@ -1757,6 +1757,9 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         deleteNodeAssocsToAndFrom(nodeId);
         deleteChildAssocsToAndFrom(nodeId);
         
+        // Remove subscriptions
+        deleteSubscriptions(nodeId);
+        
         int count = updateNode(nodeUpdate);
         if (count != 1)
         {
@@ -3891,6 +3894,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             QName assocTypeQName,
             QName assocQName,
             String childNodeName);
+    
+    protected abstract void deleteSubscriptions(Long nodeId);
 
     protected abstract Transaction selectLastTxnBeforeCommitTime(Long maxCommitTime);
     protected abstract int selectTransactionCount();

@@ -315,7 +315,7 @@ public class Invite extends DeclarativeWebScript
         try
         {
             // complete the wf:invitePendingTask along the 'cancel' transition because the invitation has been cancelled
-            InviteHelper.completeInviteTask(inviteId, WorkflowModelNominatedInvitation.WF_INVITE_TASK_INVITE_PENDING,
+            InviteHelper.completeInviteTask(inviteId, WorkflowModelNominatedInvitation.WF_TASK_INVITE_PENDING,
                         WorkflowModelNominatedInvitation.WF_TRANSITION_CANCEL, this.workflowService);
         }
         catch(InvitationExceptionForbidden fe)

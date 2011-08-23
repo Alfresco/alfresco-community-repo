@@ -99,8 +99,8 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
         this.personService = personService;
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.workflow.AbstractWorkflowFormProcessor#getTypedItemForDecodedId(java.lang.String)
+    /**
+    * {@inheritDoc}
      */
     @Override
     protected WorkflowTask getTypedItemForDecodedId(String itemId)
@@ -108,32 +108,28 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
         return workflowService.getTaskById(itemId);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#getItemType(java.lang.Object)
-     */
+    /**
+     * {@inheritDoc}
+      */
     @Override
     protected String getItemType(WorkflowTask item)
     {
-        TypeDefinition typeDef = item.definition.metadata;
+        TypeDefinition typeDef = item.getDefinition().getMetadata();
         return typeDef.getName().toPrefixString(namespaceService);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#getItemURI(java.lang.Object)
-     */
+    /**
+     * {@inheritDoc}
+      */
     @Override
     protected String getItemURI(WorkflowTask item)
     {
-        return "api/task-instances/" + item.id;
+        return "api/task-instances/" + item.getId();
     }
 
-    /*
-     * @see org.alfresco.repo.forms.processor.task.ContentModelFormProcessor#getLogger()
-     */
+    /**
+     * {@inheritDoc}
+      */
     @Override
     protected Log getLogger()
     {
@@ -143,19 +139,19 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
     @Override
     protected TypeDefinition getBaseType(WorkflowTask task)
     {
-        return task.definition.metadata;
+        return task.getDefinition().getMetadata();
     }
 
     @Override
     protected Map<QName, Serializable> getPropertyValues(WorkflowTask task)
     {
-        return task.properties;
+        return task.getProperties();
     }
 
     @Override
     protected Map<QName, Serializable> getAssociationValues(WorkflowTask item)
     {
-        return item.properties;
+        return item.getProperties();
     }
 
     @Override
@@ -245,7 +241,7 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
 
     private String getTransitionValues(WorkflowTask item)
     {
-        WorkflowTransition[] transitions = item.definition.node.transitions;
+        WorkflowTransition[] transitions = item.getDefinition().getNode().getTransitions();
         
         if (transitions == null || transitions.length == 0)
         {

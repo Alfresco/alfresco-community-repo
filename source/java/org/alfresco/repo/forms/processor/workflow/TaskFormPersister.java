@@ -65,7 +65,7 @@ public class TaskFormPersister extends ContentModelFormPersister<WorkflowTask>
             throw new AccessDeniedException("Failed to update task with id '" + item.getId() + "'.");
         }
         
-        this.updater = new TaskUpdater(item.id, workflowService, nodeService, behaviourFilter);
+        this.updater = new TaskUpdater(item.getId(), workflowService, nodeService, behaviourFilter);
     }
     
     /**

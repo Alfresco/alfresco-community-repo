@@ -21,6 +21,7 @@ package org.alfresco.repo.invitation;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -32,12 +33,12 @@ import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.authentication.PasswordGenerator;
 import org.alfresco.repo.security.authentication.UserNameGenerator;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.site.SiteModel;
-import org.alfresco.repo.workflow.WorkflowConstants;
 import org.alfresco.repo.workflow.WorkflowModel;
+import org.alfresco.repo.workflow.activiti.ActivitiConstants;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.invitation.Invitation;
 import org.alfresco.service.cmr.invitation.InvitationException;
@@ -56,9 +57,9 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.cmr.workflow.WorkflowAdminService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowException;
-import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
@@ -77,6 +78,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * 
  * @see org.alfresco.service.cmr.invitation.Invitation
  * @author mrogers
+ * @author Nick Smith
  */
 public class InvitationServiceImpl implements InvitationService, NodeServicePolicies.BeforeDeleteNodePolicy
 {
@@ -86,6 +88,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
      * Services
      */
     private WorkflowService workflowService;
+    private WorkflowAdminService workflowAdminService;
     private PersonService personService;
     private SiteService siteService;
     private MutableAuthenticationService authenticationService;
@@ -148,7 +151,9 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     {
         List<String> ret = new ArrayList<String>(3);
         ret.add(WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME);
+        ret.add(WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI);
         ret.add(WorkflowModelModeratedInvitation.WORKFLOW_DEFINITION_NAME);
+        ret.add(WorkflowModelModeratedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI);
         // old deprecated invitation workflow.
         ret.add("jbpm$wf:invite");
         return ret;
@@ -263,60 +268,46 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
      */
     public Invitation accept(String invitationId, String ticket)
     {
-        Invitation invitation = getInvitation(invitationId);
-
-        if (invitation instanceof NominatedInvitation)
+        WorkflowTask startTask = getStartTask(invitationId);
+        NominatedInvitation invitation = getNominatedInvitation(startTask);
+        if(invitation == null)
         {
-
-            // Check invitationId and ticket match
-            if (ticket == null || (!ticket.equals(((NominatedInvitation) invitation).getTicket())))
-            {
-                throw new InvitationException("Response to invite has supplied an invalid ticket. The response to the "
-                            + "invitation could thus not be processed");
-            }
-
-            /**
-             * Nominated invitation complete the wf:invitePendingTask along the
-             * 'accept' transition because the invitation has been accepted
-             */
-
-            // create workflow task query
-            WorkflowTaskQuery wfTaskQuery = new WorkflowTaskQuery();
-
-            // set the given invite ID as the workflow process ID in the
-            // workflow query
-            wfTaskQuery.setProcessId(invitationId);
-
-            // find incomplete invite workflow tasks with given task name
-            wfTaskQuery.setActive(Boolean.TRUE);
-            wfTaskQuery.setTaskState(WorkflowTaskState.IN_PROGRESS);
-            wfTaskQuery.setTaskName(WorkflowModelNominatedInvitation.WF_INVITE_TASK_INVITE_PENDING);
-
-            // set process name to "wf:invite" so that only
-            // invite workflow instances are considered by this query
-            wfTaskQuery.setProcessName(WorkflowModelNominatedInvitation.WF_PROCESS_INVITE);
-
-            // query for invite workflow tasks with the constructed query
-            List<WorkflowTask> wf_invite_tasks = workflowService.queryTasks(wfTaskQuery);
-
-            if (wf_invite_tasks.size() == 0)
-            {
-                Object objs[] = { invitationId };
-                throw new InvitationExceptionUserError("invitation.invite.already_finished", objs);
-            }
-
-            // end all tasks found with this name
-            for (WorkflowTask workflowTask : wf_invite_tasks)
-            {
-                workflowService.endTask(workflowTask.id, WorkflowModelNominatedInvitation.WF_TRANSITION_ACCEPT);
-            }
-
-            return invitation;
+            throw new InvitationException("State error, accept may only be called on a nominated invitation.");
         }
-        throw new InvitationException("State error, cannot call accept a moderated invitation");
-
+        // Check invitationId and ticket match
+        if(invitation.getTicket().equals(ticket)==false)
+        {
+            //TODO localise msg
+            String msg = "Response to invite has supplied an invalid ticket. The response to the invitation could thus not be processed";
+            throw new InvitationException(msg);
+        }
+        endInvitation(startTask,
+                WorkflowModelNominatedInvitation.WF_TRANSITION_ACCEPT, null,
+                WorkflowModelNominatedInvitation.WF_TASK_INVITE_PENDING, WorkflowModelNominatedInvitation.WF_TASK_ACTIVIT_INVITE_PENDING);
+        return invitation;
     }
 
+    private void endInvitation(WorkflowTask startTask, String transition, Map<QName, Serializable> properties, QName... taskTypes )
+    {
+        List<WorkflowTask> tasks = workflowService.getTasksForWorkflowPath(startTask.getPath().getId());
+        if(tasks.size()==1)
+        {
+            WorkflowTask task = tasks.get(0);
+            if(taskTypeMatches(task, taskTypes))
+            {
+                if(properties != null)
+                {
+                    workflowService.updateTask(task.getId(), properties, null, null);
+                }
+                workflowService.endTask(task.getId(), transition);
+                return;
+            }
+        }
+        // Throw exception if the task not found.
+        Object objs[] = { startTask.getPath().getInstance().getId() };
+        throw new InvitationExceptionUserError("invitation.invite.already_finished", objs);
+    }
+    
     /**
      * Moderator approves this invitation
      * 
@@ -325,41 +316,25 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
      */
     public Invitation approve(String invitationId, String reason)
     {
-        Invitation invitation = getInvitation(invitationId);
-        if (invitation instanceof ModeratedInvitation)
+        WorkflowTask startTask = getStartTask(invitationId);
+        ModeratedInvitation invitation = getModeratedInvitation(startTask);
+        if(invitation == null)
         {
-            // Check approver is a site manager
-            String approverUserName = this.authenticationService.getCurrentUserName();
-            checkManagerRole(approverUserName, invitation.getResourceType(), invitation.getResourceName());
-
-            WorkflowTaskQuery wfModeratedTaskQuery = new WorkflowTaskQuery();
-
-            // Current Review Moderated Tasks
-            wfModeratedTaskQuery.setActive(Boolean.TRUE);
-            wfModeratedTaskQuery.setTaskState(WorkflowTaskState.IN_PROGRESS);
-            wfModeratedTaskQuery.setTaskName(WorkflowModelModeratedInvitation.WF_REVIEW_TASK);
-            wfModeratedTaskQuery.setProcessName(WorkflowModelModeratedInvitation.WF_PROCESS_INVITATION_MODERATED);
-            wfModeratedTaskQuery.setProcessId(invitationId);
-
-            // query for invite review tasks
-            List<WorkflowTask> wf_moderated_tasks = this.workflowService.queryTasks(wfModeratedTaskQuery);
-
-            for (WorkflowTask workflowTask : wf_moderated_tasks)
-            {
-                Map<QName, Serializable> wfReviewProps = new HashMap<QName, Serializable>();
-                wfReviewProps.put(ContentModel.PROP_OWNER, approverUserName);
-                wfReviewProps.put(WorkflowModelModeratedInvitation.WF_PROP_REVIEW_COMMENTS, reason);
-                workflowService.updateTask(workflowTask.id, wfReviewProps, null, null);
-                workflowService.endTask(workflowTask.id, WorkflowModelModeratedInvitation.WF_TRANSITION_APPROVE);
-            }
+            String msg = "State error, can only call approve on a Moderated invitation.";
+            throw new InvitationException(msg);
         }
-        else
-        {
-            throw new InvitationException("State error, cannot call approve on this type of invitation"
-                        + invitation.getClass().getName());
-        }
+
+        // Check approver is a site manager
+        String currentUser = this.authenticationService.getCurrentUserName();
+        checkManagerRole(currentUser, invitation.getResourceType(), invitation.getResourceName());
+        Map<QName, Serializable> wfReviewProps = new HashMap<QName, Serializable>();
+        wfReviewProps.put(ContentModel.PROP_OWNER, currentUser);
+        wfReviewProps.put(WorkflowModelModeratedInvitation.WF_PROP_REVIEW_COMMENTS, reason);
+        endInvitation(startTask,
+                WorkflowModelModeratedInvitation.WF_TRANSITION_APPROVE,
+                wfReviewProps,
+                WorkflowModelModeratedInvitation.WF_ACTIVITI_REVIEW_TASK, WorkflowModelModeratedInvitation.WF_REVIEW_TASK);
         return invitation;
-
     }
 
     /**
@@ -370,135 +345,78 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
      */
     public Invitation reject(String invitationId, String reason)
     {
-        Invitation invitation = getInvitation(invitationId);
-
-        if (invitation instanceof NominatedInvitation)
+        WorkflowTask startTask = getStartTask(invitationId);
+        if(taskTypeMatches(startTask, WorkflowModelModeratedInvitation.WF_START_TASK))
         {
-
-            /**
-             * Nominated invitation complete the wf:invitePendingTask along the
-             * 'reject' transition because the invitation has been rejected
-             */
-            // create workflow task query
-            WorkflowTaskQuery wfTaskQuery = new WorkflowTaskQuery();
-
-            // set the given invite ID as the workflow process ID in the
-            // workflow query
-            wfTaskQuery.setProcessId(invitationId);
-
-            // find incomplete invite workflow tasks with given task name
-            wfTaskQuery.setActive(Boolean.TRUE);
-            wfTaskQuery.setTaskState(WorkflowTaskState.IN_PROGRESS);
-            wfTaskQuery.setTaskName(WorkflowModelNominatedInvitation.WF_INVITE_TASK_INVITE_PENDING);
-
-            // set process name to "wf:invite" so that only
-            // invite workflow instances are considered by this query
-            wfTaskQuery.setProcessName(WorkflowModelNominatedInvitation.WF_PROCESS_INVITE);
-
-            // query for invite workflow tasks with the constructed query
-            List<WorkflowTask> wf_invite_tasks = workflowService.queryTasks(wfTaskQuery);
-
-            if (wf_invite_tasks.size() == 0)
-            {
-                Object objs[] = { invitationId };
-                throw new InvitationExceptionUserError("invitation.invite.already_finished", objs);
-            }
-
-            // end all tasks found with this name
-            for (WorkflowTask workflowTask : wf_invite_tasks)
-            {
-                workflowService.endTask(workflowTask.id, WorkflowModelNominatedInvitation.WF_TRANSITION_REJECT);
-            }
-
-            return invitation;
+            return rejectModeratedInvitation(startTask, reason);
         }
-
-        if (invitation instanceof ModeratedInvitation)
+        else
         {
-            WorkflowTaskQuery wfModeratedTaskQuery = new WorkflowTaskQuery();
-
-            // Check rejecter is a site manager and throw and exception if not
-            String rejecterUserName = this.authenticationService.getCurrentUserName();
-            checkManagerRole(rejecterUserName, invitation.getResourceType(), invitation.getResourceName());
-
-            // Current Review Moderated Tasks
-            wfModeratedTaskQuery.setActive(Boolean.TRUE);
-            wfModeratedTaskQuery.setTaskState(WorkflowTaskState.IN_PROGRESS);
-            wfModeratedTaskQuery.setTaskName(WorkflowModelModeratedInvitation.WF_REVIEW_TASK);
-            wfModeratedTaskQuery.setProcessName(WorkflowModelModeratedInvitation.WF_PROCESS_INVITATION_MODERATED);
-            wfModeratedTaskQuery.setProcessId(invitationId);
-
-            // query for invite review tasks
-            List<WorkflowTask> wf_moderated_tasks = this.workflowService.queryTasks(wfModeratedTaskQuery);
-
-            for (WorkflowTask workflowTask : wf_moderated_tasks)
-            {
-                Map<QName, Serializable> wfReviewProps = new HashMap<QName, Serializable>();
-                wfReviewProps.put(ContentModel.PROP_OWNER, rejecterUserName);
-                wfReviewProps.put(WorkflowModelModeratedInvitation.WF_PROP_REVIEW_COMMENTS, reason);
-                workflowService.updateTask(workflowTask.id, wfReviewProps, null, null);
-                this.workflowService.endTask(workflowTask.id, WorkflowModelModeratedInvitation.WF_TRANSITION_REJECT);
-            }
-
-            return invitation;
+            return rejectNominatedInvitation(startTask);
         }
+    }
 
+    private Invitation rejectModeratedInvitation(WorkflowTask startTask, String reason)
+    {
+        ModeratedInvitation invitation = getModeratedInvitation(startTask);
+        // Check rejecter is a site manager and throw and exception if not
+        String rejecterUserName = this.authenticationService.getCurrentUserName();
+        checkManagerRole(rejecterUserName, invitation.getResourceType(), invitation.getResourceName());
+
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+        properties.put(ContentModel.PROP_OWNER, rejecterUserName);
+        properties.put(WorkflowModelModeratedInvitation.WF_PROP_REVIEW_COMMENTS, reason);
+
+        endInvitation(startTask,
+                WorkflowModelModeratedInvitation.WF_TRANSITION_REJECT,
+                properties,
+                WorkflowModelModeratedInvitation.WF_ACTIVITI_REVIEW_TASK, WorkflowModelModeratedInvitation.WF_REVIEW_TASK);
         return invitation;
     }
 
-    /*
-     * cancel a pending request
+    private Invitation rejectNominatedInvitation(WorkflowTask startTask)
+    {
+        NominatedInvitation invitation = getNominatedInvitation(startTask);
+        endInvitation(startTask,
+                WorkflowModelNominatedInvitation.WF_TRANSITION_REJECT, null,
+                WorkflowModelNominatedInvitation.WF_TASK_INVITE_PENDING, WorkflowModelNominatedInvitation.WF_TASK_ACTIVIT_INVITE_PENDING);
+        return invitation;
+    }
+
+    /**
+    * {@inheritDoc}
      */
     public Invitation cancel(String invitationId)
     {
-        Invitation invitation = getInvitation(invitationId);
-
-        if (invitation instanceof NominatedInvitation)
+        WorkflowTask startTask = getStartTask(invitationId);
+        if(taskTypeMatches(startTask, WorkflowModelModeratedInvitation.WF_START_TASK))
         {
-
-            // Check canceller is a site manager
-            String approverUserName = this.authenticationService.getCurrentUserName();
-            checkManagerRole(approverUserName, invitation.getResourceType(), invitation.getResourceName());
-
-            // create workflow task query
-            WorkflowTaskQuery wfTaskQuery = new WorkflowTaskQuery();
-
-            // set the given invite ID as the workflow process ID in the
-            // workflow query
-            wfTaskQuery.setProcessId(invitationId);
-
-            // find incomplete invite workflow tasks with given task name
-            wfTaskQuery.setActive(Boolean.TRUE);
-            wfTaskQuery.setTaskState(WorkflowTaskState.IN_PROGRESS);
-            wfTaskQuery.setTaskName(WorkflowModelNominatedInvitation.WF_INVITE_TASK_INVITE_PENDING);
-
-            // set process name to "wf:invite" so that only
-            // invite workflow instances are considered by this query
-            wfTaskQuery.setProcessName(WorkflowModelNominatedInvitation.WF_PROCESS_INVITE);
-
-            // query for invite workflow tasks with the constructed query
-            List<WorkflowTask> wf_invite_tasks = workflowService.queryTasks(wfTaskQuery);
-
-            // end all tasks found with this name
-            for (WorkflowTask workflowTask : wf_invite_tasks)
-            {
-                workflowService.endTask(workflowTask.id, WorkflowModelNominatedInvitation.WF_TRANSITION_CANCEL);
-            }
+            return cancelModeratedInvitation(startTask);
         }
-
-        if (invitation instanceof ModeratedInvitation)
+        else
         {
-            // Moderated invitation may be cancelled by either a site manager or
-            // the invitee.
-            String currentUserName = this.authenticationService.getCurrentUserName();
-
-            if (!currentUserName.equals(((ModeratedInvitation) invitation).getInviteeUserName()))
-            {
-                checkManagerRole(currentUserName, invitation.getResourceType(), invitation.getResourceName());
-            }
-            workflowService.cancelWorkflow(invitationId);
+            return cancelNominatedInvitation(startTask);
         }
+    }
 
+    private Invitation cancelModeratedInvitation(WorkflowTask startTask)
+    {
+        ModeratedInvitation invitation = getModeratedInvitation(startTask);
+        String currentUserName = this.authenticationService.getCurrentUserName();
+        if (false == currentUserName.equals(invitation.getInviteeUserName()))
+        {
+            checkManagerRole(currentUserName, invitation.getResourceType(), invitation.getResourceName());
+        }
+        workflowService.cancelWorkflow(invitation.getInviteId());
+        return invitation;
+    }
+
+    private Invitation cancelNominatedInvitation(WorkflowTask startTask)
+    {
+        NominatedInvitation invitation = getNominatedInvitation(startTask);
+        endInvitation(startTask, 
+                WorkflowModelNominatedInvitation.WF_TRANSITION_CANCEL, null,
+                WorkflowModelNominatedInvitation.WF_TASK_INVITE_PENDING, WorkflowModelNominatedInvitation.WF_TASK_ACTIVIT_INVITE_PENDING);
         return invitation;
     }
 
@@ -512,83 +430,67 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
      */
     public Invitation getInvitation(String invitationId)
     {
+        WorkflowTask startTask = getStartTask(invitationId);
+        return getInvitation(startTask);
+    }
 
+    private Invitation getInvitation(WorkflowTask startTask)
+    {
+        Invitation invitation = getNominatedInvitation(startTask);
+        if(invitation == null)
+        {
+            invitation = getModeratedInvitation(startTask);
+        }
+        return invitation;
+    }
+
+    private ModeratedInvitation getModeratedInvitation(WorkflowTask startTask)
+    {
+        ModeratedInvitation invitation = null;
+        if (taskTypeMatches(startTask, WorkflowModelModeratedInvitation.WF_START_TASK))
+        {
+            String invitationId = startTask.getPath().getInstance().getId();
+            invitation = new ModeratedInvitationImpl(invitationId, startTask.getProperties());
+        }
+        return invitation;
+    }
+
+    private NominatedInvitation getNominatedInvitation(WorkflowTask startTask)
+    {
+        NominatedInvitation invitation = null;
+        if (taskTypeMatches(startTask, WorkflowModelNominatedInvitation.WF_TASK_INVITE_TO_SITE))
+        {
+            Date inviteDate = startTask.getPath().getInstance().getStartDate();
+            String invitationId = startTask.getPath().getInstance().getId();
+            invitation = new NominatedInvitationImpl(invitationId, inviteDate, startTask.getProperties());
+        }
+        return invitation;
+    }
+
+    private boolean taskTypeMatches(WorkflowTask task, QName... types)
+    {
+        QName taskDefName = task.getDefinition().getMetadata().getName();
+        return Arrays.asList(types).contains(taskDefName);
+    }
+    
+    private WorkflowTask getStartTask(String invitationId)
+    {
         validateInvitationId(invitationId);
-
-        WorkflowInstance wi = null;
+        WorkflowTask startTask = null;
         try
         {
-            wi = workflowService.getWorkflowById(invitationId);
+            startTask = workflowService.getStartTask(invitationId);
         }
         catch (WorkflowException we)
         {
             // Do nothing
         }
-
-        if (wi == null)
+        if (startTask == null)
         {
             Object objs[] = { invitationId };
             throw new InvitationExceptionNotFound("invitation.error.not_found", objs);
         }
-        String workflowName = wi.getDefinition().getName();
-
-        if (workflowName.equals(WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME))
-        {
-            // This is a nominated invitation
-            WorkflowTaskQuery wfTaskQuery = new WorkflowTaskQuery();
-            wfTaskQuery.setProcessId(invitationId);
-
-            // filter to find only the start task which contains the properties.
-            wfTaskQuery.setTaskState(WorkflowTaskState.COMPLETED);
-            wfTaskQuery.setTaskName(WorkflowModelNominatedInvitation.WF_INVITE_TASK_INVITE_TO_SITE);
-
-            // query for invite workflow task associate
-            List<WorkflowTask> inviteStartTasks = workflowService.queryTasks(wfTaskQuery);
-
-            // should also be 0 or 1
-            if (inviteStartTasks.size() < 1)
-            {
-                throw new InvitationExceptionNotFound("invitation.error.not_found", invitationId);
-            }
-            else
-            {
-                WorkflowTask task = inviteStartTasks.get(0);
-                NominatedInvitationImpl result = new NominatedInvitationImpl(task.getProperties());
-                result.setSentInviteDate(task.getPath().getInstance().getStartDate());
-                result.setInviteId(invitationId);
-                return result;
-            }
-        }
-        if (workflowName.equals(WorkflowModelModeratedInvitation.WORKFLOW_DEFINITION_NAME))
-        {
-            // This is a moderated invitation
-            WorkflowTaskQuery wfTaskQuery = new WorkflowTaskQuery();
-            wfTaskQuery.setProcessId(invitationId);
-
-            // filter to find only the start task which contains the properties.
-            wfTaskQuery.setTaskState(WorkflowTaskState.COMPLETED);
-            wfTaskQuery.setTaskName(WorkflowModelModeratedInvitation.WF_START_TASK);
-
-            List<WorkflowTask> inviteStartTasks = workflowService.queryTasks(wfTaskQuery);
-
-            // should also be 0 or 1
-            if (inviteStartTasks.size() < 1)
-            {
-                // No start task - workflow may have been completed
-                Object objs[] = { invitationId };
-                throw new InvitationExceptionNotFound("invitation.error.not_found", objs);
-            }
-            else
-            {
-                WorkflowTask task = inviteStartTasks.get(0);
-                ModeratedInvitationImpl result = new ModeratedInvitationImpl(task.properties);
-                result.setInviteId(invitationId);
-                return result;
-            }
-        }
-
-        // Unknown workflow type here
-        return null;
+        return startTask;
     }
 
     /**
@@ -627,7 +529,6 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
      */
     public List<Invitation> searchInvitation(InvitationSearchCriteria criteria)
     {
-
         List<Invitation> ret = new ArrayList<Invitation>();
 
         InvitationSearchCriteria.InvitationType toSearch = criteria.getInvitationType();
@@ -672,7 +573,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 
             // pick up the pending task
             wfTaskQuery.setTaskState(WorkflowTaskState.IN_PROGRESS);
-            wfTaskQuery.setTaskName(WorkflowModelNominatedInvitation.WF_INVITE_TASK_INVITE_PENDING);
+            wfTaskQuery.setTaskName(WorkflowModelNominatedInvitation.WF_TASK_INVITE_PENDING);
             wfTaskQuery.setProcessName(WorkflowModelNominatedInvitation.WF_PROCESS_INVITE);
 
             // query for invite workflow tasks
@@ -787,8 +688,8 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
             for (WorkflowTask workflowTask : wf_moderated_tasks)
             {
                 // Add moderated invitations
-                String workflowId = workflowTask.path.instance.id;
-                ModeratedInvitationImpl result = new ModeratedInvitationImpl(workflowTask.properties);
+                String workflowId = workflowTask.getPath().getInstance().getId();
+                ModeratedInvitationImpl result = new ModeratedInvitationImpl(workflowId, workflowTask.getProperties());
 
                 // TODO ALFCOM-2598 records are being returned that do not match
                 // properties
@@ -797,7 +698,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
                 for (QName key : keys)
                 {
                     Object val1 = wfQueryModeratedProps.get(key);
-                    Object val2 = workflowTask.properties.get(key);
+                    Object val2 = workflowTask.getProperties().get(key);
                     if (!val1.equals(val2))
                     {
                         // crap detected
@@ -807,8 +708,6 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
                     }
                 }
                 // TODO END ALFCOM-2598 Work-around
-
-                result.setInviteId(workflowId);
                 if (!crap)
                 {
                     ret.add(result);
@@ -833,6 +732,14 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         this.workflowService = workflowService;
     }
 
+    /**
+     * @param workflowAdminService the workflowAdminService to set
+     */
+    public void setWorkflowAdminService(WorkflowAdminService workflowAdminService)
+    {
+        this.workflowAdminService = workflowAdminService;
+    }
+    
     /**
      * @return the workflow service
      */
@@ -1016,9 +923,8 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     private ModeratedInvitation startModeratedInvite(String inviteeComments, String inviteeUserName,
                 Invitation.ResourceType resourceType, String resourceName, String inviteeRole)
     {
-
         // Get invitee person NodeRef to add as assignee
-        NodeRef inviteeNodeRef = this.personService.getPerson(inviteeUserName);
+        NodeRef inviteeNodeRef = personService.getPerson(inviteeUserName);
 
         SiteInfo siteInfo = siteService.getSite(resourceName);
 
@@ -1036,10 +942,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         // get the workflow description
         String workflowDescription = generateWorkflowDescription(siteInfo, "invitation.moderated.workflow.description");
         
-        NodeRef wfPackage = this.workflowService.createPackage(null);
-
         Map<QName, Serializable> workflowProps = new HashMap<QName, Serializable>(16);
-        workflowProps.put(WorkflowModel.ASSOC_PACKAGE, wfPackage);
         workflowProps.put(WorkflowModel.ASSOC_ASSIGNEE, inviteeNodeRef);
         workflowProps.put(WorkflowModel.PROP_WORKFLOW_DESCRIPTION, workflowDescription);
         workflowProps.put(WorkflowModelModeratedInvitation.ASSOC_GROUP_ASSIGNEE, roleGroup);
@@ -1051,44 +954,8 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 
         // get the moderated workflow
 
-        WorkflowDefinition wfDefinition = this.workflowService
-                    .getDefinitionByName(WorkflowModelModeratedInvitation.WORKFLOW_DEFINITION_NAME);
-        if (wfDefinition == null)
-        {
-            // handle workflow definition does not exist
-            Object objs[] = { WorkflowModelModeratedInvitation.WORKFLOW_DEFINITION_NAME };
-            throw new InvitationException("invitation.error.noworkflow", objs);
-        }
-
-        // start the workflow
-        WorkflowPath wfPath = this.workflowService.startWorkflow(wfDefinition.getId(), workflowProps);
-
-        String workflowId = wfPath.instance.id;
-        String wfPathId = wfPath.id;
-        List<WorkflowTask> wfTasks = this.workflowService.getTasksForWorkflowPath(wfPathId);
-
-        // throw an exception if no tasks where found on the workflow path
-        if (wfTasks.size() == 0)
-        {
-            Object objs[] = { WorkflowModelModeratedInvitation.WORKFLOW_DEFINITION_NAME };
-            throw new InvitationException("invitation.error.notasks", objs);
-        }
-
-        try
-        {
-            WorkflowTask wfStartTask = wfTasks.get(0);
-            this.workflowService.endTask(wfStartTask.id, null);
-        }
-        catch (RuntimeException err)
-        {
-            if (logger.isDebugEnabled())
-                logger.debug("Failed - caught error during Invite workflow transition: " + err.getMessage());
-            throw err;
-        }
-
-        ModeratedInvitationImpl result = new ModeratedInvitationImpl(workflowProps);
-        result.setInviteId(workflowId);
-        return result;
+        WorkflowDefinition wfDefinition = getWorkflowDefinition(false);
+        return (ModeratedInvitation) startWorkflow(wfDefinition, workflowProps);
     }
 
     /**
@@ -1111,7 +978,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 
         // get the inviter user name (the name of user web script is executed
         // under)
-        String inviterUserName = this.authenticationService.getCurrentUserName();
+        String inviterUserName = authenticationService.getCurrentUserName();
         boolean created = false;
 
         checkManagerRole(inviterUserName, resourceType, siteShortName);
@@ -1196,20 +1063,6 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
                 }
             }
         }
-        else
-        {
-            // TODO MER - Is the code block neccessary - seems to do nothing ?
-            // inviteeUserName was specified
-            NodeRef person = this.personService.getPerson(inviteeUserName);
-
-            // TODO
-            Serializable firstNameVal = this.getNodeService().getProperty(person, ContentModel.PROP_FIRSTNAME);
-            Serializable lastNameVal = this.getNodeService().getProperty(person, ContentModel.PROP_LASTNAME);
-            Serializable emailVal = this.getNodeService().getProperty(person, ContentModel.PROP_EMAIL);
-            firstNameVal = DefaultTypeConverter.INSTANCE.convert(String.class, firstNameVal);
-            lastNameVal = DefaultTypeConverter.INSTANCE.convert(String.class, lastNameVal);
-            emailVal = DefaultTypeConverter.INSTANCE.convert(String.class, emailVal);
-        }
 
         /**
          * throw exception if person is already a member of the given site
@@ -1248,19 +1101,10 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         // Start the invite workflow with inviter, invitee and site properties
         //
 
-        WorkflowDefinition wfDefinition = this.workflowService
-                    .getDefinitionByName(WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME);
-
-        if (wfDefinition == null)
-        {
-            // handle workflow definition does not exist
-            Object objs[] = { WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME };
-            throw new InvitationException("invitation.error.noworkflow", objs);
-        }
+        WorkflowDefinition wfDefinition = getWorkflowDefinition(true);
 
         // Get invitee person NodeRef to add as assignee
-        NodeRef inviteeNodeRef = this.personService.getPerson(inviteeUserName);
-
+        NodeRef inviteeNodeRef = personService.getPerson(inviteeUserName);
         SiteInfo siteInfo = this.siteService.getSite(siteShortName);
         String siteDescription = siteInfo.getDescription();
         if (siteDescription == null)
@@ -1295,6 +1139,14 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_REJECT_URL, rejectUrl);
         workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_INVITE_TICKET, inviteTicket);
 
+        return (NominatedInvitation) startWorkflow(wfDefinition, workflowProps);
+    }
+
+    private Invitation startWorkflow(WorkflowDefinition wfDefinition, Map<QName, Serializable> workflowProps)
+    {
+        NodeRef wfPackage = workflowService.createPackage(null);
+        workflowProps.put(WorkflowModel.ASSOC_PACKAGE, wfPackage);
+
         // start the workflow
         WorkflowPath wfPath = this.workflowService.startWorkflow(wfDefinition.getId(), workflowProps);
 
@@ -1303,54 +1155,19 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         //
 
         // get the workflow tasks
-        String workflowId = wfPath.instance.id;
-        String wfPathId = wfPath.id;
-        List<WorkflowTask> wfTasks = this.workflowService.getTasksForWorkflowPath(wfPathId);
-
-        // throw an exception if no tasks where found on the workflow path
-        if (wfTasks.size() == 0)
-        {
-            Object objs[] = { WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME };
-            throw new InvitationException("invitation.error.notasks", objs);
-        }
-
-        //
-        // first task in workflow task list (there should only be one)
-        // associated
-        // with the workflow path id (above) should be "wf:inviteToSiteTask",
-        // otherwise
-        // throw web script exception
-        //
-        String wfTaskName = wfTasks.get(0).name;
-        QName wfTaskNameQName = QName.createQName(wfTaskName, this.namespaceService);
-        QName inviteToSiteTaskQName = WorkflowModelNominatedInvitation.WF_INVITE_TASK_INVITE_TO_SITE;
-        if (!wfTaskNameQName.equals(inviteToSiteTaskQName))
-        {
-            Object objs[] = { wfPathId, WorkflowModelNominatedInvitation.WF_INVITE_TASK_INVITE_TO_SITE };
-            throw new InvitationException("invitation.error.wrong_first_task", objs);
-        }
-
-        // get "inviteToSite" task
-        WorkflowTask wfStartTask = wfTasks.get(0);
-
+        String workflowId = wfPath.getInstance().getId();
+        WorkflowTask startTask = workflowService.getStartTask(workflowId);
+        
         // attach empty package to start task, end it and follow with transition
         // that sends out the invite
         if (logger.isDebugEnabled())
             logger.debug("Starting Invite workflow task by attaching empty package...");
-        NodeRef wfPackage = this.workflowService.createPackage(null);
-        Map<QName, Serializable> wfTaskProps = new HashMap<QName, Serializable>(1, 1.0f);
-        wfTaskProps.put(WorkflowModel.ASSOC_PACKAGE, wfPackage);
-        wfTaskProps.put(WorkflowModel.PROP_WORKFLOW_INSTANCE_ID, workflowId);
-
-        if (logger.isDebugEnabled())
-            logger.debug("Updating Invite workflow task...");
-        this.workflowService.updateTask(wfStartTask.id, wfTaskProps, null, null);
 
         if (logger.isDebugEnabled())
             logger.debug("Transitioning Invite workflow task...");
         try
         {
-            this.workflowService.endTask(wfStartTask.id, WorkflowModelNominatedInvitation.WF_TRANSITION_SEND_INVITE);
+            workflowService.endTask(startTask.getId(), null);
         }
         catch (RuntimeException err)
         {
@@ -1358,12 +1175,44 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
                 logger.debug("Failed - caught error during Invite workflow transition: " + err.getMessage());
             throw err;
         }
+        Invitation invitation = getInvitation(startTask);
+        return invitation;
+    }
 
-        NominatedInvitationImpl result = new NominatedInvitationImpl(workflowProps);
-        result.setTicket(inviteTicket);
-        result.setInviteId(workflowId);
-        result.setSentInviteDate(new Date());
-        return result;
+    /**
+     * Return Activiti workflow definition unless Activiti engine is disabled.
+     * @param isNominated TODO
+     * @return
+     */
+    private WorkflowDefinition getWorkflowDefinition(boolean isNominated)
+    {
+        String workflowName = isNominated ? getNominatedDefinitionName() : getModeratedDefinitionName();
+        WorkflowDefinition definition = workflowService.getDefinitionByName(workflowName);
+        if (definition == null)
+        {
+            // handle workflow definition does not exist
+            Object objs[] = {workflowName};
+            throw new InvitationException("invitation.error.noworkflow", objs);
+        }
+        return definition;
+    }
+
+    private String getNominatedDefinitionName()
+    {
+//        if(workflowAdminService.isEngineEnabled(ActivitiConstants.ENGINE_ID))
+//        {
+//            return WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI;
+//        }
+        return WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME;
+    }
+    
+    private String getModeratedDefinitionName()
+    {
+//        if(workflowAdminService.isEngineEnabled(ActivitiConstants.ENGINE_ID))
+//        {
+//            return WorkflowModelModeratedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI;
+//        }
+        return WorkflowModelModeratedInvitation.WORKFLOW_DEFINITION_NAME;
     }
 
     /**

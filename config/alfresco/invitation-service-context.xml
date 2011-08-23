@@ -5,6 +5,7 @@
      <!--  Invitation Service Configuration File --> 
      <bean id="invitationService" class="org.alfresco.repo.invitation.InvitationServiceImpl" init-method="init">
         <property name="workflowService" ref="WorkflowService"/>
+        <property name="workflowAdminService" ref="workflowAdminService"/>
         <property name="personService" ref="PersonService"/>
         <property name="permissionService" ref="PermissionService"/>
         <property name="authenticationService" ref="AuthenticationService"/>
@@ -76,5 +77,29 @@
         <property name="repositoryHelper" ref="repositoryHelper"/>
         <property name="messageService" ref="messageService"/>
     </bean>
+    
+    <!--  Activiti Workflow Delegate beans -->
+    <bean id="baseInvitationDelegate" parent="baseJavaDelegate"
+            class="org.alfresco.repo.invitation.activiti.AbstractInvitationDelegate" abstract="true">
+        <property name="inviteHelper" ref="InviteHelper" />
+    </bean>
+    
+    <bean id="AcceptNominatedInviteDelegate" parent="baseInvitationDelegate" 
+         class="org.alfresco.repo.invitation.activiti.AcceptNominatedInviteDelegate" />
+    
+    <bean id="ApproveModeratedInviteDelegate" parent="baseInvitationDelegate" 
+         class="org.alfresco.repo.invitation.activiti.ApproveModeratedInviteDelegate" />
+    
+    <bean id="CancelNominatedInviteDelegate" parent="baseInvitationDelegate" 
+         class="org.alfresco.repo.invitation.activiti.CancelNominatedInviteDelegate" />
+    
+    <bean id="RejectModeratedInviteDelegate" parent="baseInvitationDelegate" 
+         class="org.alfresco.repo.invitation.activiti.RejectModeratedInviteDelegate" />
+    
+    <bean id="RejectNominatedInviteDelegate" parent="baseInvitationDelegate" 
+         class="org.alfresco.repo.invitation.activiti.RejectNominatedInviteDelegate" />
+    
+    <bean id="SendNominatedInviteDelegate" parent="baseInvitationDelegate" 
+         class="org.alfresco.repo.invitation.activiti.SendNominatedInviteDelegate" />
     
 </beans>

@@ -32,6 +32,9 @@ import org.alfresco.service.namespace.QName;
  */
 public class WorkflowTaskQuery
 {
+    // Engine Id
+    private String engineId = null;
+    
     // task predicates
     private String taskId;
     private WorkflowTaskState taskState = WorkflowTaskState.IN_PROGRESS;
@@ -45,7 +48,7 @@ public class WorkflowTaskQuery
     private String workflowDefinitionName;
     private Boolean active = Boolean.TRUE;
     private Map<QName, Object> processCustomProps;
-
+    
     // order by
     private OrderBy[] orderBy;
     
@@ -262,5 +265,21 @@ public class WorkflowTaskQuery
     public void setLimit(int limit)
     {
         this.limit = limit;
+    }
+    
+    /**
+     * @param engineId the engineId to set
+     */
+    public void setEngineId(String engineId)
+    {
+        this.engineId = engineId;
+    }
+    
+    /**
+     * @return the engineId
+     */
+    public String getEngineId()
+    {
+        return engineId;
     }
 }

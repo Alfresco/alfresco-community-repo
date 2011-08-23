@@ -1246,37 +1246,47 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             String msg = messageService.getMessage(ERR_END_UNEXISTING_TASK, taskId);
             throw new WorkflowException(msg);
         }
-        
-        // Signal the transition on the task
-        if (transition != null && 
-                ActivitiConstants.DEFAULT_TRANSITION_NAME.equals(transition)==false)
-        {
-            // Only 'Next' is supported as transition.
-            String msg = messageService.getMessage(ERR_END_TASK_INVALID_TRANSITION, transition, taskId, ActivitiConstants.DEFAULT_TRANSITION_NAME);
-            throw new WorkflowException(msg);
-        }
-        setOutcome(task);
+        setOutcome(task, transition);
         taskService.complete(localTaskId);
         // The task should have a historicTaskInstance
         HistoricTaskInstance historicTask = historyService.createHistoricTaskInstanceQuery().taskId(task.getId()).singleResult();
         return typeConverter.convert(historicTask);
     }
 
-    private void setOutcome(Task task)
+    private void setOutcome(Task task, String transition)
     {
+        String outcomeValue = ActivitiConstants.DEFAULT_TRANSITION_NAME;
+        HashMap<QName, Serializable> updates = new HashMap<QName, Serializable>();
+
         Map<QName, Serializable> properties = propertyConverter.getTaskProperties(task, false);
         QName outcomePropName = (QName) properties.get(WorkflowModel.PROP_OUTCOME_PROPERTY_NAME);
         if(outcomePropName !=null)
         {
-            Serializable rawOutcome = properties.get(outcomePropName);
-            String outcomeValue = ActivitiConstants.DEFAULT_TRANSITION_NAME;
-            if(rawOutcome != null)
+            if(transition != null)
             {
-                outcomeValue = DefaultTypeConverter.INSTANCE.convert(String.class, rawOutcome);
+                outcomeValue = transition;
+                Serializable transitionValue = propertyConverter.convertValueToPropertyType(task, transition, outcomePropName);
+                updates.put(outcomePropName, transitionValue);
             }
-            String outcomeName = factory.mapQNameToName(WorkflowModel.PROP_OUTCOME);
-            taskService.setVariableLocal(task.getId(), outcomeName, outcomeValue);
+            else
+            {
+                Serializable rawOutcome = properties.get(outcomePropName);
+                if(rawOutcome != null)
+                {
+                    outcomeValue = DefaultTypeConverter.INSTANCE.convert(String.class, rawOutcome);
+                }
+            }
         }
+        else if (transition != null && 
+                ActivitiConstants.DEFAULT_TRANSITION_NAME.equals(transition)==false)
+        {
+            // Only 'Next' is supported as transition.
+            String taskId = createGlobalId(task.getId());
+            String msg = messageService.getMessage(ERR_END_TASK_INVALID_TRANSITION, transition, taskId, ActivitiConstants.DEFAULT_TRANSITION_NAME);
+            throw new WorkflowException(msg);
+        }
+        updates.put(WorkflowModel.PROP_OUTCOME, outcomeValue);
+        propertyConverter.updateTask(task, updates, null, null);
     }
 
     private WorkflowTask endStartTask(String taskId, String localTaskId, String transition)

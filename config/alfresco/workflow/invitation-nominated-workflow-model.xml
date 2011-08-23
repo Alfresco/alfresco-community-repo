@@ -42,20 +42,54 @@
          </mandatory-aspects>
       </type>
 
-      <type name="inwf:invitePendingTask">
-         <parent>bpm:workflowTask</parent>
-         <overrides>
+    <type name="inwf:invitePendingTask">
+        <parent>bpm:workflowTask</parent>
+        <overrides>
             <property name="bpm:hiddenTransitions">
                 <default>cancel</default>
             </property>
             <property name="bpm:reassignable">
                 <default>false</default>
             </property>
-         </overrides>         
-         <mandatory-aspects>
-             <aspect>inwf:nominatedInvitationStats</aspect>
-         </mandatory-aspects>
-      </type>
+        </overrides>
+        <mandatory-aspects>
+            <aspect>inwf:nominatedInvitationStats</aspect>
+        </mandatory-aspects>
+    </type>
+
+    <type name="inwf:activitiInvitePendingTask">
+        <parent>bpm:activitiOutcomeTask</parent>
+        <properties>
+            <property name="inwf:inviteOutcome">
+                <type>d:text</type>
+                <default>Reject</default>
+                <constraints>
+                    <constraint name="inwf:inviteOutcomeOptions"
+                        type="LIST">
+                        <parameter name="allowedValues">
+                            <list>
+                                <value>accept</value>
+                                <value>reject</value>
+                                <value>reject</value>
+                            </list>
+                        </parameter>
+                    </constraint>
+                </constraints>
+            </property>
+        </properties>
+        <overrides>
+            <property name="bpm:outcomePropertyName">
+                <default>{http://www.alfresco.org/model/workflow/invite/moderated/1.0}reviewOutcome
+                </default>
+            </property>
+            <property name="bpm:reassignable">
+                <default>false</default>
+            </property>
+        </overrides>
+        <mandatory-aspects>
+            <aspect>inwf:nominatedInvitationStats</aspect>
+        </mandatory-aspects>
+    </type>
 
       <type name="inwf:acceptInviteTask">
          <parent>bpm:workflowTask</parent>

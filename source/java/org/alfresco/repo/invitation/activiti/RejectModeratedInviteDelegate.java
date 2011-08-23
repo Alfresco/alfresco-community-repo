@@ -44,7 +44,7 @@ import org.apache.commons.logging.LogFactory;
  * @author Frederik Heremans
  * @since 4.0
  */
-public class RejectModeratedInviteDelegate extends BaseJavaDelegate
+public class RejectModeratedInviteDelegate extends AbstractInvitationDelegate
 {
     private static final String REJECT_TEMPLATE = "/alfresco/bootstrap/invite/moderated-reject-email.ftl";
     private static final Log logger = LogFactory.getLog(RejectModeratedInviteDelegate.class);

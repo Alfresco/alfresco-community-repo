@@ -18,8 +18,24 @@
  */
 package org.alfresco.repo.invitation;
 
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.WF_PROP_ACCEPT_URL;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.WF_PROP_INVITEE_EMAIL;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.WF_PROP_INVITEE_FIRSTNAME;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.WF_PROP_INVITEE_LASTNAME;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.WF_PROP_INVITEE_ROLE;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.WF_PROP_INVITEE_USER_NAME;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.WF_PROP_INVITER_USER_NAME;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.WF_PROP_INVITE_TICKET;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.WF_PROP_REJECT_URL;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_DESCRIPTION;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_NAME;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_TITLE;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_TYPE;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.WF_PROP_SERVER_PATH;
+
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.service.cmr.invitation.NominatedInvitation;
@@ -35,43 +51,43 @@ import org.alfresco.service.namespace.QName;
 {
     private static final long serialVersionUID = -8800842866845149466L;
     
-    private String inviteeFirstName;
-    private String inviteeLastName;
-    private String inviteeEmail;
-    private String inviterUserName;
-    private String resourceDescription;
-    private String resourceTitle;
-    private String serverPath;
-    private String acceptUrl; 
-    private String rejectUrl;
-    private Date sentInviteDate;
-    private String ticket;
+    private final String inviteeFirstName;
+    private final String inviteeLastName;
+    private final String inviteeEmail;
+    private final String inviterUserName;
+    private final String resourceDescription;
+    private final String resourceTitle;
+    private final String serverPath;
+    private final String acceptUrl; 
+    private final String rejectUrl;
+    private final Date sentInviteDate;
+    private final String ticket;
     
-    public NominatedInvitationImpl(Map<QName, Serializable> workflowProps)
+    public NominatedInvitationImpl(String inviteId, Date inviteDate, Map<QName, Serializable> props)
     {
-        setInviteeUserName((String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_USER_NAME));
-        setRoleName((String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_ROLE));
-        inviteeFirstName = (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_FIRSTNAME);
-        inviteeLastName = (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_LASTNAME);
-        inviteeEmail = (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_EMAIL);
-        inviterUserName = (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_INVITER_USER_NAME);
-        resourceTitle = (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_TITLE);
-        resourceDescription = (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_DESCRIPTION);
-        setResourceName( (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_NAME));
-        
-        if (workflowProps.containsKey(WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_TYPE))
-        {
-            setResourceType(ResourceType.valueOf((String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_TYPE)));
-        }
-        serverPath =   (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_SERVER_PATH);
-        acceptUrl =  (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_ACCEPT_URL);
-        rejectUrl =   (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_REJECT_URL);
-        ticket =  (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_INVITE_TICKET);
+        super(getConstructorProps(inviteId, props));
+        inviteeFirstName = (String)props.get(WF_PROP_INVITEE_FIRSTNAME);
+        inviteeLastName = (String)props.get(WF_PROP_INVITEE_LASTNAME);
+        inviteeEmail = (String)props.get(WF_PROP_INVITEE_EMAIL);
+        inviterUserName = (String)props.get(WF_PROP_INVITER_USER_NAME);
+        resourceTitle = (String)props.get(WF_PROP_RESOURCE_TITLE);
+        resourceDescription = (String)props.get(WF_PROP_RESOURCE_DESCRIPTION);
+        serverPath =   (String)props.get(WF_PROP_SERVER_PATH);
+        acceptUrl =  (String)props.get(WF_PROP_ACCEPT_URL);
+        rejectUrl =   (String)props.get(WF_PROP_REJECT_URL);
+        this.ticket =  (String)props.get(WF_PROP_INVITE_TICKET);
+        this.sentInviteDate =inviteDate;
     }
     
-    public void setInviteeFirstName(String inviteeFirstName)
+    private static Map<String, String> getConstructorProps(String inviteId, Map<QName, Serializable> props)
     {
-        this.inviteeFirstName = inviteeFirstName;
+        Map<String, String> parentProps = new HashMap<String, String>();
+        parentProps.put(ID_KEY, inviteId);
+        parentProps.put(INVITEE_KEY, (String) props.get(WF_PROP_INVITEE_USER_NAME));
+        parentProps.put(ROLE_KEY,(String)props.get(WF_PROP_INVITEE_ROLE));
+        parentProps.put(RESOURCE_NAME_KEY,(String)props.get(WF_PROP_RESOURCE_NAME));
+        parentProps.put(RESOURCE_TYPE_KEY,(String)props.get(WF_PROP_RESOURCE_TYPE));
+        return parentProps;
     }
     
     public String getInviteeFirstName()
@@ -79,19 +95,9 @@ import org.alfresco.service.namespace.QName;
         return inviteeFirstName;
     }
 
-    public void setInviteeLastName(String inviteeLastName)
-    {
-        this.inviteeLastName = inviteeLastName;
-    }
-
     public String getInviteeLastName()
     {
         return inviteeLastName;
-    }
-
-    public void setInviteeEmail(String inviteeEmail)
-    {
-        this.inviteeEmail = inviteeEmail;
     }
 
     public String getInviteeEmail()
@@ -109,19 +115,9 @@ import org.alfresco.service.namespace.QName;
         return resourceTitle;
     }
 
-    public void setServerPath(String serverPath)
-    {
-        this.serverPath = serverPath;
-    }
-
     public String getServerPath()
     {
         return serverPath;
-    }
-
-    public void setAcceptUrl(String acceptUrl)
-    {
-        this.acceptUrl = acceptUrl;
     }
 
     public String getAcceptUrl()
@@ -129,29 +125,14 @@ import org.alfresco.service.namespace.QName;
         return acceptUrl;
     }
 
-    public void setRejectUrl(String rejectUrl)
-    {
-        this.rejectUrl = rejectUrl;
-    }
-
     public String getRejectUrl()
     {
         return rejectUrl;
     }
 
-    public void setSentInviteDate(Date sentInviteDate)
-    {
-        this.sentInviteDate = sentInviteDate;
-    }
-
     public Date getSentInviteDate()
     {
         return sentInviteDate;
-    }
-
-    public void setTicket(String ticket)
-    {
-        this.ticket = ticket;
     }
 
     public String getTicket()
@@ -162,11 +143,6 @@ import org.alfresco.service.namespace.QName;
     public String getInviterUserName()
     {
         return inviterUserName;
-    }
-    
-    public void setInviterUserName(String inviterUserName)
-    {
-        this.inviterUserName= inviterUserName;
     }
     
     @Override

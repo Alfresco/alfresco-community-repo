@@ -1,70 +1,99 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-  <!--  Moderated invitation workflow -->
+<!-- Moderated invitation workflow -->
 
 <model name="imwf:invitation-moderated-workflow-model" xmlns="http://www.alfresco.org/model/dictionary/1.0">
 
-  <imports>
-    <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d" />
-    <import uri="http://www.alfresco.org/model/bpm/1.0" prefix="bpm" />
-    <import uri="http://www.alfresco.org/model/workflow/1.0" prefix="wf" />
-    <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm" />
-  </imports>
+    <imports>
+        <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d" />
+        <import uri="http://www.alfresco.org/model/bpm/1.0" prefix="bpm" />
+        <import uri="http://www.alfresco.org/model/workflow/1.0" prefix="wf" />
+        <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm" />
+    </imports>
 
-  <namespaces>
-    <namespace uri="http://www.alfresco.org/model/workflow/invite/moderated/1.0" prefix="imwf" />
-  </namespaces>
+    <namespaces>
+        <namespace
+            uri="http://www.alfresco.org/model/workflow/invite/moderated/1.0" prefix="imwf" />
+    </namespaces>
 
-  <types>
-    <type name="imwf:moderatedInvitationSubmitTask">
-      <parent>bpm:startTask</parent>
-      <mandatory-aspects>
-        <aspect>bpm:assignee</aspect>
-        <aspect>bpm:groupAssignee</aspect>
-        <aspect>imwf:moderatedInvitationStats</aspect>
-      </mandatory-aspects>
-    </type>
+    <types>
+        <type name="imwf:moderatedInvitationSubmitTask">
+            <parent>bpm:startTask</parent>
+            <mandatory-aspects>
+                <aspect>bpm:assignee</aspect>
+                <aspect>bpm:groupAssignee</aspect>
+                <aspect>imwf:moderatedInvitationStats</aspect>
+            </mandatory-aspects>
+        </type>
 
-    <type name="imwf:moderatedInvitationReviewTask">
-      <parent>bpm:workflowTask</parent>
-      <properties>
-        <property name="imwf:reviewComments">
-          <type>d:text</type>
-        </property>
-      </properties>
+        <type name="imwf:moderatedInvitationReviewTask">
+            <parent>bpm:workflowTask</parent>
+            <mandatory-aspects>
+                <aspect>bpm:groupAssignee</aspect>
+                <aspect>cm:ownable</aspect>
+                <aspect>imwf:moderatedInvitationStats</aspect>
+            </mandatory-aspects>
+        </type>
 
-      <mandatory-aspects>
-        <aspect>bpm:groupAssignee</aspect>
-        <aspect>cm:ownable</aspect>
-        <aspect>imwf:moderatedInvitationStats</aspect>
-      </mandatory-aspects>
+        <type name="imwf:activitiModeratedInvitationReviewTask">
+            <parent>bpm:activitiOutcomeTask</parent>
+            <properties>
+                <property name="imwf:reviewOutcome">
+                    <type>d:text</type>
+                    <default>Reject</default>
+                    <constraints>
+                        <constraint name="imwf:reviewOutcomeOptions"
+                            type="LIST">
+                            <parameter name="allowedValues">
+                                <list>
+                                    <value>Approve</value>
+                                    <value>Reject</value>
+                                </list>
+                            </parameter>
+                        </constraint>
+                    </constraints>
+                </property>
+            </properties>
+            <overrides>
+                <property name="bpm:outcomePropertyName">
+                    <default>{http://www.alfresco.org/model/workflow/invite/moderated/1.0}reviewOutcome
+                    </default>
+                </property>
+            </overrides>
+            <mandatory-aspects>
+                <aspect>bpm:groupAssignee</aspect>
+                <aspect>cm:ownable</aspect>
+                <aspect>imwf:moderatedInvitationStats</aspect>
+            </mandatory-aspects>
+        </type>
 
-    </type>
+    </types>
 
-  </types>
-
-  <aspects>
-    <aspect name="imwf:moderatedInvitationStats">
-      <properties>
-        <property name="imwf:inviteeUserName">
-          <type>d:text</type>
-        </property>
-        <property name="imwf:resourceType">
-          <type>d:text</type>
-          <default>WEB_SITE</default>
-        </property>
-        <property name="imwf:resourceName">
-          <type>d:text</type>
-        </property>
-        <property name="imwf:inviteeRole">
-          <type>d:text</type>
-        </property>
-        <property name="imwf:inviteeComments">
-          <type>d:text</type>
-        </property>
-      </properties>
-    </aspect>
-  </aspects>
+    <aspects>
+        <aspect name="imwf:moderatedInvitationStats">
+            <properties>
+                <property name="imwf:inviteeUserName">
+                    <type>d:text</type>
+                </property>
+                <property name="imwf:resourceType">
+                    <type>d:text</type>
+                    <default>WEB_SITE</default>
+                </property>
+                <property name="imwf:resourceName">
+                    <type>d:text</type>
+                </property>
+                <property name="imwf:inviteeRole">
+                    <type>d:text</type>
+                </property>
+                <property name="imwf:inviteeComments">
+                    <type>d:text</type>
+                </property>
+                <property name="imwf:reviewComments">
+                    <type>d:text</type>
+                </property>
+            </properties>
+        </aspect>
+    </aspects>
 
 
 </model>

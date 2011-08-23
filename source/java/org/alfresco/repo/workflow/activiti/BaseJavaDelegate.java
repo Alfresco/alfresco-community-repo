@@ -60,6 +60,6 @@ public abstract class BaseJavaDelegate implements JavaDelegate
      */
     protected String getName()
     {
-        return getClass().getName();
+        return getClass().getSimpleName();
     }
 }

@@ -28,6 +28,8 @@ import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVa
 import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarRole;
 import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarServerPath;
 import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarWorkflowInstanceId;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.WF_TASK_INVITE_PENDING;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.WF_TASK_ACTIVIT_INVITE_PENDING;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -66,6 +68,7 @@ import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.collections.CollectionUtils;
+import org.alfresco.util.collections.Filter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -153,32 +156,7 @@ public class InviteHelper implements InitializingBean
      */
     public WorkflowTask findInviteStartTask(String inviteId)
     {
-        // create workflow task query
-        WorkflowTaskQuery wfTaskQuery = new WorkflowTaskQuery();
-        
-        wfTaskQuery.setProcessId(inviteId);
-        
-        // set process name to "wf:invite" so that only tasks associated with
-        // invite workflow instances are returned by query
-        wfTaskQuery.setProcessName(WorkflowModelNominatedInvitation.WF_PROCESS_INVITE);
-
-        // filter to find only the invite start task
-        wfTaskQuery.setTaskState(WorkflowTaskState.COMPLETED);
-        wfTaskQuery.setTaskName(WorkflowModelNominatedInvitation.WF_INVITE_TASK_INVITE_TO_SITE);
-
-        // query for invite workflow task associate
-        List<WorkflowTask> inviteStartTasks = workflowService
-                .queryTasks(wfTaskQuery);
-
-        // should also be 0 or 1
-        if (inviteStartTasks.size() < 1)
-        {
-            return null;
-        }
-        else
-        {
-            return inviteStartTasks.get(0);
-        }
+        return workflowService.getStartTask(inviteId);
     }
     
     /**
@@ -188,28 +166,16 @@ public class InviteHelper implements InitializingBean
      */
     public List<WorkflowTask> findInvitePendingTasks(String inviteeUserName)
     {
-            // create workflow task query
-            WorkflowTaskQuery wfTaskQuery = new WorkflowTaskQuery();
-            
-            // set process name to "wf:invite" so that only tasks associated with
-            // invite workflow instances are returned by query
-            wfTaskQuery.setProcessName(WorkflowModelNominatedInvitation.WF_PROCESS_INVITE);
-            
-            // set query to only pick up invite workflow instances
-            // associated with the given invitee user name
-            Map<QName, Object> processCustomProps = new HashMap<QName, Object>(1, 1.0f);
-            processCustomProps.put(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_USER_NAME, inviteeUserName);
-            wfTaskQuery.setProcessCustomProps(processCustomProps);
-
-            // set query to only pick up in-progress invite pending tasks 
-            wfTaskQuery.setTaskState(WorkflowTaskState.IN_PROGRESS);
-            wfTaskQuery.setTaskName(WorkflowModelNominatedInvitation.WF_INVITE_TASK_INVITE_PENDING);
-
-            // query for invite workflow task associate
-            List<WorkflowTask> inviteStartTasks = workflowService
-                    .queryTasks(wfTaskQuery);
-
-            return inviteStartTasks;
+        List<WorkflowTask> tasks = workflowService.getAssignedTasks(inviteeUserName, WorkflowTaskState.IN_PROGRESS);
+        return CollectionUtils.filter(tasks, new Filter<WorkflowTask>()
+        {
+            public Boolean apply(WorkflowTask value)
+            {
+                QName taskDefName = value.getDefinition().getMetadata().getName();
+                return WF_TASK_INVITE_PENDING.equals(taskDefName) || 
+                    WF_TASK_ACTIVIT_INVITE_PENDING.equals(taskDefName);
+            }
+        });
     }
     
     /**
@@ -276,7 +242,7 @@ public class InviteHelper implements InitializingBean
             {
                 if (overrideExisting || !siteService.isMember(siteName, invitee))
                 {
-                    siteService.setMembership(siteName, invitee, role);
+                siteService.setMembership(siteName, invitee, role);
                 }
                 return null;
             }

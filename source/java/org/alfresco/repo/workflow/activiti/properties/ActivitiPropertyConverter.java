@@ -61,6 +61,7 @@ import org.alfresco.service.cmr.dictionary.ClassAttributeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -600,6 +601,23 @@ public class ActivitiPropertyConverter
         throw new WorkflowException(msg);
     }
 
+    /**
+     * Converts a {@link Serializable} value to the type of the specified property. 
+     * @param value
+     * @param definition
+     * @return
+     */
+    public Serializable convertValueToPropertyType(Task task, Serializable value, QName propertyName)
+    {
+        TypeDefinition taskDef = typeManager.getFullTaskDefinition(task);
+        PropertyDefinition propDef = taskDef.getProperties().get(propertyName);
+        if(propDef != null)
+        {
+            return (Serializable) DefaultTypeConverter.INSTANCE.convert(propDef.getDataType(), value);
+        }
+        return value;
+    }
+    
     @SuppressWarnings("unchecked")
     private Map<QName, Serializable> getNewTaskProperties(Task task, Map<QName, Serializable> properties, Map<QName, List<NodeRef>> add,
                 Map<QName, List<NodeRef>> remove)

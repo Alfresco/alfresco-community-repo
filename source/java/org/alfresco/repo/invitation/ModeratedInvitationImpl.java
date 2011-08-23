@@ -18,7 +18,14 @@
  */
 package org.alfresco.repo.invitation;
 
+import static org.alfresco.repo.invitation.WorkflowModelModeratedInvitation.WF_PROP_INVITEE_COMMENTS;
+import static org.alfresco.repo.invitation.WorkflowModelModeratedInvitation.WF_PROP_INVITEE_ROLE;
+import static org.alfresco.repo.invitation.WorkflowModelModeratedInvitation.WF_PROP_INVITEE_USER_NAME;
+import static org.alfresco.repo.invitation.WorkflowModelModeratedInvitation.WF_PROP_RESOURCE_NAME;
+import static org.alfresco.repo.invitation.WorkflowModelModeratedInvitation.WF_PROP_RESOURCE_TYPE;
+
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.service.cmr.invitation.ModeratedInvitation;
@@ -32,28 +39,28 @@ import org.alfresco.service.namespace.QName;
 {
 	private static final long serialVersionUID = -5557544865169876451L;
 	
-	private String inviteeComments;
+	private final String inviteeComments;
 	
-	public ModeratedInvitationImpl(Map<QName, Serializable> workflowProps)
+	public ModeratedInvitationImpl(String inviteId, Map<QName, Serializable> props)
 	{
-		 setInviteeUserName((String)workflowProps.get(WorkflowModelModeratedInvitation.WF_PROP_INVITEE_USER_NAME));
-		 setRoleName((String)workflowProps.get(WorkflowModelModeratedInvitation.WF_PROP_INVITEE_ROLE));
-		 setResourceName((String)workflowProps.get(WorkflowModelModeratedInvitation.WF_PROP_RESOURCE_NAME));
-	     if(workflowProps.containsKey(WorkflowModelModeratedInvitation.WF_PROP_RESOURCE_TYPE))
-	     {
-	     	 setResourceType(ResourceType.valueOf((String)workflowProps.get(WorkflowModelModeratedInvitation.WF_PROP_RESOURCE_TYPE)));
-	     }
-	     inviteeComments = (String)workflowProps.get(WorkflowModelModeratedInvitation.WF_PROP_INVITEE_COMMENTS);
+	    super(getConstructorProps(inviteId, props));
+	     inviteeComments = (String)props.get(WF_PROP_INVITEE_COMMENTS);
 	}
 	
+    private static Map<String, String> getConstructorProps(String inviteId, Map<QName, Serializable> props)
+    {
+        Map<String, String> parentProps = new HashMap<String, String>();
+        parentProps.put(ID_KEY, inviteId);
+        parentProps.put(INVITEE_KEY, (String) props.get(WF_PROP_INVITEE_USER_NAME));
+        parentProps.put(ROLE_KEY,(String)props.get(WF_PROP_INVITEE_ROLE));
+        parentProps.put(RESOURCE_NAME_KEY,(String)props.get(WF_PROP_RESOURCE_NAME));
+        parentProps.put(RESOURCE_TYPE_KEY,(String)props.get(WF_PROP_RESOURCE_TYPE));
+        return parentProps;
+    }
+
 	public String getInviteeComments() 
 	{
 		return inviteeComments;
-	}
-	
-	public void setInviteeComments(String inviteeComments)
-	{
-		this.inviteeComments = inviteeComments;
 	}
 
 	@Override

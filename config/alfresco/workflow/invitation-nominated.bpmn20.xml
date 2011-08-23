@@ -10,7 +10,7 @@
 
       <sequenceFlow id="flow1" sourceRef="start" targetRef="sendInvite" />
       
-      <serviceTask id="sendInvite" name="Send Invite" activiti:class="org.alfresco.repo.invitation.SendInvitationDelegate" />
+      <serviceTask id="sendInvite" name="Send Invite" activiti:delegateExpression="${SendNominatedInviteDelegate}" />
       
       <sequenceFlow id="flow2" sourceRef="sendInvite" targetRef="invitePending" />
 
@@ -51,13 +51,13 @@
       <sequenceFlow id="flow7" sourceRef="inviteGateway" targetRef="cancelled" />
       
       
-      <serviceTask id="accepted" name="Accepted" activiti:class="org.alfresco.repo.invitation.AcceptInviteDelegate" />
+      <serviceTask id="accepted" name="Accepted" activiti:delegateExpression="${AcceptNominatedInviteDelegate}" />
       <sequenceFlow id="flow6" sourceRef="accepted" targetRef="end" />
 
-      <serviceTask id="rejected" name="Rejected" activiti:class="org.alfresco.repo.invitation.RejectInviteDelegate" />
+      <serviceTask id="rejected" name="Rejected" activiti:delegateExpression="${RejectNominatedInviteDelegate}" />
       <sequenceFlow id="flow8" sourceRef="rejected" targetRef="end" />
       
-      <serviceTask id="cancelled" name="Cancelled" activiti:class="org.alfresco.repo.invitation.CancelInviteDelegate" />
+      <serviceTask id="cancelled" name="Cancelled" activiti:delegateExpression="${CancelNominatedInviteDelegate}" />
       <sequenceFlow id="flow9" sourceRef="cancelled" targetRef="end" />
       
       <endEvent id="end" />

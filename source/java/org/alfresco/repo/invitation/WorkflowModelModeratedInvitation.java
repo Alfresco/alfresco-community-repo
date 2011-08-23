@@ -41,6 +41,7 @@ public interface WorkflowModelModeratedInvitation
     // tasks
     public static final QName WF_START_TASK = QName.createQName(NAMESPACE_URI, "moderatedInvitationSubmitTask");
     public static final QName WF_REVIEW_TASK =  QName.createQName(NAMESPACE_URI,"moderatedInvitationReviewTask");
+    public static final QName WF_ACTIVITI_REVIEW_TASK =  QName.createQName(NAMESPACE_URI,"activitiModeratedInvitationReviewTask");
     
     // associations
     static final QName ASSOC_GROUP_ASSIGNEE = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "groupAssignee");

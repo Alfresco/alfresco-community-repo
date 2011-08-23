@@ -21,13 +21,12 @@ package org.alfresco.repo.forms.processor.workflow;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
 
 import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
+import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.FormNotFoundException;
 import org.alfresco.repo.forms.Item;
-import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.processor.FormCreationData;
 import org.alfresco.repo.forms.processor.node.ContentModelFormProcessor;
 import org.alfresco.repo.forms.processor.node.ContentModelItemData;

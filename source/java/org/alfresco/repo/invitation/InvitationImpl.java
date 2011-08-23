@@ -18,37 +18,55 @@
  */
 package org.alfresco.repo.invitation;
 
+import java.util.Map;
+
 import org.alfresco.service.cmr.invitation.Invitation;
 import org.alfresco.service.cmr.invitation.Invitation.InvitationType;
 import org.alfresco.service.cmr.invitation.Invitation.ResourceType;
 
 /* package scope */ abstract class InvitationImpl 
 {
+    public static final String ID_KEY = "id";
+    public static final String INVITEE_KEY = "invitee";
+    public static final String RESOURCE_NAME_KEY = "resourceName";
+    public static final String RESOURCE_TYPE_KEY = "resourceType";
+    public static final String ROLE_KEY = "role";
+    
     /**
      * Unique reference for this invitation
      */
-    private String inviteId;
+    private final String inviteId;
      
     /**
      * Which resource is this invitation for ?
      */
-    private String resourceName;
+    private final String resourceName;
      
     /**
      * What sort of invitation is this invitation for e.g. WEB_SITE or WEB_PROJECT
      */
-    private Invitation.ResourceType resourceType;
+    private final Invitation.ResourceType resourceType;
 
     /**
      * What role is the invitation for.
      */
-    private String roleName;
+    private final String roleName;
 
     /**
      * Who is this invitation for
      */
-    private String inviteeUserName;
+    private final String inviteeUserName;
      
+    public InvitationImpl(Map<String, String> props)
+    {
+        this.inviteId = props.get(ID_KEY);
+        this.inviteeUserName = props.get(INVITEE_KEY);
+        this.resourceName = props.get(RESOURCE_NAME_KEY);
+        this.roleName = props.get(ROLE_KEY);
+        String type = props.get(RESOURCE_TYPE_KEY);
+        this.resourceType = type==null ? ResourceType.WEB_SITE : ResourceType.valueOf(type);
+    }
+
     /**
      * What sort of resource is it
      * @return the resource type
@@ -58,24 +76,9 @@ import org.alfresco.service.cmr.invitation.Invitation.ResourceType;
         return resourceType;
     }
         
-    public void setResourceType(ResourceType resourceType)
-    {
-        this.resourceType = resourceType;
-    }
-
-    public void setInviteId(String inviteId)
-    {
-        this.inviteId = inviteId;
-    }
-
     public String getInviteId()
     {
         return inviteId;
-    }
-
-    public void setResourceName(String resourceName)
-    {
-        this.resourceName = resourceName;
     }
 
     public String getResourceName()
@@ -87,24 +90,11 @@ import org.alfresco.service.cmr.invitation.Invitation.ResourceType;
     {
         return roleName;
     }
-    
-    /**
-     * @param roleName the roleName to set
-     */
-    public void setRoleName(String roleName)
-    {
-        this.roleName = roleName;
-    }
-
-    public abstract InvitationType getInvitationType();
-
-    public void setInviteeUserName(String inviteeUserName)
-    {
-        this.inviteeUserName = inviteeUserName;
-    }
 
     public String getInviteeUserName()
     {
         return inviteeUserName;
     }
+    
+    public abstract InvitationType getInvitationType();
 }

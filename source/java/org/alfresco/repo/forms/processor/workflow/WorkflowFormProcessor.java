@@ -90,7 +90,7 @@ public class WorkflowFormProcessor extends AbstractWorkflowFormProcessor<Workflo
     @Override
     protected String getItemType(WorkflowDefinition item)
     {
-        return item.name;
+        return item.getName();
     }
 
     /* (non-Javadoc)
@@ -99,7 +99,7 @@ public class WorkflowFormProcessor extends AbstractWorkflowFormProcessor<Workflo
     @Override
     protected String getItemURI(WorkflowDefinition item)
     {
-        return "api/workflow-definitions/"+item.id;
+        return "api/workflow-definitions/"+item.getId();
     }
 
     /* (non-Javadoc)

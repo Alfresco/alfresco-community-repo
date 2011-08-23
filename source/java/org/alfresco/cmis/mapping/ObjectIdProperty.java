@@ -108,7 +108,33 @@ public class ObjectIdProperty extends AbstractVersioningProperty
     {
         String field = getLuceneFieldName();
         String stringValue = getValueAsString(value);
-        return lqp.getFieldQuery(field, stringValue, AnalysisMode.IDENTIFIER, luceneFunction);
+        String[] split = stringValue.split(";");
+        if(split.length == 1)
+        {
+            return lqp.getFieldQuery(field, stringValue, AnalysisMode.IDENTIFIER, luceneFunction);
+        }
+        else
+        {
+            if(split[1].equalsIgnoreCase("PWC"))
+            {
+                return new TermQuery(new Term("NO_TOKENS", "__"));
+            }
+            
+            BooleanQuery query = new BooleanQuery();
+            BooleanQuery part1 = new BooleanQuery();
+            part1.add(lqp.getFieldQuery(field, split[0], AnalysisMode.IDENTIFIER, luceneFunction), Occur.MUST);
+            part1.add(lqp.getFieldQuery("@"+ContentModel.PROP_VERSION_LABEL.toString(), split[1], AnalysisMode.IDENTIFIER, luceneFunction), Occur.MUST);
+            query.add(part1, Occur.SHOULD);
+            
+            if(split[1].equals("1.0"))
+            {
+                BooleanQuery part2 = new BooleanQuery();
+                part2.add(lqp.getFieldQuery(field, split[0], AnalysisMode.IDENTIFIER, luceneFunction), Occur.MUST);
+                part2.add(lqp.getFieldQuery(AbstractLuceneQueryParser.FIELD_ASPECT, ContentModel.ASPECT_VERSIONABLE.toString(), AnalysisMode.IDENTIFIER, luceneFunction), Occur.MUST_NOT);
+                query.add(part2, Occur.SHOULD);
+            }
+            return query;
+        }
     }
 
     /*
@@ -151,7 +177,6 @@ public class ObjectIdProperty extends AbstractVersioningProperty
      */
     public Query buildLuceneIn(AbstractLuceneQueryParser lqp, Collection<Serializable> values, Boolean not, PredicateMode mode) throws ParseException
     {
-        String field = getLuceneFieldName();
 
         // Check type conversion
 
@@ -175,11 +200,14 @@ public class ObjectIdProperty extends AbstractVersioningProperty
             String value = asStrings.iterator().next();
             if (not)
             {
-                return lqp.getDoesNotMatchFieldQuery(field, value, AnalysisMode.IDENTIFIER, LuceneFunction.FIELD);
+                BooleanQuery booleanQuery = new BooleanQuery();
+                booleanQuery.add(new MatchAllDocsQuery(), Occur.MUST);
+                booleanQuery.add(buildLuceneEquality(lqp, value, mode, LuceneFunction.FIELD), Occur.MUST_NOT);
+                return booleanQuery;
             }
             else
             {
-                return lqp.getFieldQuery(field, value, AnalysisMode.IDENTIFIER, LuceneFunction.FIELD);
+                return buildLuceneEquality(lqp, value, mode, LuceneFunction.FIELD);
             }
         }
         else
@@ -191,7 +219,7 @@ public class ObjectIdProperty extends AbstractVersioningProperty
             }
             for (String value : asStrings)
             {
-                Query any = lqp.getFieldQuery(field, value, AnalysisMode.IDENTIFIER, LuceneFunction.FIELD);
+                Query any = buildLuceneEquality(lqp, value, mode, LuceneFunction.FIELD);
                 if (not)
                 {
                     booleanQuery.add(any, Occur.MUST_NOT);
@@ -211,9 +239,10 @@ public class ObjectIdProperty extends AbstractVersioningProperty
      */
     public Query buildLuceneInequality(AbstractLuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
     {
-        String field = getLuceneFieldName();
-        String stringValue = getValueAsString(value);
-        return lqp.getDoesNotMatchFieldQuery(field, stringValue, AnalysisMode.IDENTIFIER, luceneFunction);
+        BooleanQuery booleanQuery = new BooleanQuery();
+        booleanQuery.add(new MatchAllDocsQuery(), Occur.MUST);
+        booleanQuery.add(buildLuceneEquality(lqp, value, mode, LuceneFunction.FIELD), Occur.MUST_NOT);
+        return booleanQuery;
     }
 
     /*
@@ -242,20 +271,7 @@ public class ObjectIdProperty extends AbstractVersioningProperty
      */
     public Query buildLuceneLike(AbstractLuceneQueryParser lqp, Serializable value, Boolean not) throws ParseException
     {
-        String field = getLuceneFieldName();
-        String stringValue = getValueAsString(value);
-        
-        if (not)
-        {
-            BooleanQuery booleanQuery = new BooleanQuery();
-            booleanQuery.add(new MatchAllDocsQuery(), Occur.MUST);
-            booleanQuery.add(lqp.getLikeQuery(field, stringValue, AnalysisMode.IDENTIFIER), Occur.MUST_NOT);
-            return booleanQuery;
-        }
-        else
-        {
-            return lqp.getLikeQuery(field, stringValue, AnalysisMode.IDENTIFIER);
-        }
+        throw new CMISQueryException("Property " + getName() + " can not be used in a 'like' comparison");
     }
 
     /* (non-Javadoc)

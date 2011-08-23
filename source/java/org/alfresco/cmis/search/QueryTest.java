@@ -501,6 +501,7 @@ public class QueryTest extends BaseCMISTest
             T returnValue = null;
             CMISQueryOptions options = new CMISQueryOptions(query, rootNodeRef.getStoreRef());
             options.setQueryMode(mode);
+            options.setIncludeInTransactionData(true);
             rs = cmisQueryService.query(options);
 
             for (CMISResultSetRow row : rs)
@@ -2737,6 +2738,65 @@ public class QueryTest extends BaseCMISTest
 
         testQuery("SELECT cmis:objectId FROM cmis:folder WHERE ANY cmis:objectId IN     ('" + companyHomeId + "')", 1, false, "cmis:objectId", new String(), true);
         testQuery("SELECT cmis:objectId FROM cmis:folder WHERE ANY cmis:objectId NOT IN ('" + companyHomeId + "')", 9, false, "cmis:objectId", new String(), true);
+        
+        // Folder versions which are ignored ....
+        
+        testQuery("SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId =  '" + companyHomeId + ";1.0'", 1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId <> '" + companyHomeId + ";1.0'", 9, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId IN     ('" + companyHomeId + ";1.0')", 1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId NOT IN ('" + companyHomeId + ";1.0')", 9, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId IS NOT NULL", 10, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:folder WHERE cmis:objectId IS     NULL", 0, false, "cmis:objectId", new String(), false);
+        
+        // Docs
+        
+        
+        String docId = testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:name = 'Alfresco Tutorial'", 1, false, "cmis:objectId", new String(), false);
+        
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId =  '" + docId + "'", 1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId <> '" + docId + "'", doc_count-1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId IN     ('" + docId + "')", 1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId NOT IN ('" + docId + "')", doc_count-1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId IS     NULL", 0, false, "cmis:objectId", new String(), false);
+        
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId =  '" + docId + ";1.0'", 1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId <> '" + docId + ";1.0'", doc_count-1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId IN     ('" + docId + ";1.0')", 1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId NOT IN ('" + docId + ";1.0')", doc_count-1, false, "cmis:objectId", new String(), false);
+
+        nodeService.setProperty(c0, ContentModel.PROP_VERSION_LABEL, "1.0");
+        
+        docId = testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:name = 'Alfresco Tutorial'", 1, false, "cmis:objectId", new String(), false);
+        
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId =  '" + docId + "'", 1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId <> '" + docId + "'", doc_count-1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId IN     ('" + docId + "')", 1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId NOT IN ('" + docId + "')", doc_count-1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId IS     NULL", 0, false, "cmis:objectId", new String(), false);
+        
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId =  '" + docId + ";1.0'", 1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId <> '" + docId + ";1.0'", doc_count-1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId IN     ('" + docId + ";1.0')", 1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId NOT IN ('" + docId + ";1.0')", doc_count-1, false, "cmis:objectId", new String(), false);
+ 
+        nodeService.setProperty(c0, ContentModel.PROP_VERSION_LABEL, "2.1");
+        
+        docId = testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:name = 'Alfresco Tutorial'", 1, false, "cmis:objectId", new String(), false);
+        
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId =  '" + docId + "'", 1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId <> '" + docId + "'", doc_count-1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId IN     ('" + docId + "')", 1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId NOT IN ('" + docId + "')", doc_count-1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId IS NOT NULL", doc_count, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId IS     NULL", 0, false, "cmis:objectId", new String(), false);
+        
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId =  '" + docId + ";2.1'", 1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId <> '" + docId + ";2.1'", doc_count-1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId IN     ('" + docId + ";2.1')", 1, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId NOT IN ('" + docId + ";2.1')", doc_count-1, false, "cmis:objectId", new String(), false);
+
     }
 
     public void testOrderBy() throws Exception

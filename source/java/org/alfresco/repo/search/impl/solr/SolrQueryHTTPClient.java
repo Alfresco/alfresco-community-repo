@@ -29,7 +29,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.model.ContentModel;
+import org.alfresco.httpclient.HttpClientFactory;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParserException;
 import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
@@ -44,12 +44,8 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.apache.commons.codec.net.URLCodec;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
@@ -73,20 +69,34 @@ public class SolrQueryHTTPClient
 
     private Map<String, String> storeMappings;
 
+    private String solrHost;
+    private int solrPort;
     private String baseUrl;
 
     private HttpClient httpClient;
-
+	private HttpClientFactory httpClientFactory;
+	
     public SolrQueryHTTPClient()
     {
-        MultiThreadedHttpConnectionManager connectionManager = new MultiThreadedHttpConnectionManager();
-        httpClient = new HttpClient(connectionManager);
-        HttpClientParams params = httpClient.getParams();
-        params.setBooleanParameter("http.tcp.nodelay", true);
-        params.setBooleanParameter("http.connection.stalecheck", false);
-        params.setBooleanParameter(HttpClientParams.PREEMPTIVE_AUTHENTICATION, true);
-        httpClient.getState().setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), new UsernamePasswordCredentials("admin", "admin"));
     }
+
+    public void init()
+    {
+    	StringBuilder sb = new StringBuilder();
+//    	sb.append("http://");
+//    	sb.append(solrHost);
+//    	sb.append(":");
+//    	sb.append(solrPort);
+    	sb.append("/solr");
+    	this.baseUrl = sb.toString();
+
+    	httpClient = httpClientFactory.getHttpClient(solrHost, solrPort);
+    }
+
+    public void setHttpClientFactory(HttpClientFactory httpClientFactory)
+	{
+		this.httpClientFactory = httpClientFactory;
+	}
 
     public void setNodeDAO(NodeDAO nodeDAO)
     {
@@ -108,12 +118,47 @@ public class SolrQueryHTTPClient
         this.storeMappings = storeMappings;
     }
 
-    public void setBaseUrl(String baseUrl)
+    public void setSolrHost(String solrHost)
     {
-        this.baseUrl = baseUrl;
+        this.solrHost = solrHost;
     }
+    
+    public void setSolrPort(int solrPort)
+    {
+        this.solrPort = solrPort;
+    }
+    
+//    public void setBaseUrl(String baseUrl)
+//    {
+//        this.baseUrl = baseUrl;
+//    }
 
-    public ResultSet executeQuery(SearchParameters searchParameters, String language)
+//    public void setKeyStoreLocation(String keyStoreLocation)
+//	{
+//		this.keyStoreLocation = keyStoreLocation;
+//	}
+//
+//	public void setTrustStoreLocation(String trustStoreLocation)
+//	{
+//		this.trustStoreLocation = trustStoreLocation;
+//	}
+//
+//	public void setKeyStoreType(String keyStoreType)
+//	{
+//		this.keyStoreType = keyStoreType;
+//	}
+//
+//	public void setTrustStoreType(String trustStoreType)
+//	{
+//		this.trustStoreType = trustStoreType;
+//	}
+//
+//	public void setPasswordFileLocation(String passwordFileLocation)
+//	{
+//		this.passwordFileLocation = passwordFileLocation;
+//	}
+
+	public ResultSet executeQuery(SearchParameters searchParameters, String language)
     {   
         try
         {

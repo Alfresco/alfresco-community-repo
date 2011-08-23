@@ -1012,14 +1012,22 @@
         </property>
     </bean>
 
+    <bean id="solrHttpClientFactory" class="org.alfresco.httpclient.HttpClientFactory">
+        <property name="secureCommsType" value="${solr.secureComms}"/>
+        <property name="sSLEncryptionParameters" ref="sslEncryptionParameters"/>
+        <property name="keyResourceLoader" ref="springKeyResourceLoader"/>
+        <property name="keyStoreParameters" ref="keyStoreParameters"/>
+        <property name="encryptionParameters" ref="md5EncryptionParameters"/>
+    </bean>
+
     <bean id="solrAdminClient" class="org.alfresco.repo.solr.SOLRAdminClient" init-method="init" destroy-method="shutdown">
-      <property name="solrHost" value="${solr.solrHost}"/>
-      <property name="solrPort" value="${solr.solrAdminPort}"/>
-      <property name="solrUrl" value="${solr.solrUrl}"/>
+      <property name="solrHost" value="${solr.host}"/>
+      <property name="solrPort" value="${solr.port}"/>
       <property name="solrUser" value="${solr.solrUser}"/>
       <property name="solrPassword" value="${solr.solrPassword}"/>
       <property name="solrPingCronExpression" value="${solr.solrPingCronExpression}"/>
       <property name="solrConnectTimeout" value="${solr.solrConnectTimeout}"/>
+      <property name="httpClientFactory" ref="solrHttpClientFactory"/>
     </bean>
 
     <bean id="solr" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">

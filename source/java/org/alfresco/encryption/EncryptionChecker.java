@@ -18,17 +18,6 @@
  */
 package org.alfresco.encryption;
 
-import java.io.Serializable;
-import java.security.InvalidKeyException;
-import java.util.List;
-
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.service.cmr.attributes.AttributeService;
-import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.EqualsHelper;
-import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
@@ -38,6 +27,7 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
  * The EncryptionChecker checks the state of the repository's encryption system.
  * In particular it checks:
  * <ul>
+ *    <li> that the keystore exists and, if not, creates one.
  *    <li> that the encryption keys have not been changed. If so, the bootstrap will be halted.
  * </ul>
  * 
@@ -47,96 +37,31 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 public class EncryptionChecker extends AbstractLifecycleBean
 {
     private static Log logger = LogFactory.	getLog(EncryptionChecker.class);
-    public static String TOP_LEVEL_KEY = "keyCheck";
-    private static enum KEY_STATUS
-    {
-    	OK, CHANGED, MISSING;
-    };
-
-    private TransactionService transactionService;
-    private AttributeService attributeService;
-    private Encryptor encryptor;
-    private List<String> keyAliases;
     
-	public void setTransactionService(TransactionService transactionService)
+    private KeyStoreChecker keyStoreChecker;
+    private KeyStoreParameters keyStoreParameters;
+    private KeyResourceLoader keyResourceLoader;
+
+	public void setkeyStoreParameters(KeyStoreParameters keyStoreParameters)
 	{
-		this.transactionService = transactionService;
+		this.keyStoreParameters = keyStoreParameters;
 	}
 
-	public void setAttributeService(AttributeService attributeService)
+	public void setKeyStoreChecker(KeyStoreChecker keyStoreChecker)
 	{
-		this.attributeService = attributeService;
+		this.keyStoreChecker = keyStoreChecker;
 	}
-
-	public void setKeyAliases(List<String> keyAliases)
+	
+	public void setKeyResourceLoader(KeyResourceLoader keyResourceLoader)
 	{
-		this.keyAliases = keyAliases;
-	}
-
-	public void setEncryptor(Encryptor encryptor)
-	{
-		this.encryptor = encryptor;
-	}
-
-	private void removeKey(String keyAlias)
-	{
-		attributeService.removeAttributes(TOP_LEVEL_KEY);
-		logger.info("Removed registered key " + keyAlias);
-	}
-
-	private KEY_STATUS checkKey(String keyAlias)
-	{
-		if(attributeService.exists(TOP_LEVEL_KEY, keyAlias))
-		{
-			try
-			{
-				// check that the key has not changed by decrypting the encrypted guid attribute
-				// comparing against the guid
-				KeyCheck keyCheck = (KeyCheck)attributeService.getAttribute(TOP_LEVEL_KEY, keyAlias);
-				Serializable storedGUID = encryptor.unsealObject(keyAlias, keyCheck.getEncrypted());
-				return EqualsHelper.nullSafeEquals(storedGUID, keyCheck.getGuid()) ? KEY_STATUS.OK : KEY_STATUS.CHANGED;
-			}
-			catch(InvalidKeyException e)
-			{
-				// key exception indicates that the key has changed - it can't decrypt the
-				// previously-encrypted data
-				return KEY_STATUS.CHANGED;
-			}
-		}
-		else
-		{
-			// register the key by creating an attribute that stores a guid and its encrypted value
-			String guid = GUID.generate();
-			Serializable encrypted = encryptor.sealObject(keyAlias, null, guid);
-			KeyCheck keyCheck = new KeyCheck(guid, encrypted);
-			attributeService.createAttribute(keyCheck, TOP_LEVEL_KEY, keyAlias);
-			logger.info("Registered key " + keyAlias);
-			return KEY_STATUS.MISSING;
-		}		
+		this.keyResourceLoader = keyResourceLoader;
 	}
 
 	@Override
 	protected void onBootstrap(ApplicationEvent event)
 	{
-    	RetryingTransactionHelper retryingTransactionHelper = transactionService.getRetryingTransactionHelper();
-    	final RetryingTransactionCallback<Void> checkKeysCallback = new RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Throwable
-            {
-        		for(String keyAlias : keyAliases)
-        		{
-        			KEY_STATUS keyStatus = checkKey(keyAlias);
-        			if(keyStatus == KEY_STATUS.CHANGED)
-        			{
-        				// Note: this will halt the application bootstrap.
-        				throw new AlfrescoRuntimeException("The key with alias " + keyAlias + " has been changed, re-instate the previous keystore");
-        			}
-        		}
-
-        		return null;
-            }
-        };
-        retryingTransactionHelper.doInTransaction(checkKeysCallback, false);
+		AlfrescoKeyStore mainKeyStore = new CachingKeyStore(keyStoreParameters, keyResourceLoader);
+		keyStoreChecker.checkKeyStore(mainKeyStore);
 	}
 
 	@Override
@@ -144,70 +69,4 @@ public class EncryptionChecker extends AbstractLifecycleBean
 	{
 		
 	}
-	
-	public void removeRegisteredKeys()
-	{
-    	RetryingTransactionHelper retryingTransactionHelper = transactionService.getRetryingTransactionHelper();
-    	final RetryingTransactionCallback<Void> removeKeysCallback = new RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Throwable
-            {
-        		for(String keyAlias : keyAliases)
-        		{
-        			removeKey(keyAlias);
-        		}
-
-        		return null;
-            }
-        };
-        retryingTransactionHelper.doInTransaction(removeKeysCallback, false);
-	}
-	
-	/**
-	 * A KeyCheck object stores a well-known guid and it's encrypted value.
-	 * 
-	 * @since 4.0
-	 *
-	 */
-	private static class KeyCheck implements Serializable
-	{
-		private static final long serialVersionUID = 4514315444977162903L;
-
-		private String guid;
-		private Serializable encrypted;
-		
-		public KeyCheck(String guid, Serializable encrypted)
-		{
-			super();
-			this.guid = guid;
-			this.encrypted = encrypted;
-		}
-
-		public String getGuid()
-		{
-			return guid;
-		}
-
-		public Serializable getEncrypted()
-		{
-			return encrypted;
-		}
-		
-		public boolean equals(Object other)
-		{
-			if(this == other)
-			{
-				return true;
-			}
-
-			if(!(other instanceof KeyCheck))
-			{
-				return false;
-			}
-			KeyCheck keyCheck = (KeyCheck)other;
-			return EqualsHelper.nullSafeEquals(keyCheck.getGuid(), getGuid()) &&
-					EqualsHelper.nullSafeEquals(keyCheck.getEncrypted(), getEncrypted());
-		}
-	}
-
 }

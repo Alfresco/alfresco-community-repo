@@ -29,8 +29,10 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.httpclient.HttpClientFactory;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.httpclient.Credentials;
+import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -68,6 +70,8 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware
 
 	private ApplicationEventPublisher applicationEventPublisher;
 	private SolrTracker solrTracker;
+	
+	private HttpClientFactory httpClientFactory;
 
 	public SOLRAdminClient()
 	{
@@ -81,11 +85,6 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware
 	public void setSolrPort(String solrPort)
 	{
 		this.solrPort = Integer.parseInt(solrPort);
-	}
-	
-	public void setSolrUrl(String url)
-	{
-		this.solrUrl = url;
 	}
 	
 	public void setSolrUser(String solrUser)
@@ -114,7 +113,29 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware
         this.solrPingCronExpression = solrPingCronExpression;
     }
 
-    public void init()
+    public void setHttpClientFactory(HttpClientFactory httpClientFactory)
+	{
+		this.httpClientFactory = httpClientFactory;
+	}
+
+//	protected HttpClient getHttpClient()
+//	{
+//		return httpClientFactory.getHttpClient(solrHost, solrPort);
+////		HttpClient httpClient = new HttpClient();
+////
+////        HttpClientParams params = httpClient.getParams();
+////        params.setBooleanParameter("http.tcp.nodelay", true);
+////        params.setBooleanParameter("http.connection.stalecheck", false);
+////
+////    	ProtocolSocketFactory socketFactory = new AuthSSLProtocolSocketFactory(
+////    			keyResourceLoader, encryptionParameters);
+////        Protocol myhttps = new Protocol("https", socketFactory, 8843);
+////        httpClient.getHostConfiguration().setHost(solrHost, 8080, myhttps);	
+////
+////        return httpClient;
+//	}
+
+	public void init()
 	{
     	ParameterCheck.mandatory("solrHost", solrHost);
     	ParameterCheck.mandatory("solrPort", solrPort);
@@ -126,7 +147,17 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware
 
 		try
 		{
-			server = new CommonsHttpSolrServer(solrUrl); 
+	    	StringBuilder sb = new StringBuilder();
+	    	sb.append(httpClientFactory.isSSL() ? "https://" : "http://");
+	    	sb.append(solrHost);
+	    	sb.append(":");
+	    	sb.append(solrPort);
+	    	sb.append("/solr");
+			this.solrUrl = sb.toString();
+			HttpClient httpClient = httpClientFactory.getHttpClient(solrHost, solrPort);
+
+			server = new CommonsHttpSolrServer(solrUrl, httpClient);
+			// TODO remove credentials because we're using SSL?
 			Credentials defaultcreds = new UsernamePasswordCredentials(solrUser, solrPassword); 
 			server.getHttpClient().getState().setCredentials(new AuthScope(solrHost, solrPort, AuthScope.ANY_REALM), 
 					defaultcreds);

@@ -29,10 +29,36 @@
         </property>
     </bean>
 
-    <bean id="search.solrQueryHTTPCLient" class="org.alfresco.repo.search.impl.solr.SolrQueryHTTPClient" >
+    <bean id="search.solrQueryHTTPCLient" class="org.alfresco.repo.search.impl.solr.SolrQueryHTTPClient" init-method="init">
+        <property name="solrHost">
+            <value>${solr.host}</value>
+        </property>
+        <property name="solrPort">
+            <value>${solr.port}</value>
+        </property>
+        <property name="httpClientFactory" ref="solrHttpClientFactory"/>
+        <!--
         <property name="baseUrl">
             <value>${solr.base.url}</value>
         </property>
+        -->
+        <!--
+        <property name="keyStoreLocation">
+            <value>${encryption.ssl.keystore.location}</value>
+        </property>
+        <property name="keyStoreType">
+            <value>${encryption.ssl.keystore.type}</value>
+        </property>
+        <property name="trustStoreLocation">
+            <value>${encryption.ssl.truststore.location}</value>
+        </property>
+        <property name="trustStoreType">
+            <value>${encryption.ssl.truststore.type}</value>
+        </property>
+        <property name="passwordFileLocation">
+            <value>${solr.ssl.passwordsFile.location}</value>
+        </property>
+        -->
         <property name="nodeDAO">
             <ref bean="nodeDAO" />
         </property>

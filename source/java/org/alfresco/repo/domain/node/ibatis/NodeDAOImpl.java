@@ -49,6 +49,7 @@ import org.alfresco.repo.domain.node.TransactionEntity;
 import org.alfresco.repo.domain.node.TransactionQueryEntity;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -90,6 +91,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String SELECT_NODES_BY_UUIDS = "alfresco.node.select_NodesByUuids";
     private static final String SELECT_NODES_BY_IDS = "alfresco.node.select_NodesByIds";
     private static final String SELECT_NODE_PROPERTIES = "alfresco.node.select_NodeProperties";
+    private static final String SELECT_PROPERTIES_BY_TYPE = "alfresco.node.select_PropertiesByType";
     private static final String SELECT_NODE_ASPECTS = "alfresco.node.select_NodeAspects";
     private static final String INSERT_NODE_PROPERTY = "alfresco.node.insert.insert_NodeProperty";
     private static final String UPDATE_PRIMARY_CHILDREN_SHARED_ACL = "alfresco.node.update.update_PrimaryChildrenSharedAcl";
@@ -1480,6 +1482,31 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
             template.select(SELECT_CHILD_ASSOCS_BY_PROPERTY_VALUE, assocProp, resultHandler);
             resultsCallback.done();
         }
+    }
+    
+    // TODO - use a callback approach
+    public List<NodePropertyEntity> getProperties(Collection<PropertyDefinition> propertyDefs)
+    {
+    	Set<QName> qnames = new HashSet<QName>();
+		for(PropertyDefinition propDef : propertyDefs)
+		{
+			qnames.add(propDef.getName());
+		}
+	
+		final List<NodePropertyEntity> props = new ArrayList<NodePropertyEntity>();
+
+		// qnames of properties that are encrypted
+		Set<Long> qnameIds = qnameDAO.convertQNamesToIds(qnames, false);
+        template.select(SELECT_PROPERTIES_BY_TYPE, qnameIds, new ResultHandler()
+        {
+			@Override
+			public void handleResult(ResultContext context)
+			{
+				props.add((NodePropertyEntity)context.getResultObject());
+			}
+        });
+		
+		return props;
     }
     
     /*

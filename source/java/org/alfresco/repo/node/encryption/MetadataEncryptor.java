@@ -1,6 +1,7 @@
 package org.alfresco.repo.node.encryption;
 
 import java.io.Serializable;
+import java.security.InvalidKeyException;
 import java.security.KeyException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -10,6 +11,7 @@ import java.util.Set;
 import javax.crypto.SealedObject;
 
 import org.alfresco.encryption.Encryptor;
+import org.alfresco.encryption.FallbackEncryptor;
 import org.alfresco.encryption.KeyProvider;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationException;
@@ -220,5 +222,24 @@ public class MetadataEncryptor
         }
         // Done
         return outbound;
+    }
+
+    public Serializable reencrypt(QName propertyQName, Serializable sealed) throws InvalidKeyException
+    {
+		// metadataEncryptor uses a fallback encryptor; decryption will try the
+		// default (new) keys first (which will fail for properties created before the
+		// change in keys), followed by the backup keys.
+		Serializable decrypted = decrypt(propertyQName, sealed);
+
+		// Re-encrypt. The new keys will be used.
+		Serializable resealed = encrypt(propertyQName, decrypted);
+
+		return resealed;
+    }
+
+    public boolean isFallbackAvailable()
+    {
+    	return false;
+//    	return encryptor.isFallbackAvailable();
     }
 }

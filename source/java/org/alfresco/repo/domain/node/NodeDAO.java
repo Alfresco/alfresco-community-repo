@@ -27,6 +27,7 @@ import java.util.Set;
 
 import org.alfresco.repo.node.NodeBulkLoader;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -36,6 +37,7 @@ import org.alfresco.service.cmr.repository.StoreExistsException;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
+import org.springframework.dao.ConcurrencyFailureException;
 
 /**
  * DAO services for <b>alf_node</b> and related tables
@@ -671,4 +673,5 @@ public interface NodeDAO extends NodeBulkLoader
      */
     public void setNodeDefiningAclId(Long nodeId, long id);
  
+    public List<NodePropertyEntity> getProperties(Collection<PropertyDefinition> propertyDefs);
 }

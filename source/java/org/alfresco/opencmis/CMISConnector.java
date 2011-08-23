@@ -2588,7 +2588,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         repCap.setCapabilityJoin(CapabilityJoin.NONE);
         repCap.setCapabilityQuery(CapabilityQuery.BOTHCOMBINED);
         repCap.setCapabilityRendition(CapabilityRenditions.READ);
-        repCap.setIsPwcSearchable(true);
+        repCap.setIsPwcSearchable(false);
         repCap.setIsPwcUpdatable(true);
         repCap.setSupportsGetDescendants(true);
         repCap.setSupportsGetFolderTree(true);

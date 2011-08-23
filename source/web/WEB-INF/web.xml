@@ -318,12 +318,12 @@
       <filter-name>CacheExpiresFilter</filter-name>
       <url-pattern>*.js</url-pattern>
    </filter-mapping>
-
+<!--
    <filter-mapping>
       <filter-name>SOLR Authentication Filter</filter-name>
       <url-pattern>/service/api/solr/*</url-pattern>
    </filter-mapping>
-
+-->
    <listener>
       <listener-class>org.apache.myfaces.webapp.StartupServletContextListener</listener-class>
    </listener>
@@ -432,7 +432,7 @@
          <param-value>webscripts.authenticator.basic</param-value>
       </init-param>
    </servlet>
-
+   
    <servlet>
       <servlet-name>wcapiServlet</servlet-name>
       <servlet-class>org.springframework.extensions.webscripts.servlet.WebScriptServlet</servlet-class>
@@ -839,5 +839,28 @@
       <env-entry-value/> <!-- Empty value included for JBoss compatibility -->
       <env-entry-type>java.lang.String</env-entry-type>
    </env-entry>
+   
+   <security-constraint>
+      <web-resource-collection>
+         <url-pattern>/service/api/solr/*</url-pattern>
+      </web-resource-collection>
+
+      <auth-constraint>
+         <role-name>repoclient</role-name>
+      </auth-constraint>
+
+      <user-data-constraint>
+         <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+      </user-data-constraint>
+   </security-constraint>
+
+   <login-config>
+      <auth-method>CLIENT-CERT</auth-method>
+      <realm-name>Repository</realm-name>
+   </login-config>
+
+   <security-role>
+     <role-name>repoclient</role-name>
+   </security-role>
 
 </web-app>

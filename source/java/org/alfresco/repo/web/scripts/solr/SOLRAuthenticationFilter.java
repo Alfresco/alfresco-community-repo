@@ -1,67 +1,99 @@
+/*
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.alfresco.repo.web.scripts.solr;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.security.AlgorithmParameters;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 
-import org.alfresco.encryption.EncryptionUtils;
-import org.alfresco.encryption.Encryptor;
-import org.alfresco.encryption.KeyProvider;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.web.filter.beans.DependencyInjectedFilter;
-import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+/**
+ * This filter protects the solr callback urls by verifying MACs on requests and encrypting responses
+ * and generating MACs on responses, if the secureComms property is set to "md5". If it is set to "https"
+ * or "none", the filter does nothing to the request and response.
+ * 
+ * @since 4.0
+ *
+ */
 public class SOLRAuthenticationFilter implements DependencyInjectedFilter
 {
+	public static enum SecureCommsType
+	{
+		HTTPS, NONE;
+		
+		public static SecureCommsType getType(String type)
+		{
+			if(type.equalsIgnoreCase("https"))
+			{
+				return HTTPS;
+			}
+			else if(type.equalsIgnoreCase("none"))
+			{
+				return NONE;
+			}
+			else
+			{
+				throw new IllegalArgumentException("Invalid communications type");
+			}
+		}
+	};
+
     // Logger
     private static Log logger = LogFactory.getLog(SOLRAuthenticationFilter.class);
 
-    private boolean enabled = true;
-    private Encryptor encryptor;
-    private EncryptionUtils encryptionUtils;
-
-    public void setEncryptor(Encryptor encryptor)
-	{
-		this.encryptor = encryptor;
-	}
-
-	public void setEncryptionUtils(EncryptionUtils encryptionUtils)
-	{
-		this.encryptionUtils = encryptionUtils;
-	}
+    private SecureCommsType secureComms = SecureCommsType.HTTPS;
 	
-	public void setEnabled(boolean enabled)
+	public void setSecureComms(String type)
 	{
-		this.enabled = enabled;
+		try
+		{
+			this.secureComms = SecureCommsType.getType(type);
+		}
+		catch(IllegalArgumentException e)
+		{
+			throw new AlfrescoRuntimeException("", e);
+		}
 	}
 
 	public void doFilter(ServletContext context, ServletRequest request,
 			ServletResponse response, FilterChain chain) throws IOException,
 			ServletException
 	{
-		if(enabled)
+		HttpServletRequest httpRequest = (HttpServletRequest)request;
+		HttpServletResponse httpResponse = (HttpServletResponse)response;
+
+/*		if(secureComms == SecureCommsType.ALFRESCO)
 		{
-			HttpServletRequest httpRequest = (HttpServletRequest)request;
-			HttpServletResponse httpResponse = (HttpServletResponse)response;
-	
 			// Need to get as a byte array because we need to read the request twice, once for authentication
 			// and again by the web service.
 			SOLRHttpServletRequestWrapper requestWrapper = new SOLRHttpServletRequestWrapper(httpRequest, encryptionUtils);
@@ -101,6 +133,18 @@ public class SOLRAuthenticationFilter implements DependencyInjectedFilter
 				httpResponse.setStatus(401);
 			}
 		}
+		else */if(secureComms == SecureCommsType.HTTPS)
+		{
+			if(httpRequest.isSecure())
+			{
+				// https authentication
+				chain.doFilter(request, response);
+			}
+			else
+			{
+				throw new AlfrescoRuntimeException("Expected a https request");
+			}
+		}
 		else
 		{
 			chain.doFilter(request, response);
@@ -130,7 +174,7 @@ public class SOLRAuthenticationFilter implements DependencyInjectedFilter
     	return((currentTime - timestamp) < 30 * 1000); // 5s
     }
     
-    private static class SOLRHttpServletRequestWrapper extends HttpServletRequestWrapper
+/*    private static class SOLRHttpServletRequestWrapper extends HttpServletRequestWrapper
     {
     	private byte[] body;
 
@@ -168,7 +212,7 @@ public class SOLRAuthenticationFilter implements DependencyInjectedFilter
 				}
     		};
     	}
-    }
+    }*/
     
     private static class ByteArrayServletOutputStream extends ServletOutputStream
     {

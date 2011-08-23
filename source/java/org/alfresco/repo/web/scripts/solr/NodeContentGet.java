@@ -55,6 +55,7 @@ public class NodeContentGet extends StreamContent
 {
     private static final String TRANSFORM_STATUS_HEADER = "X-Alfresco-transformStatus";
     private static final String TRANSFORM_EXCEPTION_HEADER = "X-Alfresco-transformException";
+    private static final String TRANSFORM_DURATION_HEADER = "X-Alfresco-transformDuration";
     
     private static final Log logger = LogFactory.getLog(NodeContentGet.class);
 
@@ -166,7 +167,10 @@ public class NodeContentGet extends StreamContent
 
         try
         {
+        	long start = System.currentTimeMillis();
             transformer.transform(reader, writer);
+            long transformDuration = System.currentTimeMillis() - start;
+            res.setHeader(TRANSFORM_DURATION_HEADER, String.valueOf(transformDuration));
         }
         catch (ContentIOException e)
         {

@@ -31,6 +31,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
@@ -187,5 +188,191 @@ public class NodeServiceTest extends TestCase
         assertEquals(
                 "Node locale not set in setProperties(). ",
                 Locale.GERMAN, nodeService.getProperty(nodeRef2, ContentModel.PROP_LOCALE));
+    }
+
+    /**
+     * Creates a string of parent-child nodes to fill the given array of nodes
+     * 
+     * @param workspaceRootNodeRef          the store to use
+     * @param liveNodeRefs                  the node array to fill
+     */
+    private void buildNodeHierarchy(final NodeRef workspaceRootNodeRef, final NodeRef[] liveNodeRefs)
+    {
+        RetryingTransactionCallback<Void> setupCallback = new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                liveNodeRefs[0] = nodeService.createNode(
+                        workspaceRootNodeRef,
+                        ContentModel.ASSOC_CHILDREN,
+                        QName.createQName(NAMESPACE, "depth-" + 0),
+                        ContentModel.TYPE_FOLDER).getChildRef();
+                for (int i = 1; i < liveNodeRefs.length; i++)
+                {
+                    liveNodeRefs[i] = nodeService.createNode(
+                            liveNodeRefs[i-1],
+                            ContentModel.ASSOC_CONTAINS,
+                            QName.createQName(NAMESPACE, "depth-" + i),
+                            ContentModel.TYPE_FOLDER).getChildRef();
+                }
+                return null;
+            }
+        };
+        txnService.getRetryingTransactionHelper().doInTransaction(setupCallback);
+    }
+    
+    /**
+     * Tests that two separate node trees can be deleted concurrently at the database level.
+     * This is not a concurren thread issue; instead we delete a hierarchy and hold the txn
+     * open while we delete another in a new txn, thereby testing that DB locks don't prevent
+     * concurrent deletes.
+     * <p/>
+     * See: <a href="https://issues.alfresco.com/jira/browse/ALF-5714">ALF-5714</a>
+     */
+    public void testConcurrentArchive() throws Exception
+    {
+        final NodeRef workspaceRootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        final NodeRef[] nodesOne = new NodeRef[10];
+        buildNodeHierarchy(workspaceRootNodeRef, nodesOne);
+        final NodeRef[] nodesTwo = new NodeRef[10];
+        buildNodeHierarchy(workspaceRootNodeRef, nodesTwo);
+        
+        RetryingTransactionCallback<Void> outerCallback = new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                // Delete the first hierarchy
+                nodeService.deleteNode(nodesOne[0]);
+                // Keep the txn hanging around to maintain DB locks
+                // and start a second transaction to delete another hierarchy
+                RetryingTransactionCallback<Void> innerCallback = new RetryingTransactionCallback<Void>()
+                {
+                    @Override
+                    public Void execute() throws Throwable
+                    {
+                        nodeService.deleteNode(nodesTwo[0]);
+                        return null;
+                    }
+                };
+                txnService.getRetryingTransactionHelper().doInTransaction(innerCallback, false, true);
+                return null;
+            }
+        };
+        txnService.getRetryingTransactionHelper().doInTransaction(outerCallback, false, true);
+    }
+    
+    /**
+     * Tests archive and restore of simple hierarchy, checking that references and IDs are
+     * used correctly.
+     */
+    public void testArchiveAndRestore()
+    {
+        // First create a node structure (a very simple one) and record the references and IDs
+        final NodeRef[] liveNodeRefs = new NodeRef[10];
+        final NodeRef[] archivedNodeRefs = new NodeRef[10];
+        
+        final NodeRef workspaceRootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        final NodeRef archiveRootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE);
+
+        buildNodeHierarchy(workspaceRootNodeRef, liveNodeRefs);
+
+        // Get the node status details
+        Long txnIdCreate = null;
+        for (int i = 0; i < liveNodeRefs.length; i++)
+        {
+            StoreRef archivedStoreRef = archiveRootNodeRef.getStoreRef();
+            archivedNodeRefs[i] = new NodeRef(archivedStoreRef, liveNodeRefs[i].getId());
+
+            Status liveStatus = nodeService.getNodeStatus(liveNodeRefs[i]);
+            Status archivedStatus = nodeService.getNodeStatus(archivedNodeRefs[i]);
+            
+            // Check that live node statuses are correct
+            assertNotNull("'Live' node " + i + " status does not exist.", liveStatus);
+            assertFalse("'Live' node " + i + " should be node be deleted", liveStatus.isDeleted());
+            assertNull("'Archived' node " + i + " should not (yet) exist.", archivedStatus);
+            
+            // Nodes in the hierarchy must be in the same txn
+            if (txnIdCreate == null)
+            {
+                txnIdCreate = liveStatus.getDbTxnId();
+            }
+            else
+            {
+                // Make sure that the DB Txn ID is the same
+                assertEquals(
+                        "DB TXN ID should have been the same for the hierarchy. ",
+                        txnIdCreate, liveStatus.getDbTxnId());
+            }
+        }
+        
+        // Archive the top-level node
+        nodeService.deleteNode(liveNodeRefs[0]);
+        
+        // Recheck the nodes and make sure that all the 'live' nodes are deleted
+        Long txnIdDelete = null;
+        for (int i = 0; i < liveNodeRefs.length; i++)
+        {
+            Status liveStatus = nodeService.getNodeStatus(liveNodeRefs[i]);
+            Status archivedStatus = nodeService.getNodeStatus(archivedNodeRefs[i]);
+            
+            // Check that the ghosted nodes are marked as deleted and the archived nodes are not
+            assertNotNull("'Live' node " + i + " status does not exist.", liveStatus);
+            assertTrue("'Live' node " + i + " should be deleted (ghost entries)", liveStatus.isDeleted());
+            assertNotNull("'Archived' node " + i + " does not exist.", archivedStatus);
+            assertFalse("'Archived' node " + i + " should be undeleted", archivedStatus.isDeleted());
+
+            // Check that both old (ghosted deletes) and new nodes are in the same txn
+            if (txnIdDelete == null)
+            {
+                txnIdDelete = liveStatus.getDbTxnId();
+            }
+            else
+            {
+                // Make sure that the DB Txn ID is the same
+                assertEquals(
+                        "DB TXN ID should have been the same for the deleted (ghost) nodes. ",
+                        txnIdDelete, liveStatus.getDbTxnId());
+            }
+            assertEquals(
+                    "DB TXN ID should be the same for deletes across the hierarchy",
+                    txnIdDelete, archivedStatus.getDbTxnId());
+        }
+        
+        // Restore the top-level node
+        nodeService.restoreNode(archivedNodeRefs[0], workspaceRootNodeRef, null, null);
+        
+        // Recheck the nodes and make sure that all the 'archived' nodes are deleted and the 'live' nodes are back
+        Long txnIdRestore = null;
+        for (int i = 0; i < liveNodeRefs.length; i++)
+        {
+            Status liveStatus = nodeService.getNodeStatus(liveNodeRefs[i]);
+            StoreRef archivedStoreRef = archiveRootNodeRef.getStoreRef();
+            archivedNodeRefs[i] = new NodeRef(archivedStoreRef, liveNodeRefs[i].getId());
+            Status archivedStatus = nodeService.getNodeStatus(archivedNodeRefs[i]);
+            
+            // Check that the ghosted nodes are marked as deleted and the archived nodes are not
+            assertNotNull("'Live' node " + i + " status does not exist.", liveStatus);
+            assertFalse("'Live' node " + i + " should not be deleted", liveStatus.isDeleted());
+            assertNotNull("'Archived' node " + i + " does not exist.", archivedStatus);
+            assertTrue("'Archived' node " + i + " should be deleted (ghost entry)", archivedStatus.isDeleted());
+
+            // Check that both old (ghosted deletes) and new nodes are in the same txn
+            if (txnIdRestore == null)
+            {
+                txnIdRestore = liveStatus.getDbTxnId();
+            }
+            else
+            {
+                // Make sure that the DB Txn ID is the same
+                assertEquals(
+                        "DB TXN ID should have been the same for the restored nodes. ",
+                        txnIdRestore, liveStatus.getDbTxnId());
+            }
+            assertEquals(
+                    "DB TXN ID should be the same for the ex-archived (now-ghost) nodes. ",
+                    txnIdRestore, archivedStatus.getDbTxnId());
+        }
     }
 }

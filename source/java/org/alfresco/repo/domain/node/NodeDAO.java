@@ -157,6 +157,7 @@ public interface NodeDAO extends NodeBulkLoader
      * @return                  Returns the details of the child association created
      * @throws InvalidTypeException if the node type is invalid or if the node type
      *                          is not a valid real node
+     * @throws NodeExistsException          if the target reference is already taken by a live node
      */
     public ChildAssocEntity newNode(
             Long parentNodeId,
@@ -167,35 +168,32 @@ public interface NodeDAO extends NodeBulkLoader
             QName nodeTypeQName,
             Locale nodeLocale,
             String childNodeName,
-            Map<QName, Serializable> auditableProperties/*,
-            Map<QName, Serializable> ownableProperties*/) throws InvalidTypeException;
+            Map<QName, Serializable> auditableProperties) throws InvalidTypeException;
 
     /**
      * Update a node's primary association, giving it a new parent and new association parameters.
      * <p/>
-     * <b>**NEW**:</b> If the parent node's store differs from the child node's store, then the
-     * child node's store is updated.  Store move conflicts are automatically handled by assigning
-     * new UUIDs to the existing target node.
+     * <b>**NEW**:</b>  If the parent node's store differs from the child node's store, then a new
+     *                  child node's is created.
      * 
      * @param childNodeId       the child node that is moving
      * @param newParentNodeId   the new parent node (may not be <tt>null</tt>)
      * @param assocTypeQName    the new association type or <tt>null</tt> to keep the existing type
      * @param assocQName        the new association qname or <tt>null</tt> to keep the existing name
-     * @return                  Returns the new association reference
+     * @return                  Returns the (first) new association reference and new child reference (second)
+     * @throws NodeExistsException      if the target UUID of the move (in case of a store move) already exists
      */
-    public Pair<Long, ChildAssociationRef> moveNode(
+    public Pair<Pair<Long, ChildAssociationRef>, Pair<Long, NodeRef>> moveNode(
             Long childNodeId,
             Long newParentNodeId,
             QName assocTypeQName,
             QName assocQName);
     
     /**
-     * @param storeRef          the new store or <tt>null</tt> to keep the existing one
-     * @param uuid              the new UUID for the node or <tt>null</tt> to keep it the same
      * @param nodeTypeQName     the new type QName for the node or <tt>null</tt> to keep the existing one
      * @param nodeLocale        the new locale for the node or <tt>null</tt> to keep the existing one
      */
-    public void updateNode(Long nodeId, StoreRef storeRef, String uuid, QName nodeTypeQName, Locale nodeLocale);
+    public void updateNode(Long nodeId, QName nodeTypeQName, Locale nodeLocale);
     
     public void setNodeAclId(Long nodeId, Long aclId);
     

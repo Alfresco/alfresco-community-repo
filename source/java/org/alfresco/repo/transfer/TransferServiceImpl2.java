@@ -22,7 +22,6 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -52,7 +51,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transfer.manifest.TransferManifestDeletedNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestHeader;
 import org.alfresco.repo.transfer.manifest.TransferManifestNode;
@@ -73,7 +72,6 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.transfer.TransferCallback;
 import org.alfresco.service.cmr.transfer.TransferCancelledException;
@@ -144,7 +142,7 @@ public class TransferServiceImpl2 implements TransferService2
     public void init()
     {
         PropertyCheck.mandatory(this, "nodeService", nodeService);
-        PropertyCheck.mandatory(this, "searchService", getSearchService());
+        PropertyCheck.mandatory(this, "searchService", searchService);
         PropertyCheck.mandatory(this, "transferSpaceQuery", transferSpaceQuery);
         PropertyCheck.mandatory(this, "defaultTransferGroup", defaultTransferGroup);
         PropertyCheck.mandatory(this, "transmitter", transmitter);
@@ -152,7 +150,7 @@ public class TransferServiceImpl2 implements TransferService2
         PropertyCheck.mandatory(this, "actionService", actionService);
         PropertyCheck.mandatory(this, "transactionService", transactionService);
         PropertyCheck.mandatory(this, "descriptorService", descriptorService);
-        PropertyCheck.mandatory(this, "transferVersionChecker", getTransferVersionChecker());
+        PropertyCheck.mandatory(this, "transferVersionChecker", transferVersionChecker);
     }
     
     private String transferSpaceQuery; 
@@ -465,7 +463,7 @@ public class TransferServiceImpl2 implements TransferService2
        params.put("definition", definition);
        params.put("callbacks", (Serializable)callbacks);
        
-       Action transferAction = getActionService().createAction("transfer-async", params); 
+       Action transferAction = actionService.createAction("transfer-async", params); 
        
        /**
         * Execute transfer async in its own transaction.
@@ -478,7 +476,7 @@ public class TransferServiceImpl2 implements TransferService2
        {
            trx.begin();
            logger.debug("calling action service to execute action");
-           getActionService().executeAction(transferAction, null, false, true);
+           actionService.executeAction(transferAction, null, false, true);
            trx.commit();   
            logger.debug("committed successfully");
            success = true;
@@ -617,7 +615,7 @@ public class TransferServiceImpl2 implements TransferService2
                     {
                         // check alfresco versions are compatible
                         TransferVersion toVersion = transfer.getToVersion();
-                        if(!getTransferVersionChecker().checkTransferVersions(fromVersion, toVersion))
+                        if(!this.transferVersionChecker.checkTransferVersions(fromVersion, toVersion))
                         {
                             throw new TransferException(MSG_INCOMPATIBLE_VERSIONS, new Object[] {transfer.getTransferId(), fromVersion, toVersion});
                         }
@@ -1135,19 +1133,9 @@ public class TransferServiceImpl2 implements TransferService2
         this.nodeService = nodeService;
     }
 
-    public NodeService getNodeService()
-    {
-        return nodeService;
-    }
-
     public void setSearchService(SearchService searchService)
     {
         this.searchService = searchService;
-    }
-
-    public SearchService getSearchService()
-    {
-        return searchService;
     }
 
     public void setTenantService(TenantService tenantService)
@@ -1160,21 +1148,11 @@ public class TransferServiceImpl2 implements TransferService2
         this.transferSpaceQuery = transferSpaceQuery;
     }
 
-    public String getTransferSpaceQuery()
-    {
-        return transferSpaceQuery;
-    }
-    
     public void setDefaultTransferGroup(String defaultGroup)
     {
         this.defaultTransferGroup = defaultGroup;
     }
 
-    public String getDefaultTransferGroup()
-    {
-        return defaultTransferGroup;
-    }
-    
     public TransferTransmitter getTransmitter()
     {
         return transmitter;
@@ -1331,29 +1309,27 @@ public class TransferServiceImpl2 implements TransferService2
     private NodeRef persistTransferReport(final String transferName, final Transfer transfer, final TransferTarget target, final TransferDefinition definition,
             final List<TransferEvent> events, final File snapshotFile, final Exception exception)
     {
-        /**
-         * persist the transfer report in its own transaction so it cannot be rolled back
-         */
-        NodeRef reportNode = transactionService.getRetryingTransactionHelper().doInTransaction(
-                    new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
-                    {
-                        public NodeRef execute() throws Throwable
-                        {
-                            logger.debug("transfer report starting");
-                            NodeRef reportNode = null; 
-                            if (exception != null)
-                            {
-                                reportNode = transferReporter.createTransferReport(transferName, exception, target, definition, events, snapshotFile);
-                            
-                            }
-                            else
-                            {
-                                reportNode = transferReporter.createTransferReport(transferName, transfer, target, definition, events, snapshotFile);
-                            }
-                            logger.debug("transfer report done");
-                            return reportNode;
-                        }
-                    }, false, true);
+        // persist the transfer report in its own transaction so it cannot be rolled back
+        RetryingTransactionCallback<NodeRef> writeReportCallback = new RetryingTransactionCallback<NodeRef>()
+        {
+            @Override
+            public NodeRef execute() throws Throwable
+            {
+                logger.debug("transfer report starting");
+                NodeRef reportNode = null; 
+                if (exception != null)
+                {
+                    reportNode = transferReporter.createTransferReport(transferName, exception, target, definition, events, snapshotFile);
+                }
+                else
+                {
+                    reportNode = transferReporter.createTransferReport(transferName, transfer, target, definition, events, snapshotFile);
+                }
+                logger.debug("transfer report done");
+                return reportNode;
+            }
+        };
+        NodeRef reportNode = transactionService.getRetryingTransactionHelper().doInTransaction(writeReportCallback, false, true);
         return reportNode;
     }
     
@@ -1365,49 +1341,41 @@ public class TransferServiceImpl2 implements TransferService2
             final Transfer transfer, 
             final TransferTarget target)
     {
-       /**
-         *  in its own transaction so it cannot be rolled back
-         */
-        NodeRef reportNode = transactionService.getRetryingTransactionHelper().doInTransaction(
-            new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
+        // in its own transaction so it cannot be rolled back
+        RetryingTransactionCallback<NodeRef> writeReportCallback = new RetryingTransactionCallback<NodeRef>()
+        {
+            @Override
+            public NodeRef execute() throws Throwable
             {
-                public NodeRef execute() throws Throwable
+                File tempDir = TempFileProvider.getLongLifeTempDir(FILE_DIRECTORY);
+                File destReportFile = TempFileProvider.createTempFile("TRX-DREP", FILE_SUFFIX, tempDir);
+                FileOutputStream destReportOutput = new FileOutputStream(destReportFile); 
+                transmitter.getTransferReport(transfer, destReportOutput);
+                logger.debug("transfer report (destination) starting");
+
+                NodeRef reportNode = transferReporter.writeDestinationReport(transferName, target, destReportFile);
+                logger.debug("transfer report (destination) done");
+
+                if(destReportFile != null)
                 {
-                   try
-                   {
-                        File tempDir = TempFileProvider.getLongLifeTempDir(FILE_DIRECTORY);
-                        File destReportFile = TempFileProvider.createTempFile("TRX-DREP", FILE_SUFFIX, tempDir);
-                        FileOutputStream destReportOutput = new FileOutputStream(destReportFile); 
-                        transmitter.getTransferReport(transfer, destReportOutput);
-                        logger.debug("transfer report (destination) starting");
+                    destReportFile.delete();
+                }
+                logger.debug("destination report temp file deleted");
 
-                        NodeRef reportNode = transferReporter.writeDestinationReport(transferName, target, destReportFile);
-                        logger.debug("transfer report (destination) done");
-
-                        if(destReportFile != null)
-                        {
-                            destReportFile.delete();
-                        }
-                        logger.debug("destination report temp file deleted");
-
-                        return reportNode;
-                    }
-                    catch(FileNotFoundException ie)
-                    {
-                        // there's nothing we can do here. - but we do not want the exception to propogate up.
-                        logger.debug("unexpected error while obtaining destination transfer report", ie);
-                        return null;
-                    }
-                    catch(TransferException ie)
-                    {
-                        // there's nothing we can do here. - but we do not want the exception to propogate up.
-                        logger.debug("unexpected error while obtaining destination transfer report", ie);
-                        return null;
-                    }
-                } // end execute
-            }, false, true);
-            
-        return reportNode;
+                return reportNode;
+            }
+        };
+        try
+        {
+            NodeRef reportNode = transactionService.getRetryingTransactionHelper().doInTransaction(writeReportCallback, false, true);
+            return reportNode;
+        }
+        catch (Throwable e)
+        {
+            // there's nothing we can do here. - but we do not want the exception to propogate up.
+            logger.debug("unexpected error while obtaining destination transfer report", e);
+            return null;
+        }
     }
     
     public void setTransferManifestNodeFactory(TransferManifestNodeFactory transferManifestNodeFactory)
@@ -1415,19 +1383,9 @@ public class TransferServiceImpl2 implements TransferService2
         this.transferManifestNodeFactory = transferManifestNodeFactory;
     }
 
-    public TransferManifestNodeFactory getTransferManifestNodeFactory()
-    {
-        return transferManifestNodeFactory;
-    }
-
     public void setActionService(ActionService actionService)
     {
         this.actionService = actionService;
-    }
-
-    public ActionService getActionService()
-    {
-        return actionService;
     }
 
     public void setTransactionService(TransactionService transactionService)
@@ -1435,29 +1393,14 @@ public class TransferServiceImpl2 implements TransferService2
         this.transactionService = transactionService;
     }
 
-    public TransactionService getTransactionService()
-    {
-        return transactionService;
-    }
-
     public void setTransferReporter(TransferReporter transferReporter)
     {
         this.transferReporter = transferReporter;
     }
 
-    public TransferReporter getTransferReporter()
-    {
-        return transferReporter;
-    }
-    
     public void setCommitPollDelay(long commitPollDelay)
     {
         this.commitPollDelay = commitPollDelay;
-    }
-
-    public long getCommitPollDelay()
-    {
-        return commitPollDelay;
     }
 
     public void setDescriptorService(DescriptorService descriptorService)
@@ -1465,21 +1408,11 @@ public class TransferServiceImpl2 implements TransferService2
         this.descriptorService = descriptorService;
     }
 
-    public DescriptorService getDescriptorService()
-    {
-        return descriptorService;
-    }
-
     public void setTransferVersionChecker(TransferVersionChecker transferVersionChecker)
     {
         this.transferVersionChecker = transferVersionChecker;
     }
 
-    public TransferVersionChecker getTransferVersionChecker()
-    {
-        return transferVersionChecker;
-    }
-    
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;

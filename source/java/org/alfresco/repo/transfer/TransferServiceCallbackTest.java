@@ -115,6 +115,7 @@ public class TransferServiceCallbackTest extends TestCase
         applicationContext = ApplicationContextHelper.getApplicationContext();
 
         // Get the required services
+        descriptorService = (DescriptorService) this.applicationContext.getBean("DescriptorService");
         transferServiceImpl = (TransferServiceImpl2) this.applicationContext.getBean("transferService2");
         transferService = transferServiceImpl;
         authenticationComponent = (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
@@ -122,8 +123,8 @@ public class TransferServiceCallbackTest extends TestCase
         repository = (Repository) applicationContext.getBean("repositoryHelper");
         fileFolderService = (FileFolderService) applicationContext.getBean("fileFolderService");
                
-        localRepositoryId =  transferServiceImpl.getDescriptorService().getCurrentRepositoryDescriptor().getId();
-        version =  new TransferVersionImpl(transferServiceImpl.getDescriptorService().getServerDescriptor());
+        localRepositoryId = descriptorService.getCurrentRepositoryDescriptor().getId();
+        version =  new TransferVersionImpl(descriptorService.getServerDescriptor());
         
         mockedTransferTransmitter = mock(TransferTransmitter.class);
         mockedCallback = mock(TransferCallback.class);

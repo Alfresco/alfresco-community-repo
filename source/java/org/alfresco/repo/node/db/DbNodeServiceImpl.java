@@ -37,6 +37,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.ChildAssocEntity;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.node.NodeDAO;
+import org.alfresco.repo.domain.node.NodeExistsException;
 import org.alfresco.repo.domain.node.NodeDAO.ChildAssocRefQueryCallback;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.node.AbstractNodeServiceImpl;
@@ -734,7 +735,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         invokeBeforeUpdateNode(nodeRef);
         
         // Set the type
-        nodeDAO.updateNode(nodePair.getFirst(), null, null, typeQName, null);
+        nodeDAO.updateNode(nodePair.getFirst(), typeQName, null);
         
         // Add the default aspects and properties required for the given type. Existing values will not be overridden.
         addAspectsAndProperties(nodePair, typeQName, null, null, null, null, false);
@@ -946,7 +947,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         StoreRef storeRef = nodeRef.getStoreRef();
         StoreRef archiveStoreRef = storeArchiveMap.get(storeRef);
 
-        /**
+        /*
          *  Work out whether we need to archive or delete the node.
          */
      
@@ -985,7 +986,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             }
         }
 
-        /**
+        /*
          * Now we have worked out whether to archive or delete, go ahead and do it
          */
         if (requiresDelete == null || requiresDelete)
@@ -2091,6 +2092,30 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         Map<QName, Serializable> existingProperties = nodeDAO.getNodeProperties(nodeId);
         Map<QName, Serializable> newProperties = new HashMap<QName, Serializable>(11);
         
+        // move the node
+        Pair<Long, NodeRef> archiveStoreRootNodePair = nodeDAO.getRootNode(archiveStoreRef);
+        Pair<Long, NodeRef> newNodePair = null;
+        try
+        {
+            ChildAssociationRef newPrimaryParentAssocPair = moveNode(
+                    nodeRef,
+                    archiveStoreRootNodePair.getSecond(),
+                    ContentModel.ASSOC_CHILDREN,
+                    NodeArchiveService.QNAME_ARCHIVED_ITEM);
+            newNodePair = getNodePairNotNull(newPrimaryParentAssocPair.getChildRef());
+        }
+        catch (NodeExistsException e)
+        {
+            // Clear out the offending node and try again
+            deleteNode(e.getNodePair().getSecond());
+            ChildAssociationRef newPrimaryParentAssocPair = moveNode(
+                    nodeRef,
+                    archiveStoreRootNodePair.getSecond(),
+                    ContentModel.ASSOC_CHILDREN,
+                    NodeArchiveService.QNAME_ARCHIVED_ITEM);
+            newNodePair = getNodePairNotNull(newPrimaryParentAssocPair.getChildRef());
+        }
+        
         // add the aspect
         newAspects.add(ContentModel.ASPECT_ARCHIVED);
         newProperties.put(ContentModel.PROP_ARCHIVED_BY, AuthenticationUtil.getFullyAuthenticatedUser());
@@ -2104,22 +2129,12 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                     ContentModel.PROP_ARCHIVED_ORIGINAL_OWNER,
                     originalOwner != null ? originalOwner : originalCreator);
         }
-        
         // change the node ownership
         newAspects.add(ContentModel.ASPECT_OWNABLE);
         newProperties.put(ContentModel.PROP_OWNER, AuthenticationUtil.getFullyAuthenticatedUser());
         
         // Set the aspects and properties
-        nodeDAO.addNodeProperties(nodeId, newProperties);
-        nodeDAO.addNodeAspects(nodeId, newAspects);
-        
-        // move the node
-        Pair<Long, NodeRef> archiveStoreRootNodePair = nodeDAO.getRootNode(archiveStoreRef);
-        moveNode(
-                nodeRef,
-                archiveStoreRootNodePair.getSecond(),
-                ContentModel.ASSOC_CHILDREN,
-                NodeArchiveService.QNAME_ARCHIVED_ITEM);
+        addAspectsAndProperties(newNodePair, null, null, null, newAspects, newProperties, false);
     }
     
     /**
@@ -2233,13 +2248,12 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         
         Long nodeToMoveId = nodeToMovePair.getFirst();
         QName nodeToMoveTypeQName = nodeDAO.getNodeType(nodeToMoveId);
+        Set<QName> nodeToMoveAspectQNames = nodeDAO.getNodeAspects(nodeToMoveId);
         NodeRef oldNodeToMoveRef = nodeToMovePair.getSecond();
         Long parentNodeId = parentNodePair.getFirst();
         NodeRef parentNodeRef = parentNodePair.getSecond();
         StoreRef oldStoreRef = oldNodeToMoveRef.getStoreRef();
         StoreRef newStoreRef = parentNodeRef.getStoreRef();
-        NodeRef newNodeToMoveRef = new NodeRef(newStoreRef, oldNodeToMoveRef.getId());
-        Pair<Long, NodeRef> newNodeToMovePair = new Pair<Long, NodeRef>(nodeToMoveId, newNodeToMoveRef);
         
         // Get the primary parent association
         Pair<Long, ChildAssociationRef> oldParentAssocPair = nodeDAO.getPrimaryParentAssoc(nodeToMoveId);
@@ -2249,15 +2263,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             throw new IllegalArgumentException("Node " + nodeToMoveId + " doesn't have a parent.  Use 'addChild' instead of move.");
         }
         ChildAssociationRef oldParentAssocRef = oldParentAssocPair.getSecond();
-        
-        // Shortcut this whole process if nothing has changed
-        if (EqualsHelper.nullSafeEquals(oldParentAssocRef.getParentRef(), newParentRef) &&
-                EqualsHelper.nullSafeEquals(oldParentAssocRef.getTypeQName(), assocTypeQName) &&
-                EqualsHelper.nullSafeEquals(oldParentAssocRef.getQName(), assocQName))
-        {
-            // It's all just the same
-            return oldParentAssocRef;
-        }
         
         boolean movingStore = !oldStoreRef.equals(newStoreRef);
         
@@ -2279,11 +2284,13 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
         
         // Move node under the new parent
-        Pair<Long, ChildAssociationRef> newParentAssocPair = nodeDAO.moveNode(
+        Pair<Pair<Long, ChildAssociationRef>, Pair<Long, NodeRef>> moveNodeResult = nodeDAO.moveNode(
                 nodeToMoveId,
                 parentNodeId,
                 assocTypeQName,
                 assocQName);
+        Pair<Long, ChildAssociationRef> newParentAssocPair = moveNodeResult.getFirst();
+        Pair<Long, NodeRef> newNodeToMovePair = moveNodeResult.getSecond();
         ChildAssociationRef newParentAssocRef = newParentAssocPair.getSecond();
 
         // Handle indexing differently if it is a store move
@@ -2302,7 +2309,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // Call behaviours
         if (movingStore)
         {
-            Set<QName> nodeToMoveAspectQNames = nodeDAO.getNodeAspects(nodeToMoveId);
             // The Node changes NodeRefs, so this is really the deletion of the old node and creation
             // of a node in a new store as far as the clients are concerned.
             invokeOnDeleteNode(oldParentAssocRef, nodeToMoveTypeQName, nodeToMoveAspectQNames, true);
@@ -2371,7 +2377,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             QName childNodeTypeQName = nodeDAO.getNodeType(childNodeId);
             Set<QName> childNodeAspectQNames = nodeDAO.getNodeAspects(childNodeId);
             Pair<Long, ChildAssociationRef> oldParentAssocPair = nodeDAO.getPrimaryParentAssoc(childNodeId);
-            Pair<Long, NodeRef> newChildNodePair = oldChildNodePair;
             Pair<Long, ChildAssociationRef> newParentAssocPair = oldParentAssocPair;
             ChildAssociationRef newParentAssocRef = newParentAssocPair.getSecond();
             
@@ -2389,7 +2394,18 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                         newParentAssocRef.getQName(),
                         childNodeTypeQName);
             // Move the node as this gives back the primary parent association
-            newParentAssocPair = nodeDAO.moveNode(childNodeId, nodeId, null,null);
+            Pair<Pair<Long, ChildAssociationRef>, Pair<Long, NodeRef>> moveResult;
+            try
+            {
+                moveResult = nodeDAO.moveNode(childNodeId, nodeId, null,null);
+            }
+            catch (NodeExistsException e)
+            {
+                deleteNode(e.getNodePair().getSecond());
+                moveResult = nodeDAO.moveNode(childNodeId, nodeId, null,null);
+            }
+            newParentAssocPair = moveResult.getFirst();
+            Pair<Long, NodeRef> newChildNodePair = moveResult.getSecond();
             // Index
             nodeIndexer.indexCreateNode(newParentAssocPair.getSecond());
             // Fire node policies.  This ensures that each node in the hierarchy gets a notification fired.

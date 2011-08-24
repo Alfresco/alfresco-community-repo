@@ -381,8 +381,6 @@
     <update id="update_Node" parameterType="NodeUpdate">
         update alf_node set
                                                     version           = #{version}
-            <if test="updateStore == true">       , store_id          = #{store.id}</if>
-            <if test="updateUuid == true">        , uuid              = #{uuid}</if>
             <if test="updateTypeQNameId == true"> , type_qname_id     = #{typeQNameId}</if>
             <if test="updateLocaleId == true">    , locale_id         = #{localeId}</if>
             <if test="updateAclId == true">       , acl_id            = #{aclId,jdbcType=BIGINT}</if>
@@ -448,6 +446,43 @@
         where
             child_node_id = #{childNode.id} and
             is_primary = #{isPrimary}
+    </update>
+    
+    <update id="update_MoveParentAssocs" parameterType="Ids">
+        update alf_child_assoc set
+            child_node_id = #{idTwo}
+        where
+            child_node_id = #{idOne}
+    </update>
+    <update id="update_MoveChildAssocs" parameterType="Ids">
+        update alf_child_assoc set
+            parent_node_id = #{idTwo}
+        where
+            parent_node_id = #{idOne}
+    </update>
+    <update id="update_MoveSourceAssocs" parameterType="Ids">
+        update alf_node_assoc set
+            source_node_id = #{idTwo}
+        where
+            source_node_id = #{idOne}
+    </update>
+    <update id="update_MoveTargetAssocs" parameterType="Ids">
+        update alf_node_assoc set
+            target_node_id = #{idTwo}
+        where
+            target_node_id = #{idOne}
+    </update>
+    <update id="update_MoveProperties" parameterType="Ids">
+        update alf_node_properties set
+            node_id = #{idTwo}
+        where
+            node_id = #{idOne}
+    </update>
+    <update id="update_MoveAspects" parameterType="Ids">
+        update alf_node_aspects set
+            node_id = #{idTwo}
+        where
+            node_id = #{idOne}
     </update>
     
     <!--                -->

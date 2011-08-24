@@ -190,7 +190,8 @@ public class ArchiveAndRestoreTest extends TestCase
      *   |/    \|
      *   AA <-> BB
      * </pre>
-     * Explicit UUIDs are used for debugging purposes.
+     * Explicit UUIDs are used for debugging purposes.  Live nodes are <b>cm:countable</b> with the
+     * <b>cm:counter</b> property.
      * <p>
      * <b>A</b>, <b>B</b>, <b>AA</b> and <b>BB</b> are set up to archive automatically
      * on deletion.
@@ -199,6 +200,8 @@ public class ArchiveAndRestoreTest extends TestCase
     {
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(5);
 
+        properties.put(ContentModel.PROP_COUNTER, 50);
+        
         properties.put(ContentModel.PROP_NODE_UUID, "a");
         a = nodeService.createNode(
                 workStoreRootNodeRef,
@@ -263,7 +266,7 @@ public class ArchiveAndRestoreTest extends TestCase
     
     private void verifyNodeExistence(NodeRef nodeRef, boolean exists)
     {
-        assertEquals("Node should " + (exists ? "" : "not") + "exist", exists, nodeService.exists(nodeRef));
+        assertEquals("Node should " + (exists ? "" : "not ") + "exist", exists, nodeService.exists(nodeRef));
     }
     
     private void verifyChildAssocExistence(ChildAssociationRef childAssocRef, boolean exists)
@@ -297,6 +300,20 @@ public class ArchiveAndRestoreTest extends TestCase
         }
     }
     
+    private void verifyPropertyExistence(NodeRef nodeRef, QName propertyQName, boolean exists)
+    {
+        assertEquals(
+                "Property is not present " + nodeRef + " - " + propertyQName,
+                exists, nodeService.getProperty(nodeRef, propertyQName) != null);
+    }
+    
+    private void verifyAspectExistence(NodeRef nodeRef, QName aspectQName, boolean exists)
+    {
+        assertEquals(
+                "Aspect is not present " + nodeRef + " - " + aspectQName,
+                exists, nodeService.hasAspect(nodeRef, aspectQName));
+    }
+    
     public void verifyAll()
     {
         // work store references
@@ -310,6 +327,14 @@ public class ArchiveAndRestoreTest extends TestCase
         verifyChildAssocExistence(childAssocBtoAA, true);
         verifyTargetAssocExistence(assocAtoB, true);
         verifyTargetAssocExistence(assocAAtoBB, true);
+        verifyPropertyExistence(a, ContentModel.PROP_COUNTER, true);
+        verifyAspectExistence(a, ContentModel.ASPECT_COUNTABLE, true);
+        verifyPropertyExistence(b, ContentModel.PROP_COUNTER, true);
+        verifyAspectExistence(b, ContentModel.ASPECT_COUNTABLE, true);
+        verifyPropertyExistence(aa, ContentModel.PROP_COUNTER, true);
+        verifyAspectExistence(aa, ContentModel.ASPECT_COUNTABLE, true);
+        verifyPropertyExistence(bb, ContentModel.PROP_COUNTER, true);
+        verifyAspectExistence(bb, ContentModel.ASPECT_COUNTABLE, true);
         // archive store references
         verifyNodeExistence(a_, false);
         verifyNodeExistence(b_, false);
@@ -543,6 +568,19 @@ public class ArchiveAndRestoreTest extends TestCase
         txn.commit();
         txn = transactionService.getUserTransaction();
         txn.begin();
+    }
+    
+    public void testSimple_Create_Commit_Delete_Commit() throws Exception
+    {
+        commitAndBeginNewTransaction();
+        nodeService.deleteNode(a);
+        commitAndBeginNewTransaction();
+    }
+    
+    public void testSimple_Create_Delete_Commit() throws Exception
+    {
+        nodeService.deleteNode(a);
+        commitAndBeginNewTransaction();
     }
     
     public void testRestoreToMissingParent() throws Exception

@@ -89,7 +89,7 @@ public interface AccessControlListDAO
     
     public void setAccessControlList(StoreRef storeRef, Acl acl);
     
-    public void updateInheritance(Long childNodeId, Long oldParentNodeId, Long newParentNodeId);
+    public void updateInheritance(Long childNodeId, Long oldParentAclId, Long newParentAclId);
     
     public void setFixedAcls(Long nodeId, Long inheritFrom, Long mergeFrom, Long sharedAclToReplace, List<AclChange> changes, boolean set);
 }

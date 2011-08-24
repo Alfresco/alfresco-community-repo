@@ -194,14 +194,14 @@ public class ChildAssocEntity
         StringBuilder sb = new StringBuilder(512);
         sb.append("ChildAssocEntity")
           .append("[ ID=").append(id)
-          .append(", parentNode=").append(parentNode)
-          .append(", childNode=").append(childNode)
           .append(", typeQNameId=").append(typeQNameId)
           .append(", childNodeNameCrc=").append(childNodeNameCrc)
           .append(", childNodeName=").append(childNodeName)
           .append(", qnameNamespaceId=").append(qnameNamespaceId)
           .append(", qnameLocalName=").append(qnameLocalName)
           .append(", qnameCrc=").append(qnameCrc)
+          .append(", parentNode=").append(parentNode)
+          .append(", childNode=").append(childNode)
           .append("]");
         return sb.toString();
     }

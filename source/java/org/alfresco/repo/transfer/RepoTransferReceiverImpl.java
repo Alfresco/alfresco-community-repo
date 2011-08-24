@@ -48,11 +48,11 @@ import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantService;
@@ -66,7 +66,6 @@ import org.alfresco.repo.transfer.requisite.XMLTransferRequsiteWriter;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -75,9 +74,9 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferProgress;
+import org.alfresco.service.cmr.transfer.TransferProgress.Status;
 import org.alfresco.service.cmr.transfer.TransferReceiver;
 import org.alfresco.service.cmr.transfer.TransferServicePolicies;
-import org.alfresco.service.cmr.transfer.TransferProgress.Status;
 import org.alfresco.service.cmr.transfer.TransferServicePolicies.BeforeStartInboundTransferPolicy;
 import org.alfresco.service.cmr.transfer.TransferServicePolicies.OnEndInboundTransferPolicy;
 import org.alfresco.service.cmr.transfer.TransferServicePolicies.OnStartInboundTransferPolicy;
@@ -729,11 +728,6 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
         file.delete();
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.alfresco.service.cmr.transfer.TransferReceiver#nudgeLock(java.lang.String)
-     */
     public Lock checkLock(final String transferId) throws TransferException
     {
         if (transferId == null)
@@ -765,11 +759,6 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
         }
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.alfresco.service.cmr.transfer.TransferReceiver#saveSnapshot(java.io.InputStream)
-     */
     public void saveSnapshot(String transferId, InputStream openStream) throws TransferException
     {
         // Check that this transfer still owns the lock
@@ -804,12 +793,6 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
         }
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.alfresco.service.cmr.transfer.TransferReceiver#saveContent(java.lang.String, java.lang.String,
-     * java.io.InputStream)
-     */
     public void saveContent(String transferId, String contentFileId, InputStream contentStream)
             throws TransferException
     {
@@ -1518,10 +1501,13 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
             if (log.isDebugEnabled())
             {
                 log.debug("lock taken: name" + lockQName + " token:" +lockToken);
+                log.debug("register lock callback, target lock refresh time :" + getLockRefreshTime());
             }
-            log.debug("register lock callback, target lock refresh time :" + getLockRefreshTime());
             getJobLockService().refreshLock(lockToken, lockQName, getLockRefreshTime(), this);
-            log.debug("refreshLock callback registered");
+            if (log.isDebugEnabled())
+            {
+                log.debug("refreshLock callback registered");
+            }
         }
 
         /**

@@ -123,6 +123,14 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String SELECT_PARENT_ASSOCS_OF_CHILD = "alfresco.node.select_ParentAssocsOfChild";
     private static final String UPDATE_PARENT_ASSOCS_OF_CHILD = "alfresco.node.update_ParentAssocsOfChild";
     private static final String DELETE_SUBSCRIPTIONS = "alfresco.node.delete_Subscriptions";
+    
+    private static final String UPDATE_MOVE_PARENT_ASSOCS = "alfresco.node.update_MoveParentAssocs";
+    private static final String UPDATE_MOVE_CHILD_ASSOCS = "alfresco.node.update_MoveChildAssocs";
+    private static final String UPDATE_MOVE_SOURCE_ASSOCS = "alfresco.node.update_MoveSourceAssocs";
+    private static final String UPDATE_MOVE_TARGET_ASSOCS = "alfresco.node.update_MoveTargetAssocs";
+    private static final String UPDATE_MOVE_PROPERTIES = "alfresco.node.update_MoveProperties";
+    private static final String UPDATE_MOVE_ASPECTS = "alfresco.node.update_MoveAspects";
+    
     private static final String SELECT_TXN_LAST = "alfresco.node.select_TxnLast";
     private static final String SELECT_TXN_NODES = "alfresco.node.select_TxnNodes";
     private static final String SELECT_TXNS = "alfresco.node.select_Txns";
@@ -1313,6 +1321,35 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         assoc.setPrimary(Boolean.TRUE);
         
         return template.update(UPDATE_PARENT_ASSOCS_OF_CHILD, assoc);
+    }
+
+    @Override
+    protected void moveNodeData(Long fromNodeId, Long toNodeId)
+    {
+        IdsEntity params = new IdsEntity();
+        params.setIdOne(fromNodeId);
+        params.setIdTwo(toNodeId);
+        
+        
+        int countPA = template.update(UPDATE_MOVE_PARENT_ASSOCS, params);
+        int countCA = template.update(UPDATE_MOVE_CHILD_ASSOCS, params);
+        int countSA = template.update(UPDATE_MOVE_SOURCE_ASSOCS, params);
+        int countTA = template.update(UPDATE_MOVE_TARGET_ASSOCS, params);
+        int countP = template.update(UPDATE_MOVE_PROPERTIES, params);
+        int countA = template.update(UPDATE_MOVE_ASPECTS, params);
+        if (isDebugEnabled)
+        {
+            logger.debug(
+                    "Moved node data: \n" +
+                    "   From: " + fromNodeId + "\n" +
+                    "   To:   " + toNodeId + "\n" +
+                    "   PA:   " + countPA + "\n" +
+                    "   CA:   " + countCA + "\n" +
+                    "   SA:   " + countSA + "\n" +
+                    "   TA:   " + countTA + "\n" +
+                    "   P:    " + countP + "\n" +
+                    "   A:    " + countA);
+        }
     }
 
     /**

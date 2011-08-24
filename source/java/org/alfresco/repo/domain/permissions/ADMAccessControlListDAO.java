@@ -377,18 +377,17 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.domain.AccessControlListDAO#updateInheritance(java.lang.Long, java.lang.Long, java.lang.Long)
+    /**
+     * {@inheritDoc}
      */
-    public void updateInheritance(Long childNodeId, Long oldParentNodeId, Long newParentNodeId)
+    public void updateInheritance(Long childNodeId, Long oldParentAclId, Long newParentAclId)
     {
-        if(oldParentNodeId == null)
+        if (oldParentAclId == null)
         {
             // nothing to do
             return;
         }
         List<AclChange> changes = new ArrayList<AclChange>();
-        Long newParentAclId = nodeDAO.getNodeAclId(newParentNodeId);
        
         Long childAclId = nodeDAO.getNodeAclId(childNodeId);
         if(childAclId == null)
@@ -400,54 +399,46 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
             }
         }
         Acl acl = aclDaoComponent.getAcl(childAclId);
-        if(acl != null)
+        if (acl != null && acl.getInherits())
         {
-            if(acl.getInherits())
+            Long oldParentSharedAclId = aclDaoComponent.getInheritedAccessControlList(oldParentAclId);
+            Long sharedAclchildInheritsFrom = acl.getInheritsFrom();
+            if(childAclId.equals(oldParentSharedAclId))
             {
-                // Does it inherit from the old parent - if not nothing changes
-                Long oldParentAclId = nodeDAO.getNodeAclId(oldParentNodeId);
-                if(oldParentAclId != null)
+                // child had old shared acl
+                if(newParentAclId != null)
                 {
-                    Long oldParentSharedAclId = aclDaoComponent.getInheritedAccessControlList(oldParentAclId);
-                    Long sharedAclchildInheritsFrom = acl.getInheritsFrom();
-                    if(childAclId.equals(oldParentSharedAclId))
-                    {
-                        // child had old shared acl
-                        if(newParentAclId != null)
-                        {
-                            Long newParentSharedAclId = aclDaoComponent.getInheritedAccessControlList(newParentAclId);
-                            setFixedAcls(childNodeId, newParentSharedAclId, null, childAclId, changes, true);
-                        }
-                    }
-                    else if(sharedAclchildInheritsFrom == null)
-                    {
-                        // child has defining acl of some form that does not inherit ?
-                        // Leave alone
-                    }
-                    else if(sharedAclchildInheritsFrom.equals(oldParentSharedAclId))
-                    {
-                        // child has defining acl and needs to be remerged
-                        if (acl.getAclType() == ACLType.LAYERED)
-                        {
-                            throw new UnsupportedOperationException();
-                        }
-                        else if (acl.getAclType() == ACLType.DEFINING)
-                        {
-                            Long newParentSharedAclId = aclDaoComponent.getInheritedAccessControlList(newParentAclId);
-                            @SuppressWarnings("unused")
-                            List<AclChange> newChanges = aclDaoComponent.mergeInheritedAccessControlList(newParentSharedAclId, childAclId);
-                        }
-                        else if (acl.getAclType() == ACLType.SHARED)
-                        {
-                            throw new IllegalStateException();
-                        }
-                    }
-                    else
-                    {
-                        // the acl does not inherit from a node and does not need to be fixed up
-                        // Leave alone
-                    }
+                    Long newParentSharedAclId = aclDaoComponent.getInheritedAccessControlList(newParentAclId);
+                    setFixedAcls(childNodeId, newParentSharedAclId, null, childAclId, changes, true);
                 }
+            }
+            else if(sharedAclchildInheritsFrom == null)
+            {
+                // child has defining acl of some form that does not inherit ?
+                // Leave alone
+            }
+            else if(sharedAclchildInheritsFrom.equals(oldParentSharedAclId))
+            {
+                // child has defining acl and needs to be remerged
+                if (acl.getAclType() == ACLType.LAYERED)
+                {
+                    throw new UnsupportedOperationException();
+                }
+                else if (acl.getAclType() == ACLType.DEFINING)
+                {
+                    Long newParentSharedAclId = aclDaoComponent.getInheritedAccessControlList(newParentAclId);
+                    @SuppressWarnings("unused")
+                    List<AclChange> newChanges = aclDaoComponent.mergeInheritedAccessControlList(newParentSharedAclId, childAclId);
+                }
+                else if (acl.getAclType() == ACLType.SHARED)
+                {
+                    throw new IllegalStateException();
+                }
+            }
+            else
+            {
+                // the acl does not inherit from a node and does not need to be fixed up
+                // Leave alone
             }
         }
     }

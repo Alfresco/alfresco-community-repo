@@ -27,8 +27,6 @@ package org.alfresco.repo.domain.node;
  */
 public class NodeUpdateEntity extends NodeEntity
 {
-    private boolean updateStore;
-    private boolean updateUuid;
     private boolean updateTypeQNameId;
     private boolean updateLocaleId;
     private boolean updateAclId;
@@ -49,27 +47,7 @@ public class NodeUpdateEntity extends NodeEntity
     public boolean isUpdateAnything()
     {
         return updateAuditableProperties || updateTransaction || updateDeleted
-               || updateLocaleId || updateAclId || updateStore || updateUuid || updateTypeQNameId;
-    }
-
-    public boolean isUpdateStore()
-    {
-        return updateStore;
-    }
-
-    public void setUpdateStore(boolean updateStore)
-    {
-        this.updateStore = updateStore;
-    }
-
-    public boolean isUpdateUuid()
-    {
-        return updateUuid;
-    }
-
-    public void setUpdateUuid(boolean updateUuid)
-    {
-        this.updateUuid = updateUuid;
+               || updateLocaleId || updateAclId || updateTypeQNameId;
     }
 
     public boolean isUpdateTypeQNameId()

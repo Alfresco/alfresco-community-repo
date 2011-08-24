@@ -112,10 +112,10 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     private static final String CACHE_REGION_PROPERTIES = "N.P";
     private static final String CACHE_REGION_PARENT_ASSOCS = "N.PA";
     
-    private Log logger = LogFactory.getLog(getClass());
+    protected Log logger = LogFactory.getLog(getClass());
     private Log loggerPaths = LogFactory.getLog(getClass().getName() + ".paths");
     
-    private boolean isDebugEnabled = logger.isDebugEnabled();
+    protected final boolean isDebugEnabled = logger.isDebugEnabled();
     private NodePropertyHelper nodePropertyHelper;
     private ServerIdCallback serverIdCallback = new ServerIdCallback();
     private UpdateTransactionListener updateTransactionListener = new UpdateTransactionListener();
@@ -670,7 +670,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         Long aclId = aclDAO.createAccessControlList();
         
         // Create a root node
-        NodeEntity rootNode = newNodeImpl(store, null, ContentModel.TYPE_STOREROOT, null, aclId, false, null);
+        Long nodeTypeQNameId = qnameDAO.getOrCreateQName(ContentModel.TYPE_STOREROOT).getFirst();
+        NodeEntity rootNode = newNodeImpl(store, null, nodeTypeQNameId, null, aclId, false, null);
         Long rootNodeId = rootNode.getId();
         addNodeAspects(rootNodeId, Collections.singleton(ContentModel.ASPECT_ROOT));
 
@@ -950,7 +951,9 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // Get the store
         StoreEntity store = getStoreNotNull(storeRef);
         // Create the node (it is not a root node)
-        NodeEntity node = newNodeImpl(store, uuid, nodeTypeQName, nodeLocale, childAclId, false, auditableProps);
+        Long nodeTypeQNameId = qnameDAO.getOrCreateQName(nodeTypeQName).getFirst();
+        Long nodeLocaleId = localeDAO.getOrCreateLocalePair(nodeLocale).getFirst();
+        NodeEntity node = newNodeImpl(store, uuid, nodeTypeQNameId, nodeLocaleId, childAclId, false, auditableProps);
         Long nodeId = node.getId();
         
         // Protect the node's cm:auditable if it was explicitly set
@@ -993,17 +996,18 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
 
     /**
      * @param uuid                          the node UUID, or <tt>null</tt> to auto-generate
-     * @param nodeTypeQName                 the node's type
-     * @param nodeLocale                    the node's locale or <tt>null</tt> to use the default locale
+     * @param nodeTypeQNameId               the node's type
+     * @param nodeLocaleId                  the node's locale or <tt>null</tt> to use the default locale
      * @param aclId                         an ACL ID if available
      * @param auditableProps                <tt>null</tt> to auto-generate or provide a value to explicitly set
      * @param deleted                       <tt>true</tt> to create an already-deleted node (used for leaving trails of moved nodes)
+     * @throws NodeExistsException          if the target reference is already taken by a live node
      */
     private NodeEntity newNodeImpl(
                 StoreEntity store,
                 String uuid,
-                QName nodeTypeQName,
-                Locale nodeLocale,
+                Long nodeTypeQNameId,
+                Long nodeLocaleId,
                 Long aclId,
                 boolean deleted,
                 AuditablePropertiesEntity auditableProps) throws InvalidTypeException
@@ -1021,11 +1025,14 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             node.setUuid(uuid);
         }
         // QName
-        Long typeQNameId = qnameDAO.getOrCreateQName(nodeTypeQName).getFirst();
-        node.setTypeQNameId(typeQNameId);
+        node.setTypeQNameId(nodeTypeQNameId);
+        QName nodeTypeQName = qnameDAO.getQName(nodeTypeQNameId).getSecond();
         // Locale
-        final Long localeId = localeDAO.getOrCreateLocalePair(nodeLocale).getFirst();
-        node.setLocaleId(localeId);
+        if (nodeLocaleId == null)
+        {
+            nodeLocaleId = localeDAO.getOrCreateDefaultLocalePair().getFirst();
+        }
+        node.setLocaleId(nodeLocaleId);
         // ACL (may be null)
         node.setAclId(aclId);
         // Deleted
@@ -1064,6 +1071,11 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             controlDAO.rollbackToSavepoint(savepoint);
             // This is probably because there is an existing node.  We can handle existing deleted nodes.
             NodeRef targetNodeRef = node.getNodeRef();
+            NodeEntity liveNode = selectNodeByNodeRef(targetNodeRef, false);    // Only look for live nodes
+            if (liveNode != null)
+            {
+                throw new NodeExistsException(liveNode.getNodePair(), e);
+            }
             NodeEntity deletedNode = selectNodeByNodeRef(targetNodeRef, true);           // Only look for deleted nodes
             if (deletedNode != null)
             {
@@ -1105,7 +1117,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return node;
     }
 
-    public Pair<Long, ChildAssociationRef> moveNode(
+    public Pair<Pair<Long, ChildAssociationRef>, Pair<Long, NodeRef>> moveNode(
             final Long childNodeId,
             final Long newParentNodeId,
             final QName assocTypeQName,
@@ -1116,27 +1128,84 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         final Node childNode = getNodeNotNull(childNodeId);
         final StoreEntity childStore = childNode.getStore();
         ChildAssocEntity primaryParentAssoc = getPrimaryParentAssocImpl(childNodeId);
-        final Long oldParentNodeId;
-        if(primaryParentAssoc == null)
+        final Long oldParentAclId;
+        if (primaryParentAssoc == null)
         {
-            oldParentNodeId = null;
+            oldParentAclId = null;
         }
         else
         {
-            if(primaryParentAssoc.getParentNode() == null)
+            if (primaryParentAssoc.getParentNode() == null)
             {
-                oldParentNodeId = null;
+                oldParentAclId = null;
             }
             else
             {
-                oldParentNodeId = primaryParentAssoc.getParentNode().getId();
+                Long oldParentNodeId = primaryParentAssoc.getParentNode().getId();
+                oldParentAclId = getNodeNotNull(oldParentNodeId).getAclId();
                 
                 // Update the parent node, if required
                 propagateTimestamps(childNodeId);
             }
         }
-       
+        
+        // First attempt to move the node, which may rollback to a savepoint
+        Node newChildNode = childNode;
+        // Store
+        if (!childStore.getId().equals(newParentStore.getId()))
+        {
+            // Clear out parent assocs cache; make sure child nodes are updated, too
+            invalidateCachesByNodeId(childNodeId, childNodeId, parentAssocsCache);
 
+            // Remove the cm:auditable aspect from the source node
+            // Remove the cm:auditable aspect from the old node as the new one will get new values as required
+            Set<Long> aspectIdsToDelete = qnameDAO.convertQNamesToIds(
+                    Collections.singleton(ContentModel.ASPECT_AUDITABLE),
+                    true);
+            deleteNodeAspects(childNodeId, aspectIdsToDelete);
+            // ... but make sure we copy over the cm:auditable data from the originating node
+            AuditablePropertiesEntity auditableProps = childNode.getAuditableProperties();
+            // Create a new node and copy all the data over to it
+            newChildNode = newNodeImpl(
+                    newParentStore,
+                    childNode.getUuid(),
+                    childNode.getTypeQNameId(),
+                    childNode.getLocaleId(),
+                    childNode.getAclId(),
+                    false,
+                    auditableProps);
+            moveNodeData(
+                    childNode.getId(),
+                    newChildNode.getId());
+            // The new node has cache entries that will need updating to the new values
+            invalidateNodeCaches(newChildNode.getId());
+            // Now update the original to be 'deleted'
+            NodeUpdateEntity childNodeUpdate = new NodeUpdateEntity();
+            childNodeUpdate.setId(childNodeId);
+            childNodeUpdate.setAclId(null);
+            childNodeUpdate.setUpdateAclId(true);
+            childNodeUpdate.setTypeQNameId(qnameDAO.getOrCreateQName(ContentModel.TYPE_CMOBJECT).getFirst());
+            childNodeUpdate.setUpdateTypeQNameId(true);
+            childNodeUpdate.setLocaleId(localeDAO.getOrCreateDefaultLocalePair().getFirst());
+            childNodeUpdate.setUpdateLocaleId(true);
+            childNodeUpdate.setDeleted(Boolean.TRUE);
+            childNodeUpdate.setUpdateDeleted(true);
+            // Update the entity.
+            // Note: We don't use delete here because that will attempt to clean everything up again.
+            updateNodeImpl(childNode, childNodeUpdate);
+        }
+        else
+        {
+            // Ensure that the child node reflects the current txn and auditable data
+            touchNodeImpl(childNodeId);
+            
+            // The moved node's reference has not changed, so just remove the cache entry to
+            // it's immediate parent.  All children of the moved node will still point to the
+            // correct node.
+            invalidateCachesByNodeId(null, childNodeId, parentAssocsCache);
+        }
+        
+        final Long newChildNodeId = newChildNode.getId();
         // Now update the primary parent assoc
         RetryingCallback<Integer> callback = new RetryingCallback<Integer>()
         {
@@ -1154,7 +1223,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 try
                 {
                     int updated = updatePrimaryParentAssocs(
-                            childNodeId,
+                            newChildNodeId,
                             newParentNodeId,
                             assocTypeQName,
                             assocQName,
@@ -1174,61 +1243,30 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 }
             }
         };
-        Integer updateCount = childAssocRetryingHelper.doWithRetry(callback);
-        if (updateCount > 0)
-        {
-            NodeUpdateEntity nodeUpdate = new NodeUpdateEntity();
-            // ID
-            nodeUpdate.setId(childNodeId);
-            // Store
-            if (!childStore.getId().equals(newParentStore.getId()))
-            {
-                nodeUpdate.setStore(newParentNode.getStore());
-                nodeUpdate.setUpdateStore(true);
-            }
-            
-            // Update.  This takes care of the store move, auditable and transaction
-            updateNodeImpl(childNode, nodeUpdate);
-            
-            // Clear out parent assocs cache
-            invalidateCachesByNodeId(null, childNodeId, parentAssocsCache);
-            
-            // Check that there is not a cyclic relationship
-            getPaths(nodeUpdate.getNodePair(), false);
-            
-            // Update ACLs for moved tree
-            accessControlListDAO.updateInheritance(childNodeId, oldParentNodeId, newParentNodeId); 
-        }
-        else
-        {
-            // Clear out parent assocs cache
-            invalidateCachesByNodeId(null, childNodeId, parentAssocsCache);
-        }
+        childAssocRetryingHelper.doWithRetry(callback);
         
-        Pair<Long, ChildAssociationRef> assocPair = getPrimaryParentAssoc(childNodeId);
+        // Check for cyclic relationships
+        getPaths(newChildNode.getNodePair(), false);
+
+        // Update ACLs for moved tree
+        Long newParentAclId = newParentNode.getAclId();
+        accessControlListDAO.updateInheritance(newChildNodeId, oldParentAclId, newParentAclId); 
         
         // Done
+        Pair<Long, ChildAssociationRef> assocPair = getPrimaryParentAssoc(newChildNode.getId());
+        Pair<Long, NodeRef> nodePair = newChildNode.getNodePair();
         if (isDebugEnabled)
         {
-            logger.debug("Moved node: " + assocPair);
+            logger.debug("Moved node: " + assocPair + " ... " + nodePair);
         }
-        return assocPair;
+        return new Pair<Pair<Long, ChildAssociationRef>, Pair<Long, NodeRef>>(assocPair, nodePair);
     }
     
     @Override
-    public void updateNode(Long nodeId, StoreRef storeRef, String uuid, QName nodeTypeQName, Locale nodeLocale)
+    public void updateNode(Long nodeId, QName nodeTypeQName, Locale nodeLocale)
     {
         // Get the existing node; we need to check for a change in store or UUID
         Node oldNode = getNodeNotNull(nodeId);
-        // Use existing values, where necessary
-        if (storeRef == null)
-        {
-            storeRef = oldNode.getStore().getStoreRef();
-        }
-        if (uuid == null)
-        {
-            uuid = oldNode.getUuid();
-        }
         final Long nodeTypeQNameId;
         if (nodeTypeQName == null)
         {
@@ -1251,27 +1289,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // Wrap all the updates into one
         NodeUpdateEntity nodeUpdate = new NodeUpdateEntity();
         nodeUpdate.setId(nodeId);
-        // Store (if necessary)
-        if (!storeRef.equals(oldNode.getStore().getStoreRef()))
-        {
-            StoreEntity store = getStoreNotNull(storeRef);
-            nodeUpdate.setStore(store);
-            nodeUpdate.setUpdateStore(true);
-        }
-        else
-        {
-            nodeUpdate.setStore(oldNode.getStore());        // Need node reference
-        }
-        // UUID (if necessary)
-        if (!uuid.equals(oldNode.getUuid()))
-        {
-            nodeUpdate.setUuid(uuid);
-            nodeUpdate.setUpdateUuid(true);
-        }
-        else
-        {
-            nodeUpdate.setUuid(oldNode.getUuid());          // Need node reference
-        }
+        nodeUpdate.setStore(oldNode.getStore());        // Need node reference
+        nodeUpdate.setUuid(oldNode.getUuid());          // Need node reference
         // TypeQName (if necessary)
         if (!nodeTypeQNameId.equals(oldNode.getTypeQNameId()))
         {
@@ -1319,6 +1338,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      * 
      * @param oldNode               the existing node, fully populated
      * @param nodeUpdate            the node update with all update elements populated
+     * @return                      the updated node ID and reference
      */
     private void updateNodeImpl(Node oldNode, NodeUpdateEntity nodeUpdate)
     {
@@ -1330,16 +1350,10 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             throw new IllegalArgumentException("NodeUpdateEntity node ID is not correct: " + nodeUpdate);
         }
 
-        // Copy the Store and UUID to the updated node, but leave the update flags.
-        // The NodeRef may be required when resolving the duplicate NodeRef issues.
-        if (!nodeUpdate.isUpdateStore())
-        {
-            nodeUpdate.setStore(oldNode.getStore());
-        }
-        if (!nodeUpdate.isUpdateUuid())
-        {
-            nodeUpdate.setUuid(oldNode.getUuid());
-        }
+        // Copy of the reference data
+        nodeUpdate.setStore(oldNode.getStore());
+        nodeUpdate.setUuid(oldNode.getUuid());
+        
         // Ensure that other values are set for completeness when caching
         if (!nodeUpdate.isUpdateTypeQNameId())
         {
@@ -1357,9 +1371,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         {
             nodeUpdate.setDeleted(oldNode.getDeleted());
         }
-        
-        // Check the update values of the reference elements
-        boolean updateReference = nodeUpdate.isUpdateStore() || nodeUpdate.isUpdateUuid();
         
         nodeUpdate.setVersion(oldNode.getVersion());
         // Update the transaction
@@ -1421,72 +1432,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             return;
         }
         
-        // Do the update
-        int count = 0;
-        Savepoint savepoint = controlDAO.createSavepoint("updateNode");
-        try
-        {
-            count = updateNode(nodeUpdate);
-            controlDAO.releaseSavepoint(savepoint);
-        }
-        catch (Throwable e)
-        {
-            controlDAO.rollbackToSavepoint(savepoint);
-            NodeRef targetNodeRef = nodeUpdate.getNodeRef();
-            // Wipe the node ID from the caches just in case we have stale caches
-            // The TransactionalCache will propagate removals to the shared cache on rollback
-            nodesCache.removeByKey(nodeId);
-            nodesCache.removeByValue(nodeUpdate);
-            
-            if (updateReference)
-            {
-                // This is the first error.  Clean out deleted nodes that might be in the way and
-                // move away live nodes.
-                try
-                {
-                    // Look for live nodes first as they will leave a trail of deleted nodes
-                    // that we will have to deal with subsequently.
-                    NodeEntity liveNode = selectNodeByNodeRef(targetNodeRef, false);    // Only look for live nodes
-                    if (liveNode != null)
-                    {
-                        Long liveNodeId = liveNode.getId();
-                        String liveNodeUuid = GUID.generate();
-                        updateNode(liveNodeId, null, liveNodeUuid, null, null);
-                    }
-                    NodeEntity deletedNode = selectNodeByNodeRef(targetNodeRef, true);  // Only look for deleted nodes
-                    if (deletedNode != null)
-                    {
-                        Long deletedNodeId = deletedNode.getId();
-                        deleteNodeById(deletedNodeId, true);
-                    }
-                    if (isDebugEnabled)
-                    {
-                        logger.debug("Cleaned up target references for reference update: " + targetNodeRef);
-                    }
-                }
-                catch (Throwable ee)
-                {
-                    // We don't want to mask the original problem
-                    logger.error("Failed to clean up target nodes for new reference: " + targetNodeRef, ee);
-                    throw new RuntimeException("Failed to update node:" + nodeUpdate, e);
-                }
-                // Now repeat
-                try
-                {
-                    // The version number will have been incremented.  Undo that.
-                    nodeUpdate.setVersion(nodeUpdate.getVersion() - 1L);
-                    count = updateNode(nodeUpdate);
-                }
-                catch (Throwable ee)
-                {
-                    throw new RuntimeException("Failed to update Node: " + nodeUpdate, e);
-                }
-            }
-            else        // There is no reference change, so the error must just be propagated
-            {
-                throw new RuntimeException("Failed to update Node: " + nodeUpdate, e);
-            }
-        }
+        // The node is remaining in the current store
+        int count = updateNode(nodeUpdate);
         // Do concurrency check
         if (count != 1)
         {
@@ -1496,15 +1443,18 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             
             throw new ConcurrencyFailureException("Failed to update node " + nodeId);
         }
-        
-        // We need to leave a trail of deleted nodes
-        if (updateReference)
+        else
         {
-            StoreEntity oldStore = oldNode.getStore();
-            String oldUuid = oldNode.getUuid();
-            newNodeImpl(oldStore, oldUuid, ContentModel.TYPE_CMOBJECT, null, null, true, null);
+            // Update the caches
+            nodeUpdate.lock();
+            nodesCache.setValue(nodeId, nodeUpdate);
+            if (nodeUpdate.isUpdateTypeQNameId() || nodeUpdate.isUpdateDeleted())
+            {
+                // The association references will all be wrong
+                invalidateCachesByNodeId(nodeId, nodeId, parentAssocsCache);
+            }
         }
-        
+
         // Ensure that cm:auditable values are propagated, if required
         if (enableTimestampPropagation &&
                 nodeUpdate.isUpdateAuditableProperties() &&
@@ -1513,15 +1463,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             propagateTimestamps(nodeId);
         }
         
-        // Update the caches
-        nodeUpdate.lock();
-        nodesCache.setValue(nodeId, nodeUpdate);
-        if (updateReference || nodeUpdate.isUpdateTypeQNameId())
-        {
-            // The association references will all be wrong
-            invalidateCachesByNodeId(nodeId, nodeId, parentAssocsCache);
-        }
-
         // Done
         if (isDebugEnabled)
         {
@@ -2646,7 +2587,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // node into the current transaction for secondary associations
         if (!isPrimary)
         {
-            updateNode(childNodeId, null, null, null, null);
+            updateNode(childNodeId, null, null);
         }
         
         // Done
@@ -3138,6 +3079,14 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             Stack<Long> assocIdStack,
             boolean primaryOnly) throws CyclicChildRelationshipException
     {
+        if (isDebugEnabled)
+        {
+            logger.debug("\n" +
+                    "Prepending paths: \n" +
+                    "   Current node: " + currentNodePair + "\n" +
+                    "   Current root: " + currentRootNodePair + "\n" +
+                    "   Current path: " + currentPath);
+        }
         Long currentNodeId = currentNodePair.getFirst();
         NodeRef currentNodeRef = currentNodePair.getSecond();
 
@@ -3256,6 +3205,13 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                         "   current path: " + currentPath + "\n" +
                         "   next assoc: " + assocId);
                 throw new CyclicChildRelationshipException("Node has been pasted into its own tree.", assocRef);
+            }
+
+            if (isDebugEnabled)
+            {
+                logger.debug("\n" +
+                        "   Prepending path parent: \n" +
+                        "      Parent node: " + parentNodePair);
             }
 
             // push the assoc stack, recurse and pop
@@ -3894,6 +3850,14 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             QName assocTypeQName,
             QName assocQName,
             String childNodeName);
+    /**
+     * Moves all node-linked data from one node to another.  The source node will be left
+     * in an orphaned state and without any attached data other than the current transaction.
+     * 
+     * @param fromNodeId            the source node
+     * @param toNodeId              the target node
+     */
+    protected abstract void moveNodeData(Long fromNodeId, Long toNodeId);
     
     protected abstract void deleteSubscriptions(Long nodeId);
 

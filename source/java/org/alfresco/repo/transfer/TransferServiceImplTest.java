@@ -50,7 +50,9 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transfer.manifest.TransferManifestNodeFactory;
 import org.alfresco.service.cmr.action.ActionService;
@@ -167,6 +169,13 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
     {
         preventTransaction();
         super.runBare();
+    }
+    
+    public void testSetup()
+    {
+        assertEquals(
+                "Must run without transactions",
+                TxnReadState.TXN_NONE, AlfrescoTransactionSupport.getTransactionReadState());
     }
     
     /**

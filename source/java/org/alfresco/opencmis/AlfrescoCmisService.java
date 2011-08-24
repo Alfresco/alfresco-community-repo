@@ -1142,7 +1142,7 @@ public class AlfrescoCmisService extends AbstractCmisService
         final CMISNodeInfo parentInfo = getOrCreateFolderInfo(folderId, "Folder");
 
         // get name and type
-        final String name = connector.getNameProperty(properties);
+        final String name = connector.getNameProperty(properties, null);
         final String objectTypeId = connector.getObjectTypeIdProperty(properties);
         final TypeDefinitionWrapper type = connector.getTypeForCreate(objectTypeId, BaseTypeId.CMIS_FOLDER);
 
@@ -1194,7 +1194,7 @@ public class AlfrescoCmisService extends AbstractCmisService
         final CMISNodeInfo parentInfo = getOrCreateFolderInfo(folderId, "Parent folder");
 
         // get name and type
-        final String name = connector.getNameProperty(properties);
+        final String name = connector.getNameProperty(properties, null);
         final String objectTypeId = connector.getObjectTypeIdProperty(properties);
         final TypeDefinitionWrapper type = connector.getTypeForCreate(objectTypeId, BaseTypeId.CMIS_DOCUMENT);
 
@@ -1288,9 +1288,6 @@ public class AlfrescoCmisService extends AbstractCmisService
         // get the parent folder node ref
         final CMISNodeInfo parentInfo = getOrCreateFolderInfo(folderId, "Parent folder");
 
-        // get name and type
-        final String name = connector.getNameProperty(properties);
-
         // get source
         CMISNodeInfo info = getOrCreateNodeInfo(sourceId, "Source");
 
@@ -1305,6 +1302,9 @@ public class AlfrescoCmisService extends AbstractCmisService
         {
             throw new CmisConstraintException("Source object is not a document!");
         }
+
+        // get name and type
+        final String name = connector.getNameProperty(properties, info.getName());
 
         final TypeDefinitionWrapper type = info.getType();
         connector.checkChildObjectType(parentInfo, type.getTypeId());
@@ -2005,7 +2005,9 @@ public class AlfrescoCmisService extends AbstractCmisService
                         try
                         {
                             NodeRef pwcNodeRef = connector.getCheckOutCheckInService().checkout(nodeRef);
-                            objectId.setValue(pwcNodeRef.toString());
+                            CMISNodeInfo pwcNodeInfo = createNodeInfo(pwcNodeRef);
+                            objectId.setValue(pwcNodeInfo.getObjectId());
+                            
                             if (contentCopied != null)
                             {
                                 contentCopied.setValue(connector.getFileFolderService().getReader(pwcNodeRef) != null);

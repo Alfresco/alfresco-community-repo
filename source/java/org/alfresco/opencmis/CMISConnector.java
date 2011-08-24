@@ -2478,12 +2478,18 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         return ((PropertyId) property).getFirstValue();
     }
 
-    public String getNameProperty(Properties properties)
+    public String getNameProperty(Properties properties, String fallback)
     {
         String name = getStringProperty(properties, PropertyIds.NAME);
         if ((name == null) || (name.trim().length() == 0))
         {
-            throw new CmisInvalidArgumentException("Property " + PropertyIds.NAME + " must be set!");
+            if (fallback == null)
+            {
+                throw new CmisInvalidArgumentException("Property " + PropertyIds.NAME + " must be set!");
+            } else
+            {
+                name = fallback;
+            }
         }
 
         return name;

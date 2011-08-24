@@ -2240,6 +2240,10 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
                     // retrieve process instance
                     GraphSession graphSession = context.getGraphSession();
                     ProcessInstance processInstance = getProcessInstanceIfExists(graphSession, workflowInstanceId);
+                    if(processInstance == null)
+                    {
+                        return null;
+                    }
                     Task startTask = processInstance.getProcessDefinition().getTaskMgmtDefinition().getStartTask();
                     
                     // retrieve task

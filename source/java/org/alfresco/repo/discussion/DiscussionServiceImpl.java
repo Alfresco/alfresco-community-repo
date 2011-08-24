@@ -30,6 +30,7 @@ import org.alfresco.model.ForumModel;
 import org.alfresco.query.CannedQueryFactory;
 import org.alfresco.query.CannedQueryResults;
 import org.alfresco.query.CannedQuerySortDetails;
+import org.alfresco.query.EmptyCannedQueryResults;
 import org.alfresco.query.EmptyPagingResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
@@ -889,6 +890,13 @@ public class DiscussionServiceImpl implements DiscussionService
          QName nodeType, String creatorUsername, Date from, Date to, 
          boolean oldestFirst, PagingRequest paging) 
    {
+      // The Canned Query system doesn't allow for zero sized pages
+      // If they asked for that (bits of share sometimes do), bail out now
+      if(paging != null && paging.getMaxItems() == 0)
+      {
+         return new EmptyCannedQueryResults<NodeBackedEntity>(null);
+      }
+      
       // Grab the factory
       GetChildrenAuditableCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenAuditableCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_GET_CHILDREN);
       

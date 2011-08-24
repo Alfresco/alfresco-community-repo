@@ -59,6 +59,16 @@
        <property name="methodSecurity" ref="DiscussionService_security_listPosts"/>
    </bean>
 
+   <!-- The Get Discussions Topics and Posts Canned Query Factory -->
+   <bean name="discussionGetDiscussionTopcisWithPostsCannedQueryFactory" class="org.alfresco.repo.discussion.cannedqueries.GetDiscussionTopcisWithPostsCannedQueryFactory">
+       <property name="registry" ref="discussionCannedQueryRegistry"/>
+       <property name="tenantService" ref="tenantService"/>
+       <property name="nodeDAO" ref="nodeDAO"/>
+       <property name="qnameDAO" ref="qnameDAO"/>
+       <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
+       <property name="methodSecurity" ref="DiscussionService_security_listPosts"/>
+   </bean>
+
    <!-- Discussion Service base bean -->
 	<bean id="discussionService" class="org.alfresco.repo.discussion.DiscussionServiceImpl">
         <property name="nodeDAO" ref="nodeDAO" />

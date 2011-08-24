@@ -33,6 +33,10 @@ import org.alfresco.query.CannedQuerySortDetails;
 import org.alfresco.query.EmptyPagingResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.discussion.cannedqueries.GetDiscussionTopcisWithPostsCannedQuery;
+import org.alfresco.repo.discussion.cannedqueries.GetDiscussionTopcisWithPostsCannedQueryFactory;
+import org.alfresco.repo.discussion.cannedqueries.NodeWithChildrenEntity;
+import org.alfresco.repo.discussion.cannedqueries.NodeWithChildrenEntity.NameAndCreatedAt;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.node.getchildren.GetChildrenAuditableCannedQuery;
 import org.alfresco.repo.node.getchildren.GetChildrenAuditableCannedQueryFactory;
@@ -80,6 +84,7 @@ public class DiscussionServiceImpl implements DiscussionService
    
     protected static final String CANNED_QUERY_GET_CHILDREN = "discussionGetChildrenCannedQueryFactory";
     protected static final String CANNED_QUERY_GET_CHILDREN_TARGETS = "discussionGetChildrenWithTargetAssocsAuditableCannedQueryFactory";
+    protected static final String CANNED_QUERY_GET_TOPICS_WITH_POSTS = "discussionGetDiscussionTopcisWithPostsCannedQueryFactory";
     protected static final int MAX_REPLIES_FETCH_SIZE = 1000; 
     
     /**
@@ -651,7 +656,38 @@ public class DiscussionServiceImpl implements DiscussionService
       // Wrap and return
       return wrap(nodes, nodeRef);
    }
+
    
+   @Override
+   public PagingResults<Pair<TopicInfo, Integer>> listHotTopics(
+         String siteShortName, Date since, PagingRequest paging) {
+      NodeRef container = getSiteDiscussionsContainer(siteShortName, false);
+      if(container == null)
+      {
+         // No topics
+         return new EmptyPagingResults<Pair<TopicInfo,Integer>>();
+      }
+      
+      // We can now fetch by parent nodeRef
+      return listHotTopics(container, since, paging);
+   }
+   
+   @Override
+   public PagingResults<Pair<TopicInfo, Integer>> listHotTopics(
+         NodeRef nodeRef, Date since, PagingRequest paging) {
+      // Do the query
+      GetDiscussionTopcisWithPostsCannedQueryFactory getCQFactory = (GetDiscussionTopcisWithPostsCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_GET_TOPICS_WITH_POSTS);
+      GetDiscussionTopcisWithPostsCannedQuery cq = (GetDiscussionTopcisWithPostsCannedQuery)getCQFactory.getCannedQuery(
+            nodeRef, null, since, null, paging);
+      
+      // Execute the canned query
+      CannedQueryResults<NodeWithChildrenEntity> results = cq.execute();
+      
+      // Wrap and return
+      return wrapWithCount(results, nodeRef);
+   }
+
+
    @Override
    public PagingResults<TopicInfo> findTopics(String siteShortName,
          String username, String tag, PagingRequest paging) {
@@ -845,21 +881,7 @@ public class DiscussionServiceImpl implements DiscussionService
       return new PostWithReplies(post, replies);
    }
 
-   
-   @Override
-   public PagingResults<PostInfo> listPosts(NodeRef nodeRef,
-         PagingRequest paging) {
-      // TODO Auto-generated method stub
-      return null;
-   }
 
-   @Override
-   public PagingResults<PostInfo> listPosts(String siteShortName,
-         PagingRequest paging) {
-      // TODO Auto-generated method stub
-      return null;
-   }
-   
    /**
     * Finds nodes in the specified parent container, with the given
     *  type, optionally filtered by creator
@@ -1022,6 +1044,65 @@ public class DiscussionServiceImpl implements DiscussionService
                  posts.add(buildPost(nodeRef, topic, name, null));
               }
               return posts;
+          }
+          @Override
+          public boolean hasMoreItems()
+          {
+              return results.hasMoreItems();
+          }
+          @Override
+          public Pair<Integer, Integer> getTotalResultCount()
+          {
+              return results.getTotalResultCount();
+          }
+      };
+   }
+   
+   /**
+    * Our class to wrap up paged results of NodeWithChildrenEntity as
+    *  {@link TopicInfo} instances
+    */
+   private PagingResults<Pair<TopicInfo,Integer>> wrapWithCount(final PagingResults<NodeWithChildrenEntity> results, final NodeRef container)
+   {
+      // Pre-load the nodes before we create them
+      List<Long> ids = new ArrayList<Long>();
+      for(NodeBackedEntity node : results.getPage())
+      {
+         ids.add(node.getId());
+      }
+      nodeDAO.cacheNodesById(ids);
+      
+      // Wrap
+      return new PagingResults<Pair<TopicInfo,Integer>>()
+      {
+          @Override
+          public String getQueryExecutionId()
+          {
+              return results.getQueryExecutionId();
+          }
+          @Override
+          public List<Pair<TopicInfo,Integer>> getPage()
+          {
+              List<Pair<TopicInfo,Integer>> topics = new ArrayList<Pair<TopicInfo,Integer>>();
+              for(NodeWithChildrenEntity node : results.getPage())
+              {
+                 NodeRef nodeRef = node.getNodeRef();
+                 String name = node.getName();
+                 TopicInfo topic = buildTopic(nodeRef, container, name);
+                 
+                 int count = node.getChildren().size();
+                 for(NameAndCreatedAt c : node.getChildren())
+                 {
+                    if(c.getName().equals(name))
+                    {
+                       // Primary post
+                       count--;
+                    }
+                 }
+                 
+                 topics.add(new Pair<TopicInfo,Integer>(topic, count));
+              }
+              return topics;
           }
           @Override
           public boolean hasMoreItems()

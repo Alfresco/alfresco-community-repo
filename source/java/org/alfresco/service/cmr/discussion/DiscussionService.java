@@ -206,6 +206,23 @@ public interface DiscussionService {
 
    
    /**
+    * Finds topics which have had replies since the specified date, and
+    *  returns them along with the count of replies since then.
+    * Primary posts are not included in this.
+    */
+   @NotAuditable
+   PagingResults<Pair<TopicInfo,Integer>> listHotTopics(String siteShortName, Date since, PagingRequest paging);
+
+   /**
+    * Finds topics which have had replies since the specified date, and
+    *  returns them along with the count of replies since then.
+    * Primary posts are not included in this.
+    */
+   @NotAuditable
+   PagingResults<Pair<TopicInfo,Integer>> listHotTopics(NodeRef nodeRef, Date since, PagingRequest paging);
+   
+   
+   /**
     * Retrieves all posts in a topic, ordered by creation date
     */
    @NotAuditable
@@ -222,20 +239,4 @@ public interface DiscussionService {
     */
    @NotAuditable
    PostWithReplies listPostReplies(PostInfo primaryPost, int levels);
-   
-   /**
-    * Retrieves all posts in a site, across all topics
-    * TODO Is this needed?
-    */
-   @NotAuditable
-   PagingResults<PostInfo> listPosts(String siteShortName, PagingRequest paging);
-
-   /**
-    * Retrieves all posts attached to the specified Node, across all topics
-    * TODO Is this needed?
-    */
-   @NotAuditable
-   PagingResults<PostInfo> listPosts(NodeRef nodeRef, PagingRequest paging);
-
-   // TODO Hot topics support
 }

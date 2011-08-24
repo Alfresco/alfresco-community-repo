@@ -1162,6 +1162,73 @@ public class DiscussionServiceImplTest
     }
     
     /**
+     * Checks we correctly identify hot topics
+     */
+    @Test public void discussionsHotTopicsListing() throws Exception
+    {
+       PagingRequest paging = new PagingRequest(10);
+       PagingResults<Pair<TopicInfo,Integer>> topics;
+       
+       Date now = new Date();
+       Date yesterday = new Date(now.getTime()-ONE_DAY_MS-60000);
+       Date tomorrow = new Date(now.getTime()+ONE_DAY_MS);
+       Date future = new Date(now.getTime()+10*ONE_DAY_MS);
+       Date fourDaysAgo = new Date(now.getTime()-4*ONE_DAY_MS);
+       
+       
+       // To start with, we have no hot topics
+       topics = DISCUSSION_SERVICE.listHotTopics(DISCUSSION_SITE.getShortName(), fourDaysAgo, paging);
+       assertEquals(0, topics.getPage().size());
+       topics = DISCUSSION_SERVICE.listHotTopics(FORUM_NODE, fourDaysAgo, paging);
+       assertEquals(0, topics.getPage().size());
+       
+       
+       // Create some topics
+       TopicInfo topicSA = DISCUSSION_SERVICE.createTopic(
+             DISCUSSION_SITE.getShortName(), "Title1A"
+       );
+       TopicInfo topicSB = DISCUSSION_SERVICE.createTopic(
+             DISCUSSION_SITE.getShortName(), "Title1B"
+       );
+       testNodesToTidy.add(topicSA.getNodeRef());
+       testNodesToTidy.add(topicSB.getNodeRef());
+       
+       TopicInfo topicNA = DISCUSSION_SERVICE.createTopic(
+             FORUM_NODE, "TitleNA"
+       );
+       TopicInfo topicNB = DISCUSSION_SERVICE.createTopic(
+             FORUM_NODE, "TitleNB"
+       );
+       testNodesToTidy.add(topicNA.getNodeRef());
+       testNodesToTidy.add(topicNB.getNodeRef());
+       
+       
+       // These won't show as hot, as they have no posts on them
+       topics = DISCUSSION_SERVICE.listHotTopics(DISCUSSION_SITE.getShortName(), fourDaysAgo, paging);
+       assertEquals(0, topics.getPage().size());
+       topics = DISCUSSION_SERVICE.listHotTopics(FORUM_NODE, fourDaysAgo, paging);
+       assertEquals(0, topics.getPage().size());
+
+       
+       // Add primary posts, this won't help as only replies count
+       PostInfo postSA = DISCUSSION_SERVICE.createPost(topicSA, "Test S Post");
+       PostInfo postSB = DISCUSSION_SERVICE.createPost(topicSB, "Test S Post");
+       PostInfo postNA = DISCUSSION_SERVICE.createPost(topicNA, "Test N Post");
+       PostInfo postNB = DISCUSSION_SERVICE.createPost(topicNB, "Test N Post");
+       
+       topics = DISCUSSION_SERVICE.listHotTopics(DISCUSSION_SITE.getShortName(), fourDaysAgo, paging);
+       assertEquals(0, topics.getPage().size());
+       topics = DISCUSSION_SERVICE.listHotTopics(FORUM_NODE, fourDaysAgo, paging);
+       assertEquals(0, topics.getPage().size());
+       
+       
+       // Add a few replies, topics will begin showing up
+       
+       
+       // TODO
+    }
+    
+    /**
      * Checks that the correct permission checking occurs on fetching
      *  topic and post listings (which go through canned queries)
      */

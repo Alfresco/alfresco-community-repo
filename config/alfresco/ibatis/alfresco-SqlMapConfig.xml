@@ -86,6 +86,9 @@ Inbound settings from iBatis
         <typeAlias alias="CopyParameters" type="org.alfresco.repo.copy.query.CopyParametersEntity"/>
         <typeAlias alias="Copy" type="org.alfresco.repo.copy.query.CopyEntity"/>
         
+        <!-- Discussions CQ -->
+        <typeAlias alias="NodeWithChildrenEntity" type="org.alfresco.repo.discussion.cannedqueries.NodeWithChildrenEntity"/>
+
         <!-- Patch -->
         
         <typeAlias alias="Ids" type="org.alfresco.ibatis.IdsEntity"/>
@@ -200,6 +203,7 @@ Inbound settings from iBatis
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-blogs-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-calendar-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-copy-common-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/query-discussion-common-SqlMap.xml"/>
     </mappers>
     
 </configuration>

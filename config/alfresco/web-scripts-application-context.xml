@@ -665,7 +665,6 @@
    <bean id="webscript.org.alfresco.repository.invite.invite.get"
          class="org.alfresco.repo.web.scripts.invite.Invite"
          parent="webscript">
-      <property name="workflowService" ref="WorkflowService"/>
       <property name="invitationService" ref="InvitationService"/>
    </bean>
    

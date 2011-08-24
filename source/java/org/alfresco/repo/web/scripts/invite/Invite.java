@@ -21,14 +21,11 @@ package org.alfresco.repo.web.scripts.invite;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.repo.invitation.InviteHelper;
-import org.alfresco.repo.invitation.WorkflowModelNominatedInvitation;
 import org.alfresco.service.cmr.invitation.Invitation;
 import org.alfresco.service.cmr.invitation.InvitationExceptionForbidden;
 import org.alfresco.service.cmr.invitation.InvitationExceptionUserError;
 import org.alfresco.service.cmr.invitation.InvitationService;
 import org.alfresco.service.cmr.invitation.NominatedInvitation;
-import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
@@ -71,13 +68,7 @@ public class Invite extends DeclarativeWebScript
     private static final String PARAM_REJECT_URL = "rejectUrl";
     
     // services
-    private WorkflowService workflowService;
     private InvitationService invitationService;
-    
-    public void setWorkflowService(WorkflowService workflowService)
-    {
-        this.workflowService = workflowService;
-    }
     
     public void setInvitationService(InvitationService invitationService)
     {
@@ -272,7 +263,6 @@ public class Invite extends DeclarativeWebScript
                 // add model properties for template to render
                 model.put(MODEL_PROP_KEY_ACTION, ACTION_CANCEL);
                 model.put(MODEL_PROP_KEY_INVITE_ID, inviteId);
-            	cancelInvite(model, inviteId);
             }
             catch(InvitationExceptionForbidden fe)
             {
@@ -289,66 +279,5 @@ public class Invite extends DeclarativeWebScript
 
         return model;
     }
-    
 
-    /**
-     * Cancels pending invite. Note that only a Site Manager of the 
-     * site associated with the pending invite should be able to cancel that
-     * invite
-     * 
-     * @param model
-     *            model to add objects to, which will be passed to the template
-     *            for rendering
-     * @param inviteId
-     *            invite id of the invitation that inviter wishes to
-     *            cancel
-     */
-    private void cancelInvite(Map<String, Object> model, String inviteId)
-    {
-        // handle given invite ID null or empty
-        if ((inviteId == null) || (inviteId.length() == 0))
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "Given invite ID " + inviteId + " null or empty");
-        }
-
-        try
-        {
-            // complete the wf:invitePendingTask along the 'cancel' transition because the invitation has been cancelled
-            InviteHelper.completeInviteTask(inviteId, WorkflowModelNominatedInvitation.WF_TASK_INVITE_PENDING,
-                        WorkflowModelNominatedInvitation.WF_TRANSITION_CANCEL, this.workflowService);
-        }
-        catch(InvitationExceptionForbidden fe)
-        {
-        	throw new WebScriptException(Status.STATUS_FORBIDDEN, "Unable to cancel workflow" , fe);
-        }
-
-        catch (WorkflowException wfe)
-        {
-            //
-            // If the indirect cause of workflow exception is a WebScriptException object 
-            // then throw this directly, otherwise it will not be picked up by unit tests
-            //
-            
-            Throwable indirectCause = wfe.getCause().getCause();
-            
-            if(indirectCause instanceof InvitationExceptionForbidden)
-            {
-            	throw new WebScriptException(Status.STATUS_FORBIDDEN, "Unable to cancel workflow" , indirectCause);
-            }
-            else if (indirectCause instanceof WebScriptException)
-            {
-                WebScriptException wse = (WebScriptException) indirectCause;
-                throw wse;
-            }
-            else
-            {
-                throw wfe;
-            }
-        }
-        
-        // add model properties for template to render
-        model.put(MODEL_PROP_KEY_ACTION, ACTION_CANCEL);
-        model.put(MODEL_PROP_KEY_INVITE_ID, inviteId);
-    }
 }

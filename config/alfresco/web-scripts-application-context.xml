@@ -1625,6 +1625,12 @@
          parent="abstractDiscussionWebScript">
    </bean>
    
+   <!-- Lists the discussion topics with recent replies for a site -->
+   <bean id="webscript.org.alfresco.repository.discussions.forum.forum-posts-hot.get"
+         class="org.alfresco.repo.web.scripts.discussion.ForumTopicsHotGet"
+         parent="abstractDiscussionWebScript">
+   </bean>
+   
    
    <!--                                        -->
    <!--      Slingshot Calendar REST API       -->

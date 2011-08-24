@@ -45,6 +45,7 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -162,6 +163,41 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
        PagingRequest paging = new PagingRequest( startIndex, pageSize );
        paging.setRequestTotalCountMax( Math.max(10*pageSize,startIndex+2*pageSize) );
        return paging;
+    }
+    
+    protected List<String> getTags(JSONObject json) throws JSONException
+    {
+       List<String> tags = null;
+       if(json.has("tags"))
+       {
+          // Is it "tags":"" or "tags":[...] ?
+          if(json.get("tags") instanceof String)
+          {
+             // This is normally an empty string, skip
+             String tagsS = json.getString("tags");
+             if("".equals(tagsS))
+             {
+                // No tags were given
+                return null;
+             }
+             else
+             {
+                // Log, and treat as empty
+                logger.warn("Unexpected tag data: " + tagsS);
+                return null;
+             }
+          }
+          else
+          {
+             tags = new ArrayList<String>();
+             JSONArray jsTags = json.getJSONArray("tags");
+             for(int i=0; i<jsTags.length(); i++)
+             {
+                tags.add( jsTags.getString(i) );
+             }
+          }
+       }
+       return tags;
     }
     
     /**
@@ -360,17 +396,26 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
     protected Map<String, Object> renderTopics(PagingResults<TopicInfo> topics,
           PagingRequest paging, SiteInfo site)
     {
+       return renderTopics(topics.getPage(), topics.getTotalResultCount(), paging, site);
+    }
+    /*
+     * Renders out the list of topics
+     * TODO Fetch the post data in one go, rather than one at a time
+     */
+    protected Map<String, Object> renderTopics(List<TopicInfo> topics, 
+          Pair<Integer,Integer> size, PagingRequest paging, SiteInfo site)
+    {
        Map<String, Object> model = new HashMap<String, Object>();
        
        // Paging info
-       model.put("total", topics.getTotalResultCount().getFirst());
+       model.put("total", size.getFirst());
        model.put("pageSize", paging.getMaxItems());
        model.put("startIndex", paging.getSkipCount());
-       model.put("itemCount", topics.getPage().size());
+       model.put("itemCount", topics.size());
        
        // Data
        List<Map<String,Object>> items = new ArrayList<Map<String,Object>>();
-       for(TopicInfo topic : topics.getPage())
+       for(TopicInfo topic : topics)
        {
           items.add(renderTopic(topic, site));
        }

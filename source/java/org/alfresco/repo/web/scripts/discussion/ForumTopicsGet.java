@@ -65,6 +65,7 @@ public class ForumTopicsGet extends AbstractDiscussionWebScript
       PagingRequest paging = buildPagingRequest(req);
       if(tagSearch)
       {
+         // Tag based is a search rather than a listing
          if(site != null)
          {
             topics = discussionService.findTopics(site.getShortName(), null, tag, paging);

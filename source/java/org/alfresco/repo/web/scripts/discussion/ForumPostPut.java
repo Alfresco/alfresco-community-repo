@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.web.scripts.discussion;
 
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.service.cmr.discussion.PostInfo;
@@ -114,10 +115,11 @@ public class ForumPostPut extends AbstractDiscussionWebScript
          if(json.has("tags"))
          {
             topic.getTags().clear();
-            JSONArray tags = json.getJSONArray("tags");
-            for(int i=0; i<tags.length(); i++)
+            
+            List<String> tags = getTags(json);
+            if(tags != null)
             {
-               topic.getTags().add( tags.getString(i) );
+               topic.getTags().addAll(tags);
             }
          }
       }

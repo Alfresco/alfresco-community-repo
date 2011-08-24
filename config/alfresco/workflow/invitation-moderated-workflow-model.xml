@@ -40,14 +40,14 @@
             <properties>
                 <property name="imwf:reviewOutcome">
                     <type>d:text</type>
-                    <default>Reject</default>
+                    <default>reject</default>
                     <constraints>
                         <constraint name="imwf:reviewOutcomeOptions"
                             type="LIST">
                             <parameter name="allowedValues">
                                 <list>
-                                    <value>Approve</value>
-                                    <value>Reject</value>
+                                    <value>approve</value>
+                                    <value>reject</value>
                                 </list>
                             </parameter>
                         </constraint>

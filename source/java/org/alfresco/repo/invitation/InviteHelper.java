@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.invitation;
 
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.WF_TASK_ACTIVIT_INVITE_PENDING;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.WF_TASK_INVITE_PENDING;
 import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarAcceptUrl;
 import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarInviteTicket;
 import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarInviteeGenPassword;
@@ -28,8 +30,6 @@ import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVa
 import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarRole;
 import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarServerPath;
 import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarWorkflowInstanceId;
-import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.WF_TASK_INVITE_PENDING;
-import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.WF_TASK_ACTIVIT_INVITE_PENDING;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -63,7 +63,6 @@ import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
-import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -289,46 +288,6 @@ public class InviteHelper implements InitializingBean
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());
-    }
-    
-    /**
-     * Complete the specified Invite Workflow Task for the invite workflow 
-     * instance associated with the given invite ID, and follow the given
-     * transition upon completing the task
-     * 
-     * @param inviteId the invite ID of the invite workflow instance for which
-     *          we want to complete the given task
-     * @param fullTaskName qualified name of invite workflow task to complete
-     * @param transitionId the task transition to take on completion of 
-     *          the task (or null, for the default transition)
-     * @param workflowService TODO
-     */
-    public static void completeInviteTask(String inviteId, QName fullTaskName, String transitionId, WorkflowService workflowService)
-    {
-        // create workflow task query
-        WorkflowTaskQuery wfTaskQuery = new WorkflowTaskQuery();
-        
-        // set the given invite ID as the workflow process ID in the workflow query
-        wfTaskQuery.setProcessId(inviteId);
-
-        // find incomplete invite workflow tasks with given task name 
-        wfTaskQuery.setActive(Boolean.TRUE);
-        wfTaskQuery.setTaskState(WorkflowTaskState.IN_PROGRESS);
-        wfTaskQuery.setTaskName(fullTaskName);
-
-        // set process name to "wf:invite" so that only
-        // invite workflow instances are considered by this query
-        wfTaskQuery.setProcessName(WorkflowModelNominatedInvitation.WF_PROCESS_INVITE);
-
-        // query for invite workflow tasks with the constructed query
-        List<WorkflowTask> wf_invite_tasks = workflowService
-                .queryTasks(wfTaskQuery);
-        
-        // end all tasks found with this name 
-        for (WorkflowTask workflowTask : wf_invite_tasks)
-        {
-            workflowService.endTask(workflowTask.getId(), transitionId);
-        }
     }
     
     /**

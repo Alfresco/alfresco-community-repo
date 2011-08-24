@@ -38,7 +38,6 @@ import org.alfresco.repo.security.authentication.PasswordGenerator;
 import org.alfresco.repo.security.authentication.UserNameGenerator;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.workflow.WorkflowModel;
-import org.alfresco.repo.workflow.activiti.ActivitiConstants;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.invitation.Invitation;
 import org.alfresco.service.cmr.invitation.InvitationException;
@@ -414,6 +413,11 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     private Invitation cancelNominatedInvitation(WorkflowTask startTask)
     {
         NominatedInvitation invitation = getNominatedInvitation(startTask);
+        String currentUserName = this.authenticationService.getCurrentUserName();
+        if (false == currentUserName.equals(invitation.getInviterUserName()))
+        {
+            checkManagerRole(currentUserName, invitation.getResourceType(), invitation.getResourceName());
+        }
         endInvitation(startTask, 
                 WorkflowModelNominatedInvitation.WF_TRANSITION_CANCEL, null,
                 WorkflowModelNominatedInvitation.WF_TASK_INVITE_PENDING, WorkflowModelNominatedInvitation.WF_TASK_ACTIVIT_INVITE_PENDING);

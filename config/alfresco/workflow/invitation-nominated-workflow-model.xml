@@ -62,7 +62,7 @@
         <properties>
             <property name="inwf:inviteOutcome">
                 <type>d:text</type>
-                <default>Reject</default>
+                <default>reject</default>
                 <constraints>
                     <constraint name="inwf:inviteOutcomeOptions"
                         type="LIST">

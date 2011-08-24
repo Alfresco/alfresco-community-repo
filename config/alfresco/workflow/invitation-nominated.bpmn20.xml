@@ -15,7 +15,7 @@
       <sequenceFlow id="flow2" sourceRef="sendInvite" targetRef="invitePending" />
 
       <userTask id="invitePending" name="Invite Pending"
-         activiti:formKey="inwf:invitePendingTask">
+         activiti:formKey="inwf:activitiInvitePendingTask">
          <extensionElements>
             <activiti:taskListener event="create"
                class="org.alfresco.repo.workflow.activiti.tasklistener.ScriptTaskListener">
@@ -26,6 +26,13 @@
                      if (typeof bpm_workflowPriority != 'undefined') 
                         task.priority = bpm_workflowPriority;
                      </activiti:string>
+               </activiti:field>
+            </activiti:taskListener>
+            <activiti:taskListener event="complete" class="org.alfresco.repo.workflow.activiti.tasklistener.ScriptTaskListener">
+               <activiti:field name="script">
+                  <activiti:string>
+                     execution.setVariable('inwf_inviteOutcome', task.getVariable('inwf_inviteOutcome'));
+                  </activiti:string>
                </activiti:field>
             </activiti:taskListener>
          </extensionElements>

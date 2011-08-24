@@ -584,7 +584,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
                 // get workflow instance (ID) that pendingInvite task (in query
                 // result set)
 
-                String workflowId = workflowTask.path.instance.id;
+                String workflowId = workflowTask.getPath().getInstance().getId();
                 // TODO ALFCOM-2597 workflowTask.properties does not contain
                 // custom process values
                 // NominatedInvitationImpl result = new
@@ -1007,8 +1007,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 
             inviteeUserName = null;
 
-            Set<NodeRef> peopleWithInviteeEmail = this.personService.getPeopleFilteredByProperty(
-                        ContentModel.PROP_EMAIL, inviteeEmail);
+            Set<NodeRef> peopleWithInviteeEmail = personService.getPeopleFilteredByProperty(ContentModel.PROP_EMAIL, inviteeEmail);
 
             if (peopleWithInviteeEmail.size() > 0)
             {

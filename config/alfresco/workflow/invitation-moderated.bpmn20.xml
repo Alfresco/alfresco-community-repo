@@ -11,7 +11,7 @@
       <sequenceFlow id="flow1" sourceRef="start" targetRef="reviewTask" />
 
       <userTask id="reviewTask" name="Review Task"
-         activiti:formKey="imwf:moderatedInvitationReviewTask">
+         activiti:formKey="imwf:activitiModeratedInvitationReviewTask">
          <extensionElements>
             <activiti:taskListener event="create"
                class="org.alfresco.repo.workflow.activiti.tasklistener.ScriptTaskListener">
@@ -34,8 +34,7 @@
          </extensionElements>
          <potentialOwner>
             <resourceAssignmentExpression>
-               <formalExpression>${bpm_groupAssignee.properties.authorityName}
-               </formalExpression>
+               <formalExpression>${bpm_groupAssignee}</formalExpression>
             </resourceAssignmentExpression>
          </potentialOwner>
       </userTask>
@@ -48,12 +47,12 @@
           <conditionExpression xsi:type="tFormalExpression">${imwf_reviewOutcome == 'Approve'}</conditionExpression>
       </sequenceFlow>
       
-      <serviceTask id="approved" name="Approved" activiti:class="ApproveModeratedInviteDelegate" />
+      <serviceTask id="approved" name="Approved" activiti:delegateExpression="${ApproveModeratedInviteDelegate}" />
       <sequenceFlow id="flow5" sourceRef="approved" targetRef="end" />
 
       <sequenceFlow id="flow4" sourceRef="reviewDecision" targetRef="rejected" />
 
-      <serviceTask id="rejected" name="Rejected" activiti:class="RejectModeratedInviteDelegate" />
+      <serviceTask id="rejected" name="Rejected" activiti:delegateExpression="${RejectModeratedInviteDelegate}" />
       <sequenceFlow id='flow6' sourceRef='rejected' targetRef='end' />
       
       <endEvent id="end" />

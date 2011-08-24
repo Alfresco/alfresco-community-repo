@@ -799,7 +799,7 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
          * Now verify access control list contains user two
          */
         String roleName = siteService.getMembersRole(resourceName, inviteeUserName);
-        assertEquals("role name wrong", roleName, inviteeRole);
+        assertEquals("role name wrong", inviteeRole, roleName);
 
         /**
          * Negative test attempt to approve an invitation that has aready been

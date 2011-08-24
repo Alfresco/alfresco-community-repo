@@ -1258,11 +1258,13 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         String outcomeValue = ActivitiConstants.DEFAULT_TRANSITION_NAME;
         HashMap<QName, Serializable> updates = new HashMap<QName, Serializable>();
 
+        boolean isDefaultTransition = transition == null || ActivitiConstants.DEFAULT_TRANSITION_NAME.equals(transition);
+
         Map<QName, Serializable> properties = propertyConverter.getTaskProperties(task, false);
         QName outcomePropName = (QName) properties.get(WorkflowModel.PROP_OUTCOME_PROPERTY_NAME);
         if(outcomePropName !=null)
         {
-            if(transition != null)
+            if(isDefaultTransition == false)
             {
                 outcomeValue = transition;
                 Serializable transitionValue = propertyConverter.convertValueToPropertyType(task, transition, outcomePropName);
@@ -1277,8 +1279,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
                 }
             }
         }
-        else if (transition != null && 
-                ActivitiConstants.DEFAULT_TRANSITION_NAME.equals(transition)==false)
+        else if (isDefaultTransition==false)
         {
             // Only 'Next' is supported as transition.
             String taskId = createGlobalId(task.getId());

@@ -28,18 +28,21 @@ import java.util.Date;
  */
 public class GetDiscussionTopcisWithPostsCannedQueryParams extends NodeWithChildrenEntity
 {
-    private Date   topicCreatedAfter;
-    private Date   postCreatedAfter;
+    private boolean excludePrimaryPost; 
+    private Date    topicCreatedAfter;
+    private Date    postCreatedAfter;
     
     public GetDiscussionTopcisWithPostsCannedQueryParams(Long parentNodeId,
                                          Long nameQNameId,
                                          Long contentTypeQNameId,
                                          Long childrenTypeId,
                                          Date topicCreatedAfter,
-                                         Date postCreatedAfter)
+                                         Date postCreatedAfter,
+                                         boolean excludePrimaryPost)
                                          
     {
         super(parentNodeId, nameQNameId, contentTypeQNameId, childrenTypeId);
+        this.excludePrimaryPost = excludePrimaryPost;
         this.topicCreatedAfter = topicCreatedAfter;
         this.postCreatedAfter  = postCreatedAfter;
     }
@@ -52,5 +55,10 @@ public class GetDiscussionTopcisWithPostsCannedQueryParams extends NodeWithChild
     public Date getPostCreatedAfter() 
     {
        return postCreatedAfter;
+    }
+    
+    public boolean getExcludePrimaryPost()
+    {
+       return excludePrimaryPost;
     }
 }

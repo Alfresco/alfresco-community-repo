@@ -1223,9 +1223,167 @@ public class DiscussionServiceImplTest
        
        
        // Add a few replies, topics will begin showing up
+       PostInfo replySA1 = DISCUSSION_SERVICE.createReply(postSA, "Reply SA 1");
+       PostInfo replySB1 = DISCUSSION_SERVICE.createReply(postSB, "Reply SB 1");
+       PostInfo replySB2 = DISCUSSION_SERVICE.createReply(postSB, "Reply SB 2");
+       PostInfo replySB3 = DISCUSSION_SERVICE.createReply(postSB, "Reply SB 3");
+       PostInfo replyNA1 = DISCUSSION_SERVICE.createReply(postNA, "Reply NA 1");
+       PostInfo replyNB1 = DISCUSSION_SERVICE.createReply(postNB, "Reply NB 1");
+       PostInfo replyNB2 = DISCUSSION_SERVICE.createReply(postNB, "Reply NB 2");
+       PostInfo replyNB3 = DISCUSSION_SERVICE.createReply(postNB, "Reply NB 3");
+       PostInfo replyNB4 = DISCUSSION_SERVICE.createReply(postNB, "Reply NB 4");
+       
+       // Check we now see things as expected, ordered by count
+       topics = DISCUSSION_SERVICE.listHotTopics(DISCUSSION_SITE.getShortName(), fourDaysAgo, paging);
+       assertEquals(2, topics.getPage().size());
+       assertEquals(topicSB.getTitle(), topics.getPage().get(0).getFirst().getTitle());
+       assertEquals(3,                  topics.getPage().get(0).getSecond().intValue());
+       assertEquals(topicSA.getTitle(), topics.getPage().get(1).getFirst().getTitle());
+       assertEquals(1,                  topics.getPage().get(1).getSecond().intValue());
+       
+       topics = DISCUSSION_SERVICE.listHotTopics(FORUM_NODE, fourDaysAgo, paging);
+       assertEquals(2, topics.getPage().size());
+       assertEquals(topicNB.getTitle(), topics.getPage().get(0).getFirst().getTitle());
+       assertEquals(4,                  topics.getPage().get(0).getSecond().intValue());
+       assertEquals(topicNA.getTitle(), topics.getPage().get(1).getFirst().getTitle());
+       assertEquals(1,                  topics.getPage().get(1).getSecond().intValue());
        
        
-       // TODO
+       // Add reply to reply, counts go up
+       PostInfo replySA1_1 = DISCUSSION_SERVICE.createReply(replySA1, "Reply to a reply");
+       PostInfo replyNA1_1 = DISCUSSION_SERVICE.createReply(replyNA1, "Reply to a reply");
+       
+       topics = DISCUSSION_SERVICE.listHotTopics(DISCUSSION_SITE.getShortName(), fourDaysAgo, paging);
+       assertEquals(2, topics.getPage().size());
+       assertEquals(topicSB.getTitle(), topics.getPage().get(0).getFirst().getTitle());
+       assertEquals(3,                  topics.getPage().get(0).getSecond().intValue());
+       assertEquals(topicSA.getTitle(), topics.getPage().get(1).getFirst().getTitle());
+       assertEquals(2,                  topics.getPage().get(1).getSecond().intValue());
+       
+       topics = DISCUSSION_SERVICE.listHotTopics(FORUM_NODE, fourDaysAgo, paging);
+       assertEquals(2, topics.getPage().size());
+       assertEquals(topicNB.getTitle(), topics.getPage().get(0).getFirst().getTitle());
+       assertEquals(4,                  topics.getPage().get(0).getSecond().intValue());
+       assertEquals(topicNA.getTitle(), topics.getPage().get(1).getFirst().getTitle());
+       assertEquals(2,                  topics.getPage().get(1).getSecond().intValue());
+       
+       
+       // Changing the date of the primary post or the topic makes no difference
+       pushAuditableDatesBack(topicSA, 11, 1);
+       pushAuditableDatesBack(topicSB, 12, 2);
+       pushAuditableDatesBack(topicNA, 13, 3);
+       pushAuditableDatesBack(topicNB, 14, 4);
+       pushAuditableDatesBack(postSA, 3, 3);
+       pushAuditableDatesBack(postNA, 3, 3);
+       
+       topics = DISCUSSION_SERVICE.listHotTopics(DISCUSSION_SITE.getShortName(), fourDaysAgo, paging);
+       assertEquals(2, topics.getPage().size());
+       assertEquals(topicSB.getTitle(), topics.getPage().get(0).getFirst().getTitle());
+       assertEquals(3,                  topics.getPage().get(0).getSecond().intValue());
+       assertEquals(topicSA.getTitle(), topics.getPage().get(1).getFirst().getTitle());
+       assertEquals(2,                  topics.getPage().get(1).getSecond().intValue());
+       
+       topics = DISCUSSION_SERVICE.listHotTopics(FORUM_NODE, fourDaysAgo, paging);
+       assertEquals(2, topics.getPage().size());
+       assertEquals(topicNB.getTitle(), topics.getPage().get(0).getFirst().getTitle());
+       assertEquals(4,                  topics.getPage().get(0).getSecond().intValue());
+       assertEquals(topicNA.getTitle(), topics.getPage().get(1).getFirst().getTitle());
+       assertEquals(2,                  topics.getPage().get(1).getSecond().intValue());
+       
+       
+       // Push some replies into the past, counts go down
+       pushAuditableDatesBack(replySA1, 6, 6);
+       pushAuditableDatesBack(replyNA1, 6, 6);
+       pushAuditableDatesBack(replySB1, 1, 1); // Not enough to affect it
+       pushAuditableDatesBack(replyNB1, 1, 1); // Not enough to affect it
+       
+       topics = DISCUSSION_SERVICE.listHotTopics(DISCUSSION_SITE.getShortName(), fourDaysAgo, paging);
+       assertEquals(2, topics.getPage().size());
+       assertEquals(topicSB.getTitle(), topics.getPage().get(0).getFirst().getTitle());
+       assertEquals(3,                  topics.getPage().get(0).getSecond().intValue());
+       assertEquals(topicSA.getTitle(), topics.getPage().get(1).getFirst().getTitle());
+       assertEquals(1,                  topics.getPage().get(1).getSecond().intValue());
+       
+       topics = DISCUSSION_SERVICE.listHotTopics(FORUM_NODE, fourDaysAgo, paging);
+       assertEquals(2, topics.getPage().size());
+       assertEquals(topicNB.getTitle(), topics.getPage().get(0).getFirst().getTitle());
+       assertEquals(4,                  topics.getPage().get(0).getSecond().intValue());
+       assertEquals(topicNA.getTitle(), topics.getPage().get(1).getFirst().getTitle());
+       assertEquals(1,                  topics.getPage().get(1).getSecond().intValue());
+
+       
+       // Push most replies into the past, still shows, created date ordering matters here
+       pushAuditableDatesBack(replySB2, 10, 10);
+       pushAuditableDatesBack(replySB3, 10, 10);
+       pushAuditableDatesBack(replyNB2, 10, 10);
+       pushAuditableDatesBack(replyNB3, 10, 10);
+       pushAuditableDatesBack(replyNB4, 10, 10);
+       
+       topics = DISCUSSION_SERVICE.listHotTopics(DISCUSSION_SITE.getShortName(), fourDaysAgo, paging);
+       assertEquals(2, topics.getPage().size());
+       assertEquals(topicSA.getTitle(), topics.getPage().get(0).getFirst().getTitle());
+       assertEquals(1,                  topics.getPage().get(0).getSecond().intValue());
+       assertEquals(topicSB.getTitle(), topics.getPage().get(1).getFirst().getTitle());
+       assertEquals(1,                  topics.getPage().get(1).getSecond().intValue());
+       
+       topics = DISCUSSION_SERVICE.listHotTopics(FORUM_NODE, fourDaysAgo, paging);
+       assertEquals(2, topics.getPage().size());
+       assertEquals(topicNA.getTitle(), topics.getPage().get(0).getFirst().getTitle());
+       assertEquals(1,                  topics.getPage().get(0).getSecond().intValue());
+       assertEquals(topicNB.getTitle(), topics.getPage().get(1).getFirst().getTitle());
+       assertEquals(1,                  topics.getPage().get(1).getSecond().intValue());
+       
+       
+       // Delete the few recent replies, topics will then vanish
+       DISCUSSION_SERVICE.deletePost(replySB1);
+       DISCUSSION_SERVICE.deletePost(replyNB1);
+       
+       topics = DISCUSSION_SERVICE.listHotTopics(DISCUSSION_SITE.getShortName(), fourDaysAgo, paging);
+       assertEquals(1, topics.getPage().size());
+       assertEquals(topicSA.getTitle(), topics.getPage().get(0).getFirst().getTitle());
+       assertEquals(1,                  topics.getPage().get(0).getSecond().intValue());
+       
+       topics = DISCUSSION_SERVICE.listHotTopics(FORUM_NODE, fourDaysAgo, paging);
+       assertEquals(1, topics.getPage().size());
+       assertEquals(topicNA.getTitle(), topics.getPage().get(0).getFirst().getTitle());
+       assertEquals(1,                  topics.getPage().get(0).getSecond().intValue());
+       
+       
+       // Exact date matching check
+       pushAuditableDatesBack(replySA1_1, 1, 1);
+       pushAuditableDatesBack(replyNA1_1, 1, 1);
+       
+       topics = DISCUSSION_SERVICE.listHotTopics(DISCUSSION_SITE.getShortName(), fourDaysAgo, paging);
+       assertEquals(1, topics.getPage().size());
+       assertEquals(topicSA.getTitle(), topics.getPage().get(0).getFirst().getTitle());
+       assertEquals(1,                  topics.getPage().get(0).getSecond().intValue());
+       
+       topics = DISCUSSION_SERVICE.listHotTopics(FORUM_NODE, fourDaysAgo, paging);
+       assertEquals(1, topics.getPage().size());
+       assertEquals(topicNA.getTitle(), topics.getPage().get(0).getFirst().getTitle());
+       assertEquals(1,                  topics.getPage().get(0).getSecond().intValue());
+       
+       topics = DISCUSSION_SERVICE.listHotTopics(DISCUSSION_SITE.getShortName(), yesterday, paging);
+       assertEquals(1, topics.getPage().size());
+       assertEquals(topicSA.getTitle(), topics.getPage().get(0).getFirst().getTitle());
+       assertEquals(1,                  topics.getPage().get(0).getSecond().intValue());
+       
+       topics = DISCUSSION_SERVICE.listHotTopics(FORUM_NODE, yesterday, paging);
+       assertEquals(1, topics.getPage().size());
+       assertEquals(topicNA.getTitle(), topics.getPage().get(0).getFirst().getTitle());
+       assertEquals(1,                  topics.getPage().get(0).getSecond().intValue());
+       
+       
+       // If we ask for a date in the future, we don't get anything though
+       topics = DISCUSSION_SERVICE.listHotTopics(DISCUSSION_SITE.getShortName(), tomorrow, paging);
+       assertEquals(0, topics.getPage().size());
+       topics = DISCUSSION_SERVICE.listHotTopics(FORUM_NODE, tomorrow, paging);
+       assertEquals(0, topics.getPage().size());
+
+       topics = DISCUSSION_SERVICE.listHotTopics(DISCUSSION_SITE.getShortName(), future, paging);
+       assertEquals(0, topics.getPage().size());
+       topics = DISCUSSION_SERVICE.listHotTopics(FORUM_NODE, future, paging);
+       assertEquals(0, topics.getPage().size());
     }
     
     /**

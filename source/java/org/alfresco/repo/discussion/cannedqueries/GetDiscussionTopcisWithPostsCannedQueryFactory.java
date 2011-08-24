@@ -58,7 +58,7 @@ public class GetDiscussionTopcisWithPostsCannedQueryFactory extends AbstractQNam
     }
     
     public CannedQuery<NodeWithChildrenEntity> getCannedQuery(NodeRef parentNodeRef, 
-          Date topicCreatedFrom, Date postCreatedFrom,
+          Date topicCreatedFrom, Date postCreatedFrom, boolean excludePrimaryPosts,
           CannedQuerySortDetails sortDetails, PagingRequest pagingReq)
     {
         ParameterCheck.mandatory("parentNodeRef", parentNodeRef);
@@ -72,7 +72,8 @@ public class GetDiscussionTopcisWithPostsCannedQueryFactory extends AbstractQNam
               getQNameId(ContentModel.PROP_NAME),
               getQNameId(ForumModel.TYPE_TOPIC),
               getQNameId(ForumModel.TYPE_POST),
-              topicCreatedFrom, postCreatedFrom
+              topicCreatedFrom, postCreatedFrom,
+              excludePrimaryPosts
         );
         
         CannedQueryPageDetails cqpd = createCQPageDetails(pagingReq);

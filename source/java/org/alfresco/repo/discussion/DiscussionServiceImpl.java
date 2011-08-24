@@ -36,7 +36,6 @@ import org.alfresco.query.PagingResults;
 import org.alfresco.repo.discussion.cannedqueries.GetDiscussionTopcisWithPostsCannedQuery;
 import org.alfresco.repo.discussion.cannedqueries.GetDiscussionTopcisWithPostsCannedQueryFactory;
 import org.alfresco.repo.discussion.cannedqueries.NodeWithChildrenEntity;
-import org.alfresco.repo.discussion.cannedqueries.NodeWithChildrenEntity.NameAndCreatedAt;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.node.getchildren.GetChildrenAuditableCannedQuery;
 import org.alfresco.repo.node.getchildren.GetChildrenAuditableCannedQueryFactory;
@@ -678,7 +677,7 @@ public class DiscussionServiceImpl implements DiscussionService
       // Do the query
       GetDiscussionTopcisWithPostsCannedQueryFactory getCQFactory = (GetDiscussionTopcisWithPostsCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_GET_TOPICS_WITH_POSTS);
       GetDiscussionTopcisWithPostsCannedQuery cq = (GetDiscussionTopcisWithPostsCannedQuery)getCQFactory.getCannedQuery(
-            nodeRef, null, since, null, paging);
+            nodeRef, null, since, true, null, paging);
       
       // Execute the canned query
       CannedQueryResults<NodeWithChildrenEntity> results = cq.execute();
@@ -1088,18 +1087,9 @@ public class DiscussionServiceImpl implements DiscussionService
               {
                  NodeRef nodeRef = node.getNodeRef();
                  String name = node.getName();
-                 TopicInfo topic = buildTopic(nodeRef, container, name);
-                 
                  int count = node.getChildren().size();
-                 for(NameAndCreatedAt c : node.getChildren())
-                 {
-                    if(c.getName().equals(name))
-                    {
-                       // Primary post
-                       count--;
-                    }
-                 }
                  
+                 TopicInfo topic = buildTopic(nodeRef, container, name);
                  topics.add(new Pair<TopicInfo,Integer>(topic, count));
               }
               return topics;

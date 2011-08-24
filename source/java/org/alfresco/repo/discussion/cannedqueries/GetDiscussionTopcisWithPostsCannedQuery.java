@@ -111,11 +111,29 @@ public class GetDiscussionTopcisWithPostsCannedQuery extends AbstractCannedQuery
               result.setChildren(wantedPosts);
            }
            
-           // Ignore any topic with no replies
-           // (As topics have a primary post, that means any with less than 2 children)
-           if(result.getChildren().size() <= 1)
+           // If required, filter out the primary post
+           if(paramBean.getExcludePrimaryPost())
            {
-              // No posts at all, or only the primary one
+              List<NameAndCreatedAt> wantedPosts = new ArrayList<NameAndCreatedAt>();
+              for(NameAndCreatedAt post : result.getChildren())
+              {
+                 if(post.getName().equals( result.getName() ))
+                 {
+                    // Primary post, skip
+                    continue;
+                 }
+                 else
+                 {
+                    wantedPosts.add(post);
+                 }
+              }
+              result.setChildren(wantedPosts);
+           }
+           
+           // Ignore any topic with no posts
+           if(result.getChildren().size() == 0)
+           {
+              // No valid posts
               continue;
            }
            

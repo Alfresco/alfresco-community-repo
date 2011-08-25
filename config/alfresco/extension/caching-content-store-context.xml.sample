@@ -21,6 +21,7 @@
         <property name="cacheOnInbound" value="true"/>
     </bean>
 
+
     <!--
         The backingStore should NOT be a FileContentStore. If using a FileContentStore there
         is no need to use a CachingContentStore and therefore no need for the backingStore.
@@ -33,13 +34,14 @@
             <value>${dir.contentstore}</value>
         </constructor-arg>
     </bean>
-
+    
 
     <bean id="contentCache" class="org.alfresco.repo.content.caching.ContentCacheImpl">
         <property name="memoryStore" ref="cachingContentStoreCache"/>
+        <property name="cacheRoot" value="${dir.cachedcontent}"/>
     </bean>
     
-    
+
     <bean id="cachingContentStoreCache" class="org.alfresco.repo.cache.EhCacheAdapter">
         <property name="cache">
             <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
@@ -52,4 +54,37 @@
             </bean>
         </property>
     </bean>
+    
+    
+    <bean id="cachingContentStoreCleanerJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass">
+            <value>org.alfresco.repo.content.caching.cleanup.CachedContentCleanupJob</value>
+        </property>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="cachedContentCleaner">
+                    <ref bean="cachedContentCleaner" />
+                </entry>
+            </map>
+        </property>
+    </bean>
+    
+    <bean id="cachedContentCleaner" class="org.alfresco.repo.content.caching.cleanup.CachedContentCleaner">
+        <property name="maxDeleteWatchCount" value="1"/>
+        <property name="cache" ref="contentCache"/>
+    </bean>
+    
+
+    <bean id="cachingContentStoreCleanerTrigger" class="org.alfresco.util.CronTriggerBean">
+        <property name="jobDetail">
+            <ref bean="cachingContentStoreCleanerJobDetail" />
+        </property>
+        <property name="scheduler">
+            <ref bean="schedulerFactory" />
+        </property>
+        <property name="cronExpression">
+            <value>${system.content.cachedContentCleanup.cronExpression}</value>
+        </property>
+    </bean>
+    
 </beans>

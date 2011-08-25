@@ -76,7 +76,7 @@ public class CachingContentStoreTest
     {
         ContentReader cachedContentReader = mock(ContentReader.class);
         when(cache.getReader("url")).thenReturn(cachedContentReader);
-        
+        when(cache.contains("url")).thenReturn(true);
         ContentReader returnedReader = cachingStore.getReader("url");
         
         assertSame(returnedReader, cachedContentReader);

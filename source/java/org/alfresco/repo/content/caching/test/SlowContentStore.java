@@ -16,7 +16,6 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package org.alfresco.repo.content.caching.test;
 
 import java.io.IOException;
@@ -36,26 +35,33 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 
 /**
- * Package-private class - only for testing the CachingContentStore.
+ * Package-private class used only for testing the CachingContentStore.
+ * <p>
+ * Simulates a slow content store such as Amazon S3 or XAM. The ContentStore does not provide
+ * genuine facilities to store or retrieve content.
+ * <p>
+ * Asking for content using {@link #getReader(String)} will result in (generated) content
+ * being retrieved for any URL. A counter records how many times each arbitrary URL has been asked for.
+ * <p>
+ * Attempts to write content using any of the getWriter() methods will succeed. Though the content does not actually
+ * get stored anywhere.
+ * <p>
+ * Both reads and writes are slow - the readers and writers returned by this class sleep for {@link pauseMillis} after
+ * each operation.
  * 
  * @author Matt Ward
  */
 class SlowContentStore extends AbstractContentStore
 {
     private ConcurrentMap<String, AtomicLong> urlHits = new ConcurrentHashMap<String, AtomicLong>();
+    private int pauseMillis = 50;
     
-    /*
-     * @see org.alfresco.repo.content.ContentStore#isWriteSupported()
-     */
     @Override
     public boolean isWriteSupported()
     {
         return true;
     }
 
-    /*
-     * @see org.alfresco.repo.content.ContentStore#getReader(java.lang.String)
-     */
     @Override
     public ContentReader getReader(String contentUrl)
     {
@@ -73,8 +79,7 @@ class SlowContentStore extends AbstractContentStore
         
         return new SlowWriter(newContentUrl, existingContentReader);
     }
-    
-    
+        
     @Override
     public boolean exists(String contentUrl)
     {
@@ -125,7 +130,7 @@ class SlowContentStore extends AbstractContentStore
                 {
                     try
                     {
-                        Thread.sleep(50);
+                        Thread.sleep(pauseMillis);
                     }
                     catch (InterruptedException error)
                     {
@@ -205,7 +210,7 @@ class SlowContentStore extends AbstractContentStore
                     {
                         try
                         {
-                            Thread.sleep(50);
+                            Thread.sleep(pauseMillis);
                         }
                         catch (InterruptedException error)
                         {
@@ -234,12 +239,14 @@ class SlowContentStore extends AbstractContentStore
         return this.urlHits;
     }
 
-    public static void main(String[] args)
+    /**
+     * Length of time in milliseconds that ReadableByteChannel and WriteableByteChannel objects returned
+     * by SlowContentStore will pause for during read and write operations respectively.
+     *  
+     * @param pauseMillis
+     */
+    public void setPauseMillis(int pauseMillis)
     {
-        SlowContentStore scs = new SlowContentStore();
-        
-        ContentReader reader = scs.getReader("store://something/bin");
-        String content = reader.getContentString();
-        System.out.println("Content: " + content);
+        this.pauseMillis = pauseMillis;
     }
 }

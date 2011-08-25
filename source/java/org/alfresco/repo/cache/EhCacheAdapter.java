@@ -59,7 +59,7 @@ public class EhCacheAdapter<K extends Serializable, V extends Object>
     {
         try
         {
-            return (cache.get(key) != null);
+            return (cache.getQuiet(key) != null);
         }
         catch (CacheException e)
         {

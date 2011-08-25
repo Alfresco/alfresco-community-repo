@@ -28,6 +28,7 @@
 
     <bean id="contentCache" class="org.alfresco.repo.content.caching.ContentCacheImpl">
         <property name="memoryStore" ref="cachingContentStoreCache"/>
+        <property name="cacheRoot" value="${dir.cachedcontent}"/>
     </bean>
 
 

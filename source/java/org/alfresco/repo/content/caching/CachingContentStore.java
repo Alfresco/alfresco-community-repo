@@ -19,6 +19,9 @@
 package org.alfresco.repo.content.caching;
 
 import java.util.Date;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
@@ -44,17 +47,17 @@ public class CachingContentStore implements ContentStore
 {
     // NUM_LOCKS absolutely must be a power of 2 for the use of locks to be evenly balanced
     private final static int numLocks = 32;
-    private final static Object[] locks; 
+    private final static ReentrantReadWriteLock[] locks; 
     private ContentStore backingStore;
     private ContentCache cache;
     private boolean cacheOnInbound;
     
     static
     {
-        locks = new Object[numLocks];
+        locks = new ReentrantReadWriteLock[numLocks];
         for (int i = 0; i < numLocks; i++)
         {
-            locks[i] = new Object();
+            locks[i] = new ReentrantReadWriteLock();
         }
     }
 
@@ -148,46 +151,61 @@ public class CachingContentStore implements ContentStore
     @Override
     public ContentReader getReader(String contentUrl)
     {
-        // Synchronise on one of a pool of locks - which one is determined by a hash of the URL.
-        // This will stop the content from being read multiple times from the backing store
-        // when it should only be read once and cached versions should be returned after that.
-        synchronized(lock(contentUrl))
+        // Use pool of locks - which one is determined by a hash of the URL.
+        // This will stop the content from being read/cached multiple times from the backing store
+        // when it should only be read once - cached versions should be returned after that.
+        ReadLock readLock = readWriteLock(contentUrl).readLock();
+        readLock.lock();
+        try
         {
-            return retryingCacheRead(contentUrl);
+            if (cache.contains(contentUrl))
+            {
+                return cache.getReader(contentUrl);
+            }
         }
+        catch(CacheMissException e)
+        {
+            // Fall through to cacheAndRead(url);
+        }
+        finally
+        {
+            readLock.unlock();
+        }
+        
+        return cacheAndRead(contentUrl);
     }    
     
-    private ContentReader retryingCacheRead(String url)
+    private ContentReader cacheAndRead(String url)
     {
-        int triesLeft = 15;
-        
-        while (triesLeft > 0)
+        WriteLock writeLock = readWriteLock(url).writeLock();
+        writeLock.lock();
+        try
         {
-            try
+            if (!cache.contains(url))
             {
-                return cache.getReader(url);
-            }
-            catch (CacheMissException e)
-            {
-                // Cached content is missing either from memory or disk
-                // so try and populate it and retry reading it.
-                ContentReader bsReader = backingStore.getReader(url);
-                if (!cache.put(url, bsReader))
+                if (cache.put(url, backingStore.getReader(url)))
                 {
-                    // Content was empty - probably hasn't been written yet.
-                    return bsReader.getReader();
+                    return cache.getReader(url);
                 }
                 else
                 {
-                    triesLeft--;
+                    return backingStore.getReader(url);
                 }
             }
+            else
+            {
+                return cache.getReader(url);
+            }
         }
-        
-        // Give up and use the backing store directly
-        return backingStore.getReader(url);
+        catch(CacheMissException e)
+        {
+            return backingStore.getReader(url);
+        }
+        finally
+        {
+            writeLock.unlock();
+        }
     }
-    
     
     /*
      * @see org.alfresco.repo.content.ContentStore#getWriter(org.alfresco.repo.content.ContentContext)
@@ -267,17 +285,22 @@ public class CachingContentStore implements ContentStore
         return backingStore.delete(contentUrl);
     }
 
-    
-    private Object lock(String s)
+    /**
+     * Get a ReentrantReadWriteLock for a given URL. The lock is from a pool rather than
+     * per URL, so some contention is expected.
+     *  
+     * @param url
+     * @return
+     */
+    public ReentrantReadWriteLock readWriteLock(String url)
     {
-        return locks[lockIndex(s)];
+        return locks[lockIndex(url)];
     }
     
-    private int lockIndex(String s)
+    private int lockIndex(String url)
     {
-        return s.hashCode() & (numLocks - 1);
+        return url.hashCode() & (numLocks - 1);
     }
-    
     
     @Required
     public void setBackingStore(ContentStore backingStore)
@@ -295,6 +318,4 @@ public class CachingContentStore implements ContentStore
     {
         this.cacheOnInbound = cacheOnInbound;
     }
-    
-    
 }

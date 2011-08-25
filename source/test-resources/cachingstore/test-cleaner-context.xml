@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+    <!-- Override the backing store bean for the cleaner tests -->
+    <bean id="backingStore" class="org.alfresco.repo.content.caching.test.SlowContentStore">
+        <!-- set pauseMillis to 0 since we're not really after a SLOW backing store -->
+        <property name="pauseMillis" value="0"/>
+    </bean>
+    
+    
+    <bean id="cachingContentStoreCleanerJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass">
+            <value>org.alfresco.repo.content.caching.cleanup.CachedContentCleanupJob</value>
+        </property>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="cachedContentCleaner">
+                    <ref bean="cachedContentCleaner" />
+                </entry>
+            </map>
+        </property>
+    </bean>
+    
+    <bean id="cachedContentCleaner" class="org.alfresco.repo.content.caching.cleanup.CachedContentCleaner">
+        <property name="maxDeleteWatchCount" value="1"/>
+        <property name="cache" ref="contentCache"/>
+    </bean>
+    
+</beans>

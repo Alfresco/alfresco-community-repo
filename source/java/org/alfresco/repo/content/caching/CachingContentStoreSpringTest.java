@@ -19,7 +19,6 @@
 package org.alfresco.repo.content.caching;
 
 import java.io.File;
-import java.io.FilenameFilter;
 
 import net.sf.ehcache.CacheManager;
 
@@ -58,12 +57,13 @@ public class CachingContentStoreSpringTest extends AbstractWritableContentStoreT
                 getName());
         
         cache = new ContentCacheImpl();
+        cache.setCacheRoot(TempFileProvider.getLongLifeTempDir("cached_content_test"));
         cache.setMemoryStore(createMemoryStore());
         store = new CachingContentStore(backingStore, cache, false);
     }
     
     
-    private EhCacheAdapter<String, String> createMemoryStore()
+    private EhCacheAdapter<Key, String> createMemoryStore()
     {
         CacheManager manager = CacheManager.getInstance();
         
@@ -76,7 +76,7 @@ public class CachingContentStoreSpringTest extends AbstractWritableContentStoreT
             manager.addCache(memoryOnlyCache);
         }
         
-        EhCacheAdapter<String, String> memoryStore = new EhCacheAdapter<String, String>();
+        EhCacheAdapter<Key, String> memoryStore = new EhCacheAdapter<Key, String>();
         memoryStore.setCache(manager.getCache(EHCACHE_NAME));
         
         return memoryStore;

@@ -55,6 +55,7 @@ import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -2219,7 +2220,25 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
        else
        {
           // Container is already there
-          final NodeRef container = siteService.getContainer(siteShortName, componentName);
+          NodeRef containerTmp = null;
+          try
+          {
+             containerTmp = siteService.getContainer(siteShortName, componentName);
+          }
+          catch(AccessDeniedException e)
+          {
+             if(!create)
+             {
+                // Just pretend it isn't there, as they can't see it
+                return null;
+             }
+             else
+             {
+                // It's there, they can't see it, and they need it
+                throw e;
+             }
+          }
+          final NodeRef container = containerTmp;
        
           // Ensure the calendar container has the tag scope aspect applied to it
           if(! taggingService.isTagScope(container))

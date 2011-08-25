@@ -63,6 +63,7 @@ function getDoclist()
       
    return (
    {
+      container: parsedArgs.rootNode,
       onlineEditing: utils.moduleInstalled("org.alfresco.module.vti"),
       item: item,
       customJSON: slingshotDocLib.getJSON()

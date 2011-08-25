@@ -26,7 +26,7 @@
     <import resource="classpath:alfresco/period-type-context.xml" />
     <import resource="classpath*:alfresco/node-locator-context.xml" />
     <import resource="classpath*:alfresco/transfer-service-context.xml"/>
-    <import resource="classpath*:alfresco/web-publishing-context.xml" />
+    <import resource="classpath*:alfresco/content-publishing-context.xml" />
     <import resource="classpath*:alfresco/youtube-publishing-context.xml" />
     <import resource="classpath*:alfresco/twitter-publishing-context.xml" />
     <import resource="classpath*:alfresco/linkedin-publishing-context.xml" />

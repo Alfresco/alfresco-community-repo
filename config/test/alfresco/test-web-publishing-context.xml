@@ -14,7 +14,7 @@
         </property>
     </bean>
 
-   <import resource="classpath:alfresco/web-publishing-context.xml" />
+   <import resource="classpath:alfresco/content-publishing-context.xml" />
 
    <!-- Mock Channel Type -->
    <bean id="mockChannelType" class="org.alfresco.repo.publishing.MockChannelType"

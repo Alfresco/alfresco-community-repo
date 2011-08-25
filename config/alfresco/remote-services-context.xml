@@ -73,6 +73,9 @@
 		<property name="servicePort">
 			<value>${authentication.rmi.service.port}</value>
 		</property>
+		<property name="clientSocketFactory">
+			<ref bean="hostConfigurableSocketFactory" />
+		</property>
 	</bean>    
 	
     <!-- A Simple Filesystem like API for the repo implementation.

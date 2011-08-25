@@ -20,6 +20,7 @@ package org.alfresco.util.remote.server.socket;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.BindException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -28,6 +29,8 @@ import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 
 import org.alfresco.util.EqualsHelper;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
@@ -46,9 +49,20 @@ import org.springframework.beans.factory.InitializingBean;
 public class HostConfigurableSocketFactory implements RMIServerSocketFactory, RMIClientSocketFactory, Serializable
 {
     private static final long serialVersionUID = 1L;
+    private static Log logger = LogFactory.getLog(HostConfigurableSocketFactory.class);
 
+    /**
+     * How many retries to attempt if the socket is in use.
+     * Default is zero (no retries)
+     */
+    private int retries = 0;
+    /**
+     * How long to wait between retries, in miliseconds?
+     */
+    private int retryInterval = 250;
+    
     private InetAddress host;
-
+    
     public void setHost(String host)
     {
         try
@@ -64,6 +78,23 @@ public class HostConfigurableSocketFactory implements RMIServerSocketFactory, RM
             throw new RuntimeException(e.toString());
         }
     }
+    
+    /**
+     * How many retries to attempt if the socket is in use.
+     * Default is zero (no retries)
+     */
+    public void setRetries(int retries)
+    {
+       this.retries = retries;
+    }
+    
+    /**
+     * How long to wait between retries, in miliseconds?
+     */
+    public void setRetryInterval(int retryInterval)
+    {
+       this.retryInterval = retryInterval;
+    }
 
     public Socket createSocket(String host, int port) throws IOException
     {
@@ -72,7 +103,33 @@ public class HostConfigurableSocketFactory implements RMIServerSocketFactory, RM
 
     public ServerSocket createServerSocket(int port) throws IOException
     {
-        return new ServerSocket(port, 50, this.host);
+        ServerSocket socket = null;
+        for(int i=0; socket == null && i<retries+1; i++)
+        {
+           try
+           {
+              socket = new ServerSocket(port, 50, this.host);
+           }
+           catch(BindException e)
+           {
+              if(i >= retries)
+              {
+                 // We're out of retries, abort
+                 throw e;
+              }
+              else
+              {
+                 // Sleep and try again
+                 logger.warn("Port in-use, retrying", e);
+                 try
+                 {
+                    Thread.sleep(retryInterval);
+                 }
+                 catch(InterruptedException ie) {}
+              }
+           }
+        }
+        return socket;
     }
 
     /*

@@ -6,6 +6,7 @@
 
    <bean id="hostConfigurableSocketFactory" class="org.alfresco.util.remote.server.socket.HostConfigurableSocketFactory">
       <property name="host" value="${alfresco.rmi.services.host}" />
+      <property name="retries" value="${alfresco.rmi.services.retries}" />
    </bean>
 
    <bean id="baseServiceExporter" class="org.springframework.remoting.rmi.RmiServiceExporter" abstract="true">

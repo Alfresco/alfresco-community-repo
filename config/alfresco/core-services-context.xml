@@ -1019,11 +1019,15 @@
         <property name="keyResourceLoader" ref="springKeyResourceLoader"/>
         <property name="keyStoreParameters" ref="keyStoreParameters"/>
         <property name="encryptionParameters" ref="md5EncryptionParameters"/>
+        <property name="host" value="${solr.host}"/>
+        <property name="port" value="${solr.port}"/>
+        <property name="sslPort" value="${solr.port.ssl}"/>
     </bean>
 
     <bean id="solrAdminClient" class="org.alfresco.repo.solr.SOLRAdminClient" init-method="init" destroy-method="shutdown">
       <property name="solrHost" value="${solr.host}"/>
       <property name="solrPort" value="${solr.port}"/>
+      <property name="solrsslPort" value="${solr.port.ssl}"/>
       <property name="solrUser" value="${solr.solrUser}"/>
       <property name="solrPassword" value="${solr.solrPassword}"/>
       <property name="solrPingCronExpression" value="${solr.solrPingCronExpression}"/>

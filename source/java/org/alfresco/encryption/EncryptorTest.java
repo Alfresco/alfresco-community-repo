@@ -85,15 +85,15 @@ public class EncryptorTest extends TestCase
         Serializable testObject = "   This is a string, but will be serialized    ";
 
         Serializable sealedObject = encryptor.sealObject("mykey2", null, testObject);
-        try
-        {
+//        try
+//        {
         	Object output = encryptor.unsealObject("mykey2", sealedObject);
             assertEquals("Encryption round trip failed. ", testObject, output);
-        }
-        catch(KeyException e)
-        {
-        	throw new AlfrescoRuntimeException("", e)
-;        }
+//        }
+//        catch(KeyException e)
+//        {
+//        	throw new AlfrescoRuntimeException("", e)
+//;        }
 
     }
 }

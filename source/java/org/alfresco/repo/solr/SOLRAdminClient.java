@@ -61,6 +61,7 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware
 {
 	private String solrHost;
 	private int solrPort;
+	private int solrSSLPort;
 	private String solrUrl;
 	private String solrUser;
 	private String solrPassword;
@@ -87,6 +88,11 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware
 		this.solrPort = Integer.parseInt(solrPort);
 	}
 	
+	public void setSolrsslPort(int solrSSLPort)
+	{
+		this.solrSSLPort = solrSSLPort;
+	}
+
 	public void setSolrUser(String solrUser)
 	{
 		this.solrUser = solrUser;
@@ -118,32 +124,14 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware
 		this.httpClientFactory = httpClientFactory;
 	}
 
-//	protected HttpClient getHttpClient()
-//	{
-//		return httpClientFactory.getHttpClient(solrHost, solrPort);
-////		HttpClient httpClient = new HttpClient();
-////
-////        HttpClientParams params = httpClient.getParams();
-////        params.setBooleanParameter("http.tcp.nodelay", true);
-////        params.setBooleanParameter("http.connection.stalecheck", false);
-////
-////    	ProtocolSocketFactory socketFactory = new AuthSSLProtocolSocketFactory(
-////    			keyResourceLoader, encryptionParameters);
-////        Protocol myhttps = new Protocol("https", socketFactory, 8843);
-////        httpClient.getHostConfiguration().setHost(solrHost, 8080, myhttps);	
-////
-////        return httpClient;
-//	}
-
 	public void init()
 	{
     	ParameterCheck.mandatory("solrHost", solrHost);
     	ParameterCheck.mandatory("solrPort", solrPort);
+    	ParameterCheck.mandatory("solrUser", solrUser);
     	ParameterCheck.mandatory("solrPassword", solrPassword);
     	ParameterCheck.mandatory("solrPingCronExpression", solrPingCronExpression);
-    	ParameterCheck.mandatory("solrPort", solrPort);
     	ParameterCheck.mandatory("solrConnectTimeout", solrConnectTimeout);
-    	ParameterCheck.mandatory("solrUser", solrUser);
 
 		try
 		{
@@ -151,10 +139,10 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware
 	    	sb.append(httpClientFactory.isSSL() ? "https://" : "http://");
 	    	sb.append(solrHost);
 	    	sb.append(":");
-	    	sb.append(solrPort);
+	    	sb.append(httpClientFactory.isSSL() ? solrSSLPort: solrPort);
 	    	sb.append("/solr");
 			this.solrUrl = sb.toString();
-			HttpClient httpClient = httpClientFactory.getHttpClient(solrHost, solrPort);
+			HttpClient httpClient = httpClientFactory.getHttpClient();
 
 			server = new CommonsHttpSolrServer(solrUrl, httpClient);
 			// TODO remove credentials because we're using SSL?

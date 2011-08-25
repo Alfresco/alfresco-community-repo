@@ -671,5 +671,11 @@ public interface NodeDAO extends NodeBulkLoader
      */
     public void setNodeDefiningAclId(Long nodeId, long id);
  
-    public List<NodePropertyEntity> getProperties(Collection<PropertyDefinition> propertyDefs);
+    /**
+     * Used by the re-encryptor to re-encrypt encryptable properties with a new encryption key.
+     * 
+     * @param propertyDefs
+     * @return
+     */
+    public List<NodePropertyEntity> selectProperties(Collection<PropertyDefinition> propertyDefs);
 }

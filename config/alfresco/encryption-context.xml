@@ -46,6 +46,13 @@
        <property name="keyMetaDataFileLocation" value="${encryption.keystore.keyMetaData.location}"/>
     </bean>
 
+    <bean id="backupKeyStoreParameters" class="org.alfresco.encryption.KeyStoreParameters">
+       <property name="location" value="${encryption.keystore.backup.location}"/>
+       <property name="provider" value="${encryption.keystore.backup.provider}"/>
+       <property name="type"     value="${encryption.keystore.backup.type}"/>
+       <property name="keyMetaDataFileLocation" value="${encryption.keystore.backup.keyMetaData.location}"/>
+    </bean>
+    
     <bean id="keyProvider" class="org.alfresco.encryption.KeystoreKeyProvider" init-method="init">
        <property name="keyStoreParameters" ref="keyStoreParameters"/>
        <property name="keyResourceLoader" ref="springKeyResourceLoader"/>
@@ -55,35 +62,27 @@
         <property name="keyProvider" ref="keyProvider"/>
         <property name="cipherAlgorithm" value="${encryption.cipherAlgorithm}" />
     </bean>
-<!--
-    <bean id="reEncryptor" class="org.alfresco.encryption.ReEncryptor" init-method="init">
+
+    <bean id="reEncryptor" class="org.alfresco.encryption.ReEncryptor">
+        <property name="backupKeyStoreParameters" ref="backupKeyStoreParameters"/>
         <property name="keyProvider" ref="keyProvider"/>
-        <property name="cipherAlgorithm" value="${encryption.cipherAlgorithm}" />
-    </bean>
--->
-
-    <!-- Fallback encryptor - used by the re-encryptor  -->
-    <!--
-    <bean id="backupKeyStoreParameters" class="org.alfresco.encryption.KeyStoreParameters">
-       <property name="location" value="${encryption.keystore.fallback.location}"/>
-       <property name="provider" value="${encryption.keystore.fallback.provider}"/>
-       <property name="type"     value="${encryption.keystore.fallback.type}"/>
-       <property name="keyMetaDataFileLocation" value="${encryption.keystore.fallback.keyMetaData.location}"/>
+        <property name="keyResourceLoader" ref="springKeyResourceLoader"/>
+        <property name="transactionService" ref="transactionService"/>
+        <property name="dictionaryService" ref="dictionaryService"/>
+        <property name="nodeDAO" ref="nodeDAO"/>
+        <property name="dictionaryDAO" ref="dictionaryDAO"/>
+        <property name="qnameDAO" ref="qnameDAO"/>
+        <property name="cipherAlgorithm" value="${encryption.cipherAlgorithm}"/>
     </bean>
 
-    <bean id="backupKeyProvider" class="org.alfresco.encryption.KeystoreKeyProvider" init-method="init">
-       <property name="keyStoreParameters" ref="backupKeyStoreParameters"/>
-       <property name="keyResourceLoader" ref="springKeyResourceLoader"/>
+    <bean id="encryptionKeysRegistry" class="org.alfresco.encryption.EncryptionKeysRegistryImpl">
+        <property name="transactionService" ref="transactionService"/>
+        <property name="attributeService" ref="attributeService"/>
+        <property name="encryptor" ref="encryptor"/>
     </bean>
 
-    <bean id="backupEncryptor" class="org.alfresco.encryption.DefaultEncryptor" init-method="init">
-        <property name="keyProvider" ref="backupKeyProvider"/>
-        <property name="cipherAlgorithm" value="${encryption.encryption.cipherAlgorithm}" />
+    <bean id="keyStoreChecker" class="org.alfresco.encryption.KeyStoreChecker">
+        <property name="transactionService" ref="transactionService"/>
+        <property name="encryptionKeysRegistry" ref="encryptionKeysRegistry"/>
     </bean>
-
-    <bean id="fallbackEncryptor" class="org.alfresco.encryption.DefaultFallbackEncryptor">
-        <property name="fallback" ref="backupEncryptor"/>
-        <property name="main" ref="encryptor" />
-    </bean>
--->
 </beans>

@@ -60,7 +60,7 @@ public class EncryptionChecker extends AbstractLifecycleBean
 	@Override
 	protected void onBootstrap(ApplicationEvent event)
 	{
-		AlfrescoKeyStore mainKeyStore = new CachingKeyStore(keyStoreParameters, keyResourceLoader);
+		AlfrescoKeyStore mainKeyStore = new AlfrescoKeyStoreImpl(keyStoreParameters, keyResourceLoader);
 		keyStoreChecker.checkKeyStore(mainKeyStore);
 	}
 

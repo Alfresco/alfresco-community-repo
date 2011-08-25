@@ -6,6 +6,7 @@
 # Sample custom content and index data location
 #
 #dir.root=/srv/alfresco/alf_data
+#dir.keystore=${dir.root}/keystore
 
 #
 # Sample database connection properties

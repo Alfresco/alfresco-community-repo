@@ -168,16 +168,15 @@
         </property>
     </bean>
 
-    <bean id="keyStoreChecker" class="org.alfresco.encryption.KeyStoreChecker">
-        <property name="transactionService" ref="transactionService"/>
-        <property name="attributeService" ref="attributeService"/>
-        <property name="encryptor" ref="encryptor"/>
-    </bean>
-
     <bean id="encryptionChecker" class="org.alfresco.encryption.EncryptionChecker">
        <property name="keyStoreParameters" ref="keyStoreParameters"/>
        <property name="keyResourceLoader" ref="springKeyResourceLoader"/>
        <property name="keyStoreChecker" ref="keyStoreChecker"/>
+    </bean>
+
+    <bean id="bootstrapReEncryptor" class="org.alfresco.encryption.BootstrapReEncryptor">
+        <property name="enabled" value="${encryption.bootstrap.reencrypt}"/>
+        <property name="reEncryptor" ref="reEncryptor"/>
     </bean>
 
     <!-- node indexing for ADM -->
@@ -811,5 +810,4 @@
            <ref bean="transactionService"/>
        </property>
     </bean>
-    
 </beans>

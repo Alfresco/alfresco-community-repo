@@ -91,7 +91,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String SELECT_NODES_BY_UUIDS = "alfresco.node.select_NodesByUuids";
     private static final String SELECT_NODES_BY_IDS = "alfresco.node.select_NodesByIds";
     private static final String SELECT_NODE_PROPERTIES = "alfresco.node.select_NodeProperties";
-    private static final String SELECT_PROPERTIES_BY_TYPE = "alfresco.node.select_PropertiesByType";
+    private static final String SELECT_PROPERTIES_BY_TYPES = "alfresco.node.select_PropertiesByTypes";
     private static final String SELECT_NODE_ASPECTS = "alfresco.node.select_NodeAspects";
     private static final String INSERT_NODE_PROPERTY = "alfresco.node.insert.insert_NodeProperty";
     private static final String UPDATE_PRIMARY_CHILDREN_SHARED_ACL = "alfresco.node.update.update_PrimaryChildrenSharedAcl";
@@ -514,7 +514,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         default:
             prop.setQnameIds(new ArrayList<Long>(qnameIds));
         }
-        
+
         List<NodePropertyEntity> rows = (List<NodePropertyEntity>) template.selectList(SELECT_NODE_PROPERTIES, prop);
         Map<Long, Map<NodePropertyKey, NodePropertyValue>> results = makePersistentPropertiesMap(rows);
         Map<NodePropertyKey, NodePropertyValue> props = results.get(nodeId);
@@ -1521,20 +1521,25 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         }
     }
     
-    // TODO - use a callback approach
-    public List<NodePropertyEntity> getProperties(Collection<PropertyDefinition> propertyDefs)
+    @Override
+    public List<NodePropertyEntity> selectProperties(Collection<PropertyDefinition> propertyDefs)
     {
     	Set<QName> qnames = new HashSet<QName>();
 		for(PropertyDefinition propDef : propertyDefs)
 		{
 			qnames.add(propDef.getName());
 		}
-	
+
+		// TODO use callback approach
 		final List<NodePropertyEntity> props = new ArrayList<NodePropertyEntity>();
 
 		// qnames of properties that are encrypted
 		Set<Long> qnameIds = qnameDAO.convertQNamesToIds(qnames, false);
-        template.select(SELECT_PROPERTIES_BY_TYPE, qnameIds, new ResultHandler()
+	    // TODO - use a callback approach
+
+        IdsEntity param = new IdsEntity();
+        param.setIds(new ArrayList<Long>(qnameIds));
+        template.select(SELECT_PROPERTIES_BY_TYPES, param, new ResultHandler()
         {
 			@Override
 			public void handleResult(ResultContext context)
@@ -1542,7 +1547,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
 				props.add((NodePropertyEntity)context.getResultObject());
 			}
         });
-		
+
 		return props;
     }
     

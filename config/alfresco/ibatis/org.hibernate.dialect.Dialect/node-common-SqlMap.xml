@@ -763,13 +763,25 @@
         </where>
     </select>
 
+    <select id="select_PropertiesByTypes" parameterType="Ids" resultMap="result_NodeProperty">
+        <include refid="alfresco.node.select_NodeProperty_Results"/>
+        from
+            alf_node_properties prop
+        <where>
+            qname_id in
+            <foreach item="item" index="index" collection="ids" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+
     <sql id="select_NodeAspects_Results">
         select
             aspects.node_id            as node_id,
             aspects.qname_id           as qname_id
     </sql>
     
-    <select id="select_NodeAspects" parameterType="NodeAspects" resultMap="result_NodeAspects">
+    <select id="select_NodeAspects" parameterType="Ids" resultMap="result_NodeAspects">
         <include refid="alfresco.node.select_NodeAspects_Results"/>
         from
             alf_node_aspects aspects

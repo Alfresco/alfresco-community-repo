@@ -19,26 +19,30 @@
 package org.alfresco.encryption;
 
 import java.io.Serializable;
+import java.security.Key;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.crypto.SealedObject;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.batch.BatchProcessWorkProvider;
 import org.alfresco.repo.batch.BatchProcessor;
 import org.alfresco.repo.dictionary.DictionaryDAO;
-import org.alfresco.repo.dictionary.NamespaceDAO;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.NodePropertyEntity;
 import org.alfresco.repo.domain.node.NodePropertyKey;
+import org.alfresco.repo.domain.node.NodePropertyValue;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.node.encryption.MetadataEncryptor;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
@@ -65,17 +69,22 @@ public class ReEncryptor implements ApplicationContextAware
     private static Log logger = LogFactory.getLog(ReEncryptor.class);
 
 	private NodeDAO nodeDAO;
-	private NamespaceDAO namespaceDAO;
 	private DictionaryDAO dictionaryDAO;
 	private DictionaryService dictionaryService;
+	private TransactionService transactionService;
 	private QNameDAO qnameDAO;
 
-	private MetadataEncryptor metadataEncryptor;
+	private KeyStoreParameters backupKeyStoreParameters;
+	private KeyProvider keyProvider;
+	private KeyResourceLoader keyResourceLoader;
 
 	private ApplicationContext applicationContext;
-
-	private TransactionService transactionService;
 	private RetryingTransactionHelper transactionHelper;
+	private String cipherAlgorithm;
+
+	// TODO propertize
+	private int chunkSize = 50;
+	private boolean splitTxns = true;
 
     /**
      * Set the transaction provider so that each execution can be performed within a transaction
@@ -86,40 +95,93 @@ public class ReEncryptor implements ApplicationContextAware
         this.transactionHelper = transactionService.getRetryingTransactionHelper();
         this.transactionHelper.setForceWritable(true);
     }
-
-//    protected MetadataEncryptor getMetadataEncryptor(EncryptionParameters encryptionParameters)
-//    {
-//		DefaultEncryptor encryptor = new DefaultEncryptor();
-//		encryptor.setCipherAlgorithm(encryptionParameters.getCipherAlgorithm());
-//		encryptor.setCipherProvider(null);
-//		KeystoreKeyProvider keyProvider = new KeystoreKeyProvider();
-//		keyProvider.setLocation(encryptionParameters.getKeyStoreLocation());
-//		keyProvider.setPasswordsFileLocation(encryptionParameters.getPasswordFileLocation());
-//		keyProvider.setType(encryptionParameters.getKeyStoreType());
-//		keyProvider.setKeyResourceLoader(new SpringKeyResourceLoader());
-//		keyProvider.setProvider(encryptionParameters.getKeyStoreProvider()
-//				);
-//
-//		encryptor.setKeyProvider(keyProvider);
-//
-//		MetadataEncryptor metadataEncryptor = new MetadataEncryptor();
-//		metadataEncryptor.setEncryptor(encryptor);
-//		metadataEncryptor.setDictionaryService(dictionaryService);
-//
-//		return metadataEncryptor;
-//    }
     
-	public void setMetadataEncryptor(MetadataEncryptor metadataEncryptor)
+	public void setSplitTxns(boolean splitTxns)
 	{
-		this.metadataEncryptor = metadataEncryptor;
+		this.splitTxns = splitTxns;
 	}
 
-	public void init()
+	public void setNodeDAO(NodeDAO nodeDAO)
 	{
+		this.nodeDAO = nodeDAO;
 	}
 
-	public void reencrypt(final KeyStoreParameters newEncryptionParameters, final List<NodePropertyEntity> properties)
+	public void setDictionaryDAO(DictionaryDAO dictionaryDAO)
 	{
+		this.dictionaryDAO = dictionaryDAO;
+	}
+
+	public void setDictionaryService(DictionaryService dictionaryService)
+	{
+		this.dictionaryService = dictionaryService;
+	}
+
+	public void setQnameDAO(QNameDAO qnameDAO)
+	{
+		this.qnameDAO = qnameDAO;
+	}
+
+	public void setCipherAlgorithm(String cipherAlgorithm)
+	{
+		this.cipherAlgorithm = cipherAlgorithm;
+	}
+	
+	public void setBackupKeyStoreParameters(KeyStoreParameters backupKeyStoreParameters)
+	{
+		this.backupKeyStoreParameters = backupKeyStoreParameters;
+	}
+	
+	protected KeyProvider getKeyProvider(KeyStoreParameters keyStoreParameters)
+	{
+		KeyProvider keyProvider = new KeystoreKeyProvider(keyStoreParameters, keyResourceLoader);
+		return keyProvider;
+	}
+	
+	public void setKeyProvider(KeyProvider keyProvider)
+	{
+		this.keyProvider = keyProvider;
+	}
+	
+	public void setKeyResourceLoader(KeyResourceLoader keyResourceLoader)
+	{
+		this.keyResourceLoader = keyResourceLoader;
+	}
+
+	public MetadataEncryptor getMetadataEncryptor(KeyProvider backupKeyProvider, KeyProvider newKeyProvider)
+	{
+		DefaultEncryptor backupEncryptor = new DefaultEncryptor();
+		backupEncryptor.setCipherProvider(null); // TODO parameterize
+		backupEncryptor.setCipherAlgorithm(cipherAlgorithm);
+		backupEncryptor.setKeyProvider(backupKeyProvider);
+
+		DefaultEncryptor encryptor = new DefaultEncryptor();
+		encryptor.setCipherProvider(null); // TODO parameterize
+		encryptor.setCipherAlgorithm(cipherAlgorithm);
+		encryptor.setKeyProvider(newKeyProvider);
+
+		DefaultFallbackEncryptor fallbackEncryptor = new DefaultFallbackEncryptor(encryptor, backupEncryptor);
+		MetadataEncryptor metadataEncryptor = new MetadataEncryptor();
+		metadataEncryptor.setEncryptor(fallbackEncryptor);
+		metadataEncryptor.setDictionaryService(dictionaryService);
+		return metadataEncryptor;
+	}
+
+	protected KeyProvider getKeyProvider(final Map<String, Key> keys)
+	{
+		KeyProvider keyProvider = new KeyProvider()
+		{
+			@Override
+			public Key getKey(String keyAlias)
+			{
+				return keys.get(keyAlias);
+			}
+		};
+		return keyProvider;
+	}
+
+	protected void reencrypt(final MetadataEncryptor metadataEncryptor, final List<NodePropertyEntity> properties)
+	{
+		final Iterator<NodePropertyEntity> it = properties.iterator();
         BatchProcessor.BatchProcessWorker<NodePropertyEntity> worker = new BatchProcessor.BatchProcessWorker<NodePropertyEntity>()
         {
             public String getIdentifier(NodePropertyEntity entity)
@@ -135,22 +197,22 @@ public class ReEncryptor implements ApplicationContextAware
             {
             }
 
-            public void process(NodePropertyEntity entity) throws Throwable
+            public void process(final NodePropertyEntity entity) throws Throwable
             {
-    			Object value = entity.getValue();
+    			NodePropertyValue nodePropValue = entity.getValue();
+    			// TODO check that we have the correct type i.e. can be cast to Serializable
+    			Serializable value = nodePropValue.getSerializableValue();
     			if(value instanceof SealedObject)
     			{
 	    			SealedObject sealed = (SealedObject)value;
 
-	    			NodePropertyKey nodeKey = entity.getKey();
-	    			QName propertyQName = qnameDAO.getQName(nodeKey.getQnameId()).getSecond();
+	    			NodePropertyKey propertyKey = entity.getKey();
+	    			QName propertyQName = qnameDAO.getQName(propertyKey.getQnameId()).getSecond();
 
-	    			// metadataEncryptor uses a fallback encryptor; decryption will try the
-	    			// default (new) keys first (which will fail for properties created before the
-	    			// change in keys), followed by the backup keys.
+	    			// decrypt...
 	    			Serializable decrypted = metadataEncryptor.decrypt(propertyQName, sealed);
 
-	    			// Re-encrypt. The new keys will be used.
+	    			// ...and then re-encrypt. The new keys will be used.
 	    			Serializable resealed = metadataEncryptor.encrypt(propertyQName, decrypted);
 
 	    			// TODO update resealed using batch update?
@@ -159,15 +221,16 @@ public class ReEncryptor implements ApplicationContextAware
     			}
     			else
     			{
-    				// TODO
+	    			NodePropertyKey nodeKey = entity.getKey();
+	    			QName propertyQName = qnameDAO.getQName(nodeKey.getQnameId()).getSecond();
+    				logger.warn("Encountered an encrypted property that is not a SealedObject, for node id " +
+    						entity.getNodeId() + ", property " + propertyQName);
     			}
             }
         };
 
         BatchProcessWorkProvider<NodePropertyEntity> provider = new BatchProcessWorkProvider<NodePropertyEntity>()
 		{
-        	private int start = 0;
-
 			@Override
 			public int getTotalEstimatedWorkSize()
 			{
@@ -177,46 +240,87 @@ public class ReEncryptor implements ApplicationContextAware
 			@Override
 			public Collection<NodePropertyEntity> getNextWork()
 			{
-				int end = start + 20;
-				if(end > properties.size())
+				int count = 0;
+				List<NodePropertyEntity> sublist = new ArrayList<NodePropertyEntity>(chunkSize);
+				while(it.hasNext() && count < chunkSize)
 				{
-					end = properties.size();
+					sublist.add(it.next());
+					count++;
 				}
-				List<NodePropertyEntity> sublist = properties.subList(start, end);
-				start += 20;
+
 				return sublist;
 			}
 		};
 
-        // Migrate using 2 threads, 20 authorities per transaction. Log every 100 entries.
-		// TODO, propertize these numbers
+		// TODO, "propertize" these numbers
         new BatchProcessor<NodePropertyEntity>(
                 I18NUtil.getMessage(""),
                 transactionHelper,
                 provider,
                 2, 20,
                 applicationContext,
-                logger, 100).process(worker, true);
+                logger, 20).process(worker, splitTxns);
 	}
 
-	public void execute(KeyStoreParameters newEncryptionParameters)
+	/**
+	 * Re-encrypt using the configured backup keystore to decrypt and the main keystore to encrypt
+	 */
+	public int reEncrypt() throws MissingKeyException, MissingKeyStoreException
 	{
-		// Proceed only if fallback is available i.e. the systems has both old and new keys
-		if(metadataEncryptor.isFallbackAvailable())
+		if(!backupKeyStoreParameters.isDefined())
 		{
-			QName model = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, namespaceDAO);
-
-			// get properties that are encrypted
-			Collection<PropertyDefinition> propertyDefs = dictionaryDAO.getProperties(model, DataTypeDefinition.ENCRYPTED);
-			List<NodePropertyEntity> properties = nodeDAO.getProperties(propertyDefs);
-
-			// reencrypt these properties
-			reencrypt(newEncryptionParameters, properties);
+			throw new MissingKeyStoreException("Backup key store is not defined");
 		}
-		else
+		KeyProvider backupKeyProvider = getKeyProvider(backupKeyStoreParameters);
+		if(backupKeyProvider.getKey(KeyProvider.ALIAS_METADATA) == null)
 		{
-			// TODO
+			throw new MissingKeyException("Unable to find the metadata key in backup key store. Does the backup key store exist?");
 		}
+		MetadataEncryptor metadataEncryptor = getMetadataEncryptor(backupKeyProvider, keyProvider);
+		return reEncrypt(metadataEncryptor);
+	}
+
+	/**
+	 * Re-encrypt by decrypting using the configured keystore and encrypting using a keystore configured using the provided new key store parameters.
+	 * Called from e.g. JMX.
+	 * 
+	 * Note: it is the responsibility of the end user to ensure that the keystore configured by newKeyStoreParameters is
+	 * placed in the repository keystore directory. This can be done while the repository is running and it will be picked
+	 * up automatically the next time the repository restarts.
+	 */
+	public int reEncrypt(KeyStoreParameters parameters)
+	{
+		KeyProvider newKeyProvider = getKeyProvider(parameters);
+		return reEncrypt(newKeyProvider);
+	}
+	
+	public int reEncrypt(KeyProvider newKeyProvider)
+	{
+		MetadataEncryptor metadataEncryptor = getMetadataEncryptor(keyProvider, newKeyProvider);
+		return reEncrypt(metadataEncryptor);
+	}
+
+	protected int reEncrypt(MetadataEncryptor metadataEncryptor)
+	{
+		// get properties that are encrypted
+		Collection<PropertyDefinition> propertyDefs = dictionaryDAO.getPropertiesOfDataType(DataTypeDefinition.ENCRYPTED);
+		// TODO use callback mechanism
+		List<NodePropertyEntity> properties = nodeDAO.selectProperties(propertyDefs);
+		
+		if(logger.isDebugEnabled())
+		{
+			logger.debug("Found " + properties.size() + " properties to re-encrypt...");
+		}
+
+		// reencrypt these properties
+		reencrypt(metadataEncryptor, properties);
+
+		if(logger.isDebugEnabled())
+		{
+			logger.debug("...done re-encrypting.");
+		}
+
+		return properties.size();
 	}
 
 	@Override

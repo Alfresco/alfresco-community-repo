@@ -43,7 +43,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.opencmis.dictionary.CMISObjectVariant;
 import org.alfresco.opencmis.dictionary.FolderTypeDefintionWrapper;
-import org.alfresco.opencmis.dictionary.PropertyDefintionWrapper;
+import org.alfresco.opencmis.dictionary.PropertyDefinitionWrapper;
 import org.alfresco.opencmis.dictionary.TypeDefinitionWrapper;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
@@ -627,7 +627,7 @@ public class AlfrescoCmisService extends AbstractCmisService
 
                     if (sort.length > 0)
                     {
-                        PropertyDefintionWrapper propDef = connector.getOpenCMISDictionaryService()
+                        PropertyDefinitionWrapper propDef = connector.getOpenCMISDictionaryService()
                                 .findPropertyByQueryName(sort[0]);
                         if (propDef != null)
                         {
@@ -973,7 +973,7 @@ public class AlfrescoCmisService extends AbstractCmisService
                     continue;
                 }
 
-                PropertyDefintionWrapper propDef = connector.getOpenCMISDictionaryService().findPropertyByQueryName(
+                PropertyDefinitionWrapper propDef = connector.getOpenCMISDictionaryService().findPropertyByQueryName(
                         sort[0]);
                 if (propDef != null)
                 {
@@ -1967,7 +1967,7 @@ public class AlfrescoCmisService extends AbstractCmisService
             return Collections.emptyList();
         } else
         {
-            return connector.getRendtions(info.getNodeRef(), renditionFilter, maxItems, skipCount);
+            return connector.getRenditions(info.getNodeRef(), renditionFilter, maxItems, skipCount);
         }
     }
 

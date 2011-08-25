@@ -18,7 +18,7 @@
  */
 package org.alfresco.opencmis.search;
 
-import org.alfresco.opencmis.dictionary.PropertyDefintionWrapper;
+import org.alfresco.opencmis.dictionary.PropertyDefinitionWrapper;
 import org.alfresco.service.cmr.search.ResultSetColumn;
 import org.alfresco.service.namespace.QName;
 import org.apache.chemistry.opencmis.commons.enums.PropertyType;
@@ -32,7 +32,7 @@ public class CMISResultSetColumn implements ResultSetColumn
 
     private String name;
 
-    private PropertyDefintionWrapper propertyDefinition;
+    private PropertyDefinitionWrapper propertyDefinition;
 
     private PropertyType dataType;
 
@@ -40,7 +40,7 @@ public class CMISResultSetColumn implements ResultSetColumn
 
     private QName alfrescoDataTypeQName;
 
-    CMISResultSetColumn(String name, PropertyDefintionWrapper propertyDefinition, PropertyType dataType,
+    CMISResultSetColumn(String name, PropertyDefinitionWrapper propertyDefinition, PropertyType dataType,
             QName alfrescoPropertyQName, QName alfrescoDataTypeQName)
     {
         this.name = name;
@@ -55,7 +55,7 @@ public class CMISResultSetColumn implements ResultSetColumn
         return name;
     }
 
-    public PropertyDefintionWrapper getCMISPropertyDefinition()
+    public PropertyDefinitionWrapper getCMISPropertyDefinition()
     {
         return propertyDefinition;
     }

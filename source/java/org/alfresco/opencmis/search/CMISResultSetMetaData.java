@@ -22,7 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.alfresco.opencmis.dictionary.CMISDictionaryService;
-import org.alfresco.opencmis.dictionary.PropertyDefintionWrapper;
+import org.alfresco.opencmis.dictionary.PropertyDefinitionWrapper;
 import org.alfresco.opencmis.dictionary.TypeDefinitionWrapper;
 import org.alfresco.repo.search.impl.querymodel.Column;
 import org.alfresco.repo.search.impl.querymodel.PropertyArgument;
@@ -70,7 +70,7 @@ public class CMISResultSetMetaData implements ResultSetMetaData
         columnMetaData = new LinkedHashMap<String, CMISResultSetColumn>();
         for (Column column : query.getColumns())
         {
-            PropertyDefintionWrapper propertyDefinition = null;
+            PropertyDefinitionWrapper propertyDefinition = null;
             PropertyType type = null;
             QName alfrescoPropertyQName = null;
             QName alfrescoDataTypeQName = null;

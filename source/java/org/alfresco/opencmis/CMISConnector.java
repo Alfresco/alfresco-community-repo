@@ -49,7 +49,7 @@ import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.opencmis.dictionary.CMISObjectVariant;
 import org.alfresco.opencmis.dictionary.CMISPropertyAccessor;
 import org.alfresco.opencmis.dictionary.DocumentTypeDefinitionWrapper;
-import org.alfresco.opencmis.dictionary.PropertyDefintionWrapper;
+import org.alfresco.opencmis.dictionary.PropertyDefinitionWrapper;
 import org.alfresco.opencmis.dictionary.TypeDefinitionWrapper;
 import org.alfresco.opencmis.mapping.DirectProperty;
 import org.alfresco.opencmis.search.CMISQueryOptions;
@@ -846,7 +846,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     public void checkChildObjectType(CMISNodeInfo folderInfo, String childType)
     {
         TypeDefinitionWrapper targetType = folderInfo.getType();
-        PropertyDefintionWrapper allowableChildObjectTypeProperty = targetType
+        PropertyDefinitionWrapper allowableChildObjectTypeProperty = targetType
                 .getPropertyById(PropertyIds.ALLOWED_CHILD_OBJECT_TYPE_IDS);
         List<String> childTypes = (List<String>) allowableChildObjectTypeProperty.getPropertyAccessor().getValue(
                 folderInfo);
@@ -940,7 +940,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             // set renditions
             if (!RENDITION_NONE.equals(renditionFilter))
             {
-                List<RenditionData> renditions = getRendtions(info.getNodeRef(), renditionFilter, null, null);
+                List<RenditionData> renditions = getRenditions(info.getNodeRef(), renditionFilter, null, null);
                 if ((renditions != null) && (!renditions.isEmpty()))
                 {
                     result.setRenditions(renditions);
@@ -1106,7 +1106,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
         Set<String> filterSet = splitFilter(filter);
 
-        for (PropertyDefintionWrapper propDef : info.getType().getProperties())
+        for (PropertyDefinitionWrapper propDef : info.getType().getProperties())
         {
             if (!propDef.getPropertyId().equals(PropertyIds.OBJECT_ID))
             {
@@ -1133,7 +1133,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
         Map<QName, Serializable> nodeProps = node.getProperties();
 
-        for (PropertyDefintionWrapper propDef : type.getProperties())
+        for (PropertyDefinitionWrapper propDef : type.getProperties())
         {
             if (!propDef.getPropertyId().equals(PropertyIds.OBJECT_ID))
             {
@@ -1168,7 +1168,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
         Set<String> filterSet = splitFilter(filter);
 
-        for (PropertyDefintionWrapper propDef : info.getType().getProperties())
+        for (PropertyDefinitionWrapper propDef : info.getType().getProperties())
         {
             if ((filterSet != null) && (!filterSet.contains(propDef.getPropertyDefinition().getQueryName())))
             {
@@ -1206,7 +1206,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                     .getTypeId()));
 
             List<CmisExtensionElement> propertyExtensionList = new ArrayList<CmisExtensionElement>();
-            for (PropertyDefintionWrapper propDef : aspectType.getProperties())
+            for (PropertyDefinitionWrapper propDef : aspectType.getProperties())
             {
                 if (propertyIds.contains(propDef.getPropertyId()))
                 {
@@ -1315,7 +1315,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     }
 
     @SuppressWarnings("unchecked")
-    private AbstractPropertyData<?> getProperty(PropertyType propType, PropertyDefintionWrapper propDef,
+    private AbstractPropertyData<?> getProperty(PropertyType propType, PropertyDefinitionWrapper propDef,
             Serializable value)
     {
         AbstractPropertyData<?> result = null;
@@ -1590,7 +1590,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         return result;
     }
 
-    public List<RenditionData> getRendtions(NodeRef nodeRef, String renditionFilter, BigInteger maxItems,
+    public List<RenditionData> getRenditions(NodeRef nodeRef, String renditionFilter, BigInteger maxItems,
             BigInteger skipCount)
     {
         String tenantDomain = tenantAdminService.getCurrentUserDomain();
@@ -1994,7 +1994,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                     // set renditions
                     if (!RENDITION_NONE.equals(renditionFilter))
                     {
-                        List<RenditionData> renditions = getRendtions(nodeRef, renditionFilter, null, null);
+                        List<RenditionData> renditions = getRenditions(nodeRef, renditionFilter, null, null);
                         if ((renditions != null) && (!renditions.isEmpty()))
                         {
                             hit.setRenditions(renditions);
@@ -2200,7 +2200,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             throw new CmisInvalidArgumentException("Cannot process not null property!");
         }
 
-        PropertyDefintionWrapper propDef = type.getPropertyById(property.getId());
+        PropertyDefinitionWrapper propDef = type.getPropertyById(property.getId());
         if (propDef == null)
         {
             throw new CmisInvalidArgumentException("Property " + property.getId() + " is unknown!");

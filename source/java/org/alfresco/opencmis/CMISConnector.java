@@ -218,6 +218,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     private static final String QUERY_NAME_OBJECT_TYPE_ID = "cmis:objectTypeId";
     private static final String QUERY_NAME_BASE_TYPE_ID = "cmis:baseTypeId";
 
+    private static final String CMIS_USER = "cmis:user";
+
     // lifecycle
     private ProcessorLifecycle lifecycle = new ProcessorLifecycle();
 
@@ -1806,16 +1808,23 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             Set<AccessPermission> permissions = permissionService.getAllSetPermissions(nodeRef);
             for (Ace ace : removeAces.getAces())
             {
+                String principalId = ace.getPrincipalId();
+                if (CMIS_USER.equals(principalId))
+                {
+                    principalId = AuthenticationUtil.getFullyAuthenticatedUser();
+                }
+
                 for (String permission : translatePermmissionsFromCMIS(ace.getPermissions()))
                 {
-                    AccessPermission toCheck = new AccessPermissionImpl(permission, AccessStatus.ALLOWED,
-                            ace.getPrincipalId(), 0);
+
+                    AccessPermission toCheck = new AccessPermissionImpl(permission, AccessStatus.ALLOWED, principalId,
+                            0);
                     if (!permissions.contains(toCheck))
                     {
                         throw new CmisConstraintException("No matching ACE found to remove!");
                     }
 
-                    permissionService.deletePermission(nodeRef, ace.getPrincipalId(), permission);
+                    permissionService.deletePermission(nodeRef, principalId, permission);
                 }
             }
         }
@@ -1825,9 +1834,15 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         {
             for (Ace ace : addAces.getAces())
             {
+                String principalId = ace.getPrincipalId();
+                if (CMIS_USER.equals(principalId))
+                {
+                    principalId = AuthenticationUtil.getFullyAuthenticatedUser();
+                }
+
                 for (String permission : translatePermmissionsFromCMIS(ace.getPermissions()))
                 {
-                    permissionService.setPermission(nodeRef, ace.getPrincipalId(), permission, true);
+                    permissionService.setPermission(nodeRef, principalId, permission, true);
                 }
             }
         }
@@ -1856,9 +1871,15 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         // set new permissions
         for (Ace ace : aces.getAces())
         {
+            String principalId = ace.getPrincipalId();
+            if (CMIS_USER.equals(principalId))
+            {
+                principalId = AuthenticationUtil.getFullyAuthenticatedUser();
+            }
+
             for (String permission : translatePermmissionsFromCMIS(ace.getPermissions()))
             {
-                permissionService.setPermission(nodeRef, ace.getPrincipalId(), permission, true);
+                permissionService.setPermission(nodeRef, principalId, permission, true);
             }
         }
     }

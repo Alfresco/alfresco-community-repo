@@ -31,6 +31,7 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.calendar.CalendarServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.calendar.CalendarEntry;
 import org.alfresco.service.cmr.calendar.CalendarEntryDTO;
 import org.alfresco.service.cmr.calendar.CalendarRecurrenceHelper;
@@ -132,10 +133,19 @@ public class UserCalendarEntriesGet extends AbstractCalendarWebScript
       {
          SiteInfo site = sites.get(i);
          siteShortNames[i] = site.getShortName();
-         containerLookup.put(
-             siteService.getContainer(site.getShortName(), CalendarServiceImpl.CALENDAR_COMPONENT), 
-             site
-         );
+         
+         try
+         {
+            containerLookup.put(
+                siteService.getContainer(site.getShortName(), CalendarServiceImpl.CALENDAR_COMPONENT), 
+                site
+            );
+         }
+         catch(AccessDeniedException e)
+         {
+            // You can see the site, but not the calendar, so skip it
+            // This means you won't have any events in it anyway
+         }
       }
       
       

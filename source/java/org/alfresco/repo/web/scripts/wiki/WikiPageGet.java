@@ -65,6 +65,13 @@ public class WikiPageGet extends AbstractWikiWebScript
          NodeRef container = siteService.getContainer(
                site.getShortName(), WikiServiceImpl.WIKI_COMPONENT
          );
+         // If there's no container yet, the site will do for permissions
+         if(container == null)
+         {
+            container = site.getNodeRef();
+         }
+         
+         // Record these
          model.put("container", container);
          model.put("error", message);
          

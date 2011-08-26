@@ -266,16 +266,12 @@ public class EncryptionTests extends TestCase
 	{
 		try
 		{
-			reEncryptor.reEncrypt();
+			reEncryptor.bootstrapReEncrypt();
 			fail("Should have caught missing backup key store");
-		}
-		catch(MissingKeyException e)
-		{
-			fail("");
 		}
 		catch(MissingKeyStoreException e)
 		{
-
+			System.out.println("Successfully caught missing key store exception");
 		}
 	}
 	

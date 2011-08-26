@@ -303,6 +303,7 @@ public class SolrQueryHTTPClient
             body.put("textAttributes", textAttributes);
 
             PostMethod post = new PostMethod(url.toString());
+            // TOOD deal with redirects for SSL
             post.setRequestEntity(new ByteArrayRequestEntity(body.toString().getBytes("UTF-8"), "application/json"));
 
             try

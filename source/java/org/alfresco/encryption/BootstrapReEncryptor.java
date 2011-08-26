@@ -50,11 +50,7 @@ public class BootstrapReEncryptor extends AbstractLifecycleBean
 	{
 		try
 		{
-			return reEncryptor.reEncrypt();
-		}
-		catch(MissingKeyException e)
-		{
-			throw new AlfrescoRuntimeException("Bootstrap re-encryption failed", e);
+			return reEncryptor.bootstrapReEncrypt();
 		}
 		catch(MissingKeyStoreException e)
 		{

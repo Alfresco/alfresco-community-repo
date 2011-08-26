@@ -1524,6 +1524,8 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     @Override
     public List<NodePropertyEntity> selectProperties(Collection<PropertyDefinition> propertyDefs)
     {
+		final List<NodePropertyEntity> properties = new ArrayList<NodePropertyEntity>();
+
     	Set<QName> qnames = new HashSet<QName>();
 		for(PropertyDefinition propDef : propertyDefs)
 		{
@@ -1531,24 +1533,24 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
 		}
 
 		// TODO use callback approach
-		final List<NodePropertyEntity> props = new ArrayList<NodePropertyEntity>();
-
 		// qnames of properties that are encrypted
 		Set<Long> qnameIds = qnameDAO.convertQNamesToIds(qnames, false);
-	    // TODO - use a callback approach
+		if(qnameIds.size() > 0)
+		{
+	        IdsEntity param = new IdsEntity();
+	        param.setIds(new ArrayList<Long>(qnameIds));
+		    // TODO - use a callback approach
+	        template.select(SELECT_PROPERTIES_BY_TYPES, param, new ResultHandler()
+	        {
+				@Override
+				public void handleResult(ResultContext context)
+				{
+					properties.add((NodePropertyEntity)context.getResultObject());
+				}
+	        });
+		}
 
-        IdsEntity param = new IdsEntity();
-        param.setIds(new ArrayList<Long>(qnameIds));
-        template.select(SELECT_PROPERTIES_BY_TYPES, param, new ResultHandler()
-        {
-			@Override
-			public void handleResult(ResultContext context)
-			{
-				props.add((NodePropertyEntity)context.getResultObject());
-			}
-        });
-
-		return props;
+		return properties;
     }
     
     /*

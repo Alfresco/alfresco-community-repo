@@ -1525,6 +1525,12 @@
          parent="abstractLinksWebScript">
    </bean>
    
+   <!-- Creates a new link in the site -->
+   <bean id="webscript.org.alfresco.repository.links.links.post"
+         class="org.alfresco.repo.web.scripts.links.LinksPost"
+         parent="abstractLinksWebScript">
+   </bean>
+   
    <!-- Updates the details of one link -->
    <bean id="webscript.org.alfresco.repository.links.links.put"
          class="org.alfresco.repo.web.scripts.links.LinkPut"

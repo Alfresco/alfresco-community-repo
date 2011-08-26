@@ -37,6 +37,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.links.LinkInfo;
 import org.alfresco.service.cmr.links.LinksService;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
@@ -78,6 +79,7 @@ public class LinksServiceImplTest
     private static RetryingTransactionHelper    TRANSACTION_HELPER;
     private static PermissionService            PERMISSION_SERVICE;
     private static SiteService                  SITE_SERVICE;
+    private static ContentService               CONTENT_SERVICE;
     private static TaggingService               TAGGING_SERVICE;
     
     private static final String TEST_USER = LinksServiceImplTest.class.getSimpleName() + "_testuser";
@@ -106,6 +108,7 @@ public class LinksServiceImplTest
         TRANSACTION_HELPER     = (RetryingTransactionHelper)testContext.getBean("retryingTransactionHelper");
         PERMISSION_SERVICE     = (PermissionService)testContext.getBean("permissionService");
         SITE_SERVICE           = (SiteService)testContext.getBean("siteService");
+        CONTENT_SERVICE        = (ContentService)testContext.getBean("ContentService");
         TAGGING_SERVICE        = (TaggingService)testContext.getBean("TaggingService");
 
         // Do the setup as admin
@@ -197,6 +200,14 @@ public class LinksServiceImplTest
        assertEquals(0, link.getTags().size());
        
        
+       // Check the underlying node
+       assertEquals("Title", NODE_SERVICE.getProperty(link.getNodeRef(), LinksModel.PROP_TITLE));
+       assertEquals("Description", NODE_SERVICE.getProperty(link.getNodeRef(), LinksModel.PROP_DESCRIPTION));
+       assertEquals("http://www.alfresco.com/", NODE_SERVICE.getProperty(link.getNodeRef(), LinksModel.PROP_URL));
+       assertEquals("http://www.alfresco.com/", CONTENT_SERVICE.getReader(link.getNodeRef(), ContentModel.PROP_CONTENT).getContentString());
+       assertEquals(false, NODE_SERVICE.hasAspect(link.getNodeRef(), LinksModel.ASPECT_INTERNAL_LINK));
+       
+       
        // Change it
        link.setTitle("New Title");
        link.setURL("http://share.alfresco.com/");
@@ -213,6 +224,14 @@ public class LinksServiceImplTest
        assertEquals(true, link.isInternal());
        assertEquals(TEST_USER, link.getCreator());
        assertEquals(0, link.getTags().size());
+       
+       
+       // Check the underlying node now
+       assertEquals("New Title", NODE_SERVICE.getProperty(link.getNodeRef(), LinksModel.PROP_TITLE));
+       assertEquals("Description", NODE_SERVICE.getProperty(link.getNodeRef(), LinksModel.PROP_DESCRIPTION));
+       assertEquals("http://share.alfresco.com/", NODE_SERVICE.getProperty(link.getNodeRef(), LinksModel.PROP_URL));
+       assertEquals("http://share.alfresco.com/", CONTENT_SERVICE.getReader(link.getNodeRef(), ContentModel.PROP_CONTENT).getContentString());
+       assertEquals(true, NODE_SERVICE.hasAspect(link.getNodeRef(), LinksModel.ASPECT_INTERNAL_LINK));
        
        
        // Delete it

@@ -40,6 +40,8 @@ import org.alfresco.repo.site.SiteServiceImpl;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.links.LinkInfo;
 import org.alfresco.service.cmr.links.LinksService;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -79,6 +81,7 @@ public class LinksServiceImpl implements LinksService
     private NodeService nodeService;
     private SiteService siteService;
     private SearchService searchService;
+    private ContentService contentService;
     private TaggingService taggingService;
     private NamespaceService namespaceService;
     private DictionaryService dictionaryService;
@@ -103,6 +106,11 @@ public class LinksServiceImpl implements LinksService
     public void setSearchService(SearchService searchService)
     {
         this.searchService = searchService;
+    }
+    
+    public void setContentService(ContentService contentService)
+    {
+        this.contentService = contentService;
     }
     
     public void setTaggingService(TaggingService taggingService)
@@ -232,6 +240,11 @@ public class LinksServiceImpl implements LinksService
              props
        ).getChildRef();
        
+       // Duplicate the url into the node as the content property
+       ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+       writer.setEncoding("UTF-8");
+       writer.putContent(url);
+       
        // Generate the wrapping object for it
        // Build it that way, so creator and created date come through
        return buildLink(nodeRef, container, name);
@@ -269,6 +282,11 @@ public class LinksServiceImpl implements LinksService
              nodeService.removeAspect(nodeRef, LinksModel.ASPECT_INTERNAL_LINK);
           }
        }
+       
+       // Duplicate the url into the node as the content property
+       ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+       writer.setEncoding("UTF-8");
+       writer.putContent(link.getURL());
        
        // Now do the tags
        taggingService.setTags(nodeRef, link.getTags());

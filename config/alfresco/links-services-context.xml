@@ -55,6 +55,7 @@
         <property name="nodeService" ref="NodeService"/>
         <property name="siteService" ref="SiteService"/>
         <property name="searchService" ref="SearchService"/>
+        <property name="contentService" ref="ContentService"/>
         <property name="taggingService" ref="TaggingService"/>
         <property name="transactionService" ref="transactionService" />
         <property name="cannedQueryRegistry" ref="linksCannedQueryRegistry" />

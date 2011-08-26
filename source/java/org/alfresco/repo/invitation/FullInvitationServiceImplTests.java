@@ -16,28 +16,17 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.invitation.activiti;
 
-import java.util.Map;
+package org.alfresco.repo.invitation;
 
-import org.activiti.engine.delegate.DelegateExecution;
-import org.alfresco.repo.workflow.activiti.ActivitiConstants;
 
 /**
- * Activiti delegate that is executed when a invitation request has
- * been cancelled.
- *
+ * Test InvitationService with both engines enabled.
  * @author Nick Smith
- * @author Frederik Heremans
  * @since 4.0
+ *
  */
-public class CancelNominatedInviteDelegate extends AbstractInvitationDelegate
+public class FullInvitationServiceImplTests extends AbstractInvitationServiceImplTest
 {
-    @Override
-    public void execute(DelegateExecution execution) throws Exception
-    {
-        Map<String, Object> executionVariables = execution.getVariables();
-        String invitationId = ActivitiConstants.ENGINE_ID + "$" + execution.getProcessInstanceId();
-        inviteHelper.cancelInvitation(executionVariables, invitationId);
-    }
+    // See inheited tests.
 }

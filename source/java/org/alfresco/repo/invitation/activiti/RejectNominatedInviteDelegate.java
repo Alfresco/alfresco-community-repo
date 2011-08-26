@@ -20,6 +20,7 @@ package org.alfresco.repo.invitation.activiti;
 
 import org.activiti.engine.delegate.DelegateExecution;
 import org.alfresco.repo.invitation.WorkflowModelNominatedInvitation;
+import org.alfresco.repo.workflow.activiti.ActivitiConstants;
 
 /**
  * Activiti delegate that is executed when a invitation request has
@@ -36,6 +37,7 @@ public class RejectNominatedInviteDelegate extends AbstractInvitationDelegate
     {
         // Get the invitee user name
         String inviteeUserName = (String) execution.getVariable(WorkflowModelNominatedInvitation.wfVarInviteeUserName);
-        inviteHelper.deleteAuthenticationIfUnused(inviteeUserName);
+        String invitationId = ActivitiConstants.ENGINE_ID + "$" + execution.getProcessInstanceId();
+        inviteHelper.deleteAuthenticationIfUnused(inviteeUserName, invitationId);
     }
 }

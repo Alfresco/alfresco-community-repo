@@ -57,16 +57,55 @@
       
       <sequenceFlow id="flow7" sourceRef="inviteGateway" targetRef="cancelled" />
       
-      
       <serviceTask id="accepted" name="Accepted" activiti:delegateExpression="${AcceptNominatedInviteDelegate}" />
-      <sequenceFlow id="flow6" sourceRef="accepted" targetRef="end" />
+      <sequenceFlow id="flow6" sourceRef="accepted" targetRef="inviteAccepted" />
 
       <serviceTask id="rejected" name="Rejected" activiti:delegateExpression="${RejectNominatedInviteDelegate}" />
-      <sequenceFlow id="flow8" sourceRef="rejected" targetRef="end" />
+      <sequenceFlow id="flow8" sourceRef="rejected" targetRef="inviteRejected" />
       
       <serviceTask id="cancelled" name="Cancelled" activiti:delegateExpression="${CancelNominatedInviteDelegate}" />
       <sequenceFlow id="flow9" sourceRef="cancelled" targetRef="end" />
       
+       <userTask id="inviteAccepted" name="Invitation Accepted"
+            activiti:formKey="inwf:acceptInviteTask" >
+            <extensionElements>
+               <activiti:taskListener event="create" class="org.alfresco.repo.workflow.activiti.tasklistener.ScriptTaskListener">
+                  <activiti:field name="script">
+                     <activiti:string>
+                        if (typeof bpm_workflowPriority != 'undefined') task.priority = bpm_workflowPriority;
+                     </activiti:string>
+                  </activiti:field>
+               </activiti:taskListener>
+            </extensionElements>
+            <humanPerformer>
+                <resourceAssignmentExpression>
+                    <formalExpression>${initiator.properties.userName}</formalExpression>
+                </resourceAssignmentExpression>
+            </humanPerformer>
+        </userTask>
+
+      <sequenceFlow id="flow10" sourceRef="inviteAccepted" targetRef="end" />
+        
+       <userTask id="inviteRejected" name="Invitation Rejected"
+            activiti:formKey="inwf:rejectInviteTask" >
+            <extensionElements>
+               <activiti:taskListener event="create" class="org.alfresco.repo.workflow.activiti.tasklistener.ScriptTaskListener">
+                  <activiti:field name="script">
+                     <activiti:string>
+                        if (typeof bpm_workflowPriority != 'undefined') task.priority = bpm_workflowPriority;
+                     </activiti:string>
+                  </activiti:field>
+               </activiti:taskListener>
+            </extensionElements>
+            <humanPerformer>
+                <resourceAssignmentExpression>
+                    <formalExpression>${initiator.properties.userName}</formalExpression>
+                </resourceAssignmentExpression>
+            </humanPerformer>
+        </userTask>
+        
+              <sequenceFlow id="flow11" sourceRef="inviteRejected" targetRef="end" />
+        
       <endEvent id="end" />
    </process>
 

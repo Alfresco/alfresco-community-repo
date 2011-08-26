@@ -18,22 +18,10 @@
  */
 package org.alfresco.repo.invitation.site;
 
-import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarInviteeUserName;
-import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarResourceName;
-import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarWorkflowInstanceId;
-
 import java.util.Map;
 
-import org.alfresco.repo.site.SiteModel;
-import org.alfresco.repo.workflow.jbpm.JBPMSpringActionHandler;
-import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.invitation.InvitationExceptionForbidden;
-import org.alfresco.service.cmr.security.MutableAuthenticationService;
-import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.cmr.site.SiteService;
-import org.alfresco.service.cmr.workflow.WorkflowService;
+import org.alfresco.repo.workflow.jbpm.JBPMEngine;
 import org.jbpm.graph.exe.ExecutionContext;
-import org.springframework.beans.factory.BeanFactory;
 
 /**
  * This class contains logic that gets executed when
@@ -53,6 +41,7 @@ public class CancelInviteAction extends AbstractInvitationAction
     public void execute(ExecutionContext executionContext) throws Exception
     {
         Map<String, Object> executionVariables = executionContext.getContextInstance().getVariables();
-        inviteHelper.cancelInvitation(executionVariables);
+        String invitationId = JBPMEngine.ENGINE_ID + "$" + executionContext.getContextInstance().getProcessInstance().getId();
+        inviteHelper.cancelInvitation(executionVariables, invitationId);
     }
 }

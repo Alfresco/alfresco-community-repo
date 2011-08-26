@@ -19,13 +19,8 @@
 package org.alfresco.repo.invitation.site;
 
 import org.alfresco.repo.invitation.WorkflowModelNominatedInvitation;
-import org.alfresco.repo.workflow.jbpm.JBPMSpringActionHandler;
-import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.security.MutableAuthenticationService;
-import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.cmr.workflow.WorkflowService;
+import org.alfresco.repo.workflow.jbpm.JBPMEngine;
 import org.jbpm.graph.exe.ExecutionContext;
-import org.springframework.beans.factory.BeanFactory;
 
 /**
  * This class contains logic that gets executed when
@@ -45,6 +40,7 @@ public class RejectInviteAction extends AbstractInvitationAction
     {
         // get the invitee user name
         String inviteeUserName = (String) executionContext.getVariable(WorkflowModelNominatedInvitation.wfVarInviteeUserName);
-        inviteHelper.deleteAuthenticationIfUnused(inviteeUserName);
+        String invitationId = JBPMEngine.ENGINE_ID + "$" + executionContext.getContextInstance().getProcessInstance().getId();
+        inviteHelper.deleteAuthenticationIfUnused(inviteeUserName, invitationId);
     }
 }

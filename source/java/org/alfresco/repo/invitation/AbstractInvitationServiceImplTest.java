@@ -20,6 +20,7 @@
 package org.alfresco.repo.invitation;
 
 import java.lang.reflect.Field;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -31,12 +32,15 @@ import org.alfresco.repo.management.subsystems.ApplicationContextFactory;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
+import org.alfresco.repo.workflow.WorkflowAdminServiceImpl;
+import org.alfresco.repo.workflow.activiti.ActivitiConstants;
+import org.alfresco.repo.workflow.jbpm.JBPMEngine;
 import org.alfresco.service.cmr.invitation.Invitation;
+import org.alfresco.service.cmr.invitation.Invitation.ResourceType;
 import org.alfresco.service.cmr.invitation.InvitationSearchCriteria;
 import org.alfresco.service.cmr.invitation.InvitationService;
 import org.alfresco.service.cmr.invitation.ModeratedInvitation;
 import org.alfresco.service.cmr.invitation.NominatedInvitation;
-import org.alfresco.service.cmr.invitation.Invitation.ResourceType;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
@@ -48,19 +52,20 @@ import org.springframework.util.ReflectionUtils;
 /**
  * Unit tests of Invitation Service
  */
-public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
+public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpringTest
 {
     private SiteService siteService;
-    private AuthenticationComponent authenticationComponent;
+    protected AuthenticationComponent authenticationComponent;
     private PersonService personService;
-    private InvitationService invitationService;
+    protected InvitationService invitationService;
     private MailActionExecuter mailService;
     private boolean startSendEmails;
-    private InvitationServiceImpl invitationServiceImpl;
+    protected InvitationServiceImpl invitationServiceImpl;
+    protected WorkflowAdminServiceImpl workflowAdminService;
  
-    private final static String SITE_SHORT_NAME_INVITE = "InvitationTest";
-    private final static String SITE_SHORT_NAME_RED = "InvitationTestRed";
-    private final static String SITE_SHORT_NAME_BLUE = "InvitationTestBlue";
+    protected final static String SITE_SHORT_NAME_INVITE = "InvitationTest";
+    protected final static String SITE_SHORT_NAME_RED = "InvitationTestRed";
+    protected final static String SITE_SHORT_NAME_BLUE = "InvitationTestBlue";
     public final static String PERSON_FIRSTNAME = "InvitationFirstName123";
     public final static String PERSON_FIRSTNAME_SPACES = "Invitation First\tName\n1\r2\r\n3";
     public final static String PERSON_LASTNAME = "InvitationLastName123";
@@ -91,9 +96,15 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
         this.personService = (PersonService) this.applicationContext.getBean("PersonService");
         this.authenticationComponent = (AuthenticationComponent) this.applicationContext
                     .getBean("authenticationComponent");
-        this.invitationServiceImpl = (InvitationServiceImpl) this.applicationContext.getBean("invitationService");
+        this.invitationServiceImpl = (InvitationServiceImpl) applicationContext.getBean("invitationService");
+        this.workflowAdminService = (WorkflowAdminServiceImpl)applicationContext.getBean(WorkflowAdminServiceImpl.NAME); 
         
         this.startSendEmails = invitationServiceImpl.isSendEmails();
+        
+        // Check both workflow engines are active.
+        assertTrue(workflowAdminService.isEngineEnabled(JBPMEngine.ENGINE_ID));
+        assertTrue(workflowAdminService.isEngineEnabled(ActivitiConstants.ENGINE_ID));
+
         invitationServiceImpl.setSendEmails(true);
         
         // TODO MER 20/11/2009 Bodge - turn off email sending to prevent errors
@@ -139,6 +150,10 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
     @Override
     protected void onTearDownInTransaction() throws Exception
     {
+        // Make sure both workflow engines are enabled.
+        workflowAdminService.setActivitiEngineEnabled(true);
+        workflowAdminService.setJbpmEngineEnabled(true);
+        
         this.authenticationComponent.setSystemUserAsCurrentUser();
         invitationServiceImpl.setSendEmails(startSendEmails);
         siteService.deleteSite(SITE_SHORT_NAME_INVITE);
@@ -170,7 +185,9 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
      */
     public void testNominatedInvitationNewUser() throws Exception
     {
-        Date startDate = new java.util.Date();
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.SECOND, -1);
+        Date startDate = calendar.getTime();
 
         String inviteeFirstName = PERSON_FIRSTNAME;
         String inviteeLastName = PERSON_LASTNAME;
@@ -200,8 +217,8 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
         // sentInviteDate should be set to today
         {
             Date sentDate = nominatedInvitation.getSentInviteDate();
-            assertTrue("sentDate wrong - too early", sentDate.after(startDate));
-            assertTrue("sentDate wrong - too late", sentDate.before(new Date(new Date().getTime() + 1)));
+            assertTrue("sentDate wrong - too early. Start Date: " +startDate +"\nSent Date: "+sentDate, sentDate.after(startDate));
+            assertTrue("sentDate wrong - too lateStart Date: " +startDate +"\nSent Date: "+sentDate, sentDate.before(new Date(new Date().getTime() + 1)));
         }
 
         assertEquals("resource type name wrong", resourceType, nominatedInvitation.getResourceType());
@@ -336,7 +353,9 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
      */
     public void testNominatedInvitationNewUserReject() throws Exception
     {
-        Date startDate = new java.util.Date();
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.SECOND, -1);
+        Date startDate = calendar.getTime();
 
         String inviteeFirstName = PERSON_FIRSTNAME;
         String inviteeLastName = PERSON_LASTNAME;
@@ -365,8 +384,8 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
         // sentInviteDate should be set to today
         {
             Date sentDate = nominatedInvitation.getSentInviteDate();
-            assertTrue("sentDate wrong - too early", sentDate.after(startDate));
-            assertTrue("sentDate wrong - too late", sentDate.before(new Date(new Date().getTime() + 1)));
+            assertTrue("sentDate wrong - too earlyStart Date: " +startDate +"\nSent Date: "+sentDate, sentDate.after(startDate));
+            assertTrue("sentDate wrong - too lateStart Date: " +startDate +"\nSent Date: "+sentDate, sentDate.before(new Date(new Date().getTime() + 1)));
         }
 
         /**
@@ -555,7 +574,7 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
         String acceptUrl = "froob";
         String rejectUrl = "marshmallow";
 
-        this.authenticationComponent.setCurrentUser(USER_MANAGER);
+        authenticationComponent.setCurrentUser(USER_MANAGER);
 
         NominatedInvitation nominatedInvitation = invitationService.inviteNominated(inviteeUserName, resourceType,
                     resourceName, inviteeRole, serverPath, acceptUrl, rejectUrl);
@@ -657,7 +676,7 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
          * Now verify access control list
          */
         String roleName = siteService.getMembersRole(resourceName, inviteeUserName);
-        assertEquals("role name wrong", roleName, inviteeRole);
+        assertEquals("role name wrong", inviteeRole, roleName);
         siteService.removeMembership(resourceName, inviteeUserName);
     }
 
@@ -748,7 +767,7 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
          * Now verify access control list
          */
         String roleName = siteService.getMembersRole(resourceName, inviteeUserName);
-        assertEquals("role name wrong", roleName, inviteeRole);
+        assertEquals("role name wrong", inviteeRole, roleName);
         siteService.removeMembership(resourceName, inviteeUserName);
 
     }

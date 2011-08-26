@@ -30,6 +30,8 @@ import org.alfresco.service.cmr.workflow.WorkflowAdminService;
  */
 public class WorkflowAdminServiceImpl implements WorkflowAdminService
 {
+    public static final String NAME = "workflowAdminService";
+    
     private boolean jbpmEngineEnabled = true;
     private boolean activitiEngineEnabled = true;
 

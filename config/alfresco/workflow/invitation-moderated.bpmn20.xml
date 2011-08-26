@@ -28,6 +28,7 @@
                <activiti:field name="script">
                   <activiti:string>
                      execution.setVariable('imwf_reviewOutcome', task.getVariable('imwf_reviewOutcome'));
+                     execution.setVariable('imwf_reviewer', person.properties.userName);
                   </activiti:string>
                </activiti:field>
             </activiti:taskListener>
@@ -44,7 +45,7 @@
       <exclusiveGateway id="reviewDecision" name="Review Decision" /> 
 
       <sequenceFlow id="flow3" sourceRef="reviewDecision" targetRef="approved">
-          <conditionExpression xsi:type="tFormalExpression">${imwf_reviewOutcome == 'Approve'}</conditionExpression>
+          <conditionExpression xsi:type="tFormalExpression">${imwf_reviewOutcome=='approve'}</conditionExpression>
       </sequenceFlow>
       
       <serviceTask id="approved" name="Approved" activiti:delegateExpression="${ApproveModeratedInviteDelegate}" />

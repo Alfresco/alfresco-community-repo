@@ -53,6 +53,7 @@ import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.invitation.Invitation;
 import org.alfresco.service.cmr.invitation.InvitationExceptionForbidden;
 import org.alfresco.service.cmr.invitation.InvitationService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -255,11 +256,12 @@ public class InviteHelper implements InitializingBean
      * is still disabled and there are no outstanding pending invites for that invitee.
      * 
      * @param inviteeUserName
+     * @param currentInviteId TODO
      * @param authenticationservice
      * @param personService
      * @param workflowService
      */
-    public void deleteAuthenticationIfUnused(final String inviteeUserName)
+    public void deleteAuthenticationIfUnused(final String inviteeUserName, final String currentInviteId)
     {
         AuthenticationUtil.runAs(new RunAsWork<Object>()
         {
@@ -267,8 +269,16 @@ public class InviteHelper implements InitializingBean
             {
                 // see if there are any pending invites (invite workflow instances with invitePending task in-progress)
                 // outstanding for given invitee user name
-                List<WorkflowTask> pendingTasks = findInvitePendingTasks(inviteeUserName);
-                boolean invitesPending = (pendingTasks != null) && (pendingTasks.size() > 0);
+                List<Invitation> pendingInvites = invitationService.listPendingInvitationsForInvitee(inviteeUserName);
+                boolean invitesPending = CollectionUtils.isEmpty(pendingInvites)==false;
+                if(invitesPending && pendingInvites.size()==1)
+                {
+                    Invitation pendingInvite = pendingInvites.get(0);
+                    if(pendingInvite.getInviteId().equals(currentInviteId))
+                    {
+                        invitesPending = false;
+                    }
+                }
                 
                 // if invitee's user account is still disabled and there are no pending invites outstanding
                 // for the invitee, then remove the account and delete the invitee's person node
@@ -293,7 +303,7 @@ public class InviteHelper implements InitializingBean
     /**
      * @param executionVariables
      */
-    public void cancelInvitation(Map<String, Object> executionVariables)
+    public void cancelInvitation(Map<String, Object> executionVariables, String currentInviteId)
     {
         // Get the invitee user name and site short name variables off the execution context
         String inviteeUserName = (String) executionVariables.get(wfVarInviteeUserName);
@@ -312,7 +322,7 @@ public class InviteHelper implements InitializingBean
         // Clean up invitee's user account and person node if they are not in use i.e.
         // account is still disabled and there are no pending invites outstanding for the
         // invitee
-        deleteAuthenticationIfUnused(inviteeUserName);
+        deleteAuthenticationIfUnused(inviteeUserName, currentInviteId);
     }
     
     public  void sendNominatedInvitation(Map<String, Object> executionVariables)

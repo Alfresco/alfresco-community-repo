@@ -38,8 +38,11 @@ import org.alfresco.repo.security.authentication.PasswordGenerator;
 import org.alfresco.repo.security.authentication.UserNameGenerator;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.workflow.WorkflowModel;
+import org.alfresco.repo.workflow.activiti.ActivitiConstants;
+import org.alfresco.repo.workflow.jbpm.JBPMEngine;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.invitation.Invitation;
+import org.alfresco.service.cmr.invitation.Invitation.ResourceType;
 import org.alfresco.service.cmr.invitation.InvitationException;
 import org.alfresco.service.cmr.invitation.InvitationExceptionForbidden;
 import org.alfresco.service.cmr.invitation.InvitationExceptionNotFound;
@@ -68,6 +71,8 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyCheck;
+import org.alfresco.util.collections.CollectionUtils;
+import org.alfresco.util.collections.Function;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -531,197 +536,174 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
      * @param criteria
      * @return the list of invitations
      */
-    public List<Invitation> searchInvitation(InvitationSearchCriteria criteria)
+    public List<Invitation> searchInvitation(final InvitationSearchCriteria criteria)
     {
-        List<Invitation> ret = new ArrayList<Invitation>();
-
+        List<WorkflowTask> searchResults = new ArrayList<WorkflowTask>();
         InvitationSearchCriteria.InvitationType toSearch = criteria.getInvitationType();
-
-        /**
-         * Nominated search below
-         */
         if (toSearch == InvitationSearchCriteria.InvitationType.ALL
                     || toSearch == InvitationSearchCriteria.InvitationType.NOMINATED)
         {
-            // query for nominated workflow tasks by given parameters
-            WorkflowTaskQuery wfTaskQuery = new WorkflowTaskQuery();
-
-            HashMap<QName, Object> wfNominatedQueryProps = new HashMap<QName, Object>(10, 1.0f);
-
-            if (criteria.getInviter() != null)
-            {
-                wfNominatedQueryProps.put(WorkflowModelNominatedInvitation.WF_PROP_INVITER_USER_NAME, criteria
-                            .getInviter());
-            }
-            if (criteria.getInvitee() != null)
-            {
-                wfNominatedQueryProps.put(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_USER_NAME, criteria
-                            .getInvitee());
-            }
-            if (criteria.getResourceType() != null)
-            {
-                wfNominatedQueryProps.put(WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_TYPE, criteria
-                            .getResourceType().toString());
-            }
-            if (criteria.getResourceName() != null)
-            {
-                wfNominatedQueryProps.put(WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_NAME, criteria
-                            .getResourceName());
-            }
-
-            // set workflow task query parameters
-            wfTaskQuery.setProcessCustomProps(wfNominatedQueryProps);
-
-            // query only active workflows
-            wfTaskQuery.setActive(Boolean.TRUE);
-
-            // pick up the pending task
-            wfTaskQuery.setTaskState(WorkflowTaskState.IN_PROGRESS);
-            wfTaskQuery.setTaskName(WorkflowModelNominatedInvitation.WF_TASK_INVITE_PENDING);
-            wfTaskQuery.setProcessName(WorkflowModelNominatedInvitation.WF_PROCESS_INVITE);
-
-            // query for invite workflow tasks
-            List<WorkflowTask> wf_invite_tasks = this.workflowService.queryTasks(wfTaskQuery);
-
-            for (WorkflowTask workflowTask : wf_invite_tasks)
-            {
-                // get workflow instance (ID) that pendingInvite task (in query
-                // result set)
-
-                String workflowId = workflowTask.getPath().getInstance().getId();
-                // TODO ALFCOM-2597 workflowTask.properties does not contain
-                // custom process values
-                // NominatedInvitationImpl result = new
-                // NominatedInvitationImpl(workflowTask.properties);
-                // result.setInviteId(workflowId);
-                // ret.add(result);
-
-                Invitation result = getInvitation(workflowId);
-
-                // TODO ALFCOM-2598 records are being returned that do not match
-                // properties
-                Set<QName> keys = wfNominatedQueryProps.keySet();
-                boolean crap = false;
-                for (QName key : keys)
-                {
-                    if (key.equals(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_USER_NAME))
-                    {
-                        Object val1 = wfNominatedQueryProps.get(key);
-                        Object val2 = ((NominatedInvitation) result).getInviteeUserName();
-                        if (!val1.equals(val2))
-                        {
-                            // Uh oh ... crap detected
-                            crap = true;
-                            logger.debug("ALFCOM-2598 key:" + key + "query:" + val1 + "task:" + val2);
-                            break;
-                        }
-                    }
-                    if (key.equals(WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_NAME))
-                    {
-                        Object val1 = wfNominatedQueryProps.get(key);
-                        Object val2 = result.getResourceName();
-                        if (!val1.equals(val2))
-                        {
-                            // Uh oh ... crap detected
-                            crap = true;
-                            logger.debug("ALFCOM-2598 key:" + key + "query:" + val1 + "task:" + val2);
-                            break;
-                        }
-                    }
-                    if (key.equals(WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_TYPE))
-                    {
-                        Object val1 = wfNominatedQueryProps.get(key);
-                        Object val2 = result.getResourceType().toString();
-                        if (!val1.equals(val2))
-                        {
-
-                            // Uh oh ... crap detected
-                            crap = true;
-                            logger.debug("ALFCOM-2598 key:" + key + "query:" + val1 + "task:" + val2);
-                            break;
-                        }
-                    }
-                }
-
-                if (!crap)
-                {
-                    ret.add(result);
-                }
-            }
+             searchResults.addAll(searchNominatedInvitations(criteria));
         }
-
-        /**
-         * Moderated search below
-         */
         if (toSearch == InvitationSearchCriteria.InvitationType.ALL
                     || toSearch == InvitationSearchCriteria.InvitationType.MODERATED)
         {
-            // This is a moderated search
-            WorkflowTaskQuery wfModeratedTaskQuery = new WorkflowTaskQuery();
-            // workflow query properties
-            HashMap<QName, Object> wfQueryModeratedProps = new HashMap<QName, Object>(3, 1.0f);
-
-            if (criteria.getInvitee() != null)
+            searchResults.addAll(searchModeratedInvitations(criteria));
+        }
+        
+        return CollectionUtils.transform(searchResults, new Function<WorkflowTask, Invitation>()
+        {
+            public Invitation apply(WorkflowTask task)
             {
-                wfQueryModeratedProps.put(WorkflowModelModeratedInvitation.WF_PROP_INVITEE_USER_NAME, criteria
-                            .getInvitee());
-            }
-            if (criteria.getResourceType() != null)
-            {
-                wfQueryModeratedProps.put(WorkflowModelModeratedInvitation.WF_PROP_RESOURCE_TYPE, criteria
-                            .getResourceType().toString());
-            }
-            if (criteria.getResourceName() != null)
-            {
-                wfQueryModeratedProps.put(WorkflowModelModeratedInvitation.WF_PROP_RESOURCE_NAME, criteria
-                            .getResourceName());
+                String invitationId = task.getPath().getInstance().getId();
+                Invitation invitation = getInvitation(invitationId);
+                return invitationMatches(invitation, criteria) ? invitation : null;
             }
 
-            // set workflow task query parameters
-            wfModeratedTaskQuery.setProcessCustomProps(wfQueryModeratedProps);
+        });
+    }
 
-            // Current Review Moderated Tasks
-            wfModeratedTaskQuery.setActive(Boolean.TRUE);
-            wfModeratedTaskQuery.setTaskState(WorkflowTaskState.IN_PROGRESS);
-            wfModeratedTaskQuery.setTaskName(WorkflowModelModeratedInvitation.WF_REVIEW_TASK);
-            wfModeratedTaskQuery.setProcessName(WorkflowModelModeratedInvitation.WF_PROCESS_INVITATION_MODERATED);
-
-            // query for invite workflow tasks
-            List<WorkflowTask> wf_moderated_tasks = this.workflowService.queryTasks(wfModeratedTaskQuery);
-
-            for (WorkflowTask workflowTask : wf_moderated_tasks)
+    /**
+     * Fix for ALF-2598
+     * @param invitation
+     * @param criteria
+     * @return
+     */
+    private boolean invitationMatches(Invitation invitation, InvitationSearchCriteria criteria)
+    {
+        String invitee = criteria.getInvitee();
+        if(invitee!= null && 
+                false == invitee.equals(invitation.getInviteeUserName()))
+        {
+            return false;
+        }
+        String inviter = criteria.getInviter();
+        if(inviter!= null)
+        {
+            if (invitation instanceof NominatedInvitation)
             {
-                // Add moderated invitations
-                String workflowId = workflowTask.getPath().getInstance().getId();
-                ModeratedInvitationImpl result = new ModeratedInvitationImpl(workflowId, workflowTask.getProperties());
-
-                // TODO ALFCOM-2598 records are being returned that do not match
-                // properties
-                Set<QName> keys = wfQueryModeratedProps.keySet();
-                boolean crap = false;
-                for (QName key : keys)
+                NominatedInvitation modInvite = (NominatedInvitation) invitation;
+                if(inviter.equals(modInvite.getInviterUserName()))
                 {
-                    Object val1 = wfQueryModeratedProps.get(key);
-                    Object val2 = workflowTask.getProperties().get(key);
-                    if (!val1.equals(val2))
-                    {
-                        // crap detected
-                        crap = true;
-                        logger.debug("ALFCOM-2598 key:" + key + "query:" + val1 + "task:" + val2);
-                        break;
-                    }
+                    return false;
                 }
-                // TODO END ALFCOM-2598 Work-around
-                if (!crap)
-                {
-                    ret.add(result);
-                }
+            }
+            else
+            {
+                return false;
             }
         }
+        String resourceName= criteria.getResourceName();
+        if(resourceName!= null && 
+                false == resourceName.equals(invitation.getResourceName()))
+        {
+            return false;
+        }
+        return true;
+    }
+    
+    private List<WorkflowTask> searchModeratedInvitations(InvitationSearchCriteria criteria)
+    {
+        WorkflowTaskQuery query = new WorkflowTaskQuery();
+        query.setTaskState(WorkflowTaskState.IN_PROGRESS);
+        
+        Map<QName, Object> properties = new HashMap<QName, Object>();
+        String invitee = criteria.getInvitee();
+        if (invitee != null)
+        {
+            properties.put(WorkflowModelModeratedInvitation.WF_PROP_INVITEE_USER_NAME, invitee);
+        }
+        //TODO Uncomment if more than one ResourceType added.
+//        ResourceType resourceType = criteria.getResourceType();
+//        if (resourceType != null)
+//        {
+//            properties.put(WorkflowModelModeratedInvitation.WF_PROP_RESOURCE_TYPE, resourceType.toString());
+//        }
+        String resourceName = criteria.getResourceName();
+        if (resourceName != null)
+        {
+            properties.put(WorkflowModelModeratedInvitation.WF_PROP_RESOURCE_NAME, resourceName);
+        }
+        query.setProcessCustomProps(properties);
 
-        // End moderated invitation
+        query.setTaskName(WorkflowModelModeratedInvitation.WF_REVIEW_TASK);
 
-        return ret;
+        // query for invite workflow tasks
+        List<WorkflowTask> results = new ArrayList<WorkflowTask>();
+        if(workflowAdminService.isEngineEnabled(JBPMEngine.ENGINE_ID))
+        {
+            query.setTaskName(WorkflowModelModeratedInvitation.WF_REVIEW_TASK);
+            List<WorkflowTask> jbpmTasks = this.workflowService.queryTasks(query);
+            if(jbpmTasks !=null)
+            {
+                results.addAll(jbpmTasks);
+            }
+        }
+        if(workflowAdminService.isEngineEnabled(ActivitiConstants.ENGINE_ID))
+        {
+            query.setTaskName(WorkflowModelModeratedInvitation.WF_ACTIVITI_REVIEW_TASK);
+            List<WorkflowTask> jbpmTasks = this.workflowService.queryTasks(query);
+            if(jbpmTasks !=null)
+            {
+                results.addAll(jbpmTasks);
+            }
+        }
+        return results;
+    }
+
+    private List<WorkflowTask> searchNominatedInvitations(InvitationSearchCriteria criteria)
+    {
+        WorkflowTaskQuery query = new WorkflowTaskQuery();
+        query.setTaskState(WorkflowTaskState.IN_PROGRESS);
+        
+        String invitee = criteria.getInvitee();
+        if(invitee != null)
+        {
+            query.setActorId(invitee);
+        }
+        
+        Map<QName, Object> queryProps = new HashMap<QName, Object>();
+        String inviter = criteria.getInviter();
+        if (inviter != null)
+        {
+            queryProps.put(WorkflowModelNominatedInvitation.WF_PROP_INVITER_USER_NAME, inviter);
+        }
+        String resourceName = criteria.getResourceName();
+        if (resourceName != null)
+        {
+            queryProps.put(WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_NAME, resourceName);
+        }
+        
+        //TODO uncomment if more ResourceTypes are created.
+//      ResourceType resourceType = criteria.getResourceType();
+//      if (resourceType != null)
+//      {
+//          wfNominatedQueryProps.put(WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_TYPE,
+//                  resourceType.name());
+//      }
+        // set workflow task query parameters
+        query.setProcessCustomProps(queryProps);
+
+        List<WorkflowTask> results = new ArrayList<WorkflowTask>();
+        if(workflowAdminService.isEngineEnabled(JBPMEngine.ENGINE_ID))
+        {
+            query.setTaskName(WorkflowModelNominatedInvitation.WF_TASK_INVITE_PENDING);
+            List<WorkflowTask> jbpmTasks = this.workflowService.queryTasks(query);
+            if(jbpmTasks !=null)
+            {
+                results.addAll(jbpmTasks);
+            }
+        }
+        if(workflowAdminService.isEngineEnabled(ActivitiConstants.ENGINE_ID))
+        {
+            query.setTaskName(WorkflowModelNominatedInvitation.WF_TASK_ACTIVIT_INVITE_PENDING);
+            List<WorkflowTask> jbpmTasks = this.workflowService.queryTasks(query);
+            if(jbpmTasks !=null)
+            {
+                results.addAll(jbpmTasks);
+            }
+        }
+        return results;
     }
 
     // Implementation methods below
@@ -947,7 +929,6 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         String workflowDescription = generateWorkflowDescription(siteInfo, "invitation.moderated.workflow.description");
         
         Map<QName, Serializable> workflowProps = new HashMap<QName, Serializable>(16);
-        workflowProps.put(WorkflowModel.ASSOC_ASSIGNEE, inviteeNodeRef);
         workflowProps.put(WorkflowModel.PROP_WORKFLOW_DESCRIPTION, workflowDescription);
         workflowProps.put(WorkflowModelModeratedInvitation.ASSOC_GROUP_ASSIGNEE, roleGroup);
         workflowProps.put(WorkflowModelModeratedInvitation.WF_PROP_INVITEE_COMMENTS, inviteeComments);
@@ -1202,20 +1183,28 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 
     private String getNominatedDefinitionName()
     {
-//        if(workflowAdminService.isEngineEnabled(ActivitiConstants.ENGINE_ID))
-//        {
-//            return WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI;
-//        }
-        return WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME;
+        if(workflowAdminService.isEngineEnabled(ActivitiConstants.ENGINE_ID))
+        {
+            return WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI;
+        }
+        else if(workflowAdminService.isEngineEnabled(JBPMEngine.ENGINE_ID))
+        {
+            return WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME;
+        }
+        throw new IllegalStateException("None of the Workflow engines supported by teh InvitationService are currently enabled!");
     }
     
     private String getModeratedDefinitionName()
     {
-//        if(workflowAdminService.isEngineEnabled(ActivitiConstants.ENGINE_ID))
-//        {
-//            return WorkflowModelModeratedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI;
-//        }
-        return WorkflowModelModeratedInvitation.WORKFLOW_DEFINITION_NAME;
+        if(workflowAdminService.isEngineEnabled(ActivitiConstants.ENGINE_ID))
+        {
+            return WorkflowModelModeratedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI;
+        }
+        else if(workflowAdminService.isEngineEnabled(JBPMEngine.ENGINE_ID))
+        {
+            return WorkflowModelModeratedInvitation.WORKFLOW_DEFINITION_NAME;
+        }
+        throw new IllegalStateException("None of the Workflow engines supported by teh InvitationService are currently enabled!");
     }
 
     /**

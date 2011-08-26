@@ -142,15 +142,6 @@
    </filter>
 
    <filter>
-      <filter-name>SOLR Authentication Filter</filter-name>
-      <filter-class>org.alfresco.repo.web.filter.beans.BeanProxyFilter</filter-class>
-      <init-param>
-         <param-name>beanName</param-name>
-         <param-value>SOLRAuthenticationFilter</param-value>
-      </init-param>
-   </filter>
-
-   <filter>
       <filter-name>Admin Authentication Filter</filter-name>
       <filter-class>org.alfresco.web.app.servlet.AdminAuthenticationFilter</filter-class>
    </filter>
@@ -839,7 +830,7 @@
       <env-entry-value/> <!-- Empty value included for JBoss compatibility -->
       <env-entry-type>java.lang.String</env-entry-type>
    </env-entry>
-   
+
    <security-constraint>
       <web-resource-collection>
          <url-pattern>/service/api/solr/*</url-pattern>

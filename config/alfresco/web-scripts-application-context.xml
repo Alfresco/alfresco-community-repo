@@ -1577,6 +1577,14 @@
          parent="abstractWikiWebScript">
    </bean>
 
+   <!-- Fetches the contents of one wiki page at a specific version -->
+   <bean id="webscript.org.alfresco.slingshot.wiki.version.get"
+         class="org.alfresco.repo.web.scripts.wiki.WikiPageVersionGet"
+         parent="abstractWikiWebScript">
+      <property name="contentService" ref="ContentService" />
+      <property name="versionService" ref="VersionService" />
+   </bean>
+
    <!-- Deletes a wiki page -->
    <bean id="webscript.org.alfresco.slingshot.wiki.page.delete"
          class="org.alfresco.repo.web.scripts.wiki.WikiPageDelete"

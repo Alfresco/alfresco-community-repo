@@ -555,7 +555,7 @@ public class WikiRestApiTest extends BaseWebScriptTest
        
        // Fetch it at this version
        String content = getPageAtVersion(name, "1.0", Status.STATUS_OK);
-//       assertEquals(PAGE_CONTENTS_ONE, content); // TODO Fix the initial version content storing
+       assertEquals(PAGE_CONTENTS_ONE, content);
        
        
        // Upload a new copy without a version flag, denied
@@ -581,7 +581,7 @@ public class WikiRestApiTest extends BaseWebScriptTest
        content = getPageAtVersion(name, "1.1", Status.STATUS_OK);
        assertEquals(PAGE_CONTENTS_CHANGED, content);
        content = getPageAtVersion(name, "1.0", Status.STATUS_OK);
-//     assertEquals(PAGE_CONTENTS_ONE, content); // TODO Fix the initial version content storing
+       assertEquals(PAGE_CONTENTS_ONE, content);
        
        
        // Upload a new copy with the force flag, allowed
@@ -606,7 +606,7 @@ public class WikiRestApiTest extends BaseWebScriptTest
        content = getPageAtVersion(name, "1.1", Status.STATUS_OK);
        assertEquals(PAGE_CONTENTS_CHANGED, content);
        content = getPageAtVersion(name, "1.0", Status.STATUS_OK);
-//     assertEquals(PAGE_CONTENTS_ONE, content); // TODO Fix the initial version content storing
+       assertEquals(PAGE_CONTENTS_ONE, content);
        
        // You get an empty string back for invalid versions
        content = getPageAtVersion(name, "1.4", Status.STATUS_OK);

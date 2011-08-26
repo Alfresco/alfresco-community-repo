@@ -37,7 +37,7 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
- * This class is the controller for the wiki page listing page.get webscript.
+ * This class is the controller for the wiki page fetching page.get webscript.
  * 
  * @author Nick Burch
  * @since 4.0

@@ -33,16 +33,16 @@ function createWikiPage(name, folder, options)
 	var page = folder.createFile(name);
 	if (options)
 	{
-		if (options.versionable)
-		{
-			page.addAspect("cm:versionable");
-		}
+      if (options.content)
+      {
+         page.content = options.content;
+         page.mimetype = "text/html";
+      }
 		
-		if (options.content)
-		{
-			page.content = options.content;
-			page.mimetype = "text/html";
-		}
+      if (options.versionable)
+      {
+         page.addAspect("cm:versionable");
+      }
 	}
 	
 	// Initialise tags to empty array

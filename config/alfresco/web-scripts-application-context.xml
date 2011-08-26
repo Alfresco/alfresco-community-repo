@@ -1519,6 +1519,12 @@
         <property name="activityService" ref="activityService"/>
    </bean>
 
+   <!-- Fetches the details of one link -->
+   <bean id="webscript.org.alfresco.repository.links.link.link.get"
+         class="org.alfresco.repo.web.scripts.links.LinkGet"
+         parent="abstractLinksWebScript">
+   </bean>
+   
    <!-- Lists the Links for a site -->
    <bean id="webscript.org.alfresco.repository.links.links.get"
          class="org.alfresco.repo.web.scripts.links.LinksListGet"

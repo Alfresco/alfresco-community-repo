@@ -53,7 +53,7 @@ public interface LinksService {
     * Deletes an existing {@link LinkInfo} from the repository
     */
    @NotAuditable
-   void deleteLink(LinkInfo entry);
+   void deleteLink(LinkInfo link);
    
    /**
     * Retrieves an existing {@link LinkInfo} from the repository

@@ -30,11 +30,14 @@ function main()
    // indexing (if any) there is on the version store.
    for (var i=0; i < versions.length; i++)
    {
-      version = versions[i].node;
+      version = versions[i];
+      versionNode = version.node;
+
       // If we don't create a string explicitly the comparison fails
-      if (String(version.id) === params.versionId)
+      if (String(versionNode.id) === params.versionId || 
+          String(version.label) == params.versionId)
       {
-         content = version.content;
+         content = versionNode.content;
          break;
       }
    }

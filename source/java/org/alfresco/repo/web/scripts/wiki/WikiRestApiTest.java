@@ -90,7 +90,7 @@ public class WikiRestApiTest extends BaseWebScriptTest
     private static final String URL_WIKI_UPDATE = URL_WIKI_BASE + "/" + SITE_SHORT_NAME_WIKI + "/"; // plus title
     private static final String URL_WIKI_DELETE = URL_WIKI_BASE + "/" + SITE_SHORT_NAME_WIKI + "/"; // plus title
     private static final String URL_WIKI_RENAME = URL_WIKI_BASE + "/" + SITE_SHORT_NAME_WIKI + "/"; // plus title
-    private static final String URL_WIKI_VERSIONS = "/slingshot/wiki/version/" + SITE_SHORT_NAME_WIKI + "/";
+    private static final String URL_WIKI_VERSION = "/slingshot/wiki/version/" + SITE_SHORT_NAME_WIKI + "/";
     
     
     // General methods
@@ -240,6 +240,27 @@ public class WikiRestApiTest extends BaseWebScriptTest
     }
     
     /**
+     * Fetches the content of a page at a given version
+     * Note - not JSON based.
+     */
+    private String getPageAtVersion(String name, String version, int expectedStatus) throws Exception
+    {
+       Response response = sendRequest(new GetRequest(URL_WIKI_VERSION + name + "/" + version), expectedStatus);
+       if (expectedStatus == Status.STATUS_OK)
+       {
+          return response.getContentAsString();
+       }
+       else if(expectedStatus == Status.STATUS_NOT_FOUND)
+       {
+          return response.getContentAsString();
+       }
+       else
+       {
+          return null;
+       }
+    }
+    
+    /**
      * Creates a single wiki page based on the supplied details
      */
     private JSONObject createOrUpdatePage(String title, String contents, String version, int expectedStatus)
@@ -290,7 +311,7 @@ public class WikiRestApiTest extends BaseWebScriptTest
     /**
      * Renames the page
      */
-    private JSONObject renamPage(String oldTitle, String newTitle, int expectedStatus) throws Exception
+    private JSONObject renamePage(String oldTitle, String newTitle, int expectedStatus) throws Exception
     {
        String name = oldTitle.replace(' ', '_');
        
@@ -299,7 +320,7 @@ public class WikiRestApiTest extends BaseWebScriptTest
        json.put("name", newTitle);
        json.put("page", "wiki-page"); // TODO Is this really needed?
        
-       Response response = sendRequest(new PostRequest(URL_WIKI_UPDATE + name, json.toString(), "application/json"), expectedStatus);
+       Response response = sendRequest(new PostRequest(URL_WIKI_RENAME + name, json.toString(), "application/json"), expectedStatus);
        if (expectedStatus == Status.STATUS_OK)
        {
           JSONObject result = new JSONObject(response.getContentAsString());
@@ -486,7 +507,7 @@ public class WikiRestApiTest extends BaseWebScriptTest
        
        
        // Have it renamed
-       page = renamPage(PAGE_TITLE_TWO, PAGE_TITLE_THREE, Status.STATUS_OK);
+       page = renamePage(PAGE_TITLE_TWO, PAGE_TITLE_THREE, Status.STATUS_OK);
        name2 = PAGE_TITLE_THREE.replace(' ', '_');
        assertEquals(name2, page.getString("name"));
        
@@ -532,12 +553,18 @@ public class WikiRestApiTest extends BaseWebScriptTest
        assertEquals(USER_ONE, versions.getJSONObject(0).get("author"));
        
        
+       // Fetch it at this version
+       String content = getPageAtVersion(name, "1.0", Status.STATUS_OK);
+//       assertEquals(PAGE_CONTENTS_ONE, content); // TODO Fix the initial version content storing
+       
+       
        // Upload a new copy without a version flag, denied
        createOrUpdatePage(PAGE_TITLE_TWO, "Changed Contents", "none", Status.STATUS_CONFLICT);
        
        
        // Upload a new copy with the appropriate version, allowed
-       page = createOrUpdatePage(PAGE_TITLE_TWO, "Changed Contents 2", "1.0", Status.STATUS_OK);
+       String PAGE_CONTENTS_CHANGED = "Changed Contents 2";
+       page = createOrUpdatePage(PAGE_TITLE_TWO, PAGE_CONTENTS_CHANGED, "1.0", Status.STATUS_OK);
        
        page = getPage(name, Status.STATUS_OK);
        assertEquals("Incorrect JSON: " + page.toString(), true, page.has("versionhistory"));
@@ -550,8 +577,16 @@ public class WikiRestApiTest extends BaseWebScriptTest
        assertEquals(USER_ONE, versions.getJSONObject(1).get("author"));
        
        
+       // Check the version contents
+       content = getPageAtVersion(name, "1.1", Status.STATUS_OK);
+       assertEquals(PAGE_CONTENTS_CHANGED, content);
+       content = getPageAtVersion(name, "1.0", Status.STATUS_OK);
+//     assertEquals(PAGE_CONTENTS_ONE, content); // TODO Fix the initial version content storing
+       
+       
        // Upload a new copy with the force flag, allowed
-       page = createOrUpdatePage(PAGE_TITLE_TWO, "Changed Contents 3", "force", Status.STATUS_OK);
+       String PAGE_CONTENTS_CHANGED3 = "Changed Contents 3";
+       page = createOrUpdatePage(PAGE_TITLE_TWO, PAGE_CONTENTS_CHANGED3, "force", Status.STATUS_OK);
        
        page = getPage(name, Status.STATUS_OK);
        assertEquals("Incorrect JSON: " + page.toString(), true, page.has("versionhistory"));
@@ -564,6 +599,18 @@ public class WikiRestApiTest extends BaseWebScriptTest
        assertEquals(USER_ONE, versions.getJSONObject(1).get("author"));
        assertEquals("1.0",    versions.getJSONObject(2).get("version"));
        assertEquals(USER_ONE, versions.getJSONObject(2).get("author"));
+       
+       // Check the version contents
+       content = getPageAtVersion(name, "1.2", Status.STATUS_OK);
+       assertEquals(PAGE_CONTENTS_CHANGED3, content);
+       content = getPageAtVersion(name, "1.1", Status.STATUS_OK);
+       assertEquals(PAGE_CONTENTS_CHANGED, content);
+       content = getPageAtVersion(name, "1.0", Status.STATUS_OK);
+//     assertEquals(PAGE_CONTENTS_ONE, content); // TODO Fix the initial version content storing
+       
+       // You get an empty string back for invalid versions
+       content = getPageAtVersion(name, "1.4", Status.STATUS_OK);
+       assertEquals("", content);
     }
     
     public void testLinks() throws Exception

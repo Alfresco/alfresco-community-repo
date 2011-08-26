@@ -2034,7 +2034,7 @@ public class AlfrescoCmisService extends AbstractCmisService
         CMISNodeInfo info = getOrCreateNodeInfo(objectId, "Object");
 
         // only accept a PWC
-        if (info.isVariant(CMISObjectVariant.PWC))
+        if (!info.isVariant(CMISObjectVariant.PWC))
         {
             throw new CmisVersioningException("Object is not a PWC!");
         }

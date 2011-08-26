@@ -132,7 +132,7 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         WorkflowInstance instance = workflowService.getWorkflowById(wfId);
         assertNotNull(instance);
         List<WorkflowPath> paths = workflowService.getWorkflowPaths(wfId);
-        assertEquals(1, paths.size());
+        assertEquals(2, paths.size());
         Map<QName, Serializable> props = workflowService.getPathProperties(paths.get(0).getId());
         assertEquals(eventNode, props.get(PROP_WF_PUBLISHING_EVENT));
         assertEquals(schedule, props.get(PROP_WF_SCHEDULED_PUBLISH_DATE));

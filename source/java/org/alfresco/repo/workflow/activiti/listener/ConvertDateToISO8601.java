@@ -19,6 +19,7 @@
 
 package org.alfresco.repo.workflow.activiti.listener;
 
+import java.util.Calendar;
 import java.util.Date;
 
 import org.activiti.engine.delegate.DelegateExecution;
@@ -61,7 +62,19 @@ public class ConvertDateToISO8601 implements ExecutionListener
             throw new IllegalArgumentException("Both fields 'source' and 'target' shoudl be set");
         }
         
-        Date dateToConvert = (Date) execution.getVariable(sourceVarName);
+        Object dateVar = execution.getVariable(sourceVarName);
+        Date dateToConvert = null;
+        
+        // Accept null, Date or Calendar as value
+        if(dateVar != null) {
+        	if(dateVar instanceof Date) {
+        		dateToConvert = (Date) execution.getVariable(sourceVarName);
+        	} else if(dateVar instanceof Calendar) {
+        		dateToConvert = ((Calendar) execution.getVariable(sourceVarName)).getTime();
+        	} else {
+        		throw new IllegalArgumentException("Variable with name: " + sourceVarName + " must be a Date or a Calendar");
+        	}
+        }
         if(dateToConvert != null) {
             // Convert the date to ISO-8601 format
             String convertedDate = ISO8601DateFormat.format(dateToConvert);

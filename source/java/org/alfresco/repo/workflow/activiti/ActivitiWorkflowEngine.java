@@ -46,6 +46,7 @@ import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricTaskInstanceQuery;
 import org.activiti.engine.impl.RepositoryServiceImpl;
+import org.activiti.engine.impl.bpmn.behavior.ReceiveTaskActivityBehavior;
 import org.activiti.engine.impl.bpmn.behavior.UserTaskActivityBehavior;
 import org.activiti.engine.impl.bpmn.deployer.BpmnDeployer;
 import org.activiti.engine.impl.bpmn.diagram.ProcessDiagramGenerator;
@@ -597,6 +598,16 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         }
         return null;
     }
+    
+    private boolean isReceiveTask(PvmActivity act)
+    {
+        if(act instanceof ActivityImpl) 
+        {
+            ActivityImpl actImpl = (ActivityImpl) act;
+            return (actImpl.getActivityBehavior() instanceof ReceiveTaskActivityBehavior);        
+        }
+        return false;
+    }
 
     private Collection<PvmActivity> findUserTasks(PvmActivity startEvent)
     {
@@ -607,6 +618,17 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         findUserTasks(startEvent, userTasks);
         
         return userTasks.values();
+    }
+    
+    private boolean isFirstActivity(PvmActivity activity, ReadOnlyProcessDefinition procDef)
+    {
+        if(procDef.getInitial().getOutgoingTransitions().size() == 1) 
+        {
+            if(procDef.getInitial().getOutgoingTransitions().get(0).getDestination().equals(activity)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void findUserTasks(PvmActivity currentActivity, Map<String, PvmActivity> userTasks)
@@ -974,10 +996,14 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             
             // Start the process-instance
             ProcessInstance instance = runtimeService.startProcessInstanceById(processDefId, variables);
-            
-            // Set ID of workflowinstance after ProcessInstance is created
-            runtimeService.setVariable(instance.getId(), WorkflowConstants.PROP_WORKFLOW_INSTANCE_ID, createGlobalId(instance.getId()));
-            return typeConverter.convert((Execution)instance);        
+            if(instance.isEnded()) 
+            {
+                return typeConverter.buildCompletedPath(instance.getId(), instance.getId());
+            } 
+            else
+            {
+                return typeConverter.convert((Execution)instance);        
+            }
         }
         catch (ActivitiException ae)
         {
@@ -1299,8 +1325,35 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         // Set start task end date on the process
         runtimeService.setVariable(processInstanceId, ActivitiConstants.PROP_START_TASK_END_DATE, new Date());
         
-        // Return virtual start task for the execution, it's safe to use the processInstanceId
-        return typeConverter.getVirtualStartTask(processInstanceId, false);
+        // Check if the current activity is a signalTask and the first activity in the process,
+        // this is a workaround for processes without any task/waitstates that should otherwise end
+        // when they are started.
+        ProcessInstance processInstance = activitiUtil.getProcessInstance(processInstanceId);
+        String currentActivity = ((ExecutionEntity)processInstance).getActivityId();
+        
+        ReadOnlyProcessDefinition procDef = activitiUtil.getDeployedProcessDefinition(processInstance.getProcessDefinitionId());
+        PvmActivity activity = procDef.findActivity(currentActivity);
+        if(isReceiveTask(activity) && isFirstActivity(activity, procDef)) 
+        {
+            // Signal the process to start flowing, beginning from the recieve task
+            runtimeService.signal(processInstanceId);
+            
+            // It's possible the process has ended after signalling the receive task
+            processInstance = activitiUtil.getProcessInstance(processInstanceId);
+            if(processInstance != null) {
+                return typeConverter.getVirtualStartTask(processInstanceId, false);
+            }
+            else
+            {
+                return typeConverter.getVirtualStartTask(activitiUtil.getHistoricProcessInstance(processInstanceId));
+            }
+        }
+        else
+        {
+            // Return virtual start task for the execution, it's safe to use the processInstanceId
+            return typeConverter.getVirtualStartTask(processInstanceId, false);
+        }
+        
     }
 
     /**

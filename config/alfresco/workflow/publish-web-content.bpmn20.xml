@@ -6,13 +6,19 @@
    xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema"
    expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://alfresco.org">
 
-    <process id="activitiPublishWebContent" name="Publish Web Content Activiti Process">
+    <process id="publishWebContent" name="Publish Web Content Activiti Process">
 
         <startEvent id="start"
             activiti:formKey="pubwf:startPublish" />
+        
+        <sequenceFlow id='flow0' 
+            sourceRef='start'
+            targetRef='startWait' />
+            
+        <receiveTask id="startWait" name="Receive event for start-task" />
 
         <sequenceFlow id='flow1' 
-            sourceRef='start'
+            sourceRef='startWait'
             targetRef='checkForScheduledTime'>
              <extensionElements>
                <!-- If the schedule date is null, publish should be performed immediatly. Gateway used the 'schedule' boolean -->
@@ -20,7 +26,7 @@
                   <activiti:field name="script">
                      <activiti:string>
                         // Check if the publish should be scheduled or performed immediatly
-                        if (typeof pubwf_scheduledPublishDate != 'undefined') {
+                        if (typeof pubwf_scheduledPublishDate != 'undefined' &amp;&amp; pubwf_scheduledPublishDate != null) {
                            execution.setVariable("schedule", true);
                         } else {
                            execution.setVariable("schedule", false);
@@ -39,7 +45,7 @@
 
         <exclusiveGateway  id="checkForScheduledTime" name="Check Schedule" /> 
 
-        <sequenceFlow id='flow3' sourceRef='checkForScheduledTime' targetRef='schedulePublish' >
+        <sequenceFlow id='flow3' sourceRef='checkForScheduledTime' targetRef='waitForScheduledTime' >
             <conditionExpression xsi:type="tFormalExpression">${schedule}</conditionExpression>
         </sequenceFlow>
 
@@ -60,15 +66,15 @@
               </extensionElements>
          </serviceTask>
          
-         <receiveTask id="schedulePublish" name="Wait for publish time" />
+         <receiveTask id="waitForScheduledTime" name="Wait for publish time" />
          
-         <boundaryEvent id="publishTimer" cancelActivity="true" attachedToRef="schedulePublish">
+         <boundaryEvent id="publishTimer" cancelActivity="true" attachedToRef="waitForScheduledTime">
              <timerEventDefinition>
                  <timeDate>${iso8601PublishDate}</timeDate>
              </timerEventDefinition>
          </boundaryEvent>    
          
-         <sequenceFlow id='flow5' sourceRef='schedulePublish'
+         <sequenceFlow id='flow5' sourceRef='waitForScheduledTime'
             targetRef='end' />
             
          <sequenceFlow id='flow6' sourceRef='publishTimer'

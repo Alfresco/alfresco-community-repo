@@ -33,6 +33,8 @@
         class="org.alfresco.repo.workflow.activiti.AddTaskListenerParseListener">
         <property name="createTaskListener" ref="activitiCreateTaskListener" />
         <property name="completeTaskListener" ref="activitiCompleteTaskListener" />
+        <property name="processCreateListener" ref="activitiProcessCreateListener" />
+         
     </bean>
 
     <!-- -->
@@ -177,6 +179,8 @@
         <property name="propertyConverter" ref="activitiPropertyConverter" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
+    
+    <bean id="activitiProcessCreateListener" class="org.alfresco.repo.workflow.activiti.listener.ProcessStartExecutionListener" />
 
     <bean id="activitiRepositoryService" factory-bean="activitiProcessEngine"
         factory-method="getRepositoryService" />

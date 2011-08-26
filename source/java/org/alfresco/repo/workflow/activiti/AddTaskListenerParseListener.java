@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.workflow.activiti;
 
+import org.activiti.engine.delegate.ExecutionListener;
 import org.activiti.engine.delegate.TaskListener;
 import org.activiti.engine.impl.bpmn.behavior.UserTaskActivityBehavior;
 import org.activiti.engine.impl.bpmn.parser.BpmnParseListener;
@@ -42,6 +43,7 @@ public class AddTaskListenerParseListener implements BpmnParseListener
 {
     private TaskListener completeTaskListener;
     private TaskListener createTaskListener;
+    private ExecutionListener processCreateListener;
     
     @Override
     public void parseUserTask(Element userTaskElement, ScopeImpl scope, ActivityImpl activity)
@@ -64,7 +66,7 @@ public class AddTaskListenerParseListener implements BpmnParseListener
     @Override
     public void parseProcess(Element processElement, ProcessDefinitionEntity processDefinition)
     {
-      // Nothing to do here
+        processDefinition.addExecutionListener(ExecutionListener.EVENTNAME_START, processCreateListener);
     }
 
     @Override
@@ -195,6 +197,11 @@ public class AddTaskListenerParseListener implements BpmnParseListener
     public void setCreateTaskListener(TaskListener createTaskListener)
     {
         this.createTaskListener = createTaskListener;
+    }
+    
+    public void setProcessCreateListener(ExecutionListener processCreateListener)
+    {
+        this.processCreateListener = processCreateListener;
     }
 
 }

@@ -19,6 +19,10 @@
 
 package org.alfresco.repo.publishing;
 
+import java.util.List;
+
+import org.alfresco.service.cmr.workflow.WorkflowPath;
+
 
 /**
  * @author Nick Smith
@@ -26,9 +30,9 @@ package org.alfresco.repo.publishing;
  * @since 4.0
  *
  */
-public class PublishWebContentJbpmTest extends PublishWebContentProcessTest
+public class PublishWebContentActivitiTest extends PublishWebContentProcessTest
 {
-    private static final String DEF_NAME = "jbpm$publishWebContent";
+    private static final String DEF_NAME = "activiti$publishWebContent";
     
     @Override
     protected String getWorkflowDefinitionName()
@@ -36,4 +40,14 @@ public class PublishWebContentJbpmTest extends PublishWebContentProcessTest
         return DEF_NAME;
     }
     
+    /**
+     * Activiti has 2 paths: a timer-scope-path and the main execution-path
+     */
+    protected void checkNode(String expNode)
+    {
+        List<WorkflowPath> paths = workflowService.getWorkflowPaths(instanceId);
+        assertEquals(2, paths.size());
+        WorkflowPath path = paths.get(0);
+        assertEquals(expNode, path.getNode().getName());
+    }
 }

@@ -40,7 +40,7 @@ import org.springframework.social.oauth2.OAuth2Parameters;
 public class FacebookChannelType extends AbstractChannelType
 {
     public final static String ID = "facebook";
-    public final static String DEFAULT_REDIRECT_URI = "http://cognite.net/alfresco/stand-alone-auth-return.html";
+    public final static String DEFAULT_REDIRECT_URI = "http://alfresco.com/stand-alone-auth-return.html";
 
     private FacebookPublishingHelper publishingHelper;
     private String redirectUri = DEFAULT_REDIRECT_URI;

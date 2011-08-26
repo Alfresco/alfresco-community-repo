@@ -2,26 +2,25 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <beans>
-    <bean parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
-        <property name="models">
-            <list>
-                <value>alfresco/model/facebookPublishingModel.xml</value>
-            </list>
-        </property>
-    </bean>
+   <bean parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
+      <property name="models">
+         <list>
+            <value>alfresco/model/facebookPublishingModel.xml</value>
+         </list>
+      </property>
+   </bean>
 
-    <bean id="facebookDeliveryChannelType" class="org.alfresco.repo.publishing.facebook.FacebookChannelType" parent="baseChannelType" >
-        <property name="publishingHelper" ref="facebookPublishingHelper" />
-    </bean>
+   <bean id="facebookDeliveryChannelType" class="org.alfresco.repo.publishing.facebook.FacebookChannelType" parent="baseChannelType">
+      <property name="publishingHelper" ref="facebookPublishingHelper" />
+   </bean>
 
-    <bean id="facebookPublishingHelper" class="org.alfresco.repo.publishing.facebook.FacebookPublishingHelper">
-        <property name="nodeService" ref="NodeService" />
-        <property name="connectionFactory">
-            <bean class="org.springframework.social.facebook.connect.FacebookConnectionFactory">
-                <constructor-arg value="172471752819337" />
-                <constructor-arg value="663c15276462894fd3f0e94b41a4e2e1" />
-            </bean>
-        </property>
-    </bean>
+   <bean id="facebookPublishingHelper" class="org.alfresco.repo.publishing.facebook.FacebookPublishingHelper">
+      <property name="nodeService" ref="NodeService" />
+      <property name="connectionFactory" ref="facebookConnectionFactory" />
+   </bean>
 
+   <bean id="facebookConnectionFactory" class="org.springframework.social.facebook.connect.FacebookConnectionFactory">
+      <constructor-arg value="239653749405669" />
+      <constructor-arg value="34807bf851b3a73429c8332f14d42ddb" />
+   </bean>
 </beans>

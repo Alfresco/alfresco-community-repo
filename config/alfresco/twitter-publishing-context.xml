@@ -14,8 +14,8 @@
         <property name="nodeService" ref="NodeService" />
         <property name="connectionFactory">
             <bean class="org.springframework.social.twitter.connect.TwitterConnectionFactory">
-                <constructor-arg value="H6xYrEbF7sgGz9eL5s6uA" />
-                <constructor-arg value="JXydqZec0g4Va3mEl1sY2odlYNnyokS5TWy3C1sNVIg" />
+                <constructor-arg value="hXZ5T0h2zTIa7nPrtq2mg" />
+                <constructor-arg value="IdJ8j5Bx8MKYWWVNl4T98rNECSEDbqnBPIoAw1sIPyc" />
             </bean>
         </property>
     </bean>

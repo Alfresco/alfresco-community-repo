@@ -22,8 +22,8 @@
     </bean>
 
     <bean id="flickrConnectionFactory" class="org.alfresco.repo.publishing.flickr.springsocial.connect.FlickrConnectionFactory">
-        <constructor-arg value="cc61f5d37569cec8c04fce8b4db3f37d" />
-        <constructor-arg value="75f29c6fc18a1b0c" />
+        <constructor-arg value="f7dafa571e8698ff93b08ebcb8c3de88" />
+        <constructor-arg value="e9a8d6072d4cb9e6" />
     </bean>
 
     <bean id="publish_flickr" parent="action-executer" class="org.alfresco.repo.publishing.flickr.FlickrPublishAction">

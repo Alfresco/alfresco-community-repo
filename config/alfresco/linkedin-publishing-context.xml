@@ -2,22 +2,21 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <beans>
-    <bean parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
-        <property name="models">
-            <list>
-                <value>alfresco/model/linkedInPublishingModel.xml</value>
-            </list>
-        </property>
-    </bean>
+   <bean parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
+      <property name="models">
+         <list>
+            <value>alfresco/model/linkedInPublishingModel.xml</value>
+         </list>
+      </property>
+   </bean>
 
-    <bean id="linkedInDeliveryChannelType" class="org.alfresco.repo.publishing.linkedin.LinkedInChannelType" parent="baseChannelType" >
-        <property name="nodeService" ref="NodeService" />
-        <property name="connectionFactory">
-            <bean class="org.alfresco.repo.publishing.linkedin.springsocial.connect.LinkedInConnectionFactory">
-                <constructor-arg value="l0a39tvf6v4x" />
-                <constructor-arg value="veWjLwlnJmu7IyFs" />
-            </bean>
-        </property>
-    </bean>
+   <bean id="linkedInDeliveryChannelType" class="org.alfresco.repo.publishing.linkedin.LinkedInChannelType" parent="baseChannelType">
+      <property name="nodeService" ref="NodeService" />
+      <property name="connectionFactory" ref="linkedinConnectionFactory" />
+   </bean>
 
+   <bean id="linkedinConnectionFactory" class="org.alfresco.repo.publishing.linkedin.springsocial.connect.LinkedInConnectionFactory">
+      <constructor-arg value="j2efeg3twccy" />
+      <constructor-arg value="z1pgc6svhKKBMeXP" />
+   </bean>
 </beans>

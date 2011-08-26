@@ -47,8 +47,8 @@ public class YouTubePublishingHelper
             {
                 String youtubeUsername = (String) nodeService.getProperty(parent, PublishingModel.PROP_CHANNEL_USERNAME);
                 String youtubePassword = (String) nodeService.getProperty(parent, PublishingModel.PROP_CHANNEL_PASSWORD);
-                service = new YouTubeService("Alfresco Kickoff Demo",
-                        "AI39si71pRNHkfExcTpqcZewDtI4GHWuPAXyRPL2Xq-RQUBWlE1bqn77ANXEL5lZUWFDz6ZlS_XWCw8hlr2BJY1TnC-EMs4e4g");
+                service = new YouTubeService("Alfresco",
+                        "AI39si78RHlniONCtnu9o8eBfwZToBAp2ZbbURm5eoJjj4gZi0LcxjDqJTzD35oYokmtFXbCo5ojofbimGnMlRbmNrh7-M7ZCw");
                 try
                 {
                     service.setUserCredentials(youtubeUsername, youtubePassword);

@@ -1546,6 +1546,12 @@
          class="org.alfresco.repo.web.scripts.wiki.WikiPageGet"
          parent="abstractWikiWebScript">
    </bean>
+
+   <!-- Deletes a wiki page -->
+   <bean id="webscript.org.alfresco.slingshot.wiki.page.delete"
+         class="org.alfresco.repo.web.scripts.wiki.WikiPageDelete"
+         parent="abstractWikiWebScript">
+   </bean>
    
    <!-- Lists the Wiki Pages for a site -->
    <bean id="webscript.org.alfresco.slingshot.wiki.pagelist.get"

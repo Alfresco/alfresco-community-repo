@@ -59,6 +59,7 @@ public class WikiPageGet extends AbstractWikiWebScript
          String message = "The Wiki Page could not be found";
          status.setCode(Status.STATUS_NOT_FOUND);
          status.setMessage(message);
+         status.setRedirect(true);
          
          // Grab the container, used in permissions checking
          NodeRef container = siteService.getContainer(
@@ -68,9 +69,7 @@ public class WikiPageGet extends AbstractWikiWebScript
          model.put("error", message);
          
          // Bail out
-         Map<String, Object> result = new HashMap<String, Object>();
-         result.put("result", model);
-         return result;
+         return model;
       }
 
       

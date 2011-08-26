@@ -144,7 +144,7 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
     /**
      * Generates an activity entry for the link
      */
-    protected void addActivityEntry(String event, LinkInfo link, SiteInfo site, 
+    protected void addActivityEntry(String event, WikiPageInfo wikiPage, SiteInfo site, 
           WebScriptRequest req, JSONObject json)
     {
        // What page is this for?
@@ -169,8 +169,8 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
        try
        {
           JSONObject activity = new JSONObject();
-          activity.put("title", link.getTitle());
-          activity.put("page", page + "?title=" + link.getTitle());
+          activity.put("title", wikiPage.getTitle());
+          activity.put("page", page + "?title=" + wikiPage.getSystemName());
           
           activityService.postActivity(
                 "org.alfresco.wiki.page-" + event,

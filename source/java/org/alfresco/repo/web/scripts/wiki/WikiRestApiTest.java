@@ -228,6 +228,11 @@ public class WikiRestApiTest extends BaseWebScriptTest
           }
           return result;
        }
+       else if(expectedStatus == Status.STATUS_NOT_FOUND)
+       {
+          JSONObject result = new JSONObject(response.getContentAsString());
+          return result;
+       }
        else
        {
           return null;
@@ -372,7 +377,6 @@ public class WikiRestApiTest extends BaseWebScriptTest
        // Won't be there to start with
        page = getPage(PAGE_TITLE_ONE, Status.STATUS_NOT_FOUND);
        
-       
        // Create
        page = createOrUpdatePage(PAGE_TITLE_ONE, PAGE_CONTENTS_ONE, null, Status.STATUS_OK);
        name = PAGE_TITLE_ONE.replace(' ', '_');
@@ -449,6 +453,13 @@ public class WikiRestApiTest extends BaseWebScriptTest
        
        // Fetch, will have gone
        page = getPage(name, Status.STATUS_NOT_FOUND);
+       
+       // On a page that isn't there, you do get permissions
+       assertEquals(true, page.has("permissions"));
+       permissions = page.getJSONObject("permissions");
+       assertEquals(true, permissions.getBoolean("create"));
+       assertEquals(true, permissions.getBoolean("edit"));
+       assertEquals(false, permissions.has("delete")); // No delete for non existing page
        
        
        // Can't delete again

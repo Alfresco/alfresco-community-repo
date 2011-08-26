@@ -21,6 +21,7 @@ package org.alfresco.repo.web.scripts.links;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.links.LinkInfo;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.json.JSONObject;
@@ -30,12 +31,12 @@ import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
- * This class is the controller for the link fetching link.get webscript.
+ * This class is the controller for the link deleting link.delete webscript.
  * 
  * @author Nick Burch
  * @since 4.0
  */
-public class LinkGet extends AbstractLinksWebScript
+public class LinkDelete extends AbstractLinksWebScript
 {
    @Override
    protected Map<String, Object> executeImpl(SiteInfo site, String linkName,
@@ -50,14 +51,19 @@ public class LinkGet extends AbstractLinksWebScript
          throw new WebScriptException(Status.STATUS_NOT_FOUND, message);
       }
       
-      // Build the model
-      model.put(PARAM_ITEM, renderLink(link));
-      model.put("node", link.getNodeRef());
-      model.put("link", link);
-      model.put("site", site);
-      model.put("siteId", site.getShortName());
+      // Delete it
+      try
+      {
+         linksService.deleteLink(link);
+      }
+      catch(AccessDeniedException e)
+      {
+         String message = "You don't have permission to delete that link";
+         throw new WebScriptException(Status.STATUS_FORBIDDEN, message);
+      }
       
-      // All done
+      // Mark it as gone
+      status.setCode(Status.STATUS_NO_CONTENT);
       return model;
    }
 }

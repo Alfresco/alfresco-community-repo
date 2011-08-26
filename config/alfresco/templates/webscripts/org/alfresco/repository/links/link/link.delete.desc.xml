@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Delete link</shortname>
+  <description>Deletes a link.</description>
+  <url>/api/links/link/site/{site}/{container}/{path}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

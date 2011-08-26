@@ -18,7 +18,9 @@
  */
 package org.alfresco.repo.web.scripts.links;
 
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 import javax.transaction.UserTransaction;
 
@@ -43,6 +45,7 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
@@ -299,8 +302,28 @@ public class LinksRestApiTest extends BaseWebScriptTest
      */
     private JSONObject deleteLink(String name, int expectedStatus) throws Exception
     {
+       Response response = sendRequest(new DeleteRequest(URL_LINKS_FETCH+name), expectedStatus);
+       if (expectedStatus == Status.STATUS_OK)
+       {
+          JSONObject result = new JSONObject(response.getContentAsString());
+          return result;
+       }
+       else
+       {
+          return null;
+       }
+    }
+    
+    /**
+     * Deletes the links
+     */
+    private JSONObject deleteLinks(List<String> names, int expectedStatus) throws Exception
+    {
        JSONArray items = new JSONArray();
-       items.put(name);
+       for(String name : names)
+       {
+          items.put(name);
+       }
        
        JSONObject json = new JSONObject();
        json.put("items", items);
@@ -482,7 +505,7 @@ public class LinksRestApiTest extends BaseWebScriptTest
 
        
        // Delete
-       link = deleteLink(name, Status.STATUS_OK);
+       link = deleteLinks(Arrays.asList(new String[]{name}), Status.STATUS_OK);
        assertEquals(
              "Incorrect JSON: " + link.toString(), 
              true, link.has("message")
@@ -498,11 +521,21 @@ public class LinksRestApiTest extends BaseWebScriptTest
        
        
        // Can't delete again
-       deleteLink(name, Status.STATUS_NOT_FOUND);
+       deleteLinks(Arrays.asList(new String[]{name}), Status.STATUS_NOT_FOUND);
        
        
        // Can't edit it when it's deleted
        sendRequest(new PutRequest(URL_LINKS_UPDATE + name, "{}", "application/json"), Status.STATUS_NOT_FOUND);
+       
+       
+       // Do a single delete
+       link = createLink(LINK_TITLE_ONE, "Thing 1", LINK_URL_ONE, false, Status.STATUS_OK);
+       name = getNameFromLink(link);
+       
+       getLink(name, Status.STATUS_OK);
+       deleteLink(name, Status.STATUS_NO_CONTENT);
+       getLink(name, Status.STATUS_NOT_FOUND);
+       deleteLink(name, Status.STATUS_NOT_FOUND);
     }
     
     /**

@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.web.scripts.links;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,7 @@ import java.util.Map;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.links.LinkInfo;
 import org.alfresco.service.cmr.site.SiteInfo;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
@@ -33,55 +35,38 @@ import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
- * This class is the controller for the link fetching links.put webscript.
+ * This class is the controller for the links deleting links-delete.post webscript.
  * 
  * @author Nick Burch
  * @since 4.0
  */
-public class LinkPut extends AbstractLinksWebScript
+public class LinksDeletePost extends AbstractLinksWebScript
 {
+   protected static final int RECENT_SEARCH_PERIOD_DAYS = 7;
+   protected static final long ONE_DAY_MS = 24*60*60*1000;
+   
    @Override
    protected Map<String, Object> executeImpl(SiteInfo site, String linkName,
          WebScriptRequest req, JSONObject json, Status status, Cache cache) {
       Map<String, Object> model = new HashMap<String, Object>();
       
-      // Try to find the link
-      LinkInfo link = linksService.getLink(site.getShortName(), linkName);
-      if(link == null)
-      {
-         String message = "No link found with that name";
-         
-         status.setCode(Status.STATUS_NOT_FOUND);
-         status.setMessage(message);
-         model.put(PARAM_MESSAGE, message);
-         return model;
-      }
-      
-      
-      // Get the new link details from the JSON
+      // Get the requested nodes from the JSON
+      // Silently skips over any invalid ones specified
+      List<LinkInfo> links = new ArrayList<LinkInfo>();
       try
       {
-         // Update the main properties
-         link.setTitle(getOrNull(json, "title"));
-         link.setDescription(getOrNull(json, "description"));
-         link.setURL(getOrNull(json, "url"));
-         
-         // Handle internal / not internal
-         if(json.has("internal"))
+         if(json.has("items"))
          {
-            link.setInternal(true);
-         }
-         else
-         {
-            link.setInternal(false);
-         }
-         
-         // Do the tags
-         link.getTags().clear();
-         List<String> tags = getTags(json);
-         if(tags != null && tags.size() > 0)
-         {
-            link.getTags().addAll(tags);
+            JSONArray items = json.getJSONArray("items");
+            for(int i=0; i<items.length(); i++)
+            {
+               String name = items.getString(i);
+               LinkInfo link = linksService.getLink(site.getShortName(), name);
+               if(link != null)
+               {
+                  links.add(link);
+               }
+            }
          }
       }
       catch(JSONException je)
@@ -90,32 +75,47 @@ public class LinkPut extends AbstractLinksWebScript
       }
       
       
-      // Update the link
-      try
+      // Check we got at least one link, and bail if not
+      if(links.size() == 0)
       {
-         link = linksService.updateLink(link);
-      }
-      catch(AccessDeniedException e)
-      {
-         String message = "You don't have permission to update that link";
+         String message = "No valid link names supplied";
          
-         status.setCode(Status.STATUS_FORBIDDEN);
+         status.setCode(Status.STATUS_NOT_FOUND);
          status.setMessage(message);
          model.put(PARAM_MESSAGE, message);
          return model;
       }
       
-      // Generate an activity for the change
-      addActivityEntry("updated", link, site, req, json);
+      
+      // Delete each one in turn
+      for(LinkInfo link : links)
+      {
+         // Do the delete
+         try
+         {
+            linksService.deleteLink(link);
+         }
+         catch(AccessDeniedException e)
+         {
+            String message = "You don't have permission to delete the link with name '" + link.getSystemName() + "'";
+            
+            status.setCode(Status.STATUS_FORBIDDEN);
+            status.setMessage(message);
+            model.put(PARAM_MESSAGE, message);
+            return model;
+         }
+         
+         // Generate the activity entry for it
+         addActivityEntry("deleted", link, site, req, json);
+         
+         // Record a message (only the last one is used though!)
+         model.put(PARAM_MESSAGE, "Node " + link.getNodeRef() + " deleted");
+      }
 
       
-      // Build the model
-      model.put(PARAM_MESSAGE, "Node " + link.getNodeRef() + " updated");
-      model.put("link", link);
-      model.put("site", site);
-      model.put("siteId", site.getShortName());
-      
       // All done
+      model.put("siteId", site.getShortName());
+      model.put("site", site);
       return model;
    }
 }

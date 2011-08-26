@@ -53,6 +53,9 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 public abstract class AbstractLinksWebScript extends DeclarativeWebScript
 {
     public static final String LINKS_SERVICE_ACTIVITY_APP_NAME = "links";
+
+    protected static final String PARAM_MESSAGE = "message";
+    protected static final String PARAM_ITEM = "item";
     
     private static Log logger = LogFactory.getLog(AbstractLinksWebScript.class);
     

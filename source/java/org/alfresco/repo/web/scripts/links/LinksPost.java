@@ -40,8 +40,6 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class LinksPost extends AbstractLinksWebScript
 {
-   private static final String PARAM_MESSAGE = "message";
-   
    @Override
    protected Map<String, Object> executeImpl(SiteInfo site, String linkName,
          WebScriptRequest req, JSONObject json, Status status, Cache cache) {
@@ -101,7 +99,7 @@ public class LinksPost extends AbstractLinksWebScript
       
       // Build the model
       model.put(PARAM_MESSAGE, link.getSystemName()); // Really!
-      model.put("item", renderLink(link));
+      model.put(PARAM_ITEM, renderLink(link));
       model.put("node", link.getNodeRef());
       model.put("link", link);
       model.put("site", site);

@@ -1537,9 +1537,21 @@
          parent="abstractLinksWebScript">
    </bean>
    
+   <!-- Deletes a single link -->
+   <bean id="webscript.org.alfresco.repository.links.link.link.delete"
+         class="org.alfresco.repo.web.scripts.links.LinkDelete"
+         parent="abstractLinksWebScript">
+   </bean>
+   
    <!-- Lists the Links for a site -->
    <bean id="webscript.org.alfresco.repository.links.links.get"
          class="org.alfresco.repo.web.scripts.links.LinksListGet"
+         parent="abstractLinksWebScript">
+   </bean>
+
+   <!-- Deletes multiple links  in a site -->
+   <bean id="webscript.org.alfresco.repository.links.links-delete.post"
+         class="org.alfresco.repo.web.scripts.links.LinksDeletePost"
          parent="abstractLinksWebScript">
    </bean>
    

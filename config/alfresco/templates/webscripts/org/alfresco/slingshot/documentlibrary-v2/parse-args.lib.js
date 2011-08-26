@@ -209,7 +209,7 @@ var ParseArgs =
             id = url.templateArgs.id;
 
          nodeRef = storeType + "://" + storeId + "/" + id;
-         rootNode = libraryRoot || ParseArgs.resolveNode(nodeRef);
+         rootNode = ParseArgs.resolveNode(nodeRef);
          if (rootNode == null)
          {
             status.setCode(status.STATUS_NOT_FOUND, "Not a valid nodeRef: '" + nodeRef + "'");

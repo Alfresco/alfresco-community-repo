@@ -21,6 +21,7 @@ package org.alfresco.repo.invitation.activiti;
 import java.util.Map;
 
 import org.activiti.engine.delegate.DelegateExecution;
+import org.alfresco.repo.workflow.activiti.ActivitiConstants;
 
 /**
  * Activiti delegate that is executed when a invitation request has
@@ -36,8 +37,9 @@ public class SendNominatedInviteDelegate extends AbstractInvitationDelegate
     @Override
     public void execute(DelegateExecution execution) throws Exception
     {
+        String invitationId = ActivitiConstants.ENGINE_ID + "$" + execution.getProcessInstanceId();
         Map<String, Object> variables = execution.getVariables();
-        inviteHelper.sendNominatedInvitation(variables);
+        inviteHelper.sendNominatedInvitation(invitationId, variables);
     }
     
 }

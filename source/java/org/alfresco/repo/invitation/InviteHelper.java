@@ -325,7 +325,7 @@ public class InviteHelper implements InitializingBean
         deleteAuthenticationIfUnused(inviteeUserName, currentInviteId);
     }
     
-    public  void sendNominatedInvitation(Map<String, Object> executionVariables)
+    public  void sendNominatedInvitation(String inviteId, Map<String, Object> executionVariables)
     {
         if(invitationService.isSendEmails())
         {
@@ -336,9 +336,7 @@ public class InviteHelper implements InitializingBean
             String packageRef = packageNode.getNodeRef().toString();
             properties.put(InviteSender.WF_PACKAGE, packageRef);
             
-            String instanceName=WorkflowModel.PROP_WORKFLOW_INSTANCE_ID.toPrefixString(namespaceService).replace(":", "_");
-            String instanceId = (String) executionVariables.get(instanceName);
-            properties.put(InviteSender.WF_INSTANCE_ID, instanceId);
+            properties.put(InviteSender.WF_INSTANCE_ID, inviteId);
             
             inviteSender.sendMail(properties);
         }

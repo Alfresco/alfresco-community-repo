@@ -21,6 +21,8 @@ package org.alfresco.repo.invitation.site;
 
 import java.util.Map;
 
+import org.alfresco.repo.workflow.jbpm.JBPMEngine;
+import org.jbpm.context.exe.ContextInstance;
 import org.jbpm.graph.exe.ExecutionContext;
 
 public class SendInviteAction extends AbstractInvitationAction
@@ -30,8 +32,11 @@ public class SendInviteAction extends AbstractInvitationAction
     @SuppressWarnings("unchecked")
     public void execute(final ExecutionContext context) throws Exception
     {
-        Map<String, Object> executionVariables = context.getContextInstance().getVariables();
-        inviteHelper.sendNominatedInvitation(executionVariables);
+        ContextInstance contextInstance = context.getContextInstance();
+        long processId = contextInstance.getProcessInstance().getId();
+        String inviteId = JBPMEngine.ENGINE_ID + "$" + processId;
+        Map<String, Object> executionVariables = contextInstance.getVariables();
+        inviteHelper.sendNominatedInvitation(inviteId, executionVariables);
     }
 
 }

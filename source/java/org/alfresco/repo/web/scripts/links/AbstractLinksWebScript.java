@@ -19,7 +19,9 @@
 package org.alfresco.repo.web.scripts.links;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.query.PagingRequest;
@@ -34,6 +36,7 @@ import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -93,6 +96,42 @@ public abstract class AbstractLinksWebScript extends DeclarativeWebScript
           return json.getString(key);
        }
        return null;
+    }
+    
+    protected List<String> getTags(JSONObject json) throws JSONException
+    {
+       List<String> tags = null;
+       if(json.has("tags"))
+       {
+          // Is it "tags":"" or "tags":[...] ?
+          if(json.get("tags") instanceof String)
+          {
+             // This is normally an empty string, skip
+             String tagsS = json.getString("tags");
+             if("".equals(tagsS))
+             {
+                // No tags were given
+                return null;
+             }
+             else
+             {
+                // Log, and treat as empty
+                // (We don't support "tags":"a,b,c" in these webscripts)
+                logger.warn("Unexpected tag data: " + tagsS);
+                return null;
+             }
+          }
+          else
+          {
+             tags = new ArrayList<String>();
+             JSONArray jsTags = json.getJSONArray("tags");
+             for(int i=0; i<jsTags.length(); i++)
+             {
+                tags.add( jsTags.getString(i) );
+             }
+          }
+       }
+       return tags;
     }
     
     /**

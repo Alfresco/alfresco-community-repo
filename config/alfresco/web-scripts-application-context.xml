@@ -1525,6 +1525,12 @@
          parent="abstractLinksWebScript">
    </bean>
    
+   <!-- Updates the details of one link -->
+   <bean id="webscript.org.alfresco.repository.links.links.put"
+         class="org.alfresco.repo.web.scripts.links.LinkPut"
+         parent="abstractLinksWebScript">
+   </bean>
+   
    <!-- Lists the Links for a site -->
    <bean id="webscript.org.alfresco.repository.links.links.get"
          class="org.alfresco.repo.web.scripts.links.LinksListGet"

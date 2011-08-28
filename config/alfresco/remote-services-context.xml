@@ -33,6 +33,9 @@
 		<property name="servicePort">
 			<value>${avm.rmi.service.port}</value>
 		</property>
+		<property name="clientSocketFactory">
+			<ref bean="hostConfigurableSocketFactory" />
+		</property>
 	</bean>
 			
     <bean id="avmSyncServiceTransport" class="org.alfresco.repo.avm.AVMSyncServiceTransportImpl">
@@ -56,6 +59,9 @@
         </property>
         <property name="servicePort">
 			<value>${avmsync.rmi.service.port}</value>
+		</property>
+		<property name="clientSocketFactory">
+			<ref bean="hostConfigurableSocketFactory" />
 		</property>
     </bean>
     
@@ -143,6 +149,9 @@
         <property name="servicePort">
 			<value>${repo.rmi.service.port}</value>
 		</property>
+		<property name="clientSocketFactory">
+			<ref bean="hostConfigurableSocketFactory" />
+		</property>
     </bean>	
     
     <!-- Remoting the ActionService -->
@@ -168,6 +177,9 @@
         </property>
         <property name="servicePort">
 			<value>${action.rmi.service.port}</value>
+		</property>
+		<property name="clientSocketFactory">
+			<ref bean="hostConfigurableSocketFactory" />
 		</property>
     </bean>
 </beans>

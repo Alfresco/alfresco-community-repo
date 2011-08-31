@@ -18,9 +18,12 @@
  */
 package org.alfresco.repo.web.scripts.discussion;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.transaction.UserTransaction;
 
@@ -30,6 +33,7 @@ import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -44,15 +48,15 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyMap;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.json.JSONObject;
 
 /**
  * Unit Test to test Discussions Web Script API
@@ -120,14 +124,15 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
         // Create the forum
         String forumNodeName = "TestForum";
         FORUM_NODE = nodeService.getChildByName(siteInfo.getNodeRef(), ContentModel.ASSOC_CONTAINS, forumNodeName);
-        if(FORUM_NODE == null)
+        if (FORUM_NODE == null)
         {
-           FORUM_NODE = nodeService.createNode(
-                 siteInfo.getNodeRef(), ContentModel.ASSOC_CONTAINS,
-                 QName.createQName(forumNodeName), ForumModel.TYPE_FORUM
-           ).getChildRef();
-           nodeService.setProperty(FORUM_NODE, ContentModel.PROP_NAME, forumNodeName); 
-           nodeService.setProperty(FORUM_NODE, ContentModel.PROP_TITLE, forumNodeName);
+            Map<QName, Serializable> props = new HashMap<QName, Serializable>(5);
+            props.put(ContentModel.PROP_NAME, forumNodeName);
+            props.put(ContentModel.PROP_TITLE, forumNodeName);
+            FORUM_NODE = nodeService.createNode(
+                    siteInfo.getNodeRef(), ContentModel.ASSOC_CONTAINS,
+                    QName.createQName(forumNodeName), ForumModel.TYPE_FORUM
+            ).getChildRef();
         }
         
         // Create users
@@ -160,7 +165,16 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
         }
         
         // delete discussions test site
-        siteService.deleteSite(SITE_SHORT_NAME_DISCUSSION);
+        RetryingTransactionCallback<Void> deleteCallback = new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                siteService.deleteSite(SITE_SHORT_NAME_DISCUSSION);
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(deleteCallback);
     }
     
     private void createUser(String userName, String role)

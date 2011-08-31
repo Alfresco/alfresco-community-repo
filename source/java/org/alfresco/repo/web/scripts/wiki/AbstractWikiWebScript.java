@@ -25,7 +25,6 @@ import java.util.Map;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.activities.ActivityService;
-import org.alfresco.service.cmr.links.LinkInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;

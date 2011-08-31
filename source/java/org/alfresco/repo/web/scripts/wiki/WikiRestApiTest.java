@@ -523,6 +523,23 @@ public class WikiRestApiTest extends BaseWebScriptTest
        assertEquals(name, page.getString("name"));
        assertEquals(PAGE_TITLE_TWO, page.getString("title"));
        assertEquals("This page has been moved [["+name2+"|here]].", page.getString("pagetext"));
+       
+       
+       // Ensure you can't rename onto an existing page
+       page = createOrUpdatePage(PAGE_TITLE_ONE, PAGE_CONTENTS_THREE, null, Status.STATUS_OK);
+       String name1 = PAGE_TITLE_ONE.replace(' ', '_');
+       
+       // Check the rename won't work
+       renamePage(PAGE_TITLE_THREE, PAGE_TITLE_ONE, Status.STATUS_CONFLICT);
+       
+       // Check that the pages weren't changed
+       page = getPage(name2, Status.STATUS_OK);
+       assertEquals(name2, page.getString("name"));
+       assertEquals(PAGE_TITLE_THREE, page.getString("title"));
+       
+       page = getPage(name1, Status.STATUS_OK);
+       assertEquals(name1, page.getString("name"));
+       assertEquals(PAGE_TITLE_ONE, page.getString("title"));
     }
     
     public void testVersioning() throws Exception

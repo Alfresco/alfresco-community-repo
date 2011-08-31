@@ -1585,6 +1585,19 @@
       <property name="versionService" ref="VersionService" />
    </bean>
 
+   <!-- Creates and Edits wiki pages -->
+   <bean id="webscript.org.alfresco.slingshot.wiki.page.put"
+         class="org.alfresco.repo.web.scripts.wiki.WikiPagePut"
+         parent="abstractWikiWebScript">
+      <property name="versionService" ref="VersionService" />
+   </bean>
+
+   <!-- Renames a wiki page (changing the title and name) -->
+   <bean id="webscript.org.alfresco.slingshot.wiki.move.post"
+         class="org.alfresco.repo.web.scripts.wiki.WikiPageMovePost"
+         parent="abstractWikiWebScript">
+   </bean>
+
    <!-- Deletes a wiki page -->
    <bean id="webscript.org.alfresco.slingshot.wiki.page.delete"
          class="org.alfresco.repo.web.scripts.wiki.WikiPageDelete"

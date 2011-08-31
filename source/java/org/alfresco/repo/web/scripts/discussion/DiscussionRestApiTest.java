@@ -120,19 +120,26 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
             siteInfo = this.siteService.createSite("DiscussionSitePreset", SITE_SHORT_NAME_DISCUSSION, 
                   "DiscussionSiteTitle", "DiscussionSiteDescription", SiteVisibility.PUBLIC);
         }
+        final NodeRef siteNodeRef = siteInfo.getNodeRef();
         
         // Create the forum
-        String forumNodeName = "TestForum";
+        final String forumNodeName = "TestForum";
         FORUM_NODE = nodeService.getChildByName(siteInfo.getNodeRef(), ContentModel.ASSOC_CONTAINS, forumNodeName);
         if (FORUM_NODE == null)
         {
-            Map<QName, Serializable> props = new HashMap<QName, Serializable>(5);
-            props.put(ContentModel.PROP_NAME, forumNodeName);
-            props.put(ContentModel.PROP_TITLE, forumNodeName);
-            FORUM_NODE = nodeService.createNode(
-                    siteInfo.getNodeRef(), ContentModel.ASSOC_CONTAINS,
-                    QName.createQName(forumNodeName), ForumModel.TYPE_FORUM
-            ).getChildRef();
+           FORUM_NODE = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<NodeRef>() {
+              @Override
+              public NodeRef execute() throws Throwable {
+                 Map<QName, Serializable> props = new HashMap<QName, Serializable>(5);
+                 props.put(ContentModel.PROP_NAME, forumNodeName);
+                 props.put(ContentModel.PROP_TITLE, forumNodeName);
+
+                 return nodeService.createNode(
+                       siteNodeRef, ContentModel.ASSOC_CONTAINS,
+                       QName.createQName(forumNodeName), ForumModel.TYPE_FORUM, props 
+                 ).getChildRef();
+              }
+           });
         }
         
         // Create users

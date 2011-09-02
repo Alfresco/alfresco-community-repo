@@ -5,7 +5,7 @@
    <url>/api/publishing/{store_protocol}/{store_id}/{node_id}/channels</url>
    <format default="json"/>
    <authentication>user</authentication>
-   <transaction allow="readonly">required</transaction>
+   <transaction>required</transaction>
    <lifecycle>public_api</lifecycle>
    <args>
       <arg>

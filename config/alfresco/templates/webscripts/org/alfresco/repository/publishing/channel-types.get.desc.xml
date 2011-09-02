@@ -4,7 +4,7 @@
    <url>/api/publishing/channel-types</url>
    <format default="json"/>
    <authentication>user</authentication>
-   <transaction allow="readonly">required</transaction>
+   <transaction>required</transaction>
    <lifecycle>public_api</lifecycle>
    <responses>
       <response>

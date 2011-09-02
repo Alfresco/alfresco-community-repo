@@ -124,9 +124,11 @@ public class GetCalendarEntriesCannedQueryFactory extends AbstractQNameAwareCann
     
     protected CannedQuerySortDetails createCQSortDetails()
     {
+        // Sort by start date, then end date, then created at for two events with matching times 
         List<Pair<? extends Object,SortOrder>> sort = new ArrayList<Pair<? extends Object, SortOrder>>();
         sort.add(new Pair<QName, SortOrder>(CalendarModel.PROP_FROM_DATE, SortOrder.ASCENDING)); 
         sort.add(new Pair<QName, SortOrder>(CalendarModel.PROP_TO_DATE, SortOrder.ASCENDING));
+        sort.add(new Pair<QName, SortOrder>(ContentModel.PROP_CREATED, SortOrder.ASCENDING));
         
         return new CannedQuerySortDetails(sort);
     }

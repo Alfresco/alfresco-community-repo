@@ -255,9 +255,11 @@ public class CalendarServiceImpl implements CalendarService
        }
        
        // Build our sorting, by date
+       // Sort by start date, then end date, then created at for two events with matching times 
        List<Pair<QName,Boolean>> sort = new ArrayList<Pair<QName, Boolean>>();
        sort.add(new Pair<QName, Boolean>(CalendarModel.PROP_FROM_DATE, true)); 
        sort.add(new Pair<QName, Boolean>(CalendarModel.PROP_TO_DATE, true));
+       sort.add(new Pair<QName, Boolean>(ContentModel.PROP_CREATED, true)); 
        
        // We only want calendar entries
        Set<QName> types = new HashSet<QName>();

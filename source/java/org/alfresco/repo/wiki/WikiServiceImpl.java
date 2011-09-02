@@ -134,7 +134,10 @@ public class WikiServiceImpl implements WikiService
              siteService, transactionService, taggingService);
     }
     
-    private String buildName(String title)
+    /**
+     * Turns a Title into a Page Name.
+     */
+    private static String buildName(String title)
     {
        // The name is based on the title, but with underscores
        String name = title.replace(' ', '_');

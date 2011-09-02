@@ -18,13 +18,13 @@
                     <prop key="engineId">jbpm</prop>
                     <prop key="location">alfresco/workflow/publish_web_content_processdefinition.xml</prop>
                     <prop key="mimetype">text/xml</prop>
-                    <prop key="redeploy">true</prop>
+                    <prop key="redeploy">false</prop>
                 </props>
                  <props>
                     <prop key="engineId">activiti</prop>
                     <prop key="location">alfresco/workflow/publish-web-content.bpmn20.xml</prop>
                     <prop key="mimetype">text/xml</prop>
-                    <prop key="redeploy">true</prop>
+                    <prop key="redeploy">false</prop>
                 </props>
             </list>
         </property>

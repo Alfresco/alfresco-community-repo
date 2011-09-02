@@ -30,9 +30,8 @@ import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.wiki.WikiPageInfo;
 import org.alfresco.service.namespace.QName;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -60,55 +59,46 @@ public class WikiPagePut extends AbstractWikiWebScript
       Map<String, Object> model = new HashMap<String, Object>();
       
       // Grab the details of the change
-      List<String> tags = null;
-      String currentVersion = null;
-      boolean forceSave;
-      String contents;
+      // Fetch the contents
+      String contents = (String)json.get("pagecontent");
+      
+      // Fetch the title, used only when creating
       String title;
-      try
+      if(json.containsKey("title"))
       {
-         // Fetch the contents
-         contents = json.getString("pagecontent");
-         
-         // Fetch the title, used only when creating
-         if(json.has("title"))
+         title = (String)json.get("title");
+      }
+      else
+      {
+         title = pageName;
+      }
+      
+      // Fetch the versioning details
+      boolean forceSave = json.containsKey("forceSave");
+      String currentVersion = null;
+      if(json.containsKey("currentVersion"))
+      {
+         currentVersion = (String)json.get("currentVersion");
+      }
+      
+      // Fetch the tags, if given
+      List<String> tags = null;
+      if(json.containsKey("tags"))
+      {
+         tags = new ArrayList<String>();
+         if(json.get("tags").equals(""))
          {
-            title = json.getString("title");
+            // Empty list given as a string, eg "tags":""
          }
          else
          {
-            title = pageName;
-         }
-         
-         // Fetch the versioning details
-         forceSave = json.has("forceSave");
-         if(json.has("currentVersion"))
-         {
-            currentVersion = json.getString("currentVersion");
-         }
-         
-         // Fetch the tags, if given
-         if(json.has("tags"))
-         {
-            tags = new ArrayList<String>();
-            if(json.get("tags").equals(""))
+            // Array of tags
+            JSONArray tagsA = (JSONArray)json.get("tags");
+            for(int i=0; i<tagsA.size(); i++)
             {
-               // Empty list given as a string, eg "tags":""
-            }
-            else
-            {
-               // Array of tags
-               JSONArray tagsA = json.getJSONArray("tags");
-               for(int i=0; i<tagsA.length(); i++)
-               {
-                  tags.add(tagsA.getString(i));
-               }
+               tags.add((String)tagsA.get(i));
             }
          }
-      }
-      catch(JSONException e)
-      {
-         throw new WebScriptException("Invalid JSON: " + e.getMessage());
       }
       
       // Are we creating or editing?

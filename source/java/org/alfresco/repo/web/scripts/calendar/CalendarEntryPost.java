@@ -26,7 +26,7 @@ import org.alfresco.service.cmr.calendar.CalendarEntry;
 import org.alfresco.service.cmr.calendar.CalendarEntryDTO;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.json.JSONException;
-import org.json.JSONObject;
+import org.json.simple.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -59,9 +59,9 @@ public class CalendarEntryPost extends AbstractCalendarWebScript
          isAllDay = extractDates(entry, json);
          
          // Handle tags
-         if(json.has("tags"))
+         if(json.containsKey("tags"))
          {
-            StringTokenizer st = new StringTokenizer(json.getString("tags"), " ");
+            StringTokenizer st = new StringTokenizer((String)json.get("tags"), " ");
             while(st.hasMoreTokens())
             {
                entry.getTags().add(st.nextToken());

@@ -19,6 +19,7 @@
 package org.alfresco.repo.web.scripts.links;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,15 +37,16 @@ import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.json.JSONWriter;
 
 /**
  * @author Nick Burch
@@ -92,25 +94,25 @@ public abstract class AbstractLinksWebScript extends DeclarativeWebScript
     }
     
     
-    protected String getOrNull(JSONObject json, String key) throws JSONException
+    protected String getOrNull(JSONObject json, String key)
     {
-       if(json.has(key))
+       if(json.containsKey(key))
        {
-          return json.getString(key);
+          return (String)json.get(key);
        }
        return null;
     }
     
-    protected List<String> getTags(JSONObject json) throws JSONException
+    protected List<String> getTags(JSONObject json)
     {
        List<String> tags = null;
-       if(json.has("tags"))
+       if(json.containsKey("tags"))
        {
           // Is it "tags":"" or "tags":[...] ?
           if(json.get("tags") instanceof String)
           {
              // This is normally an empty string, skip
-             String tagsS = json.getString("tags");
+             String tagsS = (String)json.get("tags");
              if("".equals(tagsS))
              {
                 // No tags were given
@@ -127,10 +129,10 @@ public abstract class AbstractLinksWebScript extends DeclarativeWebScript
           else
           {
              tags = new ArrayList<String>();
-             JSONArray jsTags = json.getJSONArray("tags");
-             for(int i=0; i<jsTags.length(); i++)
+             JSONArray jsTags = (JSONArray)json.get("tags");
+             for(int i=0; i<jsTags.size(); i++)
              {
-                tags.add( jsTags.getString(i) );
+                tags.add( (String)jsTags.get(i) );
              }
           }
        }
@@ -177,13 +179,9 @@ public abstract class AbstractLinksWebScript extends DeclarativeWebScript
        String page = req.getParameter("page");
        if(page == null && json != null)
        {
-          if(json.has("page"))
+          if(json.containsKey("page"))
           {
-             try
-             {
-                page = json.getString("page");
-             }
-             catch(JSONException e) {}
+             page = (String)json.get("page");
           }
        }
        if(page == null)
@@ -194,15 +192,18 @@ public abstract class AbstractLinksWebScript extends DeclarativeWebScript
        
        try
        {
-          JSONObject activity = new JSONObject();
-          activity.put("title", link.getTitle());
-          activity.put("page", page + "?linkId=" + link.getSystemName());
+          StringWriter activityJson = new StringWriter();
+          JSONWriter activity = new JSONWriter(activityJson);
+          activity.startObject();
+          activity.writeValue("title", link.getTitle());
+          activity.writeValue("page", page + "?linkId=" + link.getSystemName());
+          activity.endObject();
           
           activityService.postActivity(
                 "org.alfresco.links.link-" + event,
                 site.getShortName(),
                 LINKS_SERVICE_ACTIVITY_APP_NAME,
-                activity.toString()
+                activityJson.toString()
           );
        }
        catch(Exception e)
@@ -272,17 +273,18 @@ public abstract class AbstractLinksWebScript extends DeclarativeWebScript
        }
        if(MimetypeMap.MIMETYPE_JSON.equals(contentType))
        {
+          JSONParser parser = new JSONParser();
           try
           {
-             json = new JSONObject(new JSONTokener(req.getContent().getContent()));
+             json = (JSONObject)parser.parse(req.getContent().getContent());
           }
           catch(IOException io)
           {
              throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Invalid JSON: " + io.getMessage());
           }
-          catch(JSONException je)
+          catch(ParseException pe)
           {
-             throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Invalid JSON: " + je.getMessage());
+             throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Invalid JSON: " + pe.getMessage());
           }
        }
        
@@ -295,18 +297,14 @@ public abstract class AbstractLinksWebScript extends DeclarativeWebScript
        }
        if(siteName == null && json != null)
        {
-          try
+          if(json.containsKey("siteid"))
           {
-             if(json.has("siteid"))
-             {
-                siteName = json.getString("siteid");
-             }
-             else if(json.has("site"))
-             {
-                siteName = json.getString("site");
-             }
+             siteName = (String)json.get("siteid");
           }
-          catch(JSONException e) {}
+          else if(json.containsKey("site"))
+          {
+             siteName = (String)json.get("site");
+          }
        }
        if(siteName == null)
        {

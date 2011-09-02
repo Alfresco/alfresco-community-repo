@@ -25,11 +25,9 @@ import java.util.Map;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.links.LinkInfo;
 import org.alfresco.service.cmr.site.SiteInfo;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.json.simple.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
@@ -59,34 +57,27 @@ public class LinkPut extends AbstractLinksWebScript
       
       
       // Get the new link details from the JSON
-      try
+      // Update the main properties
+      link.setTitle(getOrNull(json, "title"));
+      link.setDescription(getOrNull(json, "description"));
+      link.setURL(getOrNull(json, "url"));
+      
+      // Handle internal / not internal
+      if(json.containsKey("internal"))
       {
-         // Update the main properties
-         link.setTitle(getOrNull(json, "title"));
-         link.setDescription(getOrNull(json, "description"));
-         link.setURL(getOrNull(json, "url"));
-         
-         // Handle internal / not internal
-         if(json.has("internal"))
-         {
-            link.setInternal(true);
-         }
-         else
-         {
-            link.setInternal(false);
-         }
-         
-         // Do the tags
-         link.getTags().clear();
-         List<String> tags = getTags(json);
-         if(tags != null && tags.size() > 0)
-         {
-            link.getTags().addAll(tags);
-         }
+         link.setInternal(true);
       }
-      catch(JSONException je)
+      else
       {
-         throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Invalid JSON: " + je.getMessage());
+         link.setInternal(false);
+      }
+      
+      // Do the tags
+      link.getTags().clear();
+      List<String> tags = getTags(json);
+      if(tags != null && tags.size() > 0)
+      {
+         link.getTags().addAll(tags);
       }
       
       

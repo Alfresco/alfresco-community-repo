@@ -26,7 +26,7 @@ import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.wiki.WikiPageInfo;
 import org.json.JSONException;
-import org.json.JSONObject;
+import org.json.simple.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -69,16 +69,8 @@ public class WikiPageMovePost extends AbstractWikiWebScript
       
       
       // Grab the new Title
-      String newTitle;
-      try
-      {
-         // The "name" in the JSON is actually the title!
-         newTitle = json.getString("name");
-      }
-      catch(JSONException e)
-      {
-         throw new WebScriptException("Invalid JSON: " + e.getMessage());
-      }
+      // The "name" in the JSON is actually the title!
+      String newTitle = (String)json.get("name");
          
       
       // Have the page re-named, if possible

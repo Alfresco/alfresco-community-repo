@@ -26,7 +26,7 @@ import org.alfresco.service.cmr.calendar.CalendarEntry;
 import org.alfresco.service.cmr.calendar.CalendarEntryDTO;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.json.JSONException;
-import org.json.JSONObject;
+import org.json.simple.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -57,10 +57,10 @@ public class CalendarEntryPut extends AbstractCalendarWebScript
       try
       {
          // Doc folder is a bit special
-         String docFolder = json.getString("docfolder");
+         String docFolder = (String)json.get("docfolder");
          
          // Editing recurring events is special and a little bit odd...
-         if(entry.getRecurrenceRule() != null && !json.has("recurrenceRule"))
+         if(entry.getRecurrenceRule() != null && !json.containsKey("recurrenceRule"))
          {
             // Have an ignored event generated
             // Will allow us to override this one instance
@@ -99,37 +99,37 @@ public class CalendarEntryPut extends AbstractCalendarWebScript
          isAllDay = extractDates(entry, json);
          
          // Recurring properties, only changed if keys present
-         if (json.has("recurrenceRule"))
+         if (json.containsKey("recurrenceRule"))
          {
-            if (json.isNull("recurrenceRule"))
+            if (json.get("recurrenceRule") == null)
             {
                entry.setRecurrenceRule(null);
             }
             else
             {
-               entry.setRecurrenceRule(json.getString("recurrenceRule"));
+               entry.setRecurrenceRule((String)json.get("recurrenceRule"));
             }
          }
-         if (json.has("recurrenceLastMeeting"))
+         if (json.containsKey("recurrenceLastMeeting"))
          {
-            if (json.isNull("recurrenceLastMeeting"))
+            if (json.get("recurrenceLastMeeting") == null)
             {
                entry.setLastRecurrence(null);
             }
             else
             {
                entry.setLastRecurrence(
-                     parseDate(json.getString("recurrenceLastMeeting"))
+                     parseDate((String)json.get("recurrenceLastMeeting"))
                );
             }
          }
          
          // Handle tags
-         if(json.has("tags"))
+         if(json.containsKey("tags"))
          {
             entry.getTags().clear();
             
-            StringTokenizer st = new StringTokenizer(json.getString("tags"), " ");
+            StringTokenizer st = new StringTokenizer((String)json.get("tags"), " ");
             while(st.hasMoreTokens())
             {
                entry.getTags().add(st.nextToken());

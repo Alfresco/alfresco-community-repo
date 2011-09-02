@@ -25,8 +25,7 @@ import org.alfresco.service.cmr.discussion.PostInfo;
 import org.alfresco.service.cmr.discussion.TopicInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteInfo;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.json.simple.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -83,25 +82,17 @@ public class ForumPostRepliesPost extends AbstractDiscussionWebScript
    {
       // Fetch the details from the JSON
       String title = null;
-      String contents = null;
+      if(json.containsKey("title"))
+      {
+         title = (String)json.get("title");
+      }
       
-      try
+      String contents = null;
+      if(json.containsKey("content"))
       {
-         // Grab the data
-         if(json.has("title"))
-         {
-            title = json.getString("title");
-         }
-         if(json.has("content"))
-         {
-            contents = json.getString("content");
-         }
+         contents = (String)json.get("content");
+      }
          
-      }
-      catch(JSONException e)
-      {
-         throw new WebScriptException("Invalid JSON: " + e.getMessage());
-      }
       
       // Create the reply
       PostInfo reply = discussionService.createReply(post, contents);

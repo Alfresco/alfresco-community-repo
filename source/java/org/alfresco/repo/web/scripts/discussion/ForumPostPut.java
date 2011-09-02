@@ -25,9 +25,7 @@ import org.alfresco.service.cmr.discussion.PostInfo;
 import org.alfresco.service.cmr.discussion.TopicInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteInfo;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.json.simple.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -92,40 +90,34 @@ public class ForumPostPut extends AbstractDiscussionWebScript
          JSONObject json)
    {
       // Fetch the details from the JSON
-      try
+      
+      // Update the titles on the post and it's topic
+      if(json.containsKey("title"))
       {
-         // Update the titles on the post and it's topic
-         if(json.has("title"))
+         String title = (String)json.get("title");
+         post.setTitle(title);
+         if(title.length() > 0)
          {
-            String title = json.getString("title");
-            post.setTitle(title);
-            if(title.length() > 0)
-            {
-               topic.setTitle(title);
-            }
-         }
-         
-         // Contents is on the post
-         if(json.has("content"))
-         {
-            post.setContents(json.getString("content"));
-         }
-         
-         // Tags are on the topic
-         if(json.has("tags"))
-         {
-            topic.getTags().clear();
-            
-            List<String> tags = getTags(json);
-            if(tags != null)
-            {
-               topic.getTags().addAll(tags);
-            }
+            topic.setTitle(title);
          }
       }
-      catch(JSONException e)
+      
+      // Contents is on the post
+      if(json.containsKey("content"))
       {
-         throw new WebScriptException("Invalid JSON: " + e.getMessage());
+         post.setContents((String)json.get("content"));
+      }
+      
+      // Tags are on the topic
+      if(json.containsKey("tags"))
+      {
+         topic.getTags().clear();
+         
+         List<String> tags = getTags(json);
+         if(tags != null)
+         {
+            topic.getTags().addAll(tags);
+         }
       }
       
       // Save the topic and the post

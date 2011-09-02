@@ -26,12 +26,10 @@ import java.util.Map;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.links.LinkInfo;
 import org.alfresco.service.cmr.site.SiteInfo;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
@@ -53,25 +51,18 @@ public class LinksDeletePost extends AbstractLinksWebScript
       // Get the requested nodes from the JSON
       // Silently skips over any invalid ones specified
       List<LinkInfo> links = new ArrayList<LinkInfo>();
-      try
+      if(json.containsKey("items"))
       {
-         if(json.has("items"))
+         JSONArray items = (JSONArray)json.get("items");
+         for(int i=0; i<items.size(); i++)
          {
-            JSONArray items = json.getJSONArray("items");
-            for(int i=0; i<items.length(); i++)
+            String name = (String)items.get(i);
+            LinkInfo link = linksService.getLink(site.getShortName(), name);
+            if(link != null)
             {
-               String name = items.getString(i);
-               LinkInfo link = linksService.getLink(site.getShortName(), name);
-               if(link != null)
-               {
-                  links.add(link);
-               }
+               links.add(link);
             }
          }
-      }
-      catch(JSONException je)
-      {
-         throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Invalid JSON: " + je.getMessage());
       }
       
       

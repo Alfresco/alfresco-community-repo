@@ -18,7 +18,6 @@
  */
 package org.alfresco.repo.web.scripts.discussion;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -26,9 +25,7 @@ import org.alfresco.service.cmr.discussion.PostInfo;
 import org.alfresco.service.cmr.discussion.TopicInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteInfo;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.json.simple.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -58,23 +55,15 @@ public class ForumTopicPost extends AbstractDiscussionWebScript
       // Grab the details of the new Topic and Post
       String title = "";
       String contents = "";
-      List<String> tags = null;
-      try
+      if(json.containsKey("title"))
       {
-         if(json.has("title"))
-         {
-            title = json.getString("title");
-         }
-         if(json.has("content"))
-         {
-            contents = json.getString("content");
-         }
-         tags = getTags(json);
+         title = (String)json.get("title");
       }
-      catch(JSONException e)
+      if(json.containsKey("content"))
       {
-         throw new WebScriptException("Invalid JSON: " + e.getMessage());
+         contents = (String)json.get("content");
       }
+      List<String> tags = getTags(json);
       
       
       // Have the topic created

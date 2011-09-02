@@ -20,6 +20,7 @@ package org.alfresco.repo.web.scripts.calendar;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.StringWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -42,13 +43,15 @@ import org.alfresco.util.ISO8601DateFormat;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
-import org.json.JSONObject;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.json.JSONTokener;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.json.JSONWriter;
 
 /**
  * @author Nick Burch
@@ -150,18 +153,18 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
     {
        boolean isAllDay = false;
        
-       if(json.has("startAt") && json.has("endAt"))
+       if(json.containsKey("startAt") && json.containsKey("endAt"))
        {
           // New style ISO8601 dates
-          entry.setStart(parseDate(json.getString("startAt")));
-          entry.setEnd(parseDate(json.getString("endAt")));
-          if(json.has("allday"))
+          entry.setStart(parseDate((String)json.get("startAt")));
+          entry.setEnd(parseDate((String)json.get("endAt")));
+          if(json.containsKey("allday"))
           {
              // TODO Handle All Day events properly, including timezones
              isAllDay = true;
           }
        }
-       else if(json.has("allday"))
+       else if(json.containsKey("allday"))
        {
           // Old style all-day event
           entry.setStart(parseDate(getOrNull(json, "from")));
@@ -171,8 +174,8 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
        else
        {
           // Old style regular event
-          entry.setStart(parseDate(json.getString("from") + " " + json.getString("start")));
-          entry.setEnd(parseDate(json.getString("to") + " " + json.getString("end")));
+          entry.setStart(parseDate((String)json.get("from") + " " + (String)json.get("start")));
+          entry.setEnd(parseDate((String)json.get("to") + " " + (String)json.get("end")));
        }
        
        return isAllDay;
@@ -180,9 +183,9 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
     
     protected String getOrNull(JSONObject json, String key) throws JSONException
     {
-       if(json.has(key))
+       if(json.containsKey(key))
        {
-          return json.getString(key);
+          return (String)json.get(key);
        }
        return null;
     }
@@ -237,13 +240,9 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
        String page = req.getParameter("page");
        if(page == null && json != null)
        {
-          if(json.has("page"))
+          if(json.containsKey("page"))
           {
-             try
-             {
-                page = json.getString("page");
-             }
-             catch(JSONException e) {}
+             page = (String)json.get("page");
           }
        }
        if(page == null)
@@ -254,15 +253,18 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
        
        try
        {
-          JSONObject activity = new JSONObject();
-          activity.put("title", entry.getTitle());
-          activity.put("page", page + dateOpt);
+          StringWriter activityJson = new StringWriter();
+          JSONWriter activity = new JSONWriter(activityJson);
+          activity.startObject();
+          activity.writeValue("title", entry.getTitle());
+          activity.writeValue("page", page + dateOpt);
+          activity.endObject();
           
           activityService.postActivity(
                 "org.alfresco.calendar.event-" + event,
                 site.getShortName(),
                 CALENDAR_SERVICE_ACTIVITY_APP_NAME,
-                activity.toString()
+                activityJson.toString()
           );
        }
        catch(Exception e)
@@ -324,15 +326,16 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
        }
        if(MimetypeMap.MIMETYPE_JSON.equals(contentType))
        {
+          JSONParser parser = new JSONParser();
           try
           {
-             json = new JSONObject(new JSONTokener(req.getContent().getContent()));
+             json = (JSONObject)parser.parse(req.getContent().getContent());
           }
           catch(IOException io)
           {
              return buildError("Invalid JSON: " + io.getMessage());
           }
-          catch(JSONException je)
+          catch(org.json.simple.parser.ParseException je)
           {
              return buildError("Invalid JSON: " + je.getMessage());
           }
@@ -351,18 +354,14 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
        }
        if(siteName == null && json != null)
        {
-          try
+          if(json.containsKey("siteid"))
           {
-             if(json.has("siteid"))
-             {
-                siteName = json.getString("siteid");
-             }
-             else if(json.has("site"))
-             {
-                siteName = json.getString("site");
-             }
+             siteName = (String)json.get("siteid");
           }
-          catch(JSONException e) {}
+          else if(json.containsKey("site"))
+          {
+             siteName = (String)json.get("site");
+          }
        }
        if(siteName == null)
        {

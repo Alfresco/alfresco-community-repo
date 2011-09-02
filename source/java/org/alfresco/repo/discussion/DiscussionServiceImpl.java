@@ -584,7 +584,7 @@ public class DiscussionServiceImpl implements DiscussionService
    
    @Override
    public PagingResults<TopicInfo> listTopics(String siteShortName,
-         PagingRequest paging) {
+         boolean sortAscending, PagingRequest paging) {
       NodeRef container = getSiteDiscussionsContainer(siteShortName, false);
       if(container == null)
       {
@@ -593,15 +593,15 @@ public class DiscussionServiceImpl implements DiscussionService
       }
       
       // We can now fetch by parent nodeRef
-      return listTopics(container, paging);
+      return listTopics(container, sortAscending, paging);
    }
 
    @Override
    public PagingResults<TopicInfo> listTopics(NodeRef nodeRef,
-         PagingRequest paging) {
+         boolean sortAscending, PagingRequest paging) {
       // Do the listing, oldest first
       CannedQueryResults<NodeBackedEntity> nodes = 
-         listEntries(nodeRef, ForumModel.TYPE_TOPIC, null, null, null, true, paging);
+         listEntries(nodeRef, ForumModel.TYPE_TOPIC, null, null, null, sortAscending, paging);
       
       // Wrap and return
       return wrap(nodes, nodeRef);
@@ -609,7 +609,7 @@ public class DiscussionServiceImpl implements DiscussionService
    
    @Override
    public PagingResults<TopicInfo> listTopics(String siteShortName,
-         String username, PagingRequest paging) {
+         String username, boolean sortAscending, PagingRequest paging) {
       NodeRef container = getSiteDiscussionsContainer(siteShortName, false);
       if(container == null)
       {
@@ -618,15 +618,15 @@ public class DiscussionServiceImpl implements DiscussionService
       }
       
       // We can now fetch by parent nodeRef
-      return listTopics(container, username, paging);
+      return listTopics(container, username, sortAscending, paging);
    }
 
    @Override
    public PagingResults<TopicInfo> listTopics(NodeRef nodeRef,
-         String username, PagingRequest paging) {
+         String username, boolean sortAscending, PagingRequest paging) {
       // Do the listing, oldest first
       CannedQueryResults<NodeBackedEntity> nodes = 
-         listEntries(nodeRef, ForumModel.TYPE_TOPIC, username, null, null, true, paging);
+         listEntries(nodeRef, ForumModel.TYPE_TOPIC, username, null, null, sortAscending, paging);
       
       // Wrap and return
       return wrap(nodes, nodeRef);
@@ -634,7 +634,7 @@ public class DiscussionServiceImpl implements DiscussionService
    
    @Override
    public PagingResults<TopicInfo> listTopics(String siteShortName,
-         Date from, Date to, PagingRequest paging) {
+         Date from, Date to, boolean sortAscending, PagingRequest paging) {
       NodeRef container = getSiteDiscussionsContainer(siteShortName, false);
       if(container == null)
       {
@@ -643,15 +643,15 @@ public class DiscussionServiceImpl implements DiscussionService
       }
       
       // We can now fetch by parent nodeRef
-      return listTopics(container, from, to, paging);
+      return listTopics(container, from, to, sortAscending, paging);
    }
 
    @Override
    public PagingResults<TopicInfo> listTopics(NodeRef nodeRef,
-         Date from, Date to, PagingRequest paging) {
-      // Do the listing, oldest first
+         Date from, Date to, boolean sortAscending, PagingRequest paging) {
+      // Do the listing, with the sort order as requested
       CannedQueryResults<NodeBackedEntity> nodes = 
-         listEntries(nodeRef, ForumModel.TYPE_TOPIC, null, from, to, true, paging);
+         listEntries(nodeRef, ForumModel.TYPE_TOPIC, null, from, to, sortAscending, paging);
       
       // Wrap and return
       return wrap(nodes, nodeRef);
@@ -690,7 +690,7 @@ public class DiscussionServiceImpl implements DiscussionService
 
    @Override
    public PagingResults<TopicInfo> findTopics(String siteShortName,
-         String username, String tag, PagingRequest paging) {
+         String username, String tag, boolean sortAscending, PagingRequest paging) {
       NodeRef container = getSiteDiscussionsContainer(siteShortName, false);
       if(container == null)
       {
@@ -699,12 +699,12 @@ public class DiscussionServiceImpl implements DiscussionService
       }
       
       // We can now search by parent nodeRef
-      return findTopics(container, username, tag, paging);
+      return findTopics(container, username, tag, sortAscending, paging);
    }
 
    @Override
    public PagingResults<TopicInfo> findTopics(NodeRef nodeRef,
-         String username, String tag, PagingRequest paging) {
+         String username, String tag, boolean sortAscending, PagingRequest paging) {
       // Build the query
       StringBuilder luceneQuery = new StringBuilder();
       luceneQuery.append(
@@ -734,7 +734,7 @@ public class DiscussionServiceImpl implements DiscussionService
       sp.addStore(nodeRef.getStoreRef());
       sp.setLanguage(SearchService.LANGUAGE_LUCENE);
       sp.setQuery(luceneQuery.toString());
-      sp.addSort(sortOn, true);
+      sp.addSort(sortOn, sortAscending);
       if (paging.getMaxItems() > 0)
       {
           sp.setLimit(paging.getMaxItems());

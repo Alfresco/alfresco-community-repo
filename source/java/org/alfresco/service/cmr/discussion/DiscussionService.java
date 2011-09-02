@@ -155,54 +155,60 @@ public interface DiscussionService {
    
    
    /**
-    * Retrieves all topics in a site
+    * Retrieves all topics in a site, sorted by either oldest
+    *  or newest topics first.
     */
    @NotAuditable
-   PagingResults<TopicInfo> listTopics(String siteShortName, PagingRequest paging);
+   PagingResults<TopicInfo> listTopics(String siteShortName, boolean sortAscending, PagingRequest paging);
 
    /**
-    * Retrieves all topics attached to the specified Node
+    * Retrieves all topics attached to the specified Node, sorted by
+    *  either oldest or newest topics first.
     */
    @NotAuditable
-   PagingResults<TopicInfo> listTopics(NodeRef nodeRef, PagingRequest paging);
+   PagingResults<TopicInfo> listTopics(NodeRef nodeRef, boolean sortAscending, PagingRequest paging);
    
    /**
-    * Retrieves all topics in a site, filtered by username
+    * Retrieves all topics in a site, filtered by username, sorted by
+    *  either oldest or newest topics first.
     */
    @NotAuditable
-   PagingResults<TopicInfo> listTopics(String siteShortName, String username, PagingRequest paging);
+   PagingResults<TopicInfo> listTopics(String siteShortName, String username, boolean sortAscending, PagingRequest paging);
 
    /**
-    * Retrieves all topics attached to the specified Node, filtered by username
+    * Retrieves all topics attached to the specified Node, filtered by username, 
+    *  sorted by either oldest or newest topics first.
     */
    @NotAuditable
-   PagingResults<TopicInfo> listTopics(NodeRef nodeRef, String username, PagingRequest paging);
+   PagingResults<TopicInfo> listTopics(NodeRef nodeRef, String username, boolean sortAscending, PagingRequest paging);
    
    /**
-    * Retrieves all topics in a site, created in the given date range
+    * Retrieves all topics in a site, created in the given date range, sorted by
+    *  either oldest or newest topics first.
     */
    @NotAuditable
-   PagingResults<TopicInfo> listTopics(String siteShortName, Date from, Date to, PagingRequest paging);
+   PagingResults<TopicInfo> listTopics(String siteShortName, Date from, Date to, boolean sortAscending, PagingRequest paging);
 
    /**
     * Retrieves all topics attached to the specified Node, created in the 
-    *  given date range
+    *  given date range, sorted by either oldest or newest topics first.
     */
    @NotAuditable
-   PagingResults<TopicInfo> listTopics(NodeRef nodeRef, Date from, Date to, PagingRequest paging);
+   PagingResults<TopicInfo> listTopics(NodeRef nodeRef, Date from, Date to, boolean sortAscending, PagingRequest paging);
    
    /**
-    * Searches for all topics in a site, filtered by username or tag
+    * Searches for all topics in a site, filtered by username or tag, sorted by
+    *  either oldest or newest topics first.
     */
    @NotAuditable
-   PagingResults<TopicInfo> findTopics(String siteShortName, String username, String tag, PagingRequest paging);
+   PagingResults<TopicInfo> findTopics(String siteShortName, String username, String tag, boolean sortAscending, PagingRequest paging);
 
    /**
     * Searches for all topics attached to the specified Node, filtered 
-    *  by username or tag
+    *  by username or tag, sorted by either oldest or newest topics first.
     */
    @NotAuditable
-   PagingResults<TopicInfo> findTopics(NodeRef nodeRef, String username, String tag, PagingRequest paging);
+   PagingResults<TopicInfo> findTopics(NodeRef nodeRef, String username, String tag, boolean sortAscending, PagingRequest paging);
 
    
    /**

@@ -19,34 +19,33 @@
 package org.alfresco.repo.web.scripts.subscriptions;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.json.simple.parser.ParseException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 
 public class SubscriptionServiceFollowsPost extends AbstractSubscriptionServiceWebScript
 {
+    @SuppressWarnings("unchecked")
     public JSONArray executeImpl(String userId, WebScriptRequest req, WebScriptResponse res) throws IOException,
-            JSONException
+            ParseException
     {
-        JSONArray jsonUsers = new JSONArray(req.getContent().getContent());
-
-        List<String> users = new ArrayList<String>(jsonUsers.length());
-        for (int i = 0; i < jsonUsers.length(); i++)
-        {
-            users.add(jsonUsers.getString(i));
-        }
+        JSONArray jsonUsers = (JSONArray) JSONValue.parseWithException(req.getContent().getContent());
 
         JSONArray result = new JSONArray();
-        for (String user : users)
+
+        for (Object o : jsonUsers)
         {
-            JSONObject item = new JSONObject();
-            item.put(user, subscriptionService.follows(userId, user));
-            result.put(item);
+            String user = (o == null ? null : o.toString());
+            if (user != null)
+            {
+                JSONObject item = new JSONObject();
+                item.put(user, subscriptionService.follows(userId, user));
+                result.add(item);
+            }
         }
 
         return result;

@@ -19,31 +19,28 @@
 package org.alfresco.repo.web.scripts.subscriptions;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.json.simple.parser.ParseException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 
 public class SubscriptionServiceUnfollowPost extends AbstractSubscriptionServiceWebScript
 {
     public JSONObject executeImpl(String userId, WebScriptRequest req, WebScriptResponse res) throws IOException,
-            JSONException
+            ParseException
     {
-        JSONArray jsonUsers = new JSONArray(req.getContent().getContent());
+        JSONArray jsonUsers = (JSONArray) JSONValue.parseWithException(req.getContent().getContent());
 
-        List<String> users = new ArrayList<String>(jsonUsers.length());
-        for (int i = 0; i < jsonUsers.length(); i++)
+        for (Object o : jsonUsers)
         {
-            users.add(jsonUsers.getString(i));
-        }
-
-        for (String user : users)
-        {
-            subscriptionService.unfollow(userId, user);
+            String user = (o == null ? null : o.toString());
+            if (user != null)
+            {
+                subscriptionService.unfollow(userId, user);
+            }
         }
 
         return null;

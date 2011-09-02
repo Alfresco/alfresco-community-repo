@@ -20,15 +20,14 @@ package org.alfresco.repo.web.scripts.subscriptions;
 
 import java.io.IOException;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.json.simple.JSONObject;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 
 public class SubscriptionServiceFollowingCountGet extends AbstractSubscriptionServiceWebScript
 {
-    public JSONObject executeImpl(String userId, WebScriptRequest req, WebScriptResponse res) throws IOException,
-            JSONException
+    @SuppressWarnings("unchecked")
+    public JSONObject executeImpl(String userId, WebScriptRequest req, WebScriptResponse res) throws IOException
     {
         int count = subscriptionService.getFollowingCount(userId);
 

@@ -34,9 +34,9 @@ import org.alfresco.service.cmr.subscriptions.PrivateSubscriptionListException;
 import org.alfresco.service.cmr.subscriptions.SubscriptionService;
 import org.alfresco.service.cmr.subscriptions.SubscriptionsDisabledException;
 import org.alfresco.util.ISO8601DateFormat;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.ParseException;
 import org.springframework.extensions.webscripts.AbstractWebScript;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -79,43 +79,43 @@ public abstract class AbstractSubscriptionServiceWebScript extends AbstractWebSc
             if (obj instanceof JSONObject || obj instanceof JSONArray)
             {
                 res.setContentEncoding(Charset.defaultCharset().displayName());
-                
+
                 Writer writer = res.getWriter();
                 if (obj instanceof JSONObject)
                 {
-                    ((JSONObject) obj).write(writer);
-                }
-                else
+                    ((JSONObject) obj).writeJSONString(writer);
+                } else
                 {
-                    ((JSONArray) obj).write(writer);
+                    ((JSONArray) obj).writeJSONString(writer);
                 }
                 writer.flush();
-            }
-            else
+            } else
             {
                 res.setStatus(204);
             }
-        }
-        catch (SubscriptionsDisabledException sde)
+        } catch (SubscriptionsDisabledException sde)
         {
             throw new WebScriptException(404, "Subscription service is disabled!", sde);
-        }
-        catch (NoSuchPersonException nspe)
+        } catch (NoSuchPersonException nspe)
         {
             throw new WebScriptException(404, "Unknown user '" + nspe.getUserName() + "'!", nspe);
-        }
-        catch (PrivateSubscriptionListException psle)
+        } catch (PrivateSubscriptionListException psle)
         {
             throw new WebScriptException(403, "Subscription list is private!", psle);
-        }
-        catch (JSONException je)
+        } catch (ParseException pe)
         {
-            throw new WebScriptException(500, "Unable to parse or serialize JSON!", je);
+            throw new WebScriptException(400, "Unable to parse JSON!", pe);
+        } catch (ClassCastException cce)
+        {
+            throw new WebScriptException(400, "Unable to parse JSON!", cce);
+        } catch (IOException ioe)
+        {
+            throw new WebScriptException(500, "Unable to serialize JSON!", ioe);
         }
     }
 
     public abstract Object executeImpl(String userId, WebScriptRequest req, WebScriptResponse res) throws IOException,
-            JSONException;
+            ParseException;
 
     protected int parseNumber(String name, String number, int def)
     {
@@ -125,13 +125,11 @@ public abstract class AbstractSubscriptionServiceWebScript extends AbstractWebSc
             {
                 return Integer.parseInt(number);
 
-            }
-            catch (NumberFormatException e)
+            } catch (NumberFormatException e)
             {
                 throw new WebScriptException(400, name + " is not a number!", e);
             }
-        }
-        else
+        } else
         {
             return def;
         }
@@ -148,7 +146,8 @@ public abstract class AbstractSubscriptionServiceWebScript extends AbstractWebSc
         return result;
     }
 
-    protected JSONObject getUserDetails(String username) throws JSONException
+    @SuppressWarnings("unchecked")
+    protected JSONObject getUserDetails(String username)
     {
         NodeRef node = personService.getPerson(username);
 
@@ -176,7 +175,8 @@ public abstract class AbstractSubscriptionServiceWebScript extends AbstractWebSc
         return result;
     }
 
-    protected JSONArray getUserArray(List<String> usernames) throws JSONException
+    @SuppressWarnings("unchecked")
+    protected JSONArray getUserArray(List<String> usernames)
     {
         JSONArray result = new JSONArray();
 
@@ -184,7 +184,7 @@ public abstract class AbstractSubscriptionServiceWebScript extends AbstractWebSc
         {
             for (String username : usernames)
             {
-                result.put(getUserDetails(username));
+                result.add(getUserDetails(username));
             }
         }
 

@@ -107,6 +107,12 @@ public class ContentCacheImpl implements ContentCache
         if (memoryStore.contains(url))
         {
             String path = memoryStore.get(url);
+            
+            // Getting the path for a URL from the memoryStore will reset the timeToIdle for
+            // that URL. It is important to perform a reverse lookup as well to ensure that the
+            // cache file path to URL mapping is also kept in the cache.
+            memoryStore.get(Key.forCacheFile(path));
+            
             File cacheFile = new File(path);
             if (cacheFile.exists())
             {

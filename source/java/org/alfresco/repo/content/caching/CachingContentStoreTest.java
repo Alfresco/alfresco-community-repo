@@ -23,7 +23,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -45,6 +47,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 /**
@@ -85,15 +88,39 @@ public class CachingContentStoreTest
     
     
     @Test
-    public void getReaderForItemMissingFromCache()
+    public void getReaderForItemMissingFromCacheWillGiveUpAfterRetrying()
     {
         ContentReader sourceContent = mock(ContentReader.class);
         when(cache.getReader("url")).thenThrow(new CacheMissException("url"));
         when(backingStore.getReader("url")).thenReturn(sourceContent);
         when(cache.put("url", sourceContent)).thenReturn(true);
         
-        cachingStore.getReader("url");
+        ContentReader returnedReader = cachingStore.getReader("url");
+        
+        // Upon failure, item is removed from cache
+        verify(cache, Mockito.atLeastOnce()).remove("url");
+        
+        // The content comes direct from the backing store
+        assertSame(returnedReader, sourceContent);
     }
+    
+    
+    @Test
+    public void getReaderForItemMissingFromCacheWillRetryAndCanSucceed()
+    {
+        ContentReader sourceContent = mock(ContentReader.class);
+        ContentReader cachedContent = mock(ContentReader.class);
+        when(cache.getReader("url")).
+            thenThrow(new CacheMissException("url")).
+            thenReturn(cachedContent);
+        when(backingStore.getReader("url")).thenReturn(sourceContent);
+        when(cache.put("url", sourceContent)).thenReturn(true);
+        
+        ContentReader returnedReader = cachingStore.getReader("url");
+        
+        assertSame(returnedReader, cachedContent);
+    }
+    
     
     @Test
     public void getReaderForItemMissingFromCacheButNoContentToCache()
@@ -144,7 +171,35 @@ public class CachingContentStoreTest
         
         verify(backingStore).getWriter(ctx);
     }
-
+    
+    
+    @Test(expected=RuntimeException.class)
+    // Check that exceptions raised by the backing store's putContent(ContentReader)
+    // aren't swallowed and can therefore cause the transaction to fail.
+    public void exceptionRaisedWhenCopyingTempToBackingStoreIsPropogatedCorrectly() 
+        throws ContentIOException, IOException
+    {
+        cachingStore = new CachingContentStore(backingStore, cache, true);
+        ContentContext ctx = ContentContext.NULL_CONTEXT;
+        ContentWriter bsWriter = mock(ContentWriter.class);
+        when(backingStore.getWriter(ctx)).thenReturn(bsWriter);
+        when(bsWriter.getContentUrl()).thenReturn("url");
+        ContentWriter cacheWriter = mock(ContentWriter.class);
+        when(cache.getWriter("url")).thenReturn(cacheWriter);
+        ContentReader readerFromCacheWriter = mock(ContentReader.class);
+        when(cacheWriter.getReader()).thenReturn(readerFromCacheWriter);
+        
+        doThrow(new RuntimeException()).when(bsWriter).putContent(any(ContentReader.class));
+        
+        cachingStore.getWriter(ctx);
+        
+        // Get the stream listener and trigger it
+        ArgumentCaptor<ContentStreamListener> arg = ArgumentCaptor.forClass(ContentStreamListener.class);
+        verify(cacheWriter).addListener(arg.capture());
+        // Simulate a stream close
+        arg.getValue().contentStreamClosed();
+    }
+    
     
     @Test
     public void encodingAttrsCopiedToBackingStoreWriter()

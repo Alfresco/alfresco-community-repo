@@ -59,7 +59,7 @@ public class SlowContentStoreTest
         TimedStoreReader storeReader = new TimedStoreReader();
         storeReader.execute();
         assertTrue("First read should take a while", storeReader.timeTakenMillis() > 1000);
-        logger.info(String.format("First read took %ds", storeReader.timeTakenMillis()));
+        logger.debug(String.format("First read took %ds", storeReader.timeTakenMillis()));
         // The content came from the slow backing store...
         assertEquals("This is the content for my slow ReadableByteChannel", storeReader.content);
         
@@ -69,7 +69,7 @@ public class SlowContentStoreTest
             storeReader = new TimedStoreReader();
             storeReader.execute();
             assertTrue("Subsequent reads should be fast", storeReader.timeTakenMillis() < 100);
-            logger.info(String.format("Cache read took %ds", storeReader.timeTakenMillis()));
+            logger.debug(String.format("Cache read took %ds", storeReader.timeTakenMillis()));
             // The content came from the slow backing store, but was cached...
             assertEquals("This is the content for my slow ReadableByteChannel", storeReader.content);
         }
@@ -89,7 +89,7 @@ public class SlowContentStoreTest
         TimedStoreReader storeReader = new TimedStoreReader();
         storeReader.execute();
         assertTrue("First read should be fast", storeReader.timeTakenMillis() < 100);
-        logger.info(String.format("First read took %ds", storeReader.timeTakenMillis()));
+        logger.debug(String.format("First read took %ds", storeReader.timeTakenMillis()));
         assertEquals("Content written from " + getClass().getSimpleName(), storeReader.content);
         
         // Subsequent reads will also hit the cache
@@ -98,7 +98,7 @@ public class SlowContentStoreTest
             storeReader = new TimedStoreReader();
             storeReader.execute();
             assertTrue("Subsequent reads should be fast", storeReader.timeTakenMillis() < 100);
-            logger.info(String.format("Cache read took %ds", storeReader.timeTakenMillis()));
+            logger.debug(String.format("Cache read took %ds", storeReader.timeTakenMillis()));
             // The original cached content, still cached...
             assertEquals("Content written from " + getClass().getSimpleName(), storeReader.content);
         }
@@ -113,7 +113,7 @@ public class SlowContentStoreTest
         protected void doExecute()
         {
             content = cachingStore.getReader("any-url").getContentString();
-            logger.info("Read content: " + content);
+            logger.debug("Read content: " + content);
         }   
     }
     

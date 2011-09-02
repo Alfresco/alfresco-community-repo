@@ -18,7 +18,7 @@
     <bean id="cachingContentStore" class="org.alfresco.repo.content.caching.CachingContentStore">
         <property name="backingStore" ref="backingStore"/>
         <property name="cache" ref="contentCache"/>
-        <property name="cacheOnInbound" value="true"/>
+        <property name="cacheOnInbound" value="${system.content.caching.cacheOnInbound}"/>
     </bean>
 
 
@@ -51,6 +51,13 @@
                 <property name="cacheName">
                     <value>org.alfresco.cache.cachingContentStoreCache</value>
                 </property>
+                <property name="eternal" value="false"/>
+                <property name="timeToLive" value="${system.content.caching.timeToLiveSeconds}"/>
+                <property name="timeToIdle" value="${system.content.caching.timeToIdleSeconds}"/>
+                <property name="maxElementsInMemory" value="${system.content.caching.maxElementsInMemory}"/>
+                <property name="maxElementsOnDisk" value="${system.content.caching.maxElementsOnDisk}"/>
+                <property name="overflowToDisk" value="true"/>
+                <property name="diskPersistent" value="true"/>
             </bean>
         </property>
     </bean>
@@ -70,7 +77,7 @@
     </bean>
     
     <bean id="cachedContentCleaner" class="org.alfresco.repo.content.caching.cleanup.CachedContentCleaner">
-        <property name="maxDeleteWatchCount" value="1"/>
+        <property name="maxDeleteWatchCount" value="${system.content.caching.maxDeleteWatchCount}"/>
         <property name="cache" ref="contentCache"/>
     </bean>
     
@@ -83,7 +90,7 @@
             <ref bean="schedulerFactory" />
         </property>
         <property name="cronExpression">
-            <value>${system.content.cachedContentCleanup.cronExpression}</value>
+            <value>${system.content.caching.contentCleanup.cronExpression}</value>
         </property>
     </bean>
     

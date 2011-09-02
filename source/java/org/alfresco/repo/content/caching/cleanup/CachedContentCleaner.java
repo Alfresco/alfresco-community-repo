@@ -23,6 +23,7 @@ import java.io.File;
 import org.alfresco.repo.content.caching.CacheFileProps;
 import org.alfresco.repo.content.caching.ContentCacheImpl;
 import org.alfresco.repo.content.caching.FileHandler;
+import org.alfresco.util.Deleter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
@@ -130,7 +131,10 @@ public class CachedContentCleaner implements FileHandler
         CacheFileProps props = new CacheFileProps(cacheFile);
         props.delete();
         cacheFile.delete();
+        Deleter.deleteEmptyParents(cacheFile, cache.getCacheRoot());
     }
+
+    
 
     @Required
     public void setCache(ContentCacheImpl cache)

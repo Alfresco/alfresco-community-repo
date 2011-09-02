@@ -24,6 +24,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 
 import org.alfresco.repo.content.caching.CacheFileProps;
@@ -93,6 +94,21 @@ public class CachedContentCleanupJobTest
         }
     }
 
+    @Test
+    public void emptyParentDirectoriesAreDeleted() throws FileNotFoundException
+    {
+        cleaner.setMaxDeleteWatchCount(0);
+        File file = new File(cacheRoot, "243235984/a/b/c/d.bin");
+        file.getParentFile().mkdirs();
+        PrintWriter writer = new PrintWriter(file);
+        writer.println("Content for emptyParentDirectoriesAreDeleted");
+        writer.close();
+        assertTrue("Directory should exist", new File(cacheRoot, "243235984/a/b/c").exists());
+        
+        cleaner.handle(file);
+        
+        assertFalse("Directory should have been deleted", new File(cacheRoot, "243235984").exists());
+    }
     
     @Test
     public void markedFilesHaveDeletionDeferredUntilCorrectPassOfCleaner()

@@ -51,6 +51,7 @@ public class CachingContentStore implements ContentStore
     private ContentStore backingStore;
     private ContentCache cache;
     private boolean cacheOnInbound;
+    private int maxCacheTries = 2;
     
     static
     {
@@ -175,36 +176,54 @@ public class CachingContentStore implements ContentStore
         return cacheAndRead(contentUrl);
     }    
     
+    
     private ContentReader cacheAndRead(String url)
     {
         WriteLock writeLock = readWriteLock(url).writeLock();
         writeLock.lock();
         try
         {
-            if (!cache.contains(url))
+            for (int i = 0; i < maxCacheTries; i++)
             {
-                if (cache.put(url, backingStore.getReader(url)))
+                ContentReader reader = attemptCacheAndRead(url);
+                if (reader != null)
                 {
-                    return cache.getReader(url);
-                }
-                else
-                {
-                    return backingStore.getReader(url);
+                    return reader;
                 }
             }
-            else
-            {
-                return cache.getReader(url);
-            }
-        }
-        catch(CacheMissException e)
-        {
+            // Have tried multiple times to cache the item and read it back from the cache
+            // but there is a recurring problem - give up and return the item from the backing store.
             return backingStore.getReader(url);
         }
         finally
         {
             writeLock.unlock();
         }
+    }
+    
+    private ContentReader attemptCacheAndRead(String url)
+    {
+        ContentReader reader = null;
+        try
+        {
+            if (!cache.contains(url))
+            {
+                if (cache.put(url, backingStore.getReader(url)))
+                {
+                    reader = cache.getReader(url);
+                }
+            }
+            else
+            {
+                reader = cache.getReader(url);
+            }
+        }
+        catch(CacheMissException e)
+        {
+            cache.remove(url);
+        }
+        
+        return reader;
     }
     
     /*
@@ -279,10 +298,40 @@ public class CachingContentStore implements ContentStore
     @Override
     public boolean delete(String contentUrl)
     {
-        if (cache.contains(contentUrl))
-            cache.remove(contentUrl);
+        ReentrantReadWriteLock readWriteLock = readWriteLock(contentUrl);
+        ReadLock readLock = readWriteLock.readLock();
+        readLock.lock();
+        try
+        {
+            if (!cache.contains(contentUrl))
+            {
+                // The item isn't in the cache, so simply delete from the backing store
+                return backingStore.delete(contentUrl);
+            }
+        }
+        finally
+        {
+            readLock.unlock();
+        }
         
-        return backingStore.delete(contentUrl);
+        WriteLock writeLock = readWriteLock.writeLock();
+        writeLock.lock();
+        try
+        {
+            // Double check the content still exists in the cache
+            if (cache.contains(contentUrl))
+            {
+                // The item is in the cache, so remove.
+                cache.remove(contentUrl);
+                
+            }
+            // Whether the item was in the cache or not, it must still be deleted from the backing store.
+            return backingStore.delete(contentUrl);
+        }
+        finally
+        {
+            writeLock.unlock();
+        }
     }
 
     /**

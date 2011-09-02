@@ -34,6 +34,7 @@ import org.alfresco.repo.content.UnsupportedContentUrlException;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.util.Deleter;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
@@ -613,7 +614,7 @@ public class FileContentStore
         // Delete empty parents regardless of whether the file was ignore above.
         if (deleteEmptyDirs && deleted)
         {
-            deleteEmptyParents(file);
+            Deleter.deleteEmptyParents(file, getRootLocation());
         }
 
         // done
@@ -626,38 +627,7 @@ public class FileContentStore
         return deleted;
     }
 
-    /**
-     * Deletes the parents of the specified file. The file itself must have been
-     * deleted before calling this method - since only empty directories can be deleted.
-     * 
-     * @param file
-     */
-    private void deleteEmptyParents(File file)
-    {
-        String root = getRootLocation();
-        File parent = file.getParentFile();
-        boolean deleted = false;
-        do
-        {
-            try
-            {
-                if (parent.isDirectory() && !parent.getCanonicalPath().equals(root))
-                {
-                    // Only an empty directory will successfully be deleted.
-                    deleted = parent.delete();
-                }
-            }
-            catch (IOException error)
-            {
-                logger.error("Unable to construct canonical path for " + parent.getAbsolutePath());
-                break;
-            }
-            
-            parent = parent.getParentFile();
-        }
-        while(deleted);
-
-    }
+    
 
     /**
      * Creates a new content URL.  This must be supported by all

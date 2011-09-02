@@ -56,16 +56,16 @@ public class ForumTopicsMineGet extends AbstractDiscussionWebScript
       // Grab the current user to list for
       String username = AuthenticationUtil.getFullyAuthenticatedUser();
       
-      // Get the topics for the user
+      // Get the topics for the user, oldest first
       PagingResults<TopicInfo> topics = null;
       PagingRequest paging = buildPagingRequest(req);
       if(site != null)
       {
-         topics = discussionService.listTopics(site.getShortName(), username, paging);
+         topics = discussionService.listTopics(site.getShortName(), username, true, paging);
       }
       else
       {
-         topics = discussionService.listTopics(nodeRef, username, paging);
+         topics = discussionService.listTopics(nodeRef, username, true, paging);
       }
       
       

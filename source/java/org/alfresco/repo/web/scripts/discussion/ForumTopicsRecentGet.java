@@ -68,16 +68,16 @@ public class ForumTopicsRecentGet extends AbstractDiscussionWebScript
       Date from = new Date(now.getTime() - numDays*ONE_DAY_MS);
       Date to = new Date(now.getTime() + ONE_DAY_MS);
       
-      // Get the topics for the user
+      // Get the recent topics, newest first
       PagingResults<TopicInfo> topics = null;
       PagingRequest paging = buildPagingRequest(req);
       if(site != null)
       {
-         topics = discussionService.listTopics(site.getShortName(), from, to, paging);
+         topics = discussionService.listTopics(site.getShortName(), from, to, false, paging);
       }
       else
       {
-         topics = discussionService.listTopics(nodeRef, from, to, paging);
+         topics = discussionService.listTopics(nodeRef, from, to, false, paging);
       }
       
       

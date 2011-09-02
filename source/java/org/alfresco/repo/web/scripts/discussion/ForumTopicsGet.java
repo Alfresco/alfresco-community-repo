@@ -61,6 +61,7 @@ public class ForumTopicsGet extends AbstractDiscussionWebScript
       }
       
       // Get the topics
+      boolean oldestTopicsFirst = true;
       PagingResults<TopicInfo> topics = null;
       PagingRequest paging = buildPagingRequest(req);
       if(tagSearch)
@@ -68,22 +69,22 @@ public class ForumTopicsGet extends AbstractDiscussionWebScript
          // Tag based is a search rather than a listing
          if(site != null)
          {
-            topics = discussionService.findTopics(site.getShortName(), null, tag, paging);
+            topics = discussionService.findTopics(site.getShortName(), null, tag, oldestTopicsFirst, paging);
          }
          else
          {
-            topics = discussionService.findTopics(nodeRef, null, tag, paging);
+            topics = discussionService.findTopics(nodeRef, null, tag, oldestTopicsFirst, paging);
          }
       }
       else
       {
          if(site != null)
          {
-            topics = discussionService.listTopics(site.getShortName(), paging);
+            topics = discussionService.listTopics(site.getShortName(), oldestTopicsFirst, paging);
          }
          else
          {
-            topics = discussionService.listTopics(nodeRef, buildPagingRequest(req));
+            topics = discussionService.listTopics(nodeRef, oldestTopicsFirst, buildPagingRequest(req));
          }
       }
       

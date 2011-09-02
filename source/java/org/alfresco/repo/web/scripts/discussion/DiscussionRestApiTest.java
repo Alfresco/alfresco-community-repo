@@ -1008,26 +1008,26 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
       
       
       // Check for recent (new)
-      // We should get all the topics
+      // We should get all the topics, with the newest one first (rather than last as with others)
       result = getPosts("new?numdays=2", Status.STATUS_OK);
       assertEquals(2, result.getInt("total"));
       assertEquals(2, result.getInt("itemCount"));
       assertEquals(2, result.getJSONArray("items").length());
-      assertEquals("SiteTitle1", result.getJSONArray("items").getJSONObject(0).getString("title"));
-      assertEquals("SiteTitle2", result.getJSONArray("items").getJSONObject(1).getString("title"));
-      assertEquals(2, result.getJSONArray("items").getJSONObject(0).getInt("replyCount"));
-      assertEquals(3, result.getJSONArray("items").getJSONObject(1).getInt("replyCount"));
+      assertEquals("SiteTitle2", result.getJSONArray("items").getJSONObject(0).getString("title"));
+      assertEquals("SiteTitle1", result.getJSONArray("items").getJSONObject(1).getString("title"));
+      assertEquals(3, result.getJSONArray("items").getJSONObject(0).getInt("replyCount"));
+      assertEquals(2, result.getJSONArray("items").getJSONObject(1).getInt("replyCount"));
       
       result = getPosts(FORUM_NODE, "new?numdays=2", Status.STATUS_OK);
       assertEquals(3, result.getInt("total"));
       assertEquals(3, result.getInt("itemCount"));
       assertEquals(3, result.getJSONArray("items").length());
-      assertEquals("NodeTitle1", result.getJSONArray("items").getJSONObject(0).getString("title"));
+      assertEquals("NodeTitle3", result.getJSONArray("items").getJSONObject(0).getString("title"));
       assertEquals("NodeTitle2", result.getJSONArray("items").getJSONObject(1).getString("title"));
-      assertEquals("NodeTitle3", result.getJSONArray("items").getJSONObject(2).getString("title"));
-      assertEquals(1, result.getJSONArray("items").getJSONObject(0).getInt("replyCount"));
+      assertEquals("NodeTitle1", result.getJSONArray("items").getJSONObject(2).getString("title"));
+      assertEquals(0, result.getJSONArray("items").getJSONObject(0).getInt("replyCount"));
       assertEquals(0, result.getJSONArray("items").getJSONObject(1).getInt("replyCount"));
-      assertEquals(0, result.getJSONArray("items").getJSONObject(2).getInt("replyCount"));
+      assertEquals(1, result.getJSONArray("items").getJSONObject(2).getInt("replyCount"));
       
       
       // Check for hot
@@ -1093,10 +1093,10 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
       assertEquals(2, result.getInt("total"));
       assertEquals(2, result.getInt("itemCount"));
       assertEquals(2, result.getJSONArray("items").length());
-      assertEquals("NodeTitle3", result.getJSONArray("items").getJSONObject(0).getString("title"));
-      assertEquals("NodeTitle1", result.getJSONArray("items").getJSONObject(1).getString("title"));
-      assertEquals(0, result.getJSONArray("items").getJSONObject(0).getInt("replyCount"));
-      assertEquals(1, result.getJSONArray("items").getJSONObject(1).getInt("replyCount"));
+      assertEquals("NodeTitle1", result.getJSONArray("items").getJSONObject(0).getString("title"));
+      assertEquals("NodeTitle3", result.getJSONArray("items").getJSONObject(1).getString("title"));
+      assertEquals(1, result.getJSONArray("items").getJSONObject(0).getInt("replyCount"));
+      assertEquals(0, result.getJSONArray("items").getJSONObject(1).getInt("replyCount"));
       
       result = getPosts(FORUM_NODE, "new?numdays=2", Status.STATUS_OK);
       assertEquals(1, result.getInt("total"));

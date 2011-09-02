@@ -249,5 +249,16 @@
         <property name="dictionaryService" ref="dictionaryService" />
         <property name="encryptor" ref="fallbackEncryptor" />
     </bean>
-    
+
+    <bean id="reEncryptor" class="org.alfresco.encryption.ReEncryptor">
+        <property name="chunkSize" value="${encryption.reencryptor.chunkSize}"/>
+        <property name="backupKeyProvider" ref="backupKeyProvider"/>
+        <property name="keyProvider" ref="keyProvider"/>
+        <property name="transactionService" ref="transactionService"/>
+        <property name="nodeDAO" ref="nodeDAO"/>
+        <property name="dictionaryDAO" ref="dictionaryDAO"/>
+        <property name="qnameDAO" ref="qnameDAO"/>
+        <property name="metadataEncryptor" ref="metadataEncryptor"/>
+        <property name="jobLockService" ref="jobLockService"/>
+    </bean>    
 </beans>

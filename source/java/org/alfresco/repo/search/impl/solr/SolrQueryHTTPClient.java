@@ -42,8 +42,11 @@ import org.alfresco.service.cmr.search.SearchParameters.FieldFacetSort;
 import org.alfresco.service.cmr.search.SearchParameters.SortDefinition;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.apache.commons.codec.net.URLCodec;
+import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
@@ -303,12 +306,22 @@ public class SolrQueryHTTPClient
             body.put("textAttributes", textAttributes);
 
             PostMethod post = new PostMethod(url.toString());
-            // TOOD deal with redirects for SSL
             post.setRequestEntity(new ByteArrayRequestEntity(body.toString().getBytes("UTF-8"), "application/json"));
 
             try
             {
                 httpClient.executeMethod(post);
+
+                if(post.getStatusCode() == HttpStatus.SC_MOVED_PERMANENTLY || post.getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY)
+                {
+	    	        Header locationHeader = post.getResponseHeader("location");
+	    	        if (locationHeader != null)
+	    	        {
+	    	            String redirectLocation = locationHeader.getValue();
+	    	            post.setURI(new URI(redirectLocation, true));
+	    	            httpClient.executeMethod(post);
+	    	        }
+                }
 
                 if (post.getStatusCode() != HttpServletResponse.SC_OK)
                 {

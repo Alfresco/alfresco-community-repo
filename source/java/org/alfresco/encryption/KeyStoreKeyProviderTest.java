@@ -61,7 +61,7 @@ public class KeyStoreKeyProviderTest extends TestCase
         passwords.put(AlfrescoKeyStore.KEY_KEYSTORE_PASSWORD, "ksPwd2");
         passwords.put(ALIAS_ONE, "aliasPwd1");
         passwords.put(ALIAS_TWO, "aliasPwd2");
-        KeyStoreParameters encryptionParameters = new KeyStoreParameters("JCEKS", "SunJCE", null, FILE_TWO);
+        KeyStoreParameters encryptionParameters = new KeyStoreParameters("test", "JCEKS", "SunJCE", null, FILE_TWO);
         KeystoreKeyProvider keyProvider = new KeystoreKeyProvider(encryptionParameters, getKeyStoreLoader(passwords));
 //                FILE_TWO,
 //                getKeyStoreLoader(),
@@ -77,7 +77,7 @@ public class KeyStoreKeyProviderTest extends TestCase
 //        passwords.put(KeyStoreManager.KEY_KEYSTORE_PASSWORD, "ksPwd2");
 //        passwords.put(ALIAS_ONE, "aliasPwd1");
 //        passwords.put(ALIAS_TWO, "aliasPwd2");
-        KeyStoreParameters encryptionParameters = new KeyStoreParameters("JCEKS", "SunJCE", null, keyStoreLocation);
+        KeyStoreParameters encryptionParameters = new KeyStoreParameters("test", "JCEKS", "SunJCE", null, keyStoreLocation);
         KeystoreKeyProvider keyProvider = new KeystoreKeyProvider(encryptionParameters, getKeyStoreLoader(passwords));
 //                FILE_TWO,
 //                getKeyStoreLoader(),

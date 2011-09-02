@@ -1013,7 +1013,7 @@
         </property>
     </bean>
 
-    <bean id="solrHttpClientFactory" class="org.alfresco.httpclient.HttpClientFactory">
+    <bean id="solrHttpClientFactory" class="org.alfresco.httpclient.HttpClientFactory" init-method="init">
         <property name="secureCommsType" value="${solr.secureComms}"/>
         <property name="sSLEncryptionParameters" ref="sslEncryptionParameters"/>
         <property name="keyResourceLoader" ref="springKeyResourceLoader"/>

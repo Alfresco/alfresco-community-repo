@@ -56,7 +56,6 @@ import org.springframework.context.ApplicationContext;
 public class EncryptionTests extends TestCase
 {
 	private static final String TEST_MODEL = "org/alfresco/encryption/reencryption_model.xml";
-//    private static final String TEST_BUNDLE = "org/alfresco/encryption/encryptiontest_model";
 
 	private static int NUM_PROPERTIES = 500;
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
@@ -72,11 +71,13 @@ public class EncryptionTests extends TestCase
     private MetadataEncryptor metadataEncryptor;
 	private ReEncryptor reEncryptor;
 	private String cipherAlgorithm = "DESede/CBC/PKCS5Padding";
-	private KeyStoreParameters keyStoreParameters;
 	private KeyStoreParameters backupKeyStoreParameters;
+	private AlfrescoKeyStoreImpl backupKeyStore;
 	private KeyResourceLoader keyResourceLoader;
 	private EncryptionKeysRegistryImpl encryptionKeysRegistry;
 	private KeyStoreChecker keyStoreChecker;
+	private DefaultEncryptor mainEncryptor;
+	private DefaultEncryptor backupEncryptor;
 
     private AuthenticationComponent authenticationComponent;
 	private DictionaryDAO dictionaryDAO;
@@ -102,8 +103,10 @@ public class EncryptionTests extends TestCase
         reEncryptor = (ReEncryptor)ctx.getBean("reEncryptor");
         backupKeyStoreParameters = (KeyStoreParameters)ctx.getBean("backupKeyStoreParameters");
         keyStoreChecker = (KeyStoreChecker)ctx.getBean("keyStoreChecker");
-        keyStoreParameters = (KeyStoreParameters)ctx.getBean("keyStoreParameters");
         encryptionKeysRegistry = (EncryptionKeysRegistryImpl)ctx.getBean("encryptionKeysRegistry");
+        backupKeyStore = (AlfrescoKeyStoreImpl)ctx.getBean("backupKeyStore");
+        mainEncryptor = (DefaultEncryptor)ctx.getBean("encryptor");
+        backupEncryptor = (DefaultEncryptor)ctx.getBean("backupEncryptor");
 
         // reencrypt in one txn (since we don't commit the model, the qnames won't be available across transactions)
         reEncryptor.setSplitTxns(false);
@@ -162,18 +165,26 @@ public class EncryptionTests extends TestCase
 			{
 				return keys.get(keyAlias);
 			}
+
+			@Override
+			public void refresh()
+			{
+				// nothing to do
+			}
 		};
 		return keyProvider;
 	}
 
-	protected Encryptor getEncryptor(KeyProvider keyProvider)
+	protected Encryptor getFallbackEncryptor(KeyProvider keyProvider)
 	{
 		DefaultEncryptor encryptor = new DefaultEncryptor();
 		encryptor.setCipherAlgorithm(cipherAlgorithm);
 		encryptor.setCipherProvider(null);
 		encryptor.setKeyProvider(keyProvider);
+
+		DefaultFallbackEncryptor fallbackEncryptor = new DefaultFallbackEncryptor(encryptor, mainEncryptor);
 		
-		return encryptor;
+		return fallbackEncryptor;
 	}
 
 	protected MetadataEncryptor getMetadataEncryptor(Encryptor encryptor)
@@ -185,7 +196,7 @@ public class EncryptionTests extends TestCase
 		return metadataEncryptor;
 	}
 
-	protected void createEncryptedProperties(List<NodeRef> nodes, MetadataEncryptor metadataEncryptor)
+	protected void createEncryptedProperties(List<NodeRef> nodes)
 	{
 		for(int i = 0; i < NUM_PROPERTIES; i++)
 		{
@@ -218,20 +229,26 @@ public class EncryptionTests extends TestCase
 
 	public void testReEncrypt()
 	{
+		KeyProvider backupKeyProvider = backupEncryptor.getKeyProvider();
+		KeyProvider mainKeyProvider = mainEncryptor.getKeyProvider();
 		try
 		{
 			// Create encrypted properties using the configured encryptor and key provider
-	        createEncryptedProperties(before, metadataEncryptor);
+	        createEncryptedProperties(before);
 	        
 	        // Create encrypted properties using the new encryptor and key provider
 	        KeyProvider newKeyProvider = getKeyProvider(newKeys);
-	        Encryptor newEncryptor = getEncryptor(newKeyProvider);
-	        MetadataEncryptor newMetadataEncryptor = getMetadataEncryptor(newEncryptor);
-	        createEncryptedProperties(after, newMetadataEncryptor);
-	
+
+	        // set backup encryptor key provider to main encryptor key provider and drop in
+	        // new key provider for main encryptor
+	        backupEncryptor.setKeyProvider(mainEncryptor.getKeyProvider());
+	        mainEncryptor.setKeyProvider(newKeyProvider);
+	        
+	        createEncryptedProperties(after);
+
 	        // re-encrypt
 	        long start = System.currentTimeMillis();
-			reEncryptor.reEncrypt(newKeyProvider);
+	        System.out.println(reEncryptor.reEncrypt() + " properties re-encrypted");
 			System.out.println("Re-encrypted " + NUM_PROPERTIES*2 + " properties in " + (System.currentTimeMillis() - start) + "ms");
 	
 			// check that the nodes have been re-encrypted properly i.e. check that the properties
@@ -239,7 +256,7 @@ public class EncryptionTests extends TestCase
 			for(NodeRef nodeRef : before)
 			{
 				Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
-				props = newMetadataEncryptor.decrypt(props);
+				props = metadataEncryptor.decrypt(props);
 				assertNotNull("", props.get(PROP));
 				assertEquals("", nodeRef.toString(), props.get(PROP));
 			}
@@ -247,10 +264,14 @@ public class EncryptionTests extends TestCase
 			for(NodeRef nodeRef : after)
 			{
 				Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
-				props = newMetadataEncryptor.decrypt(props);
+				props = metadataEncryptor.decrypt(props);
 				assertNotNull("", props.get(PROP));
 				assertEquals("", nodeRef.toString(), props.get(PROP));			
 			}
+		}
+		catch(MissingKeyStoreException e)
+		{
+			fail(e.getMessage());
 		}
 		catch(AlfrescoRuntimeException e)
 		{
@@ -260,12 +281,21 @@ public class EncryptionTests extends TestCase
 				fail();
 			}
 		}
+		finally
+		{
+			backupEncryptor.setKeyProvider(backupKeyProvider);
+			mainEncryptor.setKeyProvider(mainKeyProvider);
+		}
 	}
 	
 	public void testBootstrapReEncrypt()
 	{
 		try
 		{
+			// ensure that the backup key store is not available
+			backupKeyStoreParameters.setLocation("");
+			backupKeyStore.reload();
+
 			reEncryptor.bootstrapReEncrypt();
 			fail("Should have caught missing backup key store");
 		}

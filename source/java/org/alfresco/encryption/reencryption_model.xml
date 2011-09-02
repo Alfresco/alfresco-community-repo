@@ -7,6 +7,7 @@
    
    <imports>
       <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
    </imports>
    
    <namespaces>
@@ -23,7 +24,7 @@
       <type name="test:base">
          <title>Base</title>
          <description>The Base Type</description>
-         <parent></parent>
+         <parent>cm:content</parent>
          
          <properties>
             <property name="test:prop1">

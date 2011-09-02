@@ -37,8 +37,8 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.ChildAssocEntity;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.node.NodeDAO;
-import org.alfresco.repo.domain.node.NodeExistsException;
 import org.alfresco.repo.domain.node.NodeDAO.ChildAssocRefQueryCallback;
+import org.alfresco.repo.domain.node.NodeExistsException;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.node.AbstractNodeServiceImpl;
 import org.alfresco.repo.node.StoreArchiveMap;
@@ -1980,9 +1980,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
     }
     
+    @Override
     public AssociationRef getAssoc(Long id)
     {
-        return nodeDAO.getNodeAssoc(id).getSecond();
+        Pair<Long, AssociationRef> nodeAssocPair = nodeDAO.getNodeAssocOrNull(id);
+        return nodeAssocPair == null ? null : nodeAssocPair.getSecond();
     }
 
     public List<AssociationRef> getTargetAssocs(NodeRef sourceRef, QNamePattern qnamePattern)

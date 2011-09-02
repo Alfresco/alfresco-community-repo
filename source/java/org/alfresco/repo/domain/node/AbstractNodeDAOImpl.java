@@ -1569,7 +1569,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 {
                     // Disable all behaviour.
                     // This only affects cm:auditable and is discarded at the end of this txn
-                    policyBehaviourFilter.disableAllBehaviours();
+                    policyBehaviourFilter.disableBehaviour();
                     // Tag the transaction to prevent further propagation
                     AlfrescoTransactionSupport.bindResource(KEY_AUDITABLE_PROPAGATION_DISABLE, Boolean.TRUE);
                     
@@ -2506,16 +2506,33 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
         return results;
     }
-    
-    public Pair<Long, AssociationRef> getNodeAssoc(Long assocId)
+
+    @Override
+    public Pair<Long, AssociationRef> getNodeAssocOrNull(Long assocId)
     {
         NodeAssocEntity nodeAssocEntity = selectNodeAssocById(assocId);
         if (nodeAssocEntity == null)
         {
+            return null;
+        }
+        else
+        {
+            AssociationRef assocRef = nodeAssocEntity.getAssociationRef(qnameDAO);
+            return new Pair<Long, AssociationRef>(assocId, assocRef);
+        }
+    }
+    
+    public Pair<Long, AssociationRef> getNodeAssoc(Long assocId)
+    {
+        Pair<Long, AssociationRef> ret = getNodeAssocOrNull(assocId);
+        if (ret == null)
+        {
             throw new ConcurrencyFailureException("Assoc ID does not point to a valid association: " + assocId);
         }
-        AssociationRef assocRef = nodeAssocEntity.getAssociationRef(qnameDAO);
-        return new Pair<Long, AssociationRef>(assocId, assocRef);
+        else
+        {
+            return ret;
+        }
     }
 
     /*

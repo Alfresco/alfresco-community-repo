@@ -29,6 +29,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
@@ -374,5 +375,12 @@ public class NodeServiceTest extends TestCase
                     "DB TXN ID should be the same for the ex-archived (now-ghost) nodes. ",
                     txnIdRestore, archivedStatus.getDbTxnId());
         }
+    }
+    
+    public void testGetAssocById()
+    {
+        // Get a node association that doesn't exist
+        AssociationRef assocRef = nodeService.getAssoc(Long.MAX_VALUE);
+        assertNull("Should get null for missing ID of association. ", assocRef);
     }
 }

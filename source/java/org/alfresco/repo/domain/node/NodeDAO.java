@@ -330,6 +330,12 @@ public interface NodeDAO extends NodeBulkLoader
 
     /**
      * @return                  Returns a specific node association with the given ID
+     *                          or <tt>null</tt> if it doesn't exist
+     */
+    public Pair<Long, AssociationRef> getNodeAssocOrNull(Long assocId);
+
+    /**
+     * @return                  Returns a specific node association with the given ID
      * 
      * @throws ConcurrencyFailureException  if the association ID is invalid
      */

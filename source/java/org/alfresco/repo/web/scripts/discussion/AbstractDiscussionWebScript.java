@@ -209,6 +209,13 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
     protected void addActivityEntry(String thing, String event, TopicInfo topic, 
           PostInfo post, SiteInfo site, WebScriptRequest req, JSONObject json)
     {
+       // We can only add activities against a site
+       if(site == null)
+       {
+          logger.info("Unable to add activity entry for " + thing + " " + event + " as no site given");
+          return;
+       }
+       
        // What page is this for?
        String page = req.getParameter("page");
        if(page == null && json != null)
@@ -555,6 +562,21 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
           {
              topic = objects.getFirst();
              post = objects.getSecond();
+          }
+          
+          // See if it's actually attached to a site
+          if(topic != null)
+          {
+             NodeRef container = topic.getContainerNodeRef();
+             if(container != null)
+             {
+                NodeRef maybeSite = nodeService.getPrimaryParent(container).getParentRef();
+                if(maybeSite != null)
+                {
+                   // Try to make it a site, will return Null if it isn't one
+                   site = siteService.getSite(maybeSite);
+                }
+             }
           }
        }
        else

@@ -122,7 +122,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
             "alfresco.node.select_ChildAssocsOfParentWithoutParentAssocsOfType";
     private static final String SELECT_PARENT_ASSOCS_OF_CHILD = "alfresco.node.select_ParentAssocsOfChild";
     private static final String UPDATE_PARENT_ASSOCS_OF_CHILD = "alfresco.node.update_ParentAssocsOfChild";
-    private static final String DELETE_SUBSCRIPTIONS = "alfresco.node.delete_Subscriptions";
+    private static final String DELETE_SUBSCRIPTIONS = "alfresco.node.delete_NodeSubscriptions";
     
     private static final String UPDATE_MOVE_PARENT_ASSOCS = "alfresco.node.update_MoveParentAssocs";
     private static final String UPDATE_MOVE_CHILD_ASSOCS = "alfresco.node.update_MoveChildAssocs";
@@ -1566,6 +1566,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         
         public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
         {
+            super.setSqlSessionTemplate(sqlSessionTemplate);
             this.template = sqlSessionTemplate;
         }
 

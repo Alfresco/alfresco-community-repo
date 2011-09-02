@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -161,14 +160,23 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
         final List<Pair<QName, SortOrder>> sortPairs = (List)sortDetails.getSortPairs();
         
         // Set sort / filter params
-        Set<QName> sortFilterProps = new HashSet<QName>(filterProps.size() + sortPairs.size());
-        for (FilterProp filter : filterProps)
-        {
-            sortFilterProps.add(filter.getPropName());
-        }
+        // Note - need to keep the sort properties in their requested order
+        List<QName> sortFilterProps = new ArrayList<QName>(filterProps.size() + sortPairs.size());
         for (Pair<QName, SortOrder> sort : sortPairs)
         {
-            sortFilterProps.add(sort.getFirst());
+            QName sortQName = sort.getFirst();
+            if(! sortFilterProps.contains(sortQName))
+            {
+               sortFilterProps.add(sortQName);
+            }
+        }
+        for (FilterProp filter : filterProps)
+        {
+            QName filterQName = filter.getPropName();
+            if(! sortFilterProps.contains(filterQName))
+            {
+               sortFilterProps.add(filterQName);
+            }
         }
         
         int filterSortPropCnt = sortFilterProps.size();
@@ -279,7 +287,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
     }
     
     // Set filter/sort props (between 0 and 3)
-    private int setFilterSortParams(Set<QName> filterSortProps, FilterSortNodeEntity params)
+    private int setFilterSortParams(List<QName> filterSortProps, FilterSortNodeEntity params)
     {
         int cnt = 0;
         

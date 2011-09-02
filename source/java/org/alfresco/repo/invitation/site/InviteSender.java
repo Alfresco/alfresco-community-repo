@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -151,8 +151,8 @@ public class InviteSender
 
     private String buildSubject(Map<String, String> properties)
     {
-    	return messageService.getMessage("invitation.invitesender.email.subject", 
-    	            ModelUtil.getProductName(repoAdminService), getSiteName(properties));
+        return messageService.getMessage("invitation.invitesender.email.subject", 
+                    ModelUtil.getProductName(repoAdminService), getSiteName(properties));
     }
 
     private Map<String, Serializable> buildMailTextModel(Map<String, String> properties, NodeRef inviter, NodeRef invitee)
@@ -191,15 +191,16 @@ public class InviteSender
         return args;
     }
 
-    private String getRoleName(Map<String, String> properties) {
-    	String roleName = properties.get(wfVarRole);
-    	String role = messageService.getMessage("invitation.invitesender.email.role."+roleName);
-    	if(role == null)
-    	{
-			role = roleName;
-		}
-    	return role;
-	}
+    private String getRoleName(Map<String, String> properties) 
+    {
+        String roleName = properties.get(wfVarRole);
+        String role = messageService.getMessage("invitation.invitesender.email.role." + roleName);
+        if (role == null)
+        {
+            role = roleName;
+        }
+        return role;
+    }
 
     private String getEmail(NodeRef person)
     {

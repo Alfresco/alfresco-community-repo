@@ -31,7 +31,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 /**
  * @author Nick Smith
  * @since 4.0
- *
  */
 public class PublishingEventFilterImpl implements PublishingEventFilter
 {
@@ -44,7 +43,7 @@ public class PublishingEventFilterImpl implements PublishingEventFilter
     */
     public PublishingEventFilter setIds(String... ids)
     {
-        if(ids != null && ids.length>0)
+        if (ids != null && ids.length > 0)
         {
             this.ids = new HashSet<String>(Arrays.asList(ids));
         }
@@ -57,7 +56,7 @@ public class PublishingEventFilterImpl implements PublishingEventFilter
     @Override
     public PublishingEventFilter setIds(Collection<String> ids)
     {
-        if(ids != null && ids.isEmpty() == false)
+        if (ids != null && ids.isEmpty() == false)
         {
             this.ids = new HashSet<String>(ids);
         }
@@ -76,7 +75,7 @@ public class PublishingEventFilterImpl implements PublishingEventFilter
     */
     public PublishingEventFilter setPublishedNodes(NodeRef... publishedNodes)
     {
-        if(publishedNodes != null && publishedNodes.length>0)
+        if (publishedNodes != null && publishedNodes.length > 0)
         {
             this.publishedNodes = new HashSet<NodeRef>(Arrays.asList(publishedNodes));
         }
@@ -88,7 +87,7 @@ public class PublishingEventFilterImpl implements PublishingEventFilter
     */
     public PublishingEventFilter setPublishedNodes(Collection<NodeRef> publishedNodes)
     {
-        if(publishedNodes != null && publishedNodes.isEmpty() == false)
+        if (publishedNodes != null && publishedNodes.isEmpty() == false)
         {
             this.publishedNodes = new HashSet<NodeRef>(publishedNodes);
         }
@@ -108,7 +107,7 @@ public class PublishingEventFilterImpl implements PublishingEventFilter
      */
     public PublishingEventFilter setUnpublishedNodes(NodeRef... unpublishedNodes)
     {
-        if(unpublishedNodes != null && unpublishedNodes.length>0)
+        if (unpublishedNodes != null && unpublishedNodes.length > 0)
         {
             this.unpublishedNodes = new HashSet<NodeRef>(Arrays.asList(unpublishedNodes));
         }
@@ -120,7 +119,7 @@ public class PublishingEventFilterImpl implements PublishingEventFilter
      */
     public PublishingEventFilter setUnpublishedNodes(Collection<NodeRef> unpublishedNodes)
     {
-        if(unpublishedNodes != null && unpublishedNodes.isEmpty() == false)
+        if (unpublishedNodes != null && unpublishedNodes.isEmpty() == false)
         {
             this.unpublishedNodes = new HashSet<NodeRef>(unpublishedNodes);
         }
@@ -134,5 +133,4 @@ public class PublishingEventFilterImpl implements PublishingEventFilter
     {
         return Collections.unmodifiableSet(unpublishedNodes);
     }
-
 }

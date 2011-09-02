@@ -26,11 +26,9 @@ import org.alfresco.service.cmr.publishing.MutablePublishingEvent;
 /**
  * @author Nick Smith
  * @since 4.0
- *
  */
 public class MutablePublishingEventImpl extends PublishingEventImpl implements MutablePublishingEvent
 {
-
     /**
      * @param publishingEventImpl
      */
@@ -56,5 +54,4 @@ public class MutablePublishingEventImpl extends PublishingEventImpl implements M
     {
         this.comment = comment;
     }
-
 }

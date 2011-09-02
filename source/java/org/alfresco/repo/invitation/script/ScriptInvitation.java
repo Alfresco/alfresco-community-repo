@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 Alfresco Software Limited.
+ * Copyright (C) 2009-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -29,15 +29,15 @@ import org.alfresco.service.cmr.invitation.InvitationService;
  */
 public abstract class ScriptInvitation<T extends Invitation>
 {
-	private T invitation;
-	private InvitationService invitationService;
+    private T invitation;
+    private InvitationService invitationService;
 
-	public ScriptInvitation(T invitation, InvitationService invitationService)
-	{
-		this.invitation = invitation;
-		this.invitationService = invitationService;				
-	}
-	   
+    public ScriptInvitation(T invitation, InvitationService invitationService)
+    {
+        this.invitation = invitation;
+        this.invitationService = invitationService;
+    }
+
     public void reject(String reason)
     {
         invitationService.reject(invitation.getInviteId(), reason);
@@ -47,36 +47,36 @@ public abstract class ScriptInvitation<T extends Invitation>
     {
         invitationService.cancel(invitation.getInviteId());
     }
-	
-	public String getInviteId() 
-	{
-		return invitation.getInviteId();
-	}
 
-	public String getInvitationType() 
-	{
-		return invitation.getInvitationType().toString();
-	}
+    public String getInviteId() 
+    {
+        return invitation.getInviteId();
+    }
 
-	public String getResourceName() 
-	{
-		return invitation.getResourceName();
-	}
-
-	public String getResourceType() 
-	{
-		return invitation.getResourceType().toString();
-	}
-	
-	protected T getInvitation()
-	{
-		return invitation;
-	}
-	
-	protected InvitationService getInvitationService()
-	{
-		return invitationService;
-	}
+    public String getInvitationType() 
+    {
+        return invitation.getInvitationType().toString();
+    }
+    
+    public String getResourceName() 
+    {
+        return invitation.getResourceName();
+    }
+    
+    public String getResourceType() 
+    {
+        return invitation.getResourceType().toString();
+    }
+    
+    protected T getInvitation()
+    {
+        return invitation;
+    }
+    
+    protected InvitationService getInvitationService()
+    {
+        return invitationService;
+    }
 
     /**
      * Which role to be added with
@@ -84,7 +84,7 @@ public abstract class ScriptInvitation<T extends Invitation>
      */
     public String getRoleName()
     {
-    	return getInvitation().getRoleName();
+        return getInvitation().getRoleName();
     }
 
     /**
@@ -93,7 +93,7 @@ public abstract class ScriptInvitation<T extends Invitation>
      */
     public String getInviteeUserName()
     {
-    	return getInvitation().getInviteeUserName();
+        return getInvitation().getInviteeUserName();
     }
     
     public abstract String getInviteeEmail();

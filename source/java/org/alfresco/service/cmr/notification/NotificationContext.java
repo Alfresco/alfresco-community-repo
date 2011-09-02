@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -29,6 +29,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * Notification context.  Provides the contextual information about a notification.
  * 
  * @author Roy Wetherall
+ * @since 4.0
  */
 public class NotificationContext 
 {
@@ -58,7 +59,7 @@ public class NotificationContext
     
     /** Indicates whether the notification should be sent asynchronously or not */
     private boolean asyncNotification = false;
-	
+
     /**
      * Default constructor
      */

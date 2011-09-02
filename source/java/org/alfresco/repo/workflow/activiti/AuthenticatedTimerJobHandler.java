@@ -41,61 +41,62 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
  */
 public class AuthenticatedTimerJobHandler implements JobHandler 
 {
-	private JobHandler wrappedHandler;
-	
-	public AuthenticatedTimerJobHandler(JobHandler jobHandler) 
-	{
-		if(jobHandler == null)
-		{
-			throw new IllegalArgumentException("JobHandler to delegate to is required");
-		}
-		this.wrappedHandler = jobHandler;
-	}
-	
-	@Override
-	public void execute(final String configuration, final ExecutionEntity execution,
-			final CommandContext commandContext) 
-	{
-		String userName = null;
-		
-		PvmActivity targetActivity = execution.getActivity();
-		if(targetActivity != null)
-		{
-			// Only try getting active task, if execution timer is waiting on is a userTask
-			String activityType = (String) targetActivity.getProperty(ActivitiConstants.NODE_TYPE);
-			if(ActivitiConstants.USER_TASK_NODE_TYPE.equals(activityType))
-			{
-				Task task = new TaskQueryImpl(commandContext)
-					.executionId(execution.getId())
-					.executeSingleResult(commandContext);
-				
-				if(task != null && task.getAssignee() != null)
-				{
-					userName = task.getAssignee();
-				}
-			}
-		}
-		
-		// When no task assignee is set, use system user to run job
-		if(userName == null)
-		{
-			userName = AuthenticationUtil.getSystemUserName();
-		}
-		
-		// Execute timer
+    private JobHandler wrappedHandler;
+    
+    public AuthenticatedTimerJobHandler(JobHandler jobHandler) 
+    {
+        if (jobHandler == null)
+        {
+            throw new IllegalArgumentException("JobHandler to delegate to is required");
+        }
+        this.wrappedHandler = jobHandler;
+    }
+    
+    @Override
+    public void execute(final String configuration, final ExecutionEntity execution,
+                final CommandContext commandContext) 
+    {
+        String userName = null;
+        
+        PvmActivity targetActivity = execution.getActivity();
+        if (targetActivity != null)
+        {
+            // Only try getting active task, if execution timer is waiting on is a userTask
+            String activityType = (String) targetActivity.getProperty(ActivitiConstants.NODE_TYPE);
+            if (ActivitiConstants.USER_TASK_NODE_TYPE.equals(activityType))
+            {
+                Task task = new TaskQueryImpl(commandContext)
+                    .executionId(execution.getId())
+                    .executeSingleResult(commandContext);
+
+                if (task != null && task.getAssignee() != null)
+                {
+                    userName = task.getAssignee();
+                }
+            }
+        }
+        
+        // When no task assignee is set, use system user to run job
+        if (userName == null)
+        {
+            userName = AuthenticationUtil.getSystemUserName();
+        }
+        
+// Execute timer
         AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
             @SuppressWarnings("synthetic-access")
             public Void doWork() throws Exception
             {
-            	wrappedHandler.execute(configuration, execution, commandContext);
-            	return null;
+                wrappedHandler.execute(configuration, execution, commandContext);
+                return null;
             }
         }, userName);
-	}	
-	
-	@Override
-	public String getType() {
-		return wrappedHandler.getType();
-	}
+    }
+
+    @Override
+    public String getType() 
+    {
+        return wrappedHandler.getType();
+    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -21,7 +21,6 @@ package org.alfresco.repo.invitation;
 
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.service.cmr.invitation.Invitation;
-import org.alfresco.service.cmr.invitation.NominatedInvitation;
 
 /**
  * @author Nick Smith
@@ -62,6 +61,5 @@ public class ActivitiInvitationServiceImplTests extends AbstractInvitationServic
         // Disable Jbpm and enable Activiti
         workflowAdminService.setJbpmEngineEnabled(false);
         workflowAdminService.setActivitiEngineEnabled(true);
-
     }
 }

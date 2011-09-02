@@ -109,9 +109,9 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 /**
- * @since 3.4.e
  * @author Nick Smith
  * @author Frederik Heremans
+ * @since 3.4.e
  */
 public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
 {
@@ -200,6 +200,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     {
         super();
     }
+    
     /**
      * {@inheritDoc}
      */
@@ -225,7 +226,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         try
         {
             ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(localId).singleResult();
-            if(processInstance == null) 
+            if (processInstance == null) 
             {
                 throw new WorkflowException(messageService.getMessage(ERR_CANCEL_UNEXISTING_WORKFLOW));
             }
@@ -236,8 +237,8 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             
             // Convert historic process instance
             HistoricProcessInstance deletedInstance = historyService.createHistoricProcessInstanceQuery()
-            	.processInstanceId(processInstance.getId())
-            	.singleResult();
+                        .processInstanceId(processInstance.getId())
+                        .singleResult();
             WorkflowInstance result =  typeConverter.convert(deletedInstance);
             
             // Delete the historic process instance
@@ -245,7 +246,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             
             return result;
         } 
-        catch(ActivitiException ae) 
+        catch (ActivitiException ae) 
         {
             String msg = messageService.getMessage(ERR_CANCEL_WORKFLOW);
             throw new WorkflowException(msg, ae);
@@ -262,7 +263,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         try
         {
             ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(localId).singleResult();
-            if(processInstance == null) 
+            if (processInstance == null) 
             {
                 throw new WorkflowException(messageService.getMessage(ERR_DELETE_UNEXISTING_WORKFLOW));
             }
@@ -272,8 +273,8 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             
             // Convert historic process instance
             HistoricProcessInstance deletedInstance = historyService.createHistoricProcessInstanceQuery()
-            	.processInstanceId(processInstance.getId())
-            	.singleResult();
+                        .processInstanceId(processInstance.getId())
+                        .singleResult();
             WorkflowInstance result =  typeConverter.convert(deletedInstance);
             
             // Delete the historic process instance
@@ -281,7 +282,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             
             return result;
         } 
-        catch(ActivitiException ae) 
+        catch (ActivitiException ae) 
         {
             String msg = messageService.getMessage(ERR_DELETE_WORKFLOW);
             throw new WorkflowException(msg, ae);
@@ -315,7 +316,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
              // not exposed
              return typeConverter.convert(deployment);
          } 
-         catch(ActivitiException ae) 
+         catch (ActivitiException ae) 
          {
              String msg = messageService.getMessage(ERR_DEPLOY_WORKFLOW);
              throw new WorkflowException(msg, ae);
@@ -342,7 +343,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         {
             return getWorkflowInstances(workflowDefinitionId, true);
         }
-        catch(ActivitiException ae) 
+        catch (ActivitiException ae) 
         {
             String message = messageService.getMessage(ERR_GET_ACTIVE_WORKFLOW_INSTS, workflowDefinitionId);
             throw new WorkflowException(message, ae);
@@ -355,7 +356,8 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     @Override
     public List<WorkflowDefinition> getAllDefinitions()
     {
-        try {
+        try 
+        {
             List<ProcessDefinition> definitions = repoService.createProcessDefinitionQuery().list();
             return getValidWorkflowDefinitions(definitions);
         } 
@@ -375,12 +377,14 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         try 
         {
             String name = workflowName;
-            if(tenantService.isEnabled()) 
+            if (tenantService.isEnabled()) 
             {
                 // When a definition is requested from a wrong domain, an
                 // AlfrescoRuntimeException will be thrown
                 name = tenantService.getName(createLocalId(workflowName));              
-            } else {
+            } 
+            else 
+            {
                 name = createLocalId(workflowName);
             }
             List<ProcessDefinition> definitions = repoService.createProcessDefinitionQuery()
@@ -442,12 +446,14 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         try 
         {
             String name = workflowName;
-            if(tenantService.isEnabled()) 
+            if (tenantService.isEnabled()) 
             {
                 // When a definition is requested from a wrong domain, and
                 // ActivitiRuntimeException will be thrown
                 name = tenantService.getName(createLocalId(workflowName));              
-            } else {
+            } 
+            else 
+            {
                 name = createLocalId(workflowName);
             }
             
@@ -477,13 +483,13 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
                .processDefinitionId(processDefinitionId)
                .singleResult();
            
-           if(processDefinition == null)
+           if (processDefinition == null)
            {
                throw new WorkflowException(messageService.getMessage(ERR_GET_DEF_UNEXISTING_IMAGE, workflowDefinitionId));
            }
            
            String diagramResourceName = ((ReadOnlyProcessDefinition)processDefinition).getDiagramResourceName();
-           if(diagramResourceName != null)
+           if (diagramResourceName != null)
            {
                ByteArrayOutputStream out = new ByteArrayOutputStream();
                InputStream resourceInputStream = repoService.getResourceAsStream(processDefinitionId, diagramResourceName);
@@ -494,12 +500,12 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
            // No image was found for the process definition
            return null;
        }
-       catch(IOException ioe)
+       catch (IOException ioe)
        {
            String msg = messageService.getMessage(ERR_GET_DEF_IMAGE, workflowDefinitionId);
            throw new WorkflowException(msg, ioe);
        }
-       catch(ActivitiException ae)
+       catch (ActivitiException ae)
        {
            String msg = messageService.getMessage(ERR_GET_DEF_IMAGE, workflowDefinitionId);
            throw new WorkflowException(msg, ae);
@@ -560,7 +566,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         
         String startTaskName = null;
         StartFormData startFormData = formService.getStartFormData(processDefinition.getId());
-        if(startFormData != null) 
+        if (startFormData != null) 
         {
             startTaskName = startFormData.getFormKey();
         }
@@ -570,7 +576,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         
         // Now, continue through process, finding all user-tasks
         Collection<PvmActivity> taskActivities = findUserTasks(startEvent);
-        for(PvmActivity act : taskActivities)
+        for (PvmActivity act : taskActivities)
         {
             String formKey = getFormKey(act);
             defs.add(typeConverter.getTaskDefinition(act, formKey, processDefinition.getId()));
@@ -581,14 +587,14 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
 
     private String getFormKey(PvmActivity act)
     {
-        if(act instanceof ActivityImpl) 
+        if (act instanceof ActivityImpl) 
         {
             ActivityImpl actImpl = (ActivityImpl) act;
             if (actImpl.getActivityBehavior() instanceof UserTaskActivityBehavior)        
             {
-            	UserTaskActivityBehavior uta = (UserTaskActivityBehavior) actImpl.getActivityBehavior();
+                UserTaskActivityBehavior uta = (UserTaskActivityBehavior) actImpl.getActivityBehavior();
                 TaskFormHandler handler = uta.getTaskDefinition().getTaskFormHandler();
-                if(handler != null && handler instanceof DefaultTaskFormHandler)
+                if (handler != null && handler instanceof DefaultTaskFormHandler)
                 {
                     // We cast to DefaultTaskFormHandler since we do not configure our own
                     return ((DefaultTaskFormHandler)handler).getFormKey();
@@ -601,7 +607,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     
     private boolean isReceiveTask(PvmActivity act)
     {
-        if(act instanceof ActivityImpl) 
+        if (act instanceof ActivityImpl) 
         {
             ActivityImpl actImpl = (ActivityImpl) act;
             return (actImpl.getActivityBehavior() instanceof ReceiveTaskActivityBehavior);        
@@ -622,9 +628,10 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     
     private boolean isFirstActivity(PvmActivity activity, ReadOnlyProcessDefinition procDef)
     {
-        if(procDef.getInitial().getOutgoingTransitions().size() == 1) 
+        if (procDef.getInitial().getOutgoingTransitions().size() == 1) 
         {
-            if(procDef.getInitial().getOutgoingTransitions().get(0).getDestination().equals(activity)) {
+            if (procDef.getInitial().getOutgoingTransitions().get(0).getDestination().equals(activity)) 
+            {
                 return true;
             }
         }
@@ -634,19 +641,19 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     private void findUserTasks(PvmActivity currentActivity, Map<String, PvmActivity> userTasks)
     {
         // Only process activity if not already present to prevent endless loops
-        if(!userTasks.containsKey(currentActivity.getId()))
+        if (!userTasks.containsKey(currentActivity.getId()))
         {
-            if(isUserTask(currentActivity)) 
+            if (isUserTask(currentActivity)) 
             {
                 userTasks.put(currentActivity.getId(), currentActivity);
             }
             
             // Process outgoing transitions
-            if(currentActivity.getOutgoingTransitions() != null)
+            if (currentActivity.getOutgoingTransitions() != null)
             {
-                for(PvmTransition transition : currentActivity.getOutgoingTransitions())
+                for (PvmTransition transition : currentActivity.getOutgoingTransitions())
                 {
-                    if(transition.getDestination() != null)
+                    if (transition.getDestination() != null)
                     {
                         findUserTasks(transition.getDestination(), userTasks);
                     }
@@ -659,7 +666,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     {
         // TODO: Validate if this is the best way to find out an activity is a usertask
         String type = (String) currentActivity.getProperty(ActivitiConstants.NODE_TYPE);
-        if(type != null && type.equals(ActivitiConstants.USER_TASK_NODE_TYPE))
+        if (type != null && type.equals(ActivitiConstants.USER_TASK_NODE_TYPE))
         {
             return true;
         }
@@ -676,14 +683,14 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         { 
            // Extract the Activiti ID from the path
            String executionId = getExecutionIdFromPath(pathId);
-           if(executionId == null) 
+           if (executionId == null) 
            {
                throw new WorkflowException(messageService.getMessage(ERR_GET_WORKFLOW_TOKEN_INVALID, pathId));
            }
            
            // Check if the execution exists
            Execution execution = runtimeService.createExecutionQuery().executionId(executionId).singleResult();
-           if(execution == null)
+           if (execution == null)
            {
                throw new WorkflowException(messageService.getMessage(ERR_GET_WORKFLOW_TOKEN_NULL, pathId));
            }
@@ -693,20 +700,20 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
            // Check if workflow's start task has been completed. If not, return the virtual task
            // Otherwise, just return the runtime activiti tasks
            Date startTaskEndDate = (Date) runtimeService.getVariable(execution.getProcessInstanceId(),
-        		   ActivitiConstants.PROP_START_TASK_END_DATE);
+                       ActivitiConstants.PROP_START_TASK_END_DATE);
            boolean startTaskEnded = (startTaskEndDate != null);
            
-           if(startTaskEnded)
+           if (startTaskEnded)
            {
-        	   List<Task> tasks = taskService.createTaskQuery().executionId(executionId).list();
-        	   for(Task task : tasks) 
-        	   {
-        		   resultList.add(typeConverter.convert(task));
-        	   }
+               List<Task> tasks = taskService.createTaskQuery().executionId(executionId).list();
+               for (Task task : tasks) 
+               {
+                   resultList.add(typeConverter.convert(task));
+               }
            } 
            else
            {
-        	   resultList.add(typeConverter.getVirtualStartTask(executionId, true));
+               resultList.add(typeConverter.getVirtualStartTask(executionId, true));
            }
            return resultList;
         }
@@ -716,14 +723,13 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             throw new WorkflowException(msg, ae);
         }
     }
-    
-    
 
-    protected String getExecutionIdFromPath(String workflowPath) {
-        if(workflowPath != null) 
+    protected String getExecutionIdFromPath(String workflowPath) 
+    {
+        if (workflowPath != null) 
         {
             String[] parts = workflowPath.split(WORKFLOW_TOKEN_SEPERATOR);
-            if(parts.length != 2) 
+            if (parts.length != 2) 
             {
                 throw new WorkflowException(messageService.getMessage(ERR_GET_WORKFLOW_TOKEN_INVALID, workflowPath));
             }
@@ -738,41 +744,41 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     @Override
     public List<WorkflowTimer> getTimers(String workflowId)
     {
-    	 try 
-         {
-             List<WorkflowTimer> timers = new ArrayList<WorkflowTimer>();
+        try 
+        {
+            List<WorkflowTimer> timers = new ArrayList<WorkflowTimer>();
              
-             String processInstanceId = createLocalId(workflowId);
-             List<Job> timerJobs = managementService.createJobQuery()
-             	.processInstanceId(processInstanceId)
-             	.timers()
-             	.list();
+            String processInstanceId = createLocalId(workflowId);
+            List<Job> timerJobs = managementService.createJobQuery()
+                        .processInstanceId(processInstanceId)
+                        .timers()
+                        .list();
              
-             // Only fetch process-instance when timers are available, to prevent extra unneeded query
-             ProcessInstance jobsProcessInstance = null;
-             if(timerJobs.size() > 0)
-             {
-            	 // Reuse the process-instance, is used from WorkflowPath creation
-            	 jobsProcessInstance = runtimeService.createProcessInstanceQuery()
-              		.processInstanceId(processInstanceId).singleResult();
-             }
-             
-             // Convert the timerJobs to WorkflowTimers
-             for(Job job : timerJobs)
-             {
-            	 Execution jobExecution = runtimeService.createExecutionQuery()
-            	 	.executionId(job.getExecutionId()).singleResult();
-            	 
-            	 WorkflowPath path = typeConverter.convert(jobExecution, jobsProcessInstance);
-            	 WorkflowTask workflowTask = getTaskForTimer(job, jobsProcessInstance, jobExecution);
-            	 
-            	 WorkflowTimer workflowTimer = factory.createWorkflowTimer(job.getId(), job.getId(),
-            			 job.getExceptionMessage(), job.getDuedate(), path, workflowTask);
-            	 timers.add(workflowTimer);
-             }
-             
-             return timers;
-             
+            // Only fetch process-instance when timers are available, to prevent extra unneeded query
+            ProcessInstance jobsProcessInstance = null;
+            if (timerJobs.size() > 0)
+            {
+                // Reuse the process-instance, is used from WorkflowPath creation
+                jobsProcessInstance = runtimeService.createProcessInstanceQuery()
+                            .processInstanceId(processInstanceId).singleResult();
+            }
+            
+            // Convert the timerJobs to WorkflowTimers
+            for (Job job : timerJobs)
+            {
+                Execution jobExecution = runtimeService.createExecutionQuery()
+                            .executionId(job.getExecutionId()).singleResult();
+
+                WorkflowPath path = typeConverter.convert(jobExecution, jobsProcessInstance);
+                WorkflowTask workflowTask = getTaskForTimer(job, jobsProcessInstance, jobExecution);
+ 
+                WorkflowTimer workflowTimer = factory.createWorkflowTimer(job.getId(), job.getId(),
+                            job.getExceptionMessage(), job.getDuedate(), path, workflowTask);
+                timers.add(workflowTimer);
+            }
+
+            return timers;
+
          }
          catch (ActivitiException ae)
          {
@@ -781,33 +787,34 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
          }
     }
 
-    private WorkflowTask getTaskForTimer(Job job, ProcessInstance processInstance, Execution jobExecution) {
-    	if (job instanceof TimerEntity) {
-			
-			ReadOnlyProcessDefinition def = activitiUtil.getDeployedProcessDefinition(processInstance.getProcessDefinitionId());
-			List<String> activeActivityIds = runtimeService.getActiveActivityIds(jobExecution.getId());
-			
-			if(activeActivityIds.size() == 1)
-			{
-				PvmActivity targetActivity = def.findActivity(activeActivityIds.get(0));
-				if(targetActivity != null)
-				{
-					// Only get tasks of active activity is a user-task 
-					String activityType = (String) targetActivity.getProperty(ActivitiConstants.NODE_TYPE);
-					if(ActivitiConstants.USER_TASK_NODE_TYPE.equals(activityType))
-					{
-						Task task = taskService.createTaskQuery().executionId(job.getExecutionId()).singleResult();
-						return typeConverter.convert(task);
-					}
-				}
-			}
-		}
-		return null;
-	}
+    private WorkflowTask getTaskForTimer(Job job, ProcessInstance processInstance, Execution jobExecution) 
+    {
+        if (job instanceof TimerEntity) 
+        {
+            ReadOnlyProcessDefinition def = activitiUtil.getDeployedProcessDefinition(processInstance.getProcessDefinitionId());
+            List<String> activeActivityIds = runtimeService.getActiveActivityIds(jobExecution.getId());
+            
+            if (activeActivityIds.size() == 1)
+            {
+                PvmActivity targetActivity = def.findActivity(activeActivityIds.get(0));
+                if (targetActivity != null)
+                {
+                    // Only get tasks of active activity is a user-task 
+                    String activityType = (String) targetActivity.getProperty(ActivitiConstants.NODE_TYPE);
+                    if (ActivitiConstants.USER_TASK_NODE_TYPE.equals(activityType))
+                    {
+                        Task task = taskService.createTaskQuery().executionId(job.getExecutionId()).singleResult();
+                        return typeConverter.convert(task);
+                    }
+                }
+            }
+        }
+        return null;
+    }
 
-	/**
-    * {@inheritDoc}
-    */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public WorkflowInstance getWorkflowById(String workflowId)
     {
@@ -820,7 +827,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
                 .processInstanceId(processInstanceId)
                 .singleResult();
             
-            if(processIntance != null) 
+            if (processIntance != null) 
             {
                 instance = typeConverter.convert(processIntance);
             } 
@@ -919,7 +926,8 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
 
     private String getProcessKey(InputStream workflowDefinition) throws Exception
     {
-        try {
+        try 
+        {
             InputSource inputSource = new InputSource(workflowDefinition);
             DOMParser parser = new DOMParser();
             parser.parse(inputSource);
@@ -953,7 +961,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         Execution oldExecution = activitiUtil.getExecution(execId);
         runtimeService.signal(execId);
         Execution execution = activitiUtil.getExecution(execId);
-        if(execution !=null)
+        if (execution !=null)
         {
             return typeConverter.convert(execution);
         }
@@ -996,7 +1004,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             
             // Start the process-instance
             ProcessInstance instance = runtimeService.startProcessInstanceById(processDefId, variables);
-            if(instance.isEnded()) 
+            if (instance.isEnded()) 
             {
                 return typeConverter.buildCompletedPath(instance.getId(), instance.getId());
             } 
@@ -1024,7 +1032,8 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             ProcessDefinition procDef = repoService.createProcessDefinitionQuery()
                 .processDefinitionId(procDefId)
                 .singleResult();
-            if(procDef == null)     {
+            if (procDef == null)     
+            {
                 String msg = messageService.getMessage(ERR_UNDEPLOY_WORKFLOW_UNEXISTING, workflowDefinitionId);
                 throw new WorkflowException(msg);
             }
@@ -1254,7 +1263,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     {
         String localTaskId = createLocalId(taskId);
         // Check if the task is a virtual start task
-        if(localTaskId.startsWith(ActivitiConstants.START_TASK_PREFIX))
+        if (localTaskId.startsWith(ActivitiConstants.START_TASK_PREFIX))
         {
             return endStartTask(taskId, localTaskId, transition);
         }
@@ -1267,7 +1276,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         // Retrieve task
         Task task = taskService.createTaskQuery().taskId(localTaskId).singleResult();
         
-        if(task == null)
+        if (task == null)
         {
             String msg = messageService.getMessage(ERR_END_UNEXISTING_TASK, taskId);
             throw new WorkflowException(msg);
@@ -1288,9 +1297,9 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
 
         Map<QName, Serializable> properties = propertyConverter.getTaskProperties(task, false);
         QName outcomePropName = (QName) properties.get(WorkflowModel.PROP_OUTCOME_PROPERTY_NAME);
-        if(outcomePropName !=null)
+        if (outcomePropName !=null)
         {
-            if(isDefaultTransition == false)
+            if (isDefaultTransition == false)
             {
                 outcomeValue = transition;
                 Serializable transitionValue = propertyConverter.convertValueToPropertyType(task, transition, outcomePropName);
@@ -1299,13 +1308,13 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             else
             {
                 Serializable rawOutcome = properties.get(outcomePropName);
-                if(rawOutcome != null)
+                if (rawOutcome != null)
                 {
                     outcomeValue = DefaultTypeConverter.INSTANCE.convert(String.class, rawOutcome);
                 }
             }
         }
-        else if (isDefaultTransition==false)
+        else if (isDefaultTransition == false)
         {
             // Only 'Next' is supported as transition.
             String taskId = createGlobalId(task.getId());
@@ -1333,14 +1342,15 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         
         ReadOnlyProcessDefinition procDef = activitiUtil.getDeployedProcessDefinition(processInstance.getProcessDefinitionId());
         PvmActivity activity = procDef.findActivity(currentActivity);
-        if(isReceiveTask(activity) && isFirstActivity(activity, procDef)) 
+        if (isReceiveTask(activity) && isFirstActivity(activity, procDef)) 
         {
             // Signal the process to start flowing, beginning from the recieve task
             runtimeService.signal(processInstanceId);
             
             // It's possible the process has ended after signalling the receive task
             processInstance = activitiUtil.getProcessInstance(processInstanceId);
-            if(processInstance != null) {
+            if (processInstance != null) 
+            {
                 return typeConverter.getVirtualStartTask(processInstanceId, false);
             }
             else
@@ -1353,7 +1363,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             // Return virtual start task for the execution, it's safe to use the processInstanceId
             return typeConverter.getVirtualStartTask(processInstanceId, false);
         }
-        
     }
 
     /**
@@ -1364,7 +1373,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     {
         try
         {
-            if(state == WorkflowTaskState.IN_PROGRESS)
+            if (state == WorkflowTaskState.IN_PROGRESS)
             {
                 List<Task> tasks = taskService.createTaskQuery()
                     .taskAssignee(authority)
@@ -1394,7 +1403,8 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     {
         try 
         {
-            if(authorities != null && authorities.size() > 0) {
+            if (authorities != null && authorities.size() > 0) 
+            {
                 // As an optimisation, we assume the first authority CAN be a user. All the 
                 // others are groups to which the user (or group) belongs. This way, we don't have to
                 // check for the type of the authority.
@@ -1413,7 +1423,8 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
                     // Candidate group
                     addTasksForCandidateGroup(firstAuthority, resultingTasks);
                 }
-                for(int i=1; i<authorities.size(); i++) {
+                for (int i=1; i<authorities.size(); i++) 
+                {
                     // All folowing authorities are groups, just add the cadidate-group tasks
                     addTasksForCandidateGroup(authorities.get(i), resultingTasks);
                 }
@@ -1421,8 +1432,10 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
                 List<Task> tasks = new ArrayList<Task>();
                 
                 // Only tasks that have NO assignee, should be returned
-                for(Task task : resultingTasks.values()) {
-                    if(task.getAssignee() == null) {
+                for(Task task : resultingTasks.values()) 
+                {
+                    if(task.getAssignee() == null) 
+                    {
                         tasks.add(task);
                     }
                 }
@@ -1431,10 +1444,10 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             
             return Collections.emptyList();
         }
-        catch(ActivitiException ae)
+        catch (ActivitiException ae)
         {
             String authorityString = null;
-            if(authorities != null)
+            if (authorities != null)
             {
                 authorityString = StringUtils.join(authorities.iterator(), ", ");
             }
@@ -1446,7 +1459,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     private void addTasksForCandidateGroup(String groupName, Map<String, Task> resultingTasks)
     {
         List<Task> tasks = taskService.createTaskQuery().taskCandidateGroup(groupName).list();
-        for(Task task : tasks)
+        for (Task task : tasks)
         {
             resultingTasks.put(task.getId(), task);
         }
@@ -1455,7 +1468,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     private void addTasksForCandidateUser(String userName, Map<String, Task> resultingTasks)
     {
         List<Task> tasks = taskService.createTaskQuery().taskCandidateUser(userName).list();
-        for(Task task : tasks)
+        for (Task task : tasks)
         {
             resultingTasks.put(task.getId(), task);
         }
@@ -1470,7 +1483,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         try
         {
             String localId = createLocalId(taskId);
-            if(localId.startsWith(ActivitiConstants.START_TASK_PREFIX)) 
+            if (localId.startsWith(ActivitiConstants.START_TASK_PREFIX)) 
             {
                 String processInstanceId = localId.replace(ActivitiConstants.START_TASK_PREFIX ,"");
                 return getVirtualStartTaskForProcessInstance(processInstanceId);
@@ -1478,7 +1491,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             else
             {
                 Task task = activitiUtil.getTaskInstance(localId);
-                if(task != null) 
+                if (task != null) 
                 {
                     return typeConverter.convert(task);
                 }
@@ -1501,13 +1514,13 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
      {
          ArrayList<WorkflowTask> result = new ArrayList<WorkflowTask>();
          WorkflowTaskState taskState = query.getTaskState();
-         if(WorkflowTaskState.COMPLETED.equals(taskState) == false)
+         if (WorkflowTaskState.COMPLETED.equals(taskState) == false)
          {
              result.addAll(queryRuntimeTasks(query));           
          }       
          
          // Depending on the state, history should be included/excluded as wel
-         if(WorkflowTaskState.IN_PROGRESS.equals(taskState) == false)
+         if (WorkflowTaskState.IN_PROGRESS.equals(taskState) == false)
          {
              result.addAll(queryHistoricTasks(query));
              result.addAll(queryStartTasks(query));
@@ -1592,8 +1605,9 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
      }
      
      private void addProcessPropertiesToQuery(
-             Map<QName, Object> processCustomProps, TaskQuery taskQuery) {
-    	 for(Entry<QName, Object> customProperty : processCustomProps.entrySet()) 
+             Map<QName, Object> processCustomProps, TaskQuery taskQuery) 
+     {
+         for (Entry<QName, Object> customProperty : processCustomProps.entrySet()) 
          {
              String name =factory.mapQNameToName(customProperty.getKey());
              taskQuery.processVariableValueEquals(name, customProperty.getValue());
@@ -1630,7 +1644,8 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
          return processName;
      }
 
-     private void orderQuery(TaskQuery taskQuery, OrderBy[] orderBy) {
+     private void orderQuery(TaskQuery taskQuery, OrderBy[] orderBy) 
+     {
          for (WorkflowTaskQuery.OrderBy orderByPart : orderBy)
          {
              if (orderByPart == WorkflowTaskQuery.OrderBy.TaskActor_Asc)
@@ -1677,7 +1692,8 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
          }
      }
      
-     private void orderQuery(HistoricTaskInstanceQuery taskQuery, OrderBy[] orderBy) {
+     private void orderQuery(HistoricTaskInstanceQuery taskQuery, OrderBy[] orderBy) 
+     {
          for (WorkflowTaskQuery.OrderBy orderByPart : orderBy)
          {
              if (orderByPart == WorkflowTaskQuery.OrderBy.TaskActor_Asc)
@@ -1733,7 +1749,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
 
      private void addTaskPropertiesToQuery(Map<QName, Object> taskCustomProps, TaskQuery taskQuery)
      {
-         for(Entry<QName, Object> customProperty : taskCustomProps.entrySet()) 
+         for (Entry<QName, Object> customProperty : taskCustomProps.entrySet()) 
          {
              String name =factory.mapQNameToName(customProperty.getKey());
              taskQuery.taskVariableValueEquals(name, customProperty.getValue());
@@ -1832,21 +1848,23 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
      }
      
      private void addTaskPropertiesToQuery(Map<QName, Object> taskCustomProps, 
-    	HistoricTaskInstanceQuery taskQuery) {
-    	 for(Entry<QName, Object> customProperty : taskCustomProps.entrySet()) 
-    	 {
-    		 String name =factory.mapQNameToName(customProperty.getKey());
-    		 taskQuery.taskVariableValueEquals(name, customProperty.getValue());
-    	 }
+                 HistoricTaskInstanceQuery taskQuery) 
+     {
+         for (Entry<QName, Object> customProperty : taskCustomProps.entrySet()) 
+         {
+             String name =factory.mapQNameToName(customProperty.getKey());
+             taskQuery.taskVariableValueEquals(name, customProperty.getValue());
+         }
      }
      
      private void addProcessPropertiesToQuery(Map<QName, Object> processCustomProps, 
-    	HistoricTaskInstanceQuery taskQuery) {
-    	 for(Entry<QName, Object> customProperty : processCustomProps.entrySet()) 
-    	 {
-    		 String name =factory.mapQNameToName(customProperty.getKey());
-    		 taskQuery.processVariableValueEquals(name, customProperty.getValue());
-    	 }
+                 HistoricTaskInstanceQuery taskQuery) 
+     {
+         for (Entry<QName, Object> customProperty : processCustomProps.entrySet()) 
+         {
+             String name =factory.mapQNameToName(customProperty.getKey());
+             taskQuery.processVariableValueEquals(name, customProperty.getValue());
+         }
      }
      
      private List<WorkflowTask> queryStartTasks(WorkflowTaskQuery query)
@@ -1855,16 +1873,16 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
 
          String processInstanceId = null;
          String taskId = query.getTaskId();
-         if(taskId != null )
+         if (taskId != null )
          {
              String localTaskId = createLocalId(taskId);
-             if(localTaskId.startsWith(ActivitiConstants.START_TASK_PREFIX))
+             if (localTaskId.startsWith(ActivitiConstants.START_TASK_PREFIX))
              processInstanceId = localTaskId.substring(ActivitiConstants.START_TASK_PREFIX.length());
          }
          else
          {
              String processId = query.getProcessId();
-             if(processId != null)
+             if (processId != null)
              {
                  // Start task for a specific process
                  processInstanceId = createLocalId(processId);
@@ -1872,155 +1890,153 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
          }
          
          // Only return start-task when a process or task id is set
-         if(processInstanceId != null)
+         if (processInstanceId != null)
          {
              // Extract processInstanceId
              WorkflowTask workflowTask = getVirtualStartTaskForProcessInstance(processInstanceId);
-             if(workflowTask != null)
+             if (workflowTask != null)
              {
-            	boolean startTaskMatches = isStartTaskMatching(workflowTask, query);
-            	if(startTaskMatches)
-            	{
-            		startTasks.add(workflowTask);
-            	}
+                 boolean startTaskMatches = isStartTaskMatching(workflowTask, query);
+                 if (startTaskMatches)
+                 {
+                     startTasks.add(workflowTask);
+                 }
              }
          }
          return startTasks;
      }
          
      
-    private boolean isStartTaskMatching(WorkflowTask workflowTask,
-			WorkflowTaskQuery query) {
-	
-    	if(query.isActive() != null)
-    	{
-    		if(query.isActive() && !workflowTask.getPath().isActive()) 
-    		{
-    			return false;
-    		}
-    		if(!query.isActive() && workflowTask.getPath().isActive()) 
-    		{
-    			return false;
-    		}
-    	}
-    	
-    	if(query.getActorId() != null && !query.getActorId().equals(workflowTask.getProperties().get(ContentModel.PROP_OWNER)))
-    	{
-    		return false;
-    	}
-    	
-    	if(query.getProcessCustomProps() != null)
-    	{
-    		// Get properties for process instance, based on path of start task, which is process-instance
-    		Map<QName, Serializable> props = getPathProperties(workflowTask.getPath().getId());
-    		if(!checkPropertiesPresent(query.getProcessCustomProps(), props))
-    		{
-    			return false;
-    		}
-    	}
-    		
-		if(query.getProcessId() != null)
-		{
-			if(!query.getProcessId().equals(workflowTask.getPath().getInstance().getId()))
-			{
-				return false;
-			}
-		}
-		
-		// Query by process name deprecated, but still implemented.
-		if(query.getProcessName() != null)
-		{
-			String processName = factory.mapQNameToName(query.getProcessName());
-			if(!processName.equals(workflowTask.getPath().getInstance().getDefinition().getName()))
-			{
-				return false;
-			}
-		}
-		
-		if(query.getWorkflowDefinitionName() != null)
+    private boolean isStartTaskMatching(WorkflowTask workflowTask, WorkflowTaskQuery query) 
+    {
+        if (query.isActive() != null)
         {
-            if(!query.getWorkflowDefinitionName().equals(workflowTask.getPath().getInstance().getDefinition().getName()))
+            if (query.isActive() && !workflowTask.getPath().isActive()) 
+            {
+                return false;
+            }
+            if (!query.isActive() && workflowTask.getPath().isActive()) 
             {
                 return false;
             }
         }
-    	
-		if(query.getTaskCustomProps() != null)
-		{
-			if(!checkPropertiesPresent(query.getTaskCustomProps(), workflowTask.getProperties()))
-    		{
-    			return false;
-    		}
-		}
-		
-		if(query.getTaskId() != null)
-		{
-			if(!query.getTaskId().equals(workflowTask.getId()))
-			{
-				return false;
-			}
-		}
-		
-		if(query.getTaskName() != null)
-		{
-			if(!query.getTaskName().equals(workflowTask.getDefinition().getMetadata().getName()))
-			{
-				return false;
-			}
-		}
-		
-		if(query.getTaskState() != null)
-		{
-			if(!query.getTaskState().equals(workflowTask.getState()))
-			{
-				return false;
-			}
-		}
-		
-    	// If we fall through, start task matches the query
-    	return true;
+        
+        if (query.getActorId() != null && !query.getActorId().equals(workflowTask.getProperties().get(ContentModel.PROP_OWNER)))
+        {
+            return false;
+        }
+        
+        if (query.getProcessCustomProps() != null)
+        {
+            // Get properties for process instance, based on path of start task, which is process-instance
+            Map<QName, Serializable> props = getPathProperties(workflowTask.getPath().getId());
+            if (!checkPropertiesPresent(query.getProcessCustomProps(), props))
+            {
+                return false;
+            }
+        }
+
+        if (query.getProcessId() != null)
+        {
+            if (!query.getProcessId().equals(workflowTask.getPath().getInstance().getId()))
+            {
+                return false;
+            }
+        }
+        
+        // Query by process name deprecated, but still implemented.
+        if (query.getProcessName() != null)
+        {
+            String processName = factory.mapQNameToName(query.getProcessName());
+            if (!processName.equals(workflowTask.getPath().getInstance().getDefinition().getName()))
+            {
+                return false;
+            }
+        }
+
+        if (query.getWorkflowDefinitionName() != null)
+        {
+            if (!query.getWorkflowDefinitionName().equals(workflowTask.getPath().getInstance().getDefinition().getName()))
+            {
+                return false;
+            }
+        }
+
+        if (query.getTaskCustomProps() != null)
+        {
+            if (!checkPropertiesPresent(query.getTaskCustomProps(), workflowTask.getProperties()))
+            {
+                return false;
+            }
+        }
+
+        if (query.getTaskId() != null)
+        {
+            if (!query.getTaskId().equals(workflowTask.getId()))
+            {
+                return false;
+            }
+        }
+        
+        if (query.getTaskName() != null)
+        {
+            if (!query.getTaskName().equals(workflowTask.getDefinition().getMetadata().getName()))
+            {
+                return false;
+            }
+        }
+        
+        if (query.getTaskState() != null)
+        {
+            if (!query.getTaskState().equals(workflowTask.getState()))
+            {
+                return false;
+            }
+        }
+
+        // If we fall through, start task matches the query
+        return true;
     }
     
     private boolean checkPropertiesPresent(Map<QName, Object> expectedProperties, Map<QName, Serializable> props)
     {
-    	for(Map.Entry<QName, Object> entry : expectedProperties.entrySet())
-		{
-			if(props.containsKey(entry.getKey())) 
-			{
-				Object requiredValue = entry.getValue();
-				Object actualValue = props.get(entry.getKey());
-				
-				if(requiredValue != null)
-				{
-					if(!requiredValue.equals(actualValue))
-					{
-						return false;
-					}
-					break;
-				}
-				else
-				{
-					if(actualValue != null)
-					{
-						return false;
-					}
-					break;
-				}
-			}
-			if(entry.getValue() != null)
-			{
-				// If variable is not found and required value is non null, start-task doesn't match
-				return false;    				
-			}
-		}
-    	
-    	return true;
+        for(Map.Entry<QName, Object> entry : expectedProperties.entrySet())
+        {
+            if (props.containsKey(entry.getKey())) 
+            {
+                Object requiredValue = entry.getValue();
+                Object actualValue = props.get(entry.getKey());
+                
+                if (requiredValue != null)
+                {
+                    if (!requiredValue.equals(actualValue))
+                    {
+                        return false;
+                    }
+                    break;
+                }
+                else
+                {
+                    if (actualValue != null)
+                    {
+                        return false;
+                    }
+                    break;
+                }
+            }
+            if (entry.getValue() != null)
+            {
+                // If variable is not found and required value is non null, start-task doesn't match
+                return false;
+            }
+        }
+
+        return true;
     }
     
-    
-	/**
-    * {@inheritDoc}
-    */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public WorkflowTask getStartTask(String workflowInstanceId)
     {
@@ -2035,11 +2051,11 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             .processInstanceId(processInstanceId)
             .singleResult();
         
-        if(runningInstance != null)
+        if (runningInstance != null)
         {
            // Check the process instance variable to see if start-task has been completed
            Date startTaskEndDate = (Date) runtimeService.getVariable(runningInstance.getProcessInstanceId(),
-        		   ActivitiConstants.PROP_START_TASK_END_DATE);
+                       ActivitiConstants.PROP_START_TASK_END_DATE);
            boolean startTaskEnded = (startTaskEndDate != null);
            return typeConverter.getVirtualStartTask(runningInstance.getId(), !startTaskEnded);
         }
@@ -2080,7 +2096,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     {
         try
         {
-            if(taskId.startsWith(ActivitiConstants.START_TASK_PREFIX))
+            if (taskId.startsWith(ActivitiConstants.START_TASK_PREFIX))
             {
                 // Known limitation, start-tasks cannot be updated
                 String msg = messageService.getMessage(ERR_UPDATE_START_TASK, taskId);
@@ -2088,7 +2104,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             }
             
             Task task = taskService.createTaskQuery().taskId(createLocalId(taskId)).singleResult();
-            if(task != null)
+            if (task != null)
             {
                 Task updatedTask = propertyConverter.updateTask(task, properties, add, remove);
                 return typeConverter.convert(updatedTask);
@@ -2099,7 +2115,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
                 throw new WorkflowException(msg);
             }            
         }
-        catch(ActivitiException ae)
+        catch (ActivitiException ae)
         {
             String msg = messageService.getMessage(ERR_UPDATE_TASK, taskId);
             throw new WorkflowException(msg, ae);
@@ -2110,7 +2126,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     {
         String processDefId = createLocalId(workflowDefinitionId);
         LinkedList<WorkflowInstance> results = new LinkedList<WorkflowInstance>();
-        if(Boolean.FALSE.equals(isActive)==false)
+        if (Boolean.FALSE.equals(isActive)==false)
         {
             List<ProcessInstance> activeInstances = runtimeService.createProcessInstanceQuery()
                 .processDefinitionId(processDefId)
@@ -2118,7 +2134,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             List<WorkflowInstance> activeResults = typeConverter.convert(activeInstances);
             results.addAll(activeResults);
         }
-        if(Boolean.TRUE.equals(isActive)==false)
+        if (Boolean.TRUE.equals(isActive)==false)
         {
             List<HistoricProcessInstance> completedInstances = historyService.createHistoricProcessInstanceQuery()
                 .processDefinitionId(processDefId)

@@ -1,10 +1,5 @@
-package org.alfresco.repo.invitation;
-
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
-
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -21,13 +16,16 @@ import org.alfresco.service.namespace.QName;
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
+package org.alfresco.repo.invitation;
+
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Workflow Model for a Moderated Invitation
  */
 public interface WorkflowModelModeratedInvitation
 {
-
     // namespace
     public static final String NAMESPACE_URI = "http://www.alfresco.org/model/workflow/invite/moderated/1.0";
     

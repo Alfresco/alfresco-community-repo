@@ -26,6 +26,10 @@ import org.springframework.social.facebook.api.Facebook;
 import org.springframework.social.facebook.connect.FacebookConnectionFactory;
 import org.springframework.social.oauth2.AccessGrant;
 
+/**
+ * @author Brian
+ * @since 4.0
+ */
 public class FacebookPublishingHelper
 {
     private NodeService nodeService;

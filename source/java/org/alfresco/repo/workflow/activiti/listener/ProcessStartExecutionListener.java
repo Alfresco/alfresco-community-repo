@@ -30,15 +30,14 @@ import org.alfresco.repo.workflow.activiti.ActivitiConstants;
  * when process starts.
  * 
  * @author Frederik Heremans
+ * @since 4.0
  */
 public class ProcessStartExecutionListener implements ExecutionListener
 {
-
     public void notify(DelegateExecution execution) throws Exception
     {
         // Add the workflow ID
         execution.setVariable(WorkflowConstants.PROP_WORKFLOW_INSTANCE_ID, BPMEngineRegistry
                     .createGlobalId(ActivitiConstants.ENGINE_ID, execution.getId()));
-
     }
 }

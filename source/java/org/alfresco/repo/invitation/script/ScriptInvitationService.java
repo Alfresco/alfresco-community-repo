@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -43,7 +43,7 @@ import org.springframework.beans.factory.InitializingBean;
 public class ScriptInvitationService extends BaseScopableProcessorExtension
     implements InitializingBean
 {    
-	
+
     /** The invitation service */
     private InvitationService invitationService;
     
@@ -99,35 +99,35 @@ public class ScriptInvitationService extends BaseScopableProcessorExtension
      */
 
     public ScriptInvitation<?>[] listInvitations(Scriptable props)
-    {	    	
-    	InvitationSearchCriteriaImpl crit = new InvitationSearchCriteriaImpl();
+    {
+        InvitationSearchCriteriaImpl crit = new InvitationSearchCriteriaImpl();
 
-    	if (props.has("resourceName", props))
-    	{
-    		crit.setResourceName((String)props.get("resourceName", props));
-      	}
-    	if (props.has("resourceType", props))
-    	{
-    		crit.setResourceType(ResourceType.valueOf((String)props.get("resourceType", props)));
-      	}
-    	if (props.has("inviteeUserName", props))
-    	{
-    		crit.setInvitee((String)props.get("inviteeUserName", props));
-      	}
-    	if (props.has("invitationType", props))
-    	{
-    		String invitationType = (String)props.get("invitationType", props);
-    		crit.setInvitationType(InvitationType.valueOf(invitationType));
+        if (props.has("resourceName", props))
+        {
+            crit.setResourceName((String)props.get("resourceName", props));
         }
-
-    	List<Invitation> invitations = invitationService.searchInvitation(crit);
-    	ScriptInvitation<?>[] ret = new ScriptInvitation[invitations.size()];
+        if (props.has("resourceType", props))
+        {
+            crit.setResourceType(ResourceType.valueOf((String)props.get("resourceType", props)));
+        }
+        if (props.has("inviteeUserName", props))
+        {
+            crit.setInvitee((String)props.get("inviteeUserName", props));
+        }
+        if (props.has("invitationType", props))
+        {
+            String invitationType = (String)props.get("invitationType", props);
+            crit.setInvitationType(InvitationType.valueOf(invitationType));
+        }
+    
+        List<Invitation> invitations = invitationService.searchInvitation(crit);
+        ScriptInvitation<?>[] ret = new ScriptInvitation[invitations.size()];
         int i = 0;
-		for(Invitation item : invitations)
-		{
-			ret[i++] = scriptInvitationFactory.toScriptInvitation(item);
-		}
-    	return ret;
+        for(Invitation item : invitations)
+        {
+            ret[i++] = scriptInvitationFactory.toScriptInvitation(item);
+        }
+        return ret;
     }
 
     /* (non-Javadoc)

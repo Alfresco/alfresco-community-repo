@@ -28,9 +28,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * This ActionExecuter adds a publish event to the publish event queue.
+ * 
  * @author Nick Smith
  * @since 4.0
- *
  */
 public class PublishEventAction extends ActionExecuterAbstractBase 
 {
@@ -61,5 +61,4 @@ public class PublishEventAction extends ActionExecuterAbstractBase
     {
         this.processor = processor;
     }
-
 }

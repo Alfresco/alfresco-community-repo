@@ -37,9 +37,8 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
 /**
- * @since 3.4.e
  * @author Nick Smith
- *
+ * @since 3.4.e
  */
 public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServiceIntegrationTest
 {
@@ -85,27 +84,27 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
     @Override
     protected void checkTaskQueryStartTaskCompleted(String workflowInstanceId, WorkflowTask startTask) 
     {
-    	// In activiti, start-tasks only show up when the taskId or workflowInstanceId is passed in.
-		List<String> expectedTasks = Arrays.asList(startTask.getId());
-		
+        // In activiti, start-tasks only show up when the taskId or workflowInstanceId is passed in.
+        List<String> expectedTasks = Arrays.asList(startTask.getId());
+        
         checkProcessIdQuery(workflowInstanceId, expectedTasks, WorkflowTaskState.COMPLETED);
-	    checkTaskIdQuery(startTask.getId(), WorkflowTaskState.COMPLETED);
-	    
-	    // Check additional filtering, when workflowInstanceId is passed
-	    QName startTaskName = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "submitAdhocTask");
-	    checkTaskNameQuery(startTaskName, expectedTasks, WorkflowTaskState.COMPLETED, workflowInstanceId);
-	    checkActorIdQuery(USER1, expectedTasks, WorkflowTaskState.COMPLETED, workflowInstanceId);
-	    checkIsActiveQuery(expectedTasks, WorkflowTaskState.COMPLETED, workflowInstanceId);
-	    checkTaskPropsQuery(expectedTasks, WorkflowTaskState.COMPLETED, workflowInstanceId);
-	}
+        checkTaskIdQuery(startTask.getId(), WorkflowTaskState.COMPLETED);
+        
+        // Check additional filtering, when workflowInstanceId is passed
+        QName startTaskName = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "submitAdhocTask");
+        checkTaskNameQuery(startTaskName, expectedTasks, WorkflowTaskState.COMPLETED, workflowInstanceId);
+        checkActorIdQuery(USER1, expectedTasks, WorkflowTaskState.COMPLETED, workflowInstanceId);
+        checkIsActiveQuery(expectedTasks, WorkflowTaskState.COMPLETED, workflowInstanceId);
+        checkTaskPropsQuery(expectedTasks, WorkflowTaskState.COMPLETED, workflowInstanceId);
+    }
     
     @Override
     protected void checkTaskQueryTaskCompleted(String workflowInstanceId, WorkflowTask theTask, WorkflowTask startTask) 
-	{
-		List<String> withoutStartTask = Arrays.asList(theTask.getId());
-		List<String> bothTasks= Arrays.asList(theTask.getId(), startTask.getId());
+    {
+        List<String> withoutStartTask = Arrays.asList(theTask.getId());
+        List<String> bothTasks= Arrays.asList(theTask.getId(), startTask.getId());
         
-		checkProcessIdQuery(workflowInstanceId, bothTasks, WorkflowTaskState.COMPLETED);
+        checkProcessIdQuery(workflowInstanceId, bothTasks, WorkflowTaskState.COMPLETED);
         
         // Adhoc task should only be returned
         QName taskName = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "adhocTask");
@@ -121,25 +120,26 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
         
         // Process properties
         checkProcessPropsQuery(withoutStartTask, WorkflowTaskState.COMPLETED);
-	}
+    }
     
     @Override
-    protected void checkQueryTasksInactiveWorkflow(String workflowInstanceId) {
-		WorkflowTaskQuery taskQuery = createWorkflowTaskQuery(WorkflowTaskState.COMPLETED);
-		taskQuery.setActive(false);
-		taskQuery.setProcessId(workflowInstanceId);
-		
-		List<WorkflowTask> tasks = workflowService.queryTasks(taskQuery);
+    protected void checkQueryTasksInactiveWorkflow(String workflowInstanceId) 
+    {
+        WorkflowTaskQuery taskQuery = createWorkflowTaskQuery(WorkflowTaskState.COMPLETED);
+        taskQuery.setActive(false);
+        taskQuery.setProcessId(workflowInstanceId);
+
+        List<WorkflowTask> tasks = workflowService.queryTasks(taskQuery);
         assertNotNull(tasks);
         
         // Activiti doesn't return start-task when no process/task id is set in query, so only 2 tasks will be returned
         assertEquals(3, tasks.size());
         
         taskQuery = createWorkflowTaskQuery(WorkflowTaskState.COMPLETED);
-		taskQuery.setActive(true);
+        taskQuery.setActive(true);
         taskQuery.setProcessId(workflowInstanceId);
-		checkNoTasksFoundUsingQuery(taskQuery);
-	}
+        checkNoTasksFoundUsingQuery(taskQuery);
+    }
     
     @Override
     protected String getEngine()
@@ -171,15 +171,15 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
         return "alfresco/workflow/parallel-review.bpmn20.xml";
     }
 
-	@Override
-	protected String getTestTimerDefinitionPath() 
-	{
-		return "activiti/testTimer.bpmn20.xml";
-	}
-	
-	@Override
-	protected QName getAdhocProcessName() {
-		return QName.createQName("activitiAdhoc");
-	}
-    
+    @Override
+    protected String getTestTimerDefinitionPath() 
+    {
+        return "activiti/testTimer.bpmn20.xml";
+    }
+
+    @Override
+    protected QName getAdhocProcessName() 
+    {
+        return QName.createQName("activitiAdhoc");
+    }
 }

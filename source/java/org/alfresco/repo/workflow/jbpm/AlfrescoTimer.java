@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -82,7 +82,7 @@ public class AlfrescoTimer extends Timer
                     && taskInstance.isOpen())
                 {
                     taskInstance.setSignalling(false);
-                	taskInstance.end();
+                    taskInstance.end();
                 }
                 return deleteTimer;
             }

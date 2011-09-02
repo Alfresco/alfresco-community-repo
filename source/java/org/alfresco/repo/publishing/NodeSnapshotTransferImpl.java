@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -38,7 +38,6 @@ import org.alfresco.service.namespace.QName;
  * @author Brian
  * @author Nick Smith
  * @since 4.0
- *
  */
 public class NodeSnapshotTransferImpl implements NodeSnapshot
 {
@@ -54,7 +53,7 @@ public class NodeSnapshotTransferImpl implements NodeSnapshot
 
     public List<ChildAssociationRef> getAllParentAssocs()
     {
-        if(transferNode==null)
+        if (transferNode == null)
         {
             return Collections.emptyList();
         }
@@ -66,7 +65,7 @@ public class NodeSnapshotTransferImpl implements NodeSnapshot
      */
     public Set<QName> getAspects()
     {
-        if(transferNode==null)
+        if (transferNode == null)
         {
             return Collections.emptySet();
         }
@@ -78,7 +77,7 @@ public class NodeSnapshotTransferImpl implements NodeSnapshot
       */
     public NodeRef getNodeRef()
     {
-        if(transferNode==null)
+        if (transferNode == null)
         {
             return null;
         }
@@ -90,7 +89,7 @@ public class NodeSnapshotTransferImpl implements NodeSnapshot
      */
     public List<AssociationRef> getOutboundPeerAssociations()
     {
-        if(transferNode==null)
+        if (transferNode == null)
         {
             return Collections.emptyList();
         }
@@ -102,7 +101,7 @@ public class NodeSnapshotTransferImpl implements NodeSnapshot
      */
     public ChildAssociationRef getPrimaryParentAssoc()
     {
-        if(transferNode==null)
+        if (transferNode == null)
         {
             return null;
         }
@@ -114,7 +113,7 @@ public class NodeSnapshotTransferImpl implements NodeSnapshot
      */
     public Path getPrimaryPath()
     {
-        if(transferNode==null)
+        if (transferNode == null)
         {
             return null;
         }
@@ -126,7 +125,7 @@ public class NodeSnapshotTransferImpl implements NodeSnapshot
      */
     public Map<QName, Serializable> getProperties()
     {
-        if(transferNode==null)
+        if (transferNode == null)
         {
             return Collections.emptyMap();
         }
@@ -138,7 +137,7 @@ public class NodeSnapshotTransferImpl implements NodeSnapshot
      */
     public QName getType()
     {
-        if(transferNode==null)
+        if (transferNode == null)
         {
             return null;
         }

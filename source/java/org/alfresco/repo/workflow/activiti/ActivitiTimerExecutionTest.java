@@ -57,7 +57,8 @@
 // * @author Frederik Heremans
 // * @since 3.4.e
 // */
-//public class ActivitiTimerExecutionTest extends BaseSpringTest {
+//public class ActivitiTimerExecutionTest extends BaseSpringTest 
+//{
 //
 //	private static final String USER1 = "User1" + GUID.generate();
 //	
@@ -202,9 +203,9 @@
 //    			.processInstanceId(processInstanceId).singleResult();
 //    		
 //    		int numberOfRetries = 5;
-//    		for(int i = 0; i < numberOfRetries; i++)
+//    		for (int i = 0; i < numberOfRetries; i++)
 //    		{
-//    			if(timer.getExceptionMessage() != null && timer.getRetries() == 0)
+//    			if (timer.getExceptionMessage() != null && timer.getRetries() == 0)
 //    			{
 //    				break;
 //    			}
@@ -254,7 +255,7 @@
 //        				.processDefinitionKey("testTimerTransaction")
 //        				.singleResult();
 //        				
-//        				if(procDef != null)
+//        				if (procDef != null)
 //        				{
 //        					activitiProcessEngine.getRepositoryService().deleteDeployment(procDef.getDeploymentId(), true);
 //        				}
@@ -296,9 +297,9 @@
 //			.list();
 //		
 //		int numberOfRetries = 5;
-//		for(int i=0; i< numberOfRetries; i++)
+//		for (int i=0; i< numberOfRetries; i++)
 //		{
-//			if(timers.size() == 0)
+//			if (timers.size() == 0)
 //			{
 //				break;
 //			}

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -95,7 +95,7 @@ public class WorkflowDefinitionType implements ContentServicePolicies.OnContentU
      */
     public void onContentUpdate(NodeRef nodeRef, boolean newContent)
     {
-    	workflowDeployer.deploy(nodeRef, true);
+        workflowDeployer.deploy(nodeRef, true);
     }
     
     /**
@@ -118,23 +118,23 @@ public class WorkflowDefinitionType implements ContentServicePolicies.OnContentU
         {
             if (afterValue.booleanValue() == true)
             {
-            	workflowDeployer.deploy(nodeRef, true);
+                workflowDeployer.deploy(nodeRef, true);
             }
             else
             {
-            	workflowDeployer.undeploy(nodeRef);
+                workflowDeployer.undeploy(nodeRef);
             }
         }
         else if (afterValue == null && beforeValue != null)
         {
             // Undeploy the definition since the value has been cleared
-        	workflowDeployer.undeploy(nodeRef);
+            workflowDeployer.undeploy(nodeRef);
         }
 
     }
     
     public void beforeDeleteNode(NodeRef nodeRef)
     {
-    	workflowDeployer.undeploy(nodeRef);
+        workflowDeployer.undeploy(nodeRef);
     }
 }

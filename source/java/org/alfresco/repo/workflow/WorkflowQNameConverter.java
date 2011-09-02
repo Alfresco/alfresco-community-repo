@@ -25,9 +25,8 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNameCache;
 
 /**
- * @since 3.4.e
  * @author Nick Smith
- *
+ * @since 3.4.e
  */
 public class WorkflowQNameConverter
 {
@@ -49,7 +48,7 @@ public class WorkflowQNameConverter
     public String mapQNameToName(QName qName)
     {
         String name = cache.getName(qName);
-        if(name == null)
+        if (name == null)
         {
             name = convertQNameToName(qName);
             cache.putQNameToName(qName, name);
@@ -83,14 +82,14 @@ public class WorkflowQNameConverter
     
     private QName convertNameToQName(String name)
     {
-        if(name.indexOf(QName.NAMESPACE_BEGIN)==0)
+        if (name.indexOf(QName.NAMESPACE_BEGIN)==0)
         {
             return QName.createQName(name);
         }
         String qName = name;
-        if(name.indexOf(QName.NAMESPACE_PREFIX)==-1)
+        if (name.indexOf(QName.NAMESPACE_PREFIX)==-1)
         {
-            if(name.indexOf('_')==-1)
+            if (name.indexOf('_')==-1)
             {
                 return QName.createQName(NamespaceService.DEFAULT_URI, name);
             }
@@ -112,5 +111,4 @@ public class WorkflowQNameConverter
         // Return prefixed QName string.
         return nameStr.replace(':', '_');
     }
-    
 }

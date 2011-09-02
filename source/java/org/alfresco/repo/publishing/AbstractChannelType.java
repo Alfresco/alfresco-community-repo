@@ -44,7 +44,6 @@ import org.springframework.core.io.Resource;
 /**
  * @author Nick Smith
  * @since 4.0
- * 
  */
 public abstract class AbstractChannelType implements ChannelType, InitializingBean
 {

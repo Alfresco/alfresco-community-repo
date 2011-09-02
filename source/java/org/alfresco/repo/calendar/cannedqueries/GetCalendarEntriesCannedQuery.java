@@ -100,7 +100,7 @@ public class GetCalendarEntriesCannedQuery extends AbstractCannedQueryPermission
             
             Date fromDate = DefaultTypeConverter.INSTANCE.convert(Date.class, result.getFromDate()); 
             Date toDate = DefaultTypeConverter.INSTANCE.convert(Date.class, result.getToDate());
-            if(toDate == null)
+            if (toDate == null)
             {
                toDate = fromDate;
             }
@@ -109,7 +109,7 @@ public class GetCalendarEntriesCannedQuery extends AbstractCannedQueryPermission
             Date recurringLastDate = DefaultTypeConverter.INSTANCE.convert(Date.class, result.getRecurrenceLastMeeting());
             
             // Only return entries in the right period
-            if(entriesFromDate != null)
+            if (entriesFromDate != null)
             {
                // Needs to end on or after the Filter From date
                if(toDate == null || toDate.before(entriesFromDate))
@@ -117,7 +117,7 @@ public class GetCalendarEntriesCannedQuery extends AbstractCannedQueryPermission
                   nextNodeIsAcceptable = false;
                }
             }
-            if(entriesToDate != null)
+            if (entriesToDate != null)
             {
                // Needs have started by the Filter To date
                if(fromDate == null || fromDate.after(entriesToDate))
@@ -127,53 +127,52 @@ public class GetCalendarEntriesCannedQuery extends AbstractCannedQueryPermission
             }
             
             // Handle recurring events specially
-            if(recurringRule != null && !nextNodeIsAcceptable)
+            if (recurringRule != null && !nextNodeIsAcceptable)
             {
-               if(entriesToDate != null || recurringLastDate != null)
+               if (entriesToDate != null || recurringLastDate != null)
                {
                   Date searchFrom = entriesFromDate;
-                  if(searchFrom == null)
+                  if (searchFrom == null)
                   {
                      searchFrom = fromDate;
                   }
                   Date searchTo = entriesToDate;
-                  if(searchTo == null)
+                  if (searchTo == null)
                   {
                      searchTo = recurringLastDate;
                   }
                      
                   List<Date> dates = CalendarRecurrenceHelper.getRecurrencesOnOrAfter(
                         recurringRule, fromDate, toDate, recurringLastDate,
-                        searchFrom, searchTo, false
-                  );
-                  if(dates != null && dates.size() > 0)
+                        searchFrom, searchTo, false);
+                  if (dates != null && dates.size() > 0)
                   {
                      // Do any of these fit?
-                     for(Date date : dates)
+                     for (Date date : dates)
                      {
-                        if(entriesFromDate != null && entriesToDate != null)
+                        if (entriesFromDate != null && entriesToDate != null)
                         {
                            // From and To date given, needs to sit between them
-                           if(entriesFromDate.getTime() <= date.getTime() &&
+                           if (entriesFromDate.getTime() <= date.getTime() &&
                               date.getTime() <= entriesToDate.getTime())
                            {
                               nextNodeIsAcceptable = true;
                               break;
                            }
                         }
-                        else if(entriesFromDate != null)
+                        else if (entriesFromDate != null)
                         {
                            // From date but no end date, needs to be after the from
-                           if(entriesFromDate.getTime() <= date.getTime())
+                           if (entriesFromDate.getTime() <= date.getTime())
                            {
                               nextNodeIsAcceptable = true;
                               break;
                            }
                         }
-                        else if(entriesToDate != null)
+                        else if (entriesToDate != null)
                         {
                            // End date but no start date, needs to be before the from
-                           if(date.getTime() <= entriesToDate.getTime())
+                           if (date.getTime() <= entriesToDate.getTime())
                            {
                               nextNodeIsAcceptable = true;
                               break;
@@ -198,7 +197,7 @@ public class GetCalendarEntriesCannedQuery extends AbstractCannedQueryPermission
         {
             List<Pair<Comparator<CalendarEntity>, SortOrder>> comparators =
                new ArrayList<Pair<Comparator<CalendarEntity>,SortOrder>>();
-            for(Pair<? extends Object, SortOrder> sortPair : sortPairs)
+            for (Pair<? extends Object, SortOrder> sortPair : sortPairs)
             {
                final QName sortProperty = (QName)sortPair.getFirst();
                final CalendarEntityComparator comparator = new CalendarEntityComparator(sortProperty);
@@ -221,7 +220,7 @@ public class GetCalendarEntriesCannedQuery extends AbstractCannedQueryPermission
             logger.debug("Base query: "+calendarEntries.size()+" in "+(System.currentTimeMillis()-start)+" msecs");
         }
         
-        if(testHook != null)
+        if (testHook != null)
         {
            testHook.notifyComplete(results, filtered);
         }
@@ -246,12 +245,10 @@ public class GetCalendarEntriesCannedQuery extends AbstractCannedQueryPermission
        private static final long serialVersionUID = 5717119409619436964L;
        private CalendarEntryImpl(CalendarEntity entity)
        {
-          super(
-                entity.getNodeRef(), 
+          super(entity.getNodeRef(), 
                 // TODO Fetch this from the database layer when querying
                 nodeService.getPrimaryParent(entity.getNodeRef()).getParentRef(), 
-                entity.getName()
-          );
+                entity.getName());
           super.populate(nodeService.getProperties(entity.getNodeRef()));
           super.setTags(taggingService.getTags(entity.getNodeRef()));
        }
@@ -275,7 +272,8 @@ public class GetCalendarEntriesCannedQuery extends AbstractCannedQueryPermission
        
         @SuppressWarnings("unchecked")
         @Override
-        protected Comparable getProperty(CalendarEntity entity) {
+        protected Comparable getProperty(CalendarEntity entity) 
+        {
             if (comparableProperty.equals(CalendarModel.PROP_FROM_DATE))
             {
                return entity.getFromDate();

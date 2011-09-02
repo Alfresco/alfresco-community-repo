@@ -71,7 +71,6 @@ import org.mockito.stubbing.Answer;
  * @author Frederik Heremans
  * 
  * @since 4.0
- *
  */
 public abstract class PublishWebContentProcessTest extends BaseSpringTest
 {
@@ -133,7 +132,7 @@ public abstract class PublishWebContentProcessTest extends BaseSpringTest
     private void checkEnded(String instanceId2)
     {
         WorkflowInstance instance = workflowService.getWorkflowById(instanceId2);
-        if(instance.isActive())
+        if (instance.isActive())
         {
             List<WorkflowPath> paths = workflowService.getWorkflowPaths(instance.getId());
             String nodeName = paths.get(0).getNode().getName();
@@ -242,5 +241,4 @@ public abstract class PublishWebContentProcessTest extends BaseSpringTest
         nodeService.deleteNode(event);
         AuthenticationUtil.clearCurrentSecurityContext();
     }
-    
 }

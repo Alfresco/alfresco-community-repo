@@ -1,20 +1,20 @@
 function testGetFormForNonExistentContentNode()
 {
-	// Replace all the digits in the ID with an 'x'.
-	// Surely that node will not exist...
-	var corruptedTestDoc = testDoc.replace(/\d/g, "x");
-	var form = null;
-	
-	try
-	{
-	   form = formService.getForm("node", corruptedTestDoc);
-	}
-	catch (e)
-	{
-	   // expected
-	}
-	
-	test.assertNull(form, "Form should have not been found: " + testDoc);
+   // Replace all the digits in the ID with an 'x'.
+   // Surely that node will not exist...
+   var corruptedTestDoc = testDoc.replace(/\d/g, "x");
+   var form = null;
+   
+   try
+   {
+      form = formService.getForm("node", corruptedTestDoc);
+   }
+   catch (e)
+   {
+      // expected
+   }
+   
+   test.assertNull(form, "Form should have not been found: " + testDoc);
 }
 
 function testGetFormForContentNode()
@@ -40,8 +40,8 @@ function testGetFormForContentNode()
     var fieldDef = null;
     for (var x = 0; x < fieldDefs.length; x++)
     {
-	     fieldDef = fieldDefs[x];
-	     fieldDefnDataHash[fieldDef.name] = fieldDef;
+       fieldDef = fieldDefs[x];
+       fieldDefnDataHash[fieldDef.name] = fieldDef;
     }
 
     var nameField = fieldDefnDataHash['cm:name'];

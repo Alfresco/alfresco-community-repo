@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -60,7 +60,6 @@ import org.alfresco.util.GUID;
 /**
  * @author Nick Smith
  * @since 4.0
- *
  */
 public class PublishingTestHelper
 {
@@ -123,7 +122,7 @@ public class PublishingTestHelper
         {
             siteService.deleteSite(siteId);
         }
-        catch(Throwable t)
+        catch (Throwable t)
         {
             //NOOP
         }
@@ -137,7 +136,7 @@ public class PublishingTestHelper
             {
                 channelService.deleteChannel(channel);
             }
-            catch(Throwable t)
+            catch (Throwable t)
             {
                 //NOOP
             }
@@ -152,7 +151,7 @@ public class PublishingTestHelper
             {
                 publishingService.cancelPublishingEvent(event);
             }
-            catch(Throwable t)
+            catch (Throwable t)
             {
                 //NOOP
             }
@@ -162,7 +161,7 @@ public class PublishingTestHelper
     public ChannelType mockChannelType(String channelTypeId)
     {
         ChannelType channelType = channelService.getChannelType(channelTypeId);
-        if(channelType != null)
+        if (channelType != null)
         {
             reset(channelType);
             when(channelType.getId()).thenReturn(channelTypeId);
@@ -289,12 +288,12 @@ public class PublishingTestHelper
         String eventId = transactionHelper.doInTransaction(startWorkflowCallback);
 
         int i = 0;
-        while(i<100)
+        while (i < 100)
         {
             Thread.sleep(200);
             PublishingEvent event = publishingService.getPublishingEvent(eventId);
             Status status = event.getStatus();
-            if(Status.IN_PROGRESS!=status && Status.SCHEDULED!=status)
+            if (Status.IN_PROGRESS != status && Status.SCHEDULED != status)
             {
                 return event;
             }
@@ -302,5 +301,4 @@ public class PublishingTestHelper
         }
         throw new IllegalStateException("The publishing event did not complete after 20s!");
     }
-
 }

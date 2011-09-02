@@ -30,17 +30,14 @@ import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.namespace.QName;
 
 /**
- * @since 3.5
  * @author Frederik Heremans
- *
+ * @since 4.0
  */
 public class ActivitiDueDatePropertyHandler extends ActivitiTaskPropertyHandler
 {
-
     /**
     * {@inheritDoc}
     */
-    
     @Override
     protected Object handleTaskProperty(Task task, TypeDefinition type, QName key, Serializable value)
     {
@@ -63,11 +60,9 @@ public class ActivitiDueDatePropertyHandler extends ActivitiTaskPropertyHandler
     /**
     * {@inheritDoc}
     */
-    
     @Override
     protected QName getKey()
     {
         return WorkflowModel.PROP_DUE_DATE;
     }
-
 }

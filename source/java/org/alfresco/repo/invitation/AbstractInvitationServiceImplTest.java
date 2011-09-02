@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -799,7 +799,6 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
         {
             invitationService.approve(invitationId, "No Way Hosea!");
             assertTrue("excetion not thrown", false);
-
         }
         catch (Exception e)
         {
@@ -868,7 +867,6 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
         {
             invitationService.reject(invitationId, "No Way Hosea!");
             assertTrue("excetion not thrown", false);
-
         }
         catch (Exception e)
         {
@@ -972,7 +970,6 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
 
         invitationService.searchInvitation(crit2);
         assertTrue("search everything returned 0 elements", resFive.size() > 0);
-
     }
 
     /**

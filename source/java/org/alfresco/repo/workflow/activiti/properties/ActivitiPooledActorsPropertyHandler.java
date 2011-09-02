@@ -41,9 +41,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
- * @since 3.4.e
  * @author Nick Smith
- *
+ * @since 3.4.e
  */
 public class ActivitiPooledActorsPropertyHandler extends ActivitiTaskPropertyHandler
 {
@@ -77,11 +76,11 @@ public class ActivitiPooledActorsPropertyHandler extends ActivitiTaskPropertyHan
     @SuppressWarnings("unchecked")
     private Collection<NodeRef> getNodes(Serializable value)
     {
-        if(value instanceof Collection<?>)
+        if (value instanceof Collection<?>)
         {
             return (Collection<NodeRef>) value;
         }
-        if(value instanceof NodeRef)
+        if (value instanceof NodeRef)
         {
             return Collections.singletonList((NodeRef)value);
         }
@@ -91,55 +90,55 @@ public class ActivitiPooledActorsPropertyHandler extends ActivitiTaskPropertyHan
     private void updateTaskCandidates(String taskId, UserAndGroupUpdates updates)
     {
         // Only new candidates are present in pooledUsers and pooledGroups, create Links for these
-        for(String user : updates.getUsers())
+        for (String user : updates.getUsers())
         {
             taskService.addCandidateUser(taskId, user);
         }
-        for(String group : updates.getGroups())
+        for (String group : updates.getGroups())
         {
             taskService.addCandidateGroup(taskId, group);
         }
         
 
         // Remove all candidates which have been removed
-        for(IdentityLink link : updates.getLinksToRemove())
+        for (IdentityLink link : updates.getLinksToRemove())
         {
-        	if(link.getUserId() != null)
-        	{
-        		taskService.deleteUserIdentityLink(link.getTaskId(),
-        				link.getUserId(), link.getType());
-        	}
-        	else
-        	{
-        		taskService.deleteGroupIdentityLink(link.getTaskId(), 
-        				link.getGroupId(), link.getType());
-        	}
+            if (link.getUserId() != null)
+            {
+                taskService.deleteUserIdentityLink(link.getTaskId(),
+                            link.getUserId(), link.getType());
+            }
+            else
+            {
+                taskService.deleteGroupIdentityLink(link.getTaskId(), 
+                            link.getGroupId(), link.getType());
+            }
         }
     }
     
     private void updateTaskCandidates(DelegateTask task, UserAndGroupUpdates updates)
     {
         // Only new candidates are present in pooledUsers and pooledGroups, create Links for these
-        for(String user : updates.getUsers())
+        for (String user : updates.getUsers())
         {
             task.addCandidateUser( user);
         }
-        for(String group : updates.getGroups())
+        for (String group : updates.getGroups())
         {
             task.addCandidateGroup( group);
         }
         
         // Remove all candidates which have been removed
-        for(IdentityLink link : updates.linksToRemove)
+        for (IdentityLink link : updates.linksToRemove)
         {
-        	if(link.getUserId() != null)
-        	{
-        		task.deleteUserIdentityLink(link.getUserId(), link.getType());
-        	}
-        	else
-        	{
-        		task.deleteGroupIdentityLink(link.getGroupId(), link.getType());
-        	}
+            if (link.getUserId() != null)
+            {
+                task.deleteUserIdentityLink(link.getUserId(), link.getType());
+            }
+            else
+            {
+                task.deleteGroupIdentityLink(link.getGroupId(), link.getType());
+            }
         }
     }
 
@@ -169,11 +168,12 @@ public class ActivitiPooledActorsPropertyHandler extends ActivitiTaskPropertyHan
         List<IdentityLink> linksToRemove = new LinkedList<IdentityLink>();
         for (IdentityLink link : links)
         {
-        	if(IdentityLinkType.CANDIDATE.equals(link.getType())) {
-        		String userId = link.getUserId();
-                if(userId!=null)
+            if (IdentityLinkType.CANDIDATE.equals(link.getType())) 
+            {
+                String userId = link.getUserId();
+                if (userId != null)
                 {
-                    if(users.remove(userId)==false)
+                    if (users.remove(userId)==false)
                     {
                         linksToRemove.add(link);
                     }
@@ -181,12 +181,12 @@ public class ActivitiPooledActorsPropertyHandler extends ActivitiTaskPropertyHan
                 else 
                 {
                     String groupId = link.getGroupId();
-                    if(groupId!=null && groups.remove(groupId)==false)
+                    if (groupId != null && groups.remove(groupId) == false)
                     {
                         linksToRemove.add(link);
                     }
                 }
-        	}
+            }
         }
         return new UserAndGroupUpdates(users, groups, linksToRemove);
     }
@@ -254,5 +254,4 @@ public class ActivitiPooledActorsPropertyHandler extends ActivitiTaskPropertyHan
             return linksToRemove;
         }
     }
-
 }

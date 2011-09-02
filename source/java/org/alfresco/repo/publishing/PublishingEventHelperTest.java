@@ -70,7 +70,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 /**
  * @author Nick Smith
  * @since 4.0
- *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:test/alfresco/test-web-publishing-context.xml"})

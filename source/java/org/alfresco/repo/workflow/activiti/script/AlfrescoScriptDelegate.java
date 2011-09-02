@@ -33,12 +33,13 @@ import org.alfresco.service.cmr.repository.ScriptService;
  * currently logged in (eg. flow triggered by timer) the system user will be used instead.
  * 
  * @author Frederik Heremans
- * @since 3.5
+ * @since 4.0
  */
-public class AlfrescoScriptDelegate extends DelegateExecutionScriptBase implements JavaDelegate {
-
-	@Override
-	public void execute(DelegateExecution execution) throws Exception {
-		runScript(execution);
-	}
+public class AlfrescoScriptDelegate extends DelegateExecutionScriptBase implements JavaDelegate 
+{
+    @Override
+    public void execute(DelegateExecution execution) throws Exception 
+    {
+        runScript(execution);
+    }
 }

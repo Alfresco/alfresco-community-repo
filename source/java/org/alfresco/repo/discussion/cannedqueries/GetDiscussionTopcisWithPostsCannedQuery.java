@@ -81,10 +81,10 @@ public class GetDiscussionTopcisWithPostsCannedQuery extends AbstractCannedQuery
         for (NodeWithChildrenEntity result : results)
         {
             // Filter by topic date
-           if(filterByTopicCreatedDate)
+           if (filterByTopicCreatedDate)
            {
                Date createdDate = DefaultTypeConverter.INSTANCE.convert(Date.class, result.getCreatedDate());
-               if(createdDate.before(paramBean.getTopicCreatedAfter()))
+               if (createdDate.before(paramBean.getTopicCreatedAfter()))
                {
                   // Created too early
                   continue;
@@ -92,13 +92,13 @@ public class GetDiscussionTopcisWithPostsCannedQuery extends AbstractCannedQuery
            }
            
            // Filter by post date
-           if(filterByPostCreatedDate)
+           if (filterByPostCreatedDate)
            {
               List<NameAndCreatedAt> wantedPosts = new ArrayList<NameAndCreatedAt>();
-              for(NameAndCreatedAt post : result.getChildren())
+              for (NameAndCreatedAt post : result.getChildren())
               {
                  Date createdDate = DefaultTypeConverter.INSTANCE.convert(Date.class, post.getCreatedAt());
-                 if(createdDate.before(paramBean.getPostCreatedAfter()))
+                 if (createdDate.before(paramBean.getPostCreatedAfter()))
                  {
                     // Created too early
                     continue;
@@ -112,12 +112,12 @@ public class GetDiscussionTopcisWithPostsCannedQuery extends AbstractCannedQuery
            }
            
            // If required, filter out the primary post
-           if(paramBean.getExcludePrimaryPost())
+           if (paramBean.getExcludePrimaryPost())
            {
               List<NameAndCreatedAt> wantedPosts = new ArrayList<NameAndCreatedAt>();
-              for(NameAndCreatedAt post : result.getChildren())
+              for (NameAndCreatedAt post : result.getChildren())
               {
-                 if(post.getName().equals( result.getName() ))
+                 if (post.getName().equals( result.getName() ))
                  {
                     // Primary post, skip
                     continue;
@@ -131,7 +131,7 @@ public class GetDiscussionTopcisWithPostsCannedQuery extends AbstractCannedQuery
            }
            
            // Ignore any topic with no posts
-           if(result.getChildren().size() == 0)
+           if (result.getChildren().size() == 0)
            {
               // No valid posts
               continue;
@@ -144,9 +144,10 @@ public class GetDiscussionTopcisWithPostsCannedQuery extends AbstractCannedQuery
         // Sort by the result count, and then the created date
         Collections.sort(filtered, new Comparator<NodeWithChildrenEntity>() {
            @Override
-           public int compare(NodeWithChildrenEntity o1, NodeWithChildrenEntity o2) {
+           public int compare(NodeWithChildrenEntity o1, NodeWithChildrenEntity o2) 
+           {
               int res = o2.getChildren().size() - o1.getChildren().size();
-              if(res == 0)
+              if (res == 0)
               {
                  res = o2.getCreatedDate().compareTo(o1.getCreatedDate());
               }

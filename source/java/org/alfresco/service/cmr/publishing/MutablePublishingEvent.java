@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -23,8 +23,9 @@ import java.util.Calendar;
 
 /**
  * An extension of the {@link PublishingEvent} interface that allows some changes to be made. 
+ * 
  * @author Brian
- *
+ * @since 4.0
  */
 public interface MutablePublishingEvent extends PublishingEvent
 {

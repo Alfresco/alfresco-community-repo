@@ -61,7 +61,6 @@ import org.alfresco.util.collections.Function;
 /**
  * @author Nick Smith
  * @since 4.0
- *
  */
 public class ChannelHelper
 {
@@ -98,8 +97,7 @@ public class ChannelHelper
 
     public Channel buildChannelObject(NodeRef nodeRef, ChannelService channelService)
     {
-        if(nodeRef == null ||
-                nodeService.exists(nodeRef)==false)
+        if (nodeRef == null || nodeService.exists(nodeRef) == false)
         {
             return null;
         }
@@ -130,7 +128,7 @@ public class ChannelHelper
      */
     public static NodeRef mapSourceToEnvironment(NodeRef source, final NodeRef channelNode, final NodeService nodeService)
     {
-        if(source == null || channelNode == null)
+        if (source == null || channelNode == null)
         {
             return null;
         }
@@ -177,10 +175,10 @@ public class ChannelHelper
     public Pair<NodeRef, String> findChannelAndType(NodeRef node)
     {
         Pair<NodeRef, String> result = getChannelAndTypeIfChannel(node);
-        if(result == null)
+        if (result == null)
         {
             result = getChannelAndType(node);
-            if(result == null)
+            if (result == null)
             {
                 ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(node);
                 if (parentAssoc != null)
@@ -209,7 +207,7 @@ public class ChannelHelper
 
     public boolean canPublish(NodeRef nodeToPublish, ChannelType type)
     {
-        if(type.canPublish() == false)
+        if (type.canPublish() == false)
         {
             return false;
         }
@@ -234,13 +232,13 @@ public class ChannelHelper
     private boolean isContentTypeSupported(QName contentType, ChannelType type)
     {
         Set<QName> supportedContentTypes = type.getSupportedContentTypes();
-        if(supportedContentTypes == null || supportedContentTypes.isEmpty())
+        if (supportedContentTypes == null || supportedContentTypes.isEmpty())
         {
             return true;
         }
         for (QName supportedType : supportedContentTypes)
         {
-            if(contentType.equals(supportedType) 
+            if (contentType.equals(supportedType) 
                     || dictionaryService.isSubClass(contentType, supportedType))
             {
                 return true;
@@ -257,14 +255,14 @@ public class ChannelHelper
     private Pair<NodeRef, String> getChannelAndTypeIfChannel(NodeRef node)
     {
         QName type = nodeService.getType(node);
-        if(dictionaryService.isSubClass(type, TYPE_DELIVERY_CHANNEL))
+        if (dictionaryService.isSubClass(type, TYPE_DELIVERY_CHANNEL))
         {
             String channelTypeId = (String) nodeService.getProperty(node, PROP_CHANNEL_TYPE_ID);
-            if(channelTypeId == null)
+            if (channelTypeId == null)
             {
                 TypeDefinition typeDef = dictionaryService.getType(type);
                 PropertyDefinition channelTypeProp = typeDef.getProperties().get(PROP_CHANNEL_TYPE_ID);
-                if(channelTypeProp !=null)
+                if (channelTypeProp !=null)
                 {
                     channelTypeId = channelTypeProp.getDefaultValue();
                 }
@@ -339,7 +337,7 @@ public class ChannelHelper
 
     private List<ChildAssociationRef> getChannelAssocs(NodeRef channelContainer)
     {
-        if(channelContainer == null)
+        if (channelContainer == null)
         {
             return null;
         }
@@ -350,7 +348,7 @@ public class ChannelHelper
     
     private List<ChildAssociationRef> getChannelAssocsByType(NodeRef channelContainer, String channelTypeId)
     {
-        if(channelContainer == null)
+        if (channelContainer == null)
         {
             return null;
         }
@@ -360,7 +358,7 @@ public class ChannelHelper
     private Pair<NodeRef, String> getChannelAndType(NodeRef node)
     {
         NodeRef channel = (NodeRef) nodeService.getProperty(node, PROP_CHANNEL);
-        if(channel != null)
+        if (channel != null)
         {
             String channelType = (String) nodeService.getProperty(node, PROP_CHANNEL_TYPE);
             return new Pair<NodeRef, String>(channel, channelType);
@@ -375,7 +373,7 @@ public class ChannelHelper
             public Channel apply(ChildAssociationRef value)
             {
                 NodeRef channelNode = value.getChildRef();
-                if(checkPermissions && hasPublishPermissions(channelNode)==false)
+                if (checkPermissions && hasPublishPermissions(channelNode)==false)
                 {
                     return null;
                 }
@@ -431,5 +429,4 @@ public class ChannelHelper
     {
         this.permissionService = permissionService;
     }
-    
 }

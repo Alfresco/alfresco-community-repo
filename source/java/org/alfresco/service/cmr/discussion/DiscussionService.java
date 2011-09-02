@@ -33,7 +33,8 @@ import org.alfresco.util.Pair;
  * @author Nick Burch
  * @since 4.0
  */
-public interface DiscussionService {
+public interface DiscussionService 
+{
    /**
     * Creates a new {@link PostInfo} in the given topic,
     *  with the specified contents.
@@ -153,7 +154,6 @@ public interface DiscussionService {
    @NotAuditable
    TopicInfo getTopic(NodeRef parentNodeRef, String topicName);
    
-   
    /**
     * Retrieves all topics in a site, sorted by either oldest
     *  or newest topics first.
@@ -209,7 +209,6 @@ public interface DiscussionService {
     */
    @NotAuditable
    PagingResults<TopicInfo> findTopics(NodeRef nodeRef, String username, String tag, boolean sortAscending, PagingRequest paging);
-
    
    /**
     * Finds topics which have had replies since the specified date, and
@@ -226,7 +225,6 @@ public interface DiscussionService {
     */
    @NotAuditable
    PagingResults<Pair<TopicInfo,Integer>> listHotTopics(NodeRef nodeRef, Date since, PagingRequest paging);
-   
    
    /**
     * Retrieves all posts in a topic, ordered by creation date

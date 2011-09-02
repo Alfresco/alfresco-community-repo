@@ -28,9 +28,8 @@ import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.namespace.QName;
 
 /**
- * @since 3.4.e
  * @author Nick Smith
- *
+ * @since 3.4.e
  */
 public class WorkflowPropertyHandlerRegistry
 {
@@ -69,12 +68,12 @@ public class WorkflowPropertyHandlerRegistry
             QName key = entry.getKey();
             Serializable value = entry.getValue();
             WorkflowPropertyHandler handler = handlers.get(key);
-            if(handler == null)
+            if (handler == null)
             {
                 handler = defaultHandler;
             }
             Object result = handler.handleProperty(key, value, type, object, objectType);
-            if(WorkflowPropertyHandler.DO_NOT_ADD.equals(result)==false) 
+            if (WorkflowPropertyHandler.DO_NOT_ADD.equals(result)==false) 
             {
                 String keyStr = qNameConverter.mapQNameToName(key);
                 variablesToSet.put(keyStr, result);
@@ -82,5 +81,4 @@ public class WorkflowPropertyHandlerRegistry
         }
         return variablesToSet;
     }
-    
 }

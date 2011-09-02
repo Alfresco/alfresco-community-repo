@@ -33,10 +33,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.service.cmr.publishing.NodeSnapshot;
 import org.alfresco.service.cmr.publishing.PublishingDetails;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
 import org.alfresco.service.cmr.publishing.PublishingPackage;
@@ -57,7 +54,6 @@ import org.junit.Test;
 /**
  * @author Nick Smith
  * @since 4.0
- *
  */
 public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
 {
@@ -105,7 +101,7 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         ArrayList<NodeRef> toUnpublish = new ArrayList<NodeRef>(1);
         for (PublishingPackageEntry entry : pckg.getEntries())
         {
-            if(entry.isPublish())
+            if (entry.isPublish())
             {
                 assertNotNull(entry.getSnapshot());
                 toPublish.add(entry.getNodeRef());
@@ -241,5 +237,4 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         this.workflowService = serviceRegistry.getWorkflowService();
         this.publishingService = (PublishingService) getApplicationContext().getBean("publishingService");
     }
-    
 }

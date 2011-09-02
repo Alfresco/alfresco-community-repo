@@ -46,9 +46,8 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
- * @since 3.4.e
  * @author Nick Smith
- * 
+ * @since 3.4.e
  */
 public class ActivitiSpringTest extends TestCase
 {
@@ -104,7 +103,7 @@ public class ActivitiSpringTest extends TestCase
         };
         String id = txnHelper.doInTransaction(callback);
         ProcessInstance instance = findProcessInstance(id);
-        if(instance!=null)
+        if (instance != null)
         {
             runtime.deleteProcessInstance(id, "For test");
             fail("The process instance creation should have been rolled back!");
@@ -248,7 +247,8 @@ public class ActivitiSpringTest extends TestCase
     @Override
     protected void tearDown() throws Exception
     {
-        try{
+        try
+        {
             repo.deleteDeployment(deployment.getId());
             authenticationComponent.clearCurrentSecurityContext();
         }

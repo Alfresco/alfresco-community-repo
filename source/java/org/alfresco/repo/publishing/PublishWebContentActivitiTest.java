@@ -28,7 +28,6 @@ import org.alfresco.service.cmr.workflow.WorkflowPath;
  * @author Nick Smith
  * @author Frederik Heremans
  * @since 4.0
- *
  */
 public class PublishWebContentActivitiTest extends PublishWebContentProcessTest
 {

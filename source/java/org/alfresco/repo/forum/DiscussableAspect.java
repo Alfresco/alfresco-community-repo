@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -75,10 +75,12 @@ public class DiscussableAspect implements
     {
         this.policyComponent = policyComponent;
     }
+    
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
+    
     public final void setFileFolderService(FileFolderService fileFolderService)
     {
         this.fileFolderService = fileFolderService;

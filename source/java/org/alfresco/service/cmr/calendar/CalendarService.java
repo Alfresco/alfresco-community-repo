@@ -30,7 +30,8 @@ import org.alfresco.service.NotAuditable;
  * @author Nick Burch
  * @since 4.0
  */
-public interface CalendarService {
+public interface CalendarService 
+{
    /**
     * Stores a new {@link CalendarEntry} into the given site.
     * The concrete class {@link CalendarEntryDTO} can be used

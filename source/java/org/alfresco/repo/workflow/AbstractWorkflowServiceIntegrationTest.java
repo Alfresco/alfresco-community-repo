@@ -60,10 +60,9 @@ import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 
 /**
- * @since 3.4.e
  * @author Nick Smith
  * @author Frederik Heremans
- *
+ * @since 3.4.e
  */
 public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringTest
 {
@@ -509,7 +508,7 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
     
     public void testGetTimers() 
     {
-    	// Make admin current user
+        // Make admin current user
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         
         // Start process that will have a timer
@@ -573,7 +572,7 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
     
     public void testQueryTasks()
     {
-    	// Start adhoc Workflow
+        // Start adhoc Workflow
         WorkflowDefinition workflowDef = deployDefinition(getAdhocDefinitionPath());
         assertNotNull(workflowDef);
         
@@ -634,24 +633,25 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         assertEquals(5, tasks.size());
     }
 
-	protected void checkQueryTasksInactiveWorkflow(String workflowInstanceId) {
-		WorkflowTaskQuery taskQuery = createWorkflowTaskQuery(WorkflowTaskState.COMPLETED);
-		taskQuery.setActive(false);
-		taskQuery.setProcessId(workflowInstanceId);
-		
-		List<WorkflowTask> tasks = workflowService.queryTasks(taskQuery);
+    protected void checkQueryTasksInactiveWorkflow(String workflowInstanceId) 
+    {
+        WorkflowTaskQuery taskQuery = createWorkflowTaskQuery(WorkflowTaskState.COMPLETED);
+        taskQuery.setActive(false);
+        taskQuery.setProcessId(workflowInstanceId);
+
+        List<WorkflowTask> tasks = workflowService.queryTasks(taskQuery);
         assertNotNull(tasks);
         assertEquals(3, tasks.size());
         
         taskQuery = createWorkflowTaskQuery(WorkflowTaskState.COMPLETED);
-		taskQuery.setActive(true);
-		taskQuery.setProcessId(workflowInstanceId);
-		checkNoTasksFoundUsingQuery(taskQuery);
-	}
+        taskQuery.setActive(true);
+        taskQuery.setProcessId(workflowInstanceId);
+        checkNoTasksFoundUsingQuery(taskQuery);
+    }
 
-	protected void checkTaskQueryTaskCompleted(String workflowInstanceId, WorkflowTask theTask, WorkflowTask startTask) 
-	{
-		List<String> expectedTasks = Arrays.asList(theTask.getId(), startTask.getId());
+    protected void checkTaskQueryTaskCompleted(String workflowInstanceId, WorkflowTask theTask, WorkflowTask startTask) 
+    {
+        List<String> expectedTasks = Arrays.asList(theTask.getId(), startTask.getId());
         checkProcessIdQuery(workflowInstanceId, expectedTasks, WorkflowTaskState.COMPLETED);
         
         // Adhoc task should only be returned
@@ -666,12 +666,12 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
        
         // Both tasks have custom property set
         checkTaskPropsQuery(expectedTasks, WorkflowTaskState.COMPLETED, null);
-	}
+    }
 
-	protected void checkTaskQueryInProgress(String workflowInstanceId, WorkflowTask expectedTask, String workflowInstanceId2)
+    protected void checkTaskQueryInProgress(String workflowInstanceId, WorkflowTask expectedTask, String workflowInstanceId2)
     {
-		List<String> expectedTasks = Arrays.asList(expectedTask.getId());
-		
+        List<String> expectedTasks = Arrays.asList(expectedTask.getId());
+
         checkProcessIdQuery(workflowInstanceId, expectedTasks, WorkflowTaskState.IN_PROGRESS);
         checkTaskIdQuery(expectedTask.getId(), WorkflowTaskState.IN_PROGRESS);
         
@@ -682,23 +682,24 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         checkTaskPropsQuery(expectedTasks, WorkflowTaskState.IN_PROGRESS, null);
         checkProcessPropsQuery(expectedTasks, WorkflowTaskState.IN_PROGRESS);
     }
-	
-	protected void checkTaskQueryStartTaskCompleted(String workflowInstanceId, WorkflowTask startTask) {
-		List<String> expectedTasks = Arrays.asList(startTask.getId());
-		
-		checkProcessIdQuery(workflowInstanceId, expectedTasks, WorkflowTaskState.COMPLETED);
-	    checkTaskIdQuery(startTask.getId(), WorkflowTaskState.COMPLETED);
-	    
-	    QName startTaskName = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "submitAdhocTask");
-	    checkTaskNameQuery(startTaskName, expectedTasks, WorkflowTaskState.COMPLETED, null);
-	    checkActorIdQuery(USER1, expectedTasks, WorkflowTaskState.COMPLETED, null);
-	    checkIsActiveQuery(expectedTasks, WorkflowTaskState.COMPLETED, workflowInstanceId);
-	    checkTaskPropsQuery(expectedTasks, WorkflowTaskState.COMPLETED, null);
-	}
-    
-	public void testGetWorkflows() throws Exception
+
+    protected void checkTaskQueryStartTaskCompleted(String workflowInstanceId, WorkflowTask startTask) 
     {
-	    String fakeDefId = getEngine() + "$9999999999999";
+        List<String> expectedTasks = Arrays.asList(startTask.getId());
+
+        checkProcessIdQuery(workflowInstanceId, expectedTasks, WorkflowTaskState.COMPLETED);
+        checkTaskIdQuery(startTask.getId(), WorkflowTaskState.COMPLETED);
+
+        QName startTaskName = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "submitAdhocTask");
+        checkTaskNameQuery(startTaskName, expectedTasks, WorkflowTaskState.COMPLETED, null);
+        checkActorIdQuery(USER1, expectedTasks, WorkflowTaskState.COMPLETED, null);
+        checkIsActiveQuery(expectedTasks, WorkflowTaskState.COMPLETED, workflowInstanceId);
+        checkTaskPropsQuery(expectedTasks, WorkflowTaskState.COMPLETED, null);
+    }
+    
+    public void testGetWorkflows() throws Exception
+    {
+        String fakeDefId = getEngine() + "$9999999999999";
         List<WorkflowInstance> workflows = workflowService.getActiveWorkflows(fakeDefId);
         assertTrue(workflows.isEmpty());
         workflows = workflowService.getCompletedWorkflows(fakeDefId);
@@ -777,19 +778,19 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         checkCompletedWorkflows(defId, instance1, instance2);
         checkWorkflows(defId, instance1, instance2);
     }
-	
-	
-	public void testDeleteWorkflow() throws Exception
+
+    public void testDeleteWorkflow() throws Exception
     {
         //TODO Implement this test!
     }
-	public void checkWorkflows(String defId, String... expectedIds)
-	{
-	    List<WorkflowInstance> workflows = workflowService.getWorkflows(defId);
-	    checkWorkflows(workflows, expectedIds);
-	}
-	
-	public void testParallelReview() throws Exception
+
+    public void checkWorkflows(String defId, String... expectedIds)
+    {
+        List<WorkflowInstance> workflows = workflowService.getWorkflows(defId);
+        checkWorkflows(workflows, expectedIds);
+    }
+
+    public void testParallelReview() throws Exception
     {
         // start pooled review and approve workflow
         WorkflowDefinition workflowDef = deployDefinition(getParallelReviewDefinitionPath());
@@ -825,51 +826,52 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         tasks = workflowService.getAssignedTasks(USER3, WorkflowTaskState.IN_PROGRESS);
         assertEquals(1, tasks.size());
     }
-	
-	public void checkCompletedWorkflows(String defId, String... expectedIds)
-	{
-	    List<WorkflowInstance> workflows = workflowService.getCompletedWorkflows(defId);
-	    checkWorkflows(workflows, expectedIds);
-	}
-	
-	private void checkActiveWorkflows(String defId, String... expectedIds)
-	{
-	    List<WorkflowInstance> workflows = workflowService.getActiveWorkflows(defId);
-	    checkWorkflows(workflows, expectedIds);
-	}
+
+    public void checkCompletedWorkflows(String defId, String... expectedIds)
+    {
+        List<WorkflowInstance> workflows = workflowService.getCompletedWorkflows(defId);
+        checkWorkflows(workflows, expectedIds);
+    }
+    
+    private void checkActiveWorkflows(String defId, String... expectedIds)
+    {
+        List<WorkflowInstance> workflows = workflowService.getActiveWorkflows(defId);
+        checkWorkflows(workflows, expectedIds);
+    }
 
     private void checkWorkflows(List<WorkflowInstance> workflows, String... expectedIds)
     {
         assertEquals(expectedIds.length, workflows.size());
-	    List<String> expIds = Arrays.asList(expectedIds);
-	    for (WorkflowInstance workflow : workflows)
+        List<String> expIds = Arrays.asList(expectedIds);
+        for (WorkflowInstance workflow : workflows)
         {
             String workflowId = workflow.getId();
             assertTrue("The id: "+workflowId +" was not expected! Expected Ids: "+expIds, expIds.contains(workflowId));
         }
     }
-	
+
     protected void checkTaskNameQuery(QName taskName, List<String> expectedTaskIds, WorkflowTaskState state, 
-    		String optionalProcessId) {
+                String optionalProcessId) 
+    {
         WorkflowTaskQuery taskQuery = createWorkflowTaskQuery(state);
         taskQuery.setTaskName(taskName);
-        if(optionalProcessId != null)
+        if (optionalProcessId != null)
         {
-        	taskQuery.setProcessId(optionalProcessId);
+            taskQuery.setProcessId(optionalProcessId);
         }
         checkTasksFoundUsingQuery(expectedTaskIds, taskQuery);
         
         QName unexistingTaskName = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "unexistingTask");
         taskQuery = createWorkflowTaskQuery(state);
         taskQuery.setTaskName(unexistingTaskName);
-        if(optionalProcessId != null)
+        if (optionalProcessId != null)
         {
-        	taskQuery.setProcessId(optionalProcessId);
+            taskQuery.setProcessId(optionalProcessId);
         }
         checkNoTasksFoundUsingQuery(taskQuery);
-	}
+    }
 
-	protected void checkProcessIdQuery(String workflowInstanceId, List<String> expectedTaskIds, WorkflowTaskState state)
+    protected void checkProcessIdQuery(String workflowInstanceId, List<String> expectedTaskIds, WorkflowTaskState state)
     {
         WorkflowTaskQuery taskQuery = createWorkflowTaskQuery(state);
         taskQuery.setProcessId(workflowInstanceId);
@@ -895,9 +897,9 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
     {
         WorkflowTaskQuery taskQuery = createWorkflowTaskQuery(state);
         taskQuery.setActive(true);
-        if(optionalProcessId != null)
+        if (optionalProcessId != null)
         {
-        	taskQuery.setProcessId(optionalProcessId);
+            taskQuery.setProcessId(optionalProcessId);
         }
         checkTasksFoundUsingQuery(expectedTaskIds, taskQuery);
         
@@ -905,33 +907,33 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         taskQuery.setActive(false);
         if(optionalProcessId != null)
         {
-        	taskQuery.setProcessId(optionalProcessId);
+            taskQuery.setProcessId(optionalProcessId);
         }
         checkNoTasksFoundUsingQuery(taskQuery);
     }
     
     protected void checkActorIdQuery(String actorId, List<String> expectedTaskIds, WorkflowTaskState state,
-    		String optionalProcessId) 
+                String optionalProcessId) 
     {
         WorkflowTaskQuery taskQuery = createWorkflowTaskQuery(state);
         taskQuery.setActorId(actorId);
-        if(optionalProcessId != null)
+        if (optionalProcessId != null)
         {
-        	taskQuery.setProcessId(optionalProcessId);
+            taskQuery.setProcessId(optionalProcessId);
         }
         checkTasksFoundUsingQuery(expectedTaskIds, taskQuery);
         
         taskQuery = createWorkflowTaskQuery(state);
         taskQuery.setActorId(USER3);
-        if(optionalProcessId != null)
+        if (optionalProcessId != null)
         {
-        	taskQuery.setProcessId(optionalProcessId);
+            taskQuery.setProcessId(optionalProcessId);
         }
         checkNoTasksFoundUsingQuery(taskQuery);
     }
     
     protected void checkTaskPropsQuery(List<String> expectedTaskIds, WorkflowTaskState state,
-    		String optionalProcessId) 
+                String optionalProcessId) 
     {
         WorkflowTaskQuery taskQuery = createWorkflowTaskQuery(state);
         Map<QName, Object> taskProps = new HashMap<QName, Object>();
@@ -939,9 +941,9 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         taskProps.put(customStringProp, "stringValue");
         
         taskQuery.setTaskCustomProps(taskProps);
-        if(optionalProcessId != null)
+        if (optionalProcessId != null)
         {
-        	taskQuery.setProcessId(optionalProcessId);
+            taskQuery.setProcessId(optionalProcessId);
         }
         checkTasksFoundUsingQuery(expectedTaskIds, taskQuery);
         
@@ -950,9 +952,9 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         
         taskQuery = createWorkflowTaskQuery(state);
         taskQuery.setTaskCustomProps(taskProps);
-        if(optionalProcessId != null)
+        if (optionalProcessId != null)
         {
-        	taskQuery.setProcessId(optionalProcessId);
+            taskQuery.setProcessId(optionalProcessId);
         }
         checkNoTasksFoundUsingQuery(taskQuery);
     }
@@ -997,39 +999,38 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
     
     protected WorkflowTaskQuery createWorkflowTaskQuery(WorkflowTaskState state)
     {
-    	 WorkflowTaskQuery taskQuery = new WorkflowTaskQuery();
-         taskQuery.setTaskState(state);
-         return taskQuery;
+        WorkflowTaskQuery taskQuery = new WorkflowTaskQuery();
+        taskQuery.setTaskState(state);
+        return taskQuery;
     }
     
     protected void checkTasksFoundUsingQuery(List<String> taskIds, WorkflowTaskQuery workflowTaskQuery)
     {
-    	 List<WorkflowTask> tasks = workflowService.queryTasks(workflowTaskQuery);
-         assertNotNull(tasks);
-         assertEquals(taskIds.size(), tasks.size());
-         for(WorkflowTask task : tasks)
-         {
-        	 assertTrue(taskIds.contains(task.getId()));
-         }
+        List<WorkflowTask> tasks = workflowService.queryTasks(workflowTaskQuery);
+        assertNotNull(tasks);
+        assertEquals(taskIds.size(), tasks.size());
+        for (WorkflowTask task : tasks)
+        {
+            assertTrue(taskIds.contains(task.getId()));
+        }
     }
     
     protected void checkNoTasksFoundUsingQuery(WorkflowTaskQuery workflowTaskQuery)
     {
-    	 List<WorkflowTask> tasks = workflowService.queryTasks(workflowTaskQuery);
-         assertNotNull(tasks);
-         assertEquals(0, tasks.size());
+        List<WorkflowTask> tasks = workflowService.queryTasks(workflowTaskQuery);
+        assertNotNull(tasks);
+        assertEquals(0, tasks.size());
     }
-    
     
     protected WorkflowTask getNextTaskForWorkflow(String workflowInstanceId) 
     {
-    	 WorkflowTaskQuery taskQuery = new WorkflowTaskQuery();
-         taskQuery.setProcessId(workflowInstanceId);
-         taskQuery.setTaskState(WorkflowTaskState.IN_PROGRESS);
+        WorkflowTaskQuery taskQuery = new WorkflowTaskQuery();
+        taskQuery.setProcessId(workflowInstanceId);
+        taskQuery.setTaskState(WorkflowTaskState.IN_PROGRESS);
          
-         List<WorkflowTask> workflowTasks = workflowService.queryTasks(taskQuery);
-         assertEquals(1, workflowTasks.size());
-         return workflowTasks.get(0);
+        List<WorkflowTask> workflowTasks = workflowService.queryTasks(taskQuery);
+        assertEquals(1, workflowTasks.size());
+        return workflowTasks.get(0);
     }
     
     protected WorkflowDefinition deployDefinition(String resource)
@@ -1055,9 +1056,9 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         String id = expDefinition.getId();
         for (WorkflowDefinition definition : definitions)
         {
-            if(expContainsDef)
+            if (expContainsDef)
             {
-                if(definition.getId().equals(id))
+                if (definition.getId().equals(id))
                 {
                     checkDefinition(expDefinition, definition);
                     return;
@@ -1066,13 +1067,14 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
             }
             else
             {
-                if(definition.getId().equals(id))
+                if (definition.getId().equals(id))
                 {
                     fail("The definitions unexpectedly contain id: "+id);
                 }
             }
         }
-        if(expContainsDef)
+        
+        if (expContainsDef)
             fail("The definitions did not contain expected id: "+id);
     }
 

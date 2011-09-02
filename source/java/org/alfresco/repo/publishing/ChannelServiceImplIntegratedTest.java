@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -46,7 +46,7 @@ import org.junit.Test;
 /**
  * @author Brian
  * @author Nick Smith
- * 
+ * @since 4.0
  */
 public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrationTest
 {
@@ -277,7 +277,7 @@ public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrat
         for (Channel channel : channels)
         {
             remainingIds.remove(channel.getId());
-            if(remainingIds.isEmpty())
+            if (remainingIds.isEmpty())
             {
                 return true;
             }

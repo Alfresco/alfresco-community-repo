@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -24,6 +24,7 @@ import org.alfresco.service.NotAuditable;
  * Notification Provider interface.
  * 
  * @author Roy Wetherall
+ * @since 4.0
  */
 public interface NotificationProvider 
 {
@@ -33,14 +34,13 @@ public interface NotificationProvider
      * @return  notification provider name
      */
     @NotAuditable
-	String getName();
-	
+    String getName();
+
     /**
      * Sends a notification using the notification provider.
      * 
      * @param notificationContext   notification context
      */
     @NotAuditable
-	void sendNotification(NotificationContext notificationContext);
-	
+    void sendNotification(NotificationContext notificationContext);
 }

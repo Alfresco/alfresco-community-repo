@@ -38,7 +38,6 @@ import org.junit.Before;
 /**
  * @author Nick Smith
  * @since 4.0
- *
  */
 public abstract class AbstractPublishingIntegrationTest extends BaseSpringTest
 {
@@ -86,5 +85,4 @@ public abstract class AbstractPublishingIntegrationTest extends BaseSpringTest
             super.onTearDown();
         }
     }
-
 }

@@ -51,9 +51,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * @since 3.4.e
  * @author Nick Smith
  * @author Frederik Heremans
+ * @since 3.4.e
  */
 public class ActivitiTaskComponentTest extends AbstractActivitiComponentTest
 {
@@ -210,7 +210,7 @@ public class ActivitiTaskComponentTest extends AbstractActivitiComponentTest
     }
     
     @SuppressWarnings("unchecked")
-	@Test
+    @Test
     public void testGetFinishedTaskById() throws Exception
     {
         WorkflowPath path = workflowEngine.startWorkflow(workflowDef.getId(), new HashMap<QName, Serializable>());
@@ -300,7 +300,7 @@ public class ActivitiTaskComponentTest extends AbstractActivitiComponentTest
         for(HistoricDetail detail : updates)
         {
             HistoricVariableUpdate update = (HistoricVariableUpdate) detail;
-            if(update.getVariableName().equals("test_myVar"))
+            if (update.getVariableName().equals("test_myVar"))
             {
                 Assert.assertEquals("test123", update.getValue());
                 found = true;
@@ -373,7 +373,8 @@ public class ActivitiTaskComponentTest extends AbstractActivitiComponentTest
     }
     
     @Test
-    public void testQueryTasksInProgress() throws Exception {
+    public void testQueryTasksInProgress() throws Exception 
+    {
         // Testing all query functionality for WorkflowTaskState.IN_PROGRESS
         WorkflowPath path = workflowEngine.startWorkflow(workflowDef.getId(), new HashMap<QName, Serializable>());
         
@@ -542,28 +543,29 @@ public class ActivitiTaskComponentTest extends AbstractActivitiComponentTest
     
     
     @Test
-    public void testQueryTasksCompleted() throws Exception {
+    public void testQueryTasksCompleted() throws Exception 
+    {
         // Testing all query functionality for WorkflowTaskState.COMPLETED
         WorkflowPath path = workflowEngine.startWorkflow(workflowDef.getId(), new HashMap<QName, Serializable>());
         
         Task task = taskService.createTaskQuery()
-	        .executionId(BPMEngineRegistry.getLocalId(path.getId()))
-	        .singleResult();
+                    .executionId(BPMEngineRegistry.getLocalId(path.getId()))
+                    .singleResult();
         
         taskService.setVariableLocal(task.getId(), "taskVar", "theValue");
-	    assertNotNull("Task should exist!", task);
-	    String globalTaskId = createGlobalId(task.getId());
-	    
-	    // Set the actor
-	    taskService.setAssignee(task.getId(), TEST_USER);
-	    
-	    // Set process prop
-	    runtime.setVariable(task.getExecutionId(), "processVar", "testing");
-	    
-	    // End the task
-	    workflowEngine.endTask(globalTaskId, null);
+        assertNotNull("Task should exist!", task);
+        String globalTaskId = createGlobalId(task.getId());
 
-	    // Test query by taskId
+        // Set the actor
+        taskService.setAssignee(task.getId(), TEST_USER);
+        
+        // Set process prop
+        runtime.setVariable(task.getExecutionId(), "processVar", "testing");
+        
+        // End the task
+        workflowEngine.endTask(globalTaskId, null);
+
+        // Test query by taskId
         WorkflowTaskQuery taskQuery = createWorkflowTaskQuery(WorkflowTaskState.COMPLETED);
         taskQuery.setActive(Boolean.FALSE); // Set to false, since workflow this task is in, has finished
         taskQuery.setTaskId(globalTaskId);
@@ -592,16 +594,16 @@ public class ActivitiTaskComponentTest extends AbstractActivitiComponentTest
         
         boolean taskFound = false;
         boolean startTaskFound = false;
-        for(WorkflowTask wfTask : tasks)
+        for (WorkflowTask wfTask : tasks)
         {
-        	if(wfTask.getId().equals(globalTaskId))
-        	{
-        		taskFound = true;
-        	}
-        	if(wfTask.getId().contains(ActivitiConstants.START_TASK_PREFIX))
-        	{
-        		startTaskFound = true;
-        	}
+            if (wfTask.getId().equals(globalTaskId))
+            {
+                taskFound = true;
+            }
+            if (wfTask.getId().contains(ActivitiConstants.START_TASK_PREFIX))
+            {
+                startTaskFound = true;
+            }
         }
         Assert.assertTrue("Task should have been returned", taskFound);
         Assert.assertTrue("Start-task should have been returned", startTaskFound);
@@ -682,45 +684,47 @@ public class ActivitiTaskComponentTest extends AbstractActivitiComponentTest
     }
     
     private void checkTaskVariableTaskPresent(WorkflowTaskState state,
-			QName varName, Object varValue, String expectedTask) {
+                QName varName, Object varValue, String expectedTask) 
+    {
         WorkflowTaskQuery taskQuery =  createWorkflowTaskQuery(state);
         Map<QName, Object> customProperties = new HashMap<QName, Object>();
         customProperties.put(varName, varValue);
         taskQuery.setTaskCustomProps(customProperties);
 
         assertTaskPresent(taskQuery, expectedTask);
-	}
+    }
     
     private void checkTaskVariableNoMatch(WorkflowTaskState state,
-			QName varName, Object varValue) {
+                QName varName, Object varValue) 
+    {
         WorkflowTaskQuery taskQuery =  createWorkflowTaskQuery(state);
         Map<QName, Object> customProperties = new HashMap<QName, Object>();
         customProperties.put(varName, varValue);
         taskQuery.setTaskCustomProps(customProperties);
 
         assertNoTaskPresent(taskQuery);
-	}
+    }
 
-	private WorkflowTaskQuery createWorkflowTaskQuery(WorkflowTaskState state) 
+    private WorkflowTaskQuery createWorkflowTaskQuery(WorkflowTaskState state) 
     {
-    	WorkflowTaskQuery taskQuery = new WorkflowTaskQuery();
+        WorkflowTaskQuery taskQuery = new WorkflowTaskQuery();
         taskQuery.setTaskState(state);
         return taskQuery;
     }
    
         
-	private void assertTaskPresent(WorkflowTaskQuery taskQuery,
-			String taskId) 
-	{
-		List<WorkflowTask> tasks = workflowEngine.queryTasks(taskQuery);
+    private void assertTaskPresent(WorkflowTaskQuery taskQuery,
+                String taskId) 
+    {
+        List<WorkflowTask> tasks = workflowEngine.queryTasks(taskQuery);
         Assert.assertNotNull(tasks);
         Assert.assertEquals(1, tasks.size());
         Assert.assertEquals(taskId, tasks.get(0).getId());
-	}
-	
-	private void assertNoTaskPresent(WorkflowTaskQuery taskQuery)
-	{
-		List<WorkflowTask> tasks = workflowEngine.queryTasks(taskQuery);
+    }
+
+    private void assertNoTaskPresent(WorkflowTaskQuery taskQuery)
+    {
+        List<WorkflowTask> tasks = workflowEngine.queryTasks(taskQuery);
         Assert.assertNotNull(tasks);
         Assert.assertEquals(0, tasks.size());
     }

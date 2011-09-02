@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -109,7 +109,8 @@ public class RatingServiceImpl implements RatingService
             throw new RatingServiceException("Users can't rate their own content for scheme " + ratingSchemeName);
         }
         
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() {
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() 
+        {
             public Void doWork() throws Exception
             {
                 applyRating(targetNode, rating, ratingSchemeName, currentUser);

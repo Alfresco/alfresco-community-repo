@@ -37,8 +37,6 @@ import org.alfresco.service.cmr.publishing.channels.ChannelService;
 import org.alfresco.service.cmr.publishing.channels.ChannelType;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.site.SiteInfo;
-import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.transfer.NodeFilter;
 import org.alfresco.service.cmr.transfer.NodeFinder;
 import org.alfresco.service.namespace.NamespaceService;
@@ -51,7 +49,6 @@ import org.alfresco.util.collections.Filter;
  * @author Nick Smith
  * @author Brian
  * @since 4.0
- * 
  */
 public class ChannelServiceImpl implements ChannelService
 {
@@ -126,7 +123,7 @@ public class ChannelServiceImpl implements ChannelService
     {
         NodeRef channelContainer = getChannelContainer();
         ChannelType channelType = channelTypes.get(channelTypeId);
-        if(channelType == null)
+        if (channelType == null)
         {
             String message = "Channel Type: " + channelTypeId + " does not exist!";
             throw new IllegalArgumentException(message);
@@ -175,16 +172,16 @@ public class ChannelServiceImpl implements ChannelService
         ParameterCheck.mandatory("channelName", channelName);
 
         NodeRef channelContainer = getChannelContainer();
-        if(channelContainer == null)
+        if (channelContainer == null)
         {
             return null;
         }
         
         NodeRef child = nodeService.getChildByName(channelContainer, ContentModel.ASSOC_CONTAINS, channelName);
-        if(child!=null)
+        if (child != null)
         {
             QName type = nodeService.getType(child);
-            if(dictionaryService.isSubClass(type, TYPE_DELIVERY_CHANNEL))
+            if (dictionaryService.isSubClass(type, TYPE_DELIVERY_CHANNEL))
             {
                 return child;
             }
@@ -209,7 +206,7 @@ public class ChannelServiceImpl implements ChannelService
     public List<Channel> getPublishingChannels(boolean filterByPublishPermission)
     {
         final NodeRef containerNode = getChannelContainer();
-        if(containerNode != null)
+        if (containerNode != null)
         {
             List<ChannelType> types = CollectionUtils.filter(channelTypes.values(), new Filter<ChannelType>()
             {
@@ -308,7 +305,7 @@ public class ChannelServiceImpl implements ChannelService
     */
     public Channel getChannelById(String id)
     {
-        if(id!=null&& NodeRef.isNodeRef(id))
+        if (id != null && NodeRef.isNodeRef(id))
         {
             NodeRef node = new NodeRef(id);
             return channelHelper.buildChannelObject(node, this);

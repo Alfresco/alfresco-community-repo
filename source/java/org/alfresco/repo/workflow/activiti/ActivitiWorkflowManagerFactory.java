@@ -69,15 +69,15 @@ public class ActivitiWorkflowManagerFactory implements FactoryBean<ActivitiWorkf
     @Override
     public ActivitiWorkflowManager getObject() throws Exception
     {
-        if (messageService ==null)
+        if (messageService == null)
         {
             throw new WorkflowException("MessageService not specified");
         }
-        if (serviceRegistry ==null)
+        if (serviceRegistry == null)
         {
             throw new WorkflowException("ServiceRegistry not specified");
         }
-        if (tenantService ==null)
+        if (tenantService == null)
         {
             throw new WorkflowException("TenantService not specified");
         }

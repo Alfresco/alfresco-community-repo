@@ -25,9 +25,8 @@ import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.namespace.QName;
 
 /**
- * @since 3.4.e
  * @author Nick Smith
- *
+ * @since 3.4.e
  */
 public interface WorkflowPropertyHandler
 {

@@ -37,22 +37,22 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class MimetypeFieldProcessor extends TransientFieldProcessor
 {
-	private static final Log logger = LogFactory.getLog(MimetypeFieldProcessor.class);
-	
-	public static final String KEY = "mimetype";
+    private static final Log logger = LogFactory.getLog(MimetypeFieldProcessor.class);
 
-	private static final String MSG_MIMETYPE_LABEL = "form_service.mimetype.label";
+    public static final String KEY = "mimetype";
+
+    private static final String MSG_MIMETYPE_LABEL = "form_service.mimetype.label";
     private static final String MSG_MIMETYPE_DESC = "form_service.mimetype.description";
 
-	@Override
-	protected Log getLogger() 
-	{
-		return logger;
-	}
-	
-	@Override
-	protected FieldDefinition makeTransientFieldDefinition() 
-	{
+    @Override
+    protected Log getLogger() 
+    {
+        return logger;
+    }
+
+    @Override
+    protected FieldDefinition makeTransientFieldDefinition() 
+    {
         String dataKeyName = PROP_DATA_PREFIX + KEY;
         PropertyFieldDefinition mimetypeField = new PropertyFieldDefinition(KEY, DataTypeDefinition.TEXT
                     .getLocalName());
@@ -62,9 +62,9 @@ public class MimetypeFieldProcessor extends TransientFieldProcessor
         return mimetypeField;
     }
 
-	@Override
+    @Override
     protected String getRegistryKey() 
-	{
-		 return KEY;
-	}
+    {
+        return KEY;
+    }
 }

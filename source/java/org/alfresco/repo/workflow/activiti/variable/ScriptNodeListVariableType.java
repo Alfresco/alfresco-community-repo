@@ -60,7 +60,7 @@ public class ScriptNodeListVariableType extends SerializableType
     @Override
     public boolean isAbleToStore(Object value)
     {
-        if(value == null) 
+        if (value == null) 
         {
             return true;
         }
@@ -70,9 +70,9 @@ public class ScriptNodeListVariableType extends SerializableType
     @Override
     public void setValue(Object value, ValueFields valueFields)
     {
-        if(value != null) 
+        if (value != null) 
         {
-            if(!(value instanceof ActivitiScriptNodeList)) 
+            if (!(value instanceof ActivitiScriptNodeList)) 
             {
                 throw new ActivitiException("Passed value is not an instance of ActivitiScriptNodeList, cannot set variable value.");
             }
@@ -89,12 +89,12 @@ public class ScriptNodeListVariableType extends SerializableType
     public Object getValue(ValueFields valueFields)
     {
         Object serializable = super.getValue(valueFields);
-        if(serializable == null)
+        if (serializable == null)
         {
             return null;
         }
         
-        if(!(serializable instanceof List<?>))
+        if (!(serializable instanceof List<?>))
         {
             throw new ActivitiException("Serializable stored in variable is not instance of List<NodeRef>, cannot get value.");
         }
@@ -102,7 +102,7 @@ public class ScriptNodeListVariableType extends SerializableType
         ActivitiScriptNodeList scriptNodes = new ActivitiScriptNodeList();
         // Wrap all node references in an ActivitiScriptNode
         List<NodeRef> nodeRefs =(List<NodeRef>) serializable;
-        for(NodeRef ref : nodeRefs) 
+        for (NodeRef ref : nodeRefs) 
         {
             scriptNodes.add(new ActivitiScriptNode(ref, serviceRegistry));
         }

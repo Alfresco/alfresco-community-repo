@@ -62,9 +62,9 @@ import org.junit.Test;
  * Spring-configured JUnit 4 test case.
  * Uses Spring to load up a test context and runs each test case in a transaction which gets rolled back.
  * Loads up the activiti-context.xml and test-database-context.xml.
- * @since 3.4.e
+ * 
  * @author Nick Smith
- *
+ * @since 3.4.e
  */
 public class ActivitiWorkflowComponentTest extends AbstractActivitiComponentTest
 {
@@ -641,7 +641,7 @@ public class ActivitiWorkflowComponentTest extends AbstractActivitiComponentTest
         
         // One timer should be active on workflow
         String workflowInstanceId = BPMEngineRegistry.createGlobalId(ActivitiConstants.ENGINE_ID, 
-        		processInstance.getProcessInstanceId());
+                    processInstance.getProcessInstanceId());
         
         // Query the timer in activity to have reference
         Job timerJob = managementService.createJobQuery().timers().processInstanceId(processInstance.getId()).singleResult();

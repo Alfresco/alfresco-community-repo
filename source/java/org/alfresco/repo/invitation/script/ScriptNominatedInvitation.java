@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 Alfresco Software Limited.
+ * Copyright (C) 2009-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -31,15 +31,15 @@ import org.springframework.extensions.surf.util.ISO8601DateFormat;
  * @author mrogers
  */
 public class ScriptNominatedInvitation  extends ScriptInvitation<NominatedInvitation> implements java.io.Serializable
-{			
-	private static final long serialVersionUID = 6079656007339750930L;
+{
+    private static final long serialVersionUID = 6079656007339750930L;
 
     public ScriptNominatedInvitation(NominatedInvitation invitation, InvitationService invitationService)
     {
         super(invitation, invitationService);
     }
 
-	/**
+    /**
      * @see org.alfresco.service.cmr.invitation.NominatedInvitation#getInviteeEmail()
      */
     @Override
@@ -66,23 +66,23 @@ public class ScriptNominatedInvitation  extends ScriptInvitation<NominatedInvita
         return getInvitation().getInviteeLastName();
     }
 
-	public void accept(String reason)
-	{
-		getInvitationService().accept(getInviteId(), reason);
-	}
-	
-	/**
-	 * Which role to be added with
-	 * @return the roleName
-	 */
-	public Date getSentInviteDate()
-	{
-		return getInvitation().getSentInviteDate();
-	}
-	
-	public String getSentInviteDateAsISO8601()
-	{
-		return ISO8601DateFormat.format(getSentInviteDate());
-	}
+    public void accept(String reason)
+    {
+        getInvitationService().accept(getInviteId(), reason);
+    }
+    
+    /**
+     * Which role to be added with
+     * @return the roleName
+     */
+    public Date getSentInviteDate()
+    {
+        return getInvitation().getSentInviteDate();
+    }
+    
+    public String getSentInviteDateAsISO8601()
+    {
+        return ISO8601DateFormat.format(getSentInviteDate());
+    }
 
 }

@@ -32,7 +32,6 @@ import org.alfresco.util.ParameterCheck;
 /**
  * @author Nick Smith
  * @since 4.0
- *
  */
 public class ChannelDependancyNodeFilter extends AbstractNodeFilter
 {
@@ -64,13 +63,13 @@ public class ChannelDependancyNodeFilter extends AbstractNodeFilter
     public boolean accept(NodeRef thisNode)
     {
         String typeId = (String) nodeService.getProperty(thisNode, PROP_CHANNEL_TYPE);
-        if(typeId !=null)
+        if (typeId !=null)
         {
             ChannelType type = channelService.getChannelType(typeId);
-            if(type != null)
+            if (type != null)
             {
                 NodeFilter filter = type.getNodeFilter();
-                if(filter !=null)
+                if (filter !=null)
                 {
                     return filter.accept(thisNode);
                 }
@@ -78,5 +77,4 @@ public class ChannelDependancyNodeFilter extends AbstractNodeFilter
         }
         return true;
     }
-
 }

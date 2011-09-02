@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -98,7 +98,6 @@ import org.apache.commons.logging.LogFactory;
  * @author Brian
  * @author Nick Smith
  * @since 4.0
- *
  */
 public class PublishingEventHelper
 {
@@ -183,7 +182,7 @@ public class PublishingEventHelper
     
     public PublishingEvent getPublishingEvent(NodeRef eventNode) throws AlfrescoRuntimeException
     {
-        if(eventNode == null)
+        if (eventNode == null)
         {
             return null;
         }
@@ -213,7 +212,7 @@ public class PublishingEventHelper
     {
         String message = (String) props.get(PROP_STATUS_UPDATE_MESSAGE);
         Collection<String> channelNames = (Collection<String>) props.get(PROP_STATUS_UPDATE_CHANNEL_NAMES);
-        if(channelNames == null || channelNames.isEmpty())
+        if (channelNames == null || channelNames.isEmpty())
         {
             return null;
         }
@@ -237,7 +236,7 @@ public class PublishingEventHelper
     {
         checkChannelAccess(details.getPublishChannelId());
         Set<String> statusChannelIds = details.getStatusUpdateChannels();
-        if(isEmpty(statusChannelIds)==false )
+        if (isEmpty(statusChannelIds) == false)
         for (String statusChannelId : statusChannelIds)
         {
             checkChannelAccess(statusChannelId);
@@ -257,7 +256,7 @@ public class PublishingEventHelper
     {
         NodeRef channelNode = new NodeRef(channelId);
         AccessStatus accessStatus = permissionService.hasPermission(channelNode, PermissionService.ADD_CHILDREN);
-        if(AccessStatus.ALLOWED != accessStatus)
+        if (AccessStatus.ALLOWED != accessStatus)
         {
             throw new AccessDeniedException("You do not have access to channel: " + channelId);
         }
@@ -288,11 +287,11 @@ public class PublishingEventHelper
         props.put(PROP_PUBLISHING_EVENT_NODES_TO_UNPUBLISH, (Serializable) unpublshStrings);
         String message = details.getStatusMessage();
         Set<String> statusChannels = details.getStatusUpdateChannels();
-        if(message != null && isEmpty(statusChannels)==false)
+        if (message != null && isEmpty(statusChannels) == false)
         {
             props.put(PROP_STATUS_UPDATE_MESSAGE, message);
             NodeRef statusNode = details.getNodeToLinkTo();
-            if(statusNode != null)
+            if (statusNode != null)
             {
                 props.put(PROP_STATUS_UPDATE_NODE_REF, statusNode.toString());
             }
@@ -310,7 +309,7 @@ public class PublishingEventHelper
     {
         List<NodeRef> eventNodes;
         Set<NodeRef> publishedNodes = filter.getPublishedNodes();
-        if(isEmpty(publishedNodes) == false)
+        if (isEmpty(publishedNodes) == false)
         {
             eventNodes= getEventNodesForPublishedNodes(queue, publishedNodes);
         }
@@ -319,7 +318,7 @@ public class PublishingEventHelper
             eventNodes = getAllPublishingEventNodes(queue);
         }
         Set<String> ids = filter.getIds();
-        if(isEmpty(ids) == false)
+        if (isEmpty(ids) == false)
         {
             eventNodes = filterEventNodesById(eventNodes, ids);
         }
@@ -473,7 +472,7 @@ public class PublishingEventHelper
     {
         String definitionName = workflowEngineId + "$" + WORKFLOW_DEFINITION_NAME;
         WorkflowDefinition definition = workflowService.getDefinitionByName(definitionName);
-        if(definition == null)
+        if (definition == null)
         {
             String msg = "The Web publishing workflow definition does not exist! Definition name: " + definitionName;
             throw new AlfrescoRuntimeException(msg);
@@ -483,7 +482,7 @@ public class PublishingEventHelper
 
     public Calendar getScheduledTime(NodeRef eventNode)
     {
-        if(eventNode == null)
+        if (eventNode == null)
         {
             return null;
         }
@@ -596,7 +595,7 @@ public class PublishingEventHelper
     private NodeSnapshot createUnpublishSnapshot(NodeRef source, NodeRef channelNode)
     {
         NodeRef lastEvent = getLastPublishEvent(source, channelNode);
-        if(lastEvent==null)
+        if (lastEvent == null)
         {
             String msg = "Cannot create unpublish snapshot as last publishing event does not exist! Source node: "+ source + " channelId: "+channelNode;
             throw new AlfrescoRuntimeException(msg);
@@ -609,7 +608,7 @@ public class PublishingEventHelper
     public NodeRef getLastPublishEvent(NodeRef source, NodeRef channelNode)
     {
         NodeRef publishedNode = ChannelHelper.mapSourceToEnvironment(source, channelNode, nodeService);
-        if(publishedNode == null)
+        if (publishedNode == null)
         {
             return null;
         }
@@ -650,7 +649,7 @@ public class PublishingEventHelper
     public AssociationRef linkToLastEvent(NodeRef publishedNode, NodeRef eventNode)
     {
         List<AssociationRef> assocs = nodeService.getTargetAssocs(publishedNode, ASSOC_LAST_PUBLISHING_EVENT);
-        if(isEmpty(assocs)==false)
+        if (isEmpty(assocs) == false)
         {
             // Remove old association.
             AssociationRef assoc = assocs.get(0);

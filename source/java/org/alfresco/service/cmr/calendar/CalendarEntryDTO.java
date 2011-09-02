@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -32,7 +32,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Nick Burch
  * @since 4.0
  */
-public class CalendarEntryDTO implements CalendarEntry, Serializable {
+public class CalendarEntryDTO implements CalendarEntry, Serializable 
+{
    private static final long serialVersionUID = -7997650453677545845L;
    
    private NodeRef nodeRef;
@@ -281,7 +282,7 @@ public class CalendarEntryDTO implements CalendarEntry, Serializable {
     */
    public static boolean isAllDay(CalendarEntry entry)
    {
-      if(entry.getStart() == null || entry.getEnd() == null)
+      if (entry.getStart() == null || entry.getEnd() == null)
       {
          // One or both dates is missing
          return false;
@@ -292,12 +293,12 @@ public class CalendarEntryDTO implements CalendarEntry, Serializable {
       start.setTime(entry.getStart());
       end.setTime(entry.getEnd());
       
-      if(start.get(Calendar.HOUR_OF_DAY) == 0 &&
-         start.get(Calendar.MINUTE) == 0 &&
-         start.get(Calendar.SECOND) == 0 &&
-         end.get(Calendar.HOUR_OF_DAY) == 0 &&
-         end.get(Calendar.MINUTE) == 0 &&
-         end.get(Calendar.SECOND) == 0)
+      if (start.get(Calendar.HOUR_OF_DAY) == 0 &&
+          start.get(Calendar.MINUTE) == 0 &&
+          start.get(Calendar.SECOND) == 0 &&
+          end.get(Calendar.HOUR_OF_DAY) == 0 &&
+          end.get(Calendar.MINUTE) == 0 &&
+          end.get(Calendar.SECOND) == 0)
       {
          // Both midnight, counts as all day
          return true;

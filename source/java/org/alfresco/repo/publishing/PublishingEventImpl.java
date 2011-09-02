@@ -31,7 +31,6 @@ import org.alfresco.service.cmr.publishing.StatusUpdate;
 /**
  * @author Nick Smith
  * @since 4.0
- *
  */
 public class PublishingEventImpl implements PublishingEvent
 {
@@ -178,12 +177,12 @@ public class PublishingEventImpl implements PublishingEvent
     */
     public int compareTo(PublishingEvent event)
     {
-        if(event == null)
+        if (event == null)
         {
             return 1;
         }
         Date eventTime = event.getCreatedTime();
-        if(eventTime == null)
+        if (eventTime == null)
         {
             return 1;
         }

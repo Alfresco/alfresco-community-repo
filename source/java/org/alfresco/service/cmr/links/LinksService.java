@@ -30,7 +30,8 @@ import org.alfresco.service.NotAuditable;
  * @author Nick Burch
  * @since 4.0
  */
-public interface LinksService {
+public interface LinksService 
+{
    /**
     * Creates a new {@link LinkInfo} in the given site, with the
     *  specified settings
@@ -38,8 +39,7 @@ public interface LinksService {
     * @return The newly created {@link LinkInfo}
     */
    @NotAuditable
-   LinkInfo createLink(String siteShortName, String title,
-         String description, String url, boolean internal);
+   LinkInfo createLink(String siteShortName, String title, String description, String url, boolean internal);
    
    /**
     * Updates an existing {@link LinkInfo} in the repository.

@@ -232,7 +232,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
     }
     
     @SuppressWarnings("unchecked")
-	public void testGetAllDocForm() throws Exception
+    public void testGetAllDocForm() throws Exception
     {
         Form form = this.formService.getForm(new Item(NODE_FORM_ITEM_KIND, this.document.toString()));
         
@@ -1705,13 +1705,13 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
     
     public void testJavascriptAPI() throws Exception
     {
-    	Map<String, Object> model = new HashMap<String, Object>();
-    	model.put("testDoc", this.document.toString());
-    	model.put("testDocName", this.documentName);
-    	model.put("testAssociatedDoc", this.associatedDoc.toString());
-    	model.put("folder", this.folder.toString());
-    	model.put("folderName", this.folderName);
-    	
+        Map<String, Object> model = new HashMap<String, Object>();
+        model.put("testDoc", this.document.toString());
+        model.put("testDocName", this.documentName);
+        model.put("testAssociatedDoc", this.associatedDoc.toString());
+        model.put("folder", this.folder.toString());
+        model.put("folderName", this.folderName);
+        
         ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/forms/script/test_formService.js");
         this.scriptService.executeScript(location, model);
     }

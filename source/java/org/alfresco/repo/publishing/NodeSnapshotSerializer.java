@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -23,12 +23,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import org.alfresco.service.cmr.publishing.NodeSnapshot;
-import org.alfresco.service.cmr.publishing.PublishingPackage;
-import org.alfresco.service.cmr.publishing.PublishingPackageEntry;
-import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * @author Brian

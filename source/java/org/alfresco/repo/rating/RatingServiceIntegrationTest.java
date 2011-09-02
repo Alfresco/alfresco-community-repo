@@ -37,7 +37,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.BaseAlfrescoSpringTest;
@@ -156,7 +155,8 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
         try
         {
             ratingService.applyRating(nodeRef, illegalRating, schemeName);
-        } catch (RatingServiceException expectedException)
+        } 
+        catch (RatingServiceException expectedException)
         {
             return;
         }
@@ -367,7 +367,8 @@ public class RatingServiceIntegrationTest extends BaseAlfrescoSpringTest
         {
             // But fiveStar rating scheme disallows rating your own content.
             ratingService.applyRating(testDoc_UserTwo, 4, FIVE_STAR_SCHEME_NAME);
-        } catch (RatingServiceException expected)
+        } 
+        catch (RatingServiceException expected)
         {
             return;
         }

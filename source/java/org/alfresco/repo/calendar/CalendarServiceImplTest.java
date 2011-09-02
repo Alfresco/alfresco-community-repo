@@ -31,7 +31,6 @@ import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQueryFactory;
-import org.alfresco.query.CannedQueryResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.calendar.cannedqueries.CalendarEntity;
@@ -156,8 +155,7 @@ public class CalendarServiceImplTest
        
        // Create one
        entry = new CalendarEntryDTO(
-             "Title", "Description", "Location", new Date(1), new Date(1234)
-       );
+             "Title", "Description", "Location", new Date(1), new Date(1234));
        entry.setOutlook(true);
        entry.setOutlookUID("12345LookOut!");
        
@@ -224,8 +222,7 @@ public class CalendarServiceImplTest
        
        // Create an entry
        entry = new CalendarEntryDTO(
-             "Title", "Description", "Location", new Date(1), new Date(1234)
-       );
+             "Title", "Description", "Location", new Date(1), new Date(1234));
        entry.setOutlook(true);
        entry.setOutlookUID("12345LookOut!");
        entry = CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), entry);
@@ -308,21 +305,19 @@ public class CalendarServiceImplTest
           @Override
           public Void execute() throws Throwable
           {
-             if(SITE_SERVICE.getSite(TEST_SITE_NAME) != null)
+             if (SITE_SERVICE.getSite(TEST_SITE_NAME) != null)
              {
                 SITE_SERVICE.deleteSite(TEST_SITE_NAME);
              }
              SITE_SERVICE.createSite(
-                   TEST_SITE_PREFIX, TEST_SITE_NAME, "Test", "Test", SiteVisibility.PUBLIC
-             );
+                   TEST_SITE_PREFIX, TEST_SITE_NAME, "Test", "Test", SiteVisibility.PUBLIC);
 
              // Won't have the container to start with
              assertFalse(SITE_SERVICE.hasContainer(TEST_SITE_NAME, CalendarServiceImpl.CALENDAR_COMPONENT));
 
              // Create a calendar entry
              CalendarEntry entry = new CalendarEntryDTO(
-                   "Title", "Description", "Location", new Date(1), new Date(1234)
-             );
+                   "Title", "Description", "Location", new Date(1), new Date(1234));
              CALENDAR_SERVICE.createCalendarEntry(TEST_SITE_NAME, entry);
 
              // It will now exist
@@ -348,8 +343,7 @@ public class CalendarServiceImplTest
        
        // Create one without tagging
        entry = new CalendarEntryDTO(
-             "Title", "Description", "Location", new Date(1), new Date(1234)
-       );
+             "Title", "Description", "Location", new Date(1), new Date(1234));
        entry = CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), entry);
        testNodesToTidy.add(entry.getNodeRef());
        
@@ -423,8 +417,7 @@ public class CalendarServiceImplTest
        
        // Create an event with tags
        entry = new CalendarEntryDTO(
-             "Title", "Description", "Location", new Date(1), new Date(1234)
-       );
+             "Title", "Description", "Location", new Date(1), new Date(1234));
        entry.getTags().add(TAG_1);
        entry.getTags().add(TAG_1);
        entry.getTags().add(TAG_2);
@@ -469,14 +462,11 @@ public class CalendarServiceImplTest
        
        // Add a few
        CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
-             "TitleA", "Description", "Location", new Date(1302431400), new Date(1302435000)
-       ));
+             "TitleA", "Description", "Location", new Date(1302431400), new Date(1302435000)));
        CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
-             "TitleB", "Description", "Location", new Date(1302431400), new Date(1302442200)
-       ));
+             "TitleB", "Description", "Location", new Date(1302431400), new Date(1302442200)));
        CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
-             "TitleC", "Description", "Location", new Date(1302435000), new Date(1302442200)
-       ));
+             "TitleC", "Description", "Location", new Date(1302435000), new Date(1302442200)));
        
        // Check now
        results = CALENDAR_SERVICE.listCalendarEntries(CALENDAR_SITE.getShortName(), paging);
@@ -487,8 +477,7 @@ public class CalendarServiceImplTest
        
        // Add one more, before those, and drop the page size 
        CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
-             "TitleD", "Description", "Location", new Date(1302417000), new Date(1302420600)
-       ));
+             "TitleD", "Description", "Location", new Date(1302417000), new Date(1302420600)));
        
        paging = new PagingRequest(3);
        results = CALENDAR_SERVICE.listCalendarEntries(CALENDAR_SITE.getShortName(), paging);
@@ -536,19 +525,15 @@ public class CalendarServiceImplTest
        // Note - add the events as a different user for the site that the
        //  test user isn't a member of!
        CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
-             "TitleA", "Description", "Location", new Date(1302431400), new Date(1302435000)
-       ));
+             "TitleA", "Description", "Location", new Date(1302431400), new Date(1302435000)));
        CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
-             "TitleB", "Description", "Location", new Date(1302431400), new Date(1302442200)
-       ));
+             "TitleB", "Description", "Location", new Date(1302431400), new Date(1302442200)));
        
        AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
        CALENDAR_SERVICE.createCalendarEntry(ALTERNATE_CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
-             "PrivateTitleA", "Description", "Location", new Date(1302431400), new Date(1302435000)
-       ));
+             "PrivateTitleA", "Description", "Location", new Date(1302431400), new Date(1302435000)));
        CALENDAR_SERVICE.createCalendarEntry(ALTERNATE_CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
-             "PrivateTitleB", "Description", "Location", new Date(1302431400), new Date(1302442200)
-       ));
+             "PrivateTitleB", "Description", "Location", new Date(1302431400), new Date(1302442200)));
        NodeRef priv3 = CALENDAR_SERVICE.createCalendarEntry(ALTERNATE_CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
              "PrivateTitleC", "Description", "Location", new Date(1302431400), new Date(1302442200)
        )).getNodeRef();
@@ -614,12 +599,12 @@ public class CalendarServiceImplTest
        AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
        paging = new PagingRequest(10);
        results = CALENDAR_SERVICE.listCalendarEntries(CALENDAR_SITE.getShortName(), paging);
-       for(CalendarEntry entry : results.getPage())
+       for (CalendarEntry entry : results.getPage())
        {
           testNodesToTidy.add(entry.getNodeRef());
        }
        results = CALENDAR_SERVICE.listCalendarEntries(ALTERNATE_CALENDAR_SITE.getShortName(), paging);
-       for(CalendarEntry entry : results.getPage())
+       for (CalendarEntry entry : results.getPage())
        {
           testNodesToTidy.add(entry.getNodeRef());
        }
@@ -855,7 +840,8 @@ public class CalendarServiceImplTest
        {
           @Override
           public void notifyComplete(List<CalendarEntity> fullList,
-                List<CalendarEntity> filteredList) {
+                List<CalendarEntity> filteredList) 
+          {
              full.clear();
              filtered.clear();
              full.addAll(fullList);
@@ -877,20 +863,16 @@ public class CalendarServiceImplTest
        
        // Add some events, with a mixture of repeating and non
        CalendarEntry c1 = CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
-             "SiteNormal", "Description", "Location", new Date(1302431400), new Date(1302442200)
-       ));
+             "SiteNormal", "Description", "Location", new Date(1302431400), new Date(1302442200)));
        CalendarEntry c2 = CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
-             "SiteRepeating", "Description", "Location", new Date(1302435000), new Date(1302435000)
-       ));
+             "SiteRepeating", "Description", "Location", new Date(1302435000), new Date(1302435000)));
        CalendarEntry c3 = CALENDAR_SERVICE.createCalendarEntry(ALTERNATE_CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
-             "AltSiteNormal", "Description", "Location", new Date(1302431400), new Date(1302435000)
-       ));
+             "AltSiteNormal", "Description", "Location", new Date(1302431400), new Date(1302435000)));
        
        
        // Do a fetch that'll include all of them
        cq = (GetCalendarEntriesCannedQuery)CALENDAR_CQ_FACTORY.getCannedQuery(
-             containers, from, to, paging
-       );
+             containers, from, to, paging);
        cq.setTestHook(hook);
        cq.execute();
        
@@ -921,8 +903,7 @@ public class CalendarServiceImplTest
        from = new Date(1302431400-10);
        to = new Date(1302431400+10);
        cq = (GetCalendarEntriesCannedQuery)CALENDAR_CQ_FACTORY.getCannedQuery(
-             containers, from, to, paging
-       );
+             containers, from, to, paging);
        cq.setTestHook(hook);
        cq.execute();
        
@@ -940,8 +921,7 @@ public class CalendarServiceImplTest
        CALENDAR_SERVICE.updateCalendarEntry(c3);
        
        cq = (GetCalendarEntriesCannedQuery)CALENDAR_CQ_FACTORY.getCannedQuery(
-             containers, from, to, paging
-       );
+             containers, from, to, paging);
        cq.setTestHook(hook);
        cq.execute();
        assertEquals(3, full.size());
@@ -980,8 +960,7 @@ public class CalendarServiceImplTest
        
        // Monday-Tuesday will find it for itself
        cq = (GetCalendarEntriesCannedQuery)CALENDAR_CQ_FACTORY.getCannedQuery(
-             containers, c20110718mon.getTime(), c20110719tue.getTime(), paging
-       );
+             containers, c20110718mon.getTime(), c20110719tue.getTime(), paging);
        cq.setTestHook(hook);
        cq.execute();
        assertEquals(3, full.size());
@@ -990,8 +969,7 @@ public class CalendarServiceImplTest
        
        // Monday-Wednesday will find it for itself
        cq = (GetCalendarEntriesCannedQuery)CALENDAR_CQ_FACTORY.getCannedQuery(
-             containers, c20110718mon.getTime(), c20110720wed.getTime(), paging
-       );
+             containers, c20110718mon.getTime(), c20110720wed.getTime(), paging);
        cq.setTestHook(hook);
        cq.execute();
        assertEquals(3, full.size());
@@ -1000,8 +978,7 @@ public class CalendarServiceImplTest
        
        // Wednesday-Friday will find it as a repeating event on the Thursday
        cq = (GetCalendarEntriesCannedQuery)CALENDAR_CQ_FACTORY.getCannedQuery(
-             containers, c20110720wed.getTime(), c20110722fri.getTime(), paging
-       );
+             containers, c20110720wed.getTime(), c20110722fri.getTime(), paging);
        cq.setTestHook(hook);
        cq.execute();
        assertEquals(3, full.size());
@@ -1013,8 +990,7 @@ public class CalendarServiceImplTest
        CALENDAR_SERVICE.updateCalendarEntry(c3);
        
        cq = (GetCalendarEntriesCannedQuery)CALENDAR_CQ_FACTORY.getCannedQuery(
-             containers, c20110720wed.getTime(), c20110722fri.getTime(), paging
-       );
+             containers, c20110720wed.getTime(), c20110722fri.getTime(), paging);
        cq.setTestHook(hook);
        cq.execute();
        assertEquals(3, full.size());
@@ -1038,8 +1014,7 @@ public class CalendarServiceImplTest
                         TEST_SITE_PREFIX, 
                         CalendarServiceImplTest.class.getSimpleName() + "_testSite" + System.currentTimeMillis(),
                         "test site title", "test site description", 
-                        SiteVisibility.PUBLIC
-                  );
+                        SiteVisibility.PUBLIC);
                   privateCalendarService.getSiteCalendarContainer(site.getShortName(), true);
                   CLASS_TEST_NODES_TO_TIDY.add(site.getNodeRef());
                   return site;
@@ -1057,8 +1032,7 @@ public class CalendarServiceImplTest
                         TEST_SITE_PREFIX, 
                         CalendarServiceImplTest.class.getSimpleName() + "_testAltSite" + System.currentTimeMillis(),
                         "alternate site title", "alternate site description", 
-                        SiteVisibility.PRIVATE
-                  );
+                        SiteVisibility.PRIVATE);
                   privateCalendarService.getSiteCalendarContainer(site.getShortName(), true);
                   CLASS_TEST_NODES_TO_TIDY.add(site.getNodeRef());
                   return site;

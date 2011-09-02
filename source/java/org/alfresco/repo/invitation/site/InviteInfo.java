@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -32,15 +32,15 @@ import org.alfresco.service.cmr.site.SiteInfo;
  */
 public class InviteInfo implements Serializable
 {
-	private static final long serialVersionUID = -4514253998906200208L;
-	
+    private static final long serialVersionUID = -4514253998906200208L;
+    
     // invitation statuses
     public static final String INVITATION_STATUS_PENDING = "pending";
     public static final String INVITATION_STATUS_ACCEPTED = "accepted";
     public static final String INVITATION_STATUS_REJECTED = "rejected";
     
     // private instances to hold property values
-	private String invitationStatus;
+    private String invitationStatus;
     private String inviterUserName;
     private TemplateNode inviterPerson;
     private String inviteeUserName;
@@ -52,10 +52,10 @@ public class InviteInfo implements Serializable
     private String inviteId;
     
     public InviteInfo(String invitationStatus, String inviterUserName, TemplateNode inviterPerson,
-    		String inviteeUserName, TemplateNode inviteePerson, String role,
-    		String siteShortName, SiteInfo siteInfo, Date sentInviteDate, String inviteId)
+                String inviteeUserName, TemplateNode inviteePerson, String role,
+                String siteShortName, SiteInfo siteInfo, Date sentInviteDate, String inviteId)
     {
-    	this.invitationStatus = invitationStatus;
+        this.invitationStatus = invitationStatus;
         this.inviterUserName = inviterUserName;
         this.inviterPerson = inviterPerson;
         this.inviteeUserName = inviteeUserName;
@@ -107,55 +107,55 @@ public class InviteInfo implements Serializable
         return inviteId;
     }
 
-	/**
-	 * Gets the invitee person
-	 * 
-	 * @return the invitee person
-	 */
+    /**
+     * Gets the invitee person
+     * 
+     * @return the invitee person
+     */
     public TemplateNode getInviteePerson()
-	{
-		return inviteePerson;
-	}
+    {
+        return inviteePerson;
+    }
 
-	/**
-	 * Gets the inviter person
-	 * 
-	 * @return the inviter person
-	 */
+    /**
+     * Gets the inviter person
+     * 
+     * @return the inviter person
+     */
     public TemplateNode getInviterPerson()
-	{
-		return inviterPerson;
-	}
+    {
+        return inviterPerson;
+    }
 
-	/**
-	 * Gets the sent invite date
-	 * 
-	 * @return the sent invite date
-	 */
+    /**
+     * Gets the sent invite date
+     * 
+     * @return the sent invite date
+     */
     public Date getSentInviteDate()
-	{
-		return sentInviteDate;
-	}
+    {
+        return sentInviteDate;
+    }
 
-	/**
-	 * Gets the invitation status
-	 * 
-	 * @return the invitation status
-	 */
+    /**
+     * Gets the invitation status
+     * 
+     * @return the invitation status
+     */
     public String getInvitationStatus()
-	{
-		return invitationStatus;
-	}
+    {
+        return invitationStatus;
+    }
 
-	/**
-	 * Gets the role that invitee has been invited to the site as
-	 * 
-	 * @return the role that the invitee has been invited to the site as
-	 */
+    /**
+     * Gets the role that invitee has been invited to the site as
+     * 
+     * @return the role that the invitee has been invited to the site as
+     */
     public String getRole()
-	{
-		return role;
-	}
+    {
+        return role;
+    }
 
     public SiteInfo getSiteInfo()
     {

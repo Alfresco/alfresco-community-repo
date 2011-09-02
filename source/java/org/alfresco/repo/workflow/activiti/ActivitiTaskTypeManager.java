@@ -30,9 +30,8 @@ import org.alfresco.repo.workflow.WorkflowObjectFactory;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 
 /**
- * @since 3.4.e
  * @author Nick Smith
- *
+ * @since 3.4.e
  */
 public class ActivitiTaskTypeManager
 {
@@ -76,7 +75,7 @@ public class ActivitiTaskTypeManager
     private TypeDefinition getFullTaskDefinition(String taskDefinitionKey, FormData taskFormData)
     {
         String formKey = null;
-        if(taskFormData != null)
+        if (taskFormData != null)
         {
             formKey = taskFormData.getFormKey();
         }

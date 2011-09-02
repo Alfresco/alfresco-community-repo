@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -786,10 +786,10 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
         {
             throw getStartWorkflowException(workflowDefinitionId, e);
         }
-		catch (DataAccessException e) 
-		{
-		    throw getStartWorkflowException(workflowDefinitionId, e);
-		}
+        catch (DataAccessException e) 
+        {
+            throw getStartWorkflowException(workflowDefinitionId, e);
+        }
     }
 
     private WorkflowException getStartWorkflowException(final String workflowDefinitionId, Exception e)
@@ -1859,21 +1859,21 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
 
     private Object[] getProcessIds(List<?> processList)
     {
-		ArrayList<Object> ids = new ArrayList<Object>(processList.size());
-		if (processList.isEmpty())
-		{
-		    ids.add(new Long(-1));
-		}
-		else
-		{
-			for (Object obj : processList)
-			{
-				ProcessInstance instance = (ProcessInstance) obj;
-				ids.add(instance.getId());
-			}
-		}
-		return ids.toArray();
-	}
+        ArrayList<Object> ids = new ArrayList<Object>(processList.size());
+        if (processList.isEmpty())
+        {
+            ids.add(new Long(-1));
+        }
+        else
+        {
+            for (Object obj : processList)
+            {
+                ProcessInstance instance = (ProcessInstance) obj;
+                ids.add(instance.getId());
+            }
+        }
+        return ids.toArray();
+    }
     
     /**
      * Create process-specific query criteria
@@ -1999,7 +1999,7 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
             return (WorkflowTask) jbpmTemplate.execute(new JbpmCallback()
             {
                 @SuppressWarnings("unchecked")
-				public Object doInJbpm(JbpmContext context)
+                public Object doInJbpm(JbpmContext context)
                 {
                     // retrieve task
                     TaskMgmtSession taskSession = context.getTaskMgmtSession();
@@ -2443,11 +2443,11 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
     @SuppressWarnings("unchecked")
     protected Map<QName, Serializable> getTaskProperties(TaskInstance instance, boolean localProperties, Map<Long, TokenVariableMap> variablesCache)
     {
-    	// retrieve type definition for task
+        // retrieve type definition for task
         TypeDefinition taskDef = getFullTaskDefinition(instance);
         Map<QName, PropertyDefinition> taskProperties = taskDef.getProperties();
         Map<QName, AssociationDefinition> taskAssocs = taskDef.getAssociations();
-    	
+
         // build properties from jBPM context (visit all tokens to the root)
         Map<String, Object> vars = instance.getVariablesLocally();
         if (!localProperties)
@@ -2492,8 +2492,8 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
             boolean isAssoc = taskAssocs.containsKey(qname);
             if (taskProperties.containsKey(qname) || isAssoc || instance.hasVariableLocally(key))
             {
-	            Serializable value = convertValue(entry.getValue());
-	            properties.put(qname, value);
+                Serializable value = convertValue(entry.getValue());
+                properties.put(qname, value);
             }
         }
 
@@ -2654,7 +2654,7 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
                                 Session session = context.getSession();
                                 for (Object obj: comments)
                                 {
-                                	Comment comment = (Comment) obj;
+                                    Comment comment = (Comment) obj;
                                     comment.getToken().getComments().remove(comment);
                                     session.delete(comment);
                                 }
@@ -2975,7 +2975,7 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
      * @return JBPMNodeList or JBPMNode
      */
     @SuppressWarnings("unchecked")
-	private Serializable convertNodeRefs(boolean isMany, Serializable value)
+    private Serializable convertNodeRefs(boolean isMany, Serializable value)
     {
         if (value instanceof NodeRef)
         {
@@ -3395,11 +3395,11 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
         TaskInstance taskInstance = timer.getTaskInstance();
         if (taskInstance != null)
         {
-        	workflowTask = createWorkflowTask(taskInstance);
+            workflowTask = createWorkflowTask(taskInstance);
         }
         
         return factory.createWorkflowTimer(new Long(timer.getId()).toString(), timer.getName(), 
-        		timer.getException(), timer.getDueDate(), path, workflowTask);
+                    timer.getException(), timer.getDueDate(), path, workflowTask);
     }
     
     /**

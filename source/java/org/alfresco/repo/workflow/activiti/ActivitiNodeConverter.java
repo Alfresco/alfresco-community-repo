@@ -78,15 +78,15 @@ public class ActivitiNodeConverter extends AbstractWorkflowNodeConverter
     @Override
     public boolean isSupported(Object object)
     {
-        if(object == null)
+        if (object == null)
         {
             return false;
         }
-        if(object instanceof ActivitiScriptNode)
+        if (object instanceof ActivitiScriptNode)
         {
             return true;
         }
-        if(object instanceof ActivitiScriptNodeList)
+        if (object instanceof ActivitiScriptNodeList)
         {
             return true;
         }

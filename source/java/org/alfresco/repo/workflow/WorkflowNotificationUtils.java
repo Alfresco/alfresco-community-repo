@@ -38,6 +38,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * Utility class containing methods to help when sending workflow notifications.
  * 
  * @author Roy Wetherall
+ * @since 4.0
  */
 public abstract class WorkflowNotificationUtils
 {

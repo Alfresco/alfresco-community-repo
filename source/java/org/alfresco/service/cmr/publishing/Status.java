@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,9 +19,15 @@
 
 package org.alfresco.service.cmr.publishing;
 
-public enum Status {
+/**
+ * @author Brian
+ * @since 4.0
+ */
+public enum Status 
+{
     SCHEDULED,
     IN_PROGRESS,
     CANCEL_REQUESTED,
     COMPLETED,
-    FAILED}
+    FAILED
+}

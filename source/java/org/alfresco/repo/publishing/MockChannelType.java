@@ -30,9 +30,9 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * For test purposes only.
+ * 
  * @author Nick Smith
  * @since 4.0
- *
  */
 public class MockChannelType extends AbstractChannelType
 {
@@ -155,5 +155,4 @@ public class MockChannelType extends AbstractChannelType
     {
         return "";
     }
-
 }

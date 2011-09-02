@@ -57,7 +57,6 @@ import org.apache.commons.logging.LogFactory;
 /**
  * @author Nick Smith
  * @since 4.0
- *
  */
 public class PublishingEventProcessor
 {
@@ -71,8 +70,8 @@ public class PublishingEventProcessor
     private UrlShortener urlShortener;
     private DictionaryService dictionaryService;
     
-     public void processEventNode(NodeRef eventNode)
-     {
+    public void processEventNode(NodeRef eventNode)
+    {
         ParameterCheck.mandatory("eventNode", eventNode);
         try
         {
@@ -94,7 +93,7 @@ public class PublishingEventProcessor
                 nodeService.setProperty(eventNode, PublishingModel.PROP_PUBLISHING_EVENT_STATUS, completedStatus);
             }
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             log.error("Caught exception while processing publishing event " + eventNode, e);
             fail(eventNode, e.getMessage());
@@ -107,7 +106,7 @@ public class PublishingEventProcessor
 
     public void updateStatus(Channel publishChannel, StatusUpdate update)
     {
-        if(update == null)
+        if (update == null)
         {
             return;
         }
@@ -117,7 +116,7 @@ public class PublishingEventProcessor
         for (String channelId : channels)
         {
             Channel channel = channelService.getChannelById(channelId);
-            if(channel != null)
+            if (channel != null)
             {
                 channel.updateStatus(message, nodeUrl);
             }
@@ -133,10 +132,10 @@ public class PublishingEventProcessor
     {
         NodeRef node = update.getNodeToLinkTo();
         String nodeUrl = null;
-        if(node!= null)
+        if (node!= null)
         {
             nodeUrl = publishChannel.getUrl(node);
-            if(nodeUrl != null)
+            if (nodeUrl != null)
             {
                 nodeUrl = " " + urlShortener.shortenUrl(nodeUrl);
             }
@@ -145,7 +144,7 @@ public class PublishingEventProcessor
     }
 
     public void publishEvent(Channel channel, PublishingEvent event)
-     {
+    {
          NodeRef eventNode = eventHelper.getPublishingEventNode(event.getId());
          for (PublishingPackageEntry entry : event.getPackage().getEntries())
          {
@@ -164,7 +163,7 @@ public class PublishingEventProcessor
      {
          NodeRef channelNode = new NodeRef(channel.getId());
          NodeRef publishedNode = channelHelper.mapSourceToEnvironment(entry.getNodeRef(), channelNode);
-         if(NodeUtils.exists(publishedNode, nodeService))
+         if (NodeUtils.exists(publishedNode, nodeService))
          {
              channel.unPublish(publishedNode);
              // Need to set as temporary to delete node instead of archiving.
@@ -183,7 +182,7 @@ public class PublishingEventProcessor
      public NodeRef publishEntry(Channel channel, PublishingPackageEntry entry, NodeRef eventNode)
      {
          NodeRef publishedNode = channelHelper.mapSourceToEnvironment(entry.getNodeRef(), channel.getNodeRef());
-         if(publishedNode == null)
+         if (publishedNode == null)
          {
              publishedNode = publishNewNode(channel.getNodeRef(),  entry.getSnapshot());
          }
@@ -284,67 +283,67 @@ public class PublishingEventProcessor
         }
     }
 
-     private void addAspects(NodeRef publishedNode, Collection<QName> aspects)
-     {
-         Set<QName> currentAspects = nodeService.getAspects(publishedNode);
-          for (QName aspect : aspects)
-          {
-              if(currentAspects.contains(aspect)==false)
-              {
-                  nodeService.addAspect(publishedNode, aspect, null);
-              }
-          }
-     }
+    private void addAspects(NodeRef publishedNode, Collection<QName> aspects)
+    {
+        Set<QName> currentAspects = nodeService.getAspects(publishedNode);
+        for (QName aspect : aspects)
+        {
+            if (currentAspects.contains(aspect) == false)
+            {
+                nodeService.addAspect(publishedNode, aspect, null);
+            }
+        }
+    }
 
-     private NodeRef createPublishedNode(NodeRef root, NodeSnapshot snapshot)
-     {
-         QName type = snapshot.getType();
-          Map<QName, Serializable> actualProps = getPropertiesToPublish(snapshot);
-          String name = (String) actualProps.get(ContentModel.PROP_NAME);
-          if(name == null)
-          {
-              name = GUID.generate();
-          }
-          QName assocName = QName.createQName(NAMESPACE, name);
-          ChildAssociationRef publishedAssoc = nodeService.createNode(root, ASSOC_CONTAINS, assocName, type, actualProps);
-          NodeRef publishedNode = publishedAssoc.getChildRef();
-         return publishedNode;
-     }
+    private NodeRef createPublishedNode(NodeRef root, NodeSnapshot snapshot)
+    {
+        QName type = snapshot.getType();
+        Map<QName, Serializable> actualProps = getPropertiesToPublish(snapshot);
+        String name = (String) actualProps.get(ContentModel.PROP_NAME);
+        if (name == null)
+        {
+            name = GUID.generate();
+        }
+        QName assocName = QName.createQName(NAMESPACE, name);
+        ChildAssociationRef publishedAssoc = nodeService.createNode(root, ASSOC_CONTAINS, assocName, type, actualProps);
+        NodeRef publishedNode = publishedAssoc.getChildRef();
+       return publishedNode;
+    }
 
-     private Map<QName, Serializable> getPropertiesToPublish(NodeSnapshot snapshot)
-     {
-         Map<QName, Serializable> properties = snapshot.getProperties();
-          // Remove the Node Ref Id
-          Map<QName, Serializable> actualProps = new HashMap<QName, Serializable>(properties);
-          actualProps.remove(ContentModel.PROP_NODE_UUID);
-         return actualProps;
-     }
+    private Map<QName, Serializable> getPropertiesToPublish(NodeSnapshot snapshot)
+    {
+        Map<QName, Serializable> properties = snapshot.getProperties();
+        // Remove the Node Ref Id
+        Map<QName, Serializable> actualProps = new HashMap<QName, Serializable>(properties);
+        actualProps.remove(ContentModel.PROP_NODE_UUID);
+        return actualProps;
+    }
 
-     /**
-      * @param channelHelper the channelHelper to set
-      */
-     public void setChannelHelper(ChannelHelper channelHelper)
-     {
-         this.channelHelper = channelHelper;
-     }
-     
-     /**
-      * @param channelService the channelService to set
-      */
-     public void setChannelService(ChannelService channelService)
-     {
-         this.channelService = channelService;
-     }
-     
-     /**
-      * @param eventHelper the Publishing Event Helper to set
-      */
-     public void setPublishingEventHelper(PublishingEventHelper eventHelper)
-     {
-         this.eventHelper = eventHelper;
-     }
+    /**
+     * @param channelHelper the channelHelper to set
+     */
+    public void setChannelHelper(ChannelHelper channelHelper)
+    {
+        this.channelHelper = channelHelper;
+    }
+ 
+    /**
+     * @param channelService the channelService to set
+     */
+    public void setChannelService(ChannelService channelService)
+    {
+        this.channelService = channelService;
+    }
+ 
+    /**
+     * @param eventHelper the Publishing Event Helper to set
+     */
+    public void setPublishingEventHelper(PublishingEventHelper eventHelper)
+    {
+        this.eventHelper = eventHelper;
+    }
 
-     /**
+    /**
      * @param nodeService the nodeService to set
      */
     public void setNodeService(NodeService nodeService)

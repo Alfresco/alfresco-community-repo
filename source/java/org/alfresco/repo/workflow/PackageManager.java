@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -49,9 +49,8 @@ import org.apache.commons.logging.LogFactory;
  * (such as adding and removing package items). These changes are then applied
  * to the package when either the create() or update() method is called.
  * 
- * @since 3.4
  * @author Nick Smith
- * 
+ * @since 3.4
  */
 public class PackageManager
 {
@@ -173,30 +172,27 @@ public class PackageManager
      */
     public void update(final NodeRef packageRef)
     {
-        if(addItems.isEmpty() && removeItems.isEmpty())
+        if (addItems.isEmpty() && removeItems.isEmpty())
             return;
 
         AuthenticationUtil.runAs(new RunAsWork<Void>()
-       {
-           public Void doWork() throws Exception
-           {
-               checkPackage(packageRef);
-               checkPackageItems(packageRef);
-               addPackageItems(packageRef);
-               removePackageItems(packageRef);
-               return null;
-           }
-
-       }, AuthenticationUtil.getSystemUserName());
-       addItems.clear();
-       removeItems.clear();
+        {
+            public Void doWork() throws Exception
+            {
+                checkPackage(packageRef);
+                checkPackageItems(packageRef);
+                addPackageItems(packageRef);
+                removePackageItems(packageRef);
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
+        addItems.clear();
+        removeItems.clear();
     }
-
 
     private void checkPackage(NodeRef packageRef)
     {
-        if(packageRef == null 
-          || nodeService.hasAspect(packageRef, PCKG_ASPECT)==false )
+        if (packageRef == null || nodeService.hasAspect(packageRef, PCKG_ASPECT) == false)
         {
             String msg = "The package NodeRef must implement the aspect: " + PCKG_ASPECT;
             throw new WorkflowException(msg);
@@ -256,7 +252,7 @@ public class PackageManager
         removeItems.removeAll(intersection);
         for (NodeRef node : intersection)
         {
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
                 logger.debug("Item was added and removed from package! Ignoring item: "+ node);
         }
         checkAddedItems(currentitems);
@@ -268,7 +264,7 @@ public class PackageManager
         for (Iterator<NodeRef> iter = removeItems.iterator(); iter.hasNext();)
         {
             NodeRef removeItem= iter.next();
-            if(currentitems.contains(removeItem)==false)
+            if (currentitems.contains(removeItem) == false)
             {
                 iter.remove();
                 if (logger.isDebugEnabled())
@@ -282,7 +278,7 @@ public class PackageManager
         for (Iterator<NodeRef> iter = addItems.iterator(); iter.hasNext();)
         {
             NodeRef addItem= iter.next();
-            if(currentitems.contains(addItem))
+            if (currentitems.contains(addItem))
             {
                 iter.remove();
                 if (logger.isDebugEnabled())

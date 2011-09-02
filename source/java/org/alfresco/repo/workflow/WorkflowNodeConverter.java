@@ -26,8 +26,8 @@ import java.util.List;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * @since 3.4.e
  * @author Nick Smith
+ * @since 3.4.e
  */
 public interface WorkflowNodeConverter
 {
@@ -105,5 +105,4 @@ public interface WorkflowNodeConverter
      * @return
      */
     Serializable convert(Object object);
-
 }

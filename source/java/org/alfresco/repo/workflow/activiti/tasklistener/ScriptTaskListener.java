@@ -53,63 +53,63 @@ public class ScriptTaskListener extends ActivitiScriptBase implements TaskListen
     @Override
     public void notify(DelegateTask delegateTask)
     {
-        if(script != null)
+        if (script != null)
         {
-        	String scriptString = getStringValue(script, delegateTask);
-        	String scriptProcessorName = getStringValue(scriptProcessor, delegateTask);
-        	String runAsUser = getStringValue(runAs, delegateTask);
-        	
-        	
- 			// Make sure there is an authenticated user for the current thread, so when
-        	// the script is executed using no 'runAs' from a job-executor thread, the task's assignee
-        	// will be the authenticated user.
-        	boolean clearAuthenticationContext = checkFullyAuthenticatedUser(delegateTask);
-        	
-        	// Get all activiti-defined objects
-        	Map<String, Object> scriptModel = getInputMap(delegateTask, runAsUser);
-        	
-        	// Add core alfresco objects to the input-map 
-        	getServiceRegistry().getScriptService().buildCoreModel(scriptModel);
-        	
-        	try
-        	{
-        		Object scriptOutput = executeScript(scriptString, scriptModel, scriptProcessorName, runAsUser);
-        		
-        		// TODO: What to do with the script-output?
-        		if(scriptOutput != null)
-        		{
-        			// delegateTask.setVariableLocal("scriptOutput", scriptOutput);
-        		}
-        	}
-        	finally
-        	{
-        		if(clearAuthenticationContext)
-        		{
-        			// If the current user has been set to the Task's assignee, we should clear it agian
-        			AuthenticationUtil.clearCurrentSecurityContext();
-        		}
-        	}
+            String scriptString = getStringValue(script, delegateTask);
+            String scriptProcessorName = getStringValue(scriptProcessor, delegateTask);
+            String runAsUser = getStringValue(runAs, delegateTask);
+            
+            
+            // Make sure there is an authenticated user for the current thread, so when
+            // the script is executed using no 'runAs' from a job-executor thread, the task's assignee
+            // will be the authenticated user.
+            boolean clearAuthenticationContext = checkFullyAuthenticatedUser(delegateTask);
+            
+            // Get all activiti-defined objects
+            Map<String, Object> scriptModel = getInputMap(delegateTask, runAsUser);
+            
+            // Add core alfresco objects to the input-map 
+            getServiceRegistry().getScriptService().buildCoreModel(scriptModel);
+            
+            try
+            {
+                Object scriptOutput = executeScript(scriptString, scriptModel, scriptProcessorName, runAsUser);
+
+                // TODO: What to do with the script-output?
+                if (scriptOutput != null)
+                {
+                    // delegateTask.setVariableLocal("scriptOutput", scriptOutput);
+                }
+            }
+            finally
+            {
+                if (clearAuthenticationContext)
+                {
+                    // If the current user has been set to the Task's assignee, we should clear it agian
+                    AuthenticationUtil.clearCurrentSecurityContext();
+                }
+            }
         }
         else
         {
-        	throw new IllegalArgumentException("The field 'script' should be set on the TaskListener");
+            throw new IllegalArgumentException("The field 'script' should be set on the TaskListener");
         }
     }
 
-	protected Map<String, Object> getInputMap(DelegateTask delegateTask, String runAsUser) 
-	{
-		HashMap<String, Object> scriptModel = new HashMap<String, Object>(1);
+    protected Map<String, Object> getInputMap(DelegateTask delegateTask, String runAsUser) 
+    {
+        HashMap<String, Object> scriptModel = new HashMap<String, Object>(1);
         
         // Add current logged-in user and it's user home
         ActivitiScriptNode personNode = getPersonNode(runAsUser);
-        if(personNode != null)
+        if (personNode != null)
         {
-        	ServiceRegistry registry = getServiceRegistry();
-        	scriptModel.put(PERSON_BINDING_NAME, personNode);
-        	NodeRef userHomeNode = (NodeRef) registry.getNodeService().getProperty(personNode.getNodeRef(), ContentModel.PROP_HOMEFOLDER);
+            ServiceRegistry registry = getServiceRegistry();
+            scriptModel.put(PERSON_BINDING_NAME, personNode);
+            NodeRef userHomeNode = (NodeRef) registry.getNodeService().getProperty(personNode.getNodeRef(), ContentModel.PROP_HOMEFOLDER);
             if (userHomeNode != null)
             {
-            	scriptModel.put(USERHOME_BINDING_NAME, new ActivitiScriptNode(userHomeNode, registry));
+                scriptModel.put(USERHOME_BINDING_NAME, new ActivitiScriptNode(userHomeNode, registry));
             }
         }
         
@@ -120,29 +120,30 @@ public class ScriptTaskListener extends ActivitiScriptBase implements TaskListen
         // Add all workflow variables to model
         Map<String, Object> variables = delegateTask.getExecution().getVariables();
         
-        for(Entry<String, Object> varEntry : variables.entrySet())
+        for (Entry<String, Object> varEntry : variables.entrySet())
         {
-        	scriptModel.put(varEntry.getKey(), varEntry.getValue());
+            scriptModel.put(varEntry.getKey(), varEntry.getValue());
         }
-	    return scriptModel;
-	}
-	
-	/**
-	 * Checks a valid Fully Authenticated User is set.
-	 * If none is set then attempts to set the task assignee as the Fully Authenticated User.
-	 * @param delegateTask the delegate task
-	 * @return <code>true</code> if the Fully Authenticated User was changed, otherwise <code>false</code>.
-	 */
-	private boolean checkFullyAuthenticatedUser(final DelegateTask delegateTask) {
-		if(AuthenticationUtil.getFullyAuthenticatedUser() == null)
-		{
-			String userName = delegateTask.getAssignee();
-			if (userName != null)
-			{
-				AuthenticationUtil.setFullyAuthenticatedUser(userName);
-				return true;
-			}
-		}
-		return false;
-	}
+        return scriptModel;
+    }
+
+    /**
+     * Checks a valid Fully Authenticated User is set.
+     * If none is set then attempts to set the task assignee as the Fully Authenticated User.
+     * @param delegateTask the delegate task
+     * @return <code>true</code> if the Fully Authenticated User was changed, otherwise <code>false</code>.
+     */
+    private boolean checkFullyAuthenticatedUser(final DelegateTask delegateTask) 
+    {
+        if (AuthenticationUtil.getFullyAuthenticatedUser() == null)
+        {
+            String userName = delegateTask.getAssignee();
+            if (userName != null)
+            {
+                AuthenticationUtil.setFullyAuthenticatedUser(userName);
+                return true;
+            }
+        }
+        return false;
+    }
 }

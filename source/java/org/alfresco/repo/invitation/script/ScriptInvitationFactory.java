@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 Alfresco Software Limited.
+ * Copyright (C) 2009-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -52,27 +52,27 @@ public class ScriptInvitationFactory
     }
 
     public ScriptInvitation<?> toScriptInvitation(Invitation invitation)
-	{
-		if(invitation instanceof NominatedInvitation)
-		{
-			return new ScriptNominatedInvitation((NominatedInvitation) invitation, invitationService);
-		}
-		
-		if(invitation instanceof ModeratedInvitation)
-		{
-		    String userName = invitation.getInviteeUserName();
-		    NodeRef person = personService.getPerson(userName);
-		    Map<QName, Serializable> properties = nodeService.getProperties(person);
-		    String firstName = (String) properties.get(ContentModel.PROP_FIRSTNAME);
-		    String lastName = (String) properties.get(ContentModel.PROP_LASTNAME);
-		    String email = (String) properties.get(ContentModel.PROP_EMAIL);
-			return new ScriptModeratedInvitation(
-			            (ModeratedInvitation) invitation,
-			            invitationService,
-			            email,
-			            firstName,
-			            lastName);
-		}
-		throw new AlfrescoRuntimeException("Unknown invitation type.");
-	}
+    {
+        if(invitation instanceof NominatedInvitation)
+        {
+            return new ScriptNominatedInvitation((NominatedInvitation) invitation, invitationService);
+        }
+
+        if(invitation instanceof ModeratedInvitation)
+        {
+            String userName = invitation.getInviteeUserName();
+            NodeRef person = personService.getPerson(userName);
+            Map<QName, Serializable> properties = nodeService.getProperties(person);
+            String firstName = (String) properties.get(ContentModel.PROP_FIRSTNAME);
+            String lastName = (String) properties.get(ContentModel.PROP_LASTNAME);
+            String email = (String) properties.get(ContentModel.PROP_EMAIL);
+            return new ScriptModeratedInvitation(
+                        (ModeratedInvitation) invitation,
+                        invitationService,
+                        email,
+                        firstName,
+                        lastName);
+        }
+        throw new AlfrescoRuntimeException("Unknown invitation type.");
+    }
 }

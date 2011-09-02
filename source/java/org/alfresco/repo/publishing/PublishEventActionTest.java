@@ -46,7 +46,6 @@ import javax.annotation.Resource;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.publishing.NodeSnapshot;
 import org.alfresco.service.cmr.publishing.PublishingDetails;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
@@ -67,7 +66,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * @author Nick Smith
  * @since 4.0
- *
  */
 public class PublishEventActionTest extends AbstractPublishingIntegrationTest
 {
@@ -409,7 +407,7 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
     {
         PublishingDetails details = publishingService.getPublishingQueue().createPublishingDetails();
         details.setPublishChannel(channel.getId());
-        if(publish)
+        if (publish)
         {
             details.addNodesToPublish(source);
         }
@@ -417,7 +415,7 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
         {
             details.addNodesToUnpublish(source);
         }
-        if(message!=null)
+        if (message != null)
         {
             details.setStatusMessage(message)
                 .setStatusNodeToLinkTo(source)

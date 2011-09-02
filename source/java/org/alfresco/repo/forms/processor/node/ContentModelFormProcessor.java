@@ -724,10 +724,10 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
                 }
             }
 
-	        // add the potentially changed content data object back to property map for persistence
+            // add the potentially changed content data object back to property map for persistence
             if (contentData != null)
             {
-            	propsToPersist.put(ContentModel.PROP_CONTENT, contentData);
+                propsToPersist.put(ContentModel.PROP_CONTENT, contentData);
             }
         }
     }

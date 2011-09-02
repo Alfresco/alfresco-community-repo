@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.alfresco.repo.workflow.jbpm;
 
 import static org.mockito.Matchers.any;
@@ -39,123 +57,127 @@ import org.mockito.stubbing.Answer;
 
 public class AlfrescoJavaScriptIntegrationTest extends BaseAlfrescoSpringTest
 {
-	private static final QName fooName = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "Foo");
-	private static final QName barName = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "Bar");
-	private static final QName docName = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "Doc");
-	private static final String BASIC_USER = "basic"+GUID.generate();
-	private static String systemUser = AuthenticationUtil.getSystemUserName();
-	
-	private ServiceRegistry services;
-	private ExecutionContext context;
-	private HashMap<String, Object> variables;
-	private PersonService personService;
+    private static final QName fooName = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "Foo");
+    private static final QName barName = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "Bar");
+    private static final QName docName = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "Doc");
+    private static final String BASIC_USER = "basic"+GUID.generate();
+    private static String systemUser = AuthenticationUtil.getSystemUserName();
+    
+    private ServiceRegistry services;
+    private ExecutionContext context;
+    private HashMap<String, Object> variables;
+    private PersonService personService;
     private Repository repository;
 
-	/**
-	 * Test that JavaScript can still be run even if no Authentication is provided.
-	 * This can occur if, e.g. the action is executed as part of an asynchronous task.
-	 * @throws Exception
-	 */
-	public void testRunsWithoutAuthentication() throws Exception {
-		NodeRef systemNode = personService.getPerson(systemUser);
-		NodeRef baseUserNode = personService.getPerson(BASIC_USER);
-		TestUserStore userStore = new TestUserStore();
-		variables.put("userStore", userStore);
-		Element script = buildScript("userStore.storeUsers(person)");
-		
-		// Check authentication cleared.
-		AuthenticationUtil.clearCurrentSecurityContext();
-		assertNull(AuthenticationUtil.getFullyAuthenticatedUser());
-		assertNull(AuthenticationUtil.getRunAsUser());
-		
-		// Check uses system user when no authentication set and no task assignee.
-		AlfrescoJavaScript scriptHandler = new AlfrescoJavaScript();
-		scriptHandler.setScript(script);
-		scriptHandler.execute(context);
-		assertEquals(systemUser, userStore.runAsUser);
-		assertEquals(systemUser, userStore.fullUser);
-		assertEquals(systemNode, userStore.person.getNodeRef());
+    /**
+     * Test that JavaScript can still be run even if no Authentication is provided.
+     * This can occur if, e.g. the action is executed as part of an asynchronous task.
+     * @throws Exception
+     */
+    public void testRunsWithoutAuthentication() throws Exception 
+    {
+        NodeRef systemNode = personService.getPerson(systemUser);
+        NodeRef baseUserNode = personService.getPerson(BASIC_USER);
+        TestUserStore userStore = new TestUserStore();
+        variables.put("userStore", userStore);
+        Element script = buildScript("userStore.storeUsers(person)");
+        
+        // Check authentication cleared.
+        AuthenticationUtil.clearCurrentSecurityContext();
+        assertNull(AuthenticationUtil.getFullyAuthenticatedUser());
+        assertNull(AuthenticationUtil.getRunAsUser());
+        
+        // Check uses system user when no authentication set and no task assignee.
+        AlfrescoJavaScript scriptHandler = new AlfrescoJavaScript();
+        scriptHandler.setScript(script);
+        scriptHandler.execute(context);
+        assertEquals(systemUser, userStore.runAsUser);
+        assertEquals(systemUser, userStore.fullUser);
+        assertEquals(systemNode, userStore.person.getNodeRef());
+        
+        // Check authentication is correctly reset.
+        assertNull(AuthenticationUtil.getFullyAuthenticatedUser());
+        assertNull(AuthenticationUtil.getRunAsUser());
+        
+        // Check that when a task assignee exists, then he/she is used for authentication.
+        TaskInstance taskInstance = mock(TaskInstance.class);
+        when(taskInstance.getActorId()).thenReturn(BASIC_USER);
+        when(context.getTaskInstance()).thenReturn(taskInstance);
+        scriptHandler = new AlfrescoJavaScript();
+        scriptHandler.setScript(script);
+        scriptHandler.execute(context);
+        assertEquals(BASIC_USER, userStore.runAsUser);
+        assertEquals(BASIC_USER, userStore.fullUser);
+        assertEquals(baseUserNode, userStore.person.getNodeRef());
+        
+        // Check authentication is correctly reset.
+        assertNull(AuthenticationUtil.getFullyAuthenticatedUser());
+        assertNull(AuthenticationUtil.getRunAsUser());
+    }
 
-		// Check authentication is correctly reset.
-		assertNull(AuthenticationUtil.getFullyAuthenticatedUser());
-		assertNull(AuthenticationUtil.getRunAsUser());
+    /**
+     * See Jira issue ALF-657.
+     * @throws Exception
+     */
+    public void testRunAsAdminMoveContent() throws Exception 
+    {
+        NodeRef fooFolder = nodeService.createNode(rootNodeRef,
+                    ContentModel.ASSOC_CONTAINS,
+                    fooName,
+                    ContentModel.TYPE_FOLDER).getChildRef();
+        
+        NodeRef barFolder = nodeService.createNode(rootNodeRef,
+                    ContentModel.ASSOC_CONTAINS,
+                    barName,
+                    ContentModel.TYPE_FOLDER).getChildRef();
+        
+        NodeRef doc = nodeService.createNode(fooFolder,
+                    ContentModel.ASSOC_CONTAINS,
+                    docName,
+                    ContentModel.TYPE_CONTENT).getChildRef();
+        PermissionService permissions = services.getPermissionService();
+        permissions.setPermission(doc, BASIC_USER, PermissionService.ALL_PERMISSIONS, true);
+        AuthenticationUtil.setFullyAuthenticatedUser(BASIC_USER);
+        
+        Element script = buildScript("doc.move(bar)");
+        
+        variables.put("doc", new JBPMNode(doc, services));
+        variables.put("bar", new JBPMNode(barFolder, services));
+        assertEquals(fooFolder, nodeService.getPrimaryParent(doc).getParentRef());
+        try
+        {
+            AlfrescoJavaScript scriptHandler = new AlfrescoJavaScript();
+            scriptHandler.setScript(script);
+            scriptHandler.execute(context);
+            fail("The user should not have permission to write to bar!");
+        } 
+        catch (ScriptException e)
+        {
+            // Do nothing.
+        }
+        
+        assertEquals(fooFolder, nodeService.getPrimaryParent(doc).getParentRef());
+        
+        AlfrescoJavaScript scriptHandler = new AlfrescoJavaScript();
+        scriptHandler.setScript(script);
+        scriptHandler.setRunas(AuthenticationUtil.getAdminUserName());
+        scriptHandler.execute(context);
+        assertEquals(barFolder, nodeService.getPrimaryParent(doc).getParentRef());
+    }
+    
+    /**
+     * See Jira issue ALF-5346.
+     * @throws Exception
+     */
+    public void testRunAsAdminMoveContentBetweenSites() throws Exception 
+    {
+        SiteService siteService = services.getSiteService();
+        FileFolderService fileFolderService = services.getFileFolderService();
 
-		// Check that when a task assignee exists, then he/she is used for authentication.
-		TaskInstance taskInstance = mock(TaskInstance.class);
-		when(taskInstance.getActorId()).thenReturn(BASIC_USER);
-		when(context.getTaskInstance()).thenReturn(taskInstance);
-		scriptHandler = new AlfrescoJavaScript();
-		scriptHandler.setScript(script);
-		scriptHandler.execute(context);
-		assertEquals(BASIC_USER, userStore.runAsUser);
-		assertEquals(BASIC_USER, userStore.fullUser);
-		assertEquals(baseUserNode, userStore.person.getNodeRef());
-		
-		// Check authentication is correctly reset.
-		assertNull(AuthenticationUtil.getFullyAuthenticatedUser());
-		assertNull(AuthenticationUtil.getRunAsUser());
-	}
-	
-	/**
-	 * See Jira issue ALF-657.
-	 * @throws Exception
-	 */
-	public void testRunAsAdminMoveContent() throws Exception {
-		NodeRef fooFolder = nodeService.createNode(rootNodeRef,
-				ContentModel.ASSOC_CONTAINS,
-				fooName,
-				ContentModel.TYPE_FOLDER).getChildRef();
-		
-		NodeRef barFolder = nodeService.createNode(rootNodeRef,
-				ContentModel.ASSOC_CONTAINS,
-				barName,
-				ContentModel.TYPE_FOLDER).getChildRef();
-		
-		NodeRef doc = nodeService.createNode(fooFolder,
-				ContentModel.ASSOC_CONTAINS,
-				docName,
-				ContentModel.TYPE_CONTENT).getChildRef();
-		PermissionService permissions = services.getPermissionService();
-		permissions.setPermission(doc, BASIC_USER, PermissionService.ALL_PERMISSIONS, true);
-		AuthenticationUtil.setFullyAuthenticatedUser(BASIC_USER);
+        String siteAName = "siteA"+GUID.generate();
+        String siteBName = "siteB"+GUID.generate();
 
-		Element script = buildScript("doc.move(bar)");
-		
-		variables.put("doc", new JBPMNode(doc, services));
-		variables.put("bar", new JBPMNode(barFolder, services));
-		assertEquals(fooFolder, nodeService.getPrimaryParent(doc).getParentRef());
-		try
-		{
-			AlfrescoJavaScript scriptHandler = new AlfrescoJavaScript();
-			scriptHandler.setScript(script);
-			scriptHandler.execute(context);
-			fail("The user should not have permission to write to bar!");
-		} catch(ScriptException e)
-		{
-			// Do nothing.
-		}
-		
-		assertEquals(fooFolder, nodeService.getPrimaryParent(doc).getParentRef());
-		
-		AlfrescoJavaScript scriptHandler = new AlfrescoJavaScript();
-		scriptHandler.setScript(script);
-		scriptHandler.setRunas(AuthenticationUtil.getAdminUserName());
-		scriptHandler.execute(context);
-		assertEquals(barFolder, nodeService.getPrimaryParent(doc).getParentRef());
-	}
-	
-	/**
-	 * See Jira issue ALF-5346.
-	 * @throws Exception
-	 */
-	public void testRunAsAdminMoveContentBetweenSites() throws Exception {
-	    SiteService siteService = services.getSiteService();
-	    FileFolderService fileFolderService = services.getFileFolderService();
-	    
-	    String siteAName = "siteA"+GUID.generate();
-	    String siteBName = "siteB"+GUID.generate();
-	    
-	    AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
         siteService.createSite(
                     "testSitePreset", siteAName, "title", "description", SiteVisibility.PRIVATE);
@@ -171,38 +193,38 @@ public class AlfrescoJavaScriptIntegrationTest extends BaseAlfrescoSpringTest
         ContentWriter writer = fileFolderService.getWriter(doc);
         writer.putContent("Just some old content that doesn't mean anything");
 
-	    AuthenticationUtil.setFullyAuthenticatedUser(BASIC_USER);
-	    
-	    Element script = buildScript("doc.move(companyhome.childByNamePath(\"Sites/"+ siteBName +"/documentLibrary\"))");
-	    
-	    NodeRef companyHome = repository.getCompanyHome();
-	    variables.put("companyhome", new JBPMNode(companyHome, services));
-	    variables.put("doc", new JBPMNode(doc, services));
-	    assertEquals(docLibA, nodeService.getPrimaryParent(doc).getParentRef());
-	    try
-	    {
-	        AlfrescoJavaScript scriptHandler = new AlfrescoJavaScript();
-	        scriptHandler.setScript(script);
-	        scriptHandler.execute(context);
-	        fail("The user should not have permission to write to Site B!");
-	    } catch(ScriptException e)
-	    {
-	        // Do nothing.
-	    }
-	    
-	    assertEquals(docLibA, nodeService.getPrimaryParent(doc).getParentRef());
-	    
-	    AlfrescoJavaScript scriptHandler = new AlfrescoJavaScript();
-	    scriptHandler.setScript(script);
-	    scriptHandler.setRunas(AuthenticationUtil.getAdminUserName());
-	    scriptHandler.execute(context);
-	    assertEquals(docLibB, nodeService.getPrimaryParent(doc).getParentRef());
-	}
+        AuthenticationUtil.setFullyAuthenticatedUser(BASIC_USER);
+        
+        Element script = buildScript("doc.move(companyhome.childByNamePath(\"Sites/"+ siteBName +"/documentLibrary\"))");
+        
+        NodeRef companyHome = repository.getCompanyHome();
+        variables.put("companyhome", new JBPMNode(companyHome, services));
+        variables.put("doc", new JBPMNode(doc, services));
+        assertEquals(docLibA, nodeService.getPrimaryParent(doc).getParentRef());
+        try
+        {
+            AlfrescoJavaScript scriptHandler = new AlfrescoJavaScript();
+            scriptHandler.setScript(script);
+            scriptHandler.execute(context);
+            fail("The user should not have permission to write to Site B!");
+        } catch(ScriptException e)
+        {
+            // Do nothing.
+        }
+        
+        assertEquals(docLibA, nodeService.getPrimaryParent(doc).getParentRef());
+        
+        AlfrescoJavaScript scriptHandler = new AlfrescoJavaScript();
+        scriptHandler.setScript(script);
+        scriptHandler.setRunas(AuthenticationUtil.getAdminUserName());
+        scriptHandler.execute(context);
+        assertEquals(docLibB, nodeService.getPrimaryParent(doc).getParentRef());
+    }
 
-	public void testScopeVariables() throws Exception
+    public void testScopeVariables() throws Exception
     {
-	    String admin = AuthenticationUtil.getAdminUserName();
-	    AuthenticationUtil.setFullyAuthenticatedUser(admin);
+        String admin = AuthenticationUtil.getAdminUserName();
+        AuthenticationUtil.setFullyAuthenticatedUser(admin);
         NodeRef person = personService.getPerson(admin);
         Serializable userHome = nodeService.getProperty(person, ContentModel.PROP_HOMEFOLDER);
         
@@ -231,31 +253,33 @@ public class AlfrescoJavaScriptIntegrationTest extends BaseAlfrescoSpringTest
         value = (ScriptNode) variables.get(key);
         assertEquals(companyHome, value.getNodeRef());
     }
-	
-	private Element buildScript(String expression) {
-		Element script = DocumentHelper.createElement("script");
-		script.setText(expression);
-		return script;
-	}
 
-	@Override
-	@SuppressWarnings("deprecation")
-	protected void onSetUp() throws Exception {
-		super.onSetUp();
-		
-		this.services = (ServiceRegistry) applicationContext.getBean("ServiceRegistry");
-		repository = (Repository) applicationContext.getBean("repositoryHelper");
-		personService = services.getPersonService();
-		createUser(BASIC_USER);
-		
-		// Sets up the Execution Context
-		context = mock(ExecutionContext.class);
-		ContextInstance contextInstance = mock(ContextInstance.class);
-		when(context.getContextInstance()).thenReturn(contextInstance);
-		variables = new HashMap<String, Object>();
-		when(contextInstance.getVariables()).thenReturn(variables);
-		when(contextInstance.getVariables( any(Token.class))).thenReturn(variables);
-		when(context.getVariable(anyString())).thenAnswer(new Answer<Object>()
+    private Element buildScript(String expression) 
+    {
+        Element script = DocumentHelper.createElement("script");
+        script.setText(expression);
+        return script;
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    protected void onSetUp() throws Exception 
+    {
+        super.onSetUp();
+        
+        this.services = (ServiceRegistry) applicationContext.getBean("ServiceRegistry");
+        repository = (Repository) applicationContext.getBean("repositoryHelper");
+        personService = services.getPersonService();
+        createUser(BASIC_USER);
+        
+        // Sets up the Execution Context
+        context = mock(ExecutionContext.class);
+        ContextInstance contextInstance = mock(ContextInstance.class);
+        when(context.getContextInstance()).thenReturn(contextInstance);
+        variables = new HashMap<String, Object>();
+        when(contextInstance.getVariables()).thenReturn(variables);
+        when(contextInstance.getVariables( any(Token.class))).thenReturn(variables);
+        when(context.getVariable(anyString())).thenAnswer(new Answer<Object>()
         {
             public Object answer(InvocationOnMock invocation) throws Throwable
             {
@@ -263,7 +287,7 @@ public class AlfrescoJavaScriptIntegrationTest extends BaseAlfrescoSpringTest
                 return variables.get(key);
             }
         });
-		doAnswer(new Answer<Void>()
+        doAnswer(new Answer<Void>()
         {
             public Void answer(InvocationOnMock invocation) throws Throwable
             {
@@ -273,8 +297,8 @@ public class AlfrescoJavaScriptIntegrationTest extends BaseAlfrescoSpringTest
                 return null;
             }
         }).when(context).setVariable(anyString(), any());
-	}
-	
+    }
+
     private void createUser(String userName)
     {
         if (this.authenticationService.authenticationExists(userName) == false)
@@ -291,16 +315,17 @@ public class AlfrescoJavaScriptIntegrationTest extends BaseAlfrescoSpringTest
         }
     }
     
-    public static class TestUserStore {
-    	private String runAsUser;
-    	private String fullUser;
-    	private ScriptNode person = null;
-    	
-		public void storeUsers(ScriptNode user)
-    	{
-    		fullUser = AuthenticationUtil.getFullyAuthenticatedUser();
-    		runAsUser = AuthenticationUtil.getRunAsUser();
-    		this.person = user;
-    	}
+    public static class TestUserStore 
+    {
+        private String runAsUser;
+        private String fullUser;
+        private ScriptNode person = null;
+
+        public void storeUsers(ScriptNode user)
+        {
+            fullUser = AuthenticationUtil.getFullyAuthenticatedUser();
+            runAsUser = AuthenticationUtil.getRunAsUser();
+            this.person = user;
+        }
     }
 }

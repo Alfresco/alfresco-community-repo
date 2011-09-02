@@ -27,7 +27,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Brian
  * @author Nick Smith
  * @since 4.0
- *
  */
 // Package protected
 class PublishingPackageEntryImpl implements PublishingPackageEntry

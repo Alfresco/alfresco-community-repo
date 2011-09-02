@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -34,7 +34,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 /**
  * @author Brian
  * @author Nick Smith
- * 
+ * @since 4.0
  */
 public class PublishingQueueImpl implements PublishingQueue
 {
@@ -51,7 +51,7 @@ public class PublishingQueueImpl implements PublishingQueue
     /**
      * {@inheritDoc}
     */
-        public PublishingDetails createPublishingDetails()
+    public PublishingDetails createPublishingDetails()
     {
         return publishingEventHelper.createPublishingDetails();
     }
@@ -59,38 +59,38 @@ public class PublishingQueueImpl implements PublishingQueue
     /**
      * {@inheritDoc}
      */
-     public StatusUpdate createStatusUpdate(String message, NodeRef nodeToLinkTo, String... channelNames)
-     {
-         return createStatusUpdate(message, nodeToLinkTo, Arrays.asList(channelNames));
-     }
+    public StatusUpdate createStatusUpdate(String message, NodeRef nodeToLinkTo, String... channelNames)
+    {
+        return createStatusUpdate(message, nodeToLinkTo, Arrays.asList(channelNames));
+    }
 
-     /**
+    /**
      * {@inheritDoc}
      */
-     public StatusUpdate createStatusUpdate(String message, NodeRef nodeToLinkTo, Collection<String> channelNames)
-     {
-         return new StatusUpdateImpl(message, nodeToLinkTo, channelNames);
-     }
+    public StatusUpdate createStatusUpdate(String message, NodeRef nodeToLinkTo, Collection<String> channelNames)
+    {
+        return new StatusUpdateImpl(message, nodeToLinkTo, channelNames);
+    }
 
-     /**
-      * {@inheritDoc}
-      */
-     public List<PublishingEvent> getPublishingEvents(PublishingEventFilter filter)
-     {
-         return publishingEventHelper.findPublishingEvents(nodeRef, filter);
-     }
-
-     /**
-      * {@inheritDoc}
-      */
-      public PublishingEventFilter createPublishingEventFilter()
-      {
-          return new PublishingEventFilterImpl();
-      }
-
-      /**
+    /**
      * {@inheritDoc}
-    */
+     */
+    public List<PublishingEvent> getPublishingEvents(PublishingEventFilter filter)
+    {
+        return publishingEventHelper.findPublishingEvents(nodeRef, filter);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public PublishingEventFilter createPublishingEventFilter()
+    {
+        return new PublishingEventFilterImpl();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public String scheduleNewEvent(PublishingDetails publishingDetails)
     {
         try
@@ -112,5 +112,4 @@ public class PublishingQueueImpl implements PublishingQueue
     {
         return nodeRef;
     }
-
 }

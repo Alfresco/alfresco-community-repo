@@ -49,14 +49,14 @@ public class AddTaskListenerParseListener implements BpmnParseListener
     public void parseUserTask(Element userTaskElement, ScopeImpl scope, ActivityImpl activity)
     {
          ActivityBehavior activitybehaviour = activity.getActivityBehavior();
-         if(activitybehaviour instanceof UserTaskActivityBehavior)
+         if (activitybehaviour instanceof UserTaskActivityBehavior)
          {
-        	 UserTaskActivityBehavior userTaskActivity = (UserTaskActivityBehavior) activitybehaviour;
-             if(createTaskListener != null)
+             UserTaskActivityBehavior userTaskActivity = (UserTaskActivityBehavior) activitybehaviour;
+             if (createTaskListener != null)
              {
                  userTaskActivity.getTaskDefinition().addTaskListener(TaskListener.EVENTNAME_CREATE, createTaskListener);                 
              }
-             if(completeTaskListener != null)
+             if (completeTaskListener != null)
              {
                  userTaskActivity.getTaskDefinition().addTaskListener(TaskListener.EVENTNAME_COMPLETE, completeTaskListener);                 
              }
@@ -168,25 +168,26 @@ public class AddTaskListenerParseListener implements BpmnParseListener
     }
     
     @Override
-	public void parseBoundaryErrorEventDefinition(Element errorEventDefinition,
-			boolean interrupting, ActivityImpl activity,
-			ActivityImpl nestedErrorEventActivity) 
+    public void parseBoundaryErrorEventDefinition(Element errorEventDefinition,
+                boolean interrupting, ActivityImpl activity,
+                ActivityImpl nestedErrorEventActivity) 
     {
-		// Nothing to do here
-	}
+        // Nothing to do here
+    }
     
     @Override
-	public void parseIntermediateTimerEventDefinition(
-			Element timerEventDefinition, ActivityImpl timerActivity) 
+    public void parseIntermediateTimerEventDefinition(
+                Element timerEventDefinition, ActivityImpl timerActivity) 
     {
-    	// Nothing to do here
-	}
+        // Nothing to do here
+    }
     
     @Override
     public void parseMultiInstanceLoopCharacteristics(Element activityElement,
-    		Element multiInstanceLoopCharacteristicsElement,
-    		ActivityImpl activity) {
-    	// Nothing to do here
+                Element multiInstanceLoopCharacteristicsElement,
+                ActivityImpl activity) 
+    {
+        // Nothing to do here
     }
     
     public void setCompleteTaskListener(TaskListener completeTaskListener)
@@ -203,5 +204,4 @@ public class AddTaskListenerParseListener implements BpmnParseListener
     {
         this.processCreateListener = processCreateListener;
     }
-
 }

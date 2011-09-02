@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -40,8 +40,8 @@ import org.alfresco.service.namespace.QName;
  * accumulates the various parameters and package items used to start the
  * workflow. The workflow is started when the build() method is called.
  * 
- * @since 3.4
  * @author Nick Smith
+ * @since 3.4
  */
 public class WorkflowBuilder
 {
@@ -110,5 +110,4 @@ public class WorkflowBuilder
             throw new WorkflowException("Start task not found! Expected 1 task but found: " + tasks.size());
         }
     }
-
 }

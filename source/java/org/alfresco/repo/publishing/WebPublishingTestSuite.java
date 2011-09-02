@@ -25,7 +25,6 @@ import org.junit.runners.Suite;
 /**
  * @author Nick Smith
  * @since 4.0
- *
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses( { ChannelServiceImplTest.class,

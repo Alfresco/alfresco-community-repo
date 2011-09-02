@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -33,7 +33,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 /**
  * @author Brian
  * @author Nick Smith
- *
+ * @since 4.0
  */
 public class PublishingPackageImpl implements PublishingPackage
 {
@@ -48,7 +48,7 @@ public class PublishingPackageImpl implements PublishingPackage
         for (PublishingPackageEntry entry : entries.values())
         {
             NodeRef node = entry.getNodeRef();
-            if(entry.isPublish())
+            if (entry.isPublish())
             {
                 toPublish.add(node);
             }
@@ -92,5 +92,4 @@ public class PublishingPackageImpl implements PublishingPackage
      {
          return nodesToUnpublish;
      }
-
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -27,6 +27,7 @@ import org.alfresco.service.NotAuditable;
  * Notification Service Interface.
  * 
  * @author Roy Wetherall
+ * @since 4.0
  */
 public interface NotificationService 
 {
@@ -36,16 +37,16 @@ public interface NotificationService
      * @param notificationProvider  notification provider
      */
     @NotAuditable
-	void register(NotificationProvider notificationProvider);
-	
+    void register(NotificationProvider notificationProvider);
+
     /**
      * Gets a list of all the currently available notification providers.
      * 
      * @return {@link List}<{@link String}> notification provider names
      */
     @NotAuditable
-	List<String> getNotificationProviders();
-	
+    List<String> getNotificationProviders();
+
     /**
      * Indicates whether a notification provider exists or not.
      * 
@@ -53,8 +54,8 @@ public interface NotificationService
      * @return boolean              true if exists, false otherwise
      */
     @NotAuditable
-	boolean exists(String notificationProvider);
-	
+    boolean exists(String notificationProvider);
+
     /**
      * Send notification using the names notification provider and notification context.
      * 
@@ -62,5 +63,5 @@ public interface NotificationService
      * @param notificationContext   notification context
      */
     @NotAuditable
-	void sendNotification(String notificationProvider, NotificationContext notificationContext);	
+    void sendNotification(String notificationProvider, NotificationContext notificationContext);	
 }

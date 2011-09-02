@@ -34,9 +34,8 @@ import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.namespace.QName;
 
 /**
- * @since 3.4.e
  * @author Nick Smith
- *
+ * @since 3.4.e
  */
 public abstract class AbstractWorkflowPropertyHandler implements WorkflowPropertyHandler
 {
@@ -53,7 +52,7 @@ public abstract class AbstractWorkflowPropertyHandler implements WorkflowPropert
      */
     protected Object handleAssociation(Serializable value, AssociationDefinition assocDef)
     {
-        if(assocDef.isProtected())
+        if (assocDef.isProtected())
         {
             return DO_NOT_ADD;
         }
@@ -120,7 +119,7 @@ public abstract class AbstractWorkflowPropertyHandler implements WorkflowPropert
     public void setRegistry(WorkflowPropertyHandlerRegistry registry)
     {
         QName key = getKey();
-        if(key!=null)
+        if (key!=null)
         {
             registry.registerHandler(key, this);
         }
@@ -155,14 +154,14 @@ public abstract class AbstractWorkflowPropertyHandler implements WorkflowPropert
     protected Object handleDefaultProperty(Object task, TypeDefinition type, QName key, Serializable value)
     {
         PropertyDefinition propDef = type.getProperties().get(key);
-        if(propDef!=null)
+        if (propDef != null)
         {
             return handleProperty(value, propDef);
         }
         else
         {
             AssociationDefinition assocDef = type.getAssociations().get(key);
-            if(assocDef!=null)
+            if (assocDef != null)
             {
                 return handleAssociation(value, assocDef);
             }

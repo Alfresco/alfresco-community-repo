@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -107,17 +107,17 @@ public class InviteSenderTest extends TestCase
 
     public void testSendMailWorkingPath() throws Exception
     {
-    	String rolePropertyName = "invitation.invitesender.email.role.Role";
-    	String subjectPropertyName = "invitation.invitesender.email.subject";
+        String rolePropertyName = "invitation.invitesender.email.role.Role";
+        String subjectPropertyName = "invitation.invitesender.email.subject";
 
-    	String subjectMsg = "Subject message";
-		when(messageService.getMessage(eq(subjectPropertyName), eq("Share"), eq(siteShortName))).thenReturn(subjectMsg);
-    	
+        String subjectMsg = "Subject message";
+        when(messageService.getMessage(eq(subjectPropertyName), eq("Share"), eq(siteShortName))).thenReturn(subjectMsg);
+
         Map<String, String> properties = buildDefaultProperties();
         sender.sendMail(properties);
 
         verify(messageService).getMessage(eq(subjectPropertyName), eq("Share"), eq(siteShortName));
-		verify(messageService).getMessage(eq(rolePropertyName));
+        verify(messageService).getMessage(eq(rolePropertyName));
 
         verify(mailAction).setParameterValue(eq(MailActionExecuter.PARAM_FROM), eq(inviter.email));
         verify(mailAction).setParameterValue(eq(MailActionExecuter.PARAM_TO), eq(invitee.email));

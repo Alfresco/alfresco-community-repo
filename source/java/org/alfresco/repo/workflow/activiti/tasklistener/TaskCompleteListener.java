@@ -53,10 +53,10 @@ public class TaskCompleteListener implements TaskListener
     @Override
     public void notify(DelegateTask task)
     {
-    	// Check all mandatory properties are set. This is checked here instead of in
-    	// the completeTask() to allow taskListeners to set variable values before checking
-    	propertyConverter.checkMandatoryProperties(task);
-    	
+        // Check all mandatory properties are set. This is checked here instead of in
+        // the completeTask() to allow taskListeners to set variable values before checking
+        propertyConverter.checkMandatoryProperties(task);
+
         // Set properties for ended task
         Map<String, Object> endTaskVariables = new HashMap<String, Object>();
 
@@ -72,26 +72,26 @@ public class TaskCompleteListener implements TaskListener
     }
 
     private void addPooledActorsAsVariable(DelegateTask task,
-			Map<String, Object> variables) {
-
-    	List<IdentityLinkEntity> links = ((TaskEntity)task).getIdentityLinks();
-        if(links.size() > 0)
+                Map<String, Object> variables) 
+    {
+        List<IdentityLinkEntity> links = ((TaskEntity)task).getIdentityLinks();
+        if (links.size() > 0)
         {
-        	// Add to list of IdentityLink
-        	List<IdentityLink> identityLinks = new ArrayList<IdentityLink>();
-        	identityLinks.addAll(links);
-        	
-        	List<NodeRef> pooledActorRefs = propertyConverter.getPooledActorsReference(identityLinks);
-        	
-        	// Save references as a variable
-        	List<String> nodeIds = new ArrayList<String>();
-        	for(NodeRef ref : pooledActorRefs)
-        	{
-        		nodeIds.add(ref.toString());
-        	}
-        	variables.put(ActivitiConstants.PROP_POOLED_ACTORS_HISTORY, nodeIds);
+            // Add to list of IdentityLink
+            List<IdentityLink> identityLinks = new ArrayList<IdentityLink>();
+            identityLinks.addAll(links);
+            
+            List<NodeRef> pooledActorRefs = propertyConverter.getPooledActorsReference(identityLinks);
+            
+            // Save references as a variable
+            List<String> nodeIds = new ArrayList<String>();
+            for (NodeRef ref : pooledActorRefs)
+            {
+                nodeIds.add(ref.toString());
+            }
+            variables.put(ActivitiConstants.PROP_POOLED_ACTORS_HISTORY, nodeIds);
         }
-	}
+    }
     
     public void setNamespaceService(NamespaceService namespaceService)
     {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -45,9 +45,9 @@ import org.springframework.beans.BeansException;
 
 /**
  * Returns a properly configured Environment. The factory is multi-tenancy enabled, returning the correct Environment object for the current domain.
+ * 
  * @author Nick Smith
  * @since 4.0
- *
  */
 public class PublishingRootObject
 {

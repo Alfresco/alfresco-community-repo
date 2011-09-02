@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -30,26 +30,25 @@ import org.alfresco.service.cmr.invitation.Invitation;
 
 public interface NominatedInvitationProcess  extends InvitationProcess
 {
-	/*
-	 * inviter starts the invitation process
-	 */
-	public Invitation invite(Invitation request, String comment);
-	
-	/**
-	 * invitee accepts this request
-	 * @param request
-	 */
-	public void accept(Invitation request);
-	
-	/**
-	 * invitee rejects this request
-	 * @param request
-	 */
-	public void reject(Invitation request);
-	
-	/**
-	 * cancel this request
-	 */
-	public void cancel (Invitation request);
-	
+    /*
+     * inviter starts the invitation process
+     */
+    public Invitation invite(Invitation request, String comment);
+
+    /**
+     * invitee accepts this request
+     * @param request
+     */
+    public void accept(Invitation request);
+
+    /**
+     * invitee rejects this request
+     * @param request
+     */
+    public void reject(Invitation request);
+
+    /**
+     * cancel this request
+     */
+    public void cancel (Invitation request);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -76,24 +76,26 @@ public class WorkflowTestSuite extends TestSuite
         return suite;
     }
     
-    public static class WorkflowSuiteContextShutdownTest extends TestCase {
-       public void testDummy() { /*Do Nothing */ }
+    public static class WorkflowSuiteContextShutdownTest extends TestCase 
+    {
+        public void testDummy() { /*Do Nothing */ }
 
-       @Override
-    protected void tearDown() throws Exception {
-          System.err.println("Workflow test suite has completed, shutting down the ApplicationContext...");
-          ApplicationContextHelper.closeApplicationContext();
+        @Override
+        protected void tearDown() throws Exception 
+        {
+            System.err.println("Workflow test suite has completed, shutting down the ApplicationContext...");
+            ApplicationContextHelper.closeApplicationContext();
           
-          // Null out the static Workflow engine field
-          Field engineField = WorkflowTaskInstance.class.getDeclaredField("jbpmEngine");
-          engineField.setAccessible(true);
-          engineField.set(null, null);
-          
-          Thread.yield();
-          Thread.sleep(25);
-          Thread.yield();
-          
-          System.err.println("Workflow test suite shutdown has finished");
-       }
+            // Null out the static Workflow engine field
+            Field engineField = WorkflowTaskInstance.class.getDeclaredField("jbpmEngine");
+            engineField.setAccessible(true);
+            engineField.set(null, null);
+  
+            Thread.yield();
+            Thread.sleep(25);
+            Thread.yield();
+  
+            System.err.println("Workflow test suite shutdown has finished");
+        }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -37,16 +37,16 @@ import org.alfresco.service.namespace.QName;
  */
 /*package scope */ class ModeratedInvitationImpl extends InvitationImpl implements ModeratedInvitation, Serializable 
 {
-	private static final long serialVersionUID = -5557544865169876451L;
-	
-	private final String inviteeComments;
-	
-	public ModeratedInvitationImpl(String inviteId, Map<QName, Serializable> props)
-	{
-	    super(getConstructorProps(inviteId, props));
-	     inviteeComments = (String)props.get(WF_PROP_INVITEE_COMMENTS);
-	}
-	
+    private static final long serialVersionUID = -5557544865169876451L;
+
+    private final String inviteeComments;
+
+    public ModeratedInvitationImpl(String inviteId, Map<QName, Serializable> props)
+    {
+        super(getConstructorProps(inviteId, props));
+        inviteeComments = (String)props.get(WF_PROP_INVITEE_COMMENTS);
+    }
+    
     private static Map<String, String> getConstructorProps(String inviteId, Map<QName, Serializable> props)
     {
         Map<String, String> parentProps = new HashMap<String, String>();
@@ -58,13 +58,14 @@ import org.alfresco.service.namespace.QName;
         return parentProps;
     }
 
-	public String getInviteeComments() 
-	{
-		return inviteeComments;
-	}
-
-	@Override
-    public InvitationType getInvitationType() {
-		return InvitationType.MODERATED;
-	}
+    public String getInviteeComments() 
+    {
+        return inviteeComments;
+    }
+    
+    @Override
+    public InvitationType getInvitationType() 
+    {
+        return InvitationType.MODERATED;
+    }
 }

@@ -51,8 +51,7 @@ public class GetDiscussionTopcisWithPostsCannedQueryFactory extends AbstractQNam
     public CannedQuery<NodeWithChildrenEntity> getCannedQuery(CannedQueryParameters parameters)
     {
         final GetDiscussionTopcisWithPostsCannedQuery cq = new GetDiscussionTopcisWithPostsCannedQuery(
-              cannedQueryDAO, methodSecurity, parameters
-        );
+              cannedQueryDAO, methodSecurity, parameters);
         
         return (CannedQuery<NodeWithChildrenEntity>) cq;
     }
@@ -73,8 +72,7 @@ public class GetDiscussionTopcisWithPostsCannedQueryFactory extends AbstractQNam
               getQNameId(ForumModel.TYPE_TOPIC),
               getQNameId(ForumModel.TYPE_POST),
               topicCreatedFrom, postCreatedFrom,
-              excludePrimaryPosts
-        );
+              excludePrimaryPosts);
         
         CannedQueryPageDetails cqpd = createCQPageDetails(pagingReq);
         

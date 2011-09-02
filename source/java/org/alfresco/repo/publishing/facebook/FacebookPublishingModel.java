@@ -23,7 +23,7 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * @author Brian
- *
+ * @since 4.0
  */
 public interface FacebookPublishingModel
 {

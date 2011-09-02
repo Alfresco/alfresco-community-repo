@@ -39,6 +39,10 @@ import org.springframework.social.oauth1.OAuth1Parameters;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+/**
+ * @author Brian
+ * @since 4.0
+ */
 public class FlickrChannelType extends AbstractOAuth1ChannelType<Flickr>
 {
     public final static String ID = "flickr";

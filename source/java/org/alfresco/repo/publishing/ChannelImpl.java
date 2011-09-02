@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -93,7 +93,7 @@ public class ChannelImpl implements Channel
     public void publish(NodeRef nodeToPublish)
     {
         channelHelper.addPublishedAspect(nodeToPublish, nodeRef);
-        if(channelHelper.canPublish(nodeToPublish, channelType))
+        if (channelHelper.canPublish(nodeToPublish, channelType))
         {
             channelType.publish(nodeToPublish, getProperties());
         }
@@ -104,7 +104,7 @@ public class ChannelImpl implements Channel
     */
     public void unPublish(NodeRef nodeToUnpublish)
     {
-        if(channelType.canUnpublish())
+        if (channelType.canUnpublish())
         {
             channelType.unpublish(nodeToUnpublish, getProperties());
         }
@@ -115,7 +115,7 @@ public class ChannelImpl implements Channel
     */
     public void updateStatus(String status, String nodeUrl)
     {
-        if(channelType.canPublishStatusUpdates())
+        if (channelType.canPublishStatusUpdates())
         {
             int urlLength = nodeUrl == null ? 0 : nodeUrl.length();
             int maxLength = channelType.getMaximumStatusLength() - urlLength;
@@ -124,7 +124,7 @@ public class ChannelImpl implements Channel
                 int endpoint = Math.min(maxLength, status.length());
                 status = status.substring(0, endpoint );
             }
-            String msg = nodeUrl==null ? status : status + nodeUrl;
+            String msg = nodeUrl == null ? status : status + nodeUrl;
             channelType.updateStatus(this, msg, getProperties());
         }
     }

@@ -32,9 +32,8 @@ import org.activiti.engine.runtime.ProcessInstance;
 import org.springframework.core.io.ClassPathResource;
 
 /**
- * @since 3.4.e
  * @author Nick Smith
- * 
+ * @since 3.4.e
  */
 public class ActivitiSmokeTest extends TestCase
 {

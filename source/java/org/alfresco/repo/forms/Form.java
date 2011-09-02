@@ -89,12 +89,12 @@ public class Form
     
     public List<String> getFieldDefinitionNames()
     {
-    	List<String> result = new ArrayList<String>(fieldDefinitions.size());
-    	for (FieldDefinition fieldDefn : fieldDefinitions)
-    	{
-    		result.add(fieldDefn.getName());
-    	}
-    	return result;
+        List<String> result = new ArrayList<String>(fieldDefinitions.size());
+        for (FieldDefinition fieldDefn : fieldDefinitions)
+        {
+            result.add(fieldDefn.getName());
+        }
+        return result;
     }
     
     /**
@@ -253,8 +253,3 @@ public class Form
         return buffer.toString();
     }
 }
-
-
-
-
-

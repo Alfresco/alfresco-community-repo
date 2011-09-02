@@ -54,8 +54,7 @@ public interface BlogService
      * 
      * @see SiteService#getContainer(String, String) to retrieve the blogContainerNode
      */
-    BlogPostInfo createBlogPost(NodeRef blogContainerNode, String blogTitle,
-                                       String blogContent, boolean isDraft);
+    BlogPostInfo createBlogPost(NodeRef blogContainerNode, String blogTitle, String blogContent, boolean isDraft);
     
     /**
      * Gets the draft blog posts created by the specified user.

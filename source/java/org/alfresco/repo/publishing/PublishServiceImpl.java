@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -33,7 +33,7 @@ import org.alfresco.util.ParameterCheck;
 /**
  * @author Brian
  * @author Nick Smith
- *
+ * @since 4.0
  */
 public class PublishServiceImpl implements PublishingService
 {
@@ -61,34 +61,34 @@ public class PublishServiceImpl implements PublishingService
     /**
      * {@inheritDoc}
      */
-     public PublishingEvent getPublishingEvent(String id)
-     {
-         return publishingEventHelper.getPublishingEvent(id);
-     }
+    public PublishingEvent getPublishingEvent(String id)
+    {
+        return publishingEventHelper.getPublishingEvent(id);
+    }
 
-     /**
-      * {@inheritDoc}
-      */
-      public List<PublishingEvent> getEventsForPublishedNode(NodeRef publishedNode)
-      {
-          NodeRef queueNode = rootObject.getPublishingQueue().getNodeRef();
-          List<NodeRef> eventNodes = publishingEventHelper.getEventNodesForPublishedNode(queueNode, publishedNode);
-          return publishingEventHelper.getPublishingEvents(eventNodes);
-      }
+    /**
+     * {@inheritDoc}
+     */
+    public List<PublishingEvent> getEventsForPublishedNode(NodeRef publishedNode)
+    {
+        NodeRef queueNode = rootObject.getPublishingQueue().getNodeRef();
+        List<NodeRef> eventNodes = publishingEventHelper.getEventNodesForPublishedNode(queueNode, publishedNode);
+        return publishingEventHelper.getPublishingEvents(eventNodes);
+    }
 
-      /**
-      * {@inheritDoc}
-      */
-      public List<PublishingEvent> getEventsForUnpublishedNode(NodeRef unpublishedNode)
-      {
-          NodeRef queueNode = rootObject.getPublishingQueue().getNodeRef();
-          List<NodeRef> eventNodes = publishingEventHelper.getEventNodesForUnpublishedNode(queueNode, unpublishedNode);
-          return publishingEventHelper.getPublishingEvents(eventNodes);
-      }
+    /**
+     * {@inheritDoc}
+     */
+    public List<PublishingEvent> getEventsForUnpublishedNode(NodeRef unpublishedNode)
+    {
+        NodeRef queueNode = rootObject.getPublishingQueue().getNodeRef();
+        List<NodeRef> eventNodes = publishingEventHelper.getEventNodesForUnpublishedNode(queueNode, unpublishedNode);
+        return publishingEventHelper.getPublishingEvents(eventNodes);
+    }
 
-     /**
-      * {@inheritDoc}
-      */
+    /**
+     * {@inheritDoc}
+     */
     public void cancelPublishingEvent(String id)
     {
         ParameterCheck.mandatory("id", id);
@@ -130,5 +130,4 @@ public class PublishServiceImpl implements PublishingService
         //TODO
         return null;
     }
-
 }

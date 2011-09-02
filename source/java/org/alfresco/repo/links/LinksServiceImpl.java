@@ -169,7 +169,7 @@ public class LinksServiceImpl implements LinksService
        link.setURL((String)props.get(LinksModel.PROP_URL));
        
        // Now the internal aspect
-       if(nodeService.hasAspect(nodeRef, LinksModel.ASPECT_INTERNAL_LINK))
+       if (nodeService.hasAspect(nodeRef, LinksModel.ASPECT_INTERNAL_LINK))
        {
           Boolean isInternal = DefaultTypeConverter.INSTANCE.convert(
                 Boolean.class, props.get(LinksModel.PROP_IS_INTERNAL));
@@ -193,14 +193,14 @@ public class LinksServiceImpl implements LinksService
     public LinkInfo getLink(String siteShortName, String linkName) 
     {
        NodeRef container = getSiteLinksContainer(siteShortName, false);
-       if(container == null)
+       if (container == null)
        {
           // No links
           return null;
        }
        
        NodeRef link = nodeService.getChildByName(container, ContentModel.ASSOC_CONTAINS, linkName);
-       if(link != null)
+       if (link != null)
        {
           return buildLink(link, container, linkName);
        }
@@ -220,7 +220,7 @@ public class LinksServiceImpl implements LinksService
        props.put(LinksModel.PROP_DESCRIPTION, description);
        props.put(LinksModel.PROP_URL,         url);
        
-       if(internal)
+       if (internal)
        {
           props.put(LinksModel.PROP_IS_INTERNAL, "true");
        }
@@ -254,7 +254,7 @@ public class LinksServiceImpl implements LinksService
     public LinkInfo updateLink(LinkInfo link) 
     {
        // Sanity check what we were given
-       if(link.getNodeRef() == null)
+       if (link.getNodeRef() == null)
        {
           throw new IllegalArgumentException("Can't update a link that was never persisted, call create instead");
        }
@@ -266,9 +266,9 @@ public class LinksServiceImpl implements LinksService
        nodeService.setProperty(nodeRef, LinksModel.PROP_URL,         link.getURL());
        
        // Internal/External is "special"
-       if(link.isInternal())
+       if (link.isInternal())
        {
-          if(! nodeService.hasAspect(nodeRef, LinksModel.ASPECT_INTERNAL_LINK))
+          if (! nodeService.hasAspect(nodeRef, LinksModel.ASPECT_INTERNAL_LINK))
           {
              Map<QName, Serializable> props = new HashMap<QName, Serializable>();
              props.put(LinksModel.PROP_IS_INTERNAL, "true");
@@ -277,7 +277,7 @@ public class LinksServiceImpl implements LinksService
        }
        else
        {
-          if(nodeService.hasAspect(nodeRef, LinksModel.ASPECT_INTERNAL_LINK))
+          if (nodeService.hasAspect(nodeRef, LinksModel.ASPECT_INTERNAL_LINK))
           {
              nodeService.removeAspect(nodeRef, LinksModel.ASPECT_INTERNAL_LINK);
           }
@@ -298,7 +298,7 @@ public class LinksServiceImpl implements LinksService
     @Override
     public void deleteLink(LinkInfo link) 
     {
-       if(link.getNodeRef() == null)
+       if (link.getNodeRef() == null)
        {
           throw new IllegalArgumentException("Can't delete a link entry that was never persisted");
        }
@@ -330,14 +330,15 @@ public class LinksServiceImpl implements LinksService
           Date from, Date to, PagingRequest paging) 
     {
        NodeRef container = getSiteLinksContainer(siteShortName, false);
-       if(container == null)
+       if (container == null)
        {
           // No events
           return new EmptyPagingResults<LinkInfo>();
        }
        
        // Run the canned query
-       GetChildrenAuditableCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenAuditableCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_GET_CHILDREN);
+       GetChildrenAuditableCannedQueryFactory getChildrenCannedQueryFactory = 
+                   (GetChildrenAuditableCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_GET_CHILDREN);
        GetChildrenAuditableCannedQuery cq = (GetChildrenAuditableCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(
              container, LinksModel.TYPE_LINK, user, from, to, null, null, null, 
              getChildrenCannedQueryFactory.createDateDescendingCQSortDetails(), paging);
@@ -354,7 +355,7 @@ public class LinksServiceImpl implements LinksService
           Date from, Date to, String tag, PagingRequest paging) 
     {
        NodeRef container = getSiteLinksContainer(siteShortName, false);
-       if(container == null)
+       if (container == null)
        {
           // No links
           return new EmptyPagingResults<LinkInfo>();
@@ -362,30 +363,21 @@ public class LinksServiceImpl implements LinksService
        
        // Build the query
        StringBuilder luceneQuery = new StringBuilder();
-       luceneQuery.append(
-            " +TYPE:\"" + LinksModel.TYPE_LINK + "\""
-       );
-       luceneQuery.append(
-            " +PATH:\"" + nodeService.getPath(container).toPrefixString(namespaceService) + "/*\""
-       );
+       luceneQuery.append(" +TYPE:\"" + LinksModel.TYPE_LINK + "\"");
+       luceneQuery.append(" +PATH:\"" + nodeService.getPath(container).toPrefixString(namespaceService) + "/*\"");
 
-       if(user != null)
+       if (user != null)
        {
-          luceneQuery.append(
-                " +@cm\\:creator:\"" + user + "\""
-          );
+          luceneQuery.append(" +@cm\\:creator:\"" + user + "\"");
        }
-       if(from != null && to != null)
+       if (from != null && to != null)
        {
           luceneQuery.append(LuceneUtils.createDateRangeQuery(
-                from, to, ContentModel.PROP_CREATED, dictionaryService, namespaceService
-          ));
+                from, to, ContentModel.PROP_CREATED, dictionaryService, namespaceService));
        }
-       if(tag != null)
+       if (tag != null)
        {
-          luceneQuery.append(
-                " +PATH:\"/cm:taggable/cm:" + ISO9075.encode(tag) + "/member\"" 
-          );
+          luceneQuery.append(" +PATH:\"/cm:taggable/cm:" + ISO9075.encode(tag) + "/member\"");
        }
        
        String sortOn = "@{http://www.alfresco.org/model/content/1.0}created";
@@ -418,7 +410,7 @@ public class LinksServiceImpl implements LinksService
        }
        finally
        {
-          if(results != null)
+          if (results != null)
           {
              results.close();
           }
@@ -430,23 +422,25 @@ public class LinksServiceImpl implements LinksService
     private PagingResults<LinkInfo> wrap(final ResultSet finalLuceneResults, final NodeRef container)
     {
        final List<LinkInfo> links = new ArrayList<LinkInfo>();
-       for(ResultSetRow row : finalLuceneResults)
+       for (ResultSetRow row : finalLuceneResults)
        {
           LinkInfo link = buildLink(
-                row.getNodeRef(), container, row.getQName().getLocalName()
-          );
+                row.getNodeRef(), container, row.getQName().getLocalName());
           links.add(link);
        }
        
        // Wrap
-       return new PagingResults<LinkInfo>() {
+       return new PagingResults<LinkInfo>() 
+       {
           @Override
-          public boolean hasMoreItems() {
+          public boolean hasMoreItems() 
+          {
              return finalLuceneResults.hasMore();
           }
 
           @Override
-          public Pair<Integer, Integer> getTotalResultCount() {
+          public Pair<Integer, Integer> getTotalResultCount() 
+          {
              int skipCount = finalLuceneResults.getStart();
              int itemsRemainingAfterThisPage = finalLuceneResults.length();
              final int totalItemsInUnpagedResultSet = skipCount + itemsRemainingAfterThisPage;
@@ -454,15 +448,17 @@ public class LinksServiceImpl implements LinksService
           }
 
           @Override
-          public List<LinkInfo> getPage() {
+          public List<LinkInfo> getPage() 
+          {
              return links;
           }
 
           @Override
-          public String getQueryExecutionId() {
+          public String getQueryExecutionId() 
+          {
              return null;
           }
-      };
+       };
     }    
     
     /**
@@ -473,7 +469,7 @@ public class LinksServiceImpl implements LinksService
     {
        // Pre-load the nodes before we create them
        List<Long> ids = new ArrayList<Long>();
-       for(NodeBackedEntity node : results.getPage())
+       for (NodeBackedEntity node : results.getPage())
        {
           ids.add(node.getId());
        }
@@ -487,11 +483,12 @@ public class LinksServiceImpl implements LinksService
            {
                return results.getQueryExecutionId();
            }
+           
            @Override
            public List<LinkInfo> getPage()
            {
                List<LinkInfo> links = new ArrayList<LinkInfo>();
-               for(NodeBackedEntity node : results.getPage())
+               for (NodeBackedEntity node : results.getPage())
                {
                   NodeRef nodeRef = node.getNodeRef();
                   String name = node.getName();
@@ -499,11 +496,13 @@ public class LinksServiceImpl implements LinksService
                }
                return links;
            }
+           
            @Override
            public boolean hasMoreItems()
            {
                return results.hasMoreItems();
            }
+           
            @Override
            public Pair<Integer, Integer> getTotalResultCount()
            {

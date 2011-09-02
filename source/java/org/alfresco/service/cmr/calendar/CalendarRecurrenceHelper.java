@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -46,7 +46,8 @@ public class CalendarRecurrenceHelper
    private static Log logger = LogFactory.getLog(CalendarRecurrenceHelper.class);
    
    private static Map<String,Integer> d2cd;
-   static {
+   static 
+   {
       d2cd = new HashMap<String, Integer>();
       d2cd.put("SU", Calendar.SUNDAY);
       d2cd.put("MO", Calendar.MONDAY);
@@ -56,6 +57,7 @@ public class CalendarRecurrenceHelper
       d2cd.put("FR", Calendar.FRIDAY);
       d2cd.put("SA", Calendar.SATURDAY);
    }
+   
    /**
     * The lookup from the day strings to Calendar Day entries
     */
@@ -90,6 +92,7 @@ public class CalendarRecurrenceHelper
    {
       return extractRecurrenceRule(entry.getRecurrenceRule());
    }
+   
    /**
     * Returns the parsed calendar recurrence rule
     * WARNING - Alfresco use only. Return type will likely shift to
@@ -97,17 +100,17 @@ public class CalendarRecurrenceHelper
     */
    private static Map<String,String> extractRecurrenceRule(String recurrenceRule)
    {
-      if(recurrenceRule == null)
+      if (recurrenceRule == null)
       {
          return null;
       }
       
       // Turn the string into a useful map
       Map<String,String> params = new HashMap<String, String>();
-      for(String rule : recurrenceRule.split(";"))
+      for (String rule : recurrenceRule.split(";"))
       {
          String[] parts = rule.split("=");
-         if(parts.length != 2)
+         if (parts.length != 2)
          {
             logger.warn("Invalid rule '" + rule + "' in recurrence: " + recurrenceRule);
          }
@@ -133,8 +136,7 @@ public class CalendarRecurrenceHelper
    {
       return getRecurrencesOnOrAfter(
             entry.getRecurrenceRule(), entry.getStart(), entry.getEnd(), 
-            entry.getLastRecurrence(), onOrAfter, until, firstOnly
-      );
+            entry.getLastRecurrence(), onOrAfter, until, firstOnly);
    }
    
    /**
@@ -149,7 +151,7 @@ public class CalendarRecurrenceHelper
                                                     Date eventEnd, Date lastRecurrence,
                                                     Date onOrAfter, Date until, boolean firstOnly)
    {
-      if(recurrenceRule == null)
+      if (recurrenceRule == null)
       {
          // No recurrence
          return null;
@@ -157,22 +159,22 @@ public class CalendarRecurrenceHelper
       
       // See if we're past the last recurrence date
       // Note - we rely on this being set for us, rather than checking the count
-      if(lastRecurrence != null && lastRecurrence.before(onOrAfter))
+      if (lastRecurrence != null && lastRecurrence.before(onOrAfter))
       {
          // Recurrence has stopped by this point
          return null;
       }
       
       // Work until the earlier of the last event and the limit
-      if(lastRecurrence != null)
+      if (lastRecurrence != null)
       {
-         if(until == null)
+         if (until == null)
          {
             until = lastRecurrence;
          }
          else
          {
-            if(lastRecurrence.before(until))
+            if (lastRecurrence.before(until))
             {
                // Last recurrence is earlier, use that
                until = lastRecurrence;
@@ -181,7 +183,7 @@ public class CalendarRecurrenceHelper
       }
       
       // Safety limit - don't recurse for ever!
-      if(lastRecurrence == null && !firstOnly && until == null)
+      if (lastRecurrence == null && !firstOnly && until == null)
       {
          logger.info("No end date set on the recurring event, and no end date " +
          		"specified, only fetching first instance");
@@ -193,12 +195,12 @@ public class CalendarRecurrenceHelper
       
       // Handle the different frequencies
       Map<String,String> params = extractRecurrenceRule(recurrenceRule);
-      if(params.containsKey("FREQ"))
+      if (params.containsKey("FREQ"))
       {
          String freq = params.get("FREQ");
          String intervalS = params.get("INTERVAL");
          int interval = 1;
-         if(intervalS != null)
+         if (intervalS != null)
          {
             try
             {
@@ -248,17 +250,17 @@ public class CalendarRecurrenceHelper
          Map<String,String> params, Date onOrAfter, Date until, boolean firstOnly, int interval)
    {
       // Nice and easy
-      while(currentDate.getTime().before(onOrAfter))
+      while (currentDate.getTime().before(onOrAfter))
       {
          currentDate.add(Calendar.DATE, 1);
       }
       
-      if(firstOnly)
+      if (firstOnly)
       {
          // Save the first date, if valid
-         if(until != null)
+         if (until != null)
          {
-            if(currentDate.getTime().before(until))
+            if (currentDate.getTime().before(until))
             {
                dates.add(currentDate.getTime());
             }
@@ -271,7 +273,7 @@ public class CalendarRecurrenceHelper
       else
       {
          // Run until the end
-         while(currentDate.getTime().before(until))
+         while (currentDate.getTime().before(until))
          {
             dates.add(currentDate.getTime());
             currentDate.add(Calendar.DATE, 1);
@@ -284,10 +286,10 @@ public class CalendarRecurrenceHelper
    {
       // Get a sorted list of the days it applies to
       List<Integer> daysOfWeek = new ArrayList<Integer>(); 
-      for(String dayS : params.get("BYDAY").split(","))
+      for (String dayS : params.get("BYDAY").split(","))
       {
          Integer day = DAY_NAMES_TO_CALENDAR_DAYS.get(dayS);
-         if(day == null)
+         if (day == null)
          {
             logger.warn("Invalid day " + dayS);
          }
@@ -302,19 +304,19 @@ public class CalendarRecurrenceHelper
       boolean going = true;
       boolean valid = false;
       Date origDate = currentDate.getTime();
-      while(going)
+      while (going)
       {
          // Check each day
-         for(int day : daysOfWeek)
+         for (int day : daysOfWeek)
          {
             currentDate.set(Calendar.DAY_OF_WEEK, day);
-            if(!valid)
+            if (!valid)
             {
-               if(currentDate.getTime().before(onOrAfter))
+               if (currentDate.getTime().before(onOrAfter))
                {
                   // To early
                }
-               else if(currentDate.getTime().before(origDate))
+               else if (currentDate.getTime().before(origDate))
                {
                   // Too early
                }
@@ -324,11 +326,11 @@ public class CalendarRecurrenceHelper
                   valid = true;
                }
             }
-            if(valid)
+            if (valid)
             {
-               if(until != null)
+               if (until != null)
                {
-                  if(currentDate.getTime().after(until))
+                  if (currentDate.getTime().after(until))
                   {
                      // Too late
                      going = false;
@@ -336,7 +338,7 @@ public class CalendarRecurrenceHelper
                   }
                }
                dates.add(currentDate.getTime());
-               if(firstOnly) 
+               if (firstOnly) 
                {
                   going = false;
                   break;
@@ -357,7 +359,7 @@ public class CalendarRecurrenceHelper
       {
          // eg the 15th of each month
          int dayOfMonth = Integer.parseInt(params.get("BYMONTHDAY"));
-         if(currentDate.get(Calendar.DAY_OF_MONTH) > dayOfMonth)
+         if (currentDate.get(Calendar.DAY_OF_MONTH) > dayOfMonth)
          {
             // Move forward to start of the next month
             addMonthToDayOfMonth(currentDate, dayOfMonth);
@@ -369,15 +371,15 @@ public class CalendarRecurrenceHelper
          }
          
          // Go until in the ok range
-         while(currentDate.getTime().before(onOrAfter))
+         while (currentDate.getTime().before(onOrAfter))
          {
             addMonthToDayOfMonth(currentDate, dayOfMonth);
          }
-         while(true)
+         while (true)
          {
-            if(until != null)
+            if (until != null)
             {
-               if(currentDate.getTime().after(until))
+               if (currentDate.getTime().after(until))
                {
                   break;
                }
@@ -396,38 +398,38 @@ public class CalendarRecurrenceHelper
       {
          // eg the first Thursday of the month
          int dayOfWeek = DAY_NAMES_TO_CALENDAR_DAYS.get(params.get("BYSETPOS"));
-         if(currentDate.get(Calendar.DAY_OF_MONTH) > 8)
+         if (currentDate.get(Calendar.DAY_OF_MONTH) > 8)
          {
             // Move to start, in next month
             addMonthToFirstDayOfWeek(currentDate, dayOfWeek);
          }
-         else if(currentDate.get(Calendar.DAY_OF_WEEK) != dayOfWeek)
+         else if (currentDate.get(Calendar.DAY_OF_WEEK) != dayOfWeek)
          {
             // Move forward to start
             Date t = currentDate.getTime();
             currentDate.set(Calendar.DAY_OF_WEEK, dayOfWeek);
-            if(currentDate.getTime().before(t))
+            if (currentDate.getTime().before(t))
             {
                currentDate.add(Calendar.DATE, 7);
             }
          }
          
-         while(currentDate.getTime().before(onOrAfter))
+         while (currentDate.getTime().before(onOrAfter))
          {
             addMonthToFirstDayOfWeek(currentDate, dayOfWeek);
          }
-         while(true)
+         while (true)
          {
-            if(until != null)
+            if (until != null)
             {
-               if(currentDate.getTime().after(until))
+               if (currentDate.getTime().after(until))
                {
                   break;
                }
             }
             
             dates.add(currentDate.getTime());
-            if(firstOnly)
+            if (firstOnly)
             {
                break;
             }
@@ -446,7 +448,7 @@ public class CalendarRecurrenceHelper
       {
          // eg the 2nd of March every year
          int dayOfMonth = Integer.parseInt(params.get("BYMONTHDAY"));
-         if(currentDate.get(Calendar.MONTH) == month &&
+         if (currentDate.get(Calendar.MONTH) == month &&
             currentDate.get(Calendar.DAY_OF_MONTH) == dayOfMonth)
          {
             // Correct start time
@@ -458,24 +460,24 @@ public class CalendarRecurrenceHelper
             currentDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
          }
          
-         while(currentDate.getTime().before(onOrAfter))
+         while (currentDate.getTime().before(onOrAfter))
          {
             currentDate.set(Calendar.YEAR, currentDate.get(Calendar.YEAR) + 1);
             currentDate.set(Calendar.MONTH, month);
             currentDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
          }
-         while(true)
+         while (true)
          {
-            if(until != null)
+            if (until != null)
             {
-               if(currentDate.getTime().after(until))
+               if (currentDate.getTime().after(until))
                {
                   break;
                }
             }
             
             dates.add(currentDate.getTime());
-            if(firstOnly)
+            if (firstOnly)
             {
                break;
             }
@@ -493,7 +495,6 @@ public class CalendarRecurrenceHelper
       }
    }
    
-   
    private static void addMonthToDayOfMonth(Calendar c, int dayOfMonth)
    {
       // Set it to the 1st
@@ -503,6 +504,7 @@ public class CalendarRecurrenceHelper
       // Set to the requred day in the month
       c.set(Calendar.DAY_OF_MONTH, dayOfMonth);
    }
+   
    private static void addMonthToFirstDayOfWeek(Calendar c, int dayOfWeek)
    {
       // Go forward to the 1st of next month
@@ -512,7 +514,7 @@ public class CalendarRecurrenceHelper
       Date t = c.getTime();
       c.set(Calendar.DAY_OF_WEEK, dayOfWeek);
       // If we went back, go forward a week
-      if(c.getTime().before(t))
+      if (c.getTime().before(t))
       {
          c.add(Calendar.DATE, 7);
       }

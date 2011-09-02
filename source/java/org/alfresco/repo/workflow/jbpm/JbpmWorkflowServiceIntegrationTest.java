@@ -139,15 +139,15 @@ public class JbpmWorkflowServiceIntegrationTest extends AbstractWorkflowServiceI
         return "alfresco/workflow/parallelreview_processdefinition.xml";
     }
     
-	@Override
-	protected String getTestTimerDefinitionPath() 
-	{
-		return "jbpmresources/test_timer.xml";
-	}
+    @Override
+    protected String getTestTimerDefinitionPath() 
+    {
+        return "jbpmresources/test_timer.xml";
+    }
 
-	@Override
-	protected QName getAdhocProcessName() 
-	{
-		return QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "adhoc");
-	}
+    @Override
+    protected QName getAdhocProcessName() 
+    {
+        return QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "adhoc");
+    }
 }

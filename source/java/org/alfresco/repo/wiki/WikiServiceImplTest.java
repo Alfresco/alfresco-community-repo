@@ -142,8 +142,7 @@ public class WikiServiceImplTest
        
        // Create one
        page = WIKI_SERVICE.createWikiPage(
-             WIKI_SITE.getShortName(), "Title", "This Is Some Content"
-       );
+             WIKI_SITE.getShortName(), "Title", "This Is Some Content");
        
        
        // Ensure it got a noderef, and the correct site
@@ -184,8 +183,7 @@ public class WikiServiceImplTest
        
        // Create a page
        page = WIKI_SERVICE.createWikiPage(
-             WIKI_SITE.getShortName(), "Title", "This Is Some Content"
-       );
+             WIKI_SITE.getShortName(), "Title", "This Is Some Content");
        testNodesToTidy.add(page.getNodeRef());
        
        
@@ -224,8 +222,7 @@ public class WikiServiceImplTest
        
        // Create a new node with spaces in title
        page = WIKI_SERVICE.createWikiPage(
-             WIKI_SITE.getShortName(), "Title Space", "This Is Some Content"
-       );
+             WIKI_SITE.getShortName(), "Title Space", "This Is Some Content");
        testNodesToTidy.add(page.getNodeRef());
        
        // Check it
@@ -281,16 +278,14 @@ public class WikiServiceImplTest
                 SITE_SERVICE.deleteSite(TEST_SITE_NAME);
              }
              SITE_SERVICE.createSite(
-                   TEST_SITE_PREFIX, TEST_SITE_NAME, "Test", "Test", SiteVisibility.PUBLIC
-             );
+                   TEST_SITE_PREFIX, TEST_SITE_NAME, "Test", "Test", SiteVisibility.PUBLIC);
 
              // Won't have the container to start with
              assertFalse(SITE_SERVICE.hasContainer(TEST_SITE_NAME, WikiServiceImpl.WIKI_COMPONENT));
 
              // Create a link
              WIKI_SERVICE.createWikiPage(
-                   TEST_SITE_NAME, "Title", "TextTextText"
-             );
+                   TEST_SITE_NAME, "Title", "TextTextText");
              
              // It will now exist
              assertTrue(SITE_SERVICE.hasContainer(TEST_SITE_NAME, WikiServiceImpl.WIKI_COMPONENT));
@@ -315,8 +310,7 @@ public class WikiServiceImplTest
        
        // Create one without tagging
        page = WIKI_SERVICE.createWikiPage(
-             WIKI_SITE.getShortName(), "Title", "This Is Some Content"
-       );
+             WIKI_SITE.getShortName(), "Title", "This Is Some Content");
        testNodesToTidy.add(page.getNodeRef());
        
        // Check
@@ -402,14 +396,11 @@ public class WikiServiceImplTest
        
        // Add a few
        WikiPageInfo pageA = WIKI_SERVICE.createWikiPage(
-             WIKI_SITE.getShortName(), "TitleA", "ContentA"
-       );
+             WIKI_SITE.getShortName(), "TitleA", "ContentA");
        WikiPageInfo pageB = WIKI_SERVICE.createWikiPage(
-             WIKI_SITE.getShortName(), "TitleB", "ContentB"
-       );
+             WIKI_SITE.getShortName(), "TitleB", "ContentB");
        WikiPageInfo pageC = WIKI_SERVICE.createWikiPage(
-             WIKI_SITE.getShortName(), "TitleC", "ContentC"
-       );
+             WIKI_SITE.getShortName(), "TitleC", "ContentC");
        testNodesToTidy.add(pageA.getNodeRef());
        testNodesToTidy.add(pageB.getNodeRef());
        testNodesToTidy.add(pageC.getNodeRef());
@@ -424,8 +415,7 @@ public class WikiServiceImplTest
        // Add one more, as a different user, and drop the page size
        AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
        WikiPageInfo pageD = WIKI_SERVICE.createWikiPage(
-             WIKI_SITE.getShortName(), "TitleD", "ContentD"
-       );
+             WIKI_SITE.getShortName(), "TitleD", "ContentD");
        testNodesToTidy.add(pageD.getNodeRef());
        AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
        
@@ -531,12 +521,12 @@ public class WikiServiceImplTest
        paging = new PagingRequest(10);
        AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
        results = WIKI_SERVICE.listWikiPages(WIKI_SITE.getShortName(), paging);
-       for(WikiPageInfo link : results.getPage())
+       for (WikiPageInfo link : results.getPage())
        {
           PUBLIC_NODE_SERVICE.deleteNode(link.getNodeRef());
        }
        results = WIKI_SERVICE.listWikiPages(ALTERNATE_WIKI_SITE.getShortName(), paging);
-       for(WikiPageInfo link : results.getPage())
+       for (WikiPageInfo link : results.getPage())
        {
           PUBLIC_NODE_SERVICE.deleteNode(link.getNodeRef());
        }
@@ -570,24 +560,19 @@ public class WikiServiceImplTest
        // Note - add the events as a different user for the site that the
        //  test user isn't a member of!
        WikiPageInfo pageA = WIKI_SERVICE.createWikiPage(
-             WIKI_SITE.getShortName(), "TitleA", "ContentA"
-       );
+             WIKI_SITE.getShortName(), "TitleA", "ContentA");
        WikiPageInfo pageB = WIKI_SERVICE.createWikiPage(
-             WIKI_SITE.getShortName(), "TitleB", "ContentB"
-       );
+             WIKI_SITE.getShortName(), "TitleB", "ContentB");
        testNodesToTidy.add(pageA.getNodeRef());
        testNodesToTidy.add(pageB.getNodeRef());
        
        AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
        WikiPageInfo pagePrivA = WIKI_SERVICE.createWikiPage(
-             ALTERNATE_WIKI_SITE.getShortName(), "PrivTitleA", "Contents A"
-       );
+             ALTERNATE_WIKI_SITE.getShortName(), "PrivTitleA", "Contents A");
        WikiPageInfo pagePrivB = WIKI_SERVICE.createWikiPage(
-             ALTERNATE_WIKI_SITE.getShortName(), "PrivTitleB", "Contents B"
-       );
+             ALTERNATE_WIKI_SITE.getShortName(), "PrivTitleB", "Contents B");
        WikiPageInfo pagePrivC = WIKI_SERVICE.createWikiPage(
-             ALTERNATE_WIKI_SITE.getShortName(), "PrivTitleC", "Contents C"
-       );
+             ALTERNATE_WIKI_SITE.getShortName(), "PrivTitleC", "Contents C");
        testNodesToTidy.add(pagePrivA.getNodeRef());
        testNodesToTidy.add(pagePrivB.getNodeRef());
        testNodesToTidy.add(pagePrivC.getNodeRef());
@@ -653,12 +638,12 @@ public class WikiServiceImplTest
        paging = new PagingRequest(10);
        AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
        results = WIKI_SERVICE.listWikiPages(WIKI_SITE.getShortName(), paging);
-       for(WikiPageInfo link : results.getPage())
+       for (WikiPageInfo link : results.getPage())
        {
           PUBLIC_NODE_SERVICE.deleteNode(link.getNodeRef());
        }
        results = WIKI_SERVICE.listWikiPages(ALTERNATE_WIKI_SITE.getShortName(), paging);
-       for(WikiPageInfo link : results.getPage())
+       for (WikiPageInfo link : results.getPage())
        {
           PUBLIC_NODE_SERVICE.deleteNode(link.getNodeRef());
        }
@@ -681,19 +666,24 @@ public class WikiServiceImplTest
        final Date newModified = new Date(modified.getTime() - modifiedDaysAgo*ONE_DAY_MS);
        
        // Update the created date
-       TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>() {
+       TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>() 
+       {
           @Override
-          public Void execute() throws Throwable {
+          public Void execute() throws Throwable 
+          {
              BEHAVIOUR_FILTER.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
              NODE_SERVICE.setProperty(node, ContentModel.PROP_CREATED, newCreated);
              NODE_SERVICE.setProperty(node, ContentModel.PROP_MODIFIED, newModified);
              return null;
           }
        }, false, true);
+       
        // Change something else too in the public nodeservice, to force a re-index
-       TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>() {
+       TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>() 
+       {
           @Override
-          public Void execute() throws Throwable {
+          public Void execute() throws Throwable 
+          {
              BEHAVIOUR_FILTER.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
              PUBLIC_NODE_SERVICE.setProperty(node, ContentModel.PROP_CREATED, newCreated);
              PUBLIC_NODE_SERVICE.setProperty(node, ContentModel.PROP_MODIFIED, newModified);
@@ -701,10 +691,13 @@ public class WikiServiceImplTest
              return null;
           }
        }, false, true);
+       
        // Check it was taken
-       TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>() {
+       TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>() 
+       {
           @Override
-          public Void execute() throws Throwable {
+          public Void execute() throws Throwable 
+          {
              assertEquals(newCreated, NODE_SERVICE.getProperty(node, ContentModel.PROP_CREATED));
              assertEquals(newCreated, PUBLIC_NODE_SERVICE.getProperty(node, ContentModel.PROP_CREATED));
              assertEquals(newModified, NODE_SERVICE.getProperty(node, ContentModel.PROP_MODIFIED));
@@ -731,8 +724,7 @@ public class WikiServiceImplTest
                         TEST_SITE_PREFIX, 
                         WikiServiceImplTest.class.getSimpleName() + "_testSite" + System.currentTimeMillis(),
                         "test site title", "test site description", 
-                        SiteVisibility.PUBLIC
-                  );
+                        SiteVisibility.PUBLIC);
                   privateWikiPageService.getSiteWikiContainer(site.getShortName(), true);
                   CLASS_TEST_NODES_TO_TIDY.add(site.getNodeRef());
                   return site;
@@ -750,8 +742,7 @@ public class WikiServiceImplTest
                         TEST_SITE_PREFIX, 
                         WikiServiceImplTest.class.getSimpleName() + "_testAltSite" + System.currentTimeMillis(),
                         "alternate site title", "alternate site description", 
-                        SiteVisibility.PRIVATE
-                  );
+                        SiteVisibility.PRIVATE);
                   privateWikiPageService.getSiteWikiContainer(site.getShortName(), true);
                   CLASS_TEST_NODES_TO_TIDY.add(site.getNodeRef());
                   return site;

@@ -43,37 +43,38 @@ import org.alfresco.service.cmr.repository.ScriptService;
  */
 public class ScriptExecutionListener extends DelegateExecutionScriptBase implements ExecutionListener
 {
+    private static final String DELETED_FLAG = "deleted";
+    private static final String CANCELLED_FLAG = "cancelled";
 
-	private static final String DELETED_FLAG = "deleted";
-	private static final String CANCELLED_FLAG = "cancelled";
-	
-	@Override
-	public void notify(DelegateExecution execution) throws Exception {
-		runScript(execution);
-	}
-	
-	@Override
-	protected Map<String, Object> getInputMap(DelegateExecution execution,
-			String runAsUser) {
-		Map<String, Object> scriptModel =  super.getInputMap(execution, runAsUser);
-		
-		ExecutionListenerExecution listenerExecution = (ExecutionListenerExecution) execution;
-		
-		// Add deleted/cancelled flags
+    @Override
+    public void notify(DelegateExecution execution) throws Exception 
+    {
+        runScript(execution);
+    }
+    
+    @Override
+    protected Map<String, Object> getInputMap(DelegateExecution execution,
+                String runAsUser) 
+    {
+        Map<String, Object> scriptModel =  super.getInputMap(execution, runAsUser);
+
+        ExecutionListenerExecution listenerExecution = (ExecutionListenerExecution) execution;
+
+        // Add deleted/cancelled flags
         boolean cancelled = false;
         boolean deleted = false;
         
-        if(ActivitiConstants.DELETE_REASON_DELETED.equals(listenerExecution.getDeleteReason()))
+        if (ActivitiConstants.DELETE_REASON_DELETED.equals(listenerExecution.getDeleteReason()))
         {
-        	deleted = true;
+            deleted = true;
         } 
-        else if(ActivitiConstants.DELETE_REASON_CANCELLED.equals(listenerExecution.getDeleteReason()))
+        else if (ActivitiConstants.DELETE_REASON_CANCELLED.equals(listenerExecution.getDeleteReason()))
         {
-        	cancelled = true;
+            cancelled = true;
         }
         scriptModel.put(DELETED_FLAG, deleted);
         scriptModel.put(CANCELLED_FLAG, cancelled);
         
-	    return scriptModel;
-	}
+        return scriptModel;
+    }
 }

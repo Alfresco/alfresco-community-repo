@@ -47,6 +47,10 @@ import org.springframework.http.converter.xml.AbstractXmlHttpMessageConverter;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
+/**
+ * @author Brian
+ * @since 4.0
+ */
 public class JaxbHttpMessageConverter extends AbstractXmlHttpMessageConverter<Object>
 {
     private static Log log = LogFactory.getLog(JaxbHttpMessageConverter.class);
@@ -239,5 +243,4 @@ public class JaxbHttpMessageConverter extends AbstractXmlHttpMessageConverter<Ob
         }
         return result;
     }
-
 }

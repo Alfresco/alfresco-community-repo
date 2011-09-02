@@ -40,9 +40,8 @@ import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 
 /**
- * @since 3.4.e
  * @author Nick Smith
- *
+ * @since 3.4.e
  */
 public class ActivitiUtil
 {
@@ -107,7 +106,8 @@ public class ActivitiUtil
     public String getStartFormKey(String processDefinitionId)
     {
         ProcessDefinitionEntity procDef = (ProcessDefinitionEntity) getDeployedProcessDefinition(processDefinitionId);
-        if(procDef.getStartFormHandler() == null) {
+        if(procDef.getStartFormHandler() == null) 
+        {
             return null;
         }
         return procDef.getStartFormHandler().createStartFormData(procDef).getFormKey();
@@ -117,7 +117,7 @@ public class ActivitiUtil
     {
         String startTaskName = null;
         StartFormData startFormData = formService.getStartFormData(processDefinitionId);
-        if(startFormData != null) 
+        if (startFormData != null) 
         {
             startTaskName = startFormData.getFormKey();
         }
@@ -185,5 +185,4 @@ public class ActivitiUtil
     {
         return historyService.createHistoricTaskInstanceQuery().taskId(localId).singleResult();
     }
-    
 }

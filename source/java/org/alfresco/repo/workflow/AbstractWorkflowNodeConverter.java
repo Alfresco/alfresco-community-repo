@@ -27,9 +27,8 @@ import java.util.List;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * @since 3.4.e
  * @author Nick Smith
- *
+ * @since 3.4.e
  */
 public abstract class AbstractWorkflowNodeConverter implements WorkflowNodeConverter
 {
@@ -39,11 +38,11 @@ public abstract class AbstractWorkflowNodeConverter implements WorkflowNodeConve
     @SuppressWarnings("unchecked")
     public Object convertNodes(Object value, boolean isMany)
     {
-        if(value instanceof NodeRef)
+        if (value instanceof NodeRef)
         {
             return convertNode((NodeRef) value, isMany);
         }
-        else if(value instanceof Collection<?>)
+        else if (value instanceof Collection<?>)
         {
             return convertNodes((Collection<NodeRef>) value, isMany);
         }
@@ -102,7 +101,7 @@ public abstract class AbstractWorkflowNodeConverter implements WorkflowNodeConve
     
     public Serializable convert(Object object)
     {
-        if(object instanceof Collection<?>)
+        if (object instanceof Collection<?>)
         {
             return (Serializable) convertToNodes((Collection<?>)object);
         }
@@ -114,5 +113,4 @@ public abstract class AbstractWorkflowNodeConverter implements WorkflowNodeConve
     public abstract List<? extends Object> convertNodes(Collection<NodeRef> values);
     
     public abstract NodeRef convertToNode(Object toConvert);
-    
 }

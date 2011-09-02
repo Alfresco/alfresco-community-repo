@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,7 +19,6 @@
 package org.alfresco.repo.invitation.site;
 
 import org.alfresco.repo.invitation.ModeratedInvitationProcess;
-import org.alfresco.repo.invitation.NominatedInvitationProcess;
 import org.alfresco.service.cmr.invitation.Invitation;
 
 /**
@@ -28,33 +27,29 @@ import org.alfresco.service.cmr.invitation.Invitation;
  */
 public class SiteModeratedInvitationProcess implements ModeratedInvitationProcess
 {
-
-	public void approve(Invitation request, String reason) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void cancel(Invitation request, String reason) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void reject(Invitation request, String reason) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public Invitation invite(Invitation request, String reason) {
-		// TODO Auto-generated method stub
-		return null;
-		
-	}
-
-	public void cancel(Invitation request) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	
-	
+    public void approve(Invitation request, String reason) 
+    {
+        // TODO Auto-generated method stub
+    }
+    
+    public void cancel(Invitation request, String reason) 
+    {
+        // TODO Auto-generated method stub
+    }
+    
+    public void reject(Invitation request, String reason) 
+    {
+        // TODO Auto-generated method stub
+    }
+    
+    public Invitation invite(Invitation request, String reason) 
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    public void cancel(Invitation request) 
+    {
+        // TODO Auto-generated method stub
+    }
 }

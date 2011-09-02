@@ -24,14 +24,12 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityType;
 
 /**
- * @since 3.4.e
  * @author Nick Smith
- *
+ * @since 3.4.e
  */
 public class WorkflowAuthorityManager
 {
     private final AuthorityDAO authorityDAO;
-    
     
     public WorkflowAuthorityManager(AuthorityDAO authorityDAO)
     {
@@ -78,5 +76,4 @@ public class WorkflowAuthorityManager
     {
         return authorityDAO.getAuthorityName(authorityRef);
     }
-    
 }

@@ -136,14 +136,14 @@ public class CalendarServiceImpl implements CalendarService
     public CalendarEntry getCalendarEntry(String siteShortName, String entryName) 
     {
        NodeRef container = getSiteCalendarContainer(siteShortName, false);
-       if(container == null)
+       if (container == null)
        {
           // No events
           return null;
        }
        
        NodeRef event = nodeService.getChildByName(container, ContentModel.ASSOC_CONTAINS, entryName);
-       if(event != null)
+       if (event != null)
        {
           CalendarEntryImpl entry = new CalendarEntryImpl(event, container, entryName);
           entry.populate(nodeService.getProperties(event));
@@ -156,7 +156,7 @@ public class CalendarServiceImpl implements CalendarService
     @Override
     public CalendarEntry createCalendarEntry(String siteShortName, CalendarEntry entry) 
     {
-       if(entry.getNodeRef() != null)
+       if (entry.getNodeRef() != null)
        {
           throw new IllegalArgumentException("Can't call create for a calendar entry that was previously persisted");
        }
@@ -184,7 +184,7 @@ public class CalendarServiceImpl implements CalendarService
        
        // Record it's details
        CalendarEntryImpl entryImpl;
-       if(entry instanceof CalendarEntryImpl)
+       if (entry instanceof CalendarEntryImpl)
        {
           entryImpl = (CalendarEntryImpl)entry;
           entryImpl.recordStorageDetails(nodeRef, container, name);
@@ -204,9 +204,10 @@ public class CalendarServiceImpl implements CalendarService
     }
 
     @Override
-    public CalendarEntry updateCalendarEntry(CalendarEntry entry) {
+    public CalendarEntry updateCalendarEntry(CalendarEntry entry) 
+    {
        // Sanity check what we were given
-       if(entry.getNodeRef() == null)
+       if (entry.getNodeRef() == null)
        {
           throw new IllegalArgumentException("Can't update a calendar entry that was never persisted, call create instead");
        }
@@ -215,9 +216,9 @@ public class CalendarServiceImpl implements CalendarService
        Map<QName,Serializable> properties = CalendarEntryImpl.toNodeProperties(entry);
        
        // Merge in the non calendar ones
-       for(Map.Entry<QName,Serializable> prop : nodeService.getProperties(entry.getNodeRef()).entrySet())
+       for (Map.Entry<QName,Serializable> prop : nodeService.getProperties(entry.getNodeRef()).entrySet())
        {
-          if(! prop.getKey().getNamespaceURI().equals(CalendarModel.CALENDAR_MODEL_URL))
+          if (! prop.getKey().getNamespaceURI().equals(CalendarModel.CALENDAR_MODEL_URL))
           {
              properties.put(prop.getKey(), prop.getValue());
           }
@@ -234,8 +235,9 @@ public class CalendarServiceImpl implements CalendarService
     }
 
     @Override
-    public void deleteCalendarEntry(CalendarEntry entry) {
-       if(entry.getNodeRef() == null)
+    public void deleteCalendarEntry(CalendarEntry entry) 
+    {
+       if (entry.getNodeRef() == null)
        {
           throw new IllegalArgumentException("Can't delete a calendar entry that was never persisted");
        }
@@ -248,7 +250,7 @@ public class CalendarServiceImpl implements CalendarService
           String siteShortName, PagingRequest paging) 
     {
        NodeRef container = getSiteCalendarContainer(siteShortName, false);
-       if(container == null)
+       if (container == null)
        {
           // No events
           return new EmptyPagingResults<CalendarEntry>();
@@ -280,7 +282,7 @@ public class CalendarServiceImpl implements CalendarService
           String[] siteShortNames, PagingRequest paging) 
     {
        // If we only have the one site, use the list above 
-       if(siteShortNames != null && siteShortNames.length == 1)
+       if (siteShortNames != null && siteShortNames.length == 1)
        {
           return listCalendarEntries(siteShortNames[0], paging);
        }
@@ -295,11 +297,11 @@ public class CalendarServiceImpl implements CalendarService
     {
        // Get the containers
        List<NodeRef> containersL = new ArrayList<NodeRef>();
-       for(String siteShortName : siteShortNames)
+       for (String siteShortName : siteShortNames)
        {
           // Grab the container for this site
           NodeRef container = getSiteCalendarContainer(siteShortName, false);
-          if(container != null)
+          if (container != null)
           {
              containersL.add(container);
           }
@@ -307,7 +309,7 @@ public class CalendarServiceImpl implements CalendarService
        NodeRef[] containers = containersL.toArray(new NodeRef[containersL.size()]);
        
        // Check we have some sites to look for
-       if(containers.length == 0)
+       if (containers.length == 0)
        {
           // No sites, so no events
           return new EmptyPagingResults<CalendarEntry>();
@@ -316,8 +318,7 @@ public class CalendarServiceImpl implements CalendarService
        // Run the canned query
        GetCalendarEntriesCannedQueryFactory cqFactory = (GetCalendarEntriesCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_GET_ENTRIES);
        GetCalendarEntriesCannedQuery cq = (GetCalendarEntriesCannedQuery)cqFactory.getCannedQuery(
-             containers, from, to, paging
-       );
+             containers, from, to, paging);
        
        // Execute the canned query
        return cq.execute();
@@ -340,6 +341,7 @@ public class CalendarServiceImpl implements CalendarService
            {
                return results.getQueryExecutionId();
            }
+           
            @Override
            public List<CalendarEntry> getPage()
            {
@@ -355,11 +357,13 @@ public class CalendarServiceImpl implements CalendarService
                }
                return entries;
            }
+           
            @Override
            public boolean hasMoreItems()
            {
                return results.hasMoreItems();
            }
+           
            @Override
            public Pair<Integer, Integer> getTotalResultCount()
            {

@@ -162,10 +162,10 @@ public class WikiServiceImpl implements WikiService
        
        // Finally, do the content
        String contents = preLoadedContents;
-       if(contents == null)
+       if (contents == null)
        {
           ContentReader reader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
-          if(reader != null)
+          if (reader != null)
           {
              contents = reader.getContentString();
           }
@@ -184,14 +184,14 @@ public class WikiServiceImpl implements WikiService
     public WikiPageInfo getWikiPage(String siteShortName, String pageName) 
     {
        NodeRef container = getSiteWikiContainer(siteShortName, false);
-       if(container == null)
+       if (container == null)
        {
           // No links
           return null;
        }
        
        NodeRef link = nodeService.getChildByName(container, ContentModel.ASSOC_CONTAINS, pageName);
-       if(link != null)
+       if (link != null)
        {
           return buildPage(link, container, pageName, null);
        }
@@ -236,7 +236,7 @@ public class WikiServiceImpl implements WikiService
     public WikiPageInfo updateWikiPage(WikiPageInfo page) 
     {
        // Sanity check what we were given
-       if(page.getNodeRef() == null)
+       if (page.getNodeRef() == null)
        {
           throw new IllegalArgumentException("Can't update a page that was never persisted, call create instead");
        }
@@ -246,14 +246,14 @@ public class WikiServiceImpl implements WikiService
        
        // Handle the rename case
        boolean renamed = false;
-       if(! nodeService.getProperty(nodeRef, ContentModel.PROP_TITLE).equals(page.getTitle()))
+       if (! nodeService.getProperty(nodeRef, ContentModel.PROP_TITLE).equals(page.getTitle()))
        {
           try
           {
              fileFolderService.rename(nodeRef, nodeName);
              renamed = true;
           }
-          catch(FileNotFoundException e)
+          catch (FileNotFoundException e)
           {
              throw new AlfrescoRuntimeException("Invalid node state - wiki page no longer found");
           }
@@ -270,7 +270,7 @@ public class WikiServiceImpl implements WikiService
        taggingService.setTags(nodeRef, page.getTags());
        
        // If we re-named, re-create the object
-       if(renamed)
+       if (renamed)
        {
           page = buildPage(nodeRef, page.getContainerNodeRef(), nodeName, page.getContents());
        }
@@ -282,7 +282,7 @@ public class WikiServiceImpl implements WikiService
     @Override
     public void deleteWikiPage(WikiPageInfo page) 
     {
-       if(page.getNodeRef() == null)
+       if (page.getNodeRef() == null)
        {
           throw new IllegalArgumentException("Can't delete a wiki page that was never persisted");
        }
@@ -321,14 +321,15 @@ public class WikiServiceImpl implements WikiService
           Date createdFrom, Date createdTo, Date modifiedFrom, Date modifiedTo, PagingRequest paging) 
     {
        NodeRef container = getSiteWikiContainer(siteShortName, false);
-       if(container == null)
+       if (container == null)
        {
           // No events
           return new EmptyPagingResults<WikiPageInfo>();
        }
        
        // Grab the factory
-       GetChildrenAuditableCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenAuditableCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_GET_CHILDREN);
+       GetChildrenAuditableCannedQueryFactory getChildrenCannedQueryFactory = 
+                   (GetChildrenAuditableCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_GET_CHILDREN);
        
        // Do the sorting, newest first by created date
        CannedQuerySortDetails sorting = getChildrenCannedQueryFactory.createDateDescendingCQSortDetails();
@@ -353,7 +354,7 @@ public class WikiServiceImpl implements WikiService
     {
        // Pre-load the nodes before we create them
        List<Long> ids = new ArrayList<Long>();
-       for(NodeBackedEntity node : results.getPage())
+       for (NodeBackedEntity node : results.getPage())
        {
           ids.add(node.getId());
        }
@@ -367,11 +368,12 @@ public class WikiServiceImpl implements WikiService
            {
                return results.getQueryExecutionId();
            }
+           
            @Override
            public List<WikiPageInfo> getPage()
            {
                List<WikiPageInfo> pages = new ArrayList<WikiPageInfo>();
-               for(NodeBackedEntity node : results.getPage())
+               for (NodeBackedEntity node : results.getPage())
                {
                   NodeRef nodeRef = node.getNodeRef();
                   String name = node.getName();
@@ -379,11 +381,13 @@ public class WikiServiceImpl implements WikiService
                }
                return pages;
            }
+           
            @Override
            public boolean hasMoreItems()
            {
                return results.hasMoreItems();
            }
+           
            @Override
            public Pair<Integer, Integer> getTotalResultCount()
            {

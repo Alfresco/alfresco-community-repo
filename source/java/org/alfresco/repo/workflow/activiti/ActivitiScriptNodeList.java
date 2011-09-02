@@ -38,7 +38,7 @@ public class ActivitiScriptNodeList extends ArrayList<ActivitiScriptNode>
     {
         // Extract all node references
         List<NodeRef> nodeRefs = new ArrayList<NodeRef>();
-        for(ActivitiScriptNode scriptNode : this)
+        for (ActivitiScriptNode scriptNode : this)
         {
             nodeRefs.add(scriptNode.getNodeRef());
         }
@@ -46,7 +46,8 @@ public class ActivitiScriptNodeList extends ArrayList<ActivitiScriptNode>
     }
     
     @Override
-    public int size() {
-    	return super.size();
+    public int size() 
+    {
+        return super.size();
     }
 }

@@ -192,11 +192,11 @@ public class DiscussionServiceImpl implements DiscussionService
        // Title is special - in older cases from share it was set on the
        //  First Post but not on the Topic
        String title = (String)props.get(ContentModel.PROP_TITLE);
-       if(title == null)
+       if (title == null)
        {
           // Try the first child
           PostInfo primaryPost = getPrimaryPost(topic);
-          if(primaryPost != null)
+          if (primaryPost != null)
           {
              title = primaryPost.getTitle();
           }
@@ -229,10 +229,10 @@ public class DiscussionServiceImpl implements DiscussionService
        
        // Finally, do the content
        String contents = preLoadedContents;
-       if(contents == null)
+       if (contents == null)
        {
           ContentReader reader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
-          if(reader != null)
+          if (reader != null)
           {
              contents = reader.getContentString();
           }
@@ -248,7 +248,7 @@ public class DiscussionServiceImpl implements DiscussionService
     public TopicInfo getTopic(String siteShortName, String topicName) 
     {
        NodeRef container = getSiteDiscussionsContainer(siteShortName, false);
-       if(container == null)
+       if (container == null)
        {
           // No discussions
           return null;
@@ -262,7 +262,7 @@ public class DiscussionServiceImpl implements DiscussionService
     public TopicInfo getTopic(NodeRef parentNodeRef, String topicName) 
     {
        NodeRef topic = nodeService.getChildByName(parentNodeRef, ContentModel.ASSOC_CONTAINS, topicName);
-       if(topic != null)
+       if (topic != null)
        {
           return buildTopic(topic, parentNodeRef, topicName);
        }
@@ -273,14 +273,14 @@ public class DiscussionServiceImpl implements DiscussionService
     public PostInfo getPost(TopicInfo topic, String postName) 
     {
        // Sanity check what we were given
-       if(topic.getNodeRef() == null)
+       if (topic.getNodeRef() == null)
        {
           throw new IllegalArgumentException("Can't get posts for a topic that was never persisted!");
        }
        
        // Fetch
        NodeRef post = nodeService.getChildByName(topic.getNodeRef(), ContentModel.ASSOC_CONTAINS, postName);
-       if(post != null)
+       if (post != null)
        {
           return buildPost(post, topic, postName, null);
        }
@@ -321,7 +321,7 @@ public class DiscussionServiceImpl implements DiscussionService
        // We require that the parent container of the topic
        //  is always a tag scope. This should always be the case
        //  for site containers, but perhaps not others
-       if(! taggingService.isTagScope(parentNodeRef))
+       if (! taggingService.isTagScope(parentNodeRef))
        {
           AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() {
              public Void doWork() throws Exception
@@ -342,14 +342,14 @@ public class DiscussionServiceImpl implements DiscussionService
     public PostInfo createPost(TopicInfo topic, String contents) 
     {
        // Sanity check what we were given
-       if(topic.getNodeRef() == null)
+       if (topic.getNodeRef() == null)
        {
           throw new IllegalArgumentException("Can't create posts for a topic that was never persisted!");
        }
        
        // Are we going to be the primary post?
        boolean isPrimary = false;
-       if(getPrimaryPost(topic) == null)
+       if (getPrimaryPost(topic) == null)
        {
           isPrimary = true;
        }
@@ -357,7 +357,7 @@ public class DiscussionServiceImpl implements DiscussionService
        // Decide on the name. If this is the first post in a topic,
        //  it should share the topic's name, otherwise needs a new one
        String name = generateName();
-       if(isPrimary)
+       if (isPrimary)
        {
           name = topic.getSystemName();
        }
@@ -372,7 +372,7 @@ public class DiscussionServiceImpl implements DiscussionService
        
        // Do we want a title? By default, primary posts share a title
        //  with the topic, but replies are title-free
-       if(isPrimary)
+       if (isPrimary)
        {
           props.put(ContentModel.PROP_TITLE, topic.getTitle());
        }
@@ -400,11 +400,11 @@ public class DiscussionServiceImpl implements DiscussionService
     public PostInfo createReply(PostInfo parentPost, String contents)
     {
        // Sanity check what we were given
-       if(parentPost.getNodeRef() == null)
+       if (parentPost.getNodeRef() == null)
        {
           throw new IllegalArgumentException("Can't reply to a post that was never persisted");
        }
-       if(parentPost.getTopic() == null)
+       if (parentPost.getTopic() == null)
        {
           throw new IllegalArgumentException("Can't reply to a post with no attached topic");
        }
@@ -414,8 +414,7 @@ public class DiscussionServiceImpl implements DiscussionService
        
        // Now make it a reply
        nodeService.createAssociation(
-             reply.getNodeRef(), parentPost.getNodeRef(), ContentModel.ASSOC_REFERENCES
-       );
+             reply.getNodeRef(), parentPost.getNodeRef(), ContentModel.ASSOC_REFERENCES);
        
        // All done
        return reply;
@@ -426,7 +425,7 @@ public class DiscussionServiceImpl implements DiscussionService
     public TopicInfo updateTopic(TopicInfo topic) 
     {
        // Sanity check what we were given
-       if(topic.getNodeRef() == null)
+       if (topic.getNodeRef() == null)
        {
           throw new IllegalArgumentException("Can't update a topic that was never persisted, call create instead");
        }
@@ -443,9 +442,10 @@ public class DiscussionServiceImpl implements DiscussionService
     }
 
     @Override
-    public PostInfo updatePost(PostInfo post) {
+    public PostInfo updatePost(PostInfo post) 
+    {
        // Sanity check what we were given
-       if(post.getNodeRef() == null)
+       if (post.getNodeRef() == null)
        {
           throw new IllegalArgumentException("Can't update a post that was never persisted, call create instead");
        }
@@ -462,7 +462,7 @@ public class DiscussionServiceImpl implements DiscussionService
        // Mark it as having been updated
        Date updatedAt = new Date();
        nodeService.setProperty(nodeRef, ContentModel.PROP_UPDATED, updatedAt);
-       if(post instanceof PostInfoImpl)
+       if (post instanceof PostInfoImpl)
        {
           ((PostInfoImpl)post).setUpdatedAt(updatedAt);
           ((PostInfoImpl)post).setModifiedAt(updatedAt);
@@ -479,8 +479,9 @@ public class DiscussionServiceImpl implements DiscussionService
 
     
     @Override
-    public void deleteTopic(TopicInfo topic) {
-       if(topic.getNodeRef() == null)
+    public void deleteTopic(TopicInfo topic) 
+    {
+       if (topic.getNodeRef() == null)
        {
           throw new IllegalArgumentException("Can't delete a topic that was never persisted");
        }
@@ -489,15 +490,15 @@ public class DiscussionServiceImpl implements DiscussionService
     }
 
     @Override
-    public void deletePost(PostInfo post) {
-       if(post.getNodeRef() == null)
+    public void deletePost(PostInfo post) 
+    {
+       if (post.getNodeRef() == null)
        {
           throw new IllegalArgumentException("Can't delete a post that was never persisted");
        }
 
        nodeService.deleteNode(post.getNodeRef());
     }
-
     
     @Override
     public Pair<TopicInfo,PostInfo> getForNodeRef(NodeRef nodeRef)
@@ -506,13 +507,13 @@ public class DiscussionServiceImpl implements DiscussionService
        TopicInfo topic = null;
        PostInfo post = null;
        
-       if(type.equals(ForumModel.TYPE_TOPIC))
+       if (type.equals(ForumModel.TYPE_TOPIC))
        {
           ChildAssociationRef ref = nodeService.getPrimaryParent(nodeRef);
           String topicName = ref.getQName().getLocalName();
           topic = getTopic(ref.getParentRef(), topicName);
        }
-       else if(type.equals(ForumModel.TYPE_POST))
+       else if (type.equals(ForumModel.TYPE_POST))
        {
           ChildAssociationRef toTopic = nodeService.getPrimaryParent(nodeRef);
           String postName = toTopic.getQName().getLocalName();
@@ -539,14 +540,14 @@ public class DiscussionServiceImpl implements DiscussionService
        // First up, see if there is a post with the same name as the topic
        // (That's the normal Share case)
        PostInfo post = getPost(topic, topic.getSystemName());
-       if(post != null)
+       if (post != null)
        {
           return post;
        }
 
        // Cater for the explorer case, we want the first child
        List<ChildAssociationRef> children = nodeService.getChildAssocs(topic.getNodeRef());
-       if(children.size() == 0)
+       if (children.size() == 0)
        {
           // No child posts yet
           return null;
@@ -568,7 +569,7 @@ public class DiscussionServiceImpl implements DiscussionService
            listEntries(topic.getNodeRef(), ForumModel.TYPE_POST, null, null, null, false, paging);
           
        // Bail if the topic lacks posts
-       if(results.getPage().size() == 0)
+       if (results.getPage().size() == 0)
        {
           // No posts in the topic
           return null;
@@ -584,9 +585,10 @@ public class DiscussionServiceImpl implements DiscussionService
    
    @Override
    public PagingResults<TopicInfo> listTopics(String siteShortName,
-         boolean sortAscending, PagingRequest paging) {
+         boolean sortAscending, PagingRequest paging) 
+   {
       NodeRef container = getSiteDiscussionsContainer(siteShortName, false);
-      if(container == null)
+      if (container == null)
       {
          // No topics
          return new EmptyPagingResults<TopicInfo>();
@@ -598,7 +600,8 @@ public class DiscussionServiceImpl implements DiscussionService
 
    @Override
    public PagingResults<TopicInfo> listTopics(NodeRef nodeRef,
-         boolean sortAscending, PagingRequest paging) {
+         boolean sortAscending, PagingRequest paging) 
+   {
       // Do the listing, oldest first
       CannedQueryResults<NodeBackedEntity> nodes = 
          listEntries(nodeRef, ForumModel.TYPE_TOPIC, null, null, null, sortAscending, paging);
@@ -609,9 +612,10 @@ public class DiscussionServiceImpl implements DiscussionService
    
    @Override
    public PagingResults<TopicInfo> listTopics(String siteShortName,
-         String username, boolean sortAscending, PagingRequest paging) {
+         String username, boolean sortAscending, PagingRequest paging) 
+   {
       NodeRef container = getSiteDiscussionsContainer(siteShortName, false);
-      if(container == null)
+      if (container == null)
       {
          // No topics
          return new EmptyPagingResults<TopicInfo>();
@@ -623,7 +627,8 @@ public class DiscussionServiceImpl implements DiscussionService
 
    @Override
    public PagingResults<TopicInfo> listTopics(NodeRef nodeRef,
-         String username, boolean sortAscending, PagingRequest paging) {
+         String username, boolean sortAscending, PagingRequest paging) 
+   {
       // Do the listing, oldest first
       CannedQueryResults<NodeBackedEntity> nodes = 
          listEntries(nodeRef, ForumModel.TYPE_TOPIC, username, null, null, sortAscending, paging);
@@ -634,9 +639,10 @@ public class DiscussionServiceImpl implements DiscussionService
    
    @Override
    public PagingResults<TopicInfo> listTopics(String siteShortName,
-         Date from, Date to, boolean sortAscending, PagingRequest paging) {
+         Date from, Date to, boolean sortAscending, PagingRequest paging) 
+   {
       NodeRef container = getSiteDiscussionsContainer(siteShortName, false);
-      if(container == null)
+      if (container == null)
       {
          // No topics
          return new EmptyPagingResults<TopicInfo>();
@@ -648,7 +654,8 @@ public class DiscussionServiceImpl implements DiscussionService
 
    @Override
    public PagingResults<TopicInfo> listTopics(NodeRef nodeRef,
-         Date from, Date to, boolean sortAscending, PagingRequest paging) {
+         Date from, Date to, boolean sortAscending, PagingRequest paging) 
+   {
       // Do the listing, with the sort order as requested
       CannedQueryResults<NodeBackedEntity> nodes = 
          listEntries(nodeRef, ForumModel.TYPE_TOPIC, null, from, to, sortAscending, paging);
@@ -660,9 +667,10 @@ public class DiscussionServiceImpl implements DiscussionService
    
    @Override
    public PagingResults<Pair<TopicInfo, Integer>> listHotTopics(
-         String siteShortName, Date since, PagingRequest paging) {
+         String siteShortName, Date since, PagingRequest paging) 
+   {
       NodeRef container = getSiteDiscussionsContainer(siteShortName, false);
-      if(container == null)
+      if (container == null)
       {
          // No topics
          return new EmptyPagingResults<Pair<TopicInfo,Integer>>();
@@ -674,9 +682,11 @@ public class DiscussionServiceImpl implements DiscussionService
    
    @Override
    public PagingResults<Pair<TopicInfo, Integer>> listHotTopics(
-         NodeRef nodeRef, Date since, PagingRequest paging) {
+         NodeRef nodeRef, Date since, PagingRequest paging) 
+   {
       // Do the query
-      GetDiscussionTopcisWithPostsCannedQueryFactory getCQFactory = (GetDiscussionTopcisWithPostsCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_GET_TOPICS_WITH_POSTS);
+      GetDiscussionTopcisWithPostsCannedQueryFactory getCQFactory = 
+                  (GetDiscussionTopcisWithPostsCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_GET_TOPICS_WITH_POSTS);
       GetDiscussionTopcisWithPostsCannedQuery cq = (GetDiscussionTopcisWithPostsCannedQuery)getCQFactory.getCannedQuery(
             nodeRef, null, since, true, null, paging);
       
@@ -687,12 +697,12 @@ public class DiscussionServiceImpl implements DiscussionService
       return wrapWithCount(results, nodeRef);
    }
 
-
    @Override
    public PagingResults<TopicInfo> findTopics(String siteShortName,
-         String username, String tag, boolean sortAscending, PagingRequest paging) {
+         String username, String tag, boolean sortAscending, PagingRequest paging) 
+   {
       NodeRef container = getSiteDiscussionsContainer(siteShortName, false);
-      if(container == null)
+      if (container == null)
       {
          // No topics
          return new EmptyPagingResults<TopicInfo>();
@@ -704,27 +714,20 @@ public class DiscussionServiceImpl implements DiscussionService
 
    @Override
    public PagingResults<TopicInfo> findTopics(NodeRef nodeRef,
-         String username, String tag, boolean sortAscending, PagingRequest paging) {
+         String username, String tag, boolean sortAscending, PagingRequest paging) 
+   {
       // Build the query
       StringBuilder luceneQuery = new StringBuilder();
-      luceneQuery.append(
-           " +TYPE:\"" + ForumModel.TYPE_TOPIC + "\""
-      );
-      luceneQuery.append(
-           " +PATH:\"" + nodeService.getPath(nodeRef).toPrefixString(namespaceService) + "/*\""
-      );
+      luceneQuery.append(" +TYPE:\"" + ForumModel.TYPE_TOPIC + "\"");
+      luceneQuery.append(" +PATH:\"" + nodeService.getPath(nodeRef).toPrefixString(namespaceService) + "/*\"");
 
-      if(username != null)
+      if (username != null)
       {
-         luceneQuery.append(
-               " +@cm\\:creator:\"" + username + "\""
-         );
+         luceneQuery.append(" +@cm\\:creator:\"" + username + "\"");
       }
-      if(tag != null)
+      if (tag != null)
       {
-         luceneQuery.append(
-               " +PATH:\"/cm:taggable/cm:" + ISO9075.encode(tag) + "/member\"" 
-         );
+         luceneQuery.append(" +PATH:\"/cm:taggable/cm:" + ISO9075.encode(tag) + "/member\"" );
       }
       
       String sortOn = "@{http://www.alfresco.org/model/content/1.0}created";
@@ -757,7 +760,7 @@ public class DiscussionServiceImpl implements DiscussionService
       }
       finally
       {
-         if(results != null)
+         if (results != null)
          {
             results.close();
          }
@@ -783,7 +786,7 @@ public class DiscussionServiceImpl implements DiscussionService
    public PostWithReplies listPostReplies(TopicInfo topic, int levels)
    {
        PostInfo primaryPost = getPrimaryPost(topic);
-       if(primaryPost == null)
+       if (primaryPost == null)
        {
           return null;
        }
@@ -794,7 +797,8 @@ public class DiscussionServiceImpl implements DiscussionService
    public PostWithReplies listPostReplies(PostInfo primaryPost, int levels)
    {
       // Grab the factory
-      GetChildrenWithTargetAssocsAuditableCannedQueryFactory cqFactory = (GetChildrenWithTargetAssocsAuditableCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_GET_CHILDREN_TARGETS);
+      GetChildrenWithTargetAssocsAuditableCannedQueryFactory cqFactory = 
+                  (GetChildrenWithTargetAssocsAuditableCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_GET_CHILDREN_TARGETS);
       
       // Sort by date
       CannedQuerySortDetails sorting = cqFactory.createDateAscendingCQSortDetails();
@@ -815,23 +819,23 @@ public class DiscussionServiceImpl implements DiscussionService
       }
       
       Map<NodeRef,List<NodeWithTargetsEntity>> idToReplies = new HashMap<NodeRef, List<NodeWithTargetsEntity>>();
-      for(NodeWithTargetsEntity e : results.getPage())
+      for (NodeWithTargetsEntity e : results.getPage())
       {
-         for(TargetAndTypeId idP : e.getTargetIds())
+         for (TargetAndTypeId idP : e.getTargetIds())
          {
             Long id = idP.getTargetId();
             NodeRef nodeRef = idToNodeRef.get(id);
-            if(nodeRef == null)
+            if (nodeRef == null)
             {
                // References a node outside of this topic
                continue;
             }
-            if(id.equals(e.getId()))
+            if (id.equals(e.getId()))
             {
                // Self reference
                continue;
             }
-            if(! idToReplies.containsKey(nodeRef))
+            if (! idToReplies.containsKey(nodeRef))
             {
                idToReplies.put(nodeRef, new ArrayList<NodeWithTargetsEntity>());
             }
@@ -847,31 +851,33 @@ public class DiscussionServiceImpl implements DiscussionService
       // Wrap
       return wrap(primaryPost, idToReplies, levels);
    }
+   
    private void calculateRepliesPreLoad(NodeRef nodeRef, List<NodeRef> preLoad, 
          Map<NodeRef,List<NodeWithTargetsEntity>> idToReplies, int levels)
    {
       preLoad.add(nodeRef);
-      if(levels > 0)
+      if (levels > 0)
       {
          List<NodeWithTargetsEntity> replies = idToReplies.get(nodeRef);
-         if(replies != null && replies.size() > 0)
+         if (replies != null && replies.size() > 0)
          {
-            for(NodeWithTargetsEntity entity : replies)
+            for (NodeWithTargetsEntity entity : replies)
             {
                calculateRepliesPreLoad(entity.getNodeRef(), preLoad, idToReplies, levels-1);
             }
          }
       }
    }
+   
    private PostWithReplies wrap(PostInfo post, Map<NodeRef,List<NodeWithTargetsEntity>> idToReplies, int levels)
    {
       List<PostWithReplies> replies = new ArrayList<PostWithReplies>();
-      if(levels > 0)
+      if (levels > 0)
       {
          List<NodeWithTargetsEntity> replyEntities = idToReplies.get(post.getNodeRef());
-         if(replyEntities != null && replyEntities.size() > 0)
+         if (replyEntities != null && replyEntities.size() > 0)
          {
-            for(NodeWithTargetsEntity entity : replyEntities)
+            for (NodeWithTargetsEntity entity : replyEntities)
             {
                PostInfo replyPost = buildPost(entity.getNodeRef(), post.getTopic(), entity.getName(), null);
                replies.add(wrap(replyPost, idToReplies, levels-1));
@@ -892,7 +898,7 @@ public class DiscussionServiceImpl implements DiscussionService
    {
       // The Canned Query system doesn't allow for zero sized pages
       // If they asked for that (bits of share sometimes do), bail out now
-      if(paging != null && paging.getMaxItems() == 0)
+      if (paging != null && paging.getMaxItems() == 0)
       {
          return new EmptyCannedQueryResults<NodeBackedEntity>(null);
       }
@@ -902,7 +908,7 @@ public class DiscussionServiceImpl implements DiscussionService
       
       // Do the sorting, newest first or last by created date (as requested)
       CannedQuerySortDetails sorting = null;
-      if(oldestFirst)
+      if (oldestFirst)
       {
          sorting = getChildrenCannedQueryFactory.createDateAscendingCQSortDetails();
       }
@@ -929,23 +935,25 @@ public class DiscussionServiceImpl implements DiscussionService
    private PagingResults<TopicInfo> wrap(final ResultSet finalLuceneResults, final NodeRef container)
    {
       final List<TopicInfo> topics = new ArrayList<TopicInfo>();
-      for(ResultSetRow row : finalLuceneResults)
+      for (ResultSetRow row : finalLuceneResults)
       {
          TopicInfo topic = buildTopic(
-               row.getNodeRef(), container, row.getQName().getLocalName()
-         );
+               row.getNodeRef(), container, row.getQName().getLocalName());
          topics.add(topic);
       }
       
       // Wrap
-      return new PagingResults<TopicInfo>() {
+      return new PagingResults<TopicInfo>() 
+      {
          @Override
-         public boolean hasMoreItems() {
+         public boolean hasMoreItems() 
+         {
             return finalLuceneResults.hasMore();
          }
 
          @Override
-         public Pair<Integer, Integer> getTotalResultCount() {
+         public Pair<Integer, Integer> getTotalResultCount() 
+         {
             int skipCount = 0;
             int itemsRemainingAfterThisPage = 0;
             try
@@ -960,12 +968,14 @@ public class DiscussionServiceImpl implements DiscussionService
          }
 
          @Override
-         public List<TopicInfo> getPage() {
+         public List<TopicInfo> getPage() 
+         {
             return topics;
          }
 
          @Override
-         public String getQueryExecutionId() {
+         public String getQueryExecutionId() 
+         {
             return null;
          }
      };
@@ -979,7 +989,7 @@ public class DiscussionServiceImpl implements DiscussionService
    {
       // Pre-load the nodes before we create them
       List<Long> ids = new ArrayList<Long>();
-      for(NodeBackedEntity node : results.getPage())
+      for (NodeBackedEntity node : results.getPage())
       {
          ids.add(node.getId());
       }
@@ -993,11 +1003,12 @@ public class DiscussionServiceImpl implements DiscussionService
           {
               return results.getQueryExecutionId();
           }
+          
           @Override
           public List<TopicInfo> getPage()
           {
               List<TopicInfo> topics = new ArrayList<TopicInfo>();
-              for(NodeBackedEntity node : results.getPage())
+              for (NodeBackedEntity node : results.getPage())
               {
                  NodeRef nodeRef = node.getNodeRef();
                  String name = node.getName();
@@ -1005,11 +1016,13 @@ public class DiscussionServiceImpl implements DiscussionService
               }
               return topics;
           }
+          
           @Override
           public boolean hasMoreItems()
           {
               return results.hasMoreItems();
           }
+          
           @Override
           public Pair<Integer, Integer> getTotalResultCount()
           {
@@ -1026,7 +1039,7 @@ public class DiscussionServiceImpl implements DiscussionService
    {
       // Pre-load the nodes before we create them
       List<Long> ids = new ArrayList<Long>();
-      for(NodeBackedEntity node : results.getPage())
+      for (NodeBackedEntity node : results.getPage())
       {
          ids.add(node.getId());
       }
@@ -1040,11 +1053,12 @@ public class DiscussionServiceImpl implements DiscussionService
           {
               return results.getQueryExecutionId();
           }
+          
           @Override
           public List<PostInfo> getPage()
           {
               List<PostInfo> posts = new ArrayList<PostInfo>();
-              for(NodeBackedEntity node : results.getPage())
+              for (NodeBackedEntity node : results.getPage())
               {
                  NodeRef nodeRef = node.getNodeRef();
                  String name = node.getName();
@@ -1052,11 +1066,13 @@ public class DiscussionServiceImpl implements DiscussionService
               }
               return posts;
           }
+          
           @Override
           public boolean hasMoreItems()
           {
               return results.hasMoreItems();
           }
+          
           @Override
           public Pair<Integer, Integer> getTotalResultCount()
           {
@@ -1073,7 +1089,7 @@ public class DiscussionServiceImpl implements DiscussionService
    {
       // Pre-load the nodes before we create them
       List<Long> ids = new ArrayList<Long>();
-      for(NodeBackedEntity node : results.getPage())
+      for (NodeBackedEntity node : results.getPage())
       {
          ids.add(node.getId());
       }
@@ -1087,11 +1103,12 @@ public class DiscussionServiceImpl implements DiscussionService
           {
               return results.getQueryExecutionId();
           }
+          
           @Override
           public List<Pair<TopicInfo,Integer>> getPage()
           {
               List<Pair<TopicInfo,Integer>> topics = new ArrayList<Pair<TopicInfo,Integer>>();
-              for(NodeWithChildrenEntity node : results.getPage())
+              for (NodeWithChildrenEntity node : results.getPage())
               {
                  NodeRef nodeRef = node.getNodeRef();
                  String name = node.getName();
@@ -1102,11 +1119,13 @@ public class DiscussionServiceImpl implements DiscussionService
               }
               return topics;
           }
+          
           @Override
           public boolean hasMoreItems()
           {
               return results.hasMoreItems();
           }
+          
           @Override
           public Pair<Integer, Integer> getTotalResultCount()
           {

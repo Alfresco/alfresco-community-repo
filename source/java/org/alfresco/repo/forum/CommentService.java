@@ -21,7 +21,6 @@ package org.alfresco.repo.forum;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ForumModel;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 
 /**
  * This is a starting point for a future service for handling Share comments.

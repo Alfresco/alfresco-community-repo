@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -30,28 +30,27 @@ import org.alfresco.service.cmr.invitation.Invitation;
 
 public interface ModeratedInvitationProcess extends InvitationProcess
 {
-	/**
-	 * Invitee kicks off process
-	 * @param request
-	 * @param reason
-	 */
-	public Invitation invite(Invitation request, String reason);
-	
-	/**
-	 * Moderator approves this request
-	 * @param request the request to approve.
-	 */
-	public void approve(Invitation request, String reason);
-	
-	/**
-	 * Moderator rejects this request
-	 * @param request the request to reject
-	 */
-	public void reject(Invitation request, String reason);
-	
-	/**
-	 * Invitee cancels this request
-	 */
-	public void cancel (Invitation request, String reason);
-	
+    /**
+     * Invitee kicks off process
+     * @param request
+     * @param reason
+     */
+    public Invitation invite(Invitation request, String reason);
+
+    /**
+     * Moderator approves this request
+     * @param request the request to approve.
+     */
+    public void approve(Invitation request, String reason);
+
+    /**
+     * Moderator rejects this request
+     * @param request the request to reject
+     */
+    public void reject(Invitation request, String reason);
+
+    /**
+     * Invitee cancels this request
+     */
+    public void cancel (Invitation request, String reason);
 }

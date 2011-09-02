@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -22,14 +22,13 @@ package org.alfresco.repo.publishing;
 import javax.annotation.Resource;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.junit.Test;
 
 /**
  * @author Nick Smith
- * 
+ * @since 4.0
  */
 public class PublishingRootObjectTest extends AbstractPublishingIntegrationTest
 {
@@ -76,5 +75,4 @@ public class PublishingRootObjectTest extends AbstractPublishingIntegrationTest
         super.onSetUp();
         this.rootObject = (PublishingRootObject) getApplicationContext().getBean(PublishingRootObject.NAME);
     }
-
 }

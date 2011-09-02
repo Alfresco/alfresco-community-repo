@@ -29,13 +29,11 @@ import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.namespace.QName;
 
 /**
- * @since 3.4.e
  * @author Nick Smith
- *
+ * @since 3.4.e
  */
 public class ActivitiOwnerPropertyHandler extends ActivitiTaskPropertyHandler
 {
-
     /**
     * {@inheritDoc}
     */
@@ -68,11 +66,9 @@ public class ActivitiOwnerPropertyHandler extends ActivitiTaskPropertyHandler
     /**
     * {@inheritDoc}
     */
-    
     @Override
     protected QName getKey()
     {
         return ContentModel.PROP_OWNER;
     }
-    
 }

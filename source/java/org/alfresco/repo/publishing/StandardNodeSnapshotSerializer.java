@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -43,6 +43,7 @@ import org.alfresco.service.cmr.publishing.NodeSnapshot;
 /**
  * @author Brian
  * @author Nick Smith
+ * @since 4.0
  */
 public class StandardNodeSnapshotSerializer implements NodeSnapshotSerializer
 {
@@ -67,8 +68,7 @@ public class StandardNodeSnapshotSerializer implements NodeSnapshotSerializer
      public void serialize(Collection<NodeSnapshot> snapshots, OutputStream output) throws Exception
      {
         try
-        {
-            
+        {   
             TransferManifestHeader header = new TransferManifestHeader();
             header.setCreatedDate(new Date());
             header.setNodeCount(snapshots.size());

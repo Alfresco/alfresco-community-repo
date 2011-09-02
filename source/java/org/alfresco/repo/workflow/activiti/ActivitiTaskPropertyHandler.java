@@ -28,23 +28,21 @@ import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.namespace.QName;
 
 /**
- * @since 3.4.e
  * @author Nick Smith
- *
+ * @since 3.4.e
  */
 public abstract class ActivitiTaskPropertyHandler extends AbstractWorkflowPropertyHandler
 {
-
     /**
     * {@inheritDoc}
     */
     public Object handleProperty(QName key, Serializable value, TypeDefinition type, Object object, Class<?> objectType)
     {
-        if(DelegateTask.class.equals(objectType))
+        if (DelegateTask.class.equals(objectType))
         {
             return handleDelegateTaskProperty((DelegateTask)object, type, key, value);
         }
-        else if(Task.class.equals(objectType))
+        else if (Task.class.equals(objectType))
         {
             return handleTaskProperty((Task)object, type, key, value);
         }
@@ -81,5 +79,4 @@ public abstract class ActivitiTaskPropertyHandler extends AbstractWorkflowProper
      * @return
      */
     protected abstract Object handleDelegateTaskProperty(DelegateTask task, TypeDefinition type, QName key, Serializable value);
-
 }

@@ -235,7 +235,7 @@ public class DiscussionServiceImplTest
 
        
        // Check these actions in turn
-       for(TopicInfo topic : new TopicInfo[] {siteTopic, nodeTopic})
+       for (TopicInfo topic : new TopicInfo[] {siteTopic, nodeTopic})
        {
           AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
           
@@ -429,7 +429,7 @@ public class DiscussionServiceImplTest
        
        
        // For each, create and edit some posts
-       for(TopicInfo topic : new TopicInfo[] {siteTopic, nodeTopic})
+       for (TopicInfo topic : new TopicInfo[] {siteTopic, nodeTopic})
        {
           // Create a post and a reply
           String contents = "This Is Some Content";
@@ -810,7 +810,7 @@ public class DiscussionServiceImplTest
        
        // For both site and node based topics, check adding and
        //  removing posts correctly affects counts
-       for(TopicInfo topic : new TopicInfo[] {siteT1, nodeT1})
+       for (TopicInfo topic : new TopicInfo[] {siteT1, nodeT1})
        {
           // None to start with
           posts = DISCUSSION_SERVICE.listPosts(topic, new PagingRequest(10));
@@ -886,7 +886,7 @@ public class DiscussionServiceImplTest
        testNodesToTidy.add(siteT1.getNodeRef());
        testNodesToTidy.add(nodeT1.getNodeRef());
        
-       for(TopicInfo topic : new TopicInfo[] {siteT1, nodeT1})
+       for (TopicInfo topic : new TopicInfo[] {siteT1, nodeT1})
        {
           // Listing initially gives nothing
           PostWithReplies pr = DISCUSSION_SERVICE.listPostReplies(topic, 1);
@@ -1108,13 +1108,12 @@ public class DiscussionServiceImplTest
           @Override
           public Void execute() throws Throwable
           {
-             if(SITE_SERVICE.getSite(TEST_SITE_NAME) != null)
+             if (SITE_SERVICE.getSite(TEST_SITE_NAME) != null)
              {
                 SITE_SERVICE.deleteSite(TEST_SITE_NAME);
              }
              SITE_SERVICE.createSite(
-                   TEST_SITE_PREFIX, TEST_SITE_NAME, "Test", "Test", SiteVisibility.PUBLIC
-             );
+                   TEST_SITE_PREFIX, TEST_SITE_NAME, "Test", "Test", SiteVisibility.PUBLIC);
 
              // Won't have the container to start with
              assertFalse(SITE_SERVICE.hasContainer(TEST_SITE_NAME, DiscussionServiceImpl.DISCUSSION_COMPONENT));
@@ -1239,20 +1238,16 @@ public class DiscussionServiceImplTest
        
        // Create some topics
        TopicInfo topicSA = DISCUSSION_SERVICE.createTopic(
-             DISCUSSION_SITE.getShortName(), "Title1A"
-       );
+             DISCUSSION_SITE.getShortName(), "Title1A");
        TopicInfo topicSB = DISCUSSION_SERVICE.createTopic(
-             DISCUSSION_SITE.getShortName(), "Title1B"
-       );
+             DISCUSSION_SITE.getShortName(), "Title1B");
        testNodesToTidy.add(topicSA.getNodeRef());
        testNodesToTidy.add(topicSB.getNodeRef());
        
        TopicInfo topicNA = DISCUSSION_SERVICE.createTopic(
-             FORUM_NODE, "TitleNA"
-       );
+             FORUM_NODE, "TitleNA");
        TopicInfo topicNB = DISCUSSION_SERVICE.createTopic(
-             FORUM_NODE, "TitleNB"
-       );
+             FORUM_NODE, "TitleNB");
        testNodesToTidy.add(topicNA.getNodeRef());
        testNodesToTidy.add(topicNB.getNodeRef());
        
@@ -1471,36 +1466,29 @@ public class DiscussionServiceImplTest
        // Note - add the events as a different user for the site that the
        //  test user isn't a member of!
        TopicInfo topicSA = DISCUSSION_SERVICE.createTopic(
-             DISCUSSION_SITE.getShortName(), "Title1A"
-       );
+             DISCUSSION_SITE.getShortName(), "Title1A");
        TopicInfo topicSB = DISCUSSION_SERVICE.createTopic(
-             DISCUSSION_SITE.getShortName(), "Title1B"
-       );
+             DISCUSSION_SITE.getShortName(), "Title1B");
        testNodesToTidy.add(topicSA.getNodeRef());
        testNodesToTidy.add(topicSB.getNodeRef());
        
        AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
        TopicInfo topicPrivA = DISCUSSION_SERVICE.createTopic(
-             ALTERNATE_DISCUSSION_SITE.getShortName(), "PrivTitleA"
-       );
+             ALTERNATE_DISCUSSION_SITE.getShortName(), "PrivTitleA");
        TopicInfo topicPrivB = DISCUSSION_SERVICE.createTopic(
-             ALTERNATE_DISCUSSION_SITE.getShortName(), "PrivTitleB"
-       );
+             ALTERNATE_DISCUSSION_SITE.getShortName(), "PrivTitleB");
        TopicInfo topicPrivC = DISCUSSION_SERVICE.createTopic(
-             ALTERNATE_DISCUSSION_SITE.getShortName(), "PrivTitleC"
-       );
+             ALTERNATE_DISCUSSION_SITE.getShortName(), "PrivTitleC");
        testNodesToTidy.add(topicPrivA.getNodeRef());
        testNodesToTidy.add(topicPrivB.getNodeRef());
        testNodesToTidy.add(topicPrivC.getNodeRef());
        AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
        
        TopicInfo topicNA = DISCUSSION_SERVICE.createTopic(
-             FORUM_NODE, "TitleNA"
-       );
+             FORUM_NODE, "TitleNA");
        AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
        TopicInfo topicNB = DISCUSSION_SERVICE.createTopic(
-             FORUM_NODE, "TitleNB"
-       );
+             FORUM_NODE, "TitleNB");
        AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
        testNodesToTidy.add(topicNA.getNodeRef());
        testNodesToTidy.add(topicNB.getNodeRef());
@@ -1635,17 +1623,17 @@ public class DiscussionServiceImplTest
        paging = new PagingRequest(10);
        AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
        topics = DISCUSSION_SERVICE.listTopics(DISCUSSION_SITE.getShortName(), true, paging);
-       for(TopicInfo topic : topics.getPage())
+       for (TopicInfo topic : topics.getPage())
        {
           PUBLIC_NODE_SERVICE.deleteNode(topic.getNodeRef());
        }
        topics = DISCUSSION_SERVICE.listTopics(ALTERNATE_DISCUSSION_SITE.getShortName(), true, paging);
-       for(TopicInfo topic : topics.getPage())
+       for (TopicInfo topic : topics.getPage())
        {
           PUBLIC_NODE_SERVICE.deleteNode(topic.getNodeRef());
        }
        topics = DISCUSSION_SERVICE.listTopics(FORUM_NODE, true, paging);
-       for(TopicInfo topic : topics.getPage())
+       for (TopicInfo topic : topics.getPage())
        {
           PUBLIC_NODE_SERVICE.deleteNode(topic.getNodeRef());
        }
@@ -1661,15 +1649,15 @@ public class DiscussionServiceImplTest
     private void pushAuditableDatesBack(final Object thing, final int createdDaysAgo, final int modifiedDaysAgo) throws Exception
     {
        NodeRef tmpNodeRef;
-       if(thing instanceof NodeRef)
+       if (thing instanceof NodeRef)
        {
           tmpNodeRef = (NodeRef)thing;
        }
-       else if(thing instanceof TopicInfo)
+       else if (thing instanceof TopicInfo)
        {
           tmpNodeRef = ((TopicInfo)thing).getNodeRef();
        }
-       else if(thing instanceof PostInfo)
+       else if (thing instanceof PostInfo)
        {
           tmpNodeRef = ((PostInfo)thing).getNodeRef();
        }
@@ -1685,19 +1673,24 @@ public class DiscussionServiceImplTest
        final Date newModified = new Date(modified.getTime() - modifiedDaysAgo*ONE_DAY_MS);
        
        // Update the created date
-       TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>() {
+       TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>() 
+       {
           @Override
-          public Void execute() throws Throwable {
+          public Void execute() throws Throwable 
+          {
              BEHAVIOUR_FILTER.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
              NODE_SERVICE.setProperty(node, ContentModel.PROP_CREATED, newCreated);
              NODE_SERVICE.setProperty(node, ContentModel.PROP_MODIFIED, newModified);
              return null;
           }
        }, false, true);
+       
        // Change something else too in the public nodeservice, to force a re-index
-       TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>() {
+       TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>() 
+       {
           @Override
-          public Void execute() throws Throwable {
+          public Void execute() throws Throwable 
+          {
              BEHAVIOUR_FILTER.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
              PUBLIC_NODE_SERVICE.setProperty(node, ContentModel.PROP_CREATED, newCreated);
              PUBLIC_NODE_SERVICE.setProperty(node, ContentModel.PROP_MODIFIED, newModified);
@@ -1705,10 +1698,13 @@ public class DiscussionServiceImplTest
              return null;
           }
        }, false, true);
+       
        // Check it was taken
-       TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>() {
+       TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>() 
+       {
           @Override
-          public Void execute() throws Throwable {
+          public Void execute() throws Throwable 
+          {
              assertEquals(newCreated, NODE_SERVICE.getProperty(node, ContentModel.PROP_CREATED));
              assertEquals(newCreated, PUBLIC_NODE_SERVICE.getProperty(node, ContentModel.PROP_CREATED));
              assertEquals(newModified, NODE_SERVICE.getProperty(node, ContentModel.PROP_MODIFIED));
@@ -1718,12 +1714,12 @@ public class DiscussionServiceImplTest
        }, false, true);
 
        // Update the object itself
-       if(thing instanceof TopicInfo)
+       if (thing instanceof TopicInfo)
        {
           ((TopicInfoImpl)thing).setCreatedAt(newCreated);
           ((TopicInfoImpl)thing).setModifiedAt(newModified);
        }
-       if(thing instanceof PostInfo)
+       if (thing instanceof PostInfo)
        {
           ((PostInfoImpl)thing).setCreatedAt(newCreated);
           ((PostInfoImpl)thing).setModifiedAt(newModified);
@@ -1743,8 +1739,7 @@ public class DiscussionServiceImplTest
                         TEST_SITE_PREFIX, 
                         DiscussionServiceImplTest.class.getSimpleName() + "_testSite" + System.currentTimeMillis(),
                         "test site title", "test site description", 
-                        SiteVisibility.PUBLIC
-                  );
+                        SiteVisibility.PUBLIC);
                   privateDiscussionService.getSiteDiscussionsContainer(site.getShortName(), true);
                   CLASS_TEST_NODES_TO_TIDY.add(site.getNodeRef());
                   return site;
@@ -1779,8 +1774,7 @@ public class DiscussionServiceImplTest
                         TEST_SITE_PREFIX, 
                         DiscussionServiceImplTest.class.getSimpleName() + "_testAltSite" + System.currentTimeMillis(),
                         "alternate site title", "alternate site description", 
-                        SiteVisibility.PRIVATE
-                  );
+                        SiteVisibility.PRIVATE);
                   privateDiscussionService.getSiteDiscussionsContainer(site.getShortName(), true);
                   CLASS_TEST_NODES_TO_TIDY.add(site.getNodeRef());
                   return site;

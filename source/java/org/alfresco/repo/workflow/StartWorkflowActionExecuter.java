@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -45,12 +45,12 @@ import org.alfresco.service.namespace.QName;
  */
 public class StartWorkflowActionExecuter extends ActionExecuterAbstractBase 
 {
-	public static final String NAME = "start-workflow";
-	public static final String PARAM_WORKFLOW_NAME = "workflowName";
+    public static final String NAME = "start-workflow";
+    public static final String PARAM_WORKFLOW_NAME = "workflowName";
     public static final String PARAM_END_START_TASK = "endStartTask";
     public static final String PARAM_START_TASK_TRANSITION = "startTaskTransition";
     
-	// action dependencies
+    // action dependencies
     private NamespaceService namespaceService;
     private WorkflowService workflowService;
     private NodeService nodeService;
@@ -75,15 +75,15 @@ public class StartWorkflowActionExecuter extends ActionExecuterAbstractBase
     /**
      * @param workflowService
      */
-	public void setWorkflowService(WorkflowService workflowService) 
-	{
-		this.workflowService = workflowService;
-	}
+    public void setWorkflowService(WorkflowService workflowService) 
+    {
+        this.workflowService = workflowService;
+    }
 
 
-	/* (non-Javadoc)
+    /* (non-Javadoc)
      * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#getAdhocPropertiesAllowed()
-	 */
+     */
     @Override
     protected boolean getAdhocPropertiesAllowed()
     {
@@ -94,21 +94,21 @@ public class StartWorkflowActionExecuter extends ActionExecuterAbstractBase
     /* (non-Javadoc)
      * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
      */
-	@Override
-	protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
-	{
-		paramList.add(new ParameterDefinitionImpl(PARAM_WORKFLOW_NAME, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_WORKFLOW_NAME)));
+    @Override
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    {
+        paramList.add(new ParameterDefinitionImpl(PARAM_WORKFLOW_NAME, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_WORKFLOW_NAME)));
         paramList.add(new ParameterDefinitionImpl(PARAM_END_START_TASK, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_END_START_TASK)));
         paramList.add(new ParameterDefinitionImpl(PARAM_START_TASK_TRANSITION, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_START_TASK_TRANSITION)));
         // TODO: start task node parameter
-	}
+    }
 
 
     /* (non-Javadoc)
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-	protected void executeImpl(Action ruleAction, NodeRef actionedUponNodeRef) 
+    protected void executeImpl(Action ruleAction, NodeRef actionedUponNodeRef) 
     {
         // retrieve workflow definition
         String workflowName = (String)ruleAction.getParameterValue(PARAM_WORKFLOW_NAME);
@@ -158,5 +158,5 @@ public class StartWorkflowActionExecuter extends ActionExecuterAbstractBase
                 workflowService.endTask(task.getId(), startTaskTransition);
             }
         }
-	}
+    }
 }

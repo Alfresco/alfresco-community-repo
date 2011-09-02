@@ -19,11 +19,6 @@
 
 package org.alfresco.repo.publishing;
 
-import static org.mockito.Mockito.*;
-import static junit.framework.Assert.*;
-
-import org.alfresco.service.cmr.publishing.channels.ChannelType;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

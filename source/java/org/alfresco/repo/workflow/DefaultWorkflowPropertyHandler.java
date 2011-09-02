@@ -25,9 +25,8 @@ import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.namespace.QName;
 
 /**
- * @since 3.4.e
  * @author Nick Smith
- *
+ * @since 3.4.e
  */
 public class DefaultWorkflowPropertyHandler extends AbstractWorkflowPropertyHandler
 {
@@ -48,5 +47,4 @@ public class DefaultWorkflowPropertyHandler extends AbstractWorkflowPropertyHand
         // Does not have a key!
         return null;
     }
-
 }

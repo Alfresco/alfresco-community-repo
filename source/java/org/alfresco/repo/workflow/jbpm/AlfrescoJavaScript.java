@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -109,99 +109,108 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
         }
     }
 
-	private Object executeExpression(String expression, ExecutionContext executionContext, List<VariableAccess> variableAccesses) {
-		boolean userChanged = checkFullyAuthenticatedUser(executionContext);
-		Object result = executeScript(expression, executionContext, variableAccesses);
-		if(userChanged)
-		{
-			AuthenticationUtil.clearCurrentSecurityContext();
-		}
-		return result;
-	}
-
-	private Object executeScript(String expression,
-			ExecutionContext executionContext,
-			List<VariableAccess> variableAccesses) 
-	{
-		String user = AuthenticationUtil.getFullyAuthenticatedUser();
-		if (runas == null && user !=null)
-		{
-             return executeScript(executionContext, services, expression, variableAccesses, companyHome);
-		}
-		else
+    private Object executeExpression(String expression, ExecutionContext executionContext, List<VariableAccess> variableAccesses) 
+    {
+        boolean userChanged = checkFullyAuthenticatedUser(executionContext);
+        Object result = executeScript(expression, executionContext, variableAccesses);
+        if(userChanged)
         {
-			String runAsUser = runas;
-    		if(runAsUser == null)
-    		{
-    			runAsUser = AuthenticationUtil.getSystemUserName();
-    		} else
-    		{
-    			validateRunAsUser();
-    		}
-        	return executeScriptAs(runAsUser, expression, executionContext, variableAccesses);
+            AuthenticationUtil.clearCurrentSecurityContext();
         }
-	}
+        return result;
+    }
 
-	private Object executeScriptAs(String runAsUser,
-			final String expression,
-			final ExecutionContext executionContext,
-			final List<VariableAccess> variableAccesses) {
-		// execute as specified runAsUser
-		return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-		{
-			public Object doWork() throws Exception
-			{
-				return executeScript(executionContext, services, expression, variableAccesses,companyHome);
-			}
-		}, runAsUser);
-	}
+    private Object executeScript(String expression,
+                ExecutionContext executionContext,
+                List<VariableAccess> variableAccesses) 
+    {
+        String user = AuthenticationUtil.getFullyAuthenticatedUser();
+        if (runas == null && user !=null)
+        {
+             return executeScript(executionContext, services, expression, variableAccesses, companyHome);
+        }
+        else
+        {
+            String runAsUser = runas;
+            if(runAsUser == null)
+            {
+                runAsUser = AuthenticationUtil.getSystemUserName();
+            } 
+            else
+            {
+                validateRunAsUser();
+            }
+            return executeScriptAs(runAsUser, expression, executionContext, variableAccesses);
+        }
+    }
 
-	/**
-	 * Checks a valid Fully Authenticated User is set.
-	 * If none is set then attempts to set the task assignee as the Fully Authenticated User.
-	 * @param executionContext
-	 * @return <code>true</code> if the Fully Authenticated User was changes, otherwise <code>false</code>.
-	 */
-	private boolean checkFullyAuthenticatedUser(final ExecutionContext executionContext) {
-		if(AuthenticationUtil.getFullyAuthenticatedUser()!= null)
-			return false;
-		TaskInstance taskInstance = executionContext.getTaskInstance();
-	    if(taskInstance!=null)
-	    {
-			String userName = taskInstance.getActorId();
-			if (userName != null)
-			{
-				AuthenticationUtil.setFullyAuthenticatedUser(userName);
-				return true;
-			}
-	    }
-		return false;
-	}
+    private Object executeScriptAs(String runAsUser,
+                final String expression,
+                final ExecutionContext executionContext,
+                final List<VariableAccess> variableAccesses) 
+    {
+        // execute as specified runAsUser
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                return executeScript(executionContext, services, expression, variableAccesses,companyHome);
+            }
+        }, runAsUser);
+    }
 
-	/**
-	 * Checks that the specified 'runas' field
-	 * specifies a valid username.
-	 */
-	private void validateRunAsUser() {
-		Boolean runAsExists = AuthenticationUtil.runAs(new RunAsWork<Boolean>()
-		{	// Validate using System user to ensure sufficient permissions available to access person node.
-			
-			public Boolean doWork() throws Exception {
-				return services.getPersonService().personExists(runas);
-			}
-		}, AuthenticationUtil.getSystemUserName());
-		if (!runAsExists)
-		{
-			throw new WorkflowException("runas user '" + runas + "' does not exist.");
-		}
-	}
+    /**
+     * Checks a valid Fully Authenticated User is set.
+     * If none is set then attempts to set the task assignee as the Fully Authenticated User.
+     * @param executionContext
+     * @return <code>true</code> if the Fully Authenticated User was changes, otherwise <code>false</code>.
+     */
+    private boolean checkFullyAuthenticatedUser(final ExecutionContext executionContext) 
+    {
+        if(AuthenticationUtil.getFullyAuthenticatedUser()!= null)
+            return false;
+        
+        TaskInstance taskInstance = executionContext.getTaskInstance();
+        if(taskInstance!=null)
+        {
+            String userName = taskInstance.getActorId();
+            if (userName != null)
+            {
+                AuthenticationUtil.setFullyAuthenticatedUser(userName);
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Checks that the specified 'runas' field
+     * specifies a valid username.
+     */
+    private void validateRunAsUser() 
+    {
+        Boolean runAsExists = AuthenticationUtil.runAs(new RunAsWork<Boolean>()
+        {
+            // Validate using System user to ensure sufficient permissions available to access person node.
+        
+            public Boolean doWork() throws Exception 
+            {
+                return services.getPersonService().personExists(runas);
+            }
+        }, AuthenticationUtil.getSystemUserName());
+        if (!runAsExists)
+        {
+            throw new WorkflowException("runas user '" + runas + "' does not exist.");
+        }
+    }
 
     /**
      * Gets the expression {@link String} from the script.
      * @param isTextOnly Is the script text only or is it XML?
      * @return the expression {@link String}.
      */
-	private String getExpression(boolean isTextOnly) {
+    private String getExpression(boolean isTextOnly) 
+    {
         if (isTextOnly)
         {
             return script.getText().trim();
@@ -215,26 +224,28 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
             }
             return expressionElement.getText().trim();
         }
-	}
+    }
 
-	@SuppressWarnings("unchecked")
-	private List<VariableAccess> getVariableAccessors(boolean isTextOnly) {
-        if(isTextOnly)
+    @SuppressWarnings("unchecked")
+    private List<VariableAccess> getVariableAccessors(boolean isTextOnly) 
+    {
+        if (isTextOnly)
         {
-        	return null;
+            return null;
         }
         else
         {
-        	return jpdlReader.readVariableAccesses(script);
+            return jpdlReader.readVariableAccesses(script);
         }
-	}
+    }
 
     /**
      * Is the script specified as text only, or as explicit expression, variable elements
      * @return
      */
-	@SuppressWarnings("unchecked")
-	private boolean isScriptOnlyText() {
+    @SuppressWarnings("unchecked")
+    private boolean isScriptOnlyText() 
+    {
         Iterator<Element> iter = script.elementIterator();
         while (iter.hasNext())
         {
@@ -244,8 +255,8 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
               return false;
            }
         }
-		return true;
-	}
+        return true;
+    }
 
     
     /**
@@ -358,7 +369,7 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
         inputMap.put("executionContext", executionContext);
         inputMap.put("token", token);
         Node node = executionContext.getNode();
-		if (node != null)
+        if (node != null)
         {
             inputMap.put("node", node);
         }
@@ -368,7 +379,7 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
             inputMap.put("task", task);
         }
         TaskInstance taskInstance = executionContext.getTaskInstance();
-		if (taskInstance != null)
+        if (taskInstance != null)
         {
             inputMap.put("taskInstance", taskInstance);
         }
@@ -408,16 +419,16 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
     }
 
 
-	private static NodeRef getPersonNode(ServiceRegistry services) {
-		String userName = AuthenticationUtil.getFullyAuthenticatedUser();
-		if(userName != null)
-		{
-			NodeRef person = services.getPersonService().getPerson(userName);
-		    return person;
-		}
-		return null;
-	}
-    
+    private static NodeRef getPersonNode(ServiceRegistry services) 
+    {
+        String userName = AuthenticationUtil.getFullyAuthenticatedUser();
+        if (userName != null)
+        {
+            NodeRef person = services.getPersonService().getPerson(userName);
+            return person;
+        }
+        return null;
+    }
     
     /**
      * Determine if there are variables to read from the process context
@@ -467,12 +478,13 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
         return writable;
     }
     
-    public void setScript(Element script) {
-		this.script = script;
-	}
+    public void setScript(Element script) 
+    {
+        this.script = script;
+    }
     
-    public void setRunas(String runas) {
-		this.runas = runas;
-	}
-    
+    public void setRunas(String runas) 
+    {
+        this.runas = runas;
+    }
 }

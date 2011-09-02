@@ -140,8 +140,7 @@ public class LinksServiceImplTest
        // Create one
        link = LINKS_SERVICE.createLink(
              LINKS_SITE.getShortName(), "Title", "Description",
-             "http://www.alfresco.com/", false
-       );
+             "http://www.alfresco.com/", false);
        
        
        // Ensure it got a noderef, and the correct site
@@ -187,8 +186,7 @@ public class LinksServiceImplTest
        // Create a link
        link = LINKS_SERVICE.createLink(
              LINKS_SITE.getShortName(), "Title", "Description",
-             "http://www.alfresco.com/", false
-       );
+             "http://www.alfresco.com/", false);
        
        
        // Check it
@@ -255,13 +253,12 @@ public class LinksServiceImplTest
           @Override
           public Void execute() throws Throwable
           {
-             if(SITE_SERVICE.getSite(TEST_SITE_NAME) != null)
+             if (SITE_SERVICE.getSite(TEST_SITE_NAME) != null)
              {
                 SITE_SERVICE.deleteSite(TEST_SITE_NAME);
              }
              SITE_SERVICE.createSite(
-                   TEST_SITE_PREFIX, TEST_SITE_NAME, "Test", "Test", SiteVisibility.PUBLIC
-             );
+                   TEST_SITE_PREFIX, TEST_SITE_NAME, "Test", "Test", SiteVisibility.PUBLIC);
 
              // Won't have the container to start with
              assertFalse(SITE_SERVICE.hasContainer(TEST_SITE_NAME, LinksServiceImpl.LINKS_COMPONENT));
@@ -269,8 +266,7 @@ public class LinksServiceImplTest
              // Create a link
              LINKS_SERVICE.createLink(
                    TEST_SITE_NAME, "Title", "Description",
-                   "http://www.alfresco.com/", false
-             );
+                   "http://www.alfresco.com/", false);
              
              // It will now exist
              assertTrue(SITE_SERVICE.hasContainer(TEST_SITE_NAME, LinksServiceImpl.LINKS_COMPONENT));
@@ -296,8 +292,7 @@ public class LinksServiceImplTest
        // Create one without tagging
        link = LINKS_SERVICE.createLink(
              LINKS_SITE.getShortName(), "Title", "Description",
-             "http://www.alfresco.com/", false
-       );
+             "http://www.alfresco.com/", false);
        testNodesToTidy.add(link.getNodeRef());
        
        // Check
@@ -384,16 +379,13 @@ public class LinksServiceImplTest
        // Add a few
        LinkInfo linkA = LINKS_SERVICE.createLink(
              LINKS_SITE.getShortName(), "TitleA", "Description",
-             "http://www.alfresco.com/", false
-       );
+             "http://www.alfresco.com/", false);
        LinkInfo linkB = LINKS_SERVICE.createLink(
              LINKS_SITE.getShortName(), "TitleB", "Description",
-             "http://www.alfresco.com/", false
-       );
+             "http://www.alfresco.com/", false);
        LinkInfo linkC = LINKS_SERVICE.createLink(
              LINKS_SITE.getShortName(), "TitleC", "Description",
-             "http://www.alfresco.com/", false
-       );
+             "http://www.alfresco.com/", false);
        testNodesToTidy.add(linkA.getNodeRef());
        testNodesToTidy.add(linkB.getNodeRef());
        testNodesToTidy.add(linkC.getNodeRef());
@@ -409,8 +401,7 @@ public class LinksServiceImplTest
        AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
        LinkInfo linkD = LINKS_SERVICE.createLink(
              LINKS_SITE.getShortName(), "TitleD", "Description",
-             "http://www.alfresco.com/", false
-       );
+             "http://www.alfresco.com/", false);
        testNodesToTidy.add(linkD.getNodeRef());
        AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
        
@@ -473,12 +464,12 @@ public class LinksServiceImplTest
        paging = new PagingRequest(10);
        AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
        results = LINKS_SERVICE.listLinks(LINKS_SITE.getShortName(), paging);
-       for(LinkInfo link : results.getPage())
+       for (LinkInfo link : results.getPage())
        {
           PUBLIC_NODE_SERVICE.deleteNode(link.getNodeRef());
        }
        results = LINKS_SERVICE.listLinks(ALTERNATE_LINKS_SITE.getShortName(), paging);
-       for(LinkInfo link : results.getPage())
+       for (LinkInfo link : results.getPage())
        {
           PUBLIC_NODE_SERVICE.deleteNode(link.getNodeRef());
        }
@@ -513,28 +504,23 @@ public class LinksServiceImplTest
        //  test user isn't a member of!
        LinkInfo linkA = LINKS_SERVICE.createLink(
              LINKS_SITE.getShortName(), "TitleA", "Description",
-             "http://www.alfresco.com/", false
-       );
+             "http://www.alfresco.com/", false);
        LinkInfo linkB = LINKS_SERVICE.createLink(
              LINKS_SITE.getShortName(), "TitleB", "Description",
-             "http://www.alfresco.com/", false
-       );
+             "http://www.alfresco.com/", false);
        testNodesToTidy.add(linkA.getNodeRef());
        testNodesToTidy.add(linkB.getNodeRef());
        
        AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
        LinkInfo linkPrivA = LINKS_SERVICE.createLink(
              ALTERNATE_LINKS_SITE.getShortName(), "PrivTitleA", "Description",
-             "http://team.alfresco.com/", false
-       );
+             "http://team.alfresco.com/", false);
        LinkInfo linkPrivB = LINKS_SERVICE.createLink(
              ALTERNATE_LINKS_SITE.getShortName(), "PrivTitleB", "Description",
-             "http://team.alfresco.com/", false
-       );
+             "http://team.alfresco.com/", false);
        LinkInfo linkPrivC = LINKS_SERVICE.createLink(
              ALTERNATE_LINKS_SITE.getShortName(), "PrivTitleC", "Description",
-             "http://team.alfresco.com/", false
-       );
+             "http://team.alfresco.com/", false);
        testNodesToTidy.add(linkPrivA.getNodeRef());
        testNodesToTidy.add(linkPrivB.getNodeRef());
        testNodesToTidy.add(linkPrivC.getNodeRef());
@@ -600,12 +586,12 @@ public class LinksServiceImplTest
        paging = new PagingRequest(10);
        AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
        results = LINKS_SERVICE.listLinks(LINKS_SITE.getShortName(), paging);
-       for(LinkInfo link : results.getPage())
+       for (LinkInfo link : results.getPage())
        {
           PUBLIC_NODE_SERVICE.deleteNode(link.getNodeRef());
        }
        results = LINKS_SERVICE.listLinks(ALTERNATE_LINKS_SITE.getShortName(), paging);
-       for(LinkInfo link : results.getPage())
+       for (LinkInfo link : results.getPage())
        {
           PUBLIC_NODE_SERVICE.deleteNode(link.getNodeRef());
        }
@@ -635,28 +621,23 @@ public class LinksServiceImplTest
        // Add some entries to the two sites
        LinkInfo linkA = LINKS_SERVICE.createLink(
              LINKS_SITE.getShortName(), "TitleA", "Description",
-             "http://www.alfresco.com/", false
-       );
+             "http://www.alfresco.com/", false);
        LinkInfo linkB = LINKS_SERVICE.createLink(
              LINKS_SITE.getShortName(), "TitleB", "Description",
-             "http://www.alfresco.com/", false
-       );
+             "http://www.alfresco.com/", false);
        testNodesToTidy.add(linkA.getNodeRef());
        testNodesToTidy.add(linkB.getNodeRef());
        
        AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
        LinkInfo linkPrivA = LINKS_SERVICE.createLink(
              ALTERNATE_LINKS_SITE.getShortName(), "PrivTitleA", "Description",
-             "http://team.alfresco.com/", false
-       );
+             "http://team.alfresco.com/", false);
        LinkInfo linkPrivB = LINKS_SERVICE.createLink(
              ALTERNATE_LINKS_SITE.getShortName(), "PrivTitleB", "Description",
-             "http://team.alfresco.com/", false
-       );
+             "http://team.alfresco.com/", false);
        LinkInfo linkPrivC = LINKS_SERVICE.createLink(
              ALTERNATE_LINKS_SITE.getShortName(), "PrivTitleC", "Description",
-             "http://team.alfresco.com/", false
-       );
+             "http://team.alfresco.com/", false);
        testNodesToTidy.add(linkPrivA.getNodeRef());
        testNodesToTidy.add(linkPrivB.getNodeRef());
        testNodesToTidy.add(linkPrivC.getNodeRef());
@@ -710,8 +691,7 @@ public class LinksServiceImplTest
        
        LinkInfo linkPrivD = LINKS_SERVICE.createLink(
              ALTERNATE_LINKS_SITE.getShortName(), "PrivTitleD", "Description",
-             "http://team.alfresco.com/", false
-       );
+             "http://team.alfresco.com/", false);
        testNodesToTidy.add(linkPrivD.getNodeRef());
        
        
@@ -800,28 +780,36 @@ public class LinksServiceImplTest
        final Date newCreated = new Date(created.getTime() - daysAgo*ONE_DAY_MS);
        
        // Update the created date
-       TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>() {
+       TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>() 
+       {
           @Override
-          public Void execute() throws Throwable {
+          public Void execute() throws Throwable 
+          {
              BEHAVIOUR_FILTER.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
              NODE_SERVICE.setProperty(node, ContentModel.PROP_CREATED, newCreated);
              return null;
           }
        }, false, true);
+       
        // Change something else too in the public nodeservice, to force a re-index
-       TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>() {
+       TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>() 
+       {
           @Override
-          public Void execute() throws Throwable {
+          public Void execute() throws Throwable 
+          {
              BEHAVIOUR_FILTER.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
              PUBLIC_NODE_SERVICE.setProperty(node, ContentModel.PROP_CREATED, newCreated);
              PUBLIC_NODE_SERVICE.setProperty(node, ContentModel.PROP_DESCRIPTION, "Forced Change");
              return null;
           }
        }, false, true);
+       
        // Check it was taken
-       TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>() {
+       TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>() 
+       {
           @Override
-          public Void execute() throws Throwable {
+          public Void execute() throws Throwable 
+          {
              assertEquals(newCreated, NODE_SERVICE.getProperty(node, ContentModel.PROP_CREATED));
              assertEquals(newCreated, PUBLIC_NODE_SERVICE.getProperty(node, ContentModel.PROP_CREATED));
              return null;
@@ -845,8 +833,7 @@ public class LinksServiceImplTest
                         TEST_SITE_PREFIX, 
                         LinksServiceImplTest.class.getSimpleName() + "_testSite" + System.currentTimeMillis(),
                         "test site title", "test site description", 
-                        SiteVisibility.PUBLIC
-                  );
+                        SiteVisibility.PUBLIC);
                   privateCalendarService.getSiteLinksContainer(site.getShortName(), true);
                   CLASS_TEST_NODES_TO_TIDY.add(site.getNodeRef());
                   return site;
@@ -864,8 +851,7 @@ public class LinksServiceImplTest
                         TEST_SITE_PREFIX, 
                         LinksServiceImplTest.class.getSimpleName() + "_testAltSite" + System.currentTimeMillis(),
                         "alternate site title", "alternate site description", 
-                        SiteVisibility.PRIVATE
-                  );
+                        SiteVisibility.PRIVATE);
                   privateCalendarService.getSiteLinksContainer(site.getShortName(), true);
                   CLASS_TEST_NODES_TO_TIDY.add(site.getNodeRef());
                   return site;

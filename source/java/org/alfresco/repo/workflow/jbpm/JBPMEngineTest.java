@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -174,8 +174,8 @@ public class JBPMEngineTest extends BaseAlfrescoSpringTest
         assertEquals(path.getInstance().getId(), instance.getId());
         
         workflowComponent.cancelWorkflow(instance.getId());
-    	WorkflowInstance result = workflowComponent.getWorkflowById(instance.getId());
-    	assertNull("The workflow isntance should be null!", result);
+        WorkflowInstance result = workflowComponent.getWorkflowById(instance.getId());
+        assertNull("The workflow isntance should be null!", result);
     }
     
     
@@ -330,7 +330,7 @@ public class JBPMEngineTest extends BaseAlfrescoSpringTest
     
     public void testCancelWorkflowInstance() throws Exception
     {
-    	WorkflowDefinition workflowDef = getTestDefinition();
+        WorkflowDefinition workflowDef = getTestDefinition();
         workflowComponent.startWorkflow(workflowDef.getId(), null);
         List<WorkflowInstance> instances1 = workflowComponent.getActiveWorkflows(workflowDef.getId());
         assertNotNull(instances1);

@@ -593,8 +593,8 @@ public class TaskFormProcessorTest extends TestCase
     private WorkflowTask makeTask(WorkflowTransition... transitions)
     {
         String id = TASK_ID;
-		String title = "Test";
-		WorkflowTaskState state = WorkflowTaskState.IN_PROGRESS;
+        String title = "Test";
+        WorkflowTaskState state = WorkflowTaskState.IN_PROGRESS;
         WorkflowTaskDefinition taskDef = makeTaskDefinition(transitions);
         Map<QName, Serializable> properties = makeTaskProperties();
 
@@ -608,7 +608,6 @@ public class TaskFormProcessorTest extends TestCase
         WorkflowPath path = new WorkflowPath(null, instance, node, true);
         return new WorkflowTask(id,
                     taskDef, null, title, null, state, path, properties);
-		
     }
 
     private HashMap<QName, Serializable> makeTaskProperties()

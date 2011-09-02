@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -26,18 +26,15 @@ import org.alfresco.service.cmr.invitation.Invitation;
  *
  * This invitation process is the unmoderated invite someone else.
  */
-
 public interface InvitationProcess 
 {
-	/*
-	 * someone starts the invitation process
-	 */
-	public Invitation invite(Invitation request, String comment);
-	
-	
-	/*
-	 * cancel this request
-	 */
-	public void cancel (Invitation request);
-	
+    /*
+     * someone starts the invitation process
+     */
+    public Invitation invite(Invitation request, String comment);
+
+    /*
+     * cancel this request
+     */
+    public void cancel (Invitation request);
 }

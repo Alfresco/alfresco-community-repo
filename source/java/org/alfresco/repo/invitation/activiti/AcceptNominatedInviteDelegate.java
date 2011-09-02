@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -39,5 +39,4 @@ public class AcceptNominatedInviteDelegate extends AbstractInvitationDelegate
         Map<String, Object> executionVariables = execution.getVariables();
         inviteHelper.acceptNominatedInvitation(executionVariables);
     }
-
 }

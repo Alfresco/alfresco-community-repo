@@ -30,6 +30,7 @@ import org.springframework.context.ApplicationListener;
  * job executor.
  *
  * @author Frederik Heremans
+ * @since 4.0
  */
 public class ActivitiEngineInitializer implements ApplicationListener<ApplicationEvent>
 {

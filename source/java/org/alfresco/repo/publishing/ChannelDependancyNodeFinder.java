@@ -35,7 +35,6 @@ import org.alfresco.util.ParameterCheck;
 /**
  * @author Nick Smith
  * @since 4.0
- *
  */
 public class ChannelDependancyNodeFinder extends AbstractNodeFinder
 {
@@ -67,13 +66,13 @@ public class ChannelDependancyNodeFinder extends AbstractNodeFinder
     public Set<NodeRef> findFrom(NodeRef thisNode)
     {
         String typeId = (String) nodeService.getProperty(thisNode, PROP_CHANNEL_TYPE);
-        if(typeId !=null)
+        if (typeId !=null)
         {
             ChannelType type = channelService.getChannelType(typeId);
-            if(type != null)
+            if (type != null)
             {
                 NodeFinder finder = type.getNodeFinder();
-                if(finder !=null)
+                if (finder !=null)
                 {
                     return finder.findFrom(thisNode);
                 }
@@ -81,5 +80,4 @@ public class ChannelDependancyNodeFinder extends AbstractNodeFinder
         }
         return Collections.emptySet();
     }
-    
 }

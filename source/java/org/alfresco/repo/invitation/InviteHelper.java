@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -139,7 +139,7 @@ public class InviteHelper implements InitializingBean
         {
             public Void doWork() throws Exception
             {
-                if(false==authenticationService.getAuthenticationEnabled(invitee))
+                if (false==authenticationService.getAuthenticationEnabled(invitee))
                 {
                     authenticationService.setAuthenticationEnabled(invitee, true);
                 }
@@ -242,7 +242,7 @@ public class InviteHelper implements InitializingBean
             {
                 if (overrideExisting || !siteService.isMember(siteName, invitee))
                 {
-                siteService.setMembership(siteName, invitee, role);
+                    siteService.setMembership(siteName, invitee, role);
                 }
                 return null;
             }
@@ -271,10 +271,10 @@ public class InviteHelper implements InitializingBean
                 // outstanding for given invitee user name
                 List<Invitation> pendingInvites = invitationService.listPendingInvitationsForInvitee(inviteeUserName);
                 boolean invitesPending = CollectionUtils.isEmpty(pendingInvites)==false;
-                if(invitesPending && pendingInvites.size()==1)
+                if (invitesPending && pendingInvites.size() == 1)
                 {
                     Invitation pendingInvite = pendingInvites.get(0);
-                    if(pendingInvite.getInviteId().equals(currentInviteId))
+                    if (pendingInvite.getInviteId().equals(currentInviteId))
                     {
                         invitesPending = false;
                     }
@@ -327,7 +327,7 @@ public class InviteHelper implements InitializingBean
     
     public  void sendNominatedInvitation(String inviteId, Map<String, Object> executionVariables)
     {
-        if(invitationService.isSendEmails())
+        if (invitationService.isSendEmails())
         {
             Map<String, String> properties = makePropertiesFromContextVariables(executionVariables, sendInvitePropertyNames);
 
@@ -365,7 +365,7 @@ public class InviteHelper implements InitializingBean
     public void rejectModeratedInvitation(Map<String, Object> vars)
     {
         //Do nothing if emails disabled.
-        if(invitationService.isSendEmails() == false)
+        if (invitationService.isSendEmails() == false)
         {
             return;
         }
@@ -403,7 +403,7 @@ public class InviteHelper implements InitializingBean
             emailAction.setExecuteAsynchronously(true);
             actionService.executeAction(emailAction, null);
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             // Swallow exception
             logger.error("unable to send reject email", e);
@@ -433,5 +433,4 @@ public class InviteHelper implements InitializingBean
     {
         this.serviceRegistry = serviceRegistry;
     }
-
  }

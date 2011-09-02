@@ -26,9 +26,8 @@ import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.namespace.NamespaceService;
 
 /**
- * @since 3.4.e
  * @author Nick Smith
- *
+ * @since 3.4.e
  */
 public abstract class AlfrescoBpmEngine extends BPMEngine
 {

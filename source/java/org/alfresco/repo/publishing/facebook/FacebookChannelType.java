@@ -37,6 +37,10 @@ import org.springframework.social.oauth2.GrantType;
 import org.springframework.social.oauth2.OAuth2Operations;
 import org.springframework.social.oauth2.OAuth2Parameters;
 
+/**
+ * @author Brian
+ * @since 4.0
+ */
 public class FacebookChannelType extends AbstractChannelType
 {
     public final static String ID = "facebook";

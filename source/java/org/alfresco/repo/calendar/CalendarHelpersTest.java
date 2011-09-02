@@ -101,8 +101,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildDailyRecurrences(
             currentDate, dates, null,
             date(2011,7,10), date(2011,7,15),
-            true, 1
-      );
+            true, 1);
       assertEquals(0, dates.size());
       
       dates.clear();
@@ -110,8 +109,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildDailyRecurrences(
             currentDate, dates, null,
             date(2011,7,10), date(2011,7,15),
-            false, 1
-      );
+            false, 1);
       assertEquals(0, dates.size());
       
       
@@ -121,8 +119,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildDailyRecurrences(
             currentDate, dates, null,
             date(2011,7,19), date(2011,7,25),
-            true, 1
-      );
+            true, 1);
       assertEquals(1, dates.size());
       assertEquals("2011-07-19", dateFmt.format(dates.get(0)));
       
@@ -131,8 +128,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildDailyRecurrences(
             currentDate, dates, null,
             date(2011,7,19), date(2011,7,25),
-            false, 1
-      );
+            false, 1);
       assertEquals(6, dates.size());
       assertEquals("2011-07-19", dateFmt.format(dates.get(0)));
       assertEquals("2011-07-24", dateFmt.format(dates.get(5)));
@@ -144,8 +140,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildDailyRecurrences(
             currentDate, dates, null,
             date(2011,7,20), date(2011,7,30),
-            true, 1
-      );
+            true, 1);
       assertEquals(1, dates.size());
       assertEquals("2011-07-20", dateFmt.format(dates.get(0)));
       
@@ -154,8 +149,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildDailyRecurrences(
             currentDate, dates, null,
             date(2011,7,20), date(2011,7,30),
-            false, 1
-      );
+            false, 1);
       assertEquals(10, dates.size());
       assertEquals("2011-07-20", dateFmt.format(dates.get(0)));
       assertEquals("2011-07-29", dateFmt.format(dates.get(9)));
@@ -167,8 +161,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildDailyRecurrences(
             currentDate, dates, null,
             date(2011,7,19), null,
-            true, 1
-      );
+            true, 1);
       assertEquals(1, dates.size());
       assertEquals("2011-07-19", dateFmt.format(dates.get(0)));
       
@@ -177,8 +170,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildDailyRecurrences(
             currentDate, dates, null,
             date(2011,7,20), null,
-            true, 1
-      );
+            true, 1);
       assertEquals(1, dates.size());
       assertEquals("2011-07-20", dateFmt.format(dates.get(0)));
    }
@@ -198,8 +190,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildWeeklyRecurrences(
             currentDate, dates, params,
             date(2011,7,10), date(2011,7,15),
-            true, 1
-      );
+            true, 1);
       assertEquals(0, dates.size());
       
       dates.clear();
@@ -207,8 +198,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildWeeklyRecurrences(
             currentDate, dates, params,
             date(2011,7,10), date(2011,7,15),
-            false, 1
-      );
+            false, 1);
       assertEquals(0, dates.size());
       
       
@@ -218,8 +208,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildWeeklyRecurrences(
             currentDate, dates, params,
             date(2011,7,17), date(2011,7,26),
-            true, 1
-      );
+            true, 1);
       assertEquals(1, dates.size());
       assertEquals("2011-07-21", dateFmt.format(dates.get(0))); // Thursday
       
@@ -228,8 +217,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildWeeklyRecurrences(
             currentDate, dates, params,
             date(2011,7,19), date(2011,7,26),
-            false, 1
-      );
+            false, 1);
       assertEquals(2, dates.size());
       assertEquals("2011-07-21", dateFmt.format(dates.get(0))); // Thu
       assertEquals("2011-07-25", dateFmt.format(dates.get(1))); // Mon
@@ -241,8 +229,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildWeeklyRecurrences(
             currentDate, dates, params,
             date(2011,7,19), date(2011,7,26),
-            true, 1
-      );
+            true, 1);
       assertEquals(1, dates.size());
       assertEquals("2011-07-21", dateFmt.format(dates.get(0))); // Thursday
       
@@ -251,8 +238,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildWeeklyRecurrences(
             currentDate, dates, params,
             date(2011,7,19), date(2011,7,26),
-            false, 1
-      );
+            false, 1);
       assertEquals(2, dates.size());
       assertEquals("2011-07-21", dateFmt.format(dates.get(0))); // Thu
       assertEquals("2011-07-25", dateFmt.format(dates.get(1))); // Mon
@@ -264,8 +250,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildWeeklyRecurrences(
             currentDate, dates, params,
             date(2011,7,20), date(2011,7,30),
-            true, 1
-      );
+            true, 1);
       assertEquals(1, dates.size());
       assertEquals("2011-07-21", dateFmt.format(dates.get(0))); // Thu
       
@@ -274,8 +259,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildWeeklyRecurrences(
             currentDate, dates, params,
             date(2011,7,20), date(2011,7,30),
-            false, 1
-      );
+            false, 1);
       assertEquals(3, dates.size());
       assertEquals("2011-07-21", dateFmt.format(dates.get(0)));
       assertEquals("2011-07-25", dateFmt.format(dates.get(1)));
@@ -288,8 +272,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildWeeklyRecurrences(
             currentDate, dates, params,
             date(2011,7,20), date(2011,8,30),
-            true, 3
-      );
+            true, 3);
       assertEquals(1, dates.size());
       assertEquals("2011-07-21", dateFmt.format(dates.get(0))); // Thu
       
@@ -298,8 +281,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildWeeklyRecurrences(
             currentDate, dates, params,
             date(2011,7,20), date(2011,8,30),
-            false, 3
-      );
+            false, 3);
       assertEquals(4, dates.size());
       assertEquals("2011-07-21", dateFmt.format(dates.get(0)));
       // Not the 25th or 28th
@@ -317,8 +299,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildWeeklyRecurrences(
             currentDate, dates, params,
             date(2011,7,19), null,
-            true, 1
-      );
+            true, 1);
       assertEquals(1, dates.size());
       assertEquals("2011-07-21", dateFmt.format(dates.get(0))); // Thu
       
@@ -327,8 +308,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildWeeklyRecurrences(
             currentDate, dates, params,
             date(2011,7,22), null,
-            true, 1
-      );
+            true, 1);
       assertEquals(1, dates.size());
       assertEquals("2011-07-25", dateFmt.format(dates.get(0)));
    }
@@ -351,8 +331,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildMonthlyRecurrences(
             currentDate, dates, params,
             date(2011,7,10), date(2011,7,15),
-            true, 1
-      );
+            true, 1);
       assertEquals(0, dates.size());
       
       dates.clear();
@@ -360,8 +339,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildMonthlyRecurrences(
             currentDate, dates, params,
             date(2011,7,10), date(2011,7,15),
-            false, 1
-      );
+            false, 1);
       assertEquals(0, dates.size());
       
       
@@ -371,8 +349,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildMonthlyRecurrences(
             currentDate, dates, params,
             date(2011,7,1), date(2011,7,26),
-            true, 1
-      );
+            true, 1);
       assertEquals(1, dates.size());
       assertEquals("2011-07-02", dateFmt.format(dates.get(0)));
       
@@ -381,8 +358,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildMonthlyRecurrences(
             currentDate, dates, params,
             date(2011,7,1), date(2011,7,26),
-            false, 1
-      );
+            false, 1);
       assertEquals(1, dates.size());
       assertEquals("2011-07-02", dateFmt.format(dates.get(0)));
       
@@ -393,8 +369,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildMonthlyRecurrences(
             currentDate, dates, params,
             date(2011,7,2), date(2011,7,26),
-            true, 1
-      );
+            true, 1);
       assertEquals(1, dates.size());
       assertEquals("2011-07-02", dateFmt.format(dates.get(0)));
       
@@ -403,8 +378,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildMonthlyRecurrences(
             currentDate, dates, params,
             date(2011,7,2), date(2011,7,26),
-            false, 1
-      );
+            false, 1);
       assertEquals(1, dates.size());
       assertEquals("2011-07-02", dateFmt.format(dates.get(0)));
       
@@ -415,8 +389,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildMonthlyRecurrences(
             currentDate, dates, params,
             date(2011,7,20), date(2011,9,20),
-            true, 1
-      );
+            true, 1);
       assertEquals(1, dates.size());
       assertEquals("2011-08-02", dateFmt.format(dates.get(0)));
       
@@ -425,8 +398,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildMonthlyRecurrences(
             currentDate, dates, params,
             date(2011,7,20), date(2011,9,20),
-            false, 1
-      );
+            false, 1);
       assertEquals(2, dates.size());
       assertEquals("2011-08-02", dateFmt.format(dates.get(0)));
       assertEquals("2011-09-02", dateFmt.format(dates.get(1)));
@@ -438,8 +410,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildMonthlyRecurrences(
             currentDate, dates, params,
             date(2011,7,1), null,
-            true, 1
-      );
+            true, 1);
       assertEquals(1, dates.size());
       assertEquals("2011-07-02", dateFmt.format(dates.get(0)));
       
@@ -448,8 +419,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildMonthlyRecurrences(
             currentDate, dates, params,
             date(2011,7,19), null,
-            true, 1
-      );
+            true, 1);
       assertEquals(1, dates.size());
       assertEquals("2011-08-02", dateFmt.format(dates.get(0)));
    }
@@ -472,8 +442,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildMonthlyRecurrences(
             currentDate, dates, params,
             date(2011,7,10), date(2011,7,15),
-            true, 1
-      );
+            true, 1);
       assertEquals(0, dates.size());
       
       dates.clear();
@@ -481,8 +450,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildMonthlyRecurrences(
             currentDate, dates, params,
             date(2011,7,10), date(2011,7,15),
-            false, 1
-      );
+            false, 1);
       assertEquals(0, dates.size());
       
       
@@ -492,8 +460,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildMonthlyRecurrences(
             currentDate, dates, params,
             date(2011,7,1), date(2011,7,26),
-            true, 1
-      );
+            true, 1);
       assertEquals(1, dates.size());
       assertEquals("2011-07-05", dateFmt.format(dates.get(0))); // Tuesday 5th
       
@@ -502,8 +469,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildMonthlyRecurrences(
             currentDate, dates, params,
             date(2011,7,1), date(2011,7,26),
-            false, 1
-      );
+            false, 1);
       assertEquals(1, dates.size());
       assertEquals("2011-07-05", dateFmt.format(dates.get(0))); // Tuesday 5th
       
@@ -514,8 +480,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildMonthlyRecurrences(
             currentDate, dates, params,
             date(2011,7,2), date(2011,7,26),
-            true, 1
-      );
+            true, 1);
       assertEquals(1, dates.size());
       assertEquals("2011-07-05", dateFmt.format(dates.get(0))); // Tuesday 5th
       
@@ -524,8 +489,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildMonthlyRecurrences(
             currentDate, dates, params,
             date(2011,7,2), date(2011,7,26),
-            false, 1
-      );
+            false, 1);
       assertEquals(1, dates.size());
       assertEquals("2011-07-05", dateFmt.format(dates.get(0))); // Tuesday 5th
       
@@ -536,8 +500,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildMonthlyRecurrences(
             currentDate, dates, params,
             date(2011,7,20), date(2011,9,20),
-            true, 1
-      );
+            true, 1);
       assertEquals(1, dates.size());
       assertEquals("2011-08-02", dateFmt.format(dates.get(0))); // Tuesday 2nd
       
@@ -546,8 +509,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildMonthlyRecurrences(
             currentDate, dates, params,
             date(2011,7,20), date(2011,9,20),
-            false, 1
-      );
+            false, 1);
       assertEquals(2, dates.size());
       assertEquals("2011-08-02", dateFmt.format(dates.get(0))); // Tuesday 2nd
       assertEquals("2011-09-06", dateFmt.format(dates.get(1))); // Tuesday 6th
@@ -559,8 +521,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildMonthlyRecurrences(
             currentDate, dates, params,
             date(2011,7,1), null,
-            true, 1
-      );
+            true, 1);
       assertEquals(1, dates.size());
       assertEquals("2011-07-05", dateFmt.format(dates.get(0)));
       
@@ -569,8 +530,7 @@ public class CalendarHelpersTest
       RecurrenceHelper.buildMonthlyRecurrences(
             currentDate, dates, params,
             date(2011,7,19), null,
-            true, 1
-      );
+            true, 1);
       assertEquals(1, dates.size());
       assertEquals("2011-08-02", dateFmt.format(dates.get(0)));
    }
@@ -610,6 +570,7 @@ public class CalendarHelpersTest
    {
       return date(year, month, day, 0, 0);
    }
+   
    private static Date date(int year, int month, int day, int hour, int minute)
    {
       Calendar c = Calendar.getInstance();

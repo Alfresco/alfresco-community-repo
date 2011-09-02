@@ -30,7 +30,8 @@ import org.alfresco.service.NotAuditable;
  * @author Nick Burch
  * @since 4.0
  */
-public interface WikiService {
+public interface WikiService 
+{
    /**
     * Creates a new {@link WikiPageInfo} in the given site, with the
     *  specified contents
@@ -38,8 +39,7 @@ public interface WikiService {
     * @return The newly created {@link WikiPageInfo}
     */
    @NotAuditable
-   WikiPageInfo createWikiPage(String siteShortName, String title,
-         String contents);
+   WikiPageInfo createWikiPage(String siteShortName, String title, String contents);
    
    /**
     * Updates an existing {@link WikiPageInfo} in the repository.

@@ -31,9 +31,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
- * @since 3.4.e
  * @author Nick Smith
- *
+ * @since 3.4.e
  */
 public class ActivitiPackagePropertyHandler extends ActivitiTaskPropertyHandler
 {
@@ -63,9 +62,9 @@ public class ActivitiPackagePropertyHandler extends ActivitiTaskPropertyHandler
     {
         Object currentPckg = runtimeService.getVariableLocal(processId, PCKG_KEY);
         // Do not change package if one already exists!
-        if(currentPckg == null)
+        if (currentPckg == null)
         {
-            if(value instanceof NodeRef)
+            if (value instanceof NodeRef)
             {
                 return nodeConverter.convertNode((NodeRef)value);
             }
@@ -80,7 +79,6 @@ public class ActivitiPackagePropertyHandler extends ActivitiTaskPropertyHandler
     /**
     * {@inheritDoc}
     */
-    
     @Override
     protected QName getKey()
     {

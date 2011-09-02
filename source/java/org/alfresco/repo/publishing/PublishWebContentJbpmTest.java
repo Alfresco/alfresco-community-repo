@@ -24,7 +24,6 @@ package org.alfresco.repo.publishing;
  * @author Nick Smith
  * @author Frederik Heremans
  * @since 4.0
- *
  */
 public class PublishWebContentJbpmTest extends PublishWebContentProcessTest
 {
@@ -35,5 +34,4 @@ public class PublishWebContentJbpmTest extends PublishWebContentProcessTest
     {
         return DEF_NAME;
     }
-    
 }

@@ -78,10 +78,9 @@ import org.springframework.test.context.transaction.TransactionConfiguration;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * @since 3.4.e
  * @author Nick Smith
  * @author Frederik Heremans
- *
+ * @since 3.4.e
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations={"classpath:test-database-context.xml",

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -31,23 +31,23 @@ public class RatingServiceException extends AlfrescoRuntimeException
     private static final long serialVersionUID = 6035456870472850041L;
 
     /**
-	 * Constructs a Rating Service Exception with the specified message.
-	 * 
-	 * @param message 	the message string
-	 */
-	public RatingServiceException(String message) 
-	{
-		super(message);
-	}
+     * Constructs a Rating Service Exception with the specified message.
+     * 
+     * @param message 	the message string
+     */
+    public RatingServiceException(String message) 
+    {
+        super(message);
+    }
 
     /**
      * Constructs a Rating Service Exception with the specified message and source exception.
      * 
      * @param message   the message string
-	 * @param source	the source exception
-	 */
-	public RatingServiceException(String message, Throwable source) 
-	{
-		super(message, source);
-	}
+     * @param source	the source exception
+     */
+    public RatingServiceException(String message, Throwable source) 
+    {
+        super(message, source);
+    }
 }

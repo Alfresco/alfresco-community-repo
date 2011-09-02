@@ -28,9 +28,9 @@ import org.activiti.engine.impl.variable.VariableType;
 import org.activiti.spring.SpringProcessEngineConfiguration;
 
 /**
- * @since 3.4.e
  * @author Nick Smith
  * @author Frederik Heremans
+ * @since 3.4.e
  */
 public class AlfrescoProcessEngineConfiguration extends SpringProcessEngineConfiguration
 {
@@ -41,30 +41,31 @@ public class AlfrescoProcessEngineConfiguration extends SpringProcessEngineConfi
     {
         super.initVariableTypes();
         // Add custom types before SerializableType
-        if(customTypes != null)
+        if (customTypes != null)
         {
             int serializableIndex = variableTypes.getTypeIndex(SerializableType.TYPE_NAME);
-            for(VariableType type : customTypes) {
+            for (VariableType type : customTypes) 
+            {
                 variableTypes.addType(type, serializableIndex);
             }
         }
     }
     
     @Override
-    protected void initJobExecutor() {
-    	super.initJobExecutor();
-    	
-    	// Get the existing timer-job handler and wrap
-    	// with one that is alfresco-authentication aware
-    	JobHandler jobHandler = jobHandlers.get(TimerExecuteNestedActivityJobHandler.TYPE);
-    	JobHandler wrappingJobHandler = new AuthenticatedTimerJobHandler(jobHandler);
-    	
-    	jobHandlers.put(TimerExecuteNestedActivityJobHandler.TYPE, wrappingJobHandler);
+    protected void initJobExecutor() 
+    {
+        super.initJobExecutor();
+
+        // Get the existing timer-job handler and wrap
+        // with one that is alfresco-authentication aware
+        JobHandler jobHandler = jobHandlers.get(TimerExecuteNestedActivityJobHandler.TYPE);
+        JobHandler wrappingJobHandler = new AuthenticatedTimerJobHandler(jobHandler);
+
+        jobHandlers.put(TimerExecuteNestedActivityJobHandler.TYPE, wrappingJobHandler);
     }
     
     public void setCustomTypes(List<VariableType> customTypes)
     {
         this.customTypes = customTypes;
     }
-
 }

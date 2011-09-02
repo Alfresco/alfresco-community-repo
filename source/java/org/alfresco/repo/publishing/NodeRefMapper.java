@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 Alfresco Software Limited.
+ * Copyright (C) 2009-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -20,6 +20,10 @@ package org.alfresco.repo.publishing;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 
+/**
+ * @author Brian
+ * @since 4.0
+ */
 public class NodeRefMapper
 {
     public NodeRef mapSourceNodeRef(NodeRef node)

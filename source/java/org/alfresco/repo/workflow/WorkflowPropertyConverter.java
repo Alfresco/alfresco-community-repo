@@ -35,9 +35,8 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 
 /**
- * @since 3.4.e
  * @author Nick Smith
- * 
+ * @since 3.4.e
  */
 public class WorkflowPropertyConverter
 {
@@ -152,7 +151,7 @@ public class WorkflowPropertyConverter
     @SuppressWarnings("unchecked")
     private Object convertNodeRefs(boolean isMany, Object value)
     {
-        if(value instanceof NodeRef)
+        if (value instanceof NodeRef)
         {
             NodeRef node = (NodeRef) value;
             if (isMany)
@@ -167,7 +166,7 @@ public class WorkflowPropertyConverter
         if (value instanceof Collection<?>)
         {
             Collection<NodeRef> nodes = (Collection<NodeRef>) value;
-            if(isMany)
+            if (isMany)
             {
                 converter.convertNodes(nodes);
             }
@@ -179,5 +178,4 @@ public class WorkflowPropertyConverter
         }
         return value;
     }
-
 }

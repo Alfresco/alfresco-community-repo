@@ -110,7 +110,7 @@ public interface DescriptorService
     
     /**
      * Attempts to load the license.
-     * @return
+     * @return          Returns a message telling the user what happened
      */
     public String loadLicense();
 }

@@ -20,13 +20,14 @@ package org.alfresco.repo.descriptor;
 
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.transaction.TransactionServiceImpl;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseSpringTest;
-import org.alfresco.util.debug.NodeStoreInspector;
 
 public class DescriptorServiceTest extends BaseSpringTest
 {
@@ -49,8 +50,6 @@ public class DescriptorServiceTest extends BaseSpringTest
         this.authenticationComponent = (AuthenticationComponent)this.applicationContext.getBean("authenticationComponent");
         
         this.authenticationComponent.setSystemUserAsCurrentUser();
-      
-        System.out.println(NodeStoreInspector.dumpNodeStore(nodeService, storeRef));
     } 
     
     @Override
@@ -213,5 +212,27 @@ public class DescriptorServiceTest extends BaseSpringTest
        }
       
        return builder.toString();
+    }
+    
+    public void testReadOnlyLicenseLoad_ALF10110() throws Exception
+    {
+        setComplete();
+        endTransaction();
+        
+        QName vetoName = QName.createQName("{test}veto");
+        TransactionServiceImpl txnService = (TransactionServiceImpl) applicationContext.getBean("TransactionService");
+        ServiceRegistry registry = (ServiceRegistry)applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        DescriptorService descriptorService = registry.getDescriptorService();
+        // Veto writes
+        try
+        {
+            txnService.setAllowWrite(false, vetoName);
+            // Now reload the license
+            descriptorService.loadLicense();
+        }
+        finally
+        {
+            txnService.setAllowWrite(true, vetoName);
+        }
     }
 }

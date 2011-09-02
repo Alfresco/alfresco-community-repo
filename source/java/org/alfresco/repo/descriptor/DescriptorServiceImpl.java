@@ -145,27 +145,29 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
     }
 
     /**
-     * Load license management method.
-     * 
-     * Return Message to user to say what happened.
+     * {@inheritDoc}
      */
     @Override
     public String loadLicense()
     {
+        // Ensure that we force a writable txn for this operation
+        final RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+        txnHelper.setForceWritable(true);
+        
+        final RetryingTransactionCallback<String> loadCallback = new RetryingTransactionCallback<String>()
+        {
+            @Override
+            public String execute() throws Throwable
+            {
+                return licenseService.loadLicense();      
+            }
+        };
+        // ... and we have to be 'system' for this, too
         String result = AuthenticationUtil.runAs(new RunAsWork<String>()
         {
             public String doWork() throws Exception
             {
-                RetryingTransactionHelper helper = transactionService.getRetryingTransactionHelper();
-                helper.setForceWritable(true);
-                
-                return helper.doInTransaction(new RetryingTransactionCallback<String>()
-                {
-                    public String execute()
-                    {    
-                        return licenseService.loadLicense();      
-                    }
-                });
+                return txnHelper.doInTransaction(loadCallback, false, true);
             }
         }, AuthenticationUtil.getSystemUserName());
 

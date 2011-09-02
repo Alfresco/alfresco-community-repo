@@ -1569,7 +1569,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 {
                     // Disable all behaviour.
                     // This only affects cm:auditable and is discarded at the end of this txn
-                    policyBehaviourFilter.disableBehaviour();
+                    policyBehaviourFilter.disableAllBehaviours();
                     // Tag the transaction to prevent further propagation
                     AlfrescoTransactionSupport.bindResource(KEY_AUDITABLE_PROPAGATION_DISABLE, Boolean.TRUE);
                     

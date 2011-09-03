@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,7 +18,6 @@
  */
 package org.alfresco.repo.web.scripts.blogs;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -54,9 +53,9 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
  */
 public class BlogServiceTest extends BaseWebScriptTest
 {
-	@SuppressWarnings("unused")
+    @SuppressWarnings("unused")
     private static Log logger = LogFactory.getLog(BlogServiceTest.class);
-	
+
     private MutableAuthenticationService authenticationService;
     private AuthenticationComponent authenticationComponent;
     private PersonService personService;
@@ -163,20 +162,20 @@ public class BlogServiceTest extends BaseWebScriptTest
         JSONObject post = new JSONObject();
         if (title != null)
         {
-        	post.put("title", title);
+            post.put("title", title);
         }
         if (content != null)
         {
-        	post.put("content", content);
+            post.put("content", content);
         }
         if (tags != null)
         {
-        	JSONArray arr = new JSONArray();
-        	for(String s : tags)
-        	{
-        		arr.put(s);
-        	}
-        	post.put("tags", arr);
+            JSONArray arr = new JSONArray();
+            for (String s : tags)
+            {
+                arr.put(s);
+            }
+            post.put("tags", arr);
         }
         post.put("draft", isDraft);
         return post;
@@ -186,65 +185,65 @@ public class BlogServiceTest extends BaseWebScriptTest
     throws Exception
     {
         JSONObject post = getRequestObject(title, content, tags, isDraft);
-	    Response response = sendRequest(new PostRequest(URL_BLOG_POSTS, post.toString(), "application/json"), expectedStatus);
-	    
-	    if (expectedStatus != 200)
-	    {
-	    	return null;
-	    }
-	    
-    	//logger.debug(response.getContentAsString());
-    	JSONObject result = new JSONObject(response.getContentAsString());
-    	JSONObject item = result.getJSONObject("item");
-    	if (isDraft)
-    	{
-    		this.drafts.add(item.getString("name"));
-    	}
-    	else
-    	{
-    	    this.posts.add(item.getString("name"));
-    	}
-    	return item;
+        Response response = sendRequest(new PostRequest(URL_BLOG_POSTS, post.toString(), "application/json"), expectedStatus);
+
+        if (expectedStatus != 200)
+        {
+            return null;
+        }
+        
+        //logger.debug(response.getContentAsString());
+        JSONObject result = new JSONObject(response.getContentAsString());
+        JSONObject item = result.getJSONObject("item");
+        if (isDraft)
+        {
+            this.drafts.add(item.getString("name"));
+        }
+        else
+        {
+            this.posts.add(item.getString("name"));
+        }
+        return item;
     }
     
     private JSONObject updatePost(String name, String title, String content, String[] tags, boolean isDraft, int expectedStatus)
     throws Exception
     {
-    	JSONObject post = getRequestObject(title, content, tags, isDraft);
-	    Response response = sendRequest(new PutRequest(URL_BLOG_POST + name, post.toString(), "application/json"), expectedStatus);
-	    
-	    if (expectedStatus != 200)
-	    {
-	    	return null;
-	    }
+        JSONObject post = getRequestObject(title, content, tags, isDraft);
+        Response response = sendRequest(new PutRequest(URL_BLOG_POST + name, post.toString(), "application/json"), expectedStatus);
+        
+        if (expectedStatus != 200)
+        {
+            return null;
+        }
 
-    	JSONObject result = new JSONObject(response.getContentAsString());
-    	return result.getJSONObject("item");
+        JSONObject result = new JSONObject(response.getContentAsString());
+        return result.getJSONObject("item");
     }
     
     private JSONObject getPost(String name, int expectedStatus)
     throws Exception
     {
-    	Response response = sendRequest(new GetRequest(URL_BLOG_POST + name), expectedStatus);
-    	if (expectedStatus == 200)
-    	{
-    		JSONObject result = new JSONObject(response.getContentAsString());
-    		return result.getJSONObject("item");
-    	}
-    	else
-    	{
-    		return null;
-    	}
+        Response response = sendRequest(new GetRequest(URL_BLOG_POST + name), expectedStatus);
+        if (expectedStatus == 200)
+        {
+            JSONObject result = new JSONObject(response.getContentAsString());
+            return result.getJSONObject("item");
+        }
+        else
+        {
+            return null;
+        }
     }
     
     private String getCommentsUrl(String nodeRef)
     {
-    	return "/api/node/" + nodeRef.replace("://", "/") + "/comments";
+        return "/api/node/" + nodeRef.replace("://", "/") + "/comments";
     }
     
     private String getCommentUrl(String nodeRef)
     {
-    	return "/api/comment/node/" + nodeRef.replace("://", "/");
+        return "/api/comment/node/" + nodeRef.replace("://", "/");
     }
     
     private JSONObject createComment(String nodeRef, String title, String content, int expectedStatus)
@@ -253,34 +252,34 @@ public class BlogServiceTest extends BaseWebScriptTest
         JSONObject comment = new JSONObject();
         comment.put("title", title);
         comment.put("content", content);
-	    Response response = sendRequest(new PostRequest(getCommentsUrl(nodeRef), comment.toString(), "application/json"), expectedStatus);
-	    
-	    if (expectedStatus != 200)
-	    {
-	    	return null;
-	    }
-	    
-	    //logger.debug("Comment created: " + response.getContentAsString());
-    	JSONObject result = new JSONObject(response.getContentAsString());
-    	return result.getJSONObject("item");
+        Response response = sendRequest(new PostRequest(getCommentsUrl(nodeRef), comment.toString(), "application/json"), expectedStatus);
+
+        if (expectedStatus != 200)
+        {
+            return null;
+        }
+
+        //logger.debug("Comment created: " + response.getContentAsString());
+        JSONObject result = new JSONObject(response.getContentAsString());
+        return result.getJSONObject("item");
     }
     
     private JSONObject updateComment(String nodeRef, String title, String content, int expectedStatus)
     throws Exception
     {
-    	JSONObject comment = new JSONObject();
+        JSONObject comment = new JSONObject();
         comment.put("title", title);
         comment.put("content", content);
-	    Response response = sendRequest(new PutRequest(getCommentUrl(nodeRef), comment.toString(), "application/json"), expectedStatus);
-	    
-	    if (expectedStatus != 200)
-	    {
-	    	return null;
-	    }
-	    
-	    //logger.debug("Comment updated: " + response.getContentAsString());
-    	JSONObject result = new JSONObject(response.getContentAsString());
-    	return result.getJSONObject("item");
+        Response response = sendRequest(new PutRequest(getCommentUrl(nodeRef), comment.toString(), "application/json"), expectedStatus);
+
+        if (expectedStatus != 200)
+        {
+            return null;
+        }
+
+        //logger.debug("Comment updated: " + response.getContentAsString());
+        JSONObject result = new JSONObject(response.getContentAsString());
+        return result.getJSONObject("item");
     }
     
     
@@ -383,22 +382,22 @@ public class BlogServiceTest extends BaseWebScriptTest
     
     public void testCreatePublishedPost() throws Exception
     {
-    	String title = "published";
-    	String content = "content";
-    	
-    	JSONObject item = createPost(title, content, null, false, 200);
+        String title = "published";
+        String content = "content";
+        
+        JSONObject item = createPost(title, content, null, false, 200);
         final String postName = item.getString("name");
-    	
-    	// check the values
-    	assertEquals(title, item.get("title"));
-    	assertEquals(content, item.get("content"));
-    	assertEquals(false, item.get("isDraft"));
-    	
-    	// check that user two has access to it as well
-    	this.authenticationComponent.setCurrentUser(USER_TWO);
-    	getPost(item.getString("name"), 200);
-    	this.authenticationComponent.setCurrentUser(USER_ONE);
-    	
+        
+        // check the values
+        assertEquals(title, item.get("title"));
+        assertEquals(content, item.get("content"));
+        assertEquals(false, item.get("isDraft"));
+        
+        // check that user two has access to it as well
+        this.authenticationComponent.setCurrentUser(USER_TWO);
+        getPost(item.getString("name"), 200);
+        this.authenticationComponent.setCurrentUser(USER_ONE);
+
         // Now we'll GET my-published to ensure that the post is there.
         Response response = sendRequest(new GetRequest(URL_MY_PUBLISHED_BLOG_POSTS), 200);
         JSONObject result = new JSONObject(response.getContentAsString());
@@ -413,159 +412,159 @@ public class BlogServiceTest extends BaseWebScriptTest
     
     public void testCreateEmptyPost() throws Exception
     {
-    	JSONObject item = createPost(null, null, null, false, 200);
-    	
-    	// check the values
-    	assertEquals("", item.get("title"));
-    	assertEquals("", item.get("content"));
-    	assertEquals(false, item.get("isDraft"));
-    	
-    	// check that user two has access to it as well
-    	this.authenticationComponent.setCurrentUser(USER_TWO);
-    	getPost(item.getString("name"), 200);
-    	this.authenticationComponent.setCurrentUser(USER_ONE);
+        JSONObject item = createPost(null, null, null, false, 200);
+        
+        // check the values
+        assertEquals("", item.get("title"));
+        assertEquals("", item.get("content"));
+        assertEquals(false, item.get("isDraft"));
+        
+        // check that user two has access to it as well
+        this.authenticationComponent.setCurrentUser(USER_TWO);
+        getPost(item.getString("name"), 200);
+        this.authenticationComponent.setCurrentUser(USER_ONE);
     }
     
     public void testUpdated() throws Exception
     {
-    	JSONObject item = createPost("test", "test", null, false, 200);
-    	String name = item.getString("name");
-    	assertEquals(false, item.getBoolean("isUpdated"));
-    	
-    	item = updatePost(name, "new title", "new content", null, false, 200);
-    	assertEquals(true, item.getBoolean("isUpdated"));
-    	assertEquals("new title", item.getString("title"));
-    	assertEquals("new content", item.getString("content"));
+        JSONObject item = createPost("test", "test", null, false, 200);
+        String name = item.getString("name");
+        assertEquals(false, item.getBoolean("isUpdated"));
+        
+        item = updatePost(name, "new title", "new content", null, false, 200);
+        assertEquals(true, item.getBoolean("isUpdated"));
+        assertEquals("new title", item.getString("title"));
+        assertEquals("new content", item.getString("content"));
     }
     
     public void testUpdateWithEmptyValues() throws Exception
     {
-    	JSONObject item = createPost("test", "test", null, false, 200);
-    	String name = item.getString("name");
-    	assertEquals(false, item.getBoolean("isUpdated"));
-    	
-    	item = updatePost(item.getString("name"), null, null, null, false, 200);
-    	assertEquals("", item.getString("title"));
-    	assertEquals("", item.getString("content"));
+        JSONObject item = createPost("test", "test", null, false, 200);
+        String name = item.getString("name");
+        assertEquals(false, item.getBoolean("isUpdated"));
+        
+        item = updatePost(item.getString("name"), null, null, null, false, 200);
+        assertEquals("", item.getString("title"));
+        assertEquals("", item.getString("content"));
     }
     
     public void testPublishThroughUpdate() throws Exception
     {
-    	JSONObject item = createPost("test", "test", null, true, 200);
-    	String name = item.getString("name");
-    	assertEquals(true, item.getBoolean("isDraft"));
-    	
-    	// check that user two does not have access
-    	this.authenticationComponent.setCurrentUser(USER_TWO);
-    	getPost(name, 404);
-    	this.authenticationComponent.setCurrentUser(USER_ONE);
-    	
-    	item = updatePost(name, "new title", "new content", null, false, 200);
-    	assertEquals("new title", item.getString("title"));
-    	assertEquals("new content", item.getString("content"));
-    	assertEquals(false, item.getBoolean("isDraft"));
-    	
-    	// check that user two does have access
-    	this.authenticationComponent.setCurrentUser(USER_TWO);
-    	getPost(name, 200);
-    	this.authenticationComponent.setCurrentUser(USER_ONE);
+        JSONObject item = createPost("test", "test", null, true, 200);
+        String name = item.getString("name");
+        assertEquals(true, item.getBoolean("isDraft"));
+        
+        // check that user two does not have access
+        this.authenticationComponent.setCurrentUser(USER_TWO);
+        getPost(name, 404);
+        this.authenticationComponent.setCurrentUser(USER_ONE);
+        
+        item = updatePost(name, "new title", "new content", null, false, 200);
+        assertEquals("new title", item.getString("title"));
+        assertEquals("new content", item.getString("content"));
+        assertEquals(false, item.getBoolean("isDraft"));
+        
+        // check that user two does have access
+        this.authenticationComponent.setCurrentUser(USER_TWO);
+        getPost(name, 200);
+        this.authenticationComponent.setCurrentUser(USER_ONE);
     }
 
     public void testCannotDoUnpublish() throws Exception
     {
-    	JSONObject item = createPost("test", "test", null, false, 200);
-    	String name = item.getString("name");
-    	assertEquals(false, item.getBoolean("isDraft"));
-    	
-    	item = updatePost(name, "new title", "new content", null, true, 400); // should return bad request
+        JSONObject item = createPost("test", "test", null, false, 200);
+        String name = item.getString("name");
+        assertEquals(false, item.getBoolean("isDraft"));
+        
+        item = updatePost(name, "new title", "new content", null, true, 400); // should return bad request
     }
     
     public void testGetAll() throws Exception
     {
-    	String url = URL_BLOG_POSTS;
-    	Response response = sendRequest(new GetRequest(url), 200);
-    	JSONObject result = new JSONObject(response.getContentAsString());
-    	
-    	// we should have posts.size + drafts.size together
-    	assertEquals(this.posts.size() + this.drafts.size(), result.getInt("total"));
+        String url = URL_BLOG_POSTS;
+        Response response = sendRequest(new GetRequest(url), 200);
+        JSONObject result = new JSONObject(response.getContentAsString());
+        
+        // we should have posts.size + drafts.size together
+        assertEquals(this.posts.size() + this.drafts.size(), result.getInt("total"));
     }
     
     public void testGetNew() throws Exception
     {
-    	String url = URL_BLOG_POSTS + "/new";
-    	Response response = sendRequest(new GetRequest(url), 200);
-    	JSONObject result = new JSONObject(response.getContentAsString());
-    	
-    	// we should have posts.size
-    	assertEquals(this.posts.size(), result.getInt("total"));
+        String url = URL_BLOG_POSTS + "/new";
+        Response response = sendRequest(new GetRequest(url), 200);
+        JSONObject result = new JSONObject(response.getContentAsString());
+        
+        // we should have posts.size
+        assertEquals(this.posts.size(), result.getInt("total"));
     }
     
     public void testGetDrafts() throws Exception
     {
-    	String url = URL_BLOG_POSTS + "/mydrafts";
-    	Response response = sendRequest(new GetRequest(URL_BLOG_POSTS), 200);
-    	JSONObject result = new JSONObject(response.getContentAsString());
-    	
-    	// we should have drafts.size resultss
-    	assertEquals(this.drafts.size(), result.getInt("total"));
-    	
-    	// the second user should have zero
-    	this.authenticationComponent.setCurrentUser(USER_TWO);
-    	response = sendRequest(new GetRequest(url), 200);
-    	result = new JSONObject(response.getContentAsString());
-    	assertEquals(0, result.getInt("total"));
-    	this.authenticationComponent.setCurrentUser(USER_ONE);
-    	
+        String url = URL_BLOG_POSTS + "/mydrafts";
+        Response response = sendRequest(new GetRequest(URL_BLOG_POSTS), 200);
+        JSONObject result = new JSONObject(response.getContentAsString());
+        
+        // we should have drafts.size resultss
+        assertEquals(this.drafts.size(), result.getInt("total"));
+        
+        // the second user should have zero
+        this.authenticationComponent.setCurrentUser(USER_TWO);
+        response = sendRequest(new GetRequest(url), 200);
+        result = new JSONObject(response.getContentAsString());
+        assertEquals(0, result.getInt("total"));
+        this.authenticationComponent.setCurrentUser(USER_ONE);
+
     }
     
     public void testMyPublished() throws Exception
     {
-    	String url = URL_BLOG_POSTS + "/mypublished";
-    	Response response = sendRequest(new GetRequest(url), 200);
-    	JSONObject result = new JSONObject(response.getContentAsString());
-    	
-    	// we should have posts.size results
-    	assertEquals(this.drafts.size(), result.getInt("total"));
-    	
-    	// the second user should have zero
-    	this.authenticationComponent.setCurrentUser(USER_TWO);
-    	response = sendRequest(new GetRequest(url), 200);
-    	result = new JSONObject(response.getContentAsString());
-    	assertEquals(0, result.getInt("total"));
-    	this.authenticationComponent.setCurrentUser(USER_ONE);
+        String url = URL_BLOG_POSTS + "/mypublished";
+        Response response = sendRequest(new GetRequest(url), 200);
+        JSONObject result = new JSONObject(response.getContentAsString());
+        
+        // we should have posts.size results
+        assertEquals(this.drafts.size(), result.getInt("total"));
+        
+        // the second user should have zero
+        this.authenticationComponent.setCurrentUser(USER_TWO);
+        response = sendRequest(new GetRequest(url), 200);
+        result = new JSONObject(response.getContentAsString());
+        assertEquals(0, result.getInt("total"));
+        this.authenticationComponent.setCurrentUser(USER_ONE);
     }
 
     public void testComments() throws Exception
     {
-    	JSONObject item = createPost("test", "test", null, false, 200);
-    	String name = item.getString("name");
-    	String nodeRef = item.getString("nodeRef");
-    	
-    	JSONObject commentOne = createComment(nodeRef, "comment", "content", 200);
-    	JSONObject commentTwo = createComment(nodeRef, "comment", "content", 200);
-    	
-    	// fetch the comments
-    	Response response = sendRequest(new GetRequest(getCommentsUrl(nodeRef)), 200);
-    	JSONObject result = new JSONObject(response.getContentAsString());
-    	assertEquals(2, result.getInt("total"));
-    	
-    	// add another one
-    	JSONObject commentThree = createComment(nodeRef, "comment", "content", 200);
-    	
-    	response = sendRequest(new GetRequest(getCommentsUrl(nodeRef)), 200);
-    	result = new JSONObject(response.getContentAsString());
-    	assertEquals(3, result.getInt("total"));
-    	
-    	// delete the last comment
-    	response = sendRequest(new DeleteRequest(getCommentUrl(commentThree.getString("nodeRef"))), 200);
-    	
-    	response = sendRequest(new GetRequest(getCommentsUrl(nodeRef)), 200);
-    	result = new JSONObject(response.getContentAsString());
-    	assertEquals(2, result.getInt("total"));
-    	
-    	JSONObject commentTwoUpdated = updateComment(commentTwo.getString("nodeRef"), "new title", "new content", 200);
-    	assertEquals("new title", commentTwoUpdated.getString("title"));
-    	assertEquals("new content", commentTwoUpdated.getString("content"));
+        JSONObject item = createPost("test", "test", null, false, 200);
+        String name = item.getString("name");
+        String nodeRef = item.getString("nodeRef");
+        
+        JSONObject commentOne = createComment(nodeRef, "comment", "content", 200);
+        JSONObject commentTwo = createComment(nodeRef, "comment", "content", 200);
+        
+        // fetch the comments
+        Response response = sendRequest(new GetRequest(getCommentsUrl(nodeRef)), 200);
+        JSONObject result = new JSONObject(response.getContentAsString());
+        assertEquals(2, result.getInt("total"));
+        
+        // add another one
+        JSONObject commentThree = createComment(nodeRef, "comment", "content", 200);
+        
+        response = sendRequest(new GetRequest(getCommentsUrl(nodeRef)), 200);
+        result = new JSONObject(response.getContentAsString());
+        assertEquals(3, result.getInt("total"));
+        
+        // delete the last comment
+        response = sendRequest(new DeleteRequest(getCommentUrl(commentThree.getString("nodeRef"))), 200);
+        
+        response = sendRequest(new GetRequest(getCommentsUrl(nodeRef)), 200);
+        result = new JSONObject(response.getContentAsString());
+        assertEquals(2, result.getInt("total"));
+        
+        JSONObject commentTwoUpdated = updateComment(commentTwo.getString("nodeRef"), "new title", "new content", 200);
+        assertEquals("new title", commentTwoUpdated.getString("title"));
+        assertEquals("new content", commentTwoUpdated.getString("content"));
     }
  
     /**
@@ -577,91 +576,93 @@ public class BlogServiceTest extends BaseWebScriptTest
      * 
      * 2. JSONException, but with root cause being
      *   get(assocs) failed on instance of org.alfresco.repo.template.TemplateNode
-     *   The problematic instruction:	
+     *   The problematic instruction:
      *   ----------
-	 *   ==> if person.assocs["cm:avatar"]?? [on line 4, column 7 in org/alfresco/repository/blogs/blogpost.lib.ftl]
-	 *   
+     *   ==> if person.assocs["cm:avatar"]?? [on line 4, column 7 in org/alfresco/repository/blogs/blogpost.lib.ftl]
+     *   
      * @throws Exception
      */
     public void _testTagsStressTest() throws Exception
     {
-    	final List<Exception> exceptions = Collections.synchronizedList(new ArrayList<Exception>());
-    	List<Thread> threads = new ArrayList<Thread>();
-    	
+        final List<Exception> exceptions = Collections.synchronizedList(new ArrayList<Exception>());
+        List<Thread> threads = new ArrayList<Thread>();
+
         System.err.println("Creating and starting threads...");
-    	for (int x=0; x < 3; x++)
-    	{
-    		Thread t = new Thread(new Runnable() {
-    			public void run() {
-    				// set the correct user
-    				authenticationComponent.setCurrentUser(USER_ONE);
-    				
-    				// now do some requests
-    				try {
-	    				for (int y=0; y < 3; y++)
-	    				{
-	    					off_testPostTags();
-	    					off_testClearTags();
-	    					
-	    				}
-	    				System.err.println("------------- SUCCEEDED ---------------");
-    				} catch (Exception e)
-    				{
-    					System.err.println("------------- ERROR ---------------");
-    					exceptions.add(e);
-    					e.printStackTrace();
-    					return;
-    				}
-    			}}
-    		);
-    		threads.add(t);
-    		t.start();
-    	} 
-    	/*for (Thread t : threads)
-    	{
-    		t.start();
-    	}*/
-    	
-    	for (Thread t : threads)
-    	{
-    		t.join();
-    	}
-    	
-    	System.err.println("------------- STACK TRACES ---------------");
-    	for (Exception e : exceptions)
-    	{
-    		e.printStackTrace();
-    	}
-    	System.err.println("------------- STACK TRACES END ---------------");
-    	if (exceptions.size() > 0)
-    	{
-    		throw exceptions.get(0);
-    	}
+        for (int x=0; x < 3; x++)
+        {
+            Thread t = new Thread(new Runnable() 
+            {
+                public void run() 
+                {
+                    // set the correct user
+                    authenticationComponent.setCurrentUser(USER_ONE);
+
+                    // now do some requests
+                    try 
+                    {
+                        for (int y=0; y < 3; y++)
+                        {
+                            off_testPostTags();
+                            off_testClearTags();
+                        }
+                        System.err.println("------------- SUCCEEDED ---------------");
+                    } catch (Exception e)
+                    {
+                        System.err.println("------------- ERROR ---------------");
+                        exceptions.add(e);
+                        e.printStackTrace();
+                        return;
+                    }
+            }});
+            
+            threads.add(t);
+            t.start();
+        } 
+        /*for (Thread t : threads)
+        {
+            t.start();
+        }*/
+        
+        for (Thread t : threads)
+        {
+            t.join();
+        }
+        
+        System.err.println("------------- STACK TRACES ---------------");
+        for (Exception e : exceptions)
+        {
+            e.printStackTrace();
+        }
+        System.err.println("------------- STACK TRACES END ---------------");
+        if (exceptions.size() > 0)
+        {
+            throw exceptions.get(0);
+        }
     }
     
     public void off_testPostTags() throws Exception
     {
-    	String[] tags = { "first", "test" };
-    	JSONObject item = createPost("tagtest", "tagtest", tags, false, 200);
-    	assertEquals(2, item.getJSONArray("tags").length());
-    	assertEquals("first", item.getJSONArray("tags").get(0));
-    	assertEquals("test", item.getJSONArray("tags").get(1));
-    	
-    	item = updatePost(item.getString("name"), null, null, new String[] { "First", "Test", "Second" }, false, 200);
-    	assertEquals(3, item.getJSONArray("tags").length());
-    	assertEquals("first", item.getJSONArray("tags").get(0));
-    	assertEquals("test", item.getJSONArray("tags").get(1));
-    	assertEquals("second", item.getJSONArray("tags").get(2));
+        String[] tags = { "first", "test" };
+        JSONObject item = createPost("tagtest", "tagtest", tags, false, 200);
+        assertEquals(2, item.getJSONArray("tags").length());
+        assertEquals("first", item.getJSONArray("tags").get(0));
+        assertEquals("test", item.getJSONArray("tags").get(1));
+        
+        item = updatePost(item.getString("name"), null, null, new String[] { "First", "Test", "Second" }, false, 200);
+        assertEquals(3, item.getJSONArray("tags").length());
+        assertEquals("first", item.getJSONArray("tags").get(0));
+        assertEquals("test", item.getJSONArray("tags").get(1));
+        assertEquals("second", item.getJSONArray("tags").get(2));
     }
     
     public void off_testClearTags() throws Exception
     {
-    	String[] tags = { "abc", "def"};
-    	JSONObject item = createPost("tagtest", "tagtest", tags, false, 200);
-    	assertEquals(2, item.getJSONArray("tags").length());
-    	
-    	item = updatePost(item.getString("name"), null, null, new String[0], false, 200);
-    	assertEquals(0, item.getJSONArray("tags").length());
+        String[] tags = { "abc", "def"};
+        JSONObject item = createPost("tagtest", "tagtest", tags, false, 200);
+        assertEquals(2, item.getJSONArray("tags").length());
+        
+        item = updatePost(item.getString("name"), null, null, new String[0], false, 200);
+        assertEquals(0, item.getJSONArray("tags").length());
     }
 
 }

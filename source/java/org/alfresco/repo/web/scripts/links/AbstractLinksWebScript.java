@@ -96,7 +96,7 @@ public abstract class AbstractLinksWebScript extends DeclarativeWebScript
     
     protected String getOrNull(JSONObject json, String key)
     {
-       if(json.containsKey(key))
+       if (json.containsKey(key))
        {
           return (String)json.get(key);
        }
@@ -106,14 +106,14 @@ public abstract class AbstractLinksWebScript extends DeclarativeWebScript
     protected List<String> getTags(JSONObject json)
     {
        List<String> tags = null;
-       if(json.containsKey("tags"))
+       if (json.containsKey("tags"))
        {
           // Is it "tags":"" or "tags":[...] ?
-          if(json.get("tags") instanceof String)
+          if (json.get("tags") instanceof String)
           {
              // This is normally an empty string, skip
              String tagsS = (String)json.get("tags");
-             if("".equals(tagsS))
+             if ("".equals(tagsS))
              {
                 // No tags were given
                 return null;
@@ -130,7 +130,7 @@ public abstract class AbstractLinksWebScript extends DeclarativeWebScript
           {
              tags = new ArrayList<String>();
              JSONArray jsTags = (JSONArray)json.get("tags");
-             for(int i=0; i<jsTags.size(); i++)
+             for (int i=0; i<jsTags.size(); i++)
              {
                 tags.add( (String)jsTags.get(i) );
              }
@@ -147,7 +147,7 @@ public abstract class AbstractLinksWebScript extends DeclarativeWebScript
     {
        String pageNumberS = req.getParameter("page");
        String pageSizeS = req.getParameter("pageSize");
-       if(pageNumberS == null || pageSizeS == null)
+       if (pageNumberS == null || pageSizeS == null)
        {
           throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Paging size parameters missing");
        }
@@ -159,7 +159,7 @@ public abstract class AbstractLinksWebScript extends DeclarativeWebScript
           pageNumber = Integer.parseInt(pageNumberS);
           pageSize = Integer.parseInt(pageSizeS);
        }
-       catch(NumberFormatException e)
+       catch (NumberFormatException e)
        {
           throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Paging size parameters invalid");
        }
@@ -177,14 +177,14 @@ public abstract class AbstractLinksWebScript extends DeclarativeWebScript
     {
        // What page is this for?
        String page = req.getParameter("page");
-       if(page == null && json != null)
+       if (page == null && json != null)
        {
-          if(json.containsKey("page"))
+          if (json.containsKey("page"))
           {
              page = (String)json.get("page");
           }
        }
-       if(page == null)
+       if (page == null)
        {
           // Default
           page = "links";
@@ -203,10 +203,9 @@ public abstract class AbstractLinksWebScript extends DeclarativeWebScript
                 "org.alfresco.links.link-" + event,
                 site.getShortName(),
                 LINKS_SERVICE_ACTIVITY_APP_NAME,
-                activityJson.toString()
-          );
+                activityJson.toString());
        }
-       catch(Exception e)
+       catch (Exception e)
        {
           // Warn, but carry on
           logger.warn("Error adding link " + event + " to activities feed", e);
@@ -229,7 +228,7 @@ public abstract class AbstractLinksWebScript extends DeclarativeWebScript
        // FTL needs a script node of the person
        String creator = link.getCreator();
        Object creatorO;
-       if(creator == null)
+       if (creator == null)
        {
           creatorO = "";
        }
@@ -241,9 +240,9 @@ public abstract class AbstractLinksWebScript extends DeclarativeWebScript
        res.put("creator", creatorO);
        
        // We want blank instead of null
-       for(String key : res.keySet())
+       for (String key : res.keySet())
        {
-          if(res.get(key) == null)
+          if (res.get(key) == null)
           {
              res.put(key, "");
           }
@@ -257,7 +256,7 @@ public abstract class AbstractLinksWebScript extends DeclarativeWebScript
           Status status, Cache cache) 
     {
        Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
-       if(templateVars == null)
+       if (templateVars == null)
        {
           String error = "No parameters supplied";
           throw new WebScriptException(Status.STATUS_BAD_REQUEST, error);
@@ -267,18 +266,18 @@ public abstract class AbstractLinksWebScript extends DeclarativeWebScript
        // Parse the JSON, if supplied
        JSONObject json = null;
        String contentType = req.getContentType();
-       if(contentType != null && contentType.indexOf(';') != -1)
+       if (contentType != null && contentType.indexOf(';') != -1)
        {
           contentType = contentType.substring(0, contentType.indexOf(';'));
        }
-       if(MimetypeMap.MIMETYPE_JSON.equals(contentType))
+       if (MimetypeMap.MIMETYPE_JSON.equals(contentType))
        {
           JSONParser parser = new JSONParser();
           try
           {
              json = (JSONObject)parser.parse(req.getContent().getContent());
           }
-          catch(IOException io)
+          catch (IOException io)
           {
              throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Invalid JSON: " + io.getMessage());
           }
@@ -291,22 +290,22 @@ public abstract class AbstractLinksWebScript extends DeclarativeWebScript
        
        // Get the site short name. Try quite hard to do so...
        String siteName = templateVars.get("site");
-       if(siteName == null)
+       if (siteName == null)
        {
           siteName = req.getParameter("site");
        }
-       if(siteName == null && json != null)
+       if (siteName == null && json != null)
        {
-          if(json.containsKey("siteid"))
+          if (json.containsKey("siteid"))
           {
              siteName = (String)json.get("siteid");
           }
-          else if(json.containsKey("site"))
+          else if (json.containsKey("site"))
           {
              siteName = (String)json.get("site");
           }
        }
-       if(siteName == null)
+       if (siteName == null)
        {
           String error = "No site given";
           throw new WebScriptException(Status.STATUS_BAD_REQUEST, error);
@@ -314,7 +313,7 @@ public abstract class AbstractLinksWebScript extends DeclarativeWebScript
        
        // Grab the requested site
        SiteInfo site = siteService.getSite(siteName);
-       if(site == null)
+       if (site == null)
        {
           String error = "Could not find site: " + siteName;
           throw new WebScriptException(Status.STATUS_NOT_FOUND, error);

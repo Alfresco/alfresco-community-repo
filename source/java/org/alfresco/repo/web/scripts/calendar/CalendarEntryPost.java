@@ -41,7 +41,8 @@ public class CalendarEntryPost extends AbstractCalendarWebScript
 {
    @Override
    protected Map<String, Object> executeImpl(SiteInfo site, String eventName,
-         WebScriptRequest req, JSONObject json, Status status, Cache cache) {
+         WebScriptRequest req, JSONObject json, Status status, Cache cache) 
+   {
       CalendarEntry entry = new CalendarEntryDTO();
       
       // TODO Handle All Day events properly, including timezones
@@ -59,25 +60,19 @@ public class CalendarEntryPost extends AbstractCalendarWebScript
          isAllDay = extractDates(entry, json);
          
          // Handle tags
-         if(json.containsKey("tags"))
+         if (json.containsKey("tags"))
          {
             StringTokenizer st = new StringTokenizer((String)json.get("tags"), " ");
-            while(st.hasMoreTokens())
+            while (st.hasMoreTokens())
             {
                entry.getTags().add(st.nextToken());
             }
          }
       }
-      catch(JSONException je)
+      catch (JSONException je)
       {
          return buildError("Invalid JSON: " + je.getMessage());
       }
-      
-      if(entry == null)
-      {
-         return buildError("Could not find event: " + eventName);
-      }
-      
       
       // Have it added
       entry = calendarService.createCalendarEntry(site.getShortName(), entry);
@@ -102,9 +97,9 @@ public class CalendarEntryPost extends AbstractCalendarWebScript
       result.put("docfolder", entry.getSharePointDocFolder());
       
       // Replace nulls with blank strings for the JSON
-      for(String key : result.keySet())
+      for (String key : result.keySet())
       {
-         if(result.get(key) == null)
+         if (result.get(key) == null)
          {
             result.put(key, "");
          }

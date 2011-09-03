@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -112,38 +112,38 @@ public class InviteResponse extends DeclarativeWebScript
         String action = req.getServiceMatch().getTemplateVars().get("action");
         if (action.equals("accept"))
         {
-        	try
-        	{
-        		Invitation invitation = invitationService.accept(inviteId, inviteTicket);
+            try
+            {
+                Invitation invitation = invitationService.accept(inviteId, inviteTicket);
                 // add model properties for template to render
                 model.put(MODEL_PROP_KEY_RESPONSE, RESPONSE_ACCEPT);
                 model.put(MODEL_PROP_KEY_SITE_SHORT_NAME, invitation.getResourceName());
-        	}
+            }
             catch (InvitationExceptionForbidden fe)
             {
-        		throw new WebScriptException(Status.STATUS_FORBIDDEN, fe.toString());            
+                throw new WebScriptException(Status.STATUS_FORBIDDEN, fe.toString());
             }
             catch (InvitationExceptionUserError fe)
             {
-                throw new WebScriptException(Status.STATUS_CONFLICT, fe.toString());            
+                throw new WebScriptException(Status.STATUS_CONFLICT, fe.toString());
             }
         }
         else if (action.equals("reject"))
         {
-        	try 
-        	{
-        		Invitation invitation = invitationService.reject(inviteId, "Rejected");
+            try 
+            {
+                Invitation invitation = invitationService.reject(inviteId, "Rejected");
                 // add model properties for template to render
                 model.put(MODEL_PROP_KEY_RESPONSE, RESPONSE_REJECT);
                 model.put(MODEL_PROP_KEY_SITE_SHORT_NAME, invitation.getResourceName());
-        	}
+            }
             catch (InvitationExceptionForbidden fe)
             {
-        		throw new WebScriptException(Status.STATUS_FORBIDDEN, fe.toString());            
+                throw new WebScriptException(Status.STATUS_FORBIDDEN, fe.toString());
             }
             catch (InvitationExceptionUserError fe)
             {
-                throw new WebScriptException(Status.STATUS_CONFLICT, fe.toString());            
+                throw new WebScriptException(Status.STATUS_CONFLICT, fe.toString());
             }
         }
         else

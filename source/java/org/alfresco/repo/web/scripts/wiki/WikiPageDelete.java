@@ -39,12 +39,13 @@ public class WikiPageDelete extends AbstractWikiWebScript
 {
    @Override
    protected Map<String, Object> executeImpl(SiteInfo site, String pageName,
-         WebScriptRequest req, JSONObject json, Status status, Cache cache) {
+         WebScriptRequest req, JSONObject json, Status status, Cache cache) 
+   {
       Map<String, Object> model = new HashMap<String, Object>();
       
       // Try to find the page
       WikiPageInfo page = wikiService.getWikiPage(site.getShortName(), pageName);
-      if(page == null)
+      if (page == null)
       {
          String message = "The Wiki Page could not be found";
          throw new WebScriptException(Status.STATUS_NOT_FOUND, message);

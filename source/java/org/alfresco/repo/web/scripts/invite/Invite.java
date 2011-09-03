@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -26,7 +26,6 @@ import org.alfresco.service.cmr.invitation.InvitationExceptionForbidden;
 import org.alfresco.service.cmr.invitation.InvitationExceptionUserError;
 import org.alfresco.service.cmr.invitation.InvitationService;
 import org.alfresco.service.cmr.invitation.NominatedInvitation;
-import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
@@ -209,34 +208,34 @@ public class Invite extends DeclarativeWebScript
             NominatedInvitation newInvite = null;
             try
             {
-            	if(inviteeUserName != null)
-            	{
-            		newInvite = invitationService.inviteNominated(inviteeUserName, Invitation.ResourceType.WEB_SITE, siteShortName, inviteeSiteRole, serverPath, acceptUrl, rejectUrl);
-            	}
-            	else
-            	{
-            		newInvite = invitationService.inviteNominated(inviteeFirstName, inviteeLastName, inviteeEmail, Invitation.ResourceType.WEB_SITE, siteShortName, inviteeSiteRole, serverPath, acceptUrl, rejectUrl);
-            	}
-            	// add model properties for template to render
-            	model.put(MODEL_PROP_KEY_ACTION, ACTION_START);
-            	model.put(MODEL_PROP_KEY_INVITE_ID, newInvite.getInviteId());
-            	model.put(MODEL_PROP_KEY_INVITE_TICKET, newInvite.getTicket());
-            	model.put(MODEL_PROP_KEY_INVITEE_USER_NAME, newInvite.getInviteeUserName());
-            	model.put(MODEL_PROP_KEY_INVITEE_FIRSTNAME, inviteeFirstName);
-            	model.put(MODEL_PROP_KEY_INVITEE_LASTNAME, inviteeLastName);
-            	model.put(MODEL_PROP_KEY_INVITEE_EMAIL, inviteeEmail);
-            	model.put(MODEL_PROP_KEY_SITE_SHORT_NAME, siteShortName);
+                if (inviteeUserName != null)
+                {
+                    newInvite = invitationService.inviteNominated(inviteeUserName, Invitation.ResourceType.WEB_SITE, siteShortName, inviteeSiteRole, serverPath, acceptUrl, rejectUrl);
+                }
+                else
+                {
+                    newInvite = invitationService.inviteNominated(inviteeFirstName, inviteeLastName, inviteeEmail, Invitation.ResourceType.WEB_SITE, siteShortName, inviteeSiteRole, serverPath, acceptUrl, rejectUrl);
+                }
+                // add model properties for template to render
+                model.put(MODEL_PROP_KEY_ACTION, ACTION_START);
+                model.put(MODEL_PROP_KEY_INVITE_ID, newInvite.getInviteId());
+                model.put(MODEL_PROP_KEY_INVITE_TICKET, newInvite.getTicket());
+                model.put(MODEL_PROP_KEY_INVITEE_USER_NAME, newInvite.getInviteeUserName());
+                model.put(MODEL_PROP_KEY_INVITEE_FIRSTNAME, inviteeFirstName);
+                model.put(MODEL_PROP_KEY_INVITEE_LASTNAME, inviteeLastName);
+                model.put(MODEL_PROP_KEY_INVITEE_EMAIL, inviteeEmail);
+                model.put(MODEL_PROP_KEY_SITE_SHORT_NAME, siteShortName);
             }
             catch (InvitationExceptionUserError ie)
-        	{
-        		throw new WebScriptException(Status.STATUS_CONFLICT,
+            {
+                throw new WebScriptException(Status.STATUS_CONFLICT,
                     "Cannot proceed with invitation. A person with user name: '" + inviteeUserName
                     + "' and invitee email address: '"
                     + inviteeEmail + "' is already a member of the site: '" + siteShortName + "'.");
-        	}
+            }
             catch (InvitationExceptionForbidden fe)
             {
-        		throw new WebScriptException(Status.STATUS_FORBIDDEN, fe.toString());            
+                throw new WebScriptException(Status.STATUS_FORBIDDEN, fe.toString());
             }
 
             // process action 'start' with provided parameters
@@ -259,14 +258,14 @@ public class Invite extends DeclarativeWebScript
             // process action 'cancel' with provided parameters
             try
             {
-            	invitationService.cancel(inviteId);
+                invitationService.cancel(inviteId);
                 // add model properties for template to render
                 model.put(MODEL_PROP_KEY_ACTION, ACTION_CANCEL);
                 model.put(MODEL_PROP_KEY_INVITE_ID, inviteId);
             }
             catch(InvitationExceptionForbidden fe)
             {
-            	throw new WebScriptException(Status.STATUS_FORBIDDEN, "Unable to cancel workflow" , fe);
+                throw new WebScriptException(Status.STATUS_FORBIDDEN, "Unable to cancel workflow" , fe);
             }
         }
         // handle action not recognised

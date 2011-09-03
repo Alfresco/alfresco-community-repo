@@ -49,7 +49,8 @@ public class CalendarEntriesListGet extends AbstractCalendarWebScript
 {
    @Override
    protected Map<String, Object> executeImpl(SiteInfo site, String eventName,
-         WebScriptRequest req, JSONObject json, Status status, Cache cache) {
+         WebScriptRequest req, JSONObject json, Status status, Cache cache) 
+   {
       SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy"); // Evil...
       
       // Get the entries for the list
@@ -68,8 +69,8 @@ public class CalendarEntriesListGet extends AbstractCalendarWebScript
          
          List<ChildAssociationRef> ignores = nodeService.getChildAssocs(
                entry.getNodeRef(), CalendarModel.TYPE_IGNORE_EVENT, 
-               ContentModel.ASSOC_CONTAINS, true
-         );
+               ContentModel.ASSOC_CONTAINS, true);
+         
          List<String> ignoreEvents = new ArrayList<String>();
          List<Date> ignoreEventDates = new ArrayList<Date>();
          for (ChildAssociationRef ref : ignores)

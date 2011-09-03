@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -22,7 +22,6 @@ package org.alfresco.repo.web.scripts.publishing;
 /**
  * @author Nick Smith
  * @since 4.0
- *
  */
 public interface PublishingWebScriptConstants
 {
@@ -74,5 +73,4 @@ public interface PublishingWebScriptConstants
     public static final String URL_LENGTH = "urlLength";
     public static final String PUBLISHING_CHANNELS = "publishChannels";
     public static final String STATUS_UPDATE_CHANNELS = "statusUpdateChannels";
-
 }

@@ -38,23 +38,23 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class WorkflowDefinitionGet extends AbstractWorkflowWebscript
 {
-	private static final String PARAM_WORKFLOW_DEFINITION_ID = "workflowDefinitionId";
-	
+    private static final String PARAM_WORKFLOW_DEFINITION_ID = "workflowDefinitionId";
+
     @Override
     protected Map<String, Object> buildModel(WorkflowModelBuilder modelBuilder, WebScriptRequest req, Status status, Cache cache)
     {
-    	Map<String, String> params = req.getServiceMatch().getTemplateVars();
+        Map<String, String> params = req.getServiceMatch().getTemplateVars();
 
         // Get the definition id from the params
         String workflowDefinitionId = params.get(PARAM_WORKFLOW_DEFINITION_ID);
         
-    	WorkflowDefinition workflowDefinition = workflowService.getDefinitionById(workflowDefinitionId);
-    	
-    	// Workflow definition is not found, 404
+        WorkflowDefinition workflowDefinition = workflowService.getDefinitionById(workflowDefinitionId);
+
+        // Workflow definition is not found, 404
         if (workflowDefinition == null)
         {
             throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, 
-            		"Unable to find workflow definition with id: " + workflowDefinitionId);
+                        "Unable to find workflow definition with id: " + workflowDefinitionId);
         }
         
         Map<String, Object> model = new HashMap<String, Object>();

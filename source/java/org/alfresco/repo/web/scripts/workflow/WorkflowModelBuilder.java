@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -57,7 +57,7 @@ import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 /**
  * @author Nick Smith
- *
+ * @since 3.4
  */
 public class WorkflowModelBuilder
 {
@@ -403,7 +403,9 @@ public class WorkflowModelBuilder
             keys.addAll(propKeys);
         }
         else
+        {
             keys = buildQNameKeys(propertyFilters);
+        }
         return buildQNameProperties(properties, keys);
     }
 
@@ -592,10 +594,10 @@ public class WorkflowModelBuilder
                         break;
                     }
                 }
-                if(outcomeLabel == null)
+                if (outcomeLabel == null)
                 {
-                	// TODO: is this okay -> no real transitions exist for activiti
-                	outcomeLabel = outcomeId;
+                    // TODO: is this okay -> no real transitions exist for activiti
+                    outcomeLabel = outcomeId;
                 }
             }
         }

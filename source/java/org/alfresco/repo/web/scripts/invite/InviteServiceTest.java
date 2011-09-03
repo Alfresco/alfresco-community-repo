@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -242,37 +242,37 @@ public class InviteServiceTest extends BaseWebScriptTest
      */
     public static void configureMailExecutorForTestMode(TestWebScriptServer server)
     {
-    	// This test class depends on a MailActionExecuter bean which sends out emails
-    	// in a live system. We want to prevent these emails from being sent during
-    	// test execution.
-    	// To do that, we need to get at the outboundSMTP-context.xml and change its
-    	// "mail" MailActionExecuter bean to test mode. setTestMode(true) on that object
-    	// will turn off email sending.
-    	// But that bean is defined within a subsystem i.e. a child application context.
-
-    	// There are a number of ways we could do this, none of them perfect.
-    	//
-    	// 1. Expose the setTestMode(boolean) method in the subsystem API.
-    	//    We could have the "mail" bean implement a "TestModeable" interface and
-    	//    expose that through the proxy.
-    	//    But that would mean that the setTestMode method would be available in the
-    	//    live system too, which is not ideal.
-    	// 2. Replace the "mail" bean in outboundSMTP-context.xml with an alternative in a
-    	//    different subsystem context file as described in
-    	//    http://wiki.alfresco.com/wiki/Alfresco_Subsystems#Debugging_Alfresco_Subsystems
-    	//    But to do that, we'd have to reproduce all the spring config for that bean
-    	//    and add a testMode property. Again not ideal.
-    	// 3. Hack into the "mail" bean by programmatically going through the known applicationContext
-    	//    and bean structure. This is not ideal either, but it has no effect on product code
-    	//    and isolates all the hacking into this test class.
-    	//
-    	// Therefore we've decided to do [3].
-    	
-		ChildApplicationContextFactory outboundSmptSubsystem
+        // This test class depends on a MailActionExecuter bean which sends out emails
+        // in a live system. We want to prevent these emails from being sent during
+        // test execution.
+        // To do that, we need to get at the outboundSMTP-context.xml and change its
+        // "mail" MailActionExecuter bean to test mode. setTestMode(true) on that object
+        // will turn off email sending.
+        // But that bean is defined within a subsystem i.e. a child application context.
+        
+        // There are a number of ways we could do this, none of them perfect.
+        //
+        // 1. Expose the setTestMode(boolean) method in the subsystem API.
+        //    We could have the "mail" bean implement a "TestModeable" interface and
+        //    expose that through the proxy.
+        //    But that would mean that the setTestMode method would be available in the
+        //    live system too, which is not ideal.
+        // 2. Replace the "mail" bean in outboundSMTP-context.xml with an alternative in a
+        //    different subsystem context file as described in
+        //    http://wiki.alfresco.com/wiki/Alfresco_Subsystems#Debugging_Alfresco_Subsystems
+        //    But to do that, we'd have to reproduce all the spring config for that bean
+        //    and add a testMode property. Again not ideal.
+        // 3. Hack into the "mail" bean by programmatically going through the known applicationContext
+        //    and bean structure. This is not ideal either, but it has no effect on product code
+        //    and isolates all the hacking into this test class.
+        //
+        // Therefore we've decided to do [3].
+        
+        ChildApplicationContextFactory outboundSmptSubsystem
             = (ChildApplicationContextFactory)server.getApplicationContext().getBean("OutboundSMTP");
-    	ApplicationContext childAppCtxt = outboundSmptSubsystem.getApplicationContext();
-    	MailActionExecuter mailActionExecutor = (MailActionExecuter)childAppCtxt.getBean("mail");
-    	mailActionExecutor.setTestMode(true);
+        ApplicationContext childAppCtxt = outboundSmptSubsystem.getApplicationContext();
+        MailActionExecuter mailActionExecutor = (MailActionExecuter)childAppCtxt.getBean("mail");
+        mailActionExecutor.setTestMode(true);
     }
     
     @Override

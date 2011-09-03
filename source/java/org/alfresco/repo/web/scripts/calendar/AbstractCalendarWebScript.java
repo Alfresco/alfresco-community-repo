@@ -45,7 +45,6 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.JSONTokener;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
@@ -101,7 +100,7 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
     protected Date parseDate(String date)
     {
        // Is there one at all?
-       if(date == null || date.length() == 0)
+       if (date == null || date.length() == 0)
        {
           return null;
        }
@@ -111,7 +110,7 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
        {
           return ISO8601DateFormat.parse(date);
        }
-       catch(Exception e) {}
+       catch (Exception e) {}
        
        // Try YYYY/MM/DD
        SimpleDateFormat slashtime = new SimpleDateFormat("yyyy/MM/dd HH:mm");
@@ -120,12 +119,12 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
        {
           return slashtime.parse(date);
        }
-       catch(ParseException e) {}
+       catch (ParseException e) {}
        try
        {
           return slash.parse(date);
        }
-       catch(ParseException e) {}
+       catch (ParseException e) {}
        
        // Try YYYY-MM-DD
        SimpleDateFormat dashtime = new SimpleDateFormat("yyyy-MM-dd HH:mm");
@@ -134,12 +133,12 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
        {
           return dashtime.parse(date);
        }
-       catch(ParseException e) {}
+       catch (ParseException e) {}
        try
        {
           return dash.parse(date);
        }
-       catch(ParseException e) {}
+       catch (ParseException e) {}
 
        // We don't know what it is, object
        throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Invalid date '" + date + "'");
@@ -153,18 +152,18 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
     {
        boolean isAllDay = false;
        
-       if(json.containsKey("startAt") && json.containsKey("endAt"))
+       if (json.containsKey("startAt") && json.containsKey("endAt"))
        {
           // New style ISO8601 dates
           entry.setStart(parseDate((String)json.get("startAt")));
           entry.setEnd(parseDate((String)json.get("endAt")));
-          if(json.containsKey("allday"))
+          if (json.containsKey("allday"))
           {
              // TODO Handle All Day events properly, including timezones
              isAllDay = true;
           }
        }
-       else if(json.containsKey("allday"))
+       else if (json.containsKey("allday"))
        {
           // Old style all-day event
           entry.setStart(parseDate(getOrNull(json, "from")));
@@ -183,7 +182,7 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
     
     protected String getOrNull(JSONObject json, String key) throws JSONException
     {
-       if(json.containsKey(key))
+       if (json.containsKey(key))
        {
           return (String)json.get(key);
        }
@@ -238,14 +237,14 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
        
        // What page is this for?
        String page = req.getParameter("page");
-       if(page == null && json != null)
+       if (page == null && json != null)
        {
-          if(json.containsKey("page"))
+          if (json.containsKey("page"))
           {
              page = (String)json.get("page");
           }
        }
-       if(page == null)
+       if (page == null)
        {
           // Default
           page = "calendar";
@@ -264,10 +263,9 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
                 "org.alfresco.calendar.event-" + event,
                 site.getShortName(),
                 CALENDAR_SERVICE_ACTIVITY_APP_NAME,
-                activityJson.toString()
-          );
+                activityJson.toString());
        }
-       catch(Exception e)
+       catch (Exception e)
        {
           // Warn, but carry on
           logger.warn("Error adding event " + event + " to activities feed", e);
@@ -303,10 +301,10 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
           Status status, Cache cache) 
     {
        Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
-       if(templateVars == null)
+       if (templateVars == null)
        {
           String error = "No parameters supplied";
-          if(useJSONErrors())
+          if (useJSONErrors())
           {
              return buildError(error);
           }
@@ -320,22 +318,22 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
        // Parse the JSON, if supplied
        JSONObject json = null;
        String contentType = req.getContentType();
-       if(contentType != null && contentType.indexOf(';') != -1)
+       if (contentType != null && contentType.indexOf(';') != -1)
        {
           contentType = contentType.substring(0, contentType.indexOf(';'));
        }
-       if(MimetypeMap.MIMETYPE_JSON.equals(contentType))
+       if (MimetypeMap.MIMETYPE_JSON.equals(contentType))
        {
           JSONParser parser = new JSONParser();
           try
           {
              json = (JSONObject)parser.parse(req.getContent().getContent());
           }
-          catch(IOException io)
+          catch (IOException io)
           {
              return buildError("Invalid JSON: " + io.getMessage());
           }
-          catch(org.json.simple.parser.ParseException je)
+          catch (org.json.simple.parser.ParseException je)
           {
              return buildError("Invalid JSON: " + je.getMessage());
           }
@@ -344,29 +342,29 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
        
        // Get the site short name. Try quite hard to do so...
        String siteName = templateVars.get("siteid");
-       if(siteName == null)
+       if (siteName == null)
        {
           siteName = templateVars.get("site");
        }
-       if(siteName == null)
+       if (siteName == null)
        {
           siteName = req.getParameter("site");
        }
-       if(siteName == null && json != null)
+       if (siteName == null && json != null)
        {
-          if(json.containsKey("siteid"))
+          if (json.containsKey("siteid"))
           {
              siteName = (String)json.get("siteid");
           }
-          else if(json.containsKey("site"))
+          else if (json.containsKey("site"))
           {
              siteName = (String)json.get("site");
           }
        }
-       if(siteName == null)
+       if (siteName == null)
        {
           String error = "No site given";
-          if(useJSONErrors())
+          if (useJSONErrors())
           {
              return buildError("No site given");
           }
@@ -378,10 +376,10 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
        
        // Grab the requested site
        SiteInfo site = siteService.getSite(siteName);
-       if(site == null)
+       if (site == null)
        {
           String error = "Could not find site: " + siteName;
-          if(useJSONErrors())
+          if (useJSONErrors())
           {
              return buildError(error);
           }
@@ -401,5 +399,4 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
     protected abstract Map<String, Object> executeImpl(SiteInfo site, 
           String eventName, WebScriptRequest req, JSONObject json, 
           Status status, Cache cache);
-    
 }

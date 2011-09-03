@@ -41,12 +41,12 @@ public class CalendarEntryPut extends AbstractCalendarWebScript
 {
    @Override
    protected Map<String, Object> executeImpl(SiteInfo site, String eventName,
-         WebScriptRequest req, JSONObject json, Status status, Cache cache) {
+         WebScriptRequest req, JSONObject json, Status status, Cache cache) 
+   {
       CalendarEntry entry = calendarService.getCalendarEntry(
-            site.getShortName(), eventName
-      );
+            site.getShortName(), eventName);
       
-      if(entry == null)
+      if (entry == null)
       {
          return buildError("Could not find event: " + eventName);
       }
@@ -60,7 +60,7 @@ public class CalendarEntryPut extends AbstractCalendarWebScript
          String docFolder = (String)json.get("docfolder");
          
          // Editing recurring events is special and a little bit odd...
-         if(entry.getRecurrenceRule() != null && !json.containsKey("recurrenceRule"))
+         if (entry.getRecurrenceRule() != null && !json.containsKey("recurrenceRule"))
          {
             // Have an ignored event generated
             // Will allow us to override this one instance
@@ -70,7 +70,7 @@ public class CalendarEntryPut extends AbstractCalendarWebScript
             CalendarEntry newEntry = new CalendarEntryDTO();
             newEntry.setOutlook(true);
             
-            if("*NOT_CHANGE*".equals(docFolder))
+            if ("*NOT_CHANGE*".equals(docFolder))
             {
                newEntry.setSharePointDocFolder(entry.getSharePointDocFolder());
             }
@@ -80,7 +80,7 @@ public class CalendarEntryPut extends AbstractCalendarWebScript
          }
          
          // Doc folder is a bit special
-         if("*NOT_CHANGE*".equals(docFolder))
+         if ("*NOT_CHANGE*".equals(docFolder))
          {
             // Nothing to change
          }
@@ -119,33 +119,26 @@ public class CalendarEntryPut extends AbstractCalendarWebScript
             else
             {
                entry.setLastRecurrence(
-                     parseDate((String)json.get("recurrenceLastMeeting"))
-               );
+                     parseDate((String)json.get("recurrenceLastMeeting")));
             }
          }
          
          // Handle tags
-         if(json.containsKey("tags"))
+         if (json.containsKey("tags"))
          {
             entry.getTags().clear();
             
             StringTokenizer st = new StringTokenizer((String)json.get("tags"), " ");
-            while(st.hasMoreTokens())
+            while (st.hasMoreTokens())
             {
                entry.getTags().add(st.nextToken());
             }
          }
       }
-      catch(JSONException je)
+      catch (JSONException je)
       {
          return buildError("Invalid JSON: " + je.getMessage());
       }
-      
-      if(entry == null)
-      {
-         return buildError("Could not find event: " + eventName);
-      }
-      
       
       // Have it edited
       entry = calendarService.updateCalendarEntry(entry);
@@ -170,9 +163,9 @@ public class CalendarEntryPut extends AbstractCalendarWebScript
       result.put("docfolder", entry.getSharePointDocFolder());
       
       // Replace nulls with blank strings for the JSON
-      for(String key : result.keySet())
+      for (String key : result.keySet())
       {
-         if(result.get(key) == null)
+         if (result.get(key) == null)
          {
             result.put(key, "");
          }
@@ -192,11 +185,11 @@ public class CalendarEntryPut extends AbstractCalendarWebScript
    protected String generateTagString(CalendarEntry entry)
    {
       StringBuffer sb = new StringBuffer();
-      if(entry.getTags() != null)
+      if (entry.getTags() != null)
       {
-         for(String tag : entry.getTags())
+         for (String tag : entry.getTags())
          {
-            if(sb.length() > 0) sb.append(' ');
+            if (sb.length() > 0) sb.append(' ');
             sb.append(tag);
          }
       }

@@ -47,11 +47,11 @@ public class ForumPostGet extends AbstractDiscussionWebScript
       Map<String, Object> model = buildCommonModel(site, topic, post, req);
       
       // Did they want just one post, or the whole of the topic?
-      if(post != null)
+      if (post != null)
       {
          model.put(KEY_POSTDATA, renderPost(post, site));
       }
-      else if(topic != null)
+      else if (topic != null)
       {
          model.put(KEY_POSTDATA, renderTopic(topic, site));
       }

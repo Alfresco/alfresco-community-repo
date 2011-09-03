@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -22,14 +22,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
-import org.springframework.extensions.webscripts.json.JSONUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
+import org.springframework.extensions.webscripts.json.JSONUtils;
 
 public class FormRestApiGet_Test extends AbstractTestFormRestApi 
 {
@@ -58,7 +57,7 @@ public class FormRestApiGet_Test extends AbstractTestFormRestApi
 
     public void testGetFormForNonExistentNode() throws Exception
     {
-    	// Create a NodeRef with all digits changed to an 'x' char - 
+        // Create a NodeRef with all digits changed to an 'x' char - 
         // this should make for a non-existent node.
         String missingId = this.referencingDocNodeRef.getId().replaceAll("\\d", "x");
         NodeRef missingNodeRef = new NodeRef(this.referencingDocNodeRef.getStoreRef(), 
@@ -130,10 +129,10 @@ public class FormRestApiGet_Test extends AbstractTestFormRestApi
         List<String> keys = new ArrayList<String>();
         for (Iterator iter = formDataObject.keys(); iter.hasNext(); )
         {
-        	String nextFieldName = (String)iter.next();
+            String nextFieldName = (String)iter.next();
             assertEquals("Did not expect to find a colon char in " + nextFieldName,
-            		-1, nextFieldName.indexOf(':'));
-			keys.add(nextFieldName);
+                        -1, nextFieldName.indexOf(':'));
+            keys.add(nextFieldName);
         }
         // Threshold is a rather arbitrary number. I simply want to ensure that there
         // are *some* entries in the formData hash.
@@ -144,7 +143,7 @@ public class FormRestApiGet_Test extends AbstractTestFormRestApi
     }
     
     @SuppressWarnings("unchecked")
-	public void testJsonDefinitionFields() throws Exception
+    public void testJsonDefinitionFields() throws Exception
     {
         JSONObject jsonPostData = createItemJSON(this.referencingDocNodeRef);
         String jsonPostString = jsonPostData.toString();

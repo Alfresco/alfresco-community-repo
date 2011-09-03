@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -42,14 +42,12 @@ import org.json.JSONTokener;
 /**
  * @author Nick Smith
  * @since 4.0
- *
  */
 public class PublishingJsonParser implements PublishingWebScriptConstants
 {
-
     public JSONObject getJson(String jsonStr) throws JSONException
     {
-        if(jsonStr!=null && jsonStr.isEmpty()==false)
+        if (jsonStr != null && jsonStr.isEmpty() == false)
         {
             return new JSONObject(new JSONTokener(jsonStr));
         }
@@ -60,7 +58,7 @@ public class PublishingJsonParser implements PublishingWebScriptConstants
     {
         JSONObject json = getJson(jsonStr);
         String newName = json.optString(NAME);
-        if(newName != null && newName.isEmpty() == false)
+        if (newName != null && newName.isEmpty() == false)
         {
             channelService.renameChannel(channel, newName);
         }
@@ -82,7 +80,7 @@ public class PublishingJsonParser implements PublishingWebScriptConstants
     
     public PublishingDetails setStatusUpdate(PublishingDetails details, JSONObject json)
     {
-        if(json != null)
+        if (json != null)
         {
             details.setStatusMessage(json.optString(MESSAGE));
             String nodeStr = json.optString(NODE_REF);
@@ -103,7 +101,7 @@ public class PublishingJsonParser implements PublishingWebScriptConstants
     
     private List<String> toStrings(JSONArray json)
     {
-        if(json == null || json.length() == 0)
+        if (json == null || json.length() == 0)
         {
             return Collections.emptyList();
         }
@@ -114,5 +112,4 @@ public class PublishingJsonParser implements PublishingWebScriptConstants
         }
         return results;
     }
-
 }

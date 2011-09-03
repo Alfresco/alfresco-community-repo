@@ -46,16 +46,16 @@ public class ForumPostRepliesPost extends AbstractDiscussionWebScript
    {
       // If they're trying to create a reply to a topic, they actually
       //  mean to create the reply on the primary post
-      if(post == null)
+      if (post == null)
       {
          post = discussionService.getPrimaryPost(topic);
-         if(post == null)
+         if (post == null)
          {
             throw new WebScriptException(Status.STATUS_PRECONDITION_FAILED,
                   "First (primary) post was missing from the topic, can't fetch");
          }
       }
-      else if(topic == null)
+      else if (topic == null)
       {
          String error = "Node was of the wrong type, only Topic and Post are supported";
          throw new WebScriptException(Status.STATUS_BAD_REQUEST, error);
@@ -82,13 +82,13 @@ public class ForumPostRepliesPost extends AbstractDiscussionWebScript
    {
       // Fetch the details from the JSON
       String title = null;
-      if(json.containsKey("title"))
+      if (json.containsKey("title"))
       {
          title = (String)json.get("title");
       }
       
       String contents = null;
-      if(json.containsKey("content"))
+      if (json.containsKey("content"))
       {
          contents = (String)json.get("content");
       }
@@ -98,7 +98,7 @@ public class ForumPostRepliesPost extends AbstractDiscussionWebScript
       PostInfo reply = discussionService.createReply(post, contents);
       
       // Set the title if needed (it normally isn't)
-      if(title != null && title.length() > 0)
+      if (title != null && title.length() > 0)
       {
          nodeService.setProperty(reply.getNodeRef(), ContentModel.PROP_TITLE, title);
          reply = discussionService.getPost(topic, reply.getSystemName());

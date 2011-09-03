@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -53,8 +53,8 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO8601DateFormat;
 
 /**
- * @since 3.4
  * @author Nick Smith
+ * @since 3.4
  */
 public class WorkflowModelBuilderTest extends TestCase
 {

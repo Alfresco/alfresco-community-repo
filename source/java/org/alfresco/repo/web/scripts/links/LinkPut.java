@@ -40,12 +40,13 @@ public class LinkPut extends AbstractLinksWebScript
 {
    @Override
    protected Map<String, Object> executeImpl(SiteInfo site, String linkName,
-         WebScriptRequest req, JSONObject json, Status status, Cache cache) {
+         WebScriptRequest req, JSONObject json, Status status, Cache cache) 
+   {
       Map<String, Object> model = new HashMap<String, Object>();
       
       // Try to find the link
       LinkInfo link = linksService.getLink(site.getShortName(), linkName);
-      if(link == null)
+      if (link == null)
       {
          String message = "No link found with that name";
          
@@ -63,7 +64,7 @@ public class LinkPut extends AbstractLinksWebScript
       link.setURL(getOrNull(json, "url"));
       
       // Handle internal / not internal
-      if(json.containsKey("internal"))
+      if (json.containsKey("internal"))
       {
          link.setInternal(true);
       }
@@ -75,7 +76,7 @@ public class LinkPut extends AbstractLinksWebScript
       // Do the tags
       link.getTags().clear();
       List<String> tags = getTags(json);
-      if(tags != null && tags.size() > 0)
+      if (tags != null && tags.size() > 0)
       {
          link.getTags().addAll(tags);
       }
@@ -86,7 +87,7 @@ public class LinkPut extends AbstractLinksWebScript
       {
          link = linksService.updateLink(link);
       }
-      catch(AccessDeniedException e)
+      catch (AccessDeniedException e)
       {
          String message = "You don't have permission to update that link";
          

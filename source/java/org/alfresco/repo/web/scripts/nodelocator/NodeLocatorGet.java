@@ -36,7 +36,6 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 /**
  * @author Nick Smith
  * @since 4.0
- *
  */
 public class NodeLocatorGet extends DeclarativeWebScript
 {
@@ -66,7 +65,7 @@ public class NodeLocatorGet extends DeclarativeWebScript
         String storeType = vars.get(STORE_TYPE);
         String storeId= vars.get(STORE_ID);
         String nodeId= vars.get(NODE_ID);
-        if(storeType!=null && storeId != null && nodeId != null)
+        if (storeType != null && storeId != null && nodeId != null)
         {
             source = new NodeRef(storeType, storeId, nodeId);
         }
@@ -83,7 +82,7 @@ public class NodeLocatorGet extends DeclarativeWebScript
     private Map<String, Serializable> mapParams(WebScriptRequest req)
     {
         Map<String, Serializable> params = new HashMap<String, Serializable>();
-        for(String key: req.getParameterNames())
+        for (String key: req.getParameterNames())
         {
             String value = req.getParameter(key);
             if (value != null)
@@ -103,5 +102,4 @@ public class NodeLocatorGet extends DeclarativeWebScript
     {
         this.locatorService = locatorService;
     }
-
 }

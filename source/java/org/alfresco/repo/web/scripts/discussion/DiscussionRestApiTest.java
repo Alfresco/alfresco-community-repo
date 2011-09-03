@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -67,7 +67,7 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
     private static Log logger = LogFactory.getLog(DiscussionRestApiTest.class);
     
     private static final String DELETED_REPLY_POST_MARKER = "[[deleted]]";
-	
+
     private MutableAuthenticationService authenticationService;
     private AuthenticationComponent authenticationComponent;
     private TransactionService transactionService;
@@ -160,13 +160,13 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
         
         // delete the discussions users
         personService.deletePerson(USER_ONE);
-        if(this.authenticationService.authenticationExists(USER_ONE))
+        if (this.authenticationService.authenticationExists(USER_ONE))
         {
            this.authenticationService.deleteAuthentication(USER_ONE);
         }
         
         personService.deletePerson(USER_TWO);
-        if(this.authenticationService.authenticationExists(USER_TWO))
+        if (this.authenticationService.authenticationExists(USER_TWO))
         {
            this.authenticationService.deleteAuthentication(USER_TWO);
         }
@@ -230,6 +230,7 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
     {
        return doCreatePost(URL_FORUM_SITE_POSTS, title, content, expectedStatus);
     }
+    
     /**
      * Creates a new topic+post under the given node
      */
@@ -238,6 +239,7 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
     {
        return doCreatePost(getPostsUrl(nodeRef), title, content, expectedStatus);
     }
+    
     private JSONObject doCreatePost(String url, String title, String content, 
           int expectedStatus) throws Exception
     {
@@ -262,11 +264,13 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
     {
        return doUpdatePost(getPostUrl(nodeRef), title, content, expectedStatus);
     }
+    
     private JSONObject updatePost(String name, String title, String content, 
           int expectedStatus) throws Exception
     {
        return doUpdatePost(URL_FORUM_SITE_POST + name, title, content, expectedStatus);
     }
+    
     private JSONObject doUpdatePost(String url, String title, String content, 
           int expectedStatus) throws Exception
     {
@@ -288,10 +292,12 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
     {
        return doGetPost(URL_FORUM_SITE_POST + name, expectedStatus);
     }
+    
     private JSONObject getPost(NodeRef nodeRef, int expectedStatus) throws Exception
     {
        return doGetPost(getPostUrl(nodeRef), expectedStatus);
     }
+    
     private JSONObject doGetPost(String url, int expectedStatus) throws Exception
     {
        Response response = sendRequest(new GetRequest(url), expectedStatus);
@@ -310,10 +316,12 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
     {
        return doGetReplies(getRepliesUrl(name), expectedStatus);
     }
+    
     private JSONObject getReplies(NodeRef nodeRef, int expectedStatus) throws Exception
     {
        return doGetReplies(getRepliesUrl(nodeRef), expectedStatus);
     }
+    
     private JSONObject doGetReplies(String url, int expectedStatus) throws Exception
     {
        Response response = sendRequest(new GetRequest(url), expectedStatus);
@@ -332,30 +340,32 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
     {
        return doGetPosts(URL_FORUM_SITE_POSTS, type, expectedStatus);
     }
+    
     private JSONObject getPosts(NodeRef nodeRef, String type, int expectedStatus) throws Exception
     {
        return doGetPosts(getPostsUrl(nodeRef), type, expectedStatus);
     }
+    
     private JSONObject doGetPosts(String baseUrl, String type, int expectedStatus) throws Exception
     {
        String url = null;
-       if(type == null)
+       if (type == null)
        {
           url = baseUrl;
        }
-       else if(type == "limit")
+       else if (type == "limit")
        {
           url = baseUrl + "?pageSize=1";
        }
-       else if(type == "hot")
+       else if (type == "hot")
        {
           url = baseUrl + "/hot";
        }
-       else if(type == "mine")
+       else if (type == "mine")
        {
           url = baseUrl + "/myposts";
        }
-       else if(type.startsWith("new"))
+       else if (type.startsWith("new"))
        {
           url = baseUrl + "/" + type;
        }
@@ -380,10 +390,12 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
     {
        return doDeletePost(URL_FORUM_SITE_POST + name, expectedStatus);
     }
+    
     private JSONObject deletePost(NodeRef nodeRef, int expectedStatus) throws Exception
     {
        return doDeletePost(getPostUrl(nodeRef), expectedStatus);
     }
+    
     private JSONObject doDeletePost(String url, int expectedStatus) throws Exception
     {
        Response response = sendRequest(new DeleteRequest(url), Status.STATUS_OK);
@@ -401,6 +413,7 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
     {
        return getPostUrl(nodeRef) + "/replies";
     }
+    
     private String getRepliesUrl(String postName)
     {
        return URL_FORUM_SITE_POST + postName + "/replies";
@@ -410,6 +423,7 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
     {
        return URL_FORUM_NODE_POST_BASE + nodeRef.toString().replace("://", "/");
     }
+    
     private String getPostsUrl(NodeRef nodeRef)
     {
        return URL_FORUM_NODE_POSTS_BASE + nodeRef.toString().replace("://", "/") + "/posts";
@@ -491,30 +505,30 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
     
     public void testCreateForumPost() throws Exception
     {
-    	String title = "test";
-    	String content = "test";
-    	JSONObject item = createSitePost(title, content, Status.STATUS_OK);
-    	
-    	// Check that the values in the response are correct
-    	assertEquals(title, item.get("title"));
-    	assertEquals(content, item.get("content"));
-      assertEquals(0, item.get("replyCount"));
-    	assertEquals("Invalid JSON " + item, true, item.has("createdOn"));
-      assertEquals("Invalid JSON " + item, true, item.has("modifiedOn"));
-      assertEquals("Invalid JSON " + item, true, item.has("author"));
-      assertEquals("Invalid JSON " + item, true, item.has("permissions"));
-      assertEquals("Invalid JSON " + item, true, item.has("url"));
-      assertEquals("Invalid JSON " + item, true, item.has("repliesUrl"));
-      assertEquals("Invalid JSON " + item, true, item.has("nodeRef"));
-      
-      // Save some details
-      String name = item.getString("name");
-      NodeRef nodeRef = new NodeRef(item.getString("nodeRef"));
+        String title = "test";
+        String content = "test";
+        JSONObject item = createSitePost(title, content, Status.STATUS_OK);
+        
+        // Check that the values in the response are correct
+        assertEquals(title, item.get("title"));
+        assertEquals(content, item.get("content"));
+        assertEquals(0, item.get("replyCount"));
+        assertEquals("Invalid JSON " + item, true, item.has("createdOn"));
+        assertEquals("Invalid JSON " + item, true, item.has("modifiedOn"));
+        assertEquals("Invalid JSON " + item, true, item.has("author"));
+        assertEquals("Invalid JSON " + item, true, item.has("permissions"));
+        assertEquals("Invalid JSON " + item, true, item.has("url"));
+        assertEquals("Invalid JSON " + item, true, item.has("repliesUrl"));
+        assertEquals("Invalid JSON " + item, true, item.has("nodeRef"));
+          
+        // Save some details
+        String name = item.getString("name");
+        NodeRef nodeRef = new NodeRef(item.getString("nodeRef"));
 
       
       // Fetch the post by name and check
-    	item = getPost(name, Status.STATUS_OK);
-    	
+      item = getPost(name, Status.STATUS_OK);
+
       assertEquals(title, item.get("title"));
       assertEquals(content, item.get("content"));
       assertEquals(0, item.get("replyCount"));
@@ -525,9 +539,9 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
       assertEquals("Invalid JSON " + item, true, item.has("url"));
       assertEquals("Invalid JSON " + item, true, item.has("repliesUrl"));
       assertEquals("Invalid JSON " + item, true, item.has("nodeRef"));
-    	
-    	
-    	// Fetch the post by noderef and check
+
+
+      // Fetch the post by noderef and check
       item = getPost(nodeRef, Status.STATUS_OK);
       
       assertEquals(title, item.get("title"));
@@ -540,9 +554,9 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
       assertEquals("Invalid JSON " + item, true, item.has("url"));
       assertEquals("Invalid JSON " + item, true, item.has("repliesUrl"));
       assertEquals("Invalid JSON " + item, true, item.has("nodeRef"));
-    	
+
       
-    	// Create another post, this time by noderef
+      // Create another post, this time by noderef
       title = "By Node Title";
       content = "By Node Content";
       item = createNodePost(FORUM_NODE, title, content, Status.STATUS_OK);
@@ -562,73 +576,73 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
     
     public void testUpdateForumPost() throws Exception
     {
-    	String title = "test";
-    	String content = "test";
-    	JSONObject item = createSitePost(title, content, 200);
-    	
-    	// check that the values
-    	assertEquals(title, item.get("title"));
-    	assertEquals(content, item.get("content"));
-    	assertEquals(false, item.getBoolean("isUpdated"));
-    	
-      assertEquals(true, item.has("name"));
-      String name = item.getString("name");
-      assertEquals(true, item.has("nodeRef"));
-    	NodeRef nodeRef = new NodeRef(item.getString("nodeRef"));
-    	
-    	// fetch the post by name
-    	item = getPost(item.getString("name"), 200);
-      assertEquals(title, item.get("title"));
-      assertEquals(content, item.get("content"));
-      assertEquals(false, item.getBoolean("isUpdated"));
+        String title = "test";
+        String content = "test";
+        JSONObject item = createSitePost(title, content, 200);
 
-      // Fetch the post by noderef
-      item = getPost(nodeRef, 200);
-      assertEquals(title, item.get("title"));
-      assertEquals(content, item.get("content"));
-      assertEquals(false, item.getBoolean("isUpdated"));
+        // check that the values
+        assertEquals(title, item.get("title"));
+        assertEquals(content, item.get("content"));
+        assertEquals(false, item.getBoolean("isUpdated"));
+        
+        assertEquals(true, item.has("name"));
+        String name = item.getString("name");
+        assertEquals(true, item.has("nodeRef"));
+        NodeRef nodeRef = new NodeRef(item.getString("nodeRef"));
+
+        // fetch the post by name
+        item = getPost(item.getString("name"), 200);
+        assertEquals(title, item.get("title"));
+        assertEquals(content, item.get("content"));
+        assertEquals(false, item.getBoolean("isUpdated"));
+
+        // Fetch the post by noderef
+        item = getPost(nodeRef, 200);
+        assertEquals(title, item.get("title"));
+        assertEquals(content, item.get("content"));
+        assertEquals(false, item.getBoolean("isUpdated"));
 
       
-    	// Update it by name
-      String title2 = "updated test";
-      String content2 = "test updated";
-      item = updatePost(name, title2, content2, 200);
+        // Update it by name
+        String title2 = "updated test";
+        String content2 = "test updated";
+        item = updatePost(name, title2, content2, 200);
       
-      // Check the response
-      assertEquals(title2, item.get("title"));
-      assertEquals(content2, item.get("content"));
-      assertEquals(name, item.get("name"));
-      assertEquals(nodeRef.toString(), item.get("nodeRef"));
-      assertEquals(true, item.getBoolean("isUpdated"));
+        // Check the response
+        assertEquals(title2, item.get("title"));
+        assertEquals(content2, item.get("content"));
+        assertEquals(name, item.get("name"));
+        assertEquals(nodeRef.toString(), item.get("nodeRef"));
+        assertEquals(true, item.getBoolean("isUpdated"));
       
-      // Fetch and check
-      item = getPost(nodeRef, 200);
-      assertEquals(title2, item.get("title"));
-      assertEquals(content2, item.get("content"));
-      assertEquals(name, item.get("name"));
-      assertEquals(nodeRef.toString(), item.get("nodeRef"));
-      assertEquals(true, item.getBoolean("isUpdated"));
+        // Fetch and check
+        item = getPost(nodeRef, 200);
+        assertEquals(title2, item.get("title"));
+        assertEquals(content2, item.get("content"));
+        assertEquals(name, item.get("name"));
+        assertEquals(nodeRef.toString(), item.get("nodeRef"));
+        assertEquals(true, item.getBoolean("isUpdated"));
+
       
-      
-      // Update it again, this time by noderef
-      String title3 = "updated 3 test";
-      String content3 = "test 3 updated";
-    	item = updatePost(nodeRef, title3, content3, 200);
-    	
-    	// Check that the values returned are correct
-      assertEquals(title3, item.get("title"));
-      assertEquals(content3, item.get("content"));
-      assertEquals(name, item.get("name"));
-      assertEquals(nodeRef.toString(), item.get("nodeRef"));
-      assertEquals(true, item.getBoolean("isUpdated"));
-      
-      // Fetch and re-check
-      item = getPost(nodeRef, 200);
-      assertEquals(title3, item.get("title"));
-      assertEquals(content3, item.get("content"));
-      assertEquals(name, item.get("name"));
-      assertEquals(nodeRef.toString(), item.get("nodeRef"));
-      assertEquals(true, item.getBoolean("isUpdated"));
+        // Update it again, this time by noderef
+        String title3 = "updated 3 test";
+        String content3 = "test 3 updated";
+        item = updatePost(nodeRef, title3, content3, 200);
+    
+        // Check that the values returned are correct
+        assertEquals(title3, item.get("title"));
+        assertEquals(content3, item.get("content"));
+        assertEquals(name, item.get("name"));
+        assertEquals(nodeRef.toString(), item.get("nodeRef"));
+        assertEquals(true, item.getBoolean("isUpdated"));
+        
+        // Fetch and re-check
+        item = getPost(nodeRef, 200);
+        assertEquals(title3, item.get("title"));
+        assertEquals(content3, item.get("content"));
+        assertEquals(name, item.get("name"));
+        assertEquals(nodeRef.toString(), item.get("nodeRef"));
+        assertEquals(true, item.getBoolean("isUpdated"));
     }
     
     /**
@@ -687,57 +701,57 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
     
     public void testAddReply() throws Exception
     {
-    	// Create a root post
-    	JSONObject item = createSitePost("test", "test", Status.STATUS_OK);
-    	String topicName = item.getString("name");
-    	NodeRef topicNodeRef = new NodeRef(item.getString("nodeRef"));
-    	
-    	// Add a reply
-    	JSONObject reply = createReply(topicNodeRef, "test", "test", Status.STATUS_OK);
-    	NodeRef replyNodeRef = new NodeRef(reply.getString("nodeRef"));
-    	assertEquals("test", reply.getString("title"));
-    	assertEquals("test", reply.getString("content"));
-    	
-    	// Add a reply to the reply
-    	JSONObject reply2 = createReply(replyNodeRef, "test2", "test2", 200);
-      NodeRef reply2NodeRef = new NodeRef(reply2.getString("nodeRef"));
-    	assertEquals("test2", reply2.getString("title"));
-    	assertEquals("test2", reply2.getString("content"));
-    	
-    	
-    	// Check things were correctly setup. These should all be siblings
-    	//  of each other, with relations between the replies
-      assertEquals(ForumModel.TYPE_TOPIC, nodeService.getType(topicNodeRef));
-      assertEquals(ForumModel.TYPE_POST, nodeService.getType(replyNodeRef));
-      assertEquals(ForumModel.TYPE_POST, nodeService.getType(reply2NodeRef));
-      assertEquals(topicNodeRef, nodeService.getPrimaryParent(replyNodeRef).getParentRef());
-      assertEquals(topicNodeRef, nodeService.getPrimaryParent(reply2NodeRef).getParentRef());
+        // Create a root post
+        JSONObject item = createSitePost("test", "test", Status.STATUS_OK);
+        String topicName = item.getString("name");
+        NodeRef topicNodeRef = new NodeRef(item.getString("nodeRef"));
 
-      // Reply 2 should have an assoc to Reply 1
-      assertEquals(0, nodeService.getSourceAssocs(reply2NodeRef, RegexQNamePattern.MATCH_ALL).size());
-      assertEquals(1, nodeService.getTargetAssocs(reply2NodeRef, RegexQNamePattern.MATCH_ALL).size());
-      assertEquals(replyNodeRef, nodeService.getTargetAssocs(reply2NodeRef, RegexQNamePattern.MATCH_ALL).get(0).getTargetRef());
-      
-      assertEquals(1, nodeService.getSourceAssocs(replyNodeRef, RegexQNamePattern.MATCH_ALL).size());
-      assertEquals(1, nodeService.getTargetAssocs(replyNodeRef, RegexQNamePattern.MATCH_ALL).size());
-      assertEquals(reply2NodeRef, nodeService.getSourceAssocs(replyNodeRef, RegexQNamePattern.MATCH_ALL).get(0).getSourceRef());
+        // Add a reply
+        JSONObject reply = createReply(topicNodeRef, "test", "test", Status.STATUS_OK);
+        NodeRef replyNodeRef = new NodeRef(reply.getString("nodeRef"));
+        assertEquals("test", reply.getString("title"));
+        assertEquals("test", reply.getString("content"));
+        
+        // Add a reply to the reply
+        JSONObject reply2 = createReply(replyNodeRef, "test2", "test2", 200);
+          NodeRef reply2NodeRef = new NodeRef(reply2.getString("nodeRef"));
+        assertEquals("test2", reply2.getString("title"));
+        assertEquals("test2", reply2.getString("content"));
+        
+        
+        // Check things were correctly setup. These should all be siblings
+        //  of each other, with relations between the replies
+        assertEquals(ForumModel.TYPE_TOPIC, nodeService.getType(topicNodeRef));
+        assertEquals(ForumModel.TYPE_POST, nodeService.getType(replyNodeRef));
+        assertEquals(ForumModel.TYPE_POST, nodeService.getType(reply2NodeRef));
+        assertEquals(topicNodeRef, nodeService.getPrimaryParent(replyNodeRef).getParentRef());
+        assertEquals(topicNodeRef, nodeService.getPrimaryParent(reply2NodeRef).getParentRef());
 
+        // Reply 2 should have an assoc to Reply 1
+        assertEquals(0, nodeService.getSourceAssocs(reply2NodeRef, RegexQNamePattern.MATCH_ALL).size());
+        assertEquals(1, nodeService.getTargetAssocs(reply2NodeRef, RegexQNamePattern.MATCH_ALL).size());
+        assertEquals(replyNodeRef, nodeService.getTargetAssocs(reply2NodeRef, RegexQNamePattern.MATCH_ALL).get(0).getTargetRef());
       
-    	// Fetch all replies for the post
-    	JSONObject result = getReplies(topicNodeRef, Status.STATUS_OK);
-    	// check the number of replies
-    	assertEquals(1, result.getJSONArray("items").length());
-    	
-    	// Check the replies by name too
-    	result = getReplies(topicName, Status.STATUS_OK);
-      assertEquals(1, result.getJSONArray("items").length());
-    	
-    	
-    	// Fetch the top level post again, and check the counts there
-      // That post should have one direct reply, and one reply to it's reply
-    	item = getPost(topicName, Status.STATUS_OK);
-    	assertEquals(2, item.getInt("totalReplyCount"));
-    	assertEquals(1, item.getInt("replyCount"));
+        assertEquals(1, nodeService.getSourceAssocs(replyNodeRef, RegexQNamePattern.MATCH_ALL).size());
+        assertEquals(1, nodeService.getTargetAssocs(replyNodeRef, RegexQNamePattern.MATCH_ALL).size());
+        assertEquals(reply2NodeRef, nodeService.getSourceAssocs(replyNodeRef, RegexQNamePattern.MATCH_ALL).get(0).getSourceRef());
+
+        
+        // Fetch all replies for the post
+        JSONObject result = getReplies(topicNodeRef, Status.STATUS_OK);
+        // check the number of replies
+        assertEquals(1, result.getJSONArray("items").length());
+        
+        // Check the replies by name too
+        result = getReplies(topicName, Status.STATUS_OK);
+        assertEquals(1, result.getJSONArray("items").length());
+
+        
+        // Fetch the top level post again, and check the counts there
+        // That post should have one direct reply, and one reply to it's reply
+        item = getPost(topicName, Status.STATUS_OK);
+        assertEquals(2, item.getInt("totalReplyCount"));
+        assertEquals(1, item.getInt("replyCount"));
     }
 
     public void testUpdateReply() throws Exception

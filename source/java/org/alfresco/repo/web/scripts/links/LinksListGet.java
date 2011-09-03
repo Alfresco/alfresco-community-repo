@@ -49,14 +49,15 @@ public class LinksListGet extends AbstractLinksWebScript
    
    @Override
    protected Map<String, Object> executeImpl(SiteInfo site, String linkName,
-         WebScriptRequest req, JSONObject json, Status status, Cache cache) {
+         WebScriptRequest req, JSONObject json, Status status, Cache cache) 
+   {
       // Decide on what kind of request they wanted
       String filter = req.getParameter("filter");
       
       // Tagging?
       boolean tagFiltering = true;
       String tag = req.getParameter("tag");
-      if(tag == null || tag.length() == 0)
+      if (tag == null || tag.length() == 0)
       {
          tagFiltering = false;
       }
@@ -64,7 +65,7 @@ public class LinksListGet extends AbstractLinksWebScript
       // User?
       boolean userFiltering = false;
       String user = null;
-      if("user".equals(filter))
+      if ("user".equals(filter))
       {
          userFiltering = true;
          user = AuthenticationUtil.getFullyAuthenticatedUser();
@@ -74,7 +75,7 @@ public class LinksListGet extends AbstractLinksWebScript
       boolean dateFiltering = false;
       Date from = null;
       Date to = null;
-      if("recent".equals(filter))
+      if ("recent".equals(filter))
       {
          dateFiltering = true;
          Date now = new Date();
@@ -86,17 +87,17 @@ public class LinksListGet extends AbstractLinksWebScript
       // Get the links for the list
       PagingRequest paging = buildPagingRequest(req);
       PagingResults<LinkInfo> links;
-      if(tagFiltering)
+      if (tagFiltering)
       {
          links = linksService.findLinks(site.getShortName(), user, from, to, tag, paging);
       }
       else
       {
-         if(userFiltering)
+         if (userFiltering)
          {
             links = linksService.listLinks(site.getShortName(), user, paging);
          }
-         else if(dateFiltering)
+         else if (dateFiltering)
          {
             links = linksService.listLinks(site.getShortName(), from, to, paging);
          }
@@ -121,7 +122,7 @@ public class LinksListGet extends AbstractLinksWebScript
       data.put("itemCount", items.size());
       
       int total = items.size();
-      if(links.getTotalResultCount() != null && links.getTotalResultCount().getFirst() != null)
+      if (links.getTotalResultCount() != null && links.getTotalResultCount().getFirst() != null)
       {
          total = links.getTotalResultCount().getFirst();
       }
@@ -129,7 +130,7 @@ public class LinksListGet extends AbstractLinksWebScript
       
       // We need the container node for permissions checking
       NodeRef container;
-      if(links.getPage().size() > 0)
+      if (links.getPage().size() > 0)
       {
          container = links.getPage().get(0).getContainerNodeRef();
       }
@@ -137,10 +138,9 @@ public class LinksListGet extends AbstractLinksWebScript
       {
          // Find the container (if it's been created yet)
          container = siteService.getContainer(
-               site.getShortName(), LinksServiceImpl.LINKS_COMPONENT
-         );
+               site.getShortName(), LinksServiceImpl.LINKS_COMPONENT);
          
-         if(container == null)
+         if (container == null)
          {
             // Brand new site, no write operations on links have happened
             // Fudge it for now with the site itself, the first write call

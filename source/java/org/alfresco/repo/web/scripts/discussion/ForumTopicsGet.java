@@ -46,7 +46,7 @@ public class ForumTopicsGet extends AbstractDiscussionWebScript
          Status status, Cache cache) 
    {
       // They shouldn't be trying to list of an existing Post or Topic
-      if(topic != null || post != null)
+      if (topic != null || post != null)
       {
          String error = "Can't list Topics inside an existing Topic or Post";
          throw new WebScriptException(Status.STATUS_BAD_REQUEST, error);
@@ -55,7 +55,7 @@ public class ForumTopicsGet extends AbstractDiscussionWebScript
       // Do we need to list or search?
       boolean tagSearch = false;
       String tag = req.getParameter("tag");
-      if(tag != null && tag.length() > 0)
+      if (tag != null && tag.length() > 0)
       {
          tagSearch = true;
       }
@@ -64,10 +64,10 @@ public class ForumTopicsGet extends AbstractDiscussionWebScript
       boolean oldestTopicsFirst = true;
       PagingResults<TopicInfo> topics = null;
       PagingRequest paging = buildPagingRequest(req);
-      if(tagSearch)
+      if (tagSearch)
       {
          // Tag based is a search rather than a listing
-         if(site != null)
+         if (site != null)
          {
             topics = discussionService.findTopics(site.getShortName(), null, tag, oldestTopicsFirst, paging);
          }
@@ -78,7 +78,7 @@ public class ForumTopicsGet extends AbstractDiscussionWebScript
       }
       else
       {
-         if(site != null)
+         if (site != null)
          {
             topics = discussionService.listTopics(site.getShortName(), oldestTopicsFirst, paging);
          }
@@ -91,7 +91,7 @@ public class ForumTopicsGet extends AbstractDiscussionWebScript
       
       // If they did a site based search, and the component hasn't
       //  been created yet, use the site for the permissions checking
-      if(site != null && nodeRef == null)
+      if (site != null && nodeRef == null)
       {
          nodeRef = site.getNodeRef();
       }

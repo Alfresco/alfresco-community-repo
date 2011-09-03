@@ -49,13 +49,13 @@ public class ForumPostRepliesGet extends AbstractDiscussionWebScript
       // How many levels did they want?
       int levels = 1;
       String levelsS = req.getParameter("levels");
-      if(levelsS != null)
+      if (levelsS != null)
       {
          try
          {
             levels = Integer.parseInt(levelsS);
          }
-         catch(NumberFormatException e)
+         catch (NumberFormatException e)
          {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Level depth parameter invalid");
          }
@@ -63,11 +63,11 @@ public class ForumPostRepliesGet extends AbstractDiscussionWebScript
       
       // Fetch the replies
       PostWithReplies replies;
-      if(post != null)
+      if (post != null)
       {
          replies = discussionService.listPostReplies(post, levels);
       }
-      else if(topic != null)
+      else if (topic != null)
       {
          replies = discussionService.listPostReplies(topic, levels);
       }
@@ -93,7 +93,7 @@ public class ForumPostRepliesGet extends AbstractDiscussionWebScript
       reply.put("childCount", replies.getReplies().size());
       
       List<Map<String,Object>> r = new ArrayList<Map<String,Object>>();
-      for(PostWithReplies child : replies.getReplies())
+      for (PostWithReplies child : replies.getReplies())
       {
          r.add(renderReplies(child, site));
       }

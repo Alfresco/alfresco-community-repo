@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -35,7 +35,6 @@ import org.springframework.extensions.webscripts.WebScriptResponse;
 /**
  * @author Nick Smith
  * @since 4.0
- *
  */
 public class ChannelPut extends AbstractWebScript
 {
@@ -54,7 +53,7 @@ public class ChannelPut extends AbstractWebScript
         Map<String, String> params = req.getServiceMatch().getTemplateVars();
         String channelId = URLDecoder.decode(params.get(CHANNEL_ID));
         Channel channel = channelService.getChannelById(channelId);
-        if(channel == null)
+        if (channel == null)
         {
             String msg = "No channel found for ID: " + channelId;
             throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, msg);
@@ -69,7 +68,7 @@ public class ChannelPut extends AbstractWebScript
             }
             parser.updateChannel(channel, content, channelService);
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             String msg = "Failed to Rename Channel: " + channelId + ". POST body: " + content;
             throw new WebScriptException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg, e);

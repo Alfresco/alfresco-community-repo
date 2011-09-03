@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -38,7 +38,6 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class WorkflowInstanceDelete extends AbstractWorkflowWebscript
 {
-
     public static final String PARAM_FORCED = "forced";
     
     @Override
@@ -106,10 +105,10 @@ public class WorkflowInstanceDelete extends AbstractWorkflowWebscript
         // get the initiator
         WorkflowInstance wi = workflowService.getWorkflowById(instanceId);  
         
-        if(wi == null)
+        if (wi == null)
         {
-        	 throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, 
-        			 "The workflow instance to delete/cancel with id " + instanceId + " doesn't exist: ");
+            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, 
+                        "The workflow instance to delete/cancel with id " + instanceId + " doesn't exist: ");
         }
         
         NodeRef initiator = wi.getInitiator();
@@ -117,7 +116,7 @@ public class WorkflowInstanceDelete extends AbstractWorkflowWebscript
         {
             // determine if the current user is the initiator of the workflow
             String currentUserName = authenticationService.getCurrentUserName();
-  
+
            // get the username of the initiator
            String userName = (String)nodeService.getProperty(initiator, ContentModel.PROP_USERNAME);
            

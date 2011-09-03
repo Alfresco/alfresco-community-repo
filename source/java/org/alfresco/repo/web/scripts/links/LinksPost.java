@@ -40,7 +40,8 @@ public class LinksPost extends AbstractLinksWebScript
 {
    @Override
    protected Map<String, Object> executeImpl(SiteInfo site, String linkName,
-         WebScriptRequest req, JSONObject json, Status status, Cache cache) {
+         WebScriptRequest req, JSONObject json, Status status, Cache cache) 
+   {
       Map<String, Object> model = new HashMap<String, Object>();
       
       // Get the new link details from the JSON
@@ -68,7 +69,7 @@ public class LinksPost extends AbstractLinksWebScript
       {
          link = linksService.createLink(site.getShortName(), title, description, url, internal);
       }
-      catch(AccessDeniedException e)
+      catch (AccessDeniedException e)
       {
          String message = "You don't have permission to create a link";
          
@@ -79,7 +80,7 @@ public class LinksPost extends AbstractLinksWebScript
       }
       
       // Set the tags if required
-      if(tags != null && tags.size() > 0)
+      if (tags != null && tags.size() > 0)
       {
          link.getTags().addAll(tags);
          linksService.updateLink(link);

@@ -39,25 +39,26 @@ public class CalendarEntryDelete extends AbstractCalendarWebScript
     * This WebScript uses HTTP status codes for errors
     */
    @Override
-   protected boolean useJSONErrors() {
+   protected boolean useJSONErrors() 
+   {
       return false;
    }
 
    @Override
    protected Map<String, Object> executeImpl(SiteInfo site, String eventName,
-         WebScriptRequest req, JSONObject json, Status status, Cache cache) {
+         WebScriptRequest req, JSONObject json, Status status, Cache cache) 
+   {
       CalendarEntry entry = calendarService.getCalendarEntry(
-            site.getShortName(), eventName
-      );
+            site.getShortName(), eventName);
       
-      if(entry == null)
+      if (entry == null)
       {
          status.setCode(Status.STATUS_NOT_FOUND);
          return null;
       }
       
       // Special case for "deleting" an instance of a recurring event 
-      if(req.getParameter("date") != null && entry.getRecurrenceRule() != null)
+      if (req.getParameter("date") != null && entry.getRecurrenceRule() != null)
       {
          // Have an ignored event generated
          createIgnoreEvent(req, entry);

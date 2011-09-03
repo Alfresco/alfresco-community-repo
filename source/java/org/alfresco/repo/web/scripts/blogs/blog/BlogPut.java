@@ -59,10 +59,12 @@ public class BlogPut extends AbstractBlogWebScript
         try
         {
             json = new JSONObject(new JSONTokener(req.getContent().getContent()));
-        } catch (JSONException jsonX)
+        } 
+        catch (JSONException jsonX)
         {
             throw new AlfrescoRuntimeException("Could not parse JSON", jsonX);
-        } catch (IOException iox)
+        } 
+        catch (IOException iox)
         {
             throw new AlfrescoRuntimeException("Could not parse JSON", iox);
         }

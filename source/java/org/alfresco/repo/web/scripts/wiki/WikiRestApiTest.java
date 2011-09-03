@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -54,12 +54,13 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
  * Unit Test to test the Wiki Web Script API
  * 
  * @author Nick Burch
+ * @since 4.0
  */
 public class WikiRestApiTest extends BaseWebScriptTest
 {
-	@SuppressWarnings("unused")
+    @SuppressWarnings("unused")
     private static Log logger = LogFactory.getLog(WikiRestApiTest.class);
-	
+
     private MutableAuthenticationService authenticationService;
     private AuthenticationComponent authenticationComponent;
     private TransactionService transactionService;
@@ -191,14 +192,14 @@ public class WikiRestApiTest extends BaseWebScriptTest
     private JSONObject getPages(String filter, String username) throws Exception
     {
        String origUser = this.authenticationComponent.getCurrentUserName();
-       if(username != null)
+       if (username != null)
        {
           this.authenticationComponent.setCurrentUser(username);
           filter = "myPages";
        }
        
        String url = URL_WIKI_LIST;
-       if(filter == null)
+       if (filter == null)
        {
           filter = "all";
        }
@@ -208,7 +209,7 @@ public class WikiRestApiTest extends BaseWebScriptTest
        Response response = sendRequest(new GetRequest(url), 200);
        JSONObject result = new JSONObject(response.getContentAsString());
        
-       if(username != null)
+       if (username != null)
        {
           this.authenticationComponent.setCurrentUser(origUser);
        }
@@ -222,13 +223,13 @@ public class WikiRestApiTest extends BaseWebScriptTest
        if (expectedStatus == Status.STATUS_OK)
        {
           JSONObject result = new JSONObject(response.getContentAsString());
-          if(result.has("page"))
+          if (result.has("page"))
           {
              return result.getJSONObject("page");
           }
           return result;
        }
-       else if(expectedStatus == Status.STATUS_NOT_FOUND)
+       else if (expectedStatus == Status.STATUS_NOT_FOUND)
        {
           JSONObject result = new JSONObject(response.getContentAsString());
           return result;
@@ -250,7 +251,7 @@ public class WikiRestApiTest extends BaseWebScriptTest
        {
           return response.getContentAsString();
        }
-       else if(expectedStatus == Status.STATUS_NOT_FOUND)
+       else if (expectedStatus == Status.STATUS_NOT_FOUND)
        {
           return response.getContentAsString();
        }
@@ -275,14 +276,14 @@ public class WikiRestApiTest extends BaseWebScriptTest
        json.put("tags", "");
        json.put("page", "wiki-page"); // TODO Is this really needed?
        
-       if(version == null || "force".equals(version))
+       if (version == null || "force".equals(version))
        {
           // Allow the save as-is, no versioning check
           json.put("forceSave", "true"); // Allow the save as-is
        }
        else
        {
-          if("none".equals(version))
+          if ("none".equals(version))
           {
              // No versioning
           }
@@ -296,7 +297,7 @@ public class WikiRestApiTest extends BaseWebScriptTest
        if (expectedStatus == Status.STATUS_OK)
        {
           JSONObject result = new JSONObject(response.getContentAsString());
-          if(result.has("page"))
+          if (result.has("page"))
           {
              return result.getJSONObject("page");
           }

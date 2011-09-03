@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -118,7 +118,6 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 /**
  * @author Nick Smith
  * @since 4.0
- *
  */
 public class PublishingRestApiTest extends BaseWebScriptTest
 {
@@ -481,7 +480,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         for (int i = 0; i < data.length(); i++)
         {
             JSONObject json = data.optJSONObject(i);
-            if(typeId.equals(json.optString(ID)))
+            if (typeId.equals(json.optString(ID)))
             {
                 checkChannelType(json, type);
                 return;
@@ -504,7 +503,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         for (int i = 0; i < data.length(); i++)
         {
             JSONObject json = data.optJSONObject(i);
-            if(eventId.equals(json.optString(ID)))
+            if (eventId.equals(json.optString(ID)))
             {
                 PublishingEvent event = publishingService.getPublishingEvent(eventId);
                 checkJsonEvent(event, json);
@@ -555,7 +554,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         for (int i = 0; i < jsonArray.length(); i++)
         {
             JSONObject json = jsonArray.getJSONObject(i);
-            if(nodeId.equals(json.getString(NODE_REF)))
+            if (nodeId.equals(json.getString(NODE_REF)))
             {
                 checkNode(entry, json);
                 return;
@@ -568,12 +567,12 @@ public class PublishingRestApiTest extends BaseWebScriptTest
     {
         NodeSnapshot snapshot = entry.getSnapshot();
         String version = snapshot.getVersion();
-        if(version != null && version.isEmpty() == false)
+        if (version != null && version.isEmpty() == false)
         {
             assertEquals(version, json.getString(VERSION));
         }
         String name = (String) snapshot.getProperties().get(ContentModel.PROP_NAME);
-        if(name != null && name.isEmpty() == false)
+        if (name != null && name.isEmpty() == false)
         {
             assertEquals(name, json.getString(NAME));
         }
@@ -602,7 +601,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         json.put(CHANNEL_ID, publishChannel.getId());
         json.put(COMMENT, comment);
         Collection<String> publishNodes = Collections.singleton(node.toString());
-        if(publish)
+        if (publish)
         {
             json.put(PUBLISH_NODES, publishNodes);
         }
@@ -610,7 +609,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         {
             json.put(UNPUBLISH_NODES, publishNodes);
         }
-        if(statusMessage != null)
+        if (statusMessage != null)
         {
             json.put(STATUS_UPDATE, buildStatusUpdate(statusMessage, node, statusChannels));
         }
@@ -649,7 +648,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         {
             JSONObject jsonChannel = json.getJSONObject(i);
             String name = jsonChannel.getString(NAME);
-            if(channel.getName().equals(name))
+            if (channel.getName().equals(name))
             {
                 checkChannel(jsonChannel, channel);
                 return;
@@ -719,7 +718,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
     {
         for (int i = 0; i < json.length(); i++)
         {
-            if(string.equals(json.getString(i)))
+            if (string.equals(json.getString(i)))
             {
                 return;
             }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -45,12 +45,13 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
  * Unit Test to test the Calendaring Web Script API
  * 
  * @author Nick Burch
+ * @since 4.0
  */
 public class CalendarRestApiTest extends BaseWebScriptTest
 {
-	@SuppressWarnings("unused")
+    @SuppressWarnings("unused")
     private static Log logger = LogFactory.getLog(CalendarRestApiTest.class);
-	
+
     private MutableAuthenticationService authenticationService;
     private AuthenticationComponent authenticationComponent;
     private PersonService personService;
@@ -99,7 +100,7 @@ public class CalendarRestApiTest extends BaseWebScriptTest
         }
         
         // Ensure the calendar container is there
-        if(!siteService.hasContainer(SITE_SHORT_NAME_CALENDAR, "calendar"))
+        if (!siteService.hasContainer(SITE_SHORT_NAME_CALENDAR, "calendar"))
         {
             siteService.createContainer(SITE_SHORT_NAME_CALENDAR, "calendar", null, null);
         }
@@ -125,13 +126,13 @@ public class CalendarRestApiTest extends BaseWebScriptTest
         
         // delete the users
         personService.deletePerson(USER_ONE);
-        if(this.authenticationService.authenticationExists(USER_ONE))
+        if (this.authenticationService.authenticationExists(USER_ONE))
         {
            this.authenticationService.deleteAuthentication(USER_ONE);
         }
         
         personService.deletePerson(USER_TWO);
-        if(this.authenticationService.authenticationExists(USER_TWO))
+        if (this.authenticationService.authenticationExists(USER_TWO))
         {
            this.authenticationService.deleteAuthentication(USER_TWO);
         }
@@ -168,13 +169,13 @@ public class CalendarRestApiTest extends BaseWebScriptTest
     private JSONObject getEntries(String username, String from) throws Exception
     {
        String url = URL_EVENTS_LIST + "?site=" + SITE_SHORT_NAME_CALENDAR;
-       if(username != null)
+       if (username != null)
        {
           url = URL_USER_SITE_EVENTS_LIST;
        }
-       if(from != null)
+       if (from != null)
        {
-          if(url.indexOf('/') > 0)
+          if (url.indexOf('/') > 0)
           {
              url += "&";
           }
@@ -208,8 +209,7 @@ public class CalendarRestApiTest extends BaseWebScriptTest
      * Creates a 1 hour, non-all day event on the 29th of June
      */
     private JSONObject createEntry(String name, String where, String description, 
-          int expectedStatus)
-    throws Exception
+          int expectedStatus) throws Exception
     {
        String date = "2011/06/29"; // A wednesday
        String start = "12:00";
@@ -234,7 +234,7 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        if (expectedStatus == Status.STATUS_OK)
        {
           JSONObject result = new JSONObject(response.getContentAsString());
-          if(result.has("event"))
+          if (result.has("event"))
           {
              return result.getJSONObject("event");
           }
@@ -270,7 +270,7 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        json.put("docfolder", "");
        json.put("page", "calendar");
        
-       if(withRecurrence)
+       if (withRecurrence)
        {
           json.put("recurrenceRule", "FREQ=WEEKLY;INTERVAL=2;BYDAY=WE,FR");
           json.put("recurrenceLastMeeting", "2011-09-11");
@@ -280,11 +280,11 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        if (expectedStatus == Status.STATUS_OK)
        {
           JSONObject result = new JSONObject(response.getContentAsString());
-          if(result.has("event"))
+          if (result.has("event"))
           {
              return result.getJSONObject("event");
           }
-          if(result.has("data"))
+          if (result.has("data"))
           {
              return result.getJSONObject("data");
           }
@@ -301,17 +301,16 @@ public class CalendarRestApiTest extends BaseWebScriptTest
      */
     private String getNameFromEntry(JSONObject entry) throws Exception
     {
-       if(! entry.has("uri"))
+       if (! entry.has("uri"))
        {
           throw new IllegalArgumentException("No uri in " + entry.toString());
        }
     
        String uri = entry.getString("uri");
        String name = uri.substring( 
-             uri.indexOf(SITE_SHORT_NAME_CALENDAR) + SITE_SHORT_NAME_CALENDAR.length() + 1
-       );
+             uri.indexOf(SITE_SHORT_NAME_CALENDAR) + SITE_SHORT_NAME_CALENDAR.length() + 1);
        
-       if(name.indexOf('?') > 0)
+       if (name.indexOf('?') > 0)
        {
           return name.substring(0, name.indexOf('?'));
        }
@@ -433,9 +432,7 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        assertEquals(
              "Occurs every 2 weeks on Wednesday, Friday, effective " +
              "28-Jun-2011 until 11-Sep-2011 from 11:30 to 13:30", 
-             entry.getString("recurrence")
-       );
-       
+             entry.getString("recurrence"));
        
        // Delete
        sendRequest(new DeleteRequest(URL_EVENT_BASE + name), Status.STATUS_NO_CONTENT);

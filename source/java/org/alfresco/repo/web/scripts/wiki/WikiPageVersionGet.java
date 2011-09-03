@@ -54,25 +54,27 @@ public class WikiPageVersionGet extends AbstractWikiWebScript
    
    private ContentService contentService;
    private VersionService versionService;
+   
    public void setVersionService(VersionService versionService) 
    {
        this.versionService = versionService;
    }
+   
    public void setContentService(ContentService contentService) 
    {
        this.contentService = contentService;
    }
 
-
    @Override
    protected Map<String, Object> executeImpl(SiteInfo site, String pageName,
-         WebScriptRequest req, JSONObject json, Status status, Cache cache) {
+         WebScriptRequest req, JSONObject json, Status status, Cache cache) 
+   {
       Map<String, Object> model = new HashMap<String, Object>();
       
       // Grab the version string
       Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
       String versionId = templateVars.get("versionId");
-      if(versionId == null)
+      if (versionId == null)
       {
          String error = "No versionId supplied";
          throw new WebScriptException(Status.STATUS_BAD_REQUEST, error);
@@ -80,7 +82,7 @@ public class WikiPageVersionGet extends AbstractWikiWebScript
       
       // Try to find the page
       WikiPageInfo page = wikiService.getWikiPage(site.getShortName(), pageName);
-      if(page == null)
+      if (page == null)
       {
          String message = "The Wiki Page could not be found";
          status.setCode(Status.STATUS_NOT_FOUND);
@@ -99,9 +101,9 @@ public class WikiPageVersionGet extends AbstractWikiWebScript
       {
          versionHistory = versionService.getVersionHistory(page.getNodeRef());
       }
-      catch(AspectMissingException e) {}
+      catch (AspectMissingException e) {}
       
-      if(versionHistory == null)
+      if (versionHistory == null)
       {
          // Not been versioned, return an empty string
          model.put(PARAM_CONTENT, "");
@@ -111,23 +113,23 @@ public class WikiPageVersionGet extends AbstractWikiWebScript
       
       // Fetch the version by either ID or Label
       Matcher m = LABEL_PATTERN.matcher(versionId);
-      if(m.matches())
+      if (m.matches())
       {
          // It's a version label like 2.3
          try
          {
             version = versionHistory.getVersion(versionId);
          }
-         catch(VersionDoesNotExistException e) {}
+         catch (VersionDoesNotExistException e) {}
       }
       else
       {
          // It's a version ID like ed00bac1-f0da-4042-8598-45a0d39cb74d
          // (The ID is usually part of the NodeRef of the frozen node, but we
          //  don't assume to be able to just generate the full NodeRef)
-         for(Version v : versionHistory.getAllVersions())
+         for (Version v : versionHistory.getAllVersions())
          {
-            if(v.getFrozenStateNodeRef().getId().equals(versionId))
+            if (v.getFrozenStateNodeRef().getId().equals(versionId))
             {
                version = v;
             }
@@ -137,10 +139,10 @@ public class WikiPageVersionGet extends AbstractWikiWebScript
       
       // Did we find the right version in the end?
       String contents;
-      if(version != null)
+      if (version != null)
       {
          ContentReader reader = contentService.getReader(version.getFrozenStateNodeRef(), ContentModel.PROP_CONTENT);
-         if(reader != null)
+         if (reader != null)
          {
             contents = reader.getContentString();
          }

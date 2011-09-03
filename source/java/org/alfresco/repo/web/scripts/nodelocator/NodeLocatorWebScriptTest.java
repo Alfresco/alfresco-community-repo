@@ -49,7 +49,6 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 /**
  * @author Nick Smith
  * @since 4.0
- *
  */
 public class NodeLocatorWebScriptTest extends BaseWebScriptTest
 {
@@ -108,7 +107,7 @@ public class NodeLocatorWebScriptTest extends BaseWebScriptTest
         finally
         {
             nodeService.deleteNode(companyChild);
-            if(site != null)
+            if (site != null)
             {
                 siteService.deleteSite(site.getShortName());
             }

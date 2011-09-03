@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -33,7 +33,6 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 /**
  * @author Nick Smith
  * @since 4.0
- *
  */
 public class PublishingQueuePost extends PublishingWebScript
 {
@@ -47,7 +46,7 @@ public class PublishingQueuePost extends PublishingWebScript
         try
         {
             content = WebScriptUtil.getContent(req);
-            if(content == null || content.isEmpty())
+            if (content == null || content.isEmpty())
             {
                 throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, "No publishing event was posted!");
             }
@@ -56,15 +55,14 @@ public class PublishingQueuePost extends PublishingWebScript
             Map<String, Object> eventModel = builder.buildPublishingEvent(event, channelService);
             return WebScriptUtil.createBaseModel(eventModel);
         }
-        catch(WebScriptException we)
+        catch (WebScriptException we)
         {
             throw we;
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             String msg = "Failed to schedule publishing event. POST body: " + content;
             throw new WebScriptException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg, e);
         }
     }
-    
 }

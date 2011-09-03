@@ -48,7 +48,7 @@ public class ForumPostPut extends AbstractDiscussionWebScript
       Map<String, Object> model = buildCommonModel(site, topic, post, req);
       
       // Did they want to change a reply or the whole topic?
-      if(post != null)
+      if (post != null)
       {
          // Update the specified post
          doUpdatePost(post, post.getTopic(), req, json);
@@ -59,11 +59,11 @@ public class ForumPostPut extends AbstractDiscussionWebScript
          // Build the JSON for just this post
          model.put(KEY_POSTDATA, renderPost(post, site));
       }
-      else if(topic != null)
+      else if (topic != null)
       {
          // Update the primary post of the topic
          post = discussionService.getPrimaryPost(topic);
-         if(post == null)
+         if (post == null)
          {
             throw new WebScriptException(Status.STATUS_PRECONDITION_FAILED,
                   "First (primary) post was missing from the topic, can't fetch");
@@ -92,29 +92,29 @@ public class ForumPostPut extends AbstractDiscussionWebScript
       // Fetch the details from the JSON
       
       // Update the titles on the post and it's topic
-      if(json.containsKey("title"))
+      if (json.containsKey("title"))
       {
          String title = (String)json.get("title");
          post.setTitle(title);
-         if(title.length() > 0)
+         if (title.length() > 0)
          {
             topic.setTitle(title);
          }
       }
       
       // Contents is on the post
-      if(json.containsKey("content"))
+      if (json.containsKey("content"))
       {
          post.setContents((String)json.get("content"));
       }
       
       // Tags are on the topic
-      if(json.containsKey("tags"))
+      if (json.containsKey("tags"))
       {
          topic.getTags().clear();
          
          List<String> tags = getTags(json);
-         if(tags != null)
+         if (tags != null)
          {
             topic.getTags().addAll(tags);
          }

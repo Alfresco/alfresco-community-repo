@@ -53,7 +53,7 @@ public class ForumTopicsHotGet extends AbstractDiscussionWebScript
          Status status, Cache cache) 
    {
       // They shouldn't be trying to list of an existing Post or Topic
-      if(topic != null || post != null)
+      if (topic != null || post != null)
       {
          String error = "Can't list Topics inside an existing Topic or Post";
          throw new WebScriptException(Status.STATUS_BAD_REQUEST, error);
@@ -62,7 +62,7 @@ public class ForumTopicsHotGet extends AbstractDiscussionWebScript
       // Grab the date range to search over
       String numDaysS = req.getParameter("numdays");
       int numDays = RECENT_POSTS_PERIOD_DAYS;
-      if(numDaysS != null)
+      if (numDaysS != null)
       {
          numDays = Integer.parseInt(numDaysS);  
       }
@@ -73,7 +73,7 @@ public class ForumTopicsHotGet extends AbstractDiscussionWebScript
       // Get the topics with recent replies
       PagingResults<Pair<TopicInfo,Integer>> topicsAndCounts = null;
       PagingRequest paging = buildPagingRequest(req);
-      if(site != null)
+      if (site != null)
       {
          topicsAndCounts = discussionService.listHotTopics(site.getShortName(), since, paging);
       }
@@ -84,7 +84,7 @@ public class ForumTopicsHotGet extends AbstractDiscussionWebScript
       
       // For this, we actually only need the topics, not their counts too
       List<TopicInfo> topics = new ArrayList<TopicInfo>();
-      for(Pair<TopicInfo,Integer> tc : topicsAndCounts.getPage())
+      for (Pair<TopicInfo,Integer> tc : topicsAndCounts.getPage())
       {
          topics.add(tc.getFirst());
       }
@@ -92,7 +92,7 @@ public class ForumTopicsHotGet extends AbstractDiscussionWebScript
       
       // If they did a site based search, and the component hasn't
       //  been created yet, use the site for the permissions checking
-      if(site != null && nodeRef == null)
+      if (site != null && nodeRef == null)
       {
          nodeRef = site.getNodeRef();
       }

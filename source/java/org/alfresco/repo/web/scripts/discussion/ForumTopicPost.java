@@ -45,7 +45,7 @@ public class ForumTopicPost extends AbstractDiscussionWebScript
          Status status, Cache cache) 
    {
       // They shouldn't be adding to an existing Post or Topic
-      if(topic != null || post != null)
+      if (topic != null || post != null)
       {
          String error = "Can't create a new Topic inside an existing Topic or Post";
          throw new WebScriptException(Status.STATUS_BAD_REQUEST, error);
@@ -55,11 +55,11 @@ public class ForumTopicPost extends AbstractDiscussionWebScript
       // Grab the details of the new Topic and Post
       String title = "";
       String contents = "";
-      if(json.containsKey("title"))
+      if (json.containsKey("title"))
       {
          title = (String)json.get("title");
       }
-      if(json.containsKey("content"))
+      if (json.containsKey("content"))
       {
          contents = (String)json.get("content");
       }
@@ -67,7 +67,7 @@ public class ForumTopicPost extends AbstractDiscussionWebScript
       
       
       // Have the topic created
-      if(site != null)
+      if (site != null)
       {
          topic = discussionService.createTopic(site.getShortName(), title);
       }
@@ -75,7 +75,7 @@ public class ForumTopicPost extends AbstractDiscussionWebScript
       {
          topic = discussionService.createTopic(nodeRef, title);
       }
-      if(tags != null && tags.size() > 0)
+      if (tags != null && tags.size() > 0)
       {
          topic.getTags().clear();
          topic.getTags().addAll(tags);

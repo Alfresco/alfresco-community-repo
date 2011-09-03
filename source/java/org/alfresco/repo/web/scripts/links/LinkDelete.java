@@ -40,12 +40,13 @@ public class LinkDelete extends AbstractLinksWebScript
 {
    @Override
    protected Map<String, Object> executeImpl(SiteInfo site, String linkName,
-         WebScriptRequest req, JSONObject json, Status status, Cache cache) {
+         WebScriptRequest req, JSONObject json, Status status, Cache cache) 
+   {
       Map<String, Object> model = new HashMap<String, Object>();
       
       // Try to find the link
       LinkInfo link = linksService.getLink(site.getShortName(), linkName);
-      if(link == null)
+      if (link == null)
       {
          String message = "No link found with that name";
          throw new WebScriptException(Status.STATUS_NOT_FOUND, message);
@@ -56,7 +57,7 @@ public class LinkDelete extends AbstractLinksWebScript
       {
          linksService.deleteLink(link);
       }
-      catch(AccessDeniedException e)
+      catch (AccessDeniedException e)
       {
          String message = "You don't have permission to delete that link";
          throw new WebScriptException(Status.STATUS_FORBIDDEN, message);

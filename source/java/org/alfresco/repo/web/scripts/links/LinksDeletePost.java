@@ -45,20 +45,21 @@ public class LinksDeletePost extends AbstractLinksWebScript
    
    @Override
    protected Map<String, Object> executeImpl(SiteInfo site, String linkName,
-         WebScriptRequest req, JSONObject json, Status status, Cache cache) {
+         WebScriptRequest req, JSONObject json, Status status, Cache cache) 
+   {
       Map<String, Object> model = new HashMap<String, Object>();
       
       // Get the requested nodes from the JSON
       // Silently skips over any invalid ones specified
       List<LinkInfo> links = new ArrayList<LinkInfo>();
-      if(json.containsKey("items"))
+      if (json.containsKey("items"))
       {
          JSONArray items = (JSONArray)json.get("items");
-         for(int i=0; i<items.size(); i++)
+         for (int i=0; i<items.size(); i++)
          {
             String name = (String)items.get(i);
             LinkInfo link = linksService.getLink(site.getShortName(), name);
-            if(link != null)
+            if (link != null)
             {
                links.add(link);
             }
@@ -67,7 +68,7 @@ public class LinksDeletePost extends AbstractLinksWebScript
       
       
       // Check we got at least one link, and bail if not
-      if(links.size() == 0)
+      if (links.size() == 0)
       {
          String message = "No valid link names supplied";
          
@@ -79,14 +80,14 @@ public class LinksDeletePost extends AbstractLinksWebScript
       
       
       // Delete each one in turn
-      for(LinkInfo link : links)
+      for (LinkInfo link : links)
       {
          // Do the delete
          try
          {
             linksService.deleteLink(link);
          }
-         catch(AccessDeniedException e)
+         catch (AccessDeniedException e)
          {
             String message = "You don't have permission to delete the link with name '" + link.getSystemName() + "'";
             

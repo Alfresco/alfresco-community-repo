@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -55,12 +55,13 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
  * Unit Test to test the Links Web Script API
  * 
  * @author Nick Burch
+ * @since 4.0
  */
 public class LinksRestApiTest extends BaseWebScriptTest
 {
-	@SuppressWarnings("unused")
+    @SuppressWarnings("unused")
     private static Log logger = LogFactory.getLog(LinksRestApiTest.class);
-	
+
     private MutableAuthenticationService authenticationService;
     private AuthenticationComponent authenticationComponent;
     private TransactionService transactionService;
@@ -119,7 +120,7 @@ public class LinksRestApiTest extends BaseWebScriptTest
         }
         
         // Ensure the links container is there
-        if(!siteService.hasContainer(SITE_SHORT_NAME_LINKS, "links"))
+        if (!siteService.hasContainer(SITE_SHORT_NAME_LINKS, "links"))
         {
             siteService.createContainer(SITE_SHORT_NAME_LINKS, "links", null, null);
         }
@@ -151,7 +152,7 @@ public class LinksRestApiTest extends BaseWebScriptTest
         }
         
         personService.deletePerson(USER_TWO);
-        if(this.authenticationService.authenticationExists(USER_TWO))
+        if (this.authenticationService.authenticationExists(USER_TWO))
         {
            this.authenticationService.deleteAuthentication(USER_TWO);
         }
@@ -188,14 +189,14 @@ public class LinksRestApiTest extends BaseWebScriptTest
     private JSONObject getLinks(String filter, String username) throws Exception
     {
        String origUser = this.authenticationComponent.getCurrentUserName();
-       if(username != null)
+       if (username != null)
        {
           this.authenticationComponent.setCurrentUser(username);
           filter = "user";
        }
        
        String url = URL_LINKS_LIST;
-       if(filter == null)
+       if (filter == null)
        {
           filter = "all";
        }
@@ -205,7 +206,7 @@ public class LinksRestApiTest extends BaseWebScriptTest
        Response response = sendRequest(new GetRequest(url), 200);
        JSONObject result = new JSONObject(response.getContentAsString());
        
-       if(username != null)
+       if (username != null)
        {
           this.authenticationComponent.setCurrentUser(origUser);
        }
@@ -219,7 +220,7 @@ public class LinksRestApiTest extends BaseWebScriptTest
        if (expectedStatus == Status.STATUS_OK)
        {
           JSONObject result = new JSONObject(response.getContentAsString());
-          if(result.has("item"))
+          if (result.has("item"))
           {
              return result.getJSONObject("item");
           }
@@ -235,8 +236,7 @@ public class LinksRestApiTest extends BaseWebScriptTest
      * Creates a single link based on the supplied details
      */
     private JSONObject createLink(String title, String description, String url,
-          boolean internal, int expectedStatus)
-    throws Exception
+          boolean internal, int expectedStatus) throws Exception
     {
        JSONObject json = new JSONObject();
        json.put("site", SITE_SHORT_NAME_LINKS);
@@ -244,7 +244,7 @@ public class LinksRestApiTest extends BaseWebScriptTest
        json.put("description", description);
        json.put("url", url);
        json.put("tags", "");
-       if(internal)
+       if (internal)
        {
           json.put("internal", "true");
        }
@@ -254,7 +254,7 @@ public class LinksRestApiTest extends BaseWebScriptTest
        if (expectedStatus == Status.STATUS_OK)
        {
           JSONObject result = new JSONObject(response.getContentAsString());
-          if(result.has("link"))
+          if (result.has("link"))
           {
              return result.getJSONObject("link");
           }
@@ -285,7 +285,7 @@ public class LinksRestApiTest extends BaseWebScriptTest
        if (expectedStatus == Status.STATUS_OK)
        {
           JSONObject result = new JSONObject(response.getContentAsString());
-          if(result.has("links"))
+          if (result.has("links"))
           {
              return result.getJSONObject("links");
           }
@@ -320,7 +320,7 @@ public class LinksRestApiTest extends BaseWebScriptTest
     private JSONObject deleteLinks(List<String> names, int expectedStatus) throws Exception
     {
        JSONArray items = new JSONArray();
-       for(String name : names)
+       for (String name : names)
        {
           items.put(name);
        }
@@ -370,7 +370,7 @@ public class LinksRestApiTest extends BaseWebScriptTest
      */
     private String getNameFromLink(JSONObject link) throws Exception
     {
-       if(! link.has("name"))
+       if (! link.has("name"))
        {
           throw new IllegalArgumentException("No name in " + link.toString());
        }
@@ -442,29 +442,22 @@ public class LinksRestApiTest extends BaseWebScriptTest
        // Check the comments url
        assertEquals(
              "/node/workspace/" + nodeRef.getStoreRef().getIdentifier() + "/" + nodeRef.getId() + "/comments",
-             link.getString("commentsUrl")
-       );
+             link.getString("commentsUrl"));
        
        // Check the created date
        assertEquals(
              ISO8601DateFormat.format((Date)nodeService.getProperty(nodeRef, ContentModel.PROP_CREATED)),
-             link.getJSONObject("createdOnDate").getString("iso8601")
-       );
-
-       
+             link.getJSONObject("createdOnDate").getString("iso8601"));
        
        // Edit
        // We should get a simple message
        link = updateLink(name, LINK_TITLE_ONE, "More Thing 1", LINK_URL_ONE, true, Status.STATUS_OK);
        assertEquals(
              "Incorrect JSON: " + link.toString(), 
-             true, link.has("message")
-       );
+             true, link.has("message"));
        assertEquals(
              "Incorrect JSON: " + link.toString(), 
-             true, link.getString("message").contains("updated")
-       );
-       
+             true, link.getString("message").contains("updated"));
        
        
        // Fetch
@@ -508,13 +501,12 @@ public class LinksRestApiTest extends BaseWebScriptTest
        link = deleteLinks(Arrays.asList(new String[]{name}), Status.STATUS_OK);
        assertEquals(
              "Incorrect JSON: " + link.toString(), 
-             true, link.has("message")
-       );
+             true, link.has("message"));
+       
        assertEquals(
              "Incorrect JSON: " + link.toString(), 
-             true, link.getString("message").contains("deleted")
-       );
-       
+             true, link.getString("message").contains("deleted"));
+
        
        // Fetch, will have gone
        link = getLink(name, Status.STATUS_NOT_FOUND);

@@ -50,7 +50,7 @@ public class ForumTopicsRecentGet extends AbstractDiscussionWebScript
          Status status, Cache cache) 
    {
       // They shouldn't be trying to list of an existing Post or Topic
-      if(topic != null || post != null)
+      if (topic != null || post != null)
       {
          String error = "Can't list Topics inside an existing Topic or Post";
          throw new WebScriptException(Status.STATUS_BAD_REQUEST, error);
@@ -59,7 +59,7 @@ public class ForumTopicsRecentGet extends AbstractDiscussionWebScript
       // Grab the date range to search over
       String numDaysS = req.getParameter("numdays");
       int numDays = RECENT_SEARCH_PERIOD_DAYS;
-      if(numDaysS != null)
+      if (numDaysS != null)
       {
          numDays = Integer.parseInt(numDaysS);  
       }
@@ -71,7 +71,7 @@ public class ForumTopicsRecentGet extends AbstractDiscussionWebScript
       // Get the recent topics, newest first
       PagingResults<TopicInfo> topics = null;
       PagingRequest paging = buildPagingRequest(req);
-      if(site != null)
+      if (site != null)
       {
          topics = discussionService.listTopics(site.getShortName(), from, to, false, paging);
       }
@@ -83,7 +83,7 @@ public class ForumTopicsRecentGet extends AbstractDiscussionWebScript
       
       // If they did a site based search, and the component hasn't
       //  been created yet, use the site for the permissions checking
-      if(site != null && nodeRef == null)
+      if (site != null && nodeRef == null)
       {
          nodeRef = site.getNodeRef();
       }

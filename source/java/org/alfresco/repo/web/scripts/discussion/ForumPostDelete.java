@@ -51,11 +51,11 @@ public class ForumPostDelete extends AbstractDiscussionWebScript
       
       // Are we deleting a topic, or a post in it?
       String message = null;
-      if(post != null)
+      if (post != null)
       {
          message = doDeletePost(topic, post);
       }
-      else if(topic != null)
+      else if (topic != null)
       {
          message = doDeleteTopic(topic, site, req, json);
       }
@@ -78,7 +78,7 @@ public class ForumPostDelete extends AbstractDiscussionWebScript
       discussionService.deleteTopic(topic);
       
       // Add an activity entry for this if it's site based
-      if(site != null)
+      if (site != null)
       {
          addActivityEntry("post", "deleted", topic, null, site, req, json);
       }

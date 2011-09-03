@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -46,7 +46,6 @@ import org.springframework.extensions.surf.util.URLEncoder;
 /**
  * @author Nick Smith
  * @since 4.0
- *
  */
 public class PublishingModelBuilder implements PublishingWebScriptConstants
 {
@@ -87,7 +86,7 @@ public class PublishingModelBuilder implements PublishingWebScriptConstants
         
         String channelId = event.getChannelId();
         Channel channel = channelService.getChannelById(channelId);
-        if(channel!= null)
+        if (channel!= null)
         {
             model.put(CHANNEL, buildChannel(channel));
         }
@@ -224,16 +223,15 @@ public class PublishingModelBuilder implements PublishingWebScriptConstants
         NodeSnapshot snapshot = entry.getSnapshot();
         model.put(NODEREF, entry.getNodeRef().toString());
         String version = snapshot.getVersion();
-        if(version!=null && version.isEmpty()==false)
+        if (version != null && version.isEmpty() == false)
         {
             model.put(VERSION, version);
         }
         String name = (String) snapshot.getProperties().get(ContentModel.PROP_NAME);
-        if(name != null && name.isEmpty() == false)
+        if (name != null && name.isEmpty() == false)
         {
             model.put(NAME, name);
         }
         return model;
     }
-
 }

@@ -47,12 +47,12 @@ public class CalendarEntryGet extends AbstractCalendarWebScript
    
    @Override
    protected Map<String, Object> executeImpl(SiteInfo site, String eventName,
-         WebScriptRequest req, JSONObject json, Status status, Cache cache) {
+         WebScriptRequest req, JSONObject json, Status status, Cache cache) 
+   {
       CalendarEntry entry = calendarService.getCalendarEntry(
-            site.getShortName(), eventName
-      );
+            site.getShortName(), eventName);
       
-      if(entry == null)
+      if (entry == null)
       {
          return buildError("Could not find event: " + eventName);
       }
@@ -73,9 +73,9 @@ public class CalendarEntryGet extends AbstractCalendarWebScript
       result.put("recurrence", buildRecurrenceString(entry));
       
       // Replace nulls with blank strings for the JSON
-      for(String key : result.keySet())
+      for (String key : result.keySet())
       {
-         if(result.get(key) == null)
+         if (result.get(key) == null)
          {
             result.put(key, "");
          }
@@ -98,7 +98,7 @@ public class CalendarEntryGet extends AbstractCalendarWebScript
    {
       // If there's no recurrence rules, then there's nothing to do
       String recurrence = event.getRecurrenceRule();
-      if(recurrence == null || recurrence.trim().length() == 0)
+      if (recurrence == null || recurrence.trim().length() == 0)
       {
          return null;
       }
@@ -114,11 +114,11 @@ public class CalendarEntryGet extends AbstractCalendarWebScript
       StringBuffer text = new StringBuffer();
       
       // Handle the different frequencies
-      if(params.containsKey("FREQ"))
+      if (params.containsKey("FREQ"))
       {
          String freq = params.get("FREQ");
          String interval = params.get("INTERVAL");
-         if(interval == null)
+         if (interval == null)
          {
             interval = "1";
          }
@@ -134,7 +134,7 @@ public class CalendarEntryGet extends AbstractCalendarWebScript
                text.append("Occurs every " + interval + " weeks on ");
             }
             
-            for(String day : params.get("BYDAY").split(","))
+            for (String day : params.get("BYDAY").split(","))
             {
                text.append(days.get(day));
                text.append(", ");
@@ -179,11 +179,11 @@ public class CalendarEntryGet extends AbstractCalendarWebScript
       
       // And the rest
       DateFormat dFormat = SimpleDateFormat.getDateInstance(
-            SimpleDateFormat.MEDIUM, I18NUtil.getLocale()
-      );
+            SimpleDateFormat.MEDIUM, I18NUtil.getLocale());
+      
       DateFormat tFormat = SimpleDateFormat.getTimeInstance(
-            SimpleDateFormat.SHORT, I18NUtil.getLocale()
-      );
+            SimpleDateFormat.SHORT, I18NUtil.getLocale());
+      
       text.append("effective " + dFormat.format(event.getStart()));
       
       if (params.containsKey("COUNT"))

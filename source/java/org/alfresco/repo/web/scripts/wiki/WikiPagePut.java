@@ -55,7 +55,8 @@ public class WikiPagePut extends AbstractWikiWebScript
 
    @Override
    protected Map<String, Object> executeImpl(SiteInfo site, String pageName,
-         WebScriptRequest req, JSONObject json, Status status, Cache cache) {
+         WebScriptRequest req, JSONObject json, Status status, Cache cache) 
+   {
       Map<String, Object> model = new HashMap<String, Object>();
       
       // Grab the details of the change
@@ -64,7 +65,7 @@ public class WikiPagePut extends AbstractWikiWebScript
       
       // Fetch the title, used only when creating
       String title;
-      if(json.containsKey("title"))
+      if (json.containsKey("title"))
       {
          title = (String)json.get("title");
       }
@@ -76,17 +77,17 @@ public class WikiPagePut extends AbstractWikiWebScript
       // Fetch the versioning details
       boolean forceSave = json.containsKey("forceSave");
       String currentVersion = null;
-      if(json.containsKey("currentVersion"))
+      if (json.containsKey("currentVersion"))
       {
          currentVersion = (String)json.get("currentVersion");
       }
       
       // Fetch the tags, if given
       List<String> tags = null;
-      if(json.containsKey("tags"))
+      if (json.containsKey("tags"))
       {
          tags = new ArrayList<String>();
-         if(json.get("tags").equals(""))
+         if (json.get("tags").equals(""))
          {
             // Empty list given as a string, eg "tags":""
          }
@@ -94,7 +95,7 @@ public class WikiPagePut extends AbstractWikiWebScript
          {
             // Array of tags
             JSONArray tagsA = (JSONArray)json.get("tags");
-            for(int i=0; i<tagsA.size(); i++)
+            for (int i=0; i<tagsA.size(); i++)
             {
                tags.add((String)tagsA.get(i));
             }
@@ -103,13 +104,13 @@ public class WikiPagePut extends AbstractWikiWebScript
       
       // Are we creating or editing?
       WikiPageInfo page = wikiService.getWikiPage(site.getShortName(), pageName);
-      if(page == null)
+      if (page == null)
       {
          // Create the page
          page = wikiService.createWikiPage(site.getShortName(), title, contents);
          
          // Add tags if given
-         if(tags != null && tags.size() > 0)
+         if (tags != null && tags.size() > 0)
          {
             page.getTags().addAll(tags);
             wikiService.updateWikiPage(page);
@@ -124,11 +125,11 @@ public class WikiPagePut extends AbstractWikiWebScript
       else
       {
          // Updating, check about versioning first
-         if(forceSave || pageVersionMatchesSubmitted(page, currentVersion))
+         if (forceSave || pageVersionMatchesSubmitted(page, currentVersion))
          {
             // Update the page
             page.setContents(contents);
-            if(tags != null && tags.size() > 0)
+            if (tags != null && tags.size() > 0)
             {
                page.getTags().clear();
                page.getTags().addAll(tags);
@@ -161,14 +162,14 @@ public class WikiPagePut extends AbstractWikiWebScript
    private boolean pageVersionMatchesSubmitted(WikiPageInfo page, String currentVersion)
    {
       // If they didn't give version, it can't be right
-      if(currentVersion == null)
+      if (currentVersion == null)
       {
          return false;
       }
       
       // Grab the current version
       Version version = versionService.getCurrentVersion(page.getNodeRef());
-      if(version == null)
+      if (version == null)
       {
          // It should be versioned already, fix that
          makeVersioned(page);
@@ -178,7 +179,7 @@ public class WikiPagePut extends AbstractWikiWebScript
       }
       
       // Check the label
-      if(version.getVersionLabel().equals(currentVersion))
+      if (version.getVersionLabel().equals(currentVersion))
       {
          // Match, no changes
          return true;

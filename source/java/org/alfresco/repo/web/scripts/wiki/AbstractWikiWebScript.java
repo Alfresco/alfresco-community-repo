@@ -95,7 +95,7 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
     
     protected String getOrNull(JSONObject json, String key)
     {
-       if(json.containsKey(key))
+       if (json.containsKey(key))
        {
           return (String)json.get(key);
        }
@@ -112,26 +112,26 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
        int pageNumber = 1;
        
        String pageSizeS = req.getParameter("pageSize");
-       if(pageSizeS != null)
+       if (pageSizeS != null)
        {
           try
           {
              pageSize = Integer.parseInt(pageSizeS);
           }
-          catch(NumberFormatException e)
+          catch (NumberFormatException e)
           {
              throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Paging size parameters invalid");
           }
        }
        
        String pageNumberS = req.getParameter("page");
-       if(pageNumberS != null)
+       if (pageNumberS != null)
        {
           try
           {
              pageNumber = Integer.parseInt(pageNumberS);
           }
-          catch(NumberFormatException e)
+          catch (NumberFormatException e)
           {
              throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Paging size parameters invalid");
           }
@@ -150,14 +150,14 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
     {
        // What page is this for?
        String page = req.getParameter("page");
-       if(page == null && json != null)
+       if (page == null && json != null)
        {
-          if(json.containsKey("page"))
+          if (json.containsKey("page"))
           {
              page = (String)json.get("page");
           }
        }
-       if(page == null)
+       if (page == null)
        {
           // Default
           page = "wiki";
@@ -176,10 +176,9 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
                 "org.alfresco.wiki.page-" + event,
                 site.getShortName(),
                 WIKI_SERVICE_ACTIVITY_APP_NAME,
-                activityJson.toString()
-          );
+                activityJson.toString());
        }
-       catch(Exception e)
+       catch (Exception e)
        {
           // Warn, but carry on
           logger.warn("Error adding wiki page " + event + " to activities feed", e);
@@ -188,7 +187,7 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
     
     protected Object buildPerson(String username)
     {
-       if(username == null || username.length() == 0)
+       if (username == null || username.length() == 0)
        {
           // Empty string needed
           return "";
@@ -220,9 +219,9 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
        res.put("modifiedBY", buildPerson(page.getModifier()));
        
        // We want blank instead of null
-       for(String key : res.keySet())
+       for (String key : res.keySet())
        {
-          if(res.get(key) == null)
+          if (res.get(key) == null)
           {
              res.put(key, "");
           }
@@ -236,7 +235,7 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
           Status status, Cache cache) 
     {
        Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
-       if(templateVars == null)
+       if (templateVars == null)
        {
           String error = "No parameters supplied";
           throw new WebScriptException(Status.STATUS_BAD_REQUEST, error);
@@ -246,22 +245,22 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
        // Parse the JSON, if supplied
        JSONObject json = null;
        String contentType = req.getContentType();
-       if(contentType != null && contentType.indexOf(';') != -1)
+       if (contentType != null && contentType.indexOf(';') != -1)
        {
           contentType = contentType.substring(0, contentType.indexOf(';'));
        }
-       if(MimetypeMap.MIMETYPE_JSON.equals(contentType))
+       if (MimetypeMap.MIMETYPE_JSON.equals(contentType))
        {
           JSONParser parser = new JSONParser();
           try
           {
              json = (JSONObject)parser.parse(req.getContent().getContent());
           }
-          catch(IOException io)
+          catch (IOException io)
           {
              throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Invalid JSON: " + io.getMessage());
           }
-          catch(ParseException pe)
+          catch (ParseException pe)
           {
              throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Invalid JSON: " + pe.getMessage());
           }
@@ -270,17 +269,17 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
        
        // Get the site short name. Try quite hard to do so...
        String siteName = templateVars.get("siteId");
-       if(siteName == null)
+       if (siteName == null)
        {
           siteName = req.getParameter("site");
        }
-       if(siteName == null && json != null)
+       if (siteName == null && json != null)
        {
-          if(json.containsKey("siteid"))
+          if (json.containsKey("siteid"))
           {
              siteName = (String)json.get("siteid");
           }
-          else if(json.containsKey("siteId"))
+          else if (json.containsKey("siteId"))
           {
              siteName = (String)json.get("siteId");
           }
@@ -289,7 +288,7 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
              siteName = (String)json.get("site");
           }
        }
-       if(siteName == null)
+       if (siteName == null)
        {
           String error = "No site given";
           throw new WebScriptException(Status.STATUS_BAD_REQUEST, error);
@@ -297,7 +296,7 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
        
        // Grab the requested site
        SiteInfo site = siteService.getSite(siteName);
-       if(site == null)
+       if (site == null)
        {
           String error = "Could not find site: " + siteName;
           throw new WebScriptException(Status.STATUS_NOT_FOUND, error);
@@ -314,5 +313,4 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
     protected abstract Map<String, Object> executeImpl(SiteInfo site, 
           String pageName, WebScriptRequest req, JSONObject json, 
           Status status, Cache cache);
-    
 }

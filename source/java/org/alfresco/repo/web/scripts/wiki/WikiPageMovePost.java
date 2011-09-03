@@ -25,7 +25,6 @@ import java.util.ResourceBundle;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.wiki.WikiPageInfo;
-import org.json.JSONException;
 import org.json.simple.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
@@ -48,13 +47,14 @@ public class WikiPageMovePost extends AbstractWikiWebScript
    
    @Override
    protected Map<String, Object> executeImpl(SiteInfo site, String pageName,
-         WebScriptRequest req, JSONObject json, Status status, Cache cache) {
+         WebScriptRequest req, JSONObject json, Status status, Cache cache) 
+   {
       final Map<String, Object> model = new HashMap<String, Object>();
       final ResourceBundle rb = getResources();
       
       // Try to find the page we're renaming
       WikiPageInfo page = wikiService.getWikiPage(site.getShortName(), pageName);
-      if(page == null)
+      if (page == null)
       {
          String message = "The Wiki Page could not be found";
          status.setCode(Status.STATUS_NOT_FOUND);
@@ -80,7 +80,7 @@ public class WikiPageMovePost extends AbstractWikiWebScript
          page.setTitle(newTitle);
          page = wikiService.updateWikiPage(page);
       }
-      catch(FileExistsException e)
+      catch (FileExistsException e)
       {
          throw new WebScriptException(Status.STATUS_CONFLICT, "Duplicate page name");
       }

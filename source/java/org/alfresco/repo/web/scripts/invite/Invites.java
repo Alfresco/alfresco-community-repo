@@ -19,19 +19,16 @@
 package org.alfresco.repo.web.scripts.invite;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.invitation.InvitationSearchCriteriaImpl;
-import org.alfresco.repo.invitation.InviteHelper;
-import org.alfresco.service.cmr.invitation.InvitationSearchCriteria;
-import org.alfresco.repo.invitation.WorkflowModelNominatedInvitation;
 import org.alfresco.repo.invitation.site.InviteInfo;
 import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.invitation.Invitation;
+import org.alfresco.service.cmr.invitation.InvitationSearchCriteria;
 import org.alfresco.service.cmr.invitation.InvitationService;
 import org.alfresco.service.cmr.invitation.NominatedInvitation;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -39,10 +36,6 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
-import org.alfresco.service.cmr.workflow.WorkflowTask;
-import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
-import org.alfresco.service.cmr.workflow.WorkflowTaskState;
-import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -97,23 +90,27 @@ public class Invites extends DeclarativeWebScript
         this.workflowService = workflowService;
     }
 
-	public void setServiceRegistry(ServiceRegistry serviceRegistry) {
-		this.serviceRegistry = serviceRegistry;
-	}
-
-    public void setSiteService(SiteService siteService) {
+    public void setServiceRegistry(ServiceRegistry serviceRegistry) 
+    {
+        this.serviceRegistry = serviceRegistry;
+    }
+    
+    public void setSiteService(SiteService siteService) 
+    {
         this.siteService = siteService;
     }
     
-	public void setInvitationService(InvitationService invitationService) {
-		this.invitationService = invitationService;
-	}
-
-	public InvitationService getInvitationService() {
-		return invitationService;
-	}
+    public void setInvitationService(InvitationService invitationService) 
+    {
+        this.invitationService = invitationService;
+    }
     
-	/*
+    public InvitationService getInvitationService() 
+    {
+        return invitationService;
+    }
+    
+    /*
      * (non-Javadoc)
      * 
      * @see
@@ -181,8 +178,8 @@ public class Invites extends DeclarativeWebScript
         // query properties
         if (inviteIdProvided)
         {
-        	NominatedInvitation invitation = (NominatedInvitation)invitationService.getInvitation(inviteId);
-        	inviteInfoList.add(toInviteInfo(invitation));
+            NominatedInvitation invitation = (NominatedInvitation)invitationService.getInvitation(inviteId);
+            inviteInfoList.add(toInviteInfo(invitation));
         }
         else
         // 'inviteId' has not been provided, so create the query properties from
@@ -194,37 +191,34 @@ public class Invites extends DeclarativeWebScript
         // properties will be set
         // at this point
         {
-        	InvitationSearchCriteriaImpl criteria = new InvitationSearchCriteriaImpl();  
-        	criteria.setInvitationType(InvitationSearchCriteria.InvitationType.NOMINATED);
-        	criteria.setResourceType(Invitation.ResourceType.WEB_SITE);
+            InvitationSearchCriteriaImpl criteria = new InvitationSearchCriteriaImpl();  
+            criteria.setInvitationType(InvitationSearchCriteria.InvitationType.NOMINATED);
+            criteria.setResourceType(Invitation.ResourceType.WEB_SITE);
 
 
             if (inviterUserNameProvided)
             {
-            	criteria.setInviter(inviterUserName);
-
+                criteria.setInviter(inviterUserName);
             }
             if (inviteeUserNameProvided)
             {
-            	criteria.setInvitee(inviteeUserName);
-
+                criteria.setInvitee(inviteeUserName);
             }
             if (siteShortNameProvided)
             {
-            	criteria.setResourceName(siteShortName);
-
+                criteria.setResourceName(siteShortName);
             }
             
-        	List<Invitation> invitations = invitationService.searchInvitation(criteria);
+            List<Invitation> invitations = invitationService.searchInvitation(criteria);
 
-        	// Put InviteInfo objects (containing workflow path properties
-        	// wf:inviterUserName, wf:inviteeUserName, wf:siteShortName,
-        	// and invite id property (from workflow instance id))
-        	// onto model for each invite workflow task returned by the query
-        	for (Invitation invitation : invitations)
-        	{
-            	inviteInfoList.add(toInviteInfo((NominatedInvitation)invitation));
-        	}
+            // Put InviteInfo objects (containing workflow path properties
+            // wf:inviterUserName, wf:inviteeUserName, wf:siteShortName,
+            // and invite id property (from workflow instance id))
+            // onto model for each invite workflow task returned by the query
+            for (Invitation invitation : invitations)
+            {
+                inviteInfoList.add(toInviteInfo((NominatedInvitation)invitation));
+            }
         }
 
         // put the list of invite infos onto model to be passed onto template
@@ -256,20 +250,19 @@ public class Invites extends DeclarativeWebScript
         TemplateNode inviteePerson = null;
         if (inviteeRef != null)
         {
-        	inviteePerson = new TemplateNode(inviteeRef, serviceRegistry, null);
+            inviteePerson = new TemplateNode(inviteeRef, serviceRegistry, null);
         }
         
         InviteInfo ret = new InviteInfo(invitationStatus, 
-        		invitation.getInviterUserName(), 
-        		inviterPerson,
-         		invitation.getInviteeUserName(), 
-         		inviteePerson, 
-         		invitation.getRoleName(),
-         		invitation.getResourceName(), 
-         		siteInfo, 
-         		invitation.getSentInviteDate(),
-         		invitation.getInviteId()
-         		);
+                    invitation.getInviterUserName(), 
+                    inviterPerson,
+                    invitation.getInviteeUserName(), 
+                    inviteePerson, 
+                    invitation.getRoleName(),
+                    invitation.getResourceName(), 
+                    siteInfo, 
+                    invitation.getSentInviteDate(),
+                    invitation.getInviteId());
          
          return ret;
     }

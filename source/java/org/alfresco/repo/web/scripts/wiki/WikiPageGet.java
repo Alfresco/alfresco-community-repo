@@ -49,12 +49,13 @@ public class WikiPageGet extends AbstractWikiWebScript
    
    @Override
    protected Map<String, Object> executeImpl(SiteInfo site, String pageName,
-         WebScriptRequest req, JSONObject json, Status status, Cache cache) {
+         WebScriptRequest req, JSONObject json, Status status, Cache cache) 
+   {
       Map<String, Object> model = new HashMap<String, Object>();
       
       // Try to find the page
       WikiPageInfo page = wikiService.getWikiPage(site.getShortName(), pageName);
-      if(page == null)
+      if (page == null)
       {
          String message = "The Wiki Page could not be found";
          status.setCode(Status.STATUS_NOT_FOUND);
@@ -63,10 +64,10 @@ public class WikiPageGet extends AbstractWikiWebScript
          
          // Grab the container, used in permissions checking
          NodeRef container = siteService.getContainer(
-               site.getShortName(), WikiServiceImpl.WIKI_COMPONENT
-         );
+               site.getShortName(), WikiServiceImpl.WIKI_COMPONENT);
+         
          // If there's no container yet, the site will do for permissions
-         if(container == null)
+         if (container == null)
          {
             container = site.getNodeRef();
          }
@@ -83,13 +84,13 @@ public class WikiPageGet extends AbstractWikiWebScript
       // Identify all the internal page links, valid and not
       // TODO This may be a candidate for the service in future
       List<String> links = new ArrayList<String>();
-      if(page.getContents() != null)
+      if (page.getContents() != null)
       {
          Matcher m = LINK_PATTERN.matcher(page.getContents());
-         while(m.find())
+         while (m.find())
          {
             String link = m.group(1);
-            if(! links.contains(link))
+            if (! links.contains(link))
             {
                links.add(link);
             }

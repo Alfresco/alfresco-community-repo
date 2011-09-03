@@ -118,7 +118,7 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
     
     protected String getOrNull(JSONObject json, String key)
     {
-       if(json.containsKey(key))
+       if (json.containsKey(key))
        {
           return (String)json.get(key);
        }
@@ -135,26 +135,26 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
        int startIndex = 0;
        
        String pageSizeS = req.getParameter("pageSize");
-       if(pageSizeS != null)
+       if (pageSizeS != null)
        {
           try
           {
              pageSize = Integer.parseInt(pageSizeS);
           }
-          catch(NumberFormatException e)
+          catch (NumberFormatException e)
           {
              throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Paging size parameters invalid");
           }
        }
        
        String startIndexS = req.getParameter("startIndex");
-       if(startIndexS != null)
+       if (startIndexS != null)
        {
           try
           {
              startIndex = Integer.parseInt(startIndexS);
           }
-          catch(NumberFormatException e)
+          catch (NumberFormatException e)
           {
              throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Paging size parameters invalid");
           }
@@ -168,14 +168,14 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
     protected List<String> getTags(JSONObject json)
     {
        List<String> tags = null;
-       if(json.containsKey("tags"))
+       if (json.containsKey("tags"))
        {
           // Is it "tags":"" or "tags":[...] ?
-          if(json.get("tags") instanceof String)
+          if (json.get("tags") instanceof String)
           {
              // This is normally an empty string, skip
              String tagsS = (String)json.get("tags");
-             if("".equals(tagsS))
+             if ("".equals(tagsS))
              {
                 // No tags were given
                 return null;
@@ -191,7 +191,7 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
           {
              tags = new ArrayList<String>();
              JSONArray jsTags = (JSONArray)json.get("tags");
-             for(int i=0; i<jsTags.size(); i++)
+             for (int i=0; i<jsTags.size(); i++)
              {
                 tags.add( (String)jsTags.get(i) );
              }
@@ -210,7 +210,7 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
           PostInfo post, SiteInfo site, WebScriptRequest req, JSONObject json)
     {
        // We can only add activities against a site
-       if(site == null)
+       if (site == null)
        {
           logger.info("Unable to add activity entry for " + thing + " " + event + " as no site given");
           return;
@@ -218,14 +218,14 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
        
        // What page is this for?
        String page = req.getParameter("page");
-       if(page == null && json != null)
+       if (page == null && json != null)
        {
-          if(json.containsKey("page"))
+          if (json.containsKey("page"))
           {
              page = (String)json.get("page");
           }
        }
-       if(page == null)
+       if (page == null)
        {
           // Default
           page = "discussions-topicview";
@@ -233,10 +233,10 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
        
        // Get the title
        String title = topic.getTitle();
-       if(post != null)
+       if (post != null)
        {
           String postTitle = post.getTitle();
-          if(postTitle != null && postTitle.length() > 0)
+          if (postTitle != null && postTitle.length() > 0)
           {
              title = postTitle;
           }
@@ -256,8 +256,7 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
                 "org.alfresco.discussions." + thing + "-" + event,
                 site.getShortName(),
                 DISCUSSIONS_SERVICE_ACTIVITY_APP_NAME,
-                activity.toString()
-          );
+                activity.toString());
        }
        catch(Exception e)
        {
@@ -277,19 +276,19 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
     {
        // Are they OK on the node?
        AccessStatus canEdit = permissionService.hasPermission(post.getNodeRef(), PermissionService.WRITE); 
-       if(canEdit == AccessStatus.ALLOWED)
+       if (canEdit == AccessStatus.ALLOWED)
        {
           // Only the creator and site managers may edit
           String user = AuthenticationUtil.getFullyAuthenticatedUser();
-          if(post.getCreator().equals(user))
+          if (post.getCreator().equals(user))
           {
              // It's their post
              return true;
           }
-          if(site != null)
+          if (site != null)
           {
              String role = siteService.getMembersRole(site.getShortName(), user);
-             if(SiteServiceImpl.SITE_MANAGER.equals(role))
+             if (SiteServiceImpl.SITE_MANAGER.equals(role))
              {
                 // Managers may edit
                 return true;
@@ -303,7 +302,7 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
     
     protected Object buildPerson(String username)
     {
-       if(username == null || username.length() == 0)
+       if (username == null || username.length() == 0)
        {
           // Empty string needed
           return "";
@@ -338,7 +337,7 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
     {
        // Fetch the primary post
        PostInfo primaryPost = discussionService.getPrimaryPost(topic);
-       if(primaryPost == null)
+       if (primaryPost == null)
        {
           throw new WebScriptException(Status.STATUS_PRECONDITION_FAILED,
                  "First (primary) post was missing from the topic, can't fetch");
@@ -349,7 +348,7 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
        
        // Find out how many replies there are
        int numReplies;
-       if(mostRecentPost.getNodeRef().equals( primaryPost.getNodeRef() ))
+       if (mostRecentPost.getNodeRef().equals( primaryPost.getNodeRef() ))
        {
           // Only the one post in the topic
           mostRecentPost = null;
@@ -379,7 +378,7 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
        item.put("totalReplyCount", numReplies);
        
        // We want details on the most recent post
-       if(mostRecentPost != null)
+       if (mostRecentPost != null)
        {
           item.put("lastReply", mostRecentPost.getNodeRef());
           item.put("lastReplyBy", buildPerson(mostRecentPost.getCreator()));
@@ -418,7 +417,7 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
        
        // Data
        List<Map<String,Object>> items = new ArrayList<Map<String,Object>>();
-       for(TopicInfo topic : topics)
+       for (TopicInfo topic : topics)
        {
           items.add(renderTopic(topic, site));
        }
@@ -437,7 +436,7 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
        model.put(KEY_POST, post);
        
        // Capture the site details only if site based
-       if(site != null)
+       if (site != null)
        {
           model.put("siteId", site.getShortName());
           model.put("site", site);
@@ -446,13 +445,13 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
        // The limit on the length of the content to be returned
        int contentLength = -1;
        String contentLengthS = req.getParameter("contentLength");
-       if(contentLengthS != null)
+       if (contentLengthS != null)
        {
           try
           {
              contentLength = Integer.parseInt(contentLengthS);
           }
-          catch(NumberFormatException e)
+          catch (NumberFormatException e)
           {
              logger.info("Skipping invalid length " + contentLengthS); 
           }
@@ -468,7 +467,7 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
           Status status, Cache cache) 
     {
        Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
-       if(templateVars == null)
+       if (templateVars == null)
        {
           String error = "No parameters supplied";
           throw new WebScriptException(Status.STATUS_BAD_REQUEST, error);
@@ -478,22 +477,22 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
        // Parse the JSON, if supplied
        JSONObject json = null;
        String contentType = req.getContentType();
-       if(contentType != null && contentType.indexOf(';') != -1)
+       if (contentType != null && contentType.indexOf(';') != -1)
        {
           contentType = contentType.substring(0, contentType.indexOf(';'));
        }
-       if(MimetypeMap.MIMETYPE_JSON.equals(contentType))
+       if (MimetypeMap.MIMETYPE_JSON.equals(contentType))
        {
           JSONParser parser = new JSONParser();
           try
           {
              json = (JSONObject)parser.parse(req.getContent().getContent());
           }
-          catch(IOException io)
+          catch (IOException io)
           {
              throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Invalid JSON: " + io.getMessage());
           }
-          catch(ParseException pe)
+          catch (ParseException pe)
           {
              throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Invalid JSON: " + pe.getMessage());
           }
@@ -506,24 +505,24 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
        TopicInfo topic = null;
        PostInfo post = null;
        
-       if(templateVars.containsKey("site"))
+       if (templateVars.containsKey("site"))
        {
           // Site, and optionally topic
           String siteName = templateVars.get("site");
           site = siteService.getSite(siteName);
-          if(site == null)
+          if (site == null)
           {
              String error = "Could not find site: " + siteName;
              throw new WebScriptException(Status.STATUS_NOT_FOUND, error);
           }
           
           // Did they give a topic name too?
-          if(templateVars.containsKey("path"))
+          if (templateVars.containsKey("path"))
           {
              String name = templateVars.get("path");
              topic = discussionService.getTopic(site.getShortName(), name);
              
-             if(topic == null)
+             if (topic == null)
              {
                 String error = "Could not find topic '" + name + "' for site '" + 
                                site.getShortName() + "'";
@@ -534,23 +533,23 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
           else
           {
              // The NodeRef is the container (if it exists)
-             if(siteService.hasContainer(siteName, DiscussionServiceImpl.DISCUSSION_COMPONENT))
+             if (siteService.hasContainer(siteName, DiscussionServiceImpl.DISCUSSION_COMPONENT))
              {
                 nodeRef = siteService.getContainer(siteName, DiscussionServiceImpl.DISCUSSION_COMPONENT);
              }
           }
        }
-       else if(templateVars.containsKey("store_type") && 
-               templateVars.containsKey("store_id") &&
-               templateVars.containsKey("id"))
+       else if (templateVars.containsKey("store_type") && 
+                templateVars.containsKey("store_id") &&
+                templateVars.containsKey("id"))
        {
           // NodeRef, normally Topic or Discussion
           StoreRef store = new StoreRef(
                 templateVars.get("store_type"),
-                templateVars.get("store_id")
-          );
+                templateVars.get("store_id"));
+          
           nodeRef = new NodeRef(store, templateVars.get("id"));
-          if(! nodeService.exists(nodeRef))
+          if (! nodeService.exists(nodeRef))
           {
              String error = "Could not find node: " + nodeRef;
              throw new WebScriptException(Status.STATUS_NOT_FOUND, error);
@@ -558,20 +557,20 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
           
           // Try to build the appropriate object for it
           Pair<TopicInfo,PostInfo> objects = discussionService.getForNodeRef(nodeRef);
-          if(objects != null)
+          if (objects != null)
           {
              topic = objects.getFirst();
              post = objects.getSecond();
           }
           
           // See if it's actually attached to a site
-          if(topic != null)
+          if (topic != null)
           {
              NodeRef container = topic.getContainerNodeRef();
-             if(container != null)
+             if (container != null)
              {
                 NodeRef maybeSite = nodeService.getPrimaryParent(container).getParentRef();
-                if(maybeSite != null)
+                if (maybeSite != null)
                 {
                    // Try to make it a site, will return Null if it isn't one
                    site = siteService.getSite(maybeSite);

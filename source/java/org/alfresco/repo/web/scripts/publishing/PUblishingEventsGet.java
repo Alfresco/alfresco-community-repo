@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -37,7 +37,6 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 /**
  * @author Nick Smith
  * @since 4.0
- *
  */
 public class PUblishingEventsGet extends PublishingWebScript
 {
@@ -49,7 +48,7 @@ public class PUblishingEventsGet extends PublishingWebScript
     {
         Map<String, String> params = req.getServiceMatch().getTemplateVars();
         NodeRef node = WebScriptUtil.getNodeRef(params);
-        if(node == null)
+        if (node == null)
         {
             String msg = "A valid NodeRef must be specified!";
             throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, msg);
@@ -60,7 +59,7 @@ public class PUblishingEventsGet extends PublishingWebScript
             List<Map<String, Object>> model = builder.buildPublishingEventsForNode(events, node, channelService);
             return WebScriptUtil.createBaseModel(model);
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             String msg = "Failed to query for publishing events for node: " + node;
             throw new WebScriptException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg, e);

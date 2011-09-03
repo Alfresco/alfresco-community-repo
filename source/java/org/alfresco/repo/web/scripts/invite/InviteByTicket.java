@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -128,27 +128,25 @@ public class InviteByTicket extends DeclarativeWebScript
         
         try 
         {
-        	Invitation invitation = invitationService.getInvitation(inviteId);
-        	
-        	if (invitation instanceof NominatedInvitation)
-        	{
-        		NominatedInvitation theInvitation = (NominatedInvitation)invitation;
-        		String ticket = theInvitation.getTicket();
-        		if (ticket == null || (! ticket.equals(inviteTicket)))
-        		{
-        			throw new WebScriptException(Status.STATUS_NOT_FOUND,
-        			"Ticket mismatch");
-        		}
+            Invitation invitation = invitationService.getInvitation(inviteId);
+            
+            if (invitation instanceof NominatedInvitation)
+            {
+                NominatedInvitation theInvitation = (NominatedInvitation)invitation;
+                String ticket = theInvitation.getTicket();
+                if (ticket == null || (! ticket.equals(inviteTicket)))
+                {
+                    throw new WebScriptException(Status.STATUS_NOT_FOUND, "Ticket mismatch");
+                }
                 // return the invite info
                 model.put("invite", toInviteInfo(theInvitation));
                 return model;
-        	}
-        	else
-        	{
-        		// Not a nominated invitation
-    			throw new WebScriptException(Status.STATUS_FORBIDDEN,
-    			"Not a nominated invitation");
-        	}
+            }
+            else
+            {
+                // Not a nominated invitation
+                throw new WebScriptException(Status.STATUS_FORBIDDEN, "Not a nominated invitation");
+            }
         }
         catch (InvitationExceptionNotFound nfe)
         {
@@ -177,20 +175,19 @@ public class InviteByTicket extends DeclarativeWebScript
         TemplateNode inviteePerson = null;
         if (inviteeRef != null)
         {
-        	inviteePerson = new TemplateNode(inviteeRef, serviceRegistry, null);
+            inviteePerson = new TemplateNode(inviteeRef, serviceRegistry, null);
         }
         
         InviteInfo ret = new InviteInfo(invitationStatus, 
-        		invitation.getInviterUserName(), 
-        		inviterPerson,
-         		invitation.getInviteeUserName(), 
-         		inviteePerson, 
-         		invitation.getRoleName(),
-         		invitation.getResourceName(), 
-         		siteInfo, 
-         		invitation.getSentInviteDate(),
-         		invitation.getInviteId()
-         		);
+                    invitation.getInviterUserName(), 
+                    inviterPerson,
+                    invitation.getInviteeUserName(), 
+                    inviteePerson, 
+                    invitation.getRoleName(),
+                    invitation.getResourceName(), 
+                    siteInfo, 
+                    invitation.getSentInviteDate(),
+                    invitation.getInviteId());
          
          return ret;
     }

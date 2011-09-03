@@ -49,14 +49,15 @@ public class WikiPageListGet extends AbstractWikiWebScript
    
    @Override
    protected Map<String, Object> executeImpl(SiteInfo site, String pageName,
-         WebScriptRequest req, JSONObject json, Status status, Cache cache) {
+         WebScriptRequest req, JSONObject json, Status status, Cache cache) 
+   {
       // Decide on what kind of request they wanted
       String filter = req.getParameter("filter");
       
       // User?
       boolean userFiltering = false;
       String user = null;
-      if("user".equals(filter) || "myPages".equals(filter))
+      if ("user".equals(filter) || "myPages".equals(filter))
       {
          userFiltering = true;
          user = AuthenticationUtil.getFullyAuthenticatedUser();
@@ -67,19 +68,19 @@ public class WikiPageListGet extends AbstractWikiWebScript
       boolean dateIsCreated = true;
       Date from = null;
       Date to = null;
-      if("recentlyAdded".equals(filter) || 
-         "recentlyCreated".equals(filter) ||
-         "recentlyModified".equals(filter))
+      if ("recentlyAdded".equals(filter) || 
+          "recentlyCreated".equals(filter) ||
+          "recentlyModified".equals(filter))
       {
          dateFiltering = true;
-         if("recentlyModified".equals(filter))
+         if ("recentlyModified".equals(filter))
          {
             dateIsCreated = false;
          }
          
          int days = RECENT_SEARCH_PERIOD_DAYS;
          String daysS = req.getParameter("days");
-         if(daysS != null && daysS.length() > 0)
+         if (daysS != null && daysS.length() > 0)
          {
             days = Integer.parseInt(daysS);
          }
@@ -93,13 +94,13 @@ public class WikiPageListGet extends AbstractWikiWebScript
       // Get the links for the list
       PagingRequest paging = buildPagingRequest(req);
       PagingResults<WikiPageInfo> pages;
-      if(userFiltering)
+      if (userFiltering)
       {
          pages = wikiService.listWikiPages(site.getShortName(), user, paging);
       }
-      else if(dateFiltering)
+      else if (dateFiltering)
       {
-         if(dateIsCreated)
+         if (dateIsCreated)
          {
             pages = wikiService.listWikiPagesByCreated(site.getShortName(), from, to, paging);
          }
@@ -128,7 +129,7 @@ public class WikiPageListGet extends AbstractWikiWebScript
       data.put("itemCount", items.size());
       
       int total = items.size();
-      if(pages.getTotalResultCount() != null && pages.getTotalResultCount().getFirst() != null)
+      if (pages.getTotalResultCount() != null && pages.getTotalResultCount().getFirst() != null)
       {
          total = pages.getTotalResultCount().getFirst();
       }
@@ -136,7 +137,7 @@ public class WikiPageListGet extends AbstractWikiWebScript
       
       // We need the container node for permissions checking
       NodeRef container;
-      if(pages.getPage().size() > 0)
+      if (pages.getPage().size() > 0)
       {
          container = pages.getPage().get(0).getContainerNodeRef();
       }
@@ -144,10 +145,9 @@ public class WikiPageListGet extends AbstractWikiWebScript
       {
          // Find the container (if it's been created yet)
          container = siteService.getContainer(
-               site.getShortName(), WikiServiceImpl.WIKI_COMPONENT
-         );
+               site.getShortName(), WikiServiceImpl.WIKI_COMPONENT);
          
-         if(container == null)
+         if (container == null)
          {
             // Brand new site, no write operations on links have happened
             // Fudge it for now with the site itself, the first write call

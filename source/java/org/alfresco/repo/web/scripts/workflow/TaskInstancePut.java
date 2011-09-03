@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -147,35 +147,35 @@ public class TaskInstancePut extends AbstractWorkflowWebscript
                         }
                         else
                         {
-                        	// If the JSON returns an Object which is not a String, we use that type.
-                        	// Otherwise, we try to convert the string
-                        	if(jsonValue instanceof String)
-                        	{
-                        		// Check if the task already has the property, use that type.
-                            	Serializable existingValue = workflowTask.getProperties().get(key);
-                            	if(existingValue != null)
-                            	{
-                            		try
-                            		{
-                            			value = DefaultTypeConverter.INSTANCE.convert(existingValue.getClass(), jsonValue);
-                            		}
-                            		catch(TypeConversionException tce)
-                            		{
-                            			// TODO: is this the right approach, ignoring exception?
-                            			// Ignore the exception, revert to using String-value
-                            		}
-                            	}
-                            	else
-                            	{
-                            		// Revert to using string-value
-                            		value = (String) jsonValue;
-                            	}
-                        	}
-                        	else
-                        	{
-                        		// Use the value provided by JSON
-                        		value = (Serializable) jsonValue;
-                        	}
+                            // If the JSON returns an Object which is not a String, we use that type.
+                            // Otherwise, we try to convert the string
+                            if (jsonValue instanceof String)
+                            {
+                                // Check if the task already has the property, use that type.
+                                Serializable existingValue = workflowTask.getProperties().get(key);
+                                if (existingValue != null)
+                                {
+                                    try
+                                    {
+                                        value = DefaultTypeConverter.INSTANCE.convert(existingValue.getClass(), jsonValue);
+                                    }
+                                    catch(TypeConversionException tce)
+                                    {
+                                        // TODO: is this the right approach, ignoring exception?
+                                        // Ignore the exception, revert to using String-value
+                                    }
+                                }
+                                else
+                                {
+                                    // Revert to using string-value
+                                    value = (String) jsonValue;
+                                }
+                            }
+                            else
+                            {
+                                // Use the value provided by JSON
+                                value = (Serializable) jsonValue;
+                            }
                         }
                     }
                 }

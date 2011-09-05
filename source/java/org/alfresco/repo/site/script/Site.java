@@ -301,6 +301,45 @@ public class Site implements Serializable
      * <p>
      * If no name or role filter is specified all members of the site are listed.
      * <p>
+     * This list includes both users and groups.
+     * 
+     * @param nameFilter               user name filter
+     * @param roleFilter               user role filter
+     * 
+     * @return ScriptableHashMap<String, String>    list of members of site with their roles
+     * @deprecated Use {@link #listMembers(String, String, int, boolean)} instead
+     */
+    public ScriptableHashMap<String, String> listMembers(String nameFilter, String roleFilter)
+    {
+        return listMembers(nameFilter, roleFilter, 0);
+    }
+    
+    /**
+     * Gets a map of members of the site with their role within the site.  This list can
+     * be filtered by name and/or role.
+     * <p>
+     * If no name or role filter is specified all members of the site are listed.
+     * <p>
+     * This list includes both users and groups.
+     * 
+     * @param nameFilter               user name filter
+     * @param roleFilter               user role filter
+     * @param size                     max results size crop if >0
+     * 
+     * @return ScriptableHashMap<String, String>    list of members of site with their roles
+     * @deprecated Use {@link #listMembers(String, String, int, boolean)} instead
+     */
+    public ScriptableHashMap<String, String> listMembers(String nameFilter, String roleFilter, int size)
+    {
+        return listMembers(nameFilter, roleFilter, size, false);
+    }
+    
+    /**
+     * Gets a map of members of the site with their role within the site.  This list can
+     * be filtered by name and/or role.
+     * <p>
+     * If no name or role filter is specified all members of the site are listed.
+     * <p>
      * This list includes both users and groups if collapseGroups is set to false, otherwise all
      * groups that are members are collapsed into their component users and listed.
      * 

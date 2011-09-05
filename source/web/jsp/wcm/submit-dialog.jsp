@@ -70,7 +70,7 @@
    <h:outputText value="&nbsp;#{msg.submit_submission_info}" escape="false" />
 </h:panelGrid>
 
-<h:panelGrid columns="3" cellpadding="2" cellpadding="2" width="100%" style="margin-left:8px" 
+<h:panelGrid columns="3" cellpadding="2" width="100%" style="margin-left:8px" 
              columnClasses="requiredColumn,leftHandColumn,rightHandColumn">
    
    <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
@@ -94,10 +94,10 @@
    <h:outputText value="&nbsp;#{msg.workflow}" escape="false" />
 </h:panelGrid>
 
-<h:panelGrid columns="1" cellpadding="2" cellpadding="2" width="100%" style="margin-left:8px">
+<h:panelGrid columns="1" cellpadding="2" width="100%" style="margin-left:8px">
    <h:panelGroup rendered="#{DialogManager.bean.workflowListSize != 0}">
       <h:outputText value="#{msg.submit_workflow_selection}" />
-      <h:panelGrid columns="2" cellpadding="2" cellpadding="2">
+      <h:panelGrid columns="2" cellpadding="2">
          <a:selectList id="workflow-list" multiSelect="false" styleClass="noBrColumn" itemStyle="padding-top: 3px;"
                value="#{DialogManager.bean.workflowSelectedValue}">
             <a:listItems value="#{DialogManager.bean.workflowList}" />
@@ -108,7 +108,7 @@
    </h:panelGroup>
    <h:panelGroup rendered="#{DialogManager.bean.workflowListSize == 0}">
       <f:verbatim><% PanelGenerator.generatePanelStart(out, request.getContextPath(), "yellowInner", "#ffffcc"); %></f:verbatim>
-      <h:panelGrid columns="2" cellpadding="0" cellpadding="0">
+      <h:panelGrid columns="2" cellpadding="0">
          <h:graphicImage url="/images/icons/warning.gif" style="padding-top:2px;padding-right:4px" width="16" height="16"/>
          <h:outputText styleClass="mainSubText" value="#{msg.submit_no_workflow_warning}" />
       </h:panelGrid>
@@ -121,7 +121,7 @@
    <h:outputText value="&nbsp;#{msg.content_launch}" escape="false" />
 </h:panelGrid>
 
-<h:panelGrid columns="2" cellpadding="2" cellpadding="2" width="100%" style="margin-left:8px"
+<h:panelGrid columns="2" cellpadding="2" width="100%" style="margin-left:8px"
              columnClasses="noBrColumn,rightHandColumn" rendered="#{DialogManager.bean.workflowListSize != 0}">
    <h:outputText value="#{msg.launch_date}:"/>
    <a:inputDatePicker id="launch-date" value="#{DialogManager.bean.launchDate}" 
@@ -133,7 +133,7 @@
    <h:outputText value="&nbsp;#{msg.expiration_date_header}" escape="false" />
 </h:panelGrid>
 
-<h:panelGrid columns="2" cellpadding="2" cellpadding="2" width="100%" style="margin-left:8px"
+<h:panelGrid columns="2" cellpadding="2" width="100%" style="margin-left:8px"
              columnClasses="noBrColumn,rightHandColumn" rendered="#{DialogManager.bean.enteringExpireDate}">
    <a:inputDatePicker id="default-expire-date" value="#{DialogManager.bean.defaultExpireDate}" 
                       initialiseIfNull="false" style="margin-right: 7px;" showTime="true" />
@@ -155,7 +155,7 @@
    <h:outputText value="&nbsp;#{msg.modified_items}" escape="false" />
 </h:panelGrid>
 
-<h:panelGrid columns="1" cellpadding="2" cellpadding="2" width="100%" style="margin-left:8px">
+<h:panelGrid columns="1" cellpadding="2" width="100%" style="margin-left:8px">
    <h:panelGroup rendered="#{DialogManager.bean.warningItemsSize != 0}">
       <f:verbatim><% PanelGenerator.generatePanelStart(out, request.getContextPath(), "yellowInner", "#ffffcc"); %></f:verbatim>
       <h:panelGrid columns="2" cellpadding="0" cellpadding="0">
@@ -212,7 +212,7 @@
    
    <h:panelGroup rendered="#{DialogManager.bean.submitItemsSize != 0}">
       <f:verbatim><% PanelGenerator.generatePanelStart(out, request.getContextPath(), "yellowInner", "#ffffcc"); %></f:verbatim>
-      <h:panelGrid columns="2" cellpadding="0" cellpadding="0">
+      <h:panelGrid columns="2" cellpadding="0">
          <h:graphicImage url="/images/icons/info_icon.gif" style="padding-top:2px;padding-right:4px" width="16" height="16"/>
          <h:outputText styleClass="mainSubText" value="#{msg.submit_submit_info}" />
       </h:panelGrid>

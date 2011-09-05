@@ -102,11 +102,26 @@ function testMembership()
 	var site = siteService.getSite("siteShortName");
 	test.assertNotNull(site);
 	
+	// Check with the full set of params
 	var members = site.listMembers(null, null, 0, false);
 	test.assertNotNull(members);
 	test.assertEquals(1, members.length);
 	test.assertEquals("SiteManager", members["UserOne_SiteServiceImplTest"]);
 	
+	// Try with the 3.2 style parameters
+	site.listMembers(null, null);
+	test.assertNotNull(members);
+	test.assertEquals(1, members.length);
+	test.assertEquals("SiteManager", members["UserOne_SiteServiceImplTest"]);
+	
+	// And with the 3.3 style parameters
+	site.listMembers(null, null, 0);
+	test.assertNotNull(members);
+	test.assertEquals(1, members.length);
+	test.assertEquals("SiteManager", members["UserOne_SiteServiceImplTest"]);
+	
+	
+	// Add another user, and check they appear
 	site.setMembership("UserTwo_SiteServiceImplTest", "SiteCollaborator");
 	members = site.listMembers(null, null, 0, false);
 	test.assertNotNull(members);
@@ -114,12 +129,30 @@ function testMembership()
 	test.assertEquals("SiteManager", members["UserOne_SiteServiceImplTest"]);
 	test.assertEquals("SiteCollaborator", members["UserTwo_SiteServiceImplTest"]);
 	
+	// Check that the paging cut-off kicks in
+	members = site.listMembers(null, null, 1, false);
+	test.assertNotNull(members);
+	test.assertEquals(1, members.length);
+
+	
+	// Try the different filters, by name and role
+	site.listMembers("UserOne", null, 0, false);
+	test.assertNotNull(members);
+	test.assertEquals(1, members.length);
+	test.assertEquals("SiteManager", members["UserOne_SiteServiceImplTest"]);
+
+	site.listMembers(null, "SiteManager", 0, false);
+	test.assertNotNull(members);
+	test.assertEquals(1, members.length);
+	test.assertEquals("SiteManager", members["UserOne_SiteServiceImplTest"]);
+
+	
+	// Remove the user, check they go from the list again
 	site.removeMembership("UserTwo_SiteServiceImplTest");
 	members = site.listMembers(null, null, 0, false);
 	test.assertNotNull(members);
 	test.assertEquals(1, members.length);
 	test.assertEquals("SiteManager", members["UserOne_SiteServiceImplTest"]);
-	
 }
 
 function testContainer()

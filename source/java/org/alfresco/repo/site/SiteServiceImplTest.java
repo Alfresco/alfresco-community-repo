@@ -858,6 +858,19 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         assertTrue(members.containsKey(USER_THREE));
         assertEquals(SiteModel.SITE_COLLABORATOR, members.get(USER_THREE));
         
+        // Ensure that size limiting works correctly
+        members = this.siteService.listMembers("testMembership", null, null, 1);
+        assertNotNull(members);
+        assertEquals(1, members.size());
+        
+        members = this.siteService.listMembers("testMembership", null, null, 2);
+        assertNotNull(members);
+        assertEquals(2, members.size());
+        assertTrue(members.containsKey(USER_ONE));
+        assertEquals(SiteModel.SITE_MANAGER, members.get(USER_ONE));
+        assertTrue(members.containsKey(USER_THREE));
+        assertEquals(SiteModel.SITE_COLLABORATOR, members.get(USER_THREE));
+        
         // Check that a non-manager and non-member cannot edit the memberships
         this.authenticationComponent.setCurrentUser(USER_TWO);
         try

@@ -69,7 +69,8 @@ public class UsernamePropertyDecorator implements PropertyDecorator
         }
         else
         {
-            return null;
+            map.put("isDeleted", true);
+            return (Serializable)map;
         }
 
         map.put("firstName", firstName);

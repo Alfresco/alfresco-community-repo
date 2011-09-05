@@ -1466,7 +1466,8 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         QName siteType = directNodeService.getType(siteNodeRef);
         Set<String> permissions = this.permissionService.getSettablePermissions(siteType);
         Map<String, String> groupsToExpand = new HashMap<String, String>(32);
-        for (String permission : permissions)
+        
+        AUTHORITY_FIND: for (String permission : permissions)
         {
             if (roleFilter == null || roleFilter.length() == 0 || roleFilter.equals(permission))
             {
@@ -1489,7 +1490,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                             members.put(authority, permission);
                             
                             // break on max size limit reached
-                            if (members.size() == size) break;
+                            if (members.size() == size) break AUTHORITY_FIND;
                         }
                         break;
                     case GROUP:
@@ -1524,6 +1525,9 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                                 // No name filter add this group
                                 members.put(authority, permission);
                             }
+                            
+                            // break on max size limit reached
+                            if (members.size() == size) break AUTHORITY_FIND;
                         }
                         break;
                     }

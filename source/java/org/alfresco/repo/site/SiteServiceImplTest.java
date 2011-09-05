@@ -87,6 +87,8 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
     private static final String GROUP_TWO = "GrpTwo_SiteServiceImplTest";
     private static final String GROUP_THREE = "GrpThree_SiteServiceImplTest";
     private static final String GROUP_FOUR = "GrpFour_SiteServiceImplTest";
+    private static final String GROUP_ONE_DISPLAY = "DisplayOfGrpOne-SiteServiceImplTest";
+    private static final String GROUP_TWO_DISPLAY = "DisplayOfGrpTwo-SiteServiceImplTest";
     
     private CopyService copyService;
     private ScriptService scriptService;
@@ -146,10 +148,10 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         createUser(USER_FOUR, "UsRFoUr");
      
         // Create the test groups
-        this.groupOne = this.authorityService.createAuthority(AuthorityType.GROUP, GROUP_ONE);
+        this.groupOne = this.authorityService.createAuthority(AuthorityType.GROUP, GROUP_ONE, GROUP_ONE_DISPLAY, null);
         this.authorityService.addAuthority(this.groupOne, USER_TWO);
         
-        this.groupTwo = this.authorityService.createAuthority(AuthorityType.GROUP, GROUP_TWO);
+        this.groupTwo = this.authorityService.createAuthority(AuthorityType.GROUP, GROUP_TWO, GROUP_TWO_DISPLAY, null);
         this.authorityService.addAuthority(this.groupTwo, USER_TWO);
         this.authorityService.addAuthority(this.groupTwo, USER_THREE);
         
@@ -1319,6 +1321,13 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         
         //    - filter by name - group name
         members = this.siteService.listMembers("testMembership", GROUP_TWO, null, 0, false);
+        assertNotNull(members);
+        assertEquals(1, members.size());
+        assertTrue(members.containsKey(this.groupTwo));
+        assertEquals(SiteModel.SITE_CONSUMER, members.get(this.groupTwo));
+        
+        //     - filter by name - group display name
+        members = this.siteService.listMembers("testMembership", GROUP_TWO_DISPLAY, null, 0, false);
         assertNotNull(members);
         assertEquals(1, members.size());
         assertTrue(members.containsKey(this.groupTwo));

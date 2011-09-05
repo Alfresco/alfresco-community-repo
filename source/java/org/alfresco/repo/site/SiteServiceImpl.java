@@ -1447,7 +1447,8 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         // Build an array of name filter tokens pre lowercased to test against person properties
         // We require that matching people have at least one match against one of these on
         //  either their firstname or last name
-        // For groups, we require a match against the whole filter on the group name
+        // For groups, we require a match against the whole filter on the group name or display name
+        String nameFilterLower = null;
         String[] nameFilters = new String[0];
         if (nameFilter != null && nameFilter.length() != 0)
         {
@@ -1457,6 +1458,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
             {
                 nameFilters[i] = t.nextToken().toLowerCase();
             }
+            nameFilterLower = nameFilter.toLowerCase();
         }
         
         Map<String, String> members = new HashMap<String, String>(32);
@@ -1503,9 +1505,18 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                             if (nameFilter != null && nameFilter.length() != 0)
                             {
                                 // found a filter - does it match Group name part?
-                                if (authority.substring(GROUP_PREFIX_LENGTH).toLowerCase().contains(nameFilter.toLowerCase()))
+                                if (authority.substring(GROUP_PREFIX_LENGTH).toLowerCase().contains(nameFilterLower))
                                 {
                                     members.put(authority, permission);
+                                }
+                                else
+                                {
+                                   // Does it match on the Group Display Name part instead?
+                                   String displayName = authorityService.getAuthorityDisplayName(authority);
+                                   if(displayName != null && displayName.toLowerCase().contains(nameFilterLower))
+                                   {
+                                      members.put(authority, permission);
+                                   }
                                 }
                             }
                             else

@@ -107,7 +107,7 @@ public class KerberosAuthenticationFilter extends BaseKerberosAuthenticationFilt
    protected void onValidate(ServletContext sc, HttpServletRequest req, HttpServletResponse res)
    {
         // Set the locale using the session
-        AuthenticationHelper.setupThread(sc, req, res);
+        AuthenticationHelper.setupThread(sc, req, res, true);
     }
     
     /* (non-Javadoc)

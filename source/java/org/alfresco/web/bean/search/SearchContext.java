@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -43,6 +43,7 @@ import org.alfresco.util.ISO9075;
 import org.alfresco.web.bean.repository.Repository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.lucene.queryParser.QueryParser;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
@@ -194,7 +195,7 @@ public class SearchContext implements Serializable
             if (text.charAt(0) == '"' && text.charAt(text.length() - 1) == '"')
             {
                // as a single quoted phrase
-               String quotedSafeText = '"' + text.substring(1, text.length() - 1) + '"';
+               String quotedSafeText = '"' + QueryParser.escape(text.substring(1, text.length() - 1)) + '"';
                fullTextBuf.append("TEXT:").append(quotedSafeText);
                nameAttrBuf.append("@").append(nameAttr).append(":").append(quotedSafeText);
                for (QName qname : this.simpleSearchAdditionalAttrs)
@@ -331,7 +332,7 @@ public class SearchContext implements Serializable
             String escapedName = Repository.escapeQName(qname);
             String value = queryFixedValues.get(qname);
             attributeQuery.append(" +@").append(escapedName)
-                          .append(":\"").append(value).append('"');
+                          .append(":\"").append(QueryParser.escape(value)).append('"');
          }
       }
       
@@ -346,8 +347,8 @@ public class SearchContext implements Serializable
          {
             String escapedName = Repository.escapeQName(qname);
             RangeProperties rp = rangeAttributes.get(qname);
-            String value1 = AbstractLuceneQueryParser.escape(rp.lower);
-            String value2 = AbstractLuceneQueryParser.escape(rp.upper);
+            String value1 = QueryParser.escape(rp.lower);
+            String value2 = QueryParser.escape(rp.upper);
             attributeQuery.append(" +@").append(escapedName)
                           .append(":").append(rp.inclusive ? "[" : "{").append(value1)
                           .append(" TO ").append(value2).append(rp.inclusive ? "]" : "}");
@@ -499,7 +500,7 @@ public class SearchContext implements Serializable
       if (andOp) buf.append('+');
       else if (notOp) buf.append('-');
       buf.append('@').append(Repository.escapeQName(qname)).append(":\"")
-         .append(value).append("\" ");
+         .append(SearchContext.escape(value)).append("\" ");
    }
    
    /**
@@ -511,12 +512,12 @@ public class SearchContext implements Serializable
     * @param attrBuf    Attribute search buffer to append lucene terms to
     * @param textBuf    Text search buffer to append lucene terms to
     */
-   private static void processSearchTextAttribute(String qname, String value, StringBuilder attrBuf, StringBuilder textBuf)
-   {
-      textBuf.append("TEXT:\"").append(value).append('"');
-      attrBuf.append('@').append(qname).append(":\"")
-             .append(value).append('"');
-   }
+   private static void processSearchTextAttribute(String qname, String value, StringBuilder attrBuf, StringBuilder textBuf) 
+   { 
+      textBuf.append("TEXT:\"").append(SearchContext.escape(value)).append('"');
+      attrBuf.append('@').append(qname).append(":\"") 
+             .append(SearchContext.escape(value)).append('"'); 
+   } 
    
    /**
     * Returns a String where those characters that QueryParser
@@ -563,7 +564,7 @@ public class SearchContext implements Serializable
             ChildAssociationRef elementRef = ((Path.ChildAssocElement)element).getRef();
             if (elementRef.getParentRef() != null)
             {
-               Collection prefixes = ns.getPrefixes(elementRef.getQName().getNamespaceURI());
+               Collection<String> prefixes = ns.getPrefixes(elementRef.getQName().getNamespaceURI());
                if (prefixes.size() >0)
                {
                   elementString = '/' + (String)prefixes.iterator().next() + ':' + ISO9075.encode(elementRef.getQName().getLocalName());

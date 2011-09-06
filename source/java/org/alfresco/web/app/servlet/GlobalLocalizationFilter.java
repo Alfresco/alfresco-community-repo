@@ -29,6 +29,8 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
 
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -50,12 +52,45 @@ public class GlobalLocalizationFilter implements Filter
      */
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException
     {
-        HttpServletRequest httpRequest = (HttpServletRequest) request;
-
-        setLanguageFromRequestHeader(httpRequest);
+        setLanguageFromRequestHeader((HttpServletRequest) request);
 
         // continue filter chaining
-        chain.doFilter(request, response);
+        chain.doFilter(request, new HttpServletResponseWrapper((HttpServletResponse) response){
+
+            /* (non-Javadoc)
+             * @see javax.servlet.ServletResponseWrapper#setContentType(java.lang.String)
+             */
+            @Override
+            public void setContentType(String type)
+            {
+                super.setContentType(type);
+
+                // Parse the parameters of the media type, since some app servers (Websphere) refuse to pay attention if the
+                // character encoding isn't explicitly set
+                int startIndex = type.indexOf(';') + 1;
+                int length = type.length();
+                while (startIndex != 0 && startIndex < length)
+                {
+                  int endIndex = type.indexOf(';', startIndex);
+                  if (endIndex == -1)
+                  {
+                      endIndex = length;
+                  }
+                  String param = type.substring(startIndex, endIndex);
+                  int sepIndex = param.indexOf('=');
+                  if (sepIndex != -1)
+                  {
+                      String name = param.substring(0, sepIndex).trim();
+                      if (name.equalsIgnoreCase("charset"))
+                      {
+                          setCharacterEncoding(param.substring(sepIndex+1).trim());
+                          break;
+                      }
+                  }
+                  startIndex = endIndex + 1;
+                }                        
+            }
+        });
 
     }
 

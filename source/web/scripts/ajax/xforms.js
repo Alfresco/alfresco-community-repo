@@ -937,9 +937,13 @@ alfresco.xforms.RichTextEditor = alfresco.xforms.Widget.extend({
         tinyMCE.settings[i] = this._params[i];
       }
     }
+    
     tinyMCE.settings.height = (this._params["height"]>0) ? parseInt(this._params["height"]) : this.widget.style.height;
-    tinyMCE.settings.width = (this._params["width"]>0) ? parseInt(this._params["width"]) : this.widget.style.width;    
-
+    tinyMCE.settings.width = (this._params["width"]>0) ? parseInt(this._params["width"]) : this.widget.style.width;  
+    
+    // ALF-9089
+    if (this._params["convert_fonts_to_spans"]=="false") tinyMCE.settings.convert_fonts_to_spans = false;
+    
     tinyMCE.settings.auto_focus = this.widget.id;
     tinyMCE.execCommand("mceAddControl", false, this.widget.id)
     var editorDocument = tinyMCE.get(this.widget.id).getDoc();
@@ -2997,14 +3001,23 @@ alfresco.xforms.VGroup = alfresco.xforms.AbstractGroup.extend({
       parentOffsetWidth = this._children[i].domContainer.parentNode.offsetWidth;                        
       if (parentOffsetWidth != 0)
       {
-      contentDiv.style.width = (this._children[i] instanceof alfresco.xforms.AbstractGroup
+        contentDiv.style.width = (this._children[i] instanceof alfresco.xforms.AbstractGroup
                                 ? "100%"
                                 : (1 - (contentDiv.offsetLeft / 
                                         parentOffsetWidth)) * 100 + "%");
       }
       else
       {
-    	  contentDiv.style.width = "100%";
+        contentDiv.style.width = "100%";
+      }
+      
+      if (contentDiv.labelNode)
+      {
+        contentDiv.labelNode.style.position = "relative";
+        contentDiv.labelNode.style.top = "0px";
+        contentDiv.labelNode.style.height = contentDiv.offsetHeight + "px";
+        contentDiv.labelNode.style.lineHeight = contentDiv.labelNode.style.height;
+        contentDiv.labelNode.style.width = contentDiv.labelNode.scrollWidth + "px";
       }
 
       if (recursively)

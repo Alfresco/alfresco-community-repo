@@ -818,35 +818,46 @@ public class Application
    /**
     * Return the language Locale for the current user Session.
     * 
-    * @param session        HttpSession for the current user
-    * 
+    * @param session
+    *           HttpSession for the current user
+    * @param useInterfaceLanguage
+    *           If the session language hasn't been established yet, should we base it on user preferences?
     * @return Current language Locale set or the VM default if none set - never null
     */
-   public static Locale getLanguage(HttpSession session)
+   public static Locale getLanguage(HttpSession session, boolean useInterfaceLanguage)
    {
       Locale locale = (Locale)session.getAttribute(LOCALE);
       if (locale == null)
       {
-         // first check saved user preferences
-         String strLocale = null;
-         if (getCurrentUser(session) != null)
+         if (useInterfaceLanguage)
          {
-            strLocale = (String)PreferencesService.getPreferences(session).getValue(
-                     UserPreferencesBean.PREF_INTERFACELANGUAGE);
-            if (strLocale != null)
+            // first check saved user preferences
+            String strLocale = null;
+            if (getCurrentUser(session) != null)
             {
-               locale = I18NUtil.parseLocale(strLocale);
+               strLocale = (String) PreferencesService.getPreferences(session).getValue(
+                     UserPreferencesBean.PREF_INTERFACELANGUAGE);
+               if (strLocale != null)
+               {
+                  locale = I18NUtil.parseLocale(strLocale);
+               }
+               else
+               {
+                  // failing that, use the server default locale
+                  locale = Locale.getDefault();
+               }
             }
             else
             {
-               // failing that, use the server default locale
-               locale = Locale.getDefault();
+               // else get from web-client config - the first item in the configured list of languages
+               locale = getLanguage(WebApplicationContextUtils.getRequiredWebApplicationContext(session
+                     .getServletContext()));
             }
          }
          else
          {
-            // else get from web-client config - the first item in the configured list of languages
-            locale = getLanguage(WebApplicationContextUtils.getRequiredWebApplicationContext(session.getServletContext()));
+            // Get the request default, already decoded from the request headers
+            locale = I18NUtil.getLocale();
          }
          // save in user session
          session.setAttribute(LOCALE, locale);

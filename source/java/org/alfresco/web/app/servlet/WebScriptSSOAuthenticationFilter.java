@@ -129,7 +129,11 @@ public class WebScriptSSOAuthenticationFilter extends BaseAuthenticationFilter i
         String script = req.getPathInfo();
         if (script != null && script.equals(API_LOGIN) && req.getMethod().equalsIgnoreCase("POST"))
         {
-            handleLoginForm(req, res);
+            if (handleLoginForm(req, res));
+            {
+               // Establish the session locale using request headers rather than web client preferences
+               AuthenticationHelper.setupThread(context, req, res, false);
+            }
         }
         else
         {

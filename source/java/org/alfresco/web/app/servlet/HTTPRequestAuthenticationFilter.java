@@ -177,7 +177,7 @@ public class HTTPRequestAuthenticationFilter implements Filter
                     // Set the current locale
                     authComponent.clearCurrentSecurityContext();
                     authComponent.setCurrentUser(user.getUserName());
-                    AuthenticationHelper.setupThread(this.context, req, resp);
+                    AuthenticationHelper.setupThread(this.context, req, resp, true);
                     chain.doFilter(sreq, sresp);
                     return;
                 }
@@ -233,7 +233,7 @@ public class HTTPRequestAuthenticationFilter implements Filter
         AuthenticationHelper.setUser(context, req, userName, authenticationService.getCurrentTicket(), true);
 
         // Set the locale using the session
-        AuthenticationHelper.setupThread(this.context, req, res);
+        AuthenticationHelper.setupThread(this.context, req, res, true);
     }
 
     

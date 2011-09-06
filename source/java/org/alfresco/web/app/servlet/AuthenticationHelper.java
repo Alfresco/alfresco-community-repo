@@ -103,21 +103,17 @@ public final class AuthenticationHelper
     * @param res
     *           the response
     */
-   public static void setupThread(ServletContext sc, HttpServletRequest req, HttpServletResponse res)
+   public static void setupThread(ServletContext sc, HttpServletRequest req, HttpServletResponse res, boolean useInterfaceLanguage)
    {
       // setup faces context
       FacesContext fc = Application.inPortalServer() ? AlfrescoFacesPortlet.getFacesContext(req) : FacesHelper
             .getFacesContext(req, res, sc);
    
-      // Set the current locale and language
-      if (Application.getClientConfig(fc).isLanguageSelect())
-      {
-         I18NUtil.setLocale(Application.getLanguage(req.getSession()));
-      }
+      // Set the current locale and language (overriding the one already decoded from the Accept-Language header
+      I18NUtil.setLocale(Application.getLanguage(req.getSession(), Application.getClientConfig(fc).isLanguageSelect() && useInterfaceLanguage));
    
       // Programatically retrieve the UserPreferencesBean from JSF
-      UserPreferencesBean userPreferencesBean = (UserPreferencesBean) fc.getApplication().createValueBinding(
-            "#{UserPreferencesBean}").getValue(fc);
+      UserPreferencesBean userPreferencesBean = (UserPreferencesBean) FacesHelper.getManagedBean(fc, "UserPreferencesBean");
       if (userPreferencesBean != null)
       {
          String contentFilterLanguageStr = userPreferencesBean.getContentFilterLanguage();
@@ -202,7 +198,7 @@ public final class AuthenticationHelper
                   setUser(sc, req, AuthenticationUtil.getGuestUserName(), auth.getCurrentTicket(), false);
                   
                   // Set up the thread context
-                  setupThread(sc, req, res);
+                  setupThread(sc, req, res, true);
                   
                   // remove the session invalidated flag
                   session.removeAttribute(AuthenticationHelper.SESSION_INVALIDATED);
@@ -246,7 +242,7 @@ public final class AuthenticationHelper
          }
 
          // Set up the thread context
-         setupThread(sc, req, res);
+         setupThread(sc, req, res, true);
 
          return AuthenticationStatus.Success;
       }
@@ -307,8 +303,8 @@ public final class AuthenticationHelper
          return AuthenticationStatus.Failure;
       }
       
-      // Set up the thread context
-      setupThread(context, httpRequest, httpResponse);
+      // As we are authenticating via a ticket, establish the session locale using request headers rather than web client preferences
+      setupThread(context, httpRequest, httpResponse, false);
       
       return AuthenticationStatus.Success;
    }

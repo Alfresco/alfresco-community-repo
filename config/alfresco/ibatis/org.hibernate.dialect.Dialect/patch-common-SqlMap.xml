@@ -210,7 +210,7 @@
         where
             n.type_qname_id = #{typeQNameId} and
             np.qname_id = #{propQNameId} and
-            np.string_value like #{namePattern}
+            np.string_value like #{namePattern} <include refid="alfresco.util.escape"/>
     </select>
     
     <select id="select_oldAttrTenants" resultMap="result_admTenant">

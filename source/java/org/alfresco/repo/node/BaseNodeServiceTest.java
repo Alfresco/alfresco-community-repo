@@ -63,6 +63,7 @@ import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -3237,5 +3238,11 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         AR1414Blob checkBlob = (AR1414Blob) nodeService.getProperty(rootNodeRef, propertyQName);
         assertNotNull(checkBlob);
         assertEquals("Blob was modified while persisted", 0, checkBlob.i);
+    }
+    
+    public void testGetNodeRefById()
+    {
+        Long nodeId = (Long) nodeService.getProperty(rootNodeRef, ContentModel.PROP_NODE_DBID);
+        assertEquals("Incorrect NodeRef back ", rootNodeRef, nodeService.getNodeRef(nodeId));
     }
 }

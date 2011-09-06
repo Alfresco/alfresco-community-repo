@@ -20,12 +20,15 @@ package org.alfresco.repo.management.subsystems;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.aop.support.DefaultPointcutAdvisor;
+import org.springframework.context.ApplicationContext;
 
 /**
  * A factory bean, normally used in conjunction with {@link ChildApplicationContextFactory} allowing selected
@@ -42,6 +45,11 @@ public class SubsystemProxyFactory extends ProxyFactoryBean
     /** An optional bean name to look up in the source application context **/
     private String sourceBeanName;
 
+    private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    private ApplicationContext context;
+    private Object sourceBean;
+    private Map <Class<?>, Object> typedBeans = new HashMap<Class<?>, Object>(7);
+
     /**
      * Instantiates a new managed subsystem proxy factory.
      */
@@ -54,23 +62,7 @@ public class SubsystemProxyFactory extends ProxyFactoryBean
                 Method method = mi.getMethod();
                 try
                 {
-                    if (SubsystemProxyFactory.this.sourceBeanName == null)
-                    {
-                        Map<?, ?> beans = SubsystemProxyFactory.this.sourceApplicationContextFactory
-                                .getApplicationContext().getBeansOfType(method.getDeclaringClass());
-                        if (beans.size() != 1)
-                        {
-                            throw new RuntimeException("Don't know where to route call to method " + method);
-                        }
-                        return method.invoke(beans.values().iterator().next(), mi.getArguments());
-                    }
-                    else
-                    {
-                        Object bean = SubsystemProxyFactory.this.sourceApplicationContextFactory
-                                .getApplicationContext().getBean(SubsystemProxyFactory.this.sourceBeanName);
-                        return method.invoke(bean, mi.getArguments());
-
-                    }
+                    return method.invoke(locateBean(mi), mi.getArguments());
                 }
                 catch (InvocationTargetException e)
                 {
@@ -112,5 +104,74 @@ public class SubsystemProxyFactory extends ProxyFactoryBean
     public void setSourceBeanName(String sourceBeanName)
     {
         this.sourceBeanName = sourceBeanName;
-    }           
+    }
+    
+    // Bring our cached copies of the source beans in line with the application context factory, using a RW lock to
+    // ensure consistency
+    private Object locateBean(MethodInvocation mi)
+    {
+        boolean haveWriteLock = false;
+        this.lock.readLock().lock();
+        try
+        {
+            ApplicationContext newContext = this.sourceApplicationContextFactory.getApplicationContext();
+            if (this.context != newContext)
+            {
+                // Upgrade the lock
+                this.lock.readLock().unlock();
+                this.lock.writeLock().lock();
+                haveWriteLock = true;
+
+                newContext = this.sourceApplicationContextFactory.getApplicationContext();
+                this.context = newContext;
+                this.typedBeans.clear();
+                this.sourceBean = null;
+                if (this.sourceBeanName != null)
+                {
+                    this.sourceBean = newContext.getBean(this.sourceBeanName);
+                }
+            }
+            if (this.sourceBean == null)
+            {
+                Method method = mi.getMethod();                
+                Class<?> type = method.getDeclaringClass();
+                Object bean = this.typedBeans.get(type);
+                if (bean == null)
+                {
+                    // Upgrade the lock if necessary
+                    if (!haveWriteLock)
+                    {
+                        this.lock.readLock().unlock();
+                        this.lock.writeLock().lock();
+                        haveWriteLock = true;
+                    }
+                    bean = this.typedBeans.get(type);
+                    if (bean == null)
+                    {
+                        Map<?, ?> beans = this.context.getBeansOfType(type);
+                        if (beans.size() != 1)
+                        {
+                            throw new RuntimeException("Don't know where to route call to method " + method);
+                        }
+                        bean = beans.values().iterator().next();
+                        this.typedBeans.put(type, bean);
+                    }
+                }
+                return bean;
+            }
+            return this.sourceBean;
+        }
+        finally
+        {
+            if (haveWriteLock)
+            {
+                this.lock.writeLock().unlock();
+            }
+            else
+            {
+                this.lock.readLock().unlock();
+            }
+        }
+    }
+    
 }

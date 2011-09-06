@@ -192,8 +192,9 @@ public interface NodeDAO extends NodeBulkLoader
     /**
      * @param nodeTypeQName     the new type QName for the node or <tt>null</tt> to keep the existing one
      * @param nodeLocale        the new locale for the node or <tt>null</tt> to keep the existing one
+     * @param propagate         should this update be propagated to parent audit properties?
      */
-    public void updateNode(Long nodeId, QName nodeTypeQName, Locale nodeLocale);
+    public void updateNode(Long nodeId, QName nodeTypeQName, Locale nodeLocale, boolean propagate);
     
     public void setNodeAclId(Long nodeId, Long aclId);
     

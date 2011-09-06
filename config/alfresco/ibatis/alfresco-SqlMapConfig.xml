@@ -170,6 +170,7 @@ Inbound settings from iBatis
     </typeHandlers>
         
     <mappers>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/alfresco-util-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/appliedpatch-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/audit-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/audit-insert-SqlMap.xml"/>

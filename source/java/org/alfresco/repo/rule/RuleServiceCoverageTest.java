@@ -438,6 +438,44 @@ public class RuleServiceCoverageTest extends TestCase
         assertFalse("Should not be versionable", nodeService.hasAspect(newNodeRef, ContentModel.ASPECT_VERSIONABLE));
     }
     
+    public void testCheckThatChildRuleFiresOnMove() throws Exception
+    {
+        //ALF-9415 test
+        Map<QName, Serializable> folderProps = new HashMap<QName, Serializable>(1);     
+        folderProps.put(ContentModel.PROP_NAME, "myTestFolder");
+        NodeRef folder = this.nodeService.createNode(
+                this.rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.TYPE_FOLDER,
+                folderProps).getChildRef();  
+        
+        Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+        params.put("aspect-name", ContentModel.ASPECT_VERSIONABLE);        
+        
+        Rule rule = createRule(
+                RuleType.INBOUND, 
+                AddFeaturesActionExecuter.NAME, 
+                params, 
+                NoConditionEvaluator.NAME, 
+                null);
+        rule.applyToChildren(true);
+        this.ruleService.saveRule(folder, rule);
+        
+        folderProps.put(ContentModel.PROP_NAME, "myMoveFolder");
+        NodeRef folderForMove = this.nodeService.createNode(
+                this.rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.TYPE_FOLDER,
+                folderProps).getChildRef();
+        
+        NodeRef testFile = this.fileFolderService.create(folderForMove, "testFile.txt", ContentModel.TYPE_CONTENT).getNodeRef();
+        
+        this.fileFolderService.move(folderForMove, folder, null);
+        assertTrue("Should be versionable", nodeService.hasAspect(testFile, ContentModel.ASPECT_VERSIONABLE));
+    }
+    
     /**
      * ALF-4926: Incorrect behavior of update and move rule for the same folder
      * <p/>

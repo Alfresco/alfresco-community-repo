@@ -317,7 +317,7 @@
     
     <cache 
         name="org.alfresco.cache.webScriptsRegistryCache"
-        maxElementsInMemory="100"
+        maxElementsInMemory="1000"
         eternal="true"
         overflowToDisk="false"
         statistics="false"

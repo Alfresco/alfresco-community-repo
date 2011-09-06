@@ -2298,7 +2298,7 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
             for(Serializable name : foldersCache.getKeys())
             {
                 AlfrescoImapFolder folder = (AlfrescoImapFolder) foldersCache.get(name);
-                if (folderNodeRef.equals(folder.getFolderInfo().getNodeRef()))
+                if (folder == null || folderNodeRef.equals(folder.getFolderInfo().getNodeRef()))
                 {
                     toRemove.add(name);
                     break;
@@ -2330,7 +2330,7 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
             for(Serializable name : foldersCache.getKeys())
             {
                 AlfrescoImapFolder folder = (AlfrescoImapFolder) foldersCache.get(name);
-                if (folderNodeRef.equals(folder.getFolderInfo().getNodeRef()))
+                if (folder == null || folderNodeRef.equals(folder.getFolderInfo().getNodeRef()))
                 {
                     foldersCache.remove(name);
                     break;

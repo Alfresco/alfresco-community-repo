@@ -308,7 +308,16 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         // need to capture Transaction IDs.
         return new NodeRef.Status(nodeRef, "Unknown", null, !exists(nodeRef));
     }
-    
+
+    /**
+     * @throws UnsupportedOperationException always
+     */
+    @Override
+    public NodeRef getNodeRef(Long nodeId)
+    {
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * @param storeRef a reference to an existing store
      * @return Returns a reference to the root node of the store

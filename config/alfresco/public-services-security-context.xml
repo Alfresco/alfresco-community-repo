@@ -358,6 +358,7 @@
                org.alfresco.service.cmr.repository.NodeService.createStore=ACL_METHOD.ROLE_ADMINISTRATOR
                org.alfresco.service.cmr.repository.NodeService.exists=ACL_ALLOW
                org.alfresco.service.cmr.repository.NodeService.getNodeStatus=ACL_NODE.0.sys:base.ReadProperties
+               org.alfresco.service.cmr.repository.NodeService.getNodeRef=AFTER_ACL_NODE.sys:base.ReadProperties
                org.alfresco.service.cmr.repository.NodeService.getRootNode=ACL_NODE.0.sys:base.ReadProperties
                org.alfresco.service.cmr.repository.NodeService.createNode=ACL_NODE.0.sys:base.CreateChildren
                org.alfresco.service.cmr.repository.NodeService.moveNode=ACL_NODE.0.sys:base.DeleteNode,ACL_NODE.1.sys:base.CreateChildren

@@ -1143,9 +1143,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             {
                 Long oldParentNodeId = primaryParentAssoc.getParentNode().getId();
                 oldParentAclId = getNodeNotNull(oldParentNodeId).getAclId();
-                
-                // Update the parent node, if required
-                propagateTimestamps(childNodeId);
             }
         }
         
@@ -1192,12 +1189,12 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             childNodeUpdate.setUpdateDeleted(true);
             // Update the entity.
             // Note: We don't use delete here because that will attempt to clean everything up again.
-            updateNodeImpl(childNode, childNodeUpdate);
+            updateNodeImpl(childNode, childNodeUpdate, true);
         }
         else
         {
             // Ensure that the child node reflects the current txn and auditable data
-            touchNodeImpl(childNodeId);
+            touchNodeImpl(childNodeId, true);
             
             // The moved node's reference has not changed, so just remove the cache entry to
             // it's immediate parent.  All children of the moved node will still point to the
@@ -1263,7 +1260,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     }
     
     @Override
-    public void updateNode(Long nodeId, QName nodeTypeQName, Locale nodeLocale)
+    public void updateNode(Long nodeId, QName nodeTypeQName, Locale nodeLocale, boolean propagate)
     {
         // Get the existing node; we need to check for a change in store or UUID
         Node oldNode = getNodeNotNull(nodeId);
@@ -1304,13 +1301,13 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             nodeUpdate.setUpdateLocaleId(true);
         }
 
-        updateNodeImpl(oldNode, nodeUpdate);
+        updateNodeImpl(oldNode, nodeUpdate, propagate);
     }
     
     /**
      * Updates the node's transaction and <b>cm:auditable</b> properties only.
      */
-    private void touchNodeImpl(Long nodeId)
+    private void touchNodeImpl(Long nodeId, boolean propagate)
     {
         Node node = null;
         try
@@ -1326,7 +1323,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         NodeUpdateEntity nodeUpdate = new NodeUpdateEntity();
         nodeUpdate.setId(nodeId);
         // Update it
-        updateNodeImpl(node, nodeUpdate);
+        updateNodeImpl(node, nodeUpdate, propagate);
     }
     
     /**
@@ -1338,9 +1335,9 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      * 
      * @param oldNode               the existing node, fully populated
      * @param nodeUpdate            the node update with all update elements populated
-     * @return                      the updated node ID and reference
+     * @param propagate             should this update be propagated to parent audit properties?
      */
-    private void updateNodeImpl(Node oldNode, NodeUpdateEntity nodeUpdate)
+    private void updateNodeImpl(Node oldNode, NodeUpdateEntity nodeUpdate, boolean propagate)
     {
         Long nodeId = oldNode.getId();
         
@@ -1456,7 +1453,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
 
         // Ensure that cm:auditable values are propagated, if required
-        if (enableTimestampPropagation &&
+        if (propagate && enableTimestampPropagation &&
                 nodeUpdate.isUpdateAuditableProperties() &&
                 nodeUpdate.getAuditableProperties() != null)
         {
@@ -1606,7 +1603,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         nodeUpdateEntity.setId(nodeId);
         nodeUpdateEntity.setAclId(aclId);
         nodeUpdateEntity.setUpdateAclId(true);
-        updateNodeImpl(oldNode, nodeUpdateEntity);
+        updateNodeImpl(oldNode, nodeUpdateEntity, true);
     }
     
     public void setPrimaryChildrenSharedAclId(
@@ -2015,7 +2012,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // Touch to bring into current transaction
         if (updated)
         {
-            updateNodeImpl(node, nodeUpdate);
+            updateNodeImpl(node, nodeUpdate, propsToAdd.containsKey(ContentModel.PROP_NAME));
         }
         
         // Done
@@ -2083,7 +2080,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             cachedProps.keySet().removeAll(propertyQNames);
             setNodePropertiesCached(nodeId, cachedProps);
             // Touch to bring into current txn
-            touchNodeImpl(nodeId);
+            touchNodeImpl(nodeId, propertyQNames.contains(ContentModel.PROP_NAME));
         }
         // Done
         return deleteCount > 0;
@@ -2241,7 +2238,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
 
         // Touch to bring into current txn
-        touchNodeImpl(nodeId);
+        touchNodeImpl(nodeId, false);
         
         // Done
         return true;
@@ -2263,7 +2260,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         aspectsCache.setValue(nodeId, Collections.<QName>emptySet());
 
         // Touch to bring into current txn
-        touchNodeImpl(nodeId);
+        touchNodeImpl(nodeId, false);
         
         // Done
         return deleteCount > 0;
@@ -2289,7 +2286,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
         
         // Touch to bring into current txn
-        touchNodeImpl(nodeId);
+        touchNodeImpl(nodeId, false);
         
         // Done
         return deleteCount > 0;
@@ -2367,7 +2364,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
         
         // Touch to bring into current txn and ensure concurrency is maintained on the nodes
-        touchNodeImpl(sourceNodeId);
+        touchNodeImpl(sourceNodeId, false);
 
         // Resolve type QName
         Long assocTypeQNameId = qnameDAO.getOrCreateQName(assocTypeQName).getFirst();
@@ -2413,7 +2410,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             return 0;
         }
         // Touch to bring into current txn
-        touchNodeImpl(sourceNodeId);
+        touchNodeImpl(sourceNodeId, false);
 
         Long assocTypeQNameId = assocTypeQNamePair.getFirst();
         return deleteNodeAssoc(sourceNodeId, targetNodeId, assocTypeQNameId);
@@ -2422,7 +2419,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     public int removeNodeAssocsToAndFrom(Long nodeId)
     {
         // Touch to bring into current txn
-        touchNodeImpl(nodeId);
+        touchNodeImpl(nodeId, false);
 
         return deleteNodeAssocsToAndFrom(nodeId);
     }
@@ -2436,7 +2433,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             return 0;
         }
         // Touch to bring into current txn
-        touchNodeImpl(nodeId);
+        touchNodeImpl(nodeId, false);
 
         return deleteNodeAssocsToAndFrom(nodeId, assocTypeQNameIds);
     }
@@ -2604,7 +2601,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // node into the current transaction for secondary associations
         if (!isPrimary)
         {
-            updateNode(childNodeId, null, null);
+            updateNode(childNodeId, null, null, true);
         }
         
         // Done

@@ -34,6 +34,7 @@
                  mail.parameters.subject = "Adhoc Task " + bpm_workflowDescription;
                  mail.parameters.from = bpm_assignee.properties.email;
                  mail.parameters.text = "It's done";
+                 mail.parameters.ignore_send_failure = true;
                  mail.execute(bpm_package);
               }
            </script>

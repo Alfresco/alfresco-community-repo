@@ -396,8 +396,8 @@
             join alf_qname qn on (qn.id = asp.qname_id)
             join alf_namespace ns on (ns.id = qn.ns_id)
         where
-            ns.uri like ? and
-            qn.local_name like ?
+            ns.uri like ? <include refid="alfresco.util.escape"/> and
+            qn.local_name like ? <include refid="alfresco.util.escape"/>
     </select>
     
     <select id="select_AVMStorePropertiesByKeyPatternL" parameterMap="parameter_KeyPattern" resultMap="result_AVMStoreProperty">
@@ -408,8 +408,8 @@
             join alf_qname qn on (qn.id = asp.qname_id)
             join alf_namespace ns on (ns.id = qn.ns_id)
         where
-            ns.uri like ? and
-            lower(qn.local_name) like lower(?)
+            ns.uri like ? <include refid="alfresco.util.escape"/> and
+            lower(qn.local_name) like lower(?) <include refid="alfresco.util.escape"/>
     </select>
     
     <select id="select_AVMStorePropertiesByStoreAndKeyPattern" parameterMap="parameter_IdAndKeyPattern" resultMap="result_AVMStoreProperty">
@@ -421,8 +421,8 @@
             join alf_namespace ns on (ns.id = qn.ns_id)
         where
             asp.avm_store_id = ? and
-            ns.uri like ? and
-            qn.local_name like ?
+            ns.uri like ? <include refid="alfresco.util.escape"/> and
+            qn.local_name like ? <include refid="alfresco.util.escape"/>
     </select>
     
     <select id="select_AVMStorePropertiesByStoreAndKeyPatternL" parameterMap="parameter_IdAndKeyPattern" resultMap="result_AVMStoreProperty">
@@ -434,8 +434,8 @@
             join alf_namespace ns on (ns.id = qn.ns_id)
         where
             asp.avm_store_id = ? and
-            ns.uri like ? and
-            lower(qn.local_name) like lower(?)
+            ns.uri like ? <include refid="alfresco.util.escape"/> and
+            lower(qn.local_name) like lower(?) <include refid="alfresco.util.escape"/>
     </select>
     
     <!-- Optimistic update of the store property -->
@@ -964,7 +964,7 @@
             avm_child_entries
         where
             parent_id = ? and
-            name like ?
+            name like ? <include refid="alfresco.util.escape"/>
     </select>
     
     <select id="select_AVMNodeChildEntriesByParentAndNamePatternL" parameterMap="parameter_IdPatternMap" resultMap="result_AVMChildEntry">
@@ -974,7 +974,7 @@
             avm_child_entries
         where
             parent_id = ? and
-            lower(name) like lower(?)
+            lower(name) like lower(?) <include refid="alfresco.util.escape"/>
     </select>
     
     <!-- Get AVMNodeChildEntries by child node ID -->
@@ -1246,7 +1246,7 @@
                 value2_prop_id = ? and
                 value3_prop_id = pv3.id and
                 pv3.persisted_type = 3 and
-                psv3.string_value like ? and
+                psv3.string_value like ? <include refid="alfresco.util.escape"/> and
                 prop1_id = pl.root_prop_id and
                 psvk.string_value = ? and
                 psvv.string_value = ?
@@ -1268,7 +1268,7 @@
                 value2_prop_id = ? and
                 value3_prop_id = pv3.id and
                 pv3.persisted_type = 3 and
-                psv3.string_value like ?
+                psv3.string_value like ? <include refid="alfresco.util.escape"/>
         )
     </delete>
     

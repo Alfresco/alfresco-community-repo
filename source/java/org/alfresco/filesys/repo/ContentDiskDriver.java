@@ -1527,16 +1527,26 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
 	                
 	                // Get the file information to check if the file/folder exists
 	                
-	                FileInfo info = getFileInformation(sess, tree, name);
-	                if (info.isDirectory())
-	                {
-	                    status = FileStatus.DirectoryExists;
+                    FileInfo info = getFileInformation(sess, tree, name);
+                    NodeRef nodeRef = getNodeOrNull(name, ctx, fstate);
+                    nodeRef = ((null == nodeRef) && (info instanceof ContentFileInfo)) ? (((ContentFileInfo) info).getNodeRef()) : (nodeRef);
+
+                    if ((null == nodeRef) || !fileFolderService.exists(nodeRef))
+                    {
+                        status = FileStatus.NotExist;
+                    }
+                    else
+                    {
+		                if (info.isDirectory())
+		                {
+		                    status = FileStatus.DirectoryExists;
+		                }
+		                else
+		                {
+		                    status = FileStatus.FileExists;
+		                }
 	                }
-	                else
-	                {
-	                    status = FileStatus.FileExists;
-	                }
-	                
+
 	                // Update the file state status
 
 	                if ( fstate != null)
@@ -3877,29 +3887,14 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
         
         ContentContext ctx = (ContentContext) tree.getContext();
         
+        NodeRef result = null;
         if ( ctx.hasStateCache())
         {
             // Try and get the node ref from an in memory file state
-            
             FileState fstate = ctx.getStateCache().findFileState(path);
-            if ( fstate != null && fstate.hasFilesystemObject() && fstate.exists() )
+            if (null != (result = getNodeOrNull(path, ctx, fstate)))
             {
-                // Check that the node exists
-                
-                if (fileFolderService.exists((NodeRef) fstate.getFilesystemObject()))
-                {
-                    // Bump the file states expiry time
-                    
-                    fstate.setExpiryTime(System.currentTimeMillis() + FileState.DefTimeout);
-                    
-                    // Return the cached noderef
-                    
-                    return (NodeRef) fstate.getFilesystemObject();
-                }
-                else
-                {
-                    ctx.getStateCache().removeFileState(path);
-                }
+                return result;
             }
         }
         
@@ -3907,14 +3902,41 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
         
         return cifsHelper.getNodeRef(ctx.getRootNode(), path);
     }
-    
+
+    /**
+     * Determines current existence state of the file object from the cache.
+     * Updates state of the object in the cache according to existence state: increasing expiration time if
+     * object exists or removing object from the cache if it does not exist
+     * 
+     * @param path - {@link String} value which contains relative path to the file object
+     * @param ctx - {@link ContentContext} instance of the current {@link TreeConnection}
+     * @param fstate - {@link FileState} instance which represents current state of the cached object
+     * @return {@link NodeRef} instance of existent file object or <code>null</code> if object is not exist
+     */
+    private NodeRef getNodeOrNull(String path, ContentContext ctx, FileState fstate)
+    {
+        if ((null != fstate) && fstate.hasFilesystemObject() && fstate.exists())
+        {
+            // Check that the node exists
+            if (fileFolderService.exists((NodeRef) fstate.getFilesystemObject()))
+            {
+                // Bump the file states expiry time
+                fstate.setExpiryTime(System.currentTimeMillis() + FileState.DefTimeout);
+
+                // Return the cached noderef
+                return (NodeRef) fstate.getFilesystemObject();
+            }
+            else
+            {
+                ctx.getStateCache().removeFileState(path);
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Convert a node into a share relative path
-     * 
-     * @param tree TreeConnection
-     * @param nodeRef NodeRef
-     * @return String
-     * @exception FileNotFoundException
      */
     public String getPathForNode( TreeConnection tree, NodeRef nodeRef)
         throws FileNotFoundException

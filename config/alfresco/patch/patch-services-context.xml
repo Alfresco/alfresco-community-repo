@@ -1882,6 +1882,28 @@
         </property>
     </bean>
     
+    <bean id="patch.redeployJbpmAdhocWorkflow" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="basePatch" >
+        <property name="id"><value>patch.redeployJbpmAdhocWorkflow</value></property>
+        <property name="description"><value>patch.redeployJbpmAdhocWorkflow.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>4204</value></property>
+        <property name="targetSchema"><value>4205</value></property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.updateDmPermissions" />
+            </list>
+        </property>
+        <property name="workflowDefinitions">
+            <list>
+               <props>
+                    <prop key="engineId">jbpm</prop>
+                    <prop key="location">alfresco/workflow/adhoc_processdefinition.xml</prop>
+                    <prop key="mimetype">text/xml</prop>
+               </props>
+            </list>
+        </property>
+    </bean>
+    
     <bean id="patch.db-V3.2-ContentTables2" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
         <property name="id"><value>patch.db-V3.2-ContentTables2</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>

@@ -1462,7 +1462,6 @@ public class TaggingServiceImplTest extends TestCase
                  // Auditable checks
                  assertEquals("System", nodeService.getProperty(testData.auditableFolder, ContentModel.PROP_CREATOR));
                  assertEquals("System", nodeService.getProperty(testData.auditableFolder, ContentModel.PROP_MODIFIER));
-                 testData.origModified = (Date)nodeService.getProperty(testData.auditableFolder, ContentModel.PROP_MODIFIED);
                  
                  
                  // Create a node without tags, which the user
@@ -1493,6 +1492,16 @@ public class TaggingServiceImplTest extends TestCase
                  assertEquals("System", nodeService.getProperty(testData.auditableFolder, ContentModel.PROP_CREATOR));
                  assertEquals("System", nodeService.getProperty(ts.getNodeRef(), ContentModel.PROP_MODIFIER));
                  return null;
+            }
+        });
+        // Due to timestamp propagation, we need to start a new transaction to get the current folder modified date
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                testData.origModified = (Date)nodeService.getProperty(testData.auditableFolder, ContentModel.PROP_MODIFIED);
+                return null;
             }
         });
         transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()

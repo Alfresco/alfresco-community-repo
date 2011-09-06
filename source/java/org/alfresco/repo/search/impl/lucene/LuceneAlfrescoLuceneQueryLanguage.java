@@ -196,7 +196,18 @@ public class LuceneAlfrescoLuceneQueryLanguage extends AbstractLuceneQueryLangua
                                     String analyserClassName = propertyDef.resolveAnalyserClassName();
                                     if (analyserClassName.equals(DateTimeAnalyser.class.getCanonicalName()))
                                     {
-                                        field = field + ".sort";
+                                        switch (propertyDef.getIndexTokenisationMode())
+                                        {
+                                        case TRUE:
+                                            requiresPostSort = true;
+                                            break;
+                                        case BOTH:
+                                            field = field + ".sort";
+                                            break;
+                                        case FALSE:
+                                            // Should be able to sort on actual field OK
+                                            break;
+                                        }
                                     }
                                     else
                                     {

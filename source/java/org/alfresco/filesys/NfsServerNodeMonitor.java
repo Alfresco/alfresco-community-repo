@@ -29,10 +29,11 @@ import org.alfresco.filesys.repo.ContentContext;
 import org.alfresco.jlan.oncrpc.nfs.NFSServer;
 import org.alfresco.jlan.oncrpc.nfs.ShareDetails;
 import org.alfresco.jlan.server.core.DeviceContext;
-import org.alfresco.jlan.server.filesys.FileName;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
+import org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy;
+import org.alfresco.repo.node.NodeServicePolicies.OnDeleteChildAssociationPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnDeleteNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -40,7 +41,6 @@ import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -58,6 +58,8 @@ public class NfsServerNodeMonitor
         implements
         NodeServicePolicies.OnUpdatePropertiesPolicy,
         NodeServicePolicies.BeforeDeleteNodePolicy,
+        NodeServicePolicies.OnCreateChildAssociationPolicy,
+        NodeServicePolicies.OnDeleteChildAssociationPolicy,
         NodeServicePolicies.OnDeleteNodePolicy,
         InitializingBean
 {
@@ -195,6 +197,8 @@ public class NfsServerNodeMonitor
                 LOGGER.debug("StoreRef='" + targetStoreRef + "' was found for '" + targetDeviceName + "' device name");
             }
 
+            policyComponent.bindAssociationBehaviour(OnCreateChildAssociationPolicy.QNAME, this, new JavaBehaviour(this, "onCreateChildAssociation"));
+            policyComponent.bindAssociationBehaviour(OnDeleteChildAssociationPolicy.QNAME, this, new JavaBehaviour(this, "onDeleteChildAssociation"));
             policyComponent.bindClassBehaviour(OnDeleteNodePolicy.QNAME, this, new JavaBehaviour(this, "onDeleteNode"));
             policyComponent.bindClassBehaviour(BeforeDeleteNodePolicy.QNAME, this, new JavaBehaviour(this, "beforeDeleteNode"));
             policyComponent.bindClassBehaviour(OnUpdatePropertiesPolicy.QNAME, this, new JavaBehaviour(this, "onUpdateProperties"));
@@ -232,9 +236,7 @@ public class NfsServerNodeMonitor
 
             if (((null == oldName) && (null != newName)) || ((null != oldName) && !oldName.equals(newName)))
             {
-                String path = buildRelativePath(nodeRef, newName);
-
-                updateNfsCache(nodeRef, path);
+                updateNfsCache(nodeRef, null);
             }
         }
     }
@@ -252,11 +254,19 @@ public class NfsServerNodeMonitor
     @Override
     public void onDeleteNode(ChildAssociationRef childAssocRef, boolean isNodeArchived)
     {
-        NodeRef nodeRef = (null != childAssocRef) ? (childAssocRef.getChildRef()) : (null);
-        if (enabled && (null != nfsServer) && (null != nodeRef) && targetStoreRef.equals(nodeRef.getStoreRef()))
-        {
-            updateNfsCache(nodeRef, null);
-        }
+        updateNfsCache(childAssocRef.getChildRef(), null);
+    }
+
+    @Override
+    public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
+    {
+        updateNfsCache(childAssocRef.getChildRef(), null);
+    }
+
+    @Override
+    public void onDeleteChildAssociation(ChildAssociationRef childAssocRef)
+    {
+        updateNfsCache(childAssocRef.getChildRef(), null);
     }
 
     /**
@@ -286,41 +296,6 @@ public class NfsServerNodeMonitor
     }
 
     /**
-     * Builds path relative to NFS device name e.g. for the nfs.domain.name:/DeviceName/folder/document.doc method will return \folder\document.doc
-     * 
-     * @param nodeRef - {@link NodeRef} instance for target node
-     * @param newName - {@link String} value which contains new name for the node
-     * @return {@link String} value of relative path
-     */
-    private String buildRelativePath(NodeRef nodeRef, String newName)
-    {
-        String result = null;
-        Path path = nodeService.getPath(nodeRef);
-        if (null != path)
-        {
-            StringBuilder newPath = new StringBuilder(path.toDisplayPath(nodeService, permissionService));
-            if ((NIX_SEPARATOR == newPath.charAt(0)) || (FileName.DOS_SEPERATOR == newPath.charAt(0)))
-            {
-                newPath.delete(0, 1);
-            }
-            int indexOfFirstSeparator = newPath.indexOf(NIX_SEPARATOR_STR);
-            indexOfFirstSeparator = (-1 == indexOfFirstSeparator) ? (newPath.indexOf(FileName.DOS_SEPERATOR_STR)) : (indexOfFirstSeparator);
-            char lastChar = newPath.charAt(newPath.length() - 1);
-            if ((FileName.DOS_SEPERATOR != lastChar) && (NIX_SEPARATOR != lastChar))
-            {
-                newPath.append(FileName.DOS_SEPERATOR);
-            }
-            if (-1 == indexOfFirstSeparator)
-            {
-                indexOfFirstSeparator = newPath.length() - 1;
-            }
-            newPath = newPath.append(newName).delete(0, indexOfFirstSeparator);
-            result = newPath.toString().replace(NIX_SEPARATOR, FileName.DOS_SEPERATOR);
-        }
-        return result;
-    }
-
-    /**
      * Updates NFS cache for specified node. <code>newPath</code> equal to <code>null</code> determines that node should be deleted from the cache
      * 
      * @param nodeRef - {@link NodeRef} value of the target node
@@ -328,6 +303,10 @@ public class NfsServerNodeMonitor
      */
     private void updateNfsCache(NodeRef nodeRef, String newPath)
     {
+        if (!enabled  || nfsServer == null || !targetStoreRef.equals(nodeRef.getStoreRef()))
+        {
+            return;
+        }
         int dbId = -1;
         if (cachedNodes.containsKey(nodeRef))
         {

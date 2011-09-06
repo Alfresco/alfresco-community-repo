@@ -117,7 +117,7 @@
         </property>
         <!-- Creates Sites which require the ServiceRegistry -->
         <property name="serviceRegistry" ref="ServiceRegistry"/>
-        <property name="siteService" ref="siteService"/>
+        <property name="siteService" ref="SiteService"/>
     </bean>
     
     <!-- Behaviours and policies for Sites -->

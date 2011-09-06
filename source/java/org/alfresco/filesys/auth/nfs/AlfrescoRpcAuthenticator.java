@@ -18,14 +18,12 @@
  */
 package org.alfresco.filesys.auth.nfs;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
-import javax.transaction.Status;
-import javax.transaction.UserTransaction;
-
-import org.springframework.extensions.config.ConfigElement;
 import org.alfresco.filesys.AlfrescoConfigSection;
 import org.alfresco.filesys.alfresco.AlfrescoClientInfo;
 import org.alfresco.jlan.oncrpc.AuthType;
@@ -39,13 +37,15 @@ import org.alfresco.jlan.server.auth.ClientInfo;
 import org.alfresco.jlan.server.config.InvalidConfigurationException;
 import org.alfresco.jlan.server.config.ServerConfiguration;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.extensions.config.ConfigElement;
 
 /**
  * Alfresco RPC Authenticator Class
@@ -66,13 +66,13 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator, InitializingB
 
     // UID/GID to username conversions
     
-    private HashMap<Integer, String> m_idMap;
+    private Map<Integer, String> m_idMap = Collections.emptyMap();
     
     private List<UserMapping> userMappings;
 
     private AuthenticationComponent authenticationComponent;
     
-    private AuthenticationService authenticationService;
+    private MutableAuthenticationService authenticationService;
 
     private TransactionService transactionService;
 
@@ -86,7 +86,7 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator, InitializingB
         this.authenticationComponent = authenticationComponent;
     }
 
-    public void setAuthenticationService (AuthenticationService authenticationService)
+    public void setAuthenticationService (MutableAuthenticationService authenticationService)
     {
         this.authenticationService = authenticationService;
     }
@@ -266,109 +266,91 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator, InitializingB
      * @param sess SrvSession
      * @param client ClientInfo
      */
-    public void setCurrentUser( SrvSession sess, ClientInfo client)
+    public void setCurrentUser(SrvSession sess, final ClientInfo client)
     {
-        // Start a transaction
-        
-      UserTransaction tx = createTransaction(); 
-
-      try
-      {
-        // start the transaction
-        
-        tx.begin();
-
-        // Check the account type and setup the authentication context
-        
-        if ( client == null || client.isNullSession() || client instanceof AlfrescoClientInfo == false)
+        try
         {
-            // Clear the authentication, null user should not be allowed to do any service calls
-            
-            getAuthenticationComponent().clearCurrentSecurityContext();
-            
-            // DEBUG
-            
-            if ( logger.isDebugEnabled())
-                logger.debug("Clear security context, client=" + client);
-        }
-        else if ( client.isGuest() == false)
-        {
-          // Access the Alfresco client
+          // start the transaction
+    
+          doInTransaction(new RetryingTransactionCallback<Void>()
+          {
+              @Override
+              public Void execute() throws Throwable
+              {
+                  // Check the account type and setup the authentication context
+                  
+                  if ( client == null || client.isNullSession() || client instanceof AlfrescoClientInfo == false)
+                  {
+                      // Clear the authentication, null user should not be allowed to do any service calls
+                      
+                      getAuthenticationComponent().clearCurrentSecurityContext();
+                      
+                      // DEBUG
+                      
+                      if ( logger.isDebugEnabled())
+                          logger.debug("Clear security context, client=" + client);
+                  }
+                  else if ( client.isGuest() == false)
+                  {
+                    // Access the Alfresco client
+                    
+                    AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
+                    
+                      // Check if the authentication token has been set for the client
+                      
+                      if ( !alfClient.hasAuthenticationTicket() )
+                      {
+                          // ALF-9793: It's possible that the user we're about to accept doesn't even exist, yet we
+                          // are using alfresco authentication. In such cases we must automatically create
+                          // authentication (using a randomized password) in order to successfully authenticate.
           
-          AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
+                          if (!authenticationService.authenticationExists( client.getUserName()) && authenticationService.isAuthenticationCreationAllowed())
+                          {
+                              authenticationService.createAuthentication( client.getUserName(), GUID.generate().toCharArray());
+                          }
+                          // Set the current user and retrieve the authentication token
+                          
+                          getAuthenticationComponent().setCurrentUser( client.getUserName());
+                          alfClient.setAuthenticationTicket(getAuthenticationService().getCurrentTicket());
           
-            // Check if the authentication token has been set for the client
-            
-            if ( !alfClient.hasAuthenticationTicket() )
-            {
-                // Set the current user and retrieve the authentication token
-                
-                getAuthenticationComponent().setCurrentUser( client.getUserName());
-                alfClient.setAuthenticationTicket(getAuthenticationService().getCurrentTicket());
+                          // DEBUG
+                          
+                          if ( logger.isDebugEnabled())
+                              logger.debug("Set user name=" + client.getUserName() + ", ticket=" + alfClient.getAuthenticationTicket());
+                      }
+                      else
+                      {
+                          // Set the authentication context for the request
+                          
+                          getAuthenticationService().validate(alfClient.getAuthenticationTicket());
+                          
+                          // DEBUG
+                          
+                          if ( logger.isDebugEnabled())
+                              logger.debug("Set user using auth ticket, ticket=" + alfClient.getAuthenticationTicket());
+                      }
+                  }
+                  else
+                  {
+                      // Enable guest access for the request
+                      
+                    getAuthenticationComponent().setGuestUserAsCurrentUser();
+                      
+                    // DEBUG
+                      
+                    if ( logger.isDebugEnabled())
+                      logger.debug("Set guest user");
+                  }
+                  return null;
+              }
+          });
 
-                // DEBUG
-                
-                if ( logger.isDebugEnabled())
-                    logger.debug("Set user name=" + client.getUserName() + ", ticket=" + alfClient.getAuthenticationTicket());
-            }
-            else
-            {
-                // Set the authentication context for the request
-                
-                getAuthenticationService().validate(alfClient.getAuthenticationTicket());
-                
-                // DEBUG
-                
-                if ( logger.isDebugEnabled())
-                    logger.debug("Set user using auth ticket, ticket=" + alfClient.getAuthenticationTicket());
-            }
-        }
-        else
-        {
-            // Enable guest access for the request
-            
-          getAuthenticationComponent().setGuestUserAsCurrentUser();
-            
-          // DEBUG
-            
-          if ( logger.isDebugEnabled())
-            logger.debug("Set guest user");
-        }
       }
       catch ( Exception ex)
       {
         if ( logger.isErrorEnabled())
           logger.error( "Error in RPC authenticator setting current user", ex);
       }
-      finally
-      {
-        // Commit the transaction
-        
-        if ( tx != null)
-        {
-            try
-            {
-                // Commit or rollback the transaction
-                
-                if ( tx.getStatus() == Status.STATUS_MARKED_ROLLBACK)
-                {
-                    // Transaction is marked for rollback
-                    
-                    tx.rollback();
-                }
-                else
-                {
-                    // Commit the transaction
-                    
-                    tx.commit();
-                }
-            }
-            catch ( Exception ex)
-            {
-            }
-        }
-      }
-
     }
     
     /**
@@ -386,7 +368,7 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator, InitializingB
         
         // Copy over relevant bean properties for backward compatibility
         setAuthenticationComponent(alfrescoConfig.getAuthenticationComponent());
-        setAuthenticationService(alfrescoConfig.getAuthenticationService());
+        setAuthenticationService((MutableAuthenticationService) alfrescoConfig.getAuthenticationService());
         setTransactionService(alfrescoConfig.getTransactionService());
 
         // Check for the user mappings
@@ -503,19 +485,16 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator, InitializingB
                 }
             }
         }
-        
-        // Make sure there are some user mappings
-        
-        if ( m_idMap == null || m_idMap.size() == 0)
-            throw new InvalidConfigurationException("No user mappings for RPC authenticator");
     }
     
     /**
-     * Create a transaction, this will be a writable transaction unless the system is in read-only mode.
+     * Does work in a transaction. This will be a writeable transaction unless the system is in read-only mode.
      * 
-     * return UserTransaction
+     * @param callback
+     *            a callback that does the work
+     * @return the result, or <code>null</code> if not applicable
      */
-    protected final UserTransaction createTransaction()
+    protected <T> T doInTransaction(RetryingTransactionHelper.RetryingTransactionCallback<T> callback)
     {
         // Get the transaction service
         
@@ -526,9 +505,7 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator, InitializingB
         if ( logger.isDebugEnabled())
             logger.debug("Using " + (txService.isReadOnly() ? "ReadOnly" : "Write") + " transaction");
         
-        // Create the transaction
-        
-        return txService.getUserTransaction( txService.isReadOnly() ? true : false);
+        return txService.getRetryingTransactionHelper().doInTransaction(callback, txService.isReadOnly());
     }
     
     protected AuthenticationComponent getAuthenticationComponent()
@@ -536,7 +513,7 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator, InitializingB
         return this.authenticationComponent;
     }
     
-    protected AuthenticationService getAuthenticationService()
+    protected MutableAuthenticationService getAuthenticationService()
     {
         return this.authenticationService;
     }

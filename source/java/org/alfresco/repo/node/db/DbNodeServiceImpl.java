@@ -176,6 +176,13 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         return status;
     }
 
+    @Override
+    public NodeRef getNodeRef(Long nodeId)
+    {
+        Pair<Long, NodeRef> nodePair = nodeDAO.getNodePair(nodeId);
+        return nodePair == null ? null : nodePair.getSecond();
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -735,7 +742,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         invokeBeforeUpdateNode(nodeRef);
         
         // Set the type
-        nodeDAO.updateNode(nodePair.getFirst(), typeQName, null);
+        nodeDAO.updateNode(nodePair.getFirst(), typeQName, null, false);
         
         // Add the default aspects and properties required for the given type. Existing values will not be overridden.
         addAspectsAndProperties(nodePair, typeQName, null, null, null, null, false);

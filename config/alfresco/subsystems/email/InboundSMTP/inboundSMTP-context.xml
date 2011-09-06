@@ -106,9 +106,6 @@
 		<property name="nodeService">
 			<ref bean="NodeService" />
 		</property>
-		<property name="searchService">
-			<ref bean="SearchService" />
-		</property>
 		<property name="contentService">
 			<ref bean="ContentService" />
 		</property>

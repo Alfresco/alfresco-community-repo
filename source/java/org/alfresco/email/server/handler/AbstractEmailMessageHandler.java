@@ -26,10 +26,8 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.email.server.EmailServerModel;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.model.ImapModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -41,9 +39,6 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
@@ -63,7 +58,6 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
 
     private DictionaryService dictionaryService;
     private NodeService nodeService;
-    private SearchService searchService;
     private ContentService contentService;
     private MimetypeService mimetypeService;
 
@@ -116,14 +110,6 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
     }
 
     /**
-     * @param searchService Alfresco Search Service.
-     */
-    public void setSearchService(SearchService searchService)
-    {
-        this.searchService = searchService;
-    }
-
-    /**
      * @return      the service used to determine mimeypte and encoding
      */
     protected MimetypeService getMimetypeService()
@@ -155,21 +141,15 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
         {
             throw new InvalidArgumentException("Incorrect email address format.");
         }
-        StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
-        String query = "@sys\\:node-dbid:" + parts[0];
-        ResultSet resultSet = searchService.query(storeRef, SearchService.LANGUAGE_LUCENE, query);
         try
         {
-            if (resultSet.length() == 1)
-            {
-                return resultSet.getNodeRef(0);
-            }
+            Long dbId = Long.parseLong(parts[0]);
+            return nodeService.getNodeRef(dbId);
         }
-        finally
+        catch (NumberFormatException e)
         {
-            resultSet.close();
+            return null;
         }
-        return null;
     }
 
     /**
@@ -214,16 +194,19 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
     protected void writeContent(NodeRef nodeRef, InputStream content, String mimetype, String encoding)
     {
         InputStream bis = new BufferedInputStream(content, 4092);
-        
-        // Guess the encoding if it is text
-        if (mimetypeService.isText(mimetype))
+
+        // Only guess the encoding if it has not been supplied
+        if (encoding == null)
         {
-            ContentCharsetFinder charsetFinder = mimetypeService.getContentCharsetFinder();
-            encoding = charsetFinder.getCharset(bis, mimetype).name();
-        }
-        else if (encoding == null)
-        {
-            encoding = "UTF-8";
+            if (mimetypeService.isText(mimetype))
+            {
+                ContentCharsetFinder charsetFinder = mimetypeService.getContentCharsetFinder();
+                encoding = charsetFinder.getCharset(bis, mimetype).name();
+            }
+            else
+            {
+                encoding = "UTF-8";
+            }
         }
         
         if (log.isDebugEnabled())

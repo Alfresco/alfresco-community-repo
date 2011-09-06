@@ -40,7 +40,7 @@ public class DataKeyMatcher
      * names will look like <code>"prop_cm_name"</code>. The pattern can also be
      * used to extract the "cm" and the "name" parts.
      */
-    private final static Pattern propertyNamePattern = Pattern.compile("(^[a-zA-Z0-9]+)_([a-zA-Z0-9_]+$)");
+    private final static Pattern propertyNamePattern = Pattern.compile("(^[a-zA-Z0-9-]+)_([a-zA-Z0-9_]+$)");
 
     /**
      * A regular expression which can be used to match association names. These
@@ -48,7 +48,7 @@ public class DataKeyMatcher
      * pattern can also be used to extract the "cm", the "name" and the suffix
      * parts.
      */
-    private final static Pattern associationNamePattern = Pattern.compile("(^[a-zA-Z0-9]+)_([a-zA-Z0-9_]+)(_[a-zA-Z]+$)");
+    private final static Pattern associationNamePattern = Pattern.compile("(^[a-zA-Z0-9-]+)_([a-zA-Z0-9_]+)(_[a-zA-Z]+$)");
 
     private final static Pattern transientAssociationPattern = Pattern.compile("(^[a-zA-Z0-9]+)(_[a-zA-Z]+$)");
 

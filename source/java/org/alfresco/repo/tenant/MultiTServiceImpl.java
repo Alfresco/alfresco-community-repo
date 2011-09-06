@@ -31,10 +31,10 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.I18NUtil;
-import org.springframework.extensions.surf.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 /*
  * MT Service implementation
@@ -538,6 +538,11 @@ public class MultiTServiceImpl implements TenantService
      */
     public boolean isTenantName(String name)
     {
+        return getMultiTenantDomainName(name) != null;
+    }
+
+    public static String getMultiTenantDomainName(String name)
+    {
         // Check that all the passed values are not null
         ParameterCheck.mandatory("name", name);
         
@@ -547,11 +552,12 @@ public class MultiTServiceImpl implements TenantService
             int idx2 = name.indexOf(SEPARATOR, 1);
             if (idx2 != -1)
             {
-                return true;
+                return name.substring(1, idx2);
+
             }
         }
 
-        return false;  
+        return null;  
     }
     
     /* (non-Javadoc)

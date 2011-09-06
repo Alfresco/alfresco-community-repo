@@ -333,7 +333,17 @@ public class WorkflowDeployer extends AbstractLifecycleBean
         catch(Throwable e)
         {
             // rollback the transaction
-            try { if (userTransaction != null) {userTransaction.rollback();} } catch (Exception ex) { /* NOOP */ }
+            try
+            { 
+                if (userTransaction != null) 
+                {
+                    userTransaction.rollback();
+                }
+            }
+            catch (Exception ex)
+            {
+                // NOOP 
+            }
             throw new AlfrescoRuntimeException("Workflow deployment failed", e);
         }
         finally

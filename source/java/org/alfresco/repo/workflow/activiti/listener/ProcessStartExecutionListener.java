@@ -34,10 +34,11 @@ import org.alfresco.repo.workflow.activiti.ActivitiConstants;
  */
 public class ProcessStartExecutionListener implements ExecutionListener
 {
+
     public void notify(DelegateExecution execution) throws Exception
     {
         // Add the workflow ID
-        execution.setVariable(WorkflowConstants.PROP_WORKFLOW_INSTANCE_ID, BPMEngineRegistry
-                    .createGlobalId(ActivitiConstants.ENGINE_ID, execution.getId()));
+        String instanceId = BPMEngineRegistry.createGlobalId(ActivitiConstants.ENGINE_ID, execution.getId());
+        execution.setVariable(WorkflowConstants.PROP_WORKFLOW_INSTANCE_ID, instanceId);
     }
 }

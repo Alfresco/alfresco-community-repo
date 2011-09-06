@@ -56,6 +56,7 @@ import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.collections.Function;
 
 /**
  * @author Nick Smith
@@ -91,6 +92,12 @@ public class ActivitiTypeConverter
         this.propertyConverter =propertyConverter;
         this.activitiUtil = new ActivitiUtil(processEngine);
     }
+    
+    public <F, T> List<T> filterByDomainAndConvert(List<F> values, Function<F, String> processKeyGetter)
+    {
+        List<F> filtered = factory.filterByDomain(values, processKeyGetter);
+        return convert(filtered);
+    }
 
     /**
      * Convert a {@link Deployment} into a {@link WorkflowDeployment}.
@@ -99,7 +106,7 @@ public class ActivitiTypeConverter
      */
     public WorkflowDeployment convert(Deployment deployment)
     {
-        if (deployment == null)
+        if(deployment == null)
             return null;
         
         List<ProcessDefinition> processDefs = repoService.createProcessDefinitionQuery()
@@ -117,7 +124,7 @@ public class ActivitiTypeConverter
      */
     public WorkflowDefinition convert(ProcessDefinition definition)
     {
-        if (definition==null)
+        if(definition==null)
             return null;
         
         String defId = definition.getId();
@@ -127,7 +134,7 @@ public class ActivitiTypeConverter
         
         String startTaskName = null;
         StartFormData startFormData = formService.getStartFormData(definition.getId());
-        if (startFormData != null) 
+        if(startFormData != null) 
         {
             startTaskName = startFormData.getFormKey();
         }
@@ -147,7 +154,7 @@ public class ActivitiTypeConverter
         String startTitle = (String) activity.getProperty(ActivitiConstants.NODE_NAME);
         String startDescription= (String) activity.getProperty(ActivitiConstants.NODE_DESCRIPTION);
         String startType = (String) activity.getProperty(ActivitiConstants.NODE_TYPE);
-        if (taskFormKey == null)
+        if(taskFormKey == null)
         {
             taskFormKey = startId;
         }
@@ -163,20 +170,20 @@ public class ActivitiTypeConverter
     
     public WorkflowInstance convertAndSetVariables(ProcessInstance instance, Map<String, Object> collectedvariables)
     {
-        if (instance == null)
+        if(instance == null)
             return null;
         
         HistoricProcessInstance historicInstance = historyService
-                    .createHistoricProcessInstanceQuery()
-                    .processInstanceId(instance.getId())
-                    .singleResult();
+        	.createHistoricProcessInstanceQuery()
+        	.processInstanceId(instance.getId())
+        	.singleResult();
         
        return convertToInstanceAndSetVariables(historicInstance, collectedvariables);
     }
 
     public WorkflowInstance convert(HistoricProcessInstance instance, Map<String, Object> collectedvariables)
     {
-        if (instance == null)
+        if(instance == null)
             return null;
         
         HistoricProcessInstance historicInstance = historyService
@@ -196,7 +203,7 @@ public class ActivitiTypeConverter
 
     public WorkflowPath convert(Execution execution, ProcessInstance instance)
     {
-        if (execution == null)
+        if(execution == null)
             return null;
         
         boolean isActive = !execution.isEnded();
@@ -221,22 +228,22 @@ public class ActivitiTypeConverter
     
     public WorkflowNode convert(PvmActivity activity, boolean forceIsTaskNode)
     {
-        String procDefId = activity.getProcessDefinition().getId();
-        String key = activitiUtil.getProcessDefinition(procDefId).getKey();
-        String name = activity.getId();
-        String defaultTitle = (String) activity.getProperty(ActivitiConstants.NODE_NAME);
-        String defaultDescription = (String) activity.getProperty(ActivitiConstants.NODE_DESCRIPTION);
-        String type = (String) activity.getProperty(ActivitiConstants.NODE_TYPE);
-        boolean isTaskNode = forceIsTaskNode || ActivitiConstants.USER_TASK_NODE_TYPE.equals(type);
-        
-        if (defaultTitle == null)
-        {
-            defaultTitle = name;
-        }
-        if (defaultDescription == null)
-        {
-            defaultDescription = name;
-        }
+    	 String procDefId = activity.getProcessDefinition().getId();
+         String key = activitiUtil.getProcessDefinition(procDefId).getKey();
+         String name = activity.getId();
+         String defaultTitle = (String) activity.getProperty(ActivitiConstants.NODE_NAME);
+         String defaultDescription = (String) activity.getProperty(ActivitiConstants.NODE_DESCRIPTION);
+         String type = (String) activity.getProperty(ActivitiConstants.NODE_TYPE);
+         boolean isTaskNode = forceIsTaskNode || ActivitiConstants.USER_TASK_NODE_TYPE.equals(type);
+         
+         if(defaultTitle == null)
+         {
+         	defaultTitle = name;
+         }
+         if(defaultDescription == null)
+         {
+         	defaultDescription = name;
+         }
 
         return factory.createNode(name, key, defaultTitle, defaultDescription, type, isTaskNode, NEXT_TRANSITION);
     }
@@ -263,7 +270,7 @@ public class ActivitiTypeConverter
         for (Object in : inputs)
         {
             T out = (T) convert(in);
-            if (out != null)
+            if(out != null)
             {
                 results.add(out);
             }
@@ -279,7 +286,7 @@ public class ActivitiTypeConverter
      */
     private Object convert(Object obj)
     {
-        if (obj == null)
+        if(obj == null)
             return null;
         
         if (obj instanceof Deployment)
@@ -306,11 +313,11 @@ public class ActivitiTypeConverter
         {
             return convert( (Task) obj);
         }
-        if (obj instanceof HistoricTaskInstance) 
+        if(obj instanceof HistoricTaskInstance) 
         {
             return convert((HistoricTaskInstance) obj);
         }
-        if (obj instanceof HistoricProcessInstance) 
+        if(obj instanceof HistoricProcessInstance) 
         {
             return convert((HistoricProcessInstance) obj);
         }
@@ -320,9 +327,8 @@ public class ActivitiTypeConverter
     
     public WorkflowTask convert(Task task)
     {
-        if (task == null)
+        if(task == null)
             return null;
-        
         String id = task.getId();
         String defaultTitle = task.getName();
         String defaultDescription = task.getDescription();
@@ -338,14 +344,14 @@ public class ActivitiTypeConverter
         
         TaskFormData taskFormData =formService.getTaskFormData(task.getId());
         String taskDefId = null;
-        if (taskFormData != null) 
+        if(taskFormData != null) 
         {
             taskDefId = taskFormData.getFormKey();
         }
         WorkflowTaskDefinition taskDef = factory.createTaskDefinition(taskDefId, node, taskDefId, false);
         
         // All task-properties should be fetched, not only local
-        Map<QName, Serializable> properties = propertyConverter.getTaskProperties(task, false);
+        Map<QName, Serializable> properties = propertyConverter.getTaskProperties(task);
         
         return factory.createTask(id,
                     taskDef, taskDef.getId(), defaultTitle, defaultDescription, state, path, properties);
@@ -361,7 +367,7 @@ public class ActivitiTypeConverter
         String id = ActivitiConstants.START_TASK_PREFIX + execution.getProcessInstanceId();
         
         WorkflowTaskState state = null;
-        if (inProgress)
+        if(inProgress)
         {
             state = WorkflowTaskState.IN_PROGRESS;
         }
@@ -378,7 +384,7 @@ public class ActivitiTypeConverter
         
         StartFormData startFormData = formService.getStartFormData(processInstance.getProcessDefinitionId());
         String taskDefId = null;
-        if (startFormData != null) 
+        if(startFormData != null) 
         {
             taskDefId = startFormData.getFormKey();
         }
@@ -402,7 +408,7 @@ public class ActivitiTypeConverter
     
     public WorkflowTask getVirtualStartTask(HistoricProcessInstance historicProcessInstance)
     {
-        if (historicProcessInstance == null)
+        if(historicProcessInstance == null)
         {
             return null;
         }
@@ -413,7 +419,7 @@ public class ActivitiTypeConverter
         WorkflowTaskState state = null;
         
         boolean completed = historicProcessInstance.getEndTime() != null;
-        if (completed)
+        if(completed)
         {
             state = WorkflowTaskState.COMPLETED;
         }
@@ -424,7 +430,7 @@ public class ActivitiTypeConverter
         
         // We use the process-instance ID as execution-id. It's ended anyway
         WorkflowPath path  = buildCompletedPath(processInstanceId, processInstanceId);
-        if (path == null)
+        if(path == null)
         {
             return null;
         }
@@ -448,7 +454,7 @@ public class ActivitiTypeConverter
     
     public WorkflowTask convert(HistoricTaskInstance historicTaskInstance) 
     {
-        if (historicTaskInstance == null) 
+        if(historicTaskInstance == null) 
         {
             return null;
         }
@@ -456,7 +462,7 @@ public class ActivitiTypeConverter
         // Check to see if the instance is still running
         Execution execution = activitiUtil.getExecution(historicTaskInstance.getExecutionId());
         
-        if (execution != null)
+        if(execution != null)
         {
             // Process execution still running
             path  = convert(execution);
@@ -467,7 +473,7 @@ public class ActivitiTypeConverter
             path  = buildCompletedPath(historicTaskInstance.getExecutionId(), historicTaskInstance.getProcessInstanceId());
         }
         
-        if (path == null)
+        if(path == null)
         {
             // When path is null, workflow is deleted or cancelled. Task should
             // not be used
@@ -497,16 +503,16 @@ public class ActivitiTypeConverter
 
     private WorkflowNode buildHistoricTaskWorkflowNode(HistoricTaskInstance historicTaskInstance) 
     {
-        ReadOnlyProcessDefinition procDef = activitiUtil.getDeployedProcessDefinition(historicTaskInstance.getProcessDefinitionId());
-        PvmActivity taskActivity = procDef.findActivity(historicTaskInstance.getTaskDefinitionKey());
-        return convert(taskActivity);
-    }
+    	ReadOnlyProcessDefinition procDef = activitiUtil.getDeployedProcessDefinition(historicTaskInstance.getProcessDefinitionId());
+    	PvmActivity taskActivity = procDef.findActivity(historicTaskInstance.getTaskDefinitionKey());
+		return convert(taskActivity);
+	}
 
-    public WorkflowPath buildCompletedPath(String executionId, String processInstanceId)
+	public WorkflowPath buildCompletedPath(String executionId, String processInstanceId)
     {
         WorkflowInstance wfInstance = null;
         ProcessInstance processInstance = activitiUtil.getProcessInstance(processInstanceId);
-        if (processInstance != null)
+        if(processInstance != null)
         {
             wfInstance = convert(processInstance);
         } 
@@ -516,10 +522,10 @@ public class ActivitiTypeConverter
             if(historicProcessInstance!= null)
                 wfInstance = convert(historicProcessInstance);
         }
-        if (wfInstance == null)
+        if(wfInstance == null)
         {
-            // When workflow is cancelled or deleted, WorkflowPath should not be returned
-            return null;
+        	// When workflow is cancelled or deleted, WorkflowPath should not be returned
+        	return null;
         }
         WorkflowNode node = null;
         return factory.createPath(executionId, wfInstance, node, false);
@@ -539,9 +545,9 @@ public class ActivitiTypeConverter
         Date endDate = historicProcessInstance.getEndTime();
 
         // Copy all variables to map, if not null
-        if (collectedVariables != null)
+        if(collectedVariables != null)
         {
-            collectedVariables.putAll(variables);
+        	collectedVariables.putAll(variables);
         }
         
         boolean isActive = historicProcessInstance.getEndTime() == null;
@@ -551,6 +557,7 @@ public class ActivitiTypeConverter
     
     public WorkflowInstance convert(HistoricProcessInstance historicProcessInstance)
     {
-        return convertToInstanceAndSetVariables(historicProcessInstance, null);
+    	return convertToInstanceAndSetVariables(historicProcessInstance, null);
     }
+
 }

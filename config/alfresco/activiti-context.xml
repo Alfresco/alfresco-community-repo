@@ -30,11 +30,11 @@
 
     <!-- BPMN Parse listener which adds tasklisteners to all userTasks -->
     <bean id="activitiParseListener"
-        class="org.alfresco.repo.workflow.activiti.AddTaskListenerParseListener">
+        class="org.alfresco.repo.workflow.activiti.AlfrescoBpmnParseListener">
         <property name="createTaskListener" ref="activitiCreateTaskListener" />
         <property name="completeTaskListener" ref="activitiCompleteTaskListener" />
         <property name="processCreateListener" ref="activitiProcessCreateListener" />
-         
+         <property name="tenantService" ref="tenantService" />
     </bean>
 
     <!-- -->

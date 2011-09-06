@@ -21,10 +21,12 @@ package org.alfresco.repo.workflow;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.jscript.ScriptNode;
+import org.alfresco.repo.tenant.MultiTServiceImpl;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
@@ -41,6 +43,9 @@ import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.cmr.workflow.WorkflowTimer;
 import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.collections.CollectionUtils;
+import org.alfresco.util.collections.Filter;
+import org.alfresco.util.collections.Function;
 
 /**
  * @author Nick Smith
@@ -158,7 +163,7 @@ public class WorkflowObjectFactory
         
         workflowInstance.priority = (Integer) getVariable(variables, WorkflowModel.PROP_WORKFLOW_PRIORITY);
         Date dueDate = (Date) getVariable(variables, WorkflowModel.PROP_WORKFLOW_DUE_DATE);
-        if (dueDate != null)
+        if(dueDate != null)
         {
             workflowInstance.dueDate = dueDate;
         }
@@ -190,7 +195,7 @@ public class WorkflowObjectFactory
     public WorkflowTaskDefinition createTaskDefinition(String id, WorkflowNode node, String typeName, boolean isStart)
     {
         TypeDefinition metaData = getTaskTypeDefinition(typeName, isStart);
-        if (id == null)
+        if(id == null)
         {
             id = qNameConverter.mapQNameToName(metaData.getName());
         }
@@ -217,13 +222,13 @@ public class WorkflowObjectFactory
     }
     
     public WorkflowTimer createWorkflowTimer(String id, String name, String error, 
-                Date dueDate, WorkflowPath workflowPath, WorkflowTask workflowTask)
+    		Date dueDate, WorkflowPath workflowPath, WorkflowTask workflowTask)
     {
         String actualId = buildGlobalId(id);
         return new WorkflowTimer(actualId, name, workflowPath, workflowTask, dueDate, error);
     }
     
-    private String getProcessKey(String defName)
+    public String getProcessKey(String defName)
     {
         String processKey = defName;
         if (isGlobalId(defName))
@@ -260,7 +265,7 @@ public class WorkflowObjectFactory
         String key = keyBase+ "." + labelKey;
         String label = messageService.getMessage(key);
         int i = 0;
-        while (label == null && i < defaults.length)
+        while(label==null && i<defaults.length)
         {
             label = defaults[i];
             i++;
@@ -271,11 +276,11 @@ public class WorkflowObjectFactory
     private NodeRef getNodeVariable(Map<String, Object> variables, QName qName)
     {
         Object obj = getVariable(variables, qName);
-        if (obj == null)
+        if (obj==null)
         {
             return null;
         }
-        if (obj instanceof ScriptNode)
+        if(obj instanceof ScriptNode)
         {
             ScriptNode scriptNode  = (ScriptNode) obj;
             return scriptNode.getNodeRef();
@@ -286,7 +291,7 @@ public class WorkflowObjectFactory
     
     private Object getVariable(Map<String, Object> variables, QName qName)
     {
-        if (variables == null || qName == null)
+        if(variables == null || qName == null)
             return null;
         String varName = qNameConverter.mapQNameToName(qName);
         return variables.get(varName);
@@ -294,7 +299,7 @@ public class WorkflowObjectFactory
     
     private Object getVariable(Map<String, Object> variables, String key)
     {
-        if (variables == null || key == null)
+        if(variables == null || key == null)
             return null;
         return variables.get(key);
     }
@@ -303,7 +308,7 @@ public class WorkflowObjectFactory
      * Throws exception if domain mismatch
      * @param defName
      */
-    private void checkDomain(String defName)
+    public void checkDomain(String defName)
     {
         if (tenantService.isEnabled())
         {
@@ -314,6 +319,29 @@ public class WorkflowObjectFactory
             }
             tenantService.checkDomain(processKey);
         }
+    }
+
+    public <T extends Object> List<T> filterByDomain(List<T> values, final Function<T, String> processKeyGetter)
+    {
+        final boolean enabled = tenantService.isEnabled();
+        final String currentDomain = tenantService.getCurrentUserDomain();
+        return CollectionUtils.filter(values, new Filter<T>()
+        {
+            public Boolean apply(T value)
+            {
+                String key = processKeyGetter.apply(value);
+                String domain = MultiTServiceImpl.getMultiTenantDomainName(key);
+                if(enabled && false == currentDomain.equals(domain))
+                {
+                    return false; // The domains do not match so ignore.
+                }
+                else if(domain!=null)
+                {
+                    return false; // Ignore domain-specific definitions
+                }
+                return true;
+            }
+        });
     }
 
     /**
@@ -342,7 +370,7 @@ public class WorkflowObjectFactory
     public TypeDefinition getTaskTypeDefinition(String name, boolean isStart)
     {
         TypeDefinition typeDef = null;
-        if (name!=null)
+        if(name!=null)
         {
             QName typeName = qNameConverter.mapNameToQName(name);
             typeDef = dictionaryService.getType(typeName);
@@ -360,7 +388,7 @@ public class WorkflowObjectFactory
         return typeDef;
     }
     
-    /**
+        /**
      * Map QName to jBPM variable name
      * 
      * @param name  QName

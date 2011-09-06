@@ -103,7 +103,7 @@ public class ActivitiPropertyConverter
         this.typeManager = new ActivitiTaskTypeManager(factory, activitiUtil.getFormService());
     }
 
-    public Map<QName, Serializable> getTaskProperties(Task task, boolean localOnly)
+    public Map<QName, Serializable> getTaskProperties(Task task)
     {
         // retrieve type definition for task
         TypeDefinition taskDef = typeManager.getFullTaskDefinition(task);
@@ -112,42 +112,21 @@ public class ActivitiPropertyConverter
         
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
         TaskService taskService = activitiUtil.getTaskService();
-        // Get the local task variables
-        Map<String, Object> localVariables = taskService.getVariablesLocal(task.getId());
-        Map<String, Object> variables = null;
-        
-        if (!localOnly)
-        {
-            variables = new HashMap<String, Object>();
-            variables.putAll(localVariables);
-            
-            // Execution-variables should also be added, if no value is present locally
-            Map<String, Object> executionVariables = activitiUtil.getExecutionVariables(task.getExecutionId());
-            
-            for (Entry<String, Object> entry : executionVariables.entrySet())
-            {
-                if (!localVariables.containsKey(entry.getKey()))
-                {
-                    variables.put(entry.getKey(), entry.getValue());
-                }
-            }
-        }
-        else
-        {
-            // Only local variables should be used.
-            variables = localVariables;
-        }
+        // Get all task variables including execution vars.
+        Map<String, Object> variables = taskService.getVariables(task.getId());
         
         // Map the arbitrary properties
+        Map<String, Object> localVariables = taskService.getVariablesLocal(task.getId());
         mapArbitraryProperties(variables, properties, localVariables, taskProperties, taskAssociations);
         
         // Map activiti task instance fields to properties
         properties.put(WorkflowModel.PROP_TASK_ID, task.getId());
         properties.put(WorkflowModel.PROP_DESCRIPTION, task.getDescription());
+        
         // Since the task is never started explicitally, we use the create time
         properties.put(WorkflowModel.PROP_START_DATE, task.getCreateTime());
-        
-        // Due date is present on the process instance
+
+        // Due date is present on the task
         properties.put(WorkflowModel.PROP_DUE_DATE, task.getDueDate());
         
         // Since this is a runtime-task, it's not completed yet
@@ -158,7 +137,7 @@ public class ActivitiPropertyConverter
         
         // Be sure to fetch the outcome
         String outcomeVarName = factory.mapQNameToName(WorkflowModel.PROP_OUTCOME);
-        if (variables.get(outcomeVarName) != null)
+        if(variables.get(outcomeVarName) != null)
         {
              properties.put(WorkflowModel.PROP_OUTCOME, (Serializable) variables.get(outcomeVarName));
         }
@@ -185,14 +164,14 @@ public class ActivitiPropertyConverter
     public List<NodeRef> getPooledActorsReference(Collection<IdentityLink> links) 
     {
          List<NodeRef> pooledActorRefs = new ArrayList<NodeRef>();
-         if (links != null)
+         if(links != null)
          {
-             for (IdentityLink link : links)
+             for(IdentityLink link : links)
              {
-                 if (IdentityLinkType.CANDIDATE.equals(link.getType()))
+                 if(IdentityLinkType.CANDIDATE.equals(link.getType()))
                  {
                      String id = link.getGroupId();
-                     if (id == null)
+                     if(id == null)
                      {
                          id = link.getUserId();
                      }
@@ -227,7 +206,7 @@ public class ActivitiPropertyConverter
         Map<String, Object> localVariables = task.getVariablesLocal();
         Map<String, Object> variables = null;
         
-        if (localOnly == false)
+        if(localOnly==false)
         {
             variables = new HashMap<String, Object>();
             variables.putAll(localVariables);
@@ -235,7 +214,7 @@ public class ActivitiPropertyConverter
             // Execution-variables should also be added, if no value is present locally
             Map<String, Object> executionVariables = task.getExecution().getVariables();
             
-            for (Entry<String, Object> entry : executionVariables.entrySet())
+            for(Entry<String, Object> entry : executionVariables.entrySet())
             {
                 String key = entry.getKey();
                 if(localVariables.containsKey(key)==false)
@@ -307,7 +286,7 @@ public class ActivitiPropertyConverter
         
         // Be sure to fetch the outcome
         String outcomeVarName = factory.mapQNameToName(WorkflowModel.PROP_OUTCOME);
-        if (variables.get(outcomeVarName) != null)
+        if(variables.get(outcomeVarName) != null)
         {
              properties.put(WorkflowModel.PROP_OUTCOME, (Serializable) variables.get(outcomeVarName));
         }
@@ -315,16 +294,15 @@ public class ActivitiPropertyConverter
         // History of pooled actors is stored in task variable
         List<NodeRef> pooledActors = new ArrayList<NodeRef>();
         List<String> pooledActorRefIds = (List<String>) variables.get(ActivitiConstants.PROP_POOLED_ACTORS_HISTORY);
-        if (pooledActorRefIds != null)
+        if(pooledActorRefIds != null)
         {
-            for (String nodeId : pooledActorRefIds) 
+            for(String nodeId : pooledActorRefIds) 
             {
                 pooledActors.add(new NodeRef(nodeId));
             }
         }
-        
         // Add pooled actors. When no actors are found, set empty list
-        properties.put(WorkflowModel.ASSOC_POOLED_ACTORS, (Serializable) pooledActors);
+            properties.put(WorkflowModel.ASSOC_POOLED_ACTORS, (Serializable) pooledActors);
         
         return filterTaskProperties(properties);
     }
@@ -448,7 +426,7 @@ public class ActivitiPropertyConverter
         String wfDueDateKey = factory.mapQNameToName(WorkflowModel.PROP_WORKFLOW_DUE_DATE);
         String dueDateKey = factory.mapQNameToName(WorkflowModel.PROP_DUE_DATE);
         Serializable dueDate = (Serializable) variables.get(wfDueDateKey);
-        if (dueDate == null)
+        if(dueDate == null)
         {
             dueDate = (Serializable) variables.get(dueDateKey);
         }
@@ -460,7 +438,7 @@ public class ActivitiPropertyConverter
         // Use workflow priority at the time of starting the process
         String priorityKey = factory.mapQNameToName(WorkflowModel.PROP_PRIORITY);
         Serializable priority = (Serializable) variables.get(priorityKey);
-        if (priority == null)
+        if(priority == null)
         {
             String wfPriorityKey = factory.mapQNameToName(WorkflowModel.PROP_WORKFLOW_PRIORITY);
             priority = (Serializable) variables.get(wfPriorityKey);
@@ -471,12 +449,12 @@ public class ActivitiPropertyConverter
         
         // Use initiator username as owner
         ActivitiScriptNode ownerNode = (ActivitiScriptNode) variables.get(WorkflowConstants.PROP_INITIATOR);
-        if (ownerNode != null)
+        if(ownerNode != null && ownerNode.exists())
         {
             properties.put(ContentModel.PROP_OWNER, (Serializable) ownerNode.getProperties().get("userName"));            
         }
         
-        if (completed)
+        if(completed)
         {
             // Override default 'Not Yet Started' when start-task is completed
             properties.put(WorkflowModel.PROP_STATUS, WorkflowConstants.TASK_STATUS_COMPLETED);     
@@ -557,8 +535,11 @@ public class ActivitiPropertyConverter
         return convertHistoricDetails(historicDetails);
     }
     
-    private void mapArbitraryProperties(Map<String, Object> variables, Map<QName, Serializable> properties, 
-                Map<String, Object> localVariables, Map<QName, PropertyDefinition> taskProperties, Map<QName, AssociationDefinition> taskAssociations) 
+    private void mapArbitraryProperties(Map<String, Object> variables,
+            Map<QName, Serializable> properties,
+                Map<String, Object> localVariables,
+                Map<QName, PropertyDefinition> taskProperties,
+                Map<QName, AssociationDefinition> taskAssociations) 
     {
         // Map arbitrary task variables
         for (Entry<String, Object> entry : variables.entrySet())
@@ -568,7 +549,9 @@ public class ActivitiPropertyConverter
 
             // Add variable, only if part of task definition or locally defined
             // on task
-            if (taskProperties.containsKey(qname) || taskAssociations.containsKey(qname) || localVariables.containsKey(key))
+            if (taskProperties.containsKey(qname) 
+                    || taskAssociations.containsKey(qname) 
+                    || localVariables.containsKey(key))
             {
                 Serializable value = convertPropertyValue(entry.getValue());
                 properties.put(qname, value);
@@ -589,7 +572,7 @@ public class ActivitiPropertyConverter
         {
             return null;
         }
-        if (nodeConverter.isSupported(value))
+        if(nodeConverter.isSupported(value))
         {
             return nodeConverter.convert(value);
         }
@@ -611,7 +594,7 @@ public class ActivitiPropertyConverter
     {
         TypeDefinition taskDef = typeManager.getFullTaskDefinition(task);
         PropertyDefinition propDef = taskDef.getProperties().get(propertyName);
-        if (propDef != null)
+        if(propDef != null)
         {
             return (Serializable) DefaultTypeConverter.INSTANCE.convert(propDef.getDataType(), value);
         }
@@ -622,7 +605,7 @@ public class ActivitiPropertyConverter
     private Map<QName, Serializable> getNewTaskProperties(Task task, Map<QName, Serializable> properties, Map<QName, List<NodeRef>> add,
                 Map<QName, List<NodeRef>> remove)
     {
-        // create properties to set on task instance
+     // create properties to set on task instance
         Map<QName, Serializable> newProperties = properties;
 
         if (add != null || remove != null)
@@ -632,7 +615,7 @@ public class ActivitiPropertyConverter
                 newProperties = new HashMap<QName, Serializable>(10);
             }
 
-            Map<QName, Serializable> existingProperties = getTaskProperties(task, false);
+            Map<QName, Serializable> existingProperties = getTaskProperties(task);
 
             if (add != null)
             {
@@ -694,12 +677,11 @@ public class ActivitiPropertyConverter
     
     public void setTaskProperties(DelegateTask task, Map<QName, Serializable> properties)
     {
-        if (properties==null || properties.isEmpty())
+        if(properties==null || properties.isEmpty())
             return;
-        
         TypeDefinition type = typeManager.getFullTaskDefinition(task);
         Map<String, Object> variablesToSet = handlerRegistry.handleVariablesToSet(properties, type, task, DelegateTask.class);
-        if (variablesToSet.size() > 0)
+        if(variablesToSet.size() > 0)
         {
             task.setVariablesLocal(variablesToSet);
         }
@@ -711,7 +693,7 @@ public class ActivitiPropertyConverter
      */
     public void setTaskProperties(Task task, Map<QName, Serializable> properties)
     {
-        if (properties == null || properties.isEmpty())
+        if(properties==null || properties.isEmpty())
             return;
         
         TypeDefinition type = typeManager.getFullTaskDefinition(task);
@@ -745,7 +727,7 @@ public class ActivitiPropertyConverter
             String currentAssignee = task.getAssignee();
             // Only set the assignee if the value has changes to prevent
             // triggering assignementhandlers when not needed
-            if (ObjectUtils.equals(currentAssignee, assignee) == false)
+            if (ObjectUtils.equals(currentAssignee, assignee)==false)
             {
                 activitiUtil.getTaskService().setAssignee(task.getId(), assignee);
             }
@@ -767,7 +749,7 @@ public class ActivitiPropertyConverter
     private Map<QName, Serializable> filterTaskProperties(
             Map<QName, Serializable> properties) 
     {
-        if (properties != null)
+        if(properties != null)
         {
             properties.remove(QName.createQName(null, ActivitiConstants.PROP_POOLED_ACTORS_HISTORY));
             properties.remove(QName.createQName(null, ActivitiConstants.PROP_TASK_FORM_KEY));
@@ -793,11 +775,11 @@ public class ActivitiPropertyConverter
             }
         });
         Map<String, Object> variables = new HashMap<String, Object>();
-        for (HistoricDetail detail : details)
+        for(HistoricDetail detail : details)
         {
             HistoricVariableUpdate varUpdate = (HistoricVariableUpdate) detail;
             // First value for a single key is used
-            if (!variables.containsKey(varUpdate.getVariableName()))
+            if(!variables.containsKey(varUpdate.getVariableName()))
             {
                 variables.put(varUpdate.getVariableName(), varUpdate.getValue());                
             }
@@ -835,7 +817,7 @@ public class ActivitiPropertyConverter
         // Special case for task description default value
         // Use the shared description set in the workflowinstance
         String description = (String) defaultProperties.get(WorkflowModel.PROP_DESCRIPTION);
-        if (description == null)
+        if(description == null)
         {
             String wfDescription = (String) defaultProperties.get(WorkflowModel.PROP_WORKFLOW_DESCRIPTION);
             String procDefKey = procDef.getKey();
@@ -912,7 +894,7 @@ public class ActivitiPropertyConverter
 
     private boolean isMandatory(ClassAttributeDefinition definition)
     {
-        if (definition instanceof PropertyDefinition)
+        if(definition instanceof PropertyDefinition)
         {
             PropertyDefinition propDef = (PropertyDefinition) definition;
             return propDef.isMandatory();
@@ -927,7 +909,7 @@ public class ActivitiPropertyConverter
      */
     private boolean isEmptyString(Object value)
     {
-        if (value instanceof String)
+        if(value instanceof String)
         {
             String str = (String)value;
             return str.isEmpty();

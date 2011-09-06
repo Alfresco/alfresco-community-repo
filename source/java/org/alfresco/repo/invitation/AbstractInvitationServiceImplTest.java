@@ -799,6 +799,7 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
         {
             invitationService.approve(invitationId, "No Way Hosea!");
             assertTrue("excetion not thrown", false);
+
         }
         catch (Exception e)
         {
@@ -867,6 +868,7 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
         {
             invitationService.reject(invitationId, "No Way Hosea!");
             assertTrue("excetion not thrown", false);
+
         }
         catch (Exception e)
         {
@@ -967,9 +969,16 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
          * Search with an empty criteria - should find all open invitations
          */
         InvitationSearchCriteria crit2 = new InvitationSearchCriteriaImpl();
-
         invitationService.searchInvitation(crit2);
         assertTrue("search everything returned 0 elements", resFive.size() > 0);
+
+        InvitationSearchCriteriaImpl crit3 = new InvitationSearchCriteriaImpl();
+        crit3.setInviter(USER_MANAGER);
+        crit3.setInvitationType(InvitationSearchCriteria.InvitationType.NOMINATED);
+
+        List<Invitation> res3 = invitationService.searchInvitation(crit3);
+        assertEquals("user one does not have 2 nominated", 2, res3.size());
+
     }
 
     /**

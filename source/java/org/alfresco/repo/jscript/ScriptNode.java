@@ -82,7 +82,6 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
-import org.alfresco.service.cmr.version.VersionServiceException;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowService;
@@ -118,7 +117,7 @@ import org.springframework.extensions.surf.util.URLEncoder;
  * 
  * @author Kevin Roast
  */
-public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResolverProvider
+public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
 {
     private static final long serialVersionUID = -3378946227712939601L;
     
@@ -878,6 +877,15 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
     public Map<String, Object> getParentAssociations()
     {
         return getParentAssocs();
+    }
+    
+    /**
+     * Checks whether the {@link ScriptNode} exists in the repository.
+     * @return
+     */
+    public boolean exists()
+    {
+        return nodeService.exists(nodeRef);
     }
     
     /**

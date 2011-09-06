@@ -242,37 +242,37 @@ public class InviteServiceTest extends BaseWebScriptTest
      */
     public static void configureMailExecutorForTestMode(TestWebScriptServer server)
     {
-        // This test class depends on a MailActionExecuter bean which sends out emails
-        // in a live system. We want to prevent these emails from being sent during
-        // test execution.
-        // To do that, we need to get at the outboundSMTP-context.xml and change its
-        // "mail" MailActionExecuter bean to test mode. setTestMode(true) on that object
-        // will turn off email sending.
-        // But that bean is defined within a subsystem i.e. a child application context.
-        
-        // There are a number of ways we could do this, none of them perfect.
-        //
-        // 1. Expose the setTestMode(boolean) method in the subsystem API.
-        //    We could have the "mail" bean implement a "TestModeable" interface and
-        //    expose that through the proxy.
-        //    But that would mean that the setTestMode method would be available in the
-        //    live system too, which is not ideal.
-        // 2. Replace the "mail" bean in outboundSMTP-context.xml with an alternative in a
-        //    different subsystem context file as described in
-        //    http://wiki.alfresco.com/wiki/Alfresco_Subsystems#Debugging_Alfresco_Subsystems
-        //    But to do that, we'd have to reproduce all the spring config for that bean
-        //    and add a testMode property. Again not ideal.
-        // 3. Hack into the "mail" bean by programmatically going through the known applicationContext
-        //    and bean structure. This is not ideal either, but it has no effect on product code
-        //    and isolates all the hacking into this test class.
-        //
-        // Therefore we've decided to do [3].
-        
-        ChildApplicationContextFactory outboundSmptSubsystem
+    	// This test class depends on a MailActionExecuter bean which sends out emails
+    	// in a live system. We want to prevent these emails from being sent during
+    	// test execution.
+    	// To do that, we need to get at the outboundSMTP-context.xml and change its
+    	// "mail" MailActionExecuter bean to test mode. setTestMode(true) on that object
+    	// will turn off email sending.
+    	// But that bean is defined within a subsystem i.e. a child application context.
+
+    	// There are a number of ways we could do this, none of them perfect.
+    	//
+    	// 1. Expose the setTestMode(boolean) method in the subsystem API.
+    	//    We could have the "mail" bean implement a "TestModeable" interface and
+    	//    expose that through the proxy.
+    	//    But that would mean that the setTestMode method would be available in the
+    	//    live system too, which is not ideal.
+    	// 2. Replace the "mail" bean in outboundSMTP-context.xml with an alternative in a
+    	//    different subsystem context file as described in
+    	//    http://wiki.alfresco.com/wiki/Alfresco_Subsystems#Debugging_Alfresco_Subsystems
+    	//    But to do that, we'd have to reproduce all the spring config for that bean
+    	//    and add a testMode property. Again not ideal.
+    	// 3. Hack into the "mail" bean by programmatically going through the known applicationContext
+    	//    and bean structure. This is not ideal either, but it has no effect on product code
+    	//    and isolates all the hacking into this test class.
+    	//
+    	// Therefore we've decided to do [3].
+    	
+		ChildApplicationContextFactory outboundSmptSubsystem
             = (ChildApplicationContextFactory)server.getApplicationContext().getBean("OutboundSMTP");
-        ApplicationContext childAppCtxt = outboundSmptSubsystem.getApplicationContext();
-        MailActionExecuter mailActionExecutor = (MailActionExecuter)childAppCtxt.getBean("mail");
-        mailActionExecutor.setTestMode(true);
+    	ApplicationContext childAppCtxt = outboundSmptSubsystem.getApplicationContext();
+    	MailActionExecuter mailActionExecutor = (MailActionExecuter)childAppCtxt.getBean("mail");
+    	mailActionExecutor.setTestMode(true);
     }
     
     @Override
@@ -292,33 +292,31 @@ public class InviteServiceTest extends BaseWebScriptTest
                 {
                     public Object doWork() throws Exception
                     {
-                        // delete invite sites
-                        siteService.deleteSite(SITE_SHORT_NAME_INVITE_1);
-                        siteService.deleteSite(SITE_SHORT_NAME_INVITE_2);
-                        siteService.deleteSite(SITE_SHORT_NAME_INVITE_3);
-                        
                         // delete the inviter
                         deletePersonByUserName(USER_INVITER);
 
                         // delete all invitee people
-                        for (String inviteeEmail : InviteServiceTest.this.inviteeEmailAddrs)
+                        for (String inviteeEmail : inviteeEmailAddrs)
                         {
                             //
                             // delete all people with given email address
                             //
 
-                            Set<NodeRef> people = InviteServiceTest.this.personService.getPeopleFilteredByProperty(
-                                    ContentModel.PROP_EMAIL, inviteeEmail);
+                            Set<NodeRef> people = 
+                                personService.getPeopleFilteredByProperty(ContentModel.PROP_EMAIL, inviteeEmail);
                             for (NodeRef person : people)
                             {
                                 String userName = DefaultTypeConverter.INSTANCE.convert(String.class,
                                         InviteServiceTest.this.nodeService.getProperty(person, ContentModel.PROP_USERNAME));
-
                                 // delete person
                                 deletePersonByUserName(userName);
                             }
                         }
                         
+                        // delete invite sites
+                        siteService.deleteSite(SITE_SHORT_NAME_INVITE_1);
+                        siteService.deleteSite(SITE_SHORT_NAME_INVITE_2);
+                        siteService.deleteSite(SITE_SHORT_NAME_INVITE_3);
                         return null;
                     }
                 };
@@ -729,9 +727,8 @@ public class InviteServiceTest extends BaseWebScriptTest
 
         assertEquals(true, getInvitesResult.length() > 0);
 
-//        JSONObject inviteJSONObj = getInvitesResult.getJSONArray("invites").getJSONObject(0);
-
-//        assertEquals(USER_INVITER, inviteJSONObj.getJSONObject("inviter").get("userName"));
+        JSONObject inviteJSONObj = getInvitesResult.getJSONArray("invites").getJSONObject(0);
+        assertEquals(USER_INVITER, inviteJSONObj.getJSONObject("inviter").get("userName"));
     }
 
     public void testGetInvitesByInviteeUserName() throws Exception

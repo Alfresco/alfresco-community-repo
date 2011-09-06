@@ -19,9 +19,11 @@
 package org.alfresco.repo.domain.audit;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
@@ -302,5 +304,212 @@ public class AuditDAOTest extends TestCase
             }
         };
         txnHelper.doInTransaction(deletedCallback);
+    }
+    
+
+    /**
+     * Ensure that only the correct application's audit entries are deleted.
+     * @throws Exception 
+     */
+    public void testAuditDeleteEntriesForApplication() throws Exception
+    {
+        final String app1 = doAuditEntryImpl(6);
+        final String app2 = doAuditEntryImpl(18);
+        
+        final AuditQueryCallbackImpl resultsCallback = new AuditQueryCallbackImpl();
+        
+        RetryingTransactionCallback<Void> deletedCallback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                Long app1Id = auditDAO.getAuditApplication(app1).getId();
+                auditDAO.deleteAuditEntries(app1Id, null, null);
+                // There should be no entries for app1
+                // but still entries for app2
+                auditDAO.findAuditEntries(resultsCallback, new AuditQueryParameters(), -1);
+                assertEquals("All entries should have been deleted from app1", 0, resultsCallback.numEntries(app1));
+                assertEquals("No entries should have been deleted from app2", 18, resultsCallback.numEntries(app2));
+                return null;
+            }
+        };
+        txnHelper.doInTransaction(deletedCallback);
+    }
+    
+    
+    /**
+     * Ensure that an application's audit entries can be deleted between 2 times.
+     * @throws Exception
+     */
+    public void testAuditDeleteEntriesForApplicationBetweenTimes() throws Exception
+    {
+        RetryingTransactionCallback<Void> deletedCallback = new RetryingTransactionCallback<Void>()
+        {
+            AuditQueryCallbackImpl preDeleteCallback = new AuditQueryCallbackImpl();
+            AuditQueryCallbackImpl resultsCallback = new AuditQueryCallbackImpl();
+     
+            
+            public Void execute() throws Throwable
+            {
+                AuditApplicationInfo info1 = createAuditApp();
+                String app1 = info1.getName();
+                Long app1Id = info1.getId();
+                AuditApplicationInfo info2 = createAuditApp();
+                String app2 = info2.getName();
+                
+                // Create items 10, 11, 12, 13, 14 for application 1
+                // Create items 21, 22 for application 2
+                createItem(info1, 10);
+                createItem(info1, 11);
+                Thread.sleep(10); // stop previous statements being executed during t1
+                final long t1 = System.currentTimeMillis();
+                createItem(info2, 21);
+                createItem(info1, 12);
+                createItem(info1, 13);
+                final long t2 = System.currentTimeMillis();
+                Thread.sleep(10); // stop next statements being executed during t2
+                Thread.sleep(10);
+                createItem(info2, 22);
+                createItem(info1, 14);
+                
+                
+                auditDAO.findAuditEntries(preDeleteCallback, new AuditQueryParameters(), -1);
+                assertEquals(5, preDeleteCallback.numEntries(app1));
+                assertEquals(2, preDeleteCallback.numEntries(app2));
+                
+                auditDAO.deleteAuditEntries(app1Id, t1, t2);
+                
+                auditDAO.findAuditEntries(resultsCallback, new AuditQueryParameters(), -1);
+                assertEquals("Two entries should have been deleted from app1", 3, resultsCallback.numEntries(app1));
+                assertEquals("No entries should have been deleted from app2", 2, resultsCallback.numEntries(app2));
+                return null;
+            }
+        };
+        txnHelper.doInTransaction(deletedCallback);
+    }
+    
+    
+    /**
+     * Ensure audit entries can be deleted between two times - for all applications.
+     * @throws Exception
+     */
+    public void testAuditDeleteEntriesBetweenTimes() throws Exception
+    {
+        RetryingTransactionCallback<Void> deletedCallback = new RetryingTransactionCallback<Void>()
+        {
+            AuditQueryCallbackImpl preDeleteCallback = new AuditQueryCallbackImpl();
+            AuditQueryCallbackImpl resultsCallback = new AuditQueryCallbackImpl();
+     
+            
+            public Void execute() throws Throwable
+            {
+                AuditApplicationInfo info1 = createAuditApp();
+                String app1 = info1.getName();
+                AuditApplicationInfo info2 = createAuditApp();
+                String app2 = info2.getName();
+                
+                // Create items 10, 11, 12, 13, 14 for application 1
+                // Create items 21, 22 for application 2
+                createItem(info1, 10);
+                createItem(info1, 11);
+                Thread.sleep(10); // stop previous statements being executed during t1
+                final long t1 = System.currentTimeMillis();
+                createItem(info2, 21);
+                createItem(info1, 12);
+                createItem(info1, 13);
+                final long t2 = System.currentTimeMillis();
+                Thread.sleep(10); // stop next statements being executed during t2
+                createItem(info2, 22);
+                createItem(info1, 14);
+                
+                
+                auditDAO.findAuditEntries(preDeleteCallback, new AuditQueryParameters(), -1);
+                assertEquals(5, preDeleteCallback.numEntries(app1));
+                assertEquals(2, preDeleteCallback.numEntries(app2));
+                
+                // Delete audit entries between times - for all applications.
+                auditDAO.deleteAuditEntries(null, t1, t2);
+                
+                auditDAO.findAuditEntries(resultsCallback, new AuditQueryParameters(), -1);
+                assertEquals("Two entries should have been deleted from app1", 3, resultsCallback.numEntries(app1));
+                assertEquals("One entry should have been deleted from app2", 1, resultsCallback.numEntries(app2));
+                return null;
+            }
+        };
+        txnHelper.doInTransaction(deletedCallback);
+    }
+    
+    /**
+     * Create an audit item
+     * @param appInfo The audit application to create the item for.
+     * @param value The value that will be stored against the path /a/b/c
+     */
+    private void createItem(final AuditApplicationInfo appInfo, final int value)
+    {
+        String username = "alexi";    
+        Map<String, Serializable> values = Collections.singletonMap("/a/b/c", (Serializable) value);
+        long now = System.currentTimeMillis();
+        auditDAO.createAuditEntry(appInfo.getId(), now, username, values);
+    }
+
+    
+    /**
+     * Create an audit application.
+     * @return AuditApplicationInfo for the new application.
+     * @throws IOException 
+     */
+    private AuditApplicationInfo createAuditApp() throws IOException
+    {
+        String appName = getName() + "." + System.currentTimeMillis();
+        File file = AbstractContentTransformerTest.loadQuickTestFile("pdf");
+        assertNotNull(file);
+        URL url = new URL("file:" + file.getAbsolutePath());
+        
+        AuditApplicationInfo appInfo = auditDAO.getAuditApplication(appName);
+        if (appInfo == null)
+        {
+            Long modelId = auditDAO.getOrCreateAuditModel(url).getFirst();
+            appInfo = auditDAO.createAuditApplication(appName, modelId);
+        }
+        return appInfo;
+    }
+
+
+    public class AuditQueryCallbackImpl implements AuditQueryCallback
+    {
+        private Map<String, Integer> countsByApp = new HashMap<String, Integer>();
+        
+        public boolean valuesRequired()
+        {
+            return false;
+        }
+
+        public boolean handleAuditEntry(
+                Long entryId,
+                String applicationName,
+                String user,
+                long time,
+                Map<String, Serializable> values)
+        {
+            Integer count = countsByApp.get(applicationName);
+            if (count == null)
+                countsByApp.put(applicationName, 1);
+            else
+                countsByApp.put(applicationName, ++count);
+            
+            return true;
+        }
+
+        public boolean handleAuditEntryError(Long entryId, String errorMsg, Throwable error)
+        {
+            throw new AlfrescoRuntimeException(errorMsg, error);
+        }
+        
+        public int numEntries(String appName)
+        {
+            if (countsByApp.containsKey(appName))
+                return countsByApp.get(appName);
+            else
+                return 0;
+        }
     }
 }

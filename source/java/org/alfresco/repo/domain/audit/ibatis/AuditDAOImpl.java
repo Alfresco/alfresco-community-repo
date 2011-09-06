@@ -57,6 +57,7 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
     private static final String UPDATE_APPLICATION = "alfresco.audit.update_AuditApplication";
     
     private static final String DELETE_ENTRIES = "alfresco.audit.delete_AuditEntries";
+    private static final String DELETE_ENTRIES_BY_ID = "alfresco.audit.delete_AuditEntriesById";
     private static final String INSERT_ENTRY = "alfresco.audit.insert.insert_AuditEntry";
     
     @SuppressWarnings("unused")
@@ -181,7 +182,7 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
     {
         AuditDeleteParameters params = new AuditDeleteParameters();
         params.setAuditEntryIds(auditEntryIds);
-        return template.delete(DELETE_ENTRIES, params);
+        return template.delete(DELETE_ENTRIES_BY_ID, params);
     }
 
     @Override

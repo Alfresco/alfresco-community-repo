@@ -134,32 +134,37 @@
         </if>
     </update>
     
-    <!-- TODO: This has to be replaced with two deletes; one for the property links and another for the entries -->
+    
     <delete id="delete_AuditEntries" parameterType="AuditDeleteParameters">
        delete
        from
            alf_audit_entry
        <where>
-           <if test="auditFromTime != null">
-              audit_app_id = #{auditApplicationId}
-           </if>
-           <if test="auditFromTime != null">
-               and audit_app_id = #{auditApplicationId}
+           <if test="auditApplicationId != null">
+               audit_app_id = #{auditApplicationId}
            </if>
            <if test="auditFromTime != null">
                <![CDATA[and audit_time >= #{auditFromTime}]]>
            </if>
-           <if test="auditFromTime != null">
+           <if test="auditToTime != null">
                <![CDATA[and audit_time < #{auditToTime}]]>
-           </if>
-           <if test="auditEntryIds != null">
-                and id in 
-                <foreach item="item" index="index" collection="auditEntryIds" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
            </if>
        </where>
     </delete>
+    
+    
+    <delete id="delete_AuditEntriesById" parameterType="AuditDeleteParameters">
+       delete
+       from
+           alf_audit_entry
+       <where>
+            id in 
+            <foreach item="item" index="index" collection="auditEntryIds" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+       </where>
+    </delete>
+    
     
     <sql id="select_AuditEntriesWhereSnippet">
         <where>

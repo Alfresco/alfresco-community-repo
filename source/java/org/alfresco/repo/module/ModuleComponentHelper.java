@@ -561,7 +561,7 @@ public class ModuleComponentHelper
         Map<String, ModuleComponent> componentsByName = getComponents(moduleId);
         for (ModuleComponent component : componentsByName.values())
         {
-            executeComponent(moduleId, moduleInstallVersion, component, executedComponents);
+            executeComponent(moduleId, moduleNewVersion, component, executedComponents);
         }
         
         // Keep track of the ID as it started successfully
@@ -579,7 +579,7 @@ public class ModuleComponentHelper
      */
     private void executeComponent(
             String moduleId,
-            VersionNumber moduleInstallVersion,
+            VersionNumber currentVersion,
             ModuleComponent component,
             Set<ModuleComponent> executedComponents)
     {
@@ -600,7 +600,7 @@ public class ModuleComponentHelper
         // Check the version applicability
         VersionNumber minVersion = component.getAppliesFromVersionNumber();
         VersionNumber maxVersion = component.getAppliesToVersionNumber();
-        if (moduleInstallVersion.compareTo(minVersion) < 0 || moduleInstallVersion.compareTo(maxVersion) > 0)
+        if (currentVersion.compareTo(minVersion) < 0 || currentVersion.compareTo(maxVersion) > 0)
         {
             // It is out of the allowable range for execution so we just ignore it
             if (logger.isDebugEnabled())
@@ -608,7 +608,7 @@ public class ModuleComponentHelper
                 logger.debug("Skipping component that doesn't apply to the module installation version: \n" +
                         "   Component:       " + component + "\n" +
                         "   Module:          " + moduleId + "\n" +
-                        "   Install Version: " + moduleInstallVersion + "\n" +
+                        "   Current Version: " + currentVersion + "\n" +
                         "   Applies From :   " + minVersion + "\n" +
                         "   Applies To   :   " + maxVersion);
             }
@@ -639,7 +639,7 @@ public class ModuleComponentHelper
         List<ModuleComponent> dependencies = component.getDependsOn();
         for (ModuleComponent dependency : dependencies)
         {
-            executeComponent(moduleId, moduleInstallVersion, dependency, executedComponents);
+            executeComponent(moduleId, currentVersion, dependency, executedComponents);
         }
         // Execute the component itself
         component.execute();

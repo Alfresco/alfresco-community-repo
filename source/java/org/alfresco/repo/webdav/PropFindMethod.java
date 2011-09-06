@@ -41,6 +41,7 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.dom4j.DocumentHelper;
+import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -316,6 +317,21 @@ public class PropFindMethod extends WebDAVMethod
 
         // Send remaining data
         xml.flush();
+    }
+
+    @Override
+    protected XMLWriter createXMLWriter() throws IOException
+    {
+        String userAgent = m_request.getHeader("User-Agent");
+        if ((null != userAgent) && userAgent.toLowerCase().startsWith("microsoft-webdav-miniredir/5.1."))
+        {
+		    // ALF-9952: XP requires compact XML for this response
+            return new XMLWriter(m_response.getOutputStream(), OutputFormat.createCompactFormat());
+        }
+        else
+        {
+            return super.createXMLWriter();
+        }
     }
 
     /**

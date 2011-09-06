@@ -397,7 +397,7 @@ public abstract class BaseAuthenticationFilter
      * @throws ServletException
      *             on error
      */
-    protected void handleLoginForm(HttpServletRequest req, HttpServletResponse res) throws IOException,
+    protected boolean handleLoginForm(HttpServletRequest req, HttpServletResponse res) throws IOException,
             ServletException
     {
         // Invalidate current session
@@ -425,19 +425,20 @@ public abstract class BaseAuthenticationFilter
             if (username == null || username.length() == 0)
             {
                 res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Username not specified");
-                return;
+                return false;
             }
 
             if (password == null)
             {
                 res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Password not specified");
-                return;
+                return false;
             }
 
             authenticationService.authenticate(username, password.toCharArray());
             session = req.getSession();            
             createUserEnvironment(session, username, authenticationService.getCurrentTicket(), false);
             res.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            return true;
         }
         catch (AuthenticationException e)
         {
@@ -447,5 +448,6 @@ public abstract class BaseAuthenticationFilter
         {
             res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Unable to parse JSON POST body: " + jErr.getMessage());
         }
+        return false;
     }
 }

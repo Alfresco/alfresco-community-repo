@@ -18,8 +18,14 @@
  */
 package org.alfresco.repo.web.scripts;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.util.HashMap;
@@ -44,17 +50,20 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.descriptor.DescriptorService;
+import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.extensions.surf.util.Content;
 import org.springframework.extensions.surf.util.StringBuilderWriter;
 import org.springframework.extensions.webscripts.AbstractRuntimeContainer;
 import org.springframework.extensions.webscripts.Authenticator;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Description;
+import org.springframework.extensions.webscripts.Match;
 import org.springframework.extensions.webscripts.Registry;
 import org.springframework.extensions.webscripts.Runtime;
 import org.springframework.extensions.webscripts.ServerModel;
@@ -62,11 +71,14 @@ import org.springframework.extensions.webscripts.WebScript;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
+import org.springframework.extensions.webscripts.WrappingWebScriptRequest;
 import org.springframework.extensions.webscripts.WrappingWebScriptResponse;
+import org.springframework.extensions.webscripts.Description.FormatStyle;
 import org.springframework.extensions.webscripts.Description.RequiredAuthentication;
 import org.springframework.extensions.webscripts.Description.RequiredTransaction;
 import org.springframework.extensions.webscripts.Description.RequiredTransactionParameters;
 import org.springframework.extensions.webscripts.Description.TransactionCapability;
+import org.springframework.util.FileCopyUtils;
 
 
 /**
@@ -337,6 +349,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
         }
         else
         {
+            final BufferedRequest bufferedReq;
             final BufferedResponse bufferedRes;
             RequiredTransactionParameters trxParams = description.getRequiredTransactionParameters();
             if (trxParams.getCapability() == TransactionCapability.readwrite)
@@ -346,18 +359,21 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
                     if (logger.isDebugEnabled())
                         logger.debug("Creating Transactional Response for ReadWrite transaction; buffersize=" + trxParams.getBufferSize());
 
-                    // create buffered response that allows transaction retrying
+                    // create buffered request and response that allow transaction retrying
+                    bufferedReq = new BufferedRequest(scriptReq);
                     bufferedRes = new BufferedResponse(scriptRes, trxParams.getBufferSize());
                 }
                 else
                 {
                     if (logger.isDebugEnabled())
                         logger.debug("Transactional Response bypassed for ReadWrite - buffersize=0");
+                    bufferedReq = null;
                     bufferedRes = null;
                 }
             }
             else
             {
+                bufferedReq = null;
                 bufferedRes = null;
             }
             
@@ -378,9 +394,10 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
                         }
                         else
                         {
-                            // Reset the response in case of a transaction retry
+                            // Reset the request and response in case of a transaction retry
+                            bufferedReq.reset();
                             bufferedRes.reset();
-                            script.execute(scriptReq, bufferedRes);
+                            script.execute(bufferedReq, bufferedRes);
                         }
                     }
                     catch(Exception e)
@@ -439,6 +456,14 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
             {
                 // Map TooBusyException to a 503 status code
                 throw new WebScriptException(HttpServletResponse.SC_SERVICE_UNAVAILABLE, e.getMessage(), e);
+            }
+            finally
+            {
+                // Get rid of any temporary files
+                if (bufferedReq != null)
+                {
+                    bufferedReq.close();
+                }
             }
 
             // Ensure a response is always flushed after successful execution
@@ -822,6 +847,348 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
             {
                 throw new AlfrescoRuntimeException("Failed to commit buffered response", e);
             }
+        }
+    }
+    
+    private static class BufferedRequest implements WrappingWebScriptRequest
+    {
+        private WebScriptRequest req;
+        private File requestBody;
+        private InputStream contentStream;
+        private BufferedReader contentReader;
+        
+        public BufferedRequest(WebScriptRequest req)
+        {
+            this.req = req;
+        }
+
+        // If a web script wants access to the request stream, we copy it to a temporary file, so we can have several
+        // retries at the transaction
+        private File getRequestBodyAsFile() throws IOException
+        {
+            if (this.requestBody == null)
+            {
+                this.requestBody = TempFileProvider.createTempFile("webscript_", ".bin");
+                OutputStream out = new FileOutputStream(this.requestBody);
+                FileCopyUtils.copy(req.getContent().getInputStream(), out);
+            }
+            return this.requestBody;
+        }
+
+        public void reset()
+        {
+            if (contentStream != null)
+            {
+                try
+                {
+                    contentStream.close();
+                }
+                catch (Exception e)
+                {
+                }
+                contentStream = null;
+            }
+            if (contentReader != null)
+            {
+                try
+                {
+                    contentReader.close();
+                }
+                catch (Exception e)
+                {
+                }
+                contentReader = null;
+            }
+        }
+        
+        public void close()
+        {
+            reset();
+            if (requestBody != null)
+            {
+                try
+                {
+                    requestBody.delete();
+                }
+                catch (Exception e)
+                {
+                }
+                requestBody = null;
+            }
+        }
+
+        /* (non-Javadoc)
+         * @see org.springframework.extensions.webscripts.WrappingWebScriptRequest#getNext()
+         */
+        @Override
+        public WebScriptRequest getNext()
+        {
+            return req;
+        }
+
+        /* (non-Javadoc)
+         * @see org.springframework.extensions.webscripts.WebScriptRequest#forceSuccessStatus()
+         */
+        @Override
+        public boolean forceSuccessStatus()
+        {
+            return req.forceSuccessStatus();
+        }
+        /* (non-Javadoc)
+         * @see org.springframework.extensions.webscripts.WebScriptRequest#getAgent()
+         */
+        @Override
+        public String getAgent()
+        {
+            return req.getAgent();
+        }
+        /* (non-Javadoc)
+         * @see org.springframework.extensions.webscripts.WebScriptRequest#getContent()
+         */
+        @Override
+        public Content getContent()
+        {
+            final Content wrapped = req.getContent();
+            return new Content(){
+
+                @Override
+                public String getContent() throws IOException
+                {
+                    return wrapped.getContent();
+                }
+
+                @Override
+                public String getEncoding()
+                {
+                    return wrapped.getEncoding();
+                }
+
+                @Override
+                public String getMimetype()
+                {
+                    return wrapped.getMimetype();
+                }
+
+
+                @Override
+                public long getSize()
+                {
+                    return wrapped.getSize();
+                }
+         
+                @Override
+                public InputStream getInputStream()
+                {
+                    if (BufferedRequest.this.contentReader != null)
+                    {
+                        throw new IllegalStateException("Reader in use");
+                    }
+                    if (BufferedRequest.this.contentStream == null)
+                    {
+                        try
+                        {
+                            BufferedRequest.this.contentStream = new FileInputStream(getRequestBodyAsFile());
+                        }
+                        catch (IOException e)
+                        {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                    return BufferedRequest.this.contentStream;
+                }
+
+                @Override
+                public BufferedReader getReader() throws IOException
+                {
+                    if (BufferedRequest.this.contentStream != null)
+                    {
+                        throw new IllegalStateException("Input Stream in use");
+                    }
+                    if (BufferedRequest.this.contentReader == null)
+                    {
+                        String encoding = wrapped.getEncoding();
+                        BufferedRequest.this.contentReader = new BufferedReader(new InputStreamReader(new FileInputStream(
+                                getRequestBodyAsFile()), encoding == null ? "ISO-8859-1" : encoding));
+                    }
+                    return BufferedRequest.this.contentReader;
+                }
+            };
+        }
+        /* (non-Javadoc)
+         * @see org.springframework.extensions.webscripts.WebScriptRequest#getContentType()
+         */
+        @Override
+        public String getContentType()
+        {
+            return req.getContentType();
+        }
+        /* (non-Javadoc)
+         * @see org.springframework.extensions.webscripts.WebScriptRequest#getContextPath()
+         */
+        @Override
+        public String getContextPath()
+        {
+            return req.getContextPath();
+        }
+        /* (non-Javadoc)
+         * @see org.springframework.extensions.webscripts.WebScriptRequest#getExtensionPath()
+         */
+        @Override
+        public String getExtensionPath()
+        {
+            return req.getExtensionPath();
+        }
+        /* (non-Javadoc)
+         * @see org.springframework.extensions.webscripts.WebScriptRequest#getFormat()
+         */
+        @Override
+        public String getFormat()
+        {
+            return req.getFormat();
+        }
+        /* (non-Javadoc)
+         * @see org.springframework.extensions.webscripts.WebScriptRequest#getFormatStyle()
+         */
+        @Override
+        public FormatStyle getFormatStyle()
+        {
+            return req.getFormatStyle();
+        }
+        /* (non-Javadoc)
+         * @see org.springframework.extensions.webscripts.WebScriptRequest#getHeader(java.lang.String)
+         */
+        @Override
+        public String getHeader(String name)
+        {
+            return req.getHeader(name);
+        }
+        /* (non-Javadoc)
+         * @see org.springframework.extensions.webscripts.WebScriptRequest#getHeaderNames()
+         */
+        @Override
+        public String[] getHeaderNames()
+        {
+            return req.getHeaderNames();
+        }
+        /* (non-Javadoc)
+         * @see org.springframework.extensions.webscripts.WebScriptRequest#getHeaderValues(java.lang.String)
+         */
+        @Override
+        public String[] getHeaderValues(String name)
+        {
+            return req.getHeaderValues(name);
+        }
+        /* (non-Javadoc)
+         * @see org.springframework.extensions.webscripts.WebScriptRequest#getJSONCallback()
+         */
+        @Override
+        public String getJSONCallback()
+        {
+            return req.getJSONCallback();
+        }
+        /* (non-Javadoc)
+         * @see org.springframework.extensions.webscripts.WebScriptRequest#getParameter(java.lang.String)
+         */
+        @Override
+        public String getParameter(String name)
+        {
+            return req.getParameter(name);
+        }
+        /* (non-Javadoc)
+         * @see org.springframework.extensions.webscripts.WebScriptRequest#getParameterNames()
+         */
+        @Override
+        public String[] getParameterNames()
+        {
+            return req.getParameterNames();
+        }
+        /* (non-Javadoc)
+         * @see org.springframework.extensions.webscripts.WebScriptRequest#getParameterValues(java.lang.String)
+         */
+        @Override
+        public String[] getParameterValues(String name)
+        {
+            return req.getParameterValues(name);
+        }
+        /* (non-Javadoc)
+         * @see org.springframework.extensions.webscripts.WebScriptRequest#getPathInfo()
+         */
+        @Override
+        public String getPathInfo()
+        {
+            return req.getPathInfo();
+        }
+        /* (non-Javadoc)
+         * @see org.springframework.extensions.webscripts.WebScriptRequest#getQueryString()
+         */
+        @Override
+        public String getQueryString()
+        {
+            return req.getQueryString();
+        }
+        /* (non-Javadoc)
+         * @see org.springframework.extensions.webscripts.WebScriptRequest#getRuntime()
+         */
+        @Override
+        public Runtime getRuntime()
+        {
+            return req.getRuntime();
+        }
+        /* (non-Javadoc)
+         * @see org.springframework.extensions.webscripts.WebScriptRequest#getServerPath()
+         */
+        @Override
+        public String getServerPath()
+        {
+            return req.getServerPath();
+        }
+        /* (non-Javadoc)
+         * @see org.springframework.extensions.webscripts.WebScriptRequest#getServiceContextPath()
+         */
+        @Override
+        public String getServiceContextPath()
+        {
+            return req.getServiceContextPath();
+        }
+        /* (non-Javadoc)
+         * @see org.springframework.extensions.webscripts.WebScriptRequest#getServiceMatch()
+         */
+        @Override
+        public Match getServiceMatch()
+        {
+            return req.getServiceMatch();
+        }
+        /* (non-Javadoc)
+         * @see org.springframework.extensions.webscripts.WebScriptRequest#getServicePath()
+         */
+        @Override
+        public String getServicePath()
+        {
+            return req.getServicePath();
+        }
+        /* (non-Javadoc)
+         * @see org.springframework.extensions.webscripts.WebScriptRequest#getURL()
+         */
+        @Override
+        public String getURL()
+        {
+            return req.getURL();
+        }
+        /* (non-Javadoc)
+         * @see org.springframework.extensions.webscripts.WebScriptRequest#isGuest()
+         */
+        @Override
+        public boolean isGuest()
+        {
+            return req.isGuest();
+        }
+        /* (non-Javadoc)
+         * @see org.springframework.extensions.webscripts.WebScriptRequest#parseContent()
+         */
+        @Override
+        public Object parseContent()
+        {
+            return req.parseContent();
         }
     }
 }

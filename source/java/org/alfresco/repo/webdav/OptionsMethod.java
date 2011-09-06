@@ -33,7 +33,7 @@ public class OptionsMethod extends WebDAVMethod
     private static final String ALLOW_HEADER = "Allow";
     private static final String MS_HEADER = "MS-Author-Via";
 
-    private static final String FILE_METHODS = "OPTIONS, GET, HEAD, POST, DELETE, PROPFIND, COPY, MOVE, LOCK, UNLOCK";
+    private static final String FILE_METHODS = "OPTIONS, GET, HEAD, POST, DELETE, PROPFIND, PROPPATCH, COPY, MOVE, LOCK, UNLOCK";
     private static final String COLLECTION_METHODS = FILE_METHODS + ", PUT";
 
     /**

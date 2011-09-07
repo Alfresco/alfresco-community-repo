@@ -1189,7 +1189,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             childNodeUpdate.setUpdateDeleted(true);
             // Update the entity.
             // Note: We don't use delete here because that will attempt to clean everything up again.
-            updateNodeImpl(childNode, childNodeUpdate, true);
+            updateNodeImpl(childNode, childNodeUpdate, false);
         }
         else
         {

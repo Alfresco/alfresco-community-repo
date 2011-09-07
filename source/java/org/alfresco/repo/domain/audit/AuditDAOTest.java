@@ -361,10 +361,15 @@ public class AuditDAOTest extends TestCase
                 createItem(info1, 10);
                 createItem(info1, 11);
                 Thread.sleep(10); // stop previous statements being executed during t1
+                Thread.sleep(10);
                 final long t1 = System.currentTimeMillis();
+                Thread.sleep(10);
+                Thread.sleep(10);
                 createItem(info2, 21);
                 createItem(info1, 12);
                 createItem(info1, 13);
+                Thread.sleep(10);
+                Thread.sleep(10);
                 final long t2 = System.currentTimeMillis();
                 Thread.sleep(10); // stop next statements being executed during t2
                 Thread.sleep(10);
@@ -411,13 +416,19 @@ public class AuditDAOTest extends TestCase
                 // Create items 21, 22 for application 2
                 createItem(info1, 10);
                 createItem(info1, 11);
+                Thread.sleep(10);
                 Thread.sleep(10); // stop previous statements being executed during t1
                 final long t1 = System.currentTimeMillis();
+                Thread.sleep(10);
+                Thread.sleep(10);
                 createItem(info2, 21);
                 createItem(info1, 12);
                 createItem(info1, 13);
+                Thread.sleep(10);
+                Thread.sleep(10);
                 final long t2 = System.currentTimeMillis();
                 Thread.sleep(10); // stop next statements being executed during t2
+                Thread.sleep(10);
                 createItem(info2, 22);
                 createItem(info1, 14);
                 

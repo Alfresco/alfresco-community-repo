@@ -25,21 +25,12 @@ import java.util.Set;
 
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
-import org.alfresco.model.WCMModel;
-import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.jscript.ScriptableHashMap;
 import org.alfresco.repo.jscript.ScriptableQNameMap;
-import org.alfresco.repo.template.AVMTemplateNode;
-import org.alfresco.repo.template.TemplateContent;
-import org.alfresco.repo.template.TemplateNode;
-import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -48,8 +39,6 @@ import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespacePrefixResolverProvider;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.util.Pair;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 
@@ -57,13 +46,10 @@ import org.mozilla.javascript.Scriptable;
  * This class represents a workflow task (an instance of a workflow task definition)
  * 
  * @author glenj
+ * @author Nick Smith
  */
 public class JscriptWorkflowTask extends BaseScopableProcessorExtension implements Serializable
 {
-    private static final String WCM_WF_MODEL_1_0_URI = "http://www.alfresco.org/model/wcmworkflow/1.0";
-
-    private static final QName PROP_FROM_PATH = QName.createQName(WCM_WF_MODEL_1_0_URI, "fromPath");
-
     static final long serialVersionUID = -8285971359421912313L;
 
     /** Unique ID for workflow task */
@@ -138,41 +124,42 @@ public class JscriptWorkflowTask extends BaseScopableProcessorExtension implemen
      */
     public JscriptWorkflowTask(final WorkflowTask cmrWorkflowTask, final ServiceRegistry serviceRegistry, Scriptable scope)
     {
-        this.id = cmrWorkflowTask.id;
-        this.name = cmrWorkflowTask.name;
-        this.title = cmrWorkflowTask.title;
-        this.description = cmrWorkflowTask.description;
+        this.id = cmrWorkflowTask.getId();
+        this.name = cmrWorkflowTask.getName();
+        this.title = cmrWorkflowTask.getTitle();
+        this.description = cmrWorkflowTask.getDescription();
         this.serviceRegistry = serviceRegistry;
         this.setScope(scope);
 
         // instantiate ScriptableQNameMap<String, Serializable> properties
         // from WorkflowTasks's Map<QName, Serializable> properties
-        this.properties = new ScriptableQNameMap<String, Serializable>(new NamespacePrefixResolverProvider(){
+        this.properties = new ScriptableQNameMap<String, Serializable>(new NamespacePrefixResolverProvider()
+        {
+            private static final long serialVersionUID = 4218645978524914678L;
+
             public NamespacePrefixResolver getNamespacePrefixResolver()
             {
                 return serviceRegistry.getNamespaceService();
             }
         });
 
-        Set<QName> keys = cmrWorkflowTask.properties.keySet();
+        Set<QName> keys = cmrWorkflowTask.getProperties().keySet();
         for (QName key : keys)
         {
-            Serializable value = cmrWorkflowTask.properties.get(key);
+            Serializable value = cmrWorkflowTask.getProperties().get(key);
             this.properties.put(key.toString(), value);
         }
 
         transitions = new ScriptableHashMap<String, String>();
-        for (WorkflowTransition transition : cmrWorkflowTask.path.node.transitions)
+        for (WorkflowTransition transition : cmrWorkflowTask.getPath().getNode().getTransitions())
         {
-            transitions.put(transition.id, transition.title);
+            transitions.put(transition.getId(), transition.getTitle());
         }
 
         // build package context .... should be centralised... YUK
         // Needs to match org.alfresco.repo.template.Workflow.WorkflowTaskItem.getPackageResources
 
-        NodeRef workflowPackage = (NodeRef) cmrWorkflowTask.properties.get(WorkflowModel.ASSOC_PACKAGE);
-
-        List<NodeRef> contents = serviceRegistry.getWorkflowService().getPackageContents(cmrWorkflowTask.id);
+        List<NodeRef> contents = serviceRegistry.getWorkflowService().getPackageContents(cmrWorkflowTask.getId());
         List<NodeRef> resources = new ArrayList<NodeRef>(contents.size());
 
         NodeService nodeService = serviceRegistry.getNodeService();

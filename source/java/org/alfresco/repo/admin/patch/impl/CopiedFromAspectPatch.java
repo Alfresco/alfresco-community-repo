@@ -339,7 +339,7 @@ public class CopiedFromAspectPatch extends AbstractPatch
         public synchronized Collection<Pair<Long, NodeRef>> getNextWork()
         {
             // Record the results
-            final List<Pair<Long, NodeRef>> results = new ArrayList<Pair<Long, NodeRef>>(batchMaxQueryRange);
+            final Set<Pair<Long, NodeRef>> results = new HashSet<Pair<Long, NodeRef>>(batchMaxQueryRange*2);
             // Record the node IDs for bulk loading
             final List<Long> nodeIds = new ArrayList<Long>(batchMaxQueryRange);
             

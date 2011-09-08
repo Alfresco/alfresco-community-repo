@@ -32,11 +32,13 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.workflow.BPMEngineRegistry;
 import org.alfresco.repo.workflow.TaskComponent;
+import org.alfresco.repo.workflow.WorkflowAdminServiceImpl;
 import org.alfresco.repo.workflow.WorkflowComponent;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.repo.workflow.WorkflowPackageComponent;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.workflow.WorkflowAdminService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowDeployment;
 import org.alfresco.service.cmr.workflow.WorkflowException;
@@ -68,6 +70,7 @@ public class JBPMEngineTest extends BaseAlfrescoSpringTest
     private WorkflowPackageComponent packageComponent;
     private PersonService personService;
     private WorkflowDefinition testWorkflowDef;
+    private WorkflowAdminServiceImpl workflowAdminService;
     private NodeRef person1;
     private NodeRef person2;
     private NodeRef person3;
@@ -86,7 +89,11 @@ public class JBPMEngineTest extends BaseAlfrescoSpringTest
         BPMEngineRegistry registry = (BPMEngineRegistry)applicationContext.getBean("bpm_engineRegistry");
         workflowComponent = registry.getWorkflowComponent(JBPMEngine.ENGINE_ID);
         taskComponent = registry.getTaskComponent(JBPMEngine.ENGINE_ID);
-        packageComponent = (WorkflowPackageComponent)applicationContext.getBean("workflowPackageImpl"); 
+        packageComponent = (WorkflowPackageComponent)applicationContext.getBean("workflowPackageImpl");
+        
+        // for the purposes of the tests make sure JBPM workflow definitions are visible
+        this.workflowAdminService = (WorkflowAdminServiceImpl) applicationContext.getBean("workflowAdminService");
+        this.workflowAdminService.setJBPMWorkflowDefinitionsVisible(true);
         
         // deploy test process messages
         I18NUtil.registerResourceBundle("jbpmresources/test-messages");
@@ -558,7 +565,32 @@ public class JBPMEngineTest extends BaseAlfrescoSpringTest
         assertEquals(WorkflowTaskState.IN_PROGRESS, tasks1.get(0).getState());
         WorkflowTask updatedTask = taskComponent.endTask(tasks1.get(0).getId(), null);
         assertNotNull(updatedTask);
-    }        
+    }
+    
+    public void testWorkflowDefinitionVisibility()
+    {
+        // retrieve workflow definitions
+        List<WorkflowDefinition> defs = workflowComponent.getDefinitions();
+        List<WorkflowDefinition> allDefs = workflowComponent.getAllDefinitions();
+        
+        // make sure both lists are populated (only if the JBPM engine is enabled)
+        if (workflowAdminService.isEngineEnabled(JBPMEngine.ENGINE_ID))
+        {
+            assertFalse(defs.isEmpty());
+            assertFalse(allDefs.isEmpty());
+        }
+        
+        // turn off workflow definition visibility
+        this.workflowAdminService.setJBPMWorkflowDefinitionsVisible(false);
+        
+        // retrieve workflow definitions again
+        defs = workflowComponent.getDefinitions();
+        allDefs = workflowComponent.getAllDefinitions();
+        
+        // ensure the list of workflow definitions are empty
+        assertTrue(defs.isEmpty());
+        assertTrue(allDefs.isEmpty());
+    }
     
 //    public void testAssignTaskVariablesWithScript() throws Exception
 //    {

@@ -38,7 +38,7 @@ public class JbpmInvitationServiceImplTests extends AbstractInvitationServiceImp
         super.onSetUpInTransaction();
         
         // Add a few Jbpm invitations to check they dont' interfere with Activiti invitations.
-        workflowAdminService.setJbpmEngineEnabled(false);
+        workflowAdminService.setJBPMEngineEnabled(false);
         
         String invitee = USER_ONE;
         Invitation.ResourceType resourceType = Invitation.ResourceType.WEB_SITE;
@@ -60,6 +60,6 @@ public class JbpmInvitationServiceImplTests extends AbstractInvitationServiceImp
         
         // Disable Jbpm and enable Activiti
         workflowAdminService.setActivitiEngineEnabled(false);
-        workflowAdminService.setJbpmEngineEnabled(true);
+        workflowAdminService.setJBPMEngineEnabled(true);
     }
 }

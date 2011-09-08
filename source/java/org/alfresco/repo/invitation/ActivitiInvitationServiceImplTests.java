@@ -59,7 +59,7 @@ public class ActivitiInvitationServiceImplTests extends AbstractInvitationServic
                 resourceType, resourceName, inviteeRole);
         
         // Disable Jbpm and enable Activiti
-        workflowAdminService.setJbpmEngineEnabled(false);
+        workflowAdminService.setJBPMEngineEnabled(false);
         workflowAdminService.setActivitiEngineEnabled(true);
     }
 }

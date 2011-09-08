@@ -54,6 +54,7 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.workflow.WorkflowAdminService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowDeployment;
 import org.alfresco.service.cmr.workflow.WorkflowException;
@@ -126,6 +127,7 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
     protected AuthorityDAO authorityDAO;
     protected JbpmTemplate jbpmTemplate;
     protected SearchService unprotectedSearchService;
+    protected WorkflowAdminService workflowAdminService;
 
     // Company Home
     protected StoreRef companyHomeStore;
@@ -281,6 +283,15 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
         this.unprotectedSearchService = unprotectedSearchService;
     }
     
+    /**
+     * Sets the Workflow Admin Service
+     * 
+     * @param workflowAdminService
+     */
+    public void setWorkflowAdminService(WorkflowAdminService workflowAdminService)
+    {
+        this.workflowAdminService = workflowAdminService;
+    }
     
     //
     // Workflow Definition...
@@ -403,42 +414,49 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
     @SuppressWarnings("unchecked")
     public List<WorkflowDefinition> getDefinitions()
     {
-        try
+        if (workflowAdminService.isJBPMWorkflowDefinitionsVisible())
         {
-            return (List<WorkflowDefinition>)jbpmTemplate.execute(new JbpmCallback()
+            try
             {
-                public Object doInJbpm(JbpmContext context)
+                return (List<WorkflowDefinition>)jbpmTemplate.execute(new JbpmCallback()
                 {
-                    GraphSession graphSession = context.getGraphSession();
-                    List<ProcessDefinition> processDefs = graphSession.findLatestProcessDefinitions();
-                    List<WorkflowDefinition> workflowDefs = new ArrayList<WorkflowDefinition>(processDefs.size());
-                    for (ProcessDefinition processDef : processDefs)
-                    {                                              
-                        if (tenantService.isEnabled())
-                        {                           
-                            try 
-                            {
-                                tenantService.checkDomain(processDef.getName());
+                    public Object doInJbpm(JbpmContext context)
+                    {
+                        GraphSession graphSession = context.getGraphSession();
+                        List<ProcessDefinition> processDefs = graphSession.findLatestProcessDefinitions();
+                        List<WorkflowDefinition> workflowDefs = new ArrayList<WorkflowDefinition>(processDefs.size());
+                        for (ProcessDefinition processDef : processDefs)
+                        {                                              
+                            if (tenantService.isEnabled())
+                            {                           
+                                try 
+                                {
+                                    tenantService.checkDomain(processDef.getName());
+                                }
+                                catch (RuntimeException re)
+                                {
+                                    // deliberately skip this one - due to domain
+                                    // mismatch
+                                    continue;
+                                }                           
                             }
-                            catch (RuntimeException re)
-                            {
-                                // deliberately skip this one - due to domain
-                                // mismatch
-                                continue;
-                            }                           
+                            
+                            WorkflowDefinition workflowDef = createWorkflowDefinition(processDef);
+                            workflowDefs.add(workflowDef);
                         }
-                        
-                        WorkflowDefinition workflowDef = createWorkflowDefinition(processDef);
-                        workflowDefs.add(workflowDef);
+                        return workflowDefs;
                     }
-                    return workflowDefs;
-                }
-            });
+                });
+            }
+            catch (JbpmException e)
+            {
+                String msg = messageService.getMessage(ERR_GET_WORKFLOW_DEF);
+                throw new WorkflowException(msg, e);
+            }
         }
-        catch(JbpmException e)
+        else
         {
-            String msg = messageService.getMessage(ERR_GET_WORKFLOW_DEF);
-            throw new WorkflowException(msg, e);
+            return Collections.<WorkflowDefinition>emptyList();
         }
     }
 
@@ -451,42 +469,49 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
     @SuppressWarnings("unchecked")
     public List<WorkflowDefinition> getAllDefinitions()
     {
-        try
+        if (workflowAdminService.isJBPMWorkflowDefinitionsVisible())
         {
-            return (List<WorkflowDefinition>)jbpmTemplate.execute(new JbpmCallback()
+            try
             {
-                public Object doInJbpm(JbpmContext context)
+                return (List<WorkflowDefinition>)jbpmTemplate.execute(new JbpmCallback()
                 {
-                    GraphSession graphSession = context.getGraphSession();
-                    List<ProcessDefinition> processDefs = graphSession.findAllProcessDefinitions();
-                    List<WorkflowDefinition> workflowDefs = new ArrayList<WorkflowDefinition>(processDefs.size());
-                    for (ProcessDefinition processDef : processDefs)
+                    public Object doInJbpm(JbpmContext context)
                     {
-                        if (tenantService.isEnabled())
-                        {                           
-                            try 
-                            {
-                                tenantService.checkDomain(processDef.getName());
+                        GraphSession graphSession = context.getGraphSession();
+                        List<ProcessDefinition> processDefs = graphSession.findAllProcessDefinitions();
+                        List<WorkflowDefinition> workflowDefs = new ArrayList<WorkflowDefinition>(processDefs.size());
+                        for (ProcessDefinition processDef : processDefs)
+                        {
+                            if (tenantService.isEnabled())
+                            {                           
+                                try 
+                                {
+                                    tenantService.checkDomain(processDef.getName());
+                                }
+                                catch (RuntimeException re)
+                                {
+                                    // deliberately skip this one - due to domain
+                                    // mismatch
+                                    continue;
+                                } 
                             }
-                            catch (RuntimeException re)
-                            {
-                                // deliberately skip this one - due to domain
-                                // mismatch
-                                continue;
-                            } 
+                            
+                            WorkflowDefinition workflowDef = createWorkflowDefinition(processDef);
+                            workflowDefs.add(workflowDef);
                         }
-                        
-                        WorkflowDefinition workflowDef = createWorkflowDefinition(processDef);
-                        workflowDefs.add(workflowDef);
+                        return workflowDefs;
                     }
-                    return workflowDefs;
-                }
-            });
+                });
+            }
+            catch (JbpmException e)
+            {
+                String msg = messageService.getMessage(ERR_GET_WORKFLOW_DEF);
+                throw new WorkflowException(msg, e);
+            }
         }
-        catch(JbpmException e)
+        else
         {
-            String msg = messageService.getMessage(ERR_GET_WORKFLOW_DEF);
-            throw new WorkflowException(msg, e);
+            return Collections.<WorkflowDefinition>emptyList();
         }
     }
 

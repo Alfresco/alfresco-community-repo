@@ -32,19 +32,31 @@ public class WorkflowAdminServiceImpl implements WorkflowAdminService
 {
     public static final String NAME = "workflowAdminService";
     
-    private boolean jbpmEngineEnabled = true;
     private boolean activitiEngineEnabled = true;
-
-    public void setJbpmEngineEnabled(boolean jbpmEngineEnabled)
-    {
-        this.jbpmEngineEnabled = jbpmEngineEnabled;
-    }
+    private boolean jbpmEngineEnabled = true;
+    private boolean jbpmDefinitionsVisible = false;
 
     public void setActivitiEngineEnabled(boolean activitiEngineEnabled)
     {
         this.activitiEngineEnabled = activitiEngineEnabled;
     }
+    
+    public void setJBPMEngineEnabled(boolean jbpmEngineEnabled)
+    {
+        this.jbpmEngineEnabled = jbpmEngineEnabled;
+    }
+    
+    public void setJBPMWorkflowDefinitionsVisible(boolean jbpmDefinitionsVisible)
+    {
+        this.jbpmDefinitionsVisible = jbpmDefinitionsVisible;
+    }
 
+    @Override
+    public boolean isJBPMWorkflowDefinitionsVisible()
+    {
+        return this.jbpmDefinitionsVisible;
+    }
+    
     @Override
     public boolean isEngineEnabled(String engineId)
     {

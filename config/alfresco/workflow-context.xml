@@ -68,11 +68,14 @@
    <!--                                       -->
    
    <bean id="workflowAdminService" class="org.alfresco.repo.workflow.WorkflowAdminServiceImpl">
-      <property name="jbpmEngineEnabled">
-         <value>${system.workflow.engine.jbpm.enabled}</value>
-      </property>
       <property name="activitiEngineEnabled">
          <value>${system.workflow.engine.activiti.enabled}</value>
+      </property>
+      <property name="JBPMEngineEnabled">
+         <value>${system.workflow.engine.jbpm.enabled}</value>
+      </property>
+      <property name="JBPMWorkflowDefinitionsVisible">
+         <value>${system.workflow.jbpm.definitions.visible}</value>
       </property>
    </bean>
 

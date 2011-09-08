@@ -152,7 +152,7 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
     {
         // Make sure both workflow engines are enabled.
         workflowAdminService.setActivitiEngineEnabled(true);
-        workflowAdminService.setJbpmEngineEnabled(true);
+        workflowAdminService.setJBPMEngineEnabled(true);
         
         this.authenticationComponent.setSystemUserAsCurrentUser();
         invitationServiceImpl.setSendEmails(startSendEmails);

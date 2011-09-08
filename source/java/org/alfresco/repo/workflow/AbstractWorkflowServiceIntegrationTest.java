@@ -79,6 +79,7 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
     protected TestPersonManager personManager;
     protected TestGroupManager groupManager;
     protected NodeService nodeService;
+    protected WorkflowAdminServiceImpl workflowAdminService;
     private NodeRef companyHome;
     
     public void testDeployWorkflowDefinition()
@@ -1151,6 +1152,10 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
 
         authenticationComponent.setSystemUserAsCurrentUser();
 
+        // for the purposes of the tests make sure JBPM workflow definitions are visible
+        this.workflowAdminService = (WorkflowAdminServiceImpl) applicationContext.getBean("workflowAdminService");
+        this.workflowAdminService.setJBPMWorkflowDefinitionsVisible(true);
+        
         // create test users
         this.personManager = new TestPersonManager(authenticationService, personService, nodeService);
         this.groupManager = new TestGroupManager(authorityService, searchService);

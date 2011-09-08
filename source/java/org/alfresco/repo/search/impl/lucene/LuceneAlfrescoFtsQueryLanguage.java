@@ -79,25 +79,7 @@ public class LuceneAlfrescoFtsQueryLanguage extends AbstractLuceneQueryLanguage
         AlfrescoFunctionEvaluationContext context = new AlfrescoFunctionEvaluationContext(admLuceneSearcher.getNamespacePrefixResolver(), admLuceneSearcher.getDictionaryService(),
                 searchParameters.getNamespace());
 
-        QueryOptions options = new QueryOptions(searchParameters.getQuery(), null);
-        options.setIncludeInTransactionData(!searchParameters.excludeDataInTheCurrentTransaction());
-        options.setDefaultFTSConnective(searchParameters.getDefaultOperator() == SearchParameters.Operator.OR ? Connective.OR : Connective.AND);
-        options.setDefaultFTSFieldConnective(searchParameters.getDefaultOperator() == SearchParameters.Operator.OR ? Connective.OR : Connective.AND);
-        options.setSkipCount(searchParameters.getSkipCount());
-        options.setMaxPermissionChecks(searchParameters.getMaxPermissionChecks());
-        options.setMaxPermissionCheckTimeMillis(searchParameters.getMaxPermissionCheckTimeMillis());
-        options.setDefaultFieldName(searchParameters.getDefaultFieldName());
-        if (searchParameters.getLimitBy() == LimitBy.FINAL_SIZE)
-        {
-            options.setMaxItems(searchParameters.getLimit());
-        }
-        else
-        {
-            options.setMaxItems(searchParameters.getMaxItems());
-        }
-        options.setMlAnalaysisMode(searchParameters.getMlAnalaysisMode());
-        options.setLocales(searchParameters.getLocales());
-        options.setStores(searchParameters.getStores());
+        QueryOptions options = QueryOptions.create(searchParameters);
 
         FTSParser.Mode mode;
 
@@ -109,7 +91,7 @@ public class LuceneAlfrescoFtsQueryLanguage extends AbstractLuceneQueryLanguage
         {
             mode = FTSParser.Mode.DEFAULT_DISJUNCTION;
         }
-
+            
         Constraint constraint = FTSQueryParser.buildFTS(ftsExpression, factory, context, null, null, mode, options.getDefaultFTSFieldConnective(),
                 searchParameters.getQueryTemplates(), options.getDefaultFieldName());
         org.alfresco.repo.search.impl.querymodel.Query query = factory.createQuery(null, null, constraint, buildOrderings(factory, searchParameters));

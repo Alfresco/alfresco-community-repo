@@ -22,56 +22,45 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.cmis.CMISDictionaryService;
-import org.alfresco.cmis.CMISJoinEnum;
-import org.alfresco.cmis.CMISQueryEnum;
-import org.alfresco.cmis.CMISQueryOptions;
-import org.alfresco.cmis.CMISQueryService;
-import org.alfresco.cmis.CMISResultSet;
+
 import org.alfresco.cmis.CMISScope;
-import org.alfresco.cmis.CMISServices;
-import org.alfresco.cmis.CMISQueryOptions.CMISQueryMode;
-import org.alfresco.cmis.search.CMISQueryParser;
-import org.alfresco.cmis.search.CMISResultSetImpl;
-import org.alfresco.cmis.search.CmisFunctionEvaluationContext;
+import org.alfresco.opencmis.dictionary.CMISDictionaryService;
+import org.alfresco.opencmis.search.CMISQueryOptions;
+import org.alfresco.opencmis.search.CMISQueryOptions.CMISQueryMode;
+import org.alfresco.opencmis.search.CMISQueryParser;
+import org.alfresco.opencmis.search.CMISQueryService;
+import org.alfresco.opencmis.search.CMISResultSet;
+import org.alfresco.opencmis.search.CmisFunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.Query;
-import org.alfresco.repo.search.impl.querymodel.QueryEngineResults;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryModelFactory;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchParameters;
+import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
+import org.apache.chemistry.opencmis.commons.enums.CapabilityJoin;
+import org.apache.chemistry.opencmis.commons.enums.CapabilityQuery;
 
 /**
  * @author Andy
  *
  */
-public class SolrCMISQueryServiceImpl implements CMISQueryService
+public class SolrOpenCMISQueryServiceImpl implements CMISQueryService
 {
-    private CMISServices cmisService;
-    
+
     private SolrQueryLanguage solrQueryLanguage;
-
-    private CMISDictionaryService cmisDictionaryService;
-
+    
     private NodeService nodeService;
 
     private DictionaryService alfrescoDictionaryService;
-    
-    public void setCmisService(CMISServices cmisService)
-    {
-        this.cmisService = cmisService;
-    }
 
+    private CMISDictionaryService cmisDictionaryService;
+    
+    
     public void setSolrQueryLanguage(SolrQueryLanguage solrQueryLanguage)
     {
         this.solrQueryLanguage = solrQueryLanguage;
-    }
-
-    public void setCmisDictionaryService(CMISDictionaryService cmisDictionaryService)
-    {
-        this.cmisDictionaryService = cmisDictionaryService;
     }
 
     public void setNodeService(NodeService nodeService)
@@ -84,23 +73,28 @@ public class SolrCMISQueryServiceImpl implements CMISQueryService
         this.alfrescoDictionaryService = alfrescoDictionaryService;
     }
 
+    public void setCmisDictionaryService(CMISDictionaryService cmisDictionaryService)
+    {
+        this.cmisDictionaryService = cmisDictionaryService;
+    }
+
     /* (non-Javadoc)
-     * @see org.alfresco.cmis.CMISQueryService#query(org.alfresco.cmis.CMISQueryOptions)
+     * @see org.alfresco.opencmis.search.CMISQueryService#query(org.alfresco.opencmis.search.CMISQueryOptions)
      */
     @Override
     public CMISResultSet query(CMISQueryOptions options)
     {
         ResultSet rs = solrQueryLanguage.executeQuery(options.getAsSearchParmeters(), null);
         
-        CMISJoinEnum joinSupport = getJoinSupport();
+        CapabilityJoin joinSupport = getJoinSupport();
         if(options.getQueryMode() == CMISQueryOptions.CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS)
         {
-            joinSupport = CMISJoinEnum.INNER_JOIN_SUPPORT;
+            joinSupport = CapabilityJoin.INNERONLY;
         }
         
         // TODO: Refactor to avoid duplication of valid scopes here and in CMISQueryParser
         
-        CMISScope[] validScopes = (options.getQueryMode() == CMISQueryMode.CMS_STRICT) ? CmisFunctionEvaluationContext.STRICT_SCOPES : CmisFunctionEvaluationContext.ALFRESCO_SCOPES;
+        BaseTypeId[] validScopes = (options.getQueryMode() == CMISQueryMode.CMS_STRICT) ? CmisFunctionEvaluationContext.STRICT_SCOPES : CmisFunctionEvaluationContext.ALFRESCO_SCOPES;
         CmisFunctionEvaluationContext functionContext = new CmisFunctionEvaluationContext();
         functionContext.setCmisDictionaryService(cmisDictionaryService);
         functionContext.setNodeService(nodeService);
@@ -120,55 +114,38 @@ public class SolrCMISQueryServiceImpl implements CMISQueryService
         LimitBy limitBy = null;
         limitBy = rs.getResultSetMetaData().getLimitedBy();
         
-        CMISResultSet cmis = new CMISResultSetImpl(wrapped, options, limitBy, nodeService, query, cmisDictionaryService, alfrescoDictionaryService);
+        CMISResultSet cmis = new CMISResultSet(wrapped, options, limitBy, nodeService, query, cmisDictionaryService, alfrescoDictionaryService);
         return cmis;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.cmis.CMISQueryService#query(java.lang.String)
+     * @see org.alfresco.opencmis.search.CMISQueryService#query(java.lang.String, org.alfresco.service.cmr.repository.StoreRef)
      */
     @Override
-    public CMISResultSet query(String query)
+    public CMISResultSet query(String query, StoreRef storeRef)
     {
-        CMISQueryOptions options = new CMISQueryOptions(query, cmisService.getDefaultRootStoreRef());
+        CMISQueryOptions options = new CMISQueryOptions(query, storeRef);
         return query(options);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.cmis.CMISQueryService#getQuerySupport()
-     */
-    @Override
-    public CMISQueryEnum getQuerySupport()
-    {
-        return CMISQueryEnum.BOTH_COMBINED;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.cmis.CMISQueryService#getJoinSupport()
-     */
-    @Override
-    public CMISJoinEnum getJoinSupport()
-    {
-        return CMISJoinEnum.NO_JOIN_SUPPORT;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.cmis.CMISQueryService#getPwcSearchable()
-     */
-    @Override
     public boolean getPwcSearchable()
     {
-      return true;
+        return true;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.cmis.CMISQueryService#getAllVersionsSearchable()
-     */
-    @Override
     public boolean getAllVersionsSearchable()
     {
         return false;
     }
 
-  
+    public CapabilityQuery getQuerySupport()
+    {
+        return CapabilityQuery.BOTHCOMBINED;
+    }
+
+    public CapabilityJoin getJoinSupport()
+    {
+        return CapabilityJoin.NONE;
+    }
+
 }

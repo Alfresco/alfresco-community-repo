@@ -22,7 +22,11 @@ import java.util.Locale;
 
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.search.impl.querymodel.QueryOptions;
+import org.alfresco.repo.search.impl.querymodel.QueryOptions.Connective;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.LimitBy;
+import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.service.cmr.search.SearchService;
 
 /**
  * The options for a CMIS query
@@ -39,6 +43,35 @@ public class CMISQueryOptions extends QueryOptions
    
     private CMISQueryMode queryMode = CMISQueryMode.CMS_STRICT;
 
+    
+    public static CMISQueryOptions create(SearchParameters searchParameters)
+    {
+        String sql = searchParameters.getQuery();
+
+        CMISQueryOptions options = new CMISQueryOptions(sql, searchParameters.getStores().get(0));
+        options.setIncludeInTransactionData(!searchParameters.excludeDataInTheCurrentTransaction());
+        options.setDefaultFTSConnective(searchParameters.getDefaultOperator() == SearchParameters.Operator.OR ? Connective.OR : Connective.AND);
+        options.setDefaultFTSFieldConnective(searchParameters.getDefaultOperator() == SearchParameters.Operator.OR ? Connective.OR : Connective.AND);
+        options.setSkipCount(searchParameters.getSkipCount());
+        options.setMaxPermissionChecks(searchParameters.getMaxPermissionChecks());
+        options.setMaxPermissionCheckTimeMillis(searchParameters.getMaxPermissionCheckTimeMillis());
+        if (searchParameters.getLimitBy() == LimitBy.FINAL_SIZE)
+        {
+            options.setMaxItems(searchParameters.getLimit());
+        }
+        else
+        {
+            options.setMaxItems(searchParameters.getMaxItems());
+        }
+        options.setMlAnalaysisMode(searchParameters.getMlAnalaysisMode());
+        options.setLocales(searchParameters.getLocales());
+        options.setStores(searchParameters.getStores());
+        //options.setQuery(); Done on conbstruction
+        //options.setQueryMode(); Should set afterwards
+        options.setQueryParameterDefinitions(searchParameters.getQueryParameterDefinitions());
+        options.setDefaultFieldName(searchParameters.getDefaultFieldName());
+        return options;
+    }
     /**
      * Create a CMISQueryOptions instance with the default options other than the query and store ref.
      * The query will be run using the locale returned by I18NUtil.getLocale()
@@ -83,6 +116,33 @@ public class CMISQueryOptions extends QueryOptions
     public void setQueryMode(CMISQueryMode queryMode)
     {
         this.queryMode = queryMode;
+    }
+    /**
+     * @return
+     */
+    public SearchParameters getAsSearchParmeters()
+    {
+        SearchParameters searchParameters = new SearchParameters();
+        searchParameters.setDefaultFieldName(this.getDefaultFieldName());
+        searchParameters.setDefaultFTSFieldConnective(this.getDefaultFTSFieldConnective() == Connective.OR ? SearchParameters.Operator.OR : SearchParameters.Operator.AND);
+        searchParameters.setDefaultFTSOperator(this.getDefaultFTSConnective() == Connective.OR ? SearchParameters.Operator.OR : SearchParameters.Operator.AND);
+        searchParameters.setDefaultOperator(this.getDefaultFTSConnective() == Connective.OR ? SearchParameters.Operator.OR : SearchParameters.Operator.AND);
+        searchParameters.setLanguage(SearchService.LANGUAGE_CMIS_ALFRESCO);
+        if(this.getMaxItems() > 0)
+        {
+            searchParameters.setLimit(this.getMaxItems());
+            searchParameters.setLimitBy(LimitBy.FINAL_SIZE);
+            searchParameters.setMaxItems(this.getMaxItems());
+        }
+        searchParameters.setMaxPermissionChecks(this.getMaxPermissionChecks());
+        searchParameters.setMaxPermissionCheckTimeMillis(this.getMaxPermissionCheckTimeMillis());
+        searchParameters.setMlAnalaysisMode(this.getMlAnalaysisMode());
+        //searchParameters.setNamespace()   TODO: Fix
+        //searchParameters.setPermissionEvaluation()
+        searchParameters.setQuery(this.getQuery());
+        searchParameters.setSkipCount(this.getSkipCount());
+        
+        return searchParameters;
     }
 }
 

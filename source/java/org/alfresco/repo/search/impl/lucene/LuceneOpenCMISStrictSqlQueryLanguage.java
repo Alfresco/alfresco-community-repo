@@ -59,30 +59,8 @@ public class LuceneOpenCMISStrictSqlQueryLanguage extends AbstractLuceneQueryLan
 
     public ResultSet executeQuery(SearchParameters searchParameters, ADMLuceneSearcherImpl admLuceneSearcher)
     {
-        String sql = searchParameters.getQuery();
-
-        CMISQueryOptions options = new CMISQueryOptions(sql, searchParameters.getStores().get(0));
-        options.setIncludeInTransactionData(!searchParameters.excludeDataInTheCurrentTransaction());
-        options.setDefaultFTSConnective(searchParameters.getDefaultOperator() == SearchParameters.Operator.OR ? Connective.OR
-                : Connective.AND);
-        options.setDefaultFTSFieldConnective(searchParameters.getDefaultOperator() == SearchParameters.Operator.OR ? Connective.OR
-                : Connective.AND);
-        options.setSkipCount(searchParameters.getSkipCount());
-        options.setMaxPermissionChecks(searchParameters.getMaxPermissionChecks());
-        options.setMaxPermissionCheckTimeMillis(searchParameters.getMaxPermissionCheckTimeMillis());
-        if (searchParameters.getLimitBy() == LimitBy.FINAL_SIZE)
-        {
-            options.setMaxItems(searchParameters.getLimit());
-        } else
-        {
-            options.setMaxItems(searchParameters.getMaxItems());
-        }
-        options.setMlAnalaysisMode(searchParameters.getMlAnalaysisMode());
-        options.setLocales(searchParameters.getLocales());
-        options.setStores(searchParameters.getStores());
-
+        CMISQueryOptions options = CMISQueryOptions.create(searchParameters);
         options.setQueryMode(CMISQueryMode.CMS_STRICT);
-
         return new ResultSetSPIWrapper<CMISResultSetRow, CMISResultSetMetaData>(cmisQueryService.query(options));
     }
 }

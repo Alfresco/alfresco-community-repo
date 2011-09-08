@@ -130,35 +130,6 @@
             <ref bean="search.solrQueryHTTPCLient" />
         </property>
     </bean>
-    
-    <bean id="search.lucene.sql.alfresco" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage"  >
-	    <property name="factories">
-			<list>
-			    <ref bean="search.indexerAndSearcherFactory" />
-			</list>
-        </property>
-        <property name="name">
-            <value>cmis-alfrecso</value>
-        </property>
-        <property name="solrQueryHTTPClient">
-            <ref bean="search.solrQueryHTTPCLient" />
-        </property>
-    </bean>
-    
-    <bean id="search.lucene.sql.cmis.strict" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage" >
-	    <property name="factories">
-			<list>
-			    <ref bean="search.indexerAndSearcherFactory" />
-			</list>
-        </property>
-        <property name="name">
-            <value>cmis-strict</value>
-        </property>
-        <property name="solrQueryHTTPClient">
-            <ref bean="search.solrQueryHTTPCLient" />
-        </property>
-    </bean>
- 
  
   <bean id="search.indexerAndSearcherFactory" class="org.alfresco.repo.service.StoreRedirectorProxyFactory">
         <property name="proxyInterface">

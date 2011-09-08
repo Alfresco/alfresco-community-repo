@@ -4,19 +4,25 @@
 <beans>
 
 
-    <bean id="search.OpenCMISQueryService" class="org.alfresco.repo.search.impl.solr.SolrCMISQueryServiceImpl" >
+    <bean id="search.OpenCMISQueryService" class="org.alfresco.repo.search.impl.solr.SolrOpenCMISQueryServiceImpl" >
        
     </bean>
     
-    
-    
-     <bean id="search.lucene.sql.cmis.strict" class="org.alfresco.repo.search.impl.solr.SolrCMISQueryLanguage" >
-        <property name="nodeDAO">
-            <ref bean="nodeDAO" />
+    <bean id="search.lucene.sql.alfresco" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage"  >
+	    <property name="factories">
+			<list>
+			    <ref bean="search.indexerAndSearcherFactory" />
+			</list>
         </property>
-        <property name="permissionService">
-            <ref bean="permissionService" />
+        <property name="name">
+            <value>cmis-alfresco</value>
         </property>
+        <property name="solrQueryHTTPClient">
+            <ref bean="search.solrQueryHTTPCLient" />
+        </property>
+    </bean>
+    
+    <bean id="search.lucene.sql.cmis.strict" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage" >
 	    <property name="factories">
 			<list>
 			    <ref bean="search.indexerAndSearcherFactory" />
@@ -25,22 +31,8 @@
         <property name="name">
             <value>cmis-strict</value>
         </property>
-    </bean>
-    
-     <bean id="search.lucene.sql.alfresco" class="org.alfresco.repo.search.impl.solr.SolrCMISQueryLanguage" >
-        <property name="nodeDAO">
-            <ref bean="nodeDAO" />
-        </property>
-        <property name="permissionService">
-            <ref bean="permissionService" />
-        </property>
-	    <property name="factories">
-			<list>
-			    <ref bean="search.indexerAndSearcherFactory" />
-			</list>
-        </property>
-        <property name="name">
-            <value>cmis-alfresco</value>
+        <property name="solrQueryHTTPClient">
+            <ref bean="search.solrQueryHTTPCLient" />
         </property>
     </bean>
 	

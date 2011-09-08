@@ -4,7 +4,21 @@
 <beans>
   
     <bean id="search.CMISQueryService" class="org.alfresco.repo.search.impl.solr.SolrCMISQueryServiceImpl" >
-     
+       <property name="cmisDictionaryService">
+            <ref bean="CMISDictionaryService" />
+        </property>
+        <property name="cmisService">
+            <ref bean="CMISService" />
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="alfrescoDictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+        <property name="solrQueryLanguage">
+            <ref bean="search.lucene.sql.alfresco" />
+        </property>
     </bean>
    
 </beans>

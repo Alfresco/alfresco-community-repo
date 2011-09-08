@@ -58,30 +58,8 @@ public class LuceneAlfrescoSqlQueryLanguage extends AbstractLuceneQueryLanguage
 
     public ResultSet executeQuery(SearchParameters searchParameters, ADMLuceneSearcherImpl admLuceneSearcher)
     {
-        String sql = searchParameters.getQuery();
-
-        CMISQueryOptions options = new CMISQueryOptions(sql, searchParameters.getStores().get(0));
-        options.setIncludeInTransactionData(!searchParameters.excludeDataInTheCurrentTransaction());
-        options.setDefaultFTSConnective(searchParameters.getDefaultOperator() == SearchParameters.Operator.OR ? Connective.OR : Connective.AND);
-        options.setDefaultFTSFieldConnective(searchParameters.getDefaultOperator() == SearchParameters.Operator.OR ? Connective.OR : Connective.AND);
-        options.setSkipCount(searchParameters.getSkipCount());
-        options.setMaxPermissionChecks(searchParameters.getMaxPermissionChecks());
-        options.setMaxPermissionCheckTimeMillis(searchParameters.getMaxPermissionCheckTimeMillis());
-        options.setDefaultFieldName(searchParameters.getDefaultFieldName());
-        if (searchParameters.getLimitBy() == LimitBy.FINAL_SIZE)
-        {
-            options.setMaxItems(searchParameters.getLimit());
-        }
-        else
-        {
-            options.setMaxItems(searchParameters.getMaxItems());
-        }
-        options.setMlAnalaysisMode(searchParameters.getMlAnalaysisMode());
-        options.setLocales(searchParameters.getLocales());
-        options.setStores(searchParameters.getStores());
-        
+        CMISQueryOptions options = CMISQueryOptions.create(searchParameters);
         options.setQueryMode(CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
-
         return new ResultSetSPIWrapper<CMISResultSetRow, CMISResultSetMetaData>(cmisQueryService.query(options));
     }
 

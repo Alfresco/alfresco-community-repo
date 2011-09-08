@@ -1471,7 +1471,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
         /**
          * When did we last check whether the lock is active
          */
-        Date lastActive = new Date();
+        long lastActive = System.currentTimeMillis();
 
         public Lock(QName lockQName)
         {
@@ -1484,7 +1484,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
          *
          * @throws LockAquisitionException
          */
-        public void makeLock()
+        public synchronized void makeLock()
         {
             if(log.isDebugEnabled())
             {
@@ -1493,10 +1493,8 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
 
             lockToken = getJobLockService().getLock(lockQName, getLockRefreshTime(), getLockRetryWait(), getLockRetryCount());
 
-            synchronized(this)
-            {
-                active = true;
-            }
+            // Got the lock, so mark as active
+            active = true;
 
             if (log.isDebugEnabled())
             {
@@ -1516,10 +1514,10 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
          * Called on main transfer thread as transfer proceeds.
          * @throws TransferException (Lock timeout)
          */
-        public void suspendLockTimeout()
+        public synchronized void suspendLockTimeout()
         {
             log.debug("suspend lock called");
-            if(active)
+            if (active)
             {
                 processing = true;
             }
@@ -1531,14 +1529,13 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
             }
         }
 
-        public void enableLockTimeout()
+        public synchronized void enableLockTimeout()
         {
-            Date now = new Date();
-
+            long now = System.currentTimeMillis();
             // Update lastActive to 1S boundary
-            if(now.getTime() > lastActive.getTime() + 1000)
+            if(now > lastActive + 1000L)
             {
-                lastActive = new Date();
+                lastActive = now;
                 log.debug("start waiting : lastActive:" + lastActive);
             }
 
@@ -1550,20 +1547,17 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
          *
          * Called on main thread
          */
-        public void releaseLock()
+        public synchronized void releaseLock()
         {
             if(log.isDebugEnabled())
             {
                 log.debug("transfer service about to releaseLock : " + lockQName);
             }
 
-            synchronized(this)
+            if (active)
             {
-                if(active)
-                {
-                     getJobLockService().releaseLock(lockToken, lockQName);
-                }
                 active = false;
+                getJobLockService().releaseLock(lockToken, lockQName);
             }
         }
 
@@ -1571,47 +1565,40 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
          * Called by Job Lock Service to determine whether the lock is still active
          */
         @Override
-        public boolean isActive()
+        public synchronized boolean isActive()
         {
-            Date now = new Date();
+            long now = System.currentTimeMillis();
 
-            synchronized(this)
+            if(active)
             {
-                if(active)
+                if(!processing)
                 {
-                    if(!processing)
+                    if(now > lastActive + getLockTimeOut())
                     {
-                        if(now.getTime() > lastActive.getTime() + getLockTimeOut())
-                        {
-                            return false;
-                        }
+                        return false;
                     }
                 }
-
-                if(log.isDebugEnabled())
-                {
-                    log.debug("transfer service callback isActive: " + active);
-                }
-
-                return active;
             }
+
+            if(log.isDebugEnabled())
+            {
+                log.debug("transfer service callback isActive: " + active);
+            }
+
+            return active;
         }
 
         /**
          * Called by Job Lock Service on release of the lock after time-out
          */
         @Override
-        public void lockReleased()
+        public synchronized void lockReleased()
         {
-            synchronized(this)
+            if(active)
             {
-                if(active)
-                {
-                    log.info("transfer service: lock has timed out, timeout :" + lockQName);
-                    timeout(transferId);
-                }
-
                 active = false;
+                log.info("transfer service: lock has timed out, timeout :" + lockQName);
+                timeout(transferId);
             }
         }
     }

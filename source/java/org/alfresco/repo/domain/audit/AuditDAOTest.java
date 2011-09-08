@@ -41,6 +41,7 @@ import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.apache.commons.lang.mutable.MutableInt;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -470,7 +471,7 @@ public class AuditDAOTest extends TestCase
      */
     private AuditApplicationInfo createAuditApp() throws IOException
     {
-        String appName = getName() + "." + System.currentTimeMillis();
+        String appName = getName() + "." + GUID.generate();
         File file = AbstractContentTransformerTest.loadQuickTestFile("pdf");
         assertNotNull(file);
         URL url = new URL("file:" + file.getAbsolutePath());

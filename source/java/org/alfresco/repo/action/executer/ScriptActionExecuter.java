@@ -186,7 +186,10 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
      */
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
-        paramList.add(new ParameterDefinitionImpl(PARAM_SCRIPTREF, DataTypeDefinition.NODE_REF, true, getParamDisplayLabel(PARAM_SCRIPTREF), false, "ac-scripts"));
+        if (scriptLocation == null)
+        {
+            paramList.add(new ParameterDefinitionImpl(PARAM_SCRIPTREF, DataTypeDefinition.NODE_REF, true, getParamDisplayLabel(PARAM_SCRIPTREF), false, "ac-scripts"));
+        }
     }
     
     /**

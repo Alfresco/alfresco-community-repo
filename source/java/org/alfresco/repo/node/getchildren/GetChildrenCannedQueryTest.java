@@ -429,7 +429,7 @@ public class GetChildrenCannedQueryTest extends TestCase
         }
     }
     
-    public void DISABLED_testPropertySorting() throws Exception
+    public void testPropertySorting() throws Exception
     {
         NodeRef parentNodeRef = repositoryHelper.getCompanyHome();
         
@@ -763,11 +763,15 @@ public class GetChildrenCannedQueryTest extends TestCase
         
         // check order
         Serializable prevVal = null;
+        NodeRef prevNodeRef = null;
+        int currentIteration = 0;
         
         boolean allValsNull = true;
         
         for (NodeRef nodeRef : results.getPage())
         {
+            currentIteration++;
+            
             Serializable val = null;
             
             if (sortPropQName.equals(GetChildrenCannedQuery.SORT_QNAME_CONTENT_SIZE) || sortPropQName.equals(GetChildrenCannedQuery.SORT_QNAME_CONTENT_MIMETYPE))
@@ -835,19 +839,30 @@ public class GetChildrenCannedQueryTest extends TestCase
                 }
                 else
                 {
-                    fail("Unsupported sort type: "+val.getClass().getName());
+                    fail("Unsupported sort type ("+nodeRef+"): "+val.getClass().getName());
                 }
                 
                 if (! sortAscending)
                 {
-                    assertTrue("Not descending: ["+sortPropQName+","+val+","+prevVal+"]", result <= 0);
+                    assertTrue(
+                            "Not descending: \n" +
+                            "   Iteration: " + currentIteration + " out of " + count + "\n" +
+                            "   Previous:  " + prevNodeRef + " had " + prevVal + "\n" +
+                            "   Current :  " + nodeRef     + " had " + val,
+                            result <= 0);
                 }
                 else
                 {
-                    assertTrue("Not ascending: ["+sortPropQName+","+val+","+prevVal+"]", result >= 0);
+                    assertTrue(
+                            "Not ascending: \n" +
+                            "   Iteration: " + currentIteration + " out of " + count + "\n" +
+                            "   Previous:  " + prevNodeRef + " had " + prevVal + "\n" +
+                            "   Current :  " + nodeRef     + " had " + val,
+                            result >= 0);
                 }
             }
             prevVal = val;
+            prevNodeRef = nodeRef;
         }
         
         assertFalse("All values were null", allValsNull);

@@ -645,6 +645,12 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
             this.propVals = propVals;
         }
         
+        @Override
+        public String toString()
+        {
+            return "FilterSortNode [nodeRef=" + nodeRef + ", propVals=" + propVals + "]";
+        }
+
         public NodeRef getNodeRef()
         {
             return nodeRef;

@@ -34,6 +34,7 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.person.TestGroupManager;
 import org.alfresco.repo.security.person.TestPersonManager;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
+import org.alfresco.repo.workflow.WorkflowAdminServiceImpl;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -102,6 +103,7 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
     private TestGroupManager groupManager;
     
     protected WorkflowService workflowService;
+    protected WorkflowAdminServiceImpl workflowAdminService;
     private NodeService nodeService;
     private NamespaceService namespaceService;
     private NodeRef packageRef;
@@ -1376,6 +1378,10 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
         SearchService searchService = (SearchService) appContext.getBean("SearchService");
         FileFolderService fileFolderService = (FileFolderService) appContext.getBean("FileFolderService");
         nodeService = (NodeService) appContext.getBean("NodeService");
+        
+        // for the purposes of the tests make sure JBPM workflow definitions are visible
+        workflowAdminService = (WorkflowAdminServiceImpl) appContext.getBean("workflowAdminService");
+        workflowAdminService.setJBPMWorkflowDefinitionsVisible(true);
         
         AuthorityService authorityService = (AuthorityService) appContext.getBean("AuthorityService");
         personManager = new TestPersonManager(authenticationService, personService, nodeService);

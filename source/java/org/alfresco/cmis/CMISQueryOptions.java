@@ -25,6 +25,7 @@ import org.alfresco.repo.search.impl.querymodel.QueryOptions;
 import org.alfresco.repo.search.impl.querymodel.QueryOptions.Connective;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.LimitBy;
+import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 
@@ -141,7 +142,22 @@ public class CMISQueryOptions extends QueryOptions
         //searchParameters.setPermissionEvaluation()
         searchParameters.setQuery(this.getQuery());
         searchParameters.setSkipCount(this.getSkipCount());
-        
+        //searchParameters.addAllAttribute()
+        for(Locale locale : this.getLocales())
+        {
+            searchParameters.addLocale(locale);
+        }
+        for(QueryParameterDefinition queryParameterDefinition: this.getQueryParameterDefinitions())
+        {
+            searchParameters.addQueryParameterDefinition(queryParameterDefinition);
+        }
+        //searchParameters.addQueryTemplate(name, template)
+        //searchParameters.addSort()
+        for(StoreRef storeRef : this.getStores())
+        {
+            searchParameters.addStore(storeRef);
+        }
+        //searchParameters.addTextAttribute()
         return searchParameters;
     }
 }

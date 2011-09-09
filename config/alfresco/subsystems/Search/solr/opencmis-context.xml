@@ -3,10 +3,21 @@
 
 <beans>
 
-
-    <bean id="search.OpenCMISQueryService" class="org.alfresco.repo.search.impl.solr.SolrOpenCMISQueryServiceImpl" >
-       
+   <bean id="search.OpenCMISQueryService" class="org.alfresco.repo.search.impl.solr.SolrOpenCMISQueryServiceImpl" >
+       <property name="cmisDictionaryService">
+            <ref bean="OpenCMISDictionaryService" />
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="alfrescoDictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+        <property name="solrQueryLanguage">
+            <ref bean="search.lucene.sql.alfresco" />
+        </property>
     </bean>
+
     
     <bean id="search.lucene.sql.alfresco" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage"  >
 	    <property name="factories">

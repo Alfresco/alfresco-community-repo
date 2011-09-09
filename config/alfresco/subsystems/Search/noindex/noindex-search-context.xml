@@ -1,0 +1,111 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+    <import resource="../common-search-context.xml" />
+
+    <bean id="search.indexerComponent" class="org.alfresco.repo.search.IndexerComponent">
+        <property name="storeRedirectorProxyFactory">
+            <ref bean="&amp;search.indexerAndSearcherFactory" />
+        </property>
+    </bean>
+
+    <bean id="search.searchService" class="org.alfresco.repo.search.SearcherComponent">
+        <property name="indexerAndSearcherFactory">
+            <ref bean="search.indexerAndSearcherFactory" />
+        </property>
+    </bean>
+
+    <bean id="search.admSearchService" class="org.alfresco.repo.search.SearcherComponent">
+        <property name="indexerAndSearcherFactory">
+            <ref bean="search.noindexIndexerAndSearcherFactory" />
+        </property>
+    </bean>
+    
+    <bean id="search.versionSearchService" class="org.alfresco.repo.search.SearcherComponent">
+        <property name="indexerAndSearcherFactory">
+            <ref bean="search.noindexIndexerAndSearcherFactory" />
+        </property>
+    </bean>
+
+    
+
+ 
+  <bean id="search.indexerAndSearcherFactory" class="org.alfresco.repo.service.StoreRedirectorProxyFactory">
+        <property name="proxyInterface">
+            <value>org.alfresco.repo.search.IndexerAndSearcher</value>
+        </property>
+        <property name="defaultBinding">
+            <ref bean="search.noindexIndexerAndSearcherFactory"></ref>
+        </property>
+    </bean>
+ 
+    <bean id="search.noindexIndexerAndSearcherFactory"
+        class="org.alfresco.repo.search.impl.noindex.NoIndexIndexerAndSearcherFactory">
+        <property name="nodeService">
+            <ref bean="mlAwareNodeService" />
+        </property>
+        <property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+    </bean>
+    
+    <alias name="search.indexerAndSearcherFactory" alias="search.admLuceneIndexerAndSearcherFactory"/>
+    <alias name="search.indexerAndSearcherFactory" alias="search.admLuceneUnIndexedIndexerAndSearcherFactory"/>
+    <alias name="search.indexerAndSearcherFactory" alias="search.avmLuceneIndexerAndSearcherFactory"/>
+    
+    <bean id="search.categoryService" class="org.alfresco.repo.service.StoreRedirectorProxyFactory">
+        <property name="proxyInterface">
+            <value>org.alfresco.service.cmr.search.CategoryService</value>
+        </property>
+        <property name="defaultBinding">
+            <ref bean="search.luceneCategoryService"></ref>
+        </property>
+        <property name="redirectedProtocolBindings">
+            <map>
+                <entry key="workspace">
+                    <ref bean="search.luceneCategoryService"></ref>
+                </entry>
+                <entry key="versionStore">
+                    <ref bean="search.luceneCategoryService"></ref>
+                </entry>
+                <entry key="avm">
+                    <ref bean="search.luceneCategoryService"></ref>
+                </entry>
+            </map>
+        </property>
+    </bean>
+    
+    <bean id="search.luceneCategoryService" class="org.alfresco.repo.search.impl.noindex.NoIndexCategoryServiceImpl">
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="publicNodeService">
+            <ref bean="NodeService" />
+        </property>
+        <property name="tenantService">
+            <ref bean="tenantService"/>
+        </property>
+        <property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+        <property name="namespacePrefixResolver">
+            <ref bean="namespaceService" />
+        </property>
+        <property name="indexerAndSearcher">
+            <ref bean="search.indexerAndSearcherFactory" />
+        </property>
+    </bean>
+    
+    <bean
+         id="search.indexRecoveryComponent"
+         class="org.alfresco.repo.search.impl.noindex.NoIndexIndexRecovery" >
+    </bean>
+   
+   <alias name="search.indexRecoveryComponent" alias="search.avmIndexRecoveryComponent"/>
+	
+	<bean id="search.indexConfigurationChecker" class="org.alfresco.repo.admin.DummyIndexConfigurationCheckerImpl">
+    </bean>
+	
+</beans>

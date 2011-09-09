@@ -1070,6 +1070,24 @@
             </list>
         </property>
     </bean>
+    
+    <bean id="noindex" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
+        <property name="autoStart">
+            <value>false</value>
+        </property>
+        <property name="category">
+            <value>Search</value>
+        </property>
+        <property name="typeName">
+            <value>noindex</value>
+        </property>
+        <property name="instancePath">
+            <list>
+                <value>managed</value>
+                <value>noindex</value>
+            </list>
+        </property>
+    </bean>
    
    <bean id="indexerAndSearcherFactory" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">

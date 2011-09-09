@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+  
+    <bean id="search.CMISQueryService" class="org.alfresco.repo.search.impl.noindex.NoIndexCMISQueryServiceImpl" >
+       <property name="cmisDictionaryService">
+            <ref bean="CMISDictionaryService" />
+        </property>
+        <property name="cmisService">
+            <ref bean="CMISService" />
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="alfrescoDictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+    </bean>
+   
+</beans>

@@ -31,6 +31,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.EqualsHelper;
 
 /**
  * Class holding properties associated with the <b>cm:auditable</b> aspect.
@@ -58,6 +59,23 @@ public class AuditablePropertiesEntity
     public static Set<QName> getAuditablePropertyQNames()
     {
         return auditablePropertyQNames;
+    }
+    
+    /**
+     * 
+     * @param qnames    the property names to check
+     * @return          Returns <tt>true</tt> if the set contains a <b>cm:auditable</b> property
+     */
+    public static boolean hasAuditableProperty(Set<QName> qnames)
+    {
+        for (QName qname : qnames)
+        {
+            if (auditablePropertyQNames.contains(qname))
+            {
+                return true;
+            }
+        }
+        return false;
     }
     
     /**
@@ -299,47 +317,67 @@ public class AuditablePropertiesEntity
         
         if (properties.containsKey(ContentModel.PROP_CREATOR))
         {
-            auditCreator = DefaultTypeConverter.INSTANCE.convert(
+            String auditCreatorNew = DefaultTypeConverter.INSTANCE.convert(
                     String.class,
                     properties.get(ContentModel.PROP_CREATOR));
-            changed = true;
+            if (!EqualsHelper.nullSafeEquals(auditCreator, auditCreatorNew))
+            {
+                auditCreator = auditCreatorNew;
+                changed = true;
+            }
         }
         if (properties.containsKey(ContentModel.PROP_MODIFIER))
         {
-            auditModifier = DefaultTypeConverter.INSTANCE.convert(
+            String auditModifierNew = DefaultTypeConverter.INSTANCE.convert(
                     String.class,
                     properties.get(ContentModel.PROP_MODIFIER));
-            changed = true;
+            if (!EqualsHelper.nullSafeEquals(auditModifier, auditModifierNew))
+            {
+                auditModifier = auditModifierNew;
+                changed = true;
+            }
         }
         if (properties.containsKey(ContentModel.PROP_CREATED))
         {
-            auditCreated = DefaultTypeConverter.INSTANCE.convert(
+            String auditCreatedNew = DefaultTypeConverter.INSTANCE.convert(
                     String.class,
                     properties.get(ContentModel.PROP_CREATED));
-            changed = true;
+            if (!EqualsHelper.nullSafeEquals(auditCreated, auditCreatedNew))
+            {
+                auditCreated = auditCreatedNew;
+                changed = true;
+            }
         }
         if (properties.containsKey(ContentModel.PROP_MODIFIED))
         {
-            Date auditModifiedDate = DefaultTypeConverter.INSTANCE.convert(
+            Date auditModifiedNew = DefaultTypeConverter.INSTANCE.convert(
                     Date.class,
                     properties.get(ContentModel.PROP_MODIFIED));
-            auditModifiedTime = auditModifiedDate.getTime();
-            auditModified = DefaultTypeConverter.INSTANCE.convert(
-                    String.class,
-                    auditModifiedDate);
-            changed = true;
+            if (!EqualsHelper.nullSafeEquals(auditModified, auditModifiedNew))
+            {
+                auditModifiedTime = auditModifiedNew.getTime();
+                auditModified = DefaultTypeConverter.INSTANCE.convert(
+                        String.class,
+                        auditModifiedNew);
+                changed = true;
+            }
         }
         if (properties.containsKey(ContentModel.PROP_ACCESSED))
         {
-            auditAccessed = DefaultTypeConverter.INSTANCE.convert(
+            String auditAccessedNew = DefaultTypeConverter.INSTANCE.convert(
                     String.class,
                     properties.get(ContentModel.PROP_ACCESSED));
-            changed = true;
+            if (!EqualsHelper.nullSafeEquals(auditAccessed, auditAccessedNew))
+            {
+                auditAccessed = auditAccessedNew;
+                changed = true;
+            }
         }
 
-        if (changed)
+        // If something has changed, make sure that any missing values are populated
+        if (changed &&
+                (auditCreator == null || auditModifier == null || auditCreated == null || auditModified == null))
         {
-            // Make sure populate any missing values
             // Get a user if we need
             if (user == null)
             {

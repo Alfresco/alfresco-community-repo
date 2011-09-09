@@ -1831,20 +1831,24 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // Copy cm:auditable
         if (!policyBehaviourFilter.isEnabled(node.getNodeRef(), ContentModel.ASPECT_AUDITABLE))
         {
-            AuditablePropertiesEntity auditableProps = node.getAuditableProperties();
-            if (auditableProps == null)
+            // Only bother if cm:auditable properties are present
+            if (AuditablePropertiesEntity.hasAuditableProperty(newProps.keySet()))
             {
-                auditableProps = new AuditablePropertiesEntity();
+                AuditablePropertiesEntity auditableProps = node.getAuditableProperties();
+                if (auditableProps == null)
+                {
+                    auditableProps = new AuditablePropertiesEntity();
+                }
+                boolean containedAuditProperties = auditableProps.setAuditValues(null, null, newProps);
+                if (!containedAuditProperties)
+                {
+                    // Double-check (previous hasAuditableProperty should cover it)
+                    // The behaviour is disabled, but no audit properties were passed in
+                    auditableProps = null;
+                }
+                nodeUpdate.setAuditableProperties(auditableProps);
+                nodeUpdate.setUpdateAuditableProperties(true);
             }
-            boolean containedAuditProperties = auditableProps.setAuditValues(null, null, newProps);
-            if (!containedAuditProperties)
-            {
-                // The behaviour is disabled, but no audit properties were passed in
-                auditableProps = null;
-            }
-            nodeUpdate.setAuditableProperties(auditableProps);
-            // We DON'T set the update flag because the update depends on the aspect being enabled, etc.
-            // nodeUpdate.setUpdateAuditableProperties(true);
         }
         
         // Remove cm:auditable

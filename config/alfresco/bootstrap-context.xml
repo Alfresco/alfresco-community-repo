@@ -169,8 +169,7 @@
     </bean>
 
     <bean id="encryptionChecker" class="org.alfresco.encryption.EncryptionChecker">
-       <property name="keyStoreParameters" ref="keyStoreParameters"/>
-       <property name="keyResourceLoader" ref="springKeyResourceLoader"/>
+       <property name="transactionService" ref="transactionService"/>
        <property name="keyStoreChecker" ref="keyStoreChecker"/>
     </bean>
 

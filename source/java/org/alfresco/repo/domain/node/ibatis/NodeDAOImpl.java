@@ -1532,7 +1532,6 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
 			qnames.add(propDef.getName());
 		}
 
-		// TODO use callback approach
 		// qnames of properties that are encrypted
 		Set<Long> qnameIds = qnameDAO.convertQNamesToIds(qnames, false);
 		if(qnameIds.size() > 0)

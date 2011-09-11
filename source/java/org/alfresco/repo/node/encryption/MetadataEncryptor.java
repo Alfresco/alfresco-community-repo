@@ -9,7 +9,7 @@ import java.util.Set;
 
 import javax.crypto.SealedObject;
 
-import org.alfresco.encryption.Encryptor;
+import org.alfresco.encryption.FallbackEncryptor;
 import org.alfresco.encryption.KeyProvider;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationException;
@@ -35,7 +35,7 @@ import org.alfresco.service.namespace.QName;
 public class MetadataEncryptor
 {
     private DictionaryService dictionaryService;
-    private Encryptor encryptor;
+    private FallbackEncryptor encryptor;
 
     /**
      * @param dictionaryService service to check if properties need encrypting
@@ -48,7 +48,7 @@ public class MetadataEncryptor
     /**
      * @param encryptor         the class that does the encryption/decryption
      */
-    public void setEncryptor(Encryptor encryptor)
+    public void setEncryptor(FallbackEncryptor encryptor)
     {
         this.encryptor = encryptor;
     }
@@ -220,5 +220,15 @@ public class MetadataEncryptor
         }
         // Done
         return outbound;
+    }
+    
+    public boolean keyAvailable(String keyAlias)
+    {
+    	return encryptor.keyAvailable(keyAlias);
+    }
+    
+    public boolean backupKeyAvailable(String keyAlias)
+    {
+    	return encryptor.backupKeyAvailable(keyAlias);
     }
 }

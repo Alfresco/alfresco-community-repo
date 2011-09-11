@@ -1,0 +1,47 @@
+<model name="test:encryptedPropModel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>Alfresco Content Model</description>
+   <author>Alfresco</author>
+   <published>2005-05-30</published>
+   <version>1.0</version>
+   
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+   </imports>
+   
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/test/encryptedPropModel/1.0" prefix="test"/>
+   </namespaces>
+   
+   <constraints>
+
+   </constraints>
+
+   <types>
+      
+      <type name="test:encrypted">
+         <title>Encrypted</title>
+         <description>The Base Type</description>
+         <parent>cm:content</parent>
+         
+         <properties>
+            <property name="test:prop1">
+               <type>d:encrypted</type>
+               <protected>true</protected>
+               <default></default>
+               <constraints>
+               </constraints>
+            </property>
+         </properties>
+         
+         <associations>
+
+         </associations>
+         
+         <mandatory-aspects>
+         </mandatory-aspects>
+      </type>
+      
+   </types>
+</model>

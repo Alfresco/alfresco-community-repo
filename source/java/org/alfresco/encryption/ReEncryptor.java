@@ -76,13 +76,12 @@ public class ReEncryptor implements ApplicationContextAware
 	private QNameDAO qnameDAO;
 	
 	private MetadataEncryptor metadataEncryptor;
-	private KeyProvider backupKeyProvider;
-	private KeyProvider keyProvider;
 	
 	private ApplicationContext applicationContext;
 	private TransactionService transactionService;
 	private RetryingTransactionHelper transactionHelper;
 
+	private int numThreads;
 	private int chunkSize;
 	private boolean splitTxns = true;
 	
@@ -113,6 +112,11 @@ public class ReEncryptor implements ApplicationContextAware
 	{
 		this.jobLockService = jobLockService;
 	}
+	
+	public void setNumThreads(int numThreads)
+	{
+		this.numThreads = numThreads;
+	}
 
 	public void setChunkSize(int chunkSize)
 	{
@@ -137,16 +141,6 @@ public class ReEncryptor implements ApplicationContextAware
 	public void setQnameDAO(QNameDAO qnameDAO)
 	{
 		this.qnameDAO = qnameDAO;
-	}
-
-	public void setBackupKeyProvider(KeyProvider backupKeyProvider)
-	{
-		this.backupKeyProvider = backupKeyProvider;
-	}
-	
-	public void setKeyProvider(KeyProvider keyProvider)
-	{
-		this.keyProvider = keyProvider;
 	}
 
     /**
@@ -266,7 +260,7 @@ public class ReEncryptor implements ApplicationContextAware
                 I18NUtil.getMessage("reencryptor.batchprocessor.name"), // TODO i18n name
                 transactionHelper,
                 provider,
-                2, 100,
+                numThreads, chunkSize,
                 applicationContext,
                 logger, 100).process(worker, splitTxns);
 	}
@@ -274,11 +268,11 @@ public class ReEncryptor implements ApplicationContextAware
 	/**
 	 * Re-encrypt using the configured backup keystore to decrypt and the main keystore to encrypt
 	 */
-	public int bootstrapReEncrypt() throws MissingKeyStoreException
+	public int bootstrapReEncrypt() throws MissingKeyException
 	{
-		if(backupKeyProvider.getKey(KeyProvider.ALIAS_METADATA) == null)
+		if(!metadataEncryptor.backupKeyAvailable(KeyProvider.ALIAS_METADATA))
 		{
-			throw new MissingKeyStoreException("Backup key store is either not present or does not contain a metadata encryption key");
+			throw new MissingKeyException("Backup key store is either not present or does not contain a metadata encryption key");
 		}
 		return reEncrypt();
 	}
@@ -287,31 +281,30 @@ public class ReEncryptor implements ApplicationContextAware
 	 * Re-encrypt by decrypting using the configured keystore and encrypting using a keystore configured using the provided new key store parameters.
 	 * Called from e.g. JMX.
 	 * 
+	 * Assumes that the main key store has been already been reloaded.
+	 * 
 	 * Note: it is the responsibility of the end user to ensure that the underlying keystores have been set up appropriately
 	 * i.e. the old key store is backed up to the location defined by the property '${dir.keystore}/backup-keystore' and the new
 	 * key store replaces it. This can be done while the repository is running.
 	 */
-	public int reEncrypt() throws MissingKeyStoreException
+	public int reEncrypt() throws MissingKeyException
 	{
-		// refresh the key providers to pick up changes made
-		backupKeyProvider.refresh();
-		keyProvider.refresh();
-
-		if(keyProvider.getKey(KeyProvider.ALIAS_METADATA) == null)
+		if(!metadataEncryptor.keyAvailable(KeyProvider.ALIAS_METADATA))
 		{
-			throw new MissingKeyStoreException("Main key store is either not present or does not contain a metadata encryption key");
+			throw new MissingKeyException("Main key store is either not present or does not contain a metadata encryption key");
 		}
-		if(backupKeyProvider.getKey(KeyProvider.ALIAS_METADATA) == null)
+		if(!metadataEncryptor.backupKeyAvailable(KeyProvider.ALIAS_METADATA))
 		{
-			throw new MissingKeyStoreException("Backup key store is either not present or does not contain a metadata encryption key");
+			throw new MissingKeyException("Backup key store is either not present or does not contain a metadata encryption key");
 		}
 		
-    	int numProps =  reEncryptImpl();
+    	int numProps = reEncryptImpl();
     	return numProps;
 	}
 
 	protected int reEncryptImpl()
 	{
+		// Take out a re-encryptor lock
 		RetryingTransactionCallback<String> txnWork = new RetryingTransactionCallback<String>()
         {
             public String execute() throws Exception

@@ -18,8 +18,8 @@
  */
 package org.alfresco.encryption;
 
-import java.io.File;
 import java.io.Serializable;
+import java.security.AlgorithmParameters;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
@@ -51,6 +51,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.Pair;
 import org.springframework.context.ApplicationContext;
 
 public class EncryptionTests extends TestCase
@@ -72,7 +73,8 @@ public class EncryptionTests extends TestCase
 	private ReEncryptor reEncryptor;
 	private String cipherAlgorithm = "DESede/CBC/PKCS5Padding";
 	private KeyStoreParameters backupKeyStoreParameters;
-	private AlfrescoKeyStoreImpl backupKeyStore;
+	private AlfrescoKeyStoreImpl mainKeyStore;
+	//private AlfrescoKeyStoreImpl backupKeyStore;
 	private KeyResourceLoader keyResourceLoader;
 	private EncryptionKeysRegistryImpl encryptionKeysRegistry;
 	private KeyStoreChecker keyStoreChecker;
@@ -84,7 +86,7 @@ public class EncryptionTests extends TestCase
 	private TenantService tenantService;
 
 	private String keyAlgorithm;
-	private Map<String, Key> newKeys = new HashMap<String, Key>();
+	private KeyMap newKeys = new KeyMap();
 	private List<NodeRef> before = new ArrayList<NodeRef>();
 	private List<NodeRef> after = new ArrayList<NodeRef>();
 
@@ -104,8 +106,9 @@ public class EncryptionTests extends TestCase
         backupKeyStoreParameters = (KeyStoreParameters)ctx.getBean("backupKeyStoreParameters");
         keyStoreChecker = (KeyStoreChecker)ctx.getBean("keyStoreChecker");
         encryptionKeysRegistry = (EncryptionKeysRegistryImpl)ctx.getBean("encryptionKeysRegistry");
-        backupKeyStore = (AlfrescoKeyStoreImpl)ctx.getBean("backupKeyStore");
-        mainEncryptor = (DefaultEncryptor)ctx.getBean("encryptor");
+        //backupKeyStore = (AlfrescoKeyStoreImpl)ctx.getBean("backupKeyStore");
+        mainKeyStore = (AlfrescoKeyStoreImpl)ctx.getBean("keyStore");
+        mainEncryptor = (DefaultEncryptor)ctx.getBean("mainEncryptor");
         backupEncryptor = (DefaultEncryptor)ctx.getBean("backupEncryptor");
 
         // reencrypt in one txn (since we don't commit the model, the qnames won't be available across transactions)
@@ -122,8 +125,8 @@ public class EncryptionTests extends TestCase
         rootNodeRef = nodeService.getRootNode(storeRef);
 
         keyAlgorithm = "DESede";
-        newKeys.put(KeyProvider.ALIAS_METADATA, generateSecretKey(keyAlgorithm));
-        
+        newKeys.setKey(KeyProvider.ALIAS_METADATA, generateSecretKey(keyAlgorithm));
+
         // Load models
         DictionaryBootstrap bootstrap = new DictionaryBootstrap();
         List<String> bootstrapModels = new ArrayList<String>();
@@ -156,44 +159,17 @@ public class EncryptionTests extends TestCase
         super.tearDown();
     }
 
-	protected KeyProvider getKeyProvider(final Map<String, Key> keys)
+	protected KeyProvider getKeyProvider(final KeyMap keys)
 	{
 		KeyProvider keyProvider = new KeyProvider()
 		{
 			@Override
 			public Key getKey(String keyAlias)
 			{
-				return keys.get(keyAlias);
-			}
-
-			@Override
-			public void refresh()
-			{
-				// nothing to do
+				return keys.getCachedKey(keyAlias).getKey();
 			}
 		};
 		return keyProvider;
-	}
-
-	protected Encryptor getFallbackEncryptor(KeyProvider keyProvider)
-	{
-		DefaultEncryptor encryptor = new DefaultEncryptor();
-		encryptor.setCipherAlgorithm(cipherAlgorithm);
-		encryptor.setCipherProvider(null);
-		encryptor.setKeyProvider(keyProvider);
-
-		DefaultFallbackEncryptor fallbackEncryptor = new DefaultFallbackEncryptor(encryptor, mainEncryptor);
-		
-		return fallbackEncryptor;
-	}
-
-	protected MetadataEncryptor getMetadataEncryptor(Encryptor encryptor)
-	{
-		MetadataEncryptor metadataEncryptor = new MetadataEncryptor();
-		metadataEncryptor.setDictionaryService(dictionaryService);
-		metadataEncryptor.setEncryptor(encryptor);
-		
-		return metadataEncryptor;
 	}
 
 	protected void createEncryptedProperties(List<NodeRef> nodes)
@@ -269,7 +245,7 @@ public class EncryptionTests extends TestCase
 				assertEquals("", nodeRef.toString(), props.get(PROP));			
 			}
 		}
-		catch(MissingKeyStoreException e)
+		catch(MissingKeyException e)
 		{
 			fail(e.getMessage());
 		}
@@ -294,36 +270,142 @@ public class EncryptionTests extends TestCase
 		{
 			// ensure that the backup key store is not available
 			backupKeyStoreParameters.setLocation("");
-			backupKeyStore.reload();
+			//backupKeyStore.reload();
+			mainKeyStore.reload();
 
 			reEncryptor.bootstrapReEncrypt();
 			fail("Should have caught missing backup key store");
 		}
-		catch(MissingKeyStoreException e)
+		catch(MissingKeyException e)
 		{
-			System.out.println("Successfully caught missing key store exception");
+			System.out.println("Successfully caught missing key exception");
+		}
+		catch(InvalidKeystoreException e)
+		{
+			fail("Unexpected exception: " + e.getMessage());
+		}
+	}
+
+	protected void testChangeKeysImpl(boolean cacheCiphers) throws Throwable
+	{
+		// on a single thread
+		// create an encryptor, encrypt a string, change encryptor keys, decrypt -> should result in Invalid Key
+		
+		Pair<byte[], AlgorithmParameters> pair = null;
+		DefaultEncryptor encryptor = null;
+		Key secretKey1 = null;
+		Key secretKey2 = null;
+		String test = "hello world";
+		final KeyMap keys = new KeyMap();
+		byte[] decrypted = null;
+		String test1 = null;
+		
+		secretKey1 = generateSecretKey("DESede");
+		keys.setKey("test", secretKey1);
+		KeyProvider keyProvider = new KeyProvider()
+		{
+			@Override
+			public Key getKey(String keyAlias)
+			{
+				return keys.getCachedKey(keyAlias).getKey();
+			}
+		};
+
+		encryptor = new DefaultEncryptor();
+		encryptor.setCipherAlgorithm("DESede/CBC/PKCS5Padding");
+		encryptor.setCipherProvider(null);
+		encryptor.setKeyProvider(keyProvider);
+		encryptor.setCacheCiphers(cacheCiphers);
+		pair = encryptor.encrypt("test", null, test.getBytes("UTF-8"));
+
+		decrypted = encryptor.decrypt("test", pair.getSecond(), pair.getFirst());
+		test1 = new String(decrypted, "UTF-8");
+		
+		assertEquals("Expected encrypt,decrypt to end up with the original value", test, test1);
+		System.out.println("1:" + new String(decrypted, "UTF-8"));
+		
+		secretKey2 = generateSecretKey("DESede");
+		keys.setKey("test", secretKey2);
+		
+		assertNotNull(encryptor);
+		assertNotNull(pair);
+
+		try
+		{
+			decrypted = encryptor.decrypt("test", pair.getSecond(), pair.getFirst());
+			test1 = new String(decrypted, "UTF-8");
+		}
+		catch(AlfrescoRuntimeException e)
+		{
+			// ok - decryption failed expected.
 		}
 	}
 	
-	public void testKeyStoreCreation()
+	public void testChangeKeys() throws Throwable
 	{
-		String keyStoreLocation = System.getProperty("user.dir") + File.separator + "encryption-tests.keystore";
-		File keyStoreFile = new File(keyStoreLocation);
-		if(keyStoreFile.exists())
+		testChangeKeysImpl(false);
+	}
+
+	public void testChangeKeysCachedCiphers() throws Throwable
+	{
+		testChangeKeysImpl(true);
+	}
+	
+	public void testFailedEncryptionWithCachedCiphers() throws Throwable
+	{
+		Pair<byte[], AlgorithmParameters> pair = null;
+		DefaultEncryptor encryptor = null;
+		Key secretKey1 = null;
+		Key secretKey2 = null;
+		String test = "hello world";
+		final KeyMap keys = new KeyMap();
+		byte[] decrypted = null;
+		String test1 = null;
+		
+		secretKey1 = generateSecretKey("DESede");
+		keys.setKey("test", secretKey1);
+		KeyProvider keyProvider = new KeyProvider()
 		{
-			assertTrue("", keyStoreFile.delete());
+			@Override
+			public Key getKey(String keyAlias)
+			{
+				return keys.getCachedKey(keyAlias).getKey();
+			}
+		};
+
+		encryptor = new DefaultEncryptor();
+		encryptor.setCipherAlgorithm("DESede/CBC/PKCS5Padding");
+		encryptor.setCipherProvider(null);
+		encryptor.setKeyProvider(keyProvider);
+		encryptor.setCacheCiphers(true);
+		pair = encryptor.encrypt("test", null, test.getBytes("UTF-8"));
+
+		secretKey2 = generateSecretKey("DESede");
+		keys.setKey("test", secretKey2);
+		
+		assertNotNull(encryptor);
+		assertNotNull(pair);
+
+		try
+		{
+			decrypted = encryptor.decrypt("test", pair.getSecond(), pair.getFirst());
+			test1 = new String(decrypted, "UTF-8");
+			fail("Decryption should have failed");
+		}
+		catch(AlfrescoRuntimeException e)
+		{
+			// ok - decryption failed expected - changed key
 		}
 
-		KeyStoreParameters keyStoreParameters = new KeyStoreParameters();
-		keyStoreParameters.setLocation(keyStoreLocation);
-		keyStoreParameters.setKeyMetaDataFileLocation("classpath:org/alfresco/encryption/keystore-parameters.properties");
-		keyStoreParameters.setType("JCEKS");
-		AlfrescoKeyStore keyStore = new AlfrescoKeyStoreImpl(keyStoreParameters, keyResourceLoader);
-
-		encryptionKeysRegistry.removeRegisteredKeys(keyStore);
-
-		keyStoreChecker.checkKeyStore(keyStore);
-
-		assertNotNull("", keyStore.getKey("test"));
+		keys.setKey("test", secretKey1);
+		try
+		{
+			decrypted = encryptor.decrypt("test", pair.getSecond(), pair.getFirst());
+			test1 = new String(decrypted, "UTF-8");
+		}
+		catch(AlfrescoRuntimeException e)
+		{
+			fail("Expected decryption to work ok");
+		}
 	}
 }

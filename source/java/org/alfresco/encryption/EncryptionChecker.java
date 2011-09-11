@@ -18,6 +18,9 @@
  */
 package org.alfresco.encryption;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
@@ -37,31 +40,39 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 public class EncryptionChecker extends AbstractLifecycleBean
 {
     private static Log logger = LogFactory.	getLog(EncryptionChecker.class);
-    
+    private TransactionService transactionService;
     private KeyStoreChecker keyStoreChecker;
-    private KeyStoreParameters keyStoreParameters;
-    private KeyResourceLoader keyResourceLoader;
-
-	public void setkeyStoreParameters(KeyStoreParameters keyStoreParameters)
-	{
-		this.keyStoreParameters = keyStoreParameters;
-	}
 
 	public void setKeyStoreChecker(KeyStoreChecker keyStoreChecker)
 	{
 		this.keyStoreChecker = keyStoreChecker;
 	}
 	
-	public void setKeyResourceLoader(KeyResourceLoader keyResourceLoader)
+	public void setTransactionService(TransactionService transactionService)
 	{
-		this.keyResourceLoader = keyResourceLoader;
+		this.transactionService = transactionService;
 	}
 
 	@Override
 	protected void onBootstrap(ApplicationEvent event)
 	{
-		AlfrescoKeyStore mainKeyStore = new AlfrescoKeyStoreImpl(keyStoreParameters, keyResourceLoader);
-		keyStoreChecker.checkKeyStore(mainKeyStore);
+		transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+		{
+			public Void execute() throws Throwable
+			{
+				try
+				{
+					keyStoreChecker.validateKeyStores();
+				}
+				catch(Throwable e)
+				{
+					// Just throw as a runtime exception
+					throw new AlfrescoRuntimeException("Keystores are invalid", e);
+				}
+
+				return null;
+			}
+		});
 	}
 
 	@Override

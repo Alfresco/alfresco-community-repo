@@ -279,7 +279,7 @@ public class CalendarServiceImplTest
        c.set(Calendar.SECOND, 0);
        c.set(Calendar.MILLISECOND, 0);
        
-       // Neither start nor end are at midnight to start
+       // Neither start nor end are at midnight to start with
        assertEquals(false, CalendarEntryDTO.isAllDay(entry));
        
        // Set the start to midnight

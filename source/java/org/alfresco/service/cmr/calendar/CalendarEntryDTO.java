@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -35,6 +36,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public class CalendarEntryDTO implements CalendarEntry, Serializable 
 {
    private static final long serialVersionUID = -7997650453677545845L;
+   private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
    
    private NodeRef nodeRef;
    private NodeRef containerNodeRef;
@@ -275,10 +277,9 @@ public class CalendarEntryDTO implements CalendarEntry, Serializable
     *  on a day, and ending at midnight.
     *  
     * For a single day event, the start and end dates should be
-    *  the same, and the times for both are midnight.
-    * For a multi day event, the start and end times are midnight,
+    *  the same, and the times for both are UTC midnight.
+    * For a multi day event, the start and end times are UTC midnight,
     *  for the first and last days respectively.
-    * TODO Timezones! 
     */
    public static boolean isAllDay(CalendarEntry entry)
    {
@@ -288,20 +289,37 @@ public class CalendarEntryDTO implements CalendarEntry, Serializable
          return false;
       }
       
-      Calendar start = Calendar.getInstance();
-      Calendar end = Calendar.getInstance();
-      start.setTime(entry.getStart());
-      end.setTime(entry.getEnd());
+      // As of 4.0, all-day events use UTC midnight for consistency
+      Calendar startUTC = Calendar.getInstance();
+      Calendar endUTC = Calendar.getInstance();
+      startUTC.setTime(entry.getStart());
+      endUTC.setTime(entry.getEnd());
+      startUTC.setTimeZone(UTC);
+      endUTC.setTimeZone(UTC);
       
-      if (start.get(Calendar.HOUR_OF_DAY) == 0 &&
-          start.get(Calendar.MINUTE) == 0 &&
-          start.get(Calendar.SECOND) == 0 &&
-          end.get(Calendar.HOUR_OF_DAY) == 0 &&
-          end.get(Calendar.MINUTE) == 0 &&
-          end.get(Calendar.SECOND) == 0)
+      // Pre-4.0, the midnights were local time...
+      Calendar startLocal = Calendar.getInstance();
+      Calendar endLocal = Calendar.getInstance();
+      startLocal.setTime(entry.getStart());
+      endLocal.setTime(entry.getEnd());
+      
+      // Check for midnight, first in UTC then again in Local time
+      Calendar[] starts = new Calendar[] { startUTC, startLocal };
+      Calendar[] ends = new Calendar[] { endUTC, endLocal };
+      for(int i=0; i<starts.length; i++)
       {
-         // Both midnight, counts as all day
-         return true;
+         Calendar start = starts[i];
+         Calendar end = ends[i];
+         if (start.get(Calendar.HOUR_OF_DAY) == 0 &&
+               start.get(Calendar.MINUTE) == 0 &&
+               start.get(Calendar.SECOND) == 0 &&
+               end.get(Calendar.HOUR_OF_DAY) == 0 &&
+               end.get(Calendar.MINUTE) == 0 &&
+               end.get(Calendar.SECOND) == 0)
+         {
+            // Both at midnight, counts as all day
+            return true;
+         }
       }
       
       // In any other case, it isn't an all-day

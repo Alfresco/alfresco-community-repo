@@ -26,6 +26,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.calendar.CalendarModel;
@@ -151,16 +152,48 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
     protected boolean extractDates(CalendarEntry entry, JSONObject json) throws JSONException
     {
        boolean isAllDay = false;
+       if (json.containsKey("allday"))
+       {
+          isAllDay = true;
+       }
        
        if (json.containsKey("startAt") && json.containsKey("endAt"))
        {
-          // New style ISO8601 dates
-          entry.setStart(parseDate((String)json.get("startAt")));
-          entry.setEnd(parseDate((String)json.get("endAt")));
+          // New style ISO8601 based dates and times
+          String startAt = ((String)json.get("startAt"));
+          String endAt = ((String)json.get("endAt"));
+          
+          // Is this an all day event?
           if (json.containsKey("allday"))
           {
-             // TODO Handle All Day events properly, including timezones
-             isAllDay = true;
+             // Store it as UTC midnight to midnight
+             // Reset the time part to ensure that
+             String utcMidnight = "T00:00:00Z";
+             startAt = startAt.substring(0, 10) + utcMidnight;
+             endAt = endAt.substring(0, 10) + utcMidnight;
+             entry.setStart(ISO8601DateFormat.parse(startAt));
+             entry.setEnd(ISO8601DateFormat.parse(endAt));
+          }
+          else
+          {
+             // Regular event start and end rules
+             
+             // Do we have explicit timezone information?
+             if (json.containsKey("timeZone"))
+             {
+                // Get the specified timezone
+                TimeZone tz = TimeZone.getTimeZone((String)json.get("timeZone"));
+                
+                // Grab the dates and times in the specified timezone
+                entry.setStart(ISO8601DateFormat.parse(startAt, tz));
+                entry.setEnd(ISO8601DateFormat.parse(endAt, tz));
+             }
+             else
+             {
+                // Offset info is either in the date, or we just have to guess
+                entry.setStart(parseDate(startAt));
+                entry.setEnd(parseDate(endAt));
+             }
           }
        }
        else if (json.containsKey("allday"))
@@ -168,7 +201,6 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
           // Old style all-day event
           entry.setStart(parseDate(getOrNull(json, "from")));
           entry.setEnd(parseDate(getOrNull(json, "to")));
-          isAllDay = true;
        }
        else
        {

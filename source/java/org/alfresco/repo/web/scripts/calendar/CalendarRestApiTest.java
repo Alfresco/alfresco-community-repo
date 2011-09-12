@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.web.scripts.calendar;
 
+import java.util.Iterator;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -211,24 +213,46 @@ public class CalendarRestApiTest extends BaseWebScriptTest
     private JSONObject createEntry(String name, String where, String description, 
           int expectedStatus) throws Exception
     {
-       String date = "2011/06/29"; // A wednesday
+       String date = "2011-06-29"; // A wednesday
        String start = "12:00";
        String end = "13:00";
        
+       // Old style is:
+       //   "from": "2011/06/29",
+       //   "to":   "2011/06/29",
+       //   "start": "12:00",
+       //   "end":   "13:00",
+       
        JSONObject json = new JSONObject();
+       json.put("startAt", date + "T" + start + ":00+01:00");
+       json.put("endAt",   date + "T" + end + ":00+01:00");
+       
+       return createEntry(name, where, description, json, expectedStatus);
+    }
+    
+    /**
+     * Creates an event, with the date properties manually set
+     */
+    private JSONObject createEntry(String name, String where, String description, 
+          JSONObject datesJSON, int expectedStatus) throws Exception
+    {
+       JSONObject json = new JSONObject();
+       
        json.put("site", SITE_SHORT_NAME_CALENDAR);
        json.put("what", name);
        json.put("where", where);
        json.put("desc", description);
-       json.put("from", date);
-       json.put("to", date);
-//       json.put("fromdate", "Wednesday, 29 June 2011"); // Not needed
-//       json.put("todate", "Wednesday, 29 June 2011"); // Not needed
-       json.put("start", start);
-       json.put("end", end);
        json.put("tags", "");
        json.put("docfolder", "");
        json.put("page", "calendar");
+       
+       // Copy in the date properties
+       Iterator<String> datesIT = datesJSON.keys();
+       while(datesIT.hasNext())
+       {
+          String key = datesIT.next();
+          json.put(key, datesJSON.get(key));
+       }
        
        Response response = sendRequest(new PostRequest(URL_EVENT_CREATE, json.toString(), "application/json"), expectedStatus);
        if (expectedStatus == Status.STATUS_OK)
@@ -369,10 +393,10 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        assertEquals("false", entry.getString("allday"));
        
        // Check the new style dates too
-//       assertEquals("2011-06-29T12:00:00Z", entry.getJSONObject("startAt").get("iso8601")); // TODO Needs TZ going in
+       assertEquals("2011-06-29T12:00:00.000+01:00", entry.getJSONObject("startAt").get("iso8601"));
        assertEquals("6/29/2011", entry.getJSONObject("startAt").get("legacyDate"));
        assertEquals("12:00", entry.getJSONObject("startAt").get("legacyTime"));
-//       assertEquals("2011-06-29T13:00:00Z", entry.getJSONObject("endAt").get("iso8601")); // TODO Needs TZ going in
+       assertEquals("2011-06-29T13:00:00.000+01:00", entry.getJSONObject("endAt").get("iso8601"));
        assertEquals("6/29/2011", entry.getJSONObject("endAt").get("legacyDate"));
        assertEquals("13:00", entry.getJSONObject("endAt").get("legacyTime"));
        
@@ -384,9 +408,9 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        assertEquals("More Where", entry.getString("location"));
        assertEquals("More Thing", entry.getString("description"));
        
-       // No from/to/start/end, does dtstart and dtend instead
-       assertEquals("2011-06-28T11:30", entry.getString("dtstart"));
-       assertEquals("2011-06-28T13:30", entry.getString("dtend"));
+       // Now uses new style dates
+       assertEquals("2011-06-28T11:30", entry.getJSONObject("startAt").getString("legacyDateTime"));
+       assertEquals("2011-06-28T13:30", entry.getJSONObject("endAt").getString("legacyDateTime"));
        assertEquals("false", entry.getString("allday"));
        // No isoutlook on create/edit
        
@@ -449,6 +473,123 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        // Can't edit it when it's deleted
        sendRequest(new PutRequest(URL_EVENT_BASE + name, "{}", "application/json"), Status.STATUS_OK);
        assertEquals(true, entry.has("error"));
+    }
+    
+    /**
+     * Checks that we can work with old style two part date times,
+     *  ISO8601 datetimes with offsets, and ISO8601 datetimes with an
+     *  explicit timezone. 
+     */
+    public void testDifferentDateStyles() throws Exception
+    {
+       JSONObject json;
+       JSONObject entry;
+       
+       // From+Start, To+End with slashes
+       json = new JSONObject();
+       json.put("from", "2011/06/21");
+       json.put("to",   "2011/06/21");
+       json.put("start", "11:00");
+       json.put("end",   "12:00");
+       entry = createEntry(EVENT_TITLE_ONE, "Where", "Thing", json, Status.STATUS_OK);
+       
+       assertEquals("2011-06-21", entry.getString("from"));
+       assertEquals("2011-06-21", entry.getString("to"));
+       assertEquals("11:00", entry.getString("start"));
+       assertEquals("12:00", entry.getString("end"));
+       assertEquals("false", entry.getString("allday"));
+       // Can't check iso8601 form as we don't know the TZ
+       
+       
+       // From+Start, To+End with dashes
+       json = new JSONObject();
+       json.put("from", "2011-06-22");
+       json.put("to",   "2011-06-22");
+       json.put("start", "10:00");
+       json.put("end",   "12:00");
+       entry = createEntry(EVENT_TITLE_ONE, "Where", "Thing", json, Status.STATUS_OK);
+       
+       assertEquals("2011-06-22", entry.getString("from"));
+       assertEquals("2011-06-22", entry.getString("to"));
+       assertEquals("10:00", entry.getString("start"));
+       assertEquals("12:00", entry.getString("end"));
+       assertEquals("false", entry.getString("allday"));
+       // Can't check iso8601 form as we don't know the TZ
+       
+       
+       // ISO8601 with offset
+       json = new JSONObject();
+       json.put("startAt", "2011-06-21T11:30:05+01:00");
+       json.put("endAt",   "2011-06-21T12:45:25+01:00");
+       entry = createEntry(EVENT_TITLE_ONE, "Where", "Thing", json, Status.STATUS_OK);
+       
+       // Check old style dates and times
+       assertEquals("2011-06-21", entry.getString("from"));
+       assertEquals("2011-06-21", entry.getString("to"));
+       assertEquals("11:30", entry.getString("start"));
+       assertEquals("12:45", entry.getString("end"));
+       assertEquals("false", entry.getString("allday"));
+       
+       // Check new style dates and times
+       assertEquals("2011-06-21T11:30:05.000+01:00", entry.getJSONObject("startAt").getString("iso8601"));
+       assertEquals("2011-06-21T12:45:25.000+01:00", entry.getJSONObject("endAt").getString("iso8601"));
+       
+       
+       // ISO8601 with timezone
+       json = new JSONObject();
+       json.put("startAt", "2011-06-22T11:30:05");
+       json.put("endAt",   "2011-06-22T12:45:25");
+       json.put("timeZone", "Europe/London");
+       entry = createEntry(EVENT_TITLE_ONE, "Where", "Thing", json, Status.STATUS_OK);
+       
+       // Check old style dates and times
+       assertEquals("2011-06-22", entry.getString("from"));
+       assertEquals("2011-06-22", entry.getString("to"));
+       assertEquals("11:30", entry.getString("start"));
+       assertEquals("12:45", entry.getString("end"));
+       assertEquals("false", entry.getString("allday"));
+       
+       // Check new style dates and times
+       assertEquals("2011-06-22T11:30:05.000+01:00", entry.getJSONObject("startAt").getString("iso8601"));
+       assertEquals("2011-06-22T12:45:25.000+01:00", entry.getJSONObject("endAt").getString("iso8601"));
+       
+       
+       // All-day old-style
+       json = new JSONObject();
+       json.put("from", "2011/06/21");
+       json.put("to",   "2011/06/21");
+       json.put("allday", Boolean.TRUE);
+       entry = createEntry(EVENT_TITLE_ONE, "Where", "Thing", json, Status.STATUS_OK);
+
+       assertEquals("2011-06-21", entry.getString("from"));
+       assertEquals("2011-06-21", entry.getString("to"));
+       assertEquals("00:00", entry.getString("start"));
+       assertEquals("00:00", entry.getString("end"));
+       assertEquals("true", entry.getString("allday"));
+
+       
+       // All-day ISO8601 with offset
+       json = new JSONObject();
+       json.put("startAt", "2011-06-21T00:00:00+01:00");
+       json.put("endAt",   "2011-06-21T00:00:00+01:00");
+       json.put("allday", Boolean.TRUE);
+       
+       assertEquals("2011-06-21", entry.getString("from"));
+       assertEquals("2011-06-21", entry.getString("to"));
+       assertEquals("true", entry.getString("allday"));
+
+       
+       // All-day ISO8601 with timezone
+       json = new JSONObject();
+       json.put("startAt", "2011-06-22T00:00:00");
+       json.put("endAt",   "2011-06-22T00:00:00");
+       json.put("timeZone", "Europe/London");
+       json.put("allday", Boolean.TRUE);
+       entry = createEntry(EVENT_TITLE_ONE, "Where", "Thing", json, Status.STATUS_OK);
+       
+       assertEquals("2011-06-22", entry.getString("from"));
+       assertEquals("2011-06-22", entry.getString("to"));
+       assertEquals("true", entry.getString("allday"));
     }
     
     /**

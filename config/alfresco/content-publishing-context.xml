@@ -54,7 +54,6 @@
    <!--  Channel Type Implementations -->
    <bean id="baseChannelType" class="org.alfresco.repo.publishing.AbstractChannelType" abstract="true" >
       <property name="channelService" ref="channelService" />
-      <property name="serviceRegistry" ref="ServiceRegistry" />
    </bean>
    
    <bean id="channelHelper" class="org.alfresco.repo.publishing.ChannelHelper">

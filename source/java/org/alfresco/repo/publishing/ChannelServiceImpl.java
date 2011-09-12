@@ -37,8 +37,6 @@ import org.alfresco.service.cmr.publishing.channels.ChannelService;
 import org.alfresco.service.cmr.publishing.channels.ChannelType;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.transfer.NodeFilter;
-import org.alfresco.service.cmr.transfer.NodeFinder;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
@@ -253,22 +251,6 @@ public class ChannelServiceImpl implements ChannelService
     public ChannelType getChannelType(String id)
     {
         return channelTypes.get(id);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public NodeFinder getChannelDependancyNodeFinder()
-    {
-        return new ChannelDependancyNodeFinder(this);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public NodeFilter getChannelDependancyNodeFilter()
-    {
-        return new ChannelDependancyNodeFilter(this);
     }
 
     /**

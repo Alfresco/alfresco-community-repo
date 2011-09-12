@@ -20,24 +20,14 @@
 package org.alfresco.repo.publishing;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.repo.transfer.CompositeNodeFilter;
-import org.alfresco.repo.transfer.CompositeNodeFinder;
-import org.alfresco.repo.transfer.PrimaryParentNodeFinder;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
 import org.alfresco.service.cmr.publishing.channels.ChannelType;
-import org.alfresco.service.cmr.transfer.NodeFilter;
-import org.alfresco.service.cmr.transfer.NodeFinder;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
@@ -45,11 +35,8 @@ import org.springframework.core.io.Resource;
  * @author Nick Smith
  * @since 4.0
  */
-public abstract class AbstractChannelType implements ChannelType, InitializingBean
+public abstract class AbstractChannelType implements ChannelType
 {
-    private ServiceRegistry serviceRegistry;
-    protected NodeFinder nodeFinder;
-    protected NodeFilter nodeFilter;
     private ChannelService channelService;
 
     public void setChannelService(ChannelService channelService)
@@ -61,75 +48,6 @@ public abstract class AbstractChannelType implements ChannelType, InitializingBe
     protected ChannelService getChannelService()
     {
         return channelService;
-    }
-
-    /**
-     * @param serviceRegistry
-     *            the serviceRegistry to set
-     */
-    public void setServiceRegistry(ServiceRegistry serviceRegistry)
-    {
-        this.serviceRegistry = serviceRegistry;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void afterPropertiesSet() throws Exception
-    {
-
-        Collection<NodeFinder> finders = getAllNodeFInders();
-        CompositeNodeFinder finder = new CompositeNodeFinder(finders);
-        finder.setServiceRegistry(serviceRegistry);
-        finder.init();
-        this.nodeFinder = finder;
-
-        Collection<NodeFilter> filters = getAllNodeFIlters();
-        CompositeNodeFilter filter = new CompositeNodeFilter(filters);
-        filter.setServiceRegistry(serviceRegistry);
-        finder.init();
-        this.nodeFilter = filter;
-    }
-
-    /**
-     * @return a collection of {@link NodeFilter}s to be included in the
-     *         {@link CompositeNodeFilter} returned by the getNodeFilter()
-     *         method.
-     */
-    protected Collection<NodeFilter> getAllNodeFIlters()
-    {
-        return Collections.emptyList();
-    }
-
-    /**
-     * @return a collection of {@link NodeFinder}s to be included in the
-     *         {@link CompositeNodeFinder} returned by the getNodeFinder()
-     *         method.
-     */
-    protected Collection<NodeFinder> getAllNodeFInders()
-    {
-        // TODO Add dependency node finder.
-        NodeFinder parentFinder = new PrimaryParentNodeFinder();
-        return Arrays.asList(parentFinder);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public NodeFilter getNodeFilter()
-    {
-        return nodeFilter;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public NodeFinder getNodeFinder()
-    {
-        return nodeFinder;
     }
 
     /**

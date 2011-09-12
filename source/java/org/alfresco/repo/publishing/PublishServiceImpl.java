@@ -69,7 +69,7 @@ public class PublishServiceImpl implements PublishingService
     /**
      * {@inheritDoc}
      */
-    public List<PublishingEvent> getEventsForPublishedNode(NodeRef publishedNode)
+    public List<PublishingEvent> getPublishEventsForNode(NodeRef publishedNode)
     {
         NodeRef queueNode = rootObject.getPublishingQueue().getNodeRef();
         List<NodeRef> eventNodes = publishingEventHelper.getEventNodesForPublishedNode(queueNode, publishedNode);
@@ -79,7 +79,7 @@ public class PublishServiceImpl implements PublishingService
     /**
      * {@inheritDoc}
      */
-    public List<PublishingEvent> getEventsForUnpublishedNode(NodeRef unpublishedNode)
+    public List<PublishingEvent> getUnpublishEventsForNode(NodeRef unpublishedNode)
     {
         NodeRef queueNode = rootObject.getPublishingQueue().getNodeRef();
         List<NodeRef> eventNodes = publishingEventHelper.getEventNodesForUnpublishedNode(queueNode, unpublishedNode);

@@ -26,18 +26,14 @@ import org.alfresco.repo.publishing.flickr.springsocial.api.Flickr;
 import org.alfresco.repo.publishing.flickr.springsocial.api.MediaOperations;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
-import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.tagging.TaggingService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.social.connect.Connection;
 
 public class FlickrUnpublishAction extends ActionExecuterAbstractBase
 {
-    private final static Log log = LogFactory.getLog(FlickrUnpublishAction.class);
-
     public static final String NAME = "unpublish_flickr";
 
     private NodeService nodeService;

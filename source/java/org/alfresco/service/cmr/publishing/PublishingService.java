@@ -18,11 +18,8 @@
  */
 package org.alfresco.service.cmr.publishing;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
-import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -46,14 +43,14 @@ public interface PublishingService
      * @param publishedNode The node that was published.
      * @return A list of {@link PublishingEvent}s.
      */
-    List<PublishingEvent> getEventsForPublishedNode(NodeRef publishedNode);
+    List<PublishingEvent> getPublishEventsForNode(NodeRef publishedNode);
     
     /**
      * Retrieve a list of publishing events for which the specified <code>node</code> was unpublished.
      * @param unpublishedNode The node that was unpublished.
      * @return A list of {@link PublishingEvent}s.
      */
-    List<PublishingEvent> getEventsForUnpublishedNode(NodeRef unpublishedNode);
+    List<PublishingEvent> getUnpublishEventsForNode(NodeRef unpublishedNode);
 
     /**
      * Request that the specified publishing event be cancelled. This call will
@@ -70,20 +67,4 @@ public interface PublishingService
      * @return A PublishingQueue object corresponding tho this environment's publishing queue
      */
     PublishingQueue getPublishingQueue();
-    
-    /**
-     * Discover the publishing status of each of the specified nodes
-     * @param channelId an identifier indicating which {@link Channel} to check the status for.
-     * @param nodes The nodes whose publishing status is being sought
-     * @return A map associating a NodePublishStatus object with each of the supplied NodeRef objects
-     */
-    Map<NodeRef,NodePublishStatus> checkPublishStatus(String channelId, Collection<NodeRef> nodes);
-
-    /**
-     * Discover the publishing status of each of the specified nodes
-     * @param channelId an identifier indicating which {@link Channel} to check the status for.
-     * @param nodes The nodes whose publishing status is being sought
-     * @return A map associating a NodePublishStatus object with each of the supplied NodeRef objects
-     */
-    Map<NodeRef,NodePublishStatus> checkPublishStatus(String channelId, NodeRef... nodes);
 }

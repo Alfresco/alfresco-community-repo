@@ -27,8 +27,6 @@ import org.alfresco.repo.publishing.AbstractChannelType;
 import org.alfresco.repo.publishing.PublishingModel;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.transfer.NodeFilter;
-import org.alfresco.service.cmr.transfer.NodeFinder;
 import org.alfresco.service.namespace.QName;
 
 public class TestChannelType2 extends AbstractChannelType
@@ -68,18 +66,6 @@ public class TestChannelType2 extends AbstractChannelType
     public int getMaximumStatusLength()
     {
         return 140;
-    }
-
-    @Override
-    public NodeFilter getNodeFilter()
-    {
-        return null;
-    }
-
-    @Override
-    public NodeFinder getNodeFinder()
-    {
-        return null;
     }
 
     @Override

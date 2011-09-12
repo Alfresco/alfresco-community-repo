@@ -24,8 +24,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.transfer.NodeFilter;
-import org.alfresco.service.cmr.transfer.NodeFinder;
 import org.alfresco.service.namespace.QName;
 import org.springframework.core.io.Resource;
 
@@ -39,8 +37,7 @@ public interface ChannelType
     
     String getId();
     QName getChannelNodeType();
-    NodeFinder getNodeFinder();
-    NodeFilter getNodeFilter();
+
     void publish(NodeRef nodeToPublish, Map<QName, Serializable> properties);
     void unpublish(NodeRef nodeToUnpublish, Map<QName, Serializable> properties);
     void updateStatus(Channel channel, String status, Map<QName, Serializable> properties);

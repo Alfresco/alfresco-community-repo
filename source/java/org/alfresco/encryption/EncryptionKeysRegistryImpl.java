@@ -32,6 +32,7 @@ import org.alfresco.service.cmr.attributes.AttributeService.AttributeQueryCallba
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.GUID;
+import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -43,6 +44,9 @@ import org.apache.commons.logging.LogFactory;
  *
  */
 // TODO caching? This will probably not be used extensively.
+// TODO instead of persisting the Pair when registering a key, create two attributes per key (one for the
+// guid and one for the encrypted value of the guid). This means a custom class does not need to be bound to
+// the attribute service.
 public class EncryptionKeysRegistryImpl implements EncryptionKeysRegistry
 {
     public static String TOP_LEVEL_KEY = "keyCheck";
@@ -107,7 +111,7 @@ public class EncryptionKeysRegistryImpl implements EncryptionKeysRegistry
 		keys.setKey(keyAlias, key);
 		Encryptor encryptor = getEncryptor(keys);
 		Serializable encrypted = encryptor.sealObject(keyAlias, null, guid);
-		KeyCheck keyCheck = new KeyCheck(guid, encrypted);
+		Pair<String, Serializable> keyCheck = new Pair<String, Serializable>(guid, encrypted);
 		attributeService.createAttribute(keyCheck, TOP_LEVEL_KEY, keyAlias);
 		logger.info("Registered key " + keyAlias);
 	}
@@ -119,7 +123,16 @@ public class EncryptionKeysRegistryImpl implements EncryptionKeysRegistry
 	
 	public boolean isKeyRegistered(String keyAlias)
 	{
-		return (attributeService.getAttribute(TOP_LEVEL_KEY, keyAlias) != null);
+		try
+		{
+			return (attributeService.getAttribute(TOP_LEVEL_KEY, keyAlias) != null);
+		}
+		catch(Throwable e)
+		{
+			// there is an issue getting the attribute. Remove it.
+			attributeService.removeAttribute(TOP_LEVEL_KEY, keyAlias);
+			return (attributeService.getAttribute(TOP_LEVEL_KEY, keyAlias) != null);
+		}
 	}
 	
 	public List<String> getRegisteredKeys(final Set<String> keyStoreKeys)
@@ -131,18 +144,11 @@ public class EncryptionKeysRegistryImpl implements EncryptionKeysRegistry
 			public boolean handleAttribute(Long id, Serializable value,
 					Serializable[] keys)
 			{
-				if(value instanceof KeyCheck)
+				// Add as a registered key if the keystore contains the key
+				String keyAlias = (String)keys[1];
+				if(keyStoreKeys.contains(keyAlias))
 				{
-					// Add as a registered key if the keystore contains the key
-					String keyAlias = (String)keys[1];
-					if(keyStoreKeys.contains(keyAlias))
-					{
-						registeredKeys.add(keyAlias);
-					}
-				}
-				else
-				{
-					logger.warn("Unexpected value class in keys registry: " + value.getClass());
+					registeredKeys.add(keyAlias);
 				}
 				return true;
 			}
@@ -153,21 +159,38 @@ public class EncryptionKeysRegistryImpl implements EncryptionKeysRegistry
 		return registeredKeys;
 	}
 
+	@SuppressWarnings("unchecked")
 	public KEY_STATUS checkKey(String keyAlias, Key key)
 	{
+		Pair<String, Serializable> keyCheck = null;
+
 		if(attributeService.exists(TOP_LEVEL_KEY, keyAlias))
 		{
 			try
 			{
 				// check that the key has not changed by decrypting the encrypted guid attribute
 				// comparing against the guid
-				KeyCheck keyCheck = (KeyCheck)attributeService.getAttribute(TOP_LEVEL_KEY, keyAlias);
+				try
+				{
+					keyCheck = (Pair<String, Serializable>)attributeService.getAttribute(TOP_LEVEL_KEY, keyAlias);
+				}
+				catch(Throwable e)
+				{
+					// there is an issue getting the attribute. Remove it.
+					attributeService.removeAttribute(TOP_LEVEL_KEY, keyAlias);
+					return KEY_STATUS.MISSING;
+				}
 				
+				if(keyCheck == null)
+				{
+					return KEY_STATUS.MISSING;
+				}
+
 				KeyMap keys = new KeyMap();
 				keys.setKey(keyAlias, key);
 				Encryptor encryptor = getEncryptor(keys);
-				Serializable storedGUID = encryptor.unsealObject(keyAlias, keyCheck.getEncrypted());
-				return EqualsHelper.nullSafeEquals(storedGUID, keyCheck.getGuid()) ? KEY_STATUS.OK : KEY_STATUS.CHANGED;
+				Serializable storedGUID = encryptor.unsealObject(keyAlias, keyCheck.getSecond());
+				return EqualsHelper.nullSafeEquals(storedGUID, keyCheck.getFirst()) ? KEY_STATUS.OK : KEY_STATUS.CHANGED;
 			}
 			catch(InvalidKeyException e)
 			{
@@ -200,52 +223,4 @@ public class EncryptionKeysRegistryImpl implements EncryptionKeysRegistry
         };
         retryingTransactionHelper.doInTransaction(removeKeysCallback, false);
 	}
-	
-	/**
-	 * A KeyCheck object stores a well-known guid and it's encrypted value.
-	 * 
-	 * @since 4.0
-	 *
-	 */
-	public static class KeyCheck implements Serializable
-	{
-		private static final long serialVersionUID = 4514315444977162903L;
-
-		private String guid;
-		private Serializable encrypted;
-		
-		public KeyCheck(String guid, Serializable encrypted)
-		{
-			super();
-			this.guid = guid;
-			this.encrypted = encrypted;
-		}
-
-		public String getGuid()
-		{
-			return guid;
-		}
-
-		public Serializable getEncrypted()
-		{
-			return encrypted;
-		}
-		
-		public boolean equals(Object other)
-		{
-			if(this == other)
-			{
-				return true;
-			}
-
-			if(!(other instanceof KeyCheck))
-			{
-				return false;
-			}
-			KeyCheck keyCheck = (KeyCheck)other;
-			return EqualsHelper.nullSafeEquals(keyCheck.getGuid(), getGuid()) &&
-					EqualsHelper.nullSafeEquals(keyCheck.getEncrypted(), getEncrypted());
-		}
-	}
-
 }

@@ -38,7 +38,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * @author Nick Smith
  * @since 4.0
  */
-public class PUblishingEventsGet extends PublishingWebScript
+public class PxblishingEventsGet extends PublishingWebScript
 {
     /**
     * {@inheritDoc}
@@ -68,8 +68,8 @@ public class PUblishingEventsGet extends PublishingWebScript
 
     private ArrayList<PublishingEvent> getSortedPublishingEvents(NodeRef node)
     {
-        List<PublishingEvent> publishedEvents = publishingService.getEventsForPublishedNode(node);
-        List<PublishingEvent> unpublishedEvents = publishingService.getEventsForUnpublishedNode(node);
+        List<PublishingEvent> publishedEvents = publishingService.getPublishEventsForNode(node);
+        List<PublishingEvent> unpublishedEvents = publishingService.getUnpublishEventsForNode(node);
         ArrayList<PublishingEvent> allEvents = new ArrayList<PublishingEvent>(publishedEvents);
         allEvents.addAll(unpublishedEvents);
         Collections.sort(allEvents);

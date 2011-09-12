@@ -270,7 +270,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         finally
         {
             // Clean up events
-            List<PublishingEvent> events = publishingService.getEventsForPublishedNode(textNode);
+            List<PublishingEvent> events = publishingService.getPublishEventsForNode(textNode);
             List<String> ids = CollectionUtils.transform(events, new Function<PublishingEvent, String>()
             {
                 public String apply(PublishingEvent value)
@@ -302,7 +302,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         // Post JSON content.
         sendRequest(new PostRequest(PUBLISHING_QUEUE_URL, jsonStr, JSON), 200);
 
-        List<PublishingEvent> publishedEvents = publishingService.getEventsForPublishedNode(textNode);
+        List<PublishingEvent> publishedEvents = publishingService.getPublishEventsForNode(textNode);
         
         assertEquals(1, publishedEvents.size());
         
@@ -400,7 +400,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         Response response = sendRequest(new GetRequest(textNodeUrl), 200);
         JSONArray data = getDataArray(response);
 
-        List<PublishingEvent> unpublishEvents = publishingService.getEventsForUnpublishedNode(textNode);
+        List<PublishingEvent> unpublishEvents = publishingService.getUnpublishEventsForNode(textNode);
         assertEquals(1, unpublishEvents.size());
         PublishingEvent unpublishedEvent = unpublishEvents.get(0);
         

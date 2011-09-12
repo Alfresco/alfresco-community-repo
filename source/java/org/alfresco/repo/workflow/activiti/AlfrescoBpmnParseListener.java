@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.workflow.activiti;
 
+import java.util.List;
+
 import org.activiti.engine.delegate.ExecutionListener;
 import org.activiti.engine.delegate.TaskListener;
 import org.activiti.engine.impl.bpmn.behavior.UserTaskActivityBehavior;
@@ -181,6 +183,12 @@ public class AlfrescoBpmnParseListener implements BpmnParseListener
     {
         // Nothing to do here
     }
+    
+    @Override
+    public void parseRootElement(Element arg0, List<ProcessDefinitionEntity> arg1)
+    {
+        // Nothing to do here
+    }
 
     @Override
     public void parseMultiInstanceLoopCharacteristics(Element activityElement, 
@@ -212,4 +220,5 @@ public class AlfrescoBpmnParseListener implements BpmnParseListener
     {
         this.tenantService = tenantService;
     }
+
 }

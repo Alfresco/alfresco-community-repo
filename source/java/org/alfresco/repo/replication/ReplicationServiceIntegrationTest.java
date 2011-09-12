@@ -194,35 +194,51 @@ public class ReplicationServiceIntegrationTest extends TestCase
     }
     
     @Override
-    protected void tearDown() throws Exception {
-       UserTransaction txn = transactionService.getUserTransaction();
-       txn.begin();
-       
-      // Zap our test folders
-      if(folder1 != null) {
-         nodeService.deleteNode(folder1);
-      }
-      if(folder2 != null) {
-         nodeService.deleteNode(folder2);
-      }
-      
-      // Zap the destination folder, which may well contain
-      //  entries transfered over which are locked
-      if(destinationFolder != null) {
-         lockService.unlock(destinationFolder, true);
-         nodeService.deleteNode(destinationFolder);
-      }
-      
-      txn.commit();
-      txn = transactionService.getUserTransaction();
-      txn.begin();
-      
-      // Zap our test transfer target
-      try {
-         transferService.deleteTransferTarget(TRANSFER_TARGET);
-      } catch(TransferException e) {}
-      
-      txn.commit();
+    protected void tearDown() throws Exception
+    {
+        RetryingTransactionCallback<Void> cleanupCallback = new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                // Zap our test folders
+                if( folder1 != null)
+                {
+                    nodeService.deleteNode(folder1);
+                }
+                if (folder2 != null)
+                {
+                    nodeService.deleteNode(folder2);
+                }
+                // Zap the destination folder, which may well contain entries transfered over which are locked
+                if (destinationFolder != null)
+                {
+                   lockService.unlock(destinationFolder, true);
+                   nodeService.deleteNode(destinationFolder);
+                }
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(cleanupCallback);
+        
+        RetryingTransactionCallback<Void> cleanupTargetCallback = new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                // Zap our test transfer target
+                transferService.deleteTransferTarget(TRANSFER_TARGET);
+                return null;
+            }
+        };
+        try
+        {
+            transactionService.getRetryingTransactionHelper().doInTransaction(cleanupTargetCallback);
+        }
+        catch (TransferException e)
+        {
+            // Ignore
+        }
    }
 
 

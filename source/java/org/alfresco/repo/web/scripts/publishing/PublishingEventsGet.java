@@ -38,7 +38,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * @author Nick Smith
  * @since 4.0
  */
-public class PxblishingEventsGet extends PublishingWebScript
+public class PublishingEventsGet extends PublishingWebScript
 {
     /**
     * {@inheritDoc}

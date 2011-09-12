@@ -3016,4 +3016,38 @@
         </property>
     </bean>
     
+    <bean id="patch.updateMimetypes3" class="org.alfresco.repo.admin.patch.impl.GenericMimetypeRenamePatch" parent="basePatch" >
+        <property name="id"><value>patch.updateMimetypes3</value></property>
+        <property name="description"><value>patch.updateMimetypes3.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>5016</value></property>
+        <property name="targetSchema"><value>5017</value></property>
+        <property name="applyToTenants"><value>false</value></property>
+        <property name="dependsOn">
+            <list>
+                <ref bean="patch.db-V3.2-ContentTables2"/>
+            </list>
+        </property>
+        <property name="mimetypeDAO">
+            <ref bean="mimetypeDAO"/>
+        </property>
+        <property name="patchDAO">
+            <ref bean="patchDAO"/>
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="indexerAndSearcher">
+            <ref bean="indexerAndSearcherFactory"/>
+        </property>
+        <property name="mimetypeMappings">
+            <map>
+                <entry key="audio/x-mpeg" value="audio/mpeg"></entry>
+            </map>
+        </property>
+        <property name="reindex">
+            <value>true</value>
+        </property>
+    </bean>
+    
 </beans>

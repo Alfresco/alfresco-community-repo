@@ -61,6 +61,11 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
 {
     public static final String CALENDAR_SERVICE_ACTIVITY_APP_NAME = "calendar";
     
+    protected static final String PARAM_TIMEZONE = "timeZone";
+    protected static final String PARAM_START_AT = "startAt";
+    protected static final String PARAM_END_AT   = "endAt";
+    protected static final String PARAM_ISO8601  = "iso8601";
+    
     private static Log logger = LogFactory.getLog(AbstractCalendarWebScript.class);
     
     /**
@@ -157,11 +162,48 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
           isAllDay = true;
        }
        
-       if (json.containsKey("startAt") && json.containsKey("endAt"))
+       if (json.containsKey(PARAM_START_AT) && json.containsKey(PARAM_END_AT))
        {
           // New style ISO8601 based dates and times
-          String startAt = ((String)json.get("startAt"));
-          String endAt = ((String)json.get("endAt"));
+          Object startAtO = json.get(PARAM_START_AT);
+          Object endAtO = json.get(PARAM_END_AT);
+          
+          // Grab the details
+          String startAt;
+          String endAt;
+          String timezoneName = null;
+          if(startAtO instanceof JSONObject)
+          {
+             // "startAt": { "iso8601":"2011-...." }
+             JSONObject startAtJSON = (JSONObject)startAtO; 
+             JSONObject endAtJSON = (JSONObject)endAtO; 
+             startAt = (String)startAtJSON.get(PARAM_ISO8601); 
+             endAt = (String)endAtJSON.get(PARAM_ISO8601);
+             
+             if(startAtJSON.containsKey(PARAM_TIMEZONE))
+             {
+                timezoneName = (String)startAtJSON.get(PARAM_TIMEZONE);
+                if(endAtJSON.containsKey(PARAM_TIMEZONE))
+                {
+                   String endTZ = (String)endAtJSON.get(PARAM_TIMEZONE);
+                   if(! endTZ.equals(timezoneName))
+                   {
+                      throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Timezones must match");
+                   }
+                }
+             }
+          }
+          else
+          {
+             // "startAt": "2011-...."
+             startAt = (String)json.get(PARAM_START_AT);
+             endAt = (String)json.get(PARAM_END_AT);
+          }
+          if(json.containsKey(PARAM_TIMEZONE))
+          {
+             timezoneName = (String)json.get(PARAM_TIMEZONE);
+          }
+          
           
           // Is this an all day event?
           if (json.containsKey("allday"))
@@ -179,10 +221,10 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
              // Regular event start and end rules
              
              // Do we have explicit timezone information?
-             if (json.containsKey("timeZone"))
+             if (timezoneName != null)
              {
                 // Get the specified timezone
-                TimeZone tz = TimeZone.getTimeZone((String)json.get("timeZone"));
+                TimeZone tz = TimeZone.getTimeZone(timezoneName);
                 
                 // Grab the dates and times in the specified timezone
                 entry.setStart(ISO8601DateFormat.parse(startAt, tz));

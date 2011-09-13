@@ -168,6 +168,13 @@ public class CalendarRestApiTest extends BaseWebScriptTest
     
     // Test helper methods
     
+    private JSONObject validateAndParseJSON(String json) throws Exception
+    {
+       // TODO Do full validation, rather than just the basic bits
+       //  that the JSONObject constructor provides
+       return new JSONObject(json);
+    }
+    
     private JSONObject getEntries(String username, String from) throws Exception
     {
        String url = URL_EVENTS_LIST + "?site=" + SITE_SHORT_NAME_CALENDAR;
@@ -189,7 +196,7 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        }
        
        Response response = sendRequest(new GetRequest(url), 200);
-       JSONObject result = new JSONObject(response.getContentAsString());
+       JSONObject result = validateAndParseJSON(response.getContentAsString());
        return result;
     }
     
@@ -198,7 +205,7 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        Response response = sendRequest(new GetRequest(URL_EVENT_BASE + name), expectedStatus);
        if (expectedStatus == Status.STATUS_OK)
        {
-          JSONObject result = new JSONObject(response.getContentAsString());
+          JSONObject result = validateAndParseJSON(response.getContentAsString());
           return result;
        }
        else
@@ -257,7 +264,7 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        Response response = sendRequest(new PostRequest(URL_EVENT_CREATE, json.toString(), "application/json"), expectedStatus);
        if (expectedStatus == Status.STATUS_OK)
        {
-          JSONObject result = new JSONObject(response.getContentAsString());
+          JSONObject result = validateAndParseJSON(response.getContentAsString());
           if (result.has("event"))
           {
              return result.getJSONObject("event");
@@ -303,7 +310,7 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        Response response = sendRequest(new PutRequest(URL_EVENT_BASE + name, json.toString(), "application/json"), expectedStatus);
        if (expectedStatus == Status.STATUS_OK)
        {
-          JSONObject result = new JSONObject(response.getContentAsString());
+          JSONObject result = validateAndParseJSON(response.getContentAsString());
           if (result.has("event"))
           {
              return result.getJSONObject("event");
@@ -552,6 +559,30 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        // Check new style dates and times
        assertEquals("2011-06-22T11:30:05.000+01:00", entry.getJSONObject("startAt").getString("iso8601"));
        assertEquals("2011-06-22T12:45:25.000+01:00", entry.getJSONObject("endAt").getString("iso8601"));
+       
+       
+       // ISO8601 in get style, with timezone
+       json = new JSONObject();
+       JSONObject startAt = new JSONObject();
+       JSONObject endAt = new JSONObject();
+       startAt.put("iso8601",  "2011-06-24T09:30:05");
+       startAt.put("timeZone", "Europe/London");
+       endAt.put("iso8601",  "2011-06-24T10:45:25");
+       endAt.put("timeZone", "Europe/London");
+       json.put("startAt", startAt);
+       json.put("endAt",   endAt);
+       entry = createEntry(EVENT_TITLE_ONE, "Where", "Thing", json, Status.STATUS_OK);
+       
+       // Check old style dates and times
+       assertEquals("2011-06-24", entry.getString("from"));
+       assertEquals("2011-06-24", entry.getString("to"));
+       assertEquals("09:30", entry.getString("start"));
+       assertEquals("10:45", entry.getString("end"));
+       assertEquals("false", entry.getString("allday"));
+       
+       // Check new style dates and times
+       assertEquals("2011-06-24T09:30:05.000+01:00", entry.getJSONObject("startAt").getString("iso8601"));
+       assertEquals("2011-06-24T10:45:25.000+01:00", entry.getJSONObject("endAt").getString("iso8601"));
        
        
        // All-day old-style

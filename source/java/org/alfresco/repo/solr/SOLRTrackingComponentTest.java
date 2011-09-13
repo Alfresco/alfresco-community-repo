@@ -135,7 +135,7 @@ public class SOLRTrackingComponentTest extends TestCase
         assertEquals("ACL count should have matched", totalAcls, totalAclsCheck);
     }
     
-    public void testGetNodeMetaData()
+    public void DISABLED_testGetNodeMetaData()
     {
         long startTime = System.currentTimeMillis();
 
@@ -157,7 +157,7 @@ public class SOLRTrackingComponentTest extends TestCase
         getNodeMetaData(nodeMetaDataParams, null, st);
     }
     
-    public void testGetNodeMetaData100Nodes()
+    public void DISABLED_testGetNodeMetaData100Nodes()
     {
         long startTime = System.currentTimeMillis();
 
@@ -186,7 +186,7 @@ public class SOLRTrackingComponentTest extends TestCase
 //        assertEquals("Unxpected number of nodes", 3, bt.getSuccessCount());
     }
     
-    public void testNodeMetaDataManyNodes() throws Exception
+    public void DISABLED_testNodeMetaDataManyNodes() throws Exception
     {
         long fromCommitTime = System.currentTimeMillis();
 
@@ -243,7 +243,7 @@ public class SOLRTrackingComponentTest extends TestCase
         getNodeMetaData(nodeMetaDataParams, null, st);
     }
 
-    public void testNodeMetaDataCache() throws Exception
+    public void DISABLED_testNodeMetaDataCache() throws Exception
     {
         long fromCommitTime = System.currentTimeMillis();
 
@@ -273,7 +273,7 @@ public class SOLRTrackingComponentTest extends TestCase
         getNodeMetaData(nodeMetaDataParams, filter, st);
     }
     
-    public void testNodeMetaDataNullPropertyValue() throws Exception
+    public void DISABLED_testNodeMetaDataNullPropertyValue() throws Exception
     {
         long fromCommitTime = System.currentTimeMillis();
 
@@ -295,7 +295,7 @@ public class SOLRTrackingComponentTest extends TestCase
         getNodeMetaData(nodeMetaDataParams, null, st);
     }
     
-    public void testFilters()
+    public void DISABLED_testFilters()
     {
         long startTime = System.currentTimeMillis();
 

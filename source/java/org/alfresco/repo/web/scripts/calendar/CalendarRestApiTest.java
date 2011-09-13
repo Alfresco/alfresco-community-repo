@@ -491,6 +491,9 @@ public class CalendarRestApiTest extends BaseWebScriptTest
     {
        JSONObject json;
        JSONObject entry;
+       JSONObject startAt;
+       JSONObject endAt;
+       
        
        // From+Start, To+End with slashes
        json = new JSONObject();
@@ -561,10 +564,32 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        assertEquals("2011-06-22T12:45:25.000+01:00", entry.getJSONObject("endAt").getString("iso8601"));
        
        
+       // ISO8601 in get style, with offset
+       json = new JSONObject();
+       startAt = new JSONObject();
+       endAt = new JSONObject();
+       startAt.put("iso8601",  "2011-06-20T09:35:05+01:00");
+       endAt.put("iso8601",  "2011-06-20T10:35:25+01:00");
+       json.put("startAt", startAt);
+       json.put("endAt",   endAt);
+       entry = createEntry(EVENT_TITLE_ONE, "Where", "Thing", json, Status.STATUS_OK);
+       
+       // Check old style dates and times
+       assertEquals("2011-06-20", entry.getString("from"));
+       assertEquals("2011-06-20", entry.getString("to"));
+       assertEquals("09:35", entry.getString("start"));
+       assertEquals("10:35", entry.getString("end"));
+       assertEquals("false", entry.getString("allday"));
+       
+       // Check new style dates and times
+       assertEquals("2011-06-20T09:35:05.000+01:00", entry.getJSONObject("startAt").getString("iso8601"));
+       assertEquals("2011-06-20T10:35:25.000+01:00", entry.getJSONObject("endAt").getString("iso8601"));
+       
+       
        // ISO8601 in get style, with timezone
        json = new JSONObject();
-       JSONObject startAt = new JSONObject();
-       JSONObject endAt = new JSONObject();
+       startAt = new JSONObject();
+       endAt = new JSONObject();
        startAt.put("iso8601",  "2011-06-24T09:30:05");
        startAt.put("timeZone", "Europe/London");
        endAt.put("iso8601",  "2011-06-24T10:45:25");

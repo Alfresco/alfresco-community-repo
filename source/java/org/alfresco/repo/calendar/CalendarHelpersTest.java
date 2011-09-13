@@ -68,6 +68,10 @@ public class CalendarHelpersTest
       
       CalendarEntryDTO entry = new CalendarEntryDTO();
       
+      
+      // First up, do tests in the default locale with all the times in UTC
+      // (We now create all-day events against UTC)
+      
       // Start and end at the same midnight
       entry.setStart(c20110719_0000.getTime());
       entry.setEnd(  c20110719_0000.getTime());
@@ -98,10 +102,15 @@ public class CalendarHelpersTest
       assertFalse(CalendarEntryDTO.isAllDay(entry));
       
       
-      // In another timezone, local midnight is OK
+      // Switch the timezone of the machine to elsewhere
+      // Ensure that we still accept UTC dates for all-day
+      // Also check that local ones are OK for backwards compatibility
+      
+      // Switch the timezone
       TimeZone defaultTimezone = TimeZone.getDefault();
       TimeZone.setDefault(NewYork);
       
+      // In another timezone, local midnight is OK
       entry.setStart( c20110721_0000ny.getTime());
       entry.setEnd( c20110721_0000ny.getTime());
       assertTrue(CalendarEntryDTO.isAllDay(entry));
@@ -111,6 +120,18 @@ public class CalendarHelpersTest
       entry.setEnd(  c20110721_2000ny.getTime());
       assertFalse(CalendarEntryDTO.isAllDay(entry));
       
+      // UTC midnight is still accepted
+      entry.setStart(c20110719_0000.getTime());
+      entry.setEnd(  c20110719_0000.getTime());
+      assertTrue(CalendarEntryDTO.isAllDay(entry));
+      
+      // But UTC non-midnight still isn't (unless it happened to be local midnight!)
+      entry.setStart(c20110719_0000.getTime());
+      entry.setEnd(  c20110719_1000.getTime());
+      assertFalse(CalendarEntryDTO.isAllDay(entry));
+      
+      
+      // Put things back
       TimeZone.setDefault(defaultTimezone);
    }
    

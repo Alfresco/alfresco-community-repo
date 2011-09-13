@@ -303,7 +303,7 @@ public class CalendarEntryDTO implements CalendarEntry, Serializable
       startLocal.setTime(entry.getStart());
       endLocal.setTime(entry.getEnd());
       
-      // Check for midnight, first in UTC then again in Local time
+      // Check for midnight, first in UTC then again in Server Local Time
       Calendar[] starts = new Calendar[] { startUTC, startLocal };
       Calendar[] ends = new Calendar[] { endUTC, endLocal };
       for(int i=0; i<starts.length; i++)

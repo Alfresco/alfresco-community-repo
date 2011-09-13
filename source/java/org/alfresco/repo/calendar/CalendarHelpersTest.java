@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.alfresco.service.cmr.calendar.CalendarEntryDTO;
 import org.alfresco.service.cmr.calendar.CalendarRecurrenceHelper;
@@ -48,14 +49,22 @@ public class CalendarHelpersTest
    
    @Test public void allDayDetection()
    {
-      Calendar c20110719_0000 = Calendar.getInstance();
-      Calendar c20110719_1000 = Calendar.getInstance();
-      Calendar c20110720_0000 = Calendar.getInstance();
-      Calendar c20110721_0000 = Calendar.getInstance();
+      TimeZone UTC = TimeZone.getTimeZone("UTC");
+      TimeZone NewYork = TimeZone.getTimeZone("America/New_York");
+      
+      Calendar c20110719_0000 = Calendar.getInstance(UTC);
+      Calendar c20110719_1000 = Calendar.getInstance(UTC);
+      Calendar c20110720_0000 = Calendar.getInstance(UTC);
+      Calendar c20110721_0000 = Calendar.getInstance(UTC);
       c20110719_0000.set(2011, 07, 19, 0, 0, 0);
       c20110719_1000.set(2011, 07, 19, 1, 0, 0);
       c20110720_0000.set(2011, 07, 20, 0, 0, 0);
       c20110721_0000.set(2011, 07, 21, 0, 0, 0);
+      
+      Calendar c20110721_0000ny = Calendar.getInstance(NewYork);
+      Calendar c20110721_2000ny = Calendar.getInstance(NewYork);
+      c20110721_0000ny.set(2011, 07, 21, 0, 0, 0);
+      c20110721_2000ny.set(2011, 07, 21, 2, 0, 0);
       
       CalendarEntryDTO entry = new CalendarEntryDTO();
       
@@ -87,6 +96,22 @@ public class CalendarHelpersTest
       entry.setStart(c20110719_1000.getTime());
       entry.setEnd(  c20110719_1000.getTime());
       assertFalse(CalendarEntryDTO.isAllDay(entry));
+      
+      
+      // In another timezone, local midnight is OK
+      TimeZone defaultTimezone = TimeZone.getDefault();
+      TimeZone.setDefault(NewYork);
+      
+      entry.setStart( c20110721_0000ny.getTime());
+      entry.setEnd( c20110721_0000ny.getTime());
+      assertTrue(CalendarEntryDTO.isAllDay(entry));
+      
+      // But non midnight isn't
+      entry.setStart(  c20110721_2000ny.getTime());
+      entry.setEnd(  c20110721_2000ny.getTime());
+      assertFalse(CalendarEntryDTO.isAllDay(entry));
+      
+      TimeZone.setDefault(defaultTimezone);
    }
    
    @Test public void dailyRecurrenceDates()

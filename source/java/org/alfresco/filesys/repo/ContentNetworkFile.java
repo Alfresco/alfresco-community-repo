@@ -68,26 +68,20 @@ public class ContentNetworkFile extends NodeRefNetworkFile
     private static final Log logger = LogFactory.getLog(ContentNetworkFile.class);
     
     // Services
-    
     private NodeService nodeService;
     private ContentService contentService;
     private MimetypeService mimetypeService;
     
-    // File channel to file content
     
-    private FileChannel channel;
-    
-    // File content
-    
-    private ContentAccessor content;
+    private FileChannel channel;        // File channel to file content
+    private ContentAccessor content;    // content
+
     private String preUpdateContentURL;
     
     // Indicate if file has been written to or truncated/resized
-    
     private boolean modified;
     
     // Flag to indicate if the file channel is writable
-    
     private boolean writableChannel;
 
     /**
@@ -265,6 +259,8 @@ public class ContentNetworkFile extends NodeRefNetworkFile
     /**
      * Opens the channel for reading or writing depending on the access mode.
      * <p>
+     * Side effect: sets fileSize
+     * <p>
      * If the channel is already open, it is left.
      * 
      * @param write true if the channel must be writable
@@ -277,122 +273,137 @@ public class ContentNetworkFile extends NodeRefNetworkFile
      * @see NetworkFile#WRITEONLY
      * @see NetworkFile#READWRITE
      */
-    protected void openContent(boolean write, boolean trunc)
+    public void openContent(boolean write, boolean trunc)
     	throws AccessDeniedException, AlfrescoRuntimeException
     {
     	// Check if the file is a directory
     	
         if (isDirectory())
         {
-            throw new AlfrescoRuntimeException("Unable to open channel for a directory network file: " + this);
+            throw new AlfrescoRuntimeException("Unable to open content for a directory network file: " + this);
+        }
+        
+        if(channel != null && !write)
+        {
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("channel is already open for read-only");
+            }
+            return;
         }
         
         // Check if write access is required and the current channel is read-only
         
-        else if ( write && writableChannel == false && channel != null)
+        // update of channel and content member variables need to be serialized 
+        synchronized(this)
         {
-            // Close the existing read-only channel
-            
-            try
+            if ( write && writableChannel == false && channel != null)
             {
-                channel.close();
-                channel = null;
+                // Close the existing read-only channel
+            
+                try
+                {
+                    channel.close();
+                    channel = null;
+                    content = null;
+                }
+                catch (IOException ex)
+                {
+                    logger.error("Error closing read-only channel", ex);
+                }
+            
+                // Debug
+            
+                if ( logger.isDebugEnabled())
+                {
+                    logger.debug("Switching to writable channel for " + getName());
+                }
             }
-            catch (IOException ex)
+            else if (channel != null)
             {
-                logger.error("Error closing read-only channel", ex);
+                // Already have read/write channel open
+                return;
             }
-            
-            // Debug
-            
-            if ( logger.isDebugEnabled())
-                logger.debug("Switching to writable channel for " + getName());
-        }
-        else if (channel != null)
-        {
-            // Already have channel open
-        	
-            return;
-        }
+  
+            // We need to create the channel
         
-        // We need to create the channel
-        
-        if (write && !isWritable())
-        {
-            throw new AccessDeniedException("The network file was created for read-only: " + this);
-        }
-
-        content = null;
-        preUpdateContentURL = null;
-        if (write)
-        {
-        	// Get a writeable channel to the content, along with the original content
-            if(logger.isDebugEnabled())
+            if (write && !isWritable())
             {
-                logger.debug("get writer for content property");
+                throw new AccessDeniedException("The network file was created for read-only: " + this);
             }
+        
+            preUpdateContentURL = null;
+            
+            // Need to open content for write
+            if (write)
+            {
+                // Get a writeable channel to the content, along with the original content
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("open writer for content property");
+                }
         	
-            content = contentService.getWriter( getNodeRef(), ContentModel.PROP_CONTENT, false);
+                content = contentService.getWriter( getNodeRef(), ContentModel.PROP_CONTENT, false);
                         
-            // Keep the original content for later comparison
+                // Keep the original content for later comparison
             
-            ContentData preUpdateContentData = (ContentData) nodeService.getProperty( getNodeRef(), ContentModel.PROP_CONTENT);
-            if (preUpdateContentData != null)
-            {
-                preUpdateContentURL = preUpdateContentData.getContentUrl();
+                ContentData preUpdateContentData = (ContentData) nodeService.getProperty( getNodeRef(), ContentModel.PROP_CONTENT);
+                if (preUpdateContentData != null)
+                {
+                    preUpdateContentURL = preUpdateContentData.getContentUrl();
+                }
+            
+                // Indicate that we have a writable channel to the file
+            
+                writableChannel = true;
+            
+                // Get the writable channel, do not copy existing content data if the file is to be truncated
+                channel = ((ContentWriter) content).getFileChannel( trunc);
             }
-            
-            // Indicate that we have a writable channel to the file
-            
-            writableChannel = true;
-            
-            // Get the writable channel, do not copy existing content data if the file is to be truncated
-            
-            channel = ((ContentWriter) content).getFileChannel( trunc);
-        }
-        else
-        {
-        	// Get a read-only channel to the content
-            if(logger.isDebugEnabled())
+            else
             {
-                logger.debug("get reader for content property");
-            }
+                // Get a read-only channel to the content
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("open reader for content property");
+                }
         	
-            content = contentService.getReader( getNodeRef(), ContentModel.PROP_CONTENT);
+                content = contentService.getReader( getNodeRef(), ContentModel.PROP_CONTENT);
             
-            // Ensure that the content we are going to read is valid
+                // Ensure that the content we are going to read is valid
             
-            content = FileContentReader.getSafeContentReader(
+                content = FileContentReader.getSafeContentReader(
                     (ContentReader) content,
                     I18NUtil.getMessage(FileContentReader.MSG_MISSING_CONTENT),
                     getNodeRef(), content);
             
-            // Indicate that we only have a read-only channel to the data
+                // Indicate that we only have a read-only channel to the data
             
-            writableChannel = false;
+                writableChannel = false;
             
-            // Get the read-only channel
+                // Get the read-only channel
             
-            channel = ((ContentReader) content).getFileChannel();
-        }
-        
-        // Update the current file size
-        
-        if ( channel != null) 
-        {
-            try 
-            {
-                setFileSize(channel.size());
+                channel = ((ContentReader) content).getFileChannel();
             }
-            catch (IOException ex) 
+        
+            // Update the current file size
+        
+            if ( channel != null) 
             {
-                logger.error( ex);
+                try 
+                {
+                    setFileSize(channel.size());
+                }
+                catch (IOException ex) 
+                {
+                    logger.error( ex);
+                }
+            
+                // Indicate that the file is open
+            
+                setClosed( false);
             }
-            
-            // Indicate that the file is open
-            
-            setClosed( false);
-        }
+        } // release lock
     }
 
     /**
@@ -420,9 +431,8 @@ public class ContentNetworkFile extends NodeRefNetworkFile
             setClosed( true);
             return;
         }
-        else if (!hasContent())
-        {
-        	// File was not read/written so channel was not opened
+        else if (!hasContent())        {
+        	// File was not read/written so content was not opened
             if(logger.isDebugEnabled())
             {
                 logger.debug("no content to write - nothing to do");
@@ -434,18 +444,27 @@ public class ContentNetworkFile extends NodeRefNetworkFile
         
         // Check if the file has been modified
         
-        if (modified)
+        // update of channel and content member variables need to be serialized 
+        synchronized(this)
         {
-            if(logger.isDebugEnabled())
+        
+            if (modified)
             {
-                logger.debug("content has been modified");
-            }
-            NodeRef contentNodeRef = getNodeRef();
-            ContentWriter writer = (ContentWriter)content;
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("content has been modified");
+                }
+                NodeRef contentNodeRef = getNodeRef();
+                ContentWriter writer = (ContentWriter)content;
             
-            // We may be in a retry block, in which case this section will already have executed and channel will be null
-            if (channel != null)
-            {
+                // We may be in a retry block, in which case this section will already have executed and channel will be null
+                if (channel != null)
+                {
+                    // Close the channel
+                    channel.close();
+                    channel = null;
+                }
+                
                 // Do we need the mimetype guessing for us when we're done?
                 if (content.getMimetype() == null || content.getMimetype().equals(MimetypeMap.MIMETYPE_BINARY) )
                 {
@@ -456,73 +475,79 @@ public class ContentNetworkFile extends NodeRefNetworkFile
                 // We always want the encoding guessing
                 writer.guessEncoding();
                 
-                // Close the channel
-                channel.close();
-                channel = null;
-            }
+                // Retrieve the content data and stop the content URL from being 'eagerly deleted', in case we need to
+                // retry the transaction
+
+                final ContentData contentData = content.getContentData();
+
+                // Update node properties, but only if the binary has changed (ETHREEOH-1861)
             
-            // Retrieve the content data and stop the content URL from being 'eagerly deleted', in case we need to
-            // retry the transaction
+                ContentReader postUpdateContentReader = writer.getReader();
 
-            final ContentData contentData = content.getContentData();
-
-            // Update node properties, but only if the binary has changed (ETHREEOH-1861)
-            
-            ContentReader postUpdateContentReader = writer.getReader();
-
-            RunAsWork<ContentReader> getReader = new RunAsWork<ContentReader>()
-            {
-                public ContentReader doWork() throws Exception
+                RunAsWork<ContentReader> getReader = new RunAsWork<ContentReader>()
                 {
-                	return preUpdateContentURL == null ? null : contentService.getRawReader(preUpdateContentURL);
-                }
-            };
-            ContentReader preUpdateContentReader = AuthenticationUtil.runAs(getReader, AuthenticationUtil.getSystemUserName());
+                    public ContentReader doWork() throws Exception
+                    {
+                	    return preUpdateContentURL == null ? null : contentService.getRawReader(preUpdateContentURL);
+                    }
+                };
+                ContentReader preUpdateContentReader = AuthenticationUtil.runAs(getReader, AuthenticationUtil.getSystemUserName());
             
-            boolean contentChanged = preUpdateContentURL == null
+                boolean contentChanged = preUpdateContentURL == null
                     || !AbstractContentReader.compareContentReaders(preUpdateContentReader,
                             postUpdateContentReader);
             
-            if (contentChanged)
+                if (contentChanged)
+                {
+                    if(logger.isDebugEnabled())
+                    {
+                        logger.debug("content has changed - remove ASPECT_NO_CONTENT");
+                    }
+                    nodeService.removeAspect(contentNodeRef, ContentModel.ASPECT_NO_CONTENT);
+                    try
+                    {
+                        nodeService.setProperty( contentNodeRef, ContentModel.PROP_CONTENT, contentData);
+                    }
+                    catch (ContentQuotaException qe)
+                    {
+                        content = null;
+                        setClosed( true);
+                        throw new DiskFullException(qe.getMessage());
+                    }
+                }
+
+                // Tidy up after ourselves after a successful commit. Otherwise leave things to allow a retry. 
+                AlfrescoTransactionSupport.bindListener(new TransactionListenerAdapter()
+                {
+                    @Override
+                    public void afterCommit()
+                    {
+                        synchronized(this)
+                        {
+                            if(channel == null)
+                            {
+                                content = null;
+                                preUpdateContentURL = null;
+                                setClosed( true);
+                            }
+                        }
+                       
+                    }
+                });
+            }
+            else if (channel != null)
             {
+                // Close it - it was not modified
                 if(logger.isDebugEnabled())
                 {
-                    logger.debug("content has changed - remove ASPECT_NO_CONTENT");
+                    logger.debug("content not modified - simply close the channel");
                 }
-                nodeService.removeAspect(contentNodeRef, ContentModel.ASPECT_NO_CONTENT);
-                try
-                {
-                    nodeService.setProperty( contentNodeRef, ContentModel.PROP_CONTENT, contentData);
-                }
-                catch (ContentQuotaException qe)
-                {
-                    throw new DiskFullException(qe.getMessage());
-                }
-            }
-
-            // Tidy up after ourselves after a successful commit. Otherwise leave things to allow a retry. 
-            AlfrescoTransactionSupport.bindListener(new TransactionListenerAdapter()
-            {
-                @Override
-                public void afterCommit()
-                {
-                    content = null;
-                    preUpdateContentURL = null;
-                    
-                    setClosed( true);
-                }
-            });
-        }
-        else if (channel != null)
-        {
-            // Close it - it was not modified
-            if(logger.isDebugEnabled())
-            {
-                logger.debug("content not modified - simply close the channel");
-            }
         	
-            channel.close();
-            channel = null;
+                channel.close();
+                channel = null;
+                content = null;
+                setClosed(true);
+            }
         }
     }
 
@@ -601,9 +626,9 @@ public class ContentNetworkFile extends NodeRefNetworkFile
     public void writeFile(byte[] buffer, int length, int position, long fileOffset)
     	throws IOException
     {
-    	try {
-	        // Open the channel for writing
-	        
+    	try 
+    	{
+	        // Open the channel for writing    
 	        openContent(true, false);
     	}
     	catch ( ContentIOException ex) {
@@ -842,4 +867,5 @@ public class ContentNetworkFile extends NodeRefNetworkFile
         }
         return false;
     }
+    
 }

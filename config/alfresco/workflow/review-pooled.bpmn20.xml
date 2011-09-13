@@ -102,7 +102,7 @@
                <activiti:taskListener event="complete" class="org.alfresco.repo.workflow.activiti.tasklistener.ScriptTaskListener">
                   <activiti:field name="script">
                      <activiti:string>
-                        bpm_assignee = person;
+                        execution.setVariable('bpm_assignee', person);
                      </activiti:string>
                   </activiti:field>
                </activiti:taskListener>

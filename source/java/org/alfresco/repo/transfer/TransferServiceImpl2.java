@@ -929,13 +929,23 @@ public class TransferServiceImpl2 implements TransferService2
     {
         // which nodes to write to the snapshot
         Set<NodeRef>nodes = definition.getNodes();
+        Set<NodeRef>nodesToRemove = definition.getNodesToRemove();
     
-        if(nodes == null || nodes.size() == 0)
+        if((nodes == null || nodes.size() == 0) && (nodesToRemove == null || nodesToRemove.size() == 0))
         {
             logger.debug("no nodes to transfer");
             throw new TransferException(MSG_NO_NODES);
         }
-    
+        
+        //If a noderef exists in both the "nodes" set and the "nodesToRemove" set then the nodesToRemove wins. It is removed
+        //from the "nodes" set...
+        if (nodes != null && nodesToRemove != null)
+        {
+            nodes.removeAll(nodesToRemove);
+        }
+
+        int nodeCount = ((nodes == null) ? 0 : nodes.size()) + ((nodesToRemove == null) ? 0 : nodesToRemove.size());
+        
         /**
          * create snapshot
          */
@@ -952,15 +962,27 @@ public class TransferServiceImpl2 implements TransferService2
         header.setRepositoryId(repositoryId);
         header.setTransferVersion(fromVersion);
         header.setCreatedDate(new Date());
-        header.setNodeCount(nodes.size());
+        header.setNodeCount(nodeCount);
         header.setSync(definition.isSync());
         header.setReadOnly(definition.isReadOnly());
         formatter.startTransferManifest(snapshotWriter);
         formatter.writeTransferManifestHeader(header);
-        for(NodeRef nodeRef : nodes)
+        if (nodes != null)
         {
-            TransferManifestNode node = transferManifestNodeFactory.createTransferManifestNode(nodeRef, definition);
-            formatter.writeTransferManifestNode(node);
+            for (NodeRef nodeRef : nodes)
+            {
+                TransferManifestNode node = transferManifestNodeFactory.createTransferManifestNode(nodeRef, definition);
+                formatter.writeTransferManifestNode(node);
+            }
+        }
+        if (nodesToRemove != null)
+        {
+            for (NodeRef nodeRef : nodesToRemove)
+            {
+                TransferManifestNode node = transferManifestNodeFactory.createTransferManifestNode(nodeRef, definition,
+                        true);
+                formatter.writeTransferManifestNode(node);
+            }
         }
         formatter.endTransferManifest();
         snapshotWriter.close();        

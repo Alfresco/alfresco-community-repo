@@ -46,8 +46,12 @@ public class TransferDefinition implements Serializable
      */
     private static final long serialVersionUID = -8497919749300106861L;
     
-    // Which nodes to deploy
+    // Which nodes to transfer
     private Set<NodeRef> nodes;
+
+    // Which nodes are to be explicitly removed from the target repository 
+    // (irrespective of their state in the source repository)
+    private Set<NodeRef> nodesToRemove;
     
     // Which aspects to exclude
     private Set<QName> excludedAspects;
@@ -81,12 +85,39 @@ public class TransferDefinition implements Serializable
     }
 
     /**
+     * Set nodes that are to be explicitly removed from the the target repository
+     * @param nodes
+     */
+    public void setNodesToRemove(Collection<NodeRef> nodes)
+    {
+        this.nodesToRemove = new HashSet<NodeRef>(nodes);
+    }
+    
+    /**
+     * Set nodes that are to be explicitly removed from the the target repository
+     * @param nodes
+     */
+    public void setNodesToRemove(NodeRef...nodes)
+    {
+        this.setNodesToRemove(Arrays.asList(nodes));
+    }
+
+    /**
      * Get which nodes to transfer
      * @return
      */
     public Set<NodeRef> getNodes()
     {
         return nodes;
+    }
+
+    /**
+     * Get the list of nodes that are to be explicitly removed from the target repository
+     * @return
+     */
+    public Set<NodeRef> getNodesToRemove()
+    {
+        return nodesToRemove;
     }
 
     /**

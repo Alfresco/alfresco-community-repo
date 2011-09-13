@@ -88,8 +88,7 @@ public class HttpClientTransmitterImplTest extends TestCase
         transmitter.setHttpMethodFactory(mockedHttpMethodFactory);
 
         this.mockedNodeService = mock(NodeService.class);
-        when(mockedNodeService.hasAspect(any(NodeRef.class), 
-                eq(TransferModel.ASPECT_FILE_TRANSFER_TARGET))).thenReturn(false);
+        when(mockedNodeService.getType(any(NodeRef.class))).thenReturn(TransferModel.TYPE_TRANSFER_TARGET);
         transmitter.setNodeService(mockedNodeService);
         
         this.target = new TransferTargetImpl();

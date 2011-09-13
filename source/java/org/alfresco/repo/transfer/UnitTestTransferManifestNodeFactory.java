@@ -73,6 +73,11 @@ public class UnitTestTransferManifestNodeFactory implements TransferManifestNode
 
     public TransferManifestNode createTransferManifestNode(NodeRef nodeRef, TransferDefinition definition)
     {
+        return createTransferManifestNode(nodeRef, definition, false);
+    }
+
+    public TransferManifestNode createTransferManifestNode(NodeRef nodeRef, TransferDefinition definition, boolean forceDelete)
+    {
         TransferManifestNode newNode = realFactory.createTransferManifestNode(nodeRef, definition);
 
         NodeRef origNodeRef = newNode.getNodeRef();

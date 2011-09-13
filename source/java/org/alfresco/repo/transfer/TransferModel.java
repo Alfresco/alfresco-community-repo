@@ -50,8 +50,8 @@ public interface TransferModel
     /**
      * Aspect : fileTransferTarget
      */
-    static final QName ASPECT_FILE_TRANSFER_TARGET = QName.createQName(TRANSFER_MODEL_1_0_URI, "fileTransferTarget");
-    static final QName ASSOC_ROOT_FILE_TRANSFER = QName.createQName(TRANSFER_MODEL_1_0_URI, "rootFileTransfer");
+    static final QName TYPE_FILE_TRANSFER_TARGET = QName.createQName(TRANSFER_MODEL_1_0_URI, "fileTransferTarget");
+    static final QName ASSOC_ROOT_FILE_TRANSFER = QName.createQName(TRANSFER_MODEL_1_0_URI, "fileTransferRootNode");
 
     /*
      * Type : Transfer Group

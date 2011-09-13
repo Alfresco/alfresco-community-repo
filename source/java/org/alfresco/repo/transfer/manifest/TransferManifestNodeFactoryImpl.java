@@ -62,6 +62,11 @@ public class TransferManifestNodeFactoryImpl implements TransferManifestNodeFact
 
     public TransferManifestNode createTransferManifestNode(NodeRef nodeRef, TransferDefinition definition)
     {
+        return createTransferManifestNode(nodeRef, definition, false);
+    }
+        
+    public TransferManifestNode createTransferManifestNode(NodeRef nodeRef, TransferDefinition definition, boolean forceDelete)
+    {
         NodeRef.Status status = nodeService.getNodeStatus(nodeRef);
 
         if(status == null)
@@ -122,6 +127,21 @@ public class TransferManifestNodeFactoryImpl implements TransferManifestNodeFact
                 node.setParentPath(parentPath);
             }
 
+            return node;
+        }
+        else if (forceDelete)
+        {
+            ChildAssociationRef primaryParentAssoc = nodeService.getPrimaryParent(nodeRef);
+            TransferManifestDeletedNode node = new TransferManifestDeletedNode();
+            NodeRef parentNodeRef = primaryParentAssoc.getParentRef();
+            node.setNodeRef(primaryParentAssoc.getChildRef());
+            node.setPrimaryParentAssoc(primaryParentAssoc);
+            if (nodeService.exists(parentNodeRef))
+            {
+                // The parent node still exists so it still has a path.
+                Path parentPath = nodeService.getPath(parentNodeRef);
+                node.setParentPath(parentPath);
+            }
             return node;
         }
         else

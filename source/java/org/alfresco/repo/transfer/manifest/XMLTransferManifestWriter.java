@@ -271,7 +271,7 @@ public class XMLTransferManifestWriter implements TransferManifestWriter
                     formatQName(node.getType()));
 
         attributes.addAttribute("uri", "ancestorType", "ancestorType", "String",
-                formatQName(node.getType()));
+                formatQName(node.getAncestorType()));
 
         writer.startElement(TransferModel.TRANSFER_MODEL_1_0_URI,
                     ManifestModel.LOCALNAME_ELEMENT_NODE, PREFIX + ":"

@@ -19,14 +19,10 @@
 
 package org.alfresco.repo.transfer;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -47,7 +43,6 @@ import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferProgress;
 import org.alfresco.service.cmr.transfer.TransferTarget;
 import org.alfresco.service.cmr.transfer.TransferVersion;
-import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.json.ExceptionJsonSerializer;
 import org.alfresco.util.json.JsonSerializer;
@@ -771,7 +766,7 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
     private NodeRef getFileTransferRootNodeRef(NodeRef transferNodeRef)
     {
         //testing if transferring to file system
-        if(!nodeService.hasAspect(transferNodeRef, TransferModel.ASPECT_FILE_TRANSFER_TARGET))
+        if(!TransferModel.TYPE_FILE_TRANSFER_TARGET.equals(nodeService.getType(transferNodeRef)))
             return null;
 
         //get association

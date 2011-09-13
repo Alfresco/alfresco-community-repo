@@ -185,7 +185,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
      */
     public void testCreateTarget() throws Exception
     {
-        String name = "name";
+        String name = "Test Transfer Target " + GUID.generate();
         String title = "title";
         String description = "description";
         String endpointProtocol = "http";
@@ -249,7 +249,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
      */
     public void testCreateTargetSyntax2() throws Exception
     {
-        String name = "nameSyntax2";
+        String name = "Test Transfer Target " + GUID.generate();
         String title = "title";
         String description = "description";
         String endpointProtocol = "http";
@@ -324,8 +324,8 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
      */
     public void testGetTransferTargets() throws Exception
     {
-        String nameA = "nameA";
-        String nameB = "nameB";
+        String nameA = "Test Transfer Target " + GUID.generate();
+        String nameB = "Test Transfer Target " + GUID.generate();
         String title = "title";
         String description = "description";
         String endpointProtocol = "http";
@@ -402,7 +402,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
     //TODO Test not complete - can't yet put targets in different groups
     public void testGetAllTransferTargetsByGroup() throws Exception
     {
-        String getMe = "getMe";
+        String getMe = "Test Transfer Target " + GUID.generate();
         String title = "title";
         String description = "description";
         String endpointProtocol = "http";
@@ -439,7 +439,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
      */
     public void testUpdateTransferTarget() throws Exception
     {
-        String updateMe = "updateMe";
+        String updateMe = "Test Transfer Target " + GUID.generate();
         String title = "title";
         String description = "description";
         String endpointProtocol = "http";

@@ -26,11 +26,14 @@ import java.util.Map;
 
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.wiki.WikiServiceImpl;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.wiki.WikiPageInfo;
+import org.alfresco.util.UrlUtil;
 import org.json.simple.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
@@ -46,6 +49,14 @@ public class WikiPageListGet extends AbstractWikiWebScript
 {
    protected static final int RECENT_SEARCH_PERIOD_DAYS = 7;
    protected static final long ONE_DAY_MS = 24*60*60*1000;
+   
+   // Injected services
+   private SysAdminParams sysAdminParams;
+   
+   public void setSysAdminParams(SysAdminParams sysAdminParams)
+   {
+      this.sysAdminParams = sysAdminParams;
+   }
    
    @Override
    protected Map<String, Object> executeImpl(SiteInfo site, String pageName,
@@ -166,6 +177,7 @@ public class WikiPageListGet extends AbstractWikiWebScript
       model.put("wiki", wiki);
       model.put("siteId", site.getShortName());
       model.put("site", site);
+      model.put(TemplateService.KEY_SHARE_URL, UrlUtil.getShareUrl(sysAdminParams));
       return model;
    }
 }

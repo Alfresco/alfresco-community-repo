@@ -1608,6 +1608,7 @@
    <bean id="webscript.org.alfresco.slingshot.wiki.pagelist.get"
          class="org.alfresco.repo.web.scripts.wiki.WikiPageListGet"
          parent="abstractWikiWebScript">
+      <property name="sysAdminParams" ref="sysAdminParams" />
    </bean>
    
    

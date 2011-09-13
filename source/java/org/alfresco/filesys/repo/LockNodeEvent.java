@@ -33,6 +33,9 @@ public class LockNodeEvent extends NodeEvent {
 	
 	private String m_lockBefore;
 	private String m_lockAfter;
+    private String relPath;
+    private String name;
+
 	
 	/**
 	 * Class constructor
@@ -42,11 +45,13 @@ public class LockNodeEvent extends NodeEvent {
 	 * @param lockBefore String
 	 * @param lockAfter String
 	 */
-	public LockNodeEvent( FileFolderServiceType fType, NodeRef nodeRef, String lockBefore, String lockAfter) {
+	public LockNodeEvent( FileFolderServiceType fType, NodeRef nodeRef, String relPath, String name, String lockBefore, String lockAfter) {
 		super( fType, nodeRef);
 
 		m_lockAfter  = lockAfter;
 		m_lockBefore = lockBefore;
+	    this.setRelPath(relPath);
+	    this.setName(name);
 	}
 	
 	/**
@@ -87,4 +92,24 @@ public class LockNodeEvent extends NodeEvent {
 		
 		return str.toString();
 	}
+	
+    public void setRelPath(String relPath)
+    {
+        this.relPath = relPath;
+    }
+
+    public String getRelPath()
+    {
+        return relPath;
+    }
+
+    public void setName(String name)
+    {
+        this.name = name;
+    }
+
+    public String getName()
+    {
+        return name;
+    }
 }

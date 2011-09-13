@@ -48,6 +48,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -84,17 +85,14 @@ public class NodeMonitor extends TransactionListenerAdapter
 	private TransactionService m_transService;
 	
 	// Filesystem driver and context
-	
-//	private ContentDiskDriver m_filesysDriver;
+
+	// TODO needs to be configured with many filesystem contexts.
 	private ContentContext m_filesysCtx;
 	
-	// File state table and change notification handler
-	
+	// File state table 
 	private FileStateCache m_stateTable;
-	private NotifyChangeHandler m_changeHandler;
 	
 	// Root node path and store
-	
 	private String m_rootPath;
 	private StoreRef m_storeRef;
 	
@@ -115,7 +113,6 @@ public class NodeMonitor extends TransactionListenerAdapter
 	 */
 	protected NodeMonitor(ContentContext filesysCtx, NodeService nodeService, PolicyComponent policyComponent,
 			FileFolderService fileFolderService, PermissionService permissionService, TransactionService transService) {
-//		m_filesysDriver = filesysDriver;
 		m_filesysCtx    = filesysCtx;
 		
 		// Set various services
@@ -134,7 +131,14 @@ public class NodeMonitor extends TransactionListenerAdapter
 	/**
 	 * Initialize the node monitor
 	 */
-	public final void init() {
+	public final void init() 
+	{
+	    PropertyCheck.mandatory(this, "nodeService", m_nodeService);
+	    PropertyCheck.mandatory(this, "filesysCtx",  m_filesysCtx);
+	    PropertyCheck.mandatory(this, "policyComponent", m_policyComponent);
+	    PropertyCheck.mandatory(this, "fileFolderService",  m_fileFolderService);
+	    PropertyCheck.mandatory(this, "permissionService", m_permissionService);
+	    PropertyCheck.mandatory(this, "transService", m_transService);
 
 		// Disable change notifications from the file server
 		
@@ -189,9 +193,7 @@ public class NodeMonitor extends TransactionListenerAdapter
 	public void startMonitor() {
 		
         // Get the file state table and change notification handler, if enabled
-        
         m_stateTable = m_filesysCtx.getStateCache();
-        m_changeHandler = m_filesysCtx.getChangeHandler();
         
         // Start the event processing thread
         
@@ -218,28 +220,28 @@ public class NodeMonitor extends TransactionListenerAdapter
     	
     	NodeRef nodeRef = childAssocRef.getChildRef();
     	if ( nodeRef.getStoreRef().equals( m_storeRef) == false)
+    	{
+    	    // different store so irrelevant
     		return;
+    	}
     	
     	QName nodeType = m_nodeService.getType( nodeRef);
     	FileFolderServiceType fType = m_fileFolderService.getType( nodeType);
-    	
-    	if ( fType != FileFolderServiceType.INVALID) {
-    		
-    		// DEBUG
-    		
-    		if ( logger.isDebugEnabled()) {
+    	    	
+    	if ( fType != FileFolderServiceType.INVALID) 
+    	{
+    		// Node is not INVALID - therefore its VALID
+    	    Path nodePath = m_nodeService.getPath( nodeRef);
+            String relPath = nodePath.toDisplayPath(m_nodeService, m_permissionService);
+            String fName = (String) m_nodeService.getProperty( nodeRef, ContentModel.PROP_NAME);
 
-    			// Get the full path to the file/folder node
-    		
-	    		Path nodePath = m_nodeService.getPath( nodeRef);
-	    		String fName = (String) m_nodeService.getProperty( nodeRef, ContentModel.PROP_NAME);
-
-    			logger.debug("OnCreateNode: nodeRef=" + nodeRef + ", name=" + fName + ", path=" + nodePath.toDisplayPath(m_nodeService, m_permissionService));
+    		if ( logger.isDebugEnabled()) 
+    		{
+    			logger.debug("OnCreateNode: nodeRef=" + nodeRef + ", name=" + fName + ", path=" + relPath);
     		}
     	
     		// Create an event to process the node creation
-    		
-    		NodeEvent nodeEvent = new CreateNodeEvent( fType, nodeRef);
+    		NodeEvent nodeEvent = new CreateNodeEvent( fType, nodeRef, relPath, fName);
     		
     		// Store the event in the transaction until committed, and register the transaction listener
     		fireNodeEvent(nodeEvent);
@@ -258,34 +260,42 @@ public class NodeMonitor extends TransactionListenerAdapter
     	// Check that the node is in our store
     	
     	if ( nodeRef.getStoreRef().equals( m_storeRef) == false)
+    	{
     		return;
+    	}
 
     	// Check if the node is a file/folder
     	
     	QName nodeType = m_nodeService.getType( nodeRef);
     	FileFolderServiceType fType = m_fileFolderService.getType( nodeType);
     	
-    	if ( fType != FileFolderServiceType.INVALID) {
-
+    	if ( fType != FileFolderServiceType.INVALID) 
+    	{
     		// Check if there has been a lock change
     		
     		String beforeLock = (String) before.get( ContentModel.PROP_LOCK_TYPE);
     		String afterLock  = (String) after.get( ContentModel.PROP_LOCK_TYPE);
+            String beforeName = (String) before.get(ContentModel.PROP_NAME);
+            String afterName = (String) after.get(ContentModel.PROP_NAME);
+            
+            Path nodePath = m_nodeService.getPath(nodeRef);
+            String relPath = nodePath.toDisplayPath(m_nodeService, m_permissionService);
     		
     		if (( beforeLock != null && afterLock == null) ||
-    				( beforeLock == null && afterLock != null)) {
-    			// Process the update
-        		fireNodeEvent(new LockNodeEvent( fType, nodeRef, beforeLock, afterLock));
+    				( beforeLock == null && afterLock != null)) 
+    		{
+    			// Process the lock update first
+        		fireNodeEvent(new LockNodeEvent( fType, nodeRef, relPath, beforeName, beforeLock, afterLock));
     		}
     		
     		// Check if node has been renamed
-    		String beforeName = (String) before.get(ContentModel.PROP_NAME);
-    		String afterName = (String) after.get(ContentModel.PROP_NAME);
-    		
-    		if (beforeName != null && !beforeName.equals(afterName)) {
+    		if (beforeName != null && !beforeName.equals(afterName)) 
+    		{
+    		    // Yes Node has been renamed in the same folder
     			ChildAssociationRef childAssocRef = m_nodeService.getPrimaryParent(nodeRef);
-    			String relPath = buildRelativePathString(childAssocRef.getParentRef(), nodeRef, beforeName);
-    			fireNodeEvent(new MoveNodeEvent( fType, nodeRef, relPath , nodeRef));
+    			String relPath2 = buildRelativePathString(childAssocRef.getParentRef(), beforeName);
+    			String relPath3 = buildRelativePathString(childAssocRef.getParentRef(), afterName);
+    			fireNodeEvent(new MoveNodeEvent( fType, nodeRef, relPath2 , relPath3));
     		}
     	}
     }
@@ -335,12 +345,15 @@ public class NodeMonitor extends TransactionListenerAdapter
     	
     	NodeRef oldNodeRef = oldChildAssocRef.getChildRef();
     	if ( oldNodeRef.getStoreRef().equals( m_storeRef) == false)
+    	{
     		return;
+    	}
     	
     	QName nodeType = m_nodeService.getType( oldNodeRef);
     	FileFolderServiceType fType = m_fileFolderService.getType( nodeType);
     	
-    	if ( fType != FileFolderServiceType.INVALID) {
+    	if ( fType != FileFolderServiceType.INVALID) 
+    	{
     		
     		// Get the full path to the file/folder node
 
@@ -348,7 +361,8 @@ public class NodeMonitor extends TransactionListenerAdapter
     		String fName = (String) m_nodeService.getProperty( oldNodeRef, ContentModel.PROP_NAME);
     		
     		// Build the share relative path to the node
-    		String relPath = buildRelativePathString(oldChildAssocRef.getParentRef(), oldNodeRef, fName);
+    		String relPath = buildRelativePathString(oldChildAssocRef.getParentRef(), fName);
+    		String relPath2 = buildRelativePathString(newChildAssocRef.getParentRef(), fName);
     		
     		// DEBUG
     		
@@ -361,7 +375,7 @@ public class NodeMonitor extends TransactionListenerAdapter
 
 	    		// Create a move event
 		 		
-				NodeEvent nodeEvent = new MoveNodeEvent( fType, oldNodeRef, relPath, newChildAssocRef.getChildRef());
+				NodeEvent nodeEvent = new MoveNodeEvent( fType, oldNodeRef, relPath, relPath2);
 			
 	    		// Store the event in the transaction until committed, and register the transaction listener
 	    		fireNodeEvent(nodeEvent);
@@ -446,7 +460,7 @@ public class NodeMonitor extends TransactionListenerAdapter
 	 * @param nodeName		the old name of the childs
 	 * @return
 	 */
-	private String buildRelativePathString(NodeRef parentNodeRef, NodeRef childNodeRef, String nodeName) {
+	private String buildRelativePathString(NodeRef parentNodeRef, String nodeName) {
 		Path nodePath = m_nodeService.getPath(parentNodeRef);
 		
 		StringBuilder pathStr = new StringBuilder();
@@ -469,7 +483,9 @@ public class NodeMonitor extends TransactionListenerAdapter
 	private void fireNodeEvent(NodeEvent nodeEvent) {
     	String eventKey = FileSysNodeEvent;
 		if ( AlfrescoTransactionSupport.getResource( FileSysNodeEvent) != null)
+		{
 			eventKey = FileSysNodeEvent2;
+		}
 		
 		// Store the event in the transaction until committed, and register the transaction listener
 		
@@ -550,17 +566,16 @@ public class NodeMonitor extends TransactionListenerAdapter
 		
 		while ( m_shutdown == false)
 		{
-			
 			try
 			{
 	            // Wait for an event to process
 				
 			    final NodeEvent nodeEvent = m_eventQueue.removeEvent();
 
-			    // DEBUG
-			    
-                if ( logger.isDebugEnabled())
+			    if ( logger.isDebugEnabled())
+                {
                     logger.debug("Processing event " + nodeEvent);
+                }
                 
                 // Check for a shutdown
                 
@@ -580,38 +595,26 @@ public class NodeMonitor extends TransactionListenerAdapter
                         
                         // check for a node delete
                         
-                        if ( nodeEvent instanceof DeleteNodeEvent) {
-
-                            // Node deleted
-                            
+                        if ( nodeEvent instanceof DeleteNodeEvent) 
+                        {
+                            // Node deleted   
                             processDeleteNode((DeleteNodeEvent) nodeEvent);
                         }
-                        
-                        // Check that the node is still valid
-                        
-                        else if (!m_nodeService.exists(nodeEvent.getNodeRef()))
-                        {
-                            return null;
-                        }
-                        
+         
                         // Process the node event, for an existing node
-                        
-                        if ( nodeEvent instanceof CreateNodeEvent) {
-                            
+                        else if ( nodeEvent instanceof CreateNodeEvent) 
+                        {    
                             // Node created
-                            
                             processCreateNode((CreateNodeEvent) nodeEvent);
                         }
-                        else if ( nodeEvent instanceof MoveNodeEvent) {
-                            
-                            // Node moved
-                                
+                        else if ( nodeEvent instanceof MoveNodeEvent) 
+                        {
+                            // Node moved        
                             processMoveNode((MoveNodeEvent) nodeEvent);
                         }
-                        else if ( nodeEvent instanceof LockNodeEvent) {
-                            
-                            // Node locked/unlocked
-                            
+                        else if ( nodeEvent instanceof LockNodeEvent) 
+                        {
+                            // Node locked/unlocked   
                             processLockNode(( LockNodeEvent) nodeEvent);
                         }
                         
@@ -630,7 +633,7 @@ public class NodeMonitor extends TransactionListenerAdapter
 			}
 			catch (Throwable e)
 			{
-			    logger.error(e);
+			    logger.error("Throwable in NodeMonitor thread", e);
 			}
 		}
 	}
@@ -640,13 +643,11 @@ public class NodeMonitor extends TransactionListenerAdapter
 	 * 
 	 * @param createEvent CreateNodeEvent
 	 */
-	private final void processCreateNode(NodeEvent createEvent) {
-
+	private final void processCreateNode(CreateNodeEvent createEvent) {
+	    
 		// Get the full path to the file/folder node
-		
-		Path nodePath = m_nodeService.getPath( createEvent.getNodeRef());
-		String relPath = nodePath.toDisplayPath(m_nodeService, m_permissionService);
-		String fName = (String) m_nodeService.getProperty( createEvent.getNodeRef(), ContentModel.PROP_NAME);
+	    String relPath = createEvent.getRelPath();
+        String name = createEvent.getName();
 		
 		// Check if the path is within the filesystem view
 		
@@ -655,14 +656,14 @@ public class NodeMonitor extends TransactionListenerAdapter
 			// DEBUG
 			
 			if ( logger.isDebugEnabled())
-				logger.debug("CreateNode nodeRef=" + createEvent.getNodeRef() + ", fName=" + fName + ", path=" + relPath);
+				logger.debug("CreateNode nodeRef=" + createEvent.getNodeRef() + ", fName=" + name + ", path=" + relPath);
 			
 			// Build the full file path
 			
 			StringBuilder fullPath = new StringBuilder();
 			fullPath.append( relPath.substring( m_rootPath.length()));
 			fullPath.append( "/");
-			fullPath.append( fName);
+			fullPath.append( name);
 			
 			relPath = fullPath.toString();
 			
@@ -801,22 +802,8 @@ public class NodeMonitor extends TransactionListenerAdapter
 
 		// Strip the root path
 		
-		String fromPath = moveEvent.getPath().substring( m_rootPath.length()).replace( '/', '\\');
-
-		// Get the destination relative path
-		
-		Path nodePath = m_nodeService.getPath( moveEvent.getMoveToNodeRef());
-		String fName = (String) m_nodeService.getProperty( moveEvent.getMoveToNodeRef(), ContentModel.PROP_NAME);
-		
-		// Build the share relative path to the destination
-		
-		StringBuilder pathStr = new StringBuilder();
-		pathStr.append( nodePath.toDisplayPath(m_nodeService, m_permissionService));
-		if ( pathStr.charAt(pathStr.length() - 1) != '/' && pathStr.charAt(pathStr.length() - 1) != '\\')
-			pathStr.append("\\");
-		pathStr.append( fName);
-
-		String toPath = pathStr.toString().substring( m_rootPath.length()).replace( '/', '\\');
+		String fromPath = moveEvent.getFromPath().substring( m_rootPath.length()).replace( '/', '\\');
+		String toPath =  moveEvent.getToPath().substring( m_rootPath.length()).replace( '/', '\\');
 		
 		// DEBUG
 		
@@ -889,11 +876,10 @@ public class NodeMonitor extends TransactionListenerAdapter
 	private final void processLockNode(LockNodeEvent lockEvent) {
 		
 		// Get the full path to the file/folder node
-		
-		Path nodePath = m_nodeService.getPath( lockEvent.getNodeRef());
-		String relPath = nodePath.toDisplayPath(m_nodeService, m_permissionService);
-		String fName = (String) m_nodeService.getProperty( lockEvent.getNodeRef(), ContentModel.PROP_NAME);
-		
+	    
+	    String relPath = lockEvent.getRelPath();
+		String name = lockEvent.getName();
+	    
 		// Check if the path is within the filesystem view
 		
 		if ( relPath.startsWith( m_rootPath)) {
@@ -901,14 +887,16 @@ public class NodeMonitor extends TransactionListenerAdapter
 			// DEBUG
 			
 			if ( logger.isDebugEnabled())
-				logger.debug("LockNode nodeRef=" + lockEvent.getNodeRef() + ", fName=" + fName + ", path=" + relPath);
-			
+			{
+				logger.debug("LockNode nodeRef=" + lockEvent.getNodeRef() + ", name=" + name + ", path=" + relPath);
+			}
+				
 			// Build the full file path
 			
 			StringBuilder fullPath = new StringBuilder();
 			fullPath.append( relPath.substring( m_rootPath.length()));
 			fullPath.append( "/");
-			fullPath.append( fName);
+			fullPath.append( name);
 			
 			relPath = fullPath.toString().replace( '/', '\\');
 			

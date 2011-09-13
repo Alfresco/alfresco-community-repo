@@ -31,9 +31,8 @@ public class MoveNodeEvent extends NodeEvent {
 
 	// Moved node path and destination node
 	
-	private String m_path;
-	
-	private NodeRef m_moveToNode;
+	private String fromPath;
+	private String toPath;
 	
 	/**
 	 * Class constructor
@@ -43,11 +42,11 @@ public class MoveNodeEvent extends NodeEvent {
 	 * @param fromPath String
 	 * @param toNodeRef NodeRef
 	 */
-	public MoveNodeEvent( FileFolderServiceType fType, NodeRef nodeRef, String fromPath, NodeRef toNodeRef) {
+	public MoveNodeEvent( FileFolderServiceType fType, NodeRef nodeRef, String fromPath, String toPath) {
 		super( fType, nodeRef);
 		
-		m_path = fromPath;
-		m_moveToNode = toNodeRef;
+		this.fromPath = fromPath;
+		this.toPath = toPath;
 	}
 	
 	/**
@@ -55,19 +54,16 @@ public class MoveNodeEvent extends NodeEvent {
 	 * 
 	 * @return String
 	 */
-	public final String getPath() {
-		return m_path;
+	public final String getFromPath() 
+	{
+		return fromPath;
 	}
 	
-	/**
-	 * Return the target node for a move
-	 * 
-	 * @return NodeRef
-	 */
-	public final NodeRef getMoveToNodeRef() {
-		return m_moveToNode;
+	public final String getToPath() 
+	{
+	    return fromPath;
 	}
-
+	
 	/**
 	 * Return the node event as a string
 	 * 
@@ -80,10 +76,10 @@ public class MoveNodeEvent extends NodeEvent {
 		str.append(getFileType());
 		str.append(",nodeRef=");
 		str.append(getNodeRef());
-		str.append(",path=");
-		str.append(getPath());
-		str.append(",toNodeRef=");
-		str.append(getMoveToNodeRef());
+		str.append(",fromPath=");
+		str.append(getFromPath());
+		str.append(",toPath=");
+		str.append(getToPath());
 		str.append("]");
 		
 		return str.toString();

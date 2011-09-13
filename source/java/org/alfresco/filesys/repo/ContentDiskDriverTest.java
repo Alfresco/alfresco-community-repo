@@ -3314,6 +3314,199 @@ public class ContentDiskDriverTest extends TestCase
     }  // Scenario frame maker save
     
     /**
+     * 
+     * @throws Exception
+     */
+    public void testZeroByteRules() throws Exception
+    {
+        logger.debug("testZeroByteRules");
+        final String FILE_NAME_ZERO = "Zero.docx";
+        final String FILE_NAME_NON_ZERO = "NonZero.docx";
+         
+        class TestContext
+        {
+            NodeRef testDirNodeRef;
+            NodeRef testZeroNodeRef;
+            NodeRef testNonZeroNodeRef;
+            NetworkFile firstFileHandle;
+            NetworkFile secondFileHandle;
+        };
+        
+        final TestContext testContext = new TestContext();
+        
+        final String TEST_DIR = TEST_ROOT_DOS_PATH + "\\testZeroByteRules";
+        
+        ServerConfiguration scfg = new ServerConfiguration("testServer");
+        TestServer testServer = new TestServer("testServer", scfg);
+        final SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
+        DiskSharedDevice share = getDiskSharedDevice();
+        final TreeConnection testConnection = testServer.getTreeConnection(share);
+        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
+        
+        /**
+         * Clean up just in case garbage is left from a previous run
+         */
+        RetryingTransactionCallback<Void> deleteGarbageDirCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                driver.deleteDirectory(testSession, testConnection, TEST_DIR);
+                return null;
+            }
+        };
+        
+        try
+        {
+            tran.doInTransaction(deleteGarbageDirCB);
+        }
+        catch (Exception e)
+        {
+            // expect to go here
+        }
+        
+        logger.debug("create Test directory" + TEST_DIR);
+        RetryingTransactionCallback<Void> createTestDirCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                /**
+                 * Create the test directory we are going to use 
+                 */
+                FileOpenParams createRootDirParams = new FileOpenParams(TEST_ROOT_DOS_PATH, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                FileOpenParams createDirParams = new FileOpenParams(TEST_DIR, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                driver.createDirectory(testSession, testConnection, createRootDirParams);
+                driver.createDirectory(testSession, testConnection, createDirParams);
+                
+                testContext.testDirNodeRef = getNodeForPath(testConnection, TEST_DIR);
+                assertNotNull("testDirNodeRef is null", testContext.testDirNodeRef);                 
+                return null;
+                
+                
+            }
+        };                
+        tran.doInTransaction(createTestDirCB);
+        logger.debug("Create rule on test dir");
+        
+        RetryingTransactionCallback<Void> createRuleCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {                 
+                Rule rule = new Rule();
+                rule.setRuleType(RuleType.INBOUND);
+                rule.applyToChildren(true);
+                rule.setRuleDisabled(false);
+                rule.setTitle("Make Versionable");
+                rule.setDescription("ContentDiskDriverTest Test Zero Byte files");
+                
+                Map<String, Serializable> props = new HashMap<String, Serializable>(1);
+                props.put("aspect-name", ContentModel.ASPECT_VERSIONABLE);
+                Action addVersionable = actionService.createAction("add-features", props);
+                
+                ActionCondition noCondition1 = actionService.createActionCondition(NoConditionEvaluator.NAME);
+                addVersionable.addActionCondition(noCondition1);
+                
+                ActionCondition noCondition2 = actionService.createActionCondition(NoConditionEvaluator.NAME);
+                CompositeAction compAction = actionService.createCompositeAction();
+                compAction.setTitle("Make Versionablea");
+                compAction.setDescription("Add Aspect - Versionable");
+                compAction.addAction(addVersionable);
+                compAction.addActionCondition(noCondition2);
+
+                rule.setAction(compAction);           
+                         
+                ruleService.saveRule(testContext.testDirNodeRef, rule);
+                
+                logger.debug("add aspect versionable rule created");
+                     
+                return null;
+            }
+        };
+        tran.doInTransaction(createRuleCB, false, true);
+
+        /**
+         * Create a file in the test directory
+         */  
+        logger.debug("create test file in test directory");
+        RetryingTransactionCallback<Void> createFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {               
+                /**
+                 * Create the zero byte file we are going to use to test
+                 */
+                FileOpenParams createFileParams = new FileOpenParams(TEST_DIR + "\\" + FILE_NAME_ZERO, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                testContext.firstFileHandle = driver.createFile(testSession, testConnection, createFileParams);
+                assertNotNull(testContext.firstFileHandle);
+                
+                testContext.testZeroNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME_ZERO);
+                assertNotNull("testContext.testNodeRef is null", testContext.testZeroNodeRef);
+                
+                /**
+                 * Create the non zero byte file we are going to use to test
+                 */
+                FileOpenParams createFileParams2 = new FileOpenParams(TEST_DIR + "\\" + FILE_NAME_NON_ZERO, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                testContext.secondFileHandle = driver.createFile(testSession, testConnection, createFileParams2);
+                assertNotNull(testContext.secondFileHandle);
+                
+                testContext.testNonZeroNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME_NON_ZERO);
+                assertNotNull("testContext.testNodeRef is null", testContext.testNonZeroNodeRef);
+        
+                return null;
+            }
+        };
+        tran.doInTransaction(createFileCB, false, true);
+        
+        logger.debug("step b: close the file with zero byte content");
+        
+        /**
+         * Write ContentDiskDriverTest1.docx to the test file,
+         */
+        RetryingTransactionCallback<Void> writeFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+            
+                logger.debug("close the file, firstFileHandle");
+                driver.closeFile(testSession, testConnection, testContext.firstFileHandle);   
+                
+                
+                // Write hello world into the second file
+                byte[] stuff = "Hello World".getBytes();
+                driver.writeFile(testSession, testConnection, testContext.secondFileHandle, stuff, 0, stuff.length, 0);
+                
+                logger.debug("close the second non zero file, secondFileHandle");
+                driver.closeFile(testSession, testConnection, testContext.secondFileHandle);   
+                    
+                return null;
+            }
+        };
+        tran.doInTransaction(writeFileCB, false, true);
+        
+        logger.debug("Step c: validate versioble aspect has been applied.");
+        
+        /**
+         * c: check zero byte file has the versionable aspect.
+         */
+        RetryingTransactionCallback<Void> validateFirstExtractionCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                assertTrue("versionable aspect not applied to non zero file.", nodeService.hasAspect(testContext.testNonZeroNodeRef, ContentModel.ASPECT_VERSIONABLE));
+                assertTrue("versionable aspect not applied to zero byte file.", nodeService.hasAspect(testContext.testZeroNodeRef, ContentModel.ASPECT_VERSIONABLE));
+                return null;
+            }
+        };
+        tran.doInTransaction(validateFirstExtractionCB, false, true);
+        
+    } // testZeroByteRules
+    
+    /**
      * Test server
      */
     public class TestServer extends NetworkFileServer

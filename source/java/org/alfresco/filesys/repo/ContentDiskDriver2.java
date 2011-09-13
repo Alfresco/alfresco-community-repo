@@ -2800,6 +2800,17 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             
             TempNetworkFile tempFile =(TempNetworkFile)file;
             
+            NodeRef target = getCifsHelper().getNodeRef(rootNode, tempFile.getFullName());
+            
+            if(nodeService.hasAspect(target, ContentModel.ASPECT_NO_CONTENT))
+            {
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("removed no content aspect");
+                }
+                nodeService.removeAspect(target, ContentModel.ASPECT_NO_CONTENT);
+            }
+            
             if(tempFile.getWriteCount() > 0) 
             {
                 // Some content was written to the temp file.
@@ -2826,22 +2837,10 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                         is.close();
                     }
                 }
-     
-                NodeRef target = getCifsHelper().getNodeRef(rootNode, tempFile.getFullName());
                 ContentWriter writer = contentService.getWriter(target, ContentModel.PROP_CONTENT, true);
                 writer.setMimetype(mimetype);
                 writer.setEncoding(encoding);
                 writer.putContent(tempFile.getFile());
-            
-                long size = writer.getSize();
-                if(nodeService.hasAspect(target, ContentModel.ASPECT_NO_CONTENT) && size > 0)
-                {
-                    if(logger.isDebugEnabled())
-                    {
-                        logger.debug("removed no content aspect");
-                    }
-                    nodeService.removeAspect(target, ContentModel.ASPECT_NO_CONTENT);
-                }
             }
         }
         

@@ -19,16 +19,20 @@
 package org.alfresco.service.cmr.repository;
 
 import org.springframework.extensions.surf.util.I18NUtil;
+import org.alfresco.repo.transaction.DoNotRetryException;
 import org.alfresco.service.namespace.QName;
 
 
 /**
  * Thrown when a child node <b>cm:name</b> property  violates the data dictionary
  * <b>duplicate</b> child association constraint.
+ * <p/>
+ * Note that this exception may be triggered by database constraints but must
+ * still NOT trigger transaction retries.
  * 
  * @author Derek Hulley
  */
-public class DuplicateChildNodeNameException extends RuntimeException
+public class DuplicateChildNodeNameException extends RuntimeException implements DoNotRetryException
 {
     private static final long serialVersionUID = 5143099335847200453L;
 

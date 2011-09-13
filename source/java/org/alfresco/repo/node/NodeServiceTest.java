@@ -20,6 +20,7 @@ package org.alfresco.repo.node;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -30,6 +31,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
@@ -211,11 +213,14 @@ public class NodeServiceTest extends TestCase
                         ContentModel.TYPE_FOLDER).getChildRef();
                 for (int i = 1; i < liveNodeRefs.length; i++)
                 {
+                    Map<QName, Serializable> props = new HashMap<QName, Serializable>(3);
+                    props.put(ContentModel.PROP_NAME, "depth-" + i);
                     liveNodeRefs[i] = nodeService.createNode(
                             liveNodeRefs[i-1],
                             ContentModel.ASSOC_CONTAINS,
                             QName.createQName(NAMESPACE, "depth-" + i),
-                            ContentModel.TYPE_FOLDER).getChildRef();
+                            ContentModel.TYPE_FOLDER,
+                            props).getChildRef();
                 }
                 return null;
             }
@@ -382,5 +387,40 @@ public class NodeServiceTest extends TestCase
         // Get a node association that doesn't exist
         AssociationRef assocRef = nodeService.getAssoc(Long.MAX_VALUE);
         assertNull("Should get null for missing ID of association. ", assocRef);
+    }
+    
+    public void testDuplicateChildNodeName()
+    {
+        final NodeRef[] liveNodeRefs = new NodeRef[3];
+        final NodeRef workspaceRootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        buildNodeHierarchy(workspaceRootNodeRef, liveNodeRefs);
+        
+        // Get the name of the last node
+        final String lastName = (String) nodeService.getProperty(liveNodeRefs[2], ContentModel.PROP_NAME);
+        // Now create a node with the same name
+        RetryingTransactionCallback<NodeRef> newNodeCallback = new RetryingTransactionCallback<NodeRef>()
+        {
+            @Override
+            public NodeRef execute() throws Throwable
+            {
+                Map<QName, Serializable> props = new HashMap<QName, Serializable>(3);
+                props.put(ContentModel.PROP_NAME, lastName);
+                return nodeService.createNode(
+                        liveNodeRefs[1],
+                        ContentModel.ASSOC_CONTAINS,
+                        QName.createQName(NAMESPACE, "duplicate"),
+                        ContentModel.TYPE_FOLDER,
+                        props).getChildRef();
+            }
+        };
+        try
+        {
+            txnService.getRetryingTransactionHelper().doInTransaction(newNodeCallback);
+            fail("Duplicate child node name not detected.");
+        }
+        catch (DuplicateChildNodeNameException e)
+        {
+            // Expected
+        }
     }
 }

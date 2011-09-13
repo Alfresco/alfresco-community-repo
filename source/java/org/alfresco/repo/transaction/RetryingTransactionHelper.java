@@ -541,7 +541,8 @@ public class RetryingTransactionHelper
     }
 
     /**
-     * Sometimes, the exception means retry and sometimes not.
+     * Sometimes, the exception means retry and sometimes not.  The stack of exceptions is also checked
+     * for any occurence of {@link DoNotRetryException} and, if found, nothing is returned.
      *
      * @param cause     the cause to examine
      * @return          Returns the original cause if it is a valid retry cause, otherwise <tt>null</tt>
@@ -552,6 +553,11 @@ public class RetryingTransactionHelper
         
         if (retryCause == null)
         {
+            return null;
+        }
+        else if (ExceptionStackUtil.getCause(cause, DoNotRetryException.class) != null)
+        {
+            // Someone decided that the txn should NOT retry
             return null;
         }
         else if (retryCause instanceof SQLGrammarException

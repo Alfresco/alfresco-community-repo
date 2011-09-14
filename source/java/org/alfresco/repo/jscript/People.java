@@ -285,7 +285,6 @@ public final class People extends BaseScopableProcessorExtension implements Init
             String password, boolean setAccountEnabled, boolean notifyByEmail)
     {
     	ParameterCheck.mandatory("firstName", firstName);
-    	ParameterCheck.mandatory("lastName", lastName);
     	ParameterCheck.mandatory("emailAddress", emailAddress);
         
         ScriptNode person = null;
@@ -443,7 +442,6 @@ public final class People extends BaseScopableProcessorExtension implements Init
     {
         ParameterCheck.mandatoryString("userName", userName);
         ParameterCheck.mandatoryString("firstName", firstName);
-        ParameterCheck.mandatoryString("lastName", lastName);
         ParameterCheck.mandatoryString("emailAddress", emailAddress);
         
         ScriptNode person = null;

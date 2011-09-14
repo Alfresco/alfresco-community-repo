@@ -130,4 +130,18 @@ public class TransferProgress
         this.error = error;
     }
 
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("TransferProgress{status=");
+        sb.append(status);
+        sb.append("; currentPosition=");
+        sb.append(currentPosition);
+        sb.append("; endPosition=");
+        sb.append(endPosition);
+        sb.append("; error={");
+        sb.append(error);
+        sb.append("}}");
+        return sb.toString();
+    }
 }

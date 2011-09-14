@@ -16,12 +16,6 @@ function main()
       return;
    }
    
-   if ((json.isNull("lastName")) || (json.get("lastName").length() == 0))
-   {
-      status.setCode(status.STATUS_BAD_REQUEST, "Last name missing when creating person");
-      return;
-   }
-   
    if ((json.isNull("email")) || (json.get("email").length() == 0))
    {
       status.setCode(status.STATUS_BAD_REQUEST, "Email missing when creating person");

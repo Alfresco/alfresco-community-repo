@@ -21,12 +21,6 @@
     },
     "allday": "${result.allday?string}",
 
-    <#-- These are the old ones we'll get rid of soon -->
-    "from": "${result.from?string("yyyy-MM-dd")}",
-    "start": "${result.from?string("HH:mm")}",
-    "to": "${result.to?string("yyyy-MM-dd")}",
-    "end": "${result.to?string("HH:mm")}",
-
     <#assign tags><#list result.tags as tag>"${tag}"<#if tag_has_next>,</#if></#list></#assign>
     "tags": <#noescape>[${tags}]</#noescape>,
     "docfolder": "${result.docfolder?html}"

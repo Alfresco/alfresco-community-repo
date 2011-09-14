@@ -375,10 +375,10 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        assertEquals(EVENT_TITLE_ONE, entry.getString("name"));
        assertEquals("Where", entry.getString("where"));
        assertEquals("Thing", entry.getString("desc"));
-       assertEquals("2011-06-29", entry.getString("from")); // Different format!
-       assertEquals("2011-06-29", entry.getString("to")); // Different format!
-       assertEquals("12:00", entry.getString("start"));
-       assertEquals("13:00", entry.getString("end"));
+       assertEquals("2011-06-29", entry.getJSONObject("startAt").getString("legacyDate")); // Different format!
+       assertEquals("2011-06-29", entry.getJSONObject("endAt").getString("legacyDate")); // Different format!
+       assertEquals("12:00", entry.getJSONObject("startAt").getString("legacyTime"));
+       assertEquals("13:00", entry.getJSONObject("endAt").getString("legacyTime"));
        assertEquals("false", entry.getString("allday"));
        // No isoutlook on create/edit
        
@@ -393,10 +393,10 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        assertEquals("Thing", entry.getString("description")); // Not desc...
        
        assertEquals("false", entry.getString("isoutlook"));
-       assertEquals("6/29/2011", entry.getString("from"));
-       assertEquals("6/29/2011", entry.getString("to"));
-       assertEquals("12:00", entry.getString("start"));
-       assertEquals("13:00", entry.getString("end"));
+       assertEquals("6/29/2011", entry.getJSONObject("startAt").getString("legacyDate"));
+       assertEquals("6/29/2011", entry.getJSONObject("endAt").getString("legacyDate"));
+       assertEquals("12:00", entry.getJSONObject("startAt").getString("legacyTime"));
+       assertEquals("13:00", entry.getJSONObject("endAt").getString("legacyTime"));
        assertEquals("false", entry.getString("allday"));
        
        // Check the new style dates too
@@ -432,10 +432,10 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        assertEquals("More Thing", entry.getString("description"));
        
        assertEquals("false", entry.getString("isoutlook"));
-       assertEquals("6/28/2011", entry.getString("from"));
-       assertEquals("6/28/2011", entry.getString("to"));
-       assertEquals("11:30", entry.getString("start"));
-       assertEquals("13:30", entry.getString("end"));
+       assertEquals("6/28/2011", entry.getJSONObject("startAt").getString("legacyDate"));
+       assertEquals("6/28/2011", entry.getJSONObject("endAt").getString("legacyDate"));
+       assertEquals("11:30", entry.getJSONObject("startAt").getString("legacyTime"));
+       assertEquals("13:30", entry.getJSONObject("endAt").getString("legacyTime"));
        assertEquals("false", entry.getString("allday"));
 
        
@@ -455,10 +455,10 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        assertEquals("More Thing", entry.getString("description"));
        
        assertEquals("false", entry.getString("isoutlook"));
-       assertEquals("6/28/2011", entry.getString("from"));
-       assertEquals("6/28/2011", entry.getString("to"));
-       assertEquals("11:30", entry.getString("start"));
-       assertEquals("13:30", entry.getString("end"));
+       assertEquals("6/28/2011", entry.getJSONObject("startAt").getString("legacyDate"));
+       assertEquals("6/28/2011", entry.getJSONObject("endAt").getString("legacyDate"));
+       assertEquals("11:30", entry.getJSONObject("startAt").getString("legacyTime"));
+       assertEquals("13:30", entry.getJSONObject("endAt").getString("legacyTime"));
        assertEquals("false", entry.getString("allday"));
        assertEquals(
              "Occurs every 2 weeks on Wednesday, Friday, effective " +
@@ -503,10 +503,10 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        json.put("end",   "12:00");
        entry = createEntry(EVENT_TITLE_ONE, "Where", "Thing", json, Status.STATUS_OK);
        
-       assertEquals("2011-06-21", entry.getString("from"));
-       assertEquals("2011-06-21", entry.getString("to"));
-       assertEquals("11:00", entry.getString("start"));
-       assertEquals("12:00", entry.getString("end"));
+       assertEquals("2011-06-21", entry.getJSONObject("startAt").getString("legacyDate"));
+       assertEquals("2011-06-21", entry.getJSONObject("endAt").getString("legacyDate"));
+       assertEquals("11:00", entry.getJSONObject("startAt").getString("legacyTime"));
+       assertEquals("12:00", entry.getJSONObject("endAt").getString("legacyTime"));
        assertEquals("false", entry.getString("allday"));
        // Can't check iso8601 form as we don't know the TZ
        
@@ -519,10 +519,10 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        json.put("end",   "12:00");
        entry = createEntry(EVENT_TITLE_ONE, "Where", "Thing", json, Status.STATUS_OK);
        
-       assertEquals("2011-06-22", entry.getString("from"));
-       assertEquals("2011-06-22", entry.getString("to"));
-       assertEquals("10:00", entry.getString("start"));
-       assertEquals("12:00", entry.getString("end"));
+       assertEquals("2011-06-22", entry.getJSONObject("startAt").getString("legacyDate"));
+       assertEquals("2011-06-22", entry.getJSONObject("endAt").getString("legacyDate"));
+       assertEquals("10:00", entry.getJSONObject("startAt").getString("legacyTime"));
+       assertEquals("12:00", entry.getJSONObject("endAt").getString("legacyTime"));
        assertEquals("false", entry.getString("allday"));
        // Can't check iso8601 form as we don't know the TZ
        
@@ -534,10 +534,10 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        entry = createEntry(EVENT_TITLE_ONE, "Where", "Thing", json, Status.STATUS_OK);
        
        // Check old style dates and times
-       assertEquals("2011-06-21", entry.getString("from"));
-       assertEquals("2011-06-21", entry.getString("to"));
-       assertEquals("11:30", entry.getString("start"));
-       assertEquals("12:45", entry.getString("end"));
+       assertEquals("2011-06-21", entry.getJSONObject("startAt").getString("legacyDate"));
+       assertEquals("2011-06-21", entry.getJSONObject("endAt").getString("legacyDate"));
+       assertEquals("11:30", entry.getJSONObject("startAt").getString("legacyTime"));
+       assertEquals("12:45", entry.getJSONObject("endAt").getString("legacyTime"));
        assertEquals("false", entry.getString("allday"));
        
        // Check new style dates and times
@@ -553,10 +553,10 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        entry = createEntry(EVENT_TITLE_ONE, "Where", "Thing", json, Status.STATUS_OK);
        
        // Check old style dates and times
-       assertEquals("2011-06-22", entry.getString("from"));
-       assertEquals("2011-06-22", entry.getString("to"));
-       assertEquals("11:30", entry.getString("start"));
-       assertEquals("12:45", entry.getString("end"));
+       assertEquals("2011-06-22", entry.getJSONObject("startAt").getString("legacyDate"));
+       assertEquals("2011-06-22", entry.getJSONObject("endAt").getString("legacyDate"));
+       assertEquals("11:30", entry.getJSONObject("startAt").getString("legacyTime"));
+       assertEquals("12:45", entry.getJSONObject("endAt").getString("legacyTime"));
        assertEquals("false", entry.getString("allday"));
        
        // Check new style dates and times
@@ -575,10 +575,10 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        entry = createEntry(EVENT_TITLE_ONE, "Where", "Thing", json, Status.STATUS_OK);
        
        // Check old style dates and times
-       assertEquals("2011-06-20", entry.getString("from"));
-       assertEquals("2011-06-20", entry.getString("to"));
-       assertEquals("09:35", entry.getString("start"));
-       assertEquals("10:35", entry.getString("end"));
+       assertEquals("2011-06-20", entry.getJSONObject("startAt").getString("legacyDate"));
+       assertEquals("2011-06-20", entry.getJSONObject("endAt").getString("legacyDate"));
+       assertEquals("09:35", entry.getJSONObject("startAt").getString("legacyTime"));
+       assertEquals("10:35", entry.getJSONObject("endAt").getString("legacyTime"));
        assertEquals("false", entry.getString("allday"));
        
        // Check new style dates and times
@@ -599,10 +599,10 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        entry = createEntry(EVENT_TITLE_ONE, "Where", "Thing", json, Status.STATUS_OK);
        
        // Check old style dates and times
-       assertEquals("2011-06-24", entry.getString("from"));
-       assertEquals("2011-06-24", entry.getString("to"));
-       assertEquals("09:30", entry.getString("start"));
-       assertEquals("10:45", entry.getString("end"));
+       assertEquals("2011-06-24", entry.getJSONObject("startAt").getString("legacyDate"));
+       assertEquals("2011-06-24", entry.getJSONObject("endAt").getString("legacyDate"));
+       assertEquals("09:30", entry.getJSONObject("startAt").getString("legacyTime"));
+       assertEquals("10:45", entry.getJSONObject("endAt").getString("legacyTime"));
        assertEquals("false", entry.getString("allday"));
        
        // Check new style dates and times
@@ -617,10 +617,10 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        json.put("allday", Boolean.TRUE);
        entry = createEntry(EVENT_TITLE_ONE, "Where", "Thing", json, Status.STATUS_OK);
 
-       assertEquals("2011-06-21", entry.getString("from"));
-       assertEquals("2011-06-21", entry.getString("to"));
-       assertEquals("00:00", entry.getString("start"));
-       assertEquals("00:00", entry.getString("end"));
+       assertEquals("2011-06-21", entry.getJSONObject("startAt").getString("legacyDate"));
+       assertEquals("2011-06-21", entry.getJSONObject("endAt").getString("legacyDate"));
+       assertEquals("00:00", entry.getJSONObject("startAt").getString("legacyTime"));
+       assertEquals("00:00", entry.getJSONObject("endAt").getString("legacyTime"));
        assertEquals("true", entry.getString("allday"));
 
        
@@ -630,8 +630,8 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        json.put("endAt",   "2011-06-21T00:00:00+01:00");
        json.put("allday", Boolean.TRUE);
        
-       assertEquals("2011-06-21", entry.getString("from"));
-       assertEquals("2011-06-21", entry.getString("to"));
+       assertEquals("2011-06-21", entry.getJSONObject("startAt").getString("legacyDate"));
+       assertEquals("2011-06-21", entry.getJSONObject("endAt").getString("legacyDate"));
        assertEquals("true", entry.getString("allday"));
 
        
@@ -643,8 +643,8 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        json.put("allday", Boolean.TRUE);
        entry = createEntry(EVENT_TITLE_ONE, "Where", "Thing", json, Status.STATUS_OK);
        
-       assertEquals("2011-06-22", entry.getString("from"));
-       assertEquals("2011-06-22", entry.getString("to"));
+       assertEquals("2011-06-22", entry.getJSONObject("startAt").getString("legacyDate"));
+       assertEquals("2011-06-22", entry.getJSONObject("endAt").getString("legacyDate"));
        assertEquals("true", entry.getString("allday"));
     }
     

@@ -73,6 +73,11 @@ public class StatusCommandProcessor implements CommandProcessor
         {
             TransferProgress progress = receiver.getProgressMonitor().getProgress(transferId);
 
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(progress);
+            }
+            
             JSONObject progressObject = new JSONObject();
             progressObject.put("transferId", transferId);
             progressObject.put("status", progress.getStatus().toString());
@@ -91,8 +96,6 @@ public class StatusCommandProcessor implements CommandProcessor
             resp.addHeader("Content-Length", "" + length);
             resp.setStatus(Status.STATUS_OK);
             resp.getWriter().write(response);
-
-            logger.debug("transfer started" + transferId);
 
             return Status.STATUS_OK;
 

@@ -29,10 +29,11 @@ import junit.framework.TestCase;
 
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.TemplateException;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
-import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 /**
  * Test that the correct date ranges are generated for lucene 
@@ -208,5 +209,41 @@ public class FreeMarkerModelLuceneFunctionTest extends TestCase
         mf.setServiceRegistry(serviceRegistry);
         String result = serviceRegistry.getTemplateService().processTemplateString("freemarker", template, mf.getModel());
         assertEquals(result, "["+isoStartDate+" TO "+isoStartDate+"]");
+    }
+    
+    /**
+     * Tests finding single nodes by a lucene query.
+     * Uses a node with a special, known noderef
+     */
+    public void testSelectSingleNode()
+    {
+       String renderingSpaceNodeRef = "workspace://SpacesStore/rendering_actions_space";
+       
+       // Build a selectSingleNode to get the rendering actions space by path
+       String rendering_space = "rendering_actions";
+       String path = "'PATH:\"/app:company_home/app:dictionary/app:" + rendering_space + "\"'";
+       String template = "${selectSingleNode('workspace://SpacesStore', 'lucene', "+path+" )}";
+       
+       // Evaluate the script
+       FreeMarkerWithLuceneExtensionsModelFactory mf = new FreeMarkerWithLuceneExtensionsModelFactory();
+       mf.setServiceRegistry(serviceRegistry);
+       String result = serviceRegistry.getTemplateService().processTemplateString("freemarker", template, mf.getModel());
+       
+       // Check we got the magic, known noderef back
+       assertEquals(result, renderingSpaceNodeRef);
+       
+       
+       // Now check for a node that doesn't exist
+       String invalidSpace = "DOESnotEXISTspace";
+       path = "'PATH:\"/app:company_home/app:dictionary/app:" + invalidSpace + "\"'";
+       template = "${selectSingleNode('workspace://SpacesStore', 'lucene', "+path+" )}";
+       
+       // Will fail with "No Nodes Selected"
+       try
+       {
+          result = serviceRegistry.getTemplateService().processTemplateString("freemarker", template, mf.getModel());
+          fail("Shouldn't find anything, but got" + result);
+       }
+       catch(TemplateException e) {}
     }
 }

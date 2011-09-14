@@ -110,6 +110,7 @@ public class PublishingPackageSerializerTest extends AbstractPublishingIntegrati
         normalNode1.setTargetAssocs(targetAssocs);
         
         normalNode1.setType(ContentModel.TYPE_CONTENT);
+        normalNode1.setAncestorType(ContentModel.TYPE_CONTENT);
         normalNode1.setUuid(guid);
     }
 

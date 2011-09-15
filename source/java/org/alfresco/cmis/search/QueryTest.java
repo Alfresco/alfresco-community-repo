@@ -3343,8 +3343,11 @@ public class QueryTest extends BaseCMISTest
                 new String(), false, CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
         testQuery("SELECT D.*, O.* FROM CMIS:DOCUMENT AS D JOIN CM:OWNABLE AS O ON D.cmis:objectId = O.cmis:objectId WHERE IN_TREE('" + id + "')", 1, false, "cmis:objectId",
                 new String(), true, CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
+        testQuery("SELECT D.*, O.* FROM CMIS:DOCUMENT AS D JOIN CM:OWNABLE AS O ON D.cmis:objectId = O.cmis:objectId WHERE IN_TREE('" + id + ";versionLabel" +"')", 0, false, "cmis:objectId",
+                new String(), true, CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
 
-        testQuery("SELECT * FROM cmis:folder WHERE IN_TREE('woof://woof/woof')", 6, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT * FROM cmis:folder WHERE IN_TREE('woof://woof/woof')", 0, false, "cmis:objectId", new String(), true);
+        testQuery("SELECT * FROM cmis:folder WHERE IN_TREE('woof://woof/woof;woof')", 0, false, "cmis:objectId", new String(), true);
     }
 
     public void test_IN_FOLDER() throws Exception
@@ -3360,11 +3363,12 @@ public class QueryTest extends BaseCMISTest
                 new String(), false, CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
         testQuery("SELECT D.*, O.* FROM CMIS:DOCUMENT AS D JOIN CM:OWNABLE AS O ON D.cmis:objectId = O.cmis:objectId WHERE IN_FOLDER('" + id + "')", 1, false, "cmis:objectId",
                 new String(), true, CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
+        testQuery("SELECT D.*, O.* FROM CMIS:DOCUMENT AS D JOIN CM:OWNABLE AS O ON D.cmis:objectId = O.cmis:objectId WHERE IN_FOLDER('" + id + ";versionLabel"+"')", 0, false, "cmis:objectId",
+                new String(), true, CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
 
-        // TODO: Id + label is indistinguishable from label and so is never hit in the coes at the moment
-        // testQuery("SELECT * FROM cmis:folder WHERE IN_FOLDER('woof://woof/woof;woof')", 2, false, "cmis:objectId",
-        // new String(), false);
-        testQuery("SELECT * FROM cmis:folder WHERE IN_FOLDER('woof://woof/woof')", 2, false, "cmis:objectId", new String(), true);
+        // Note folders are unversioned - using a versoin lablel should find nothing 
+        testQuery("SELECT * FROM cmis:folder WHERE IN_FOLDER('woof://woof/woof')", 0, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT * FROM cmis:folder WHERE IN_FOLDER('woof://woof/woof;woof')", 0, false, "cmis:objectId", new String(), false);
     }
 
     public void testFTS() throws Exception

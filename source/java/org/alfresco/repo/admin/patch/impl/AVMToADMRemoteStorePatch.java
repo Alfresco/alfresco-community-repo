@@ -23,9 +23,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
@@ -40,7 +42,6 @@ import org.alfresco.repo.batch.BatchProcessor;
 import org.alfresco.repo.batch.BatchProcessor.BatchProcessWorker;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
@@ -89,10 +90,12 @@ public class AVMToADMRemoteStorePatch extends AbstractPatch
     // name of the surf config folder
     private static final String SURF_CONFIG = "surf-config";
     
-    private static final int BATCH_THREADS = 8;
-    private static final int BATCH_SIZE = 100;
+    private static final int SITE_BATCH_THREADS = 8;
+    private static final int SITE_BATCH_SIZE = 100;
+    private static final int MIGRATE_BATCH_THREADS = 8;
+    private static final int MIGRATE_BATCH_SIZE = 100;
     
-    private Map<String, Pair<NodeRef, NodeRef>> siteReferenceCache = null;
+    private Map<String, NodeRef> siteReferenceCache = null;
     private SortedMap<String, AVMNodeDescriptor> paths;
     private SortedMap<String, AVMNodeDescriptor> retryPaths;
     private NodeRef surfConfigRef = null;
@@ -208,21 +211,126 @@ public class AVMToADMRemoteStorePatch extends AbstractPatch
         
         try
         {
-            // init our cache
-            this.siteReferenceCache = new ConcurrentHashMap<String, Pair<NodeRef,NodeRef>>(16384);
+            // init the siteid to surf-config noderef cache
+            this.siteReferenceCache = new ConcurrentHashMap<String, NodeRef>(16384);
             
-            // TODO: just retrieve a List of AVM NodeDescriptor objects - sort Collection based on Path?
+            // get user names that will be used to RunAs and set permissions later
+            String systemUser = AuthenticationUtil.getSystemUserName();
+            final String tenantSystemUser = this.tenantAdminService.getDomainUser(
+                    systemUser, this.tenantAdminService.getCurrentUserDomain());
+            
+            // build a set of unique site names
+            final Set<String> sites = new HashSet<String>(paths.size());
+            Matcher matcher;
+            for (String path: paths.keySet())
+            {
+                String siteName = null;
+                if ((matcher = SITE_PATTERN_1.matcher(path)).matches())
+                {
+                    siteName = matcher.group(1);
+                }
+                else if ((matcher = SITE_PATTERN_2.matcher(path)).matches())
+                {
+                    siteName = matcher.group(1);
+                }
+                if (siteName != null)
+                {
+                    sites.add(siteName);
+                }
+            }
+            
+            // retrieve the sites for the batch work provider
+            final Iterator<String> siteItr = sites.iterator();
+            
+            // the work provider for the site 'surf-config' folder pre-create step
+            BatchProcessWorkProvider<String> siteWorkProvider = new BatchProcessWorkProvider<String>()
+            {
+                @Override
+                public synchronized Collection<String> getNextWork()
+                {
+                    int batchCount = 0;
+                    
+                    List<String> siteBatch = new ArrayList<String>(SITE_BATCH_SIZE);
+                    while (siteItr.hasNext() && batchCount++ != SITE_BATCH_SIZE)
+                    {
+                        siteBatch.add(siteItr.next());
+                    }
+                    return siteBatch;
+                }
+                
+                @Override
+                public synchronized int getTotalEstimatedWorkSize()
+                {
+                    return sites.size();
+                }
+            };
+            
+            // batch process the sites in the set and pre-create the 'surf-config' folders for each site
+            // add each config folder noderef to our cache ready for the config file migration processing
+            BatchProcessor<String> siteBatchProcessor = new BatchProcessor<String>(
+                    "AVMToADMRemoteStorePatch",
+                    this.transactionHelper,
+                    siteWorkProvider,
+                    SITE_BATCH_THREADS,
+                    SITE_BATCH_SIZE,
+                    this.applicationEventPublisher,
+                    logger,
+                    SITE_BATCH_SIZE * 10);
+            
+            BatchProcessWorker<String> siteWorker = new BatchProcessWorker<String>()
+            {
+                @Override
+                public void beforeProcess() throws Throwable
+                {
+                    AuthenticationUtil.setRunAsUser(tenantSystemUser);
+                }
+                
+                @Override
+                public void afterProcess() throws Throwable
+                {
+                    AuthenticationUtil.clearCurrentSecurityContext();
+                }
+                
+                @Override
+                public String getIdentifier(String entry)
+                {
+                    return entry;
+                }
+                
+                @Override
+                public void process(String siteName) throws Throwable
+                {
+                    // get the Site NodeRef
+                    NodeRef siteRef = getSiteNodeRef(siteName);
+                    if (siteRef != null)
+                    {
+                        // create the 'surf-config' folder for the site and cache the NodeRef to it
+                        NodeRef surfConfigRef = getSurfConfigNodeRef(siteRef);
+                        siteReferenceCache.put(siteName, surfConfigRef);
+                    }
+                    else
+                    {
+                        logger.info("WARNING: unable to find site id: " + siteName);
+                    }
+                }
+            };
+            long start = System.currentTimeMillis();
+            siteBatchProcessor.process(siteWorker, true);
+            logger.info("Created 'surf-config' folders for: " + this.siteReferenceCache.size() + " sites in " + (System.currentTimeMillis()-start) + "ms");
+            
             // retrieve AVM NodeDescriptor objects for the paths
             final Iterator<String> pathItr = this.paths.keySet().iterator();
-            BatchProcessWorkProvider<AVMNodeDescriptor> workProvider = new BatchProcessWorkProvider<AVMNodeDescriptor>()
+            
+            // the work provider for the config file migration
+            BatchProcessWorkProvider<AVMNodeDescriptor> migrateWorkProvider = new BatchProcessWorkProvider<AVMNodeDescriptor>()
             {
                 @Override
                 public synchronized Collection<AVMNodeDescriptor> getNextWork()
                 {
                     int batchCount = 0;
                     
-                    List<AVMNodeDescriptor> nodes = new ArrayList<AVMNodeDescriptor>(BATCH_SIZE);
-                    while (pathItr.hasNext() && batchCount++ != BATCH_SIZE)
+                    List<AVMNodeDescriptor> nodes = new ArrayList<AVMNodeDescriptor>(MIGRATE_BATCH_SIZE);
+                    while (pathItr.hasNext() && batchCount++ != MIGRATE_BATCH_SIZE)
                     {
                         nodes.add(paths.get(pathItr.next()));
                     }
@@ -240,16 +348,13 @@ public class AVMToADMRemoteStorePatch extends AbstractPatch
             BatchProcessor<AVMNodeDescriptor> batchProcessor = new BatchProcessor<AVMNodeDescriptor>(
                     "AVMToADMRemoteStorePatch",
                     this.transactionHelper,
-                    workProvider,
-                    BATCH_THREADS,
-                    BATCH_SIZE,
+                    migrateWorkProvider,
+                    MIGRATE_BATCH_THREADS,
+                    MIGRATE_BATCH_SIZE,
                     this.applicationEventPublisher,
                     logger,
-                    BATCH_SIZE * 10);
+                    MIGRATE_BATCH_SIZE * 10);
             
-            String systemUser = AuthenticationUtil.getSystemUserName();
-            final String tenantSystemUser = this.tenantAdminService.getDomainUser(
-                    systemUser, this.tenantAdminService.getCurrentUserDomain());
             BatchProcessWorker<AVMNodeDescriptor> worker = new BatchProcessWorker<AVMNodeDescriptor>()
             {
                 @Override
@@ -276,8 +381,6 @@ public class AVMToADMRemoteStorePatch extends AbstractPatch
                     migrateNode(entry);
                 }
             };
-            
-            long start = System.currentTimeMillis();
             batchProcessor.process(worker, true);
             
             // retry the paths that were blocked due to multiple threads attemping to create
@@ -361,57 +464,24 @@ public class AVMToADMRemoteStorePatch extends AbstractPatch
             }
             
             NodeRef surfConfigRef;
-            try
+            if (siteName != null)
             {
-                if (siteName != null)
+                if (debug) logger.debug("...resolved site id: " + siteName);
+                surfConfigRef = siteReferenceCache.get(siteName);
+                if (surfConfigRef == null)
                 {
-                    if (debug) logger.debug("...resolved site id: " + siteName);
-                    NodeRef siteRef = null;
-                    String key = AlfrescoTransactionSupport.getTransactionId() + siteName;
-                    Pair<NodeRef, NodeRef> refCache = siteReferenceCache.get(key);
-                    if (refCache == null)
-                    {
-                        refCache = new Pair<NodeRef, NodeRef>(null, null);
-                        siteReferenceCache.put(key, refCache);
-                    }
-                    siteRef = refCache.getFirst();
-                    if (siteRef == null)
-                    {
-                        siteRef = getSiteNodeRef(siteName);
-                        refCache.setFirst(siteRef);
-                    }
-                    if (siteRef != null)
-                    {
-                        surfConfigRef = refCache.getSecond();
-                        if (surfConfigRef == null)
-                        {
-                            surfConfigRef = getSurfConfigNodeRef(siteRef);
-                            refCache.setSecond(surfConfigRef);
-                        }
-                    }
-                    else
-                    {
-                        logger.info("WARNING: unable to migrate path as site id cannot be found: " + siteName);
-                        return;
-                    }
-                }
-                else if (userId != null)
-                {
-                    if (debug) logger.debug("...resolved user id: " + userId);
-                    surfConfigRef = this.surfConfigRef;
-                }
-                else
-                {
-                    if (debug) logger.debug("...resolved generic path.");
-                    surfConfigRef = this.surfConfigRef;
+                    logger.info("WARNING: unable to migrate path as site id cannot be found: " + siteName);
                 }
             }
-            catch (ConcurrencyFailureException conErr)
+            else if (userId != null)
             {
-                logger.warn("Unable to create folder: surf-config for path: " + avmNode.getPath() +
-                                " - as another txn is busy, will retry later.");
-                retryPaths.put(avmNode.getPath(), avmNode);
-                return;
+                if (debug) logger.debug("...resolved user id: " + userId);
+                surfConfigRef = this.surfConfigRef;
+            }
+            else
+            {
+                if (debug) logger.debug("...resolved generic path.");
+                surfConfigRef = this.surfConfigRef;
             }
             
             // ensure folders exist down to the specified parent

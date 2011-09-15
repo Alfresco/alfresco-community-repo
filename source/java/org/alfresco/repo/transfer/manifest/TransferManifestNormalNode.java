@@ -100,6 +100,10 @@ public class TransferManifestNormalNode implements TransferManifestNode
     public void setType(QName type)
     {
         this.type = type;
+        if (ancestorType == null)
+        {
+            ancestorType = type;
+        }
     }
 
     public QName getType()

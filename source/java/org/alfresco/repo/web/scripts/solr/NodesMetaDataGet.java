@@ -22,11 +22,14 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.search.IndexerException;
 import org.alfresco.repo.solr.MetaDataResultsFilter;
 import org.alfresco.repo.solr.NodeMetaData;
 import org.alfresco.repo.solr.NodeMetaDataParameters;
@@ -35,10 +38,12 @@ import org.alfresco.repo.solr.SOLRTrackingComponent.NodeMetaDataQueryCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
+import org.alfresco.service.cmr.repository.Path.Element;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.lucene.document.Field;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -246,6 +251,7 @@ public class NodesMetaDataGet extends DeclarativeWebScript
         private List<Long> childIds;
         private String owner;
         private Long txnId;
+        private Set<String> ancestors;
 
         public FreemarkerNodeMetaData(SOLRSerializer solrSerializer, NodeMetaData nodeMetaData) throws IOException, JSONException
         {
@@ -257,13 +263,20 @@ public class NodesMetaDataGet extends DeclarativeWebScript
             
             // convert Paths to Strings
             List<String> paths = new ArrayList<String>();
+            HashSet<String> ancestors = new HashSet<String>();
             for(Pair<Path, QName> pair : nodeMetaData.getPaths())
             {
                 JSONObject o = new JSONObject();
                 o.put("path", solrSerializer.serializeValue(String.class, pair.getFirst()));
                 o.put("qname", solrSerializer.serializeValue(String.class, pair.getSecond()));
                 paths.add(o.toString(3));
+                
+                for (NodeRef ancestor : getAncestors(pair.getFirst()))
+                {
+                    ancestors.add(ancestor.toString());
+                }
             }
+            setAncestors(ancestors);
             setPaths(paths);
 
             setChildAssocs(nodeMetaData.getChildAssocs());
@@ -366,6 +379,14 @@ public class NodesMetaDataGet extends DeclarativeWebScript
         {
             this.parentAssocsCrc = parentAssocsCrc;
         }
+        public void setAncestors(Set<String> ancestors)
+        {
+            this.ancestors = ancestors;
+        }
+        public Set<String> getAncestors()
+        {
+            return ancestors;
+        }
 
         public List<Long> getChildIds()
         {
@@ -397,6 +418,26 @@ public class NodesMetaDataGet extends DeclarativeWebScript
             this.txnId = txnId;
         }
         
+        private ArrayList<NodeRef> getAncestors(Path path)
+        {
+            ArrayList<NodeRef> ancestors = new ArrayList<NodeRef>(8);
+            for (Iterator<Path.Element> elit = path.iterator(); elit.hasNext(); /**/)
+            {
+                Path.Element element = elit.next();
+                if (!(element instanceof Path.ChildAssocElement))
+                {
+                    throw new IndexerException("Confused path: " + path);
+                }
+                Path.ChildAssocElement cae = (Path.ChildAssocElement) element;
+                NodeRef parentRef = cae.getRef().getParentRef();
+                if(parentRef != null)
+                {
+                    ancestors.add(0, parentRef);
+                }
+
+            }
+            return ancestors;
+        }
     }
 
 }

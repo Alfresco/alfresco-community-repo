@@ -78,6 +78,17 @@
          ]
          </#if>
          </#if>
+         <#if filter.includePaths??>
+         <#if nodeMetaData.ancestors??>
+         <#if (nodeMetaData.ancestors?size > 0)>
+         , "ancestors": [
+           <#list nodeMetaData.ancestors as ancestor>
+           "${ancestor}"<#if ancestor_has_next>,</#if>
+           </#list>
+         ]
+         </#if>
+         </#if>
+         </#if>
          <#if filter.includeParentAssociations??>
          <#if nodeMetaData.parentAssocs??>
          <#if (nodeMetaData.parentAssocs?size > 0)>

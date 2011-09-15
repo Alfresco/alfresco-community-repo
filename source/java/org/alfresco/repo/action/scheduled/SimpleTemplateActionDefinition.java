@@ -36,6 +36,9 @@ import org.springframework.context.ApplicationContextAware;
 /**
  * This class defines the template used to build a single action.
  * 
+ * Because SPEL will eat ${foo} or #{foo} in the template when specified in the XML,
+ *  this will also accept \$\{foo\} or \#\{foo\} as well.
+ *  
  * @author Andy Hind
  */
 public class SimpleTemplateActionDefinition extends AbstractTemplateActionDefinition implements ApplicationContextAware
@@ -176,17 +179,30 @@ public class SimpleTemplateActionDefinition extends AbstractTemplateActionDefini
         // Go through the template definitions and set the values.
         for (String paramName : parameterTemplates.keySet())
         {
-            // Transform the template
+            // Fetch the template. Need to de-escape things put in to work
+            //  around it not being possible to disable SPEL for one bean 
             String template = parameterTemplates.get(paramName);
-            String stringValue = templateService.processTemplateString(getTemplateActionModelFactory()
-                    .getTemplateEngine(), template, getTemplateActionModelFactory().getModel(nodeRef));
+            if(template.contains("\\$\\{") || template.contains("\\#\\{"))
+            {
+               template = template.replace("\\$\\{", "${");
+               template = template.replace("\\#\\{", "#{");
+               if(template.contains("\\}"))
+               {
+                  template = template.replace("\\}", "}");
+               }
+            }
+            
+            // Transform the template
+            String stringValue = templateService.processTemplateString(
+                  getTemplateActionModelFactory().getTemplateEngine(), 
+                  template, getTemplateActionModelFactory().getModel(nodeRef));
 
             // Find the data type from the action defintion
             DataTypeDefinition dataTypeDef;
             if (actionDefinition.getParameterDefintion(paramName) != null)
             {
-                dataTypeDef = dictionaryService
-                        .getDataType(actionDefinition.getParameterDefintion(paramName).getType());
+                dataTypeDef = dictionaryService.getDataType(
+                      actionDefinition.getParameterDefintion(paramName).getType());
             }
             // Fall back to the DD using the property name of it is not defined
             // This is sometimes used for setting a property to a value.

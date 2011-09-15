@@ -3,6 +3,32 @@
 
 <beans>
 
+    <bean id="linksServiceReadTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="advice">
+            <ref bean="retryingReadTxnAdvice"/>
+        </property>
+        <property name="mappedNames">
+            <list>
+                <value>getLink</value>
+                <value>listLinks</value>
+                <value>findLinks</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="linksServiceWriteTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="advice">
+            <ref bean="retryingWriteTxnAdvice"/>
+        </property>
+        <property name="mappedNames">
+            <list>
+                <value>createLink</value>
+                <value>updateLink</value>
+                <value>deleteLink</value>
+            </list>
+        </property>
+    </bean>
+
    <!-- Links Service -->
    <bean id="LinksService" class="org.springframework.aop.framework.ProxyFactoryBean">
       <property name="proxyInterfaces">
@@ -13,7 +39,9 @@
       </property>
       <property name="interceptorNames">
          <list>
-            <idref local="LinksService_transaction" />
+            <idref bean="linksServiceReadTxnAdvisor" />
+            <idref bean="linksServiceWriteTxnAdvisor" />
+            <idref bean="checkTxnAdvisor" />
             <idref bean="AuditMethodInterceptor" />
             <idref bean="exceptionTranslator" />
             <idref bean="LinksService_security" />
@@ -50,17 +78,17 @@
    </bean>
 
    <!-- Links Service base bean -->
-	<bean id="linksService" class="org.alfresco.repo.links.LinksServiceImpl">
-        <property name="nodeDAO" ref="nodeDAO" />
-        <property name="nodeService" ref="NodeService"/>
-        <property name="siteService" ref="SiteService"/>
-        <property name="searchService" ref="SearchService"/>
-        <property name="contentService" ref="ContentService"/>
-        <property name="taggingService" ref="TaggingService"/>
-        <property name="transactionService" ref="transactionService" />
-        <property name="cannedQueryRegistry" ref="linksCannedQueryRegistry" />
-        <property name="namespaceService" ref="NamespaceService"/>
-        <property name="dictionaryService" ref="dictionaryService"/>
-	</bean>
+   <bean id="linksService" class="org.alfresco.repo.links.LinksServiceImpl">
+       <property name="nodeDAO" ref="nodeDAO" />
+       <property name="nodeService" ref="NodeService"/>
+       <property name="siteService" ref="SiteService"/>
+       <property name="searchService" ref="SearchService"/>
+       <property name="contentService" ref="ContentService"/>
+       <property name="taggingService" ref="TaggingService"/>
+       <property name="transactionService" ref="transactionService" />
+       <property name="cannedQueryRegistry" ref="linksCannedQueryRegistry" />
+       <property name="namespaceService" ref="NamespaceService"/>
+       <property name="dictionaryService" ref="dictionaryService"/>
+   </bean>
 
 </beans>

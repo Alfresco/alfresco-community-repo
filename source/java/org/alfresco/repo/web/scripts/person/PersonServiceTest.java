@@ -289,7 +289,7 @@ public class PersonServiceTest extends BaseWebScriptTest
                         Status.STATUS_BAD_REQUEST);        
     }
     
-    public void testCreatePersonMissingLastName() throws Exception
+    public void DISABLED_testCreatePersonMissingLastName() throws Exception
     {
         String userName  = RandomStringUtils.randomNumeric(6);
                 

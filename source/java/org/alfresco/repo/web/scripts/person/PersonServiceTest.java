@@ -287,20 +287,5 @@ public class PersonServiceTest extends BaseWebScriptTest
         createPerson(userName, "myTitle", "", "myLastName", "myOrganisation",
                         "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg",
                         Status.STATUS_BAD_REQUEST);        
-    }
-    
-    public void DISABLED_testCreatePersonMissingLastName() throws Exception
-    {
-        String userName  = RandomStringUtils.randomNumeric(6);
-                
-        // Create a new person with lastName == null (last name is missing)
-        createPerson(userName, "myTitle", "myFirstName", null, "myOrganisation",
-                        "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg",
-                        Status.STATUS_BAD_REQUEST);        
-        
-        // Create a new person with lastName == "" (last name is blank)
-        createPerson(userName, "myTitle", "myFirstName", "", "myOrganisation",
-                        "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg",
-                        Status.STATUS_BAD_REQUEST);        
-    }    
+    }  
 }

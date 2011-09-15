@@ -51,6 +51,7 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteInfo;
@@ -60,6 +61,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.extensions.surf.util.URLDecoder;
 
@@ -359,47 +361,57 @@ public class AVMToADMRemoteStorePatch extends AbstractPatch
             }
             
             NodeRef surfConfigRef;
-            if (siteName != null)
+            try
             {
-                if (debug) logger.debug("...resolved site id: " + siteName);
-                NodeRef siteRef = null;
-                String key = AlfrescoTransactionSupport.getTransactionId() + siteName;
-                Pair<NodeRef, NodeRef> refCache = siteReferenceCache.get(key);
-                if (refCache == null)
+                if (siteName != null)
                 {
-                    refCache = new Pair<NodeRef, NodeRef>(null, null);
-                    siteReferenceCache.put(key, refCache);
-                }
-                siteRef = refCache.getFirst();
-                if (siteRef == null)
-                {
-                    siteRef = getSiteNodeRef(siteName);
-                    refCache.setFirst(siteRef);
-                }
-                if (siteRef != null)
-                {
-                    surfConfigRef = refCache.getSecond();
-                    if (surfConfigRef == null)
+                    if (debug) logger.debug("...resolved site id: " + siteName);
+                    NodeRef siteRef = null;
+                    String key = AlfrescoTransactionSupport.getTransactionId() + siteName;
+                    Pair<NodeRef, NodeRef> refCache = siteReferenceCache.get(key);
+                    if (refCache == null)
                     {
-                        surfConfigRef = getSurfConfigNodeRef(siteRef);
-                        refCache.setSecond(surfConfigRef);
+                        refCache = new Pair<NodeRef, NodeRef>(null, null);
+                        siteReferenceCache.put(key, refCache);
                     }
+                    siteRef = refCache.getFirst();
+                    if (siteRef == null)
+                    {
+                        siteRef = getSiteNodeRef(siteName);
+                        refCache.setFirst(siteRef);
+                    }
+                    if (siteRef != null)
+                    {
+                        surfConfigRef = refCache.getSecond();
+                        if (surfConfigRef == null)
+                        {
+                            surfConfigRef = getSurfConfigNodeRef(siteRef);
+                            refCache.setSecond(surfConfigRef);
+                        }
+                    }
+                    else
+                    {
+                        logger.info("WARNING: unable to migrate path as site id cannot be found: " + siteName);
+                        return;
+                    }
+                }
+                else if (userId != null)
+                {
+                    if (debug) logger.debug("...resolved user id: " + userId);
+                    surfConfigRef = this.surfConfigRef;
                 }
                 else
                 {
-                    logger.info("WARNING: unable to migrate path as site id cannot be found: " + siteName);
-                    return;
+                    if (debug) logger.debug("...resolved generic path.");
+                    surfConfigRef = this.surfConfigRef;
                 }
             }
-            else if (userId != null)
+            catch (ConcurrencyFailureException conErr)
             {
-                if (debug) logger.debug("...resolved user id: " + userId);
-                surfConfigRef = this.surfConfigRef;
-            }
-            else
-            {
-                if (debug) logger.debug("...resolved generic path.");
-                surfConfigRef = this.surfConfigRef;
+                logger.warn("Unable to create folder: surf-config for path: " + avmNode.getPath() +
+                                " - as another txn is busy, will retry later.");
+                retryPaths.put(avmNode.getPath(), avmNode);
+                return;
             }
             
             // ensure folders exist down to the specified parent
@@ -508,9 +520,19 @@ public class AVMToADMRemoteStorePatch extends AbstractPatch
             QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, SURF_CONFIG);
             Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1, 1.0f);
             properties.put(ContentModel.PROP_NAME, (Serializable) SURF_CONFIG);
-            ChildAssociationRef ref = this.nodeService.createNode(
-                    rootRef, ContentModel.ASSOC_CONTAINS, assocQName, ContentModel.TYPE_FOLDER, properties);
-            surfConfigRef = ref.getChildRef();
+            try
+            {
+                ChildAssociationRef ref = this.nodeService.createNode(
+                        rootRef, ContentModel.ASSOC_CONTAINS, assocQName, ContentModel.TYPE_FOLDER, properties);
+                surfConfigRef = ref.getChildRef();
+            }
+            catch (DuplicateChildNodeNameException dupErr)
+            {
+                // This exception is excepted in multi-threaded creation scenarios - but since fix for
+                // ALF-10280 rev 30468 - it no longer automatically retries in the txn - therefore we
+                // throw out an exception that does retry instead.
+                throw new ConcurrencyFailureException("Forcing batch retry due to DuplicateChildNodeNameException" , dupErr);
+            }
         }
         return surfConfigRef;
     }

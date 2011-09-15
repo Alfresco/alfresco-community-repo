@@ -520,12 +520,11 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
                     // If the error triggers compensation, and they should be processed.
                     if (runCompensatingActions && (t instanceof CompensatingActionException))
                     {
-                        CompensatingActionException cae = (CompensatingActionException) t.getCause();
+                        CompensatingActionException cae = (CompensatingActionException)t;
                         for (Pair<Action, NodeRef> pair : cae.getCompensatingActions())
                             if ((pair != null) && (pair.getFirst() != null) && (pair.getSecond() != null))
                             {
                                 try
-
                                 {
                                     // try the compensating action in its own tx
                                     runTransactionalCompensatingAction(pair);

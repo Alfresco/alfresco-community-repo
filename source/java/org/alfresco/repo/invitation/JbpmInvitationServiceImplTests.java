@@ -19,7 +19,11 @@
 
 package org.alfresco.repo.invitation;
 
+import java.util.Arrays;
+
 import org.alfresco.repo.site.SiteModel;
+import org.alfresco.repo.workflow.activiti.ActivitiConstants;
+import org.alfresco.repo.workflow.jbpm.JBPMEngine;
 import org.alfresco.service.cmr.invitation.Invitation;
 
 /**
@@ -38,7 +42,7 @@ public class JbpmInvitationServiceImplTests extends AbstractInvitationServiceImp
         super.onSetUpInTransaction();
         
         // Add a few Jbpm invitations to check they dont' interfere with Activiti invitations.
-        workflowAdminService.setJBPMEngineEnabled(false);
+        workflowAdminService.setEnabledEngines(Arrays.asList(ActivitiConstants.ENGINE_ID));
         
         String invitee = USER_ONE;
         Invitation.ResourceType resourceType = Invitation.ResourceType.WEB_SITE;
@@ -59,7 +63,6 @@ public class JbpmInvitationServiceImplTests extends AbstractInvitationServiceImp
                 resourceType, resourceName, inviteeRole);
         
         // Disable Jbpm and enable Activiti
-        workflowAdminService.setActivitiEngineEnabled(false);
-        workflowAdminService.setJBPMEngineEnabled(true);
+        workflowAdminService.setEnabledEngines(Arrays.asList(JBPMEngine.ENGINE_ID));
     }
 }

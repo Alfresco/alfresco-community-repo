@@ -72,12 +72,7 @@ public class AlfrescoBpmnParseListener implements BpmnParseListener
     @Override
     public void parseProcess(Element processElement, ProcessDefinitionEntity processDefinition)
     {
-        processDefinition.addExecutionListener(ExecutionListener.EVENTNAME_START, processCreateListener);
-        if (tenantService.isEnabled())
-        {
-            String key = tenantService.getName(processDefinition.getKey());
-            processDefinition.setKey(key);
-        }
+        //NOOP
     }
 
     @Override
@@ -187,7 +182,15 @@ public class AlfrescoBpmnParseListener implements BpmnParseListener
     @Override
     public void parseRootElement(Element arg0, List<ProcessDefinitionEntity> arg1)
     {
-        // Nothing to do here
+        for (ProcessDefinitionEntity processDefinition : arg1)
+        {
+            processDefinition.addExecutionListener(ExecutionListener.EVENTNAME_START, processCreateListener);
+            if (tenantService.isEnabled())
+            {
+                String key = tenantService.getName(processDefinition.getKey());
+                processDefinition.setKey(key);
+            }
+        }
     }
 
     @Override

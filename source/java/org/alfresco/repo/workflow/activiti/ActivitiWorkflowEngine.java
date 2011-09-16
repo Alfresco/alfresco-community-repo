@@ -435,7 +435,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     {
         try 
         {
-            String key =factory.getProcessKey(workflowName);
+            String key =factory.getDomainProcessKey(workflowName);
             ProcessDefinition definition = repoService.createProcessDefinitionQuery()
                 .processDefinitionKey(key)
                 .latestVersion()
@@ -918,7 +918,8 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             {
                 throw new IllegalAccessError("The process definition does not have an id!");
             }
-            return idAttrib.getNodeValue();
+            String key = idAttrib.getNodeValue();
+            return factory.getDomainProcessKey(key);
         }
         finally
         {

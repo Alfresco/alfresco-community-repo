@@ -65,6 +65,9 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
+import org.alfresco.util.collections.CollectionUtils;
+import org.alfresco.util.collections.EntryTransformer;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -110,14 +113,13 @@ public class ActivitiPropertyConverter
         Map<QName, PropertyDefinition> taskProperties = taskDef.getProperties();
         Map<QName, AssociationDefinition> taskAssociations = taskDef.getAssociations();
         
-        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
         TaskService taskService = activitiUtil.getTaskService();
         // Get all task variables including execution vars.
         Map<String, Object> variables = taskService.getVariables(task.getId());
+        Map<String, Object> localVariables = taskService.getVariablesLocal(task.getId());
         
         // Map the arbitrary properties
-        Map<String, Object> localVariables = taskService.getVariablesLocal(task.getId());
-        mapArbitraryProperties(variables, properties, localVariables, taskProperties, taskAssociations);
+        Map<QName, Serializable> properties =mapArbitraryProperties(variables, localVariables, taskProperties, taskAssociations);
         
         // Map activiti task instance fields to properties
         properties.put(WorkflowModel.PROP_TASK_ID, task.getId());
@@ -200,8 +202,6 @@ public class ActivitiPropertyConverter
         Map<QName, PropertyDefinition> taskProperties = typeDefinition.getProperties();
         Map<QName, AssociationDefinition> taskAssociations = typeDefinition.getAssociations();
         
-        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
-        
         // Get the local task variables
         Map<String, Object> localVariables = task.getVariablesLocal();
         Map<String, Object> variables = null;
@@ -228,9 +228,8 @@ public class ActivitiPropertyConverter
             // Only local variables should be used.
             variables = localVariables;
         }
-        
         // Map the arbitrary properties
-        mapArbitraryProperties(variables, properties, localVariables, taskProperties, taskAssociations);
+        Map<QName, Serializable> properties =mapArbitraryProperties(variables, localVariables, taskProperties, taskAssociations);
         
         // Map activiti task instance fields to properties
         properties.put(WorkflowModel.PROP_TASK_ID, task.getId());
@@ -255,19 +254,20 @@ public class ActivitiPropertyConverter
     }
     
     @SuppressWarnings("unchecked")
-    public Map<QName, Serializable> getTaskProperties(HistoricTaskInstance historicTask, Map<String,Object> variables)
+    public Map<QName, Serializable> getTaskProperties(HistoricTaskInstance historicTask, Map<String,Object> localVariables)
     {
         // Retrieve type definition for task, based on taskFormKey variable
-        String formKey = (String) variables.get(ActivitiConstants.PROP_TASK_FORM_KEY);
+        String formKey = (String) localVariables.get(ActivitiConstants.PROP_TASK_FORM_KEY);
         TypeDefinition taskDef = typeManager.getFullTaskDefinition(formKey);
         
         Map<QName, PropertyDefinition> taskProperties = taskDef.getProperties();
         Map<QName, AssociationDefinition> taskAssociations = taskDef.getAssociations();
         
-        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+        Map<String, Object> allVariables = getHistoricProcessVariables(historicTask.getProcessInstanceId());
+        allVariables.putAll(localVariables);
         
         // Map the arbitrary properties
-        mapArbitraryProperties(variables, properties, variables, taskProperties, taskAssociations);
+        Map<QName, Serializable> properties =mapArbitraryProperties(allVariables, localVariables, taskProperties, taskAssociations);
         
         // Map activiti task instance fields to properties
         properties.put(WorkflowModel.PROP_TASK_ID, historicTask.getId());
@@ -286,14 +286,14 @@ public class ActivitiPropertyConverter
         
         // Be sure to fetch the outcome
         String outcomeVarName = factory.mapQNameToName(WorkflowModel.PROP_OUTCOME);
-        if(variables.get(outcomeVarName) != null)
+        if(localVariables.get(outcomeVarName) != null)
         {
-             properties.put(WorkflowModel.PROP_OUTCOME, (Serializable) variables.get(outcomeVarName));
+             properties.put(WorkflowModel.PROP_OUTCOME, (Serializable) localVariables.get(outcomeVarName));
         }
         
         // History of pooled actors is stored in task variable
         List<NodeRef> pooledActors = new ArrayList<NodeRef>();
-        List<String> pooledActorRefIds = (List<String>) variables.get(ActivitiConstants.PROP_POOLED_ACTORS_HISTORY);
+        List<String> pooledActorRefIds = (List<String>) localVariables.get(ActivitiConstants.PROP_POOLED_ACTORS_HISTORY);
         if(pooledActorRefIds != null)
         {
             for(String nodeId : pooledActorRefIds) 
@@ -406,8 +406,6 @@ public class ActivitiPropertyConverter
     
     public Map<QName, Serializable> getStartTaskProperties(HistoricProcessInstance historicProcessInstance, String taskDefId, boolean completed) 
     {
-        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
-        
         TypeDefinition taskDef = typeManager.getStartTaskDefinition(taskDefId);
         Map<QName, PropertyDefinition> taskProperties = taskDef.getProperties();
         Map<QName, AssociationDefinition> taskAssociations = taskDef.getAssociations();
@@ -415,7 +413,7 @@ public class ActivitiPropertyConverter
         Map<String, Object> variables = getStartVariables(historicProcessInstance);
         
         // Map all the properties
-        mapArbitraryProperties(variables, properties, variables, taskProperties, taskAssociations);
+        Map<QName, Serializable> properties =mapArbitraryProperties(variables, variables, taskProperties, taskAssociations);
         
         // Map activiti task instance fields to properties
         properties.put(WorkflowModel.PROP_TASK_ID, ActivitiConstants.START_TASK_PREFIX + historicProcessInstance.getId());
@@ -535,28 +533,31 @@ public class ActivitiPropertyConverter
         return convertHistoricDetails(historicDetails);
     }
     
-    private void mapArbitraryProperties(Map<String, Object> variables,
-            Map<QName, Serializable> properties,
-                Map<String, Object> localVariables,
-                Map<QName, PropertyDefinition> taskProperties,
-                Map<QName, AssociationDefinition> taskAssociations) 
+    private Map<QName, Serializable> mapArbitraryProperties(Map<String, Object> variables,
+            final Map<String, Object> localVariables,
+                final Map<QName, PropertyDefinition> taskProperties,
+                final Map<QName, AssociationDefinition> taskAssociations) 
     {
-        // Map arbitrary task variables
-        for (Entry<String, Object> entry : variables.entrySet())
+        EntryTransformer<String, Object, QName, Serializable> transformer = new EntryTransformer<String, Object, QName, Serializable>()
         {
-            String key = entry.getKey();
-            QName qname = factory.mapNameToQName(key);
-
-            // Add variable, only if part of task definition or locally defined
-            // on task
-            if (taskProperties.containsKey(qname) 
-                    || taskAssociations.containsKey(qname) 
-                    || localVariables.containsKey(key))
+            @Override
+            public Pair<QName, Serializable> apply(Entry<String, Object> entry)
             {
-                Serializable value = convertPropertyValue(entry.getValue());
-                properties.put(qname, value);
+                String key = entry.getKey();
+                QName qname = factory.mapNameToQName(key);
+                // Add variable, only if part of task definition or locally defined
+                // on task
+                if (taskProperties.containsKey(qname) 
+                        || taskAssociations.containsKey(qname) 
+                        || localVariables.containsKey(key))
+                {
+                    Serializable value = convertPropertyValue(entry.getValue());
+                    return new Pair<QName, Serializable>(qname, value);
+                }
+                return null;
             }
-        }
+        };
+        return CollectionUtils.transform(variables, transformer);
     }
 
     /**

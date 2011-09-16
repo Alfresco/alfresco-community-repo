@@ -25,7 +25,6 @@
         <property name="companyHomeStore" value="${spaces.store}" />
         <property name="companyHomePath" value="/${spaces.company_home.childname}" />
         <property name="unprotectedSearchService" ref="searchService" />
-        <property name="workflowAdminService" ref="workflowAdminService" />
     </bean>
    
 </beans>

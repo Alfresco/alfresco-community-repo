@@ -43,6 +43,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.workflow.WorkflowAdminService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowDeployment;
 import org.alfresco.service.cmr.workflow.WorkflowException;
@@ -79,7 +80,8 @@ public class WorkflowServiceImpl implements WorkflowService
     private DictionaryService dictionaryService;
     private NodeService protectedNodeService;
     private ServiceRegistry services;
-
+    private WorkflowAdminService workflowAdminService;
+    
     /**
      * Sets the Authority Service
      * 
@@ -100,6 +102,14 @@ public class WorkflowServiceImpl implements WorkflowService
         this.registry = registry;
     }
 
+    /**
+     * @param workflowAdminService the workflowAdminService to set
+     */
+    public void setWorkflowAdminService(WorkflowAdminService workflowAdminService)
+    {
+        this.workflowAdminService = workflowAdminService;
+    }
+    
     /**
      * Sets the Workflow Package Component
      * 
@@ -274,8 +284,11 @@ public class WorkflowServiceImpl implements WorkflowService
         String[] ids = registry.getWorkflowComponents();
         for (String id : ids)
         {
-            WorkflowComponent component = registry.getWorkflowComponent(id);
-            definitions.addAll(component.getDefinitions());
+            if(workflowAdminService.isEngineVisible(id))
+            {
+                WorkflowComponent component = registry.getWorkflowComponent(id);
+                definitions.addAll(component.getDefinitions());
+            }
         }
         return Collections.unmodifiableList(definitions);
     }
@@ -291,8 +304,11 @@ public class WorkflowServiceImpl implements WorkflowService
         String[] ids = registry.getWorkflowComponents();
         for (String id : ids)
         {
-            WorkflowComponent component = registry.getWorkflowComponent(id);
-            definitions.addAll(component.getAllDefinitions());
+            if(workflowAdminService.isEngineVisible(id))
+            {
+                WorkflowComponent component = registry.getWorkflowComponent(id);
+                definitions.addAll(component.getAllDefinitions());
+            }
         }
         return Collections.unmodifiableList(definitions);
     }

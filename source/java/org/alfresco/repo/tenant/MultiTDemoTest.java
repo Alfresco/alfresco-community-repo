@@ -138,6 +138,7 @@ public class MultiTDemoTest extends TestCase
     
     public MultiTDemoTest()
     {
+        super();
     }
     
     

@@ -21,6 +21,7 @@ package org.alfresco.repo.invitation;
 
 import java.lang.reflect.Field;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -33,8 +34,6 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.workflow.WorkflowAdminServiceImpl;
-import org.alfresco.repo.workflow.activiti.ActivitiConstants;
-import org.alfresco.repo.workflow.jbpm.JBPMEngine;
 import org.alfresco.service.cmr.invitation.Invitation;
 import org.alfresco.service.cmr.invitation.Invitation.ResourceType;
 import org.alfresco.service.cmr.invitation.InvitationSearchCriteria;
@@ -82,7 +81,9 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
     public final static String USER_ONE_LASTNAME = "Test";
     public final static String USER_ONE_EMAIL = USER_ONE + "@alfrescotesting.com";
     public final static String USER_TWO_EMAIL = USER_TWO + "@alfrescotesting.com";
-
+    
+    private Collection<String> enabledEngines;
+    private Collection<String> visibleEngines;
     /**
      * Called during the transaction setup
      */
@@ -101,9 +102,8 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
         
         this.startSendEmails = invitationServiceImpl.isSendEmails();
         
-        // Check both workflow engines are active.
-        assertTrue(workflowAdminService.isEngineEnabled(JBPMEngine.ENGINE_ID));
-        assertTrue(workflowAdminService.isEngineEnabled(ActivitiConstants.ENGINE_ID));
+        this.enabledEngines = workflowAdminService.getEnabledEngines();
+        this.visibleEngines = workflowAdminService.getVisibleEngines();
 
         invitationServiceImpl.setSendEmails(true);
         
@@ -150,11 +150,13 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
     @Override
     protected void onTearDownInTransaction() throws Exception
     {
-        // Make sure both workflow engines are enabled.
-        workflowAdminService.setActivitiEngineEnabled(true);
-        workflowAdminService.setJBPMEngineEnabled(true);
+        // Make sure both workflow engines are enabled.and visible
         
         this.authenticationComponent.setSystemUserAsCurrentUser();
+        
+        workflowAdminService.setEnabledEngines(enabledEngines);
+        workflowAdminService.setVisibleEngines(visibleEngines);
+        
         invitationServiceImpl.setSendEmails(startSendEmails);
         siteService.deleteSite(SITE_SHORT_NAME_INVITE);
         siteService.deleteSite(SITE_SHORT_NAME_RED);

@@ -197,12 +197,14 @@ public class WorkflowTaskQuery
     }
 
     /**
+     * Use {@link WorkflowTaskQuery#setWorkflowDefinitionName(String)} instead.
      * Filters on the {@link WorkflowDefinition} name. When using Activiti,
      * the method {@link #setWorkflowDefinitionName(String)} should be used
      * instead of this method.
      * 
      * @param processName
      */
+    @Deprecated
     public void setProcessName(QName processName)
     {
         this.processName = processName;

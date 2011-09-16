@@ -18,20 +18,19 @@
  */
 package org.alfresco.repo.workflow;
 
-import java.lang.reflect.Field;
 
 import junit.framework.Test;
-import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import org.alfresco.repo.workflow.activiti.ActivitiMultitenantWorkflowTest;
 import org.alfresco.repo.workflow.activiti.ActivitiSpringTransactionTest;
 import org.alfresco.repo.workflow.activiti.ActivitiWorkflowServiceIntegrationTest;
 import org.alfresco.repo.workflow.jbpm.AlfrescoJavaScriptIntegrationTest;
 import org.alfresco.repo.workflow.jbpm.JBPMEngineTest;
 import org.alfresco.repo.workflow.jbpm.JBPMSpringTest;
+import org.alfresco.repo.workflow.jbpm.JbpmMultitenantWorkflowTest;
 import org.alfresco.repo.workflow.jbpm.JbpmWorkflowServiceIntegrationTest;
 import org.alfresco.repo.workflow.jbpm.ReviewAndApproveTest;
-import org.alfresco.repo.workflow.jbpm.WorkflowTaskInstance;
 import org.alfresco.util.ApplicationContextHelper;
 
 /**
@@ -68,34 +67,15 @@ public class WorkflowTestSuite extends TestSuite
         // periodic wierd build failures
         suite.addTestSuite( WorkflowSuiteContextShutdownTest.class );
 
+        // These tests use a different Spring config.
+        suite.addTestSuite( ActivitiMultitenantWorkflowTest.class );
+        suite.addTestSuite( JbpmMultitenantWorkflowTest.class );
+        
         // Note the following workflow tests are not included in this sutie:
         // ActivitiTaskComponentTest
         // ActivitiWorkflowComponentTest
         // ActivitiWorkflowRestApiTest
         // JbpmWorkflowRestApiTest
         return suite;
-    }
-    
-    public static class WorkflowSuiteContextShutdownTest extends TestCase 
-    {
-        public void testDummy() { /*Do Nothing */ }
-
-        @Override
-        protected void tearDown() throws Exception 
-        {
-            System.err.println("Workflow test suite has completed, shutting down the ApplicationContext...");
-            ApplicationContextHelper.closeApplicationContext();
-          
-            // Null out the static Workflow engine field
-            Field engineField = WorkflowTaskInstance.class.getDeclaredField("jbpmEngine");
-            engineField.setAccessible(true);
-            engineField.set(null, null);
-  
-            Thread.yield();
-            Thread.sleep(25);
-            Thread.yield();
-  
-            System.err.println("Workflow test suite shutdown has finished");
-        }
     }
 }

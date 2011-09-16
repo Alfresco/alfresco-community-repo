@@ -44,6 +44,8 @@
         <constructor-arg value="org.alfresco.repo.workflow.BPMEngineRegistry" />
     </bean>
 
+   <bean id="baseWorkflowEngineStatus" class="org.alfresco.repo.workflow.WorkflowEngineStatus" abstract="true" />
+
     <!-- Authentication Util initialization -->
     <bean id="authenticationUtil"
         class="org.alfresco.repo.security.authentication.AuthenticationUtil">

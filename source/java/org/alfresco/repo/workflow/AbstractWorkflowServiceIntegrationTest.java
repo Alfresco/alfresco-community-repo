@@ -79,8 +79,8 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
     protected TestPersonManager personManager;
     protected TestGroupManager groupManager;
     protected NodeService nodeService;
-    protected WorkflowAdminServiceImpl workflowAdminService;
     private NodeRef companyHome;
+    protected WorkflowTestHelper wfTestHelper;
     
     public void testDeployWorkflowDefinition()
     {
@@ -104,6 +104,20 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         // Check getDefinitionByName().
         WorkflowDefinition defByName = workflowService.getDefinitionByName(definition.getName());
         checkDefinition(definition, defByName);
+        
+        //Disable all other workflow engines
+        wfTestHelper.enableThisEngineOnly();
+        
+        // Check contains some definitions.
+        assertFalse(workflowService.getDefinitions().isEmpty());
+        assertFalse(workflowService.getAllDefinitions().isEmpty());
+        
+        // turn off workflow definition visibility
+        wfTestHelper.setVisible(false);
+        
+        // ensure the list of workflow definitions are empty
+        assertTrue(workflowService.getDefinitions().isEmpty());
+        assertTrue(workflowService.getAllDefinitions().isEmpty());
     }
 
     public void testStartWorkflow()
@@ -1048,8 +1062,7 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
     private InputStream getInputStream(String resource)
     {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        InputStream input= classLoader.getResourceAsStream(resource);
-        return input;
+        return classLoader.getResourceAsStream(resource);
     }
     
     private void checkDefinitions(WorkflowDefinition expDefinition, boolean expContainsDef, WorkflowDefinition... definitions)
@@ -1138,6 +1151,7 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
     @Override
     protected void onSetUpInTransaction() throws Exception
     {
+        super.onSetUpInTransaction();
         ServiceRegistry registry = (ServiceRegistry) applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
         this.workflowService = registry.getWorkflowService();
         this.authenticationComponent = (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
@@ -1152,9 +1166,8 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
 
         authenticationComponent.setSystemUserAsCurrentUser();
 
-        // for the purposes of the tests make sure JBPM workflow definitions are visible
-        this.workflowAdminService = (WorkflowAdminServiceImpl) applicationContext.getBean("workflowAdminService");
-        this.workflowAdminService.setJBPMWorkflowDefinitionsVisible(true);
+        WorkflowAdminServiceImpl workflowAdminService = (WorkflowAdminServiceImpl) applicationContext.getBean(WorkflowAdminServiceImpl.NAME);
+        this.wfTestHelper = new WorkflowTestHelper(workflowAdminService, getEngine(), true);
         
         // create test users
         this.personManager = new TestPersonManager(authenticationService, personService, nodeService);
@@ -1178,12 +1191,13 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
     @Override
     protected void onTearDownInTransaction() throws Exception
     {
-        super.onTearDownInTransaction();
-
+        wfTestHelper.tearDown();
         authenticationComponent.setSystemUserAsCurrentUser();
         groupManager.clearGroups();
         personManager.clearPeople();
         authenticationComponent.clearCurrentSecurityContext();
+
+        super.onTearDownInTransaction();
     }
 
     protected abstract String getEngine();

@@ -19,10 +19,14 @@
 package org.alfresco.repo.workflow;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.service.cmr.workflow.WorkflowAdminService;
 import org.alfresco.service.cmr.workflow.WorkflowException;
+import org.alfresco.util.collections.CollectionUtils;
+import org.alfresco.util.collections.Filter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -83,19 +87,9 @@ public class BPMEngineRegistry
         {
             throw new WorkflowException("Workflow Component already registered for engine id '" + engineId + "'");
         }
-        
-        if (workflowAdminService.isEngineEnabled(engineId))
-        {
-            workflowComponents.put(engineId, engine);
-        
-            if (logger.isDebugEnabled())
-                logger.debug("Registered Workflow Component '" + engineId + "' (" + engine.getClass() + ")");
-        }
-        else
-        {
-            if (logger.isWarnEnabled())
-                logger.warn("Ignoring Workflow Component '" + engineId + "' (" + engine.getClass() + ") as the engine is disabled");
-        }
+        workflowComponents.put(engineId, engine);
+        if (logger.isDebugEnabled())
+            logger.debug("Registered Workflow Component '" + engineId + "' (" + engine.getClass() + ")");
     }
 
     /**
@@ -105,7 +99,7 @@ public class BPMEngineRegistry
      */
     public String[] getWorkflowComponents()
     {
-        return workflowComponents.keySet().toArray(new String[workflowComponents.keySet().size()]);
+        return getComponents(workflowComponents.keySet());
     }
 
     /**
@@ -116,6 +110,14 @@ public class BPMEngineRegistry
      */
     public WorkflowComponent getWorkflowComponent(String engineId)
     {
+        if(false == workflowAdminService.isEngineEnabled(engineId))
+        {
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("Ignoring disabled WorkflowComponent: "+engineId);
+            }
+            return null;
+        }
         return workflowComponents.get(engineId);
     }
     
@@ -131,19 +133,9 @@ public class BPMEngineRegistry
         {
             throw new WorkflowException("Task Component already registered for engine id '" + engineId + "'");
         }
-        
-        if (workflowAdminService.isEngineEnabled(engineId))
-        {
-            taskComponents.put(engineId, engine);
-        
-            if (logger.isDebugEnabled())
-                logger.debug("Registered Task Component '" + engineId + "' (" + engine.getClass() + ")");
-        }
-        else
-        {
-            if (logger.isWarnEnabled())
-                logger.warn("Ignoring Task Component '" + engineId + "' (" + engine.getClass() + ") as the engine is disabled");
-        }
+        taskComponents.put(engineId, engine);
+        if (logger.isDebugEnabled())
+            logger.debug("Registered Task Component '" + engineId + "' (" + engine.getClass() + ")");
     }
 
     /**
@@ -153,7 +145,19 @@ public class BPMEngineRegistry
      */
     public String[] getTaskComponents()
     {
-        return taskComponents.keySet().toArray(new String[taskComponents.keySet().size()]);
+        return getComponents(taskComponents.keySet());
+    }
+
+    private String[] getComponents(Set<String> components)
+    {
+        List<String> filtered = CollectionUtils.filter(components, new Filter<String>()
+        {
+            public Boolean apply(String engineId)
+            {
+                return workflowAdminService.isEngineEnabled(engineId);
+            }
+        });
+        return filtered.toArray(new String[filtered.size()]);
     }
 
     /**
@@ -164,6 +168,14 @@ public class BPMEngineRegistry
      */
     public TaskComponent getTaskComponent(String engineId)
     {
+        if(false == workflowAdminService.isEngineEnabled(engineId))
+        {
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("Ignoring disabled TaskComponent: "+engineId);
+            }
+            return null;
+        }
         return taskComponents.get(engineId);
     }
 

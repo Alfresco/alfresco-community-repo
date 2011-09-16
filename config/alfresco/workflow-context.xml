@@ -30,6 +30,7 @@
 	  <property name="dictionaryService" ref="dictionaryService"/>
 	  <property name="protectedNodeService" ref="NodeService"/>
 	  <property name="services" ref="ServiceRegistry"/>
+	  <property name="workflowAdminService" ref="workflowAdminService"/>
    </bean>
 
    <bean id="workflowPackageImpl" class="org.alfresco.repo.workflow.WorkflowPackageImpl">
@@ -66,17 +67,30 @@
    <!--                                       -->
    <!-- Workflow Admin Service Implementation -->
    <!--                                       -->
-   
-   <bean id="workflowAdminService" class="org.alfresco.repo.workflow.WorkflowAdminServiceImpl">
-      <property name="activitiEngineEnabled">
-         <value>${system.workflow.engine.activiti.enabled}</value>
-      </property>
-      <property name="JBPMEngineEnabled">
-         <value>${system.workflow.engine.jbpm.enabled}</value>
-      </property>
-      <property name="JBPMWorkflowDefinitionsVisible">
-         <value>${system.workflow.jbpm.definitions.visible}</value>
-      </property>
+   <bean id="workflowAdminService" class="org.alfresco.repo.workflow.WorkflowAdminServiceImpl" >
+       <property name="workflowEngineConfigurations">
+           <list>
+               <!-- JbpmEngine configuration -->
+               <props>
+                   <prop key="engineId">jbpm</prop>
+                   <prop key="enabled">${system.workflow.engine.jbpm.enabled}</prop>
+                   <prop key="visible">${system.workflow.engine.jbpm.definitions.visible}</prop>
+              </props>
+               <!-- ActivitiWorkflowEngine configuration -->
+               <props>
+                   <prop key="engineId">activiti</prop>
+                   <prop key="enabled">${system.workflow.engine.activiti.enabled}</prop>
+                   <prop key="visible">${system.workflow.engine.activiti.definitions.visible}</prop>
+              </props>
+          </list>      
+       </property>
+   </bean>
+
+   <!--                                                  -->
+   <!-- Base Workflow Engine Status  -->
+   <!--                                                  -->
+   <bean id="baseWorkflowEngineStatus" class="org.alfresco.repo.workflow.WorkflowEngineStatus" abstract="true">
+      <property name="workflowAdminService" ref="workflowAdminService" />
    </bean>
 
    <!--                 -->

@@ -549,10 +549,8 @@ public class ActivitiTypeConverter
         {
         	collectedVariables.putAll(variables);
         }
-        
-        boolean isActive = historicProcessInstance.getEndTime() == null;
-        return factory.createInstance(
-                    id, definition, variables, isActive, startDate, endDate);
+        boolean isActive = endDate == null;
+        return factory.createInstance(id, definition, variables, isActive, startDate, endDate);
     }
     
     public WorkflowInstance convert(HistoricProcessInstance historicProcessInstance)

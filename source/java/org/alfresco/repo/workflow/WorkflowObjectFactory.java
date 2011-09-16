@@ -20,6 +20,7 @@
 package org.alfresco.repo.workflow;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -118,6 +119,7 @@ public class WorkflowObjectFactory
                 WorkflowTaskDefinition startTaskDef)
     {
         checkDomain(defName);
+        String actualDefName = buildGlobalId(tenantService.getBaseName(defName));
         String actualId = buildGlobalId(defId);
         
         String actualVersion = Integer.toString(version);
@@ -126,7 +128,7 @@ public class WorkflowObjectFactory
         String title = getLabel(displayId, TITLE_LABEL, defaultTitle);
         String description = getLabel(displayId, DESC_LABEL, defaultDescription, title);
         return new WorkflowDefinition(
-                    actualId, buildGlobalId(defName), actualVersion, title, description, startTaskDef);
+                    actualId, actualDefName, actualVersion, title, description, startTaskDef);
     }
     
     public String getWorkflowDefinitionName(String defName)
@@ -140,7 +142,6 @@ public class WorkflowObjectFactory
                 WorkflowDefinition definition, Map<String, Object> variables,
                 boolean isActive, Date startDate, Date endDate)
     {
-        checkDomain(definition.getName());
         String actualId = buildGlobalId(id);
         
         String description = (String) getVariable(variables, WorkflowModel.PROP_WORKFLOW_DESCRIPTION);
@@ -209,13 +210,12 @@ public class WorkflowObjectFactory
                 Map<QName, Serializable> properties)
     {
         String defName = path.getInstance().getDefinition().getName();
-        checkDomain(defName);
         String actualId = buildGlobalId(id);
         
-        String displayId =  getProcessKey(defName) + ".task." + name;
+        String processKey =  getProcessKey(defName) + ".task." + name;
         TypeDefinition metadata = taskDef.getMetadata();
-        String title = getLabel(displayId, TITLE_LABEL, defaultTitle, metadata.getTitle(), name);
-        String description = getLabel(displayId, DESC_LABEL, defaultDescription, metadata.getDescription(), title);
+        String title = getLabel(processKey, TITLE_LABEL, defaultTitle, metadata.getTitle(), name);
+        String description = getLabel(processKey, DESC_LABEL, defaultDescription, metadata.getDescription(), title);
         return new WorkflowTask(actualId,
                     taskDef, name, title, description,
                     state, path, properties);
@@ -236,6 +236,16 @@ public class WorkflowObjectFactory
             processKey = getLocalEngineId(defName);
         }
         return tenantService.getBaseName(processKey);
+    }
+    
+    public String getDomainProcessKey(String defName)
+    {
+        String processKey = defName;
+        if (isGlobalId(defName))
+        {
+            processKey = getLocalEngineId(defName);
+        }
+        return tenantService.getName(processKey);
     }
     
     public String getTaskTitle(TypeDefinition typeDefinition, String defName, String defaultTitle, String name)
@@ -321,7 +331,7 @@ public class WorkflowObjectFactory
         }
     }
 
-    public <T extends Object> List<T> filterByDomain(List<T> values, final Function<T, String> processKeyGetter)
+    public <T extends Object> List<T> filterByDomain(Collection<T> values, final Function<T, String> processKeyGetter)
     {
         final boolean enabled = tenantService.isEnabled();
         final String currentDomain = tenantService.getCurrentUserDomain();
@@ -331,15 +341,18 @@ public class WorkflowObjectFactory
             {
                 String key = processKeyGetter.apply(value);
                 String domain = MultiTServiceImpl.getMultiTenantDomainName(key);
-                if(enabled && false == currentDomain.equals(domain))
+                if(enabled)
                 {
-                    return false; // The domains do not match so ignore.
+                    if(currentDomain.equals(domain))
+                    {
+                        return true; // The domains match so include.
+                    }
                 }
-                else if(domain!=null)
+                else if(domain==null)
                 {
-                    return false; // Ignore domain-specific definitions
+                    return true; // In single-tenant mode only return items with no domain.
                 }
-                return true;
+                return false;
             }
         });
     }

@@ -744,6 +744,7 @@ function getSearchResults(params)
                            to = (sepindex === propValue.length - 1 ? "MAX" : propValue.substr(sepindex + 1));
                         }
                         formQuery += (first ? '' : ' AND ') + escapeQName(propName) + ':"' + from + '".."' + to + '"';
+                        first = false;
                      }
                   }
                   else if (propName.indexOf("cm:categories") != -1) 
@@ -755,50 +756,42 @@ function getSearchResults(params)
                         {
                            useSubCats = true;
                         }
-                     }
-                     else 
-                     { 
-                        // ignore the 'usesubcats' property
-                        continue; 
-                     }
-
-                     // build list of category terms to search for
-                     var firstCat = true;
-                     var catQuery = "";
-                     var cats = propValue.split(',');
-                     for (var i = 0; i < cats.length; i++) 
-                     {
-                        var cat = cats[i];
-                        var catNode = search.findNode(cat);
-                        if (catNode) 
+                        
+                        // build list of category terms to search for
+                        var firstCat = true;
+                        var catQuery = "";
+                        var cats = propValue.split(',');
+                        for (var i = 0; i < cats.length; i++) 
                         {
-                           catQuery += (firstCat ? '' : ' OR ') + "PATH:\"" + catNode.qnamePath + (useSubCats ? "//*\"" : "/member\"" );
-                           firstCat = false;
+                           var cat = cats[i];
+                           var catNode = search.findNode(cat);
+                           if (catNode) 
+                           {
+                              catQuery += (firstCat ? '' : ' OR ') + "PATH:\"" + catNode.qnamePath + (useSubCats ? "//*\"" : "/member\"" );
+                              firstCat = false;
+                           }
                         }
-                     }
-                     
-                     if (catQuery.length !== 0)
-                     {
-                        // surround category terms with brackets if appropriate
-                        formQuery += (first ? '' : ' AND ') + "(" + catQuery + ")";
-                     }
-                     else
-                     {
-                        // ignore categories, continue loop so we don't set the 'first' flag
-                        continue;
+                        
+                        if (catQuery.length !== 0)
+                        {
+                           // surround category terms with brackets if appropriate
+                           formQuery += (first ? '' : ' AND ') + "(" + catQuery + ")";
+                           first = false;
+                        }
                      }
                   }
                   else
                   {
                      formQuery += (first ? '' : ' AND ') + escapeQName(propName) + ':"' + propValue + '"';
+                     first = false;
                   }
                }
                else
                {
                   // pseudo cm:content property - e.g. mimetype, size or encoding
                   formQuery += (first ? '' : ' AND ') + 'cm:content.' + propName + ':"' + propValue + '"';
+                  first = false;
                }
-               first = false;
             }
          }
       }

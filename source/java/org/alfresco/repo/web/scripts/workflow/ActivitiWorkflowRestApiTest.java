@@ -21,6 +21,7 @@ package org.alfresco.repo.web.scripts.workflow;
 import java.io.Serializable;
 import java.util.HashMap;
 
+import org.alfresco.repo.workflow.activiti.ActivitiConstants;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
@@ -83,5 +84,14 @@ public class ActivitiWorkflowRestApiTest extends AbstractWorkflowRestApiTest
         params.put(QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "reviewOutcome"), "Reject");
         workflowService.updateTask(taskId, params, null, null);
         workflowService.endTask(taskId, null);
+    }
+    
+    /**
+    * {@inheritDoc}
+    */
+    @Override
+    protected String getEngine()
+    {
+        return ActivitiConstants.ENGINE_ID;
     }
 }

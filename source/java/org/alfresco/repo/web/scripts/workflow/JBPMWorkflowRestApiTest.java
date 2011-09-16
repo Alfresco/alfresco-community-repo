@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.web.scripts.workflow;
 
+import org.alfresco.repo.workflow.jbpm.JBPMEngine;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Status;
@@ -115,5 +116,11 @@ public class JBPMWorkflowRestApiTest extends AbstractWorkflowRestApiTest
             }
         }
         assertTrue("Transition 'Approve' not found", found);
+    }
+    
+    @Override
+    protected String getEngine()
+    {
+        return JBPMEngine.ENGINE_ID;
     }
 }

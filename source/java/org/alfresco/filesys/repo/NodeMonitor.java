@@ -20,23 +20,23 @@
 package org.alfresco.filesys.repo;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.jlan.server.filesys.FileStatus;
 import org.alfresco.jlan.server.filesys.NotifyChange;
 import org.alfresco.jlan.server.filesys.cache.FileState;
 import org.alfresco.jlan.server.filesys.cache.FileStateCache;
-import org.alfresco.jlan.smb.server.notify.NotifyChangeHandler;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileFolderServiceType;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -149,15 +149,13 @@ public class NodeMonitor extends TransactionListenerAdapter
         m_policyComponent.bindClassBehaviour( QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"),
                 this, new JavaBehaviour(this, "onCreateNode"));   
         m_policyComponent.bindClassBehaviour( QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),
-                this, new JavaBehaviour(this, "beforeDeleteNode"));   
-        m_policyComponent.bindClassBehaviour( QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteNode"),
-                this, new JavaBehaviour(this, "onDeleteNode"));   
+                this, new JavaBehaviour(this, "beforeDeleteNode"));     
         m_policyComponent.bindClassBehaviour( QName.createQName(NamespaceService.ALFRESCO_URI, "onMoveNode"),
                 this, new JavaBehaviour(this, "onMoveNode"));
         m_policyComponent.bindClassBehaviour( QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"),
     		  	this, new JavaBehaviour(this, "onUpdateProperties"));
 
-        // Get the store
+        // Get the store for the root node.
         
         m_storeRef = m_filesysCtx.getRootNode().getStoreRef();
         
@@ -206,7 +204,10 @@ public class NodeMonitor extends TransactionListenerAdapter
         // DEBUG
         
         if ( logger.isDebugEnabled())
+        {
         	logger.debug("NodeMonitor started, " + m_thread.getName());
+	
+        }
 	}
 	
 	/**
@@ -298,40 +299,7 @@ public class NodeMonitor extends TransactionListenerAdapter
     			fireNodeEvent(new MoveNodeEvent( fType, nodeRef, relPath2 , relPath3));
     		}
     	}
-    }
-    
-    /**
-     * Delete node event
-     * 
-     * @param childAssocRef ChildAssociationRef
-     * @param isArchiveNode boolean
-     */
-    public void onDeleteNode(ChildAssociationRef childAssocRef, boolean isArchivedNode) {
-    	
-    	// Check if there is a node event stored in the transaction
-    	
-    	NodeEvent nodeEvent = (NodeEvent) AlfrescoTransactionSupport.getResource( FileSysNodeEvent);
-    	
-    	if ( nodeEvent != null && nodeEvent instanceof DeleteNodeEvent) {
-    		
-    		// Should be the same node id
-
-    		DeleteNodeEvent deleteEvent = (DeleteNodeEvent) nodeEvent;
-        	NodeRef nodeRef = childAssocRef.getChildRef();
-        	
-    		if ( nodeRef.equals( deleteEvent.getNodeRef())) {
-    			
-    			// Confirm the node delete
-    			
-    			deleteEvent.setDeleteConfirm( true);
-
-    			// DEBUG
-        		
-        		if ( logger.isDebugEnabled())
-        			logger.debug("OnDeleteNode: confirm delete nodeRef=" + nodeRef);
-    		}
-    	}
-    }
+    }    
 
 	/**
 	 * Move node event
@@ -412,12 +380,9 @@ public class NodeMonitor extends TransactionListenerAdapter
     	 		// Create a delete event
     	 		
     			NodeEvent nodeEvent = new DeleteNodeEvent( fType, nodeRef, relPath);
+    			
+    			fireNodeEvent(nodeEvent);
     		
-	    		// Store the event in the transaction until committed, and register the transaction listener
-	    		
-	    		AlfrescoTransactionSupport.bindListener( this);
-	    		AlfrescoTransactionSupport.bindResource( FileSysNodeEvent, nodeEvent);
-
 	    		// DEBUG
 	    		
 	    		if ( logger.isDebugEnabled())
@@ -477,20 +442,23 @@ public class NodeMonitor extends TransactionListenerAdapter
 	}
 
 	/**
-	 * 	Fires a node event
-	 * @param nodeEvent the event to fire
+	 * Queues a node event for execution post-commit.
+	 *  
+	 * @param nodeEvent the event to queue
 	 */
 	private void fireNodeEvent(NodeEvent nodeEvent) {
-    	String eventKey = FileSysNodeEvent;
-		if ( AlfrescoTransactionSupport.getResource( FileSysNodeEvent) != null)
-		{
-			eventKey = FileSysNodeEvent2;
-		}
-		
+    	
+	    String eventKey = FileSysNodeEvent;
+	    List<NodeEvent> events = AlfrescoTransactionSupport.getResource(eventKey);
+	    if(events == null)
+	    {
+	        events = new ArrayList<NodeEvent>();
+	        AlfrescoTransactionSupport.bindListener( this);
+	        AlfrescoTransactionSupport.bindResource( eventKey, events);
+	    }
+	    events.add(nodeEvent);
+	    		
 		// Store the event in the transaction until committed, and register the transaction listener
-		
-		AlfrescoTransactionSupport.bindListener( this);
-		AlfrescoTransactionSupport.bindResource( eventKey, nodeEvent);
     }
 	
 	/**
@@ -506,10 +474,12 @@ public class NodeMonitor extends TransactionListenerAdapter
 			
 			// Interrupt the event processing thread
 			
-			try {
+			try 
+			{
 				m_thread.interrupt();
 			}
-			catch ( Exception ex) {
+			catch ( Exception ex) 
+			{
 			}
 		}
 	}
@@ -520,37 +490,19 @@ public class NodeMonitor extends TransactionListenerAdapter
 	public void afterCommit() {
 		
 		// Get the node event that was stored in the transaction
-		
-		NodeEvent nodeEvent = (NodeEvent) AlfrescoTransactionSupport.getResource( FileSysNodeEvent);
-		if ( nodeEvent != null) {
-			
-			// Queue the primary event for processing
-		
-			m_eventQueue.addEvent( nodeEvent);
-			
-			// Unbind the resource from the transaction
-			
-			AlfrescoTransactionSupport.unbindResource(FileSysNodeEvent);
-			
-			// Check for a secondary event
-			
-			nodeEvent = (NodeEvent) AlfrescoTransactionSupport.getResource(FileSysNodeEvent2);
-			if ( nodeEvent != null) {
-				
-				// Queue the secondary event
-			
-				m_eventQueue.addEvent( nodeEvent);
-				
-				// Unbind the resource from the transaction
-				
-				AlfrescoTransactionSupport.unbindResource(FileSysNodeEvent2);
-			}
+		List<NodeEvent>events = (List<NodeEvent>) AlfrescoTransactionSupport.getResource( FileSysNodeEvent);
+		if ( events != null) 
+		{
+			for(NodeEvent event: events )
+			{
+			    // Queue the primary event for processing
+			    m_eventQueue.addEvent(event);
+			}	
 		}
 	}
-
 	
 	/**
-	 * Event queue processing
+	 * Post Commit Event queue processing
 	 */
 	public void run() {
 		

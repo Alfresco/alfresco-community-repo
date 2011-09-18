@@ -123,7 +123,8 @@ public class TikaAutoMetadataExtracterTest extends AbstractMetadataExtracterTest
               //".vsd", // Not auto-detected properly yet
               //"2010.dwg", // Not auto-detected properly yet
               ".pdf",
-              ".odt"
+              ".odt",
+              ".ogg"
         };
            
         for (String fileBase : testFiles)
@@ -158,6 +159,15 @@ public class TikaAutoMetadataExtracterTest extends AbstractMetadataExtracterTest
     @Override
     protected boolean skipAuthorCheck(String mimetype) { return true; }
 
+    @Override
+    protected boolean skipDescriptionCheck(String mimetype) {
+       if(mimetype.endsWith("/ogg")) 
+       {
+          return true;
+       }
+       return false; 
+    }
+
    /**
     * We also provide the creation date - check that
     */
@@ -166,7 +176,8 @@ public class TikaAutoMetadataExtracterTest extends AbstractMetadataExtracterTest
       
       // Check for extra fields
       // Author isn't there for the OpenDocument ones
-      if(mimetype.indexOf(".oasis.") == -1) {
+      if(mimetype.indexOf(".oasis.") == -1 && !mimetype.endsWith("/ogg")) 
+      {
          assertEquals(
                "Property " + ContentModel.PROP_AUTHOR + " not found for mimetype " + mimetype,
                "Nevin Nollop",
@@ -184,6 +195,16 @@ public class TikaAutoMetadataExtracterTest extends AbstractMetadataExtracterTest
 //            "Test Property " + TIKA_MIMETYPE_TEST_PROPERTY + " incorrect for mimetype " + mimetype,
 //            mimetype,
 //            DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(TIKA_MIMETYPE_TEST_PROPERTY)));
+      
+      // Extra media checks for music formats
+      if(mimetype.endsWith("/ogg"))
+      {
+         // Pending ALF-6170 for proper music namespace
+         assertEquals(
+               "Property " + ContentModel.PROP_AUTHOR + " not found for mimetype " + mimetype,
+               "Hauskaz",
+               DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_AUTHOR)));
+      }
    }
 
    /**

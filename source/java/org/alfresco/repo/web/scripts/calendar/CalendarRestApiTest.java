@@ -70,7 +70,7 @@ public class CalendarRestApiTest extends BaseWebScriptTest
 
     private static final String URL_EVENT_BASE = "/calendar/event/" + SITE_SHORT_NAME_CALENDAR + "/"; 
     private static final String URL_EVENTS_LIST = "/calendar/eventList"; 
-    private static final String URL_EVENTS_LIST_ICS = "/calendar/eventList-" + SITE_SHORT_NAME_CALENDAR + ".ics"; 
+    private static final String URL_EVENTS_LIST_ICS = "/calendar/eventList-" + SITE_SHORT_NAME_CALENDAR + ".ics?format=calendar"; 
     private static final String URL_EVENT_CREATE = "/calendar/create"; 
     
     private static final String URL_USER_EVENTS_LIST = "/calendar/events/user"; 
@@ -349,6 +349,12 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        {
           return name;
        }
+    }
+    
+    private String getEntriesICAL() throws Exception
+    {
+       Response response = sendRequest(new GetRequest(URL_EVENTS_LIST_ICS), 200);
+       return response.getContentAsString();
     }
     
     
@@ -698,6 +704,19 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        entries = dates.getJSONArray("6/28/2011");
        assertEquals(1, entries.length());
        assertEquals(EVENT_TITLE_THREE, entries.getJSONObject(0).getString("name"));
+       
+       
+       // Now check the ICS
+       String ical = getEntriesICAL();
+       assertTrue("Invalid ICAL:\n" + ical, ical.contains("BEGIN:VCALENDAR"));
+       assertTrue("Invalid ICAL:\n" + ical, ical.contains("END:VCALENDAR"));
+       
+       // Should have the three entries
+       assertEquals(3+1, ical.split("BEGIN:VEVENT").length);
+       
+       assertTrue("Title not found:\n" + ical, ical.contains("SUMMARY:"+EVENT_TITLE_ONE));
+       assertTrue("Title not found:\n" + ical, ical.contains("SUMMARY:"+EVENT_TITLE_TWO));
+       assertTrue("Title not found:\n" + ical, ical.contains("SUMMARY:"+EVENT_TITLE_THREE));
     }
     
     /**

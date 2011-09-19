@@ -29,6 +29,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.notification.NotificationContext;
+import org.alfresco.service.cmr.notification.NotificationProvider;
 import org.alfresco.service.cmr.notification.NotificationService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -37,6 +38,8 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseAlfrescoTestCase;
 import org.alfresco.util.GUID;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Notification service implementation test.
@@ -46,14 +49,14 @@ import org.alfresco.util.GUID;
  */
 public class NotificationServiceImplSystemTest extends BaseAlfrescoTestCase
 {
-    private static final String FROM_USER = "fromUser" + GUID.generate();;
+    private static final String FROM_USER = "fromUser" + GUID.generate();
     private static final String FROM_EMAIL = "test@alfresco.com";
     private static final String FROM_FIRST_NAME = "Grace";
     private static final String FROM_LAST_NAME = "Wetherall";
     
-    private static final String TO_USER1 = "userOne" + GUID.generate();;
-    private static final String TO_USER2 = "userTwo" + GUID.generate();;
-    private static final String TO_USER3 = "userThree" + GUID.generate();;
+    private static final String TO_USER1 = "userOne" + GUID.generate();
+    private static final String TO_USER2 = "userTwo" + GUID.generate();
+    private static final String TO_USER3 = "userThree" + GUID.generate();
     
     private static final String EMAIL = "rwetherall@alfresco.com";
     private static final String PASSWORD = "password";
@@ -87,10 +90,17 @@ public class NotificationServiceImplSystemTest extends BaseAlfrescoTestCase
     
     private NodeRef template;
     
+    /**
+     * Storage for a {@link NotificationContext} sent from a test method.
+     */
+    private NotificationContext contextSentFromTest = null;
+    
     @Override
     protected void setUp() throws Exception
     {
         super.setUp();
+        
+        contextSentFromTest = null;
         
         // Get the notification service
         notificationService = (NotificationService)ctx.getBean("NotificationService");
@@ -221,5 +231,103 @@ public class NotificationServiceImplSystemTest extends BaseAlfrescoTestCase
                 return null;
             }
         });
+    }
+    
+    /**
+     * This method tests the {@link TestNotificationProvider}.
+     */
+    public void testTestNotificationProvider() throws Exception
+    {
+        // Create a class to receive the notification.
+        NotificationReceiver receiver = new NotificationReceiver()
+        {
+            @Override
+            public void receiveNotification(NotificationContext notificationContext)
+            {
+                contextSentFromTest = notificationContext;
+            }
+        };
+        
+        // Set up the notification provider.
+        TestNotificationProvider testNP = new TestNotificationProvider();
+        testNP.setNotificationService(notificationService);
+        testNP.setNotificationReceiver(receiver);
+        testNP.init();
+        
+        // send the notification
+        assertTrue(notificationService.getNotificationProviders().contains(TestNotificationProvider.NAME));
+        NotificationContext context = new NotificationContext();
+        final String to = "FAO: test object";
+        context.addTo(to);
+        notificationService.sendNotification(TestNotificationProvider.NAME, context);
+        
+        assertNotNull("notification context was null.", contextSentFromTest);
+        assertTrue("notification context did not contain correct 'to' entry", contextSentFromTest.getTo().contains(to));
+    }
+    
+    /**
+     * This {@link NotificationProvider} is intended for use in test code in order to validate the
+     * content/state of notifications. It could, for example, be used in a test context as a drop-in
+     * replacement for the {@link EMailNotificationProvider} for validation and/or to prevent emails being
+     * sent from test code.
+     * 
+     * @author Neil Mc Erlean
+     * @since 4.0
+     */
+    public static class TestNotificationProvider implements NotificationProvider
+    {
+        public static final String NAME = TestNotificationProvider.class.getSimpleName();
+        
+        private static Log log = LogFactory.getLog(TestNotificationProvider.class); 
+        
+        private NotificationService notificationService;
+        private NotificationReceiver notificationReceiver;
+        
+        public void setNotificationService(NotificationService notificationService)
+        {
+            this.notificationService = notificationService;
+        }
+        
+        public void setNotificationReceiver(NotificationReceiver notificationReceiver)
+        {
+            this.notificationReceiver = notificationReceiver;
+        }
+        
+        /**
+         * Init method registers provider with notification service.
+         */
+        public void init()
+        {
+            notificationService.register(TestNotificationProvider.this);
+        }
+        
+        @Override
+        public String getName()
+        {
+            return NAME;
+        }
+        
+        @Override
+        public void sendNotification(NotificationContext notificationContext)
+        {
+            if (log.isDebugEnabled())
+            {
+                log.debug("Sending notification.");
+            }
+            this.notificationReceiver.receiveNotification(notificationContext);
+        }
+    }
+    
+    /**
+     * Implementations of this interface can be injected into the {@link TestNotificationProvider} in order to receive notifications.
+     * <p/>
+     * Only intended for test code at this stage.
+     * 
+     * @author Neil Mc Erlean
+     * @since 4.0
+     */
+    public static interface NotificationReceiver
+    {
+        public void receiveNotification(NotificationContext notificationContext);
     }
 }

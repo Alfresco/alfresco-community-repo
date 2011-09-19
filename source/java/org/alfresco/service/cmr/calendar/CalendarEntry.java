@@ -159,4 +159,14 @@ public interface CalendarEntry extends Serializable, PermissionCheckValue
     * @return the Tags associated with the event 
     */
    List<String> getTags();
+   
+   /**
+    * @return the creation date and time
+    */
+   Date getCreatedAt();
+   
+   /**
+    * @return the modification date and time
+    */
+   Date getModifiedAt();
 }

@@ -185,6 +185,9 @@ public class CalendarServiceImplTest
        NodeRef site = NODE_SERVICE.getPrimaryParent(container).getParentRef();
        assertEquals(CALENDAR_SITE.getNodeRef(), site);
        
+       // Tell the test system about it, for tidying later
+       testNodesToTidy.add(entry.getNodeRef());
+       
        
        // Check the details on the object
        assertEquals("Title", entry.getTitle());
@@ -196,6 +199,10 @@ public class CalendarServiceImplTest
        assertEquals(null, entry.getLastRecurrence());
        assertEquals(true, entry.isOutlook());
        assertEquals("12345LookOut!", entry.getOutlookUID());
+       
+       // Check that auditable properties turned up
+       assertNotNull(entry.getCreatedAt());
+       assertNotNull(entry.getModifiedAt());
        
        
        // Fetch it, and check the details
@@ -210,9 +217,9 @@ public class CalendarServiceImplTest
        assertEquals(true, entry.isOutlook());
        assertEquals("12345LookOut!", entry.getOutlookUID());
        
-       
-       // Mark it as done with
-       testNodesToTidy.add(entry.getNodeRef());
+       // Check that auditable properties turned up
+       assertNotNull(entry.getCreatedAt());
+       assertNotNull(entry.getModifiedAt());
     }
     
     @Test public void createUpdateDeleteEntry() throws Exception

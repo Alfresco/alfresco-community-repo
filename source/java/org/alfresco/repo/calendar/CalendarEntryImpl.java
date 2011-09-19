@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.calendar.CalendarEntry;
 import org.alfresco.service.cmr.calendar.CalendarEntryDTO;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -93,7 +94,7 @@ public class CalendarEntryImpl extends CalendarEntryDTO
        properties.put(CalendarModel.PROP_DOC_FOLDER, entry.getSharePointDocFolder());
      
 //     properties.put(CalendarModel.PROP_COLOR, entry.getColor();
-      
+       
        return properties;
     }
     
@@ -117,6 +118,19 @@ public class CalendarEntryImpl extends CalendarEntryDTO
        entry.setOutlookUID((String)properties.get(CalendarModel.PROP_OUTLOOK_UID));
 
        //entry.setColor(properties.get(CalendarModel.PROP_COLOR));
+       
+       // If the auditable properties are available and the type is correct, record them
+       if(entry instanceof CalendarEntryDTO)
+       {
+          if(properties.containsKey(ContentModel.PROP_CREATED))
+          {
+             ((CalendarEntryDTO)entry).setCreatedAt((Date)properties.get(ContentModel.PROP_CREATED));
+          }
+          if(properties.containsKey(ContentModel.PROP_MODIFIED))
+          {
+             ((CalendarEntryDTO)entry).setModifiedAt((Date)properties.get(ContentModel.PROP_MODIFIED));
+          }
+       }
     }
     
     /**

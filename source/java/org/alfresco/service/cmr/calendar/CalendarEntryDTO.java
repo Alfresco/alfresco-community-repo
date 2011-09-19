@@ -52,6 +52,8 @@ public class CalendarEntryDTO implements CalendarEntry, Serializable
    private String sharePointDocFolder;
    private boolean isOutlook = false;
    private String outlookUID;
+   private Date createdAt;
+   private Date modifiedAt;
    private List<String> tags = new ArrayList<String>();
    
    /**
@@ -269,7 +271,31 @@ public class CalendarEntryDTO implements CalendarEntry, Serializable
    {
       return tags;
    }
-   
+
+   /**
+    * Gets when this entry was created
+    */
+   public Date getCreatedAt() 
+   {
+      return createdAt;
+   }
+   public void setCreatedAt(Date createdAt)
+   {
+      this.createdAt = createdAt;
+   }
+
+   /**
+    * Gets when this entry was modified
+    */
+   public Date getModifiedAt() 
+   {
+      return modifiedAt;
+   }
+   public void setModifiedAt(Date modifiedAt)
+   {
+      this.modifiedAt = modifiedAt;
+   }
+
    /**
     * Does the given {@link CalendarEntry} define an all-day
     *  event?

@@ -39,6 +39,7 @@ import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory;
 import org.alfresco.repo.site.SiteServiceImpl;
 import org.alfresco.service.cmr.calendar.CalendarEntry;
+import org.alfresco.service.cmr.calendar.CalendarEntryDTO;
 import org.alfresco.service.cmr.calendar.CalendarService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -143,6 +144,10 @@ public class CalendarServiceImpl implements CalendarService
        }
        
        NodeRef event = nodeService.getChildByName(container, ContentModel.ASSOC_CONTAINS, entryName);
+       return getCalendarEntry(event, entryName, container);
+    }
+    private CalendarEntry getCalendarEntry(NodeRef event, String entryName, NodeRef container)
+    {
        if (event != null)
        {
           CalendarEntryImpl entry = new CalendarEntryImpl(event, container, entryName);
@@ -196,6 +201,11 @@ public class CalendarServiceImpl implements CalendarService
           entryImpl.setTags(entry.getTags());
        }
        
+       // Set the auditable properties on it
+       Date createdAt = (Date)nodeService.getProperty(nodeRef, ContentModel.PROP_CREATED);
+       entryImpl.setCreatedAt(createdAt);
+       entryImpl.setModifiedAt(createdAt);
+       
        // Tag it
        taggingService.setTags(nodeRef, entry.getTags());
              
@@ -230,8 +240,22 @@ public class CalendarServiceImpl implements CalendarService
        // Update the tags
        taggingService.setTags(entry.getNodeRef(), entry.getTags());
        
-       // Nothing was changed on the entry itself
-       return entry;
+       // Update the auditable properties
+       if(entry instanceof CalendarEntryDTO)
+       {
+          ((CalendarEntryDTO)entry).setModifiedAt(
+                (Date)nodeService.getProperty(entry.getNodeRef(), ContentModel.PROP_MODIFIED)
+          );
+          
+          // Return the same object
+          return entry;
+       }
+       else
+       {
+          // Need to change the modified date, but we can't
+          // Re-fetch to pick up the change
+          return getCalendarEntry(entry.getNodeRef(), entry.getSystemName(), entry.getContainerNodeRef());
+       }
     }
 
     @Override

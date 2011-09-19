@@ -38,7 +38,7 @@ function runAction(p_params)
    {
       result =
       {
-         nodeRef: assetNode.nodeRef,
+         nodeRef: assetNode.nodeRef.toString(),
          action: "manageAspects",
          success: false
       }

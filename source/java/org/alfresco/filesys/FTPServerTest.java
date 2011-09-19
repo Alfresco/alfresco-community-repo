@@ -70,8 +70,10 @@ public class FTPServerTest extends TestCase
     private final String PASSWORD_ADMIN="admin";
     private final String USER_ONE = "FTPServerTestOne";
     private final String USER_TWO = "FTPServerTestTwo";
+    private final String USER_THREE = "FTPServerTestThree";
     private final String PASSWORD_ONE="Password01";
     private final String PASSWORD_TWO="Password02";
+    private final String PASSWORD_THREE="Password03";
     private final String HOSTNAME="localhost";
     
     private final String TEST_FOLDER = "FTPServerTest";
@@ -117,8 +119,9 @@ public class FTPServerTest extends TestCase
             @Override
             public Void execute() throws Throwable
             {
-                createUser(USER_ONE, PASSWORD_ONE); 
-                createUser(USER_TWO, PASSWORD_TWO);
+                createUser(USER_ONE, PASSWORD_ONE, -1); 
+                createUser(USER_TWO, PASSWORD_TWO, -1);
+                createUser(USER_THREE, PASSWORD_THREE, 30);
                 return null;
             }
         };
@@ -580,6 +583,63 @@ public class FTPServerTest extends TestCase
     }
     
     /**
+     * Test a quota failue exception over FTP.
+     * A file should not exist after a create and quota exception. 
+     */
+    public void testFtpQuotaAndFtp() throws Exception
+    {
+        final String TEST_DIR="/Alfresco/User Homes/" + USER_THREE;
+     
+        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
+            
+        FTPClient ftpOne = connectClient();
+        try
+        {
+            int reply = ftpOne.getReplyCode();
+
+            if (!FTPReply.isPositiveCompletion(reply))
+            {
+                fail("FTP server refused connection.");
+            }
+                
+            boolean login = ftpOne.login(USER_THREE, PASSWORD_THREE);
+            assertTrue("user one login not successful", login);
+                        
+            boolean success = ftpOne.changeWorkingDirectory("Alfresco");
+            assertTrue("user one unable to cd to Alfreco", success);
+            success = ftpOne.changeWorkingDirectory("User*Homes");
+            assertTrue("user one unable to cd to User*Homes", success);
+            success = ftpOne.changeWorkingDirectory(USER_THREE);
+            assertTrue("user one unable to cd to " + USER_THREE, success);
+            
+            /**
+             * Create a file as user three which is bigger than the quota
+             */
+            String FILE3_CONTENT_3="test file 3 content that needs to be greater than 100 bytes to result in a quota exception being thrown";
+            String FILE1_NAME = "test.docx";
+
+            // Should not be success
+            success = ftpOne.appendFile(FILE1_NAME , new ByteArrayInputStream(FILE3_CONTENT_3.getBytes("UTF-8")));
+            assertFalse("user one can ignore quota", success);
+                
+            boolean deleted = ftpOne.deleteFile(FILE1_NAME);
+            assertFalse("quota exception expected", deleted);
+            
+            logger.debug("test done");
+                     
+        } 
+        finally
+        {
+            ftpOne.dele(TEST_DIR);
+            if(ftpOne != null)
+            {
+                ftpOne.disconnect();
+            }
+        }       
+
+    }
+    
+    /**
      * Create a user with a small quota.
      * 
      * Upload a file less than the quota.
@@ -640,7 +700,13 @@ public class FTPServerTest extends TestCase
         return "";
     }
     
-    private void createUser(String userName, String password)
+    /**
+     * create a test user
+     * @param userName
+     * @param password
+     * @param quota
+     */
+    private void createUser(String userName, String password, long quota)
     {
         if (this.authenticationService.authenticationExists(userName) == false)
         {
@@ -652,6 +718,11 @@ public class FTPServerTest extends TestCase
             ppOne.put(ContentModel.PROP_LASTNAME, "lastName");
             ppOne.put(ContentModel.PROP_EMAIL, "email@email.com");
             ppOne.put(ContentModel.PROP_JOBTITLE, "jobTitle");
+            
+            if(quota > 0)
+            {
+                ppOne.put(ContentModel.PROP_SIZE_QUOTA, quota);
+            }
             
             this.personService.createPerson(ppOne);
         }        

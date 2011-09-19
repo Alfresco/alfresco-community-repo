@@ -29,10 +29,8 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.springframework.context.ApplicationContext;
 
@@ -85,49 +83,10 @@ public class NodeDAOTest extends TestCase
             // Expected
         }
         // Read-only
-        try
-        {
-            txnHelper.doInTransaction(getTxnIdCallback, true);
-            fail("Should have failed when running in read-only transaction");
-        }
-        catch (Throwable e)
-        {
-            // Expected
-        }
+        assertNull("No Txn ID should be present in read-only txn", txnHelper.doInTransaction(getTxnIdCallback, true));
         // First success
         Long txnId1 = txnHelper.doInTransaction(getTxnIdCallback);
-        assertNotNull("No txn ID 1", txnId1);
-        Long txnId2 = txnHelper.doInTransaction(getTxnIdCallback);
-        assertNotNull("No txn ID 2", txnId2);
-        assertTrue("2nd ID should be larger than first", txnId2.compareTo(txnId1) > 0);
-    }
-    
-    /**
-     * TODO: Clean up after test or force indexing on the stores
-     */
-    public void xtestNewStore() throws Exception
-    {
-        final StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_TEST, getName() + "-" + GUID.generate());
-        RetryingTransactionCallback<Pair<Long, NodeRef>> callback = new RetryingTransactionCallback<Pair<Long, NodeRef>>()
-        {
-            public Pair<Long, NodeRef> execute() throws Throwable
-            {
-                return nodeDAO.newStore(storeRef);
-            }
-        };
-        Pair<Long, NodeRef> rootNodePair = txnHelper.doInTransaction(callback);
-        assertNotNull(rootNodePair);
-        assertEquals("Root node has incorrect store", storeRef, rootNodePair.getSecond().getStoreRef());
-        // Should fail second time
-        try
-        {
-            txnHelper.doInTransaction(callback);
-            fail("Should not be able to create same store.");
-        }
-        catch (Throwable e)
-        {
-            // Expected
-        }
+        assertNull("No Txn ID should be present in untouched txn", txnId1);
     }
     
     public void testGetNodesWithAspects() throws Throwable

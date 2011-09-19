@@ -25,6 +25,7 @@ import java.sql.Savepoint;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -55,13 +56,8 @@ import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.permissions.AccessControlListProperties;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transaction.TransactionAwareSingleton;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
-import org.alfresco.repo.transaction.TransactionalResourceHelper;
-import org.alfresco.service.cmr.dictionary.AssociationDefinition;
-import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
@@ -119,10 +115,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     private NodePropertyHelper nodePropertyHelper;
     private ServerIdCallback serverIdCallback = new ServerIdCallback();
     private UpdateTransactionListener updateTransactionListener = new UpdateTransactionListener();
-    private AuditableTransactionListener auditableTransactionListener = new AuditableTransactionListener();
     private RetryingCallbackHelper childAssocRetryingHelper;
-    
-    private boolean enableTimestampPropagation;
 
     private TransactionService transactionService;
     private DictionaryService dictionaryService;
@@ -185,18 +178,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         aspectsCache = new EntityLookupCache<Long, Set<QName>, Serializable>(new AspectsCallbackDAO());
         propertiesCache = new EntityLookupCache<Long, Map<QName, Serializable>, Serializable>(new PropertiesCallbackDAO());
         parentAssocsCache = new EntityLookupCache<Long, ParentAssocsInfo, ChildByNameKey>(new ParentAssocsCallbackDAO());
-    }
-
-    /**
-     * Set whether <b>cm:auditable</b> timestamps should be propagated to parent nodes
-     * where the parent-child relationship has been marked using <b>propagateTimestamps<b/>.
-     * 
-     * @param enableTimestampPropagation        <tt>true</tt> to propagate timestamps to the parent
-     *                                          node where appropriate
-     */
-    public void setEnableTimestampPropagation(boolean enableTimestampPropagation)
-    {
-        this.enableTimestampPropagation = enableTimestampPropagation;
     }
 
     /**
@@ -602,8 +583,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     
     public Long getCurrentTransactionId()
     {
-        TransactionEntity txn = getCurrentTransaction();
-        return txn.getId();
+        TransactionEntity txn = AlfrescoTransactionSupport.getResource(KEY_TRANSACTION);
+        return txn == null ? null : txn.getId();
     }
     
     /*
@@ -767,7 +748,16 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         public Pair<Long, Node> findByKey(Long nodeId)
         {
             NodeEntity node = selectNodeById(nodeId, Boolean.FALSE);
-            return node == null ? null : new Pair<Long, Node>(nodeId, node);
+            if (node != null)
+            {
+                // Lock it to prevent 'accidental' modification
+                node.lock();
+                return new Pair<Long, Node>(nodeId, node);
+            }
+            else
+            {
+                return null;
+            }
         }
 
         /**
@@ -787,7 +777,16 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         {
             NodeRef nodeRef = node.getNodeRef();
             node = selectNodeByNodeRef(nodeRef, Boolean.FALSE);
-            return node == null ? null : new Pair<Long, Node>(node.getId(), node);
+            if (node != null)
+            {
+                // Lock it to prevent 'accidental' modification
+                node.lock();
+                return new Pair<Long, Node>(node.getId(), node);
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 
@@ -802,6 +801,21 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         NodeEntity node = new NodeEntity(nodeRef);
         Pair<Long, Node> pair = nodesCache.getByValue(node);
         return pair != null && !pair.getSecond().getDeleted();
+    }
+
+    @Override
+    public boolean isInCurrentTxn(Long nodeId)
+    {
+        Long currentTxnId = getCurrentTransactionId();
+        if (currentTxnId == null)
+        {
+            // No transactional changes have been made to any nodes, therefore the node cannot
+            // be part of the current transaction
+            return false;
+        }
+        Node node = getNodeNotNull(nodeId);
+        Long nodeTxnId = node.getTransaction().getId();
+        return nodeTxnId.equals(currentTxnId);
     }
 
     public Status getNodeRefStatus(NodeRef nodeRef)
@@ -977,12 +991,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         ParentAssocsInfo parentAssocsInfo = new ParentAssocsInfo(node.getTransaction().getId(), isRoot, isStoreRoot,
                 assoc);
         parentAssocsCache.setValue(nodeId, parentAssocsInfo);
-        
-        // Ensure that cm:auditable values are propagated, if required
-        if (enableTimestampPropagation)
-        {
-            propagateTimestamps(nodeId);
-        }
         
         if (isDebugEnabled)
         {
@@ -1189,12 +1197,12 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             childNodeUpdate.setUpdateDeleted(true);
             // Update the entity.
             // Note: We don't use delete here because that will attempt to clean everything up again.
-            updateNodeImpl(childNode, childNodeUpdate, false);
+            updateNodeImpl(childNode, childNodeUpdate);
         }
         else
         {
             // Ensure that the child node reflects the current txn and auditable data
-            touchNodeImpl(childNodeId, true);
+            touchNodeImpl(childNodeId);
             
             // The moved node's reference has not changed, so just remove the cache entry to
             // it's immediate parent.  All children of the moved node will still point to the
@@ -1260,7 +1268,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     }
     
     @Override
-    public void updateNode(Long nodeId, QName nodeTypeQName, Locale nodeLocale, boolean propagate)
+    public boolean updateNode(Long nodeId, QName nodeTypeQName, Locale nodeLocale)
     {
         // Get the existing node; we need to check for a change in store or UUID
         Node oldNode = getNodeNotNull(nodeId);
@@ -1301,13 +1309,26 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             nodeUpdate.setUpdateLocaleId(true);
         }
 
-        updateNodeImpl(oldNode, nodeUpdate, propagate);
+        return updateNodeImpl(oldNode, nodeUpdate);
     }
     
     /**
      * Updates the node's transaction and <b>cm:auditable</b> properties only.
      */
-    private void touchNodeImpl(Long nodeId, boolean propagate)
+    private boolean touchNodeImpl(Long nodeId)
+    {
+        return touchNodeImpl(nodeId, null);
+    }
+    /**
+     * Updates the node's transaction and <b>cm:auditable</b> properties only.
+     * 
+     * @param auditableProps            optionally override the <b>cm:auditable</b> values
+     * @param propagate                 should this update be propagated to parent audit properties?
+     * 
+     * 
+     * @see #updateNodeImpl(NodeEntity, NodeUpdateEntity)
+     */
+    private boolean touchNodeImpl(Long nodeId, AuditablePropertiesEntity auditableProps)
     {
         Node node = null;
         try
@@ -1318,12 +1339,12 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         {
             // The ID doesn't reference a live node.
             // We do nothing w.r.t. touching
-            return;
+            return false;
         }
         NodeUpdateEntity nodeUpdate = new NodeUpdateEntity();
         nodeUpdate.setId(nodeId);
         // Update it
-        updateNodeImpl(node, nodeUpdate, propagate);
+        return updateNodeImpl(node, nodeUpdate);
     }
     
     /**
@@ -1335,9 +1356,9 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      * 
      * @param oldNode               the existing node, fully populated
      * @param nodeUpdate            the node update with all update elements populated
-     * @param propagate             should this update be propagated to parent audit properties?
+     * @return                      <tt>true</tt> if any updates were made
      */
-    private void updateNodeImpl(Node oldNode, NodeUpdateEntity nodeUpdate, boolean propagate)
+    private boolean updateNodeImpl(Node oldNode, NodeUpdateEntity nodeUpdate)
     {
         Long nodeId = oldNode.getId();
         
@@ -1391,6 +1412,10 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 {
                     auditableProps = new AuditablePropertiesEntity();
                 }
+                else
+                {
+                    auditableProps = new AuditablePropertiesEntity(auditableProps);
+                }
                 boolean updateAuditableProperties = auditableProps.setAuditValues(null, null, false, 1000L);
                 nodeUpdate.setAuditableProperties(auditableProps);
                 nodeUpdate.setUpdateAuditableProperties(updateAuditableProperties);
@@ -1401,7 +1426,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 AuditablePropertiesEntity auditableProps = oldNode.getAuditableProperties();
                 if (auditableProps != null)
                 {
-                    nodeUpdate.setAuditableProperties(auditableProps);
+                    nodeUpdate.setAuditableProperties(auditableProps);  // Can reuse the locked instance
                     nodeUpdate.setUpdateAuditableProperties(true);
                 }
             }
@@ -1426,7 +1451,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // Just bug out if nothing has changed
         if (!nodeUpdate.isUpdateAnything())
         {
-            return;
+            return false;
         }
         
         // The node is remaining in the current store
@@ -1452,14 +1477,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             }
         }
 
-        // Ensure that cm:auditable values are propagated, if required
-        if (propagate && enableTimestampPropagation &&
-                nodeUpdate.isUpdateAuditableProperties() &&
-                nodeUpdate.getAuditableProperties() != null)
-        {
-            propagateTimestamps(nodeId);
-        }
-        
         // Done
         if (isDebugEnabled)
         {
@@ -1468,132 +1485,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                     "   OLD: " + oldNode + "\n" +
                     "   NEW: " + nodeUpdate);
         }
-    }
-    
-    private static final String KEY_AUDITABLE_PROPAGATION = "node.auditable.propagation";
-    private static final String KEY_AUDITABLE_PROPAGATION_DISABLE = "node.auditable.propagation.disable";
-    /**
-     * Schedule auditable property propagation for the post-commit phase
-     * 
-     * @param childNodeId           the ID of the node that has auditable properties changed
-     */
-    private void propagateTimestamps(Long childNodeId)
-    {
-        if (!enableTimestampPropagation)
-        {
-            return;                             // Don't propagate
-        }
-        // Get the current timestamp
-        Node childNode = getNodeNotNull(childNodeId);
-        if (childNode.getAuditableProperties() == null)
-        {
-            return;                             // Not auditable
-        }
-        String modified = childNode.getAuditableProperties().getAuditModified();
-        // Check the parent association
-        ChildAssocEntity primaryParentAssoc = getPrimaryParentAssocImpl(childNodeId);
-        if (primaryParentAssoc == null)
-        {
-            return;                             // This is a root
-        }
-        // Check the association type
-        Long assocTypeQNameId = primaryParentAssoc.getTypeQNameId();
-        Pair<Long, QName> assocTypeQNamePair = qnameDAO.getQName(assocTypeQNameId);
-        if (assocTypeQNamePair == null)
-        {
-            return;                             // Unknown association type
-        }
-        AssociationDefinition assocDef = dictionaryService.getAssociation(assocTypeQNamePair.getSecond());
-        if (!assocDef.isChild() || !((ChildAssociationDefinition)assocDef).getPropagateTimestamps())
-        {
-            return;                             // Don't propagate
-        }
-        
-        // Record the parent node ID for update
-        Long parentNodeId = primaryParentAssoc.getParentNode().getId();
-        Map<Long, String> modifiedDatesById = TransactionalResourceHelper.getMap(KEY_AUDITABLE_PROPAGATION);
-        String existingModified = modifiedDatesById.get(parentNodeId);
-        if (existingModified != null && existingModified.compareTo(modified) > 0)
-        {
-            return;                             // Already have a later date ready to go
-        }
-        modifiedDatesById.put(parentNodeId, modified);
-        
-        // Bind a listener for post-transaction manipulation
-        AlfrescoTransactionSupport.bindListener(auditableTransactionListener);
-    }
-    
-    /**
-     * Wrapper to update the current transaction to get the change time correct
-     * 
-     * @author Derek Hulley
-     * @since 3.4.2
-     */
-    private class AuditableTransactionListener extends TransactionListenerAdapter
-    {
-        @Override
-        public void afterCommit()
-        {
-            // Check if we are already propagating
-            if (AlfrescoTransactionSupport.getResource(KEY_AUDITABLE_PROPAGATION_DISABLE) != null)
-            {
-                // This is a propagating transaction, so do nothing
-                return;
-            }
-            
-            Map<Long, String> modifiedDatesById = TransactionalResourceHelper.getMap(KEY_AUDITABLE_PROPAGATION);
-            if (modifiedDatesById.size() == 0)
-            {
-                return;
-            }
-            // Walk through the IDs, processing groups
-            for (Map.Entry<Long, String> entry: modifiedDatesById.entrySet())
-            {
-                Long parentNodeId = entry.getKey();
-                String modified = entry.getValue();
-                processBatch(parentNodeId, modified);
-            }
-        }
-        
-        private void processBatch(final Long parentNodeId, final String modified)
-        {
-            RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
-            txnHelper.setMaxRetries(1);
-            RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-            {
-                @Override
-                public Void execute() throws Throwable
-                {
-                    // Disable all behaviour.
-                    // This only affects cm:auditable and is discarded at the end of this txn
-                    policyBehaviourFilter.disableAllBehaviours();
-                    // Tag the transaction to prevent further propagation
-                    AlfrescoTransactionSupport.bindResource(KEY_AUDITABLE_PROPAGATION_DISABLE, Boolean.TRUE);
-                    
-                    Pair<Long, NodeRef> parentNodePair = getNodePair(parentNodeId);
-                    if (parentNodePair == null)
-                    {
-                        return null;                            // Parent has gone away
-                    }
-                    // Modify the parent with the new date (if it needs)
-                    // Disable cm:auditable for the parent so that we can set it manually
-                    addNodeProperty(parentNodeId, ContentModel.PROP_MODIFIED, modified);
-                    return null;
-                }
-            };
-            try
-            {
-                txnHelper.doInTransaction(callback, false, true);
-                if (isDebugEnabled)
-                {
-                    logger.debug("Propagated timestamps from node: " + parentNodeId);
-                }
-            }
-            catch (Throwable e)
-            {
-                logger.info("Failed to update auditable properties for nodes: " + parentNodeId);
-            }
-        }
+        return true;
     }
     
     public void setNodeAclId(Long nodeId, Long aclId)
@@ -1603,7 +1495,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         nodeUpdateEntity.setId(nodeId);
         nodeUpdateEntity.setAclId(aclId);
         nodeUpdateEntity.setUpdateAclId(true);
-        updateNodeImpl(oldNode, nodeUpdateEntity, true);
+        updateNodeImpl(oldNode, nodeUpdateEntity);
     }
     
     public void setPrimaryChildrenSharedAclId(
@@ -1628,12 +1520,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
 
     public void deleteNode(Long nodeId)
     {
-        // Ensure that cm:auditable values are propagated, if required
-        if (enableTimestampPropagation)
-        {
-            propagateTimestamps(nodeId);
-        }
-        
         Node node = getNodeNotNull(nodeId);
         Long aclId = node.getAclId();           // Need this later
         
@@ -1673,6 +1559,10 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             if (auditableProps == null)
             {
                 auditableProps = new AuditablePropertiesEntity();
+            }
+            else
+            {
+                auditableProps = new AuditablePropertiesEntity(auditableProps);     // Create unlocked instance
             }
             auditableProps.setAuditValues(null, null, false, 1000L);
             nodeUpdate.setAuditableProperties(auditableProps);
@@ -1838,6 +1728,10 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 if (auditableProps == null)
                 {
                     auditableProps = new AuditablePropertiesEntity();
+                }
+                else
+                {
+                    auditableProps = new AuditablePropertiesEntity(auditableProps);     // Unlocked instance
                 }
                 boolean containedAuditProperties = auditableProps.setAuditValues(null, null, newProps);
                 if (!containedAuditProperties)
@@ -2016,7 +1910,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // Touch to bring into current transaction
         if (updated)
         {
-            updateNodeImpl(node, nodeUpdate, propsToAdd.containsKey(ContentModel.PROP_NAME));
+            updateNodeImpl(node, nodeUpdate);
         }
         
         // Done
@@ -2084,10 +1978,56 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             cachedProps.keySet().removeAll(propertyQNames);
             setNodePropertiesCached(nodeId, cachedProps);
             // Touch to bring into current txn
-            touchNodeImpl(nodeId, propertyQNames.contains(ContentModel.PROP_NAME));
+            touchNodeImpl(nodeId);
         }
         // Done
         return deleteCount > 0;
+    }
+
+    @Override
+    public boolean setModifiedDate(Long nodeId, Date modifiedDate)
+    {
+        // Do nothing if the node is not cm:auditable
+        if (!hasNodeAspect(nodeId, ContentModel.ASPECT_AUDITABLE))
+        {
+            return false;
+        }
+        // Get the node
+        Node node = getNodeNotNull(nodeId);
+        NodeRef nodeRef = node.getNodeRef();
+        // Get the existing auditable values
+        AuditablePropertiesEntity auditableProps = node.getAuditableProperties();
+        boolean dateChanged = false;
+        if (auditableProps == null)
+        {
+            // The properties should be present
+            auditableProps = new AuditablePropertiesEntity();
+            auditableProps.setAuditValues(null, modifiedDate, true, 1000L);
+            dateChanged = true;
+        }
+        else
+        {
+            auditableProps = new AuditablePropertiesEntity(auditableProps);
+            dateChanged = auditableProps.setAuditModified(modifiedDate, 1000L);
+        }
+        if (dateChanged)
+        {
+            try
+            {
+                policyBehaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+                // Send this to the node update
+                return touchNodeImpl(nodeId, auditableProps);
+            }
+            finally
+            {
+                policyBehaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+            }
+        }
+        else
+        {
+            // Date did not advance
+            return false;
+        }
     }
 
     /**
@@ -2242,7 +2182,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
 
         // Touch to bring into current txn
-        touchNodeImpl(nodeId, false);
+        touchNodeImpl(nodeId);
         
         // Done
         return true;
@@ -2264,7 +2204,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         aspectsCache.setValue(nodeId, Collections.<QName>emptySet());
 
         // Touch to bring into current txn
-        touchNodeImpl(nodeId, false);
+        touchNodeImpl(nodeId);
         
         // Done
         return deleteCount > 0;
@@ -2290,7 +2230,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
         
         // Touch to bring into current txn
-        touchNodeImpl(nodeId, false);
+        touchNodeImpl(nodeId);
         
         // Done
         return deleteCount > 0;
@@ -2368,7 +2308,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
         
         // Touch to bring into current txn and ensure concurrency is maintained on the nodes
-        touchNodeImpl(sourceNodeId, false);
+        touchNodeImpl(sourceNodeId);
 
         // Resolve type QName
         Long assocTypeQNameId = qnameDAO.getOrCreateQName(assocTypeQName).getFirst();
@@ -2414,7 +2354,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             return 0;
         }
         // Touch to bring into current txn
-        touchNodeImpl(sourceNodeId, false);
+        touchNodeImpl(sourceNodeId);
 
         Long assocTypeQNameId = assocTypeQNamePair.getFirst();
         return deleteNodeAssoc(sourceNodeId, targetNodeId, assocTypeQNameId);
@@ -2423,7 +2363,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     public int removeNodeAssocsToAndFrom(Long nodeId)
     {
         // Touch to bring into current txn
-        touchNodeImpl(nodeId, false);
+        touchNodeImpl(nodeId);
 
         return deleteNodeAssocsToAndFrom(nodeId);
     }
@@ -2437,7 +2377,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             return 0;
         }
         // Touch to bring into current txn
-        touchNodeImpl(nodeId, false);
+        touchNodeImpl(nodeId);
 
         return deleteNodeAssocsToAndFrom(nodeId, assocTypeQNameIds);
     }
@@ -2605,7 +2545,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // node into the current transaction for secondary associations
         if (!isPrimary)
         {
-            updateNode(childNodeId, null, null, true);
+            updateNode(childNodeId, null, null);
         }
         
         // Done
@@ -3246,11 +3186,11 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     private ParentAssocsInfo getParentAssocsCached(Long nodeId)
     {
         // We try to protect here against 'skew' between a cached node and its parent associations
-		// Unfortunately due to overlapping DB transactions and consistent read behaviour a thread
-		// can end up loading old associations and succeed in committing them to the shared cache
-		// without any conflicts
-		
-	    // Allow for a single retry after cache validation
+        // Unfortunately due to overlapping DB transactions and consistent read behaviour a thread
+        // can end up loading old associations and succeed in committing them to the shared cache
+        // without any conflicts
+        
+        // Allow for a single retry after cache validation
         for (int i = 0; i < 2; i++)
         {
             Pair<Long, ParentAssocsInfo> cacheEntry = parentAssocsCache.getByKey(nodeId);

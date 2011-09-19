@@ -227,6 +227,7 @@
             <value>${version.store.version2Store}</value>
          </list>
       </property>
+      <property name="enableTimestampPropagation" value="${system.enableTimestampPropagation}" />
    </bean>
 
    <bean id="nodeAuditor" class="org.alfresco.repo.node.NodeAuditor">

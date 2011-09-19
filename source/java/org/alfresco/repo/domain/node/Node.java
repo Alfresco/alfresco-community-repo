@@ -28,6 +28,11 @@ import org.alfresco.util.Pair;
  */
 public interface Node extends NodeIdAndAclId
 {
+    /**
+     * Helper method to force the instance to be read-only
+     */
+    public void lock();
+    
     public abstract NodeRef getNodeRef();
 
     public NodeRef.Status getNodeStatus();

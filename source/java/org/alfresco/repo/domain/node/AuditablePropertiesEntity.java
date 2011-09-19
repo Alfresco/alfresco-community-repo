@@ -100,6 +100,8 @@ public class AuditablePropertiesEntity
         return typeDef.getDefaultAspectNames().contains(ContentModel.ASPECT_AUDITABLE);
     }
     
+    private boolean locked;
+    
     private String auditCreator;
     private String auditCreated;
     private String auditModifier;
@@ -114,6 +116,21 @@ public class AuditablePropertiesEntity
      */
     public AuditablePropertiesEntity()
     {
+        locked = false;
+    }
+    
+    /**
+     * Copy constructor to create an unlocked instance
+     */
+    public AuditablePropertiesEntity(AuditablePropertiesEntity that)
+    {
+        locked = false;
+        this.auditCreator = that.auditCreator;
+        this.auditCreated = that.auditCreated;
+        this.auditModifier = that.auditModifier;
+        this.auditModified = that.auditModified;
+        this.auditAccessed = that.auditAccessed;
+        this.auditModifiedTime = that.auditModifiedTime;
     }
     
     @Override
@@ -127,6 +144,22 @@ public class AuditablePropertiesEntity
           .append(", auditModified=").append(auditModified)
           .append("]");
         return sb.toString();
+    }
+    
+    /**
+     * Lock the entity against further updates to prevent accidental modification
+     */
+    public synchronized void lock()
+    {
+        locked = true;
+    }
+    
+    private synchronized final void checkLock()
+    {
+        if (locked)
+        {
+            throw new IllegalStateException("The entity is locked against updates: " + this);
+        }
     }
     
     /**
@@ -159,46 +192,6 @@ public class AuditablePropertiesEntity
         else
         {
             return null;
-        }
-    }
-    
-    /**
-     * @param qname         the property name
-     * @param value         the property value
-     * @return              Returns <tt>true</tt> if the property was used
-     * @deprecated          Deprecated from the start, but possibly useful code
-     */
-    @SuppressWarnings("unused")
-    private boolean setAuditableProperty(QName qname, Serializable value)
-    {
-        if (qname.equals(ContentModel.PROP_CREATOR))
-        {
-            auditCreator = DefaultTypeConverter.INSTANCE.convert(String.class, value);
-            return true;
-        }
-        if (qname.equals(ContentModel.PROP_MODIFIER))
-        {
-            auditModifier = DefaultTypeConverter.INSTANCE.convert(String.class, value);
-            return true;
-        }
-        if (qname.equals(ContentModel.PROP_CREATED))
-        {
-            auditCreated = DefaultTypeConverter.INSTANCE.convert(String.class, value);
-            return true;
-        }
-        if (qname.equals(ContentModel.PROP_MODIFIED))
-        {
-            auditModified = DefaultTypeConverter.INSTANCE.convert(String.class, value);
-            return true;
-        }
-        if (qname.equals(ContentModel.PROP_ACCESSED))
-        {
-            auditAccessed = DefaultTypeConverter.INSTANCE.convert(String.class, value);
-            return true;
-        }
-        else
-        {
-            return false;
         }
     }
     
@@ -252,6 +245,8 @@ public class AuditablePropertiesEntity
      */
     public boolean setAuditValues(String user, Date date, boolean force, long modifiedDateToleranceMs)
     {
+        checkLock();
+        
         // Get a user if we need
         if (user == null)
         {
@@ -312,6 +307,8 @@ public class AuditablePropertiesEntity
      */
     public boolean setAuditValues(String user, Date date, Map<QName, Serializable> properties)
     {
+        checkLock();
+        
         // Need to know if anything changed
         boolean changed = false;
         
@@ -431,6 +428,7 @@ public class AuditablePropertiesEntity
      */
     public void setAuditCreator(String auditCreator)
     {
+        checkLock();
         this.auditCreator = auditCreator;
     }
 
@@ -447,6 +445,7 @@ public class AuditablePropertiesEntity
      */
     public void setAuditCreated(String auditCreated)
     {
+        checkLock();
         this.auditCreated = auditCreated;
     }
 
@@ -463,6 +462,7 @@ public class AuditablePropertiesEntity
      */
     public void setAuditModifier(String auditModifier)
     {
+        checkLock();
         this.auditModifier = auditModifier;
     }
 
@@ -492,7 +492,32 @@ public class AuditablePropertiesEntity
      */
     public void setAuditModified(String auditModified)
     {
+        checkLock();
         this.auditModified = auditModified;
+    }
+
+    /**
+     * @param modifiedDateToleranceMs   the number of milliseconds' to tolerate before updating the
+     *                  modification date.
+     *                  Setting this to 1000L (say) will mean that the modification time will not be
+     *                  changed if the existing value is withing 1000 ms of the new time.
+     * @return          Returns <tt>true</tt> if there were any changes made, otherwise <tt>false</tt>
+     */
+    public boolean setAuditModified(Date date, long modifiedDateToleranceMs)
+    {
+        checkLock();
+        
+        long dateTime = date.getTime();
+        long lastModTime = getAuditModifiedTime();
+        boolean changed = false;
+        if (lastModTime < 0 || (lastModTime + modifiedDateToleranceMs) < dateTime)
+        {
+            // The time has moved on enough
+            auditModifiedTime = dateTime;
+            auditModified = DefaultTypeConverter.INSTANCE.convert(String.class, date);
+            changed = true;
+        }
+        return changed;
     }
 
     /**
@@ -508,6 +533,7 @@ public class AuditablePropertiesEntity
      */
     public void setAuditAccessed(String auditAccessed)
     {
+        checkLock();
         this.auditAccessed = auditAccessed;
     }
 }

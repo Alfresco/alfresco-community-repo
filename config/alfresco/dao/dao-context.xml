@@ -104,7 +104,6 @@
    </bean>
    <bean id="nodeDAObase" abstract="true" init-method="init">
       <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>
-      <property name="enableTimestampPropagation" value="${system.enableTimestampPropagation}" />
       <property name="transactionService" ref="transactionService" />
       <property name="dictionaryService" ref="dictionaryService"/>
       <property name="policyBehaviourFilter" ref="policyBehaviourFilter" />

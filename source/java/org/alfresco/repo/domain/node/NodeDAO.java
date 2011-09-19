@@ -20,6 +20,7 @@ package org.alfresco.repo.domain.node;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -68,7 +69,9 @@ public interface NodeDAO extends NodeBulkLoader
     
     /**
      * 
-     * @return                  Returns the ID of the current transaction entry
+     * @return                  Returns the ID of the current transaction entry or <tt>null</tt> if
+     *                          there have not been any modifications to nodes registered in the
+     *                          transaction
      */
     public Long getCurrentTransactionId();
     
@@ -123,6 +126,13 @@ public interface NodeDAO extends NodeBulkLoader
     public boolean exists(NodeRef nodeRef);
     public boolean exists(Long nodeId);
 
+    /**
+     * @return                  Returns <tt>true</tt> if the node was last modified in the current
+     *                          transaction, otherwise <tt>false</tt>.
+     * @throws InvalidNodeRefException  if there is no record of the node, past or present
+     */
+    public boolean isInCurrentTxn(Long nodeId);
+    
     /**
      * Get the current status of the node, including deleted nodes.
      * 
@@ -192,9 +202,9 @@ public interface NodeDAO extends NodeBulkLoader
     /**
      * @param nodeTypeQName     the new type QName for the node or <tt>null</tt> to keep the existing one
      * @param nodeLocale        the new locale for the node or <tt>null</tt> to keep the existing one
-     * @param propagate         should this update be propagated to parent audit properties?
+     * @return                  <tt>true</tt> if any changes were made
      */
-    public void updateNode(Long nodeId, QName nodeTypeQName, Locale nodeLocale, boolean propagate);
+    public boolean updateNode(Long nodeId, QName nodeTypeQName, Locale nodeLocale);
     
     public void setNodeAclId(Long nodeId, Long aclId);
     
@@ -232,6 +242,17 @@ public interface NodeDAO extends NodeBulkLoader
     public boolean addNodeProperties(Long nodeId, Map<QName, Serializable> properties);
     
     public boolean removeNodeProperties(Long nodeId, Set<QName> propertyQNames);
+    
+    /**
+     * Pull the <b>cm:modified</b> up to the current time without changing any other
+     * <b>cm:auditable</b> properties.  The change may be done in the current transaction
+     * or in a later transaction.
+     * 
+     * @param nodeId            the node to change
+     * @param modifiedDate      the date to set for <b>cm:modified</b>
+     * @return                  Returns <tt>true</tt> if the <b>cm:modified</b> property was actually set
+     */
+    public boolean setModifiedDate(Long nodeId, Date date);
     
     /*
      * Aspects

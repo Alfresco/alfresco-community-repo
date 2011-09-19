@@ -108,12 +108,16 @@ public class NodeEntity implements Node, PermissionCheckValue
     /**
      * Lock the entity against further updates to prevent accidental modification
      */
-    public void lock()
+    public synchronized void lock()
     {
         locked = true;
+        if (auditableProperties != null)
+        {
+            auditableProperties.lock();
+        }
     }
     
-    private final void checkLock()
+    private synchronized final void checkLock()
     {
         if (locked)
         {

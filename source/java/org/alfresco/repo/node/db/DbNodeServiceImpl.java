@@ -46,9 +46,14 @@ import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.node.index.NodeIndexer;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
+import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.InvalidAspectException;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
@@ -85,6 +90,9 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class DbNodeServiceImpl extends AbstractNodeServiceImpl
 {
+    private final static String KEY_PRE_COMMIT_ADD_NODE = "DbNodeServiceImpl.PreCommitAddNode";
+    private final static String KEY_DELETED_NODES = "DbNodeServiceImpl.DeletedNodes";
+
     private static Log logger = LogFactory.getLog(DbNodeServiceImpl.class);
     
     private QNameDAO qnameDAO;
@@ -93,8 +101,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     private NodeService avmNodeService;
     private NodeIndexer nodeIndexer;
     private BehaviourFilter policyBehaviourFilter;
-    private final static String KEY_PRE_COMMIT_ADD_NODE = "DbNodeServiceImpl.PreCommitAddNode";
-    private final static String KEY_DELETED_NODES = "DbNodeServiceImpl.DeletedNodes";
+    private boolean enableTimestampPropagation;
     
     public DbNodeServiceImpl()
     {
@@ -131,6 +138,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     }
 
     /**
+<<<<<<< .working
      * 
      * @param policyBehaviourFilter     component used to enable and disable behaviours
      */
@@ -140,6 +148,20 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     }
 
     /**
+=======
+     * Set whether <b>cm:auditable</b> timestamps should be propagated to parent nodes
+     * where the parent-child relationship has been marked using <b>propagateTimestamps<b/>.
+     * 
+     * @param enableTimestampPropagation        <tt>true</tt> to propagate timestamps to the parent
+     *                                          node where appropriate
+     */
+    public void setEnableTimestampPropagation(boolean enableTimestampPropagation)
+    {
+        this.enableTimestampPropagation = enableTimestampPropagation;
+    }
+
+    /**
+>>>>>>> .merge-right.r30520
      * Performs a null-safe get of the node
      * 
      * @param nodeRef the node to retrieve
@@ -358,6 +380,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         
         Map<QName, Serializable> propertiesAfter = nodeDAO.getNodeProperties(childNodePair.getFirst());
         
+        // Propagate timestamps
+        propagateTimeStamps(childAssocRef);
+
         // Invoke policy behaviour
         invokeOnCreateNode(childAssocRef);
         invokeOnCreateChildAssociation(childAssocRef, true);
@@ -742,16 +767,19 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         invokeBeforeUpdateNode(nodeRef);
         
         // Set the type
-        nodeDAO.updateNode(nodePair.getFirst(), typeQName, null, false);
+        boolean updatedNode = nodeDAO.updateNode(nodePair.getFirst(), typeQName, null);
         
         // Add the default aspects and properties required for the given type. Existing values will not be overridden.
-        addAspectsAndProperties(nodePair, typeQName, null, null, null, null, false);
-        
-        // Index
-        nodeIndexer.indexUpdateNode(nodeRef);
+        boolean updatedProps = addAspectsAndProperties(nodePair, typeQName, null, null, null, null, false);
         
         // Invoke policies
-        invokeOnUpdateNode(nodeRef);
+        if (updatedNode || updatedProps)
+        {
+            // Invoke policies
+            invokeOnUpdateNode(nodeRef);
+            // Index
+            nodeIndexer.indexUpdateNode(nodeRef);
+        }
     }
     
     /**
@@ -1011,9 +1039,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             deletePrimaryChildrenNotArchived(nodePair);
             // perform a normal deletion
             nodeDAO.deleteNode(nodeId);
+            
+            // Propagate timestamps
+            propagateTimeStamps(childAssocRef);
             // Invoke policy behaviours
             invokeOnDeleteNode(childAssocRef, nodeTypeQName, nodeAspectQNames, false);
-
             // Index
             nodeIndexer.indexDeleteNode(childAssocRef);
         }
@@ -1092,6 +1122,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             deletePrimaryChildrenNotArchived(childNodePair);
             // Delete the child
             nodeDAO.deleteNode(childNodeId);
+
+            // Propagate timestamps
+            propagateTimeStamps(childParentAssocRef);
             invokeOnDeleteNode(childParentAssocRef, childNodeType, childNodeQNames, false);
             
             // lose interest in tracking this node ref
@@ -2257,7 +2290,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         
         Long nodeToMoveId = nodeToMovePair.getFirst();
         QName nodeToMoveTypeQName = nodeDAO.getNodeType(nodeToMoveId);
-        Set<QName> nodeToMoveAspectQNames = nodeDAO.getNodeAspects(nodeToMoveId);
         NodeRef oldNodeToMoveRef = nodeToMovePair.getSecond();
         Long parentNodeId = parentNodePair.getFirst();
         NodeRef parentNodeRef = parentNodePair.getSecond();
@@ -2318,6 +2350,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // Call behaviours
         if (movingStore)
         {
+            // Propagate timestamps
+            propagateTimeStamps(oldParentAssocRef);
+            propagateTimeStamps(newParentAssocRef);
+
+            Set<QName> nodeToMoveAspectQNames = nodeDAO.getNodeAspects(nodeToMoveId);
             // The Node changes NodeRefs, so this is really the deletion of the old node and creation
             // of a node in a new store as far as the clients are concerned.
             invokeOnDeleteNode(oldParentAssocRef, nodeToMoveTypeQName, nodeToMoveAspectQNames, true);
@@ -2328,6 +2365,13 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
         else
         {
+            // Propagate timestamps (watch out for moves within the same folder)
+            if (!oldParentAssocRef.getParentRef().equals(newParentAssocRef.getParentRef()))
+            {
+                propagateTimeStamps(oldParentAssocRef);
+                propagateTimeStamps(newParentAssocRef);
+            }
+
             invokeOnCreateChildAssociation(newParentAssocRef, false);
             invokeOnDeleteChildAssociation(oldParentAssocRef);
             invokeOnMoveNode(oldParentAssocRef, newParentAssocRef);
@@ -2386,8 +2430,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             QName childNodeTypeQName = nodeDAO.getNodeType(childNodeId);
             Set<QName> childNodeAspectQNames = nodeDAO.getNodeAspects(childNodeId);
             Pair<Long, ChildAssociationRef> oldParentAssocPair = nodeDAO.getPrimaryParentAssoc(childNodeId);
-            Pair<Long, ChildAssociationRef> newParentAssocPair = oldParentAssocPair;
-            ChildAssociationRef newParentAssocRef = newParentAssocPair.getSecond();
+            ChildAssociationRef oldParentAssocRef = oldParentAssocPair.getSecond();
             
             // remove the deleted node from the list of new nodes
             untrackNewNodeRef(childNodeRef);
@@ -2398,9 +2441,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             // Fire node policies.  This ensures that each node in the hierarchy gets a notification fired.
             invokeBeforeDeleteNode(childNodeRef);
             invokeBeforeCreateNode(
-                        newParentAssocRef.getParentRef(),
-                        newParentAssocRef.getTypeQName(),
-                        newParentAssocRef.getQName(),
+                        oldParentAssocPair.getSecond().getParentRef(),
+                        oldParentAssocPair.getSecond().getTypeQName(),
+                        oldParentAssocPair.getSecond().getQName(),
                         childNodeTypeQName);
             // Move the node as this gives back the primary parent association
             Pair<Pair<Long, ChildAssociationRef>, Pair<Long, NodeRef>> moveResult;
@@ -2413,13 +2456,18 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 deleteNode(e.getNodePair().getSecond());
                 moveResult = nodeDAO.moveNode(childNodeId, nodeId, null,null);
             }
-            newParentAssocPair = moveResult.getFirst();
+            // Move the node as this gives back the primary parent association
+            Pair<Long, ChildAssociationRef> newParentAssocPair = moveResult.getFirst();
             Pair<Long, NodeRef> newChildNodePair = moveResult.getSecond();
+            ChildAssociationRef newParentAssocRef = newParentAssocPair.getSecond();
             // Index
             nodeIndexer.indexCreateNode(newParentAssocPair.getSecond());
+            // Propagate timestamps
+            propagateTimeStamps(oldParentAssocRef);
+            propagateTimeStamps(newParentAssocRef);
             // Fire node policies.  This ensures that each node in the hierarchy gets a notification fired.
-            invokeOnDeleteNode(oldParentAssocPair.getSecond(), childNodeTypeQName, childNodeAspectQNames, true);
-            invokeOnCreateNode(newParentAssocPair.getSecond());
+            invokeOnDeleteNode(oldParentAssocRef, childNodeTypeQName, childNodeAspectQNames, true);
+            invokeOnCreateNode(newParentAssocRef);
             // Cascade
             pullNodeChildrenToSameStore(newChildNodePair);
         }
@@ -2469,6 +2517,179 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         {
             nodeDAO.setChildAssocsUniqueName(childNodeId, newName);
             return true;
+        }
+    }
+
+    /**
+     * Propagate, if necessary, a <b>cm:modified</b> timestamp change to the parent of the
+     * given association.  The parent node has to be <b>cm:auditable</b> and the association
+     * has to be marked for propagation as well.
+     * 
+     * @param assocRef          the association to propagate along
+     */
+    private void propagateTimeStamps(ChildAssociationRef assocRef)
+    {
+        if (!enableTimestampPropagation)
+        {
+            return;         // Bypassed on a system-wide basis
+        }
+        // First check if the association type warrants propagation in the first place
+        AssociationDefinition assocDef = dictionaryService.getAssociation(assocRef.getTypeQName());
+        if (assocDef == null || !assocDef.isChild())
+        {
+            return;
+        }
+        ChildAssociationDefinition childAssocDef = (ChildAssociationDefinition) assocDef;
+        if (!childAssocDef.getPropagateTimestamps())
+        {
+            return;
+        }
+        // The dictionary says propagate.  Now get the parent node and prompt the touch.
+        NodeRef parentNodeRef = assocRef.getParentRef();
+        Pair<Long, NodeRef> parentNodePair = getNodePairNotNull(parentNodeRef);
+        Long parentNodeId = parentNodePair.getFirst();
+        // If we have already modified a particular parent node in the current txn,
+        // it is not necessary to start a new transaction to tweak the cm:modified date.
+        // But if the parent node was NOT touched, then doing so in this transaction would
+        // create excessive concurrency and retries; in latter case we defer to a small,
+        // post-commit isolated transaction.
+        if (TransactionalResourceHelper.getSet(KEY_AUDITABLE_PROPAGATION_PRE).contains(parentNodeId))
+        {
+            // It is already registered in the current transaction.
+            return;
+        }
+        if (nodeDAO.isInCurrentTxn(parentNodeId))
+        {
+            // The parent and child are in the same transaction
+            TransactionalResourceHelper.getSet(KEY_AUDITABLE_PROPAGATION_PRE).add(parentNodeId);
+            // Make sure that it is not processed after the transaction
+            TransactionalResourceHelper.getSet(KEY_AUDITABLE_PROPAGATION_POST).remove(parentNodeId);
+        }
+        else
+        {
+            TransactionalResourceHelper.getSet(KEY_AUDITABLE_PROPAGATION_POST).add(parentNodeId);
+        }
+        
+        // Bind a listener for post-transaction manipulation
+        AlfrescoTransactionSupport.bindListener(auditableTransactionListener);
+    }
+    
+    private static final String KEY_AUDITABLE_PROPAGATION_PRE = "node.auditable.propagation.pre";
+    private static final String KEY_AUDITABLE_PROPAGATION_POST = "node.auditable.propagation.post";
+    private AuditableTransactionListener auditableTransactionListener = new AuditableTransactionListener();
+    /**
+     * Wrapper to set the <b>cm:modified</b> time on individual nodes.
+     * 
+     * @author Derek Hulley
+     * @since 3.4.6
+     */
+    private class AuditableTransactionListener extends TransactionListenerAdapter
+    {
+        @Override
+        public void beforeCommit(boolean readOnly)
+        {
+            // An error in prior code if it's read only
+            if (readOnly)
+            {
+                throw new IllegalStateException("Attempting to modify parent cm:modified in read-only txn.");
+            }
+            
+            Set<Long> parentNodeIds = TransactionalResourceHelper.getSet(KEY_AUDITABLE_PROPAGATION_PRE);
+            if (parentNodeIds.size() == 0)
+            {
+                return;
+            }
+            // Process parents, but use the current txn
+            Date modifiedDate = new Date();
+            process(parentNodeIds, modifiedDate, true);
+        }
+
+        @Override
+        public void afterCommit()
+        {
+            Set<Long> parentNodeIds = TransactionalResourceHelper.getSet(KEY_AUDITABLE_PROPAGATION_POST);
+            if (parentNodeIds.size() == 0)
+            {
+                return;
+            }
+            Date modifiedDate = new Date();
+            process(parentNodeIds, modifiedDate, false);
+        }
+
+        /**
+         * @param parentNodeIds         the parent node IDs that need to be touched for <b>cm:modified</b>
+         * @param modifiedDate          the date to set
+         * @param useCurrentTxn         <tt>true</tt> to use the current transaction
+         */
+        private void process(final Set<Long> parentNodeIds, Date modifiedDate, boolean useCurrentTxn)
+        {
+            // Walk through the IDs
+            for (Long parentNodeId: parentNodeIds)
+            {
+                processSingle(parentNodeId, modifiedDate, useCurrentTxn);
+            }
+        }
+        
+        /**
+         * Touch a single node in a new, writable txn
+         * 
+         * @param parentNodeId          the parent node to touch
+         * @param modifiedDate          the date to set
+         * @param useCurrentTxn         <tt>true</tt> to use the current transaction
+         */
+        private void processSingle(final Long parentNodeId, final Date modifiedDate, boolean useCurrentTxn)
+        {
+            RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+            txnHelper.setMaxRetries(1);
+            RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
+            {
+                @Override
+                public Void execute() throws Throwable
+                {
+                    Pair<Long, NodeRef> parentNodePair = nodeDAO.getNodePair(parentNodeId);
+                    if (parentNodePair == null)
+                    {
+                        return null;                            // Parent has gone away
+                    }
+                    else if (!nodeDAO.hasNodeAspect(parentNodeId, ContentModel.ASPECT_AUDITABLE))
+                    {
+                        return null;                            // Not auditable
+                    }
+                    NodeRef parentNodeRef = parentNodePair.getSecond();
+                    
+                    // Invoke policy behaviour
+                    invokeBeforeUpdateNode(parentNodeRef);
+
+                    // Touch the node; it is cm:auditable
+                    boolean changed = nodeDAO.setModifiedDate(parentNodeId, modifiedDate);
+                    
+                    if (changed)
+                    {
+                        // Invoke policy behaviour
+                        invokeOnUpdateNode(parentNodeRef);
+                        // Index
+                        nodeIndexer.indexUpdateNode(parentNodeRef);
+                    }
+
+                    return null;
+                }
+            };
+            try
+            {
+                txnHelper.doInTransaction(callback, false, !useCurrentTxn);
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug(
+                            "Touched cm:modified date for node " + parentNodeId +
+                            " (" + modifiedDate + ")" +
+                            (useCurrentTxn ? " in txn " : " in new txn ") +
+                            nodeDAO.getCurrentTransactionId());
+                }
+            }
+            catch (Throwable e)
+            {
+                logger.info("Failed to update cm:modified date for node: " + parentNodeId);
+            }
         }
     }
 }

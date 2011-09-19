@@ -138,7 +138,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     }
 
     /**
-<<<<<<< .working
      * 
      * @param policyBehaviourFilter     component used to enable and disable behaviours
      */
@@ -148,7 +147,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     }
 
     /**
-=======
      * Set whether <b>cm:auditable</b> timestamps should be propagated to parent nodes
      * where the parent-child relationship has been marked using <b>propagateTimestamps<b/>.
      * 
@@ -161,7 +159,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     }
 
     /**
->>>>>>> .merge-right.r30520
      * Performs a null-safe get of the node
      * 
      * @param nodeRef the node to retrieve

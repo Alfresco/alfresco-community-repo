@@ -1323,7 +1323,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      * Updates the node's transaction and <b>cm:auditable</b> properties only.
      * 
      * @param auditableProps            optionally override the <b>cm:auditable</b> values
-     * @param propagate                 should this update be propagated to parent audit properties?
      * 
      * 
      * @see #updateNodeImpl(NodeEntity, NodeUpdateEntity)
@@ -1343,6 +1342,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
         NodeUpdateEntity nodeUpdate = new NodeUpdateEntity();
         nodeUpdate.setId(nodeId);
+        nodeUpdate.setAuditableProperties(auditableProps);
         // Update it
         return updateNodeImpl(node, nodeUpdate);
     }

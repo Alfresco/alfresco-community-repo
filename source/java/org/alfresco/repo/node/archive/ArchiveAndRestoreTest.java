@@ -761,7 +761,7 @@ public class ArchiveAndRestoreTest extends TestCase
     /**
      * <a href="https://issues.alfresco.com/jira/browse/ALF-7889">ALF-7889</a>
      */
-    public synchronized void testAR7889ArchiveAndRestoreMustNotModifyAuditable() throws Exception
+    public synchronized void DISABLED_testAR7889ArchiveAndRestoreMustNotModifyAuditable() throws Exception
     {
         AuthenticationUtil.setFullyAuthenticatedUser(USER_A);
         nodeService.addAspect(b, ContentModel.ASPECT_AUDITABLE, null);

@@ -109,7 +109,7 @@ public class FlickrTest extends BaseSpringTest
                 props.put(PublishingModel.PROP_OAUTH1_TOKEN_SECRET, "YOUR_OAUTH_TOKEN_SECRET");
                 props.put(PublishingModel.PROP_AUTHORISATION_COMPLETE, Boolean.TRUE);
                 
-                Channel channel = channelService.createChannel(FlickrChannelType.ID, "FlickrTestChannel", props);
+                Channel channel = channelService.createChannel(FlickrChannelType.ID, "FlickrTestChannel_" + GUID.generate(), props);
                 //This looks a little odd, but a new channel always has its "authorisation complete" flag
                 //forced off initially. This will force it on for this channel...
                 channelService.updateChannel(channel, props);

@@ -18,15 +18,15 @@
  */
 package org.alfresco.repo.publishing.flickr.springsocial.api.impl;
 
+import org.alfresco.repo.publishing.flickr.springsocial.api.FlickrException;
 import org.alfresco.repo.publishing.flickr.springsocial.api.FlickrHelper;
 import org.alfresco.repo.publishing.flickr.springsocial.api.MediaOperations;
 import org.alfresco.repo.publishing.flickr.springsocial.api.PhotoInfo;
+import org.alfresco.repo.publishing.flickr.springsocial.api.impl.xml.FlickrError;
 import org.alfresco.repo.publishing.flickr.springsocial.api.impl.xml.FlickrPayload;
 import org.alfresco.repo.publishing.flickr.springsocial.api.impl.xml.FlickrResponse;
 import org.alfresco.repo.publishing.flickr.springsocial.api.impl.xml.Photo;
 import org.alfresco.repo.publishing.flickr.springsocial.api.impl.xml.PhotoId;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.social.support.URIBuilder;
 import org.springframework.util.LinkedMultiValueMap;
@@ -35,7 +35,6 @@ import org.springframework.web.client.RestTemplate;
 
 class MediaTemplate extends AbstractFlickrOperations implements MediaOperations
 {
-    private final static Log log = LogFactory.getLog(MediaTemplate.class);
     private final RestTemplate restTemplate;
     private FlickrHelper helper;
 
@@ -78,6 +77,7 @@ class MediaTemplate extends AbstractFlickrOperations implements MediaOperations
         helper.addStandardParams(uriBuilder);
         FlickrResponse response = restTemplate.postForObject(uriBuilder.build(), parts, FlickrResponse.class);
         FlickrPayload payload = response.payload;
+        checkError(payload);
         if (PhotoId.class.isAssignableFrom(payload.getClass()))
         {
             id = ((PhotoId)payload).id;
@@ -95,13 +95,14 @@ class MediaTemplate extends AbstractFlickrOperations implements MediaOperations
         uriBuilder.queryParam("photo_id", id);
         FlickrResponse response = restTemplate.getForObject(uriBuilder.build(), FlickrResponse.class);
         FlickrPayload payload = response.payload;
+        checkError(payload);
         if (Photo.class.isAssignableFrom(payload.getClass()))
         {
             result = (Photo)payload;
         }
         return result;
     }
-    
+
     public void deletePhoto(String id)
     {
         requireAuthorization();
@@ -111,5 +112,15 @@ class MediaTemplate extends AbstractFlickrOperations implements MediaOperations
         parts.add("photo_id", id);
         FlickrResponse response = restTemplate.postForObject(helper.getRestEndpoint(), parts, FlickrResponse.class);
         FlickrPayload payload = response.payload;
+        checkError(payload);
+    }
+    
+    private void checkError(FlickrPayload payload) throws FlickrException
+    {
+        if (payload != null && FlickrError.class.isAssignableFrom(payload.getClass()))
+        {
+            FlickrError error = (FlickrError) payload;
+            throw new FlickrException(error.code, error.msg);
+        }
     }
 }

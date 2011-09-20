@@ -23,9 +23,9 @@ import org.springframework.core.io.Resource;
 public interface MediaOperations
 {
 
-    String postPhoto(Resource photo, String title, String description, String... tags);
+    String postPhoto(Resource photo, String title, String description, String... tags) throws FlickrException;
 
-    PhotoInfo getPhoto(String id);
+    PhotoInfo getPhoto(String id) throws FlickrException;
     
-    void deletePhoto(String id);
+    void deletePhoto(String id) throws FlickrException;
 }

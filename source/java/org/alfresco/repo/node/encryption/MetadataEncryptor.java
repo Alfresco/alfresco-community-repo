@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.alfresco.repo.node.encryption;
 
 import java.io.Serializable;
@@ -12,7 +30,6 @@ import javax.crypto.SealedObject;
 import org.alfresco.encryption.FallbackEncryptor;
 import org.alfresco.encryption.KeyProvider;
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -54,20 +71,7 @@ public class MetadataEncryptor
     }
 
     /**
-     * @throws AuthenticationException if the thread is not running as 'system'
-     */
-    private final void checkAuthentication()
-    {
-        if (!AuthenticationUtil.isRunAsUserTheSystemUser())
-        {
-            throw new AuthenticationException("Metadata decryption can only be done by the system user.");
-        }
-    }
-    
-    /**
      * Encrypt a properties if the data definition (model-specific) requires it.
-     * <p/>
-     * This method has no specific authentication requirements.
      * 
      * @param propertyQName             the property qualified name
      * @param inbound                   the property to encrypt
@@ -91,8 +95,6 @@ public class MetadataEncryptor
     
     /**
      * Decrypt a property if the data definition (model-specific) requires it.
-     * <p/>
-     * This method can only be called by the 'system' user.
      * 
      * @param propertyQName             the property qualified name
      * @param inbound                   the property to decrypt
@@ -124,8 +126,6 @@ public class MetadataEncryptor
     /**
      * Encrypt properties if their data definition (model-specific) requires it.
      * The values provided can be mixed; values will be encrypted only if required.
-     * <p/>
-     * This method has no specific authentication requirements.
      * 
      * @param inbound                   the properties to encrypt
      * @return                          a new map of values if some encryption occured
@@ -170,8 +170,6 @@ public class MetadataEncryptor
     /**
      * Decrypt properties if they are decryptable.  The values provided can be mixed;
      * encrypted values will be sought out and decrypted.
-     * <p/>
-     * This method can only be called by the 'system' user.
      * 
      * @param inbound                   the properties to decrypt
      * @return                          a new map of values if some decryption occured
@@ -179,8 +177,6 @@ public class MetadataEncryptor
      */
     public Map<QName, Serializable> decrypt(Map<QName, Serializable> inbound)
     {
-        checkAuthentication();
-        
         Set<QName> encryptedProperties = new HashSet<QName>(5);
         for (Map.Entry<QName, Serializable> entry : inbound.entrySet())
         {

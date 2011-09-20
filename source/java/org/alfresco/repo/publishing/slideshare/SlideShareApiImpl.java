@@ -30,7 +30,6 @@ import org.apache.commons.logging.LogFactory;
 
 import com.benfante.jslideshare.DocumentParser;
 import com.benfante.jslideshare.DocumentParserResult;
-import com.benfante.jslideshare.SlideShareAPI;
 import com.benfante.jslideshare.SlideShareConnector;
 import com.benfante.jslideshare.SlideShareErrorException;
 import com.benfante.jslideshare.SlideShareException;
@@ -40,7 +39,7 @@ import com.benfante.jslideshare.messages.SlideshowInfo;
 import com.benfante.jslideshare.messages.Tag;
 import com.benfante.jslideshare.messages.User;
 
-public class SlideShareApiImpl implements SlideShareAPI
+public class SlideShareApiImpl implements SlideShareApi
 {
     private static final Log logger = LogFactory.getLog(SlideShareApiImpl.class);
 
@@ -57,12 +56,12 @@ public class SlideShareApiImpl implements SlideShareAPI
     static
     {
         DEFAULT_API_URLS.put(URL_GET_SLIDESHOW, "http://www.slideshare.net/api/2/get_slideshow");
-        DEFAULT_API_URLS.put(URL_GET_SLIDESHOW_INFO, "https://www.slideshare.net/api/2/get_slideshow_info");
-        DEFAULT_API_URLS.put(URL_GET_SLIDESHOW_BY_USER, "https://www.slideshare.net/api/2/get_slideshow_by_user");
-        DEFAULT_API_URLS.put(URL_GET_SLIDESHOW_BY_TAG, "https://www.slideshare.net/api/2/get_slideshow_by_tag");
-        DEFAULT_API_URLS.put(URL_GET_SLIDESHOW_BY_GROUP, "https://www.slideshare.net/api/2/get_slideshow_from_group");
+        DEFAULT_API_URLS.put(URL_GET_SLIDESHOW_INFO, "http://www.slideshare.net/api/2/get_slideshow");
+        DEFAULT_API_URLS.put(URL_GET_SLIDESHOW_BY_USER, "http://www.slideshare.net/api/2/get_slideshow_by_user");
+        DEFAULT_API_URLS.put(URL_GET_SLIDESHOW_BY_TAG, "http://www.slideshare.net/api/2/get_slideshow_by_tag");
+        DEFAULT_API_URLS.put(URL_GET_SLIDESHOW_BY_GROUP, "http://www.slideshare.net/api/2/get_slideshow_from_group");
         DEFAULT_API_URLS.put(URL_UPLOAD_SLIDESHOW, "http://www.slideshare.net/api/2/upload_slideshow");
-        DEFAULT_API_URLS.put(URL_DELETE_SLIDESHOW, "https://www.slideshare.net/api/2/delete_slideshow");
+        DEFAULT_API_URLS.put(URL_DELETE_SLIDESHOW, "http://www.slideshare.net/api/2/delete_slideshow");
     }
 
     private Map<String, String> apiUrls = new TreeMap<String, String>(DEFAULT_API_URLS);
@@ -200,7 +199,7 @@ public class SlideShareApiImpl implements SlideShareAPI
         addParameter(parameters, "username", username);
         addParameter(parameters, "password", password);
         addParameter(parameters, "slideshow_id", id);
-        return sendGetMessage(URL_DELETE_SLIDESHOW, parameters).getSlideShowId();
+        return sendMessage(URL_DELETE_SLIDESHOW, parameters).getSlideShowId();
     }
 
     private Map<String, String> addParameter(Map<String, String> parameters, String name, String value)

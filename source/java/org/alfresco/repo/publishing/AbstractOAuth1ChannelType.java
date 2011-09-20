@@ -58,8 +58,10 @@ public abstract class AbstractOAuth1ChannelType<A> extends AbstractChannelType
         if (nodeService.exists(channelNode)
                 && nodeService.hasAspect(channelNode, PublishingModel.ASPECT_OAUTH1_DELIVERY_CHANNEL))
         {
-            String tokenValue = (String) nodeService.getProperty(channelNode, PublishingModel.PROP_OAUTH1_TOKEN_VALUE);
-            String tokenSecret = (String) nodeService.getProperty(channelNode, PublishingModel.PROP_OAUTH1_TOKEN_SECRET);
+            String tokenValue = (String) getEncryptor().decrypt(PublishingModel.PROP_OAUTH1_TOKEN_VALUE, nodeService
+                    .getProperty(channelNode, PublishingModel.PROP_OAUTH1_TOKEN_VALUE));
+            String tokenSecret = (String) getEncryptor().decrypt(PublishingModel.PROP_OAUTH1_TOKEN_SECRET, nodeService
+                    .getProperty(channelNode, PublishingModel.PROP_OAUTH1_TOKEN_SECRET));
             Boolean danceComplete = (Boolean) nodeService.getProperty(channelNode, PublishingModel.PROP_AUTHORISATION_COMPLETE);
             
             if (danceComplete)
@@ -90,8 +92,10 @@ public abstract class AbstractOAuth1ChannelType<A> extends AbstractChannelType
         OAuthToken requestToken = oauthOperations.fetchRequestToken(callbackUrl, null);
 
         NodeRef channelNodeRef = channel.getNodeRef();
-        nodeService.setProperty(channelNodeRef, PublishingModel.PROP_OAUTH1_TOKEN_SECRET, requestToken.getSecret());
-        nodeService.setProperty(channelNodeRef, PublishingModel.PROP_OAUTH1_TOKEN_VALUE, requestToken.getValue());
+        nodeService.setProperty(channelNodeRef, PublishingModel.PROP_OAUTH1_TOKEN_SECRET, 
+                getEncryptor().encrypt(PublishingModel.PROP_OAUTH1_TOKEN_SECRET, requestToken.getSecret()));
+        nodeService.setProperty(channelNodeRef, PublishingModel.PROP_OAUTH1_TOKEN_VALUE, 
+                getEncryptor().encrypt(PublishingModel.PROP_OAUTH1_TOKEN_VALUE, requestToken.getValue()));
 
         return oauthOperations.buildAuthorizeUrl(requestToken.getValue(), getOAuth1Parameters(callbackUrl));
     }
@@ -108,14 +112,17 @@ public abstract class AbstractOAuth1ChannelType<A> extends AbstractChannelType
             NodeRef channelNodeRef = channel.getNodeRef();
 
             Map<QName, Serializable> currentProps = nodeService.getProperties(channelNodeRef);
-            String tokenValue = (String) currentProps.get(PublishingModel.PROP_OAUTH1_TOKEN_VALUE);
-            String tokenSecret = (String) currentProps.get(PublishingModel.PROP_OAUTH1_TOKEN_SECRET);
+            String tokenValue = (String) getEncryptor().decrypt(PublishingModel.PROP_OAUTH1_TOKEN_VALUE, currentProps
+                    .get(PublishingModel.PROP_OAUTH1_TOKEN_VALUE));
+            String tokenSecret = (String) getEncryptor().decrypt(PublishingModel.PROP_OAUTH1_TOKEN_SECRET, currentProps
+                    .get(PublishingModel.PROP_OAUTH1_TOKEN_SECRET));
             OAuthToken token = new OAuthToken(tokenValue, tokenSecret);
             OAuthToken accessToken = oauthOperations.exchangeForAccessToken(new AuthorizedRequestToken(token, verifier[0]), null);
             
             Map<QName, Serializable> newProps = new HashMap<QName, Serializable>();
             newProps.put(PublishingModel.PROP_OAUTH1_TOKEN_VALUE, accessToken.getValue());
             newProps.put(PublishingModel.PROP_OAUTH1_TOKEN_SECRET, accessToken.getSecret());
+            newProps = getEncryptor().encrypt(newProps);
             getChannelService().updateChannel(channel, newProps);
             authorised = AuthStatus.AUTHORISED;
         }

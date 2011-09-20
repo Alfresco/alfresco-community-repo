@@ -165,6 +165,7 @@ public class FacebookChannelType extends AbstractChannelType
         {
             Map<QName,Serializable> channelProps = new HashMap<QName, Serializable>();
             channelProps.put(PublishingModel.PROP_OAUTH2_TOKEN, accessToken);
+            channelProps = getEncryptor().encrypt(channelProps);
             getChannelService().updateChannel(channel, channelProps);
             authorised = AuthStatus.AUTHORISED;
         }

@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.node.encryption.MetadataEncryptor;
 import org.alfresco.repo.publishing.PublishingModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -53,6 +54,7 @@ public class SlideSharePublishingHelper
     private Map<String, String> allowedMimeTypes = Collections.unmodifiableMap(DEFAULT_MIME_TYPES);
     private NodeService nodeService;
     private SlideShareConnector slideshareConnector;
+    private MetadataEncryptor encryptor;
     
     public void setNodeService(NodeService nodeService)
     {
@@ -74,6 +76,11 @@ public class SlideSharePublishingHelper
         this.allowedMimeTypes = Collections.unmodifiableMap(allowedMimeTypes);
     }
 
+    public void setEncryptor(MetadataEncryptor encryptor)
+    {
+        this.encryptor = encryptor;
+    }
+
     public SlideShareAPI getSlideShareApi()
     {
         return createApiObject();
@@ -92,8 +99,10 @@ public class SlideSharePublishingHelper
             NodeRef parent = nodeService.getPrimaryParent(publishNode).getParentRef();
             if (nodeService.hasAspect(parent, SlideSharePublishingModel.ASPECT_DELIVERY_CHANNEL))
             {
-                String username = (String) nodeService.getProperty(parent, PublishingModel.PROP_CHANNEL_USERNAME);
-                String password = (String) nodeService.getProperty(parent, PublishingModel.PROP_CHANNEL_PASSWORD);
+                String username = (String) encryptor.decrypt(PublishingModel.PROP_CHANNEL_USERNAME, nodeService
+                        .getProperty(parent, PublishingModel.PROP_CHANNEL_USERNAME));
+                String password = (String) encryptor.decrypt(PublishingModel.PROP_CHANNEL_PASSWORD, nodeService
+                        .getProperty(parent, PublishingModel.PROP_CHANNEL_PASSWORD));
                 if (username != null && password != null)
                 {
                     result = new Pair<String, String>(username, password);
@@ -103,7 +112,7 @@ public class SlideSharePublishingHelper
         return result;
     }
 
-    public SlideShareAPI getSlideShareApi(String username, String password)
+    public SlideShareApi getSlideShareApi(String username, String password)
     {
         SlideShareApiImpl api = createApiObject();
         api.setUsername(username);

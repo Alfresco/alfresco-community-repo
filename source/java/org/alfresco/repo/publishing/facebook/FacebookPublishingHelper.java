@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.publishing.facebook;
 
+import org.alfresco.repo.node.encryption.MetadataEncryptor;
 import org.alfresco.repo.publishing.PublishingModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -34,6 +35,7 @@ public class FacebookPublishingHelper
 {
     private NodeService nodeService;
     private FacebookConnectionFactory connectionFactory;
+    private MetadataEncryptor encryptor;
 
     public void setNodeService(NodeService nodeService)
     {
@@ -50,13 +52,19 @@ public class FacebookPublishingHelper
         return connectionFactory;
     }
 
+    public void setEncryptor(MetadataEncryptor encryptor)
+    {
+        this.encryptor = encryptor;
+    }
+
     public Connection<Facebook> getFacebookConnectionForChannel(NodeRef channelNode)
     {
         Connection<Facebook> connection = null;
         if (nodeService.exists(channelNode)
                 && nodeService.hasAspect(channelNode, FacebookPublishingModel.ASPECT_DELIVERY_CHANNEL))
         {
-            String tokenValue = (String) nodeService.getProperty(channelNode, PublishingModel.PROP_OAUTH2_TOKEN);
+            String tokenValue = (String) encryptor.decrypt(PublishingModel.PROP_OAUTH2_TOKEN, nodeService.getProperty(
+                    channelNode, PublishingModel.PROP_OAUTH2_TOKEN));
             Boolean danceComplete = (Boolean) nodeService.getProperty(channelNode, PublishingModel.PROP_AUTHORISATION_COMPLETE);
             
             if (danceComplete)

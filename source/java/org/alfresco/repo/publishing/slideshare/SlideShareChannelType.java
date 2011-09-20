@@ -70,7 +70,7 @@ public class SlideShareChannelType extends AbstractChannelType
     @Override
     public boolean canUnpublish()
     {
-        return false;
+        return true;
     }
 
     @Override
@@ -107,7 +107,8 @@ public class SlideShareChannelType extends AbstractChannelType
     @Override
     public void unpublish(NodeRef nodeToUnpublish, Map<QName, Serializable> properties)
     {
-        throw new UnsupportedOperationException();
+        Action unpublishAction = actionService.createAction(SlideShareUnpublishAction.NAME);
+        actionService.executeAction(unpublishAction, nodeToUnpublish);
     }
 
     @Override

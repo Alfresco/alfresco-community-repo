@@ -100,6 +100,10 @@
         <constructor-arg value="org.alfresco.service.cmr.security.PermissionService" />
     </bean>
 
+    <bean id="metadataEncryptor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.alfresco.repo.node.encryption.MetadataEncryptor" />
+    </bean>
+
    <bean id="dictionaryBootstrap" class="java.lang.Object" />
    
 </beans>

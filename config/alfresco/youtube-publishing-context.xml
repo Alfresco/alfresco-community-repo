@@ -12,6 +12,7 @@
 
     <bean id="youtubePublishingHelper" class="org.alfresco.repo.publishing.youtube.YouTubePublishingHelper">
         <property name="nodeService" ref="NodeService" />
+        <property name="encryptor" ref="metadataEncryptor" />
     </bean>
 
     <bean id="publish_youtube" parent="action-executer" class="org.alfresco.repo.publishing.youtube.YouTubePublishAction">

@@ -19,6 +19,7 @@
     <bean id="flickrPublishingHelper" class="org.alfresco.repo.publishing.flickr.FlickrPublishingHelper">
         <property name="nodeService" ref="NodeService" />
         <property name="connectionFactory" ref="flickrConnectionFactory" />
+        <property name="encryptor" ref="metadataEncryptor" />
     </bean>
 
     <bean id="flickrConnectionFactory" class="org.alfresco.repo.publishing.flickr.springsocial.connect.FlickrConnectionFactory">

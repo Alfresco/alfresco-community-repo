@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.repo.node.encryption.MetadataEncryptor;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
 import org.alfresco.service.cmr.publishing.channels.ChannelType;
@@ -38,6 +39,7 @@ import org.springframework.core.io.Resource;
 public abstract class AbstractChannelType implements ChannelType
 {
     private ChannelService channelService;
+    private MetadataEncryptor encryptor;
 
     public void setChannelService(ChannelService channelService)
     {
@@ -48,6 +50,16 @@ public abstract class AbstractChannelType implements ChannelType
     protected ChannelService getChannelService()
     {
         return channelService;
+    }
+
+    public void setEncryptor(MetadataEncryptor encryptor)
+    {
+        this.encryptor = encryptor;
+    }
+
+    protected MetadataEncryptor getEncryptor()
+    {
+        return encryptor;
     }
 
     /**

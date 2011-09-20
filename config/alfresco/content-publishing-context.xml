@@ -49,11 +49,13 @@
       <property name="dictionaryService" ref="DictionaryService" />
       <property name="nodeService" ref="NodeService" />
       <property name="channelHelper" ref="channelHelper" />
+      <property name="encryptor" ref="metadataEncryptor" />
    </bean>
 
    <!--  Channel Type Implementations -->
    <bean id="baseChannelType" class="org.alfresco.repo.publishing.AbstractChannelType" abstract="true" >
       <property name="channelService" ref="channelService" />
+      <property name="encryptor" ref="metadataEncryptor" />
    </bean>
    
    <bean id="channelHelper" class="org.alfresco.repo.publishing.ChannelHelper">

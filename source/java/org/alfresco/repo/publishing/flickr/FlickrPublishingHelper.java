@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.publishing.flickr;
 
+import org.alfresco.repo.node.encryption.MetadataEncryptor;
 import org.alfresco.repo.publishing.PublishingModel;
 import org.alfresco.repo.publishing.flickr.springsocial.api.Flickr;
 import org.alfresco.repo.publishing.flickr.springsocial.connect.FlickrConnectionFactory;
@@ -30,6 +31,7 @@ public class FlickrPublishingHelper
 {
     private NodeService nodeService;
     private FlickrConnectionFactory connectionFactory;
+    private MetadataEncryptor encryptor;
 
     public void setNodeService(NodeService nodeService)
     {
@@ -39,6 +41,11 @@ public class FlickrPublishingHelper
     public void setConnectionFactory(FlickrConnectionFactory connectionFactory)
     {
         this.connectionFactory = connectionFactory;
+    }
+
+    public void setEncryptor(MetadataEncryptor encryptor)
+    {
+        this.encryptor = encryptor;
     }
 
     public FlickrConnectionFactory getConnectionFactory()
@@ -53,8 +60,10 @@ public class FlickrPublishingHelper
         if (nodeService.exists(channelNode)
                 && nodeService.hasAspect(channelNode, PublishingModel.ASPECT_OAUTH1_DELIVERY_CHANNEL))
         {
-            String tokenValue = (String) nodeService.getProperty(channelNode, PublishingModel.PROP_OAUTH1_TOKEN_VALUE);
-            String tokenSecret = (String) nodeService.getProperty(channelNode, PublishingModel.PROP_OAUTH1_TOKEN_SECRET);
+            String tokenValue = (String) encryptor.decrypt(PublishingModel.PROP_OAUTH1_TOKEN_VALUE, nodeService
+                    .getProperty(channelNode, PublishingModel.PROP_OAUTH1_TOKEN_VALUE));
+            String tokenSecret = (String) encryptor.decrypt(PublishingModel.PROP_OAUTH1_TOKEN_SECRET, nodeService
+                    .getProperty(channelNode, PublishingModel.PROP_OAUTH1_TOKEN_SECRET));
             Boolean danceComplete = (Boolean) nodeService.getProperty(channelNode, PublishingModel.PROP_AUTHORISATION_COMPLETE);
             
             if (danceComplete)

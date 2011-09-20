@@ -17,6 +17,7 @@
    <bean id="facebookPublishingHelper" class="org.alfresco.repo.publishing.facebook.FacebookPublishingHelper">
       <property name="nodeService" ref="NodeService" />
       <property name="connectionFactory" ref="facebookConnectionFactory" />
+      <property name="encryptor" ref="metadataEncryptor" />
    </bean>
 
    <bean id="facebookConnectionFactory" class="org.springframework.social.facebook.connect.FacebookConnectionFactory">

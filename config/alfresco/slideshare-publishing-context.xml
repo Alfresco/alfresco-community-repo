@@ -13,6 +13,7 @@
     <bean id="slidesharePublishingHelper" class="org.alfresco.repo.publishing.slideshare.SlideSharePublishingHelper">
         <property name="nodeService" ref="NodeService" />
         <property name="slideshareConnector" ref="slideshareApiConnector" />
+        <property name="encryptor" ref="metadataEncryptor" />
     </bean>
 
     <bean id="slideshareApiConnector" class="com.benfante.jslideshare.SlideShareConnectorImpl">
@@ -24,6 +25,12 @@
         <property name="nodeService" ref="NodeService" />
         <property name="taggingService" ref="TaggingService" />
         <property name="contentService" ref="ContentService" />
+        <property name="slideShareHelper" ref="slidesharePublishingHelper" />
+        <property name="publicAction" value="false" />
+    </bean>
+
+    <bean id="unpublish_slideshare" parent="action-executer" class="org.alfresco.repo.publishing.slideshare.SlideShareUnpublishAction">
+        <property name="nodeService" ref="NodeService" />
         <property name="slideShareHelper" ref="slidesharePublishingHelper" />
         <property name="publicAction" value="false" />
     </bean>

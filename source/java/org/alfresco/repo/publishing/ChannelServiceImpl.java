@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.node.encryption.MetadataEncryptor;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
@@ -57,6 +58,7 @@ public class ChannelServiceImpl implements ChannelService
     private DictionaryService dictionaryService;
     private ChannelHelper channelHelper;
     private PublishingRootObject rootObject;
+    private MetadataEncryptor encryptor;
     
     /**
      * @param nodeService
@@ -92,6 +94,11 @@ public class ChannelServiceImpl implements ChannelService
         this.channelHelper = channelHelper;
     }
     
+    public void setEncryptor(MetadataEncryptor encryptor)
+    {
+        this.encryptor = encryptor;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -126,7 +133,7 @@ public class ChannelServiceImpl implements ChannelService
             String message = "Channel Type: " + channelTypeId + " does not exist!";
             throw new IllegalArgumentException(message);
         }
-        HashMap<QName, Serializable> actualProps = new HashMap<QName, Serializable>();
+        Map<QName, Serializable> actualProps = new HashMap<QName, Serializable>();
         if (properties != null)
         {
             actualProps.putAll(properties);
@@ -134,6 +141,7 @@ public class ChannelServiceImpl implements ChannelService
         actualProps.put(ContentModel.PROP_NAME, name);
         actualProps.put(PROP_CHANNEL_TYPE_ID, channelType.getId());
         actualProps.put(PublishingModel.PROP_AUTHORISATION_COMPLETE, Boolean.FALSE);
+        actualProps = encryptor.encrypt(actualProps);
         NodeRef channelNode = channelHelper.createChannelNode(channelContainer, channelType, name, actualProps);
         return channelHelper.buildChannelObject(channelNode, this);
     }

@@ -299,12 +299,12 @@
             <properties>
                 <property name="pub:oauth1TokenValue">
                     <title>The value of the OAuth1 token</title>
-                    <type>d:text</type>
+                    <type>d:encrypted</type>
                     <multiple>false</multiple>
                 </property>
                 <property name="pub:oauth1TokenSecret">
                     <title>The secret of the OAuth1 token</title>
-                    <type>d:text</type>
+                    <type>d:encrypted</type>
                     <multiple>false</multiple>
                 </property>
             </properties>
@@ -316,7 +316,7 @@
             <properties>
                 <property name="pub:oauth2Token">
                     <title>The value of the OAuth2 token</title>
-                    <type>d:text</type>
+                    <type>d:encrypted</type>
                     <multiple>false</multiple>
                 </property>
             </properties>
@@ -328,12 +328,12 @@
             <properties>
                 <property name="pub:channelUsername">
                     <title>The authenticated channel username</title>
-                    <type>d:text</type>
+                    <type>d:encrypted</type>
                     <multiple>false</multiple>
                 </property>
                 <property name="pub:channelPassword">
                     <title>The authenticated channel password</title>
-                    <type>d:text</type>
+                    <type>d:encrypted</type>
                     <multiple>false</multiple>
                 </property>
             </properties>

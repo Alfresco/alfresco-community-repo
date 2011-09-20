@@ -133,7 +133,7 @@ public class ReplicationServiceIntegrationTest extends TestCase
     {
         if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_NONE)
         {
-            fail("Dangling transaction detected.");
+            fail("Dangling transaction detected, left by a previous test.");
         }
         
         replicationActionExecutor = (ReplicationActionExecutor) ctx.getBean("replicationActionExecutor");
@@ -238,6 +238,11 @@ public class ReplicationServiceIntegrationTest extends TestCase
         catch (TransferException e)
         {
             // Ignore
+        }
+        
+        if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_NONE)
+        {
+            fail("Dangling transaction detected, current test failed to tidy up.");
         }
    }
 

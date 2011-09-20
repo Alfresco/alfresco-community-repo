@@ -32,6 +32,7 @@ function getDoclist()
       site: parsedArgs.location.site,
       siteTitle: parsedArgs.location.siteTitle,
       container: parsedArgs.location.container,
+      containerType: parsedArgs.location.containerType,
       path: parsedArgs.location.path,
       file: node.name
    };

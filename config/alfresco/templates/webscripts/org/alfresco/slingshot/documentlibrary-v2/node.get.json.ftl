@@ -6,6 +6,8 @@
    {
       "repositoryId": "${server.id}",
       <#if doclist.container??>"container": "${doclist.container.nodeRef}",</#if>
+      <#if doclist.parent??>"parent": <#noescape>${doclist.parent.nodeJSON},</#noescape></#if>
+      <#if doclist.customJSON??>"custom": <#noescape>${doclist.customJSON},</#noescape></#if>
       "onlineEditing": ${doclist.onlineEditing?string},
       "workingCopyLabel": "${workingCopyLabel}"
    },

@@ -19,7 +19,6 @@
          "folders": ${(doclist.itemCount.folders!0)?c},
          "documents": ${(doclist.itemCount.documents!0)?c}
       },
-
       "workingCopyLabel": "${workingCopyLabel}"
    },
    "items":

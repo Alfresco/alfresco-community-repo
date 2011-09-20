@@ -2543,6 +2543,13 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
         // The dictionary says propagate.  Now get the parent node and prompt the touch.
         NodeRef parentNodeRef = assocRef.getParentRef();
+        
+        // Do not propagate if the cm:auditable behaviour is off
+        if (!policyBehaviourFilter.isEnabled(parentNodeRef, ContentModel.ASPECT_AUDITABLE))
+        {
+            return;
+        }
+        
         Pair<Long, NodeRef> parentNodePair = getNodePairNotNull(parentNodeRef);
         Long parentNodeId = parentNodePair.getFirst();
         // If we have already modified a particular parent node in the current txn,

@@ -4,6 +4,6 @@
   <url>/slingshot/wiki/version/{siteId}/{pageTitle}/{versionId}</url>
   <format default="mediawiki">argument</format>
   <authentication>user</authentication>
-  <transaction allow="readwrite" buffersize="0">required</transaction>
+  <transaction allow="readonly">required</transaction>
   <lifecycle>internal</lifecycle>
 </webscript>

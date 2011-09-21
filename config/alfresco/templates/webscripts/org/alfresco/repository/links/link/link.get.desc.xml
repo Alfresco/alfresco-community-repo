@@ -4,5 +4,5 @@
   <url>/api/links/link/site/{site}/{container}/{path}</url>
   <format default="json">argument</format>
   <authentication>user</authentication>
-  <transaction allow="readwrite" buffersize="0">required</transaction>
+  <transaction allow="readonly">required</transaction>
 </webscript>

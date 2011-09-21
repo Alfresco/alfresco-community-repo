@@ -8,7 +8,7 @@
   <url>/api/tagscopes/site/{site}/{container}/tags</url>
   <format default="json">argument</format>
   <authentication>user</authentication>
-  <transaction allow="readwrite" buffersize="0">required</transaction>
+  <transaction allow="readonly">required</transaction>
   <lifecycle>draft_public_api</lifecycle>
   <family>Tagging</family>
 </webscript>

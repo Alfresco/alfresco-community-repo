@@ -448,6 +448,15 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
         
             boolean readonly = description.getRequiredTransactionParameters().getCapability() == TransactionCapability.readonly;
             boolean requiresNew = description.getRequiredTransaction() == RequiredTransaction.requiresnew;
+            
+            // log a warning if we detect a GET webscript being run in a readwrite transaction, GET calls should
+            // NOT have any side effects so this scenario as a warning sign something maybe amiss, see ALF-10179.
+            if (logger.isWarnEnabled() && !readonly && "GET".equalsIgnoreCase(description.getMethod()))
+            {
+                logger.warn("Webscript with URL '" + scriptReq.getURL() + 
+                            "' is a GET request but it's descriptor has declared a readwrite transaction is required");
+            }
+            
             try
             {
                 retryingTransactionHelper.doInTransaction(work, readonly, requiresNew);

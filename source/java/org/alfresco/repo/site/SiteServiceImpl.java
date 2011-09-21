@@ -449,27 +449,33 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     	}
 
         // Get the site parent node reference
-        NodeRef siteParent = getSiteParent(shortName);
+        final NodeRef siteParent = getSiteParent(shortName);
         if (siteParent == null)
         {
             throw new SiteServiceException("No root sites folder exists");
         }
 
         // Create the site node
-        PropertyMap properties = new PropertyMap(4);
+        final PropertyMap properties = new PropertyMap(4);
         properties.put(ContentModel.PROP_NAME, shortName);
         properties.put(SiteModel.PROP_SITE_PRESET, sitePreset);
         properties.put(SiteModel.PROP_SITE_VISIBILITY, visibility.toString());
         properties.put(ContentModel.PROP_TITLE, title);
         properties.put(ContentModel.PROP_DESCRIPTION, description);
         
-        final NodeRef siteNodeRef = this.nodeService.createNode(
-                siteParent,
-                ContentModel.ASSOC_CONTAINS,
-                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, shortName), 
-                siteType, 
-                properties).getChildRef();
-
+        final NodeRef siteNodeRef = AuthenticationUtil.runAsSystem(new RunAsWork<NodeRef>() {
+           @Override
+           public NodeRef doWork() throws Exception {
+              return nodeService.createNode(
+                    siteParent,
+                    ContentModel.ASSOC_CONTAINS,
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, shortName), 
+                    siteType, 
+                    properties
+              ).getChildRef();
+           }
+        });
+           
         // Make the new site a tag scope
         this.taggingService.addTagScope(siteNodeRef);
 

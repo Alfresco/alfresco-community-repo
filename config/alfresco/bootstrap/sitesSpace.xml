@@ -2,10 +2,6 @@
 <view:view xmlns:view="http://www.alfresco.org/view/repository/1.0">
    <st:sites xmlns:st="http://www.alfresco.org/model/site/1.0" xmlns:view="http://www.alfresco.org/view/repository/1.0" xmlns:app="http://www.alfresco.org/model/application/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0" xmlns="" view:childName="${spaces.sites.childname}">
       <view:acl>
-         <view:ace view:access="ALLOWED">
-            <view:authority>GROUP_EVERYONE</view:authority>
-            <view:permission>Contributor</view:permission>
-         </view:ace>
       </view:acl>
       <view:aspects>
          <app:uifacets/>

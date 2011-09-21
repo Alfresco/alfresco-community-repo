@@ -3050,4 +3050,17 @@
         </property>
     </bean>
     
+    <!-- Fix data related to cm:copiedfrom aspect -->
+    <bean id="patch.sitesSpacePermissions" class="org.alfresco.repo.admin.patch.impl.SitesSpacePermissionsPatch" parent="basePatch">
+        <property name="id"><value>patch.sitesSpacePermissions</value></property>
+        <property name="description"><value>patch.sitesSpacePermissions.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>5017</value></property>
+        <property name="targetSchema"><value>5018</value></property>
+        <property name="requiresTransaction"><value>true</value></property>
+        <property name="applyToTenants"><value>true</value></property>
+        <property name="permissionService" ref="permissionService" />
+        <property name="importerBootstrap" ref="spacesBootstrap" />
+    </bean>
+
 </beans>

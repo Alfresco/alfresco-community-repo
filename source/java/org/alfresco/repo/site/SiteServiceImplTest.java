@@ -1891,6 +1891,59 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         assertNotNull(copyOfSubFolder);
         validatePermissionsOnRelocatedNode(fromSite, toSite, copyOfSubFolder, expectedPermissions);
     }
+    
+    /**
+     * ALF-1017 - Non sites in the Sites Space container shouldn't
+     *  break the listing methods
+     */
+    public void testALF_1017_nonSitesInSitesSpace() throws Exception
+    {
+       final String testTitlePrefix = TEST_TITLE.substring(0, 9);
+       
+       // Initially listing is fine
+       List<SiteInfo> sites = this.siteService.listSites(null, null);
+       assertNotNull("sites list was null.", sites);
+       final int preexistingSitesCount = sites.size();
+       
+       // Create some sites
+       SiteInfo site1 = this.siteService.createSite(TEST_SITE_PRESET, "mySiteOne", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+       SiteInfo site2 = this.siteService.createSite(TEST_SITE_PRESET, "mySiteTwo", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);
+
+       // Listing is still ok
+       sites = this.siteService.listSites(null, null);
+       assertNotNull("sites list was null.", sites);
+       assertEquals(preexistingSitesCount+2, sites.size());
+       
+       // Now add a random folder, and a random document to the sites root
+       NodeRef sitesSpace = this.nodeService.getPrimaryParent(site1.getNodeRef()).getParentRef();
+       NodeRef folder = this.nodeService.createNode(
+             sitesSpace, ContentModel.ASSOC_CONTAINS,
+             QName.createQName("Folder"), ContentModel.TYPE_FOLDER
+       ).getChildRef();
+       NodeRef document = this.nodeService.createNode(
+             sitesSpace, ContentModel.ASSOC_CONTAINS,
+             QName.createQName("Document"), ContentModel.TYPE_CONTENT
+       ).getChildRef();
+       
+       // Listing should still be fine, and count won't have increased
+       sites = this.siteService.listSites(null, null);
+       assertNotNull("sites list was null.", sites);
+       assertEquals(preexistingSitesCount+2, sites.size());
+       
+       // Delete one site, listing still ok
+       this.siteService.deleteSite(site2.getShortName());
+       sites = this.siteService.listSites(null, null);
+       assertNotNull("sites list was null.", sites);
+       assertEquals(preexistingSitesCount+1, sites.size());
+       
+       // Tidy up the random nodes, listing still fine
+       this.nodeService.deleteNode(folder);
+       this.nodeService.deleteNode(document);
+       
+       sites = this.siteService.listSites(null, null);
+       assertNotNull("sites list was null.", sites);
+       assertEquals(preexistingSitesCount+1, sites.size());
+    }
 
     private void validatePermissionsOnRelocatedNode(SiteInfo fromSite,
             SiteInfo toSite, NodeRef relocatedNode, Map<String, String> expectedPermissions)

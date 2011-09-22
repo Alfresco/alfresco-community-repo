@@ -33,6 +33,7 @@ import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.content.metadata.MetadataExtracter.OverwritePolicy;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -71,10 +72,11 @@ public class MappingMetadataExtracterTest extends TestCase
     {
         destination.clear();
         extracter.extract(reader, destination);
-        assertEquals(3, destination.size());
+        assertEquals(4, destination.size());
         assertTrue(destination.containsKey(DummyMappingMetadataExtracter.QNAME_A1));
         assertTrue(destination.containsKey(DummyMappingMetadataExtracter.QNAME_A2));
         assertTrue(destination.containsKey(DummyMappingMetadataExtracter.QNAME_B));
+        assertTrue(destination.containsKey(DummyMappingMetadataExtracter.QNAME_IMG));
     }
     
     public void testPropertyMappingOverride() throws Exception
@@ -103,11 +105,12 @@ public class MappingMetadataExtracterTest extends TestCase
         // Added a3
         destination.clear();
         extracter.extract(reader, destination);
-        assertEquals(4, destination.size());
+        assertEquals(5, destination.size());
         assertTrue(destination.containsKey(DummyMappingMetadataExtracter.QNAME_A1));
         assertTrue(destination.containsKey(DummyMappingMetadataExtracter.QNAME_A2));
         assertTrue(destination.containsKey(DummyMappingMetadataExtracter.QNAME_A3));
         assertTrue(destination.containsKey(DummyMappingMetadataExtracter.QNAME_B));
+        assertTrue(destination.containsKey(DummyMappingMetadataExtracter.QNAME_IMG));
     }
     
     public void testPropertyMappingOverrideExtra() throws Exception
@@ -131,27 +134,60 @@ public class MappingMetadataExtracterTest extends TestCase
     {
         extracter.setOverwritePolicy(OverwritePolicy.EAGER);
         extracter.extract(reader, destination);
-        assertEquals(3, destination.size());
+        assertEquals(4, destination.size());
         assertEquals(DummyMappingMetadataExtracter.VALUE_A, destination.get(DummyMappingMetadataExtracter.QNAME_A1));
         assertEquals(DummyMappingMetadataExtracter.VALUE_A, destination.get(DummyMappingMetadataExtracter.QNAME_A2));
         assertEquals(DummyMappingMetadataExtracter.VALUE_B, destination.get(DummyMappingMetadataExtracter.QNAME_B));
+        assertEquals(DummyMappingMetadataExtracter.VALUE_IMG, destination.get(DummyMappingMetadataExtracter.QNAME_IMG));
     }
     
     public void testOverwritePolicyPragmatic()
     {
         extracter.setOverwritePolicy(OverwritePolicy.PRAGMATIC);
+        
+        // Put some values in to start with
+        destination.put(DummyMappingMetadataExtracter.QNAME_C, "Will not change");
+        destination.put(DummyMappingMetadataExtracter.QNAME_IMG, "Will be changed");
+        
+        // Extract
         extracter.extract(reader, destination);
-        assertEquals(3, destination.size());
+        assertEquals(5, destination.size());
+        
+        // Check the values as extracted
         assertEquals(JunkValue.INSTANCE, destination.get(DummyMappingMetadataExtracter.QNAME_A1));
         assertEquals(DummyMappingMetadataExtracter.VALUE_A, destination.get(DummyMappingMetadataExtracter.QNAME_A2));
         assertEquals(DummyMappingMetadataExtracter.VALUE_B, destination.get(DummyMappingMetadataExtracter.QNAME_B));
+
+        // Normal values not changed
+        assertEquals("Will not change", destination.get(DummyMappingMetadataExtracter.QNAME_C));
+        
+        // Media parts are always overridden
+        assertEquals(DummyMappingMetadataExtracter.VALUE_IMG, destination.get(DummyMappingMetadataExtracter.QNAME_IMG));
+    }
+    
+    public void testOverwritePolicyPrudent()
+    {
+        extracter.setOverwritePolicy(OverwritePolicy.PRUDENT);
+        
+        // Add a media property, won't be changed
+        destination.put(DummyMappingMetadataExtracter.QNAME_IMG, "Won't be changed");
+        
+        // Extract and check
+        extracter.extract(reader, destination);
+        assertEquals(4, destination.size());
+        assertEquals(JunkValue.INSTANCE, destination.get(DummyMappingMetadataExtracter.QNAME_A1));
+        assertEquals(DummyMappingMetadataExtracter.VALUE_A, destination.get(DummyMappingMetadataExtracter.QNAME_A2));
+        assertEquals(DummyMappingMetadataExtracter.VALUE_B, destination.get(DummyMappingMetadataExtracter.QNAME_B));
+        
+        // Media behaves the same as the others
+        assertEquals("Won't be changed", destination.get(DummyMappingMetadataExtracter.QNAME_IMG));
     }
     
     public void testOverwritePolicyCautious()
     {
         extracter.setOverwritePolicy(OverwritePolicy.CAUTIOUS);
         extracter.extract(reader, destination);
-        assertEquals(3, destination.size());
+        assertEquals(4, destination.size());
         assertEquals(JunkValue.INSTANCE, destination.get(DummyMappingMetadataExtracter.QNAME_A1));
         assertEquals("", destination.get(DummyMappingMetadataExtracter.QNAME_A2));
         assertEquals(null, destination.get(DummyMappingMetadataExtracter.QNAME_B));
@@ -174,10 +210,12 @@ public class MappingMetadataExtracterTest extends TestCase
         public static final String PROP_C = "c";
         public static final String PROP_D = "d";
         public static final String PROP_E = "e";
+        public static final String PROP_IMG = "exif";
         public static final String VALUE_A = "AAA";
         public static final String VALUE_B = "BBB";
         public static final String VALUE_C = "CCC";
         public static final String VALUE_D = "DDD";
+        public static final String VALUE_IMG = "IMAGE";
         
         public static final String NAMESPACE_MY = "http://DummyMappingMetadataExtracter";
         public static final QName QNAME_A1 = QName.createQName(NAMESPACE_MY, "a1");
@@ -187,6 +225,7 @@ public class MappingMetadataExtracterTest extends TestCase
         public static final QName QNAME_C = QName.createQName(NAMESPACE_MY, "c");
         public static final QName QNAME_D = QName.createQName(NAMESPACE_MY, "d");
         public static final QName QNAME_E = QName.createQName(NAMESPACE_MY, "e");   // not extracted
+        public static final QName QNAME_IMG = QName.createQName(NamespaceService.EXIF_MODEL_1_0_URI, "test");
         private static final Set<String> MIMETYPES;
         static
         {
@@ -210,6 +249,7 @@ public class MappingMetadataExtracterTest extends TestCase
             defaultMapping = new HashMap<String, Set<QName>>(7);
             defaultMapping.put(PROP_A, new HashSet<QName>(Arrays.asList(QNAME_A1, QNAME_A2)));
             defaultMapping.put(PROP_B, new HashSet<QName>(Arrays.asList(QNAME_B)));
+            defaultMapping.put(PROP_IMG, new HashSet<QName>(Arrays.asList(QNAME_IMG)));
             
             initCheck = true;
             
@@ -232,6 +272,7 @@ public class MappingMetadataExtracterTest extends TestCase
             ret.put(PROP_B, VALUE_B);
             ret.put(PROP_C, VALUE_C);
             ret.put(PROP_D, VALUE_D);
+            ret.put(PROP_IMG, VALUE_IMG);
             return ret;
         }
     }

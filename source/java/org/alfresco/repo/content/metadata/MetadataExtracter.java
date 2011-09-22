@@ -26,6 +26,7 @@ import java.util.Set;
 import org.alfresco.repo.content.ContentWorker;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -74,13 +75,22 @@ public interface MetadataExtracter extends ContentWorker
                 return modifiedProperties;
             }
         },
+        
         /**
          * This policy puts the new value if:
          * <ul>
          *   <li>the extracted property is not null</li>
-         *   <li>there is no target key for the property</li>
-         *   <li>the target value is null</li>
-         *   <li>the string representation of the target value is an empty string</li>
+         *   <li>either:
+         *     <ul>
+         *      <li>there is no target key for the property</li>
+         *      <li>the target value is null</li>
+         *      <li>the string representation of the target value is an empty string</li>
+         *     </ul>
+         *     or:
+         *     <ul>
+         *       <li>the extracted property is a media related one (eg Image, Audio or Video)</li>
+         *     </ul>
+         *   </li>
          * </ul>
          * <tt>null</tt> extracted values are return in the 'modified' map.
          */
@@ -97,12 +107,23 @@ public interface MetadataExtracter extends ContentWorker
                 {
                     QName propertyQName = entry.getKey();
                     Serializable extractedValue = entry.getValue();
+                    
                     // Ignore null extracted value
                     if (extractedValue == null)
                     {
                         modifiedProperties.put(propertyQName, extractedValue);
                         continue;
                     }
+                    
+                    // If the property is media related, always extract
+                    String propertyNS = propertyQName.getNamespaceURI();
+                    if(propertyNS.equals(NamespaceService.EXIF_MODEL_1_0_URI))
+                    {
+                       targetProperties.put(propertyQName, extractedValue);
+                       modifiedProperties.put(propertyQName, extractedValue);
+                       continue;
+                    }
+                    
                     // Handle the shortcut cases where the target value is missing or null
                     if (!targetProperties.containsKey(propertyQName))
                     {
@@ -111,10 +132,12 @@ public interface MetadataExtracter extends ContentWorker
                         modifiedProperties.put(propertyQName, extractedValue);
                         continue;
                     }
+                    
+                    // Look at the old value, and decide based on that
                     Serializable originalValue = targetProperties.get(propertyQName);
                     if (originalValue == null)
                     {
-                        // The current value is null
+                        // The previous value is null, extract
                         targetProperties.put(propertyQName, extractedValue);
                         modifiedProperties.put(propertyQName, extractedValue);
                         continue;
@@ -136,11 +159,81 @@ public interface MetadataExtracter extends ContentWorker
                             continue;
                         }
                     }
+                    
                     // We have some other object as the original value, so keep it
                 }
                 return modifiedProperties;
             }
         },
+        
+        /**
+         * This policy puts the new value if:
+         * <ul>
+         *   <li>the extracted property is not null</li>
+         *   <li>there is no target key for the property</li>
+         *   <li>the target value is null</li>
+         *   <li>the string representation of the target value is an empty string</li>
+         * </ul>
+         * <tt>null</tt> extracted values are return in the 'modified' map.
+         */
+        PRUDENT
+        {
+           @Override
+           public Map<QName, Serializable> applyProperties(Map<QName, Serializable> extractedProperties, Map<QName, Serializable> targetProperties)
+           {
+               /*
+                * Negative and positive checks are mixed in the loop.
+                */
+               Map<QName, Serializable> modifiedProperties = new HashMap<QName, Serializable>(7);
+               for (Map.Entry<QName, Serializable> entry : extractedProperties.entrySet())
+               {
+                   QName propertyQName = entry.getKey();
+                   Serializable extractedValue = entry.getValue();
+                   // Ignore null extracted value
+                   if (extractedValue == null)
+                   {
+                       modifiedProperties.put(propertyQName, extractedValue);
+                       continue;
+                   }
+                   // Handle the shortcut cases where the target value is missing or null
+                   if (!targetProperties.containsKey(propertyQName))
+                   {
+                       // There is nothing currently
+                       targetProperties.put(propertyQName, extractedValue);
+                       modifiedProperties.put(propertyQName, extractedValue);
+                       continue;
+                   }
+                   Serializable originalValue = targetProperties.get(propertyQName);
+                   if (originalValue == null)
+                   {
+                       // The current value is null
+                       targetProperties.put(propertyQName, extractedValue);
+                       modifiedProperties.put(propertyQName, extractedValue);
+                       continue;
+                   }
+                   // Check the string representation
+                   if (originalValue instanceof String)
+                   {
+                       String originalValueStr = (String) originalValue;
+                       if (originalValueStr != null && originalValueStr.length() > 0)
+                       {
+                           // The original value is non-trivial
+                           continue;
+                       }
+                       else
+                       {
+                           // The original string is trivial
+                           targetProperties.put(propertyQName, extractedValue);
+                           modifiedProperties.put(propertyQName, extractedValue);
+                           continue;
+                       }
+                   }
+                   // We have some other object as the original value, so keep it
+               }
+               return modifiedProperties;
+           }
+        },
+        
         /**
          * This policy only puts the extracted value if there is no value (null or otherwise) in the properties map.
          * It is assumed that the mere presence of a property key is enough to inidicate that the target property

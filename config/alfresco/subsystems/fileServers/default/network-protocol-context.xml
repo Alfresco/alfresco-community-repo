@@ -208,6 +208,7 @@
                 <value>setFileInformation</value>
                 <value>copyContent</value>
                 <value>deleteEmptyFile</value>
+                <value>processIOControl</value>
             </list>
         </property>
     </bean>
@@ -222,7 +223,6 @@
                 <value>openFile</value>
                 <value>getFileInformation</value> 
                 <value>startSearch</value>
-                <value>processIOControl</value>
             </list>
         </property>
     </bean>

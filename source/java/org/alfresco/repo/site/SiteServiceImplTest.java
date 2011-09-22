@@ -41,6 +41,7 @@ import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.authority.UnknownAuthorityException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
@@ -1915,15 +1916,25 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
        assertEquals(preexistingSitesCount+2, sites.size());
        
        // Now add a random folder, and a random document to the sites root
-       NodeRef sitesSpace = this.nodeService.getPrimaryParent(site1.getNodeRef()).getParentRef();
-       NodeRef folder = this.nodeService.createNode(
-             sitesSpace, ContentModel.ASSOC_CONTAINS,
-             QName.createQName("Folder"), ContentModel.TYPE_FOLDER
-       ).getChildRef();
-       NodeRef document = this.nodeService.createNode(
-             sitesSpace, ContentModel.ASSOC_CONTAINS,
-             QName.createQName("Document"), ContentModel.TYPE_CONTENT
-       ).getChildRef();
+       final NodeRef sitesSpace = this.nodeService.getPrimaryParent(site1.getNodeRef()).getParentRef();
+       final NodeRef folder = AuthenticationUtil.runAsSystem(new RunAsWork<NodeRef>() {
+           @Override
+           public NodeRef doWork() throws Exception {
+              return nodeService.createNode(
+                    sitesSpace, ContentModel.ASSOC_CONTAINS,
+                    QName.createQName("Folder"), ContentModel.TYPE_FOLDER
+              ).getChildRef();
+           }
+       });
+       final NodeRef document = AuthenticationUtil.runAsSystem(new RunAsWork<NodeRef>() {
+           @Override
+           public NodeRef doWork() throws Exception {
+              return nodeService.createNode(
+                    sitesSpace, ContentModel.ASSOC_CONTAINS,
+                    QName.createQName("Document"), ContentModel.TYPE_CONTENT
+              ).getChildRef();
+           }
+       });
        
        // Listing should still be fine, and count won't have increased
        sites = this.siteService.listSites(null, null);

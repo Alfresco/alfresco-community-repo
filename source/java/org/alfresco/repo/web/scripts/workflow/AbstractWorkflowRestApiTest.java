@@ -948,6 +948,9 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
 
     public void testWorkflowInstancesGet() throws Exception
     {
+        // Should work even with definitions hidden.
+        wfTestHelper.setVisible(false);
+        
         //Start workflow as USER1 and assign task to USER2.
         personManager.setUser(USER1);
         WorkflowDefinition adhocDef = workflowService.getDefinitionByName(getAdhocWorkflowDefinitionName());

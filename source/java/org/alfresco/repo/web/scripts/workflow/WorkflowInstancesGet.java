@@ -30,7 +30,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
@@ -94,43 +93,21 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
         {
             workflowDefinitionId = req.getParameter(PARAM_DEFINITION_ID);
         }
-        
-        // default workflow state to ACTIVE if not supplied
-        if (state == null)
+
+        List<WorkflowInstance> workflows;
+
+        // list workflows for specified workflow definition
+        if(state == null)
         {
-            state = WorkflowState.ACTIVE;
+            workflows = workflowService.getWorkflows(workflowDefinitionId);
         }
-
-        List<WorkflowInstance> workflows = new ArrayList<WorkflowInstance>();
-
-        if (workflowDefinitionId != null)
+        else if (state == WorkflowState.ACTIVE)
         {
-            // list workflows for specified workflow definition
-            if (state == WorkflowState.ACTIVE)
-            {
-                workflows.addAll(workflowService.getActiveWorkflows(workflowDefinitionId));
-            }
-            else
-            {
-                workflows.addAll(workflowService.getCompletedWorkflows(workflowDefinitionId));
-            }
+            workflows = workflowService.getActiveWorkflows(workflowDefinitionId);
         }
         else
         {
-            List<WorkflowDefinition> workflowDefinitions = workflowService.getAllDefinitions();
-
-            // list workflows for all definitions
-            for (WorkflowDefinition workflowDefinition : workflowDefinitions)
-            {
-                if (state == WorkflowState.ACTIVE)
-                {
-                    workflows.addAll(workflowService.getActiveWorkflows(workflowDefinition.getId()));
-                }
-                else
-                {
-                    workflows.addAll(workflowService.getCompletedWorkflows(workflowDefinition.getId()));
-                }
-            }
+            workflows = workflowService.getCompletedWorkflows(workflowDefinitionId);
         }
         
         // sort workflows by due date

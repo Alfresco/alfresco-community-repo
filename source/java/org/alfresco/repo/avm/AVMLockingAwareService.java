@@ -30,6 +30,7 @@ import java.util.SortedMap;
 import org.alfresco.repo.avm.util.AVMUtil;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
@@ -41,12 +42,16 @@ import org.alfresco.service.cmr.avm.locking.AVMLockingService.LockState;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.wcm.util.WCMUtil;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * An AVMLockingService aware implementation of AVMService.
@@ -56,9 +61,13 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
 {
     public static final String STORE_SEPARATOR = "--";
     
+    public static final String STORE_WORKFLOW = "workflow";
+    
     private AVMService fService;
 
     private AVMLockingService fLockingService;
+
+    private PermissionService permissionService;
 
     private ApplicationContext fContext;
 
@@ -75,6 +84,7 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
     {
         fService = (AVMService)fContext.getBean("avmService");
         fLockingService = (AVMLockingService)fContext.getBean("avmLockingService");
+        permissionService = (PermissionService) fContext.getBean("PermissionService");
     }
 
     public void addAspect(String path, QName aspectName)
@@ -640,7 +650,17 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
             // Don't do locking in staging.
             return;
         }
-        if (webProject != null)
+        if (avmStore.indexOf(STORE_SEPARATOR + STORE_WORKFLOW) != -1)
+        {
+            //Allow lock in workflow store if user has "Write" permission
+            NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, path);
+            if (permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.DENIED)
+            {
+                String errorMessage = I18NUtil.getMessage("avmlockservice.accessdenied", AuthenticationUtil.getFullyAuthenticatedUser());
+                throw new AccessDeniedException(errorMessage);
+            }
+        }
+        else if (webProject != null)
         {
             String userName = AuthenticationUtil.getFullyAuthenticatedUser();
             LockState lockState = fLockingService.getLockState(webProject, storePath[1], userName);

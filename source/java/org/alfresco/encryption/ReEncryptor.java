@@ -255,9 +255,8 @@ public class ReEncryptor implements ApplicationContextAware
 			}
 		};
 
-		// TODO, "propertize" these numbers
         new BatchProcessor<NodePropertyEntity>(
-                I18NUtil.getMessage("reencryptor.batchprocessor.name"), // TODO i18n name
+                "Reencryptor",
                 transactionHelper,
                 provider,
                 numThreads, chunkSize,

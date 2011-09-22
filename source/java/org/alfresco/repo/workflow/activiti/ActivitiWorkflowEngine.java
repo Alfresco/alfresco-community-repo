@@ -43,6 +43,7 @@ import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.form.StartFormData;
 import org.activiti.engine.history.HistoricProcessInstance;
+import org.activiti.engine.history.HistoricProcessInstanceQuery;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricTaskInstanceQuery;
 import org.activiti.engine.impl.RepositoryServiceImpl;
@@ -65,6 +66,7 @@ import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.Job;
 import org.activiti.engine.runtime.ProcessInstance;
+import org.activiti.engine.runtime.ProcessInstanceQuery;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
 import org.alfresco.model.ContentModel;
@@ -201,6 +203,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     {
         super();
     }
+
     /**
      * {@inheritDoc}
      */
@@ -219,7 +222,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
     * {@inheritDoc}
     */
-    @Override
     public WorkflowInstance cancelWorkflow(String workflowId)
     {
         String localId = createLocalId(workflowId);
@@ -256,7 +258,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
     * {@inheritDoc}
     */
-    @Override
     public WorkflowInstance deleteWorkflow(String workflowId)
     {
         String localId = createLocalId(workflowId);
@@ -292,7 +293,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
     * {@inheritDoc}
     */
-    @Override
     public WorkflowDeployment deployDefinition(InputStream workflowDefinition, String mimetype)
     {
         return deployDefinition(workflowDefinition, mimetype, null);
@@ -301,7 +301,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
      * {@inheritDoc}
      */
-     @Override
      public WorkflowDeployment deployDefinition(InputStream workflowDefinition, String mimetype, String name)
      {
          try 
@@ -326,7 +325,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
     * {@inheritDoc}
     */
-    @Override
     public WorkflowPath fireEvent(String pathId, String event)
     {
        String message = messageService.getMessage(ERR_FIRE_EVENT_NOT_SUPPORTED);
@@ -336,7 +334,56 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
     * {@inheritDoc}
     */
+    public List<WorkflowInstance> getActiveWorkflows()
+    {
+        try
+        {
+            return getWorkflowInstances(null, true);
+        }
+        catch(ActivitiException ae) 
+        {
+            String message = messageService.getMessage(ERR_GET_ACTIVE_WORKFLOW_INSTS, "");
+            throw new WorkflowException(message, ae);
+        }
+    }
+    
+    /**
+    * {@inheritDoc}
+    */
     @Override
+    public List<WorkflowInstance> getCompletedWorkflows()
+    {
+        try
+        {
+            return getWorkflowInstances(null, false);
+        }
+        catch(ActivitiException ae) 
+        {
+            String message = messageService.getMessage(ERR_GET_COMPLETED_WORKFLOW_INSTS, "");
+            throw new WorkflowException(message, ae);
+        }
+    }
+
+    /**
+    * {@inheritDoc}
+    */
+    @Override
+    public List<WorkflowInstance> getWorkflows()
+    {
+        try
+        {
+            return getWorkflowInstances(null, null);
+        }
+        catch(ActivitiException ae) 
+        {
+            String message = messageService.getMessage(ERR_GET_WORKFLOW_INSTS, "");
+            throw new WorkflowException(message, ae);
+        }
+    }
+    
+    /**
+    * {@inheritDoc}
+    */
     public List<WorkflowInstance> getActiveWorkflows(String workflowDefinitionId)
     {
         try
@@ -353,7 +400,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
     * {@inheritDoc}
     */
-    @Override
     public List<WorkflowDefinition> getAllDefinitions()
     {
         try 
@@ -371,7 +417,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
     * {@inheritDoc}
     */
-    @Override
     public List<WorkflowDefinition> getAllDefinitionsByName(String workflowName)
     {
         try 
@@ -392,7 +437,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
     * {@inheritDoc}
     */
-    @Override
     public List<WorkflowInstance> getCompletedWorkflows(String workflowDefinitionId)
     {
         try
@@ -409,7 +453,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
     * {@inheritDoc}
     */
-    @Override
     public WorkflowDefinition getDefinitionById(String workflowDefinitionId)
     {
         try
@@ -430,7 +473,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
     * {@inheritDoc}
     */
-    @Override
     public WorkflowDefinition getDefinitionByName(String workflowName)
     {
         try 
@@ -452,7 +494,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
     * {@inheritDoc}
     */
-    @Override
     public byte[] getDefinitionImage(String workflowDefinitionId)
     {
        try
@@ -494,7 +535,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
     * {@inheritDoc}
     */
-    @Override
     public List<WorkflowDefinition> getDefinitions()
     {
         try 
@@ -514,7 +554,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
     * {@inheritDoc}
     */
-    @Override
     public Map<QName, Serializable> getPathProperties(String pathId)
     {
         String executionId = createLocalId(pathId);
@@ -524,7 +563,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
     * {@inheritDoc}
     */
-    @Override
     public List<WorkflowTaskDefinition> getTaskDefinitions(String workflowDefinitionId)
     {
         List<WorkflowTaskDefinition> defs = new ArrayList<WorkflowTaskDefinition>();
@@ -651,7 +689,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
     * {@inheritDoc}
     */
-    @Override
+    
     public List<WorkflowTask> getTasksForWorkflowPath(String pathId)
     {
         try 
@@ -716,7 +754,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
     * {@inheritDoc}
     */
-    @Override
     public List<WorkflowTimer> getTimers(String workflowId)
     {
     	 try 
@@ -790,7 +827,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
 	/**
     * {@inheritDoc}
     */
-    @Override
     public WorkflowInstance getWorkflowById(String workflowId)
     {
         try 
@@ -831,7 +867,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
     * {@inheritDoc}
     */
-    @Override
     public List<WorkflowPath> getWorkflowPaths(String workflowId)
     {
         try 
@@ -855,7 +890,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
     * {@inheritDoc}
     */
-    @Override
     public List<WorkflowInstance> getWorkflows(String workflowDefinitionId)
     {
         try
@@ -872,7 +906,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
     * {@inheritDoc}
     */
-    @Override
     public boolean isDefinitionDeployed(InputStream workflowDefinition, String mimetype)
     {
         String key = null;
@@ -930,7 +963,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
     * {@inheritDoc}
     */
-    @Override
     public WorkflowPath signal(String pathId, String transitionId)
     {
         String execId = createLocalId(pathId);
@@ -947,7 +979,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
     * {@inheritDoc}
     */
-    @Override
     public WorkflowPath startWorkflow(String workflowDefinitionId, Map<QName, Serializable> parameters)
     {
         try
@@ -999,7 +1030,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
     * {@inheritDoc}
     */
-    @Override
     public void undeployDefinition(String workflowDefinitionId)
     {
         try 
@@ -1026,7 +1056,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
      * {@inheritDoc}
      */
-    @Override
     public boolean hasWorkflowImage(String workflowInstanceId)
     {
         boolean hasImage = false;
@@ -1052,7 +1081,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
      * {@inheritDoc}
      */
-    @Override
     public InputStream getWorkflowImage(String workflowInstanceId)
     {
         String processInstanceId = createLocalId(workflowInstanceId);
@@ -1262,7 +1290,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
     * {@inheritDoc}
     */
-    @Override
     public WorkflowTask endTask(String taskId, String transition)
     {
         String localTaskId = createLocalId(taskId);
@@ -1373,7 +1400,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
     * {@inheritDoc}
     */
-    @Override
     public List<WorkflowTask> getAssignedTasks(String authority, WorkflowTaskState state)
     {
         try
@@ -1403,7 +1429,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
     * {@inheritDoc}
     */
-    @Override
     public List<WorkflowTask> getPooledTasks(List<String> authorities)
     {
         try 
@@ -1482,7 +1507,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
     * {@inheritDoc}
     */
-    @Override
     public WorkflowTask getTaskById(String taskId)
     {
         try
@@ -1514,7 +1538,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
      * {@inheritDoc}
      */
-     @Override
      public List<WorkflowTask> queryTasks(WorkflowTaskQuery query)
      {
          ArrayList<WorkflowTask> result = new ArrayList<WorkflowTask>();
@@ -2007,7 +2030,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
 	/**
     * {@inheritDoc}
     */
-    @Override
     public WorkflowTask getStartTask(String workflowInstanceId)
     {
         String instanceId = createLocalId(workflowInstanceId);
@@ -2042,7 +2064,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
     * {@inheritDoc}
     */
-    @Override
     public WorkflowTask startTask(String taskId)
     {
         throw new UnsupportedOperationException();
@@ -2051,7 +2072,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
     * {@inheritDoc}
     */
-    @Override
+    
     public WorkflowTask suspendTask(String taskId)
     {
         throw new UnsupportedOperationException();
@@ -2060,7 +2081,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
     * {@inheritDoc}
     */
-    @Override
     public WorkflowTask updateTask(String taskId, Map<QName, Serializable> properties, Map<QName, List<NodeRef>> add,
                 Map<QName, List<NodeRef>> remove)
     {
@@ -2094,22 +2114,28 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     
     private List<WorkflowInstance> getWorkflowInstances(String workflowDefinitionId, Boolean isActive)
     {
-        String processDefId = createLocalId(workflowDefinitionId);
+        String processDefId = workflowDefinitionId==null ? null : createLocalId(workflowDefinitionId);
         LinkedList<WorkflowInstance> results = new LinkedList<WorkflowInstance>();
         if(Boolean.FALSE.equals(isActive)==false)
         {
-            List<ProcessInstance> activeInstances = runtimeService.createProcessInstanceQuery()
-                .processDefinitionId(processDefId)
-                .list();
+            ProcessInstanceQuery query = runtimeService.createProcessInstanceQuery();
+            if(processDefId!=null)
+            {
+                query = query.processDefinitionId(processDefId);
+            }
+            List<ProcessInstance> activeInstances = query.list();
             List<WorkflowInstance> activeResults = typeConverter.convert(activeInstances);
             results.addAll(activeResults);
         }
         if(Boolean.TRUE.equals(isActive)==false)
         {
-            List<HistoricProcessInstance> completedInstances = historyService.createHistoricProcessInstanceQuery()
-                .processDefinitionId(processDefId)
-                .finished()
-                .list();
+            HistoricProcessInstanceQuery query = historyService.createHistoricProcessInstanceQuery()
+                .finished();
+            if(processDefId!=null)
+            {
+                query = query.processDefinitionId(processDefId);
+            }
+            List<HistoricProcessInstance> completedInstances = query.list();
             List<WorkflowInstance> completedResults = typeConverter.convert(completedInstances);
             results.addAll(completedResults);
         }

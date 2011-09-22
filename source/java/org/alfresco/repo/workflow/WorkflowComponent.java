@@ -186,6 +186,30 @@ public interface WorkflowComponent
     public List<WorkflowInstance> getWorkflows(String workflowDefinitionId);
     
     /**
+     * Gets all "in-flight" active workflow instances.
+     * 
+     * @return  the list of "in-flight" workflow instances
+     * @since 4.0
+     */
+    public List<WorkflowInstance> getActiveWorkflows();
+    
+    /**
+     * Gets all completed workflow instances.
+     * 
+     * @return  the list of "in-flight" workflow instances
+     * @since 4.0
+     */
+    public List<WorkflowInstance> getCompletedWorkflows();
+    
+    /**
+     * Gets all workflow instances (both active and completed).
+     * 
+     * @return  the list of "in-flight" workflow instances
+     * @since 4.0
+     */
+    public List<WorkflowInstance> getWorkflows();
+    
+    /**
      * Gets a specific workflow instances
      *
      * @param workflowId  the id of the workflow to retrieve

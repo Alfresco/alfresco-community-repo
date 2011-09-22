@@ -22,6 +22,7 @@ package org.alfresco.repo.workflow;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -56,6 +57,8 @@ import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.cmr.workflow.WorkflowTimer;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.collections.CollectionUtils;
+import org.alfresco.util.collections.Function;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -414,50 +417,99 @@ public class WorkflowServiceImpl implements WorkflowService
         throw new UnsupportedOperationException();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.alfresco.service.cmr.workflow.WorkflowService#getActiveWorkflows(
-     * java.lang.String)
+    /**
+    * {@inheritDoc}
      */
     public List<WorkflowInstance> getActiveWorkflows(String workflowDefinitionId)
     {
+        if(workflowDefinitionId==null)
+        {
+            return getActiveWorkflows();
+        }
         String engineId = BPMEngineRegistry.getEngineId(workflowDefinitionId);
         WorkflowComponent component = getWorkflowComponent(engineId);
         return component.getActiveWorkflows(workflowDefinitionId);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.alfresco.service.cmr.workflow.WorkflowService#getCompletedWorkflows(
-     * java.lang.String)
+    /**
+    * {@inheritDoc}
      */
     public List<WorkflowInstance> getCompletedWorkflows(String workflowDefinitionId)
     {   
+        if(workflowDefinitionId==null)
+        {
+            return getCompletedWorkflows();
+        }
+
         String engineId = BPMEngineRegistry.getEngineId(workflowDefinitionId);
         WorkflowComponent component = getWorkflowComponent(engineId);        
         return component.getCompletedWorkflows(workflowDefinitionId);
     }
     
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.alfresco.service.cmr.workflow.WorkflowService#getWorkflows(
-     * java.lang.String)
+    /**
+    * {@inheritDoc}
      */
     public List<WorkflowInstance> getWorkflows(String workflowDefinitionId)
     {
+        if(workflowDefinitionId==null)
+        {
+            return getWorkflows();
+        }
         String engineId = BPMEngineRegistry.getEngineId(workflowDefinitionId);
         WorkflowComponent component = getWorkflowComponent(engineId);
         return component.getWorkflows(workflowDefinitionId);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.alfresco.service.cmr.workflow.WorkflowService#getWorkflowById(java
-     * .lang.String)
+    /**
+    * {@inheritDoc}
+    */
+    public List<WorkflowInstance> getActiveWorkflows()
+    {
+        List<String> ids = Arrays.asList(registry.getWorkflowComponents());
+        return CollectionUtils.transformFlat(ids, new Function<String, Collection<WorkflowInstance>>()
+        {
+            public List<WorkflowInstance> apply(String id)
+            {
+                WorkflowComponent component = registry.getWorkflowComponent(id);
+                return component.getActiveWorkflows();
+            }
+        });
+    }
+
+    /**
+    * {@inheritDoc}
+    */
+    public List<WorkflowInstance> getCompletedWorkflows()
+    {
+        List<String> ids = Arrays.asList(registry.getWorkflowComponents());
+        return CollectionUtils.transformFlat(ids, new Function<String, Collection<WorkflowInstance>>()
+        {
+            public List<WorkflowInstance> apply(String id)
+            {
+                WorkflowComponent component = registry.getWorkflowComponent(id);
+                return component.getCompletedWorkflows();
+            }
+        });
+    }
+
+    /**
+    * {@inheritDoc}
+    */
+    public List<WorkflowInstance> getWorkflows()
+    {
+        List<String> ids = Arrays.asList(registry.getWorkflowComponents());
+        return CollectionUtils.transformFlat(ids, new Function<String, Collection<WorkflowInstance>>()
+        {
+            public List<WorkflowInstance> apply(String id)
+            {
+                WorkflowComponent component = registry.getWorkflowComponent(id);
+                return component.getWorkflows();
+            }
+        });
+    }
+    
+    /**
+    * {@inheritDoc}
      */
     public WorkflowInstance getWorkflowById(String workflowId)
     {

@@ -58,6 +58,8 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
+import org.alfresco.util.collections.CollectionUtils;
+import org.alfresco.util.collections.Function;
 
 /**
  * @author Nick Smith
@@ -781,6 +783,12 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         checkCompletedWorkflows(defId, instance1);
         checkWorkflows(defId, instance1, instance2);
         
+        checkWorkflowsContains(workflowService.getActiveWorkflows(), instance2);
+        checkWorkflowsDontContain(workflowService.getActiveWorkflows(), instance1);
+        checkWorkflowsContains(workflowService.getCompletedWorkflows(), instance1);
+        checkWorkflowsDontContain(workflowService.getCompletedWorkflows(), instance2);
+        checkWorkflowsContains(workflowService.getWorkflows(), instance1, instance2);
+        
         // End workflow 2
         WorkflowTask startTask2 = workflowService.getStartTask(instance2);
         workflowService.endTask(startTask2.getId(), null);
@@ -865,6 +873,28 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         }
     }
 
+    private void checkWorkflowsContains(List<WorkflowInstance> workflows, String... expectedIds)
+    {
+        List<String> expIds = Arrays.asList(expectedIds);
+        List<String> workflowIds = CollectionUtils.transform(workflows, new Function<WorkflowInstance, String>()
+        {
+            public String apply(WorkflowInstance workflow)
+            {
+                return workflow.getId();
+            }
+        });
+        assertTrue(workflowIds.containsAll(expIds));
+    }
+
+    private void checkWorkflowsDontContain(List<WorkflowInstance> workflows, String... expectedIds)
+    {
+        List<String> expIds = Arrays.asList(expectedIds);
+        for (WorkflowInstance instance : workflows)
+        {
+            assertFalse(expIds.contains(instance.getId()));
+        }
+    }
+    
     protected void checkTaskNameQuery(QName taskName, List<String> expectedTaskIds, WorkflowTaskState state, 
                 String optionalProcessId) 
     {
@@ -974,6 +1004,7 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         checkNoTasksFoundUsingQuery(taskQuery);
     }
     
+    @SuppressWarnings("deprecation")
     protected void checkProcessNameQuery(List<String> expectedTaskIds, WorkflowTaskState state)
     {
         WorkflowTaskQuery taskQuery = createWorkflowTaskQuery(state);

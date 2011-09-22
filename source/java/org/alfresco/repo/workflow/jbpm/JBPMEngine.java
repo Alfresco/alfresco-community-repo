@@ -443,6 +443,17 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
         });
     }
     
+    private List<WorkflowInstance> convertWorkflows(Collection<ProcessInstance> instances)
+    {
+        return CollectionUtils.transform(instances, new Function<ProcessInstance, WorkflowInstance>()
+        {
+            public WorkflowInstance apply(ProcessInstance value)
+            {
+                return createWorkflowInstance(value);
+            }
+        });
+    }
+    
     /*
      * (non-Javadoc)
      * 
@@ -772,55 +783,63 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
         return new WorkflowException(msg, e);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.WorkflowComponent#getActiveWorkflows(java.lang.String)
-     */    
+    /**
+    * {@inheritDoc}
+    */
+    public List<WorkflowInstance> getActiveWorkflows()
+    {
+        return getWorkflowsInternal(null, true);
+    }
+    
+    /**
+    * {@inheritDoc}
+    */
+    @Override
+    public List<WorkflowInstance> getCompletedWorkflows()
+    {
+        return getWorkflowsInternal(null, false);
+    }
+    
+    /**
+    * {@inheritDoc}
+    */
+    @Override
+    public List<WorkflowInstance> getWorkflows()
+    {
+        return getWorkflowsInternal(null, null);
+    }
+    
+    /**
+    * {@inheritDoc}
+     */
     public List<WorkflowInstance> getActiveWorkflows(final String workflowDefinitionId)
     {
         return getWorkflowsInternal(workflowDefinitionId, true);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.WorkflowComponent#getCompletedWorkflows(java.lang.String)
-     */    
+    /**
+     * {@inheritDoc}
+      */
     public List<WorkflowInstance> getCompletedWorkflows(final String workflowDefinitionId)
     {
         return getWorkflowsInternal(workflowDefinitionId, false);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.WorkflowComponent#getWorkflows(java.lang.String)
+    /**
+    * {@inheritDoc}
      */
     public List<WorkflowInstance> getWorkflows(final String workflowDefinitionId)
     {
         return getWorkflowsInternal(workflowDefinitionId, null);
     }
     
-    @SuppressWarnings("unchecked")
-    private List<WorkflowInstance> getWorkflowsInternal(final String workflowDefinitionId, final Boolean active)
+    private List<WorkflowInstance> getWorkflowsInternal(String workflowDefinitionId, Boolean active)
     {
         try
         {
-            return (List<WorkflowInstance>) jbpmTemplate.execute(new JbpmCallback()
-            {
-                public Object doInJbpm(JbpmContext context)
-                {
-                    GraphSession graphSession = context.getGraphSession();
-                    List<ProcessInstance> processInstances = graphSession
-                                .findProcessInstances(getJbpmId(workflowDefinitionId));
-                    List<WorkflowInstance> workflowInstances = new ArrayList<WorkflowInstance>(processInstances.size());
-                    for (ProcessInstance processInstance : processInstances)
-                    {
-                        if ((active == null) || (!active && processInstance.hasEnded())
-                                    || (active && !processInstance.hasEnded()))
-                        {
-                            WorkflowInstance workflowInstance = createWorkflowInstance(processInstance);
-                            workflowInstances.add(workflowInstance);
-                        }
-                    }
-                    return workflowInstances;
-                }
-            });
+            final Long processDefId = workflowDefinitionId == null ? null : getJbpmId(workflowDefinitionId);
+            List<ProcessInstance> instances = getProcessInstances(processDefId, active);
+            return convertWorkflows(instances);
         }
         catch(JbpmException e)
         {
@@ -829,12 +848,35 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.alfresco.repo.workflow.WorkflowComponent#getWorkflowById(java.lang
-     * .String)
+    @SuppressWarnings("unchecked")
+    private List<ProcessInstance> getProcessInstances(final Long processDefId, final Boolean active)
+    {
+        return (List<ProcessInstance>) jbpmTemplate.execute(new JbpmCallback()
+        {
+            public Object doInJbpm(JbpmContext context)
+            {
+                Session session = context.getSession();
+                Criteria criteria = session.createCriteria(ProcessInstance.class);
+                if(processDefId!=null)
+                {
+                    Criteria definitionCriteria = criteria.createCriteria("processDefinition");
+                    definitionCriteria.add(Restrictions.eq("id", processDefId));
+                }
+                if(Boolean.TRUE.equals(active))
+                {
+                    criteria.add(Restrictions.isNull("end"));
+                }
+                else if(Boolean.FALSE.equals(active))
+                {
+                    criteria.add(Restrictions.isNotNull("end"));
+                }
+                return criteria.list();
+            }
+        });
+    }
+    
+    /**
+    * {@inheritDoc}
      */
     public WorkflowInstance getWorkflowById(final String workflowId)
     {
@@ -1573,15 +1615,9 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
         {
             return (List<WorkflowTask>) jbpmTemplate.execute(new JbpmCallback()
             {
-                @SuppressWarnings("deprecation")
                 public List<WorkflowTask> doInJbpm(JbpmContext context)
                 {
                     Session session = context.getSession();
-                    
-                    if ((query.getProcessName() != null) && (tenantService.isEnabled()))
-                    {
-                        query.setProcessName(tenantService.getName(query.getProcessName()));
-                    }
                     Criteria criteria = createTaskQueryCriteria(session, query);
                     List<TaskInstance> tasks = criteria.list();
                     return getWorkflowTasks(tasks);

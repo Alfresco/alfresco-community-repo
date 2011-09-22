@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.service.Auditable;
-import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -235,6 +234,32 @@ public interface WorkflowService
      */
     @Auditable(parameters = {"workflowDefinitionId"})
     public List<WorkflowInstance> getWorkflows(String workflowDefinitionId);
+    
+    /**
+     * Gets all active workflow instances.
+     * 
+     * @return  the list of "in-flight" workflow instances
+     * @since4.0
+     */
+    @Auditable
+    public List<WorkflowInstance> getActiveWorkflows();
+    
+    /**
+     * Gets all completed workflow instances.
+     * 
+     * @return  the list of "in-flight" workflow instances
+     * @since 4.0
+     */
+    @Auditable
+    public List<WorkflowInstance> getCompletedWorkflows();
+    
+    /**
+     * Gets all workflow instances (both active and completed).
+     * 
+     * @return  the list of "in-flight" workflow instances
+     * @since 4.0
+     */
+    public List<WorkflowInstance> getWorkflows();
 
     /**
      * Gets a specific workflow instances

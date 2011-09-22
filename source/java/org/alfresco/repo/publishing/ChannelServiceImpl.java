@@ -281,9 +281,10 @@ public class ChannelServiceImpl implements ChannelService
      */
     public void updateChannel(Channel channel, Map<QName, Serializable> properties)
     {
-        HashMap<QName, Serializable> actualProps = new HashMap<QName, Serializable>(properties);
+        Map<QName, Serializable> actualProps = new HashMap<QName, Serializable>(properties);
         actualProps.remove(ContentModel.PROP_NODE_UUID);
         NodeRef editorialNode = new NodeRef(channel.getId());
+        actualProps = encryptor.encrypt(actualProps);
         for (Map.Entry<QName, Serializable> entry : actualProps.entrySet())
         {
             nodeService.setProperty(editorialNode, entry.getKey(), entry.getValue());

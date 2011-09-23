@@ -33,11 +33,9 @@ import java.util.StringTokenizer;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
-import org.alfresco.repo.importer.AVMZipBootstrap;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.site.SiteModel;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
@@ -60,11 +58,9 @@ public class SiteLoadPatch extends AbstractPatch
     public static final String PROPERTIES_PEOPLE = "people";
     public static final String PROPERTIES_GROUPS = "groups";
     public static final String PROPERTIES_CONTENTS = "contents";
-    public static final String PROPERTIES_AVM = "avm";
     
     private static final Map<String,String> DEFAULT_PATHS = new HashMap<String, String>();
     static {
-        DEFAULT_PATHS.put(PROPERTIES_AVM, null);
         DEFAULT_PATHS.put(PROPERTIES_USERS, "/${alfresco_user_store.system_container.childname}/${alfresco_user_store.user_container.childname}"); 
         DEFAULT_PATHS.put(PROPERTIES_PEOPLE, "/${system.system_container.childname}/${system.people_container.childname}"); 
         DEFAULT_PATHS.put(PROPERTIES_GROUPS, null);
@@ -86,7 +82,6 @@ public class SiteLoadPatch extends AbstractPatch
     
     private ImporterBootstrap spacesBootstrap;
     private ImporterBootstrap usersBootstrap;
-    private AVMZipBootstrap avmBootstrap;
     
     private Map<String,Properties> bootstrapViews;
     
@@ -113,10 +108,6 @@ public class SiteLoadPatch extends AbstractPatch
     public void setUsersBootstrap(ImporterBootstrap usersBootstrap)
     {
         this.usersBootstrap = usersBootstrap;
-    }
-    public void setAvmBootstrap(AVMZipBootstrap avmBootstrap)
-    {
-        this.avmBootstrap = avmBootstrap;
     }
 
     /**
@@ -278,15 +269,6 @@ public class SiteLoadPatch extends AbstractPatch
             {
                 throw new AlfrescoRuntimeException("Bootstrap failed", t);
             }
-        }
-        
-        // Load the AVM contents
-        if(bootstrapViews.containsKey(PROPERTIES_AVM))
-        {
-            avmBootstrap.setLocation(
-                  bootstrapViews.get(PROPERTIES_AVM).getProperty("location")
-            );
-            avmBootstrap.bootstrap();
         }
         
         // Load the Main (ACP) Contents

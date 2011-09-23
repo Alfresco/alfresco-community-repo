@@ -2752,7 +2752,6 @@
         <property name="targetSchema"><value>10000</value></property>
         <property name="spacesBootstrap" ref="siteLoadBootstrap-Spaces" />
         <property name="usersBootstrap" ref="siteLoadBootstrap-Users" />
-        <property name="avmBootstrap" ref="siteLoadBootstrap-AVM" />
         <property name="siteService" ref="siteService" />
         <property name="authorityService" ref="authorityService" />
         <property name="behaviourFilter" ref="policyBehaviourFilter" />

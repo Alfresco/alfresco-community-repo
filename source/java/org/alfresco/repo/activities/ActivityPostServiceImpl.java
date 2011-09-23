@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -32,6 +32,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
@@ -165,7 +168,42 @@ public class ActivityPostServiceImpl implements ActivityPostService
             {
                 activityData = "";
             }
-            else if (activityData.length() > ActivityPostDAO.MAX_LEN_ACTIVITY_DATA)
+            
+            if (AuthenticationUtil.isMtEnabled())
+            {
+                // MT share - required for canRead
+                try
+                {
+                    JSONObject jo = new JSONObject(new JSONTokener(activityData));
+                    
+                    boolean update = false;
+                    
+                    if (! jo.isNull(PostLookup.JSON_NODEREF))
+                    {
+                        String nodeRefStr = jo.getString(PostLookup.JSON_NODEREF);
+                        jo.put(PostLookup.JSON_NODEREF, tenantService.getName(new NodeRef(nodeRefStr)));
+                        update = true;
+                    }
+                    
+                    if (! jo.isNull(PostLookup.JSON_NODEREF_PARENT))
+                    {
+                        String nodeRefStr = jo.getString(PostLookup.JSON_NODEREF_PARENT);
+                        jo.put(PostLookup.JSON_NODEREF_PARENT, tenantService.getName(new NodeRef(nodeRefStr)));
+                        update = true;
+                    }
+                    
+                    if (update)
+                    {
+                        activityData = jo.toString();
+                    }
+                }
+                catch (JSONException e)
+                {
+                    throw new IllegalArgumentException("Invalid activity data - not valid JSON: " + e);
+                }
+            }
+            
+            if (activityData.length() > ActivityPostDAO.MAX_LEN_ACTIVITY_DATA)
             {
                 throw new IllegalArgumentException("Invalid activity data - exceeds " + ActivityPostDAO.MAX_LEN_ACTIVITY_DATA + " chars: " + activityData);
             }

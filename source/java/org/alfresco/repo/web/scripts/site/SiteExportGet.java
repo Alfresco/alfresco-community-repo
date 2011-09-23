@@ -35,15 +35,12 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.exporter.ACPExportPackageHandler;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextManager;
 import org.alfresco.repo.security.authentication.RepositoryAuthenticationDao;
-import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
-import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
-import org.alfresco.service.cmr.view.AVMZipExporterService;
 import org.alfresco.service.cmr.view.ExporterCrawlerParameters;
 import org.alfresco.service.cmr.view.ExporterService;
 import org.alfresco.service.cmr.view.Location;
@@ -58,19 +55,19 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 
 /**
- * Exports a Site as a zip of ACPs and an AVM dump
+ * Exports a Site as a zip of ACPs.
+ * 
+ * As of 4.0, the export no longer includes an AVM Dump, as
+ *  the site config is now in the main site ACP.
  * 
  * @author Nick Burch
  * @since 3.5
  */
 public class SiteExportGet extends AbstractWebScript
 {
-    private static final String SITE_AVM_ROOT = "sitestore:/alfresco/site-data/";
     private static final List<String> USERS_NOT_TO_EXPORT = Arrays.asList(
             new String[] { "admin", "guest" });
     
-    private AVMZipExporterService avmZipExporterService;
-    private AVMService avmService;
     private SiteService siteService;
     private ExporterService exporterService;
     private MimetypeService mimetypeService;
@@ -104,11 +101,8 @@ public class SiteExportGet extends AbstractWebScript
         CloseIgnoringOutputStream outputForNesting = 
                 new CloseIgnoringOutputStream(mainZip); 
         
-        // Export the AVM details (dashboard etc)
-        mainZip.putNextEntry(new ZipEntry("AVM.zip"));
-        doAVMExport(site, outputForNesting);
-        
         // Export the Site's Contents
+        // This includes the site config such as dashboards
         mainZip.putNextEntry(new ZipEntry("Contents.acp"));
         doSiteACPExport(site, outputForNesting);
         
@@ -148,31 +142,6 @@ public class SiteExportGet extends AbstractWebScript
         
         // Finish up
         mainZip.close();
-    }
-    
-    protected void doAVMExport(SiteInfo site, CloseIgnoringOutputStream writeTo) throws IOException
-    {
-        String pageRoot = SITE_AVM_ROOT + "pages/site/" + site.getShortName();
-        String componentRoot = SITE_AVM_ROOT + "components";
-        String componentMatch = "~" + site.getShortName() + "~";
-        
-        // Nest the zip
-        ZipOutputStream zip = new ZipOutputStream(writeTo);
-        
-        // First up, do the page info
-        avmZipExporterService.export(zip, -1, pageRoot, true);
-        
-        // Now do the components
-        for (AVMNodeDescriptor node : avmService.getDirectoryListing(-1, componentRoot).values())
-        {
-            if (node.getName().contains(componentMatch))
-            {
-                avmZipExporterService.export(zip, node, false);
-            }
-        }
-        
-        // Finish the AVM zip
-        zip.close();
     }
     
     protected void doSiteACPExport(SiteInfo site, CloseIgnoringOutputStream writeTo) throws IOException
@@ -351,16 +320,6 @@ public class SiteExportGet extends AbstractWebScript
             // Flushes, but doesn't close
             flush();
         }
-    }
-    
-    public void setAvmZipExporterService(AVMZipExporterService avmZipExporterService)
-    {
-        this.avmZipExporterService = avmZipExporterService;
-    }
-    
-    public void setAvmService(AVMService avmService)
-    {
-        this.avmService = avmService;
     }
     
     public void setSiteService(SiteService siteService)

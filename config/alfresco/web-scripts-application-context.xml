@@ -718,8 +718,6 @@
       <property name="mimetypeService" ref="MimetypeService"/>
       <property name="exporterService" ref="ExporterService"/>
       <property name="siteService" ref="SiteService"/>
-      <property name="avmService" ref="AVMService"/>
-      <property name="avmZipExporterService" ref="avmZipExporterService"/>
       <property name="authenticationContextManager" ref="Authentication"/>
    </bean>
 

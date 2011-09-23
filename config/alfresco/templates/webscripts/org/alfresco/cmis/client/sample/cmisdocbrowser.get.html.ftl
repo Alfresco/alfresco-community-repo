@@ -29,8 +29,10 @@
         <a target="_new" href="${contentUrl}">
         <#if child.renditions?? && (child.renditions?size > 0)>
           <#assign streamid = child.renditions?first.streamId>
+        <#else>
+          <#assign streamid = "">
         </#if>
-        <#if streamid??>
+        <#if streamid?length &gt; 0>
           <img src="${contentUrl}&stream=${streamid?url}">
         <#else>
           <img src="${url.context}/images/icons/file_large.gif">

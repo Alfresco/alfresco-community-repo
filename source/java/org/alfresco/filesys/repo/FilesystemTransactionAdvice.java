@@ -59,14 +59,8 @@ public class FilesystemTransactionAdvice implements MethodInterceptor
         this.readOnly = readOnly;
     }
 
-    public Object invoke(final MethodInvocation methodInvocation) throws IOException, Throwable
+    public Object invoke(final MethodInvocation methodInvocation) throws IOException, SMBException, Throwable
     {
-//        Object[] args = methodInvocation.getArguments();
-//        
-//        if(args.length == 0 || !(args[0] instanceof SrvSession))
-//        {
-//            throw new AlfrescoRuntimeException("First argument is not of correct type");
-//        }
         
         RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
         
@@ -112,8 +106,15 @@ public class FilesystemTransactionAdvice implements MethodInterceptor
                 {
                     if(t instanceof IOException)
                     {
-                        // Unwrap checked exceptions
                         throw (IOException) pe.getCause();
+                    }
+                    if(t instanceof SMBException)
+                    {
+                        throw pe.getCause();
+                    }
+                    if(t instanceof DeviceContextException)
+                    {
+                        throw pe.getCause();
                     }
                     throw t;
                 }
@@ -128,11 +129,27 @@ public class FilesystemTransactionAdvice implements MethodInterceptor
                return tran.doInTransaction(callback);  
             }
             catch(PropagatingException pe)
-            {
-                // Unwrap checked exceptions
-                throw (IOException) pe.getCause();
-            }
-            
+            {  
+                Throwable t = pe.getCause();
+                if(t != null)
+                {
+                    if(t instanceof IOException)
+                    {
+                        // Unwrap checked exceptions
+                        throw pe.getCause();
+                    }
+                    if(t instanceof SMBException)
+                    {
+                        throw pe.getCause();
+                    }
+                    if(t instanceof DeviceContextException)
+                    {
+                        throw pe.getCause();
+                    }
+                    throw t;
+                }
+                throw pe;
+            }            
         }
     }
 

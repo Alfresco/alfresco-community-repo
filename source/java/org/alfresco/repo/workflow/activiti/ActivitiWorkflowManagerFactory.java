@@ -26,6 +26,7 @@ import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.workflow.BPMEngineRegistry;
 import org.alfresco.repo.workflow.DefaultWorkflowPropertyHandler;
 import org.alfresco.repo.workflow.WorkflowAuthorityManager;
+import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.repo.workflow.WorkflowObjectFactory;
 import org.alfresco.repo.workflow.WorkflowPropertyHandlerRegistry;
 import org.alfresco.repo.workflow.WorkflowQNameConverter;
@@ -37,6 +38,7 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.springframework.beans.factory.FactoryBean;
 
 /**
@@ -90,7 +92,8 @@ public class ActivitiWorkflowManagerFactory implements FactoryBean<ActivitiWorkf
         WorkflowPropertyHandlerRegistry handlerRegistry = new WorkflowPropertyHandlerRegistry(defaultPropertyHandler, qNameConverter);
         
         WorkflowAuthorityManager authorityManager = new WorkflowAuthorityManager(authorityDAO);
-        WorkflowObjectFactory factory = new WorkflowObjectFactory(qNameConverter, tenantService, messageService, dictionaryService, engineId);
+        QName defaultStartTaskType = WorkflowModel.TYPE_ACTIVTI_START_TASK;
+        WorkflowObjectFactory factory = new WorkflowObjectFactory(qNameConverter, tenantService, messageService, dictionaryService, engineId, defaultStartTaskType);
         ActivitiUtil activitiUtil = new ActivitiUtil(processEngine);
         ActivitiPropertyConverter propertyConverter = new ActivitiPropertyConverter(activitiUtil, factory, handlerRegistry, authorityManager, messageService, nodeConverter);
         ActivitiTypeConverter typeConverter = new ActivitiTypeConverter(processEngine, factory, propertyConverter);

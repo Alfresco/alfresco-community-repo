@@ -73,6 +73,12 @@ public interface WorkflowModel
     // Activiti Task Constants
     static final QName TYPE_ACTIVTI_TASK = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "activitiOutcomeTask");
     static final QName PROP_OUTCOME_PROPERTY_NAME= QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "outcomePropertyName");
+    
+    // Activiti Start Task Constants
+    static final QName TYPE_ACTIVTI_START_TASK = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "activitiStartTask");
+    
+    // Activiti Start Task Constants
+    static final QName ASPECT_END_AUTOMATICALLY= QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "endAutomatically");
 
     // workflow package
     static final QName ASPECT_WORKFLOW_PACKAGE = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "workflowPackage");

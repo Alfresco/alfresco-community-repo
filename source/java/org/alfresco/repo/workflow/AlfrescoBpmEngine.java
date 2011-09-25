@@ -24,6 +24,7 @@ import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 
 /**
  * @author Nick Smith
@@ -58,7 +59,8 @@ public abstract class AlfrescoBpmEngine extends BPMEngine
             throw new WorkflowException("NamespaceService not specified");
         }
         WorkflowQNameConverter qNameConverter = new WorkflowQNameConverter(namespaceService);
-        this.factory = new WorkflowObjectFactory(qNameConverter, tenantService, messageService, dictionaryService, getEngineId());
+        QName defaultStartTaskType = getDefaultStartTaskType();
+        this.factory = new WorkflowObjectFactory(qNameConverter, tenantService, messageService, dictionaryService, getEngineId(), defaultStartTaskType);
     }
     
         /**
@@ -114,4 +116,6 @@ public abstract class AlfrescoBpmEngine extends BPMEngine
     {
         this.authorityManager = authorityManager;
     }
+    
+    protected abstract QName getDefaultStartTaskType();
 }

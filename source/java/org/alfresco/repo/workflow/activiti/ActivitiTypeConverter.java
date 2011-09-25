@@ -357,14 +357,31 @@ public class ActivitiTypeConverter
                     taskDef, taskDef.getId(), defaultTitle, defaultDescription, state, path, properties);
     }
     
-    public WorkflowTask getVirtualStartTask(String executionId, boolean inProgress)
+    public WorkflowTask getVirtualStartTask(String processInstanceId, Boolean inProgress)
     {
-        Execution execution = runtimeService.createExecutionQuery().executionId(executionId).singleResult();
-        ProcessInstance processInstance = runtimeService.createProcessInstanceQuery()
-            .processInstanceId(execution.getProcessInstanceId())
-            .singleResult();
-        
-        String id = ActivitiConstants.START_TASK_PREFIX + execution.getProcessInstanceId();
+        ProcessInstance processInstance = activitiUtil.getProcessInstance(processInstanceId);
+        if(processInstance != null)
+        {
+            if(null == inProgress)
+            {
+                inProgress = isStartTaskActive(processInstanceId);
+            }
+            return getVirtualStartTask(processInstance, inProgress);
+        }
+        HistoricProcessInstance historicProcessInstance = activitiUtil.getHistoricProcessInstance(processInstanceId);
+        return getVirtualStartTask(historicProcessInstance);
+    }
+
+    public boolean isStartTaskActive(String processInstanceId)
+    {
+        Object endDate = runtimeService.getVariable(processInstanceId, ActivitiConstants.PROP_START_TASK_END_DATE);
+        return endDate == null;
+    }
+
+    private WorkflowTask getVirtualStartTask(ProcessInstance processInstance, boolean inProgress)
+    {
+        String processInstanceId = processInstance.getId();
+        String id = ActivitiConstants.START_TASK_PREFIX + processInstanceId;
         
         WorkflowTaskState state = null;
         if(inProgress)
@@ -376,7 +393,7 @@ public class ActivitiTypeConverter
             state = WorkflowTaskState.COMPLETED;
         }
         
-        WorkflowPath path  = convert(execution);
+        WorkflowPath path  = convert((Execution)processInstance);
         
         // Convert start-event to start-task Node
         ReadOnlyProcessDefinition procDef = activitiUtil.getDeployedProcessDefinition(processInstance.getProcessDefinitionId());
@@ -393,7 +410,7 @@ public class ActivitiTypeConverter
         // Add properties based on HistoricProcessInstance
         HistoricProcessInstance historicProcessInstance = historyService
             .createHistoricProcessInstanceQuery()
-            .processInstanceId(execution.getProcessInstanceId())
+            .processInstanceId(processInstance.getId())
             .singleResult();
         
         Map<QName, Serializable> properties = propertyConverter.getStartTaskProperties(historicProcessInstance, taskDefId, !inProgress);
@@ -406,7 +423,7 @@ public class ActivitiTypeConverter
                     taskDef, taskDef.getId(), defaultTitle, defaultDescription, state, path, properties);
     }
     
-    public WorkflowTask getVirtualStartTask(HistoricProcessInstance historicProcessInstance)
+    private WorkflowTask getVirtualStartTask(HistoricProcessInstance historicProcessInstance)
     {
         if(historicProcessInstance == null)
         {
@@ -416,18 +433,9 @@ public class ActivitiTypeConverter
         String processInstanceId = historicProcessInstance.getId();
         String id = ActivitiConstants.START_TASK_PREFIX + processInstanceId;
         
-        WorkflowTaskState state = null;
-        
-        boolean completed = historicProcessInstance.getEndTime() != null;
-        if(completed)
-        {
-            state = WorkflowTaskState.COMPLETED;
-        }
-        else
-        {
-            state = WorkflowTaskState.IN_PROGRESS;
-        }
-        
+        // Since the process instance is complete the Start Task must be complete!
+        WorkflowTaskState state = WorkflowTaskState.COMPLETED;
+
         // We use the process-instance ID as execution-id. It's ended anyway
         WorkflowPath path  = buildCompletedPath(processInstanceId, processInstanceId);
         if(path == null)
@@ -442,6 +450,7 @@ public class ActivitiTypeConverter
         String taskDefId = activitiUtil.getStartFormKey(historicProcessInstance.getProcessDefinitionId());
         WorkflowTaskDefinition taskDef = factory.createTaskDefinition(taskDefId, startNode, taskDefId, true);
         
+        boolean completed = historicProcessInstance.getEndTime() != null;
         Map<QName, Serializable> properties = propertyConverter.getStartTaskProperties(historicProcessInstance, taskDefId, completed);
         
         // TODO: Figure out what name/description should be used for the start-task, start event's name?

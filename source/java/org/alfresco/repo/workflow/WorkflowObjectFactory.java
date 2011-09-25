@@ -62,18 +62,20 @@ public class WorkflowObjectFactory
     private final MessageService messageService;
     private final DictionaryService dictionaryService;
     private final String engineId;
+    private final QName defaultStartTaskType;
     
     public WorkflowObjectFactory(WorkflowQNameConverter qNameConverter,
             TenantService tenantService,
             MessageService messageService,
             DictionaryService dictionaryService,
-            String engineId)
+            String engineId, QName defaultStartTaskType)
     {
         this.tenantService = tenantService;
         this.messageService = messageService;
         this.dictionaryService = dictionaryService;
         this.engineId = engineId;
         this.qNameConverter = qNameConverter;
+        this.defaultStartTaskType = defaultStartTaskType;
     }
 
     public String buildGlobalId(String localId)
@@ -390,7 +392,7 @@ public class WorkflowObjectFactory
         }
         if (typeDef == null)
         {
-            QName defaultTypeName = isStart? WorkflowModel.TYPE_START_TASK : WorkflowModel.TYPE_WORKFLOW_TASK;
+            QName defaultTypeName = isStart? defaultStartTaskType : WorkflowModel.TYPE_WORKFLOW_TASK;
             typeDef = dictionaryService.getType(defaultTypeName);
             if (typeDef == null)
             {

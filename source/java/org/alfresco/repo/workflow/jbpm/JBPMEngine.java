@@ -3417,13 +3417,19 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
     {
         if (node instanceof HibernateProxy)
         {
-            Node realNode = (Node)((HibernateProxy)node).getHibernateLazyInitializer().getImplementation();        
+            Node realNode = (Node)((HibernateProxy)node).getHibernateLazyInitializer().getImplementation();
             return realNode;
         }
         else
         {
             return node;
         }
+    }
+
+    @Override
+    protected QName getDefaultStartTaskType()
+    {
+        return WorkflowModel.TYPE_START_TASK;
     }
 
 }

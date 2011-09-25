@@ -81,6 +81,26 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
         assertEquals("Approve", outcome);
     }
 
+    public void testStartTaskEndsAutomatically()
+    {
+        // Deploy the test workflow definition which uses the 
+        // default Start Task type, so it should end automatically.
+        WorkflowDefinition definition = deployDefinition(getTestDefinitionPath());
+        
+        // Start the Workflow
+        WorkflowPath path = workflowService.startWorkflow(definition.getId(), null);
+        String instanceId = path.getInstance().getId();
+
+        // Check the Start Task is completed.
+        WorkflowTask startTask = workflowService.getStartTask(instanceId);
+        assertEquals(WorkflowTaskState.COMPLETED, startTask.getState());
+        
+        List<WorkflowTask> tasks = workflowService.getTasksForWorkflowPath(path.getId());
+        assertEquals(1, tasks.size());
+        String taskName = tasks.get(0).getName();
+        assertEquals("bpm_foo_task", taskName);
+    }
+    
     @Override
     protected void checkTaskQueryStartTaskCompleted(String workflowInstanceId, WorkflowTask startTask) 
     {

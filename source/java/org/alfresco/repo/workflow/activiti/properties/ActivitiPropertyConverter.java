@@ -852,12 +852,10 @@ public class ActivitiPropertyConverter
      */
     private List<QName> getMissingMandatoryTaskProperties(DelegateTask task)
     {
-
         TypeDefinition typeDefinition = typeManager.getFullTaskDefinition(task);
         // retrieve properties of task
         Map<QName, Serializable> existingValues = getTaskProperties(task, typeDefinition, false);
 
-        // retrieve definition of task
         Map<QName, PropertyDefinition> propertyDefs = typeDefinition.getProperties();
         Map<QName, AssociationDefinition> assocDefs = typeDefinition.getAssociations();
 

@@ -33,6 +33,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.activiti.engine.ActivitiException;
 import org.activiti.engine.FormService;
@@ -81,6 +82,7 @@ import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.repo.workflow.WorkflowNodeConverter;
 import org.alfresco.repo.workflow.WorkflowObjectFactory;
 import org.alfresco.repo.workflow.activiti.properties.ActivitiPropertyConverter;
+import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -689,46 +691,42 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
     * {@inheritDoc}
     */
-    
     public List<WorkflowTask> getTasksForWorkflowPath(String pathId)
     {
-        try 
-        { 
-           // Extract the Activiti ID from the path
-           String executionId = getExecutionIdFromPath(pathId);
-           if(executionId == null) 
-           {
-               throw new WorkflowException(messageService.getMessage(ERR_GET_WORKFLOW_TOKEN_INVALID, pathId));
-           }
-           
-           // Check if the execution exists
-           Execution execution = runtimeService.createExecutionQuery().executionId(executionId).singleResult();
-           if(execution == null)
-           {
-               throw new WorkflowException(messageService.getMessage(ERR_GET_WORKFLOW_TOKEN_NULL, pathId));
-           }
-           
-           List<WorkflowTask> resultList = new ArrayList<WorkflowTask>();
-           
-           // Check if workflow's start task has been completed. If not, return the virtual task
-           // Otherwise, just return the runtime activiti tasks
-           Date startTaskEndDate = (Date) runtimeService.getVariable(execution.getProcessInstanceId(),
-        		   ActivitiConstants.PROP_START_TASK_END_DATE);
-           boolean startTaskEnded = (startTaskEndDate != null);
-           
-           if(startTaskEnded)
-           {
-        	   List<Task> tasks = taskService.createTaskQuery().executionId(executionId).list();
-        	   for(Task task : tasks) 
-        	   {
-        		   resultList.add(typeConverter.convert(task));
-        	   }
-           } 
-           else
-           {
-        	   resultList.add(typeConverter.getVirtualStartTask(executionId, true));
-           }
-           return resultList;
+        try
+        {
+            // Extract the Activiti ID from the path
+            String executionId = getExecutionIdFromPath(pathId);
+            if (executionId == null)
+            {
+                throw new WorkflowException(messageService.getMessage(ERR_GET_WORKFLOW_TOKEN_INVALID, pathId));
+            }
+
+            // Check if the execution exists
+            Execution execution = runtimeService.createExecutionQuery().executionId(executionId).singleResult();
+            if (execution == null)
+            {
+                throw new WorkflowException(messageService.getMessage(ERR_GET_WORKFLOW_TOKEN_NULL, pathId));
+            }
+
+            // Check if workflow's start task has been completed. If not, return
+            // the virtual task
+            // Otherwise, just return the runtime Activiti tasks
+            String processInstanceId = execution.getProcessInstanceId();
+            ArrayList<WorkflowTask> resultList = new ArrayList<WorkflowTask>();
+            if (typeConverter.isStartTaskActive(processInstanceId))
+            {
+                resultList.add(typeConverter.getVirtualStartTask(processInstanceId, true));
+            }
+            else
+            {
+                List<Task> tasks = taskService.createTaskQuery().executionId(executionId).list();
+                for (Task task : tasks)
+                {
+                    resultList.add(typeConverter.convert(task));
+                }
+            }
+            return resultList;
         }
         catch (ActivitiException ae)
         {
@@ -736,7 +734,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             throw new WorkflowException(msg, ae);
         }
     }
-    
+
     protected String getExecutionIdFromPath(String workflowPath) 
     {
         if(workflowPath != null) 
@@ -1017,13 +1015,32 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             } 
             else
             {
-                return typeConverter.convert((Execution)instance);        
+                WorkflowPath path = typeConverter.convert((Execution)instance);        
+                endStartTaskAutomatically(path, instance);
+                return path;
             }
         }
         catch (ActivitiException ae)
         {
             String msg = messageService.getMessage(ERR_START_WORKFLOW, workflowDefinitionId);
             throw new WorkflowException(msg, ae);
+        }
+    }
+
+    /**
+     * @param path
+     * @param instance
+     */
+    private void endStartTaskAutomatically(WorkflowPath path, ProcessInstance instance)
+    {
+        // Check if StartTask Needs to be ended automatically
+        WorkflowDefinition definition = path.getInstance().getDefinition();
+        TypeDefinition metadata = definition.getStartTaskDefinition().getMetadata();
+        Set<QName> aspects = metadata.getDefaultAspectNames();
+        if(aspects.contains(WorkflowModel.ASPECT_END_AUTOMATICALLY))
+        {
+            String taskId = ActivitiConstants.START_TASK_PREFIX + instance.getId();
+            endStartTask(taskId);
         }
     }
     
@@ -1296,7 +1313,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         // Check if the task is a virtual start task
         if(localTaskId.startsWith(ActivitiConstants.START_TASK_PREFIX))
         {
-            return endStartTask(taskId, localTaskId, transition);
+            return endStartTask(localTaskId);
         }
         
         return endNormalTask(taskId, localTaskId, transition);
@@ -1356,11 +1373,15 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         propertyConverter.updateTask(task, updates, null, null);
     }
 
-    private WorkflowTask endStartTask(String taskId, String localTaskId, String transition)
+    private WorkflowTask endStartTask(String localTaskId)
     {
         // We don't end a task, we set a variable on the process-instance 
         // to indicate that it's started
         String processInstanceId = localTaskId.replace(ActivitiConstants.START_TASK_PREFIX, "");
+        if(false == typeConverter.isStartTaskActive(processInstanceId))
+        {
+            return typeConverter.getVirtualStartTask(processInstanceId, false);
+        }
         
         // Set start task end date on the process
         runtimeService.setVariable(processInstanceId, ActivitiConstants.PROP_START_TASK_END_DATE, new Date());
@@ -1379,22 +1400,10 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             runtimeService.signal(processInstanceId);
             
             // It's possible the process has ended after signalling the receive task
-            processInstance = activitiUtil.getProcessInstance(processInstanceId);
-            if (processInstance != null) 
-            {
-                return typeConverter.getVirtualStartTask(processInstanceId, false);
-            }
-            else
-            {
-                return typeConverter.getVirtualStartTask(activitiUtil.getHistoricProcessInstance(processInstanceId));
-            }
         }
-        else
-        {
-            // Return virtual start task for the execution, it's safe to use the processInstanceId
-            return typeConverter.getVirtualStartTask(processInstanceId, false);
-        }
-        
+        // Return virtual start task for the execution, it's safe to use the
+        // processInstanceId
+        return typeConverter.getVirtualStartTask(processInstanceId, false);
     }
 
     /**
@@ -1515,7 +1524,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             if(localId.startsWith(ActivitiConstants.START_TASK_PREFIX)) 
             {
                 String processInstanceId = localId.replace(ActivitiConstants.START_TASK_PREFIX ,"");
-                return getVirtualStartTaskForProcessInstance(processInstanceId);
+                return typeConverter.getVirtualStartTask(processInstanceId, null);
             } 
             else
             {
@@ -1884,8 +1893,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
          // Only return start-task when a process or task id is set
          if(processInstanceId != null)
          {
-             // Extract processInstanceId
-             WorkflowTask workflowTask = getVirtualStartTaskForProcessInstance(processInstanceId);
+             WorkflowTask workflowTask = typeConverter.getVirtualStartTask(processInstanceId, null);
              if(workflowTask != null)
              {
             	boolean startTaskMatches = isStartTaskMatching(workflowTask, query);
@@ -2033,32 +2041,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     public WorkflowTask getStartTask(String workflowInstanceId)
     {
         String instanceId = createLocalId(workflowInstanceId);
-        return getVirtualStartTaskForProcessInstance(instanceId);
-    }
-
-    public WorkflowTask getVirtualStartTaskForProcessInstance(String processInstanceId)
-    {
-        
-        ProcessInstance runningInstance = runtimeService.createProcessInstanceQuery()
-            .processInstanceId(processInstanceId)
-            .singleResult();
-        
-        if(runningInstance != null)
-        {
-           // Check the process instance variable to see if start-task has been completed
-           Date startTaskEndDate = (Date) runtimeService.getVariable(runningInstance.getProcessInstanceId(),
-        		   ActivitiConstants.PROP_START_TASK_END_DATE);
-           boolean startTaskEnded = (startTaskEndDate != null);
-           return typeConverter.getVirtualStartTask(runningInstance.getId(), !startTaskEnded);
-        }
-        else
-        {
-            HistoricProcessInstance hpi = historyService.createHistoricProcessInstanceQuery()
-                .processInstanceId(processInstanceId)
-                .singleResult();
-        
-            return typeConverter.getVirtualStartTask(hpi);
-        }
+        return typeConverter.getVirtualStartTask(instanceId, null);
     }
 
     /**

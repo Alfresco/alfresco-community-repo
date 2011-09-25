@@ -335,6 +335,18 @@
 
         </type>
         
+        <!--                                                                     -->
+        <!--  Default Activiti Start Task                           -->
+        <!--  Ends automatically when workflow starts  -->
+        <!--                                                                    -->
+
+        <type name="bpm:activitiStartTask">
+            <parent>bpm:startTask</parent>
+            <mandatory-aspects>
+                <aspect>bpm:endAutomatically</aspect>
+            </mandatory-aspects>
+        </type>
+        
         <!--                      -->
         <!--  Workflow Definition -->
         <!--                      -->
@@ -490,6 +502,11 @@
 
         </aspect>
 
-    </aspects>
+        <!--                                                                                                                                                                           -->
+        <!--  Amy start task implementing this marker aspect is automatically ended as soon as the workflow starts         -->
+        <!-- Note this only applies to the Activiti Workflow Engine                                                                                      --> 
+        <!--                                                                                                                                                                          -->
 
+        <aspect name="bpm:endAutomatically" />
+    </aspects>
 </model>

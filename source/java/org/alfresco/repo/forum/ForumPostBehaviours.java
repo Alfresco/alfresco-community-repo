@@ -32,6 +32,8 @@ import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -175,15 +177,31 @@ public class ForumPostBehaviours implements NodeServicePolicies.OnCreateNodePoli
     }
     
     @Override
-    public void onCreateNode(ChildAssociationRef childAssocRef)
+    public void onCreateNode(final ChildAssociationRef childAssocRef)
     {
-        adjustCommentCount(childAssocRef.getChildRef(), true);
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                adjustCommentCount(childAssocRef.getChildRef(), true);
+                return null;
+            }
+        });
     }
     
     @Override
-    public void beforeDeleteNode(NodeRef nodeRef)
+    public void beforeDeleteNode(final NodeRef nodeRef)
     {
-        adjustCommentCount(nodeRef, false);
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                adjustCommentCount(nodeRef, false);
+                return null;
+            }
+        });
     }
     
     /**
@@ -207,6 +225,7 @@ public class ForumPostBehaviours implements NodeServicePolicies.OnCreateNodePoli
                 if (recount != null)
                 {
                     nodeService.addAspect(discussableAncestor, ForumModel.ASPECT_COMMENTS_ROLLUP, null);
+                    
                     int newCountValue = recount;
                     // If the node is being deleted then the above node-count will include the to-be-deleted node.
                     // This is because the policies are onCreateNode and *before*DeleteNode
@@ -221,6 +240,7 @@ public class ForumPostBehaviours implements NodeServicePolicies.OnCreateNodePoli
                     }
                     
                     nodeService.setProperty(discussableAncestor, ForumModel.PROP_COMMENT_COUNT, newCountValue);
+                    
                 }
                 
             }

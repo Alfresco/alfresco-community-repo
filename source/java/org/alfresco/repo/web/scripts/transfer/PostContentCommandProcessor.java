@@ -31,6 +31,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
+import org.springframework.extensions.webscripts.WrappingWebScriptRequest;
 import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest;
 import org.springframework.extensions.webscripts.servlet.FormData.FormField;
 
@@ -66,13 +67,33 @@ public class PostContentCommandProcessor implements CommandProcessor
     public int process(WebScriptRequest req, WebScriptResponse resp)
     {
         logger.debug("post content start");
-        if (!WebScriptServletRequest.class.isAssignableFrom(req.getClass()))
+        // Unwrap to a WebScriptServletRequest if we have one
+        WebScriptServletRequest webScriptServletRequest = null;
+        WebScriptRequest current = req;
+        do
+        {
+            if (current instanceof WebScriptServletRequest)
+            {
+                webScriptServletRequest = (WebScriptServletRequest) current;
+                current = null;
+            }
+            else if (current instanceof WrappingWebScriptRequest)
+            {
+                current = ((WrappingWebScriptRequest) req).getNext();
+            }
+            else
+            {
+                current = null;
+            }
+        }
+        while (current != null);
+        if (webScriptServletRequest == null)
         {
             resp.setStatus(Status.STATUS_BAD_REQUEST);
             return Status.STATUS_BAD_REQUEST;
         }
 
-        HttpServletRequest servletRequest = ((WebScriptServletRequest) req).getHttpServletRequest();
+        HttpServletRequest servletRequest = webScriptServletRequest.getHttpServletRequest();
 
         //Read the transfer id from the request
         String transferId = servletRequest.getParameter("transferId");

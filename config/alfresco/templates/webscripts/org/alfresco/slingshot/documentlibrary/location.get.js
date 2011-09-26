@@ -17,7 +17,7 @@ function resolveLocations()
    var libraryRoot = parsedArgs.libraryRoot ? parsedArgs.libraryRoot : companyhome, 
       repoLocation = Common.getLocation(parsedArgs.rootNode, libraryRoot),
       siteLocation = Common.getLocation(parsedArgs.rootNode, null),
-      fileName = !parsedArgs.rootNode.isContainer ? parsedArgs.rootNode.properties["name"] : null;
+      fileName = parsedArgs.rootNode.properties["name"];
 
    var locations =
    {

@@ -32,6 +32,7 @@ import org.springframework.extensions.webscripts.AbstractWebScript;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
+import org.springframework.extensions.webscripts.WrappingWebScriptRequest;
 import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -124,12 +125,34 @@ public abstract class BaseRemoteStore extends AbstractWebScript
     public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException
     {
         // NOTE: This web script must be executed in a HTTP Servlet environment
-        if (!(req instanceof WebScriptServletRequest))
+
+        // Unwrap to a WebScriptServletRequest if we have one
+        WebScriptServletRequest webScriptServletRequest = null;
+        WebScriptRequest current = req;
+        do
+        {
+            if (current instanceof WebScriptServletRequest)
+            {
+                webScriptServletRequest = (WebScriptServletRequest) current;
+                current = null;
+            }
+            else if (current instanceof WrappingWebScriptRequest)
+            {
+                current = ((WrappingWebScriptRequest) req).getNext();
+            }
+            else
+            {
+                current = null;
+            }
+        }
+        while (current != null);
+
+        if (webScriptServletRequest == null)
         {
             throw new WebScriptException("Remote Store access must be executed in HTTP Servlet environment");
         }
         
-        HttpServletRequest httpReq = ((WebScriptServletRequest)req).getHttpServletRequest();
+        HttpServletRequest httpReq = webScriptServletRequest.getHttpServletRequest();
                 
         // the request path for the remote store
         String extPath = req.getExtensionPath();

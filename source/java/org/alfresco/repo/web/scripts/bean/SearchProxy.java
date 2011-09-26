@@ -168,7 +168,7 @@ public class SearchProxy extends AbstractWebScript implements InitializingBean
         }
         
         HttpServletResponse servletRes = WebScriptServletRuntime.getHttpServletResponse(res);
-        SearchEngineHttpProxy proxy = new SearchEngineHttpProxy(req.getServicePath() + "/" + req.getContextPath(),
+        SearchEngineHttpProxy proxy = new SearchEngineHttpProxy(req.getServerPath() + req.getServiceContextPath(),
                 engine, engineUrl, servletRes, Collections.singletonMap("User-Agent", req.getHeader("User-Agent")));
         proxy.service();
     }

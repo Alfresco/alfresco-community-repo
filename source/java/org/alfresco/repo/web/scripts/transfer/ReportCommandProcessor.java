@@ -33,6 +33,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
+import org.springframework.extensions.webscripts.WrappingWebScriptRequest;
 import org.springframework.extensions.webscripts.json.JSONWriter;
 import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest;
 
@@ -59,7 +60,27 @@ public class ReportCommandProcessor implements CommandProcessor
     public int process(WebScriptRequest req, WebScriptResponse resp)
     {   
         //Read the transfer id from the request
-        HttpServletRequest servletRequest = ((WebScriptServletRequest)req).getHttpServletRequest();
+        // Unwrap to a WebScriptServletRequest if we have one
+        WebScriptServletRequest webScriptServletRequest = null;
+        WebScriptRequest current = req;
+        do
+        {
+            if (current instanceof WebScriptServletRequest)
+            {
+                webScriptServletRequest = (WebScriptServletRequest) current;
+                current = null;
+            }
+            else if (current instanceof WrappingWebScriptRequest)
+            {
+                current = ((WrappingWebScriptRequest) req).getNext();
+            }
+            else
+            {
+                current = null;
+            }
+        }
+        while (current != null);
+        HttpServletRequest servletRequest = webScriptServletRequest.getHttpServletRequest();
         String transferId = servletRequest.getParameter("transferId");
 
         if (transferId == null) 

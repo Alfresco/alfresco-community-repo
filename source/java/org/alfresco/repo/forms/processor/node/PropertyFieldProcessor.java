@@ -41,6 +41,7 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -148,6 +149,11 @@ public class PropertyFieldProcessor extends QNameFieldProcessor<PropertyDefiniti
             ContentData contentData = (ContentData)value;
             return contentData.getInfoUrl();
         }
+        else if (value instanceof NodeRef)
+        {
+            return ((NodeRef)value).toString();
+        }
+        
         return value;
     }
 

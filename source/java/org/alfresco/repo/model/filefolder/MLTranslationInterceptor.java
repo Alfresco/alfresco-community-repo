@@ -78,6 +78,7 @@ public class MLTranslationInterceptor implements MethodInterceptor
         METHOD_NAMES_SINGLE.add("searchSimple");
         METHOD_NAMES_SINGLE.add("rename");
         METHOD_NAMES_SINGLE.add("move");
+        METHOD_NAMES_SINGLE.add("moveFrom");
         METHOD_NAMES_SINGLE.add("copy");
         METHOD_NAMES_SINGLE.add("create");
         METHOD_NAMES_SINGLE.add("makeFolders");

@@ -55,6 +55,7 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -330,7 +331,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
                 // requirements
                 if (fullQName.equals(ContentModel.PROP_NAME))
                 {
-                    processNamePropertyPersist(nodeRef, fieldData);
+                    processNamePropertyPersist(nodeRef, fieldData, propsToPersist);
                 }
                 else if (propDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
                 {
@@ -592,22 +593,35 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
      * 
      * @param nodeRef The NodeRef to update the name for
      * @param fieldData The data representing the new name value
+     * @param propsToPersist Map of properties to be persisted
      */
-    protected void processNamePropertyPersist(NodeRef nodeRef, FieldData fieldData)
+    protected void processNamePropertyPersist(NodeRef nodeRef, FieldData fieldData, 
+                Map<QName, Serializable> propsToPersist)
     {
-        try
+        // determine whether the file folder service can handle the current node
+        FileInfo fileInfo = this.fileFolderService.getFileInfo(nodeRef);
+        if (fileInfo != null)
         {
-            // if the name property changes the rename method of the file folder
-            // service should be called rather than updating the property directly
-            this.fileFolderService.rename(nodeRef, (String) fieldData.getValue());
+            try
+            {
+                // if the name property changes the rename method of the file folder
+                // service should be called rather than updating the property directly
+                this.fileFolderService.rename(nodeRef, (String) fieldData.getValue());
+            }
+            catch (FileExistsException fee)
+            {
+                throw new FormException("Failed to persist field '" + fieldData.getName() + "'", fee);
+            }
+            catch (FileNotFoundException fnne)
+            {
+                throw new FormException("Failed to persist field '" + fieldData.getName() + "'", fnne);
+            }
         }
-        catch (FileExistsException fee)
+        else
         {
-            throw new FormException("Failed to persist field '" + fieldData.getName() + "'", fee);
-        }
-        catch (FileNotFoundException fnne)
-        {
-            throw new FormException("Failed to persist field '" + fieldData.getName() + "'", fnne);
+            // as the file folder service can not be used just set the name property,
+            // the node service will deal with the details of renaming.
+            propsToPersist.put(ContentModel.PROP_NAME, (Serializable)fieldData.getValue());
         }
     }
 

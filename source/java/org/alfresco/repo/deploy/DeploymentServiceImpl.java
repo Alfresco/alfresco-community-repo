@@ -47,6 +47,7 @@ import org.alfresco.deployment.DeploymentToken;
 import org.alfresco.deployment.DeploymentTransportOutputFilter;
 import org.alfresco.deployment.FileDescriptor;
 import org.alfresco.deployment.FileType;
+import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.action.ActionServiceRemote;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.AVMNodeService;
@@ -79,7 +80,13 @@ import org.alfresco.service.cmr.remote.AVMRemoteTransport;
 import org.alfresco.service.cmr.remote.AVMSyncServiceTransport;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.Path;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.namespace.NamespacePrefixResolver;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.NameMatcher;
@@ -96,6 +103,10 @@ import org.springframework.remoting.rmi.RmiProxyFactoryBean;
 public class DeploymentServiceImpl implements DeploymentService
 {
     private static Log fgLogger = LogFactory.getLog(DeploymentServiceImpl.class);
+
+    private NodeService nodeService;
+    private NamespacePrefixResolver namespacePrefixResolver;
+    private SearchService searchService;
 
     /**
      * The local AVMService Instance.
@@ -194,6 +205,33 @@ public class DeploymentServiceImpl implements DeploymentService
         this.trxService = trxService;
     }
     
+    /**
+     * Setter.
+     * @param nodeService The instance to set.
+     */
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+
+    /**
+     * Setter.
+     * @param namespacePrefixResolver The instance to set.
+     */
+    public void setNamespacePrefixResolver(NamespacePrefixResolver namespacePrefixResolver)
+    {
+        this.namespacePrefixResolver = namespacePrefixResolver;
+    }
+
+    /**
+     * Setter.
+     * @param searchService The instance to set.
+     */
+    public void setSearchService(SearchService searchService)
+    {
+        this.searchService = searchService;
+    }
+
     /* 
      * Deploy differences to an ASR 
      * (non-Javadoc)
@@ -1634,6 +1672,83 @@ public class DeploymentServiceImpl implements DeploymentService
 		}
 	}
 	
+    public List<NodeRef> findLiveDeploymentServers(NodeRef webProjectRef)
+    {
+        return findDeploymentServers(webProjectRef, true, false);
+    }
+
+    public List<NodeRef> findTestDeploymentServers(NodeRef webProjectRef, boolean availableOnly)
+    {
+        return findDeploymentServers(webProjectRef, false, availableOnly);
+    }
+
+    private List<NodeRef> findDeploymentServers(NodeRef webProjectRef, boolean live, boolean availableOnly)
+    {
+
+        Path projectPath = nodeService.getPath(webProjectRef);
+        String stringPath = projectPath.toPrefixString(namespacePrefixResolver);
+        String serverType;
+
+        if (live)
+        {
+            serverType = WCMAppModel.CONSTRAINT_LIVESERVER;
+        }
+        else
+        {
+            serverType = WCMAppModel.CONSTRAINT_TESTSERVER;
+        }
+
+
+        StringBuilder query = new StringBuilder("PATH:\"");
+
+        query.append(stringPath);
+        query.append("/*\" ");
+        query.append(" AND @");
+        query.append(NamespaceService.WCMAPP_MODEL_PREFIX);
+        query.append("\\:");
+        query.append(WCMAppModel.PROP_DEPLOYSERVERTYPE.getLocalName());
+        query.append(":\"");
+        query.append(serverType);
+        query.append("\"");
+
+        // if required filter the test servers
+        if (live == false && availableOnly)
+        {
+            query.append(" AND ISNULL:\"");
+            query.append(WCMAppModel.PROP_DEPLOYSERVERALLOCATEDTO.toString());
+            query.append("\"");
+        }
+
+        if (fgLogger.isDebugEnabled())
+            fgLogger.debug("Finding deployment servers using query: " + query.toString());
+
+        // execute the query
+        ResultSet results = null;
+        List<NodeRef> servers = new ArrayList<NodeRef>();
+        try
+        {
+            results = searchService.query(webProjectRef.getStoreRef(),
+                    SearchService.LANGUAGE_LUCENE, query.toString());
+
+            if (fgLogger.isDebugEnabled())
+                fgLogger.debug("Found " + results.length() + " deployment servers");
+
+            for (NodeRef server : results.getNodeRefs())
+            {
+                servers.add(server);
+            }
+        }
+        finally
+        {
+            if (results != null)
+            {
+                results.close();
+            }
+        }
+
+        return servers;
+    }
+
 	public void setNumberOfSendingThreads(int numberOfSendingThreads) {
 		this.numberOfSendingThreads = numberOfSendingThreads;
 	}

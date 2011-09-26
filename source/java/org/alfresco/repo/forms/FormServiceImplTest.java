@@ -1703,6 +1703,44 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertNotNull(form);
     }
     
+    public void testNonContentNode() throws Exception
+    {
+        // create a node (not cm:content)
+        Map<QName, Serializable> nodeProps = new HashMap<QName, Serializable>(1);
+        String nodeName = "testNode" + GUID.generate();
+        nodeProps.put(ContentModel.PROP_NAME, nodeName);
+        NodeRef node = this.nodeService.createNode(
+                this.folder, 
+                ContentModel.ASSOC_CONTAINS, 
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, nodeName), 
+                ContentModel.TYPE_CMOBJECT,
+                nodeProps).getChildRef();
+        
+        List<String> fields = new ArrayList<String>(8);
+        fields.add("cm:name");
+        fields.add("cm:creator");
+        fields.add("cm:created");
+        
+        Form form = this.formService.getForm(new Item(NODE_FORM_ITEM_KIND, node.toString()), fields);
+        
+        // check a form got returned
+        assertNotNull("Expecting form to be present", form);
+        
+        // check fields were returned
+        List<String> fieldNames = form.getFieldDefinitionNames();
+        assertEquals(3, fieldNames.size());
+        
+        // rename the node via the forms service
+        FormData data = new FormData();
+        String newName = "new-" + nodeName;
+        data.addFieldData("prop_cm_name", newName);
+        this.formService.saveForm(new Item(NODE_FORM_ITEM_KIND, node.toString()), data);
+        
+        Map<QName, Serializable> updatedProps = this.nodeService.getProperties(node);
+        String updatedName = (String)updatedProps.get(ContentModel.PROP_NAME);
+        assertEquals(newName, updatedName);
+    }
+    
     public void testJavascriptAPI() throws Exception
     {
         Map<String, Object> model = new HashMap<String, Object>();

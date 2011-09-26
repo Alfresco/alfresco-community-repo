@@ -19,7 +19,6 @@
 package org.alfresco.repo.node;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -98,7 +97,7 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     protected DictionaryService dictionaryService;
     protected TransactionService transactionService;
     protected TenantService tenantService;
-    protected List<String> storesToIgnorePolicies = new ArrayList<String>(0);
+    protected Set<String> storesToIgnorePolicies = Collections.emptySet();
 
     /*
      * Policy delegates
@@ -154,7 +153,7 @@ public abstract class AbstractNodeServiceImpl implements NodeService
         this.tenantService = tenantService;
     }
     
-    public void setStoresToIgnorePolicies(List<String> storesToIgnorePolicies)
+    public void setStoresToIgnorePolicies(Set<String> storesToIgnorePolicies)
     {
         this.storesToIgnorePolicies = storesToIgnorePolicies;
     }

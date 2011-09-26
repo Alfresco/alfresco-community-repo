@@ -58,10 +58,22 @@
             <ref bean="AVMService"/>
         </property>
         
+        <property name="nodeService">
+            <ref bean="nodeService"/>
+        </property>
+
         <property name="avmNodeService">
             <ref bean="avmNodeService"/>
         </property>
         
+        <property name="namespacePrefixResolver">
+            <ref bean="namespaceService" />
+        </property>
+
+        <property name="searchService">
+            <ref bean="searchService" />
+        </property>
+
         <property name="transactionService">
             <ref bean="transactionService"/>
         </property>

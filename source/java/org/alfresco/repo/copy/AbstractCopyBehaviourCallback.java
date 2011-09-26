@@ -151,7 +151,7 @@ public abstract class AbstractCopyBehaviourCallback implements CopyBehaviourCall
                 Serializable newListValue = oldListValue;
                 if (oldListValue instanceof NodeRef)
                 {
-                    newListValue = repointNodeRef(copyMap, (NodeRef) value);
+                    newListValue = repointNodeRef(copyMap, (NodeRef) oldListValue);
                 }
                 // Put the value in the new list even though the new list might be discarded
                 newList.add(newListValue);
@@ -159,7 +159,7 @@ public abstract class AbstractCopyBehaviourCallback implements CopyBehaviourCall
                 if (!newListValue.equals(oldListValue))
                 {
                     // The value changed, so the new list will have to be set onto the target node
-                    newValue = newListValue;
+                    newValue = (Serializable) newList;
                 }
             }
         }

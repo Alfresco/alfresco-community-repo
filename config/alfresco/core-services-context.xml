@@ -652,6 +652,7 @@
                 <value>webdav:lockScope</value>
             </list>
         </property>
+        <property name="enableAutoVersioning" value="${version.store.enableAutoVersioning}" />
     </bean>
 
     <!--                 -->
@@ -788,7 +789,6 @@
         <property name="copyService" ref="CopyService" />
         <property name="authenticationService" ref="authenticationService" />
         <property name="fileFolderService" ref="fileFolderService" />
-        <property name="versionableAspect" ref="versionableAspect" />
         <property name="policyComponent" ref="policyComponent" />
          <property name="behaviourFilter" ref="policyBehaviourFilter" />
     </bean>

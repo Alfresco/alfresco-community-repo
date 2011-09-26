@@ -100,6 +100,9 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
     
     private Set<QName> excludedOnUpdatePropQNames = Collections.emptySet();
     
+    /** flag indicating whether auto-versioning should be enabled or not */
+    private boolean enableAutoVersioning = true;
+    
     /**
      * Set the policy component
      * 
@@ -167,12 +170,28 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
     {
         this.excludedOnUpdateProps = Collections.unmodifiableList(excludedOnUpdateProps);
     }
-    
+
+    /**
+     * Set whether the aspect-associated behaviour should be enabled or disabled.  This is only used
+     * during {@link #init() initialization}.
+     * 
+     * @param enableAutoVersioning          <tt>true</tt> to enable the aspect behaviour otherwise <tt>false</tt>
+     */
+    public void setEnableAutoVersioning(boolean enableAutoVersioning)
+    {
+        this.enableAutoVersioning = enableAutoVersioning;
+    }
+
     /**
      * Initialise the versionable aspect policies
      */
     public void init()
     {
+        if (!enableAutoVersioning)
+        {
+            return;
+        }
+        
         this.policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onAddAspect"),
                 ContentModel.ASPECT_VERSIONABLE,

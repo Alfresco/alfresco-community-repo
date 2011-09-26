@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Locale;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -560,7 +561,18 @@ import org.xml.sax.helpers.AttributesImpl;
                 NodeRef valueNodeRef = (NodeRef)value;
                 if (nodeRef.getStoreRef().equals(valueNodeRef.getStoreRef()))
                 {
-                    Path nodeRefPath = createPath(context.getExportParent(), nodeRef, valueNodeRef);
+                    Path nodeRefPath = null;
+                    if (property.equals(ContentModel.PROP_CATEGORIES))
+                    {
+                        // Special case for categories - use the full path so that categories
+                        // can be successfully assigned to imported content (provided the same store
+                        // was used for both import and export and the categories still exist).
+                        nodeRefPath = nodeService.getPath(valueNodeRef);
+                    }
+                    else
+                    {
+                        nodeRefPath = createPath(context.getExportParent(), nodeRef, valueNodeRef);
+                    }
                     value = (nodeRefPath == null) ? null : nodeRefPath.toPrefixString(namespaceService);
                 }
             }

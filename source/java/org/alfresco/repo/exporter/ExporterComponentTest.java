@@ -18,30 +18,47 @@
  */package org.alfresco.repo.exporter;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
-import org.springframework.extensions.surf.util.I18NUtil;
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.importer.ACPImportPackageHandler;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.CategoryService;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.view.Exporter;
 import org.alfresco.service.cmr.view.ExporterContext;
 import org.alfresco.service.cmr.view.ExporterCrawlerParameters;
 import org.alfresco.service.cmr.view.ExporterService;
+import org.alfresco.service.cmr.view.ImportPackageHandler;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.debug.NodeStoreInspector;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 
 public class ExporterComponentTest extends BaseSpringTest
@@ -50,6 +67,8 @@ public class ExporterComponentTest extends BaseSpringTest
     private NodeService nodeService;
     private ExporterService exporterService;
     private ImporterService importerService;
+    private FileFolderService fileFolderService;
+    private CategoryService categoryService;
     private StoreRef storeRef;
     private AuthenticationComponent authenticationComponent;
 
@@ -60,18 +79,11 @@ public class ExporterComponentTest extends BaseSpringTest
         nodeService = (NodeService)applicationContext.getBean(ServiceRegistry.NODE_SERVICE.getLocalName());
         exporterService = (ExporterService)applicationContext.getBean("exporterComponent");
         importerService = (ImporterService)applicationContext.getBean("importerComponent");
-        
-        // Create the store
-//        this.storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
-//        this.storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "test");
-//      this.storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
-        
-        
+        fileFolderService = (FileFolderService) applicationContext.getBean("fileFolderService");
+        categoryService = (CategoryService) applicationContext.getBean("categoryService");     
         
         this.authenticationComponent = (AuthenticationComponent)this.applicationContext.getBean("authenticationComponent");
-        
         this.authenticationComponent.setSystemUserAsCurrentUser();
-        
         this.storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
     }
 
@@ -116,6 +128,167 @@ public class ExporterComponentTest extends BaseSpringTest
         output.close();
     }
 
+    /**
+     * Round-trip of export then import will result in the imported content having the same categories
+     * assigned to it as for the exported content -- provided the source and destination stores are the same.
+     */
+    @SuppressWarnings("unchecked")
+    public void testRoundTripKeepsCategoriesWhenWithinSameStore() throws Exception
+    {   
+        // Use a store ref that has the bootstrapped categories
+        StoreRef storeRef = StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
+        NodeRef rootNode = nodeService.getRootNode(storeRef);
+        
+        ChildAssociationRef contentChildAssocRef = createContentWithCategories(storeRef, rootNode);
+        
+        // Export/import
+        File acpFile = exportContent(contentChildAssocRef);
+        FileInfo importFolderFileInfo = importContent(acpFile, rootNode);
+        
+        // Check categories
+        NodeRef importedFileNode = fileFolderService.searchSimple(importFolderFileInfo.getNodeRef(), "test.txt");
+        assertNotNull("Couldn't find imported file: test.txt", importedFileNode);
+        assertTrue(nodeService.hasAspect(importedFileNode, ContentModel.ASPECT_GEN_CLASSIFIABLE));
+        List<NodeRef> importedFileCategories = (List<NodeRef>)
+            nodeService.getProperty(importedFileNode, ContentModel.PROP_CATEGORIES);
+        assertCategoriesEqual(importedFileCategories,
+                    "Regions",
+                    "Software Document Classification");
+    }
+    
+    /**
+     * If the source and destination stores are not the same, then a round-trip of export then import
+     * will result in the imported content not having the categories assigned to it that were present
+     * on the exported content.
+     */
+    @SuppressWarnings("unchecked")
+    public void testRoundTripLosesCategoriesImportingToDifferentStore() throws Exception
+    {   
+        // Use a store ref that has the bootstrapped categories
+        StoreRef storeRef = StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
+        NodeRef rootNode = nodeService.getRootNode(storeRef);
+        
+        ChildAssociationRef contentChildAssocRef = createContentWithCategories(storeRef, rootNode);
+        
+        // Export
+        File acpFile = exportContent(contentChildAssocRef);
+        // Import - destination store is different from export store.
+        NodeRef destRootNode = nodeService.getRootNode(this.storeRef);
+        FileInfo importFolderFileInfo = importContent(acpFile, destRootNode);
+        
+        // Check categories
+        NodeRef importedFileNode = fileFolderService.searchSimple(importFolderFileInfo.getNodeRef(), "test.txt");
+        assertNotNull("Couldn't find imported file: test.txt", importedFileNode);
+        assertTrue(nodeService.hasAspect(importedFileNode, ContentModel.ASPECT_GEN_CLASSIFIABLE));
+        List<NodeRef> importedFileCategories = (List<NodeRef>)
+            nodeService.getProperty(importedFileNode, ContentModel.PROP_CATEGORIES);
+        assertEquals("No categories should have been imported for the content", 0, importedFileCategories.size());
+    }
+
+    /**
+     * @param contentChildAssocRef
+     * @return
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    private File exportContent(ChildAssociationRef contentChildAssocRef)
+                throws FileNotFoundException, IOException
+    {
+        TestProgress testProgress = new TestProgress();
+        Location location = new Location(contentChildAssocRef.getParentRef());
+        ExporterCrawlerParameters parameters = new ExporterCrawlerParameters();
+        parameters.setExportFrom(location);
+        File acpFile = TempFileProvider.createTempFile("category-export-test", ACPExportPackageHandler.ACP_EXTENSION);
+        System.out.println("Exporting to file: " + acpFile.getAbsolutePath());        
+        File dataFile = new File("test-data-file");
+        File contentDir = new File("test-content-dir");
+        OutputStream fos = new FileOutputStream(acpFile);
+        ACPExportPackageHandler acpHandler = new ACPExportPackageHandler(fos, dataFile, contentDir, null);
+        acpHandler.setNodeService(nodeService);
+        acpHandler.setExportAsFolders(true);
+        exporterService.exportView(acpHandler, parameters, testProgress);
+        fos.close();
+        return acpFile;
+    }
+
+    /**
+     * @param storeRef
+     * @param rootNode
+     * @return
+     */
+    private ChildAssociationRef createContentWithCategories(StoreRef storeRef, NodeRef rootNode)
+    {   
+        Collection<ChildAssociationRef> assocRefs = categoryService.
+            getRootCategories(storeRef, ContentModel.ASPECT_GEN_CLASSIFIABLE);
+        assertTrue("Pre-condition failure: not enough categories", assocRefs.size() >= 2);
+        Iterator<ChildAssociationRef> it = assocRefs.iterator();
+        NodeRef softwareDocCategoryNode = it.next().getChildRef();
+        it.next(); // skip one
+        NodeRef regionsCategoryNode = it.next().getChildRef();        
+        
+        
+        // Create a content node to categorise
+        FileInfo exportFileInfo = fileFolderService.create(rootNode, "Export Folder", ContentModel.TYPE_FOLDER);
+        Map<QName, Serializable> properties = Collections.singletonMap(ContentModel.PROP_NAME, (Serializable)"test.txt");
+        ChildAssociationRef contentChildAssocRef = nodeService.createNode(
+                    exportFileInfo.getNodeRef(),
+                    ContentModel.ASSOC_CHILDREN,
+                    ContentModel.ASSOC_CHILDREN,
+                    ContentModel.TYPE_CONTENT,
+                    properties);
+        
+        NodeRef contentNodeRef = contentChildAssocRef.getChildRef();
+
+        // Attach categories
+        ArrayList<NodeRef> categories = new ArrayList<NodeRef>(2);
+        categories.add(softwareDocCategoryNode);
+        categories.add(regionsCategoryNode);
+        if(!nodeService.hasAspect(contentNodeRef, ContentModel.ASPECT_GEN_CLASSIFIABLE))
+        {
+            HashMap<QName, Serializable> props = new HashMap<QName, Serializable>();
+            props.put(ContentModel.PROP_CATEGORIES, categories);
+            nodeService.addAspect(contentNodeRef, ContentModel.ASPECT_GEN_CLASSIFIABLE, props);
+        }
+        else
+        {
+            nodeService.setProperty(contentNodeRef, ContentModel.PROP_CATEGORIES, categories);
+        }
+        return contentChildAssocRef;
+    }
+    
+    /**
+     * @param acpFile
+     * @param destRootNode
+     * @return
+     */
+    private FileInfo importContent(File acpFile, NodeRef destRootNode)
+    {
+        FileInfo importFolderFileInfo = fileFolderService.create(destRootNode, "Import Folder", ContentModel.TYPE_FOLDER);
+        ImportPackageHandler importHandler = new ACPImportPackageHandler(acpFile, ACPImportPackageHandler.DEFAULT_ENCODING);
+        importerService.importView(importHandler, new Location(importFolderFileInfo.getNodeRef()), null, null);
+        return importFolderFileInfo;
+    }
+
+    private void assertCategoriesEqual(List<NodeRef> categories, String... expectedCategoryNames)
+    {
+        assertEquals("Number of categories is not as expected.", expectedCategoryNames.length, categories.size());
+        
+        List<String> categoryNames = new ArrayList<String>(10);
+        for (NodeRef nodeRef : categories)
+        {
+            String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+            categoryNames.add(name);
+        }
+        // Sort, to give deterministic test results
+        Collections.sort(categoryNames);
+        
+        for (int i = 0; i < expectedCategoryNames.length; i++)
+        {
+            assertEquals(expectedCategoryNames[i], categoryNames.get(i));
+        }
+    }
+    
+    
     private void dumpNodeStore(Locale locale)
     {
      

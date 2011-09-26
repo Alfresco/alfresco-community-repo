@@ -463,7 +463,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         properties.put(ContentModel.PROP_TITLE, title);
         properties.put(ContentModel.PROP_DESCRIPTION, description);
         
-        final NodeRef siteNodeRef = AuthenticationUtil.runAsSystem(new RunAsWork<NodeRef>() {
+        final NodeRef siteNodeRef = AuthenticationUtil.runAs(new RunAsWork<NodeRef>() {
            @Override
            public NodeRef doWork() throws Exception {
               return nodeService.createNode(
@@ -474,7 +474,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                     properties
               ).getChildRef();
            }
-        });
+        }, AuthenticationUtil.getSystemUserName());
            
         // Make the new site a tag scope
         this.taggingService.addTagScope(siteNodeRef);

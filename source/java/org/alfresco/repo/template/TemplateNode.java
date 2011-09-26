@@ -22,15 +22,22 @@ import java.io.Serializable;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.admin.SysAdminParamsImpl;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.audit.AuditQueryParameters;
+import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.repository.AssociationRef;
@@ -529,6 +536,77 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
     }
     
     // ------------------------------------------------------------------------------
+    // Audit API
+    
+    /**
+     * @return a list of AuditInfo objects describing the Audit Trail for this node instance
+     */
+    public List<TemplateAuditInfo> getAuditTrail()
+    {
+        final List<TemplateAuditInfo> result = new ArrayList<TemplateAuditInfo>();
+        
+        // create the callback for auditQuery method
+        final AuditQueryCallback callback = new AuditQueryCallback()
+        {
+            public boolean valuesRequired()
+            {
+                return true;
+            }
+
+            public boolean handleAuditEntryError(Long entryId, String errorMsg, Throwable error)
+            {
+                throw new AlfrescoRuntimeException("Failed to retrieve audit data.", error);
+            }
+
+            public boolean handleAuditEntry(Long entryId, String applicationName, String user, long time,
+                    Map<String, Serializable> values)
+            {
+                TemplateAuditInfo auditInfo = new TemplateAuditInfo(applicationName, user, time, values);
+                result.add(auditInfo);
+                return true;
+            }
+        };
+
+        // resolve the path of the node 
+        final String nodePath = services.getNodeService().getPath(this.nodeRef).toPrefixString(services.getNamespaceService());
+
+        // run as admin user to allow everyone to see audit information
+        // (new 3.4 API doesn't allow this by default)
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                String applicationName = "alfresco-access";
+                AuditQueryParameters pathParams = new AuditQueryParameters();
+                pathParams.setApplicationName(applicationName);
+                pathParams.addSearchKey("/alfresco-access/transaction/path", nodePath);
+                services.getAuditService().auditQuery(callback, pathParams, -1);
+                
+                AuditQueryParameters copyFromPathParams = new AuditQueryParameters();
+                copyFromPathParams.setApplicationName(applicationName);
+                copyFromPathParams.addSearchKey("/alfresco-access/transaction/copy/from/path", nodePath);
+                services.getAuditService().auditQuery(callback, copyFromPathParams, -1);
+                
+                AuditQueryParameters moveFromPathParams = new AuditQueryParameters();
+                moveFromPathParams.setApplicationName(applicationName);
+                moveFromPathParams.addSearchKey("/alfresco-access/transaction/move/from/path", nodePath);
+                services.getAuditService().auditQuery(callback, moveFromPathParams, -1);
+                return null;
+            }
+        }, AuthenticationUtil.getAdminUserName());
+        
+        // sort audit entries by time of generation
+        Collections.sort(result, new Comparator<TemplateAuditInfo>()
+        {
+            public int compare(TemplateAuditInfo o1, TemplateAuditInfo o2)
+            {
+                return o1.getDate().compareTo(o2.getDate());
+            }
+        });
+        return result;
+    }
+    
+    // ------------------------------------------------------------------------------
     // Misc helpers 
     
     /**
@@ -621,6 +699,47 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
             {
                 return super.convertProperty(value, name, services, resolver);
             }
+        }
+    }
+    
+    public class TemplateAuditInfo
+    {
+        private String applicationName;
+        private String userName;
+        private long time;
+        private Map<String, Serializable> values;
+
+        public TemplateAuditInfo(String applicationName, String userName, long time, Map<String, Serializable> values)
+        {
+            this.applicationName = applicationName;
+            this.userName = userName;
+            this.time = time;
+            this.values = values;
+        }
+
+        public String getAuditApplication()
+        {
+            return this.applicationName;
+        }
+
+        public String getUserIdentifier()
+        {
+            return this.userName;
+        }
+
+        public Date getDate()
+        {
+            return new Date(time);
+        }
+
+        public String getAuditMethod()
+        {
+            return this.values.get("/alfresco-access/transaction/action").toString();
+        }
+        
+        public Map<String, Serializable> getValues()
+        {
+            return this.values;
         }
     }
 }

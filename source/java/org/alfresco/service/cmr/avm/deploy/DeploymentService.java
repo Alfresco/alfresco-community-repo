@@ -21,8 +21,8 @@ package org.alfresco.service.cmr.avm.deploy;
 import java.util.Set;
 import java.util.List;
 
-import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.NameMatcher;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.NotAuditable;
@@ -112,4 +112,17 @@ public interface DeploymentService
     @NotAuditable
     public Set<String> getAdapterNames(); 
 
+    /*
+    * @param webProjectRef Web project reference.
+    * */
+    @NotAuditable
+    public List<NodeRef> findLiveDeploymentServers(NodeRef webProjectRef);
+
+
+    /*
+    * @param webProjectRef Web project reference.
+    * @param availableOnly find available servers only.
+    * */
+    @NotAuditable
+    public List<NodeRef> findTestDeploymentServers(NodeRef webProjectRef, boolean availableOnly);
 }

@@ -271,7 +271,7 @@ public class FileFolderServiceImpl implements FileFolderService
      * 
      * @author Derek Hulley
      */
-    private static class InvalidTypeException extends RuntimeException
+    public static class InvalidTypeException extends RuntimeException
     {
         private static final long serialVersionUID = -310101369475434280L;
         
@@ -1266,7 +1266,7 @@ public class FileFolderServiceImpl implements FileFolderService
         }
         try
         {
-            List<FileInfo> results = new ArrayList<FileInfo>(10);
+            ArrayList<FileInfo> results = new ArrayList<FileInfo>(10);
             // get the primary path
             Path path = nodeService.getPath(nodeRef);
             // iterate and turn the results into file info objects
@@ -1289,6 +1289,14 @@ public class FileFolderServiceImpl implements FileFolderService
                 }
                 // we found the root and expect to be building the path up
                 FileInfo pathInfo = toFileInfo(childNodeRef, true);
+                
+                // we can't append a path element to the results if there is already a (non-folder) file at the tail
+                // since this would result in a path anomoly - file's cannot contain other files.
+                if (!results.isEmpty() && !results.get(results.size()-1).isFolder())
+                {
+                    throw new InvalidTypeException(
+                                "File is not the last element in path: files cannot contain other files.");
+                }
                 results.add(pathInfo);
             }
             // check that we found the root

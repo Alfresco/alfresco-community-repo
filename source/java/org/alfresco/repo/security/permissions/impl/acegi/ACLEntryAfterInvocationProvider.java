@@ -585,6 +585,14 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                         .getSearchParameters()));
             }
         }
+        if (returnedObject.length() > 0)
+        {
+            //force prefetch before starting record time
+            boolean builkFetch = returnedObject.getBulkFetch();
+            returnedObject.setBulkFetch(false);
+            returnedObject.getNodeRef(returnedObject.length() - 1);
+            returnedObject.setBulkFetch(builkFetch);
+        }
 
         // record the start time
         long startTimeMillis = System.currentTimeMillis();
@@ -714,6 +722,14 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                 return filteringResultSet;
             }
             
+        }
+        if (returnedObject.length() > 0)
+        {
+            // force prefetch before starting record time
+            boolean builkFetch = returnedObject.getBulkFetch();
+            returnedObject.setBulkFetch(false);
+            returnedObject.getNodeRef(returnedObject.length() - 1);
+            returnedObject.setBulkFetch(builkFetch);
         }
 
         // record the start time

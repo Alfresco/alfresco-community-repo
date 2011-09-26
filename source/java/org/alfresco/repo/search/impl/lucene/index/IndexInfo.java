@@ -1386,17 +1386,12 @@ public class IndexInfo implements IndexMonitor
                 s_logger.debug("Main index reader references = " + ((ReferenceCounting) mainIndexReader).getReferenceCount());
             }
 
-            // Prevent close calls from really closing the main reader
-            return new FilterIndexReader(mainIndexReader)
-            {
-
-                @Override
-                protected void doClose() throws IOException
-                {
-                    in.decRef();
-                }
-
-            };
+            // ALF-10040: Wrap with a one-off CachingIndexReader (with cache disabled) so that LeafScorer behaves and passes through SingleFieldSelectors to the main index readers
+            IndexReader reader = ReferenceCountingReadOnlyIndexReaderFactory.createReader(MAIN_READER + GUID.generate(), mainIndexReader, false, config);
+            ReferenceCounting refCounting = (ReferenceCounting) reader;
+            reader.incRef();
+            refCounting.setInvalidForReuse();
+            return reader;
         }
         catch (RuntimeException e)
         {

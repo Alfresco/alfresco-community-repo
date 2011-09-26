@@ -41,6 +41,7 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.M2Type;
+import org.alfresco.repo.model.filefolder.FileFolderServiceImpl.InvalidTypeException;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -828,6 +829,68 @@ public class FileFolderServiceImplTest extends TestCase
         }
     }
 
+
+    public void testGetNamePathDoesNotReturnPathContainingNonLeafFileNode() throws Exception
+    {
+        FileInfo parentFolderInfo = getByName(NAME_L0_FOLDER_A, true);
+        assertNotNull(parentFolderInfo);
+        NodeRef parentFolderRef = parentFolderInfo.getNodeRef();
+
+        // create hierarchy: folder > file
+        FileInfo dirInfo = fileFolderService.create(parentFolderRef, "newDir", ContentModel.TYPE_FOLDER);
+        FileInfo fileInfo = fileFolderService.create(dirInfo.getNodeRef(), "newFile", ContentModel.TYPE_CONTENT);
+        // generate a path where the file is the last element: ok
+        List<FileInfo> path = fileFolderService.getNamePath(parentFolderRef, fileInfo.getNodeRef());
+        assertEquals(2, path.size());
+        
+        
+        // create hierarchy: folder > file > file
+        FileInfo fileInfo2 = fileFolderService.create(fileInfo.getNodeRef(), "newFile2", ContentModel.TYPE_CONTENT);
+        // generate a path where a file is not the last element in the path: not ok
+        try
+        {
+            fileFolderService.getNamePath(parentFolderRef, fileInfo2.getNodeRef());
+            fail("Shouldn't create path for non-leaf file.");
+        }
+        catch(InvalidTypeException e)
+        {
+            // Good
+        }
+    }
+    
+    
+    public void testGetNamePathDoesNotCrossIntoNonFileFolderHierarchy() throws Exception
+    {
+        FileInfo parentFolderInfo = getByName(NAME_L0_FOLDER_A, true);
+        assertNotNull(parentFolderInfo);
+        NodeRef parentFolderRef = parentFolderInfo.getNodeRef();
+
+        // create hierarchy: folder > file
+        FileInfo dirInfo = fileFolderService.create(parentFolderRef, "newDir", ContentModel.TYPE_FOLDER);
+        FileInfo fileInfo = fileFolderService.create(dirInfo.getNodeRef(), "newFile", ContentModel.TYPE_CONTENT);
+        // generate a path where the file is the last element: ok
+        List<FileInfo> path = fileFolderService.getNamePath(parentFolderRef, fileInfo.getNodeRef());
+        assertEquals(2, path.size());
+        
+        NodeRef cmContainer = nodeService.createNode(
+                    rootNodeRef,
+                    ContentModel.ASSOC_CHILDREN,
+                    QName.createQName(NamespaceService.ALFRESCO_URI, "container"),
+                    ContentModel.TYPE_CONTAINER).getChildRef();
+        
+        NodeRef cmChild = nodeService.moveNode(
+                    fileInfo.getNodeRef(),
+                    cmContainer, 
+                    ContentModel.ASSOC_CONTAINS, 
+                    QName.createQName(NamespaceService.ALFRESCO_URI, "contains")).getChildRef();
+        
+        // This is ok, since the root - whilst not a folder - directly contains a file
+        List<FileInfo> path2 = fileFolderService.getNamePath(cmContainer, cmChild);
+        assertEquals(1, path2.size());
+        assertEquals("newFile", path2.get(0).getName());
+    }
+    
+    
     public void testSearchSimple() throws Exception
     {
         FileInfo folderInfo = getByName(NAME_L0_FOLDER_A, true);

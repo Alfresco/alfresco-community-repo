@@ -209,6 +209,15 @@
       </property>
    </bean>
 
+   <bean id="storesToIgnorePolicies" class="org.springframework.beans.factory.config.SetFactoryBean">
+      <property name="sourceSet">
+         <set>
+            <value>${spaces.archive.store}</value>
+            <value>${version.store.version2Store}</value>
+         </set>
+      </property>   
+   </bean>
+
    <alias name="dbNodeService" alias="dbNodeServiceImpl" />
    <bean id="dbNodeService" class="org.alfresco.repo.node.db.DbNodeServiceImpl" init-method="init" >
       <property name="dictionaryService" ref="dictionaryService" />
@@ -222,14 +231,11 @@
       <property name="policyBehaviourFilter" ref="policyBehaviourFilter" />
       <property name="tenantService" ref="tenantService"/>
       <property name="storesToIgnorePolicies">
-         <list>
-            <value>${spaces.archive.store}</value>
-            <value>${version.store.version2Store}</value>
-         </list>
+         <ref bean="storesToIgnorePolicies"/>
       </property>
       <property name="enableTimestampPropagation" value="${system.enableTimestampPropagation}" />
    </bean>
-
+   
    <bean id="nodeAuditor" class="org.alfresco.repo.node.NodeAuditor">
       <property name="policyComponent">
          <ref bean="policyComponent"/>

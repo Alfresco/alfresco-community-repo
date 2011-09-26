@@ -24,17 +24,15 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import org.alfresco.config.JNDIConstants;
-import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.actions.AVMDeployWebsiteAction;
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.repo.workflow.jbpm.JBPMNode;
 import org.alfresco.repo.workflow.jbpm.JBPMSpringActionHandler;
+import org.alfresco.service.cmr.avm.deploy.DeploymentService;
 import org.alfresco.wcm.sandbox.SandboxConstants;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
@@ -42,13 +40,9 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
-import org.alfresco.util.ISO9075;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -63,21 +57,17 @@ import org.springframework.beans.factory.BeanFactory;
  */
 public class AVMDeployHandler extends JBPMSpringActionHandler 
 {
+    private DeploymentService deploymentService;
     private AVMService avmService;
     private ActionService actionService;
-    private SearchService searchService;
     private NodeService unprotectedNodeService;
     private PermissionService unprotectedPermissionService;
-    private ImporterBootstrap importerBootstrap;
     
+    private static final String BEAN_DEPLOYMENT_SERVICE = "deploymentService";
     private static final String BEAN_AVM_SERVICE = "AVMService";
     private static final String BEAN_ACTION_SERVICE = "actionService";
     private static final String BEAN_NODE_SERVICE = "nodeService";
-    private static final String BEAN_SEARCH_SERVICE = "searchService";
     private static final String BEAN_PERMISSION_SERVICE = "permissionService";
-    private static final String BEAN_IMPORTER_BOOTSTRAP = "spacesBootstrap";
-    private static final String PROP_ROOT_FOLDER = "spaces.company_home.childname";
-    private static final String PROP_WCM_FOLDER = "spaces.wcm.childname";
 
     private static final long serialVersionUID = 5590265401983087178L;
     private static final Log logger = LogFactory.getLog(AVMDeployHandler.class);
@@ -89,10 +79,9 @@ public class AVMDeployHandler extends JBPMSpringActionHandler
     @Override
     protected void initialiseHandler(BeanFactory factory) 
     {
+        this.deploymentService = (DeploymentService)factory.getBean(BEAN_DEPLOYMENT_SERVICE);
         this.avmService = (AVMService)factory.getBean(BEAN_AVM_SERVICE);
         this.actionService = (ActionService)factory.getBean(BEAN_ACTION_SERVICE);
-        this.searchService = (SearchService)factory.getBean(BEAN_SEARCH_SERVICE);
-        this.importerBootstrap = (ImporterBootstrap)factory.getBean(BEAN_IMPORTER_BOOTSTRAP);
         this.unprotectedNodeService = (NodeService)factory.getBean(BEAN_NODE_SERVICE);
         this.unprotectedPermissionService = (PermissionService)factory.getBean(BEAN_PERMISSION_SERVICE);
     }
@@ -122,7 +111,7 @@ public class AVMDeployHandler extends JBPMSpringActionHandler
             NodeRef webProjectRef = webProjNode.getNodeRef();
 
             // get the list of live servers for the project that have the auto deploy flag turned on
-            List<NodeRef> servers = findDeployToServers(webProjectRef);
+            List<NodeRef> servers = deploymentService.findLiveDeploymentServers(webProjectRef);
            
             // if there are servers do the deploy
             if (servers.size() > 0)
@@ -205,60 +194,5 @@ public class AVMDeployHandler extends JBPMSpringActionHandler
                          new PropertyValue(DataTypeDefinition.TEXT, attemptId));
             }
         }
-    }
-    
-    private List<NodeRef> findDeployToServers(NodeRef webProjectRef)
-    {
-        // get folder names   
-        Properties configuration = this.importerBootstrap.getConfiguration();
-        String rootFolder = configuration.getProperty(PROP_ROOT_FOLDER);
-        String wcmFolder = configuration.getProperty(PROP_WCM_FOLDER);
-            
-        // get web project name
-        String webProjectName = (String)this.unprotectedNodeService.getProperty(
-                 webProjectRef, ContentModel.PROP_NAME);
-        String safeProjectName = ISO9075.encode(webProjectName); 
-        
-        // build the query
-        StringBuilder query = new StringBuilder("PATH:\"/");
-        query.append(rootFolder);
-        query.append("/");
-        query.append(wcmFolder);
-        query.append("/cm:");
-        query.append(safeProjectName);
-        query.append("/*\" AND @");
-        query.append(NamespaceService.WCMAPP_MODEL_PREFIX);
-        query.append("\\:");
-        query.append(WCMAppModel.PROP_DEPLOYSERVERTYPE.getLocalName());
-        query.append(":\"");
-        query.append(WCMAppModel.CONSTRAINT_LIVESERVER);
-        query.append("\" AND @");
-        query.append(NamespaceService.WCMAPP_MODEL_PREFIX);
-        query.append("\\:");
-        query.append(WCMAppModel.PROP_DEPLOYONAPPROVAL.getLocalName());
-        query.append(":\"true\"");
-        
-        // execute the query
-        ResultSet results = null;
-        List<NodeRef> servers = new ArrayList<NodeRef>();
-        try
-        {
-            results = searchService.query(webProjectRef.getStoreRef(), 
-                     SearchService.LANGUAGE_LUCENE, query.toString());
-         
-            for (NodeRef server : results.getNodeRefs())
-            {
-                servers.add(server);
-            }
-        }
-        finally
-        {
-            if (results != null)
-            {
-                results.close();
-            }
-        }
-
-        return servers;
     }
 }

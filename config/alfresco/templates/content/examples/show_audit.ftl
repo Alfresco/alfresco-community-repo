@@ -6,81 +6,27 @@
    <tr>
           <th>${message("templates.show_audit.user_name")}</th>
           <th>${message("templates.show_audit.application")}</th>
-          <th>${message("templates.show_audit.service")}</th>
           <th>${message("templates.show_audit.method")}</th>
           <th>${message("templates.show_audit.timestamp")}</th>
-          <th>${message("templates.show_audit.failed")}</th>
-          <th>${message("templates.show_audit.message")}</th>
-          <th>${message("templates.show_audit.arg_1")}</th>
-          <th>${message("templates.show_audit.arg_2")}</th>
-          <th>${message("templates.show_audit.arg_3")}</th>
-          <th>${message("templates.show_audit.arg_4")}</th>
-          <th>${message("templates.show_audit.arg_5")}</th>
-          <th>${message("templates.show_audit.return")}</th>
-          <th>${message("templates.show_audit.thowable")}</th> 
-          <th>${message("templates.show_audit.tx")}</th>
+          <th>${message("templates.show_audit.values")}</th>
    </tr>
    <#list document.auditTrail as t>
            <tr>
           <td>${t.userIdentifier}</td>
           <td>${t.auditApplication}</td>
-          <#if t.auditService?exists>
-             <td>${t.auditService}</td>
-          <#else>
-             <td>&nbsp;</td>
-          </#if>
           <#if t.auditMethod?exists>
              <td>${t.auditMethod}</td>
           <#else>
              <td>&nbsp;</td>
           </#if>
-          <td>${t.date}</td>
-          <#if t.fail?exists>
-             <td>${t.fail?string("FAILED", "OK")}</td>
+          <td>${t.date?datetime}</td>
+          <#if t.values?exists>
+          <td>
+          <@hashMap map=t.values />
+          </td>
           <#else>
              <td>&nbsp;</td>
           </#if>       
-          <#if t.message?exists>
-             <td>${t.message}</td>
-          <#else>
-             <td>&nbsp;</td>
-          </#if>          
-          <#if t.methodArgumentsAsStrings[0]?exists>
-             <td>${t.methodArgumentsAsStrings[0]}</td>
-          <#else>
-             <td>&nbsp;</td>
-          </#if>          
-          <#if t.methodArgumentsAsStrings[1]?exists>
-             <td>${t.methodArgumentsAsStrings[1]}</td>
-          <#else>
-             <td>&nbsp;</td>
-          </#if>          
-          <#if t.methodArgumentsAsStrings[2]?exists>
-             <td>${t.methodArgumentsAsStrings[2]}</td>
-          <#else>
-             <td>&nbsp;</td>
-          </#if>          
-          <#if t.methodArgumentsAsStrings[3]?exists>
-             <td>${t.methodArgumentsAsStrings[3]}</td>
-          <#else>
-             <td>&nbsp;</td>
-          </#if>          
-          <#if t.methodArgumentsAsStrings[4]?exists>
-             <td>${t.methodArgumentsAsStrings[4]}</td>
-          <#else>
-             <td>&nbsp;</td>
-          </#if>          
-          <#if t.returnObjectAsString?exists>
-             <td>${t.returnObjectAsString}</td>
-          <#else>
-             <td>&nbsp;</td>
-          </#if>
-          <#if t.throwableAsString?exists>
-             <td>${t.throwableAsString}</td>
-          <#else>
-             <td>&nbsp;</td>
-          </#if>          
-          <td>${t.txId}</td>
       </tr>
    </#list>
    </table>
@@ -91,83 +37,74 @@
    <tr>
           <th>${message("templates.show_audit.user_name")}</th>
           <th>${message("templates.show_audit.application")}</th>
-          <th>${message("templates.show_audit.service")}</th>
           <th>${message("templates.show_audit.method")}</th>
           <th>${message("templates.show_audit.timestamp")}</th>
-          <th>${message("templates.show_audit.failed")}</th>
-          <th>${message("templates.show_audit.message")}</th>
-          <th>${message("templates.show_audit.arg_1")}</th>
-          <th>${message("templates.show_audit.arg_2")}</th>
-          <th>${message("templates.show_audit.arg_3")}</th>
-          <th>${message("templates.show_audit.arg_4")}</th>
-          <th>${message("templates.show_audit.arg_5")}</th>
-          <th>${message("templates.show_audit.return")}</th>
-          <th>${message("templates.show_audit.thowable")}</th> 
-          <th>${message("templates.show_audit.tx")}</th>
+          <th>${message("templates.show_audit.values")}</th>
    </tr>
  
    <#list space.auditTrail as t>
            <tr>
           <td>${t.userIdentifier}</td>
           <td>${t.auditApplication}</td>
-          <#if t.auditService?exists>
-             <td>${t.auditService}</td>
-          <#else>
-             <td>&nbsp;</td>
-          </#if>
           <#if t.auditMethod?exists>
              <td>${t.auditMethod}</td>
           <#else>
              <td>&nbsp;</td>
           </#if>
-          <td>${t.date}</td>
-          <#if t.fail?exists>
-             <td>${t.fail?string("FAILED", "OK")}</td>
+          <td>${t.date?datetime}</td>
+          <#if t.values?exists>
+          <td>
+          <@hashMap map=t.values />
+          </td>
           <#else>
              <td>&nbsp;</td>
           </#if>       
-          <#if t.message?exists>
-             <td>${t.message}</td>
-          <#else>
-             <td>&nbsp;</td>
-          </#if>          
-          <#if t.methodArgumentsAsStrings[0]?exists>
-             <td>${t.methodArgumentsAsStrings[0]}</td>
-          <#else>
-             <td>&nbsp;</td>
-          </#if>          
-          <#if t.methodArgumentsAsStrings[1]?exists>
-             <td>${t.methodArgumentsAsStrings[1]}</td>
-          <#else>
-             <td>&nbsp;</td>
-          </#if>          
-          <#if t.methodArgumentsAsStrings[2]?exists>
-             <td>${t.methodArgumentsAsStrings[2]}</td>
-          <#else>
-             <td>&nbsp;</td>
-          </#if>          
-          <#if t.methodArgumentsAsStrings[3]?exists>
-             <td>${t.methodArgumentsAsStrings[3]}</td>
-          <#else>
-             <td>&nbsp;</td>
-          </#if>          
-          <#if t.methodArgumentsAsStrings[4]?exists>
-             <td>${t.methodArgumentsAsStrings[4]}</td>
-          <#else>
-             <td>&nbsp;</td>
-          </#if>          
-          <#if t.returnObjectAsString?exists>
-             <td>${t.returnObjectAsString}</td>
-          <#else>
-             <td>&nbsp;</td>
-          </#if>
-          <#if t.throwableAsString?exists>
-             <td>${t.throwableAsString}</td>
-          <#else>
-             <td>&nbsp;</td>
-          </#if>          
-          <td>${t.txId}</td>
       </tr>
    </#list>
    </table>
- </#if>
+          </#if>          
+ 
+<#-- renders an audit entry values -->
+<#macro hashMap map simpleMode=false>
+    <ul>
+    <#assign index = 0 />
+    <#list map?keys as key>
+    <#if simpleMode>
+    <li><@parseValue value=key />=<@parseValue value=map?values[index] /></li>
+    <#else>
+    <#assign value = map[key] />
+    <#if value?is_sequence>
+    <li><@parseValue value=key />=
+    <ul>
+    <#list value as element>
+    <li><@parseValue value=element /></li>
+    </#list>
+    </ul>
+    </li>
+    <#elseif value?is_hash>
+    <li><@parseValue value=key />=
+    <@hashMap map=value simpleMode=true />
+    </li>
+    <#else>
+    <li><@parseValue value=key />=<@parseValue value=value /></li>
+    </#if>          
+    </#if>          
+    <#assign index = index + 1 />
+   </#list>
+    </ul>
+</#macro>
+
+<#-- renders an audit entry value -->
+<#macro parseValue value="null">
+    <#if value?is_number>
+    ${value?c}
+    <#elseif value?is_boolean>
+    ${value?string}
+    <#elseif value?is_date>
+    ${value?datetime}
+    <#elseif value?is_string && value != "null">
+    ${shortQName(value?string)}
+    <#elseif value?is_hash && value?values[0]?exists>
+    ${value?values[0]}
+    </#if>
+</#macro>

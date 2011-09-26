@@ -19,8 +19,10 @@
 package org.alfresco.repo.ownable.impl;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
@@ -33,13 +35,13 @@ import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.OwnableService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.PropertyCheck;
@@ -61,6 +63,8 @@ public class OwnableServiceImpl implements
     private AuthenticationService authenticationService;
     private SimpleCache<NodeRef, String> nodeOwnerCache;
     private PolicyComponent policyComponent;
+    private TenantService tenantService;
+    private Set<String> storesToIgnorePolicies = Collections.emptySet();
 
     public OwnableServiceImpl()
     {
@@ -82,6 +86,16 @@ public class OwnableServiceImpl implements
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
+    }
+
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
+
+    public void setStoresToIgnorePolicies(Set<String> storesToIgnorePolicies)
+    {
+        this.storesToIgnorePolicies = storesToIgnorePolicies;
     }
 
     /**
@@ -164,7 +178,7 @@ public class OwnableServiceImpl implements
             {
                 userName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef, ContentModel.PROP_CREATOR));
             }
-            nodeOwnerCache.put(nodeRef, userName);
+            cacheOwner(nodeRef, userName);
         }
 
         return userName;
@@ -182,7 +196,7 @@ public class OwnableServiceImpl implements
         {
             nodeService.setProperty(nodeRef, ContentModel.PROP_OWNER, userName);
         }
-        nodeOwnerCache.put(nodeRef, userName);
+        cacheOwner(nodeRef, userName);
     }
 
     public void takeOwnership(NodeRef nodeRef)
@@ -239,6 +253,16 @@ public class OwnableServiceImpl implements
     public CopyBehaviourCallback onCopyNode(QName classRef, CopyDetails copyDetails)
     {
         return AuditableOwnableAspectCopyBehaviourCallback.INSTANCE;   
+    }
+    
+    private void cacheOwner(NodeRef nodeRef, String userName)
+    {
+        // do not cache owners of nodes that are from stores that ignores policies
+        // to prevent mess in nodeOwnerCache
+        if (!storesToIgnorePolicies.contains(tenantService.getBaseName(nodeRef.getStoreRef()).toString()))
+        {
+            nodeOwnerCache.put(nodeRef, userName);
+        }
     }
     
     /**

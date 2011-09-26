@@ -38,7 +38,6 @@ import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.version.VersionableAspect;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInServiceException;
 import org.alfresco.service.cmr.lock.LockService;
@@ -95,9 +94,9 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
      * Extension character, used to recalculate the working copy names
      */
     private static final String EXTENSION_CHARACTER = ".";
-    
+
     private static Log logger = LogFactory.getLog(CheckOutCheckInServiceImpl.class);
-    
+
     private NodeService nodeService;
     private VersionService versionService;
     private LockService lockService;
@@ -108,12 +107,7 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
     private AuthenticationService authenticationService;
     private RuleService ruleService;
     
-    /**
-     * The versionable aspect behaviour implementation
-     */
-    @SuppressWarnings("unused")
-    private VersionableAspect versionableAspect;
-    
+    /** Component to determine which behaviours are active and which not */
     private BehaviourFilter behaviourFilter;
     
     /**
@@ -180,14 +174,6 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
         this.fileFolderService = fileFolderService;
     }
 
-    /**
-     * Sets the versionable aspect behaviour implementation
-     */
-    public void setVersionableAspect(VersionableAspect versionableAspect)
-    {
-        this.versionableAspect = versionableAspect;
-    }
-    
     /**
      * @param policyComponent   policy component
      */

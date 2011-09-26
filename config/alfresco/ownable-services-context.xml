@@ -15,5 +15,11 @@
         <property name="policyComponent">
             <ref bean="policyComponent" />
         </property>
+        <property name="tenantService">
+            <ref bean="tenantService"/>
+        </property>
+        <property name="storesToIgnorePolicies">
+            <ref bean="storesToIgnorePolicies"/>
+        </property>
     </bean>
 </beans>

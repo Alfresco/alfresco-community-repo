@@ -24,6 +24,7 @@ import java.util.Map;
 
 import javax.faces.context.FacesContext;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -124,7 +125,12 @@ public class EditUserWizard extends CreateUserWizard
             // creation in CreateUserWizard. It is always possible to move the contents
             // of the old home folder by hand later.
             Map<QName, Serializable> props = this.getNodeService().getProperties(nodeRef);
-            setPersonPropertiesAndCreateHomeSpaceIfNeeded(props, context);
+            NodeRef oldHomeFolderRef = (NodeRef) this.getNodeService().getProperty(nodeRef, ContentModel.PROP_HOMEFOLDER);
+            if (oldHomeFolderRef != null && getNodeService().exists(oldHomeFolderRef) == false)
+            {
+                oldHomeFolderRef = null;
+            }
+            setPersonPropertiesAndCreateHomeSpaceIfNeeded(props, oldHomeFolderRef, context);
 
             // update the node that represents the Person
             this.getNodeService().setProperties(nodeRef, props);

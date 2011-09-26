@@ -50,6 +50,7 @@ import org.alfresco.jlan.server.filesys.DiskSharedDevice;
 import org.alfresco.jlan.server.filesys.FilesystemsConfigSection;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.model.filefolder.FileFolderServiceImpl.InvalidTypeException;
 import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.webdav.WebDAVHelper;
@@ -336,7 +337,8 @@ public final class Utils extends StringUtils
    public enum URLMode {HTTP_DOWNLOAD, HTTP_INLINE, WEBDAV, CIFS, SHOW_DETAILS, BROWSE, FTP}
    
    /**
-    * Generates a URL for the given usage for the given node.
+    * Generates a URL for the given usage for the given node. If the URL cannot be generated
+    * then null is returned.
     * 
     * The supported values for the usage parameter are of URLMode enum type
     * @see URLMode
@@ -380,6 +382,10 @@ public final class Utils extends StringUtils
             catch (FileNotFoundException nodeErr)
             {
                // cannot build path if file no longer exists
+            }
+            catch (InvalidTypeException e)
+            {
+               // primary path does not translate to a file/folder path.
             }
             break;
          }
@@ -437,7 +443,15 @@ public final class Utils extends StringUtils
                          } 
                          // There is no such node on this SharedDevice, continue 
                          continue; 
-                     } 
+                     }
+                     catch (InvalidTypeException e)
+                     {
+                         if (logger.isDebugEnabled()) 
+                         { 
+                             logger.debug(" Node " + node.getName() + " HAS NOT been found on " + contentContext.getDeviceName()); 
+                         }
+                         // primary path does not translate to a file/folder path.
+                     }
                   } 
                }
                

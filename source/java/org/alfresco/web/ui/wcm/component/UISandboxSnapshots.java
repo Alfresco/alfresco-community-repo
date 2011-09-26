@@ -230,7 +230,7 @@ public class UISandboxSnapshots extends SelfRenderingComponent
             // determine whether the deploy action should be shown
             boolean showDeployAction = false;
             NodeRef webProjectRef = Repository.getServiceRegistry(context).getWebProjectService().getWebProjectNodeFromStore(WCMUtil.getWebProjectStoreId(sandbox));
-            List<NodeRef> deployToServers = DeploymentUtil.findLiveServers(webProjectRef);
+            List<NodeRef> deployToServers = Repository.getServiceRegistry(context).getDeploymentService().findLiveDeploymentServers(webProjectRef);
             if (deployToServers != null && deployToServers.size() > 0)
             {
                 showDeployAction = true;

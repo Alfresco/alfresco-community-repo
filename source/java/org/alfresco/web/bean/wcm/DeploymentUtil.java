@@ -28,13 +28,10 @@ import javax.faces.context.FacesContext;
 
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.web.bean.repository.Repository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -246,7 +243,6 @@ public final class DeploymentUtil
       query.append("\"");
       
       ResultSet results = null;
-      NodeRef testServer = null;
       try
       {
          // execute the query
@@ -270,110 +266,6 @@ public final class DeploymentUtil
       }
       
       return serverList;
-   }
-   
-   /**
-    * Returns a list of NodeRefs representing the 'live' servers configured
-    * for the given web project.
-    *  
-    * @param webProject Web project to get live servers for 
-    * @return List of live servers
-    */
-   public static List<NodeRef> findLiveServers(NodeRef webProject)
-   {
-      return findServers(webProject, true, false);
-   }
-   
-   /**
-    * Returns a list of NodeRefs representing the 'test' servers configured
-    * for the given web project.
-    *  
-    * @param webProject Web project to get test servers for 
-    * @param availableOnly if true only returns those servers still available for deployment 
-    * @return List of test servers
-    */
-   public static List<NodeRef> findTestServers(NodeRef webProject, boolean availableOnly)
-   {
-      return findServers(webProject, false, availableOnly);
-   }
-   
-   
-   /**
-    * Returns a list of NodeRefs representing the deployment servers configured
-    * for the given web project.
-    *  
-    * @param webProject Web project to get test servers for 
-    * @param live
-    * @param availableOnly if true only returns those servers still available for deployment 
-    * @return List of test servers
-    */
-   private static List<NodeRef> findServers(NodeRef webProject, boolean live, boolean availableOnly)
-   {
-      FacesContext context = FacesContext.getCurrentInstance();
-      NodeService nodeService = Repository.getServiceRegistry(context).getNodeService();
-      SearchService searchService = Repository.getServiceRegistry(context).getSearchService();
-      
-      NamespacePrefixResolver namespacePrefixResolver = Repository.getServiceRegistry(context).getNamespaceService();
-            
-      Path projectPath = nodeService.getPath(webProject);
-      
-      String stringPath = projectPath.toPrefixString(namespacePrefixResolver);
-                 
-      StringBuilder query = new StringBuilder("PATH:\"");
-      
-      query.append(stringPath);  
-      query.append("/*\" ");  
-      query.append(" AND @");
-      query.append(NamespaceService.WCMAPP_MODEL_PREFIX);
-      query.append("\\:");
-      query.append(WCMAppModel.PROP_DEPLOYSERVERTYPE.getLocalName());
-      query.append(":\"");
-      if (live)
-      {
-         query.append(WCMAppModel.CONSTRAINT_LIVESERVER);
-      }
-      else
-      {
-         query.append(WCMAppModel.CONSTRAINT_TESTSERVER);
-      }      
-      query.append("\"");
-      
-      // if required filter the test servers
-      if (live == false && availableOnly)
-      {
-         query.append(" AND ISNULL:\"");
-         query.append(WCMAppModel.PROP_DEPLOYSERVERALLOCATEDTO.toString());
-         query.append("\"");
-      }
-      
-      if (logger.isDebugEnabled())
-         logger.debug("Finding deployment servers using query: " + query.toString());
-      
-      // execute the query
-      ResultSet results = null;
-      List<NodeRef> servers = new ArrayList<NodeRef>();
-      try
-      {
-         results = searchService.query(Repository.getStoreRef(), 
-               SearchService.LANGUAGE_LUCENE, query.toString());
-         
-         if (logger.isDebugEnabled())
-            logger.debug("Found " + results.length() + " deployment servers");
-         
-         for (NodeRef server : results.getNodeRefs())
-         {
-            servers.add(server);
-         }
-      }
-      finally
-      {
-         if (results != null)
-         {
-            results.close();
-         }
-      }
-      
-      return servers;
    }
    
    private static String formatLuceneQueryDate(Date date, boolean range)

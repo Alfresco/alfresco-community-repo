@@ -41,6 +41,7 @@ import org.alfresco.service.cmr.dictionary.Constraint;
 import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.DataDictionary;
@@ -751,5 +752,22 @@ public abstract class BaseComponentGenerator implements IComponentGenerator
       }
       
       return this.dataDictionary;
+   }
+
+   public boolean isEnabledInEditMode (FacesContext context, UIComponent control, PropertyDefinition propDef)
+   {
+      // get type info for the property
+      DataTypeDefinition dataTypeDef = propDef.getDataType();
+      QName typeName = dataTypeDef.getName();
+      if (typeName.equals(DataTypeDefinition.NODE_REF) || typeName.equals(DataTypeDefinition.PATH) ||
+          typeName.equals(DataTypeDefinition.CONTENT) || typeName.equals(DataTypeDefinition.QNAME) ||
+          typeName.equals(DataTypeDefinition.CHILD_ASSOC_REF) || typeName.equals(DataTypeDefinition.ASSOC_REF))
+      {
+         return false;
+      }
+      else
+      {
+         return true;
+      }
    }
 }

@@ -683,21 +683,27 @@ public class CreateUserWizard extends BaseWizardBean
      * 
      * @param locationId Parent location
      * @param spaceName Home space to create, can be null to simply return the parent
+     * @param oldHomeFolderRef the previous home space, for the case where the the user is being updated.
+     *        It may not have changed.
      * @param error True to throw an error if the space already exists, else ignore and return
      * @return ID of the home space
      */
-    protected NodeRef createHomeSpace(String locationId, String spaceName, boolean error)
+    protected NodeRef createHomeSpace(String locationId, String spaceName, NodeRef oldHomeFolderRef, boolean error)
     {
         NodeRef homeSpaceNodeRef = null;
         if (spaceName != null && spaceName.length() != 0)
         {
             NodeRef parentRef = new NodeRef(Repository.getStoreRef(), locationId);
 
-            // check for existance of home space with same name - return immediately
+            // check for existence of home space with same name - return immediately
             // if it exists or throw an exception an give user chance to enter another name
             NodeRef childRef = this.getNodeService().getChildByName(parentRef, ContentModel.ASSOC_CONTAINS, spaceName);
             if (childRef != null)
             {
+                if (childRef.equals(oldHomeFolderRef))
+                {
+                    return oldHomeFolderRef;
+                }
                 if (error)
                 {
                     throw new AlfrescoRuntimeException("A Home Space with the same name already exists.");
@@ -799,7 +805,7 @@ public class CreateUserWizard extends BaseWizardBean
             {
                 // create properties for Person type from submitted Form data
                 Map<QName, Serializable> props = new HashMap<QName, Serializable>(7, 1.0f);
-                setPersonPropertiesAndCreateHomeSpaceIfNeeded(props, context);
+                setPersonPropertiesAndCreateHomeSpaceIfNeeded(props, null, context);
 
                 // create the node to represent the Person
                 getPersonService().createPerson(props);
@@ -846,7 +852,7 @@ public class CreateUserWizard extends BaseWizardBean
     }
 
     protected void setPersonPropertiesAndCreateHomeSpaceIfNeeded(
-            Map<QName, Serializable> props, FacesContext context)
+            Map<QName, Serializable> props, NodeRef oldHomeFolderRef, FacesContext context)
     {
         props.put(ContentModel.PROP_USERNAME, this.userName);
         props.put(ContentModel.PROP_FIRSTNAME, this.firstName);
@@ -856,7 +862,7 @@ public class CreateUserWizard extends BaseWizardBean
         {
             // create new
             props.put(ContentModel.PROP_HOME_FOLDER_PROVIDER, "userHomesHomeFolderProvider");
-            homeSpaceNodeRef = createHomeSpace(this.homeSpaceLocation.getId(), this.homeSpaceName, true);
+            homeSpaceNodeRef = createHomeSpace(this.homeSpaceLocation.getId(), this.homeSpaceName, oldHomeFolderRef, true);
         }
         else if (this.homeSpaceLocation != null)
         {

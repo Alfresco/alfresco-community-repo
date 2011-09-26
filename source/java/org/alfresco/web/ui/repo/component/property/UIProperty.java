@@ -184,9 +184,7 @@ public class UIProperty extends PropertySheetItem
       {
          // if we are trying to edit a system property type set it to read-only as  these are internal 
          // properties that shouldn't be edited.
-         if (typeName.equals(DataTypeDefinition.NODE_REF) || typeName.equals(DataTypeDefinition.PATH) || 
-             typeName.equals(DataTypeDefinition.CONTENT) || typeName.equals(DataTypeDefinition.QNAME) ||
-             typeName.equals(DataTypeDefinition.CHILD_ASSOC_REF) || typeName.equals(DataTypeDefinition.ASSOC_REF))
+         if (!FacesHelper.getComponentGenerator(context, componentGeneratorName).isEnabledInEditMode(context, control, propDef))
          {
             logger.warn("Setting property " + propDef.getName().toString() + " to read-only as it can not be edited");
             control.getAttributes().put("disabled", Boolean.TRUE);

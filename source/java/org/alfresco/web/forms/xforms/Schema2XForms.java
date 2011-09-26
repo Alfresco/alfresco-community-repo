@@ -39,6 +39,7 @@ import java.util.regex.Pattern;
 import javax.faces.context.FacesContext;
 
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.forms.XMLUtil;
@@ -1452,8 +1453,10 @@ public class Schema2XForms implements Serializable
                LOGGER.debug("[addElementWithMultipleCompatibleTypes] Testing sub-bind with nodeset " + name);
             }
 
-            if (!SchemaUtil.isElementDeclaredIn(name, (XSComplexTypeDefinition) type, false) &&
-                !SchemaUtil.isAttributeDeclaredIn(name, (XSComplexTypeDefinition) type, false))
+            Pair<String, String> parsed = parseName(name, xformsDocument);
+            
+            if (!SchemaUtil.isElementDeclaredIn(parsed.getFirst(), parsed.getSecond(), (XSComplexTypeDefinition) type, false) &&
+                !SchemaUtil.isAttributeDeclaredIn(parsed.getFirst(), parsed.getSecond(), (XSComplexTypeDefinition) type, false))
             {
                continue;
             }
@@ -1588,7 +1591,10 @@ public class Schema2XForms implements Serializable
                {
                   Element bind = (Element)binds.item(i);
                   String nodeset = bind.getAttributeNS(NamespaceConstants.XFORMS_NS, "nodeset");
-                  if (nodeset != null && nodeset.equals(element.getName()))
+                  
+                  Pair<String, String> parsed = parseName(nodeset, xformsDocument);
+                  
+                  if (nodeset != null && EqualsHelper.nullSafeEquals(parsed.getSecond(), element.getNamespace()) && parsed.getFirst().equals(element.getName()))
                   {
                      bindId = bind.getAttributeNS(null, "id");
                   }
@@ -3328,5 +3334,23 @@ public class Schema2XForms implements Serializable
       }
       
       return repeated;
+   }
+   
+   /*
+    * split the name of element in two parts (localname, namespaceURI)
+    */
+   private Pair<String, String> parseName(String name, Document resolver)
+   {
+       int pos = name.indexOf(':');
+       String localName = name;
+       String namespace = null;
+
+       if (pos != -1)
+       {
+           localName = name.substring(pos + 1);
+           namespace = resolver.lookupNamespaceURI(name.substring(0, pos));
+       }
+
+       return new Pair<String, String>(localName, namespace);
    }
 }

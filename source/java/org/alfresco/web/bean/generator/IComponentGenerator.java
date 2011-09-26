@@ -21,6 +21,7 @@ package org.alfresco.web.bean.generator;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.web.ui.repo.component.property.PropertySheetItem;
 import org.alfresco.web.ui.repo.component.property.UIPropertySheet;
 
@@ -54,4 +55,14 @@ public interface IComponentGenerator
     */
    UIComponent generateAndAdd(FacesContext context, UIPropertySheet propertySheet, 
          PropertySheetItem item);
+
+   /**
+    * Determines whether the component will be enabled when rendered.
+    * 
+    * @param context FacesContext
+    * @param control The control being rendered
+    * @param propDef The definition of the property
+    * @return true if the component should be enabled
+    */
+   boolean isEnabledInEditMode (FacesContext context, UIComponent control, PropertyDefinition propDef);
 }

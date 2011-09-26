@@ -17,17 +17,40 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>. */
 package org.alfresco.web.forms.xforms;
 
-import java.util.*;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
+import org.alfresco.util.EqualsHelper;
 import org.alfresco.web.forms.XMLUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.xerces.xs.*;
+import org.apache.xerces.xs.XSAttributeUse;
+import org.apache.xerces.xs.XSComplexTypeDefinition;
+import org.apache.xerces.xs.XSConstants;
+import org.apache.xerces.xs.XSElementDeclaration;
+import org.apache.xerces.xs.XSImplementation;
+import org.apache.xerces.xs.XSLoader;
+import org.apache.xerces.xs.XSModel;
+import org.apache.xerces.xs.XSModelGroup;
+import org.apache.xerces.xs.XSNamedMap;
+import org.apache.xerces.xs.XSObjectList;
+import org.apache.xerces.xs.XSParticle;
+import org.apache.xerces.xs.XSSimpleTypeDefinition;
+import org.apache.xerces.xs.XSTerm;
+import org.apache.xerces.xs.XSTypeDefinition;
+import org.w3c.dom.DOMConfiguration;
+import org.w3c.dom.DOMError;
+import org.w3c.dom.DOMErrorHandler;
+import org.w3c.dom.DOMLocator;
+import org.w3c.dom.Document;
 import org.w3c.dom.bootstrap.DOMImplementationRegistry;
-import org.w3c.dom.ls.*;
-import org.w3c.dom.*;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSInput;
 
 /**
  * Provides utility functions for xml schema parsing.
@@ -392,12 +415,12 @@ public class SchemaUtil
       {
          for (String typeName : result.keySet())
          {
-            TreeSet descendents = result.get(typeName);
+            TreeSet<XSTypeDefinition> descendents = result.get(typeName);
             LOGGER.debug(">>>> for " + typeName + " Descendants=\n ");
-            Iterator it = descendents.iterator();
+            Iterator<XSTypeDefinition> it = descendents.iterator();
             while (it.hasNext()) 
             {
-               XSTypeDefinition desc = (XSTypeDefinition) it.next();
+               XSTypeDefinition desc = it.next();
                LOGGER.debug("      " + desc.getName());
             }
          }
@@ -488,7 +511,7 @@ public class SchemaUtil
    /**
     * check that the element defined by this name is declared directly in the type
     */
-   public static boolean isElementDeclaredIn(String name, 
+   public static boolean isElementDeclaredIn(String name, String namespace,
                                              XSComplexTypeDefinition type, 
                                              boolean recursive) 
    {
@@ -503,7 +526,7 @@ public class SchemaUtil
          XSComplexTypeDefinition parent = (XSComplexTypeDefinition) type.getBaseType();
          if (LOGGER.isDebugEnabled())
             LOGGER.debug("testing if it is not on parent " + parent.getName());
-         if (SchemaUtil.isElementDeclaredIn(name, parent, true))
+         if (SchemaUtil.isElementDeclaredIn(name, namespace, parent, true))
             return false;
       }
 
@@ -515,7 +538,7 @@ public class SchemaUtil
          if (term instanceof XSModelGroup) 
          {
             XSModelGroup group = (XSModelGroup) term;
-            found = SchemaUtil.isElementDeclaredIn(name, group);
+            found = SchemaUtil.isElementDeclaredIn(name, namespace, group);
          }
       }
 
@@ -529,7 +552,7 @@ public class SchemaUtil
    /**
     * private recursive method called by isElementDeclaredIn(String name, XSComplexTypeDefinition type)
     */
-   public static boolean isElementDeclaredIn(String name, XSModelGroup group) 
+   public static boolean isElementDeclaredIn(String name, String namespace, XSModelGroup group) 
    {
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("isElement " + name + " declared in group " + group.getName());
@@ -543,12 +566,12 @@ public class SchemaUtil
          if (subTerm instanceof XSElementDeclaration) 
          {
             XSElementDeclaration elDecl = (XSElementDeclaration) subTerm;
-            if (name.equals(elDecl.getName()))
+            if (EqualsHelper.nullSafeEquals(namespace, elDecl.getNamespace()) && name.equals(elDecl.getName()))
                found = true;
          } 
          else if (subTerm instanceof XSModelGroup)
          {
-            found = SchemaUtil.isElementDeclaredIn(name, (XSModelGroup) subTerm);
+            found = SchemaUtil.isElementDeclaredIn(name, namespace, (XSModelGroup) subTerm);
          }
       }
 
@@ -573,7 +596,7 @@ public class SchemaUtil
          if (baseType.getTypeCategory() == XSTypeDefinition.COMPLEX_TYPE) 
          {
             final XSComplexTypeDefinition complexType = (XSComplexTypeDefinition) baseType;
-            if (SchemaUtil.isElementDeclaredIn(element.getName(), complexType, true)) 
+            if (SchemaUtil.isElementDeclaredIn(element.getName(), element.getNamespace(), complexType, true)) 
             {
                if (LOGGER.isDebugEnabled())
                {
@@ -642,7 +665,7 @@ public class SchemaUtil
     * check that the element defined by this name is declared directly in the type
     * -> idem with string
     */
-   public static boolean isAttributeDeclaredIn(String attrName, XSComplexTypeDefinition type, boolean recursive) 
+   public static boolean isAttributeDeclaredIn(String attrName, String namespace, XSComplexTypeDefinition type, boolean recursive) 
    {
       boolean found = false;
 
@@ -658,7 +681,7 @@ public class SchemaUtil
          XSComplexTypeDefinition parent = (XSComplexTypeDefinition) type.getBaseType();
          if (LOGGER.isDebugEnabled())
             LOGGER.debug("testing if it is not on parent " + parent.getName());
-         if (SchemaUtil.isAttributeDeclaredIn(attrName, parent, true))
+         if (SchemaUtil.isAttributeDeclaredIn(attrName, namespace, parent, true))
             return false;
       }
 
@@ -672,7 +695,7 @@ public class SchemaUtil
             String name = anAttr.getName();
             if (name == null || name.length() == 0)
                name = anAttr.getAttrDeclaration().getName();
-            if (attrName.equals(name))
+            if (EqualsHelper.nullSafeEquals(namespace, anAttr.getAttrDeclaration().getNamespace()) && attrName.equals(name))
                found = true;
          }
       }

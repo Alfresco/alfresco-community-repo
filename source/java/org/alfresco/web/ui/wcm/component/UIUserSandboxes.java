@@ -135,6 +135,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
    private static final String MSG_CREATED = "created_date";
    private static final String MSG_USERNAME = "sandbox_user";
    private static final String MSG_NAME = "name";
+   private static final String MSG_TITLE = "title";
    private static final String MSG_DESCRIPTION = "description";
    private static final String MSG_MODIFIED = "modified_date";
    private static final String MSG_ACTIONS = "actions";
@@ -362,7 +363,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
          
          // determine whether the deploy action should be shown
          boolean deployServersConfigured = false;
-         List<NodeRef> deployToServers = DeploymentUtil.findTestServers(websiteRef, false);
+         List<NodeRef> deployToServers = Repository.getServiceRegistry(context).getDeploymentService().findTestDeploymentServers(websiteRef, false);
          if (deployToServers != null && deployToServers.size() > 0)
          {
             deployServersConfigured = true;
@@ -1021,6 +1022,8 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
          out.write("<tr align='left'><th>");
          out.write(bundle.getString(MSG_NAME));
          out.write("</th><th>");
+         out.write(bundle.getString(MSG_TITLE));
+         out.write("</th><th>");
          out.write(bundle.getString(MSG_DESCRIPTION));
          out.write("</th><th>");
          out.write(bundle.getString(MSG_ACTIONS));
@@ -1029,10 +1032,13 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
          for (Form f : this.forms)
          {
             out.write("<tr><td>");
-            String title = (String)f.getTitle();
+            String name = f.getName();
+            out.write(name != null ? Utils.encode(name) : "");
+            out.write("</td><td>");
+            String title= f.getTitle();
             out.write(title != null ? Utils.encode(title) : "");
             out.write("</td><td>");
-            String desc = (String)f.getDescription();
+            String desc = f.getDescription();
             out.write(desc != null ? Utils.encode(desc) : "");
             out.write("</td><td>");
             

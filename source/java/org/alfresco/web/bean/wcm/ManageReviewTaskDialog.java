@@ -28,10 +28,13 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.wcm.sandbox.SandboxConstants;
 import org.alfresco.wcm.util.WCMUtil;
 import org.alfresco.web.app.Application;
@@ -217,7 +220,19 @@ public class ManageReviewTaskDialog extends ManageTaskDialog
          
          if (this.webProjectRef != null && getPermissionService().hasPermission(webProjectRef, PermissionService.READ_PROPERTIES).equals(AccessStatus.ALLOWED))
          {
-            List<NodeRef> testServers = DeploymentUtil.findTestServers(this.webProjectRef, false);
+            final ServiceRegistry serviceRegistry = Repository.getServiceRegistry(context);
+            final NodeRef projectRef = this.webProjectRef;
+
+            TransactionService transactionService = serviceRegistry.getTransactionService();
+            RetryingTransactionCallback<List<NodeRef>> findTestServers = new RetryingTransactionCallback<List<NodeRef>>()
+            {
+                public List<NodeRef> execute() throws Exception
+                {
+                    return serviceRegistry.getDeploymentService().findTestDeploymentServers(projectRef, false);
+                }
+            };
+            List<NodeRef> testServers = transactionService.getRetryingTransactionHelper().doInTransaction(findTestServers);
+
             if (testServers != null)
             {
                result = new Boolean(testServers != null && testServers.size() > 0);

@@ -53,7 +53,9 @@
          </f:verbatim>
          <h:panelGrid id="grid-form" columns="2" cellspacing="1">
             <h:outputText id="msg-01" value="#{msg.name}: " />
-            <h:outputText id="msg-02" value="#{row.title}" />
+            <h:outputText id="msg-02" value="#{row.name}" />
+            <h:outputText id="msg-14" value="#{msg.title}: " />
+            <h:outputText id="msg-15" value="#{row.title}" />
             
             <h:outputText id="msg-03" value="#{msg.description}: " />
             <h:outputText id="msg-04" style="font-style:italic" rendered="#{empty row.description}" value="#{msg.description_not_set}" />

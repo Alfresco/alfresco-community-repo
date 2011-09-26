@@ -28,6 +28,7 @@ import java.util.regex.PatternSyntaxException;
 import javax.faces.context.FacesContext;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowService;
@@ -182,6 +183,10 @@ public class FormWorkflowDialog extends BaseDialogBean
                else
                {
                   List current = (List)params.get(qname);
+                  if (qname.equals(WorkflowModel.ASSOC_ASSIGNEES)) 
+                  { 
+                     current.clear(); 
+                  }
                   current.addAll((List)value);
                }
             }

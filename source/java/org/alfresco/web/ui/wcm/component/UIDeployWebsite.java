@@ -250,7 +250,7 @@ public class UIDeployWebsite extends UIInput
                else
                {
             	  // a test server(s) needs to be selected - display the list of test servers
-                  List<NodeRef> refs = DeploymentUtil.findTestServers(webProject, true);
+                  List<NodeRef> refs = Repository.getServiceRegistry(context).getDeploymentService().findTestDeploymentServers(webProject, true);
 
                   // Resolve the unsorted list of NodeRef to a sorted list of DeploymentServerConfig.
                   List<DeploymentServerConfig> servers = toSortedDeploymentServerConfig(nodeService, refs);
@@ -317,7 +317,7 @@ public class UIDeployWebsite extends UIInput
 
                // TODO: get a list of the servers that have been successfully deployed to 
 
-               List<NodeRef> refs = DeploymentUtil.findLiveServers(webProject);
+               List<NodeRef> refs = Repository.getServiceRegistry(context).getDeploymentService().findLiveDeploymentServers(webProject);
 
                // Resolve the unsorted list of NodeRef to a sorted list of DeploymentServerConfig.
                List<DeploymentServerConfig> servers = toSortedDeploymentServerConfig(nodeService, refs);

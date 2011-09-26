@@ -1246,13 +1246,14 @@ public class CreateWebsiteWizard extends BaseWizardBean
       {
          UIListItem item = new UIListItem();
          item.setValue(form);
-         item.setLabel(form.getTitle());
+         String forItemName = new StringBuilder().append(form.getTitle()).append(" (").append(form.getName()).append(")").toString();
+         item.setLabel(forItemName);
          item.setDescription(form.getDescription());
          item.setImage(WebResources.IMAGE_WEBFORM_32);
          boolean skip = false;
          for (FormWrapper formWrapper : this.forms)
          {
-            if (formWrapper.getTitle().equals(form.getTitle()))
+            if (formWrapper.getName().equals(form.getName()))
             {
                skip = true;
                break;

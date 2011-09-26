@@ -74,6 +74,7 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.CompositeAction;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -126,6 +127,7 @@ public class ContentDiskDriverTest extends TestCase
     private PermissionService permissionService;
     private OwnableService ownableService;
     private FileFolderService fileFolderService;
+    private CheckOutCheckInService checkOutCheckInService;
     
     private static Log logger = LogFactory.getLog(ContentDiskDriverTest.class);
 
@@ -157,7 +159,8 @@ public class ContentDiskDriverTest extends TestCase
         permissionService = (PermissionService) this.applicationContext.getBean("permissionService");
         ownableService = (OwnableService) this.applicationContext.getBean("ownableService");
         fileFolderService = (FileFolderService) this.applicationContext.getBean("fileFolderService");
-       
+        checkOutCheckInService = (CheckOutCheckInService) this.applicationContext.getBean("checkOutCheckInService");
+        
         assertNotNull("content disk driver is null", driver);
         assertNotNull("repositoryHelper is null", repositoryHelper);
         assertNotNull("mlAwareNodeService is null", mlAwareNodeService);
@@ -167,6 +170,7 @@ public class ContentDiskDriverTest extends TestCase
         assertNotNull("ruleService is null", ruleService);
         assertNotNull("actionService is null", actionService);
         assertNotNull("cifsHelper", cifsHelper);
+        assertNotNull("checkOutCheckInService", checkOutCheckInService);
         
         AuthenticationUtil.setRunAsUserSystem();
         
@@ -3505,6 +3509,228 @@ public class ContentDiskDriverTest extends TestCase
         tran.doInTransaction(validateFirstExtractionCB, false, true);
         
     } // testZeroByteRules
+    
+    
+    /**
+     * Simulates a SaveAs from Word2003 for a checked out file
+     * 
+     * 1. Create new document TESTFILE.DOC, file did not exist
+     * 2. CheckOut TESTFILE.DOC
+     * 3. Create -WRDnnnn.TMP file, where 'nnnn' is a 4 digit sequence to make the name unique
+     * 4. Rename TESTFILE(Working Copy).DOC to Backup of SAVEAS.wbk
+     * 5. Rename -WRDnnnn.TMP to TESTFILE(Working Copy).DOC 
+     * 6  CheckIn working copy.
+     * 7. Validate TESTFILE.DOC
+     */
+    public void testScenarioMSWord2003SaveAsShuffleCheckedOutFile() throws Exception
+    {
+        logger.debug("testScenarioMSWord2003SaveShuffleLockedFile");
+        final String FILE_NAME = "TESTFILE.DOC";
+        final String FILE_OLD_TEMP = "SAVEAS.wbk";
+        final String FILE_NEW_TEMP = "~WRD0002.TMP";
+        
+        class TestContext
+        {
+            NetworkFile firstFileHandle;
+            String workingFileName;
+            NodeRef workingCopy;
+        };
+        
+        final TestContext testContext = new TestContext();
+        
+        final String TEST_DIR = TEST_ROOT_DOS_PATH + "\\testScenarioMSWord2003ShuffleLockedFile";
+        
+        ServerConfiguration scfg = new ServerConfiguration("testServer");
+        TestServer testServer = new TestServer("testServer", scfg);
+        final SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
+        DiskSharedDevice share = getDiskSharedDevice();
+        final TreeConnection testConnection = testServer.getTreeConnection(share);
+        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();        
+
+        /**
+         * Clean up just in case garbage is left from a previous run
+         */
+        RetryingTransactionCallback<Void> deleteGarbageFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                driver.deleteFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NAME);
+                return null;
+            }
+        };
+     
+        /**
+         * Create a file in the test directory
+         */    
+        
+        try
+        {
+            tran.doInTransaction(deleteGarbageFileCB);
+        }
+        catch (Exception e)
+        {
+            // expect to go here
+        }
+        
+        logger.debug("a) create new file and check out");
+        RetryingTransactionCallback<Void> createFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+  
+                /**
+                 * Create the test directory we are going to use 
+                 */
+                FileOpenParams createRootDirParams = new FileOpenParams(TEST_ROOT_DOS_PATH, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                FileOpenParams createDirParams = new FileOpenParams(TEST_DIR, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                driver.createDirectory(testSession, testConnection, createRootDirParams);
+                driver.createDirectory(testSession, testConnection, createDirParams);
+                
+                /**
+                 * Create the file we are going to use
+                 */
+                FileOpenParams createFileParams = new FileOpenParams(TEST_DIR + "\\" + FILE_NAME, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                testContext.firstFileHandle = driver.createFile(testSession, testConnection, createFileParams);
+                assertNotNull(testContext.firstFileHandle);
+                
+                NodeRef shuffledNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+                
+                /**
+                 * CheckOut the test node
+                 */
+                NodeRef workingCopy = checkOutCheckInService.checkout(shuffledNodeRef);
+                assertNotNull("Working copy is null", workingCopy);
+                testContext.workingCopy = workingCopy;
+                
+                ChildAssociationRef ref = nodeService.getPrimaryParent(workingCopy);
+                QName name = ref.getQName();
+                testContext.workingFileName = ref.getQName().getLocalName();
+                assertNotNull("working file name is null", testContext.workingFileName );
+                
+                return null;
+            }
+        };
+        tran.doInTransaction(createFileCB, false, true);
+             
+        /**
+         * b) Save the new file
+         * Write ContentDiskDriverTest3.doc to the test file,
+         */
+        logger.debug("b) move new file into place");
+        RetryingTransactionCallback<Void> writeFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                FileOpenParams createFileParams = new FileOpenParams(TEST_DIR + "\\" + FILE_NEW_TEMP, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                testContext.firstFileHandle = driver.createFile(testSession, testConnection, createFileParams);    
+         
+                ClassPathResource fileResource = new ClassPathResource("filesys/ContentDiskDriverTest3.doc");
+                assertNotNull("unable to find test resource filesys/ContentDiskDriverTest3.doc", fileResource);
+
+                byte[] buffer= new byte[1000];
+                InputStream is = fileResource.getInputStream();
+                try
+                {
+                    long offset = 0;
+                    int i = is.read(buffer, 0, buffer.length);
+                    while(i > 0)
+                    {
+                        testContext.firstFileHandle.writeFile(buffer, i, 0, offset);
+                        offset += i;
+                        i = is.read(buffer, 0, buffer.length);
+                    }                 
+                }
+                finally
+                {
+                    is.close();
+                }
+            
+                driver.closeFile(testSession, testConnection, testContext.firstFileHandle);   
+                    
+                return null;
+            }
+        };
+        tran.doInTransaction(writeFileCB, false, true);
+        
+        /**
+         * c) rename the old working file
+         */
+        logger.debug("c) rename old file");
+        RetryingTransactionCallback<Void> renameOldFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                driver.renameFile(testSession, testConnection, TEST_DIR + "\\" + testContext.workingFileName, TEST_DIR + "\\" + FILE_OLD_TEMP);
+                return null;
+            }
+        };
+        tran.doInTransaction(renameOldFileCB, false, true);
+           
+        /**
+         * d) Move the new file into place, stuff should get shuffled
+         */
+        logger.debug("d) move new file into place");
+        RetryingTransactionCallback<Void> moveNewFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                driver.renameFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NEW_TEMP, TEST_DIR + "\\" + testContext.workingFileName); 
+                return null;
+            }
+        };
+        
+        tran.doInTransaction(moveNewFileCB, false, true);
+        
+        logger.debug("e) now check in");
+        
+        /**
+         * Now Check In
+         */
+        RetryingTransactionCallback<Void> checkInCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+               
+               checkOutCheckInService.checkin(testContext.workingCopy, null);         
+               return null;
+            }
+        };
+        
+        tran.doInTransaction(checkInCB, false, true);
+        
+        
+        logger.debug("e) validate results");
+        /**
+         * Now validate everything is correct
+         */
+        RetryingTransactionCallback<Void> validateCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+               
+               NodeRef shuffledNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+                             
+               Map<QName, Serializable> props = nodeService.getProperties(shuffledNodeRef);
+               
+               ContentData data = (ContentData)props.get(ContentModel.PROP_CONTENT);
+               assertNotNull("data is null", data);
+               assertEquals("size is wrong", 26112, data.getSize());
+               assertEquals("mimeType is wrong", "application/msword",data.getMimetype());
+           
+               return null;
+            }
+        };
+        
+        tran.doInTransaction(validateCB, true, true);
+        
+    } // Test Word Save Locked File
     
     /**
      * Test server

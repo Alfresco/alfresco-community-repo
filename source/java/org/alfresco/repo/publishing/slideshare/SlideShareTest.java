@@ -36,8 +36,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
@@ -115,6 +113,8 @@ public class SlideShareTest extends BaseSpringTest
     // text "YOUR_USER_NAME" and "YOUR_PASSWORD" appear.
     public void xtestSlideSharePublishAndUnpublishActions() throws Exception
     {
+        final SlideShareChannelType channelType = (SlideShareChannelType)channelService.getChannelType(SlideShareChannelType.ID);
+        final String channelName = GUID.generate();
         final List<NodeRef> nodes = transactionHelper.doInTransaction(new RetryingTransactionCallback<List<NodeRef>>()
         {
             public List<NodeRef> execute() throws Throwable
@@ -127,7 +127,7 @@ public class SlideShareTest extends BaseSpringTest
                 // "YOUR_PASSWORD");
                 props.put(PublishingModel.PROP_CHANNEL_USERNAME, "YOUR_USER_NAME");
                 props.put(PublishingModel.PROP_CHANNEL_PASSWORD, "YOUR_PASSWORD");
-                Channel channel = channelService.createChannel(SlideShareChannelType.ID, GUID.generate(), props);
+                Channel channel = channelService.createChannel(SlideShareChannelType.ID, channelName, props);
 
                 NodeRef channelNode = channel.getNodeRef();
 
@@ -162,29 +162,31 @@ public class SlideShareTest extends BaseSpringTest
         {
             public NodeRef execute() throws Throwable
             {
+                Map<QName, Serializable> channelProperties = channelService.getChannelByName(channelName).getProperties();
                 for (NodeRef node : nodes)
                 {
-                    ActionService actionService = serviceRegistry.getActionService();
-                    Action publishAction = actionService.createAction(SlideSharePublishAction.NAME);
-                    actionService.executeAction(publishAction, node);
+                    channelType.publish(node, channelProperties);
                     Map<QName, Serializable> props = nodeService.getProperties(node);
                     Assert.assertTrue(nodeService.hasAspect(node, SlideSharePublishingModel.ASPECT_ASSET));
                     Assert.assertNotNull(props.get(PublishingModel.PROP_ASSET_ID));
                     Assert.assertNotNull(props.get(PublishingModel.PROP_ASSET_URL));
 
-                    System.out.println("Test file: " + testNodeMap.get(node));
+                    System.out.println("Published test file: " + testNodeMap.get(node));
                     System.out.println("SlideShare id: " + props.get(PublishingModel.PROP_ASSET_ID));
                     System.out.println("SlideShare URL: " + props.get(PublishingModel.PROP_ASSET_URL));
                 }
 
-                // Action unpublishAction =
-                // actionService.createAction(SlideShareUnpublishAction.NAME);
-                // actionService.executeAction(unpublishAction, node);
-                // props = nodeService.getProperties(node);
-                // Assert.assertFalse(nodeService.hasAspect(node,
-                // SlideSharePublishingModel.ASPECT_ASSET));
-                // Assert.assertNull(props.get(SlideSharePublishingModel.PROP_ASSET_ID));
-                // Assert.assertNull(props.get(SlideSharePublishingModel.PROP_ASSET_URL));
+                for (NodeRef node : nodes)
+                {
+                    Map<QName, Serializable> props = nodeService.getProperties(node);
+                    channelType.unpublish(node, channelProperties);
+                    props = nodeService.getProperties(node);
+                    Assert.assertFalse(nodeService.hasAspect(node, SlideSharePublishingModel.ASPECT_ASSET));
+                    Assert.assertNull(props.get(PublishingModel.PROP_ASSET_ID));
+                    Assert.assertNull(props.get(PublishingModel.PROP_ASSET_URL));
+
+                    System.out.println("Unpublished test file: " + testNodeMap.get(node));
+                }
                 return null;
             }
         });

@@ -86,7 +86,7 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
 
     private Channel channel;
     private NodeRef channelNode;
-    private ChannelType channelType;
+    private AbstractChannelType channelType;
     
     @Test
     public void testPublishNodes() throws Exception
@@ -390,7 +390,7 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
         publishNode(source, message);
         
         String expMessage = message + " " + url;
-        verify(channelType, times(1)).updateStatus(any(Channel.class), eq(expMessage), anyMap());
+        verify(channelType, times(1)).sendStatusUpdate(any(Channel.class), eq(expMessage));
     }
 
     private NodeRef publishNode(NodeRef source)
@@ -405,7 +405,7 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
     
     private NodeRef publishNode(NodeRef source, String message, boolean publish)
     {
-        PublishingDetails details = publishingService.getPublishingQueue().createPublishingDetails();
+        PublishingDetails details = publishingService.createPublishingDetails();
         details.setPublishChannel(channel.getId());
         if (publish)
         {

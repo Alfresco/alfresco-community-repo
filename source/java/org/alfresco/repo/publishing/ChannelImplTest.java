@@ -25,7 +25,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import junit.framework.TestCase;
 
-import org.alfresco.service.cmr.publishing.channels.ChannelType;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -37,75 +36,75 @@ public class ChannelImplTest extends TestCase
     public void testUpdateStatus() throws Exception
     {
         int maxLength = 30;
-        ChannelType channelType = mockChannelType(maxLength);
+        AbstractChannelType channelType = mockChannelType(maxLength);
         
         ChannelHelper helper = mock(ChannelHelper.class);
         when(helper.getChannelProperties(any(NodeRef.class))).thenReturn(null);
         NodeRef node = new NodeRef("test://channel/node");
         
-        ChannelImpl channel = new ChannelImpl(channelType, node, "Name", helper);
+        ChannelImpl channel = new ChannelImpl(null, channelType, node, "Name", helper, null);
         
         String msg = "Here is a message";
-        channel.updateStatus(msg, null);
-        verify(channelType).updateStatus(channel, msg, null);
+        channel.sendStatusUpdate(msg, null);
+        verify(channelType).sendStatusUpdate(channel, msg);
     }
 
     public void testUpdateStatusTruncates() throws Exception
     {
         int maxLength = 30;
-        ChannelType channelType = mockChannelType(maxLength);
+        AbstractChannelType channelType = mockChannelType(maxLength);
         
         ChannelHelper helper = mock(ChannelHelper.class);
         when(helper.getChannelProperties(any(NodeRef.class))).thenReturn(null);
         NodeRef node = new NodeRef("test://channel/node");
         
-        ChannelImpl channel = new ChannelImpl(channelType, node, "Name", helper);
+        ChannelImpl channel = new ChannelImpl(null, channelType, node, "Name", helper, null);
         
         String msg = "Here is a much longer message to truncate.";
         String expMsg = msg.substring(0, maxLength);
-        channel.updateStatus(msg, null);
-        verify(channelType).updateStatus(channel, expMsg, null);
+        channel.sendStatusUpdate(msg, null);
+        verify(channelType).sendStatusUpdate(channel, expMsg);
     }
     
     public void testUpdateStatusTruncatesWithUrl() throws Exception
     {
         int maxLength = 30;
-        ChannelType channelType = mockChannelType(maxLength);
+        AbstractChannelType channelType = mockChannelType(maxLength);
         
         ChannelHelper helper = mock(ChannelHelper.class);
         when(helper.getChannelProperties(any(NodeRef.class))).thenReturn(null);
         NodeRef node = new NodeRef("test://channel/node");
         
-        ChannelImpl channel = new ChannelImpl(channelType, node, "Name", helper);
+        ChannelImpl channel = new ChannelImpl(null, channelType, node, "Name", helper, null);
         String nodeUrl ="http://foo/bar";
         int endpoint = maxLength - nodeUrl.length();
         
         String msg = "Here is a much longer message to truncate.";
         String expMsg = msg.substring(0, endpoint) + nodeUrl;
-        channel.updateStatus(msg, nodeUrl);
-        verify(channelType).updateStatus(channel, expMsg, null);
+        channel.sendStatusUpdate(msg, nodeUrl);
+        verify(channelType).sendStatusUpdate(channel, expMsg);
     }
     
     public void testUpdateStatusNoMaxLength() throws Exception
     {
-        ChannelType channelType = mockChannelType(0);
+        AbstractChannelType channelType = mockChannelType(0);
         
         ChannelHelper helper = mock(ChannelHelper.class);
         when(helper.getChannelProperties(any(NodeRef.class))).thenReturn(null);
         NodeRef node = new NodeRef("test://channel/node");
         
-        ChannelImpl channel = new ChannelImpl(channelType, node, "Name", helper);
+        ChannelImpl channel = new ChannelImpl(null, channelType, node, "Name", helper, null);
         String nodeUrl ="http://foo/bar";
         
         String msg = "Here is a much longer message to truncate.";
         String expMsg = msg + nodeUrl;
-        channel.updateStatus(msg, nodeUrl);
-        verify(channelType).updateStatus(channel, expMsg, null);
+        channel.sendStatusUpdate(msg, nodeUrl);
+        verify(channelType).sendStatusUpdate(channel, expMsg);
     }
 
-    private ChannelType mockChannelType(int maxLength)
+    private AbstractChannelType mockChannelType(int maxLength)
     {
-        ChannelType channelType = mock(ChannelType.class);
+        AbstractChannelType channelType = mock(AbstractChannelType.class);
         when(channelType.canPublishStatusUpdates()).thenReturn(true);
         when(channelType.getMaximumStatusLength()).thenReturn(maxLength);
         return channelType;

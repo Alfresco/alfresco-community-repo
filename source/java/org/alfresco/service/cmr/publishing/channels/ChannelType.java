@@ -19,7 +19,6 @@
 
 package org.alfresco.service.cmr.publishing.channels;
 
-import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 
@@ -38,13 +37,11 @@ public interface ChannelType
     String getId();
     QName getChannelNodeType();
 
-    void publish(NodeRef nodeToPublish, Map<QName, Serializable> properties);
-    void unpublish(NodeRef nodeToUnpublish, Map<QName, Serializable> properties);
-    void updateStatus(Channel channel, String status, Map<QName, Serializable> properties);
-    
     boolean canPublish();
     boolean canUnpublish();
     boolean canPublishStatusUpdates();
+    
+    void sendStatusUpdate(Channel channel, String status);
     
     Set<String> getSupportedMimeTypes();
     Set<QName> getSupportedContentTypes();

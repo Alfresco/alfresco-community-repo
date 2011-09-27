@@ -11,34 +11,19 @@
     </bean>
 
     <bean id="slidesharePublishingHelper" class="org.alfresco.repo.publishing.slideshare.SlideSharePublishingHelper">
-        <property name="nodeService" ref="NodeService" />
         <property name="slideshareConnector" ref="slideshareApiConnector" />
         <property name="encryptor" ref="metadataEncryptor" />
     </bean>
 
-    <bean id="slideshareApiConnector" class="com.benfante.jslideshare.SlideShareConnectorImpl">
+    <bean id="slideshareApiConnector" class="org.alfresco.repo.publishing.slideshare.SlideShareConnectorImpl">
         <property name="apiKey" value="iXUZdaNl" />
         <property name="sharedSecret" value="DLysO5tR" />
     </bean>
 
-    <bean id="publish_slideshare" parent="action-executer" class="org.alfresco.repo.publishing.slideshare.SlideSharePublishAction">
-        <property name="nodeService" ref="NodeService" />
+    <bean id="slideshareDeliveryChannelType" class="org.alfresco.repo.publishing.slideshare.SlideShareChannelType" parent="baseChannelType" >
+        <property name="publishingHelper" ref="slidesharePublishingHelper" />
         <property name="taggingService" ref="TaggingService" />
         <property name="contentService" ref="ContentService" />
-        <property name="slideShareHelper" ref="slidesharePublishingHelper" />
-        <property name="publicAction" value="false" />
-    </bean>
-
-    <bean id="unpublish_slideshare" parent="action-executer" class="org.alfresco.repo.publishing.slideshare.SlideShareUnpublishAction">
-        <property name="nodeService" ref="NodeService" />
-        <property name="slideShareHelper" ref="slidesharePublishingHelper" />
-        <property name="publicAction" value="false" />
-    </bean>
-
-    <bean id="slideshareDeliveryChannelType" class="org.alfresco.repo.publishing.slideshare.SlideShareChannelType" parent="baseChannelType" >
-        <property name="actionService" ref="ActionService" />
-        <property name="nodeService" ref="NodeService" />
-        <property name="publishingHelper" ref="slidesharePublishingHelper" />
     </bean>
 
 

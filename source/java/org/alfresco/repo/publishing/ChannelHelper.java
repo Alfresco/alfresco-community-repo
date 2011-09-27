@@ -36,6 +36,7 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeUtils;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
@@ -70,16 +71,19 @@ public class ChannelHelper
     private DictionaryService dictionaryService;
     private FileFolderService fileFolderService;
     private PermissionService permissionService;
+
+    private ServiceRegistry serviceRegistry;
+    private PublishingEventHelper eventHelper;
     
     public ChannelHelper()
     {
         super();
     }
     
-    public ChannelHelper(NodeService nodeService, DictionaryService dictionaryService)
+    public ChannelHelper(ServiceRegistry serviceRegistry, PublishingEventHelper eventHelper)
     {
-        this.nodeService =nodeService;
-        this.dictionaryService = dictionaryService;
+        this.serviceRegistry = serviceRegistry;
+        this.eventHelper = eventHelper;
     }
 
     public NodeRef createChannelNode(NodeRef parent, ChannelType channelType, String channelName,
@@ -105,7 +109,7 @@ public class ChannelHelper
         String channelTypeId = (String) props.get(PROP_CHANNEL_TYPE_ID);
         ChannelType channelType = channelService.getChannelType(channelTypeId);
         String name = (String) props.get(ContentModel.PROP_NAME);
-        return new ChannelImpl(channelType, nodeRef, name, this);
+        return new ChannelImpl(serviceRegistry, (AbstractChannelType) channelType, nodeRef, name, this, eventHelper);
     }
 
     /**
@@ -428,5 +432,15 @@ public class ChannelHelper
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
+    }
+
+    public void setServiceRegistry(ServiceRegistry serviceRegistry)
+    {
+        this.serviceRegistry = serviceRegistry;
+    }
+
+    public void setEventHelper(PublishingEventHelper eventHelper)
+    {
+        this.eventHelper = eventHelper;
     }
 }

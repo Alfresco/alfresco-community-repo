@@ -18,23 +18,35 @@
  */
 package org.alfresco.repo.publishing.flickr;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.publishing.AbstractOAuth1ChannelType;
 import org.alfresco.repo.publishing.PublishingModel;
 import org.alfresco.repo.publishing.flickr.springsocial.api.Flickr;
-import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.action.ActionService;
-import org.alfresco.service.cmr.publishing.channels.Channel;
+import org.alfresco.repo.publishing.flickr.springsocial.api.MediaOperations;
+import org.alfresco.repo.publishing.flickr.springsocial.api.PhotoInfo;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.collections.CollectionUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.social.connect.Connection;
 import org.springframework.social.oauth1.OAuth1Parameters;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -50,18 +62,31 @@ public class FlickrChannelType extends AbstractOAuth1ChannelType<Flickr>
             MimetypeMap.MIMETYPE_IMAGE_GIF,
             MimetypeMap.MIMETYPE_IMAGE_JPEG,
             MimetypeMap.MIMETYPE_IMAGE_PNG);
+    private static Log log = LogFactory.getLog(FlickrChannelType.class);
     
-    private ActionService actionService;
+    private ContentService contentService;
+    private TaggingService taggingService;
+    private FlickrPublishingHelper flickrHelper;
     private Set<String> supportedMimeTypes = DEFAULT_SUPPORTED_MIME_TYPES;
-    
-    public void setActionService(ActionService actionService)
-    {
-        this.actionService = actionService;
-    }
     
     public void setSupportedMimeTypes(Set<String> mimeTypes)
     {
         supportedMimeTypes = Collections.unmodifiableSet(new TreeSet<String>(mimeTypes));
+    }
+
+    public void setContentService(ContentService contentService)
+    {
+        this.contentService = contentService;
+    }
+
+    public void setTaggingService(TaggingService taggingService)
+    {
+        this.taggingService = taggingService;
+    }
+
+    public void setFlickrHelper(FlickrPublishingHelper flickrHelper)
+    {
+        this.flickrHelper = flickrHelper;
     }
 
     @Override
@@ -95,47 +120,91 @@ public class FlickrChannelType extends AbstractOAuth1ChannelType<Flickr>
     }
 
     @Override
-    public Set<QName> getSupportedContentTypes()
-    {
-        return Collections.emptySet();
-    }
-
-    @Override
     public Set<String> getSupportedMimeTypes()
     {
         return supportedMimeTypes;
     }
 
     @Override
-    public void publish(NodeRef nodeToPublish, Map<QName, Serializable> properties)
+    public void publish(NodeRef nodeToPublish, Map<QName, Serializable> channelProperties)
     {
-        Action publishAction = actionService.createAction(FlickrPublishAction.NAME);
-        actionService.executeAction(publishAction, nodeToPublish);
-    }
-
-    @Override
-    public void unpublish(NodeRef nodeToUnpublish, Map<QName, Serializable> properties)
-    {
-        Action action = actionService.createAction(FlickrUnpublishAction.NAME);
-        actionService.executeAction(action, nodeToUnpublish);
-    }
-
-    @Override
-    public void updateStatus(Channel channel, String status, Map<QName, Serializable> properties)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public String getNodeUrl(NodeRef node)
-    {
-        String url = null;
         NodeService nodeService = getNodeService();
-        if (node != null && nodeService.exists(node) && nodeService.hasAspect(node, FlickrPublishingModel.ASPECT_ASSET))
+        ContentReader reader = contentService.getReader(nodeToPublish, ContentModel.PROP_CONTENT);
+        if (reader.exists())
         {
-            url = (String)nodeService.getProperty(node, PublishingModel.PROP_ASSET_URL);
+            File contentFile;
+            boolean deleteContentFileOnCompletion = false;
+            if (FileContentReader.class.isAssignableFrom(reader.getClass()))
+            {
+                // Grab the content straight from the content store if we can...
+                contentFile = ((FileContentReader) reader).getFile();
+            }
+            else
+            {
+                // ...otherwise copy it to a temp file and use the copy...
+                File tempDir = TempFileProvider.getLongLifeTempDir("flickr");
+                contentFile = TempFileProvider.createTempFile("flickr", "", tempDir);
+                reader.getContent(contentFile);
+                deleteContentFileOnCompletion = true;
+            }
+            try
+            {
+                Resource res = new FileSystemResource(contentFile);
+                Connection<Flickr> connection = flickrHelper.getConnectionFromChannelProps(channelProperties);
+
+                String name = (String) nodeService.getProperty(nodeToPublish, ContentModel.PROP_NAME);
+                String title = (String) nodeService.getProperty(nodeToPublish, ContentModel.PROP_TITLE);
+                if (title == null || title.length() == 0)
+                {
+                    title = name;
+                }
+                String description = (String) nodeService.getProperty(nodeToPublish, ContentModel.PROP_DESCRIPTION);
+                if (description == null || description.length() == 0)
+                {
+                    description = title;
+                }
+                List<String> tags = taggingService.getTags(nodeToPublish);
+                String[] tagArray = tags.toArray(new String[tags.size()]);
+
+                MediaOperations mediaOps = connection.getApi().mediaOperations();
+                String id = mediaOps.postPhoto(res, title, description, tagArray);
+                
+                //Store info onto the published node...
+                nodeService.addAspect(nodeToPublish, FlickrPublishingModel.ASPECT_ASSET, null);
+                log.info("Posted image " + name + " to Flickr with id " + id);
+                nodeService.setProperty(nodeToPublish, PublishingModel.PROP_ASSET_ID, id);
+
+                PhotoInfo photoInfo = mediaOps.getPhoto(id);
+                String url = photoInfo.getPrimaryUrl();
+                log.info("Photo url = " + url);
+                nodeService.setProperty(nodeToPublish, PublishingModel.PROP_ASSET_URL, url);
+            }
+            finally
+            {
+                if (deleteContentFileOnCompletion)
+                {
+                    contentFile.delete();
+                }
+            }
         }
-        return url;
+    }
+
+    @Override
+    public void unpublish(NodeRef nodeToUnpublish, Map<QName, Serializable> channelProperties)
+    {
+        NodeService nodeService = getNodeService();
+        if (nodeService.hasAspect(nodeToUnpublish, FlickrPublishingModel.ASPECT_ASSET))
+        {
+            String assetId = (String) nodeService.getProperty(nodeToUnpublish, PublishingModel.PROP_ASSET_ID);
+            if (assetId != null)
+            {
+                Connection<Flickr> connection = flickrHelper.getConnectionFromChannelProps(channelProperties);
+                MediaOperations mediaOps = connection.getApi().mediaOperations();
+                mediaOps.deletePhoto(assetId);
+                nodeService.removeAspect(nodeToUnpublish, FlickrPublishingModel.ASPECT_ASSET);
+                nodeService.removeAspect(nodeToUnpublish, PublishingModel.ASPECT_ASSET);
+            }
+        }
     }
 
     @Override

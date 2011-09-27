@@ -19,13 +19,35 @@
 
 package org.alfresco.repo.publishing;
 
-import java.io.Serializable;
-import java.util.Map;
+import static org.alfresco.model.ContentModel.ASSOC_CONTAINS;
+import static org.alfresco.repo.publishing.PublishingModel.ASPECT_PUBLISHED;
+import static org.alfresco.repo.publishing.PublishingModel.ASSOC_LAST_PUBLISHING_EVENT;
+import static org.alfresco.repo.publishing.PublishingModel.NAMESPACE;
 
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.node.NodeUtils;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.publishing.NodeSnapshot;
+import org.alfresco.service.cmr.publishing.PublishingEvent;
+import org.alfresco.service.cmr.publishing.PublishingPackageEntry;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelType;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.GUID;
+import org.alfresco.util.ParameterCheck;
 
 /**
  * @author Brian
@@ -35,16 +57,24 @@ import org.alfresco.service.namespace.QName;
 public class ChannelImpl implements Channel
 {
     private final NodeRef nodeRef;
-    private final ChannelType channelType;
+    private final AbstractChannelType channelType;
     private final String name;
     private final ChannelHelper channelHelper;
+    private final NodeService nodeService;
+    private final DictionaryService dictionaryService;
+    private final PublishingEventHelper eventHelper;
+    
 
-    public ChannelImpl(ChannelType channelType, NodeRef nodeRef, String name, ChannelHelper channelHelper)
+    public ChannelImpl(ServiceRegistry serviceRegistry, AbstractChannelType channelType, NodeRef nodeRef, String name,
+            ChannelHelper channelHelper, PublishingEventHelper eventHelper)
     {
         this.nodeRef = nodeRef;
         this.channelType = channelType;
         this.name = name;
         this.channelHelper = channelHelper;
+        this.nodeService = serviceRegistry.getNodeService();
+        this.dictionaryService = serviceRegistry.getDictionaryService();
+        this.eventHelper = eventHelper;
     }
 
     /**
@@ -87,22 +117,186 @@ public class ChannelImpl implements Channel
         return channelHelper.getChannelProperties(nodeRef);
     }
 
-    /**
-    * {@inheritDoc}
-    */
-    public void publish(NodeRef nodeToPublish)
+    public void publishEvent(PublishingEvent event)
     {
-        channelHelper.addPublishedAspect(nodeToPublish, nodeRef);
-        if (channelHelper.canPublish(nodeToPublish, channelType))
+         NodeRef eventNode = eventHelper.getPublishingEventNode(event.getId());
+         for (PublishingPackageEntry entry : event.getPackage().getEntries())
+         {
+             if (entry.isPublish())
+             {
+                 publishEntry(entry, eventNode);
+             }
+             else
+             {
+                 unpublishEntry(entry);
+             }
+         }
+     }
+
+    public void unpublishEntry(PublishingPackageEntry entry)
+    {
+        NodeRef channelNode = new NodeRef(getId());
+        NodeRef publishedNode = channelHelper.mapSourceToEnvironment(entry.getNodeRef(), channelNode);
+        if (NodeUtils.exists(publishedNode, nodeService))
         {
-            channelType.publish(nodeToPublish, getProperties());
+            unpublish(publishedNode);
+            // Need to set as temporary to delete node instead of archiving.
+            nodeService.addAspect(publishedNode, ContentModel.ASPECT_TEMPORARY, null);
+            nodeService.deleteNode(publishedNode);
+        }
+    }
+
+    public NodeRef publishEntry(PublishingPackageEntry entry, NodeRef eventNode)
+    {
+        NodeRef publishedNode = channelHelper.mapSourceToEnvironment(entry.getNodeRef(), getNodeRef());
+        if (publishedNode == null)
+        {
+            publishedNode = publishNewNode(getNodeRef(),  entry.getSnapshot());
+        }
+        else
+        {
+            updatePublishedNode(publishedNode, entry);
+        }
+        eventHelper.linkToLastEvent(publishedNode, eventNode);
+        publish(publishedNode);
+        return publishedNode; 
+    }
+    
+    /**
+     * Creates a new node under the root of the specified channel. The type,
+     * aspects and properties of the node are determined by the supplied
+     * snapshot.
+     * 
+     * @param channel
+     * @param snapshot
+     * @return the newly published node.
+     */
+    private NodeRef publishNewNode(NodeRef channel, NodeSnapshot snapshot)
+    {
+        ParameterCheck.mandatory("channel", channel);
+        ParameterCheck.mandatory("snapshot", snapshot);
+        
+        NodeRef publishedNode = createPublishedNode(channel, snapshot);
+        addAspects(publishedNode, snapshot.getAspects());
+        NodeRef source = snapshot.getNodeRef();
+        channelHelper.createMapping(source, publishedNode);
+        return publishedNode;
+    }
+
+    private void updatePublishedNode(NodeRef publishedNode, PublishingPackageEntry entry)
+    {
+       NodeSnapshot snapshot = entry.getSnapshot();
+       Set<QName> newAspects = snapshot.getAspects();
+       removeUnwantedAspects(publishedNode, newAspects);
+
+       Map<QName, Serializable> snapshotProps = snapshot.getProperties();
+       removeUnwantedProperties(publishedNode, snapshotProps);
+       
+       // Add new properties
+       Map<QName, Serializable> newProps= new HashMap<QName, Serializable>(snapshotProps);
+       newProps.remove(ContentModel.PROP_NODE_UUID);
+       nodeService.setProperties(publishedNode, snapshotProps);
+       
+       // Add new aspects
+       addAspects(publishedNode, newAspects);
+       
+       List<ChildAssociationRef> assocs = nodeService.getChildAssocs(publishedNode, ASSOC_LAST_PUBLISHING_EVENT, RegexQNamePattern.MATCH_ALL);
+       for (ChildAssociationRef assoc : assocs)
+       {
+           nodeService.removeChildAssociation(assoc);
+       }
+    }
+
+    /**
+     * @param publishedNode
+     * @param snapshotProps
+     */
+    private void removeUnwantedProperties(NodeRef publishedNode, Map<QName, Serializable> snapshotProps)
+    {
+        Map<QName, Serializable> publishProps = nodeService.getProperties(publishedNode);
+        Set<QName> propsToRemove = new HashSet<QName>(publishProps.keySet());
+        propsToRemove.removeAll(snapshotProps.keySet());
+
+        //We want to retain the published asset id and URL in the updated node...
+        snapshotProps.put(PublishingModel.PROP_ASSET_ID, nodeService.getProperty(publishedNode, 
+                PublishingModel.PROP_ASSET_ID));
+        snapshotProps.put(PublishingModel.PROP_ASSET_URL, nodeService.getProperty(publishedNode, 
+                PublishingModel.PROP_ASSET_URL));
+        
+        for (QName propertyToRemove : propsToRemove)
+        {
+            nodeService.removeProperty(publishedNode, propertyToRemove);
         }
     }
 
     /**
-    * {@inheritDoc}
-    */
-    public void unPublish(NodeRef nodeToUnpublish)
+     * @param publishedNode
+     * @param newAspects
+     */
+    private void removeUnwantedAspects(NodeRef publishedNode, Set<QName> newAspects)
+    {
+        Set<QName> aspectsToRemove = nodeService.getAspects(publishedNode);
+        aspectsToRemove.removeAll(newAspects);
+        aspectsToRemove.remove(ASPECT_PUBLISHED);
+        aspectsToRemove.remove(PublishingModel.ASPECT_ASSET);
+        for (QName publishedAssetAspect : dictionaryService.getSubAspects(PublishingModel.ASPECT_ASSET, true))
+        {
+            aspectsToRemove.remove(publishedAssetAspect);
+        }
+
+        for (QName aspectToRemove : aspectsToRemove)
+        {
+            nodeService.removeAspect(publishedNode, aspectToRemove);
+        }
+    }
+
+    private void addAspects(NodeRef publishedNode, Collection<QName> aspects)
+    {
+        Set<QName> currentAspects = nodeService.getAspects(publishedNode);
+        for (QName aspect : aspects)
+        {
+            if (currentAspects.contains(aspect) == false)
+            {
+                nodeService.addAspect(publishedNode, aspect, null);
+            }
+        }
+    }
+
+    private NodeRef createPublishedNode(NodeRef root, NodeSnapshot snapshot)
+    {
+        QName type = snapshot.getType();
+        Map<QName, Serializable> actualProps = getPropertiesToPublish(snapshot);
+        String name = (String) actualProps.get(ContentModel.PROP_NAME);
+        if (name == null)
+        {
+            name = GUID.generate();
+        }
+        QName assocName = QName.createQName(NAMESPACE, name);
+        ChildAssociationRef publishedAssoc = nodeService.createNode(root, ASSOC_CONTAINS, assocName, type, actualProps);
+        NodeRef publishedNode = publishedAssoc.getChildRef();
+       return publishedNode;
+    }
+
+    private Map<QName, Serializable> getPropertiesToPublish(NodeSnapshot snapshot)
+    {
+        Map<QName, Serializable> properties = snapshot.getProperties();
+        // Remove the Node Ref Id
+        Map<QName, Serializable> actualProps = new HashMap<QName, Serializable>(properties);
+        actualProps.remove(ContentModel.PROP_NODE_UUID);
+        return actualProps;
+    }
+
+    
+    private void publish(NodeRef nodeToPublish)
+    {
+        if (channelHelper.canPublish(nodeToPublish, channelType))
+        {
+            channelHelper.addPublishedAspect(nodeToPublish, nodeRef);
+            channelType.publish(nodeToPublish, getProperties());
+        }
+    }
+
+    private void unpublish(NodeRef nodeToUnpublish)
     {
         if (channelType.canUnpublish())
         {
@@ -113,7 +307,7 @@ public class ChannelImpl implements Channel
     /**
     * {@inheritDoc}
     */
-    public void updateStatus(String status, String nodeUrl)
+    public void sendStatusUpdate(String status, String nodeUrl)
     {
         if (channelType.canPublishStatusUpdates())
         {
@@ -125,7 +319,7 @@ public class ChannelImpl implements Channel
                 status = status.substring(0, endpoint );
             }
             String msg = nodeUrl == null ? status : status + nodeUrl;
-            channelType.updateStatus(this, msg, getProperties());
+            channelType.sendStatusUpdate(this, msg);
         }
     }
 

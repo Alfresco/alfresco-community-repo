@@ -16,28 +16,16 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package org.alfresco.repo.publishing;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import java.io.Serializable;
+import java.util.Map;
 
-/**
- * @author Nick Smith
- * @since 4.0
- */
-@RunWith(Suite.class)
-@Suite.SuiteClasses( { ChannelServiceImplTest.class,
-    PublishingEventHelperTest.class,
-    ChannelServiceImplIntegratedTest.class,
-    PublishingRootObjectTest.class,
-//    EnvironmentImplTest.class,
-    PublishingQueueImplTest.class,
-    PublishingPackageSerializerTest.class,
-//  PublishEventActionTest.class,
-    PublishingIntegratedTest.class
-    })
-public class WebPublishingTestSuite
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
+
+public interface ChannelTypePublishingOperations
 {
-    //NOOP
+    void publish(NodeRef nodeToPublish, Map<QName, Serializable> channelProperties);
+    void unpublish(NodeRef nodeToUnpublish, Map<QName, Serializable> channelProperties);
 }

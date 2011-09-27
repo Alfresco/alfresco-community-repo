@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.publishing.AbstractChannelType;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -38,7 +39,7 @@ public interface ChannelService
      * @param channelType The channel type to be registered.
      * @throws IllegalArgumentException if a channel type is already registered that has the same identifier as the supplied one
      */
-    void register(ChannelType channelType);
+    void register(AbstractChannelType channelType);
     
     /**
      * Retrieve the channel type that has the specified identifier

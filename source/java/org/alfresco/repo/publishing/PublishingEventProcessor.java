@@ -19,37 +19,19 @@
 
 package org.alfresco.repo.publishing;
 
-import static org.alfresco.model.ContentModel.ASSOC_CONTAINS;
-import static org.alfresco.repo.publishing.PublishingModel.ASPECT_PUBLISHED;
-import static org.alfresco.repo.publishing.PublishingModel.ASSOC_LAST_PUBLISHING_EVENT;
-import static org.alfresco.repo.publishing.PublishingModel.NAMESPACE;
-
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.node.NodeUtils;
 import org.alfresco.repo.policy.BehaviourFilter;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.publishing.NodeSnapshot;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
-import org.alfresco.service.cmr.publishing.PublishingPackageEntry;
 import org.alfresco.service.cmr.publishing.Status;
 import org.alfresco.service.cmr.publishing.StatusUpdate;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.urlshortening.UrlShortener;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.util.GUID;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -63,34 +45,46 @@ public class PublishingEventProcessor
     private static final Log log = LogFactory.getLog(PublishingEventProcessor.class);
     
     private PublishingEventHelper eventHelper;
-    private ChannelHelper channelHelper;
     private ChannelService channelService;
     private NodeService nodeService;
     private BehaviourFilter behaviourFilter;
     private UrlShortener urlShortener;
-    private DictionaryService dictionaryService;
+    private TransactionService transactionService;
     
     public void processEventNode(NodeRef eventNode)
     {
         ParameterCheck.mandatory("eventNode", eventNode);
         try
         {
-            behaviourFilter.disableAllBehaviours();
-            String inProgressStatus = Status.IN_PROGRESS.name();
-            nodeService.setProperty(eventNode, PublishingModel.PROP_PUBLISHING_EVENT_STATUS, inProgressStatus);
-            PublishingEvent event = eventHelper.getPublishingEvent(eventNode);
+            updateEventStatus(eventNode, Status.IN_PROGRESS);
+            final PublishingEvent event = eventHelper.getPublishingEvent(eventNode);
             String channelName = event.getChannelId();
-            Channel channel = channelService.getChannelById(channelName);
+            final ChannelImpl channel = (ChannelImpl) channelService.getChannelById(channelName);
             if (channel == null)
             {
                 fail(eventNode, "No channel found");
             }
             else
             {
-                publishEvent(channel, event);
-                updateStatus(channel, event.getStatusUpdate());
-                String completedStatus = Status.COMPLETED.name();
-                nodeService.setProperty(eventNode, PublishingModel.PROP_PUBLISHING_EVENT_STATUS, completedStatus);
+                transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+                {
+                    @Override
+                    public Void execute() throws Throwable
+                    {
+                        try
+                        {
+                            behaviourFilter.disableAllBehaviours();
+                            channel.publishEvent(event);
+                            sendStatusUpdate(channel, event.getStatusUpdate());
+                        }
+                        finally
+                        {
+                            behaviourFilter.enableAllBehaviours();
+                        }
+                        return null;
+                    }
+                }, false, true);
+                updateEventStatus(eventNode, Status.COMPLETED);
             }
         }
         catch (Exception e)
@@ -98,13 +92,9 @@ public class PublishingEventProcessor
             log.error("Caught exception while processing publishing event " + eventNode, e);
             fail(eventNode, e.getMessage());
         }
-        finally
-        {
-            behaviourFilter.enableAllBehaviours();
-        }
      }
 
-    public void updateStatus(Channel publishChannel, StatusUpdate update)
+    public void sendStatusUpdate(Channel publishChannel, StatusUpdate update)
     {
         if (update == null)
         {
@@ -118,7 +108,7 @@ public class PublishingEventProcessor
             Channel channel = channelService.getChannelById(channelId);
             if (channel != null)
             {
-                channel.updateStatus(message, nodeUrl);
+                channel.sendStatusUpdate(message, nodeUrl);
             }
         }
     }
@@ -143,190 +133,26 @@ public class PublishingEventProcessor
         return nodeUrl;
     }
 
-    public void publishEvent(Channel channel, PublishingEvent event)
-    {
-         NodeRef eventNode = eventHelper.getPublishingEventNode(event.getId());
-         for (PublishingPackageEntry entry : event.getPackage().getEntries())
-         {
-             if (entry.isPublish())
-             {
-                 publishEntry(channel, entry, eventNode);
-             }
-             else
-             {
-                 unpublishEntry(channel, entry);
-             }
-         }
-     }
-     
-     public void unpublishEntry(Channel channel, PublishingPackageEntry entry)
-     {
-         NodeRef channelNode = new NodeRef(channel.getId());
-         NodeRef publishedNode = channelHelper.mapSourceToEnvironment(entry.getNodeRef(), channelNode);
-         if (NodeUtils.exists(publishedNode, nodeService))
-         {
-             channel.unPublish(publishedNode);
-             // Need to set as temporary to delete node instead of archiving.
-             nodeService.addAspect(publishedNode, ContentModel.ASPECT_TEMPORARY, null);
-             nodeService.deleteNode(publishedNode);
-         }
-     }
-
      public void fail(NodeRef eventNode, String msg)
      {
          log.error("Failed to process publishing event " + eventNode + ": " + msg);
-         String completedStatus = Status.FAILED.name();
-         nodeService.setProperty(eventNode, PublishingModel.PROP_PUBLISHING_EVENT_STATUS, completedStatus);
+         updateEventStatus(eventNode, Status.FAILED);
      }
 
-     public NodeRef publishEntry(Channel channel, PublishingPackageEntry entry, NodeRef eventNode)
+     private void updateEventStatus(final NodeRef eventNode, final Status status)
      {
-         NodeRef publishedNode = channelHelper.mapSourceToEnvironment(entry.getNodeRef(), channel.getNodeRef());
-         if (publishedNode == null)
-         {
-             publishedNode = publishNewNode(channel.getNodeRef(),  entry.getSnapshot());
-         }
-         else
-         {
-             updatePublishedNode(publishedNode, entry);
-         }
-         eventHelper.linkToLastEvent(publishedNode, eventNode);
-         channel.publish(publishedNode);
-         return publishedNode; 
-     }
-
-     /**
-      * Creates a new node under the root of the specified channel. The type,
-      * aspects and properties of the node are determined by the supplied
-      * snapshot.
-      * 
-      * @param channel
-      * @param snapshot
-      * @return the newly published node.
-      */
-     private NodeRef publishNewNode(NodeRef channel, NodeSnapshot snapshot)
-     {
-         ParameterCheck.mandatory("channel", channel);
-         ParameterCheck.mandatory("snapshot", snapshot);
-         
-         NodeRef publishedNode = createPublishedNode(channel, snapshot);
-         addAspects(publishedNode, snapshot.getAspects());
-         NodeRef source = snapshot.getNodeRef();
-         channelHelper.createMapping(source, publishedNode);
-         return publishedNode;
-     }
-
-     private void updatePublishedNode(NodeRef publishedNode, PublishingPackageEntry entry)
-     {
-        NodeSnapshot snapshot = entry.getSnapshot();
-        Set<QName> newAspects = snapshot.getAspects();
-        removeUnwantedAspects(publishedNode, newAspects);
-
-        Map<QName, Serializable> snapshotProps = snapshot.getProperties();
-        removeUnwantedProperties(publishedNode, snapshotProps);
-        
-        // Add new properties
-        Map<QName, Serializable> newProps= new HashMap<QName, Serializable>(snapshotProps);
-        newProps.remove(ContentModel.PROP_NODE_UUID);
-        nodeService.setProperties(publishedNode, snapshotProps);
-        
-        // Add new aspects
-        addAspects(publishedNode, newAspects);
-        
-        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(publishedNode, ASSOC_LAST_PUBLISHING_EVENT, RegexQNamePattern.MATCH_ALL);
-        for (ChildAssociationRef assoc : assocs)
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
         {
-            nodeService.removeChildAssociation(assoc);
-        }
-     }
-
-    /**
-     * @param publishedNode
-     * @param snapshotProps
-     */
-    private void removeUnwantedProperties(NodeRef publishedNode, Map<QName, Serializable> snapshotProps)
-    {
-        Map<QName, Serializable> publishProps = nodeService.getProperties(publishedNode);
-        Set<QName> propsToRemove = new HashSet<QName>(publishProps.keySet());
-        propsToRemove.removeAll(snapshotProps.keySet());
-
-        //We want to retain the published asset id and URL in the updated node...
-        snapshotProps.put(PublishingModel.PROP_ASSET_ID, nodeService.getProperty(publishedNode, 
-                PublishingModel.PROP_ASSET_ID));
-        snapshotProps.put(PublishingModel.PROP_ASSET_URL, nodeService.getProperty(publishedNode, 
-                PublishingModel.PROP_ASSET_URL));
-        
-        for (QName propertyToRemove : propsToRemove)
-        {
-            nodeService.removeProperty(publishedNode, propertyToRemove);
-        }
-    }
-
-    /**
-     * @param publishedNode
-     * @param newAspects
-     */
-    private void removeUnwantedAspects(NodeRef publishedNode, Set<QName> newAspects)
-    {
-        Set<QName> aspectsToRemove = nodeService.getAspects(publishedNode);
-        aspectsToRemove.removeAll(newAspects);
-        aspectsToRemove.remove(ASPECT_PUBLISHED);
-        aspectsToRemove.remove(PublishingModel.ASPECT_ASSET);
-        for (QName publishedAssetAspect : dictionaryService.getSubAspects(PublishingModel.ASPECT_ASSET, true))
-        {
-            aspectsToRemove.remove(publishedAssetAspect);
-        }
-
-        for (QName aspectToRemove : aspectsToRemove)
-        {
-            nodeService.removeAspect(publishedNode, aspectToRemove);
-        }
-    }
-
-    private void addAspects(NodeRef publishedNode, Collection<QName> aspects)
-    {
-        Set<QName> currentAspects = nodeService.getAspects(publishedNode);
-        for (QName aspect : aspects)
-        {
-            if (currentAspects.contains(aspect) == false)
+            @Override
+            public Void execute() throws Throwable
             {
-                nodeService.addAspect(publishedNode, aspect, null);
+                nodeService.setProperty(eventNode, PublishingModel.PROP_PUBLISHING_EVENT_STATUS, status.name());
+                return null;
             }
-        }
-    }
+        }, false, true);
+     }
 
-    private NodeRef createPublishedNode(NodeRef root, NodeSnapshot snapshot)
-    {
-        QName type = snapshot.getType();
-        Map<QName, Serializable> actualProps = getPropertiesToPublish(snapshot);
-        String name = (String) actualProps.get(ContentModel.PROP_NAME);
-        if (name == null)
-        {
-            name = GUID.generate();
-        }
-        QName assocName = QName.createQName(NAMESPACE, name);
-        ChildAssociationRef publishedAssoc = nodeService.createNode(root, ASSOC_CONTAINS, assocName, type, actualProps);
-        NodeRef publishedNode = publishedAssoc.getChildRef();
-       return publishedNode;
-    }
 
-    private Map<QName, Serializable> getPropertiesToPublish(NodeSnapshot snapshot)
-    {
-        Map<QName, Serializable> properties = snapshot.getProperties();
-        // Remove the Node Ref Id
-        Map<QName, Serializable> actualProps = new HashMap<QName, Serializable>(properties);
-        actualProps.remove(ContentModel.PROP_NODE_UUID);
-        return actualProps;
-    }
-
-    /**
-     * @param channelHelper the channelHelper to set
-     */
-    public void setChannelHelper(ChannelHelper channelHelper)
-    {
-        this.channelHelper = channelHelper;
-    }
- 
     /**
      * @param channelService the channelService to set
      */
@@ -367,8 +193,8 @@ public class PublishingEventProcessor
         this.urlShortener = urlShortener;
     }
 
-    public void setDictionaryService(DictionaryService dictionaryService)
+    public void setTransactionService(TransactionService transactionService)
     {
-        this.dictionaryService = dictionaryService;
+        this.transactionService = transactionService;
     }
 }

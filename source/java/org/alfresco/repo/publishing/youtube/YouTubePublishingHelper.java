@@ -18,10 +18,12 @@
  */
 package org.alfresco.repo.publishing.youtube;
 
+import java.io.Serializable;
+import java.util.Map;
+
 import org.alfresco.repo.node.encryption.MetadataEncryptor;
 import org.alfresco.repo.publishing.PublishingModel;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -30,42 +32,32 @@ import com.google.gdata.client.youtube.YouTubeService;
 public class YouTubePublishingHelper
 {
     private static final Log log = LogFactory.getLog(YouTubePublishingHelper.class);
-    private NodeService nodeService;
     private MetadataEncryptor encryptor;
-
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
 
     public void setEncryptor(MetadataEncryptor encryptor)
     {
         this.encryptor = encryptor;
     }
 
-    public YouTubeService getYouTubeServiceForNode(NodeRef publishNode)
+    public YouTubeService getYouTubeServiceFromChannelProperties(Map<QName, Serializable> channelProperties)
     {
         YouTubeService service = null;
-        if (nodeService.exists(publishNode))
+        if (channelProperties != null)
         {
-            NodeRef parent = nodeService.getPrimaryParent(publishNode).getParentRef();
-            if (nodeService.hasAspect(parent, YouTubePublishingModel.ASPECT_DELIVERY_CHANNEL))
+            String youtubeUsername = (String) encryptor.decrypt(PublishingModel.PROP_CHANNEL_USERNAME, 
+                    channelProperties.get(PublishingModel.PROP_CHANNEL_USERNAME));
+            String youtubePassword = (String) encryptor.decrypt(PublishingModel.PROP_CHANNEL_PASSWORD, 
+                    channelProperties.get(PublishingModel.PROP_CHANNEL_PASSWORD));
+            service = new YouTubeService("Alfresco",
+                    "AI39si78RHlniONCtnu9o8eBfwZToBAp2ZbbURm5eoJjj4gZi0LcxjDqJTzD35oYokmtFXbCo5ojofbimGnMlRbmNrh7-M7ZCw");
+            try
             {
-                String youtubeUsername = (String) encryptor.decrypt(PublishingModel.PROP_CHANNEL_USERNAME, nodeService
-                        .getProperty(parent, PublishingModel.PROP_CHANNEL_USERNAME));
-                String youtubePassword = (String) encryptor.decrypt(PublishingModel.PROP_CHANNEL_PASSWORD, nodeService
-                        .getProperty(parent, PublishingModel.PROP_CHANNEL_PASSWORD));
-                service = new YouTubeService("Alfresco",
-                        "AI39si78RHlniONCtnu9o8eBfwZToBAp2ZbbURm5eoJjj4gZi0LcxjDqJTzD35oYokmtFXbCo5ojofbimGnMlRbmNrh7-M7ZCw");
-                try
-                {
-                    service.setUserCredentials(youtubeUsername, youtubePassword);
-                }
-                catch (Exception e)
-                {
-                    service = null;
-                    log.error("Failed to connect to YouTube", e);
-                }
+                service.setUserCredentials(youtubeUsername, youtubePassword);
+            }
+            catch (Exception e)
+            {
+                service = null;
+                log.error("Failed to connect to YouTube", e);
             }
         }
         return service;

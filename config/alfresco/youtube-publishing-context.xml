@@ -11,28 +11,12 @@
     </bean>
 
     <bean id="youtubePublishingHelper" class="org.alfresco.repo.publishing.youtube.YouTubePublishingHelper">
-        <property name="nodeService" ref="NodeService" />
         <property name="encryptor" ref="metadataEncryptor" />
     </bean>
 
-    <bean id="publish_youtube" parent="action-executer" class="org.alfresco.repo.publishing.youtube.YouTubePublishAction">
-        <property name="nodeService" ref="NodeService" />
+    <bean id="youtubeDeliveryChannelType" class="org.alfresco.repo.publishing.youtube.YouTubeChannelType" parent="baseChannelType" >
         <property name="taggingService" ref="TaggingService" />
         <property name="contentService" ref="ContentService" />
         <property name="youTubeHelper" ref="youtubePublishingHelper" />
-        <property name="publicAction" value="false" />
     </bean>
-
-    <bean id="unpublish_youtube" parent="action-executer" class="org.alfresco.repo.publishing.youtube.YouTubeUnpublishAction">
-        <property name="nodeService" ref="NodeService" />
-        <property name="youTubeHelper" ref="youtubePublishingHelper" />
-        <property name="publicAction" value="false" />
-    </bean>
-
-    <bean id="youtubeDeliveryChannelType" class="org.alfresco.repo.publishing.youtube.YouTubeChannelType" parent="baseChannelType" >
-        <property name="actionService" ref="ActionService" />
-        <property name="nodeService" ref="NodeService" />
-    </bean>
-
-
 </beans>

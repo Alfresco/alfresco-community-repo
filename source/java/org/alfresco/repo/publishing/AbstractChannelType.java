@@ -20,13 +20,17 @@
 package org.alfresco.repo.publishing;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.repo.node.encryption.MetadataEncryptor;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
 import org.alfresco.service.cmr.publishing.channels.ChannelType;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.core.io.ClassPathResource;
@@ -36,8 +40,9 @@ import org.springframework.core.io.Resource;
  * @author Nick Smith
  * @since 4.0
  */
-public abstract class AbstractChannelType implements ChannelType
+public abstract class AbstractChannelType implements ChannelType, ChannelTypePublishingOperations
 {
+    private NodeService nodeService;
     private ChannelService channelService;
     private MetadataEncryptor encryptor;
 
@@ -60,6 +65,16 @@ public abstract class AbstractChannelType implements ChannelType
     protected MetadataEncryptor getEncryptor()
     {
         return encryptor;
+    }
+
+    protected NodeService getNodeService()
+    {
+        return nodeService;
+    }
+
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
     }
 
     /**
@@ -132,4 +147,46 @@ public abstract class AbstractChannelType implements ChannelType
     {
         return "png";
     }
+
+    @Override
+    public Set<QName> getSupportedContentTypes()
+    {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public Set<String> getSupportedMimeTypes()
+    {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public void sendStatusUpdate(Channel channel, String status)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void publish(NodeRef nodeToPublish, Map<QName, Serializable> channelProperties)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void unpublish(NodeRef nodeToUnpublish, Map<QName, Serializable> channelProperties)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String getNodeUrl(NodeRef node)
+    {
+        String url = null;
+        if (node != null && nodeService.exists(node) && nodeService.hasAspect(node, PublishingModel.ASPECT_ASSET))
+        {
+            url = (String)nodeService.getProperty(node, PublishingModel.PROP_ASSET_URL);
+        }
+        return url;
+    }
+
 }

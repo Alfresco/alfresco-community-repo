@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.service.cmr.publishing.NodePublishStatus;
+import org.alfresco.service.cmr.publishing.PublishingDetails;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
 import org.alfresco.service.cmr.publishing.PublishingQueue;
 import org.alfresco.service.cmr.publishing.PublishingService;
@@ -95,10 +96,7 @@ public class PublishServiceImpl implements PublishingService
         publishingEventHelper.cancelEvent(id);
     }
 
-    /**
-    * {@inheritDoc}
-    */
-    public PublishingQueue getPublishingQueue()
+    private PublishingQueue getPublishingQueue()
     {
         return rootObject.getPublishingQueue();
     }
@@ -130,4 +128,18 @@ public class PublishServiceImpl implements PublishingService
         //TODO
         return null;
     }
+    
+    public PublishingDetails createPublishingDetails()
+    {
+        return getPublishingQueue().createPublishingDetails();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public String scheduleNewEvent(PublishingDetails publishingDetails)
+    {
+        return getPublishingQueue().scheduleNewEvent(publishingDetails);
+    }
+
 }

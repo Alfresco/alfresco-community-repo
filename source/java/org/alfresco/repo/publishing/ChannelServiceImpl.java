@@ -102,7 +102,7 @@ public class ChannelServiceImpl implements ChannelService
     /**
      * {@inheritDoc}
      */
-    public void register(ChannelType channelType)
+    public void register(AbstractChannelType channelType)
     {
         ParameterCheck.mandatory("channelType", channelType);
         String id = channelType.getId();

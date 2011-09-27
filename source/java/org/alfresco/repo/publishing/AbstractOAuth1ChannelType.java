@@ -43,17 +43,11 @@ import org.springframework.social.oauth1.OAuthToken;
  */
 public abstract class AbstractOAuth1ChannelType<A> extends AbstractChannelType
 {
-    private NodeService nodeService;
     private OAuth1ConnectionFactory<A> connectionFactory;
     
-    public Connection<A> getConnectionForPublishNode(NodeRef publishNode)
+    protected Connection<A> getConnectionForChannel(NodeRef channelNode)
     {
-        NodeRef channelNode = nodeService.getPrimaryParent(publishNode).getParentRef();
-        return getConnectionForChannel(channelNode);
-    }
-    
-    public Connection<A> getConnectionForChannel(NodeRef channelNode)
-    {
+        NodeService nodeService = getNodeService();
         Connection<A> connection = null;
         if (nodeService.exists(channelNode)
                 && nodeService.hasAspect(channelNode, PublishingModel.ASPECT_OAUTH1_DELIVERY_CHANNEL))
@@ -73,11 +67,6 @@ public abstract class AbstractOAuth1ChannelType<A> extends AbstractChannelType
         return connection;
     }
     
-    protected NodeService getNodeService()
-    {
-        return nodeService;
-    }
-    
     @Override
     public String getAuthorisationUrl(Channel channel, String callbackUrl)
     {
@@ -88,6 +77,7 @@ public abstract class AbstractOAuth1ChannelType<A> extends AbstractChannelType
             throw new IllegalArgumentException("Invalid channel type: " + channel.getChannelType().getId());
         }
         
+        NodeService nodeService = getNodeService();
         OAuth1Operations oauthOperations = getOAuth1Operations();
         OAuthToken requestToken = oauthOperations.fetchRequestToken(callbackUrl, null);
 
@@ -104,6 +94,7 @@ public abstract class AbstractOAuth1ChannelType<A> extends AbstractChannelType
     protected AuthStatus internalAcceptAuthorisation(Channel channel, Map<String, String[]> callbackHeaders,
             Map<String, String[]> callbackParams)
     {
+        NodeService nodeService = getNodeService();
         AuthStatus authorised = AuthStatus.UNAUTHORISED;
         String[] verifier = callbackParams.get(getOAuthVerifierParamName());
         if (verifier != null)
@@ -157,13 +148,5 @@ public abstract class AbstractOAuth1ChannelType<A> extends AbstractChannelType
     public void setConnectionFactory(OAuth1ConnectionFactory<A> connectionFactory)
     {
         this.connectionFactory = connectionFactory;
-    }
-    
-    /**
-     * @param nodeService the nodeService to set
-     */
-    public final void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
     }
 }

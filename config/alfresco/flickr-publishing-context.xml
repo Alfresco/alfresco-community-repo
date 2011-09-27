@@ -11,9 +11,10 @@
     </bean>
 
     <bean id="flickrDeliveryChannelType" class="org.alfresco.repo.publishing.flickr.FlickrChannelType" parent="baseChannelType" >
-        <property name="nodeService" ref="NodeService" />
-        <property name="actionService" ref="ActionService" />
         <property name="connectionFactory" ref="flickrConnectionFactory" />
+        <property name="taggingService" ref="TaggingService" />
+        <property name="contentService" ref="ContentService" />
+        <property name="flickrHelper" ref="flickrPublishingHelper" />
     </bean>
 
     <bean id="flickrPublishingHelper" class="org.alfresco.repo.publishing.flickr.FlickrPublishingHelper">
@@ -25,19 +26,5 @@
     <bean id="flickrConnectionFactory" class="org.alfresco.repo.publishing.flickr.springsocial.connect.FlickrConnectionFactory">
         <constructor-arg value="f7dafa571e8698ff93b08ebcb8c3de88" />
         <constructor-arg value="e9a8d6072d4cb9e6" />
-    </bean>
-
-    <bean id="publish_flickr" parent="action-executer" class="org.alfresco.repo.publishing.flickr.FlickrPublishAction">
-        <property name="nodeService" ref="NodeService" />
-        <property name="taggingService" ref="TaggingService" />
-        <property name="contentService" ref="ContentService" />
-        <property name="flickrHelper" ref="flickrPublishingHelper" />
-        <property name="publicAction" value="false" />
-    </bean>
-
-    <bean id="unpublish_flickr" parent="action-executer" class="org.alfresco.repo.publishing.flickr.FlickrUnpublishAction">
-        <property name="nodeService" ref="NodeService" />
-        <property name="flickrHelper" ref="flickrPublishingHelper" />
-        <property name="publicAction" value="false" />
     </bean>
 </beans>

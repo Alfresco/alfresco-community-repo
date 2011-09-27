@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.publishing.slideshare;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
@@ -25,8 +26,7 @@ import java.util.TreeMap;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.node.encryption.MetadataEncryptor;
 import org.alfresco.repo.publishing.PublishingModel;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 
 import com.benfante.jslideshare.SlideShareAPI;
@@ -52,14 +52,8 @@ public class SlideSharePublishingHelper
     }
     
     private Map<String, String> allowedMimeTypes = Collections.unmodifiableMap(DEFAULT_MIME_TYPES);
-    private NodeService nodeService;
     private SlideShareConnector slideshareConnector;
     private MetadataEncryptor encryptor;
-    
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
     
     public void setSlideshareConnector(SlideShareConnector slideshareConnector)
     {
@@ -91,23 +85,16 @@ public class SlideSharePublishingHelper
         return new SlideShareApiImpl(slideshareConnector);
     }
     
-    public Pair<String, String> getSlideShareCredentialsForNode(NodeRef publishNode)
+    public Pair<String, String> getSlideShareCredentialsFromChannelProperties(Map<QName, Serializable> channelProperties)
     {
         Pair<String, String> result = null;
-        if (nodeService.exists(publishNode))
+        String username = (String) encryptor.decrypt(PublishingModel.PROP_CHANNEL_USERNAME, 
+                channelProperties.get(PublishingModel.PROP_CHANNEL_USERNAME));
+        String password = (String) encryptor.decrypt(PublishingModel.PROP_CHANNEL_PASSWORD, 
+                channelProperties.get(PublishingModel.PROP_CHANNEL_PASSWORD));
+        if (username != null && password != null)
         {
-            NodeRef parent = nodeService.getPrimaryParent(publishNode).getParentRef();
-            if (nodeService.hasAspect(parent, SlideSharePublishingModel.ASPECT_DELIVERY_CHANNEL))
-            {
-                String username = (String) encryptor.decrypt(PublishingModel.PROP_CHANNEL_USERNAME, nodeService
-                        .getProperty(parent, PublishingModel.PROP_CHANNEL_USERNAME));
-                String password = (String) encryptor.decrypt(PublishingModel.PROP_CHANNEL_PASSWORD, nodeService
-                        .getProperty(parent, PublishingModel.PROP_CHANNEL_PASSWORD));
-                if (username != null && password != null)
-                {
-                    result = new Pair<String, String>(username, password);
-                }
-            }
+            result = new Pair<String, String>(username, password);
         }
         return result;
     }

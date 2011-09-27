@@ -75,7 +75,7 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         Calendar schedule = Calendar.getInstance();
         schedule.add(Calendar.HOUR, 2);
         
-        PublishingDetails details = publishingService.getPublishingQueue().createPublishingDetails()
+        PublishingDetails details = publishingService.createPublishingDetails()
             .addNodesToPublish(firstNode, secondNode)
             .setPublishChannel(channelId)
             .setSchedule(schedule)
@@ -142,7 +142,7 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         
         List<String> statusChannels = Arrays.asList("test://channel/Channel1", "test://channel/Channel2", "test://channel/Channel3" );
         String message = "The message";
-        PublishingDetails details = publishingService.getPublishingQueue().createPublishingDetails()
+        PublishingDetails details = publishingService.createPublishingDetails()
             .setPublishChannel(channelId)
             .addNodesToPublish(firstNode, secondNode)
             .setStatusMessage(message)
@@ -180,7 +180,7 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         personManager.setUser(user1);
 
         // Publish an event
-        PublishingDetails details = publishingService.getPublishingQueue().createPublishingDetails();
+        PublishingDetails details = publishingService.createPublishingDetails();
         details.addNodesToPublish(firstNode, secondNode);
         details.setPublishChannel(publishChannel.getId());
         try

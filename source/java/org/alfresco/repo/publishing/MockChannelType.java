@@ -92,7 +92,7 @@ public class MockChannelType extends AbstractChannelType
     * {@inheritDoc}
     */
     @Override
-    public void updateStatus(Channel channel, String status, Map<QName, Serializable> properties)
+    public void sendStatusUpdate(Channel channel, String status)
     {
         //NOOP
     }

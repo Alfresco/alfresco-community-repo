@@ -31,8 +31,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
@@ -100,6 +98,9 @@ public class YouTubeTest extends BaseSpringTest
     //text "YOUR_USER_NAME" and "YOUR_PASSWORD" appear.
     public void xtestYouTubePublishAndUnpublishActions() throws Exception
     {
+        final String channelName = GUID.generate();
+        final YouTubeChannelType channelType = (YouTubeChannelType) channelService.getChannelType(YouTubeChannelType.ID);
+        
         final NodeRef vidNode = transactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
         {
             public NodeRef execute() throws Throwable
@@ -107,7 +108,7 @@ public class YouTubeTest extends BaseSpringTest
                 Map<QName, Serializable> props = new HashMap<QName, Serializable>();
                 props.put(PublishingModel.PROP_CHANNEL_USERNAME, "YOUR_USER_NAME");
                 props.put(PublishingModel.PROP_CHANNEL_PASSWORD, "YOUR_PASSWORD");
-                Channel channel = channelService.createChannel(YouTubeChannelType.ID, "YouTubeChannel", props);
+                Channel channel = channelService.createChannel(YouTubeChannelType.ID, channelName, props);
 
                 NodeRef channelNode = channel.getNodeRef();
                 Resource videoFile = new ClassPathResource("test/alfresco/TestVideoFile.MP4");
@@ -128,9 +129,7 @@ public class YouTubeTest extends BaseSpringTest
         {
             public NodeRef execute() throws Throwable
             {
-                ActionService actionService = serviceRegistry.getActionService();
-                Action publishAction = actionService.createAction(YouTubePublishAction.NAME);
-                actionService.executeAction(publishAction, vidNode);
+                channelType.publish(vidNode, channelService.getChannelByName(channelName).getProperties());
                 Map<QName, Serializable> props = nodeService.getProperties(vidNode);
                 Assert.assertTrue(nodeService.hasAspect(vidNode, YouTubePublishingModel.ASPECT_ASSET));
                 Assert.assertNotNull(props.get(PublishingModel.PROP_ASSET_ID));
@@ -138,8 +137,7 @@ public class YouTubeTest extends BaseSpringTest
 
                 System.out.println("YouTube video: " + props.get(PublishingModel.PROP_ASSET_ID));
                 
-                Action unpublishAction = actionService.createAction(YouTubeUnpublishAction.NAME);
-                actionService.executeAction(unpublishAction, vidNode);
+                channelType.unpublish(vidNode, channelService.getChannelByName(channelName).getProperties());
                 props = nodeService.getProperties(vidNode);
                 Assert.assertFalse(nodeService.hasAspect(vidNode, YouTubePublishingModel.ASPECT_ASSET));
                 Assert.assertNull(props.get(PublishingModel.PROP_ASSET_ID));

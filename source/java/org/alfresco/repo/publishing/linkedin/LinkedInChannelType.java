@@ -20,11 +20,6 @@ package org.alfresco.repo.publishing.linkedin;
 
 import static org.alfresco.repo.publishing.linkedin.LinkedInPublishingModel.TYPE_DELIVERY_CHANNEL;
 
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
-
 import org.alfresco.repo.publishing.AbstractOAuth1ChannelType;
 import org.alfresco.repo.publishing.linkedin.springsocial.api.AlfrescoLinkedIn;
 import org.alfresco.service.cmr.publishing.channels.Channel;
@@ -74,37 +69,13 @@ public class LinkedInChannelType extends AbstractOAuth1ChannelType<AlfrescoLinke
     }
 
     @Override
-    public Set<QName> getSupportedContentTypes()
-    {
-        return Collections.emptySet();
-    }
-
-    @Override
-    public Set<String> getSupportedMimeTypes()
-    {
-        return Collections.emptySet();
-    }
-
-    @Override
-    public void publish(NodeRef nodeToPublish, Map<QName, Serializable> properties)
-    {
-        //NO-OP
-    }
-
-    @Override
-    public void unpublish(NodeRef nodeToUnpublish, Map<QName, Serializable> properties)
-    {
-        //NO-OP
-    }
-
-    @Override
     public int getMaximumStatusLength()
     {
         return 700;
     }
 
     @Override
-    public void updateStatus(Channel channel, String status, Map<QName, Serializable> properties)
+    public void sendStatusUpdate(Channel channel, String status)
     {
         NodeRef channelNode = new NodeRef(channel.getId());
         Connection<AlfrescoLinkedIn> connection = getConnectionForChannel(channelNode);
@@ -118,6 +89,6 @@ public class LinkedInChannelType extends AbstractOAuth1ChannelType<AlfrescoLinke
     @Override
     public String getNodeUrl(NodeRef node)
     {
-        throw new UnsupportedOperationException();
+        return null;
     }
 }

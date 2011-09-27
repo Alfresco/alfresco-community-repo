@@ -56,6 +56,7 @@
    <bean id="baseChannelType" class="org.alfresco.repo.publishing.AbstractChannelType" abstract="true" >
       <property name="channelService" ref="channelService" />
       <property name="encryptor" ref="metadataEncryptor" />
+      <property name="nodeService" ref="NodeService" />
    </bean>
    
    <bean id="channelHelper" class="org.alfresco.repo.publishing.ChannelHelper">
@@ -63,6 +64,8 @@
       <property name="dictionaryService" ref="DictionaryService" />
       <property name="fileFolderService" ref="FileFolderService" />
       <property name="permissionService" ref="PermissionService" />
+      <property name="eventHelper" ref="publishingEventHelper" />
+      <property name="serviceRegistry" ref="ServiceRegistry" />
    </bean>
 
    <bean id="publishingRootObject" class="org.alfresco.repo.publishing.PublishingRootObject">
@@ -95,13 +98,12 @@
    
    <!--  Publishing Event Processor -->
    <bean id="publishingEventProcessor" class="org.alfresco.repo.publishing.PublishingEventProcessor">
-      <property name="channelHelper" ref="channelHelper" />
       <property name="channelService" ref="channelService" />
       <property name="publishingEventHelper" ref="publishingEventHelper" />
       <property name="nodeService" ref="NodeService" />
       <property name="behaviourFilter" ref="policyBehaviourFilter" />
       <property name="urlShortener" ref="urlShortener" />
-      <property name="dictionaryService" ref="DictionaryService" />
+      <property name="transactionService" ref="TransactionService" />
    </bean>
    
       <!--  Publishing Service -->

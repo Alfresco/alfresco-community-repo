@@ -69,7 +69,7 @@ public class PublishingIntegratedTest extends BaseSpringTest
 
     protected AuthenticationComponent authenticationComponent;
     private String siteId;
-    private ChannelType mockedChannelType = mock(ChannelType.class);
+    private AbstractChannelType mockedChannelType = mock(AbstractChannelType.class);
     private String channelTypeName;
 
     @Test
@@ -84,17 +84,15 @@ public class PublishingIntegratedTest extends BaseSpringTest
                     NamespaceService.CONTENT_MODEL_1_0_URI, Integer.toString(i)), ContentModel.TYPE_CONTENT).getChildRef());
         }
 
-        PublishingQueue liveQueue = publishingService.getPublishingQueue();
-
         Calendar schedule = Calendar.getInstance();
         schedule.add(Calendar.HOUR, 1);
         
-        PublishingDetails details = liveQueue.createPublishingDetails()
+        PublishingDetails details = publishingService.createPublishingDetails()
             .addNodesToPublish(nodes)
             .setPublishChannel(channel.getId())
             .setSchedule(schedule);
 
-        String eventId = liveQueue.scheduleNewEvent(details);
+        String eventId = publishingService.scheduleNewEvent(details);
         
         PublishingEvent event = publishingService.getPublishingEvent(eventId);
         
@@ -121,15 +119,14 @@ public class PublishingIntegratedTest extends BaseSpringTest
             nodes.add(nodeService.createNode(channel.getNodeRef(), ContentModel.ASSOC_CONTAINS, QName.createQName(
                     NamespaceService.CONTENT_MODEL_1_0_URI, Integer.toString(i)), ContentModel.TYPE_CONTENT).getChildRef());
         }
-        PublishingQueue liveQueue = publishingService.getPublishingQueue();
         Calendar schedule = Calendar.getInstance();
         schedule.add(Calendar.HOUR, 1);
 
-        PublishingDetails details = liveQueue.createPublishingDetails()
+        PublishingDetails details = publishingService.createPublishingDetails()
             .addNodesToPublish(nodes)
             .setPublishChannel(channel.getId())
             .setSchedule(schedule);
-        String eventId = liveQueue.scheduleNewEvent(details);
+        String eventId = publishingService.scheduleNewEvent(details);
         PublishingEvent event = publishingService.getPublishingEvent(eventId);
         Assert.assertNotNull(event);
         publishingService.cancelPublishingEvent(eventId);

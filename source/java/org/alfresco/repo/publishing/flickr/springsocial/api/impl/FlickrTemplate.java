@@ -40,6 +40,7 @@ import org.springframework.util.MultiValueMap;
 public class FlickrTemplate extends AbstractOAuth1ApiBinding implements Flickr, FlickrHelper
 {
     private static final String DEFAULT_ENDPOINT = "http://api.flickr.com/services/";
+//    private static final String DEFAULT_ENDPOINT = "https://secure.flickr.com/services/";
     
     private static String endpoint = DEFAULT_ENDPOINT;
     

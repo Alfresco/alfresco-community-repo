@@ -158,9 +158,9 @@ public class PublishingTestHelper
         }
     }
 
-    public ChannelType mockChannelType(String channelTypeId)
+    public AbstractChannelType mockChannelType(String channelTypeId)
     {
-        ChannelType channelType = channelService.getChannelType(channelTypeId);
+        AbstractChannelType channelType = (AbstractChannelType) channelService.getChannelType(channelTypeId);
         if (channelType != null)
         {
             reset(channelType);
@@ -168,7 +168,7 @@ public class PublishingTestHelper
         }
         else
         {
-            channelType = mock(ChannelType.class);
+            channelType = mock(AbstractChannelType.class);
             when(channelType.getId()).thenReturn(channelTypeId);
             channelService.register(channelType);
         }
@@ -224,8 +224,7 @@ public class PublishingTestHelper
     
     public String scheduleEvent(PublishingDetails details)
     {
-        PublishingQueue queue = publishingService.getPublishingQueue();
-        String eventId = queue.scheduleNewEvent(details);
+        String eventId = publishingService.scheduleNewEvent(details);
         events.add(eventId);
         return eventId;
     }

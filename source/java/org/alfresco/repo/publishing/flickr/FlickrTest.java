@@ -32,8 +32,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
@@ -100,6 +98,8 @@ public class FlickrTest extends BaseSpringTest
     //text "YOUR_OAUTH_TOKEN_VALUE" and "YOUR_OAUTH_TOKEN_SECRET" appear. Note that these can be quite tricky to obtain...
     public void xtestFlickrPublishAndUnpublishActions() throws Exception
     {
+        final String channelName = "FlickrTestChannel_" + GUID.generate();
+        final FlickrChannelType channelType = (FlickrChannelType) channelService.getChannelType(FlickrChannelType.ID);
         final NodeRef contentNode = transactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
         {
             public NodeRef execute() throws Throwable
@@ -109,7 +109,7 @@ public class FlickrTest extends BaseSpringTest
                 props.put(PublishingModel.PROP_OAUTH1_TOKEN_SECRET, "YOUR_OAUTH_TOKEN_SECRET");
                 props.put(PublishingModel.PROP_AUTHORISATION_COMPLETE, Boolean.TRUE);
                 
-                Channel channel = channelService.createChannel(FlickrChannelType.ID, "FlickrTestChannel_" + GUID.generate(), props);
+                Channel channel = channelService.createChannel(FlickrChannelType.ID, channelName, props);
                 //This looks a little odd, but a new channel always has its "authorisation complete" flag
                 //forced off initially. This will force it on for this channel...
                 channelService.updateChannel(channel, props);
@@ -132,9 +132,9 @@ public class FlickrTest extends BaseSpringTest
         {
             public NodeRef execute() throws Throwable
             {
-                ActionService actionService = serviceRegistry.getActionService();
-                Action publishAction = actionService.createAction(FlickrPublishAction.NAME);
-                actionService.executeAction(publishAction, contentNode);
+                Channel channel = channelService.getChannelByName(channelName);
+                channelType.publish(contentNode, channel.getProperties());
+                
                 Map<QName, Serializable> props = nodeService.getProperties(contentNode);
                 Assert.assertTrue(nodeService.hasAspect(contentNode, FlickrPublishingModel.ASPECT_ASSET));
                 Assert.assertNotNull(props.get(PublishingModel.PROP_ASSET_ID));
@@ -143,8 +143,8 @@ public class FlickrTest extends BaseSpringTest
                 System.out.println("Asset id: " + props.get(PublishingModel.PROP_ASSET_ID));
                 System.out.println("Asset URL: " + props.get(PublishingModel.PROP_ASSET_URL));
                 
-                Action unpublishAction = actionService.createAction(FlickrUnpublishAction.NAME);
-                actionService.executeAction(unpublishAction, contentNode);
+                channelType.unpublish(contentNode, channel.getProperties());
+
                 props = nodeService.getProperties(contentNode);
                 Assert.assertFalse(nodeService.hasAspect(contentNode, FlickrPublishingModel.ASPECT_ASSET));
                 Assert.assertFalse(nodeService.hasAspect(contentNode, PublishingModel.ASPECT_ASSET));

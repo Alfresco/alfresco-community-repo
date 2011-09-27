@@ -18,11 +18,6 @@
  */
 package org.alfresco.repo.publishing.twitter;
 
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
-
 import org.alfresco.repo.publishing.AbstractOAuth1ChannelType;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -68,37 +63,13 @@ public class TwitterChannelType extends AbstractOAuth1ChannelType<Twitter>
     }
 
     @Override
-    public Set<QName> getSupportedContentTypes()
-    {
-        return Collections.emptySet();
-    }
-
-    @Override
-    public Set<String> getSupportedMimeTypes()
-    {
-        return Collections.emptySet();
-    }
-
-    @Override
-    public void publish(NodeRef nodeToPublish, Map<QName, Serializable> properties)
-    {
-        //NO-OP
-    }
-
-    @Override
-    public void unpublish(NodeRef nodeToUnpublish, Map<QName, Serializable> properties)
-    {
-        //NO-OP
-    }
-
-    @Override
     public int getMaximumStatusLength()
     {
         return 140;
     }
 
     @Override
-    public void updateStatus(Channel channel, String status, Map<QName, Serializable> properties)
+    public void sendStatusUpdate(Channel channel, String status)
     {
         Connection<Twitter> connection = getConnectionForChannel(channel.getNodeRef());
         if (log.isInfoEnabled())
@@ -111,7 +82,7 @@ public class TwitterChannelType extends AbstractOAuth1ChannelType<Twitter>
     @Override
     public String getNodeUrl(NodeRef node)
     {
-        throw new UnsupportedOperationException();
+        return null;
     }
     
 }

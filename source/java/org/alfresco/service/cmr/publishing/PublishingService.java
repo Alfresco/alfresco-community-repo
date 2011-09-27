@@ -63,8 +63,16 @@ public interface PublishingService
     void cancelPublishingEvent(String id);
     
     /**
-     * Retrieve the publishing queue associated with this publishing environment
-     * @return A PublishingQueue object corresponding tho this environment's publishing queue
+     * A factory method to create an empty publishing package that can be populated before being passed into
+     * a call to the {@link PublishingQueue#scheduleNewEvent(PublishingDetails)} operation.
+     * @return A publishing package that can be populated before being placed on the publishing queue.
      */
-    PublishingQueue getPublishingQueue();
+    PublishingDetails createPublishingDetails();
+    
+    /**
+     * Adds the supplied publishing package onto the queue.
+     * @param publishingDetails The publishing package that is to be enqueued
+     * @return The identifier of the newly scheduled event
+     */
+    String scheduleNewEvent(PublishingDetails publishingDetails);
 }

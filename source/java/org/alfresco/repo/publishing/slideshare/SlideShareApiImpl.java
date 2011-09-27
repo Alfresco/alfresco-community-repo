@@ -199,7 +199,7 @@ public class SlideShareApiImpl implements SlideShareApi
         addParameter(parameters, "username", username);
         addParameter(parameters, "password", password);
         addParameter(parameters, "slideshow_id", id);
-        return sendMessage(URL_DELETE_SLIDESHOW, parameters).getSlideShowId();
+        return sendGetMessage(URL_DELETE_SLIDESHOW, parameters).getSlideShowId();
     }
 
     private Map<String, String> addParameter(Map<String, String> parameters, String name, String value)

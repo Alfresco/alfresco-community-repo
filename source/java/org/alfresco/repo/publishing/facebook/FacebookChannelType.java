@@ -19,10 +19,8 @@
 package org.alfresco.repo.publishing.facebook;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.repo.publishing.AbstractChannelType;
 import org.alfresco.repo.publishing.PublishingModel;
@@ -90,29 +88,7 @@ public class FacebookChannelType extends AbstractChannelType
     }
 
     @Override
-    public Set<QName> getSupportedContentTypes()
-    {
-        return Collections.emptySet();
-    }
-
-    @Override
-    public Set<String> getSupportedMimeTypes()
-    {
-        return Collections.emptySet();
-    }
-
-    @Override
-    public void publish(NodeRef nodeToPublish, Map<QName, Serializable> properties)
-    {
-    }
-
-    @Override
-    public void unpublish(NodeRef nodeToUnpublish, Map<QName, Serializable> properties)
-    {
-    }
-
-    @Override
-    public void updateStatus(Channel channel, String status, Map<QName, Serializable> properties)
+    public void sendStatusUpdate(Channel channel, String status)
     {
         Connection<Facebook> connection = publishingHelper.getFacebookConnectionForChannel(channel.getNodeRef());
         connection.updateStatus(status);

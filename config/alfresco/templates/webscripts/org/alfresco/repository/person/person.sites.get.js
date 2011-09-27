@@ -14,27 +14,14 @@ function main()
     }
     
     // Get the list of sites
-    var sites = siteService.listUserSites(userName);
-    
-    var sizeString = args["size"];
+    var size = 0,
+        sizeString = args["size"];
     if (sizeString != null)
     {
-        var size = parseInt(sizeString);
-        
-        if (size < sites.length)
-        {
-            // Only return the first n sites based on the passed page size
-            var pagedSites = new Array(size);
-            for (var index = 0; index < size; index++)
-            {
-                pagedSites[index] = sites[index];   
-            }
-            
-            sites = pagedSites;
-        }
+        size = parseInt(sizeString);
     }
-    
-    model.sites = sites;
+    model.sites = siteService.listUserSites(userName, size);
+    model.roles = (args["roles"] !== null ? args["roles"] : "managers");
 }
 
 main();

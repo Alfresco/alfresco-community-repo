@@ -1,7 +1,7 @@
 <webscript>
   <shortname>Get sites</shortname>
   <description>Get a collection of the sites in the repository.  The collection can be filtered by name and/or site preset.</description>
-  <url>/api/sites?nf={namefilter?}&amp;spf={sitepresetfilter?}&amp;size={pagesize?}&amp;pos={position?}</url>
+  <url>/api/sites?nf={namefilter?}&amp;spf={sitepresetfilter?}&amp;size={pagesize?}&amp;pos={position?}&amp;roles={roles?}</url>
   <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction allow="readonly">required</transaction>

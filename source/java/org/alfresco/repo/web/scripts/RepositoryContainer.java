@@ -451,9 +451,9 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
             
             // log a warning if we detect a GET webscript being run in a readwrite transaction, GET calls should
             // NOT have any side effects so this scenario as a warning sign something maybe amiss, see ALF-10179.
-            if (logger.isWarnEnabled() && !readonly && "GET".equalsIgnoreCase(description.getMethod()))
+            if (logger.isDebugEnabled() && !readonly && "GET".equalsIgnoreCase(description.getMethod()))
             {
-                logger.warn("Webscript with URL '" + scriptReq.getURL() + 
+                logger.debug("Webscript with URL '" + scriptReq.getURL() + 
                             "' is a GET request but it's descriptor has declared a readwrite transaction is required");
             }
             

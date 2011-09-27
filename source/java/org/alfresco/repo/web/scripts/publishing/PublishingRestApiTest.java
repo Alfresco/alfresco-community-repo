@@ -72,6 +72,7 @@ import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
+import org.alfresco.repo.publishing.AbstractChannelType;
 import org.alfresco.repo.publishing.ChannelHelper;
 import org.alfresco.repo.publishing.ChannelServiceImpl;
 import org.alfresco.repo.publishing.PublishServiceImpl;
@@ -329,8 +330,8 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         // Wait for Publishing Event to execute asynchronously
         Thread.sleep(5000);
         
-        ChannelType publishAnyChannelType = channelService.getChannelType(publishAnyType);
-        ChannelType statusUpdateChannelType = channelService.getChannelType(statusUpdateType);
+        AbstractChannelType publishAnyChannelType = (AbstractChannelType) channelService.getChannelType(publishAnyType);
+        AbstractChannelType statusUpdateChannelType = (AbstractChannelType) channelService.getChannelType(statusUpdateType);
         
         NodeRef mappedTextNode = channelHelper.mapSourceToEnvironment(textNode, publishChannel.getNodeRef());
         
@@ -341,12 +342,12 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         // Check updateStatus is called correctly.
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
         verify(statusUpdateChannelType)
-        .updateStatus(any(Channel.class), captor.capture(), anyMap());
+        .sendStatusUpdate(any(Channel.class), captor.capture());
         String actualStatusMessage = captor.getValue();
         assertTrue(actualStatusMessage.startsWith(statusMessage));
         
         verify(statusUpdateChannelType, never()).publish(any(NodeRef.class), anyMap());
-        verify(publishAnyChannelType, never()).updateStatus(any(Channel.class), anyString(), anyMap());
+        verify(publishAnyChannelType, never()).sendStatusUpdate(any(Channel.class), anyString());
         
         JSONObject status = json.optJSONObject(STATUS_UPDATE);
         status.remove(NODE_REF);
@@ -425,7 +426,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         
         // Create publishing event for textNode1.
         String comment = "This is a comment";
-        PublishingDetails details = publishingService.getPublishingQueue().createPublishingDetails()
+        PublishingDetails details = publishingService.createPublishingDetails()
             .setPublishChannel(publishChannel.getId())
             .addNodesToPublish(textNode1)
             .setComment(comment);

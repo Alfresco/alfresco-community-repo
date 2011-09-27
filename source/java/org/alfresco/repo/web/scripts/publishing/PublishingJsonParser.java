@@ -29,6 +29,7 @@ import java.util.List;
 import org.alfresco.repo.node.NodeUtils;
 import org.alfresco.service.cmr.publishing.PublishingDetails;
 import org.alfresco.service.cmr.publishing.PublishingQueue;
+import org.alfresco.service.cmr.publishing.PublishingService;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -64,10 +65,10 @@ public class PublishingJsonParser implements PublishingWebScriptConstants
         }
     }
     
-    public String schedulePublishingEvent(PublishingQueue queue, String jsonStr) throws ParseException, JSONException
+    public String schedulePublishingEvent(PublishingService publishingService, String jsonStr) throws ParseException, JSONException
     {
         JSONObject json = getJson(jsonStr);
-        PublishingDetails details = queue.createPublishingDetails()
+        PublishingDetails details = publishingService.createPublishingDetails()
             .setPublishChannel(json.optString(CHANNEL_ID))
             .setComment(json.optString(COMMENT))
             .setSchedule(getCalendar(json.optJSONObject(SCHEDULED_TIME)))
@@ -75,7 +76,7 @@ public class PublishingJsonParser implements PublishingWebScriptConstants
             .addNodesToUnpublish(toNodes(json.optJSONArray(UNPUBLISH_NODES)));
 
         details = setStatusUpdate(details, json.optJSONObject(STATUS_UPDATE));
-        return queue.scheduleNewEvent(details);
+        return publishingService.scheduleNewEvent(details);
     }
     
     public PublishingDetails setStatusUpdate(PublishingDetails details, JSONObject json)

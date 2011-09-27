@@ -36,11 +36,6 @@ public abstract class PublishingWebScript extends DeclarativeWebScript
     protected PublishingService publishingService;
     protected ChannelService channelService;
 
-    protected PublishingQueue getQueue()
-    {
-        return publishingService.getPublishingQueue();
-    }
-    
     /**
      * @param publishingService the publishingService to set
      */

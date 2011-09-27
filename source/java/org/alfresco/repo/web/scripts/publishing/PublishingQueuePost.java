@@ -50,7 +50,7 @@ public class PublishingQueuePost extends PublishingWebScript
             {
                 throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, "No publishing event was posted!");
             }
-            String eventId = jsonParser.schedulePublishingEvent(getQueue(), content);
+            String eventId = jsonParser.schedulePublishingEvent(publishingService, content);
             PublishingEvent event = publishingService.getPublishingEvent(eventId);
             Map<String, Object> eventModel = builder.buildPublishingEvent(event, channelService);
             return WebScriptUtil.createBaseModel(eventModel);

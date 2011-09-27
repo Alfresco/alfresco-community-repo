@@ -38,7 +38,7 @@
          "values": [
          	<#list p.values as val>
       		{
-      			"dataType": "${val.dataType}",
+      			"dataType": "${val.dataType!""}",
       			"value": <@printPropertyValue val />,
       			"isContent": ${val.content?string},
       			"isNodeRef": ${val.nodeRef?string},
@@ -47,8 +47,8 @@
          	</#list>
       	],
          "type": {
-         	"name": "${p.typeName.name}",
-         	"prefixedName": "${p.typeName.prefixedName}"
+         	"name": "<#if p.typeName??>${p.typeName.name}</#if>",
+         	"prefixedName": "<#if p.typeName??>${p.typeName.prefixedName}</#if>"
       	},
       	"multiple": ${p.collection?string},
          "residual": ${p.residual?string}

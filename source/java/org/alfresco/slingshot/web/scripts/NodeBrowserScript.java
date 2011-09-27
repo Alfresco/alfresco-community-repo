@@ -991,7 +991,11 @@ public class NodeBrowserScript extends DeclarativeWebScript
              */
             public String getDataType()
             {
-                String datatype = Property.this.getTypeName().getName();
+                String datatype = null;
+                if (Property.this.getTypeName() != null)
+                {
+                    datatype = Property.this.getTypeName().getName();
+                }
                 if (datatype == null || datatype.equals(DataTypeDefinition.ANY.toString()))
                 {
                     if (value != null)

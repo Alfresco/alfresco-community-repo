@@ -111,6 +111,8 @@ public class AVMServiceConcurrentTest extends AVMServiceTestBase
         
         testTX = fTransactionService.getUserTransaction();
         testTX.begin();
+        try
+        {
         
         searchService = fIndexerAndSearcher.getSearcher(AVMNodeConverter.ToStoreRef("main"), true);
         results = searchService.query(storeRef, "lucene", "PATH:\"/test/*\"");
@@ -121,7 +123,11 @@ public class AVMServiceConcurrentTest extends AVMServiceTestBase
         assertEquals(loops, results.length());
         results.close();
         
-        testTX.commit();
+        }
+        finally
+        {
+            try { testTX.commit(); } catch (Exception e) {}            
+        }
         
          // delete
         
@@ -233,7 +239,8 @@ public class AVMServiceConcurrentTest extends AVMServiceTestBase
         
         testTX = fTransactionService.getUserTransaction();
         testTX.begin();
-        
+        try
+        {
         searchService = fIndexerAndSearcher.getSearcher(AVMNodeConverter.ToStoreRef("main"), true);
         results = searchService.query(storeRef, "lucene", "PATH:\"/test/*\"");
         for(ResultSetRow row : results)
@@ -242,8 +249,11 @@ public class AVMServiceConcurrentTest extends AVMServiceTestBase
         }
         assertEquals(loops, results.length());
         results.close();
-        
-        testTX.commit();
+        }
+        finally
+        {
+            try { testTX.commit(); } catch (Exception e) {}            
+        }
         
         // update
         

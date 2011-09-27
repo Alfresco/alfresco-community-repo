@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.node.select.children">
+
+    <select id="select_ChildAssocsOfParent_Limited" parameterType="ChildAssoc" resultMap="result_ChildAssoc">
+        <include refid="alfresco.node.select_ChildAssocsOfParent_Query"/>
+        <if test="ordered == true">
+            <include refid="alfresco.node.select_ChildAssoc_OrderBy"/>
+        </if>
+    </select>
+
+</mapper>

@@ -124,6 +124,7 @@ public abstract class AbstractChainingAuthenticationComponent extends AbstractAu
     @Override
     public Authentication setCurrentUser(String userName)
     {
+        Exception last = null;
         for (AuthenticationComponent authComponent : getUsableAuthenticationComponents())
         {
             try
@@ -132,10 +133,10 @@ public abstract class AbstractChainingAuthenticationComponent extends AbstractAu
             }
             catch (AuthenticationException e)
             {
-                // Ignore and chain
+                last = e;
             }
         }
-        throw new AuthenticationException("Failed to set current user " + userName);
+        throw new AuthenticationException("Failed to set current user " + userName, last);
     }
 
     /**

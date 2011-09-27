@@ -115,6 +115,7 @@
       <property name="localeDAO" ref="localeDAO"/>
       <property name="usageDAO" ref="usageDAO"/>
       <property name="rootNodesCache" ref="node.rootNodesCache"/>
+      <property name="allRootNodesCache" ref="node.allRootNodesCache"/>
       <property name="nodesCache" ref="node.nodesCache"/>
       <property name="aspectsCache" ref="node.aspectsCache"/>
       <property name="propertiesCache" ref="node.propertiesCache"/>

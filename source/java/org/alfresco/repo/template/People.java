@@ -235,10 +235,10 @@ public class People extends BaseTemplateProcessorExtension implements Initializi
     {
         ParameterCheck.mandatory("Person", person);
         List<TemplateNode> parents;
-        Set<String> authorities = this.authorityService.getContainingAuthorities(
+        Set<String> authorities = this.authorityService.getContainingAuthoritiesInZone(
                 AuthorityType.GROUP,
                 (String)person.getProperties().get(ContentModel.PROP_USERNAME),
-                false);
+                AuthorityService.ZONE_APP_DEFAULT, null, 1000);
         parents = new ArrayList<TemplateNode>(authorities.size());
         for (String authority : authorities)
         {

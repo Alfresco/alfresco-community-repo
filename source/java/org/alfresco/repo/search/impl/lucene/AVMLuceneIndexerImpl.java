@@ -30,9 +30,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -56,6 +59,7 @@ import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
@@ -70,6 +74,7 @@ import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -87,6 +92,7 @@ import org.apache.lucene.analysis.Token;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TermEnum;
@@ -107,6 +113,8 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
         MAIN, DELTA;
     }
 
+    protected enum IndexDeleteMode {REINDEX, DELETE};    
+    
     private static String SNAP_SHOT_ID = "SnapShot";
 
     static Log s_logger = LogFactory.getLog(AVMLuceneIndexerImpl.class);
@@ -129,6 +137,11 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
     private int startVersion = -1;
 
     private int endVersion = -1;
+    
+    /**
+     * A list of deletions associated with the changes to nodes in the current flush
+     */
+    protected Set<String> deletionsSinceFlush = new HashSet<String>();     
 
     private long indexedDocCount = 0;
 
@@ -168,6 +181,16 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
+    }
+
+    /**
+     * Are we deleting leaves only (not meta data)
+     * 
+     * @return - deleting only nodes.
+     */
+    public boolean getDeleteOnlyNodes()
+    {
+        return indexUpdateStatus == IndexUpdateStatus.ASYNCHRONOUS;
     }
 
     /**
@@ -430,7 +453,92 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
 
     }
 
-    @Override
+    protected Set<String> deleteImpl(String nodeRef, IndexDeleteMode mode, boolean cascade, IndexReader mainReader)
+            throws LuceneIndexException, IOException
+    {
+        Set<String> leafrefs = new LinkedHashSet<String>();
+        IndexReader deltaReader = null;
+        
+        // startTimer();
+        getDeltaReader();
+        // outputTime("Delete "+nodeRef+" size = "+getDeltaWriter().docCount());
+        Set<String> refs = new LinkedHashSet<String>();
+        Set<String> containerRefs = new LinkedHashSet<String>();
+        Set<String> temp = null;
+        
+        switch(mode)
+        {
+        case REINDEX:
+            temp = deleteContainerAndBelow(nodeRef, getDeltaReader(), true, cascade);
+            closeDeltaReader();
+            refs.addAll(temp);
+            deletions.addAll(temp);
+            // should not be included as a delete for optimisation in deletionsSinceFlush
+            // should be optimised out
+            // defensive against any issue with optimisation of events
+            // the nodes have not been deleted and would require a real delete 
+            temp = deleteContainerAndBelow(nodeRef, mainReader, false, cascade);
+            refs.addAll(temp);
+            deletions.addAll(temp);
+            // should not be included as a delete for optimisation
+            // should be optimised out
+            // defensive agaainst any issue with optimisation of events
+            // the nodes have not been deleted and would require a real delete 
+            break;
+        case DELETE:
+            // if already deleted don't do it again ...
+            if(deletionsSinceFlush.contains(nodeRef))
+            {
+                // nothing to do
+                break;
+            }
+            else
+            {
+                // Delete all and reindex as they could be secondary links we have deleted and they need to be updated.
+                // Most will skip any indexing as they will really have gone.
+                temp = deleteContainerAndBelow(nodeRef, getDeltaReader(), true, cascade);
+                closeDeltaReader();
+                containerRefs.addAll(temp);
+                refs.addAll(temp);
+                temp = deleteContainerAndBelow(nodeRef, mainReader, false, cascade);
+                containerRefs.addAll(temp);
+        
+                temp = deletePrimary(containerRefs, getDeltaReader(), true);
+                leafrefs.addAll(temp);
+                closeDeltaReader();
+                temp = deletePrimary(containerRefs, mainReader, false);
+                leafrefs.addAll(temp);
+                
+                // May not have to delete references
+                temp = deleteReference(containerRefs, getDeltaReader(), true);
+                leafrefs.addAll(temp);
+                closeDeltaReader();
+                temp = deleteReference(containerRefs, mainReader, false);
+                leafrefs.addAll(temp);
+               
+                refs.addAll(containerRefs);
+                refs.addAll(leafrefs);
+                deletions.addAll(refs);
+                // do not delete anything we have deleted before in this flush
+                // probably OK to cache for the TX as a whole but done per flush => See ALF-8007 
+                deletionsSinceFlush.addAll(refs);
+        
+                // make sure leaves are also removed from the delta before reindexing
+        
+                deltaReader = getDeltaReader();
+                for(String id : leafrefs)
+                {
+                    deltaReader.deleteDocuments(new Term("ID", id));
+                }
+                closeDeltaReader();
+                break;
+            }
+        }
+        
+        return refs;
+    
+    }
+
     protected List<Document> createDocuments(String stringNodeRef, FTSStatus ftsStatus, boolean indexAllProperties, boolean includeDirectoryDocuments)
     {
         List<Document> docs = new ArrayList<Document>();
@@ -634,6 +742,161 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
         }
         incrementDocCount();
         return docs;
+    }
+
+    protected List<Document> readDocuments(final String stringNodeRef, final FTSStatus ftsStatus,
+            final boolean indexAllProperties, final boolean includeDirectoryDocuments)
+    {
+        return doInReadthroughTransaction(new RetryingTransactionCallback<List<Document>>()
+        {
+            @Override
+            public List<Document> execute() throws Throwable
+            {
+                return createDocuments(stringNodeRef, ftsStatus, indexAllProperties,
+                        includeDirectoryDocuments);
+            }
+        });
+    }
+
+    
+    protected void indexImpl(String nodeRef, boolean isNew) throws LuceneIndexException, IOException
+    {
+        IndexWriter writer = getDeltaWriter();
+
+        // avoid attempting to index nodes that don't exist
+
+        try
+        {
+            List<Document> docs = readDocuments(nodeRef, isNew ? FTSStatus.New : FTSStatus.Dirty, false, true);
+            for (Document doc : docs)
+            {
+                try
+                {
+                    writer.addDocument(doc);
+                }
+                catch (IOException e)
+                {
+                    throw new LuceneIndexException("Failed to add document to index", e);
+                }
+            }
+        }
+        catch (InvalidNodeRefException e)
+        {
+            // The node does not exist
+            return;
+        }
+
+    }
+
+    void indexImpl(Set<String> refs, boolean isNew) throws LuceneIndexException, IOException
+    {
+        for (String ref : refs)
+        {
+            indexImpl(ref, isNew);
+        }
+    }
+
+    /**
+     * @throws LuceneIndexException
+     */
+    public void flushPending() throws LuceneIndexException
+    {
+        IndexReader mainReader = null;
+        try
+        {
+            saveDelta();
+            
+            // Make sure the in flush deletion list is clear at the start
+            deletionsSinceFlush.clear();
+            if (commandList.isEmpty())
+            {
+                return;
+            }
+            
+            mainReader = getReader();
+            Set<String> forIndex = new LinkedHashSet<String>();
+
+            for (Command<String> command : commandList)
+            {
+                if (command.action == Action.INDEX)
+                {
+                    // Indexing just requires the node to be added to the list
+                    forIndex.add(command.ref.toString());
+                }
+                else if (command.action == Action.REINDEX)
+                {
+                    // Reindex is a delete and then and index
+                    Set<String> set = deleteImpl(command.ref.toString(), IndexDeleteMode.REINDEX, false, mainReader);
+
+                    // Deleting any pending index actions
+                    // - make sure we only do at most one index
+                    forIndex.removeAll(set);
+                    // Add the nodes for index
+                    forIndex.addAll(set);
+                }
+                else if (command.action == Action.CASCADEREINDEX)
+                {
+                    // Reindex is a delete and then and index
+                    Set<String> set = deleteImpl(command.ref.toString(), IndexDeleteMode.REINDEX, true, mainReader);
+
+                    // Deleting any pending index actions
+                    // - make sure we only do at most one index
+                    forIndex.removeAll(set);
+                    // Add the nodes for index
+                    forIndex.addAll(set);
+                }
+                else if (command.action == Action.DELETE)
+                {
+                    // Delete the nodes
+                    Set<String> set = deleteImpl(command.ref.toString(), IndexDeleteMode.DELETE, true, mainReader);
+                    // Remove any pending indexes
+                    forIndex.removeAll(set);
+                    // Add the leaf nodes for reindex
+                    forIndex.addAll(set);
+                }
+            }
+            commandList.clear();
+            indexImpl(forIndex, false);
+            docs = getDeltaWriter().docCount();
+            deletionsSinceFlush.clear();
+        }
+        catch (IOException e)
+        {
+            // If anything goes wrong we try and do a roll back
+            throw new LuceneIndexException("Failed to flush index", e);
+        }
+        finally
+        {
+            if (mainReader != null)
+            {
+                try
+                {
+                    mainReader.close();
+                }
+                catch (IOException e)
+                {
+                    throw new LuceneIndexException("Filed to close main reader", e);
+                }
+            }
+            // Make sure deletes are sent
+            try
+            {
+                closeDeltaReader();
+            }
+            catch (IOException e)
+            {
+
+            }
+            // Make sure writes and updates are sent.
+            try
+            {
+                closeDeltaWriter();
+            }
+            catch (IOException e)
+            {
+
+            }
+        }
     }
 
     private String[] splitPath(String path)
@@ -1247,12 +1510,12 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
     {
         if (indexUpdateStatus == IndexUpdateStatus.ASYNCHRONOUS)
         {
-            setInfo(docs, getDeletions(), false);
+            setInfo(docs, getDeletions(), getContainerDeletions(), false);
             // FTS does not trigger indexing request
         }
         else
         {
-            setInfo(docs, getDeletions(), false);
+            setInfo(docs, getDeletions(), getContainerDeletions(), false);
             // TODO: only register if required
             fullTextSearchIndexer.requiresIndex(store);
         }
@@ -1261,7 +1524,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
             callBack.indexCompleted(store, remainingCount, null);
         }
 
-        setInfo(docs, deletions, false);
+        setInfo(docs, deletions, containerDeletions, false);
     }
 
     @Override
@@ -2148,4 +2411,74 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
         deleteIndex();
 
     }
+
+    /**
+     * Delete all entries from the index.
+     */
+    public void deleteAll()
+    {
+        deleteAll(null);
+    }
+
+    /**
+     * Delete all index entries which do not start with the given prefix
+     * 
+     * @param prefix
+     */
+    public void deleteAll(String prefix)
+    {
+        IndexReader mainReader = null;
+        try
+        {
+            mainReader = getReader();
+            for (int doc = 0; doc < mainReader.maxDoc(); doc++)
+            {
+                if (!mainReader.isDeleted(doc))
+                {
+                    Document document = mainReader.document(doc);
+                    String[] ids = document.getValues("ID");
+                    if ((prefix == null) || nonStartwWith(ids, prefix))
+                    {
+                        deletions.add(ids[ids.length - 1]);
+                        // should be included in the deletion cache if we move back to caching at the TX level and not the flush level
+                        // Entries here will currently be ignored as the list is cleared at the start and end of a flush.
+                        deletionsSinceFlush.add(ids[ids.length - 1]);
+                    }
+                }
+            }
+
+        }
+        catch (IOException e)
+        {
+            // If anything goes wrong we try and do a roll back
+            throw new LuceneIndexException("Failed to delete all entries from the index", e);
+        }
+        finally
+        {
+            if (mainReader != null)
+            {
+                try
+                {
+                    mainReader.close();
+                }
+                catch (IOException e)
+                {
+                    throw new LuceneIndexException("Filed to close main reader", e);
+                }
+            }
+        }
+    }
+    
+    private boolean nonStartwWith(String[] values, String prefix)
+    {
+        for (String value : values)
+        {
+            if (value.startsWith(prefix))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+    
 }

@@ -188,6 +188,16 @@ public class NodeServiceImpl implements NodeService, VersionModel
     {
         return dbNodeService.getRootNode(storeRef);
     }
+    
+
+    /**
+     * Delegates to the <code>NodeService</code> used as the version store implementation
+     */
+    @Override
+    public Set<NodeRef> getAllRootNodes(StoreRef storeRef)
+    {
+        return dbNodeService.getAllRootNodes(storeRef);
+    }
 
     /**
      * @throws UnsupportedOperationException always
@@ -554,6 +564,18 @@ public class NodeServiceImpl implements NodeService, VersionModel
         // sort the results so that the order appears to be exactly as it was originally
         Collections.sort(result);
 
+        return result;
+    }
+    
+    @Override
+    public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, QName typeQName, QName qname, int maxResults,
+            boolean preload) throws InvalidNodeRefException
+    {
+        List<ChildAssociationRef> result = getChildAssocs(nodeRef, typeQName, qname);
+        if (result.size() > maxResults)
+        {
+            return result.subList(0, maxResults);
+        }
         return result;
     }
 

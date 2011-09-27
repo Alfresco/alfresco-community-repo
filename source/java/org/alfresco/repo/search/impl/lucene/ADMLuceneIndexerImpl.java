@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -41,6 +42,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
@@ -56,6 +58,7 @@ import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -72,6 +75,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.Path.ChildAssocElement;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.alfresco.service.namespace.QName;
@@ -100,9 +104,15 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * The implementation of the lucene based indexer. Supports basic transactional behaviour if used on its own.
  * 
  * @author andyh
+ * @author dward
  */
 public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> implements ADMLuceneIndexer
 {
+    /**
+     * The maximum number of parent associations a node can have before we choose to cascade reindex its parent rather than itself.
+     */
+    private static final int PATH_GENERATION_FACTOR = 5;
+    
     static Log s_logger = LogFactory.getLog(ADMLuceneIndexerImpl.class);
 
     /**
@@ -181,7 +191,10 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
     {
         if (s_logger.isDebugEnabled())
         {
-            s_logger.debug("Create node " + relationshipRef.getChildRef());
+            NodeRef parentRef = relationshipRef.getParentRef();
+            Path path = parentRef == null ? new Path() : nodeService.getPath(parentRef);
+            path.append(new ChildAssocElement(relationshipRef));
+            s_logger.debug("Create node " + path + " " + relationshipRef.getChildRef());
         }
         checkAbleToDoWork(IndexUpdateStatus.SYNCRONOUS);
         try
@@ -221,7 +234,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                     Document document = mainReader.document(doc);
                     String id = document.get("ID");
                     NodeRef ref = new NodeRef(id);
-                    deleteImpl(ref.toString(), IndexDeleteMode.DELETE, true, mainReader);
+                    deleteImpl(ref.toString(), getDeltaReader(), mainReader);
                 }
                 td.close();
             }
@@ -243,6 +256,14 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                     throw new LuceneIndexException("Filed to close main reader", e);
                 }
             }
+            try
+            {
+                closeDeltaReader();
+            }
+            catch (Exception e)
+            {
+                s_logger.warn("Failed to close delta reader", e);
+            }
         }
     }
 
@@ -252,7 +273,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
 
         if (s_logger.isDebugEnabled())
         {
-            s_logger.debug("Update node " + nodeRef);
+            s_logger.debug("Update node " + nodeService.getPath(nodeRef) + " " + nodeRef);
         }
         checkAbleToDoWork(IndexUpdateStatus.SYNCRONOUS);
         try
@@ -274,7 +295,10 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
     {
         if (s_logger.isDebugEnabled())
         {
-            s_logger.debug("Delete node " + relationshipRef.getChildRef());
+            NodeRef parentRef = relationshipRef.getParentRef();
+            Path path = parentRef == null ? new Path() : nodeService.getPath(parentRef);
+            path.append(new ChildAssocElement(relationshipRef));
+            s_logger.debug("Delete node " + path + " " + relationshipRef.getChildRef());
         }
         checkAbleToDoWork(IndexUpdateStatus.SYNCRONOUS);
         try
@@ -283,9 +307,6 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
             {
                 throw new LuceneIndexException("Delete node failed - node is not in the required store");
             }
-            // The requires a reindex - a delete may remove too much from under this node - that also lives under
-            // other nodes via secondary associations. All the nodes below require reindex.
-            // This is true if the deleted node is via secondary or primary assoc.
             delete(relationshipRef.getChildRef());
         }
         catch (LuceneIndexException e)
@@ -295,86 +316,74 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         }
     }
 
-    public void createChildRelationship(ChildAssociationRef relationshipRef) throws LuceneIndexException
+    private void childRelationshipEvent(ChildAssociationRef relationshipRef, String event) throws LuceneIndexException
     {
         if (s_logger.isDebugEnabled())
         {
-            s_logger.debug("Create child " + relationshipRef);
+            NodeRef parentRef = relationshipRef.getParentRef();
+            Path path = parentRef == null ? new Path() : nodeService.getPath(parentRef);
+            path.append(new ChildAssocElement(relationshipRef));
+            s_logger.debug(event + " " + path + " " + relationshipRef.getChildRef());
         }
         checkAbleToDoWork(IndexUpdateStatus.SYNCRONOUS);
         try
         {
-            // TODO: Optimise
-            // reindex(relationshipRef.getParentRef());
             if (!relationshipRef.getChildRef().getStoreRef().equals(store))
             {
-                throw new LuceneIndexException("Create child relationship failed - node is not in the required store");
+                throw new LuceneIndexException(event + " failed - node is not in the required store");
             }
-            reindex(relationshipRef.getChildRef(), true);
+            NodeRef parentRef = relationshipRef.getParentRef();
+            NodeRef childRef = relationshipRef.getChildRef(); 
+            if (parentRef != null)
+            {
+                // If the child has a lot of secondary parents, its cheaper to cascade reindex its parent rather than itself
+                if (nodeService.getParentAssocs(childRef).size() > PATH_GENERATION_FACTOR)
+                {
+                    reindex(parentRef, true);                
+                    reindex(childRef, false);
+                }
+                // Otherwise, it's cheaper to re-evaluate all the paths to this node
+                else
+                {
+                    reindex(childRef, true);                                                    
+                }
+            }
+            else
+            {
+                reindex(childRef, true);                                
+            }
         }
         catch (LuceneIndexException e)
         {
             setRollbackOnly();
-            throw new LuceneIndexException("Failed to create child relationship", e);
+            throw new LuceneIndexException(event + " failed", e);
         }
+    }
+
+    public void createChildRelationship(ChildAssociationRef relationshipRef) throws LuceneIndexException
+    {
+        childRelationshipEvent(relationshipRef, "Create child relationship");
     }
 
     public void updateChildRelationship(ChildAssociationRef relationshipBeforeRef, ChildAssociationRef relationshipAfterRef) throws LuceneIndexException
     {
-        if (s_logger.isDebugEnabled())
-        {
-            s_logger.debug("Update child " + relationshipBeforeRef + " to " + relationshipAfterRef);
-        }
-        checkAbleToDoWork(IndexUpdateStatus.SYNCRONOUS);
-        try
-        {
-            // TODO: Optimise
-            if (!relationshipBeforeRef.getChildRef().getStoreRef().equals(store))
-            {
-                throw new LuceneIndexException("Update child relationship failed - node is not in the required store");
-            }
-            if (!relationshipAfterRef.getChildRef().getStoreRef().equals(store))
-            {
-                throw new LuceneIndexException("Update child relationship failed - node is not in the required store");
-            }
-            if (relationshipBeforeRef.getParentRef() != null)
-            {
-                // reindex(relationshipBeforeRef.getParentRef());
-            }
-            move(relationshipBeforeRef.getChildRef());
-        }
-        catch (LuceneIndexException e)
-        {
-            setRollbackOnly();
-            throw new LuceneIndexException("Failed to update child relationship", e);
-        }
+        childRelationshipEvent(relationshipBeforeRef, "Update child relationship");
+        childRelationshipEvent(relationshipAfterRef, "Update child relationship");
     }
 
     public void deleteChildRelationship(ChildAssociationRef relationshipRef) throws LuceneIndexException
     {
-        if (s_logger.isDebugEnabled())
-        {
-            s_logger.debug("Delete child " + relationshipRef);
-        }
-        checkAbleToDoWork(IndexUpdateStatus.SYNCRONOUS);
-        try
-        {
-            if (!relationshipRef.getChildRef().getStoreRef().equals(store))
-            {
-                throw new LuceneIndexException("Delete child relationship failed - node is not in the required store");
-            }
-            // TODO: Optimise
-            if (relationshipRef.getParentRef() != null)
-            {
-                // reindex(relationshipRef.getParentRef());
-            }
-            reindex(relationshipRef.getChildRef(), true);
-        }
-        catch (LuceneIndexException e)
-        {
-            setRollbackOnly();
-            throw new LuceneIndexException("Failed to delete child relationship", e);
-        }
+        childRelationshipEvent(relationshipRef, "Delete child relationship");
+    }
+
+    /**
+     * Are we deleting leaves only (not meta data)
+     * 
+     * @return - deleting only nodes.
+     */
+    public boolean getDeleteOnlyNodes()
+    {
+        return true;
     }
 
     /**
@@ -486,7 +495,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                 }
             }
 
-            setInfo(docs, getDeletions(), true);
+            setInfo(docs, getDeletions(), getContainerDeletions(), getDeleteOnlyNodes());
             // mergeDeltaIntoMain(new LinkedHashSet<Term>());
         }
         catch (IOException e)
@@ -505,34 +514,6 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         {
             // Make sure we tidy up
             // deleteDelta();
-        }
-
-    }
-
-    static class Counter
-    {
-        int countInParent = 0;
-
-        int count = -1;
-
-        int getCountInParent()
-        {
-            return countInParent;
-        }
-
-        int getRepeat()
-        {
-            return (count / countInParent) + 1;
-        }
-
-        void incrementParentCount()
-        {
-            countInParent++;
-        }
-
-        void increment()
-        {
-            count++;
         }
 
     }
@@ -576,7 +557,48 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         }
     }
 
-    public List<Document> createDocuments(final String stringNodeRef, final FTSStatus ftsStatus, final boolean indexAllProperties, final boolean includeDirectoryDocuments)
+    protected Set<String> deleteImpl(String nodeRef, IndexReader deltaReader, IndexReader mainReader)
+            throws LuceneIndexException, IOException
+    {
+        Set<String> containerRefs = new LinkedHashSet<String>();
+        // Delete all and reindex as they could be secondary links we have deleted and they need to be updated.
+        // Most will skip any indexing as they will really have gone.
+        Set <String> temp = deleteContainerAndBelow(nodeRef, deltaReader, true, true);
+        containerRefs.addAll(temp);
+        temp = deleteContainerAndBelow(nodeRef, mainReader, false, true);
+        containerRefs.addAll(temp);
+        // Only mask out the container if it is present in the main index
+        if (!temp.isEmpty())
+        {
+            containerDeletions.add(nodeRef);
+        }
+
+        Set<String> leafrefs = new LinkedHashSet<String>();
+        temp = deletePrimary(containerRefs, deltaReader, true);
+        leafrefs.addAll(temp);
+        temp = deletePrimary(containerRefs, mainReader, false);
+        leafrefs.addAll(temp);
+        
+        Set<String> refs = new LinkedHashSet<String>();
+        refs.addAll(containerRefs);
+        refs.addAll(leafrefs);
+        deletions.addAll(refs);
+
+        // make sure leaves are also removed from the delta before reindexing
+
+        for(String id : refs)
+        {
+            // Only delete the leaves, as we may have hit secondary associations
+            deleteLeafOnly(id, deltaReader, true);
+        }
+        return refs;    
+    }
+
+    public List<Document> createDocuments(final String stringNodeRef, final FTSStatus ftsStatus,
+            final boolean indexAllProperties, final boolean includeDirectoryDocuments, final boolean cascade,
+            final Set<Path> pathsProcessedSinceFlush,
+            final Map<NodeRef, List<ChildAssociationRef>> childAssociationsSinceFlush, final IndexReader deltaReader,
+            final IndexReader mainReader)
     {
         if (tenantService.isEnabled() && ((AuthenticationUtil.getRunAsUser() == null) || (AuthenticationUtil.isRunAsUserTheSystemUser())))
         {
@@ -586,21 +608,27 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
             {
                 public List<Document> doWork()
                 {
-                    return createDocumentsImpl(stringNodeRef, ftsStatus, indexAllProperties, includeDirectoryDocuments);
+                    return createDocumentsImpl(stringNodeRef, ftsStatus, indexAllProperties, includeDirectoryDocuments,
+                            cascade, pathsProcessedSinceFlush, childAssociationsSinceFlush, deltaReader, mainReader);
                 }
             }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantService.getDomain(new NodeRef(stringNodeRef).getStoreRef().getIdentifier())));
         }
         else
         {
-            return createDocumentsImpl(stringNodeRef, ftsStatus, indexAllProperties, includeDirectoryDocuments);
+            return createDocumentsImpl(stringNodeRef, ftsStatus, indexAllProperties, includeDirectoryDocuments,
+                    cascade, pathsProcessedSinceFlush, childAssociationsSinceFlush, deltaReader, mainReader);
         }
     }
 
-    private List<Document> createDocumentsImpl(String stringNodeRef, FTSStatus ftsStatus, boolean indexAllProperties, boolean includeDirectoryDocuments)
+    private List<Document> createDocumentsImpl(final String stringNodeRef, FTSStatus ftsStatus,
+            boolean indexAllProperties, boolean includeDirectoryDocuments, final boolean cascade,
+            final Set<Path> pathsProcessedSinceFlush,
+            final Map<NodeRef, List<ChildAssociationRef>> childAssociationsSinceFlush, final IndexReader deltaReader,
+            final IndexReader mainReader)
     {
-        NodeRef nodeRef = new NodeRef(stringNodeRef);
-        NodeRef.Status nodeStatus = nodeService.getNodeStatus(nodeRef);             // DH: Let me know if this field gets dropped (performance)
-        List<Document> docs = new LinkedList<Document>();
+        final NodeRef nodeRef = new NodeRef(stringNodeRef);
+        final NodeRef.Status nodeStatus = nodeService.getNodeStatus(nodeRef);             // DH: Let me know if this field gets dropped (performance)
+        final List<Document> docs = new LinkedList<Document>();
         if (nodeStatus == null)
         {
             throw new InvalidNodeRefException("Node does not exist: " + nodeRef, nodeRef);            
@@ -613,18 +641,50 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
             return docs;
         }
 
-        Map<ChildAssociationRef, Counter> nodeCounts = getNodeCounts(nodeRef);
-        ChildAssociationRef qNameRef = null;
-        Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+        final Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
 
-        Collection<Path> directPaths = new LinkedHashSet<Path>(nodeService.getPaths(nodeRef, false));
-        Collection<Pair<Path, QName>> categoryPaths = getCategoryPaths(nodeRef, properties);
-        Collection<Pair<Path, QName>> paths = new ArrayList<Pair<Path, QName>>(directPaths.size() + categoryPaths.size());
-        for (Path path : directPaths)
+        boolean isRoot = nodeRef.equals(tenantService.getName(nodeService.getRootNode(nodeRef.getStoreRef())));
+
+        // Generate / regenerate all applicable parent paths as the system user (the current user doesn't necessarily have access
+        // to all of these)
+        if (includeDirectoryDocuments)
         {
-            paths.add(new Pair<Path, QName>(path, null));
+            AuthenticationUtil.runAs(new RunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    // We we must cope with the possibility of the container not existing for some of this node's parents
+                    for (ChildAssociationRef assocRef: nodeService.getParentAssocs(nodeRef))
+                    {
+                        NodeRef parentRef = tenantService.getName(assocRef.getParentRef());
+                        if (!childAssociationsSinceFlush.containsKey(parentRef))
+                        {
+                            String parentRefSString = parentRef.toString();
+                            if (!locateContainer(parentRefSString, deltaReader)
+                                    && !locateContainer(parentRefSString, mainReader))
+                            {
+                                generateContainersAndBelow(nodeService.getPaths(parentRef, false), docs, false,
+                                        pathsProcessedSinceFlush, childAssociationsSinceFlush);
+                            }
+                        }
+                    }
+                    
+                    // Now regenerate the containers for this node, cascading if necessary
+                    // Only process 'containers' - not leaves
+                    if (isCategory(getDictionaryService().getType(nodeService.getType(nodeRef)))
+                            || mayHaveChildren(nodeRef)
+                            && !getCachedChildren(childAssociationsSinceFlush, nodeRef).isEmpty())
+                    {
+                        generateContainersAndBelow(nodeService.getPaths(nodeRef, false), docs, cascade,
+                                pathsProcessedSinceFlush, childAssociationsSinceFlush);
+                    }
+                    
+                    return null;
+                }
+            }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantService.getDomain(nodeRef
+                    .getStoreRef().getIdentifier())));
         }
-        paths.addAll(categoryPaths);
 
         // check index control
         
@@ -654,9 +714,9 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                 }
             }
         }
-        
+
         Document xdoc = new Document();
-        xdoc.add(new Field("ID", nodeRef.toString(), Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
+        xdoc.add(new Field("ID", stringNodeRef, Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
         xdoc.add(new Field("TX", nodeStatus.getChangeTxnId(), Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
         boolean isAtomic = true;
         for (QName propertyName : properties.keySet())
@@ -675,89 +735,32 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
             }
         }
 
-        boolean isRoot = nodeRef.equals(tenantService.getName(nodeService.getRootNode(nodeRef.getStoreRef())));
-        boolean mayHaveChildren = includeDirectoryDocuments && mayHaveChildren(nodeRef);
-        boolean isCategory = isCategory(getDictionaryService().getType(nodeService.getType(nodeRef)));
-
         StringBuilder qNameBuffer = new StringBuilder(64);
         StringBuilder assocTypeQNameBuffer = new StringBuilder(64);
 
-        for (Iterator<Pair<Path, QName>> it = paths.iterator(); it.hasNext(); /**/)
+        if (!isRoot)
         {
-            Pair<Path, QName> pair = it.next();
-            // Lucene flags in order are: Stored, indexed, tokenised
-
-            qNameRef = tenantService.getName(getLastRefOrNull(pair.getFirst()));
-
-            String pathString = pair.getFirst().toString();
-            if ((pathString.length() > 0) && (pathString.charAt(0) == '/'))
+            for (Pair<ChildAssociationRef, QName> pair : getAllParents(nodeRef, properties))
             {
-                pathString = pathString.substring(1);
-            }
-
-            if (isRoot)
-            {
-                // Root node
-            }
-            else if (pair.getFirst().size() == 1)
-            {
-                // Pseudo root node ignore
-            }
-            else
-            // not a root node
-            {
-                Counter counter = nodeCounts.get(tenantService.getBaseName(qNameRef));
-                // If we have something in a container with root aspect we will
-                // not find it
-
-                if ((counter == null) || (counter.getRepeat() < counter.getCountInParent()))
+                ChildAssociationRef qNameRef = tenantService.getName(pair.getFirst());
+                if ((qNameRef != null) && (qNameRef.getParentRef() != null) && (qNameRef.getQName() != null))
                 {
-                    if ((qNameRef != null) && (qNameRef.getParentRef() != null) && (qNameRef.getQName() != null))
+                    if (qNameBuffer.length() > 0)
                     {
-                        if (qNameBuffer.length() > 0)
-                        {
-                            qNameBuffer.append(";/");
-                            assocTypeQNameBuffer.append(";/");
-                        }
-                        qNameBuffer.append(ISO9075.getXPathName(qNameRef.getQName()));
-                        assocTypeQNameBuffer.append(ISO9075.getXPathName(qNameRef.getTypeQName()));
-                        xdoc.add(new Field("PARENT", qNameRef.getParentRef().toString(), Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
-                        // xdoc.add(new Field("ASSOCTYPEQNAME", ISO9075.getXPathName(qNameRef.getTypeQName()),
-                        // Field.Store.YES, Field.Index.TOKENIZED, Field.TermVector.NO));
-                        xdoc.add(new Field("LINKASPECT", (pair.getSecond() == null) ? "" : ISO9075.getXPathName(pair.getSecond()), Field.Store.YES, Field.Index.NO_NORMS,
-                                Field.TermVector.NO));
+                        qNameBuffer.append(";/");
+                        assocTypeQNameBuffer.append(";/");
                     }
-                }
-
-                if (counter != null)
-                {
-                    counter.increment();
-                }
-
-                // check for child associations
-
-                if (mayHaveChildren)
-                {
-                    if (directPaths.contains(pair.getFirst()))
-                    {
-                        Document directoryEntry = new Document();
-                        directoryEntry.add(new Field("ID", nodeRef.toString(), Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
-                        directoryEntry.add(new Field("PATH", pathString, Field.Store.YES, Field.Index.TOKENIZED, Field.TermVector.NO));
-                        for (NodeRef parent : getParents(pair.getFirst()))
-                        {
-                            directoryEntry.add(new Field("ANCESTOR", tenantService.getName(parent).toString(), Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
-                        }
-                        directoryEntry.add(new Field("ISCONTAINER", "T", Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
-
-                        if (isCategory)
-                        {
-                            directoryEntry.add(new Field("ISCATEGORY", "T", Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
-                        }
-
-                        docs.add(directoryEntry);
-                    }
+                    qNameBuffer.append(ISO9075.getXPathName(qNameRef.getQName()));
+                    assocTypeQNameBuffer.append(ISO9075.getXPathName(qNameRef.getTypeQName()));
+                    xdoc.add(new Field("PARENT", qNameRef.getParentRef().toString(), Field.Store.YES,
+                            Field.Index.NO_NORMS, Field.TermVector.NO));
+                    // xdoc.add(new Field("ASSOCTYPEQNAME", ISO9075.getXPathName(qNameRef.getTypeQName()),
+                    // Field.Store.YES, Field.Index.TOKENIZED, Field.TermVector.NO));
+                    xdoc.add(new Field("LINKASPECT", (pair.getSecond() == null) ? "" : ISO9075.getXPathName(pair
+                            .getSecond()), Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
                 }
             }
+
         }
 
         // Root Node
@@ -806,8 +809,104 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
             docs.add(xdoc);
             // }
         }
-
         return docs;
+    }
+    
+    private void generateContainersAndBelow(List<Path> paths, List<Document> docs, boolean cascade,
+            Set<Path> pathsProcessedSinceFlush, Map<NodeRef, List<ChildAssociationRef>> childAssociationsSinceFlush)
+    {
+        if (paths.isEmpty())
+        {
+            return;
+        }
+
+        for (Path path: paths)
+        {
+            NodeRef nodeRef = tenantService.getName(((ChildAssocElement) path.last()).getRef().getChildRef());
+            
+            // Prevent duplication of path cascading
+            if (pathsProcessedSinceFlush.add(path))
+            {
+                // Categories have special powers - generate their container regardless of their actual children
+                boolean isCategory = isCategory(getDictionaryService().getType(nodeService.getType(nodeRef)));
+
+                // For other containers, we only add a doc if they actually have children
+                if (!isCategory)
+                {
+                    // Only process 'containers' - not leaves
+                    if (!mayHaveChildren(nodeRef))
+                    {
+                        continue;
+                    }
+        
+                    // Only process 'containers' - not leaves
+                    if (getCachedChildren(childAssociationsSinceFlush, nodeRef).isEmpty())
+                    {
+                        continue;
+                    }
+                }
+
+                // Skip the root, which is a single document
+                if (path.size() > 1)
+                {
+                    String pathString = path.toString();    
+                    if ((pathString.length() > 0) && (pathString.charAt(0) == '/'))
+                    {
+                        pathString = pathString.substring(1);
+                    }
+                    Document directoryEntry = new Document();
+                    directoryEntry.add(new Field("ID", nodeRef.toString(), Field.Store.YES,
+                            Field.Index.NO_NORMS, Field.TermVector.NO));
+                    directoryEntry.add(new Field("PATH", pathString, Field.Store.YES, Field.Index.TOKENIZED,
+                            Field.TermVector.NO));
+                    for (NodeRef parent : getParents(path))
+                    {
+                        directoryEntry.add(new Field("ANCESTOR", tenantService.getName(parent).toString(),
+                                Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
+                    }
+                    directoryEntry.add(new Field("ISCONTAINER", "T", Field.Store.YES, Field.Index.NO_NORMS,
+                            Field.TermVector.NO));
+            
+                    if (isCategory)
+                    {
+                        directoryEntry.add(new Field("ISCATEGORY", "T", Field.Store.YES, Field.Index.NO_NORMS,
+                                Field.TermVector.NO));
+                    }
+            
+                    docs.add(directoryEntry);
+                }
+            }
+        
+            if (cascade)
+            {
+                List<Path> childPaths = new LinkedList<Path>();
+                for (ChildAssociationRef childRef : getCachedChildren(childAssociationsSinceFlush, nodeRef))
+                {
+                    childPaths.add(new Path().append(path).append(new Path.ChildAssocElement(childRef)));
+                }
+                generateContainersAndBelow(childPaths, docs, true, pathsProcessedSinceFlush,
+                        childAssociationsSinceFlush);
+            }
+        }
+    }
+
+    private List<ChildAssociationRef> getCachedChildren(
+            Map<NodeRef, List<ChildAssociationRef>> childAssociationsSinceFlush, NodeRef nodeRef)
+    {
+        List <ChildAssociationRef> children = childAssociationsSinceFlush.get(nodeRef);
+
+        // Cache the children in case there are many paths to the same node
+        if (children == null)
+        {
+            children = nodeService.getChildAssocs(nodeRef);
+            for (ChildAssociationRef childRef : children)
+            {
+                // We don't want index numbers in generated paths
+                childRef.setNthSibling(-1);                
+            }
+            childAssociationsSinceFlush.put(nodeRef, children);
+        }
+        return children;
     }
 
     private void addFtsStatusDoc(List<Document> docs, FTSStatus ftsStatus, NodeRef nodeRef,
@@ -826,6 +925,185 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                         Field.TermVector.NO));
         doc.add(new Field("FTSSTATUS", ftsStatus.name(), Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
         docs.add(doc);
+    }
+    
+    /**
+     * @throws LuceneIndexException
+     */
+    public void flushPending() throws LuceneIndexException
+    {
+        IndexReader mainReader = null;
+        try
+        {
+            saveDelta();            
+            
+            if (commandList.isEmpty())
+            {
+                return;
+            }
+            
+            Map<String,Action> nodeActionMap = new LinkedHashMap<String, Action>(commandList.size() * 2);
+
+            // First, apply deletions and work out a 'flattened' list of reindex actions
+            mainReader = getReader();
+            IndexReader deltaReader = getDeltaReader();
+            Set<String> deletionsSinceFlush = new TreeSet<String>();
+            for (Command<NodeRef> command : commandList)
+            {
+                if (s_logger.isDebugEnabled())
+                {
+                    s_logger.debug(command.action + ": " + command.ref);
+                }
+                String nodeRef = command.ref.toString();
+                switch(command.action)
+                {
+                case INDEX:
+                    // No deletions
+                    if (nodeActionMap.get(nodeRef) != Action.CASCADEREINDEX)
+                    {
+                        nodeActionMap.put(nodeRef, Action.INDEX);
+                    }
+                    break;
+                case REINDEX:
+                    // Remove from delta if present
+                    deleteLeafOnly(nodeRef, deltaReader, true);
+                    
+                    // Only mask out the node if it is present in the main index
+                    if (deleteLeafOnly(nodeRef, mainReader, false));
+                    {
+                        deletions.add(nodeRef);
+                    }                    
+                    if (!nodeActionMap.containsKey(nodeRef))
+                    {
+                        nodeActionMap.put(nodeRef, Action.REINDEX);
+                    }
+                    break;
+                case CASCADEREINDEX:
+                    deleteContainerAndBelow(nodeRef, deltaReader, true, true);
+                    // Only mask out the container if it is present in the main index
+                    Set<String> temp = deleteContainerAndBelow(nodeRef, mainReader, false, true);
+                    if (!temp.isEmpty())
+                    {
+                        containerDeletions.add(nodeRef);
+                    }
+                    // Only mask out the node if it is present in the main index
+                    if (temp.contains(nodeRef))
+                    {
+                        deletions.add(nodeRef);
+                    }
+                    nodeActionMap.put(nodeRef, Action.CASCADEREINDEX);
+                    break;
+                case DELETE:
+                    // if already deleted don't do it again ...
+                    if(!deletionsSinceFlush.contains(nodeRef))
+                    {
+                        Set<String> refs = deleteImpl(nodeRef, deltaReader, mainReader);
+
+                        // do not delete anything we have deleted before in this flush
+                        // probably OK to cache for the TX as a whole but done per flush => See ALF-8007 
+                        deletionsSinceFlush.addAll(refs);                        
+                        for (String ref : refs)
+                        {
+                            if (!nodeActionMap.containsKey(ref))
+                            {
+                                nodeActionMap.put(ref, Action.REINDEX);
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+            
+            // Now reindex what needs indexing!
+            Set<Path> pathsProcessedSinceFlush = new HashSet<Path>(97);
+            Map<NodeRef, List<ChildAssociationRef>> childAssociationsSinceFlush = new HashMap<NodeRef, List<ChildAssociationRef>>(97);
+
+            // First do the reading
+            List<Document> docs = new LinkedList<Document>();
+            for (Map.Entry<String, Action> entry : nodeActionMap.entrySet())
+            {
+                String nodeRef = entry.getKey();
+                try
+                {
+                    switch (entry.getValue())
+                    {
+                    case INDEX:
+                        docs.addAll(readDocuments(nodeRef, FTSStatus.New, false, true, false, pathsProcessedSinceFlush,
+                                childAssociationsSinceFlush, deltaReader, mainReader));
+                        break;
+                    case REINDEX:
+                        docs.addAll(readDocuments(nodeRef, FTSStatus.Dirty, false, false, false,
+                                pathsProcessedSinceFlush, childAssociationsSinceFlush, deltaReader, mainReader));
+                        break;
+                    case CASCADEREINDEX:
+                        // Add the nodes for index
+                        docs.addAll(readDocuments(nodeRef, FTSStatus.Dirty, false, true, true,
+                                pathsProcessedSinceFlush, childAssociationsSinceFlush, deltaReader, mainReader));
+                        break;
+                    }
+                }
+                catch (InvalidNodeRefException e)
+                {
+                    // The node does not exist
+                }
+            }
+            closeDeltaReader();
+
+            // Now the writing
+            IndexWriter writer = getDeltaWriter();        
+            for (Document doc : docs)
+            {
+                try
+                {
+                    writer.addDocument(doc);
+                }
+                catch (IOException e)
+                {
+                    throw new LuceneIndexException("Failed to add document to index", e);
+                }
+            }
+            
+            commandList.clear();
+            this.docs = writer.docCount();
+            deletionsSinceFlush.clear();
+        }
+        catch (IOException e)
+        {
+            // If anything goes wrong we try and do a roll back
+            throw new LuceneIndexException("Failed to flush index", e);
+        }
+        finally
+        {
+            if (mainReader != null)
+            {
+                try
+                {
+                    mainReader.close();
+                }
+                catch (IOException e)
+                {
+                    throw new LuceneIndexException("Filed to close main reader", e);
+                }
+            }
+            // Make sure deletes are sent
+            try
+            {
+                closeDeltaReader();
+            }
+            catch (IOException e)
+            {
+
+            }
+            // Make sure writes and updates are sent.
+            try
+            {
+                closeDeltaWriter();
+            }
+            catch (IOException e)
+            {
+
+            }
+        }
     }
 
     private Serializable convertForMT(QName propertyName, Serializable inboundValue)
@@ -1405,55 +1683,41 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                 throw new IndexerException("Confused path: " + path);
             }
             Path.ChildAssocElement cae = (Path.ChildAssocElement) element;
-            parentsInDepthOrderStartingWithSelf.add(0, cae.getRef().getChildRef());
+            parentsInDepthOrderStartingWithSelf.add(0, tenantService.getName(cae.getRef().getChildRef()));
 
         }
         return parentsInDepthOrderStartingWithSelf;
     }
 
-    private ChildAssociationRef getLastRefOrNull(Path path)
+    private Collection<Pair<ChildAssociationRef, QName>> getAllParents(NodeRef nodeRef, Map<QName, Serializable> properties)
     {
-        if (path.last() instanceof Path.ChildAssocElement)
+        List<Pair<ChildAssociationRef, QName>> allParents = new LinkedList<Pair<ChildAssociationRef, QName>>();
+        // First get the real parents
+        StoreRef storeRef = nodeRef.getStoreRef();
+        Set<NodeRef> allRootNodes = nodeService.getAllRootNodes(storeRef);
+        for (ChildAssociationRef assocRef : nodeService.getParentAssocs(nodeRef))
         {
-            Path.ChildAssocElement cae = (Path.ChildAssocElement) path.last();
-            return cae.getRef();
-        }
-        else
-        {
-            return null;
-        }
-    }
+            allParents.add(new Pair<ChildAssociationRef, QName>(assocRef, null));            
 
-    private Map<ChildAssociationRef, Counter> getNodeCounts(NodeRef nodeRef)
-    {
-        Map<ChildAssociationRef, Counter> nodeCounts = new HashMap<ChildAssociationRef, Counter>(5);
-        List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(nodeRef);
-        // count the number of times the association is duplicated
-        for (ChildAssociationRef assoc : parentAssocs)
-        {
-            Counter counter = nodeCounts.get(assoc);
-            if (counter == null)
+            // Add a fake association to the store root if a real parent is a 'fake' root
+            NodeRef parentRef = tenantService.getBaseName(assocRef.getParentRef());
+            if (allRootNodes.contains(parentRef))
             {
-                counter = new Counter();
-                nodeCounts.put(assoc, counter);
+                NodeRef rootNodeRef = nodeService.getRootNode(parentRef.getStoreRef());
+                if (!parentRef.equals(rootNodeRef))
+                {
+                    allParents.add(new Pair<ChildAssociationRef, QName>(new ChildAssociationRef(
+                            assocRef.getTypeQName(), rootNodeRef, assocRef.getQName(), nodeRef), null));
+                }
             }
-            counter.incrementParentCount();
-
         }
-        return nodeCounts;
-    }
 
-    private Collection<Pair<Path, QName>> getCategoryPaths(NodeRef nodeRef, Map<QName, Serializable> properties)
-    {
-        ArrayList<Pair<Path, QName>> categoryPaths = new ArrayList<Pair<Path, QName>>();
-        Set<QName> aspects = nodeService.getAspects(nodeRef);
-
-        for (QName classRef : aspects)
+        // Now add the 'fake' parents, including their aspect QName
+        for (QName classRef : nodeService.getAspects(nodeRef))
         {
             AspectDefinition aspDef = getDictionaryService().getAspect(classRef);
             if (isCategorised(aspDef))
             {
-                LinkedList<Pair<Path, QName>> aspectPaths = new LinkedList<Pair<Path, QName>>();
                 for (PropertyDefinition propDef : aspDef.getProperties().values())
                 {
                     if (propDef.getDataType().getName().equals(DataTypeDefinition.CATEGORY))
@@ -1467,28 +1731,10 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
 
                                 try
                                 {
-                                    for (Path path : nodeService.getPaths(catRef, false))
+                                    for (ChildAssociationRef assocRef : nodeService.getParentAssocs(catRef))
                                     {
-                                        if ((path.size() > 1) && (path.get(1) instanceof Path.ChildAssocElement))
-                                        {
-                                            Path.ChildAssocElement cae = (Path.ChildAssocElement) path.get(1);
-                                            boolean isFakeRoot = true;
-                                            for (ChildAssociationRef car : nodeService.getParentAssocs(cae.getRef().getChildRef()))
-                                            {
-                                                if (cae.getRef().equals(car))
-                                                {
-                                                    isFakeRoot = false;
-                                                    break;
-                                                }
-                                            }
-                                            if (isFakeRoot)
-                                            {
-                                                if (path.toString().indexOf(aspDef.getName().toString()) != -1)
-                                                {
-                                                    aspectPaths.add(new Pair<Path, QName>(path, aspDef.getName()));
-                                                }
-                                            }
-                                        }
+                                        allParents
+                                                .add(new Pair<ChildAssociationRef, QName>(new ChildAssociationRef(assocRef.getTypeQName(), assocRef.getChildRef(), QName.createQName("member"), nodeRef), aspDef.getName()));
                                     }
                                 }
                                 catch (InvalidNodeRefException e)
@@ -1500,21 +1746,9 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                         }
                     }
                 }
-                categoryPaths.addAll(aspectPaths);
             }
         }
-        // Add member final element
-        for (Pair<Path, QName> pair : categoryPaths)
-        {
-            if (pair.getFirst().last() instanceof Path.ChildAssocElement)
-            {
-                Path.ChildAssocElement cae = (Path.ChildAssocElement) pair.getFirst().last();
-                ChildAssociationRef assocRef = cae.getRef();
-                pair.getFirst().append(new Path.ChildAssocElement(new ChildAssociationRef(assocRef.getTypeQName(), assocRef.getChildRef(), QName.createQName("member"), nodeRef)));
-            }
-        }
-
-        return categoryPaths;
+        return allParents;
     }
 
     private boolean isCategorised(AspectDefinition aspDef)
@@ -1669,13 +1903,13 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                         List<Document> docs;
                         try
                         {
-                            docs = readDocuments(ref.toString(), FTSStatus.Clean, true, false);
+                            docs = readDocuments(ref.toString(), FTSStatus.Clean, true, false, false, null, null, null, null);
                         }
                         catch (Throwable t)
                         {
                             // Try to recover from failure
                             s_logger.error("FTS index of " + ref + " failed. Reindexing without FTS", t);
-                            docs = readDocuments(ref.toString(), FTSStatus.Clean, false, false);
+                            docs = readDocuments(ref.toString(), FTSStatus.Clean, false, false, false, null, null, null, null);
                         }
                         for (Document doc : docs)
                         {
@@ -1725,6 +1959,23 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         }
     }
 
+    protected List<Document> readDocuments(final String stringNodeRef, final FTSStatus ftsStatus,
+            final boolean indexAllProperties, final boolean includeDirectoryDocuments, final boolean cascade,
+            final Set<Path> pathsProcessedSinceFlush,
+            final Map<NodeRef, List<ChildAssociationRef>> childAssociationsSinceFlush, final IndexReader deltaReader,
+            final IndexReader mainReader)
+    {
+        return doInReadthroughTransaction(new RetryingTransactionCallback<List<Document>>()
+        {
+            @Override
+            public List<Document> execute() throws Throwable
+            {
+                return createDocuments(stringNodeRef, ftsStatus, indexAllProperties, includeDirectoryDocuments,
+                        cascade, pathsProcessedSinceFlush, childAssociationsSinceFlush, deltaReader, mainReader);
+            }
+        });
+    }
+    
     public void registerCallBack(FTSIndexerAware callBack)
     {
         this.callBack = callBack;
@@ -1765,7 +2016,8 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         }
         else
         {
-            setInfo(docs, getDeletions(), false);
+            // Deletions delete nodes only. Containers handled separately
+            setInfo(docs, getDeletions(), getContainerDeletions(), getDeleteOnlyNodes());
             fullTextSearchIndexer.requiresIndex(store);
         }
         if (callBack != null)

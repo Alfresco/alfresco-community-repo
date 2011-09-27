@@ -82,6 +82,12 @@
         <property name="userAuthorityCache">
             <ref bean="userToAuthorityCache" />
         </property>
+        <property name="childAuthorityCache">
+            <ref bean="authorityToChildAuthorityCache" />
+        </property>
+        <property name="zoneAuthorityCache">
+            <ref bean="zoneToAuthorityCache" />
+        </property>
         <property name="policyComponent">
             <ref bean="policyComponent"/>
         </property>

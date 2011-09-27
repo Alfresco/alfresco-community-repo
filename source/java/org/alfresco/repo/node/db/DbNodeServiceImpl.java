@@ -66,10 +66,10 @@ import org.alfresco.service.cmr.repository.InvalidChildAssociationRefException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.InvalidStoreRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
@@ -280,6 +280,12 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
         // done
         return rootNodePair.getSecond();
+    }
+    
+    @Override
+    public Set<NodeRef> getAllRootNodes(StoreRef storeRef)
+    {
+        return nodeDAO.getAllRootNodes(storeRef);
     }
 
     /**
@@ -1124,6 +1130,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             propagateTimeStamps(childParentAssocRef);
             invokeOnDeleteNode(childParentAssocRef, childNodeType, childNodeQNames, false);
             
+            // Index
+            nodeIndexer.indexDeleteNode(childParentAssocRef);
+                        
             // lose interest in tracking this node ref
             untrackNewNodeRef(childNodeRef);
         }
@@ -1168,8 +1177,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
         
         // check that the child addition of the child has not created a cyclic relationship
-        // this functionality is provided for free in getPath
-        getPaths(childRef, false);
+        nodeDAO.cycleCheck(childNodePair);
 
         // Invoke policy behaviours
         for (ChildAssociationRef childAssocRef : childAssociationRefs)
@@ -1686,6 +1694,22 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         return orderedList;
     }
     
+    /**
+     * Fetches the first n child associations in an efficient manner
+     */
+    public List<ChildAssociationRef> getChildAssocs(
+            NodeRef nodeRef,
+            final QName typeQName,
+            final QName qname,
+            final int maxResults,
+            final boolean preload)
+    {
+        // Get the node
+        Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
+        // Get the assocs pointing to it
+        return nodeDAO.getChildAssocs(nodePair.getFirst(), typeQName, qname, maxResults, preload);
+    }
+
     public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, Set<QName> childNodeTypeQNames)
     {
         // Get the node

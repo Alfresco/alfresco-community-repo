@@ -113,6 +113,8 @@ public interface NodeDAO extends NodeBulkLoader
     
     public Pair<Long, NodeRef> getRootNode(StoreRef storeRef);
     
+    public Set<NodeRef> getAllRootNodes(StoreRef storeRef);
+    
     /*
      * Node
      */
@@ -491,6 +493,27 @@ public interface NodeDAO extends NodeBulkLoader
             ChildAssocRefQueryCallback resultsCallback);
 
     /**
+     * Gets the first n child associations of a given parent node, optionally filtering on association <tt>QName</tt>
+     * and association type <tt>QName</tt>.
+     * <p/>
+     * This is an efficient query for node paths.
+     * 
+     * @param parentNodeId          the parent node ID
+     * @param assocTypeQName        the association type qname to filter on; <tt>null<tt> for no filtering
+     * @param assocQName            the association qname to filter on; <tt>null</tt> for no filtering
+     * @param maxResults            the maximum number of results to return. The query will be terminated efficiently
+     *                              after that number of results                             
+     * @param preload          should the child nodes be batch loaded?
+     * @return a list of child associations
+     */
+    public List<ChildAssociationRef> getChildAssocs(
+            Long parentNodeId,
+            QName assocTypeQName,
+            QName assocQName,
+            final int maxResults,
+            boolean preload);
+    
+   /**
      * Get the child associations of a given parent node, optionally filtering on type <tt>QName</tt>.
      * 
      * @param parentNodeId          the parent node ID
@@ -597,6 +620,14 @@ public interface NodeDAO extends NodeBulkLoader
      */
     public List<Path> getPaths(Pair<Long, NodeRef> nodePair, boolean primaryOnly) throws InvalidNodeRefException;
     
+    /**
+     * Potentially cheaper than evaluating all of a node's paths to check for child association cycles.
+     * 
+     * @param nodePair
+     *            the node to check
+     */
+    public void cycleCheck(Pair<Long, NodeRef> nodePair);
+
     /*
      * Transactions
      */

@@ -483,15 +483,7 @@ public class AVMLockingServiceImpl implements AVMLockingService
         {
             return true;
         }
-        Set<String> containing = authorityService.getContainingAuthorities(null, user, false);
-        for (String parent : containing)
-        {
-            if (parent.equalsIgnoreCase(authority))
-            {
-                return true;
-            }
-        }
-        return false;
+        return authorityService.getAuthoritiesForUser(user).contains(authority);
     }
     
     /**

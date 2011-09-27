@@ -18,12 +18,15 @@
  */
 package org.alfresco.repo.security.authority;
 
+import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
@@ -123,6 +126,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         this.guestGroups = guestGroups;
     }
 
+    @Override
     public void afterPropertiesSet() throws Exception
     {
         // Fully qualify the admin group names
@@ -200,6 +204,32 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     }
     
     /**
+     * Checks if the {@code authority} (normally a username) is the same as or is contained
+     * within the {@code parentAuthority}.
+     * @param authority
+     * @param parentAuthority a normalized, case sensitive authority name
+     * @return {@code true} if does, {@code false} otherwise.
+     */
+    private boolean hasAuthority(String authority, String parentAuthority)
+    {
+        if (parentAuthority.equals(authority))
+        {
+            return true;
+        }
+        // Even users are matched case sensitively in ACLs
+        if (AuthorityType.getAuthorityType(parentAuthority) == AuthorityType.USER)
+        {
+            return false;
+        }
+        NodeRef nodeRef = authorityDAO.getAuthorityNodeRefOrNull(parentAuthority);
+        if (nodeRef == null)
+        {
+            return false;
+        }
+        return authorityDAO.isAuthorityContained(nodeRef, authority);        
+    }
+    
+    /**
      * {@inheritDoc}
      */
     // note: could be renamed (via deprecation) to getAuthoritiesForUser()
@@ -214,16 +244,17 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
      */
     public Set<String> getAuthoritiesForUser(String currentUserName)
     {
-        Set<String> authorities = new HashSet<String>(64);
-        
-        authorities.addAll(getContainingAuthorities(null, currentUserName, false));
-        
-        // Work out mapped roles
+        return new UserAuthoritySet(currentUserName);
+    }
+
+    // Return mapped roles
+    private Set<String> getRoleAuthorities(String currentUserName)
+    {
+        Set<String> authorities = new TreeSet<String>();
         
         // Check named guest and admin users
-        Set<String> adminUsers = this.authenticationService.getDefaultAdministratorUserNames();
-        
-        Set<String> guestUsers = this.authenticationService.getDefaultGuestUserNames();
+        Set<String> adminUsers = authenticationService.getDefaultAdministratorUserNames();
+        Set<String> guestUsers = authenticationService.getDefaultGuestUserNames();
         
         String defaultGuestName = AuthenticationUtil.getGuestUserName();
         if (defaultGuestName != null && defaultGuestName.length() > 0)
@@ -236,23 +267,32 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         boolean isGuestUser = containsMatch(guestUsers, currentUserName);
         
         // Check if any of the user's groups are listed as admin groups
-        if (!isAdminUser && !adminGroups.isEmpty())
+        if (!isAdminUser)
         {
-            for (String authority : authorities)
+            for (String authority : adminGroups)
             {
-                if (adminGroups.contains(authority) || adminGroups.contains(tenantService.getBaseNameUser(authority)))
+                if (hasAuthority(currentUserName, authority) || hasAuthority(currentUserName, tenantService.getBaseNameUser(authority)))
                 {
                     isAdminUser = true;
                     break;
                 }
             }
         }
-        // Check if any of the user's groups are listed as guest groups
-        if (!isAdminUser && !isGuestUser && !guestGroups.isEmpty())
+        
+        // Check if user name matches (ignore case) "ROLE_GUEST", if so its a guest. Code originally in PermissionService. 
+        if (!isAdminUser && !isGuestUser &&
+            tenantService.getBaseNameUser(currentUserName).equalsIgnoreCase(AuthenticationUtil.getGuestUserName()))
         {
-            for (String authority : authorities)
+            isGuestUser = true;
+
+        }
+        
+        // Check if any of the user's groups are listed as guest groups
+        if (!isAdminUser && !isGuestUser)
+        {
+            for (String authority : guestGroups)
             {
-                if (guestGroups.contains(authority) || guestGroups.contains(tenantService.getBaseNameUser(authority)))
+                if (hasAuthority(currentUserName, authority) || hasAuthority(currentUserName, tenantService.getBaseNameUser(authority)))
                 {
                     isGuestUser = true;
                     break;
@@ -274,6 +314,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         {
             authorities.addAll(guestSet);
         }
+        
         return authorities;
     }
     
@@ -501,6 +542,12 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     /**
      * {@inheritDoc}
      */
+    public Set<String> getContainingAuthoritiesInZone(AuthorityType type, String authority, final String zoneName, AuthorityFilter filter, int size)
+    {
+        return authorityDAO.getContainingAuthoritiesInZone(type, authority, zoneName, filter, size);
+    }
+
+    @Override
     public void removeAuthority(String parentName, String childName)
     {
         authorityDAO.removeAuthority(parentName, childName);
@@ -644,5 +691,119 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     public String getShortName(String name)
     {
         return authorityDAO.getShortName(name);
+    }
+
+
+    /**
+     * Lazy load set of authorities. Try not to iterate or ask for the size. Needed for the case where there
+     * is a large number of sites/groups.
+     * 
+     * @author David Ward, Alan Davis
+     */
+    public final class UserAuthoritySet extends AbstractSet<String>
+    {
+        private final String username;
+        private Set<String> positiveHits;
+        private Set<String> negativeHits;
+        private boolean allAuthoritiesLoaded;
+
+        /**
+         * @param username
+         * @param auths
+         */
+        public UserAuthoritySet(String username)
+        {
+            this.username = username;
+            positiveHits = getRoleAuthorities(username);
+            negativeHits = new TreeSet<String>();
+        }
+
+        // Try to avoid evaluating the full set unless we have to!
+        private Set<String> getAllAuthorities()
+        {
+            if (!allAuthoritiesLoaded)
+            {
+                allAuthoritiesLoaded = true;
+                Set<String> tmp = positiveHits;  // must add role authorities back in.
+                positiveHits = getContainingAuthorities(null, username, false);
+                positiveHits.addAll(tmp);
+                negativeHits = null;
+            }
+            return positiveHits;
+        }
+
+        @Override
+        public boolean removeAll(Collection<?> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean add(String e)
+        {
+            return positiveHits.add(e);
+        }
+
+        @Override
+        public void clear()
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean contains(Object o)
+        {
+            if (!(o instanceof String))
+            {
+                return false;
+            }
+            if (positiveHits.contains(o))
+            {
+                return true;
+            }
+            if (allAuthoritiesLoaded || negativeHits.contains(o))
+            {
+                return false;
+            }
+            // Remember positive and negative hits for next time
+            if (hasAuthority(username, (String) o))
+            {
+                positiveHits.add((String) o);
+                return true;
+            }
+            else
+            {
+                negativeHits.add((String)o);
+                return false;
+            }
+        }
+
+        @Override
+        public boolean remove(Object o)
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean retainAll(Collection<?> c)
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Iterator<String> iterator()
+        {
+            return getAllAuthorities().iterator();
+        }
+
+        @Override
+        public int size()
+        {
+            return getAllAuthorities().size();
+        }
+
+        public Object getUsername()
+        {
+            return username;
+        }
     }
 }

@@ -31,6 +31,7 @@ public interface LuceneIndexer extends Indexer, TransactionSynchronisationAwareI
 { 
     public String getDeltaId();
     public Set<String> getDeletions();
+    public Set<String> getContainerDeletions();
     public boolean getDeleteOnlyNodes();   
     public <R> R doReadOnly(IndexInfo.LockWork <R> lockWork);
 }

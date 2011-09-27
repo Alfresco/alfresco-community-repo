@@ -2270,6 +2270,8 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         results.close();
 
         nodeService.addAspect(n14, aspectWithChildren, null);
+        nodeService.createNode(n14, QName.createQName(TEST_NAMESPACE, "unused"), QName.createQName(TEST_NAMESPACE,
+                "unused"), testSuperType, getOrderProperties());
         testTX.commit();
 
         testTX = transactionService.getUserTransaction();

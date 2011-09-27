@@ -21,6 +21,7 @@ package org.alfresco.repo.search.impl.lucene.index;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 
 import junit.framework.TestCase;
@@ -109,7 +110,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
 
             ii.closeDeltaIndexWriter(guid);
             ii.setStatus(guid, TransactionStatus.PREPARING, null, null);
-            ii.setPreparedState(guid, deletions, 1, false);
+            ii.setPreparedState(guid, deletions, Collections.<String>emptySet(), 1, false);
             ii.getDeletions(guid);
             ii.setStatus(guid, TransactionStatus.PREPARED, null, null);
 
@@ -131,7 +132,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
             }
             reader.close();
 
-            reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader(guid, deletions, false);
+            reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader(guid, deletions, Collections.<String>emptySet(), false);
             assertEquals(reader.numDocs(), i + 1);
             for (int j = 0; j < WORD_LIST.length; j++)
             {
@@ -214,7 +215,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
             ii.closeDeltaIndexWriter(guid);
  
             ii.setStatus(guid, TransactionStatus.PREPARING, null, null);
-            ii.setPreparedState(guid, new HashSet<String>(), 1, false);
+            ii.setPreparedState(guid, Collections.<String>emptySet(), Collections.<String>emptySet(), 1, false);
             ii.getDeletions(guid);
             ii.setStatus(guid, TransactionStatus.PREPARED, null, null);
 
@@ -236,7 +237,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
             }
             reader.close();
 
-            reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader(guid, new HashSet<String>(), false);
+            reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader(guid, Collections.<String>emptySet(), Collections.<String>emptySet(), false);
             assertEquals(reader.numDocs(), i + 1);
             for (int j = 0; j < CREATE_LIST.length; j++)
             {
@@ -290,7 +291,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
             ii.setStatus(guid, TransactionStatus.ACTIVE, null, null);
             ii.closeDeltaIndexWriter(guid);
             ii.setStatus(guid, TransactionStatus.PREPARING, null, null);
-            ii.setPreparedState(guid, deletions, 1, false);
+            ii.setPreparedState(guid, deletions, Collections.<String>emptySet(), 1, false);
             ii.getDeletions(guid);
             ii.setStatus(guid, TransactionStatus.PREPARED, null, null);
 
@@ -314,7 +315,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
             }
             reader.close();
 
-            reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader(guid, deletions, false);
+            reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader(guid, deletions, Collections.<String>emptySet(), false);
             assertEquals(reader.numDocs(), UPDATE_LIST.length - i - 1);
             lastDoc = -1;
             for (int j = 0; j < CREATE_LIST.length; j++)
@@ -409,7 +410,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
 
             ii.closeDeltaIndexWriter(guid);
             ii.setStatus(guid, TransactionStatus.PREPARING, null, null);
-            ii.setPreparedState(guid, new HashSet<String>(), 1, false);
+            ii.setPreparedState(guid, Collections.<String>emptySet(), Collections.<String>emptySet(), 1, false);
             ii.getDeletions(guid);
             ii.setStatus(guid, TransactionStatus.PREPARED, null, null);
 
@@ -431,7 +432,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
             }
             reader.close();
 
-            reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader(guid, new HashSet<String>(), false);
+            reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader(guid, Collections.<String>emptySet(), Collections.<String>emptySet(), false);
             assertEquals(reader.numDocs(), i + 1);
             for (int j = 0; j < CREATE_LIST.length; j++)
             {
@@ -495,7 +496,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
 
             ii.closeDeltaIndexWriter(guid);
             ii.setStatus(guid, TransactionStatus.PREPARING, null, null);
-            ii.setPreparedState(guid, deletions, 1, false);
+            ii.setPreparedState(guid, deletions, Collections.<String>emptySet(), 1, false);
             ii.getDeletions(guid);
             ii.setStatus(guid, TransactionStatus.PREPARED, null, null);
 
@@ -534,7 +535,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
             }
             reader.close();
 
-            reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader(guid, deletions, false);
+            reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader(guid, deletions, Collections.<String>emptySet(), false);
             assertEquals(reader.numDocs(), UPDATE_LIST.length);
             lastDoc = -1;
             for (int j = 0; j < CREATE_LIST.length; j++)
@@ -684,7 +685,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
 
                     ii.closeDeltaIndexWriter(guid);
                     ii.setStatus(guid, TransactionStatus.PREPARING, null, null);
-                    ii.setPreparedState(guid, new HashSet<String>(), 1, false);
+                    ii.setPreparedState(guid, Collections.<String>emptySet(), Collections.<String>emptySet(), 1, false);
                     ii.getDeletions(guid);
                     ii.setStatus(guid, TransactionStatus.PREPARED, null, null);
 
@@ -709,7 +710,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
                     }
                     reader.close();
 
-                    reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader(guid, new HashSet<String>(), false);
+                    reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader(guid, Collections.<String>emptySet(), Collections.<String>emptySet(), false);
                     lastDoc = -1;
                     for (int j = 0; j < create.length; j++)
                     {
@@ -775,7 +776,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
 
                     ii.closeDeltaIndexWriter(guid);
                     ii.setStatus(guid, TransactionStatus.PREPARING, null, null);
-                    ii.setPreparedState(guid, deletions, 1, false);
+                    ii.setPreparedState(guid, deletions, Collections.<String>emptySet(), 1, false);
                     ii.getDeletions(guid);
                     ii.setStatus(guid, TransactionStatus.PREPARED, null, null);
 
@@ -814,7 +815,7 @@ public static final String[] UPDATE_LIST_2 = { "alpha2", "bravo2", "charlie2", "
                     }
                     reader.close();
 
-                    reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader(guid, deletions, false);
+                    reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader(guid, deletions, Collections.<String>emptySet(), false);
                     
                     lastDoc = -1;
                     for (int j = 0; j < create.length; j++)

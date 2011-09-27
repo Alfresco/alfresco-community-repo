@@ -871,10 +871,10 @@ public final class People extends BaseScopableProcessorExtension implements Init
     {
         ParameterCheck.mandatory("Person", person);
         Object[] parents = null;
-        Set<String> authorities = this.authorityService.getContainingAuthorities(
+        Set<String> authorities = this.authorityService.getContainingAuthoritiesInZone(
                 AuthorityType.GROUP,
                 (String)person.getProperties().get(ContentModel.PROP_USERNAME),
-                false);
+                AuthorityService.ZONE_APP_DEFAULT, null, 1000);
         parents = new Object[authorities.size()];
         int i = 0;
         for (String authority : authorities)

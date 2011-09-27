@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -55,6 +56,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
+import org.apache.ibatis.executor.result.DefaultResultContext;
 import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
@@ -117,6 +119,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String SELECT_CHILD_ASSOC_BY_ID = "alfresco.node.select_ChildAssocById";
     private static final String SELECT_CHILD_ASSOCS_BY_PROPERTY_VALUE = "alfresco.node.select_ChildAssocsByPropertyValue";
     private static final String SELECT_CHILD_ASSOCS_OF_PARENT = "alfresco.node.select_ChildAssocsOfParent";
+    private static final String SELECT_CHILD_ASSOCS_OF_PARENT_LIMITED = "alfresco.node.select_ChildAssocsOfParent_Limited";
     private static final String SELECT_CHILD_ASSOC_OF_PARENT_BY_NAME = "alfresco.node.select_ChildAssocOfParentByName";
     private static final String SELECT_CHILD_ASSOCS_OF_PARENT_WITHOUT_PARENT_ASSOCS_OF_TYPE =
             "alfresco.node.select_ChildAssocsOfParentWithoutParentAssocsOfType";
@@ -1051,6 +1054,77 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         template.select(SELECT_CHILD_ASSOCS_OF_PARENT, assoc, resultHandler);
         
         resultsCallback.done();
+    }
+
+    public List<ChildAssociationRef> getChildAssocs(
+            Long parentNodeId,
+            QName assocTypeQName,
+            QName assocQName,
+            final int maxResults,
+            boolean preload)
+    {
+        ChildAssocEntity assoc = new ChildAssocEntity();
+        // Parent
+        NodeEntity parentNode = new NodeEntity();
+        parentNode.setId(parentNodeId);
+        assoc.setParentNode(parentNode);
+
+        // Type QName
+        if (assocTypeQName != null)
+        {
+            if (!assoc.setTypeQNameAll(qnameDAO, assocTypeQName, false))
+            {
+                return Collections.emptyList();                     // Shortcut
+            }
+        }
+        // QName
+        if (assocQName != null)
+        {
+            if (!assoc.setQNameAll(qnameDAO, assocQName, false))
+            {
+                return Collections.emptyList();                     // Shortcut
+            }
+        }
+
+        final List<ChildAssociationRef> result = new LinkedList<ChildAssociationRef>();
+        final List<NodeRef> toLoad = new LinkedList<NodeRef>();
+
+        // We can't invoke the row handler whilst the limited query is running as it's illegal on some databases (MySQL)
+        List<?> entities = template.selectList(SELECT_CHILD_ASSOCS_OF_PARENT_LIMITED, assoc, new RowBounds(0,
+                maxResults));
+        ChildAssocResultHandler rowHandler = new ChildAssocResultHandler(new ChildAssocRefQueryCallback(){
+
+            @Override
+            public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair, Pair<Long, NodeRef> parentNodePair,
+                    Pair<Long, NodeRef> childNodePair)
+            {
+                result.add(childAssocPair.getSecond());
+                toLoad.add(childNodePair.getSecond());
+                return true;
+            }
+
+            @Override
+            public void done()
+            {
+            }
+
+            @Override
+            public boolean preLoadNodes()
+            {
+                return false;
+            }});
+        final DefaultResultContext resultContext = new DefaultResultContext();
+        for (Object entity : entities)
+        {
+              resultContext.nextResultObject(entity);
+              rowHandler.handleResult(resultContext);
+        }
+        if (preload && !toLoad.isEmpty())
+        {
+            cacheNodes(toLoad);
+        }
+        
+        return result;
     }
 
     @Override

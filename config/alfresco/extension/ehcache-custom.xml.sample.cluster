@@ -105,6 +105,25 @@
     </cache>
 
     <cache
+        name="org.alfresco.cache.node.allRootNodesCache"
+        maxElementsInMemory="500"
+        eternal="true"
+        timeToIdleSeconds="0"
+        timeToLiveSeconds="0"
+        overflowToDisk="false"
+        statistics="false"
+        >
+
+            <cacheEventListenerFactory
+                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                    properties="replicatePuts = false,
+                                replicateUpdates = true,
+                                replicateRemovals = true,
+                                replicateUpdatesViaCopy = false,
+                                replicateAsynchronously = false"/>
+    </cache>
+
+    <cache
         name="org.alfresco.cache.node.nodesCache"
         maxElementsInMemory="100000"
         eternal="false"
@@ -352,6 +371,40 @@
     </cache>
 
     <cache
+        name="org.alfresco.cache.authorityToChildAuthorityCache"
+        maxElementsInMemory="40000"
+        eternal="true"
+        overflowToDisk="false"
+        statistics="false"
+        >
+
+            <cacheEventListenerFactory
+                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                    properties="replicatePuts = false,
+                                replicateUpdates = true,
+                                replicateRemovals = true,
+                                replicateUpdatesViaCopy = false,
+                                replicateAsynchronously = false"/>
+    </cache>
+
+    <cache
+        name="org.alfresco.cache.zoneToAuthorityCache"
+        maxElementsInMemory="500"
+        eternal="true"
+        overflowToDisk="false"
+        statistics="false"
+        >
+
+            <cacheEventListenerFactory
+                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                    properties="replicatePuts = false,
+                                replicateUpdates = true,
+                                replicateRemovals = true,
+                                replicateUpdatesViaCopy = false,
+                                replicateAsynchronously = false"/>
+    </cache>
+
+    <cache
         name="org.alfresco.cache.authenticationCache"
         maxElementsInMemory="5000"
         eternal="true"
@@ -370,7 +423,7 @@
 
     <cache
         name="org.alfresco.cache.authorityCache" 
-        maxElementsInMemory="5000"
+        maxElementsInMemory="10000"
         eternal="true"
         overflowToDisk="false"
         statistics="false"

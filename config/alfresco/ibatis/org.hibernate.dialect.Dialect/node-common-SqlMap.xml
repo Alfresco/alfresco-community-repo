@@ -921,6 +921,42 @@
             assoc.assoc_index ASC,
             assoc.id ASC
     </sql>
+    <sql id="select_ChildAssocsOfParent_Query">
+        <include refid="alfresco.node.select_ChildAssoc_Results"/>
+        <include refid="alfresco.node.select_ChildAssoc_FromSimple"/>
+        where
+            parentNode.id = #{parentNode.id}
+            <if test="childNode != null">and assoc.child_node_id = #{childNode.id}</if>
+            <if test="typeQNameIds != null">
+                and assoc.type_qname_id in 
+                <foreach item="item" index="index" collection="typeQNameIds" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="typeQNameId != null">and assoc.type_qname_id = #{typeQNameId}</if>
+            <if test="qnameCrc != null">and assoc.qname_crc = #{qnameCrc}</if>
+            <if test="qnameNamespaceId != null">and assoc.qname_ns_id = #{qnameNamespaceId}</if>
+            <if test="qnameLocalName != null">and assoc.qname_localname = #{qnameLocalName}</if>
+            <if test="isPrimary != null">and assoc.is_primary = #{isPrimary}</if>
+            <if test="childNodeName != null">and assoc.child_node_name = #{childNodeName}</if>
+            <if test="childNodeNameCrc != null">and assoc.child_node_name_crc = #{childNodeNameCrc}</if>
+            <if test="childNodeNameCrcs != null">
+                and child_node_name_crc in 
+                <foreach item="item" index="index" collection="childNodeNameCrcs" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="childNodeTypeQNameIds != null">
+                and childNode.type_qname_id in 
+                <foreach item="item" index="index" collection="childNodeTypeQNameIds" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="sameStore != null">
+                <if test="sameStore == true">and parentStore.id = childStore.id</if>
+                <if test="sameStore == false"><![CDATA[and parentStore.id <> childStore.id]]></if>
+            </if>
+    </sql>
     
     <select id="select_ChildAssocById" parameterType="ChildAssoc" resultMap="result_ChildAssoc">
         <include refid="alfresco.node.select_ChildAssoc_Results"/>
@@ -1048,40 +1084,7 @@
     </select>
     
     <select id="select_ChildAssocsOfParent" parameterType="ChildAssoc" resultMap="result_ChildAssoc">
-        <include refid="alfresco.node.select_ChildAssoc_Results"/>
-        <include refid="alfresco.node.select_ChildAssoc_FromSimple"/>
-        where
-            parentNode.id = #{parentNode.id}
-            <if test="childNode != null">and assoc.child_node_id = #{childNode.id}</if>
-            <if test="typeQNameIds != null">
-                and assoc.type_qname_id in 
-                <foreach item="item" index="index" collection="typeQNameIds" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
-            <if test="typeQNameId != null">and assoc.type_qname_id = #{typeQNameId}</if>
-            <if test="qnameCrc != null">and assoc.qname_crc = #{qnameCrc}</if>
-            <if test="qnameNamespaceId != null">and assoc.qname_ns_id = #{qnameNamespaceId}</if>
-            <if test="qnameLocalName != null">and assoc.qname_localname = #{qnameLocalName}</if>
-            <if test="isPrimary != null">and assoc.is_primary = #{isPrimary}</if>
-            <if test="childNodeName != null">and assoc.child_node_name = #{childNodeName}</if>
-            <if test="childNodeNameCrc != null">and assoc.child_node_name_crc = #{childNodeNameCrc}</if>
-            <if test="childNodeNameCrcs != null">
-                and child_node_name_crc in 
-                <foreach item="item" index="index" collection="childNodeNameCrcs" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
-            <if test="childNodeTypeQNameIds != null">
-                and childNode.type_qname_id in 
-                <foreach item="item" index="index" collection="childNodeTypeQNameIds" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
-            <if test="sameStore != null">
-                <if test="sameStore == true">and parentStore.id = childStore.id</if>
-                <if test="sameStore == false"><![CDATA[and parentStore.id <> childStore.id]]></if>
-            </if>
+        <include refid="alfresco.node.select_ChildAssocsOfParent_Query"/>
         <if test="ordered == true">
             <include refid="alfresco.node.select_ChildAssoc_OrderBy"/>
         </if>

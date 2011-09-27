@@ -39,6 +39,7 @@ import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.security.authority.AuthorityServiceImpl;
 import org.alfresco.repo.security.permissions.ACLType;
 import org.alfresco.repo.security.permissions.AccessControlEntry;
 import org.alfresco.repo.security.permissions.AccessControlList;
@@ -68,11 +69,11 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
-import org.alfresco.util.PropertyCheck;
 
 /**
  * The Alfresco implementation of a permissions service against our APIs for the permissions model and permissions
@@ -279,6 +280,26 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         accessCache.clear();
     }
 
+    /**
+     * Cache clear on create of a child association from an authority container.
+     * 
+     * @param childAssocRef
+     */
+    public void onCreateChildAssociation(ChildAssociationRef childAssocRef)
+    {
+        accessCache.clear();
+    }
+
+    /**
+     * Cache clear on delete of a child association from an authority container.
+     * 
+     * @param childAssocRef
+     */
+    public void beforeDeleteChildAssociation(ChildAssociationRef childAssocRef)
+    {
+        accessCache.clear();
+    }
+
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
@@ -307,6 +328,9 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
     public void init()
     {
         policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onMoveNode"), ContentModel.TYPE_BASE, new JavaBehaviour(this, "onMoveNode"));
+        
+        policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateChildAssociation"), ContentModel.TYPE_AUTHORITY_CONTAINER, new JavaBehaviour(this, "onCreateChildAssociation"));
+        policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteChildAssociation"), ContentModel.TYPE_AUTHORITY_CONTAINER, new JavaBehaviour(this, "beforeDeleteChildAssociation"));
     }
 
     //
@@ -474,10 +498,13 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
             PermissionContext context = new PermissionContext(typeQname);
             context.getAspects().addAll(aspectQNames);
             Authentication auth = AuthenticationUtil.getRunAsAuthentication();
-            String user = AuthenticationUtil.getRunAsUser();
-            for (String dynamicAuthority : getDynamicAuthorities(auth, nodeRef, perm))
+            if (auth != null)
             {
-                context.addDynamicAuthorityAssignment(user, dynamicAuthority);
+                String user = AuthenticationUtil.getRunAsUser();
+                for (String dynamicAuthority : getDynamicAuthorities(auth, nodeRef, perm))
+                {
+                    context.addDynamicAuthorityAssignment(user, dynamicAuthority);
+                }
             }
             return hasPermission(properties.getId(), context, perm);
         }
@@ -711,10 +738,41 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
     {
         LinkedHashSet<Serializable> key = new LinkedHashSet<Serializable>();
         key.add(perm.toString());
-        key.addAll(auths);
+        // We will just have to key our dynamic sets by username. We wrap it so as not to be confused with a static set
+        if (auths instanceof AuthorityServiceImpl.UserAuthoritySet)
+        {
+            key.add((Serializable)Collections.singleton(((AuthorityServiceImpl.UserAuthoritySet)auths).getUsername()));
+        }
+        else
+        {
+            key.addAll(auths);            
+        }        
         key.add(nodeRef);
         key.add(type);
         return key;
+    }
+
+    /**
+     * Get the core authorisations for this {@code auth}. If {@code null} this
+     * will be an empty set. Otherwise it will be a Lazy loaded Set of authorities
+     * from the authority node structure PLUS any granted authorities.
+     */
+    private Set<String> getCoreAuthorisations(Authentication auth)
+    {
+        if (auth == null)
+        {
+            return Collections.<String>emptySet();
+        }
+        
+        User user = (User) auth.getPrincipal();
+        String username = user.getUsername();
+        Set<String> auths = authorityService.getAuthoritiesForUser(username);
+
+        for (GrantedAuthority grantedAuthority : auth.getAuthorities())
+        {
+            auths.add(grantedAuthority.getAuthority());
+        }
+        return auths;
     }
 
     /**
@@ -725,41 +783,17 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
      */
     private Set<String> getAuthorisations(Authentication auth, NodeRef nodeRef, PermissionReference required)
     {
-
-        HashSet<String> auths = new HashSet<String>();
-        // No authenticated user then no permissions
-        if (auth == null)
+        Set<String> auths = getCoreAuthorisations(auth);
+        if (auth != null)
         {
-            return auths;
+            auths.addAll(getDynamicAuthorities(auth, nodeRef, required));
         }
-        // TODO: Refactor and use the authentication service for this.
-        User user = (User) auth.getPrincipal();
-
-        String username = user.getUsername();
-        auths.add(username);
-
-        if (tenantService.getBaseNameUser(username).equalsIgnoreCase(AuthenticationUtil.getGuestUserName()))
-        {
-            auths.add(PermissionService.GUEST_AUTHORITY);
-        }
-
-        for (GrantedAuthority authority : auth.getAuthorities())
-        {
-            auths.add(authority.getAuthority());
-        }
-        auths.addAll(getDynamicAuthorities(auth, nodeRef, required));
-        auths.addAll(authorityService.getAuthoritiesForUser(username));
         return auths;
     }
-  
+    
     private Set<String> getDynamicAuthorities(Authentication auth, NodeRef nodeRef, PermissionReference required)
     {
-        HashSet<String> auths = new HashSet<String>(64);
-
-        if (auth == null)
-        {
-            return auths;
-        }
+        Set<String> dynAuths = new HashSet<String>(64);
         User user = (User) auth.getPrincipal();
         String username = user.getUsername();
 
@@ -775,49 +809,44 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
                     {
                         if (da.hasAuthority(nodeRef, username))
                         {
-                            auths.add(da.getAuthority());
+                            dynAuths.add(da.getAuthority());
                         }
                     }
                 }
             }
         }
-        auths.addAll(authorityService.getAuthoritiesForUser(user.getUsername()));
-        return auths;
+        return dynAuths;
     }
 
     private Set<String> getAuthorisations(Authentication auth, PermissionContext context)
     {
-        HashSet<String> auths = new HashSet<String>();
-        // No authenticated user then no permissions
-        if (auth == null)
+        Set<String> auths = getCoreAuthorisations(auth);
+        if (auth != null)
         {
-            return auths;
-        }
-        // TODO: Refactor and use the authentication service for this.
-        User user = (User) auth.getPrincipal();
-        auths.add(user.getUsername());
-        for (GrantedAuthority authority : auth.getAuthorities())
-        {
-            auths.add(authority.getAuthority());
-        }
-        auths.addAll(authorityService.getAuthoritiesForUser(user.getUsername()));
-
-        if (context != null)
-        {
-            Map<String, Set<String>> dynamicAuthorityAssignments = context.getDynamicAuthorityAssignment();
-            HashSet<String> dynAuths = new HashSet<String>();
-            for (String current : auths)
+            if (context != null)
             {
-                Set<String> dynos = dynamicAuthorityAssignments.get(current);
+                auths.addAll(getDynamicAuthorities(auth, context, auths));
+            }
+        }
+        return auths;
+    }
+
+    private Set<String> getDynamicAuthorities(Authentication auth, PermissionContext context, Set<String> auths)
+    {
+        Set<String> dynAuths = new HashSet<String>();
+        Map<String, Set<String>> dynamicAuthorityAssignments = context.getDynamicAuthorityAssignment();
+        for (String dynKey : dynamicAuthorityAssignments.keySet())
+        {
+            if (auths.contains(dynKey))
+            {
+                Set<String> dynos = dynamicAuthorityAssignments.get(dynKey);
                 if (dynos != null)
                 {
                     dynAuths.addAll(dynos);
                 }
             }
-            auths.addAll(dynAuths);
         }
-
-        return auths;
+        return dynAuths;
     }
 
     public NodePermissionEntry explainPermission(NodeRef nodeRef, PermissionReference perm)
@@ -1161,25 +1190,11 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         // test acl readers
         Set<String> aclReaders = getReaders(aclId);
 
-        // both lists are ordered so we can skip scan to find any overlap
-        if(authorities.size() < aclReaders.size())
+        for(String auth : aclReaders)
         {
-            for(String auth : authorities)
+            if(authorities.contains(auth))
             {
-                if(aclReaders.contains(auth))
-                {
-                    return AccessStatus.ALLOWED;
-                }
-            }
-        }
-        else
-        {
-            for(String auth : aclReaders)
-            {
-                if(authorities.contains(auth))
-                {
-                    return AccessStatus.ALLOWED;
-                }
+                return AccessStatus.ALLOWED;
             }
         }
 
@@ -1641,29 +1656,6 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
 
             // any deny denies
 
-//            if (false)
-//            {
-//                if (denied != null)
-//                {
-//                    for (String auth : authorisations)
-//                    {
-//                        Pair<String, PermissionReference> specific = new Pair<String, PermissionReference>(auth, required);
-//                        if (denied.contains(specific))
-//                        {
-//                            return false;
-//                        }
-//                        for (PermissionReference perm : granters)
-//                        {
-//                            specific = new Pair<String, PermissionReference>(auth, perm);
-//                            if (denied.contains(specific))
-//                            {
-//                                return false;
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-
             // If the permission has a match in both the authorities and
             // granters list it is allowed
             // It applies to the current user and it is granted
@@ -1917,29 +1909,6 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
             }
 
             // any deny denies
-
-//            if (false)
-//            {
-//                if (denied != null)
-//                {
-//                    for (String auth : authorisations)
-//                    {
-//                        Pair<String, PermissionReference> specific = new Pair<String, PermissionReference>(auth, required);
-//                        if (denied.contains(specific))
-//                        {
-//                            return false;
-//                        }
-//                        for (PermissionReference perm : granters)
-//                        {
-//                            specific = new Pair<String, PermissionReference>(auth, perm);
-//                            if (denied.contains(specific))
-//                            {
-//                                return false;
-//                            }
-//                        }
-//                    }
-//                }
-//            }
 
             // If the permission has a match in both the authorities and
             // granters list it is allowed
@@ -2336,34 +2305,19 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
     public Set<String> getAuthorisations()
     {
         // Use TX cache 
-        
         @SuppressWarnings("unchecked")
         Set<String> auths = (Set<String>) AlfrescoTransactionSupport.getResource("MyAuthCache");
         Authentication auth = AuthenticationUtil.getRunAsAuthentication();
-        User user = (User) auth.getPrincipal();
-        if(auths != null)
+        if (auths != null)
         {
-            if(!auths.contains(user.getUsername()))
+            if (auth == null || !auths.contains(((User)auth.getPrincipal()).getUsername()))
             {
                 auths = null;
             }
         }
         if (auths == null)
         {
-            auths = new HashSet<String>();
-              
-            // No authenticated user then no permissions
-            if (auth != null)
-            {
-                
-                auths.add(user.getUsername());
-                for (GrantedAuthority authority : auth.getAuthorities())
-                {
-                    auths.add(authority.getAuthority());
-                }
-                auths.addAll(authorityService.getAuthoritiesForUser(user.getUsername()));
-            }
-            
+            auths = getCoreAuthorisations(auth);
             AlfrescoTransactionSupport.bindResource("MyAuthCache", auths);
         }
         return Collections.unmodifiableSet(auths);   

@@ -170,6 +170,16 @@ public interface SiteService
     PagingResults<SiteInfo> listSites(List<FilterProp> filterProps, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest);
     
     /**
+     * List all the sites that the specified user has a explicit membership to.
+     *
+     * @param userName          user name
+     * @param size              list maximum size or zero for all
+     * @return List<SiteInfo>   list of site information
+     */
+    @NotAuditable
+    List<SiteInfo> listSites(String userName, int size);
+    
+    /**
      * Gets site information based on the short name of a site.
      * <p>
      * Returns null if the site can not be found.

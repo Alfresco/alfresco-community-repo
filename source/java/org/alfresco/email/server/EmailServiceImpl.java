@@ -381,7 +381,7 @@ public class EmailServiceImpl implements EmailService
      */
     private boolean isEmailContributeUser(String userName)
     {
-        return this.authorityService.getContainingAuthorities(AuthorityType.GROUP, userName, false).contains(
+        return this.authorityService.getAuthoritiesForUser(userName).contains(
                 authorityService.getName(AuthorityType.GROUP, "EMAIL_CONTRIBUTORS"));
     }
 }

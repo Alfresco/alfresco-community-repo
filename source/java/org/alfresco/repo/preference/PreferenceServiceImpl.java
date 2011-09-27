@@ -28,6 +28,7 @@ import java.util.Map;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -255,6 +256,12 @@ public class PreferenceServiceImpl implements PreferenceService
                         contentWriter.setEncoding("UTF-8");
                         contentWriter.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
                         contentWriter.putContent(jsonPrefs.toString());
+
+                        // Lets stop rule inheritance from trying to kick in - we may be in many groups
+                        if (!PreferenceServiceImpl.this.nodeService.hasAspect(personNodeRef, RuleModel.ASPECT_IGNORE_INHERITED_RULES))
+                        {
+                            PreferenceServiceImpl.this.nodeService.addAspect(personNodeRef, RuleModel.ASPECT_IGNORE_INHERITED_RULES, null);
+                        }                        
                     }
                     catch (JSONException exception)
                     {

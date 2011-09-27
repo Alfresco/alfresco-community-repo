@@ -27,6 +27,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
 import org.apache.lucene.index.FilterIndexReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
@@ -52,6 +53,7 @@ public class FilterIndexReaderByStringId extends FilterIndexReader
 
     private OpenBitSet deletedDocuments;
     private final Set<String> deletions;
+    private final Set<String> containerDeletions;
     private final boolean deleteNodesOnly;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
     
@@ -65,12 +67,13 @@ public class FilterIndexReaderByStringId extends FilterIndexReader
      * @param deletions
      * @param deleteNodesOnly
      */
-    public FilterIndexReaderByStringId(String id, IndexReader reader, Set<String> deletions, boolean deleteNodesOnly)
+    public FilterIndexReaderByStringId(String id, IndexReader reader, Set<String> deletions, Set<String> containerDeletions, boolean deleteNodesOnly)
     {
         super(reader);
         reader.incRef();
         this.id = id;
         this.deletions = deletions;
+        this.containerDeletions = containerDeletions;
         this.deleteNodesOnly = deleteNodesOnly;
         
         if (s_logger.isDebugEnabled())
@@ -103,23 +106,19 @@ public class FilterIndexReaderByStringId extends FilterIndexReader
             }
             deletedDocuments = new OpenBitSet(in.maxDoc());
 
-            if (!deleteNodesOnly)
+            Searcher searcher = new IndexSearcher(in);
+            for (String stringRef : deletions)
             {
-                for (String stringRef : deletions)
+                if (!deleteNodesOnly || containerDeletions.contains(stringRef))
                 {
                     TermDocs td = in.termDocs(new Term("ID", stringRef));
                     while (td.next())
                     {
                         deletedDocuments.set(td.doc());
                     }
-                    td.close();
+                    td.close();                        
                 }
-            }
-            else
-            {
-
-                Searcher searcher = new IndexSearcher(in);
-                for (String stringRef : deletions)
+                else
                 {
                     TermQuery query = new TermQuery(new Term("ID", stringRef));
                     Hits hits = searcher.search(query);
@@ -128,7 +127,9 @@ public class FilterIndexReaderByStringId extends FilterIndexReader
                         for (int i = 0; i < hits.length(); i++)
                         {
                             Document doc = hits.doc(i);
-                            if (doc.getField("ISCONTAINER") == null)
+                            // Exclude all containers except the root (which is also a node!)
+                            Field path = doc.getField("PATH");
+                            if (path == null || path.stringValue().length() == 0)
                             {
                                 deletedDocuments.set(hits.id(i));
                                 // There should only be one thing to delete
@@ -137,7 +138,17 @@ public class FilterIndexReaderByStringId extends FilterIndexReader
                         }
                     }
                 }
-                // searcher does not need to be closed, the reader is live 
+            }
+            // searcher does not need to be closed, the reader is live 
+
+            for (String stringRef : containerDeletions)
+            {
+                TermDocs td = in.termDocs(new Term("ANCESTOR", stringRef));
+                while (td.next())
+                {
+                    deletedDocuments.set(td.doc());
+                }
+                td.close();
             }
             return deletedDocuments;
         }

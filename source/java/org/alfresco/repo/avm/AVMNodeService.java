@@ -335,6 +335,11 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
             throw new InvalidStoreRefException(storeName +":/" + " not found.", storeRef);
         }
     }
+    
+    public Set<NodeRef> getAllRootNodes(StoreRef storeRef)
+    {
+        return Collections.singleton(getRootNode(storeRef));
+    }
 
     /**
      * @see #createNode(NodeRef, QName, QName, QName, Map)
@@ -1662,8 +1667,18 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         return result;
     }
     
-    
-    
+    @Override
+    public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, QName typeQName, QName qname, int maxResults,
+            boolean preload) throws InvalidNodeRefException
+    {
+        List<ChildAssociationRef> result = getChildAssocs(nodeRef, typeQName, qname);
+        if (result.size() > maxResults)
+        {
+            return result.subList(0, maxResults);
+        }
+        return result;
+    }
+
     public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern,
             QNamePattern qnamePattern, boolean preload) throws InvalidNodeRefException
     {

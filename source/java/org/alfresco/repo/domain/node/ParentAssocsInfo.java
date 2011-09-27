@@ -159,27 +159,27 @@ import org.apache.commons.logging.LogFactory;
         return (primaryAssocId != null) ? parentAssocsById.get(primaryAssocId) : null;
     }
     
-    public ParentAssocsInfo changeIsRoot(boolean isRoot)
+    public ParentAssocsInfo changeIsRoot(boolean isRoot, Long txnId)
     {
-        return new ParentAssocsInfo(this.txnId, isRoot, this.isRoot, parentAssocsById, primaryAssocId);
+        return new ParentAssocsInfo(txnId, isRoot, this.isRoot, parentAssocsById, primaryAssocId);
     }
 
-    public ParentAssocsInfo changeIsStoreRoot(boolean isStoreRoot)
+    public ParentAssocsInfo changeIsStoreRoot(boolean isStoreRoot, Long txnId)
     {
-        return new ParentAssocsInfo(this.txnId, this.isRoot, isStoreRoot, parentAssocsById, primaryAssocId);
+        return new ParentAssocsInfo(txnId, this.isRoot, isStoreRoot, parentAssocsById, primaryAssocId);
     }
 
-    public ParentAssocsInfo addAssoc(Long assocId, ChildAssocEntity parentAssoc)
+    public ParentAssocsInfo addAssoc(Long assocId, ChildAssocEntity parentAssoc, Long txnId)
     {
         Map<Long, ChildAssocEntity> parentAssocs = new HashMap<Long, ChildAssocEntity>(parentAssocsById);
         parentAssocs.put(parentAssoc.getId(), parentAssoc);
-        return new ParentAssocsInfo(this.txnId, isRoot, isStoreRoot, parentAssocs, primaryAssocId);
+        return new ParentAssocsInfo(txnId, isRoot, isStoreRoot, parentAssocs, primaryAssocId);
     }
 
-    public ParentAssocsInfo removeAssoc(Long assocId)
+    public ParentAssocsInfo removeAssoc(Long assocId, Long txnId)
     {
         Map<Long, ChildAssocEntity> parentAssocs = new HashMap<Long, ChildAssocEntity>(parentAssocsById);
         parentAssocs.remove(assocId);
-        return new ParentAssocsInfo(this.txnId, isRoot, isStoreRoot, parentAssocs, primaryAssocId);
+        return new ParentAssocsInfo(txnId, isRoot, isStoreRoot, parentAssocs, primaryAssocId);
     }
 }

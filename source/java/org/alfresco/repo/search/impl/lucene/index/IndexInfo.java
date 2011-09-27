@@ -72,6 +72,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.FilterIndexReader;
 import org.apache.lucene.index.IndexReader;
@@ -279,6 +280,11 @@ public class IndexInfo implements IndexMonitor
      * The default name for the index deletions file
      */
     private static String INDEX_INFO_DELETIONS = "IndexInfoDeletions";
+
+    /**
+     * The default name for the index container deletions file
+     */
+    private static String INDEX_INFO_CONTAINER_DELETIONS = "IndexInfoContainerDeletions";
 
     /**
      * What to look for to detect the previous index implementation.
@@ -1189,6 +1195,18 @@ public class IndexInfo implements IndexMonitor
      */
     public Set<String> getDeletions(String id) throws IOException
     {
+        return getDeletions(id, INDEX_INFO_DELETIONS);
+    }
+
+    /**
+     * Get the deletions for a given index (there is no check if they should be applied that is up to the calling layer)
+     * 
+     * @param id
+     * @return
+     * @throws IOException
+     */
+    private Set<String> getDeletions(String id, String fileName) throws IOException
+    {
         if (id == null)
         {
             throw new IndexerException("\"null\" is not a valid identifier for a transaction");
@@ -1196,7 +1214,7 @@ public class IndexInfo implements IndexMonitor
         // Check state
         Set<String> deletions = new HashSet<String>();
         File location = new File(indexDirectory, id).getCanonicalFile();
-        File file = new File(location, INDEX_INFO_DELETIONS).getCanonicalFile();
+        File file = new File(location, fileName).getCanonicalFile();
         if (!file.exists())
         {
             if (s_logger.isDebugEnabled())
@@ -1234,32 +1252,22 @@ public class IndexInfo implements IndexMonitor
      *            should deletions on apply to nodes (ie not to containers)
      * @throws IOException
      */
-    public void setPreparedState(String id, Set<String> toDelete, long documents, boolean deleteNodesOnly) throws IOException
+    public void setPreparedState(String id, Set<String> toDelete, Set<String> containersToDelete, long documents, boolean deleteNodesOnly) throws IOException
     {
         if (id == null)
         {
             throw new IndexerException("\"null\" is not a valid identifier for a transaction");
         }
         // Check state
-        if (toDelete.size() > 0)
+        int toDeleteSize = toDelete.size();
+        int containersToDeleteSize = containersToDelete.size();
+        if (toDeleteSize > 0)
         {
-            File location = new File(indexDirectory, id).getCanonicalFile();
-            if (!location.exists())
-            {
-                if (!location.mkdirs())
-                {
-                    throw new IndexerException("Failed to make index directory " + location);
-                }
-            }
-            // Write deletions
-            DataOutputStream os = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(new File(location, INDEX_INFO_DELETIONS).getCanonicalFile())));
-            os.writeInt(toDelete.size());
-            for (String ref : toDelete)
-            {
-                os.writeUTF(ref);
-            }
-            os.flush();
-            os.close();
+            persistDeletions(id, toDelete, INDEX_INFO_DELETIONS);
+        }
+        if (containersToDeleteSize > 0)
+        {
+            persistDeletions(id, containersToDelete, INDEX_INFO_CONTAINER_DELETIONS);
         }
         getWriteLock();
         try
@@ -1274,13 +1282,40 @@ public class IndexInfo implements IndexMonitor
                 throw new IndexerException("Deletes and doc count can only be set on a preparing index");
             }
             entry.setDocumentCount(documents);
-            entry.setDeletions(toDelete.size());
+            entry.setDeletions(toDeleteSize + containersToDeleteSize);
             entry.setDeletOnlyNodes(deleteNodesOnly);
         }
         finally
         {
             releaseWriteLock();
         }
+    }
+
+    /**
+     * @param id
+     * @param toDelete
+     * @throws IOException
+     * @throws FileNotFoundException
+     */
+    private void persistDeletions(String id, Set<String> toDelete, String fileName) throws IOException, FileNotFoundException
+    {
+        File location = new File(indexDirectory, id).getCanonicalFile();
+        if (!location.exists())
+        {
+            if (!location.mkdirs())
+            {
+                throw new IndexerException("Failed to make index directory " + location);
+            }
+        }
+        // Write deletions
+        DataOutputStream os = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(new File(location, fileName).getCanonicalFile())));
+        os.writeInt(toDelete.size());
+        for (String ref : toDelete)
+        {
+            os.writeUTF(ref);
+        }
+        os.flush();
+        os.close();
     }
 
     private void invalidateMainReadersFromFirst(Set<String> ids) throws IOException
@@ -1413,7 +1448,7 @@ public class IndexInfo implements IndexMonitor
      * @return
      * @throws IOException
      */
-    public IndexReader getMainIndexReferenceCountingReadOnlyIndexReader(String id, Set<String> deletions, boolean deleteOnlyNodes) throws IOException
+    public IndexReader getMainIndexReferenceCountingReadOnlyIndexReader(String id, Set<String> deletions, Set<String> containerDeletions, boolean deleteOnlyNodes) throws IOException
     {
         if (id == null)
         {
@@ -1482,13 +1517,13 @@ public class IndexInfo implements IndexMonitor
 
             IndexReader deltaReader = buildAndRegisterDeltaReader(id);
             IndexReader reader = null;
-            if (deletions == null || deletions.size() == 0)
+            if ((deletions == null || deletions.size() == 0) && (containerDeletions == null || containerDeletions.size() == 0))
             {
                 reader = new MultiReader(new IndexReader[] { mainIndexReader, deltaReader }, false);
             }
             else
             {
-                IndexReader filterReader = new FilterIndexReaderByStringId("main+id", mainIndexReader, deletions, deleteOnlyNodes);
+                IndexReader filterReader = new FilterIndexReaderByStringId("main+id", mainIndexReader, deletions, containerDeletions, deleteOnlyNodes);
                 reader = new MultiReader(new IndexReader[] { filterReader, deltaReader }, false);
                 // Cancel out extra incRef made by MultiReader
                 filterReader.decRef();
@@ -2254,7 +2289,7 @@ public class IndexInfo implements IndexMonitor
                         {
                             try
                             {
-                                IndexReader filterReader = new FilterIndexReaderByStringId(id, oldReader, getDeletions(entry.getName()), entry.isDeletOnlyNodes());
+                                IndexReader filterReader = new FilterIndexReaderByStringId(id, oldReader, getDeletions(entry.getName(), INDEX_INFO_DELETIONS), getDeletions(entry.getName(), INDEX_INFO_CONTAINER_DELETIONS), entry.isDeletOnlyNodes());
                                 reader = new MultiReader(new IndexReader[] { filterReader, subReader }, false);
                                 // Cancel out the incRef on the filter reader
                                 filterReader.decRef();
@@ -3843,7 +3878,8 @@ public class IndexInfo implements IndexMonitor
             LinkedHashMap<String, IndexReader> readers = new LinkedHashMap<String, IndexReader>(size);
             for (IndexEntry currentDelete : toDelete.values())
             {
-                Set<String> deletions = getDeletions(currentDelete.getName());
+                Set<String> deletions = getDeletions(currentDelete.getName(), INDEX_INFO_DELETIONS);
+                Set<String> containerDeletions = getDeletions(currentDelete.getName(), INDEX_INFO_CONTAINER_DELETIONS);
                 if (!deletions.isEmpty())
                 {
                     for (String key : indexes.keySet())
@@ -3873,7 +3909,7 @@ public class IndexInfo implements IndexMonitor
                                         readers.put(key, writeableReader);
                                     }
                                     
-                                    if (currentDelete.isDeletOnlyNodes())
+                                    if (currentDelete.isDeletOnlyNodes() && !containerDeletions.contains(stringRef))
                                     {
                                         Searcher writeableSearcher = new IndexSearcher(writeableReader);        
                                         hits = writeableSearcher.search(query);
@@ -3882,7 +3918,9 @@ public class IndexInfo implements IndexMonitor
                                             for (int i = 0; i < hits.length(); i++)
                                             {
                                                 Document doc = hits.doc(i);
-                                                if (doc.getField("ISCONTAINER") == null)
+                                                // Exclude all containers except the root (which is also a node!)
+                                                Field path = doc.getField("PATH");
+                                                if (path == null || path.stringValue().length() == 0)
                                                 {
                                                     writeableReader.deleteDocument(hits.id(i));
                                                     invalidIndexes.add(key);
@@ -3917,6 +3955,65 @@ public class IndexInfo implements IndexMonitor
                                             }
                                             invalidIndexes.add(key);
                                         }
+                                    }
+                                }
+                            }
+                        }
+                        finally
+                        {
+                            searcher.close();
+                        }    
+                    }
+                }
+                if (!containerDeletions.isEmpty())
+                {
+                    for (String key : indexes.keySet())
+                    {
+                        IndexReader reader = getReferenceCountingIndexReader(key);
+                        Searcher searcher = new IndexSearcher(reader);
+                        try
+                        {
+                            for (String stringRef : deletions)
+                            {
+                                TermQuery query = new TermQuery(new Term("ANCESTOR", stringRef));
+                                Hits hits = searcher.search(query);
+                                if (hits.length() > 0)
+                                {
+                                    IndexReader writeableReader = readers.get(key);
+                                    if (writeableReader == null)
+                                    {
+                                        File location = new File(indexDirectory, key).getCanonicalFile();
+                                        if (IndexReader.indexExists(location))
+                                        {
+                                            writeableReader = IndexReader.open(location);
+                                        }
+                                        else
+                                        {
+                                            continue;
+                                        }
+                                        readers.put(key, writeableReader);
+                                    }
+                                    
+                                    int deletedCount = 0;
+                                    try
+                                    {
+                                        deletedCount = writeableReader.deleteDocuments(new Term("ANCESTOR", stringRef));
+                                    }
+                                    catch (IOException ioe)
+                                    {
+                                        if (s_logger.isDebugEnabled())
+                                        {
+                                            s_logger.debug("IO Error for " + key);
+                                            throw ioe;
+                                        }
+                                    }
+                                    if (deletedCount > 0)
+                                    {
+                                        if (s_logger.isDebugEnabled())
+                                        {
+                                            s_logger.debug("Deleted " + deletedCount + " from " + key + " for id " + stringRef + " remaining docs " + writeableReader.numDocs());
+                                        }
+                                        invalidIndexes.add(key);
                                     }
                                 }
                             }

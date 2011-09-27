@@ -784,6 +784,12 @@
       <property name="companyHomePath"><value>/${spaces.company_home.childname}</value></property>
    </bean>
 
+   <!-- Site service cache warmer -->
+   <bean id="siteServiceBootstrap" class="org.alfresco.repo.site.SiteServiceBootstrap">
+      <property name="siteService" ref="SiteService" />
+      <property name="tenantAdminService" ref="tenantAdminService" />
+   </bean>
+
     <!-- Scheduled persisted actions - load into quartz -->
    <bean id="scheduledPersistedActionServiceBootstrap" class="org.alfresco.repo.action.scheduled.ScheduledPersistedActionServiceImpl$ScheduledPersistedActionServiceBootstrap">
        <property name="scheduledPersistedActionService" ref="scheduledPersistedActionService" />

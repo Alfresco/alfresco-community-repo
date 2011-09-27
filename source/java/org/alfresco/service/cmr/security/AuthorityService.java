@@ -277,10 +277,14 @@ public interface AuthorityService
     public Set<String> getContainedAuthorities(AuthorityType type, String name, boolean immediate);
 
     /**
-     * Get the authorities that contain the given authority
+     * Get the authorities that contain the given authority,
+     * <b>but use {@code getAuthoritiesForUser(userName).contains(authority)}</b> rather than
+     * {@code getContainingAuthorities(type, userName, false).contains(authority)} or
+     * use {@link #getContainingAuthoritiesInZone(AuthorityType, String, AuthorityService.ZONE_APP_DEFAULT)}
+     * <b>as they will be much faster</b>.
      * 
-     * For example, this can be used find out all the authorities that contain a
-     * user.
+     * For example, this method can be used find out all the authorities that contain a
+     * group.
      * 
      * @param type -
      *            if not null, limit to the type of authority specified
@@ -293,6 +297,31 @@ public interface AuthorityService
      */
     @Auditable(parameters = {"type", "name", "immediate"})
     public Set<String> getContainingAuthorities(AuthorityType type, String name, boolean immediate);
+
+    /**
+     * Get a set of authorities with varying filter criteria
+     * 
+     * @param type
+     *            authority type or null for all types
+     * @param name
+     *            if non-null, only return those authorities who contain this authority
+     * @param zoneName
+     *            if non-null, only include authorities in the named zone
+     * @param filter
+     *            optional callback to apply further filter criteria or null
+     * @param size
+     *            if greater than zero, the maximum results to return. The search strategy used is varied depending on
+     *            this number.
+     * @return a set of authorities
+     */
+    @Auditable(parameters = {"type", "name", "zoneName", "filter", "size"})
+    public Set<String> getContainingAuthoritiesInZone(AuthorityType type, String name, final String zoneName,
+            AuthorityFilter filter, int size);
+
+    public interface AuthorityFilter
+    {
+        boolean includeAuthority(String authority);
+    }
 
     /**
      * Extract the short name of an authority from its full identifier.

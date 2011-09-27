@@ -175,7 +175,8 @@ public abstract class AbstractLuceneBase
                 //
                 luceneIndexer.flushPending();
                 return new ClosingIndexSearcher(indexInfo.getMainIndexReferenceCountingReadOnlyIndexReader(deltaId,
-                        luceneIndexer.getDeletions(), luceneIndexer.getDeleteOnlyNodes()));
+                        luceneIndexer.getDeletions(), luceneIndexer.getContainerDeletions(), luceneIndexer
+                                .getDeleteOnlyNodes()));
             }
 
         }
@@ -252,9 +253,9 @@ public abstract class AbstractLuceneBase
         closeDeltaWriter();
     }
 
-    protected void setInfo(long docs, Set<String> deletions, boolean deleteNodesOnly) throws IOException
+    protected void setInfo(long docs, Set<String> deletions, Set<String> containerDeletions, boolean deleteNodesOnly) throws IOException
     {
-        indexInfo.setPreparedState(deltaId, deletions, docs, deleteNodesOnly);
+        indexInfo.setPreparedState(deltaId, deletions, containerDeletions, docs, deleteNodesOnly);
     }
 
     protected void setStatus(TransactionStatus status) throws IOException

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.node.select.children">
+
+    <!-- Note the MySQL specific fetch size limitation (Integer.MIN_VALUE) on this statement. This activates result set streaming. -->
+    <select id="select_ChildAssocsOfParent_Limited" parameterType="ChildAssoc" resultMap="result_ChildAssoc" fetchSize="-2147483648">
+        <include refid="alfresco.node.select_ChildAssocsOfParent_Query"/>
+        and 1=1 <!-- This part present to make the SQL string unique WRT the prepared statement cache -->
+        <if test="ordered == true">
+            <include refid="alfresco.node.select_ChildAssoc_OrderBy"/>
+        </if>
+    </select>
+
+</mapper>

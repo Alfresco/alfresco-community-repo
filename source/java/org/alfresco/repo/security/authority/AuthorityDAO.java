@@ -25,6 +25,7 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.AuthorityService.AuthorityFilter;
 
 public interface AuthorityDAO
 {
@@ -62,6 +63,8 @@ public interface AuthorityDAO
      */
     Set<String> getContainedAuthorities(AuthorityType type, String parentName, boolean immediate);
 
+    public boolean isAuthorityContained(NodeRef authorityNodeRef, String authorityToFind);
+
     /**
      * Remove an authority.
      * 
@@ -79,6 +82,20 @@ public interface AuthorityDAO
      * @return
      */
     Set<String> getContainingAuthorities(AuthorityType type, String name, boolean immediate);
+    
+    
+    /**
+     * Get a set of authorities with varying filter criteria
+     * 
+     * @param type authority type or null for all types
+     * @param authority if non-null, only return those authorities who contain this authority
+     * @param zoneName if non-null, only include authorities in the named zone
+     * @param filter optional callback to apply further filter criteria or null
+     * @param size if greater than zero, the maximum results to return. The search strategy used is varied depending on this number.
+     * @return a set of authorities
+     */
+    public Set<String> getContainingAuthoritiesInZone(AuthorityType type, String authority, final String zoneName, AuthorityFilter filter, int size);
+
     
     /**
      * Get authorities by type and/or zone

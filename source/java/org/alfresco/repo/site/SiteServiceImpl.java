@@ -69,7 +69,9 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -78,6 +80,7 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.security.AuthorityService.AuthorityFilter;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
@@ -786,11 +789,16 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                 query.append(")");
             }
             
-            ResultSet results = this.searchService.query(
-                    siteRoot.getStoreRef(),
-                    SearchService.LANGUAGE_LUCENE,
-                    query.toString(),
-                    null);
+            SearchParameters sp = new SearchParameters();
+            sp.addStore(siteRoot.getStoreRef());
+            sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+            sp.setQuery(query.toString());
+            if (size != 0)
+            {
+                sp.setLimit(size);
+                sp.setLimitBy(LimitBy.FINAL_SIZE);
+            }
+            ResultSet results = this.searchService.query(sp);                       
             try
             {
                 result = new ArrayList<SiteInfo>(results.length());
@@ -798,11 +806,9 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                 {
                     // Ignore any node type that is not a "site"
                     QName siteClassName = this.nodeService.getType(site);
-                    if (this.dictionaryService.isSubClass(siteClassName, SiteModel.TYPE_SITE) == true)
+                        if (this.dictionaryService.isSubClass(siteClassName, SiteModel.TYPE_SITE))
                     {
                         result.add(createSiteInfo(site));
-                        // break on max size limit reached
-                        if (result.size() == size) break;
                     }
                 }
             }
@@ -865,6 +871,14 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
      */
     public List<SiteInfo> listSites(final String userName)
     {
+        return listSites(userName, 0);
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.site.SiteService#listSites(java.lang.String, int)
+     */
+    public List<SiteInfo> listSites(final String userName, final int size)
+    {
         // MT share - for activity service system callback
         if (tenantService.isEnabled() && (AuthenticationUtil.SYSTEM_USER_NAME.equals(AuthenticationUtil.getRunAsUser())) && tenantService.isTenantUser(userName))
         {
@@ -874,13 +888,13 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
             {
                 public List<SiteInfo> doWork() throws Exception
                 {
-                    return listSitesImpl(userName);
+                    return listSitesImpl(userName, size);
                 }
             }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
         }
         else
         {
-            return listSitesImpl(userName);
+            return listSitesImpl(userName, size);
         }
     }
     
@@ -961,72 +975,62 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
      * @param userName the username
      * @return a list of {@link SiteInfo site infos}.
      */
-    private List<SiteInfo> listSitesImpl(String userName)
+    private String resolveSite(String group)
     {
-        List<SiteInfo> result = null;
-        
-        // get the Groups this user is contained within (at any level)
-        Set<String> groups = this.authorityService.getContainingAuthorities(null, userName, false);
-        Set<String> siteNames = new HashSet<String>(groups.size());
-        // purge non Site related Groups and strip the group name down to the site "shortName" it relates to
-        for (String group : groups)
+        // purge non Site related Groups and strip the group name down to the site "shortName" it relates too
+        if (group.startsWith(GROUP_SITE_PREFIX))
         {
-            if (group.startsWith(GROUP_SITE_PREFIX))
+            int roleIndex = group.lastIndexOf('_');
+            if (roleIndex + 1 <= GROUP_SITE_PREFIX_LENGTH)
             {
-                int roleIndex = group.lastIndexOf('_');
-                String siteName;
-                if (roleIndex + 1 <= GROUP_SITE_PREFIX_LENGTH)
-                {
-                    // There is no role associated
-                    siteName = group.substring(GROUP_SITE_PREFIX_LENGTH);
-                }
-                else
-                {
-                    siteName = group.substring(GROUP_SITE_PREFIX_LENGTH, roleIndex);
-                }
-                siteNames.add(siteName);
+                // There is no role associated
+                return group.substring(GROUP_SITE_PREFIX_LENGTH);
+            }
+            else
+            {
+                return group.substring(GROUP_SITE_PREFIX_LENGTH, roleIndex);
             }
         }
-        
-        // retrieve the site nodes based on the list from the containing site groups
-        NodeRef siteRoot = getSiteRoot();
-        if (siteRoot == null)
-        {
-            result = Collections.emptyList();
-        }
-        else
-        {
-            List<String> siteList = new ArrayList<String>(siteNames);
-            // ensure we do not trip over the getChildrenByName() 1000 item API limit!
-            //
-            // Note the implicit assumption here: that the specified user is not a member of > 1000 sites
-            // If the user IS a member of more than 1000 sites, then a truncated list of sites will be returned.
-            // Also, given that the siteNames are a Set<String>, there is no guarantee about which sites would be
-            // included in the truncated results and which would be excluded. HashSets are unordered.
-            if (siteList.size() > 1000)
-            {
-                siteList = siteList.subList(0, 1000);
-            }
-            List<ChildAssociationRef> assocs = this.nodeService.getChildrenByName(
-                    siteRoot,
-                    ContentModel.ASSOC_CONTAINS,
-                    siteList);
-            result = new ArrayList<SiteInfo>(assocs.size());
-            for (ChildAssociationRef assoc : assocs)
-            {
-                // Ignore any node that is not a "site" type
-                NodeRef site = assoc.getChildRef();
-                QName siteClassName = this.directNodeService.getType(site);
-                if (this.dictionaryService.isSubClass(siteClassName, SiteModel.TYPE_SITE))
-                {
-                    result.add(createSiteInfo(site));
-                }
-            }
-        }
-        
-        return result;
+        return null;
     }
 
+    private List<SiteInfo> listSitesImpl(final String userName, int size)
+    {
+        final int maxResults = size > 0 ? size : 1000;
+        final Set<String> siteNames = new TreeSet<String>();
+        authorityService.getContainingAuthoritiesInZone(AuthorityType.GROUP, userName, AuthorityService.ZONE_APP_SHARE, new AuthorityFilter(){
+            @Override
+            public boolean includeAuthority(String authority)
+            {
+                String siteName = resolveSite(authority);
+                if (siteName == null)
+                {
+                    return false;
+                }
+                return siteNames.add(siteName);
+            }}, maxResults);
+        if (siteNames.isEmpty())
+        {
+            return Collections.emptyList();
+        }
+        List<ChildAssociationRef> assocs = this.nodeService.getChildrenByName(
+                getSiteRoot(),
+                ContentModel.ASSOC_CONTAINS,
+                siteNames);
+        List<SiteInfo> result = new ArrayList<SiteInfo>(assocs.size());
+        for (ChildAssociationRef assoc : assocs)
+        {
+            // Ignore any node that is not a "site" type
+            NodeRef site = assoc.getChildRef();
+            QName siteClassName = this.directNodeService.getType(site);
+            if (this.dictionaryService.isSubClass(siteClassName, SiteModel.TYPE_SITE))
+            {
+                result.add(createSiteInfo(site));
+            }
+        }
+        return result;
+    }
+    
     /**
      * Creates a site information object given a site node reference
      * 
@@ -1683,18 +1687,17 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         Set<String> roles = this.permissionService.getSettablePermissions(siteType);
 
         // First use the authority's cached recursive group memberships to answer the question quickly
-        Set<String> authorityGroups = this.authorityService.getContainingAuthorities(AuthorityType.GROUP,
-                authorityName, false);
+        Set<String> authorities = authorityService.getAuthoritiesForUser(authorityName);
         for (String role : roles)
         {
             String roleGroup = getSiteRoleGroup(siteShortName, role, true);
-            if (authorityGroups.contains(roleGroup))
+            if (authorities.contains(roleGroup))
             {
                 fullResult.add(roleGroup);
             }
         }
         
-        // Unfortunately, due to direct membership taking precendence, we can't answer the question quickly if more than one role has been inherited
+        // Unfortunately, due to direct membership taking precedence, we can't answer the question quickly if more than one role has been inherited
         if (fullResult.size() <= 1)
         {
             return fullResult;
@@ -1702,7 +1705,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         
         // Check direct group memberships
         List<String> result = new ArrayList<String>(5);
-        authorityGroups = this.authorityService.getContainingAuthorities(AuthorityType.GROUP,
+        Set <String> authorityGroups = this.authorityService.getContainingAuthorities(AuthorityType.GROUP,
                 authorityName, true);
         for (String role : roles)
         {

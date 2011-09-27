@@ -20,7 +20,7 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/Alfresco JLAN"/>
 	<classpathentry kind="lib" path="/3rd Party/lib/commons/commons-httpclient-3.1.jar"/>
 	<classpathentry kind="lib" path="/3rd Party/lib/chiba-1.3.0-patched.jar" sourcepath="/3rd Party/src/chiba-1.3.0-patched-src.zip"/>
-	<classpathentry kind="lib" path="/3rd Party/lib/spring-surf/spring-webscripts-1.0.0.CI-SNAPSHOT.jar" sourcepath="/3rd Party/src/spring-webscripts-1.0.0.CI-SNAPSHOT-sources.jar"/>
+	<classpathentry kind="lib" path="/3rd Party/lib/spring-surf/spring-webscripts-1.0.0.jar" sourcepath="/3rd Party/src/spring-webscripts-1.0.0-sources.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/DataModel"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

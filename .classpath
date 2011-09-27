@@ -15,8 +15,8 @@
 	<classpathentry kind="lib" path="/3rd Party/lib/abdera/abdera-i18n-0.4.0-incubating.jar" sourcepath="/3rd Party/src/apache-abdera-0.4.0-incubating-src.zip"/>
 	<classpathentry kind="lib" path="/3rd Party/lib/abdera/abdera-parser-0.4.0-incubating.jar" sourcepath="/3rd Party/src/apache-abdera-0.4.0-incubating-src.zip"/>
 	<classpathentry kind="lib" path="/3rd Party/lib/abdera/abdera-client-0.4.0-incubating.jar" sourcepath="/3rd Party/src/apache-abdera-0.4.0-incubating-src.zip"/>
-	<classpathentry exported="true" kind="lib" path="/3rd Party/lib/spring-surf/spring-webscripts-1.0.0.CI-SNAPSHOT.jar" sourcepath="/3rd Party/src/spring-webscripts-1.0.0.CI-SNAPSHOT-sources.jar"/>
-	<classpathentry kind="lib" path="/3rd Party/lib/spring-surf/spring-webscripts-1.0.0.CI-SNAPSHOT-tests.jar"/>
+	<classpathentry exported="true" kind="lib" path="/3rd Party/lib/spring-surf/spring-webscripts-1.0.0.jar" sourcepath="/3rd Party/src/spring-webscripts-1.0.0-sources.jar"/>
+	<classpathentry kind="lib" path="/3rd Party/lib/spring-surf/spring-webscripts-1.0.0-tests.jar"/>
 	<classpathentry kind="lib" path="/3rd Party/lib/j2ee/servlet.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/DataModel"/>
 	<classpathentry kind="output" path="build/classes"/>

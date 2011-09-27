@@ -113,7 +113,12 @@ public class DeleteSpaceDialog extends BaseDialogBean
                   {
                      this.getNodeService().addAspect(node.getNodeRef(), ContentModel.ASPECT_TEMPORARY, null);
                   }
-                  this.getNodeService().deleteNode(node.getNodeRef());
+                  
+                  // ensure the node still exists before deleting
+                  if (this.getNodeService().exists(node.getNodeRef()))
+                  {
+                      this.getNodeService().deleteNode(node.getNodeRef());
+                  }
                }
             }
             else
@@ -178,7 +183,12 @@ public class DeleteSpaceDialog extends BaseDialogBean
                      {
                         this.getNodeService().addAspect(nodeRef, ContentModel.ASPECT_TEMPORARY, null);
                      }
-                     this.getNodeService().deleteNode(nodeRef);
+                     
+                     // ensure the node still exists before deleting
+                     if (this.getNodeService().exists(node.getNodeRef()))
+                     {
+                         this.getNodeService().deleteNode(nodeRef);
+                     }
                      
                      tx.commit();
                   }

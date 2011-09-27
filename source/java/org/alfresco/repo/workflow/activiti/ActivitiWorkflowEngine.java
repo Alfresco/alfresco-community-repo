@@ -573,7 +573,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         // This should return all task definitions, including the start-task
         ReadOnlyProcessDefinition processDefinition =((RepositoryServiceImpl)repoService).getDeployedProcessDefinition(processDefinitionId);
 
-        String processName = processDefinition.getName();
+        String processName = ((ProcessDefinition)processDefinition).getKey();
         factory.checkDomain(processName);
         
         // Process start task definition

@@ -123,8 +123,14 @@ public class UserCalendarEntriesGet extends AbstractCalendarWebScript
       }
       else
       {
-         // All their sites
-         sites = siteService.listSites(AuthenticationUtil.getRunAsUser());
+         // All their sites (with optional limit)
+         int max = 0;
+         String strMax = req.getParameter("size");
+         if (strMax != null && strMax.length() != 0)
+         {
+             max = Integer.parseInt(strMax);
+         }
+         sites = siteService.listSites(AuthenticationUtil.getRunAsUser(), max);
       }
       
       // We need to know the Site Names, and the NodeRefs of the calendar containers

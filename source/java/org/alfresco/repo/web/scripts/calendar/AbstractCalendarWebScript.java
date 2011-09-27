@@ -111,6 +111,16 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
           return null;
        }
        
+       // todays date - ignore time as we want all of today
+       if (date.equalsIgnoreCase("NOW"))
+       {
+           Date ddate = new Date();
+           ddate.setHours(0);;
+           ddate.setMinutes(0);
+           ddate.setSeconds(0);
+           return ddate;
+       }
+       
        // Try as ISO8601
        try
        {

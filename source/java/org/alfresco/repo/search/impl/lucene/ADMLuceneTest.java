@@ -386,7 +386,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         mlText.addValue(Locale.GERMAN, "banane");
         mlText.addValue(new Locale("el"), "μπανάνα");
         mlText.addValue(Locale.ITALIAN, "banana");
-        mlText.addValue(new Locale("ja"), "�?ナナ");
+        mlText.addValue(new Locale("ja"), "バナナ");
         mlText.addValue(new Locale("ko"), "바나나");
         mlText.addValue(new Locale("pt"), "banana");
         mlText.addValue(new Locale("ru"), "банан");
@@ -6091,7 +6091,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
-        sp.setQuery("@" + LuceneQueryParser.escape(mlQName.toString()) + ":�?ナナ");
+        sp.setQuery("@" + LuceneQueryParser.escape(mlQName.toString()) + ":バナナ");
         sp.addLocale(new Locale("ja"));
         results = searcher.query(sp);
         assertEquals(1, results.length());

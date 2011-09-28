@@ -310,6 +310,7 @@ public class BlogServiceImpl implements BlogService
         {
             luceneResults = searchService.query(sp);
             final ResultSet finalLuceneResults = luceneResults;
+            final List<NodeRef> nodeRefs = finalLuceneResults.getNodeRefs();
             
             results = new PagingResults<BlogPostInfo>()
             {
@@ -317,7 +318,6 @@ public class BlogServiceImpl implements BlogService
                 @Override
                 public List<BlogPostInfo> getPage()
                 {
-                    List<NodeRef> nodeRefs = finalLuceneResults.getNodeRefs();
                     List<BlogPostInfo> blogPostInfos = new ArrayList<BlogPostInfo>(nodeRefs.size());
                     for (NodeRef nodeRef : nodeRefs)
                     {

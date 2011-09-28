@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
 
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
 import org.alfresco.service.cmr.publishing.channels.ChannelType;
 import org.alfresco.service.cmr.repository.MimetypeService;
@@ -82,7 +83,14 @@ public class ChannelTypeIconGetWebScript extends AbstractWebScript
         }
         
         res.setHeader("Content-Length", "" + iconFile.contentLength());
-        String mimeType = mimetypeService.getMimetype(channelType.getIconFileExtension());
+        String filename = iconFile.getFilename();
+        int lastDot = filename.lastIndexOf('.');
+        String ext = MimetypeMap.EXTENSION_BINARY;
+        if (lastDot != -1 && lastDot < (filename.length()-1))
+        {
+            ext = filename.substring(lastDot);
+        }
+        String mimeType = mimetypeService.getMimetype(ext);
         res.setContentType(mimeType);
         OutputStream out = res.getOutputStream();
         InputStream in = iconFile.getInputStream();  

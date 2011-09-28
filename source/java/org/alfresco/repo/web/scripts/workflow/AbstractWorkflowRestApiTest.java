@@ -1173,7 +1173,7 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
         runReviewFlow(false);
     }
     
-    public void testReviewPooledProcessFlow() throws Exception 
+    public void offtestReviewPooledProcessFlow() throws Exception 
     {
         // Approve path
         runReviewPooledFlow(true);

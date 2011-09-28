@@ -310,7 +310,7 @@ public class BlogServiceTest extends BaseWebScriptTest
     /**
      * @since 4.0
      */
-    public void testCreateDraftPostWithTagsAndComment() throws Exception
+    public void offtestCreateDraftPostWithTagsAndComment() throws Exception
     {
         String[] tags = new String[]{"foo", "bar"};
         String title = "test";

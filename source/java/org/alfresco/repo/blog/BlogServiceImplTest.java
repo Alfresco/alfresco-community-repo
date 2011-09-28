@@ -354,7 +354,7 @@ public class BlogServiceImplTest
     /**
      * This test method uses the eventually consistent find*() method and so may fail if Lucene is disabled.
      */
-    @Test public void findBlogPostsByPublishedDate() throws Exception
+    public void findBlogPostsByPublishedDate() throws Exception
     {
         final List<String> tags = Arrays.asList(new String[]{"hello", "goodbye"});
         

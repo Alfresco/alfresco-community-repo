@@ -27,6 +27,11 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.social.connect.Connection;
 import org.springframework.social.twitter.api.Twitter;
 
+/**
+ * 
+ * @author Brian
+ * @since 4.0
+ */
 public class TwitterChannelType extends AbstractOAuth1ChannelType<Twitter>
 {
     private final static Log log = LogFactory.getLog(TwitterChannelType.class);

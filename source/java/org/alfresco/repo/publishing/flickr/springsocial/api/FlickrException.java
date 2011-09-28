@@ -18,6 +18,11 @@
  */
 package org.alfresco.repo.publishing.flickr.springsocial.api;
 
+/**
+ * 
+ * @author Brian
+ * @since 4.0
+ */
 public class FlickrException extends RuntimeException
 {
     private static final long serialVersionUID = 7938720115597007302L;

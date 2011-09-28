@@ -31,6 +31,11 @@ import org.alfresco.service.namespace.QName;
 import org.springframework.social.connect.Connection;
 import org.springframework.social.oauth1.OAuthToken;
 
+/**
+ * A utility class to support the {@link FlickrChannelType}.
+ * @author Brian
+ * @since 4.0
+ */
 public class FlickrPublishingHelper
 {
     private NodeService nodeService;

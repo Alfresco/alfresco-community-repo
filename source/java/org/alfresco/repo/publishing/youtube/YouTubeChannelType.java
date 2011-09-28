@@ -60,6 +60,11 @@ import com.google.gdata.data.youtube.YouTubeMediaGroup;
 import com.google.gdata.data.youtube.YouTubeNamespace;
 import com.google.gdata.util.ServiceException;
 
+/**
+ * 
+ * @author Brian
+ * @since 4.0
+ */
 public class YouTubeChannelType extends AbstractChannelType
 {
     private final static Log log = LogFactory.getLog(YouTubeChannelType.class);

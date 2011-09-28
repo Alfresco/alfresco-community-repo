@@ -28,6 +28,11 @@ import javax.xml.bind.annotation.XmlValue;
 
 import org.alfresco.repo.publishing.flickr.springsocial.api.PhotoInfo;
 
+/**
+ * 
+ * @author Brian
+ * @since 4.0
+ */
 @XmlRootElement(name = "photo")
 public class Photo implements FlickrPayload, PhotoInfo
 {

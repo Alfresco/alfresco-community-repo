@@ -39,6 +39,11 @@ import com.benfante.jslideshare.messages.SlideshowInfo;
 import com.benfante.jslideshare.messages.Tag;
 import com.benfante.jslideshare.messages.User;
 
+/**
+ * 
+ * @author Brian
+ * @since 4.0
+ */
 public class SlideShareApiImpl implements SlideShareApi
 {
     private static final Log logger = LogFactory.getLog(SlideShareApiImpl.class);

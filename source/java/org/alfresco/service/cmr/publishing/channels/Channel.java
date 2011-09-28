@@ -26,6 +26,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
+ * Represents a publishing channel
  * @author Brian
  * @author Nick Smith
  * @since 4.0
@@ -43,7 +44,7 @@ public interface Channel
     ChannelType getChannelType();
     
     /**
-     * Retrieve the node ref of the node that represents this channel in the editorial environment
+     * Retrieve the node ref of the node that represents this channel object in the repository
      * @return
      */
     NodeRef getNodeRef();
@@ -54,14 +55,28 @@ public interface Channel
      */
     String getName();
     
+    /**
+     * Retrieve the properties defined on this channel.
+     * @return
+     */
     Map<QName, Serializable> getProperties();
     
-    void sendStatusUpdate(String status, String nodeUrl);
+    /**
+     * Post the specified text onto this channel as a status update.
+     * @param status The text of the status update. Note that if the length of this text plus the
+     * length of the urlToAppend text is greater than the maximum length permitted as a status
+     * update on this channel then this text will be truncated to fit.
+     * @param urlToAppend Text that is to be appended to the status update - often a URL to a relevant 
+     * piece of content. If this channel can't accept both the status text and the URL then the status text
+     * will be truncated in preference to the URL. This argument may be null.
+     */
+    void sendStatusUpdate(String status, String urlToAppend);
     
     /**
-     * Returns the URL for some published content given the content node in the editorial environment.
-     * @param publishedNode The node representing the published content in the editorial environment.
-     * @return a URL for the published content.
+     * Returns the URL for the specified node on this channel.
+     * @param The content node whose published URL is being requested.
+     * @return a URL for the published content. May return <code>null</code> if the specified node has not
+     * been published to this channel.
      */
     String getUrl(NodeRef publishedNode);
     
@@ -78,21 +93,27 @@ public interface Channel
     
     /**
      * Returns <code>true</code> only if the currently authenticated user can publish content to this {@link Channel}.
-     * If the {@link ChannelType} does not support publishing, if the {@link Channel} is not authorised or if the currently authenticated user does not have permission to publish to this {@link Channel} then this method will return <code>false</code>.
+     * If the {@link ChannelType} does not support publishing, if the {@link Channel} is not authorised or if the 
+     * currently authenticated user does not have permission to publish to this {@link Channel} then this 
+     * method will return <code>false</code>.
      * @return 
      */
     boolean canPublish();
 
     /**
      * Returns <code>true</code> only if the currently authenticated user can unpublish content from this {@link Channel}.
-     * If the {@link ChannelType} does not support unpublishing, if the {@link Channel} is not authorised or if the currently authenticated user does not have permission to publish to this {@link Channel} then this method will return <code>false</code>.
+     * If the {@link ChannelType} does not support unpublishing, if the {@link Channel} is not authorised or if the 
+     * currently authenticated user does not have permission to publish to this {@link Channel} then this method 
+     * will return <code>false</code>.
      * @return 
      */
     boolean canUnpublish();
 
     /**
      * Returns <code>true</code> only if the currently authenticated user can unpublish status updates to this {@link Channel}.
-     * If the {@link ChannelType} does not support publishing of status updates, if the {@link Channel} is not authorised or if the currently authenticated user does not have permission to publish to this {@link Channel} then this method will return <code>false</code>.
+     * If the {@link ChannelType} does not support publishing of status updates, if the {@link Channel} is not authorised 
+     * or if the currently authenticated user does not have permission to publish to this {@link Channel} then this method 
+     * will return <code>false</code>.
      * @return 
      */
     boolean canPublishStatusUpdates();

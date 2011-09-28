@@ -42,6 +42,11 @@ import org.apache.commons.logging.LogFactory;
 import com.benfante.jslideshare.SlideShareAPI;
 import com.benfante.jslideshare.messages.SlideshowInfo;
 
+/**
+ * 
+ * @author Brian
+ * @since 4.0
+ */
 public class SlideShareChannelType extends AbstractChannelType
 {
     public final static String ID = "slideshare";

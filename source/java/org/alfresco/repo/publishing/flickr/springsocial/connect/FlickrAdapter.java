@@ -25,6 +25,11 @@ import org.springframework.social.connect.ConnectionValues;
 import org.springframework.social.connect.UserProfile;
 import org.springframework.social.connect.UserProfileBuilder;
 
+/**
+ * 
+ * @author Brian
+ * @since 4.0
+ */
 public class FlickrAdapter implements ApiAdapter<Flickr>
 {
 

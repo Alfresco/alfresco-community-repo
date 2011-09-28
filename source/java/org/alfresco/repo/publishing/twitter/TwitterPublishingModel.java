@@ -22,8 +22,9 @@ package org.alfresco.repo.publishing.twitter;
 import org.alfresco.service.namespace.QName;
 
 /**
+ * 
  * @author Brian
- *
+ * @since 4.0
  */
 public interface TwitterPublishingModel
 {

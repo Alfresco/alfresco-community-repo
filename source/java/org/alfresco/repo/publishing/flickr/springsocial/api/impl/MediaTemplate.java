@@ -33,6 +33,11 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+/**
+ * 
+ * @author Brian
+ * @since 4.0
+ */
 class MediaTemplate extends AbstractFlickrOperations implements MediaOperations
 {
     private final RestTemplate restTemplate;

@@ -39,6 +39,11 @@ import org.springframework.social.facebook.api.NotAFriendException;
 import org.springframework.social.facebook.api.ResourceOwnershipException;
 import org.springframework.web.client.DefaultResponseErrorHandler;
 
+/**
+ * 
+ * @author Brian
+ * @since 4.0
+ */
 class FlickrErrorHandler extends DefaultResponseErrorHandler
 {
 

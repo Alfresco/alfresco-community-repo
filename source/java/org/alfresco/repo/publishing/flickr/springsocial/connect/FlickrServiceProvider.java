@@ -23,6 +23,11 @@ import org.alfresco.repo.publishing.flickr.springsocial.api.impl.FlickrTemplate;
 import org.springframework.social.oauth1.AbstractOAuth1ServiceProvider;
 import org.springframework.social.oauth1.OAuth1Template;
 
+/**
+ * 
+ * @author Brian
+ * @since 4.0
+ */
 public class FlickrServiceProvider extends AbstractOAuth1ServiceProvider<Flickr>
 {
 

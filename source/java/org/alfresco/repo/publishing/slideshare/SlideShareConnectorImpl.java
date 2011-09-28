@@ -45,6 +45,11 @@ import org.apache.log4j.Logger;
 import com.benfante.jslideshare.SlideShareConnector;
 import com.benfante.jslideshare.SlideShareErrorException;
 
+/**
+ * 
+ * @author Brian
+ * @since 4.0
+ */
 public class SlideShareConnectorImpl implements SlideShareConnector
 {
 

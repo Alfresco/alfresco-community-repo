@@ -26,6 +26,11 @@ import org.springframework.social.connect.UserProfileBuilder;
 import org.springframework.social.linkedin.api.LinkedInProfile;
 import org.springframework.web.client.HttpClientErrorException;
 
+/**
+ * 
+ * @author Brian
+ * @since 4.0
+ */
 public class LinkedInAdapter implements ApiAdapter<AlfrescoLinkedIn>
 {
     public boolean test(AlfrescoLinkedIn linkedin) {

@@ -51,7 +51,7 @@ import org.springframework.core.io.Resource;
 
 /**
  * @author Brian
- * 
+ * @since 4.0
  */
 public class FlickrTest extends BaseSpringTest
 {

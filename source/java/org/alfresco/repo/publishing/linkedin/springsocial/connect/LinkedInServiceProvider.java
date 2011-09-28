@@ -23,6 +23,11 @@ import org.alfresco.repo.publishing.linkedin.springsocial.api.impl.AlfrescoLinke
 import org.springframework.social.oauth1.AbstractOAuth1ServiceProvider;
 import org.springframework.social.oauth1.OAuth1Template;
 
+/**
+ * 
+ * @author Brian
+ * @since 4.0
+ */
 public class LinkedInServiceProvider  extends AbstractOAuth1ServiceProvider<AlfrescoLinkedIn> {
 
     public LinkedInServiceProvider(String consumerKey, String consumerSecret) {

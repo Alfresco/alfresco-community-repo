@@ -18,15 +18,12 @@
  */
 package org.alfresco.repo.publishing.flickr.springsocial.api;
 
-import org.alfresco.repo.publishing.flickr.springsocial.api.MediaOperations;
-import org.alfresco.repo.publishing.flickr.springsocial.api.impl.FlickrTemplate;
 import org.springframework.social.ApiBinding;
 
 /**
- * Interface specifying a basic set of operations for interacting with Facebook.
- * Implemented by {@link FlickrTemplate}.
  * 
- * @author Craig Walls
+ * @author Brian
+ * @since 4.0
  */
 public interface Flickr extends ApiBinding
 {

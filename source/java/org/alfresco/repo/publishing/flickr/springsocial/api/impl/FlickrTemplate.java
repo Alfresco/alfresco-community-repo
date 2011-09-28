@@ -37,6 +37,11 @@ import org.springframework.social.support.URIBuilder;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+/**
+ * 
+ * @author Brian
+ * @since 4.0
+ */
 public class FlickrTemplate extends AbstractOAuth1ApiBinding implements Flickr, FlickrHelper
 {
     private static final String DEFAULT_ENDPOINT = "http://api.flickr.com/services/";

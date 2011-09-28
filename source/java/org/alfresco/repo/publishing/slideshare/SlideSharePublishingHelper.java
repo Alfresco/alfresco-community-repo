@@ -32,6 +32,11 @@ import org.alfresco.util.Pair;
 import com.benfante.jslideshare.SlideShareAPI;
 import com.benfante.jslideshare.SlideShareConnector;
 
+/**
+ * 
+ * @author Brian
+ * @since 4.0
+ */
 public class SlideSharePublishingHelper
 {
     private final static Map<String,String> DEFAULT_MIME_TYPES = new TreeMap<String,String>(); 

@@ -33,6 +33,11 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.social.linkedin.api.impl.LinkedInTemplate;
 import org.springframework.social.support.URIBuilder;
 
+/**
+ * 
+ * @author Brian
+ * @since 4.0
+ */
 public class AlfrescoLinkedInTemplate extends LinkedInTemplate implements AlfrescoLinkedIn
 {
     private static String JAXB_CONTEXT_PATH = "org.alfresco.repo.publishing.linkedin.springsocial.api.impl.xml:"

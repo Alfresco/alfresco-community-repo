@@ -29,6 +29,11 @@ import org.apache.commons.logging.LogFactory;
 
 import com.google.gdata.client.youtube.YouTubeService;
 
+/**
+ * 
+ * @author Brian
+ * @since 4.0
+ */
 public class YouTubePublishingHelper
 {
     private static final Log log = LogFactory.getLog(YouTubePublishingHelper.class);

@@ -49,8 +49,9 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
 /**
- * @author Brian
  * 
+ * @author Brian
+ * @since 4.0
  */
 public class YouTubeTest extends BaseSpringTest
 {

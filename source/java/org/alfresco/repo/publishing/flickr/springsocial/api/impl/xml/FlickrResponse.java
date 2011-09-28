@@ -22,6 +22,11 @@ import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
+/**
+ * 
+ * @author Brian
+ * @since 4.0
+ */
 @XmlRootElement(name = "rsp")
 public class FlickrResponse
 {

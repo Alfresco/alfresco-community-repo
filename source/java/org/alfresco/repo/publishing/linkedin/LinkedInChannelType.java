@@ -31,6 +31,7 @@ import org.springframework.social.connect.Connection;
 
 /**
  * @author Nick Smith
+ * @author Brian
  * @since 4.0
  */
 public class LinkedInChannelType extends AbstractOAuth1ChannelType<AlfrescoLinkedIn>

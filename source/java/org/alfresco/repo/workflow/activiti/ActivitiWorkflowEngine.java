@@ -1647,7 +1647,10 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     	 for(Entry<QName, Object> customProperty : processCustomProps.entrySet()) 
          {
              String name =factory.mapQNameToName(customProperty.getKey());
-             taskQuery.processVariableValueEquals(name, customProperty.getValue());
+             
+             // Perform minimal property conversions
+             Object converted = propertyConverter.convertPropertyToValue(customProperty.getValue());
+             taskQuery.processVariableValueEquals(name, converted);
          }
      }
      
@@ -1764,8 +1767,11 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
      {
          for(Entry<QName, Object> customProperty : taskCustomProps.entrySet()) 
          {
-             String name =factory.mapQNameToName(customProperty.getKey());
-             taskQuery.taskVariableValueEquals(name, customProperty.getValue());
+             String name = factory.mapQNameToName(customProperty.getKey());
+             
+             // Perform minimal property conversions
+             Object converted = propertyConverter.convertPropertyToValue(customProperty.getValue());
+             taskQuery.taskVariableValueEquals(name, converted);
          }
      }
 
@@ -1854,7 +1860,10 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     	 for(Entry<QName, Object> customProperty : taskCustomProps.entrySet()) 
     	 {
     		 String name =factory.mapQNameToName(customProperty.getKey());
-    		 taskQuery.taskVariableValueEquals(name, customProperty.getValue());
+    		 
+    		 // Perform minimal property conversions
+             Object converted = propertyConverter.convertPropertyToValue(customProperty.getValue());
+             taskQuery.taskVariableValueEquals(name, converted);
     	 }
      }
      
@@ -1864,7 +1873,10 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     	 for(Entry<QName, Object> customProperty : processCustomProps.entrySet()) 
     	 {
     		 String name =factory.mapQNameToName(customProperty.getKey());
-    		 taskQuery.processVariableValueEquals(name, customProperty.getValue());
+    		 
+    		 // Perform minimal property conversions
+             Object converted = propertyConverter.convertPropertyToValue(customProperty.getValue());
+    		 taskQuery.processVariableValueEquals(name, converted);
     	 }
      }
      

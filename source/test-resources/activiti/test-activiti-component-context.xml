@@ -43,6 +43,10 @@
     <bean id="bpm_engineRegistry" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="org.alfresco.repo.workflow.BPMEngineRegistry" />
     </bean>
+    
+    <bean id="workflowAdminService" class="org.mockito.Mockito" factory-method="mock">
+      <constructor-arg value="org.alfresco.service.cmr.workflow.WorkflowAdminService" />
+    </bean>
 
    <bean id="baseWorkflowEngineStatus" class="org.alfresco.repo.workflow.WorkflowEngineStatus" abstract="true" />
 

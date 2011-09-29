@@ -680,7 +680,28 @@ public class ActivitiTaskComponentTest extends AbstractActivitiComponentTest
         tasks = workflowEngine.queryTasks(taskQuery);
         assertNotNull(tasks);
         assertEquals(0, tasks.size());
+    }
+    
+    @Test
+    public void testQueryUsingNodeRef() {
+        NodeRef nodeRef = new NodeRef("workspace:///someRef");
         
+        QName nodeRefPropQname = QName.createQName("testProp");
+        HashMap<QName, Serializable> props = new HashMap<QName, Serializable>();
+        props.put(nodeRefPropQname, nodeRef);
+        
+        // Start the workflow-path
+        workflowEngine.startWorkflow(workflowDef.getId(), props);
+        
+        // Test querying with a value of type NodeRef
+        WorkflowTaskQuery taskQuery = createWorkflowTaskQuery(WorkflowTaskState.IN_PROGRESS);
+        HashMap<QName, Object> queryParams = new HashMap<QName, Object>();
+        queryParams.put(nodeRefPropQname, nodeRef);
+        taskQuery.setProcessCustomProps(queryParams);
+        
+        List<WorkflowTask> tasks = workflowEngine.queryTasks(taskQuery);
+        assertNotNull(tasks);
+        assertEquals(1, tasks.size());
     }
     
     private void checkTaskVariableTaskPresent(WorkflowTaskState state,

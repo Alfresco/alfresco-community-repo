@@ -584,6 +584,40 @@ public class ActivitiPropertyConverter
         String msg = messageService.getMessage(ERR_CONVERT_VALUE, value);
         throw new WorkflowException(msg);
     }
+    
+    /**
+     * Performs basic conversion from a property to a 
+     * value that can be uses as activiti variable. If the type of the 
+     * property is known, use {@link #convertValueToPropertyType(Task, Serializable, QName)}
+     * 
+     * @param property the property to be converted
+     * 
+     * @return the value
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public Object convertPropertyToValue(Object property) {
+        if(property instanceof NodeRef) {
+            return nodeConverter.convertNode((NodeRef) property);
+        } else if(property instanceof Collection) {
+            boolean allNodes = true;
+            // Check if collection contains node-refs
+            for(Object item : ((Collection)property)) {
+                if(!(item instanceof NodeRef)) {
+                    allNodes = false;
+                    break;
+                }
+            }
+            
+            if(allNodes) {
+                return nodeConverter.convertNodes((Collection<NodeRef>) property);
+            } else {
+                return property;
+            }
+        } else {
+            // No conversion needed, property can be used.
+            return property;
+        }
+    }
 
     /**
      * Converts a {@link Serializable} value to the type of the specified property. 

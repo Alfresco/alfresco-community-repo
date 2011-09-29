@@ -19,12 +19,12 @@
       "startAt": {
           "iso8601": "${xmldate(event.start)}",
           "legacyDate": "${event.start?string("M/d/yyyy")}",
-          "legacyTime": "${event.start?string("HH:mm")}",
+          "legacyTime": "${event.start?string("HH:mm")}"
       },
       "endAt": {
           "iso8601": "${xmldate(event.end)}",
           "legacyDate": "${event.end?string("M/d/yyyy")}",
-          "legacyTime": "${event.end?string("HH:mm")}",
+          "legacyTime": "${event.end?string("HH:mm")}"
       },
 
       "tags": [<#list item.tags as tag>"${tag}"<#if tag_has_next>,</#if></#list>],

@@ -11,12 +11,12 @@
    "startAt": {
        "iso8601": "${xmldate(result.from)}",
        "legacyDate": "${result.from?string("M/d/yyyy")}",
-       "legacyTime": "${result.from?string("HH:mm")}",
+       "legacyTime": "${result.from?string("HH:mm")}"
    },
    "endAt": {
        "iso8601": "${xmldate(result.to)}",
        "legacyDate": "${result.to?string("M/d/yyyy")}",
-       "legacyTime": "${result.to?string("HH:mm")}",
+       "legacyTime": "${result.to?string("HH:mm")}"
    },
    "allday": "${result.allday?string}",
 

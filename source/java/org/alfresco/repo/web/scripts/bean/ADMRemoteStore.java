@@ -326,13 +326,41 @@ public class ADMRemoteStore extends BaseRemoteStore
             final int off = encpath.lastIndexOf('/');
             if (off != -1)
             {
-                FileInfo parentFolder = resolveNodePath(encpath, true, false);
-                FileInfo fileInfo = this.fileFolderService.create(
-                        parentFolder.getNodeRef(), encpath.substring(off + 1), ContentModel.TYPE_CONTENT);
-                this.contentService.getWriter(
-                        fileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true).putContent(content);
-                if (logger.isDebugEnabled())
-                    logger.debug("createDocument: " + fileInfo.toString());
+                // check we actually are the user we are creating a user specific path for
+                String runAsUser = AuthenticationUtil.getFullyAuthenticatedUser();
+                String userId = null;
+                Matcher matcher;
+                if ((matcher = USER_PATTERN_1.matcher(path)).matches())
+                {
+                    userId = matcher.group(1);
+                }
+                else if ((matcher = USER_PATTERN_2.matcher(path)).matches())
+                {
+                    userId = matcher.group(1);
+                }
+                if (userId != null && userId.equals(runAsUser))
+                {
+                    runAsUser = AuthenticationUtil.getSystemUserName();
+                }
+                AuthenticationUtil.runAs(new RunAsWork<Void>()
+                {
+                    @SuppressWarnings("synthetic-access")
+                    public Void doWork() throws Exception
+                    {
+                        final FileInfo parentFolder = resolveNodePath(encpath, true, false);
+                        if (parentFolder == null)
+                        {
+                            throw new IllegalStateException("Unable to aquire parent folder reference for path: " + path);
+                        }
+                        FileInfo fileInfo = fileFolderService.create(
+                                parentFolder.getNodeRef(), encpath.substring(off + 1), ContentModel.TYPE_CONTENT);
+                        contentService.getWriter(
+                                fileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true).putContent(content);
+                        if (logger.isDebugEnabled())
+                            logger.debug("createDocument: " + fileInfo.toString());
+                        return null;
+                    }
+                }, runAsUser);
             }
         }
         catch (AccessDeniedException ae)
@@ -592,6 +620,7 @@ public class ADMRemoteStore extends BaseRemoteStore
     {
         if (logger.isDebugEnabled())
             logger.debug("Resolving path: " + path);
+        
         FileInfo result = null;
         if (path != null)
         {

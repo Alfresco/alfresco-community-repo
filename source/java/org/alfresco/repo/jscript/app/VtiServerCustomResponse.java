@@ -57,6 +57,16 @@ public class VtiServerCustomResponse implements CustomResponse
     }
 
     /**
+     * Setter for sysAdminParams
+     *
+     * @param sysAdminParams
+     */
+    public void setSysAdminParams(SysAdminParams sysAdminParams)
+    {
+        this.sysAdminParams = sysAdminParams;
+    }
+
+    /**
      * Setter for vtiServer Port
      *
      * @param vtiServerPort
@@ -74,16 +84,6 @@ public class VtiServerCustomResponse implements CustomResponse
     public void setHost(String vtiServerHost)
     {
         this.vtiServerHost = vtiServerHost;
-    }
-
-    /**
-     * Setter for sysAdminParams
-     *
-     * @param sysAdminParams
-     */
-    public void setSysAdminParams(SysAdminParams sysAdminParams)
-    {
-        this.sysAdminParams = sysAdminParams;
     }
 
     /**

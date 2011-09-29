@@ -7,4 +7,8 @@
          <#if txn_has_next>,</#if>
       </#list>
    ]
+   <#if maxTxnCommitTime??>
+    ,"maxTxnCommitTime": ${maxTxnCommitTime?c}
+   </#if>
+   
 }

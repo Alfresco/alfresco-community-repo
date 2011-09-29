@@ -60,6 +60,12 @@ public class TransactionsGet extends DeclarativeWebScript
         
         Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);
         model.put("transactions", transactions);
+        
+        Long maxTxnCommitTime = solrTrackingComponent.getMaxTxnCommitTime();
+        if(maxTxnCommitTime != null)
+        {
+            model.put("maxTxnCommitTime", maxTxnCommitTime);
+        }
 
         if (logger.isDebugEnabled())
         {

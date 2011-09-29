@@ -9,24 +9,7 @@
         </property>
     </bean>
     
-    <bean id="googleDocsServiceDelegate" class="com.google.gdata.client.docs.DocsService">
-        <constructor-arg>
-            <value>${googledocs.application.name}</value>
-        </constructor-arg>
-    </bean>
-    
-    <bean id="spreadsheetsServiceDelegate" class="com.google.gdata.client.GoogleService">
-        <constructor-arg index="0">
-            <value>${googledocs.spreadsheet.service.name}</value>
-        </constructor-arg>
-        <constructor-arg index="1">
-            <value>${googledocs.application.name}</value>
-        </constructor-arg>
-    </bean>
-    
     <bean id="googleDocsService" class="org.alfresco.repo.googledocs.GoogleDocsServiceImpl">
-        <property name="googleDocumentService" ref="googleDocsServiceDelegate"/>
-        <property name="spreadsheetsService" ref="spreadsheetsServiceDelegate"/>
         <property name="nodeService" ref="NodeService"/>
         <property name="contentService" ref="ContentService"/>
         <property name="personService" ref="PersonService"/>    
@@ -37,7 +20,10 @@
         <property name="dictionaryService" ref="DictionaryService"/>  
         <property name="enabled" value="${googledocs.googleeditable.enabled}"/>     
         <property name="url" value="${googledocs.url}"/>
-        <property name="downloadUrl" value="${googledocs.downloadurl}"/>     
+        <property name="downloadUrl" value="${googledocs.downloadurl}"/> 
+        <property name="spreadsheetDownloadUrl" value="${googledocs.spreadsheet.downloadurl}"/>
+        <property name="applicationName" value="${googledocs.application.name}"/>
+        <property name="spreadSheetServiceName" value="${googledocs.spreadsheet.service.name}"/>       
         <property name="username" value="${googledocs.username}"/>
         <property name="password" value="${googledocs.password}"/>        
         <property name="permissionMap">

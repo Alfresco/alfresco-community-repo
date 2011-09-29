@@ -18,11 +18,13 @@
 */
 package org.alfresco.repo.googledocs;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+
 
 /**
  * Google docs service initialisation exception class.
  */
-public class GoogleDocsServiceInitException extends Exception 
+public class GoogleDocsServiceInitException extends AlfrescoRuntimeException 
 {
 	/** Serial version UUID */
 	private static final long serialVersionUID = -2104024155137888545L;
@@ -42,13 +44,5 @@ public class GoogleDocsServiceInitException extends Exception
 	public GoogleDocsServiceInitException(String message, Throwable cause) 
 	{
 		super(message, cause);
-	}
-
-	/**
-	 * @param cause		causing exception
-	 */
-	public GoogleDocsServiceInitException(Throwable cause) 
-	{
-		super(cause);
 	}
 }

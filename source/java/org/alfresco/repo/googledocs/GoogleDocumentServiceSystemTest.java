@@ -216,16 +216,7 @@ public class GoogleDocumentServiceSystemTest extends TestCase implements GoogleD
     
     private boolean isGoogleServiceAvailable()
     {
-    	boolean result = true;
-    	try
-    	{    	
-    		googleDocsService.initialise();
-    	}
-    	catch (GoogleDocsServiceInitException e)
-    	{
-    		result = false;
-    	}
-    	return result;
+    	return googleDocsService.isEnabled();
     }
     
     public void testGoogleDocUploadDownload() throws Exception

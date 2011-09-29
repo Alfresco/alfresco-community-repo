@@ -52,9 +52,9 @@ import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.google.gdata.client.GoogleService;
 import com.google.gdata.client.GoogleAuthTokenFactory.UserToken;
 import com.google.gdata.client.docs.DocsService;
+import com.google.gdata.client.media.MediaService;
 import com.google.gdata.data.IEntry;
 import com.google.gdata.data.MediaContent;
 import com.google.gdata.data.PlainTextConstruct;
@@ -95,8 +95,6 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
     private final static String KEY_MARKED_DELETE = "google_doc_service.marked_delete";
 
     /** Services */
-    private DocsService googleDocumentService;
-    private GoogleService spreadsheetsService;
     private NodeService nodeService;
     private ContentService contentService;
     private PersonService personService;
@@ -112,11 +110,16 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
     /** GoogleDoc base feed url */
     private String url = "http://docs.google.com/feeds/default/private/full";
     private String downloadUrl = "https://docs.google.com/feeds/download";
+    private String spreadsheetDownloadUrl = "https://spreadsheet.google.com/feeds/download";
     
     /** Authentication credentials */
-    private boolean initialised = false;    
+    private String applicationName;
+    private String spreadSheetServiceName;    
     private String username;
     private String password;
+    
+    /** Cached service tokens */
+    private Map<String, String> serviceTokens = new HashMap<String, String>(2);
     
     /** Permission map */
     private Map<String, String> permissionMap;
@@ -146,22 +149,81 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
     	"application/vnd.ms-powerpoint",
     	"image/x-wmf"
     );
-
+    
     /**
-     * @param googleDocumentService google document service
+     * Get a new instance of the spread sheet service
+     * 
+     * @return  spreadsheet service
      */
-    public void setGoogleDocumentService(DocsService googleDocumentService)
+    public MediaService getSpreadSheetService()
     {
-        this.googleDocumentService = googleDocumentService;
+        if (spreadSheetServiceName == null)
+        {
+            throw new GoogleDocsServiceInitException("No Google Docs spreadsheet service has been specified.");
+        }
+        
+        return getMediaService(spreadSheetServiceName);       
+    }
+    
+    /**
+     * Get a new instance of a document service
+     * 
+     * @return  document service
+     */
+    public DocsService getDocumentService()
+    {
+        return (DocsService)getMediaService(DocsService.DOCS_SERVICE);      
+    }
+    
+    /**
+     * 
+     * @param serviceName
+     * @return
+     */
+    public MediaService getMediaService(String serviceName)
+    {
+        if (applicationName == null)
+        {
+            throw new GoogleDocsServiceInitException("Google Docs service " + serviceName + " could not be initialised, because no Google Doc application name has been specified.");
+        }
+        
+        MediaService service = null;
+        if (serviceName.equals(DocsService.DOCS_SERVICE) == true)
+        {
+            service = new DocsService(applicationName);
+        }
+        else
+        {
+            service = new MediaService(serviceName, applicationName);
+        }
+        service.setChunkedMediaUpload(-1);
+        
+        String token = serviceTokens.get(serviceName);
+        if (token == null)
+        {
+            try
+            {
+                if (username == null ||username.length() == 0 || password == null)
+                {
+                    throw new GoogleDocsServiceInitException("No Google Docs credentials found. Please set the Google Docs authentication configuration.");
+                }
+                
+                service.setUserCredentials(username, password);
+                serviceTokens.put(serviceName, ((UserToken)service.getAuthTokenFactory().getAuthToken()).getValue());
+            }
+            catch (AuthenticationException e)
+            {
+                throw new GoogleDocsServiceInitException("Unable to connect to Google Docs.  Please check the Google Docs authentication configuration.", e);
+            }
+        }
+        else
+        {
+            service.setUserToken(token);
+        }
+        
+        return service;        
     }
 
-    /**
-     * @param spreadsheetsService   spread sheets service
-     */
-    public void setSpreadsheetsService(GoogleService spreadsheetsService)
-    {
-        this.spreadsheetsService = spreadsheetsService;
-    }
 
     /**
      * @param nodeService   node service
@@ -242,6 +304,30 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
     {
         this.downloadUrl = downloadUrl;
     }
+    
+    /**
+     * @param spreadsheetDownloadUrl root spreadsheet download URL
+     */
+    public void setSpreadsheetDownloadUrl(String spreadsheetDownloadUrl)
+    {
+        this.spreadsheetDownloadUrl = spreadsheetDownloadUrl;
+    }
+        
+    /**
+     * @param applicationName   GDoc application name
+     */
+    public void setApplicationName(String applicationName) 
+    {
+        this.applicationName = applicationName;
+    }
+
+    /**
+     * @param spreadSheetServiceName    GDoc spread sheet service name
+     */
+    public void setSpreadSheetServiceName(String spreadSheetServiceName) 
+    {
+        this.spreadSheetServiceName = spreadSheetServiceName;
+    }
 
     /**
      * @param username  google service user name
@@ -249,7 +335,8 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
     public void setUsername(String username)
     {
         this.username = username;
-        this.initialised = false;
+        // Reset the token map
+        serviceTokens = new HashMap<String, String>(2);
     }
 
     /**
@@ -258,7 +345,8 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
     public void setPassword(String password)
     {
         this.password = password;
-        this.initialised = false;
+        // Reset the token map
+        serviceTokens = new HashMap<String, String>(2);
     }
     
     /**
@@ -276,7 +364,8 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
     public void setEnabled(boolean enabled)
     {
         this.enabled = enabled;
-        this.initialised = false;
+        // Reset the token map
+        serviceTokens = new HashMap<String, String>(2);
     }
     
     /**
@@ -285,42 +374,6 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
     public boolean isEnabled()
     {
         return enabled;
-    }
-
-    /**
-     * Initialise google docs services
-     */
-    public void initialise() throws GoogleDocsServiceInitException
-    {
-        if (initialised == false)
-        {
-            if (logger.isDebugEnabled() == true)
-            {
-                logger.debug("Trying to initialise google docs service for user " + username);
-            }
-            
-            if (username == null ||username.length() == 0 || password == null)
-            {
-                throw new GoogleDocsServiceInitException("No Google Docs credentials found. Please set the Google Docs authentication configuration.");
-            }
-            
-            try
-            {
-                googleDocumentService.setUserCredentials(username, password);
-                spreadsheetsService.setUserCredentials(username, password);
-                googleDocumentService.setChunkedMediaUpload(-1);
-            }
-            catch (AuthenticationException e)
-            {
-                throw new GoogleDocsServiceInitException("Unable to connect to Google Docs.  Please check the Google Docs authentication configuration.", e);
-            }
-            
-            initialised = true;
-            if (logger.isDebugEnabled() == true)
-            {
-                logger.debug("Successfully initialised google docs service for user " + username);
-            }
-        }
     }
 
     /**
@@ -340,16 +393,6 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
     {
         // Check for mandatory parameters
         ParameterCheck.mandatory("nodeRef", nodeRef);
-        
-        // Initialise google doc services
-        try
-        {
-        	initialise();
-        }
-        catch (GoogleDocsServiceInitException e)
-        {
-        	throw new AlfrescoRuntimeException("Unable to create google doc, because service could not be initialised.", e);
-        }
 
         // Get property values
         String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
@@ -413,16 +456,6 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
     {        
         // Check for mandatory parameters
         ParameterCheck.mandatory("nodeRef", nodeRef);
-        
-        // Initialise google doc services
-        try
-        {
-        	initialise();
-        }
-        catch (GoogleDocsServiceInitException e)
-        {
-        	throw new AlfrescoRuntimeException("Unable to create google doc, because service could not be initialised.", e);
-        }
 
         if (nodeService.hasAspect(nodeRef, ASPECT_GOOGLERESOURCE) == true)
         {
@@ -627,16 +660,6 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
         // Check for mandatory parameters
         ParameterCheck.mandatory("nodeRef", nodeRef);
         
-        // Initialise google doc services
-        try
-        {
-        	initialise();
-        }
-        catch (GoogleDocsServiceInitException e)
-        {
-        	throw new AlfrescoRuntimeException("Unable to create google doc, because service could not be initialised.", e);
-        }
-        
         try
         {
             if (nodeService.hasAspect(nodeRef, ASPECT_GOOGLERESOURCE) == true)
@@ -660,18 +683,30 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
                 
                     if (docType.equals(TYPE_DOCUMENT) || docType.equals(TYPE_PRESENTATION))
                     {
-                        downloadUrl = this.downloadUrl + "/" + docType + "s/Export?docId=" + document.getDocId() + 
-                                                                           "&exportFormat=" + fileExtension;
+                        StringBuffer buffer = new StringBuffer(this.downloadUrl);
+                        buffer.append("/").
+                               append(docType).append("s").
+                               append("/Export?docId=").append(document.getDocId()).
+                               append("&exportFormat=").append(fileExtension);     
+                        
+                        downloadUrl = buffer.toString();
                     }
                     else if (docType.equals(TYPE_SPREADSHEET))
                     {
-                        downloadUrl = ((MediaContent)document.getContent()).getUri() + "&exportFormat=" + fileExtension;
+                        StringBuffer buffer = new StringBuffer(spreadsheetDownloadUrl);     
+                        buffer.append("/").
+                               append(docType).append("s").
+                               append("/Export?key=").append(document.getDocId()).
+                               append("&exportFormat=").append(fileExtension);     
     
                         // If exporting to .csv or .tsv, add the gid parameter to specify which sheet to export
                         if (fileExtension.equals("csv") || fileExtension.equals("tsv")) 
                         {
-                            downloadUrl += "&gid=0";  // gid=0 will download only the first sheet
+                            buffer.append("&gid=0");  // gid=0 will download only the first sheet
                         }
+                        
+                        downloadUrl = buffer.toString();
+                        
                     }
                     else if (docType.equals(TYPE_PDF))
                     {            
@@ -689,27 +724,21 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
                         logger.debug("Download URL for " + docType + " is " + downloadUrl);
                     }
                     
-                    // TODO need to verify that download of a spreadsheet works before we delete this historical code ...
-                    
-                    UserToken docsToken = null;
+                    MediaService service = null;
                     if (docType.equals(TYPE_SPREADSHEET) == true)
                     {
-                        docsToken = (UserToken) googleDocumentService.getAuthTokenFactory().getAuthToken();
-                        UserToken spreadsheetsToken = (UserToken) spreadsheetsService.getAuthTokenFactory().getAuthToken();
-                        googleDocumentService.setUserToken(spreadsheetsToken.getValue());
-            
+                        service = getSpreadSheetService();
                     }
-            
+                    else
+                    {
+                        service = getDocumentService();
+                    }
+                    
                     MediaContent mc = new MediaContent();
                     mc.setUri(downloadUrl);            
-                    MediaSource ms = googleDocumentService.getMedia(mc);
+                    MediaSource ms = service.getMedia(mc);
             
-                    if (docType.equals(TYPE_SPREADSHEET) == true)
-                    {
-                        googleDocumentService.setUserToken(docsToken.getValue());
-                    }
-            
-                    result = ms.getInputStream(); 
+                    result = ms.getInputStream();
                 }
                 else
                 {
@@ -778,7 +807,7 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
         try
         {
             URL docEntryURL = new URL(url + "/" + resourceId);
-            result = googleDocumentService.getEntry(docEntryURL, entryClass);
+            result = getDocumentService().getEntry(docEntryURL, entryClass);
         }
         catch (ServiceException e)
         {
@@ -892,7 +921,7 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
             docEntry.setTitle(new PlainTextConstruct(name));  
             
             // Upload the document into the parent folder
-            document = googleDocumentService.insert(
+            document = getDocumentService().insert(
                         new URL(parentFolderUrl), 
                         docEntry);
 
@@ -944,10 +973,10 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
         try
         {
             // Update the existing content
-            googleDocumentService.getRequestFactory().setHeader("If-Match", "*");
+            DocsService service = getDocumentService();
+            service.getRequestFactory().setHeader("If-Match", "*");
             document.setMediaSource(new MediaStreamSource(is, mimeType));
-            document.updateMedia(false);                
-            googleDocumentService.getRequestFactory().setHeader("If-Match", null);
+            document.updateMedia(false);                            
         }
         catch (ServiceException e)
         {
@@ -1004,7 +1033,7 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
             folder.setTitle(new PlainTextConstruct(folderName));           
             
             // Create the folder
-            folderEntry = googleDocumentService.insert(
+            folderEntry = getDocumentService().insert(
                     new URL(parentFolderUrl), 
                     folder);
             
@@ -1067,7 +1096,7 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
             
             // See if we have already set this permission or not
             AclEntry aclEntry = null;
-            AclFeed aclFeed = googleDocumentService.getFeed(aclFeedLinkURL, AclFeed.class);
+            AclFeed aclFeed = getDocumentService().getFeed(aclFeedLinkURL, AclFeed.class);
             if (aclFeed != null)
             {
                 List<AclEntry> aclEntries = aclFeed.getEntries();
@@ -1089,7 +1118,7 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
                 aclEntry = new AclEntry();
                 aclEntry.setRole(aclRole);
                 aclEntry.setScope(scope);
-                googleDocumentService.insert(aclFeedLinkURL, aclEntry);
+                getDocumentService().insert(aclFeedLinkURL, aclEntry);
             }
             else
             {
@@ -1191,7 +1220,7 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
                     DocumentListEntry entry = getDocumentListEntry(resourceId);  
                     if (entry != null)
                     {
-                        googleDocumentService.delete(new URL(entry.getEditLink().getHref() + "?delete=true"), entry.getEtag());
+                        getDocumentService().delete(new URL(entry.getEditLink().getHref() + "?delete=true"), entry.getEtag());
                     }
                     else
                     {
@@ -1241,7 +1270,7 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
                     DocumentListEntry entry = getDocumentListEntry(resourceId);   
                     if (entry != null)
                     {
-                        googleDocumentService.delete(new URL(entry.getEditLink().getHref() + "?delete=true"), entry.getEtag());
+                        getDocumentService().delete(new URL(entry.getEditLink().getHref() + "?delete=true"), entry.getEtag());
                     }
                     else
                     {

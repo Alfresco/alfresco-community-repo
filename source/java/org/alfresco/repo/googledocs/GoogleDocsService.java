@@ -32,13 +32,6 @@ public interface GoogleDocsService
      * @return  boolean true if enabled, false otherwise
      */
     boolean isEnabled();
-    
-	/**
-	 * Initialises the googles doc service, checking the provided credentials are correct.  This need
-	 * not be called manually since other service calls will initialise the service on demand, but it can 
-	 * be helpful to know the "health" of the service up front.
-	 */
-	void initialise() throws GoogleDocsServiceInitException;
 	
 	/**
 	 * Indicates whether the mimetype is supported for creation in google docs.

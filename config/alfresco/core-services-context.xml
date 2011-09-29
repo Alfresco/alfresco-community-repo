@@ -1035,7 +1035,7 @@
       <property name="httpClientFactory" ref="solrHttpClientFactory"/>
     </bean>
 
-    <bean id="solr" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
+    <bean id="solr" class="org.alfresco.repo.search.impl.solr.SolrChildApplicationContextFactory" parent="abstractPropertyBackedBean">
         <property name="autoStart">
             <value>false</value>
         </property>

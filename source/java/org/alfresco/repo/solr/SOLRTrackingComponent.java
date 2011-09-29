@@ -142,4 +142,10 @@ public interface SOLRTrackingComponent
      * @param enabled
      */
     void setEnabled(boolean enabled);
+    
+    /**
+     * Get the last transaction timestamp from the repo
+     * @return
+     */
+    public Long getMaxTxnCommitTime();
 }

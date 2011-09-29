@@ -796,4 +796,13 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
             more = callback.handleNodeMetaData(row);
         }
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.solr.SOLRTrackingComponent#getLastTransactionTimestamp()
+     */
+    @Override
+    public Long getMaxTxnCommitTime()
+    {
+        return nodeDAO.getMaxTxnCommitTime();
+    }
 }

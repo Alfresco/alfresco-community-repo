@@ -56,6 +56,10 @@
         </property>
     </bean>
     
+    <bean id="search.solrAdminHTTPCLient" class="org.alfresco.repo.search.impl.solr.SolrAdminHTTPClient" init-method="init">
+        <property name="httpClientFactory" ref="solrHttpClientFactory"/>
+    </bean>
+    
 
 	<bean id="search.lucene.alfresco" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage" >
 	    <property name="factories">

@@ -793,12 +793,12 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
             sp.addStore(siteRoot.getStoreRef());
             sp.setLanguage(SearchService.LANGUAGE_LUCENE);
             sp.setQuery(query.toString());
-            if (size != 0)
+            if (size > 0)
             {
                 sp.setLimit(size);
                 sp.setLimitBy(LimitBy.FINAL_SIZE);
             }
-            ResultSet results = this.searchService.query(sp);                       
+            ResultSet results = this.searchService.query(sp);
             try
             {
                 result = new ArrayList<SiteInfo>(results.length());
@@ -806,7 +806,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                 {
                     // Ignore any node type that is not a "site"
                     QName siteClassName = this.nodeService.getType(site);
-                        if (this.dictionaryService.isSubClass(siteClassName, SiteModel.TYPE_SITE))
+                    if (this.dictionaryService.isSubClass(siteClassName, SiteModel.TYPE_SITE))
                     {
                         result.add(createSiteInfo(site));
                     }

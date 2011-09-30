@@ -280,8 +280,8 @@ function testSiteCustomProperties()
 // Execute test's
 testCRUD();
 testListSites();
-//testFindSites();
-//testGetSites();
+testFindSites();
+testGetSites();
 testMembership();
 testContainer();
 testPermissions();

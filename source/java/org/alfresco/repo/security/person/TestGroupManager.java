@@ -19,7 +19,9 @@
 package org.alfresco.repo.security.person;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -54,11 +56,13 @@ public class TestGroupManager
     public String createGroupIfNotExist(String groupShortName)
     {
         String fullName = authorityService.getName(AuthorityType.GROUP, groupShortName);
-        if(groups.containsKey(groupShortName) == false)
+        if (groups.containsKey(groupShortName) == false)
         {
             if (authorityService.authorityExists(fullName) == false)
             {
-                fullName = authorityService.createAuthority(AuthorityType.GROUP, groupShortName, groupShortName, null);
+                Set<String> zones = new HashSet<String>(2, 1.0f);
+                zones.add(AuthorityService.ZONE_APP_DEFAULT);
+                fullName = authorityService.createAuthority(AuthorityType.GROUP, groupShortName, groupShortName, zones);
                 groups.put(groupShortName, findGroupNode(groupShortName));
             }
         }

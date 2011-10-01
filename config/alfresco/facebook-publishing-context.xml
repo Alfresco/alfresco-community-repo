@@ -21,7 +21,7 @@
    </bean>
 
    <bean id="facebookConnectionFactory" class="org.springframework.social.facebook.connect.FacebookConnectionFactory">
-      <constructor-arg value="239653749405669" />
-      <constructor-arg value="34807bf851b3a73429c8332f14d42ddb" />
+      <constructor-arg value="289427501067879" />
+      <constructor-arg value="8680cd45e7024a5aa078034ddc2fbb09" />
    </bean>
 </beans>

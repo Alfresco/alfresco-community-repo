@@ -19,6 +19,7 @@
 package org.alfresco.repo.rule;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,6 +28,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
@@ -57,6 +60,8 @@ import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.repo.dictionary.M2Aspect;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.M2Property;
+import org.alfresco.repo.management.subsystems.ApplicationContextFactory;
+import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -898,11 +903,11 @@ public class RuleServiceCoverageTest extends TestCase
      * Test:
      *          rule type:  inbound
      *          condition:  no-condition
-     *          action:     mail
-     *          
-     * Note: this test will be removed from the standard list since it is not currently automated           
+     *          action:     mail  
+     * @throws MessagingException 
+     * @throws IOException 
      */
-    public void xtestMailAction()
+    public void testMailAction() throws MessagingException, IOException
     {
         this.nodeService.addAspect(this.nodeRef, ContentModel.ASPECT_LOCKABLE, null);
         
@@ -919,6 +924,11 @@ public class RuleServiceCoverageTest extends TestCase
         		null);
         
         this.ruleService.saveRule(this.nodeRef, rule);
+
+        MailActionExecuter mailService = (MailActionExecuter) ((ApplicationContextFactory) this.applicationContext
+                    .getBean("OutboundSMTP")).getApplicationContext().getBean("mail");
+        mailService.setTestMode(true);
+        mailService.clearLastTestMessage();
                 
         this.nodeService.createNode(
                 this.nodeRef,
@@ -928,8 +938,63 @@ public class RuleServiceCoverageTest extends TestCase
                 getContentProperties()).getChildRef();        
         
         // An email should appear in the recipients email
-        
         // System.out.println(NodeStoreInspector.dumpNodeStore(this.nodeService, this.testStoreRef));
+        MimeMessage lastMessage = mailService.retrieveLastTestMessage();
+        assertNotNull("Message should have been sent", lastMessage);
+        System.out.println("Sent email with subject: " + lastMessage.getSubject());
+        System.out.println("Sent email with content: " + lastMessage.getContent());
+    }
+    
+    public void testMailNotSentIfRollback()
+    {
+        this.nodeService.addAspect(this.nodeRef, ContentModel.ASPECT_LOCKABLE, null);
+        
+        Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+        params.put(MailActionExecuter.PARAM_TO, "alfresco.test@gmail.com");
+        params.put(MailActionExecuter.PARAM_SUBJECT, "testMailNotSentIfRollback()");
+        params.put(MailActionExecuter.PARAM_TEXT, "This email should NOT have been sent.");
+        
+        Rule rule = createRule(
+                RuleType.INBOUND, 
+                MailActionExecuter.NAME, 
+                params, 
+                NoConditionEvaluator.NAME, 
+                null);
+        
+        this.ruleService.saveRule(this.nodeRef, rule);
+
+        String illegalName = "MyName.txt "; // space at end
+        
+        MailActionExecuter mailService = (MailActionExecuter) ((ApplicationContextFactory) this.applicationContext
+                    .getBean("OutboundSMTP")).getApplicationContext().getBean("mail");
+        mailService.setTestMode(true);
+        mailService.clearLastTestMessage();
+        
+        try
+        {
+            this.nodeService.createNode(
+                    this.nodeRef,
+                    ContentModel.ASSOC_CHILDREN,                
+                    QName.createQName(TEST_NAMESPACE, "children"),
+                    ContentModel.TYPE_CONTENT,
+                    makeNameProperty(illegalName)).getChildRef();
+            fail("createNode() should have failed.");
+        }
+        catch(IntegrityException e)
+        {
+            // Expected exception.
+            // An email should NOT appear in the recipients email
+        }
+        
+        MimeMessage lastMessage = mailService.retrieveLastTestMessage();
+        assertNull("Message should NOT have been sent", lastMessage);
+    }
+    
+    private Map<QName, Serializable> makeNameProperty(String name)
+    {
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);
+        properties.put(ContentModel.PROP_NAME, name);
+        return properties;
     }
     
     /**

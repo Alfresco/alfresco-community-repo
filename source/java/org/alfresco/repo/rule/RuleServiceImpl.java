@@ -30,6 +30,8 @@ import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionModel;
 import org.alfresco.repo.action.RuntimeActionService;
+import org.alfresco.repo.action.executer.CompositeActionExecuter;
+import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.alfresco.repo.cache.NullCache;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.node.NodeServicePolicies;
@@ -41,6 +43,7 @@ import org.alfresco.repo.transaction.TransactionListener;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ActionServiceException;
+import org.alfresco.service.cmr.action.CompositeAction;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.CopyService;
@@ -85,6 +88,13 @@ public class RuleServiceImpl
     /** qname of assoc to rules */
     private String ASSOC_NAME_RULES_PREFIX = "rules";
     private RegexQNamePattern ASSOC_NAME_RULES_REGEX = new RegexQNamePattern(RuleModel.RULE_MODEL_URI, "^" + ASSOC_NAME_RULES_PREFIX + ".*");
+    
+    private static final Set<QName> IGNORE_PARENT_ASSOC_TYPES = new HashSet<QName>(7);
+    static
+    {
+        IGNORE_PARENT_ASSOC_TYPES.add(ContentModel.ASSOC_MEMBER);
+        IGNORE_PARENT_ASSOC_TYPES.add(ContentModel.ASSOC_IN_ZONE);
+    }
     
     private static Log logger = LogFactory.getLog(RuleServiceImpl.class); 
     
@@ -611,6 +621,12 @@ public class RuleServiceImpl
                 List<ChildAssociationRef> parents = this.runtimeNodeService.getParentAssocs(nodeRef);
                 for (ChildAssociationRef parent : parents)
                 {
+                    // We are not interested in following potentially massive person group membership trees!
+                    if (IGNORE_PARENT_ASSOC_TYPES.contains(parent.getTypeQName()))
+                    {
+                        continue;
+                    }
+
                     // Add the inherited rule first
                     for (Rule rule : getInheritedRules(parent.getParentRef(), ruleTypeName, visitedNodeRefs))
                     {
@@ -1167,8 +1183,36 @@ public class RuleServiceImpl
             
             // Execute the rule
             boolean executeAsync = rule.getExecuteAsynchronously();
-            this.actionService.executeAction(action, actionedUponNodeRef, true, executeAsync);
+            // ALF-718: Treats email actions as a special case where they may be performed after the
+            // current transaction is committed. This only deals with the bug fix and a more thorough approach
+            // (but one with potentially wide ranging consequences) is to replace the boolean executeAsynchronously
+            // property on Rules and Actions with an ExecutionTime property - which would
+            // be an enumerated type with members SYNCHRONOUSLY, SYNCRHONOUSLY_AFTER_COMMIT and ASYNCHRONOUSLY.
+            //
+            // NOTE: this code is not at the Action level (i.e. ActionService) since the logic of sending after
+            // successful commit works in the context of a Rule but not for the InvitationService.
+            if (action.getActionDefinitionName().equals(CompositeActionExecuter.NAME))
+            {
+                for (Action subAction : ((CompositeAction)action).getActions())
+                {
+                    if (subAction.getActionDefinitionName().equals(MailActionExecuter.NAME))
+                    {
+                        subAction.setParameterValue(MailActionExecuter.PARAM_SEND_AFTER_COMMIT, true);
         }
+    }
+            }
+            else if (action.getActionDefinitionName().equals(MailActionExecuter.NAME))
+            {
+                action.setParameterValue(MailActionExecuter.PARAM_SEND_AFTER_COMMIT, true);
+            }
+    
+            executeAction(action, actionedUponNodeRef, executeAsync);
+        }
+    }
+
+    private void executeAction(Action action, NodeRef actionedUponNodeRef, boolean executeAsynchronously)
+    {
+        this.actionService.executeAction(action, actionedUponNodeRef, true, executeAsynchronously);
     }
     
     /**

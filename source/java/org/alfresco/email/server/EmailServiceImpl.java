@@ -42,6 +42,8 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
@@ -65,6 +67,14 @@ public class EmailServiceImpl implements EmailService
     private SearchService searchService;
     private RetryingTransactionHelper retryingTransactionHelper;
     private AuthorityService authorityService;
+    
+    /**
+     * The authority that needs to contain the users and groups 
+     * who are allowed to contribute email.
+     */
+    private String emailContributorsAuthority="EMAIL_CONTRIBUTORS";
+    
+    private static Log logger = LogFactory.getLog(EmailServiceImpl.class);
 
     private boolean emailInboundEnabled;
     /** Login of user that is set as unknown. */
@@ -337,10 +347,19 @@ public class EmailServiceImpl implements EmailService
             {
                 if (unknownUser == null || unknownUser.length() == 0)
                 {
+                    if(logger.isDebugEnabled())
+                    {
+                        logger.debug("unable to find user for from: " + from);
+                    }
                     throw new EmailMessageException(ERR_UNKNOWN_SOURCE_ADDRESS, from);
                 }
                 else
                 {
+                    if(logger.isDebugEnabled())
+                    {
+                        logger.debug("unable to find user for from - return anonymous: " + from);
+                    }
+                    
                     userName = unknownUser;
                 }
             }
@@ -375,13 +394,24 @@ public class EmailServiceImpl implements EmailService
     /**
      * Check that the user is the member in <b>EMAIL_CONTRIBUTORS</b> group
      * 
-     * @param userName User name
+     * @param userName Alfresco user name
      * @return True if the user is member of the group
      * @exception EmailMessageException Exception will be thrown if the <b>EMAIL_CONTRIBUTORS</b> group isn't found
      */
     private boolean isEmailContributeUser(String userName)
     {
         return this.authorityService.getAuthoritiesForUser(userName).contains(
-                authorityService.getName(AuthorityType.GROUP, "EMAIL_CONTRIBUTORS"));
+                authorityService.getName(AuthorityType.GROUP, getEmailContributorsAuthority()));
+    }
+
+    public void setEmailContributorsAuthority(
+            String emailContributorsAuthority)
+    {
+        this.emailContributorsAuthority = emailContributorsAuthority;
+    }
+
+    public String getEmailContributorsAuthority()
+    {
+        return emailContributorsAuthority;
     }
 }

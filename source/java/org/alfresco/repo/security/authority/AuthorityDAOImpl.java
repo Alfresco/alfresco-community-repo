@@ -782,25 +782,38 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             // If this top down search is not providing an adequate hit count then resort to a naiive unlimited search
             if (processed >= maxToProcess)
             {
+                Set<String> unfilteredResult;
+                boolean filterZone;
                 if (authority == null)
                 {
-                    return new HashSet<String>(getAuthorities(type, zoneName, null, false, true, new PagingRequest(0, maxResults, null)).getPage());
-                }
-                Set<String> newResult = getContainingAuthorities(type, authority, false);
-                result.clear();
-                int i=0;
-                for (String container : newResult)
-                {
-                    if ((filter == null || filter.includeAuthority(container)
-                            && (zoneName == null || getAuthorityZones(container).contains(zoneName))))
+                    unfilteredResult = new HashSet<String>(getAuthorities(type, zoneName, null, false, true, new PagingRequest(0, filter == null ? maxResults : Integer.MAX_VALUE, null)).getPage());
+                    if (filter == null)
                     {
-                        result.add(container);
+                        return unfilteredResult;
+                    }
+                    filterZone = false;
+                }
+                else
+                {
+                    unfilteredResult = getContainingAuthorities(type, authority, false);
+                    filterZone = zoneName != null;
+                }
+                Set<String> newResult = new TreeSet<String>(result);
+                int i=newResult.size();
+                for (String container : unfilteredResult)
+                {
+                    // Do not call the filter multiple times on the same result in case it is 'stateful'
+                    if (!result.contains(container) && (filter == null || filter.includeAuthority(container))
+                            && (!filterZone || getAuthorityZones(container).contains(zoneName)))
+                    {
+                        newResult.add(container);
                         if (++i >= maxResults)
                         {
                             break;
                         }
                     }
-                }                    
+                }
+                result = newResult;
                 break;
             }
         }

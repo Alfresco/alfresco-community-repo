@@ -18,60 +18,42 @@
  */
 package org.alfresco.email.server;
 
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Properties;
 import java.util.Set;
-import java.io.Serializable;
 
-import javax.mail.Address;
 import javax.mail.Message;
 import javax.mail.Session;
 import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
+
+import junit.framework.TestCase;
 
 import org.alfresco.email.server.impl.subetha.SubethaEmailMessage;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.imap.ImapServiceImpl;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.person.PersonServiceImpl;
-import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.admin.AdminService;
-import org.alfresco.service.cmr.coci.CheckOutCheckInService;
-import org.alfresco.service.cmr.email.EmailMessage;
 import org.alfresco.service.cmr.email.EmailMessageException;
 import org.alfresco.service.cmr.email.EmailService;
-import org.alfresco.service.cmr.lock.LockService;
-import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.cmr.security.MutableAuthenticationService;
-import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.BaseSpringTest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.tools.ant.filters.StringInputStream;
 import org.springframework.context.ApplicationContext;
 
 import com.sun.mail.smtp.SMTPMessage;
-
-import junit.framework.TestCase;
 
 /**
  * Unit test of EmailServiceImplTest
@@ -205,7 +187,7 @@ public class EmailServiceImplTest extends TestCase
            InputStream is = new StringInputStream(bos.toString());
            assertNotNull("is is null", is);
        
-           SubethaEmailMessage m = new SubethaEmailMessage(from, to, is);   
+           SubethaEmailMessage m = new SubethaEmailMessage(is);   
 
            emailService.importMessage(m);
            fail("anonymous user not rejected");
@@ -221,6 +203,9 @@ public class EmailServiceImplTest extends TestCase
         * 
         * Send From the test user TEST_EMAIL to the test user's home
         */
+       {
+           logger.debug("Step 2");
+           
        String from = TEST_EMAIL;
        String to = testUserHomeDBID;
        String content = "hello world";
@@ -241,10 +226,85 @@ public class EmailServiceImplTest extends TestCase
        InputStream is = new StringInputStream(bos.toString());
        assertNotNull("is is null", is);
    
-       SubethaEmailMessage m = new SubethaEmailMessage(from, to, is);   
+           SubethaEmailMessage m = new SubethaEmailMessage(is);   
 
        emailService.importMessage(m);
    }
+       
+       /**
+        * Step 3
+        * 
+        * From with < name@ domain > format
+        * 
+        * Send From the test user <TEST_EMAIL> to the test user's home
+        */
+       {
+           logger.debug("Step 3");
+       
+           String from = " \"Joe Bloggs\" <" + TEST_EMAIL + ">";
+           String to = testUserHomeDBID;
+           String content = "hello world";
+   
+           Session sess = Session.getDefaultInstance(new Properties());
+           assertNotNull("sess is null", sess);
+           SMTPMessage msg = new SMTPMessage(sess);
+           InternetAddress[] toa =  { new InternetAddress(to) };
+   
+           msg.setFrom(new InternetAddress(from));
+           msg.setRecipients(Message.RecipientType.TO, toa);
+           msg.setSubject("JavaMail APIs transport.java Test");
+           msg.setContent(content, "text/plain");
+           
+           StringBuffer sb = new StringBuffer();
+           ByteArrayOutputStream bos = new ByteArrayOutputStream();
+           msg.writeTo(System.out);
+           msg.writeTo(bos);
+           InputStream is = new StringInputStream(bos.toString());
+           assertNotNull("is is null", is);
+   
+           SubethaEmailMessage m = new SubethaEmailMessage(is);   
+
+           emailService.importMessage(m);
+       }
+       
+//       /**
+//        * Step 4
+//        * 
+//        * From with <e=name@domain> format
+//        * 
+//        * RFC3696
+//        * 
+//        * Send From the test user <TEST_EMAIL> to the test user's home
+//        */
+//       {
+//           logger.debug("Step 4 <local tag=name@ domain > format");
+//       
+//           String from = "\"Joe Bloggs\" <e=" + TEST_EMAIL + ">";
+//           String to = testUserHomeDBID;
+//           String content = "hello world";
+//   
+//           Session sess = Session.getDefaultInstance(new Properties());
+//           assertNotNull("sess is null", sess);
+//           SMTPMessage msg = new SMTPMessage(sess);
+//           InternetAddress[] toa =  { new InternetAddress(to) };
+//   
+//           msg.setFrom(new InternetAddress(from));
+//           msg.setRecipients(Message.RecipientType.TO, toa);
+//           msg.setSubject("JavaMail APIs transport.java Test");
+//           msg.setContent(content, "text/plain");
+//           
+//           StringBuffer sb = new StringBuffer();
+//           ByteArrayOutputStream bos = new ByteArrayOutputStream();
+//           msg.writeTo(System.out);
+//           msg.writeTo(bos);
+//           InputStream is = new StringInputStream(bos.toString());
+//           assertNotNull("is is null", is);
+//   
+//           SubethaEmailMessage m = new SubethaEmailMessage(is);   
+//
+//           emailService.importMessage(m);
+//       }
+    }
 
 
     /**
@@ -313,7 +373,7 @@ public class EmailServiceImplTest extends TestCase
         InputStream is = new StringInputStream(bos.toString());
         assertNotNull("is is null", is);
     
-        SubethaEmailMessage m = new SubethaEmailMessage(from, to, is);   
+        SubethaEmailMessage m = new SubethaEmailMessage(is);   
 
         emailService.importMessage(m);
            

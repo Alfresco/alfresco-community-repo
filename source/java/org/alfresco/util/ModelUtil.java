@@ -130,6 +130,7 @@ public class ModelUtil
     {
         return page(objects, new ScriptPagingDetails(maxItems, skipCount));
     }
+    
     public static <T> List<T> page(Collection<T> objects, ScriptPagingDetails paging)
     {
         int maxItems = paging.getMaxItems();

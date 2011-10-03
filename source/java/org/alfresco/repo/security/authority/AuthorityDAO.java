@@ -83,7 +83,6 @@ public interface AuthorityDAO
      */
     Set<String> getContainingAuthorities(AuthorityType type, String name, boolean immediate);
     
-    
     /**
      * Get a set of authorities with varying filter criteria
      * 

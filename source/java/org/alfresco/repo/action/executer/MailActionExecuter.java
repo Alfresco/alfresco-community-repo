@@ -36,6 +36,8 @@ import org.alfresco.repo.template.DateCompareMethod;
 import org.alfresco.repo.template.HasAspectMethod;
 import org.alfresco.repo.template.I18NMessageMethod;
 import org.alfresco.repo.template.TemplateNode;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
@@ -81,6 +83,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     public static final String PARAM_TEMPLATE = "template";
     public static final String PARAM_TEMPLATE_MODEL = "template_model";
     public static final String PARAM_IGNORE_SEND_FAILURE = "ignore_send_failure";
+    public static final String PARAM_SEND_AFTER_COMMIT = "send_after_commit";
        
     /**
      * From address
@@ -297,6 +300,31 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     protected void executeImpl(
             final Action ruleAction,
             final NodeRef actionedUponNodeRef) 
+    {
+        if (sendAfterCommit(ruleAction))
+        {
+        AlfrescoTransactionSupport.bindListener(new TransactionListenerAdapter()
+        {
+            @Override
+            public void afterCommit()
+                {                
+                    prepareAndSendEmail(ruleAction, actionedUponNodeRef);            
+                }
+            });            
+        }
+        else
+            {
+            prepareAndSendEmail(ruleAction, actionedUponNodeRef);            
+            }
+    }
+    
+    private boolean sendAfterCommit(Action action)
+    {
+        Boolean sendAfterCommit = (Boolean) action.getParameterValue(PARAM_SEND_AFTER_COMMIT);
+        return sendAfterCommit == null ? false : sendAfterCommit.booleanValue();
+    }
+    
+    private void prepareAndSendEmail(final Action ruleAction, final NodeRef actionedUponNodeRef)
     {
         // Create the mime mail message
         MimeMessagePreparator mailPreparer = new MimeMessagePreparator()
@@ -546,6 +574,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         }
     }
     
+    
     /**
      * Return true if address has valid format
      * @param address
@@ -657,6 +686,15 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     public MimeMessage retrieveLastTestMessage()
     {
         return lastTestMessage; 
+    }
+    
+    /**
+     * Used when test mode is enabled.
+     * Clears the record of the last message that was sent. 
+     */
+    public void clearLastTestMessage()
+    {
+        lastTestMessage = null;
     }
 
     public static class URLHelper

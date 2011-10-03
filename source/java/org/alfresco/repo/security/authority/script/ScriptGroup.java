@@ -57,7 +57,6 @@ public class ScriptGroup implements Authority, Serializable
     private String fullName;
     private String displayName;
     private Set<String> childAuthorityNames;
-    private Boolean isAdmin; 
     private NodeRef groupNodeRef;
     private Scriptable scope;
     
@@ -411,29 +410,6 @@ public class ScriptGroup implements Authority, Serializable
         Set<String> parents = authorityService.getContainingAuthorities(AuthorityType.GROUP, fullName, false);
         return makeScriptGroups(parents, paging, sortBy, serviceRegistry, this.scope);
     }
-    
-    /**
-     * Is this a root group?
-     * @return
-     */
-    public boolean isRootGroup()
-    {
-        ScriptGroup[] groups = getParentGroups();
-        return (groups.length == 0);
-    }
-	
-    /**
-     * Is this an admin group?
-     * @return
-     */
-    public boolean isAdminGroup()
-    {
-        if (this.isAdmin == null)
-        {
-            this.isAdmin = authorityService.isAdminAuthority(fullName);
-        }
-        return this.isAdmin;
-    }	
 	
     /**
      * Get the number of users contained within this group.

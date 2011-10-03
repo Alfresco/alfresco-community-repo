@@ -24,6 +24,9 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+
 import org.alfresco.email.server.EmailServer;
 import org.alfresco.service.cmr.email.EmailMessage;
 import org.alfresco.service.cmr.email.EmailMessageException;
@@ -41,7 +44,7 @@ import org.subethamail.smtp.server.SMTPServer;
  */
 public class SubethaEmailServer extends EmailServer
 {
-    private final static Log log = LogFactory.getLog(SubethaEmailServer.class);
+    private final static Log logger = LogFactory.getLog(SubethaEmailServer.class);
 
     private SMTPServer serverImpl;
 
@@ -91,7 +94,6 @@ public class SubethaEmailServer extends EmailServer
 
         private List<String> EMPTY_LIST = new LinkedList<String>();
 
-        private String from;
         private MessageContext messageContext;
         List<Delivery> deliveries = new ArrayList<Delivery>();
 
@@ -105,11 +107,25 @@ public class SubethaEmailServer extends EmailServer
             return messageContext;
         }
 
-        public void from(String from) throws RejectException
+        public void from(String fromString) throws RejectException
         {
-            this.from = from;
+            String from = fromString;
+            
             try
             {
+                InternetAddress a = new InternetAddress(from);
+                from = a.getAddress();
+            }
+            catch (AddressException e)
+            {
+            }
+            
+            try
+            {
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("check whether user is allowed to send email from" + from);
+                }
                 filterSender(from);
             }
             catch (EmailMessageException e)
@@ -187,7 +203,7 @@ public class SubethaEmailServer extends EmailServer
             EmailMessage emailMessage;
             try
             {
-                emailMessage = new SubethaEmailMessage(from, delivery.getRecipient(), data);
+                emailMessage = new SubethaEmailMessage(data);
                 getEmailService().importMessage(emailMessage);
             }
             catch (EmailMessageException e)

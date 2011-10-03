@@ -725,7 +725,7 @@
              <cacheEventListenerFactory
                      class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
                      properties="replicatePuts = false,
-                                 replicateUpdates = true,
+                                 replicateUpdates = false,
                                  replicateRemovals = true,
                                  replicateUpdatesViaCopy = false,
                                  replicateAsynchronously = false"/>

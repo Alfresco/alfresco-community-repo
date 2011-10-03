@@ -3,6 +3,45 @@
 
 <beans>
 
+   <!-- Transaction Interceptors for the Discussions Service -->
+   <bean id="discussionServiceReadTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="advice">
+            <ref bean="retryingReadTxnAdvice"/>
+        </property>
+        <property name="mappedNames">
+            <list>
+                <value>getPost</value>
+                <value>getTopic</value>
+                <value>getPrimaryPost</value>
+                <value>getMostRecentPost</value>
+                <value>getForNodeRef</value>
+                <value>findTopics</value>
+                <value>listPosts</value>
+                <value>listTopics</value>
+                <value>listHotTopics</value>
+                <value>listPostReplies</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="discussionServiceWriteTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="advice">
+            <ref bean="retryingWriteTxnAdvice"/>
+        </property>
+        <property name="mappedNames">
+            <list>
+                <value>createPost</value>
+                <value>createTopic</value>
+                <value>createReply</value>
+                <value>deletePost</value>
+                <value>deleteTopic</value>
+                <value>updatePost</value>
+                <value>updateTopic</value>
+            </list>
+        </property>
+    </bean>
+
+
    <!-- Discussions Service -->
    <bean id="DiscussionService" class="org.springframework.aop.framework.ProxyFactoryBean">
       <property name="proxyInterfaces">
@@ -13,24 +52,13 @@
       </property>
       <property name="interceptorNames">
          <list>
-            <idref local="DiscussionService_transaction" />
+            <idref bean="discussionServiceReadTxnAdvisor" />
+            <idref bean="discussionServiceWriteTxnAdvisor" />
+            <idref bean="checkTxnAdvisor" />
             <idref bean="AuditMethodInterceptor" />
             <idref bean="exceptionTranslator" />
             <idref bean="DiscussionService_security" />
          </list>
-      </property>
-   </bean>
-
-   <!-- Discussions service transaction bean -->
-   <bean id="DiscussionService_transaction"
-      class="org.springframework.transaction.interceptor.TransactionInterceptor">
-      <property name="transactionManager">
-         <ref bean="transactionManager" />
-      </property>
-      <property name="transactionAttributes">
-         <props>
-            <prop key="*">${server.transaction.mode.default}</prop>
-         </props>
       </property>
    </bean>
 

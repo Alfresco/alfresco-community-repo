@@ -205,50 +205,57 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
         while (done == 0)
         {
             final StoreRef toIndex = getNextRef();
-            if (toIndex != null)
+            try
             {
-                if(s_logger.isDebugEnabled())
+                if (toIndex != null)
                 {
-                    s_logger.debug("FTS Indexing "+toIndex+" at "+(new java.util.Date()));
-                }
-                try
-                {
-                    done += transactionService.getRetryingTransactionHelper().doInTransaction(
-                            new RetryingTransactionCallback<Integer>()
-                            {
-                                @Override
-                                public Integer execute() throws Throwable
-                                {
-                                    Indexer indexer = indexerAndSearcherFactory.getIndexer(toIndex);
-                                    // Activate database 'read through' behaviour so that we don't end up with stale
-                                    // caches during this potentially long running transaction
-                                    indexer.setReadThrough(true);
-                                    if (indexer instanceof BackgroundIndexerAware)
-                                    {
-                                        BackgroundIndexerAware backgroundIndexerAware = (BackgroundIndexerAware) indexer;
-                                        backgroundIndexerAware.registerCallBack(FullTextSearchIndexerImpl.this);
-                                        return backgroundIndexerAware.updateFullTextSearch(batchSize);
-                                    }
-                                    return 0;
-                                }
-                            });
-                }
-                catch (Exception ex)
-                {
-                    if (s_logger.isWarnEnabled())
+                    if(s_logger.isDebugEnabled())
                     {
-                        s_logger.warn("FTS Job threw exception", ex);
+                        s_logger.debug("FTS Indexing "+toIndex+" at "+(new java.util.Date()));
                     }
-                    done = 1; // better luck next time
+                    try
+                    {
+                        done += transactionService.getRetryingTransactionHelper().doInTransaction(
+                                new RetryingTransactionCallback<Integer>()
+                                {
+                                    @Override
+                                    public Integer execute() throws Throwable
+                                    {
+                                        Indexer indexer = indexerAndSearcherFactory.getIndexer(toIndex);
+                                        // Activate database 'read through' behaviour so that we don't end up with stale
+                                        // caches during this potentially long running transaction
+                                        indexer.setReadThrough(true);
+                                        if (indexer instanceof BackgroundIndexerAware)
+                                        {
+                                            BackgroundIndexerAware backgroundIndexerAware = (BackgroundIndexerAware) indexer;
+                                            backgroundIndexerAware.registerCallBack(FullTextSearchIndexerImpl.this);
+                                            return backgroundIndexerAware.updateFullTextSearch(batchSize);
+                                        }
+                                        return 0;
+                                    }
+                                });
+                    }
+                    catch (Exception ex)
+                    {
+                        if (s_logger.isWarnEnabled())
+                        {
+                            s_logger.warn("FTS Job threw exception", ex);
+                        }
+                        done = 1; // better luck next time
+                    }
+                }
+                else
+                {
+                    if(s_logger.isTraceEnabled())
+                    {
+                        s_logger.trace("Nothing to FTS index at "+(new java.util.Date()));
+                    }
+                    break;
                 }
             }
-            else
+            finally
             {
-                if(s_logger.isTraceEnabled())
-                {
-                    s_logger.trace("Nothing to FTS index at "+(new java.util.Date()));
-                }
-                break;
+                indexCompleted(toIndex, 1, null);
             }
         }
     }

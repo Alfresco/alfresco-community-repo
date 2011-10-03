@@ -70,6 +70,7 @@ public class SiteServiceTest extends BaseWebScriptTest
     private static final String USER_ONE = "SiteTestOne";
     private static final String USER_TWO = "SiteTestTwo";
     private static final String USER_THREE = "SiteTestThree";
+    private static final String USER_NUMERIC = "1234567890";
     
     private static final String URL_SITES = "/api/sites";
     private static final String URL_SITES_QUERY = URL_SITES + "/query";
@@ -96,6 +97,7 @@ public class SiteServiceTest extends BaseWebScriptTest
         createUser(USER_ONE);
         createUser(USER_TWO);
         createUser(USER_THREE);
+        createUser(USER_NUMERIC);
         
         // Do tests as user one
         this.authenticationComponent.setCurrentUser(USER_ONE);
@@ -117,6 +119,14 @@ public class SiteServiceTest extends BaseWebScriptTest
             this.personService.createPerson(ppOne);
         }
     }
+    private void deleteUser(String username)
+    {
+       this.personService.deletePerson(username);
+       if(this.authenticationService.authenticationExists(username))
+       {
+          this.authenticationService.deleteAuthentication(username);
+       }
+    }
     
     @Override
     protected void tearDown() throws Exception
@@ -132,6 +142,12 @@ public class SiteServiceTest extends BaseWebScriptTest
         
         // Clear the list
         this.createdSites.clear();
+        
+        // Clear the users
+        deleteUser(USER_ONE);
+        deleteUser(USER_TWO);
+        deleteUser(USER_THREE);
+        deleteUser(USER_NUMERIC);
     }
     
     public void testCreateSite() throws Exception
@@ -350,6 +366,42 @@ public class SiteServiceTest extends BaseWebScriptTest
         JSONArray result2 = new JSONArray(response.getContentAsString());
         assertNotNull(result2);
         assertEquals(2, result2.length());
+        
+        
+        // Add another user, with a fully numeric username
+        membership = new JSONObject();
+        membership.put("role", SiteModel.SITE_CONTRIBUTOR);
+        person = new JSONObject();
+        person.put("userName", USER_NUMERIC);
+        membership.put("person", person);
+        response = sendRequest(new PostRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS, membership.toString(), "application/json"), 200);
+        
+        // Check the details are correct for one user
+        membership = new JSONObject(response.getContentAsString());
+        assertEquals(SiteModel.SITE_CONTRIBUTOR, membership.get("role"));
+        assertEquals(USER_NUMERIC, membership.getJSONObject("authority").get("userName"));
+        
+        
+        // Check the membership list
+        response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS), 200);
+        String json = response.getContentAsString();
+        JSONArray result3 = new JSONArray(json);
+        assertNotNull(result3);
+        assertEquals(3, result3.length());
+        
+        // Check the everyone has the correct membership
+        // (The webscript returns the users in order to make testing easier)
+        membership = result3.getJSONObject(0);
+        assertEquals(SiteModel.SITE_MANAGER, membership.get("role"));
+        assertEquals(USER_ONE, membership.getJSONObject("authority").get("userName"));
+        
+        membership = result3.getJSONObject(1);
+        assertEquals(SiteModel.SITE_CONSUMER, membership.get("role"));
+        assertEquals(USER_TWO, membership.getJSONObject("authority").get("userName"));
+        
+        membership = result3.getJSONObject(2);
+        assertEquals(SiteModel.SITE_CONTRIBUTOR, membership.get("role"));
+        assertEquals(USER_NUMERIC, membership.getJSONObject("authority").get("userName"));
     }
     
     public void testGetMembership() throws Exception

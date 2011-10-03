@@ -167,7 +167,7 @@ public class SiteExportGet extends AbstractWebScript
     protected void doPeopleACPExport(SiteInfo site, CloseIgnoringOutputStream writeTo) throws IOException
     {
         // Find the root group
-        String siteGroup = buildSiteGroup(site);
+        String siteGroup = AbstractSiteWebScript.buildSiteGroup(site);
         
         // Now get all people in the child groups
         Set<String> siteUsers = authorityService.getContainedAuthorities(
@@ -205,7 +205,7 @@ public class SiteExportGet extends AbstractWebScript
     protected void doGroupExport(SiteInfo site, CloseIgnoringOutputStream writeTo) throws IOException
     {
         // Find the root group
-        String siteGroup = buildSiteGroup(site);
+        String siteGroup = AbstractSiteWebScript.buildSiteGroup(site);
         
         // Get all the child groups of the site (but not children of them)
         Set<String> siteGroups = authorityService.getContainedAuthorities(
@@ -265,7 +265,7 @@ public class SiteExportGet extends AbstractWebScript
         List<NodeRef> exportNodes = new ArrayList<NodeRef>();
         
         // Identify all the users
-        String siteGroup = buildSiteGroup(site);
+        String siteGroup = AbstractSiteWebScript.buildSiteGroup(site);
         Set<String> siteUsers = authorityService.getContainedAuthorities(
                 AuthorityType.USER, siteGroup, false);
         
@@ -300,11 +300,6 @@ public class SiteExportGet extends AbstractWebScript
         
         // Do the export
         exporterService.exportView(handler, parameters, null);
-    }
-    
-    protected String buildSiteGroup(SiteInfo site)
-    {
-        return "GROUP_site_" + site.getShortName();
     }
     
     protected static class CloseIgnoringOutputStream extends FilterOutputStream

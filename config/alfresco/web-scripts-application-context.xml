@@ -712,14 +712,29 @@
    <!-- Site Service REST API -->
    <!--                         -->
    
+   <!-- abstract site web script -->
+   <bean id="abstractSiteWebScript"
+          class="org.alfresco.repo.web.scripts.site.AbstractSiteWebscript"
+          parent="webscript" abstract="true">
+      <property name="siteService" ref="SiteService"/>
+      <property name="authorityService" ref="AuthorityService"/>
+   </bean>
+
+   <!-- Lists the membership of a site -->
+   <bean id="webscript.org.alfresco.repository.site.membership.memberships.get" class="org.alfresco.repo.web.scripts.site.SiteMembershipsGet" parent="abstractSiteWebScript">
+      <property name="personService" ref="PersonService"/>
+      <property name="scriptAuthorityService" ref="authorityServiceScript"/>
+   </bean>
+
    <!-- Exports a site's contents as ACP+AVM dumps -->
    <bean id="webscript.org.alfresco.repository.site.site-export.get" class="org.alfresco.repo.web.scripts.site.SiteExportGet" parent="webscript">
-      <property name="authorityService" ref="AuthorityService"/>
+      <property name="siteService" ref="SiteService"/>
       <property name="mimetypeService" ref="MimetypeService"/>
       <property name="exporterService" ref="ExporterService"/>
-      <property name="siteService" ref="SiteService"/>
+      <property name="authorityService" ref="AuthorityService"/>
       <property name="authenticationContextManager" ref="Authentication"/>
    </bean>
+
 
    <!--                         -->
    <!-- Person Service REST API -->

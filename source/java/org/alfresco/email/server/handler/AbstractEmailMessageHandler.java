@@ -274,17 +274,20 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
         NodeRef childNodeRef = nodeService.getChildByName(parent, assocType, name);
         if (childNodeRef != null)
         {
-            // The node is present already.  Make sure the name csae is correct
+            // The node is present already.  Make sure the name case is correct
             nodeService.setProperty(childNodeRef, ContentModel.PROP_NAME, name);
         }
         else
         {
             Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
             contentProps.put(ContentModel.PROP_NAME, name);
+            
+            QName assocName =  QName.createQNameWithValidLocalName(NamespaceService.CONTENT_MODEL_1_0_URI, name); 
+            
             ChildAssociationRef associationRef = nodeService.createNode(
                     parent,
                     assocType,
-                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name),
+                    assocName,
                     ContentModel.TYPE_CONTENT,
                     contentProps);
             childNodeRef = associationRef.getChildRef();

@@ -63,11 +63,11 @@ public class FolderEmailMessageHandler extends AbstractEmailMessageHandler
     {
         if (log.isDebugEnabled())
         {
-            log.debug("Message is psocessing by SpaceMailMessageHandler");
+            log.debug("Message is processing by FolderMailMessageHandler");
         }
         try
         {
-            // Check type of the node. It must be a SPACE
+            // Check type of the node. It must be a FOLDER
             QName nodeTypeQName = getNodeService().getType(nodeRef);
 
             if (getDictionaryService().isSubClass(nodeTypeQName, ContentModel.TYPE_FOLDER))

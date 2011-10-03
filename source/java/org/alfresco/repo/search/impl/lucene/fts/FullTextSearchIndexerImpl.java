@@ -43,7 +43,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * @author andyh
  *
  */
-public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearchIndexer, DisposableBean
+public class FullTextSearchIndexerImpl implements FullTextSearchIndexer, DisposableBean
 {
     private static Log s_logger = LogFactory.getLog(FullTextSearchIndexerImpl.class);
     
@@ -89,7 +89,7 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
      * 
      * @see org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer#indexCompleted(org.alfresco.repo.ref.StoreRef, int, java.lang.Exception)
      */
-    public synchronized void indexCompleted(StoreRef storeRef, int remaining, Exception e)
+    public synchronized void indexCompleted(StoreRef storeRef, int remaining, Throwable t)
     {
         try
         {
@@ -98,13 +98,13 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
                 s_logger.debug("FTS index completed for "+storeRef+" ... "+remaining+ " remaining");
             }
             indexing.remove(storeRef);
-            if ((remaining > 0) || (e != null))
+            if ((remaining > 0) || (t != null))
             {
                 requiresIndex(storeRef);
             }
-            if (e != null)
+            if (t != null)
             {
-                throw new FTSIndexerException(e);
+                throw new FTSIndexerException(t);
             }
         }
         finally
@@ -253,9 +253,9 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
                     break;
                 }
             }
-            finally
+            catch(Throwable t)
             {
-                indexCompleted(toIndex, 1, null);
+                indexCompleted(toIndex, 0, t);
             }
         }
     }

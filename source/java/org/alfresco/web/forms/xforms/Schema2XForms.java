@@ -1299,7 +1299,7 @@ public class Schema2XForms implements Serializable
    }
 
    private Element addElementWithMultipleCompatibleTypes(final Document xformsDocument,
-                                                         final Element modelSection,
+                                                         Element modelSection,
                                                          final Element defaultInstanceElement,
                                                          final Element formSection,
                                                          final XSModel schema,
@@ -1411,9 +1411,42 @@ public class Schema2XForms implements Serializable
          final Element caseElement = caseTypes.get(type.getName());
          switchElement.appendChild(caseElement);
 
+         // ALF-9524 fix, add an extra element to the instance for each type that extends the abstract parent
+         Element newDefaultInstanceElement = xformsDocument.createElement(getElementName(type, xformsDocument));
+
+         Attr nodesetAttr = modelSection.getAttributeNodeNS(NamespaceConstants.XFORMS_NS, "nodeset");
+         // construct the nodeset that is used in bind for abstract type
+         String desiredBindNodeset = getElementName(elementDecl, xformsDocument) + (isRepeated ? "[position() != last()]" : "");
+         
+         // check the current bind
+         if (nodesetAttr == null || !nodesetAttr.getValue().equals(desiredBindNodeset))
+         {
+             // look for desired bind in children
+             Element newModelSection = DOMUtil.getElementByAttributeValueNS(modelSection, NamespaceConstants.XFORMS_NS, "bind", NamespaceConstants.XFORMS_NS, "nodeset", desiredBindNodeset);
+             
+             if (newModelSection == null)
+             {
+                 // look for absolute path
+                 desiredBindNodeset = "/" + desiredBindNodeset;
+                 newModelSection = DOMUtil.getElementByAttributeValueNS(modelSection, NamespaceConstants.XFORMS_NS, "bind", NamespaceConstants.XFORMS_NS, "nodeset", desiredBindNodeset);
+         }
+         
+             modelSection = newModelSection;
+         }
+         
+         // create the extra bind for each child of abstract type
+         Element bindElement3 = this.createBind(xformsDocument, getElementName(type, xformsDocument));
+         modelSection.appendChild(bindElement3);
+         bindElement3 = this.startBindElement(bindElement3, schema, controlType, elementDecl, occurs);
+         
+         // add the relevant attribute that checks the value of parent' @xsi:type
+         bindElement3.setAttributeNS(NamespaceConstants.XFORMS_NS,
+                 NamespaceConstants.XFORMS_PREFIX + ":relevant",
+                 "../@xsi:type='" + type.getName() + "'");
+
          final Element groupElement = this.addComplexType(xformsDocument,
                                                           modelSection,
-                                                          defaultInstanceElement,
+                                                          newDefaultInstanceElement,
                                                           caseElement,
                                                           schema,
                                                           (XSComplexTypeDefinition) type,
@@ -1427,13 +1460,15 @@ public class Schema2XForms implements Serializable
                                      NamespaceConstants.XFORMS_PREFIX + ":appearance",
                                      "");
 
+         defaultInstanceElement.appendChild(newDefaultInstanceElement.cloneNode(true));
+
          // modify bind to add a "relevant" attribute that checks the value of @xsi:type
          if (LOGGER.isDebugEnabled())
          {
-            LOGGER.debug("[addElementWithMultipleCompatibleTypes] Model section =\n" + XMLUtil.toString(bindElement2));
+            LOGGER.debug("[addElementWithMultipleCompatibleTypes] Model section =\n" + XMLUtil.toString(bindElement3));
          }
 
-         final NodeList binds = bindElement2.getElementsByTagNameNS(NamespaceConstants.XFORMS_NS, "bind");
+         final NodeList binds = bindElement3.getElementsByTagNameNS(NamespaceConstants.XFORMS_NS, "bind");
          for (int i = 0; i < binds.getLength(); i++)
          {
             final Element subBind = (Element) binds.item(i);
@@ -1443,7 +1478,7 @@ public class Schema2XForms implements Serializable
             name = repeatableNamePattern.matcher(name).replaceAll("");
             
             if (!subBind.getParentNode().getAttributes().getNamedItem("id").getNodeValue().equals(
-                    bindElement2.getAttribute("id")))
+                    bindElement3.getAttribute("id")))
             {
                 continue;
             }
@@ -1470,12 +1505,12 @@ public class Schema2XForms implements Serializable
             //test sub types of this type
             //TreeSet subCompatibleTypes = (TreeSet) typeTree.get(type);
 
-            String newRelevant = "../@xsi:type='" + type.getName() + "'";
+            String newRelevant = "../../@xsi:type='" + type.getName() + "'";
             if (this.typeTree.containsKey(type.getName()))
             {
                for (XSTypeDefinition otherType : this.typeTree.get(type.getName()))
                {
-                  newRelevant = newRelevant + " or ../@xsi:type='" + otherType.getName() + "'";
+                  newRelevant = newRelevant + " or ../../@xsi:type='" + otherType.getName() + "'";
                }
             }
 
@@ -1835,6 +1870,13 @@ public class Schema2XForms implements Serializable
       //repeatSection.setAttributeNS(NamespaceConstants.XFORMS_NS,NamespaceConstants.XFORMS_PREFIX + ":nodeset",pathToRoot);
       // bind -> last element in the modelSection
       Element bind = DOMUtil.getLastChildElement(modelSection);
+      
+      // ALF-9524 fix, previously we've added extra bind element, so last child is not correct for repeatable switch
+      if (controlType instanceof XSComplexTypeDefinition && ((XSComplexTypeDefinition)controlType).getDerivationMethod() == XSConstants.DERIVATION_EXTENSION)
+      {
+          bind = modelSection;
+      }
+
       String bindId = null;
 
       if (bind != null &&
@@ -2990,7 +3032,7 @@ public class Schema2XForms implements Serializable
     * @param xformsDocument
     * @return The element name
     */
-   private String getElementName(final XSElementDeclaration element,
+   private String getElementName(final XSObject element,
                                  final Document xformsDocument)
    {
       String elementName = element.getName();

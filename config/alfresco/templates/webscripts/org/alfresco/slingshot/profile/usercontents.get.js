@@ -6,23 +6,38 @@ function getContents(user, type, maxResults)
    {
       return (number < 10) ? '0' + number : number;
    }
+   
    //set range to within last 28 days
    var date = new Date();
-   var toQuery = date.getFullYear() + "\\-" + padZeros((date.getMonth()+1)) + "\\-" + padZeros(date.getDate());
+   var toQuery = date.getFullYear() + "-" + padZeros((date.getMonth()+1)) + "-" + padZeros(date.getDate());
    date.setDate(date.getDate() - 28);
-   var fromQuery = date.getFullYear() + "\\-" + padZeros((date.getMonth()+1)) + "\\-" + padZeros(date.getDate());
-
-   var userType = (type == 'created') ? 'creator' : 'modifier';
+   var fromQuery = date.getFullYear() + "-" + padZeros((date.getMonth()+1)) + "-" + padZeros(date.getDate());
    
-   var query = "+PATH:\"/app:company_home/st:sites/*//*\"" +
-               " +@cm\\:" + userType + ":\"" + user + "\"" +
-               " +@cm\\:" + type + ":[" + fromQuery + "T00\\:00\\:00 TO " + toQuery + "T23\\:59\\:59]" +
-               " +TYPE:\"cm:content\"" +
-               " -TYPE:\"dl:dataListItem\"" +
-               " -TYPE:\"cm:thumbnail\"";
+   var userProperty = (type == 'created') ? 'creator' : 'modifier';
+   var query = 'PATH:"/*/st:sites/*/*//*" ' +
+               'AND +@cm:' + userProperty + ':"' + user + '" ' +
+               'AND +@cm:' + type + ':["' + fromQuery + '" TO "' + toQuery + '"] ' +
+               'AND +TYPE:"cm:content" ' +
+               'AND -TYPE:"ia:calendarEvent" ' +
+               'AND -TYPE:"dl:dataListItem" ';
    
-   var nodes = search.luceneSearch(query, "@cm:" + type, false, maxResults);
-   //reset processed results (in search.lib.js)
+   // perform fts-alfresco language query
+   var sortColumns = [];
+   sortColumns.push(
+   {
+      column: "@" + utils.longQName("cm:" + type),
+      ascending: false
+   });
+   var queryDef = {
+      query: query,
+      language: "fts-alfresco",
+      page: {maxItems: maxResults},
+      onerror: "no-results",
+      sort: sortColumns
+   };
+   var nodes = search.query(queryDef);
+   
+   // reset processed results (in search.lib.js)
    processedCache = {}
    return processResults(nodes, maxResults);
 }

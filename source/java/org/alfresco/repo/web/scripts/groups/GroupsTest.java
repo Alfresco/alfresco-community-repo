@@ -210,7 +210,6 @@ public class GroupsTest extends BaseWebScriptTest
     		JSONArray data = top.getJSONArray("data");
     		assertTrue(data.length() >= 3);
     		boolean gotRootGroup = false;
-    		boolean gotAdminGroup = false;
     		boolean gotEmailGroup = false;
     		
     		
@@ -223,22 +222,14 @@ public class GroupsTest extends BaseWebScriptTest
     				assertEquals("shortName wrong", TEST_ROOTGROUP, rootGroup.getString("shortName"));
     				assertEquals("displayName wrong", TEST_ROOTGROUP_DISPLAY_NAME, rootGroup.getString("displayName"));
     				assertEquals("authorityType wrong", "GROUP", rootGroup.getString("authorityType"));
-    				assertFalse("test rootgroup is admin group", rootGroup.getBoolean("isAdminGroup"));
     				gotRootGroup = true;
-    			}
-    			if(rootGroup.getString("shortName").equals(ADMIN_GROUP))
-    			{
-    				gotAdminGroup = true;
-    				//assertTrue("admin group is not admin group", rootGroup.getBoolean("isAdminGroup"));
     			}
     			if(rootGroup.getString("shortName").equals(EMAIL_GROUP))
     			{
-    				//assertTrue("admin group is not admin group", rootGroup.getBoolean("isAdminGroup"));
     				gotEmailGroup = true;
     			}
     		}
         	assertTrue("root group not found", gotRootGroup);
-        	assertTrue("admin group not found", gotAdminGroup);
         	assertTrue("email group not found", gotEmailGroup);
     	}
 
@@ -272,11 +263,6 @@ public class GroupsTest extends BaseWebScriptTest
     				assertEquals("shortName wrong", TEST_ROOTGROUP, rootGroup.getString("shortName"));
     				assertEquals("displayName wrong", TEST_ROOTGROUP_DISPLAY_NAME, rootGroup.getString("displayName"));
     				assertEquals("authorityType wrong", "GROUP", rootGroup.getString("authorityType"));
-    				assertFalse("test rootgroup is admin group", rootGroup.getBoolean("isAdminGroup"));
-    			}
-    			if(rootGroup.getString("shortName").equals(ADMIN_GROUP))
-    			{
-    				//assertTrue("admin group is not admin group", rootGroup.getBoolean("isAdminGroup"));
     			}
     		}	
     	}
@@ -300,11 +286,6 @@ public class GroupsTest extends BaseWebScriptTest
     				assertEquals("shortName wrong", TEST_ROOTGROUP, rootGroup.getString("shortName"));
     				assertEquals("displayName wrong", TEST_ROOTGROUP_DISPLAY_NAME, rootGroup.getString("displayName"));
     				assertEquals("authorityType wrong", "GROUP", rootGroup.getString("authorityType"));
-    				assertFalse("test rootgroup is admin group", rootGroup.getBoolean("isAdminGroup"));
-    			}
-    			if(rootGroup.getString("shortName").equals(ADMIN_GROUP))
-    			{
-    				//assertTrue("admin group is not admin group", rootGroup.getBoolean("isAdminGroup"));
     			}
     		}	
     	}
@@ -336,8 +317,6 @@ public class GroupsTest extends BaseWebScriptTest
     		logger.debug(response.getContentAsString());
     		JSONObject data = top.getJSONObject("data");
     		assertTrue(data.length() > 0);
-    		//assertTrue("admin group is not admin group", data.getBoolean("isAdminGroup"));
-    		assertTrue("admin group is not root group", data.getBoolean("isRootGroup"));
     	}
     	
     	{
@@ -353,8 +332,6 @@ public class GroupsTest extends BaseWebScriptTest
     		logger.debug(response.getContentAsString());
     		JSONObject data = top.getJSONObject("data");
     		assertTrue(data.length() > 0);
-    		assertFalse("group B is not admin group", data.getBoolean("isAdminGroup"));
-    		assertFalse("group B is not root group", data.getBoolean("isRootGroup"));
     	}
     	
     	/**
@@ -366,8 +343,6 @@ public class GroupsTest extends BaseWebScriptTest
     		logger.debug(response.getContentAsString());
     		JSONObject data = top.getJSONObject("data");
     		assertTrue(data.length() > 0);
-    		assertFalse("group E is not admin group", data.getBoolean("isAdminGroup"));
-    		assertFalse("group E is not root group", data.getBoolean("isRootGroup"));
     	}
     
     }
@@ -928,7 +903,7 @@ public class GroupsTest extends BaseWebScriptTest
         assertFalse("The first group should not be the same!!", firstGroup.equals(data.get(0).toString()));
         
         // Test maxItems and skipCount when maxItems is too big.
-        // Shoudl return last 2 items.
+        // Should return last 2 items.
         data = getDataArray(baseUrl + "?skipCount=1&maxItems=5");
         assertEquals("The number of groups returned is wrong!", 2, data.length());
         assertFalse("The first group should not be the same!!", firstGroup.equals(data.get(0).toString()));
@@ -944,7 +919,7 @@ public class GroupsTest extends BaseWebScriptTest
         
         // Test maxItems works
         data = getDataArray(baseUrl +"&maxItems=2");
-        assertEquals("There should only be 3 groups!", 2, data.length());
+        assertEquals("There should only be 2 groups!", 2, data.length());
         assertEquals("The first group should be the same!!", firstGroup, data.get(0).toString());
         
         // Test skipCount works

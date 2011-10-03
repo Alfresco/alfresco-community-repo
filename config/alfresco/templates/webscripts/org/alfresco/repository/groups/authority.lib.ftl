@@ -6,10 +6,6 @@
 		   "shortName": "${authority.shortName}",
 		   "fullName": "${authority.fullName}",
 		   "displayName": "${authority.displayName}",
-		   <#-- Group specific properties -->
-		   <#if authority.rootGroup??>"isRootGroup": ${authority.rootGroup?string("true", "false")},</#if>
-		   <#if authority.adminGroup??>"isAdminGroup": ${authority.adminGroup?string("true", "false")},</#if>
-		   <#-- end of group specific properties -->
 		   <#if authority.authorityType = "GROUP">
 		   "url": "/api/groups/${authority.shortName?url}"
 		   </#if>

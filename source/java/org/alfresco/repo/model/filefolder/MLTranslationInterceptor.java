@@ -26,8 +26,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.springframework.extensions.surf.util.I18NUtil;
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingResults;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
@@ -40,6 +38,7 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * An interceptor that replaces files nodes with their equivalent
@@ -70,6 +69,7 @@ public class MLTranslationInterceptor implements MethodInterceptor
         METHOD_NAMES_LIST.add("list");
         METHOD_NAMES_LIST.add("listFiles");
         METHOD_NAMES_LIST.add("listFolders");
+        METHOD_NAMES_LIST.add("listDeepFolders");
         METHOD_NAMES_LIST.add("search");
         METHOD_NAMES_LIST.add("getNamePath");
         
@@ -91,6 +91,7 @@ public class MLTranslationInterceptor implements MethodInterceptor
         METHOD_NAMES_OTHER.add("getReader");
         METHOD_NAMES_OTHER.add("getWriter");
         METHOD_NAMES_OTHER.add("getType");
+        METHOD_NAMES_OTHER.add("exists");
     }
     
     private static Log logger = LogFactory.getLog(MLTranslationInterceptor.class);

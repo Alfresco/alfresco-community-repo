@@ -19,24 +19,24 @@
 	"customProperties":
 	{
 		<#list site.customProperties?keys as prop>
-            <#assign propDetails = site.customProperties[prop]>
-			"${prop}":
-			{
-					"name" : "${prop}",
-                    "value" : 
-                    <#if propDetails.value?is_enumerable>
-                      [
-                      <#list propDetails.value as v>
-                         "${v?string}"<#if v_has_next>,</#if>
-                      </#list>
-                      ]  
-                    <#else>
-                      "${propDetails.value?string}"
-                    </#if>,
-                    "type" : <#if propDetails.type??>"${propDetails.type}"<#else>null</#if>, 
-                    "title" : <#if propDetails.title??>"${propDetails.title}"<#else>null</#if>
-			}
-			<#if prop_has_next>,</#if>
+		<#assign propDetails = site.customProperties[prop]>
+		"${prop}":
+		{
+			"name": "${prop}",
+			"value":
+			<#if propDetails.value?is_enumerable>
+			[
+			<#list propDetails.value as v>
+			"${v?string}"<#if v_has_next>,</#if>
+			</#list>
+			]
+			<#else>
+			"${propDetails.value?string}"
+			</#if>,
+			"type": <#if propDetails.type??>"${propDetails.type}"<#else>null</#if>, 
+			"title": <#if propDetails.title??>"${propDetails.title}"<#else>null</#if>
+		}
+		<#if prop_has_next>,</#if>
 		</#list>
 	},
 	</#if>

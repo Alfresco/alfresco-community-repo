@@ -35,7 +35,6 @@ import org.subethamail.smtp.MessageHandlerFactory;
 import org.subethamail.smtp.RejectException;
 import org.subethamail.smtp.TooMuchDataException;
 import org.subethamail.smtp.server.SMTPServer;
-import org.subethamail.smtp.server.io.DeferredFileOutputStream;
 
 /**
  * @since 2.2
@@ -58,6 +57,11 @@ public class SubethaEmailServer extends EmailServer
         serverImpl.setPort(getPort());
         serverImpl.setHostName(getDomain());
         serverImpl.setMaxConnections(getMaxConnections());
+        
+        serverImpl.setHideTLS(isHideTLS());
+        serverImpl.setEnableTLS(isEnableTLS());
+        serverImpl.setRequireTLS(isRequireTLS());
+        
         serverImpl.start();
         log.info("Inbound SMTP Email Server has started successfully, on hostName:" + getDomain() + "port:" + getPort());
     }
@@ -131,12 +135,12 @@ public class SubethaEmailServer extends EmailServer
             }
             finally
             {
-                // DH: As per comments in ETHREEOH-2252, I am very concerned about the need to do the clear() here.
-                //     If this message is stateful (as it must be, given the API) then the need to clear
-                //     the list of delivery recipients ('deliveries') implies that Subetha is re-using
-                //     the instance.
-                //     Later versions of Subetha appear to define the behaviour better.  Un upgrade of
-                //     the library would be a good idea.
+//                // DH: As per comments in ETHREEOH-2252, I am very concerned about the need to do the clear() here.
+//                //     If this message is stateful (as it must be, given the API) then the need to clear
+//                //     the list of delivery recipients ('deliveries') implies that Subetha is re-using
+//                //     the instance.
+//                //     Later versions of Subetha appear to define the behaviour better.  Un upgrade of
+//                //     the library would be a good idea.
                 deliveries.clear();
             }
 //            See ALFCOM-3165: Support multiple recipients for inbound Subetha email messages
@@ -209,6 +213,12 @@ public class SubethaEmailServer extends EmailServer
 
         public void resetState()
         {
+        }
+
+        @Override
+        public void done()
+        {
+            
         }
     };
 

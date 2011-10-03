@@ -47,6 +47,9 @@ public abstract class EmailServer extends AbstractLifecycleBean
     private int maxConnections;
     private Set<String> blockedSenders;
     private Set<String> allowedSenders;
+    private boolean hideTLS = false;
+    private boolean enableTLS = true;
+    private boolean requireTLS = false;
 
     private EmailService emailService;
 
@@ -324,6 +327,40 @@ public abstract class EmailServer extends AbstractLifecycleBean
     {
         System.err.println("Use: EmailServer configLocation1, configLocation2, ...");
         System.err.println("\t configLocation - spring xml configs with EmailServer related beans (emailServer, emailServerConfiguration, emailService)");
+    }
+
+    /** Hide the TLS (Trusted Login Session) option
+     * 
+     * @param hideTLS
+     */
+    public void setHideTLS(boolean hideTLS)
+    {
+        this.hideTLS = hideTLS;
+    }
+
+    public boolean isHideTLS()
+    {
+        return hideTLS;
+    }
+
+    public void setEnableTLS(boolean enableTLS)
+    {
+        this.enableTLS = enableTLS;
+    }
+
+    public boolean isEnableTLS()
+    {
+        return enableTLS;
+    }
+
+    public void setRequireTLS(boolean requireTLS)
+    {
+        this.requireTLS = requireTLS;
+    }
+
+    public boolean isRequireTLS()
+    {
+        return requireTLS;
     }
 
 }

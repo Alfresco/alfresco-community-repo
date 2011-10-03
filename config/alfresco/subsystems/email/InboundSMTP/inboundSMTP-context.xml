@@ -33,6 +33,15 @@
         <property name="allowedSenders">
             <value>${email.server.allowed.senders}</value>
         </property>
+        <property name="enableTLS">
+            <value>${email.server.enableTLS}</value>
+        </property>
+        <property name="hideTLS">
+            <value>${email.server.hideTLS}</value>
+        </property>
+        <property name="requireTLS">
+            <value>${email.server.requireTLS}</value>
+        </property>
         <property name="emailService">
             <ref bean="EmailService" />
         </property>

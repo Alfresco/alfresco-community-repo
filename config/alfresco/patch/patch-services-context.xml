@@ -2940,6 +2940,7 @@
         <property name="fileFolderService" ref="fileFolderService" />
         <property name="contentService" ref="contentService" />
         <property name="siteService" ref="SiteService" />
+        <property name="ruleService" ref="RuleService" />
         <property name="avmService" ref="AVMService" />
         <property name="avmStore"><value>sitestore</value></property>
         <property name="avmRootPath"><value>/alfresco/site-data</value></property>

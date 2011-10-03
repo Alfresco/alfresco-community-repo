@@ -41,7 +41,6 @@ import org.alfresco.repo.batch.BatchProcessWorkProvider;
 import org.alfresco.repo.batch.BatchProcessor;
 import org.alfresco.repo.batch.BatchProcessor.BatchProcessWorker;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
@@ -55,6 +54,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -111,6 +111,7 @@ public class AVMToADMRemoteStorePatch extends AbstractPatch
     private FileFolderService fileFolderService;
     private SiteService siteService;
     private AVMService avmService;
+    private RuleService ruleService;
     private String avmStore;
     private String avmRootPath = "/";
     
@@ -145,6 +146,14 @@ public class AVMToADMRemoteStorePatch extends AbstractPatch
     public void setAvmService(AVMService avmService)
     {
         this.avmService = avmService;
+    }
+    
+    /**
+     * @param ruleService       the rule service to set
+     */
+    public void setRuleService(RuleService ruleService)
+    {
+        this.ruleService = ruleService;
     }
 
     /**
@@ -306,6 +315,7 @@ public class AVMToADMRemoteStorePatch extends AbstractPatch
                     {
                         // create the 'surf-config' folder for the site and cache the NodeRef to it
                         NodeRef surfConfigRef = getSurfConfigNodeRef(siteRef);
+                        // TODO: create components and pages folders here would also reduce contention
                         siteReferenceCache.put(siteName, surfConfigRef);
                     }
                     else
@@ -360,12 +370,14 @@ public class AVMToADMRemoteStorePatch extends AbstractPatch
                 @Override
                 public void beforeProcess() throws Throwable
                 {
+                    ruleService.disableRules();
                     AuthenticationUtil.setRunAsUser(tenantSystemUser);
                 }
                 
                 @Override
                 public void afterProcess() throws Throwable
                 {
+                    ruleService.enableRules();
                     AuthenticationUtil.clearCurrentSecurityContext();
                 }
                 
@@ -524,20 +536,21 @@ public class AVMToADMRemoteStorePatch extends AbstractPatch
                 if (userId != null)
                 {
                     // run as the appropriate user id to execute
-                    final NodeRef parentFolderRef = parentFolder;
-                    AuthenticationUtil.runAs(new RunAsWork<Void>()
+                    AuthenticationUtil.pushAuthentication();
+                    AuthenticationUtil.setFullyAuthenticatedUser(userId);
+                    try
                     {
-                        public Void doWork() throws Exception
-                        {
-                            // create new node and perform writer content copy of the content from the AVM to the DM store
-                            FileInfo fileInfo = fileFolderService.create(
-                                    parentFolderRef, avmNode.getName(), ContentModel.TYPE_CONTENT);
-                            ContentWriter writer = contentService.getWriter(
-                                    fileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true);
-                            writer.putContent(avmService.getContentReader(-1, avmNode.getPath()));
-                            return null;
-                        }
-                    }, userId);
+                        // create new node and perform writer content copy of the content from the AVM to the DM store
+                        FileInfo fileInfo = fileFolderService.create(
+                                parentFolder, avmNode.getName(), ContentModel.TYPE_CONTENT);
+                        ContentWriter writer = contentService.getWriter(
+                                fileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true);
+                        writer.putContent(avmService.getContentReader(-1, avmNode.getPath()));
+                    }
+                    finally
+                    {
+                        AuthenticationUtil.popAuthentication();
+                    }
                 }
                 else
                 {

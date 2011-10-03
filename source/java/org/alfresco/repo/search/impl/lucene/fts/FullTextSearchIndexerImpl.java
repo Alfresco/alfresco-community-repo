@@ -43,7 +43,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * @author andyh
  *
  */
-public class FullTextSearchIndexerImpl implements FullTextSearchIndexer, DisposableBean
+public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearchIndexer, DisposableBean
 {
     private static Log s_logger = LogFactory.getLog(FullTextSearchIndexerImpl.class);
     

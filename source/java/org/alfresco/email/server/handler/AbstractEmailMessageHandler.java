@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -125,43 +126,43 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
         this.mimetypeService = mimetypeService;
     }
 
-    /**
-     * @param to Email address which user part specifies node-dbid
-     * @return Referance to requested node.
-     * @throws InvalidArgumentException The exception is thrown if input string has incorrect format or empty.
-     */
-    protected NodeRef getTargetNode(String to) throws InvalidArgumentException
-    {
-        if (to == null || to.length() == 0)
-        {
-            throw new InvalidArgumentException("Input string has to contain email address.");
-        }
-        String[] parts = to.split("@");
-        if (parts.length != 2)
-        {
-            throw new InvalidArgumentException("Incorrect email address format.");
-        }
-        try
-        {
-            Long dbId = Long.parseLong(parts[0]);
-            return nodeService.getNodeRef(dbId);
-        }
-        catch (NumberFormatException e)
-        {
-            return null;
-        }
-    }
+//    /**
+//     * @param to Email address which user part specifies node-dbid
+//     * @return Referance to requested node.
+//     * @throws InvalidArgumentException The exception is thrown if input string has incorrect format or empty.
+//     */
+//    protected NodeRef getTargetNode(String to) throws InvalidArgumentException
+//    {
+//        if (to == null || to.length() == 0)
+//        {
+//            throw new InvalidArgumentException("Input string has to contain email address.");
+//        }
+//        String[] parts = to.split("@");
+//        if (parts.length != 2)
+//        {
+//            throw new InvalidArgumentException("Incorrect email address format.");
+//        }
+//        try
+//        {
+//            Long dbId = Long.parseLong(parts[0]);
+//            return nodeService.getNodeRef(dbId);
+//        }
+//        catch (NumberFormatException e)
+//        {
+//            return null;
+//        }
+//    }
 
-    /**
-     * Write the content to the node 
-     * 
-     * @param nodeRef Target node
-     * @param content Content
-     */
-    protected void writeContent(NodeRef nodeRef, String content)
-    {
-        writeContent(nodeRef, content, MimetypeMap.MIMETYPE_TEXT_PLAIN);
-    }
+//    /**
+//     * Write the content to the node as MIMETYPE TEXT PLAIN.
+//     * 
+//     * @param nodeRef Target node
+//     * @param content Content
+//     */
+//    protected void writeContent(NodeRef nodeRef, String content)
+//    {
+//        writeContent(nodeRef, content, MimetypeMap.MIMETYPE_TEXT_PLAIN);
+//    }
 
     /**
      * Write the string as content to the node.
@@ -189,7 +190,7 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
      * @param nodeRef Target node.
      * @param content Content stream.
      * @param mimetype MIME content type.
-     * @param encoding Encoding. Can be null for non text based content.
+     * @param encoding Encoding. Can be null for text based content, n which case the best guess.
      */
     protected void writeContent(NodeRef nodeRef, InputStream content, String mimetype, String encoding)
     {
@@ -266,47 +267,82 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
      * @param nodeService Alfresco Node Service
      * @param parent Parent node
      * @param name Name of the new node
+     * @param overwrite if true then overwrite an existing node with the same name.   if false the name is changed to make it unique.
      * @param assocType Association type that should be set between parent node and the new one.
      * @return Reference to created node
      */
-    protected NodeRef addContentNode(NodeService nodeService, NodeRef parent, String name, QName assocType)
+    protected NodeRef addContentNode(NodeService nodeService, NodeRef parent, String name, QName assocType, boolean overwrite)
     {
-        NodeRef childNodeRef = nodeService.getChildByName(parent, assocType, name);
-        if (childNodeRef != null)
+        NodeRef childNodeRef = null;
+        
+        String workingName = name;
+        
+        for(int counter = 0; counter < 10000; counter++)
         {
-            // The node is present already.  Make sure the name case is correct
-            nodeService.setProperty(childNodeRef, ContentModel.PROP_NAME, name);
-        }
-        else
-        {
-            Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
-            contentProps.put(ContentModel.PROP_NAME, name);
+            QName safeQName = QName.createQNameWithValidLocalName(NamespaceService.CONTENT_MODEL_1_0_URI, workingName);
+
+            List<ChildAssociationRef> childNodeRefs = nodeService.getChildAssocs(parent, ContentModel.ASSOC_CONTAINS, safeQName);
+        
+            if (childNodeRefs.size() > 0)
+            {
+                if(overwrite)
+                {
+                    childNodeRef=childNodeRefs.get(0).getChildRef();
+                
+                    // Node already exists
+                    // The node is present already.  Make sure the name case is correct
+                    nodeService.setProperty(childNodeRef, ContentModel.PROP_NAME, name);
+                    return childNodeRef;
+                }
             
-            QName assocName =  QName.createQNameWithValidLocalName(NamespaceService.CONTENT_MODEL_1_0_URI, name); 
+                // Need to work out a new safe name.
+
+                String postFix = " (" + counter + ")";
             
-            ChildAssociationRef associationRef = nodeService.createNode(
+                if(name.length() + postFix.length() > QName.MAX_LENGTH )
+                {
+                    workingName =  name.substring(0, QName.MAX_LENGTH-postFix.length()) + postFix;
+                    // Need to truncate name     
+                }
+                else
+                {
+                    workingName = name + postFix;
+                }
+            }
+            else
+            {
+                // Here if child node ref does not already exist
+                Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
+                contentProps.put(ContentModel.PROP_NAME, workingName);
+                    
+                ChildAssociationRef associationRef = nodeService.createNode(
                     parent,
                     assocType,
-                    assocName,
+                    safeQName,
                     ContentModel.TYPE_CONTENT,
                     contentProps);
-            childNodeRef = associationRef.getChildRef();
+                childNodeRef = associationRef.getChildRef();
+                    
+                return childNodeRef;
+            }
         }
-        return childNodeRef;
+        throw new AlfrescoRuntimeException("Unable to add new file");
     }
 
     /**
      * Add new node into Alfresco repository with specified parameters.
-     * Node content isn't added. New node will be created with ContentModel.ASSOC_CONTAINS association with parent.
+     * Node content isn't added. 
+     * 
+     * New node will be created with ContentModel.ASSOC_CONTAINS association with parent.
      * 
      * @param nodeService Alfresco Node Service
      * @param parent Parent node
      * @param name Name of the new node
      * @return Reference to created node
      */
-    protected NodeRef addContentNode(NodeService nodeService, NodeRef parent, String name)
+    protected NodeRef addContentNode(NodeService nodeService, NodeRef parent, String name, boolean overwrite)
     {
-        return addContentNode(nodeService, parent, name, ContentModel.ASSOC_CONTAINS);
+        return addContentNode(nodeService, parent, name, ContentModel.ASSOC_CONTAINS, overwrite);
     }
 
     /**
@@ -320,14 +356,13 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
      */
     protected NodeRef addAttachment(NodeService nodeService, NodeRef folder, NodeRef mainContentNode, String fileName)
     {
-        fileName = getAppropriateNodeName(folder, fileName, ContentModel.ASSOC_CONTAINS);
         
         if (log.isDebugEnabled())
         {
             log.debug("Adding attachment node (name=" + fileName + ").");
         }
         
-        NodeRef attachmentNode = addContentNode(nodeService, folder, fileName);
+        NodeRef attachmentNode = addContentNode(nodeService, folder, fileName, false);
         
         // Add attached aspect
         nodeService.addAspect(mainContentNode, ContentModel.ASPECT_ATTACHABLE, null);
@@ -354,6 +389,7 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
         if (nodeService.getChildByName(parent, assocType, name) != null)
         {
             name = name + "(1)";
+            
             while (nodeService.getChildByName(parent, assocType, name) != null)
             {
 

@@ -55,6 +55,8 @@ public class FolderEmailMessageHandler extends AbstractEmailMessageHandler
     private static final String ERR_MAIL_READ_ERROR = "email.server.err.mail_read_error";
     
     private static final Log log = LogFactory.getLog(FolderEmailMessageHandler.class);
+    
+    private boolean overwriteDuplicates = false;
 
     /**
      * {@inheritDoc}
@@ -108,7 +110,7 @@ public class FolderEmailMessageHandler extends AbstractEmailMessageHandler
 
         // Create main content node
         NodeRef contentNodeRef;
-        contentNodeRef = addContentNode(getNodeService(), spaceNodeRef, messageSubject);
+        contentNodeRef = addContentNode(getNodeService(), spaceNodeRef, messageSubject, overwriteDuplicates);
         // Add titled aspect
         addTitledAspect(contentNodeRef, messageSubject, message.getFrom());
         // Add emailed aspect
@@ -181,5 +183,19 @@ public class FolderEmailMessageHandler extends AbstractEmailMessageHandler
         {
             log.debug("Titled aspect has been added.");
         }
+    }
+
+    /**
+     * Set the behaviour to be done on detecting a new message with the same subject.
+     * @param overwriteDuplicates
+     */
+    public void setOverwriteDuplicates(boolean overwriteDuplicates)
+    {
+        this.overwriteDuplicates = overwriteDuplicates;
+    }
+
+    public boolean isOverwriteDuplicates()
+    {
+        return overwriteDuplicates;
     }
 }

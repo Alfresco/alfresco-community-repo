@@ -29,6 +29,7 @@ import java.util.Map;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.email.EmailMessage;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -92,7 +93,7 @@ public abstract class AbstractForumEmailMessageHandler extends AbstractEmailMess
         }
         else
         {
-            writeContent(postNodeRef, "<The message was empty>");
+            writeContent(postNodeRef, "<The message was empty>", MimetypeMap.MIMETYPE_TEXT_PLAIN);
         }
         addEmailedAspect(postNodeRef, message);
         

@@ -125,7 +125,12 @@
 
 	<bean id="folderEmailMessageHandler"
 		parent="emailMessageHandlerBase"
-		class="org.alfresco.email.server.handler.FolderEmailMessageHandler" />
+		class="org.alfresco.email.server.handler.FolderEmailMessageHandler" >
+	
+		<property name="overwriteDuplicates">
+		    <value>${email.handler.folder.overwriteDuplicates}</value>            
+        </property>
+    </bean>
 
 	<bean id="forumEmailMessageHandler"
 		parent="emailMessageHandlerBase"

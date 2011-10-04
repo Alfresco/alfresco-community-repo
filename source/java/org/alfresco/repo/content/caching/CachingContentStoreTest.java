@@ -24,7 +24,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -38,6 +40,8 @@ import java.util.Locale;
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.ContentStore.ContentUrlHandler;
+import org.alfresco.repo.content.caching.quota.QuotaManagerStrategy;
+import org.alfresco.repo.content.caching.quota.UnlimitedQuotaStrategy;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentStreamListener;
@@ -47,7 +51,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 /**
@@ -59,38 +62,63 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class CachingContentStoreTest
 {
     private CachingContentStore cachingStore;
+    private ContentReader sourceContent;
+    private ContentReader cachedContent;
     
     @Mock
     private ContentStore backingStore;
     
     @Mock
     private ContentCache cache;
-    
-    
+
+
     @Before
     public void setUp() throws Exception
     {
         cachingStore = new CachingContentStore(backingStore, cache, false);
+        cachingStore.setQuota(new UnlimitedQuotaStrategy());
+        
+        sourceContent = mock(ContentReader.class, "sourceContent");
+        cachedContent = mock(ContentReader.class, "cachedContent");
     }
 
     
     @Test
     public void getReaderForItemInCache()
     {
-        ContentReader cachedContentReader = mock(ContentReader.class);
-        when(cache.getReader("url")).thenReturn(cachedContentReader);
         when(cache.contains("url")).thenReturn(true);
+        when(cache.getReader("url")).thenReturn(cachedContent);
+        
+        ContentReader returnedReader = cachingStore.getReader("url");        
+        
+        assertSame(returnedReader, cachedContent);
+        verify(backingStore, never()).getReader(anyString());
+    }
+    
+    
+    @Test
+    // Item isn't in cache, so will be cached and returned.
+    public void getReaderForItemMissingFromCache()
+    {
+        when(cache.getReader("url")).thenReturn(cachedContent);
+        when(backingStore.getReader("url")).thenReturn(sourceContent);
+        when(sourceContent.getSize()).thenReturn(1274L);
+        when(cache.put("url", sourceContent)).thenReturn(true);
+        
+        QuotaManagerStrategy quota = mock(QuotaManagerStrategy.class);
+        cachingStore.setQuota(quota);
+        when(quota.beforeWritingCacheFile(1274L)).thenReturn(true);
+        
         ContentReader returnedReader = cachingStore.getReader("url");
         
-        assertSame(returnedReader, cachedContentReader);
-        verify(backingStore, never()).getReader(anyString());
+        assertSame(returnedReader, cachedContent);
+        verify(quota).afterWritingCacheFile(1274L);
     }
     
     
     @Test
     public void getReaderForItemMissingFromCacheWillGiveUpAfterRetrying()
     {
-        ContentReader sourceContent = mock(ContentReader.class);
         when(cache.getReader("url")).thenThrow(new CacheMissException("url"));
         when(backingStore.getReader("url")).thenReturn(sourceContent);
         when(cache.put("url", sourceContent)).thenReturn(true);
@@ -98,7 +126,7 @@ public class CachingContentStoreTest
         ContentReader returnedReader = cachingStore.getReader("url");
         
         // Upon failure, item is removed from cache
-        verify(cache, Mockito.atLeastOnce()).remove("url");
+        verify(cache, atLeastOnce()).remove("url");
         
         // The content comes direct from the backing store
         assertSame(returnedReader, sourceContent);
@@ -108,8 +136,6 @@ public class CachingContentStoreTest
     @Test
     public void getReaderForItemMissingFromCacheWillRetryAndCanSucceed()
     {
-        ContentReader sourceContent = mock(ContentReader.class);
-        ContentReader cachedContent = mock(ContentReader.class);
         when(cache.getReader("url")).
             thenThrow(new CacheMissException("url")).
             thenReturn(cachedContent);
@@ -125,7 +151,6 @@ public class CachingContentStoreTest
     @Test
     public void getReaderForItemMissingFromCacheButNoContentToCache()
     {
-        ContentReader sourceContent = mock(ContentReader.class);
         when(cache.getReader("url")).thenThrow(new CacheMissException("url"));
         when(backingStore.getReader("url")).thenReturn(sourceContent);
         when(cache.put("url", sourceContent)).thenReturn(false);
@@ -135,13 +160,37 @@ public class CachingContentStoreTest
     
     
     @Test
+    // When attempting to read uncached content.
+    public void quotaManagerCanVetoCacheFileWriting()
+    {
+        when(backingStore.getReader("url")).thenReturn(sourceContent);
+        QuotaManagerStrategy quota = mock(QuotaManagerStrategy.class);
+        cachingStore.setQuota(quota);
+        when(sourceContent.getSize()).thenReturn(1274L);
+        when(quota.beforeWritingCacheFile(1274L)).thenReturn(false);
+        
+        ContentReader returnedReader = cachingStore.getReader("url");
+        
+        verify(cache, never()).put("url", sourceContent);
+        assertSame(returnedReader, sourceContent);
+        verify(quota, never()).afterWritingCacheFile(anyLong());
+    }
+    
+    
+    @Test
     public void getWriterWhenNotCacheOnInbound()
     {   
+        QuotaManagerStrategy quota = mock(QuotaManagerStrategy.class);
+        cachingStore.setQuota(quota);
+        
         ContentContext ctx = ContentContext.NULL_CONTEXT;
         
         cachingStore.getWriter(ctx);
         
         verify(backingStore).getWriter(ctx);
+        // No quota manager interaction - as no caching happening.
+        verify(quota, never()).beforeWritingCacheFile(anyLong());
+        verify(quota, never()).afterWritingCacheFile(anyLong());
     }
 
     
@@ -157,7 +206,12 @@ public class CachingContentStoreTest
         when(cache.getWriter("url")).thenReturn(cacheWriter);
         ContentReader readerFromCacheWriter = mock(ContentReader.class);
         when(cacheWriter.getReader()).thenReturn(readerFromCacheWriter);
+        when(cacheWriter.getSize()).thenReturn(54321L);
+        QuotaManagerStrategy quota = mock(QuotaManagerStrategy.class);
+        cachingStore.setQuota(quota);
         
+        // Quota manager interceptor is fired.
+        when(quota.beforeWritingCacheFile(0L)).thenReturn(true);
         
         cachingStore.getWriter(ctx);
         
@@ -168,8 +222,68 @@ public class CachingContentStoreTest
         arg.getValue().contentStreamClosed();
         // Check behaviour of the listener
         verify(bsWriter).putContent(readerFromCacheWriter);
+        // Post caching quota manager hook is fired.
+        verify(quota).afterWritingCacheFile(54321L);
+    }
+    
+    
+    @Test
+    // When attempting to perform write-through caching, i.e. cacheOnInbound = true
+    public void quotaManagerCanVetoInboundCaching()
+    {
+        cachingStore = new CachingContentStore(backingStore, cache, true);
+        QuotaManagerStrategy quota = mock(QuotaManagerStrategy.class);
+        cachingStore.setQuota(quota);
         
-        verify(backingStore).getWriter(ctx);
+        ContentContext ctx = ContentContext.NULL_CONTEXT;
+        ContentWriter backingStoreWriter = mock(ContentWriter.class);
+        when(backingStore.getWriter(ctx)).thenReturn(backingStoreWriter);
+        when(quota.beforeWritingCacheFile(0L)).thenReturn(false);
+        
+        ContentWriter returnedWriter = cachingStore.getWriter(ctx);
+        
+        assertSame("Should be writing direct to backing store", backingStoreWriter, returnedWriter);
+        verify(quota, never()).afterWritingCacheFile(anyLong());
+    }
+    
+    
+    @Test
+    public void quotaManagerCanRequestFileDeletionFromCacheAfterWrite()
+    {
+        cachingStore = new CachingContentStore(backingStore, cache, true);
+        ContentContext ctx = ContentContext.NULL_CONTEXT;
+        ContentWriter bsWriter = mock(ContentWriter.class);
+        when(backingStore.getWriter(ctx)).thenReturn(bsWriter);
+        when(bsWriter.getContentUrl()).thenReturn("url");
+        ContentWriter cacheWriter = mock(ContentWriter.class);
+        when(cache.getWriter("url")).thenReturn(cacheWriter);
+        ContentReader readerFromCacheWriter = mock(ContentReader.class);
+        when(cacheWriter.getReader()).thenReturn(readerFromCacheWriter);
+        when(cacheWriter.getSize()).thenReturn(54321L);
+        QuotaManagerStrategy quota = mock(QuotaManagerStrategy.class);
+        cachingStore.setQuota(quota);
+        
+        // Quota manager interceptor is fired.
+        when(quota.beforeWritingCacheFile(0L)).thenReturn(true);
+        
+        cachingStore.getWriter(ctx);
+        
+        // Check that a listener was attached to cacheWriter with the correct behaviour
+        ArgumentCaptor<ContentStreamListener> arg = ArgumentCaptor.forClass(ContentStreamListener.class);
+        verify(cacheWriter).addListener(arg.capture());
+        
+        // Don't keep the new cache file
+        when(quota.afterWritingCacheFile(54321L)).thenReturn(false);
+        
+        // Simulate a stream close
+        arg.getValue().contentStreamClosed();
+        // Check behaviour of the listener
+        verify(bsWriter).putContent(readerFromCacheWriter);
+        // Post caching quota manager hook is fired.
+        verify(quota).afterWritingCacheFile(54321L);
+        // The item should be deleted from the cache (lookup table and content cache file)
+        verify(cache).deleteFile("url");
+        verify(cache).remove("url");
     }
     
     

@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.content.caching;
 
+import java.io.File;
+
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 
@@ -30,6 +32,14 @@ import org.alfresco.service.cmr.repository.ContentWriter;
  */
 public interface ContentCache
 {
+    /**
+     * Returns the location where cache files will be written (cacheRoot) - implementation
+     * dependant and may be null.
+     * 
+     * @return cacheRoot
+     */
+    public File getCacheRoot();
+    
     /**
      * Check to see if the content - specified by URL - exists in the cache.
      * <p>
@@ -66,11 +76,20 @@ public interface ContentCache
 
     /**
      * Remove a cached item from the in-memory lookup table. Implementation should not remove
-     * the actual cached content (file) - this should be left to the clean-up process.
+     * the actual cached content (file) - this should be left to the clean-up process or can
+     * be deleted with {@link #deleteFile(String)}.
      * 
      * @param contentUrl
      */
     void remove(String contentUrl);
+
+    /**
+     * Deletes the cached content file for the specified URL. To remove the item from the
+     * lookup table also, use {@link #remove(String)} after calling this method.
+     * 
+     * @param url
+     */
+    void deleteFile(String url);
 
     /**
      * Retrieve a ContentWriter to write content to a cache file. Upon closing the stream

@@ -136,6 +136,16 @@ public class CacheFileProps
     }
     
     /**
+     * Size of the properties file or 0 if it does not exist.
+     * 
+     * @return file size in bytes.
+     */
+    public long fileSize()
+    {
+        return propsFile.length();
+    }
+    
+    /**
      * Set the value of the contentUrl property.
      * 
      * @param url

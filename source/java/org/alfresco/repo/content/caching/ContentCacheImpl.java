@@ -19,8 +19,12 @@
 package org.alfresco.repo.content.caching;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.GregorianCalendar;
+import java.util.List;
 
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.content.filestore.FileContentReader;
@@ -168,6 +172,21 @@ public class ContentCacheImpl implements ContentCache
         memoryStore.remove(Key.forUrl(contentUrl));
         memoryStore.remove(Key.forCacheFile(path));
     }
+    
+    /**
+     * Remove all items from the lookup table. Cached content files are not removed. 
+     */
+    public void removeAll()
+    {
+        memoryStore.clear();
+    }
+    
+    @Override
+    public void deleteFile(String url)
+    {
+        File cacheFile = new File(getCacheFilePath(url));
+        cacheFile.delete();
+    }
 
     @Override
     public ContentWriter getWriter(final String url)
@@ -215,6 +234,7 @@ public class ContentCacheImpl implements ContentCache
         return sb.toString();
     }
 
+    
     /**
      * Configure ContentCache with a memory store - an EhCacheAdapter.
      * 
@@ -232,6 +252,14 @@ public class ContentCacheImpl implements ContentCache
      */
     public void setCacheRoot(File cacheRoot)
     {
+        if (cacheRoot == null)
+        {
+            throw new IllegalArgumentException("cacheRoot cannot be null.");
+        }
+        if (!cacheRoot.exists())
+        {
+            cacheRoot.mkdirs();
+        }
         this.cacheRoot = cacheRoot;
     }
     
@@ -240,21 +268,15 @@ public class ContentCacheImpl implements ContentCache
      * 
      * @return cacheRoot
      */
+    @Override
     public File getCacheRoot()
     {
         return this.cacheRoot;
     }
 
-    // Not part of the ContentCache interface as this breaks encapsulation.
-    // Handy method for tests though, since it allows us to find out where
-    // the content was cached.
-    protected String cacheFileLocation(String url)
-    {
-        return memoryStore.get(Key.forUrl(url));
-    }
-
     /**
-     * @param cachedContentCleaner
+     * Ask the ContentCacheImpl to visit all the content files in the cache.
+     * @param handler
      */
     public void processFiles(FileHandler handler)
     {
@@ -272,7 +294,8 @@ public class ContentCacheImpl implements ContentCache
     {
         if (dir.isDirectory())
         {
-            File[] files = dir.listFiles();
+            File[] files = sortFiles(dir);
+            
             for (File file : files)
             {
                 if (file.isDirectory())
@@ -288,6 +311,79 @@ public class ContentCacheImpl implements ContentCache
         else
         {
             throw new IllegalArgumentException("handleDir() called with non-directory: " + dir.getAbsolutePath());
+        }
+    }
+
+    /**
+     * Sort files ready for a FileHandler to visit them. This sorts them based on the structure
+     * created by the {@link #createNewCacheFilePath()} method. Knowing that the directories are all
+     * numeric date/time components, if they are sorted in ascending order then the oldest 
+     * directories will be visited first.
+     * <p>
+     * The returned array contains the (numerically sorted) directories first followed by the (unsorted) plain files.
+     * 
+     * @param dir
+     * @return
+     */
+    private File[] sortFiles(File dir)
+    {
+        List<File> dirs = new ArrayList<File>();
+        List<File> files = new ArrayList<File>();
+        
+        for (File item : dir.listFiles())
+        {
+            if (item.isDirectory())
+            {
+                dirs.add(item);
+            }
+            else
+            {
+                files.add(item);
+            }
+        }
+        
+        // Sort directories as numbers - as for structure produced by ContentCacheImpl
+        Collections.sort(dirs, new NumericFileNameComparator());
+        
+        // Concatenation of elements in dirs followed by elements in files
+        List<File> all = new ArrayList<File>();
+        all.addAll(dirs);
+        all.addAll(files);
+        
+        return all.toArray(new File[]{});
+    }
+    
+    
+    
+    protected static class NumericFileNameComparator implements Comparator<File>
+    {
+        @Override
+        public int compare(File o1, File o2)
+        {
+            Integer n1 = parse(o1.getName());
+            Integer n2 = parse(o2.getName());
+            return n1.compareTo(n2);
+        }
+        
+        /**
+         * If unable to parse a String numerically then Integer.MAX_VALUE is returned. This
+         * results in unexpected directories or files in the structure appearing after the
+         * expected directories - so the files we know ought to be older will appear first
+         * in a sorted collection.
+         * 
+         * @param s String to parse
+         * @return Numeric form of s
+         */
+        private int parse(String s)
+        {
+            try
+            {
+                return Integer.parseInt(s);
+            }
+            catch(NumberFormatException e)
+            {
+                return Integer.MAX_VALUE;
+            }
         }
     }
 }

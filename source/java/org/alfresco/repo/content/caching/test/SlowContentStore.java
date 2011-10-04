@@ -65,9 +65,6 @@ class SlowContentStore extends AbstractContentStore
     @Override
     public ContentReader getReader(String contentUrl)
     {
-        urlHits.putIfAbsent(contentUrl, new AtomicLong(0));
-        urlHits.get(contentUrl).incrementAndGet();
-        
         return new SlowReader(contentUrl);
     }
 
@@ -190,6 +187,19 @@ class SlowContentStore extends AbstractContentStore
                 private final byte[] content = "This is the content for my slow ReadableByteChannel".getBytes();
                 private int index = 0;
                 private boolean closed = false;
+                private boolean readCounted = false;
+                
+                private synchronized void registerReadAttempt()
+                {
+                    if (!readCounted)
+                    {
+                        // A true attempt to read from this ContentReader - update statistics.
+                        String url = getContentUrl();
+                        urlHits.putIfAbsent(url, new AtomicLong(0));
+                        urlHits.get(url).incrementAndGet();
+                        readCounted = true;
+                    }
+                }
                 
                 @Override
                 public boolean isOpen()
@@ -206,6 +216,8 @@ class SlowContentStore extends AbstractContentStore
                 @Override
                 public int read(ByteBuffer dst) throws IOException
                 {
+                    registerReadAttempt();
+                    
                     if (index < content.length)
                     {
                         try

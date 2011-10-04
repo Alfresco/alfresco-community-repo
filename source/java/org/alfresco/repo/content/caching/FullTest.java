@@ -27,6 +27,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.ApplicationContextHelper;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 
@@ -37,15 +38,19 @@ import org.springframework.context.ApplicationContext;
  */
 public class FullTest
 {
-    private ApplicationContext ctx;
+    private static ApplicationContext ctx;
     private CachingContentStore store;
 
-    @Before
-    public void setUp()
+    @BeforeClass
+    public static void beforeClass()
     {
         String conf = "classpath:cachingstore/test-context.xml";
-        ctx = ApplicationContextHelper.getApplicationContext(new String[] { conf });
-        
+        ctx = ApplicationContextHelper.getApplicationContext(new String[] { conf });        
+    }
+    
+    @Before
+    public void setUp()
+    {    
         store = (CachingContentStore) ctx.getBean("cachingContentStore");
         store.setCacheOnInbound(true);
     }

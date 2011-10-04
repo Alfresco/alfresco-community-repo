@@ -37,7 +37,7 @@ public class CachedContentCleanupJob implements Job
     {
         JobDataMap jobData = context.getJobDetail().getJobDataMap();
         CachedContentCleaner cachedContentCleaner = cachedContentCleaner(jobData);
-        cachedContentCleaner.execute();
+        cachedContentCleaner.execute("scheduled");
     }
 
     

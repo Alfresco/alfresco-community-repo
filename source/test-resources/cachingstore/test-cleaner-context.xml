@@ -9,20 +9,6 @@
         <property name="pauseMillis" value="0"/>
     </bean>
     
-    
-    <bean id="cachingContentStoreCleanerJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
-        <property name="jobClass">
-            <value>org.alfresco.repo.content.caching.cleanup.CachedContentCleanupJob</value>
-        </property>
-        <property name="jobDataAsMap">
-            <map>
-                <entry key="cachedContentCleaner">
-                    <ref bean="cachedContentCleaner" />
-                </entry>
-            </map>
-        </property>
-    </bean>
-    
     <bean id="cachedContentCleaner" class="org.alfresco.repo.content.caching.cleanup.CachedContentCleaner">
         <property name="maxDeleteWatchCount" value="1"/>
         <property name="cache" ref="contentCache"/>

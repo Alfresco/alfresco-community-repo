@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    <import resource="classpath:alfresco/application-context.xml" />
+        
+    
+    <bean id="cachingContentStore" class="org.alfresco.repo.content.caching.CachingContentStore">
+        <property name="backingStore" ref="backingStore"/>
+        <property name="cache" ref="contentCache"/>
+        <property name="cacheOnInbound" value="true"/>
+        <property name="quota" ref="quotaManager"/>
+    </bean>
+
+    <bean id="quotaManager"
+          class="org.alfresco.repo.content.caching.quota.StandardQuotaStrategy"
+          init-method="init"
+          destroy-method="shutdown">
+        <property name="maxUsageBytes" value="20971520"/><!-- 20971520 = 20MB -->
+        <property name="cleaner" ref="cachedContentCleaner"/>
+        <property name="cache" ref="contentCache"/>
+    </bean>
+
+
+    <bean id="backingStore" class="org.alfresco.repo.content.filestore.FileContentStore">
+        <constructor-arg>
+            <value>${dir.contentstore}</value>
+        </constructor-arg>
+    </bean>
+    
+
+    <bean id="contentCache" class="org.alfresco.repo.content.caching.ContentCacheImpl">
+        <property name="memoryStore" ref="cachingContentStoreCache"/>
+        <property name="cacheRoot" value="${dir.cachedcontent}/quota_test"/>
+    </bean>
+    
+
+    <bean id="cachingContentStoreCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+        <property name="cache">
+            <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+                <property name="cacheManager">
+                    <ref bean="internalEHCacheManager" />
+                </property>
+                <property name="cacheName">
+                    <value>org.alfresco.cache.cachingContentStoreCache</value>
+                </property>
+                <property name="eternal" value="false"/>
+                <property name="timeToLive" value="0"/>
+                <property name="timeToIdle" value="0"/>
+                <property name="maxElementsInMemory" value="12"/>
+                <property name="maxElementsOnDisk" value="0"/>
+                <property name="overflowToDisk" value="false"/>
+                <property name="diskPersistent" value="false"/>
+            </bean>
+        </property>
+    </bean>
+    
+    
+    <bean id="cachedContentCleaner" class="org.alfresco.repo.content.caching.cleanup.CachedContentCleaner">
+        <property name="maxDeleteWatchCount" value="0"/><!-- zero is NOT recommmend in production -->
+        <property name="cache" ref="contentCache"/>
+        <property name="usageTracker" ref="quotaManager"/>
+    </bean>
+
+</beans>

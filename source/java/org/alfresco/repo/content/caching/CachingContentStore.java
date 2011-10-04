@@ -25,11 +25,18 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
+import org.alfresco.repo.content.caching.quota.QuotaManagerStrategy;
+import org.alfresco.repo.content.caching.quota.UnlimitedQuotaStrategy;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentStreamListener;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
 
 /**
  * Implementation of ContentStore that wraps any other ContentStore (the backing store)
@@ -43,15 +50,19 @@ import org.springframework.beans.factory.annotation.Required;
  * 
  * @author Matt Ward
  */
-public class CachingContentStore implements ContentStore
+public class CachingContentStore implements ContentStore, ApplicationEventPublisherAware, BeanNameAware
 {
+    private final static Log log = LogFactory.getLog(CachingContentStore.class);
     // NUM_LOCKS absolutely must be a power of 2 for the use of locks to be evenly balanced
     private final static int numLocks = 32;
     private final static ReentrantReadWriteLock[] locks; 
     private ContentStore backingStore;
     private ContentCache cache;
+    private QuotaManagerStrategy quota = new UnlimitedQuotaStrategy();
     private boolean cacheOnInbound;
     private int maxCacheTries = 2;
+    private ApplicationEventPublisher eventPublisher;
+    private String beanName;
     
     static
     {
@@ -73,6 +84,13 @@ public class CachingContentStore implements ContentStore
         this.cacheOnInbound = cacheOnInbound;
     }
 
+    /**
+     * Initialisation method, should be called once the CachingContentStore has been constructed.
+     */
+    public void init()
+    {
+        eventPublisher.publishEvent(new CachingContentStoreCreatedEvent(this));
+    }
     
     /*
      * @see org.alfresco.repo.content.ContentStore#isContentUrlSupported(java.lang.String)
@@ -185,14 +203,32 @@ public class CachingContentStore implements ContentStore
         {
             for (int i = 0; i < maxCacheTries; i++)
             {
+                ContentReader backingStoreReader = backingStore.getReader(url);
+                long contentSize = backingStoreReader.getSize();
+                
+                if (!quota.beforeWritingCacheFile(contentSize))
+                {
+                    return backingStoreReader;
+                }
+                
                 ContentReader reader = attemptCacheAndRead(url);
+                
                 if (reader != null)
                 {
+                    quota.afterWritingCacheFile(contentSize);
                     return reader;
                 }
             }
             // Have tried multiple times to cache the item and read it back from the cache
             // but there is a recurring problem - give up and return the item from the backing store.
+            if (log.isWarnEnabled())
+            {
+                log.warn("Attempted " + maxCacheTries + " times to cache content item and failed - "
+                            + "returning reader from backing store instead [" + 
+                            "backingStore=" + backingStore + 
+                            ", url=" + url +
+                            "]");
+            }
             return backingStore.getReader(url);
         }
         finally
@@ -201,6 +237,18 @@ public class CachingContentStore implements ContentStore
         }
     }
     
+    
+    /**
+     * Attempt to read content into a cached file and return a reader onto it. If the content is
+     * already in the cache (possibly due to a race condition between the read/write locks) then
+     * a reader onto that content is returned.
+     * <p>
+     * If it is not possible to cache the content and/or get a reader onto the cached content then
+     * <code>null</code> is returned and the method ensure that the URL is not stored in the cache.
+     * 
+     * @param url URL to cache.
+     * @return A reader onto the cached content file or null if unable to provide one.
+     */
     private ContentReader attemptCacheAndRead(String url)
     {
         ContentReader reader = null;
@@ -235,10 +283,17 @@ public class CachingContentStore implements ContentStore
         if (cacheOnInbound)
         {
             final ContentWriter bsWriter = backingStore.getWriter(context);
-                        
-            // write to cache
-            final ContentWriter cacheWriter = cache.getWriter(bsWriter.getContentUrl());
+
+            if (!quota.beforeWritingCacheFile(0))
+            {
+                return bsWriter;
+            }
             
+            // Writing will be performed straight to the cache.
+            final String url = bsWriter.getContentUrl();
+            final ContentWriter cacheWriter = cache.getWriter(url);
+            
+            // When finished writing perform these actions.
             cacheWriter.addListener(new ContentStreamListener()
             {
                 @Override
@@ -250,6 +305,13 @@ public class CachingContentStore implements ContentStore
                     bsWriter.setLocale(cacheWriter.getLocale());
                     bsWriter.setMimetype(cacheWriter.getMimetype());
                     bsWriter.putContent(cacheWriter.getReader());
+                    
+                    if (!quota.afterWritingCacheFile(cacheWriter.getSize()))
+                    {
+                        // Quota manager has requested that the new cache file is not kept.
+                        cache.deleteFile(url);
+                        cache.remove(url);
+                    }
                 }
             });
             
@@ -357,14 +419,77 @@ public class CachingContentStore implements ContentStore
         this.backingStore = backingStore;
     }
 
+    public String getBackingStoreType()
+    {
+        return backingStore.getClass().getName();
+    }
+    
+    public String getBackingStoreDescription()
+    {
+        return backingStore.toString();
+    }
+
     @Required
     public void setCache(ContentCache cache)
     {
         this.cache = cache;
+    }
+    
+    public ContentCache getCache()
+    {
+        return this.cache;
     }
 
     public void setCacheOnInbound(boolean cacheOnInbound)
     {
         this.cacheOnInbound = cacheOnInbound;
     }
+
+    public boolean isCacheOnInbound()
+    {
+        return this.cacheOnInbound;
+    }
+
+    public int getMaxCacheTries()
+    {
+        return this.maxCacheTries;
+    }
+
+    public void setMaxCacheTries(int maxCacheTries)
+    {
+        this.maxCacheTries = maxCacheTries;
+    }
+
+    /**
+     * Sets the QuotaManagerStrategy that will be used.
+     * 
+     * @param quota
+     */
+    @Required
+    public void setQuota(QuotaManagerStrategy quota)
+    {
+        this.quota = quota;
+    }
+
+    public QuotaManagerStrategy getQuota()
+    {
+        return this.quota;
+    }
+
+    @Override
+    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher)
+    {
+        this.eventPublisher = applicationEventPublisher;
+    }
+
+    @Override
+    public void setBeanName(String name)
+    {
+        this.beanName = name;
+    }
+
+    public String getBeanName()
+    {
+        return this.beanName;
+    }    
 }

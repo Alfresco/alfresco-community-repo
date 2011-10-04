@@ -29,6 +29,9 @@ import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.TempFileProvider;
+import org.junit.internal.runners.JUnit38ClassRunner;
+import org.junit.runner.RunWith;
+
 
 /**
  * Tests for the CachingContentStore that benefit from a full set of tests
@@ -36,6 +39,7 @@ import org.alfresco.util.TempFileProvider;
  * 
  * @author Matt Ward
  */
+@RunWith(JUnit38ClassRunner.class)
 public class CachingContentStoreSpringTest extends AbstractWritableContentStoreTest
 {
     private static final String EHCACHE_NAME = "cache.test.cachingContentStoreCache";
@@ -43,6 +47,7 @@ public class CachingContentStoreSpringTest extends AbstractWritableContentStoreT
     private CachingContentStore store;
     private FileContentStore backingStore;
     private ContentCacheImpl cache;
+    
     
     @Override
     public void setUp() throws Exception
@@ -61,7 +66,6 @@ public class CachingContentStoreSpringTest extends AbstractWritableContentStoreT
         cache.setMemoryStore(createMemoryStore());
         store = new CachingContentStore(backingStore, cache, false);
     }
-    
     
     private EhCacheAdapter<Key, String> createMemoryStore()
     {
@@ -152,7 +156,7 @@ public class CachingContentStoreSpringTest extends AbstractWritableContentStoreT
         assertEquals(content, retrievedContent);
         
         // Remove the cached disk file
-        File cacheFile = new File(cache.cacheFileLocation(contentUrl));
+        File cacheFile = new File(cache.getCacheFilePath(contentUrl));
         cacheFile.delete();   
         assertTrue("Cached content should have been deleted", !cacheFile.exists());
       

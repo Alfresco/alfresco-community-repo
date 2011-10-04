@@ -15,10 +15,11 @@
     </bean>
     
     
-    <bean id="cachingContentStore" class="org.alfresco.repo.content.caching.CachingContentStore">
+    <bean id="cachingContentStore" class="org.alfresco.repo.content.caching.CachingContentStore" init-method="init">
         <property name="backingStore" ref="backingStore"/>
         <property name="cache" ref="contentCache"/>
         <property name="cacheOnInbound" value="${system.content.caching.cacheOnInbound}"/>
+        <property name="quota" ref="standardQuotaManager"/>
     </bean>
 
 
@@ -40,7 +41,26 @@
         <property name="memoryStore" ref="cachingContentStoreCache"/>
         <property name="cacheRoot" value="${dir.cachedcontent}"/>
     </bean>
-    
+
+
+    <bean
+        id="standardQuotaManager"
+        class="org.alfresco.repo.content.caching.quota.StandardQuotaStrategy"
+        init-method="init"
+        destroy-method="shutdown">
+            <!--  maxUsageMB: the maximum disk usage that should be used for cached content files -->
+            <property name="maxUsageMB" value="4096"/>
+            
+            <!-- maxFileSizeMB: files larger than this size will not be kept in the cache -->
+            <property name="maxFileSizeMB" value="0"/>
+            
+            <property name="cache" ref="contentCache"/>
+            <property name="cleaner" ref="cachedContentCleaner"/>
+    </bean>
+
+
+    <bean id="unlimitedQuotaManager" class="org.alfresco.repo.content.caching.quota.UnlimitedQuotaStrategy"/>        
+
 
     <bean id="cachingContentStoreCache" class="org.alfresco.repo.cache.EhCacheAdapter">
         <property name="cache">
@@ -76,12 +96,15 @@
         </property>
     </bean>
     
-    <bean id="cachedContentCleaner" class="org.alfresco.repo.content.caching.cleanup.CachedContentCleaner">
+    <bean id="cachedContentCleaner"
+        class="org.alfresco.repo.content.caching.cleanup.CachedContentCleaner"
+        init-method="init">
+        <property name="minFileAgeMillis" value="${system.content.caching.minFileAgeMillis}"/>
         <property name="maxDeleteWatchCount" value="${system.content.caching.maxDeleteWatchCount}"/>
         <property name="cache" ref="contentCache"/>
+        <property name="usageTracker" ref="standardQuotaManager"/>
     </bean>
     
-
     <bean id="cachingContentStoreCleanerTrigger" class="org.alfresco.util.CronTriggerBean">
         <property name="jobDetail">
             <ref bean="cachingContentStoreCleanerJobDetail" />
@@ -92,6 +115,5 @@
         <property name="cronExpression">
             <value>${system.content.caching.contentCleanup.cronExpression}</value>
         </property>
-    </bean>
-    
+    </bean>    
 </beans>

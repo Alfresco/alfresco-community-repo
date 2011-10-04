@@ -24,16 +24,20 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.content.caching.ContentCacheImpl.NumericFileNameComparator;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -56,6 +60,26 @@ public class ContentCacheImplTest
         contentCache = new ContentCacheImpl();
         contentCache.setMemoryStore(lookupTable);
         contentCache.setCacheRoot(TempFileProvider.getTempDir());
+    }
+    
+    
+    @Test(expected=IllegalArgumentException.class)
+    public void cannotSetNullCacheRoot()
+    {
+        contentCache.setCacheRoot(null);
+    }
+    
+    
+    @Test
+    public void willCreateNonExistentCacheRoot()
+    {
+        File cacheRoot = new File(TempFileProvider.getTempDir(), GUID.generate());
+        cacheRoot.deleteOnExit();
+        assertFalse("Pre-condition of test is that cacheRoot does not exist", cacheRoot.exists());
+        
+        contentCache.setCacheRoot(cacheRoot);
+        
+        assertTrue("cacheRoot should have been created", cacheRoot.exists());
     }
     
     
@@ -95,14 +119,6 @@ public class ContentCacheImplTest
             // for the 'reverse lookup' as well as the URL to path mapping.
             Mockito.verify(lookupTable).get(Key.forCacheFile(path));
         }
-    }
-    
-    
-    private File tempfile()
-    {
-        File file = TempFileProvider.createTempFile("cached-content", ".bin");
-        file.deleteOnExit();
-        return file;
     }
 
 
@@ -211,6 +227,17 @@ public class ContentCacheImplTest
         Mockito.verify(lookupTable).remove(Key.forCacheFile(path));
     }
     
+    @Test
+    public void deleteFile()
+    {
+        File cacheFile = tempfile();
+        assertTrue("Temp file should have been written", cacheFile.exists());
+        Mockito.when(contentCache.getCacheFilePath("url")).thenReturn(cacheFile.getAbsolutePath());
+        
+        contentCache.deleteFile("url");
+        
+        assertFalse("File should have been deleted", cacheFile.exists());
+    }
     
     @Test
     public void getWriter()
@@ -224,5 +251,82 @@ public class ContentCacheImplTest
         // Check cached item is recorded properly in ehcache
         Mockito.verify(lookupTable).put(Key.forUrl(url), writer.getFile().getAbsolutePath());
         Mockito.verify(lookupTable).put(Key.forCacheFile(writer.getFile().getAbsolutePath()), url);
+    }
+    
+    @Test
+    public void compareNumericFileNames()
+    {
+        NumericFileNameComparator comparator = new NumericFileNameComparator();
+        assertEquals(-1, comparator.compare(new File("1"), new File("2")));
+        assertEquals(0, comparator.compare(new File("2"), new File("2")));
+        assertEquals(1, comparator.compare(new File("2"), new File("1")));
+        
+        // Make sure that ordering is numeric and not by string value
+        assertEquals(-1, comparator.compare(new File("3"), new File("20")));
+        assertEquals(1, comparator.compare(new File("20"), new File("3")));
+        
+        assertEquals(-1, comparator.compare(new File("3"), new File("non-numeric")));
+        assertEquals(1, comparator.compare(new File("non-numeric"), new File("3")));
+    }
+    
+    @Test
+    public void canVisitOldestDirsFirst()
+    {
+        File cacheRoot = new File(TempFileProvider.getTempDir(), GUID.generate());
+        cacheRoot.deleteOnExit();
+        contentCache.setCacheRoot(cacheRoot);
+        
+        File f1 = tempfile(createDirs("2000/3/30/17/45/31"), "files-are-unsorted.bin");
+        File f2 = tempfile(createDirs("2000/3/4/17/45/31"), "another-file.bin");
+        File f3 = tempfile(createDirs("2010/12/24/23/59/58"), "a-second-before.bin");
+        File f4 = tempfile(createDirs("2010/12/24/23/59/59"), "last-one.bin");
+        File f5 = tempfile(createDirs("2000/1/7/2/7/12"), "first-one.bin");
+        
+        // Check that directories and files are visited in correct order
+        FileHandler handler = Mockito.mock(FileHandler.class);
+        contentCache.processFiles(handler);
+        
+        InOrder inOrder = Mockito.inOrder(handler);
+        inOrder.verify(handler).handle(f5);
+        inOrder.verify(handler).handle(f2);
+        inOrder.verify(handler).handle(f1);
+        inOrder.verify(handler).handle(f3);
+        inOrder.verify(handler).handle(f4);
+    }
+    
+
+
+    private File tempfile()
+    {
+        return tempfile("cached-content", ".bin");
+    }
+    
+    private File tempfile(String name, String suffix)
+    {
+        File file = TempFileProvider.createTempFile(name, suffix);
+        file.deleteOnExit();
+        return file;
+    }
+    
+    private File tempfile(File dir, String name)
+    {
+        File f = new File(dir, name);
+        try
+        {
+            f.createNewFile();
+        }
+        catch (IOException error)
+        {
+            throw new RuntimeException(error);
+        }
+        f.deleteOnExit();
+        return f;
+    }
+
+    private File createDirs(String path)
+    {
+        File f = new File(contentCache.getCacheRoot(), path);
+        f.mkdirs();
+        return f;
     }
 }

@@ -429,6 +429,7 @@ public class CalendarServiceImplTest
        entry.getTags().add(TAG_1);
        entry.getTags().add(TAG_2);
        entry = CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), entry);
+       testNodesToTidy.add(entry.getNodeRef());
        
        // Check
        entry = CALENDAR_SERVICE.getCalendarEntry(CALENDAR_SITE.getShortName(), entry.getSystemName());       
@@ -468,12 +469,16 @@ public class CalendarServiceImplTest
        assertEquals(0, results.getPage().size());
        
        // Add a few
-       CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
+       CalendarEntry entryA = CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
              "TitleA", "Description", "Location", new Date(1302431400), new Date(1302435000)));
-       CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
+       CalendarEntry entryB = CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
              "TitleB", "Description", "Location", new Date(1302431400), new Date(1302442200)));
-       CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
+       CalendarEntry entryC = CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
              "TitleC", "Description", "Location", new Date(1302435000), new Date(1302442200)));
+       testNodesToTidy.add(entryA.getNodeRef());
+       testNodesToTidy.add(entryB.getNodeRef());
+       testNodesToTidy.add(entryC.getNodeRef());
+       
        
        // Check now
        results = CALENDAR_SERVICE.listCalendarEntries(CALENDAR_SITE.getShortName(), paging);
@@ -483,8 +488,9 @@ public class CalendarServiceImplTest
        assertEquals("TitleC", results.getPage().get(2).getTitle());
        
        // Add one more, before those, and drop the page size 
-       CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
+       CalendarEntry entryD = CALENDAR_SERVICE.createCalendarEntry(CALENDAR_SITE.getShortName(), new CalendarEntryDTO(
              "TitleD", "Description", "Location", new Date(1302417000), new Date(1302420600)));
+       testNodesToTidy.add(entryD.getNodeRef());
        
        paging = new PagingRequest(3);
        results = CALENDAR_SERVICE.listCalendarEntries(CALENDAR_SITE.getShortName(), paging);
@@ -497,15 +503,6 @@ public class CalendarServiceImplTest
        results = CALENDAR_SERVICE.listCalendarEntries(CALENDAR_SITE.getShortName(), paging);
        assertEquals(1, results.getPage().size());
        assertEquals("TitleC", results.getPage().get(0).getTitle());
-       
-       
-       // Tidy
-       paging = new PagingRequest(10);
-       results = CALENDAR_SERVICE.listCalendarEntries(CALENDAR_SITE.getShortName(), paging);
-       for(CalendarEntry entry : results.getPage())
-       {
-          testNodesToTidy.add(entry.getNodeRef());
-       }
     }
 
     /**

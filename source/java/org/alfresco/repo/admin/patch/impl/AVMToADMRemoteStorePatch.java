@@ -90,10 +90,10 @@ public class AVMToADMRemoteStorePatch extends AbstractPatch
     // name of the surf config folder
     private static final String SURF_CONFIG = "surf-config";
     
-    private static final int SITE_BATCH_THREADS = 8;
-    private static final int SITE_BATCH_SIZE = 100;
-    private static final int MIGRATE_BATCH_THREADS = 8;
-    private static final int MIGRATE_BATCH_SIZE = 100;
+    private static final int SITE_BATCH_THREADS = 4;
+    private static final int SITE_BATCH_SIZE = 250;
+    private static final int MIGRATE_BATCH_THREADS = 4;
+    private static final int MIGRATE_BATCH_SIZE = 250;
     
     private Map<String, NodeRef> siteReferenceCache = null;
     private SortedMap<String, AVMNodeDescriptor> paths;
@@ -205,7 +205,7 @@ public class AVMToADMRemoteStorePatch extends AbstractPatch
                 surfConfigRef = getSurfConfigNodeRef(siteService.getSiteRoot());
                 
                 // pre-create folders that may cause contention later during multi-threaded batch processing
-                List<String> folderPath = new ArrayList<String>();
+                List<String> folderPath = new ArrayList<String>(4);
                 folderPath.add("components");
                 FileFolderUtil.makeFolders(fileFolderService, surfConfigRef, folderPath, ContentModel.TYPE_FOLDER);
                 folderPath.clear();
@@ -291,12 +291,14 @@ public class AVMToADMRemoteStorePatch extends AbstractPatch
                 @Override
                 public void beforeProcess() throws Throwable
                 {
+                    ruleService.disableRules();
                     AuthenticationUtil.setRunAsUser(tenantSystemUser);
                 }
                 
                 @Override
                 public void afterProcess() throws Throwable
                 {
+                    ruleService.enableRules();
                     AuthenticationUtil.clearCurrentSecurityContext();
                 }
                 
@@ -315,8 +317,16 @@ public class AVMToADMRemoteStorePatch extends AbstractPatch
                     {
                         // create the 'surf-config' folder for the site and cache the NodeRef to it
                         NodeRef surfConfigRef = getSurfConfigNodeRef(siteRef);
-                        // TODO: create components and pages folders here would also reduce contention
                         siteReferenceCache.put(siteName, surfConfigRef);
+                        
+                        // pre-create folders that may cause contention later during multi-threaded batch processing
+                        List<String> folderPath = new ArrayList<String>(4);
+                        folderPath.add("components");
+                        FileFolderUtil.makeFolders(fileFolderService, surfConfigRef, folderPath, ContentModel.TYPE_FOLDER);
+                        folderPath.clear();
+                        folderPath.add("pages");
+                        folderPath.add("site");
+                        FileFolderUtil.makeFolders(fileFolderService, surfConfigRef, folderPath, ContentModel.TYPE_FOLDER);
                     }
                     else
                     {

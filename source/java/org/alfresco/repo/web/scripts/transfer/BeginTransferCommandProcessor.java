@@ -110,7 +110,7 @@ public class BeginTransferCommandProcessor implements CommandProcessor
             //It replaces the root node if transfers on file system
             if(rootFileTransfer != null && rootFileTransfer.length > 0 )
             {
-                receiver.setFileTransferRootNodeFileFileSystem(rootFileTransfer[0]);
+                receiver.setTransferRootNode(rootFileTransfer[0]);
             }
 
             // attempt to start the transfer

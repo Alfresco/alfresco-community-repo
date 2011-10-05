@@ -16,7 +16,50 @@
     	<property name="model" value="alfresco/model/sitePermissionDefinitions.xml"/>
     </bean>
     
+    <!-- Site service transaction beans -->
+
+    <bean id="siteServiceReadTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="advice">
+            <ref bean="retryingReadTxnAdvice"/>
+        </property>
+        <property name="mappedNames">
+            <list>
+                <value>hasCreateSitePermissions</value>
+                <value>findSites</value>
+                <value>listSites</value>
+                <value>getSite</value>
+                <value>listMembers</value>
+                <value>getMembersRole</value>
+                <value>isMember</value>
+                <value>getContainer</value>
+                <value>hasContainer</value>
+                <value>getSiteRoles</value>
+                <value>getSiteGroup</value>
+                <value>getSiteRoleGroup</value>
+                <value>getSiteRoot</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="siteServiceWriteTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="advice">
+            <ref bean="retryingWriteTxnAdvice"/>
+        </property>
+        <property name="mappedNames">
+            <list>
+                <value>createSite</value>
+                <value>updateSite</value>
+                <value>deleteSite</value>
+                <value>setMembership</value>
+                <value>removeMembership</value>
+                <value>createContainer</value>
+                <value>setMembership</value>
+            </list>
+        </property>
+    </bean>
+
     <!-- Site service bean -->
+
     <bean id="SiteService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.repo.site.SiteServiceInternal</value>
@@ -26,7 +69,9 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="SiteService_transaction"/>
+                <idref bean="siteServiceReadTxnAdvisor" />
+                <idref bean="siteServiceWriteTxnAdvisor" />
+                <idref bean="checkTxnAdvisor" />
                 <idref bean="AuditMethodInterceptor"/>
                 <idref bean="exceptionTranslator"/>
                 <idref bean="SiteService_security"/>
@@ -34,18 +79,8 @@
         </property>
     </bean>
 
-    <!-- Site service transaction bean -->
-    <bean id="SiteService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
-        <property name="transactionManager">
-            <ref bean="transactionManager"/>
-        </property>
-        <property name="transactionAttributes">
-            <props>
-                <prop key="*">${server.transaction.mode.default}</prop>
-            </props>
-        </property>
-    </bean>
-    
+    <!-- Site service support beans -->
+
     <bean id="siteCannedQueryRegistry" class="org.alfresco.util.registry.NamedObjectRegistry">
         <property name="storageType" value="org.alfresco.query.CannedQueryFactory"/>
     </bean>

@@ -27,6 +27,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 
 import org.alfresco.repo.content.caching.CacheFileProps;
 import org.alfresco.repo.content.caching.CachingContentStore;
@@ -36,6 +39,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.apache.commons.io.FileUtils;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -96,7 +100,7 @@ public class CachedContentCleanupJobTest
             // a 'reverse lookup' in the cache (i.e. cache.contains(Key.forCacheFile(...))), or there will be no
             // URL determinable for the file.
             UrlSource urlSource = UrlSource.values()[i % UrlSource.values().length];
-            File cacheFile = createCacheFile(urlSource, i, false);
+            File cacheFile = createCacheFile(urlSource, false);
             files[i] = cacheFile;
             totalSize += cacheFile.length();
         }
@@ -126,7 +130,7 @@ public class CachedContentCleanupJobTest
         File[] oldFiles = new File[numFiles];
         for (int i = 0; i < numFiles; i++)
         {
-            oldFiles[i] = createCacheFile(UrlSource.REVERSE_CACHE_LOOKUP, i, false);
+            oldFiles[i] = createCacheFile(UrlSource.REVERSE_CACHE_LOOKUP, false);
         }
         
         // Sleep to make sure 'old' files really are older than minFileAgeMillis
@@ -136,7 +140,7 @@ public class CachedContentCleanupJobTest
         long newFilesTotalSize = 0;
         for (int i = 0; i < numFiles; i++)
         {
-            newFiles[i] = createCacheFile(UrlSource.REVERSE_CACHE_LOOKUP, i, false);
+            newFiles[i] = createCacheFile(UrlSource.REVERSE_CACHE_LOOKUP, false);
             newFilesTotalSize += newFiles[i].length();
         }
 
@@ -169,7 +173,7 @@ public class CachedContentCleanupJobTest
         {
             // Make sure it's in the cache - all the files will be in the cache, so the
             // cleaner won't clean any up once it has finished aggressively reclaiming space.
-            files[i] = createCacheFile(UrlSource.REVERSE_CACHE_LOOKUP, i, true);
+            files[i] = createCacheFile(UrlSource.REVERSE_CACHE_LOOKUP, true);
         }
 
         // How much space to reclaim - seven files worth (all files are same size)
@@ -199,32 +203,29 @@ public class CachedContentCleanupJobTest
         assertEquals("Incorrect total size of files deleted", sevenFilesSize, cleaner.getSizeFilesDeleted());
     }
     
-    @Ignore()
+
     @Test
     public void standardCleanAfterAggressiveFinished() throws InterruptedException
     {
-        int numFiles = 30;
-        int newerFilesIndex = 14;
+        // Don't use numFiles > 59! as we're using this for the minute element in the cache file path.
+        final int numFiles = 30;
         File[] files = new File[numFiles];
+        
         
         for (int i = 0; i < numFiles; i++)
         {
-            if (i == newerFilesIndex)
-            {
-                // Files after this sleep will definitely be in 'newer' directories.
-                Thread.sleep(2000);
-            }
+            Calendar calendar = new GregorianCalendar(2010, 12, 2, 17, i);
                         
             if (i >= 21 && i <= 24)
             {
                 // 21 to 24 will be deleted after the aggressive deletions (once the cleaner has returned
                 // to normal cleaning), because they are not in the cache.
-                files[i] = createCacheFile(UrlSource.NOT_PRESENT, i, false);
+                files[i] = createCacheFile(calendar, UrlSource.NOT_PRESENT, false);
             }
             else
             {
                 // All other files will be in the cache
-                files[i] = createCacheFile(UrlSource.REVERSE_CACHE_LOOKUP, i, true);
+                files[i] = createCacheFile(calendar, UrlSource.REVERSE_CACHE_LOOKUP, true);
             }
         }
         
@@ -233,43 +234,27 @@ public class CachedContentCleanupJobTest
         long sevenFilesSize = 7 * fileSize;
         
         // We'll get it to clean seven files worth aggressively and then it will continue non-aggressively.
-        // It will delete the older files aggressively (i.e. the ones prior to the two second sleep) and
+        // It will delete the older files aggressively (i.e. even if they are actively in the cache) and
         // then will examine the new files for potential deletion.
-        // Since some of the newer files are not in the cache, it will delete those.
+        // Since some of the newer files are not in the cache, it will delete those too.
         cleaner.executeAggressive("standardCleanAfterAggressiveFinished()", sevenFilesSize);
-        
+                
         for (int i = 0; i < numFiles; i++)
         {
-            File f = files[i];
-            String newerOrOlder = ((i >= newerFilesIndex) ? "newer" : "older");
-            System.out.println("files[" + i + "] = " + newerOrOlder + " file, exists=" + f.exists());
-        }
-        
-        int numOlderFilesDeleted = 0;
-        for (int i = 0; i < newerFilesIndex; i++)
-        {
-            if (!files[i].exists())
+            if (i < 7)
             {
-                numOlderFilesDeleted++;
+                assertFalse("First 7 files should have been aggressively cleaned", files[i].exists());
+            }
+            
+            if (i >= 21 && i <= 24)
+            {
+                assertFalse("Files with indexes 21-24 should have been deleted", files[i].exists());
             }
         }
-        assertEquals("Wrong number of older files deleted", 7, numOlderFilesDeleted);
-        
-        int numNewerFilesDeleted = 0;
-        for (int i = newerFilesIndex; i < numFiles; i++)
-        {
-            if (!files[i].exists())
-            {
-                numNewerFilesDeleted++;
-            }
-        }
-        assertEquals("Wrong number of newer files deleted", 4, numNewerFilesDeleted);
-        
-        // The cleaner should have recorded the correct number of deletions
         assertEquals("Incorrect number of deleted files", 11, cleaner.getNumFilesDeleted());
         assertEquals("Incorrect total size of files deleted", (11*fileSize), cleaner.getSizeFilesDeleted());
     }
-    
+        
     @Test
     public void emptyParentDirectoriesAreDeleted() throws FileNotFoundException
     {
@@ -292,14 +277,14 @@ public class CachedContentCleanupJobTest
         // A non-advisable setting but useful for testing, maxDeleteWatchCount of zero
         // which should result in immediate deletion upon discovery of content no longer in the cache.
         cleaner.setMaxDeleteWatchCount(0);
-        File file = createCacheFile(UrlSource.NOT_PRESENT, 0, false);
+        File file = createCacheFile(UrlSource.NOT_PRESENT, false);
         
         cleaner.handle(file);
         checkFilesDeleted(file);
         
         // Anticipated to be the most common setting: maxDeleteWatchCount of 1.
         cleaner.setMaxDeleteWatchCount(1);
-        file = createCacheFile(UrlSource.NOT_PRESENT, 0, false);
+        file = createCacheFile(UrlSource.NOT_PRESENT, false);
         
         cleaner.handle(file);
         checkWatchCountForCacheFile(file, 1);
@@ -309,7 +294,7 @@ public class CachedContentCleanupJobTest
         
         // Check that some other arbitrary figure for maxDeleteWatchCount works correctly.
         cleaner.setMaxDeleteWatchCount(3);
-        file = createCacheFile(UrlSource.NOT_PRESENT, 0, false);
+        file = createCacheFile(UrlSource.NOT_PRESENT, false);
         
         cleaner.handle(file);
         checkWatchCountForCacheFile(file, 1);
@@ -366,10 +351,16 @@ public class CachedContentCleanupJobTest
         }
     }
     
-    
-    private File createCacheFile(UrlSource urlSource, int fileNum, boolean putInCache)
+    private File createCacheFile(UrlSource urlSource, boolean putInCache)
     {
-        File file = new File(cacheRoot, ContentCacheImpl.createNewCacheFilePath());
+        Calendar calendar = new GregorianCalendar();
+        return createCacheFile(calendar, urlSource, putInCache);
+    }
+    
+    private File createCacheFile(Calendar calendar, /*int year, int month, int day, int hour, int minute,*/
+                                 UrlSource urlSource, boolean putInCache)
+    {
+        File file = new File(cacheRoot, createNewCacheFilePath(calendar));
         file.getParentFile().mkdirs();
         writeSampleContent(file);
         String contentUrl = makeContentUrl();
@@ -396,6 +387,32 @@ public class CachedContentCleanupJobTest
         }
         assertTrue("File should exist", file.exists());
         return file;
+    }
+
+
+    /**
+     * Mimick functionality of ContentCacheImpl.createNewCacheFilePath()
+     * but allowing a specific date (rather than 'now') to be used.
+     * 
+     * @param calendar
+     * @return Path to use for cache file.
+     */
+    private String createNewCacheFilePath(Calendar calendar)
+    {
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH) + 1;  // 0-based
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        int minute = calendar.get(Calendar.MINUTE);
+        // create the URL
+        StringBuilder sb = new StringBuilder(20);
+        sb.append(year).append('/')
+          .append(month).append('/')
+          .append(day).append('/')
+          .append(hour).append('/')
+          .append(minute).append('/')
+          .append(GUID.generate()).append(".bin");
+        return sb.toString();
     }
 
 

@@ -1650,7 +1650,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
         return new TransferVersionImpl(d);
     }
 
-    public void setFileTransferRootNodeFileFileSystem(String rootFileSystem)
+    public void setTransferRootNode(String rootFileSystem)
     {
         //just ignore, no relevant for transferring on file system
     }

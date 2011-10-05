@@ -147,5 +147,5 @@ public interface TransferReceiver
      * set the root node for the file system receiver
      * @param rootFileSystem
      */
-    void setFileTransferRootNodeFileFileSystem(String rootFileSystem);
+    void setTransferRootNode(String rootFileSystem);
 }

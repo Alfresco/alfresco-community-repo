@@ -448,4 +448,28 @@ public class IntegrityTest extends TestCase
         
         checkIntegrityExpectFailure("Failed to detect excess source cardinality for one-to-many assocs", 1);
     }
+
+    public void testSourceAssocAfterDeletion() throws Exception
+    {
+        NodeRef source1 = createNode("abc", TEST_TYPE_WITH_ASSOCS, null);
+        NodeRef source2 = createNode("abc", TEST_TYPE_WITH_ASSOCS, null);
+        NodeRef target1 = createNode("target1", TEST_TYPE_WITHOUT_ANYTHING, null);
+        NodeRef target2 = createNode("target1", TEST_TYPE_WITHOUT_ANYTHING, null);
+        nodeService.createAssociation(source1, target1, TEST_ASSOC_NODE_ONE_ONE);
+        nodeService.createAssociation(source2, target2, TEST_ASSOC_NODE_ONE_ONE);
+        checkIntegrityNoFailure();
+
+        nodeService.createAssociation(source1, target1, TEST_ASSOC_NODE_ONE_MANY);
+        nodeService.createAssociation(source2, target1, TEST_ASSOC_NODE_ONE_MANY);
+        // Both (or either of) the associations are in violation
+        checkIntegrityExpectFailure("Failed to detect excess source cardinality for one-to-many assocs", 1);
+        
+        // Now remove one of the associations
+        nodeService.removeAssociation(source2, target1, TEST_ASSOC_NODE_ONE_MANY);
+        checkIntegrityNoFailure();
+        
+        // Now remove the last association
+        nodeService.removeAssociation(source1, target1, TEST_ASSOC_NODE_ONE_MANY);
+        checkIntegrityNoFailure();
+    }
 }

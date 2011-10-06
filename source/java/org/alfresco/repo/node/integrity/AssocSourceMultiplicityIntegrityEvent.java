@@ -169,13 +169,11 @@ public class AssocSourceMultiplicityIntegrityEvent extends AbstractIntegrityEven
         {
             if (actualSize == 0)
             {
-                // Double check that the association source is still present
-                ClassDefinition classDef = assocDef.getTargetClass(); 
-                if (classDef.isAspect() && !nodeService.hasAspect(targetNodeRef, classDef.getName()))
-                {
-                    // The target is an aspect but the aspect is not present
-                    return;
-                }
+                // ALF-9591: Integrity check: Association source multiplicity checking is incorrect
+                //           At this point, there is no point worrying.  There are no more associations
+                //           pointing *to* this node and therefore the checking of the source
+                //           multiplicity (a feature of the source type/aspect) is not relevant
+                return;
             }
             
             String parentOrSourceStr = (assocDef.isChild() ? "parent" : "source");

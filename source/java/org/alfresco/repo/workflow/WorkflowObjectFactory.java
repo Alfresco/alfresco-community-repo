@@ -27,7 +27,6 @@ import java.util.Map;
 
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.jscript.ScriptNode;
-import org.alfresco.repo.tenant.MultiTServiceImpl;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
@@ -342,7 +341,7 @@ public class WorkflowObjectFactory
             public Boolean apply(T value)
             {
                 String key = processKeyGetter.apply(value);
-                String domain = MultiTServiceImpl.getMultiTenantDomainName(key);
+                String domain = tenantService.getDomain(key, false);
                 if(enabled)
                 {
                     if(currentDomain.equals(domain))

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -34,8 +34,8 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.Tenant;
 import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantService;
-import org.alfresco.repo.transaction.TransactionServiceImpl;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.transaction.TransactionServiceImpl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -526,7 +526,7 @@ public class UserUsageTrackingComponent extends AbstractLifecycleBean
                 {
                     return collapseUsage(usageNodeRef);
                 }
-            }, tenantAdminService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantAdminService.getDomain(usageNodeRef.getStoreRef().getIdentifier())));
+            }, tenantAdminService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantService.getDomain(usageNodeRef.getStoreRef().getIdentifier())));
             
             if (collapsed)
             {

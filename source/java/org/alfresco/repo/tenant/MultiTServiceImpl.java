@@ -538,26 +538,7 @@ public class MultiTServiceImpl implements TenantService
      */
     public boolean isTenantName(String name)
     {
-        return getMultiTenantDomainName(name) != null;
-    }
-
-    public static String getMultiTenantDomainName(String name)
-    {
-        // Check that all the passed values are not null
-        ParameterCheck.mandatory("name", name);
-        
-        int idx1 = name.indexOf(SEPARATOR);
-        if (idx1 == 0)
-        {
-            int idx2 = name.indexOf(SEPARATOR, 1);
-            if (idx2 != -1)
-            {
-                return name.substring(1, idx2);
-
-            }
-        }
-
-        return null;  
+        return false == getDomain(name, false).isEmpty();
     }
     
     /* (non-Javadoc)
@@ -576,7 +557,7 @@ public class MultiTServiceImpl implements TenantService
                
                return tenantDomain;
             }
-        }        
+        }
         
         return DEFAULT_DOMAIN; // default domain - non-tenant user
     }
@@ -595,11 +576,12 @@ public class MultiTServiceImpl implements TenantService
      */
     public String getDomain(String name)
     {
-        // Check that all the passed values are not null
+        return getDomain(name, false);
+    }
+    
+    public String getDomain(String name, boolean checkCurrentDomain)
+    {
         ParameterCheck.mandatory("name", name);
-
-    	name = getTenantDomain(name);
-        String tenantDomain = getCurrentUserDomain();
         
         String nameDomain = DEFAULT_DOMAIN;
         
@@ -607,14 +589,19 @@ public class MultiTServiceImpl implements TenantService
         if (idx1 == 0)
         {
             int idx2 = name.indexOf(SEPARATOR, 1);
-            nameDomain = name.substring(1, idx2);
+            nameDomain = getTenantDomain(name.substring(1, idx2));
             
-            if ((! tenantDomain.equals(DEFAULT_DOMAIN)) && (! tenantDomain.equals(nameDomain)))
+            if (checkCurrentDomain)
             {
-                throw new AlfrescoRuntimeException("domain mismatch: expected = " + tenantDomain + ", actual = " + nameDomain);
-            }    
+                String tenantDomain = getCurrentUserDomain();
+                
+                if ((! tenantDomain.equals(DEFAULT_DOMAIN)) && (! tenantDomain.equals(nameDomain)))
+                {
+                    throw new AlfrescoRuntimeException("domain mismatch: expected = " + tenantDomain + ", actual = " + nameDomain);
+                }
+            }
         } 
-
+        
         return nameDomain;
     }
     
@@ -716,11 +703,9 @@ public class MultiTServiceImpl implements TenantService
         }
         tenantsCache.remove(tenantDomain);
     }
-
-    protected String getTenantDomain(String tenantDomain)
+    
+    private String getTenantDomain(String tenantDomain)
     {
-        ParameterCheck.mandatory("tenantDomain", tenantDomain);
         return tenantDomain.toLowerCase(I18NUtil.getLocale());
     }
-
 }

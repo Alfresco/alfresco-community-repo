@@ -800,6 +800,26 @@
       </property-sheet>
    </config>
    
+   <!-- ************************* -->
+   <!-- Configuration for Audio   -->
+   <!-- ************************* -->
+   
+   <config evaluator="aspect-name" condition="audio:audio">
+      <property-sheet>
+         <show-property name="audio:album" />
+         <show-property name="audio:artist" />
+         <show-property name="audio:composer" />
+         <show-property name="audio:engineer" />
+         <show-property name="audio:genre" />
+         <show-property name="audio:trackNumber" />
+         <show-property name="audio:releaseDate" />
+         <show-property name="audio:sampleRate" />
+         <show-property name="audio:sampleType" />
+         <show-property name="audio:channelType" />
+         <show-property name="audio:compressor" />
+      </property-sheet>
+   </config>
+   
    <!-- ****************************** -->
    <!-- Configuration for Geographic   -->
    <!-- ****************************** -->

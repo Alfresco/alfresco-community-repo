@@ -18,6 +18,7 @@
       <namespace uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
       <namespace uri="http://www.alfresco.org/model/rendition/1.0" prefix="rn"/>
       <namespace uri="http://www.alfresco.org/model/exif/1.0" prefix="exif"/>
+      <namespace uri="http://www.alfresco.org/model/audio/1.0" prefix="audio"/>
       <namespace uri="http://www.alfresco.org/model/webdav/1.0" prefix="webdav"/>
    </namespaces>
 
@@ -1403,6 +1404,65 @@
             </property>
             <property name="exif:resolutionUnit">
                <title>Resolution Unit</title>
+               <type>d:text</type>
+            </property>
+         </properties>
+      </aspect>
+      
+        
+      <!--        -->
+      <!--  Audio -->
+      <!--        -->
+      
+      <aspect name="audio:audio">
+         <title>Audio</title>
+         <properties>
+            <property name="audio:album">
+               <title>Album</title>
+               <type>d:text</type>
+            </property>
+            <property name="audio:artist">
+               <title>Artist</title>
+               <type>d:text</type>
+            </property>
+            <property name="audio:composer">
+               <title>Composer</title>
+               <type>d:text</type>
+            </property>
+            <property name="audio:engineer">
+               <title>Engineer</title>
+               <type>d:text</type>
+            </property>
+            <property name="audio:genre">
+               <title>Genre</title>
+               <type>d:text</type>
+            </property>
+            <property name="audio:trackNumber">
+               <title>Track Number</title>
+               <type>d:int</type>
+            </property>
+            <property name="audio:releaseDate">
+               <title>Release Date</title>
+               <type>d:date</type>
+            </property>
+
+            <property name="audio:sampleRate">
+               <title>Sample Rate</title>
+               <type>d:int</type>
+            </property>
+            <property name="audio:sampleType">
+               <title>Sample Type</title>
+               <description>Audio Sample Type, typically one of 8Int, 16Int, 32Int or 32Float</description>
+               <type>d:text</type>
+            </property>
+            <property name="audio:channelType">
+               <title>Channel Type</title>
+               <description>Audio Channel Type, typically one of Mono, Stereo, 5.1 or 7.1</description>
+               <type>d:text</type>
+            </property>
+            <property name="audio:compressor">
+               <title>Compressor</title>
+               <description>Audio Compressor Used, such as MP3 or FLAC</description>
                <type>d:text</type>
             </property>
          </properties>

@@ -31,38 +31,35 @@ import org.apache.tika.parser.mp3.Mp3Parser;
 /**
  * Extracts the following values from MP3 files:
  * <pre>
- *   <b>songTitle:</b>              --      {music}songTitle, cm:title
- *   <b>albumTitle:</b>             --      {music}albumTitle
- *   <b>artist:</b>                 --      {music}artist, cm:author
+ *   <b>songTitle:</b>              --      cm:title
+ *   <b>albumTitle:</b>             --      audio:album
+ *   <b>artist:</b>                 --      audio:artist, cm:author
  *   <b>description:</b>            --      cm:description
- *   <b>comment:</b>                --      {music}comment
- *   <b>yearReleased:</b>           --      {music}yearReleased
- *   <b>trackNumber:</b>            --      {music}trackNumber
- *   <b>genre:</b>                  --      {music}genre
- *   <b>composer:</b>               --      {music}composer
- *   <b>lyrics:</b>                 --      {music}lyrics
+ *   <b>comment:</b>                --      
+ *   <b>yearReleased:</b>           --      audio:releaseDate
+ *   <b>trackNumber:</b>            --      audio:trackNumber
+ *   <b>genre:</b>                  --      audio:genre
+ *   <b>composer:</b>               --      audio:composer
+ *   <b>lyrics:</b>                 --      
  * </pre>
  * 
- * TODO Get hold of a mp3 file with some lyrics in it, so we
- *  can contribute the patch to Tika
+ * Note - XMPDM metadata keys are also emitted, in common with
+ *  the other Tika powered extracters 
  * 
  * Uses Apache Tika
  * 
  * @author Nick Burch
- * @author Roy Wetherall
  */
-public class MP3MetadataExtracter extends TikaPoweredMetadataExtracter
+public class MP3MetadataExtracter extends TikaAudioMetadataExtracter
 {
     private static final String KEY_SONG_TITLE = "songTitle";
     private static final String KEY_ALBUM_TITLE = "albumTitle";
     private static final String KEY_ARTIST = "artist";
-    private static final String KEY_DESCRIPTION = "description";
     private static final String KEY_COMMENT = "comment";
     private static final String KEY_YEAR_RELEASED = "yearReleased";
     private static final String KEY_TRACK_NUMBER = "trackNumber";
     private static final String KEY_GENRE = "genre";
     private static final String KEY_COMPOSER = "composer";
-    private static final String KEY_LYRICS = "lyrics";
 
     public static ArrayList<String> SUPPORTED_MIMETYPES = buildSupportedMimetypes(
           new String[] { MimetypeMap.MIMETYPE_MP3 },
@@ -82,6 +79,12 @@ public class MP3MetadataExtracter extends TikaPoweredMetadataExtracter
     @Override
     protected Map<String, Serializable> extractSpecific(Metadata metadata,
          Map<String, Serializable> properties, Map<String,String> headers) {
+       // Do the normal Audio mappings
+       super.extractSpecific(metadata, properties, headers);
+       
+       // Now do the compatibility ones
+       // We only need these for people who had pre-existing mapping
+       //  properties from before the proper audio model was added
        putRawValue(KEY_ALBUM_TITLE, metadata.get(XMPDM.ALBUM), properties);
        putRawValue(KEY_SONG_TITLE, metadata.get(Metadata.TITLE), properties);
        putRawValue(KEY_ARTIST, metadata.get(XMPDM.ARTIST), properties);
@@ -90,41 +93,8 @@ public class MP3MetadataExtracter extends TikaPoweredMetadataExtracter
        putRawValue(KEY_GENRE, metadata.get(XMPDM.GENRE), properties);
        putRawValue(KEY_YEAR_RELEASED, metadata.get(XMPDM.RELEASE_DATE), properties);
        putRawValue(KEY_COMPOSER, metadata.get(XMPDM.COMPOSER), properties);
-       // TODO lyrics
-       //putRawValue(KEY_LYRICS, getLyrics(), properties);
-       
-       putRawValue(KEY_DESCRIPTION, generateDescription(metadata), properties);
-       
+
+       // All done
        return properties;
-    }
-    
-    /**
-     * Generate the description
-     * 
-     * @param props     the properties extracted from the file
-     * @return          the description
-     */
-    private String generateDescription(Metadata metadata)
-    {
-        StringBuilder result = new StringBuilder();
-        if (metadata.get(Metadata.TITLE) != null)
-        {
-            result.append(metadata.get(Metadata.TITLE));
-            if (metadata.get(XMPDM.ALBUM) != null)
-            {
-               result
-                .append(" - ")
-                .append(metadata.get(XMPDM.ALBUM));
-            }
-            if (metadata.get(XMPDM.ARTIST) != null)
-            {
-               result
-                .append(" (")
-                .append(metadata.get(XMPDM.ARTIST))
-                .append(")");
-            }
-        }
-        
-        return result.toString();
     }
 }

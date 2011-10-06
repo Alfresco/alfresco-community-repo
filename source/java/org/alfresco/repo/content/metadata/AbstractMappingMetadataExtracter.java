@@ -662,7 +662,16 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
             // Ask Tika to detect the document, and report back on if
             //  the current mime type is plausible
             String typeErrorMessage = null;
-            String differentType = mimetypeService.getMimetypeIfNotMatches(reader.getReader());
+            String differentType = null;
+            if(mimetypeService != null)
+            {
+               differentType = mimetypeService.getMimetypeIfNotMatches(reader.getReader());
+            }
+            else
+            {
+               logger.info("Unable to verify mimetype of " + reader.getReader() + 
+                           " as no MimetypeService available to " + getClass().getName());
+            }
             if(differentType != null)
             {
                typeErrorMessage = "\n" +

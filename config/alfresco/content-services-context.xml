@@ -224,7 +224,6 @@
    <bean id="extracter.Office"        class="org.alfresco.repo.content.metadata.OfficeMetadataExtracter"        parent="baseMetadataExtracter" />
    <bean id="extracter.Mail"          class="org.alfresco.repo.content.metadata.MailMetadataExtracter"          parent="baseMetadataExtracter" />
    <bean id="extracter.Html"          class="org.alfresco.repo.content.metadata.HtmlMetadataExtracter"          parent="baseMetadataExtracter" />
-   <bean id="extracter.MP3"           class="org.alfresco.repo.content.metadata.MP3MetadataExtracter"           parent="baseMetadataExtracter" />
    <bean id="extracter.OpenDocument"  class="org.alfresco.repo.content.metadata.OpenDocumentMetadataExtracter"  parent="baseMetadataExtracter" />
    <bean id="extracter.DWG"           class="org.alfresco.repo.content.metadata.DWGMetadataExtracter"           parent="baseMetadataExtracter" />
    <bean id="extracter.RFC822"        class="org.alfresco.repo.content.metadata.RFC822MetadataExtracter"        parent="baseMetadataExtracter" >
@@ -234,6 +233,12 @@
             <value>EEE, d MMM yy HH:mm:ss Z</value>
          </list>
       </property>
+   </bean>
+   <bean id="extracter.MP3" class="org.alfresco.repo.content.metadata.MP3MetadataExtracter" parent="baseMetadataExtracter">
+      <property name="tikaConfig" ref="tikaConfig"/>
+   </bean>
+   <bean id="extracter.Audio" class="org.alfresco.repo.content.metadata.TikaAudioMetadataExtracter" parent="baseMetadataExtracter">
+      <property name="tikaConfig" ref="tikaConfig"/>
    </bean>
    <bean id="extracter.OpenOffice" class="org.alfresco.repo.content.metadata.OpenOfficeMetadataExtracter" parent="baseMetadataExtracter">
       <property name="worker">

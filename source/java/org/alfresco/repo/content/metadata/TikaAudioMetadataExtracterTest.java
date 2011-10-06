@@ -24,20 +24,24 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Test for the MP3 metadata extraction from id3 tags.
+ * Test for the audio metadata extraction.
  */
-public class MP3MetadataExtracterTest extends TikaAudioMetadataExtracterTest
+public class TikaAudioMetadataExtracterTest extends AbstractMetadataExtracterTest
 {
-    private MP3MetadataExtracter extracter;
- 
+    private TikaAudioMetadataExtracter extracter;
+    private static final String ARTIST = "Hauskaz";
+    private static final String ALBUM  = "About a dog and a fox";
+    private static final String GENRE  = "Foxtrot";
+
     @Override
     public void setUp() throws Exception
     {
         super.setUp();
-        extracter = (MP3MetadataExtracter)ctx.getBean("extracter.MP3");
+        extracter = (TikaAudioMetadataExtracter)ctx.getBean("extracter.Audio");
         extracter.register();
     }
 
@@ -51,21 +55,21 @@ public class MP3MetadataExtracterTest extends TikaAudioMetadataExtracterTest
 
     public void testSupports() throws Exception
     {
-        for (String mimetype : MP3MetadataExtracter.SUPPORTED_MIMETYPES)
+        for (String mimetype : TikaAudioMetadataExtracter.SUPPORTED_MIMETYPES)
         {
             boolean supports = extracter.isSupported(mimetype);
             assertTrue("Mimetype should be supported: " + mimetype, supports);
         }
     }
 
-    public void testMP3Extraction() throws Exception
+    public void testOggExtraction() throws Exception
     {
-        testExtractFromMimetype(MimetypeMap.MIMETYPE_MP3);
+        testExtractFromMimetype(MimetypeMap.MIMETYPE_VORBIS);
     }
-    @Override
-    public void testOggExtraction() throws Exception {}
-    @Override
-    public void testFlacExtraction() throws Exception {}
+    public void testFlacExtraction() throws Exception
+    {
+        testExtractFromMimetype(MimetypeMap.MIMETYPE_FLAC);
+    }
 
     /**
      * We don't have quite the usual metadata. Tests the descriptions one.
@@ -92,9 +96,44 @@ public class MP3MetadataExtracterTest extends TikaAudioMetadataExtracterTest
     }
 
    /** 
-    * Tests for various MP3 specific bits of metadata 
+    * Tests for various Audio specific bits of metadata 
     */
     public void testFileSpecificMetadata(String mimetype, Map<QName, Serializable> properties) {
-       super.testFileSpecificMetadata(mimetype, properties);
+       QName album = QName.createQName(NamespaceService.AUDIO_MODEL_1_0_URI, "album");
+       assertEquals(
+             "Property " + album + " not found for mimetype " + mimetype,
+             ALBUM,
+             DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(album)));
+       
+       QName artist = QName.createQName(NamespaceService.AUDIO_MODEL_1_0_URI, "artist");
+       assertEquals(
+             "Property " + artist + " not found for mimetype " + mimetype,
+             ARTIST,
+             DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(artist)));
+       
+       QName genre = QName.createQName(NamespaceService.AUDIO_MODEL_1_0_URI, "genre");
+       assertEquals(
+             "Property " + genre + " not found for mimetype " + mimetype,
+             GENRE,
+             DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(genre)));
+
+       QName releaseDate = QName.createQName(NamespaceService.AUDIO_MODEL_1_0_URI, "releaseDate");
+       assertEquals(
+             "Property " + releaseDate + " not found for mimetype " + mimetype,
+             "2009-01-01T00:00:00.000Z",
+             DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(releaseDate)));
+
+       QName channels = QName.createQName(NamespaceService.AUDIO_MODEL_1_0_URI, "channelType");
+       assertEquals(
+             "Property " + channels + " not found for mimetype " + mimetype,
+             "Stereo",
+             DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(channels)));
+
+       
+       // Description is a composite - check the artist part
+       assertContains(
+             "Property " + ContentModel.PROP_DESCRIPTION + " didn't contain " +  ARTIST + " for mimetype " + mimetype,
+             ARTIST,
+             DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_DESCRIPTION)));
     }
 }

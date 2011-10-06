@@ -88,18 +88,21 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
      * Builds up a list of supported mime types by merging an explicit
      *  list with any that Tika also claims to support
      */
-    protected static ArrayList<String> buildSupportedMimetypes(String[] explicitTypes, Parser tikaParser) {
+    protected static ArrayList<String> buildSupportedMimetypes(String[] explicitTypes, Parser... tikaParsers) {
        ArrayList<String> types = new ArrayList<String>();
        for(String type : explicitTypes) {
           if(!types.contains(type)) {
              types.add(type);
           }
        }
-       if(tikaParser != null) {
-          for(MediaType mt : tikaParser.getSupportedTypes(new ParseContext())) {
-             String type = mt.toString();
-             if(!types.contains(type)) {
-                types.add(type);
+       if(tikaParsers != null) {
+          for(Parser tikaParser : tikaParsers)
+          {
+             for(MediaType mt : tikaParser.getSupportedTypes(new ParseContext())) {
+                String type = mt.toString();
+                if(!types.contains(type)) {
+                   types.add(type);
+                }
              }
           }
        }
@@ -225,8 +228,10 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
         {
             is = getInputStream(reader); 
             Parser parser = getParser();
-            Metadata metadata = new Metadata();
             ParseContext context = new ParseContext();
+            
+            Metadata metadata = new Metadata();
+            metadata.add(Metadata.CONTENT_TYPE, reader.getMimetype());
             
             ContentHandler handler;
             Map<String,String> headers = null;

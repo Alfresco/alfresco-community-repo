@@ -124,7 +124,6 @@ public class TikaAutoMetadataExtracterTest extends AbstractMetadataExtracterTest
               //"2010.dwg", // Not auto-detected properly yet
               ".pdf",
               ".odt",
-              ".ogg"
         };
            
         for (String fileBase : testFiles)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.activities.feed.FeedTaskProcessor;
 import org.alfresco.repo.activities.feed.RepoCtx;
@@ -38,6 +39,7 @@ import org.alfresco.repo.domain.activities.FeedControlDAO;
 import org.alfresco.repo.domain.activities.FeedControlEntity;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.template.ClassPathRepoTemplateLoader;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -78,6 +80,7 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
     private ContentService contentService;
     private PermissionService permissionService;
     private SubscriptionService subscriptionService;
+    private TenantService tenantService;
 
     private String defaultEncoding;
     private List<String> templateSearchPaths;
@@ -122,6 +125,11 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
     public void setSubscriptionService(SubscriptionService subscriptionService)
     {
         this.subscriptionService = subscriptionService;
+    }
+    
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
     }
 
     public void setDefaultEncoding(String defaultEncoding)
@@ -183,17 +191,54 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
     {
         return feedControlDAO.selectFeedControls(userId);
     }
-
+    
     @Override
-    protected Set<String> getSiteMembers(final RepoCtx ctx, final String siteId) throws Exception
+    protected String getTenantName(String name, String tenantDomain)
+    {
+        if (name == null)
+        {
+            return name;
+        }
+        
+        String nameDomain = getTenantDomain(name);
+        if (nameDomain.equals(TenantService.DEFAULT_DOMAIN))
+        {
+            if (! TenantService.DEFAULT_DOMAIN.equals(tenantDomain))
+            {
+                // no domain, so add it as a prefix (between two domain separators)
+                name = TenantService.SEPARATOR + tenantDomain + TenantService.SEPARATOR + name;
+            }
+        }
+        else
+        {
+            if (! tenantDomain.equals(nameDomain))
+            {
+                throw new AlfrescoRuntimeException("domain mismatch: expected = " + tenantDomain + ", actual = " + nameDomain);
+            }
+        }
+        
+        return name;
+    }
+    
+    @Override
+    protected String getTenantDomain(String name)
+    {
+        return tenantService.getDomain(name, false);
+    }
+
+    
+    @Override
+    protected Set<String> getSiteMembers(final RepoCtx ctx, String siteIdIn, final String tenantDomain) throws Exception
     {
         if (useRemoteCallbacks)
         {
             // as per 3.0, 3.1
-            return super.getSiteMembers(ctx, siteId);
+            return super.getSiteMembers(ctx, siteIdIn, tenantDomain);
         } 
         else
         {
+            final String siteId = tenantService.getBaseName(siteIdIn, true);
+            
             // optimise for non-remote implementation - override remote repo callback (to "List Site Memberships" web script) with embedded call
             return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Set<String>>()
             {
@@ -203,7 +248,7 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
                     if ((siteId != null) && (siteId.length() != 0))
                     {
                         Map<String, String> mapResult = siteService.listMembers(siteId, null, null, 0, true);
-
+                        
                         if ((mapResult != null) && (mapResult.size() != 0))
                         {
                             for (String userName : mapResult.keySet())
@@ -216,10 +261,10 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
                             }
                         }
                     }
-
+                    
                     return members;
                 }
-            }, AuthenticationUtil.getSystemUserName());
+            }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
         }
     }
 
@@ -237,26 +282,30 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
                 // if permission service not configured then fallback (ie. no read permission check)
                 return true;
             }
-
+            
             String nodeRefStr = (String) model.get(PostLookup.JSON_NODEREF);
             if (nodeRefStr == null)
             {
                 nodeRefStr = (String) model.get(PostLookup.JSON_NODEREF_PARENT);
             }
-
+            
             if (nodeRefStr != null)
             {
                 final NodeRef nodeRef = new NodeRef(nodeRefStr);
-
+                
+                // MT share
+                String tenantDomain = (String)model.get(PostLookup.JSON_TENANT_DOMAIN);
+                if (tenantDomain == null) { tenantDomain = TenantService.DEFAULT_DOMAIN; }
+                
                 return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Boolean>()
                 {
                     public Boolean doWork() throws Exception
                     {
                         return canReadImpl(connectedUser, nodeRef);
                     }
-                }, AuthenticationUtil.getSystemUserName());
+                }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
             }
-
+            
             return true;
         }
     }
@@ -431,7 +480,7 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
         for (Resource resource : resources)
         {
             String resourcePath = resource.getURL().toExternalForm();
-
+            
             int idx = resourcePath.lastIndexOf(classPath);
             if (idx != -1)
             {
@@ -446,21 +495,29 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
         }
         return documentPaths;
     }
-
-    protected Set<String> getFollowers(String userId) throws Exception
+    
+    protected Set<String> getFollowers(final String userId, String tenantDomain) throws Exception
     {
-        Set<String> result = new HashSet<String>();
-
+        final Set<String> result = new HashSet<String>();
+        
         if (subscriptionService.isActive())
         {
-            PagingFollowingResults fr = subscriptionService.getFollowers(userId, new PagingRequest(1000000, null));
-
-            if (fr.getPage() != null)
+            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
             {
-                result.addAll(fr.getPage());
-            }
+                public Void doWork() throws Exception
+                {
+                    PagingFollowingResults fr = subscriptionService.getFollowers(userId, new PagingRequest(1000000, null));
+                    
+                    if (fr.getPage() != null)
+                    {
+                        result.addAll(fr.getPage());
+                    }
+                    
+                    return null;
+                }
+            }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
         }
-
+        
         return result;
     }
 }

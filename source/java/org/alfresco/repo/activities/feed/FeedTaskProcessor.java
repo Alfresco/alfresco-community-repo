@@ -38,11 +38,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.alfresco.repo.activities.post.lookup.PostLookup;
 import org.alfresco.repo.domain.activities.ActivityFeedDAO;
 import org.alfresco.repo.domain.activities.ActivityFeedEntity;
 import org.alfresco.repo.domain.activities.ActivityPostEntity;
 import org.alfresco.repo.domain.activities.FeedControlEntity;
 import org.alfresco.repo.template.ISO8601DateFormatMethod;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.util.JSONtoFmModel;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -207,7 +209,27 @@ public abstract class FeedTaskProcessor
                     continue;
                 }
                 
-                String thisSite = (activityPost.getSiteNetwork() != null ? activityPost.getSiteNetwork() : "");
+                // note: for MT share, site id should already be mangled - in addition to extra tenant domain info
+                
+                String thisSite = activityPost.getSiteNetwork();
+                String tenantDomain = (String)model.get(PostLookup.JSON_TENANT_DOMAIN);
+                
+                if (thisSite != null)
+                {
+                    if (tenantDomain != null)
+                    {
+                        thisSite = getTenantName(thisSite, tenantDomain);
+                    }
+                    else
+                    {
+                        // for backwards compatibility
+                        tenantDomain = getTenantDomain(thisSite);
+                    }
+                }
+                if (tenantDomain == null)
+                {
+                    tenantDomain = TenantService.DEFAULT_DOMAIN;
+                }
                 
                 model.put(ActivityFeedEntity.KEY_ACTIVITY_FEED_TYPE, activityPost.getActivityType());
                 model.put(ActivityFeedEntity.KEY_ACTIVITY_FEED_SITE, thisSite);
@@ -230,7 +252,7 @@ public abstract class FeedTaskProcessor
                         try
                         {
                             // Repository callback to get site members
-                            connectedUsers = getSiteMembers(ctx, thisSite);
+                            connectedUsers = getSiteMembers(ctx, thisSite, tenantDomain);
                             connectedUsers.add(""); // add empty posting userid - to represent site feed !
                         }
                         catch(Exception e)
@@ -248,11 +270,15 @@ public abstract class FeedTaskProcessor
                 }
                 
                 // Add followers to recipient list
-                Set<String> followerUsers = followers.get(activityPost.getUserId());
-                if(followerUsers == null) {
+                
+                // MT Share - mangle key to be within context of tenant
+                String key = getTenantKey(activityPost.getUserId(), tenantDomain);
+                Set<String> followerUsers = followers.get(key);
+                if (followerUsers == null)
+                {
                     try
                     {
-                        followerUsers = getFollowers(activityPost.getUserId());
+                        followerUsers = getFollowers(activityPost.getUserId(), tenantDomain);
                     }
                     catch(Exception e)
                     {
@@ -261,13 +287,13 @@ public abstract class FeedTaskProcessor
                         continue;
                     }
                     
-                    followers.put(activityPost.getUserId(), followerUsers);
+                    followers.put(key, followerUsers);
                 }
                 recipients.addAll(followerUsers);
-
+                
                 // Add the originator to recipients
                 recipients.add(activityPost.getUserId());
-
+                
                 try 
                 { 
                     startTransaction();
@@ -472,9 +498,27 @@ public abstract class FeedTaskProcessor
         
         return result;
     }
-
-    protected Set<String> getSiteMembers(RepoCtx ctx, String siteId) throws Exception
+    
+    protected String getTenantName(String name, String tenantDomain)
     {
+        // note: for MT impl, see override in LocalFeedTaskProcessor
+        return name;
+    }
+    
+    protected String getTenantDomain(String name)
+    {
+        // note: for MT impl, see override in LocalFeedTaskProcessor
+        return TenantService.DEFAULT_DOMAIN;
+    }
+    
+    private static String getTenantKey(String name, String tenantDomain)
+    {
+        return tenantDomain + "." + name;
+    }
+    
+    protected Set<String> getSiteMembers(RepoCtx ctx, String siteId, String tenantDomain) throws Exception
+    {
+        // note: tenant domain ignored her - it should already be part of the siteId
         Set<String> members = new HashSet<String>();
         if ((siteId != null) && (siteId.length() != 0))
         {
@@ -503,8 +547,9 @@ public abstract class FeedTaskProcessor
         
         return members;
     }
-
-    protected abstract Set<String> getFollowers(String userId) throws Exception;
+    
+    
+    protected abstract Set<String> getFollowers(String userId, String tenantDomain) throws Exception;
     
     protected boolean canRead(RepoCtx ctx, final String connectedUser, Map<String, Object> model) throws Exception
     {

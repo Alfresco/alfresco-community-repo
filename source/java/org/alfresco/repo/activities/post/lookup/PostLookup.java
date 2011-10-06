@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -76,6 +76,8 @@ public class PostLookup
     public static final String JSON_PARENT_NODEREF = "parentNodeRef";
     public static final String JSON_DISPLAY_PATH = "displayPath";
     
+    public static final String JSON_TENANT_DOMAIN = "tenantDomain";
+    
     
     public void setPostDAO(ActivityPostDAO postDAO)
     {
@@ -149,100 +151,122 @@ public class PostLookup
             {
                 final String postUserId = activityPost.getUserId();
                 
-                // MT share
-                String tenantDomain = tenantService.getUserDomain(postUserId);
-                
-                AuthenticationUtil.runAs(new RunAsWork<Object>()
+                try
                 {
-                    public Object doWork() throws Exception
+                    // MT share
+                    String tenantDomain = TenantService.DEFAULT_DOMAIN;
+                    
+                    final JSONObject jo = new JSONObject(new JSONTokener(activityPost.getActivityData()));
+                    if (! jo.isNull(JSON_TENANT_DOMAIN))
                     {
-                        try
-                        {
-                            postDAO.startTransaction();
-                            
-                            JSONObject jo = new JSONObject(new JSONTokener(activityPost.getActivityData()));
-                            
-                            String activityDataStr = null;
-                            
-                            if (! jo.isNull(JSON_NODEREF_LOOKUP))
-                            {
-                                String nodeRefStr = jo.getString(JSON_NODEREF_LOOKUP);
-                                NodeRef nodeRef = new NodeRef(nodeRefStr);
-                                
-                                // lookup additional node data
-                                JSONObject activityData = lookupNode(nodeRef, postUserId, jo);
-                                activityDataStr = activityData.toString();
-                            }
-                            else
-                            {
-                                // lookup additional person data
-                                Pair<String, String> firstLastName = lookupPerson(postUserId);
-                                if (firstLastName != null)
-                                {
-                                    jo.put(JSON_FIRSTNAME, firstLastName.getFirst());
-                                    jo.put(JSON_LASTNAME, firstLastName.getSecond());
-                                    
-                                    activityDataStr = jo.toString();
-                                }
-                            }
-                            
-                            if (activityDataStr != null)
-                            {
-                                activityPost.setActivityData(activityDataStr);
-                            }
-                            
-                            if ((activityPost.getActivityData() != null) && (activityPost.getActivityData().length() > ActivityPostDAO.MAX_LEN_ACTIVITY_DATA))
-                            {
-                                throw new IllegalArgumentException("Invalid activity data - exceeds " + ActivityPostDAO.MAX_LEN_ACTIVITY_DATA + " chars: " + activityPost.getActivityData());
-                            }
-                            
-                            if ((activityPost.getSiteNetwork() != null) && (activityPost.getSiteNetwork().length() > ActivityPostDAO.MAX_LEN_SITE_ID))
-                            {
-                                // belts-and-braces - should not get here since checked during post (and not modified)
-                                throw new IllegalArgumentException("Invalid siteId - exceeds " + ActivityPostDAO.MAX_LEN_SITE_ID + " chars: " + activityPost.getSiteNetwork());
-                            }
-                            
-                            activityPost.setLastModified(new Date());
-                            
-                            postDAO.updatePost(activityPost.getId(), activityPost.getSiteNetwork(), activityPost.getActivityData(), ActivityPostEntity.STATUS.POSTED);
-                            
-                            if (logger.isDebugEnabled())
-                            {
-                                activityPost.setStatus(ActivityPostEntity.STATUS.POSTED.toString()); // for debug output
-                                logger.debug("Updated: " + activityPost);
-                            }
-                            
-                            postDAO.commitTransaction();
-                        }
-                        catch (IllegalArgumentException e)
-                        {
-                            // log error, but consume exception (skip this post)
-                            logger.error("Skipping activity post " + activityPost.getId() + ": " + e);
-                            postDAO.updatePostStatus(activityPost.getId(), ActivityPostEntity.STATUS.ERROR);
-                            
-                            postDAO.commitTransaction();
-                        }
-                        catch (JSONException e)
-                        {
-                            // log error, but consume exception (skip this post)
-                            logger.error("Skipping activity post " + activityPost.getId() + ": " + e);
-                            postDAO.updatePostStatus(activityPost.getId(), ActivityPostEntity.STATUS.ERROR);
-                            
-                            postDAO.commitTransaction();
-                        }
-                        catch (SQLException e)
-                        {
-                            logger.error("Exception during update of post", e);
-                            throw new JobExecutionException(e);
-                        }
-                        finally
-                        {
-                            postDAO.endTransaction();
-                        }
-                        
-                        return null;
+                        tenantDomain = jo.getString(JSON_TENANT_DOMAIN);
                     }
-                }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
+                    
+                    AuthenticationUtil.runAs(new RunAsWork<Object>()
+                    {
+                        public Object doWork() throws Exception
+                        {
+                            try
+                            {
+                                postDAO.startTransaction();
+                                
+                                String activityDataStr = null;
+                                
+                                if (! jo.isNull(JSON_NODEREF_LOOKUP))
+                                {
+                                    String nodeRefStr = jo.getString(JSON_NODEREF_LOOKUP);
+                                    NodeRef nodeRef = new NodeRef(nodeRefStr);
+                                    
+                                    // lookup additional node data
+                                    JSONObject activityData = lookupNode(nodeRef, postUserId, jo);
+                                    activityDataStr = activityData.toString();
+                                }
+                                else
+                                {
+                                    // lookup additional person data
+                                    Pair<String, String> firstLastName = lookupPerson(postUserId);
+                                    if (firstLastName != null)
+                                    {
+                                        jo.put(JSON_FIRSTNAME, firstLastName.getFirst());
+                                        jo.put(JSON_LASTNAME, firstLastName.getSecond());
+                                        
+                                        activityDataStr = jo.toString();
+                                    }
+                                }
+                                
+                                if (activityDataStr != null)
+                                {
+                                    activityPost.setActivityData(activityDataStr);
+                                }
+                                
+                                if ((activityPost.getActivityData() != null) && (activityPost.getActivityData().length() > ActivityPostDAO.MAX_LEN_ACTIVITY_DATA))
+                                {
+                                    throw new IllegalArgumentException("Invalid activity data - exceeds " + ActivityPostDAO.MAX_LEN_ACTIVITY_DATA + " chars: " + activityPost.getActivityData());
+                                }
+                                
+                                if ((activityPost.getSiteNetwork() != null) && (activityPost.getSiteNetwork().length() > ActivityPostDAO.MAX_LEN_SITE_ID))
+                                {
+                                    // belts-and-braces - should not get here since checked during post (and not modified)
+                                    throw new IllegalArgumentException("Invalid siteId - exceeds " + ActivityPostDAO.MAX_LEN_SITE_ID + " chars: " + activityPost.getSiteNetwork());
+                                }
+                                
+                                activityPost.setLastModified(new Date());
+                                
+                                postDAO.updatePost(activityPost.getId(), activityPost.getSiteNetwork(), activityPost.getActivityData(), ActivityPostEntity.STATUS.POSTED);
+                                
+                                if (logger.isDebugEnabled())
+                                {
+                                    activityPost.setStatus(ActivityPostEntity.STATUS.POSTED.toString()); // for debug output
+                                    logger.debug("Updated: " + activityPost);
+                                }
+                                
+                                postDAO.commitTransaction();
+                            }
+                            catch (IllegalArgumentException e)
+                            {
+                                // log error, but consume exception (skip this post)
+                                logger.error("Skipping activity post " + activityPost.getId() + ": " + e);
+                                postDAO.updatePostStatus(activityPost.getId(), ActivityPostEntity.STATUS.ERROR);
+                                
+                                postDAO.commitTransaction();
+                            }
+                            catch (JSONException e)
+                            {
+                                // log error, but consume exception (skip this post)
+                                logger.error("Skipping activity post " + activityPost.getId() + ": " + e);
+                                postDAO.updatePostStatus(activityPost.getId(), ActivityPostEntity.STATUS.ERROR);
+                                
+                                postDAO.commitTransaction();
+                            }
+                            catch (SQLException e)
+                            {
+                                logger.error("Exception during update of post", e);
+                                throw new JobExecutionException(e);
+                            }
+                            finally
+                            {
+                                postDAO.endTransaction();
+                            }
+                            
+                            return null;
+                        }
+                    }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
+                }
+                catch (JSONException e)
+                {
+                    // log error, but consume exception (skip this post)
+                    logger.error("Skipping activity post " + activityPost.getId() + ": " + e);
+                    
+                    try
+                    {
+                        postDAO.updatePostStatus(activityPost.getId(), ActivityPostEntity.STATUS.ERROR);
+                        postDAO.commitTransaction();
+                    }
+                    finally
+                    {
+                        postDAO.endTransaction();
+                    }
+                }
             }
         }
         catch (SQLException e)

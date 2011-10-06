@@ -118,7 +118,7 @@ public class ActivityPostServiceImpl implements ActivityPostService
         ParameterCheck.mandatory("nodeRef", nodeRef);
         ParameterCheck.mandatory("typeQName", typeQName);
         ParameterCheck.mandatory("parentNodeRef", parentNodeRef);
-          
+        
         StringBuffer sb = new StringBuffer();
         sb.append("{").append("\""+PostLookup.JSON_NODEREF_LOOKUP+"\":\"").append(nodeRef.toString()).append("\"").append(",")
                       .append("\""+PostLookup.JSON_NAME+"\":\"").append(name).append("\"").append(",")
@@ -171,31 +171,12 @@ public class ActivityPostServiceImpl implements ActivityPostService
             
             if (AuthenticationUtil.isMtEnabled())
             {
-                // MT share - required for canRead
+                // MT share - add tenantDomain
                 try
                 {
                     JSONObject jo = new JSONObject(new JSONTokener(activityData));
-                    
-                    boolean update = false;
-                    
-                    if (! jo.isNull(PostLookup.JSON_NODEREF))
-                    {
-                        String nodeRefStr = jo.getString(PostLookup.JSON_NODEREF);
-                        jo.put(PostLookup.JSON_NODEREF, tenantService.getName(new NodeRef(nodeRefStr)));
-                        update = true;
-                    }
-                    
-                    if (! jo.isNull(PostLookup.JSON_NODEREF_PARENT))
-                    {
-                        String nodeRefStr = jo.getString(PostLookup.JSON_NODEREF_PARENT);
-                        jo.put(PostLookup.JSON_NODEREF_PARENT, tenantService.getName(new NodeRef(nodeRefStr)));
-                        update = true;
-                    }
-                    
-                    if (update)
-                    {
-                        activityData = jo.toString();
-                    }
+                    jo.put(PostLookup.JSON_TENANT_DOMAIN, tenantService.getCurrentUserDomain());
+                    activityData = jo.toString();
                 }
                 catch (JSONException e)
                 {

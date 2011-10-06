@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -538,7 +538,7 @@ public class MultiTServiceImpl implements TenantService
      */
     public boolean isTenantName(String name)
     {
-        return false == getDomain(name, false).isEmpty();
+        return (! TenantService.DEFAULT_DOMAIN.equals(getDomain(name, false)));
     }
     
     /* (non-Javadoc)

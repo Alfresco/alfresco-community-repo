@@ -87,6 +87,7 @@
       <property name="contentService" ref="ContentService"/>
       <property name="permissionService" ref="PermissionService"/>
       <property name="subscriptionService" ref="SubscriptionService"/>
+      <property name="tenantService" ref="tenantService"/>
             
       <property name="templateSearchPaths">
           <list>

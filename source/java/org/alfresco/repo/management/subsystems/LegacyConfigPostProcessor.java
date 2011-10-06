@@ -106,6 +106,7 @@ public class LegacyConfigPostProcessor implements BeanFactoryPostProcessor, Prio
             // Fix up additional properties to enforce correct order of precedence
             repositoryProperties.addPropertyValue("ignoreUnresolvablePlaceholders", Boolean.TRUE);
             repositoryProperties.addPropertyValue("localOverride", Boolean.FALSE);
+            repositoryProperties.addPropertyValue("valueSeparator", null);
             repositoryProperties.addPropertyValue("systemPropertiesModeName", "SYSTEM_PROPERTIES_MODE_NEVER");
 
             // Move location paths added to hibernateConfigProperties

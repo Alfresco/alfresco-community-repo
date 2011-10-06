@@ -53,6 +53,7 @@ import org.gagravarr.tika.VorbisParser;
  *   <b>xmpDM:releaseDate</b>       --      audio:releaseDate
  * </pre>
  * 
+ * @since 4.0
  * @author Nick Burch
  */
 public class TikaAudioMetadataExtracter extends TikaPoweredMetadataExtracter
@@ -84,7 +85,8 @@ public class TikaAudioMetadataExtracter extends TikaPoweredMetadataExtracter
     }
     
     @Override
-    protected Parser getParser() {
+    protected Parser getParser() 
+    {
        return new CompositeParser(
              tikaConfig.getMediaTypeRegistry(), parsers
        );
@@ -92,7 +94,8 @@ public class TikaAudioMetadataExtracter extends TikaPoweredMetadataExtracter
 
     @Override
     protected Map<String, Serializable> extractSpecific(Metadata metadata,
-         Map<String, Serializable> properties, Map<String,String> headers) {
+         Map<String, Serializable> properties, Map<String,String> headers) 
+    {
        // Most things can go with the default Tika -> Alfresco Mapping
        // Handle the few special cases here
        

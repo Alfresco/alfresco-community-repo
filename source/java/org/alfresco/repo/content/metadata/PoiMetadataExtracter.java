@@ -59,7 +59,8 @@ public class PoiMetadataExtracter extends TikaPoweredMetadataExtracter
     }
     
     @Override
-    protected Parser getParser() {
+    protected Parser getParser() 
+    {
         return new OOXMLParser();
     }
 }

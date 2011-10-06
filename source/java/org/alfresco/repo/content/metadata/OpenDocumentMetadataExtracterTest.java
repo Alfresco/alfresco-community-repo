@@ -79,14 +79,18 @@ public class OpenDocumentMetadataExtracterTest extends AbstractMetadataExtracter
     * We also provide the creation date - check that
     */
    protected void testFileSpecificMetadata(String mimetype,
-         Map<QName, Serializable> properties) {
+         Map<QName, Serializable> properties) 
+   {
       // Check for two cases
-      if(mimetype.equals("application/vnd.oasis.opendocument.text")) {
+      if(mimetype.equals("application/vnd.oasis.opendocument.text")) 
+      {
          assertEquals(
                "Property " + ContentModel.PROP_CREATED + " not found for mimetype " + mimetype,
                "2005-09-06T23:34:00.000+01:00",
                DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_CREATED)));
-      } else if(mimetype.equals("application/vnd.oasis.opendocument.graphics")) {
+      } 
+      else if(mimetype.equals("application/vnd.oasis.opendocument.graphics")) 
+      {
          assertEquals(
                "Property " + ContentModel.PROP_CREATED + " not found for mimetype " + mimetype,
                "2006-01-27T11:46:11.000Z",

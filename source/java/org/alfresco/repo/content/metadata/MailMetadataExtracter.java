@@ -68,14 +68,16 @@ public class MailMetadataExtracter extends TikaPoweredMetadataExtracter
     }
     
     @Override
-    protected Parser getParser() {
+    protected Parser getParser() 
+    {
        // The office parser does Outlook as well as Word, Excel etc
        return new OfficeParser();
     }
     
     @Override
     protected Map<String, Serializable> extractSpecific(Metadata metadata,
-         Map<String, Serializable> properties, Map<String,String> headers) {
+         Map<String, Serializable> properties, Map<String,String> headers) 
+    {
        putRawValue(KEY_ORIGINATOR, metadata.get(Metadata.AUTHOR), properties);
        putRawValue(KEY_SUBJECT, metadata.get(Metadata.TITLE), properties);
        putRawValue(KEY_DESCRIPTION, metadata.get(Metadata.SUBJECT), properties);

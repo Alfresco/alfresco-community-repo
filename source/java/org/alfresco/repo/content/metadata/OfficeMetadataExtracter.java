@@ -86,13 +86,15 @@ public class OfficeMetadataExtracter extends TikaPoweredMetadataExtracter
     }
     
     @Override
-    protected Parser getParser() {
+    protected Parser getParser() 
+    {
       return new OfficeParser();
     }
 
     @Override
     protected Map<String, Serializable> extractSpecific(Metadata metadata,
-         Map<String, Serializable> properties, Map<String,String> headers) {
+         Map<String, Serializable> properties, Map<String,String> headers) 
+    {
        putRawValue(KEY_CREATE_DATETIME, metadata.get(Metadata.CREATION_DATE), properties); 
        putRawValue(KEY_LAST_SAVE_DATETIME, metadata.get(Metadata.LAST_SAVED), properties);
        putRawValue(KEY_EDIT_TIME, metadata.get(Metadata.EDIT_TIME), properties);

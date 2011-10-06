@@ -43,6 +43,7 @@ import org.apache.tika.parser.dwg.DWGParser;
  * 
  * Uses Apache Tika
  * 
+ * @since 3.4
  * @author Nick Burch
  */
 public class DWGMetadataExtracter extends TikaPoweredMetadataExtracter
@@ -66,14 +67,16 @@ public class DWGMetadataExtracter extends TikaPoweredMetadataExtracter
     
     @Override
     protected Map<String, Serializable> extractSpecific(Metadata metadata,
-         Map<String, Serializable> properties, Map<String,String> headers) {
+         Map<String, Serializable> properties, Map<String,String> headers) 
+    {
        putRawValue(KEY_KEYWORD, metadata.get(Metadata.KEYWORDS), properties);
        putRawValue(KEY_LAST_AUTHOR, metadata.get(Metadata.LAST_AUTHOR), properties);
        return properties;
     }
 
     @Override
-    protected Parser getParser() {
+    protected Parser getParser() 
+    {
       return new DWGParser();
     }
 }

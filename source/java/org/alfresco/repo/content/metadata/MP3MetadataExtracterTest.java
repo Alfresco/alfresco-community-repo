@@ -71,7 +71,8 @@ public class MP3MetadataExtracterTest extends TikaAudioMetadataExtracterTest
      * We don't have quite the usual metadata. Tests the descriptions one.
      * Other tests in {@link #testFileSpecificMetadata(String, Map)}
      */
-    protected void testCommonMetadata(String mimetype, Map<QName, Serializable> properties) {
+    protected void testCommonMetadata(String mimetype, Map<QName, Serializable> properties) 
+    {
        // Title is as normal
        assertEquals(
              "Property " + ContentModel.PROP_TITLE + " not found for mimetype " + mimetype,
@@ -94,7 +95,8 @@ public class MP3MetadataExtracterTest extends TikaAudioMetadataExtracterTest
    /** 
     * Tests for various MP3 specific bits of metadata 
     */
-    public void testFileSpecificMetadata(String mimetype, Map<QName, Serializable> properties) {
+    public void testFileSpecificMetadata(String mimetype, Map<QName, Serializable> properties) 
+    {
        super.testFileSpecificMetadata(mimetype, properties);
     }
 }

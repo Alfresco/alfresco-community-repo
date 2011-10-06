@@ -75,7 +75,8 @@ public class TikaAudioMetadataExtracterTest extends AbstractMetadataExtracterTes
      * We don't have quite the usual metadata. Tests the descriptions one.
      * Other tests in {@link #testFileSpecificMetadata(String, Map)}
      */
-    protected void testCommonMetadata(String mimetype, Map<QName, Serializable> properties) {
+    protected void testCommonMetadata(String mimetype, Map<QName, Serializable> properties) 
+    {
        // Title is as normal
        assertEquals(
              "Property " + ContentModel.PROP_TITLE + " not found for mimetype " + mimetype,

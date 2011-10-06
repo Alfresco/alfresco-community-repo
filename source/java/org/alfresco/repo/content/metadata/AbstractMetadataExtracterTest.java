@@ -154,18 +154,24 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
     protected void testCommonMetadata(String mimetype, Map<QName, Serializable> properties)
     {
        // One of Creator or Author
-       if(!skipAuthorCheck(mimetype)) {
-          if(properties.containsKey(ContentModel.PROP_CREATOR)) {
+       if(!skipAuthorCheck(mimetype)) 
+       {
+          if(properties.containsKey(ContentModel.PROP_CREATOR)) 
+          {
              assertEquals(
                    "Property " + ContentModel.PROP_CREATOR + " not found for mimetype " + mimetype,
                    QUICK_CREATOR,
                    DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_CREATOR)));
-          } else if(properties.containsKey(ContentModel.PROP_AUTHOR)) {
+          } 
+          else if(properties.containsKey(ContentModel.PROP_AUTHOR)) 
+          {
              assertEquals(
                    "Property " + ContentModel.PROP_AUTHOR + " not found for mimetype " + mimetype,
                    QUICK_CREATOR,
                    DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_AUTHOR)));
-          } else {
+          } 
+          else 
+          {
              fail("Expected one property out of " + ContentModel.PROP_CREATOR + " and " + 
                    ContentModel.PROP_AUTHOR + " but found neither of them for " + mimetype);
           }
@@ -176,7 +182,8 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
                 "Property " + ContentModel.PROP_TITLE + " not found for mimetype " + mimetype,
                 QUICK_TITLE,
                 DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_TITLE)));
-       if (!skipDescriptionCheck(mimetype)) {
+       if (!skipDescriptionCheck(mimetype)) 
+       {
     	   assertEquals(
     			   "Property " + ContentModel.PROP_DESCRIPTION + " not found for mimetype " + mimetype,
     			   QUICK_DESCRIPTION,
@@ -236,13 +243,16 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
     }
     
     
-    protected static void assertContains(String message, String needle, String haystack) {
-       if(haystack.indexOf(needle) > -1) {
+    protected static void assertContains(String message, String needle, String haystack) 
+    {
+       if(haystack.indexOf(needle) > -1) 
+       {
           return;
        }
        fail(message);
     }
-    protected static void assertContains(String needle, String haystack) {
+    protected static void assertContains(String needle, String haystack) 
+    {
        assertContains("'" + needle + "' wasn't found in '" + haystack + "'", needle, haystack);
     }
 }

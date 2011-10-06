@@ -68,7 +68,8 @@ public class PoiMetadataExtracterTest extends AbstractMetadataExtracterTest
     }
 
     @Override
-    protected boolean skipDescriptionCheck(String mimetype) {
+    protected boolean skipDescriptionCheck(String mimetype) 
+    {
     	// Our 3 OpenOffice 07 quick files have no description properties.
     	return true;
     }
@@ -76,7 +77,8 @@ public class PoiMetadataExtracterTest extends AbstractMetadataExtracterTest
 
     @Override
     protected void testFileSpecificMetadata(String mimetype,
-         Map<QName, Serializable> properties) {
+         Map<QName, Serializable> properties) 
+    {
     	// This test class is testing 3 files: quick.docx, quick.xlsx & quick.pptx.
     	// Their created times are hard-coded here for checking.
     	// Of course this means that if the files are updated, the test will break

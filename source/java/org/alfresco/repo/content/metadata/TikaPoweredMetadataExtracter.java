@@ -69,6 +69,7 @@ import org.xml.sax.SAXException;
  *   <b>comments:</b>
  * </pre>
  * 
+ * @since 3.4
  * @author Nick Burch
  */
 public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetadataExtracter
@@ -88,19 +89,25 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
      * Builds up a list of supported mime types by merging an explicit
      *  list with any that Tika also claims to support
      */
-    protected static ArrayList<String> buildSupportedMimetypes(String[] explicitTypes, Parser... tikaParsers) {
+    protected static ArrayList<String> buildSupportedMimetypes(String[] explicitTypes, Parser... tikaParsers) 
+    {
        ArrayList<String> types = new ArrayList<String>();
-       for(String type : explicitTypes) {
-          if(!types.contains(type)) {
+       for(String type : explicitTypes) 
+       {
+          if(!types.contains(type)) 
+          {
              types.add(type);
           }
        }
-       if(tikaParsers != null) {
+       if(tikaParsers != null) 
+       {
           for(Parser tikaParser : tikaParsers)
           {
-             for(MediaType mt : tikaParser.getSupportedTypes(new ParseContext())) {
+             for(MediaType mt : tikaParser.getSupportedTypes(new ParseContext())) 
+             {
                 String type = mt.toString();
-                if(!types.contains(type)) {
+                if(!types.contains(type)) 
+                {
                    types.add(type);
                 }
              }
@@ -153,9 +160,11 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
      *  and similar formats, which Tika makes use of
      */
     @Override
-    protected Date makeDate(String dateStr) {
+    protected Date makeDate(String dateStr) 
+    {
        // Try our formats first, in order
-       for(DateFormat df : this.tikaDateFormats) {
+       for(DateFormat df : this.tikaDateFormats) 
+       {
           try
           {
               return df.parse(dateStr);
@@ -183,7 +192,8 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
      * Do we care about the contents of the
      *  extracted header, or nothing at all?
      */
-    protected boolean needHeaderContents() {
+    protected boolean needHeaderContents() 
+    {
        return false;
     }
     
@@ -192,7 +202,8 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
      *  to be done.
      */
     protected Map<String, Serializable> extractSpecific(Metadata metadata, 
-          Map<String, Serializable> properties, Map<String,String> headers) {
+          Map<String, Serializable> properties, Map<String,String> headers) 
+    {
        return properties;
     }
     
@@ -206,10 +217,14 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
      */
     private InputStream getInputStream(ContentReader reader) throws IOException {
        if("image/jpeg".equals(reader.getMimetype()) ||
-             "image/tiff".equals(reader.getMimetype())) {
-          if(reader instanceof FileContentReader) {
+             "image/tiff".equals(reader.getMimetype())) 
+       {
+          if(reader instanceof FileContentReader) 
+          {
              return TikaInputStream.get( ((FileContentReader)reader).getFile() );
-          } else {
+          } 
+          else 
+          {
              File tmpFile = TempFileProvider.createTempFile("tika", "tmp");
              reader.getContent(tmpFile);
              return TikaInputStream.get(tmpFile);
@@ -235,12 +250,15 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
             
             ContentHandler handler;
             Map<String,String> headers = null;
-            if(needHeaderContents()) {
+            if(needHeaderContents()) 
+            {
                MapCaptureContentHandler headerCapture = 
                   new MapCaptureContentHandler();
                headers = headerCapture.tags;
                handler = new HeadContentHandler(headerCapture);
-            } else {
+            } 
+            else 
+            {
                handler = new NullContentHandler(); 
             }
 
@@ -249,7 +267,8 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
             // First up, copy all the Tika metadata over
             // This allows people to map any of the Tika
             //  keys onto their own content model
-            for(String tikaKey : metadata.names()) {
+            for(String tikaKey : metadata.names()) 
+            {
                putRawValue(tikaKey, metadata.get(tikaKey), rawProperties);
             }
             
@@ -267,21 +286,29 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
             //  being nearly as consistent as one might hope
             String subject = metadata.get(Metadata.SUBJECT);
             String description = metadata.get(Metadata.DESCRIPTION);
-            if(subject != null && description != null) {
+            if(subject != null && description != null) 
+            {
                putRawValue(KEY_DESCRIPTION, description, rawProperties);
                putRawValue(KEY_SUBJECT, subject, rawProperties);
-            } else if(subject != null) {
+            } 
+            else if(subject != null) 
+            {
                putRawValue(KEY_DESCRIPTION, subject, rawProperties);
                putRawValue(KEY_SUBJECT, subject, rawProperties);
-            } else if(description != null) {
+            } 
+            else if(description != null) 
+            {
                putRawValue(KEY_DESCRIPTION, description, rawProperties);
                putRawValue(KEY_SUBJECT, description, rawProperties);
             }
             
             // Try for the dates two different ways too
-            if(metadata.get(Metadata.CREATION_DATE) != null) {
+            if(metadata.get(Metadata.CREATION_DATE) != null) 
+            {
                putRawValue(KEY_CREATED, metadata.get(Metadata.CREATION_DATE), rawProperties);
-            } else if(metadata.get(Metadata.DATE) != null) {
+            } 
+            else if(metadata.get(Metadata.DATE) != null) 
+            {
                putRawValue(KEY_CREATED, metadata.get(Metadata.DATE), rawProperties);
             }
             
@@ -308,7 +335,8 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
      *  the header of the Tika content XHTML, but ignore the
      *  rest.
      */
-    protected static class HeadContentHandler extends ContentHandlerDecorator {
+    protected static class HeadContentHandler extends ContentHandlerDecorator 
+    {
        /**
         * XHTML XPath parser.
         */
@@ -327,7 +355,8 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
         *
         * @param handler content handler
         */
-       protected HeadContentHandler(ContentHandler handler) {
+       protected HeadContentHandler(ContentHandler handler) 
+       {
            super(new MatchingContentHandler(handler, MATCHER));
        }
     }
@@ -337,26 +366,31 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
      *  of them.
      * Normally only used with {@link HeadContentHandler} 
      */
-    protected static class MapCaptureContentHandler implements ContentHandler {
+    protected static class MapCaptureContentHandler implements ContentHandler 
+    {
        protected Map<String,String> tags =
           new HashMap<String, String>();
        private StringBuffer text;
 
-      public void characters(char[] ch, int start, int len) {
-         if(text != null) {
+      public void characters(char[] ch, int start, int len) 
+      {
+         if(text != null) 
+         {
             text.append(ch, start, len);
          }
       }
-      public void endElement(String namespace, String localname,
-            String qname) {
-         if(text != null && text.length() > 0) {
+      public void endElement(String namespace, String localname, String qname) 
+      {
+         if(text != null && text.length() > 0) 
+         {
             tags.put(qname, text.toString());
          }
          text = null;
       }
-      public void startElement(String namespace, String localname,
-            String qname, Attributes attrs) {
-         for(int i=0; i<attrs.getLength(); i++) {
+      public void startElement(String namespace, String localname, String qname, Attributes attrs) 
+      {
+         for(int i=0; i<attrs.getLength(); i++) 
+         {
             tags.put(attrs.getQName(i), attrs.getValue(i));
          }
          text = new StringBuffer();
@@ -379,7 +413,8 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
      * Normally used when we only want the metadata, and don't
      *  care about the file contents.
      */
-    protected static class NullContentHandler implements ContentHandler {
+    protected static class NullContentHandler implements ContentHandler 
+    {
       public void characters(char[] paramArrayOfChar, int paramInt1,
             int paramInt2) throws SAXException {}
       public void endDocument() throws SAXException {}

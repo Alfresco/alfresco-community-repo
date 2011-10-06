@@ -45,6 +45,7 @@ import org.apache.tika.parser.Parser;
  *   <p>geo:long:</b>               --      cm:longitude
  * </pre>
  * 
+ * @since 3.4
  * @author Nick Burch
  */
 public class TikaAutoMetadataExtracter extends TikaPoweredMetadataExtracter
@@ -86,7 +87,8 @@ public class TikaAutoMetadataExtracter extends TikaPoweredMetadataExtracter
      *  Parser.
      */
     @Override
-    protected Parser getParser() {
+    protected Parser getParser() 
+    {
        return parser;
     }
 }

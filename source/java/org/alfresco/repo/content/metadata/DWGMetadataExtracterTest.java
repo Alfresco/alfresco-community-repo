@@ -118,8 +118,8 @@ public class DWGMetadataExtracterTest extends AbstractMetadataExtracterTest
     * We also provide the creation date - check that
     */
    protected void testFileSpecificMetadata(String mimetype,
-         Map<QName, Serializable> properties) {
-      
+         Map<QName, Serializable> properties) 
+   {
       // Check for extra fields
       assertEquals(
             "Property " + ContentModel.PROP_AUTHOR + " not found for mimetype " + mimetype,

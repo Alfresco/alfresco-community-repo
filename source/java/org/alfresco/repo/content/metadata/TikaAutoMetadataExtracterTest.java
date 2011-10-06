@@ -99,7 +99,8 @@ public class TikaAutoMetadataExtracterTest extends AbstractMetadataExtracterTest
                  new Mp3Parser(), new OOXMLParser()
         }) {
            Set<MediaType> mts = p.getSupportedTypes(new ParseContext());
-           for (MediaType mt : mts) {
+           for (MediaType mt : mts) 
+           {
               mimeTypes.add(mt.toString());
            }
         }
@@ -159,7 +160,8 @@ public class TikaAutoMetadataExtracterTest extends AbstractMetadataExtracterTest
     protected boolean skipAuthorCheck(String mimetype) { return true; }
 
     @Override
-    protected boolean skipDescriptionCheck(String mimetype) {
+    protected boolean skipDescriptionCheck(String mimetype) 
+    {
        if(mimetype.endsWith("/ogg")) 
        {
           return true;
@@ -171,7 +173,8 @@ public class TikaAutoMetadataExtracterTest extends AbstractMetadataExtracterTest
     * We also provide the creation date - check that
     */
    protected void testFileSpecificMetadata(String mimetype,
-         Map<QName, Serializable> properties) {
+         Map<QName, Serializable> properties) 
+   {
       
       // Check for extra fields
       // Author isn't there for the OpenDocument ones

@@ -72,13 +72,15 @@ public class MP3MetadataExtracter extends TikaAudioMetadataExtracter
     }
     
     @Override
-    protected Parser getParser() {
+    protected Parser getParser() 
+    {
        return new Mp3Parser();
     }
 
     @Override
     protected Map<String, Serializable> extractSpecific(Metadata metadata,
-         Map<String, Serializable> properties, Map<String,String> headers) {
+         Map<String, Serializable> properties, Map<String,String> headers) 
+    {
        // Do the normal Audio mappings
        super.extractSpecific(metadata, properties, headers);
        

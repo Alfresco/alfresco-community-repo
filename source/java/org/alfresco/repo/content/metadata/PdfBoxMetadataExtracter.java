@@ -56,7 +56,8 @@ public class PdfBoxMetadataExtracter extends TikaPoweredMetadataExtracter
     }
     
     @Override
-    protected Parser getParser() {
+    protected Parser getParser() 
+    {
        return new PDFParser();
     }
 }

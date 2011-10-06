@@ -105,13 +105,15 @@ public class OpenDocumentMetadataExtracter extends TikaPoweredMetadataExtracter
     }
     
     @Override
-    protected Parser getParser() {
+    protected Parser getParser() 
+    {
        return new OpenDocumentParser();
     }
 
     @Override
     protected Map<String, Serializable> extractSpecific(Metadata metadata,
-         Map<String, Serializable> properties, Map<String, String> headers) {
+         Map<String, Serializable> properties, Map<String, String> headers) 
+    {
        putRawValue(KEY_CREATION_DATE, getDateOrNull(metadata.get(Metadata.CREATION_DATE)), properties);
        putRawValue(KEY_CREATOR, metadata.get(Metadata.CREATOR), properties);
        putRawValue(KEY_DATE, getDateOrNull(metadata.get(Metadata.DATE)), properties);

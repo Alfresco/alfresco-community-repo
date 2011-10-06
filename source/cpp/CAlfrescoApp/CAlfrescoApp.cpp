@@ -1,20 +1,18 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2006 Alfresco, Inc.
  *
- * This file is part of Alfresco
+ * Licensed under the Mozilla Public License version 1.1 
+ * with a permitted attribution clause. You may obtain a
+ * copy of the License at
  *
- * Alfresco is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ *   http://www.alfresco.org/legal/license.txt
  *
- * Alfresco is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
+ * language governing permissions and limitations under the
+ * License.
  */
 
 #include "stdafx.h"
@@ -358,8 +356,8 @@ bool CAlfrescoApp::buildDesktopParameters( AlfrescoInterface& alfresco, StringLi
 			// If the path is to a file that is not on the Alfresco share the file will need to be copied,
 			// after checking the status of a matching file in the Alfresco folder
 
-			if ( curFile.length() >= 3 && curFile.startsWithIgnoreCase( alfresco.getDrivePath()) == false && 
-				 curFile.substring(1,3).equals( L":\\")) {
+			if ( curFile.length() >= 3 && curFile.substring(1,3).equals( L":\\") &&
+				(alfresco.isMappedDrive() == false || curFile.startsWithIgnoreCase( alfresco.getDrivePath()) == false)) {
 
 				// Check if the action supports local files
 

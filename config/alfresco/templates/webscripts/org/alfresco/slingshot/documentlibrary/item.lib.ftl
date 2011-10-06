@@ -87,6 +87,20 @@
       "latitude": ${(node.properties["cm:latitude"]!0)?c},
       "longitude": ${(node.properties["cm:longitude"]!0)?c}
    },</#if>
+   <#if node.hasAspect("audio:audio")>"audio":
+   {
+      "album": "${node.properties["audio:album"]!""}",
+      "artist": "${node.properties["audio:artist"]!""}",
+      "composer": "${node.properties["audio:composer"]!""}",
+      "engineer": "${node.properties["audio:engineer"]!""}",
+      "genre": "${node.properties["audio:genre"]!""}",
+      "trackNumber": ${(node.properties["audio:trackNumber"]!0)?c},
+      "releaseDate": "<@dateFormat node.properties["audio:releaseDate"] />",
+      "sampleRate": ${(node.properties["audio:sampleRate"]!0)?c},
+      "sampleType": "${node.properties["audio:sampleType"]!""}",
+      "channelType": "${node.properties["audio:channelType"]!""}",
+      "compressor": "${node.properties["audio:compressor"]!""}"
+   },</#if>
    <#if node.hasAspect("exif:exif")>"exif":
    {
       "dateTimeOriginal": "<@dateFormat node.properties["exif:dateTimeOriginal"] />",

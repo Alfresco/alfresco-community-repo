@@ -334,7 +334,6 @@ public class WorkflowObjectFactory
 
     public <T extends Object> List<T> filterByDomain(Collection<T> values, final Function<T, String> processKeyGetter)
     {
-        final boolean enabled = tenantService.isEnabled();
         final String currentDomain = tenantService.getCurrentUserDomain();
         return CollectionUtils.filter(values, new Filter<T>()
         {
@@ -342,18 +341,7 @@ public class WorkflowObjectFactory
             {
                 String key = processKeyGetter.apply(value);
                 String domain = tenantService.getDomain(key, false);
-                if(enabled)
-                {
-                    if(currentDomain.equals(domain))
-                    {
-                        return true; // The domains match so include.
-                    }
-                }
-                else if(domain==null)
-                {
-                    return true; // In single-tenant mode only return items with no domain.
-                }
-                return false;
+                return (currentDomain.equals(domain));
             }
         });
     }

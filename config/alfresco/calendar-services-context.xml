@@ -3,6 +3,33 @@
 
 <beans>
 
+   <!-- Transaction Interceptors for the Calendar Service -->
+   <bean id="calendarServiceReadTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="advice">
+            <ref bean="retryingReadTxnAdvice"/>
+        </property>
+        <property name="mappedNames">
+            <list>
+                <value>getCalendarEntry</value>
+                <value>listCalendarEntries</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="calendarServiceWriteTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="advice">
+            <ref bean="retryingWriteTxnAdvice"/>
+        </property>
+        <property name="mappedNames">
+            <list>
+                <value>createCalendarEntry</value>
+                <value>updateCalendarEntry</value>
+                <value>deleteCalendarEntry</value>
+            </list>
+        </property>
+    </bean>
+
+
    <!-- Calendar Service -->
    <bean id="CalendarService" class="org.springframework.aop.framework.ProxyFactoryBean">
       <property name="proxyInterfaces">
@@ -13,24 +40,13 @@
       </property>
       <property name="interceptorNames">
          <list>
-            <idref local="CalendarService_transaction" />
+            <idref bean="calendarServiceReadTxnAdvisor" />
+            <idref bean="calendarServiceWriteTxnAdvisor" />
+            <idref bean="checkTxnAdvisor" />
             <idref bean="AuditMethodInterceptor" />
             <idref bean="exceptionTranslator" />
             <idref bean="CalendarService_security" />
          </list>
-      </property>
-   </bean>
-
-   <!-- Calendar service transaction bean -->
-   <bean id="CalendarService_transaction"
-      class="org.springframework.transaction.interceptor.TransactionInterceptor">
-      <property name="transactionManager">
-         <ref bean="transactionManager" />
-      </property>
-      <property name="transactionAttributes">
-         <props>
-            <prop key="*">${server.transaction.mode.default}</prop>
-         </props>
       </property>
    </bean>
 

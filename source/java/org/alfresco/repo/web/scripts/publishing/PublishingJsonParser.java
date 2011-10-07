@@ -69,7 +69,7 @@ public class PublishingJsonParser implements PublishingWebScriptConstants
     {
         JSONObject json = getJson(jsonStr);
         PublishingDetails details = publishingService.createPublishingDetails()
-            .setPublishChannel(json.optString(CHANNEL_ID))
+            .setPublishChannelId(json.optString(CHANNEL_ID))
             .setComment(json.optString(COMMENT))
             .setSchedule(getCalendar(json.optJSONObject(SCHEDULED_TIME)))
             .addNodesToPublish(toNodes(json.optJSONArray(PUBLISH_NODES)))

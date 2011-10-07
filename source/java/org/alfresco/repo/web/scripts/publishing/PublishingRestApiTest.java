@@ -427,7 +427,7 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         // Create publishing event for textNode1.
         String comment = "This is a comment";
         PublishingDetails details = publishingService.createPublishingDetails()
-            .setPublishChannel(publishChannel.getId())
+            .setPublishChannelId(publishChannel.getId())
             .addNodesToPublish(textNode1)
             .setComment(comment);
         

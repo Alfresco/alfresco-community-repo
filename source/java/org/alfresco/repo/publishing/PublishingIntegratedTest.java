@@ -89,7 +89,7 @@ public class PublishingIntegratedTest extends BaseSpringTest
         
         PublishingDetails details = publishingService.createPublishingDetails()
             .addNodesToPublish(nodes)
-            .setPublishChannel(channel.getId())
+            .setPublishChannelId(channel.getId())
             .setSchedule(schedule);
 
         String eventId = publishingService.scheduleNewEvent(details);
@@ -124,7 +124,7 @@ public class PublishingIntegratedTest extends BaseSpringTest
 
         PublishingDetails details = publishingService.createPublishingDetails()
             .addNodesToPublish(nodes)
-            .setPublishChannel(channel.getId())
+            .setPublishChannelId(channel.getId())
             .setSchedule(schedule);
         String eventId = publishingService.scheduleNewEvent(details);
         PublishingEvent event = publishingService.getPublishingEvent(eventId);

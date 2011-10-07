@@ -84,7 +84,7 @@ public class PublishingDetailsImpl implements PublishingDetails
     /**
     * {@inheritDoc}
     */
-    public PublishingDetails setPublishChannel(String publishChannelId)
+    public PublishingDetails setPublishChannelId(String publishChannelId)
     {
         this.publishChannelId = publishChannelId;
         return this;

@@ -42,7 +42,7 @@ public interface PublishingDetails
     
     PublishingDetails addNodesToPublish(Collection<NodeRef> nodesToPublish);
     
-    PublishingDetails setPublishChannel(String channelId);
+    PublishingDetails setPublishChannelId(String channelId);
     
     PublishingDetails setComment(String comment);
     

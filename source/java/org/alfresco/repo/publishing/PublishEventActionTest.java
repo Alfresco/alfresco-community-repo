@@ -406,7 +406,7 @@ public class PublishEventActionTest extends AbstractPublishingIntegrationTest
     private NodeRef publishNode(NodeRef source, String message, boolean publish)
     {
         PublishingDetails details = publishingService.createPublishingDetails();
-        details.setPublishChannel(channel.getId());
+        details.setPublishChannelId(channel.getId());
         if (publish)
         {
             details.addNodesToPublish(source);

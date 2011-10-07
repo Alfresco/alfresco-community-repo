@@ -194,7 +194,7 @@ public class PublishingEventHelperTest
         
         PublishingDetails details = new PublishingDetailsImpl()
             .setSchedule(schedule)
-            .setPublishChannel(channelId)
+            .setPublishChannelId(channelId)
             .setComment(comment);
         
         NodeRef result = helper.createNode(queue, details);

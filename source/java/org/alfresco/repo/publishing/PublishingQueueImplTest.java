@@ -77,7 +77,7 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         
         PublishingDetails details = publishingService.createPublishingDetails()
             .addNodesToPublish(firstNode, secondNode)
-            .setPublishChannel(channelId)
+            .setPublishChannelId(channelId)
             .setSchedule(schedule)
             .setComment(comment);
         
@@ -143,7 +143,7 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         List<String> statusChannels = Arrays.asList("test://channel/Channel1", "test://channel/Channel2", "test://channel/Channel3" );
         String message = "The message";
         PublishingDetails details = publishingService.createPublishingDetails()
-            .setPublishChannel(channelId)
+            .setPublishChannelId(channelId)
             .addNodesToPublish(firstNode, secondNode)
             .setStatusMessage(message)
             .setStatusNodeToLinkTo(secondNode)
@@ -182,7 +182,7 @@ public class PublishingQueueImplTest extends AbstractPublishingIntegrationTest
         // Publish an event
         PublishingDetails details = publishingService.createPublishingDetails();
         details.addNodesToPublish(firstNode, secondNode);
-        details.setPublishChannel(publishChannel.getId());
+        details.setPublishChannelId(publishChannel.getId());
         try
         {
             testHelper.scheduleEvent1Year(details);

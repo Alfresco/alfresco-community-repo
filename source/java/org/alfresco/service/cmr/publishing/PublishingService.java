@@ -20,6 +20,8 @@ package org.alfresco.service.cmr.publishing;
 
 import java.util.List;
 
+import org.alfresco.service.Auditable;
+import org.alfresco.service.NotAuditable;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -36,6 +38,7 @@ public interface PublishingService
      *         identifier or <code>null</code> if no such publishing event can
      *         be located
      */
+    @NotAuditable
     PublishingEvent getPublishingEvent(String id);
 
     /**
@@ -43,6 +46,7 @@ public interface PublishingService
      * @param publishedNode The node that was published.
      * @return A list of {@link PublishingEvent}s.
      */
+    @NotAuditable
     List<PublishingEvent> getPublishEventsForNode(NodeRef publishedNode);
     
     /**
@@ -50,6 +54,7 @@ public interface PublishingService
      * @param unpublishedNode The node that was unpublished.
      * @return A list of {@link PublishingEvent}s.
      */
+    @NotAuditable
     List<PublishingEvent> getUnpublishEventsForNode(NodeRef unpublishedNode);
 
     /**
@@ -60,6 +65,7 @@ public interface PublishingService
      * 
      * @param id The identifier of the publishing event that is to be cancelled.
      */
+    @Auditable(parameters={"id"})
     void cancelPublishingEvent(String id);
     
     /**
@@ -67,6 +73,7 @@ public interface PublishingService
      * a call to the {@link PublishingQueue#scheduleNewEvent(PublishingDetails)} operation.
      * @return A publishing package that can be populated before being placed on the publishing queue.
      */
+    @NotAuditable
     PublishingDetails createPublishingDetails();
     
     /**
@@ -74,5 +81,6 @@ public interface PublishingService
      * @param publishingDetails The publishing package that is to be enqueued
      * @return The identifier of the newly scheduled event
      */
+    @Auditable
     String scheduleNewEvent(PublishingDetails publishingDetails);
 }

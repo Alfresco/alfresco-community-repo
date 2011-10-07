@@ -49,10 +49,10 @@
         init-method="init"
         destroy-method="shutdown">
             <!--  maxUsageMB: the maximum disk usage that should be used for cached content files -->
-            <property name="maxUsageMB" value="4096"/>
+            <property name="maxUsageMB" value="${system.content.caching.maxUsageMB}"/>
             
             <!-- maxFileSizeMB: files larger than this size will not be kept in the cache -->
-            <property name="maxFileSizeMB" value="0"/>
+            <property name="maxFileSizeMB" value="${system.content.caching.maxFileSizeMB}"/>
             
             <property name="cache" ref="contentCache"/>
             <property name="cleaner" ref="cachedContentCleaner"/>

@@ -94,6 +94,7 @@ public class AdminNodeBrowseBean implements Serializable
     private QName nodeType = null;
     private Path primaryPath = null;
     private Boolean inheritPermissions = null;
+    private Long searchElapsedTime = null;
 
     // stores and node
     transient private DataModel stores = null;
@@ -694,6 +695,7 @@ public class AdminNodeBrowseBean implements Serializable
      */
     public String submitSearch()
     {
+        long start = System.currentTimeMillis();
         RetryingTransactionCallback<String> searchCallback = new RetryingTransactionCallback<String>()
         {
             public String execute() throws Throwable
@@ -725,7 +727,9 @@ public class AdminNodeBrowseBean implements Serializable
 
         try
         {
-            return getTransactionService().getRetryingTransactionHelper().doInTransaction(searchCallback, true);
+            String result = getTransactionService().getRetryingTransactionHelper().doInTransaction(searchCallback, true);
+            this.searchElapsedTime = System.currentTimeMillis() - start;
+            return result;
         }
         catch (Throwable e)
         {
@@ -736,6 +740,14 @@ public class AdminNodeBrowseBean implements Serializable
             context.addMessage("searchForm:query", message);
             return "error";
         }
+    }
+
+    /**
+     * @return the searchElapsedTime
+     */
+    public Long getSearchElapsedTime()
+    {
+        return this.searchElapsedTime;
     }
 
     /**

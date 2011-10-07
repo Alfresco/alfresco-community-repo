@@ -83,6 +83,8 @@
               </h:commandLink>
           </h:column>
       </h:dataTable>
+      
+      <p>Time ms: <h:outputText value="#{AdminNodeBrowseBean.searchElapsedTime}"/></p>
 
    </h:form>
 </f:view>

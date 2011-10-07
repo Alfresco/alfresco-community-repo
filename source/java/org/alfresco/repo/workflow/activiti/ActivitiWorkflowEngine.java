@@ -1456,21 +1456,19 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
                 {
                     // Candidate user
                     addTasksForCandidateUser(firstAuthority, resultingTasks);
+                    if(authorities.size() > 1) {
+                        List<String> remainingAuthorities = authorities.subList(1, authorities.size());
+                        addTasksForCandidateGroups(remainingAuthorities, resultingTasks);
+                    }
                 } 
                 else
                 {
                     // Candidate group
-                    addTasksForCandidateGroup(firstAuthority, resultingTasks);
-                }
-                for (int i=1; i<authorities.size(); i++) 
-                {
-                    // All folowing authorities are groups, just add the cadidate-group tasks
-                    addTasksForCandidateGroup(authorities.get(i), resultingTasks);
+                    addTasksForCandidateGroups(authorities, resultingTasks);
                 }
                 
                 List<Task> tasks = new ArrayList<Task>();
-                
-                // Only tasks that have NO assignee, should be returned
+                                // Only tasks that have NO assignee, should be returned
                 for(Task task : resultingTasks.values()) 
                 {
                     if(task.getAssignee() == null) 
@@ -1495,12 +1493,14 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         }
     }
 
-    private void addTasksForCandidateGroup(String groupName, Map<String, Task> resultingTasks)
+    private void addTasksForCandidateGroups(List<String> groupNames, Map<String, Task> resultingTasks)
     {
-        List<Task> tasks = taskService.createTaskQuery().taskCandidateGroup(groupName).list();
-        for(Task task : tasks)
-        {
-            resultingTasks.put(task.getId(), task);
+        if(groupNames != null && groupNames.size() > 0) {
+            List<Task> tasks = taskService.createTaskQuery().taskCandidateGroupIn(groupNames).list();
+            for(Task task : tasks)
+            {
+                resultingTasks.put(task.getId(), task);
+            }
         }
     }
 

@@ -107,7 +107,7 @@ var Filters =
       {
          case "all":
             filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\"";
-            filterQuery += " +TYPE:\"content\"";
+            filterQuery += " +TYPE:\"cm:content\"";
             filterParams.query = filterQuery + filterQueryDefaults;
             break;
 
@@ -150,7 +150,7 @@ var Filters =
             {
                filterQuery += " +@cm\\:" + ownerField + ":\"" + person.properties.userName + '"';
             }
-            filterQuery += " +TYPE:\"content\"";
+            filterQuery += " +TYPE:\"cm:content\"";
 
             filterParams.sort = [
             {
@@ -161,14 +161,24 @@ var Filters =
             break;
 
          case "editingMe":
-            filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\"";
+            filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath;
+            if (parsedArgs.nodeRef == "alfresco://sites/home")
+            {
+               filterQuery += "/*/cm:documentLibrary";
+            }
+            filterQuery += "//*\"";
             filterQuery += " +ASPECT:\"workingcopy\"";
             filterQuery += " +@cm\\:workingCopyOwner:\"" + person.properties.userName + '"';
             filterParams.query = filterQuery;
             break;
 
          case "editingOthers":
-            filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\"";
+            filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath;
+            if (parsedArgs.nodeRef == "alfresco://sites/home")
+            {
+               filterQuery += "/*/cm:documentLibrary";
+            }
+            filterQuery += "//*\"";
             filterQuery += " +ASPECT:\"workingcopy\"";
             filterQuery += " -@cm\\:workingCopyOwner:\"" + person.properties.userName + '"';
             filterParams.query = filterQuery;
@@ -186,7 +196,24 @@ var Filters =
                foundOne = true;
                filterQuery += "ID:\"" + favourite + "\"";
             }
-            filterParams.query = filterQuery.length > 0 ? "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\" +(" + filterQuery + ")" : "+ID:\"\"";
+            
+            if (filterQuery.length > 0)
+            {
+               filterQuery = "+(" + filterQuery + ") ";
+               filterQuery += "+PATH:\"" + parsedArgs.rootNode.qnamePath;
+               if (parsedArgs.nodeRef == "alfresco://sites/home")
+               {
+                  filterQuery += "/*/cm:documentLibrary";
+               }
+               filterQuery += "//*\"";
+            }
+            else
+            {
+               // empty favourites query
+               filterQuery = "+ID:\"\"";
+            }
+            
+            filterParams.query = filterQuery;
             break;
 
          case "node":
@@ -200,7 +227,13 @@ var Filters =
             {
                filterData = filterData.slice(0, -1);
             }
-            filterParams.query = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\" +PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(filterData) + "/member\"";
+            filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath;
+            if (parsedArgs.nodeRef == "alfresco://sites/home")
+            {
+               filterQuery += "/*/cm:documentLibrary";
+            }
+            filterQuery += "//*\"";
+            filterParams.query = filterQuery + " +PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(filterData) + "/member\"";
             break;
 
          case "category":

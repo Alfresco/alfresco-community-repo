@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    <import resource="classpath*:alfresco/content-publishing-context.xml" />
+    
+    <bean id="PublishingService_security"
+        class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+
+    <bean id="PublishingService_transaction"
+        class="org.alfresco.repo.transaction.RetryingTransactionInterceptor">
+        <property name="transactionService" ref="TransactionService" />
+        <property name="transactionManager">
+            <ref bean="transactionManager" />
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="get*">${server.transaction.mode.readOnly}</prop>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="PublishingService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.service.cmr.publishing.PublishingService</value>
+        </property>
+        <property name="target">
+            <ref bean="publishingService" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="PublishingService_transaction" />
+                <idref bean="AuditMethodInterceptor" />
+                <idref bean="exceptionTranslator" />
+                <idref local="PublishingService_security" />
+            </list>
+        </property>
+    </bean>
+
+    <bean id="ChannelService_security"
+        class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+
+    <bean id="ChannelService_transaction"
+        class="org.alfresco.repo.transaction.RetryingTransactionInterceptor">
+        <property name="transactionService" ref="TransactionService" />
+        <property name="transactionManager">
+            <ref bean="transactionManager" />
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="get*">${server.transaction.mode.readOnly}</prop>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="ChannelService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.service.cmr.publishing.channels.ChannelService</value>
+        </property>
+        <property name="target">
+            <ref bean="channelService" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="ChannelService_transaction" />
+                <idref bean="AuditMethodInterceptor" />
+                <idref bean="exceptionTranslator" />
+                <idref local="ChannelService_security" />
+            </list>
+        </property>
+    </bean>
+
+    <bean id="publish-content" class="org.alfresco.repo.publishing.PublishContentActionExecuter" parent="action-executer">
+        <property name="channelService" ref="ChannelService" />
+        <property name="publishingService" ref="PublishingService" />
+        <property name="ignoreLock" value="true" />
+        <property name="applicableTypes">
+            <list>
+                <value>{http://www.alfresco.org/model/content/1.0}content</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="ac-publishing-channels" class="org.alfresco.repo.publishing.PublishingChannelParameterConstraint"
+        parent="action-constraint">
+        <property name="channelService" ref="ChannelService" />
+    </bean>
+   
+    <bean id="ac-status-update-channels" class="org.alfresco.repo.publishing.StatusUpdateChannelParameterConstraint"
+        parent="action-constraint">
+        <property name="channelService" ref="ChannelService" />
+    </bean>
+   
+</beans>

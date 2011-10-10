@@ -450,6 +450,7 @@
       <type name="cm:rating">
          <title>Rating</title>
          <parent>sys:base</parent>
+         <includedInSuperTypeQuery>false</includedInSuperTypeQuery>
          <properties>
             <property name="cm:ratingScore">
                <title>Rating</title>
@@ -484,12 +485,12 @@
          </properties>
       </type>
 
-
       <!-- Failed thumbnail content type -->
       <type name="cm:failedThumbnail">
          <title>Failed Thumbnail</title>
          <parent>cm:cmobject</parent> 
          <archive>false</archive>
+         <includedInSuperTypeQuery>false</includedInSuperTypeQuery>
          <properties>
             <property name="cm:failureCount">
                <title>Count of thumbnail failures</title>

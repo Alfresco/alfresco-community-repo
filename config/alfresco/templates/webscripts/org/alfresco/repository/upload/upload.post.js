@@ -246,7 +246,7 @@ function main()
          }
 
          /**
-          * Exitsing file handling.
+          * Existing file handling.
           */
          var existingFile = destNode.childByNamePath(filename);
          if (existingFile !== null)
@@ -306,11 +306,10 @@ function main()
          {
             newFile.specializeType(contentType);
          }
-         newFile.properties.content.write(content);
-
-         // Reapply mimetype as upload may have been via Flash - which always sends binary mimetype
-         newFile.properties.content.guessMimetype(filename);
-         newFile.properties.content.guessEncoding();
+         // Use a the appropriate write() method so that the mimetype already guessed from the original filename is
+         // maintained - as upload may have been via Flash - which always sends binary mimetype and would overwrite it.
+         // Also perform the encoding guess step in the write() method to save an additional Writer operation.
+         newFile.properties.content.write(content, false, true);
          newFile.save();
 
          // Create thumbnail?

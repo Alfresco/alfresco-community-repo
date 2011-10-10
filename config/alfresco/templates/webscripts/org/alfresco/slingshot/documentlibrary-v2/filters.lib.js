@@ -8,7 +8,7 @@ var Filters =
    {
       "documents": '+(TYPE:"content" OR TYPE:"app:filelink" OR TYPE:"folder")',
       "folders": '+(TYPE:"folder" OR TYPE:"app:folderlink")',
-      "images": '-TYPE:"thumbnail" +@cm\\:content.mimetype:image/*'
+      "images": '+@cm\\:content.mimetype:image/*'
    },
    
    /**
@@ -16,10 +16,7 @@ var Filters =
     */
    IGNORED_TYPES:
    [
-      "cm:thumbnail",
-      "cm:failedThumbnail",
       "cm:systemfolder",
-      "cm:rating",
       "fm:forums",
       "fm:forum",
       "fm:topic",

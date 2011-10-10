@@ -834,7 +834,7 @@ function getSearchResults(params)
       {
          ftsQuery = 'PATH:"' + path + '/*" AND (' + ftsQuery + ') ';
       }
-      ftsQuery = '(' + ftsQuery + ') AND -TYPE:"cm:thumbnail"';
+      ftsQuery = '(' + ftsQuery + ') AND -TYPE:"cm:thumbnail" AND -TYPE:"cm:failedThumbnail" AND -TYPE:"cm:rating"';
       
       // sort field - expecting field to in one of the following formats:
       //  - short QName form such as: cm:name

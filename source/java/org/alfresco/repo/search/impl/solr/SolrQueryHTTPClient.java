@@ -34,6 +34,7 @@ import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParserException;
 import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchParameters.FieldFacet;
@@ -156,14 +157,20 @@ public class SolrQueryHTTPClient
             url.append(encoder.encode(searchParameters.getQuery(), "UTF-8"));
             url.append("&wt=").append(encoder.encode("json", "UTF-8"));
             url.append("&fl=").append(encoder.encode("*,score", "UTF-8"));
-            if (searchParameters.getMaxItems() > 0)
+            
+            if (searchParameters.getMaxItems() >= 0)
             {
                 url.append("&rows=").append(encoder.encode("" + searchParameters.getMaxItems(), "UTF-8"));
+            }
+            else if(searchParameters.getLimitBy() == LimitBy.FINAL_SIZE)
+            {
+                url.append("&rows=").append(encoder.encode("" + searchParameters.getLimit(), "UTF-8"));
             }
             else
             {
                 url.append("&rows=").append(encoder.encode("" + Integer.MAX_VALUE, "UTF-8"));
             }
+            
             url.append("&df=").append(encoder.encode(searchParameters.getDefaultFieldName(), "UTF-8"));
             url.append("&start=").append(encoder.encode("" + searchParameters.getSkipCount(), "UTF-8"));
 

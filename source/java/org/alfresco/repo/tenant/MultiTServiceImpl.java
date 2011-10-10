@@ -605,6 +605,23 @@ public class MultiTServiceImpl implements TenantService
         return nameDomain;
     }
     
+    public static String getMultiTenantDomainName(String name)
+    {
+        // Check that all the passed values are not null
+        ParameterCheck.mandatory("name", name);
+        
+        int idx1 = name.indexOf(SEPARATOR);
+        if (idx1 == 0)
+        {
+            int idx2 = name.indexOf(SEPARATOR, 1);
+            if (idx2 != -1)
+            {
+                return name.substring(1, idx2);
+            }
+        }
+        return DEFAULT_DOMAIN;
+    }
+    
     /* (non-Javadoc)
      * @see org.alfresco.repo.tenant.TenantUserService#getDomainUser(java.lang.String, java.lang.String)
      */

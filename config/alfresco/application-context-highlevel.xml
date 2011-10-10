@@ -3,6 +3,7 @@
 
 <!-- These are the XML files of the high level parts of the context -->
 <beans>
+    <import resource="classpath:alfresco/bulk-import-context.xml" />
     <import resource="classpath:alfresco/scheduled-jobs-context.xml" />
     <import resource="classpath:alfresco/jcr-api-context.xml" />
     <import resource="classpath:alfresco/remote-services-context.xml"/>

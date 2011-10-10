@@ -1,0 +1,81 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+                           http://www.springframework.org/schema/util
+                           http://www.springframework.org/schema/util/spring-util-3.0.xsd">  
+
+  <!-- Public beans for the bulk filesystem importer that can be overridden in a custom context file located in alfresco/extension -->
+
+  <!-- List of import filters to use.
+    By default we filter:
+    * all hidden files (note: the definition of "hidden" depends on the OS - see http://download.oracle.com/javase/6/docs/api/java/io/File.html#isHidden() for details).
+    * all files that begin with a "." (this is for the benefit of those on Windows - on Unix-like OSes these should have been filtered by the hidden file filter already). 
+  -->
+  <util:list id="bfsiImportFilters">
+    <bean class="org.alfresco.repo.bulkimport.importfilters.HiddenFileFilter" />
+    <bean class="org.alfresco.repo.bulkimport.importfilters.FileNameRegexImportFilter">
+      <constructor-arg index="0" value="\..*" />
+    </bean>
+  </util:list>
+
+  <!-- Metadata loader to use. -->
+  <bean id="bfsiMetadataLoader"
+        class="org.alfresco.repo.bulkimport.metadataloaders.XmlPropertiesFileMetadataLoader"
+        lazy-init="true">
+    <constructor-arg index="0" ref="ServiceRegistry" />
+  </bean>
+
+  <bean id="bfsiContentDataFactory" class="org.alfresco.repo.bulkimport.impl.FilesystemContentDataFactory">
+    <property name="mimetypeService" ref="mimetypeService" />
+    <property name="defaultEncoding" value="UTF-8" />
+    <property name="storeProtocol"   value="store" />  <!-- defaults to FileContentStore.STORE_PROTOCOL -->
+  </bean>
+
+  <!-- Private beans for the bulk filesystem importer - don't mess with or override these unless you _really_ know what you're doing! -->
+
+  <!-- these two beans are currently stateful singletons, so only one import can run at the same time -->
+   
+  <bean id="bfsiStatus" class="org.alfresco.repo.bulkimport.impl.BulkImportStatusImpl"/>
+
+  <bean id="bfsiDirectoryAnalyser" class="org.alfresco.repo.bulkimport.impl.DirectoryAnalyserImpl">
+    <property name="metadataLoader"  ref="bfsiMetadataLoader" />
+    <property name="importStatus"    ref="bfsiStatus" />
+    <property name="importFilters"   ref="bfsiImportFilters" />
+  </bean>
+  
+  <bean id="abstractNodeImporterFactory" class="org.alfresco.repo.bulkimport.impl.AbstractNodeImporterFactory" abstract="true">
+    <property name="nodeService"         ref="nodeService" />
+    <property name="fileFolderService"   ref="fileFolderService" />
+    <property name="metadataLoader"      ref="bfsiMetadataLoader" />
+    <property name="versionService"      ref="versionService" />
+    <property name="importStatus"        ref="bfsiStatus" />
+    <property name="behaviourFilter"     ref="policyBehaviourFilter" />
+  </bean>
+
+  <!-- content streaming -->
+  <bean id="streamingNodeImporterFactory" class="org.alfresco.repo.bulkimport.impl.StreamingNodeImporterFactory" parent="abstractNodeImporterFactory">
+  </bean>
+  
+  <bean id="abstractBulkFilesystemImporter" class="org.alfresco.repo.bulkimport.impl.AbstractBulkFilesystemImporter" abstract="true" lazy-init="true">
+    <property name="fileFolderService"   ref="fileFolderService" />
+    <property name="transactionService"  ref="transactionService" />
+    <property name="permissionService"   ref="permissionService" />
+    <property name="jobLockService"      ref="jobLockService"/>
+    <property name="behaviourFilter"     ref="policyBehaviourFilter" />
+
+    <property name="directoryAnalyser"   ref="bfsiDirectoryAnalyser" />    
+    <property name="importStatus"        ref="bfsiStatus" />
+  </bean>
+
+  <bean id="bulkFilesystemImporter" class="org.alfresco.repo.bulkimport.impl.StripingBulkFilesystemImporter"
+        parent="abstractBulkFilesystemImporter" lazy-init="true">
+    <property name="defaultNumThreads"          value="${bulkImport.batch.numThreads}"/>
+    <property name="defaultBatchSize"           value="${bulkImport.batch.batchSize}"/>
+  </bean>
+
+</beans>

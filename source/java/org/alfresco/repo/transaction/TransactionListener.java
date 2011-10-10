@@ -46,9 +46,6 @@ public interface TransactionListener
      * {@link #beforeCommit(boolean) } even if {@link #beforeCommit(boolean)}
      * failed.
      * <p>
-     * Any exceptions generated here will only be logged and will have no effect
-     * on the state of the transaction.
-     * <p>
      * All transaction resources are still available.
      */
     void beforeCompletion();
@@ -56,7 +53,8 @@ public interface TransactionListener
     /**
      * Invoked after transaction commit.
      * <p>
-     * Any exceptions generated here will cause the transaction to rollback.
+     * Any exceptions generated here will only be logged and will have no effect
+     * on the state of the transaction.
      * <p>
      * Although all transaction resources are still available, this method should
      * be used only for cleaning up resources after a commit has occured.
@@ -65,6 +63,9 @@ public interface TransactionListener
 
     /**
      * Invoked after transaction rollback.
+     * <p>
+     * Any exceptions generated here will only be logged and will have no effect
+     * on the state of the transaction.
      * <p>
      * Although all transaction resources are still available, this method should
      * be used only for cleaning up resources after a rollback has occured.

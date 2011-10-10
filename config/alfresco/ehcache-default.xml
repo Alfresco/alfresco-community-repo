@@ -51,33 +51,29 @@
         />
     <cache 
         name="org.alfresco.cache.node.nodesCache" 
-        maxElementsInMemory="100000"
-        eternal="false"
-        timeToLiveSeconds="60"
+        maxElementsInMemory="250000"
+        eternal="true"
         overflowToDisk="false"
         statistics="false"
         />
     <cache 
         name="org.alfresco.cache.node.aspectsCache" 
-        maxElementsInMemory="80000"
-        eternal="false"
-        timeToLiveSeconds="60"
+        maxElementsInMemory="130000"
+        eternal="true"
         overflowToDisk="false"
         statistics="false"
         />
     <cache 
         name="org.alfresco.cache.node.propertiesCache" 
-        maxElementsInMemory="40000"
-        eternal="false"
-        timeToLiveSeconds="60"
+        maxElementsInMemory="130000"
+        eternal="true"
         overflowToDisk="false"
         statistics="false"
         />
     <cache 
         name="org.alfresco.cache.node.parentAssocsCache" 
-        maxElementsInMemory="80000"
-        eternal="false"
-        timeToLiveSeconds="60"
+        maxElementsInMemory="130000"
+        eternal="true"
         overflowToDisk="false"
         statistics="false"
         />
@@ -206,7 +202,7 @@
 
     <cache 
         name="org.alfresco.cache.nodeOwnerCache" 
-        maxElementsInMemory="20000"
+        maxElementsInMemory="40000"
         eternal="true"
         overflowToDisk="false"
         statistics="false"
@@ -364,11 +360,11 @@
         statistics="false"
         />
 
-    <!-- Imap Folders -->
+    <!-- Imap Messages -->
     
     <cache 
-        name="org.alfresco.cache.imapFoldersCache"
-        maxElementsInMemory="200"
+        name="org.alfresco.cache.imapMessageCache"
+        maxElementsInMemory="2000"
         eternal="true"
         overflowToDisk="false"
         statistics="false"

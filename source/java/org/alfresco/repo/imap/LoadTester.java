@@ -172,19 +172,19 @@ public class LoadTester extends TestCase
                 false);
 
         // Used to create User's folder
-        NodeRef userFolderRef = imapService.getMailboxRootRef(TEST_DATA_FOLDER_NAME, anotherUserName);
+        NodeRef userFolderRef = imapService.getUserImapHomeRef(anotherUserName);
         permissionService.setPermission(userFolderRef, anotherUserName, PermissionService.ALL_PERMISSIONS, true);
 
         importTestData("imap/load_test_data.acp", userFolderRef);
 
         reauthenticate(anotherUserName, anotherUserName);
         
-        AlfrescoImapFolder testDataFolder = imapService.getFolder(user, TEST_DATA_FOLDER_NAME);
+        AlfrescoImapFolder testDataFolder = imapService.getOrCreateMailbox(user, TEST_DATA_FOLDER_NAME, true, false);
 
         SimpleStoredMessage m = testDataFolder.getMessages().get(0);
         m = testDataFolder.getMessage(m.getUid());
         
-        AlfrescoImapFolder folder = imapService.createMailbox(user, TEST_FOLDER_NAME);
+        AlfrescoImapFolder folder = imapService.getOrCreateMailbox(user, TEST_FOLDER_NAME, false, true);
 
         logger.info("Creating folders...");
         long t = System.currentTimeMillis();
@@ -227,7 +227,7 @@ public class LoadTester extends TestCase
         logger.info("Listing folders...");
 
         long t = System.currentTimeMillis();
-        List<AlfrescoImapFolder> list = imapService.listMailboxes(user, TEST_FOLDER_NAME + "*");
+        List<AlfrescoImapFolder> list = imapService.listMailboxes(user, TEST_FOLDER_NAME + "*", false);
         t = System.currentTimeMillis() - t;
         
         logger.info("List time: " + t + " ms (" + t/1000 + " s)");

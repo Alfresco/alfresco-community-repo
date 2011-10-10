@@ -7,12 +7,12 @@ function createEmail(messageTXT, messageHTML, subject)
    var command = document.properties["cm:title"];
    var userName = person.properties["cm:userName"];
    
-   var imapRoot = imap.getImapHomeRef("INBOX", userName);
+   var imapRoot = imap.getImapHomeRef(userName);
    var inboxFolder = imapRoot.childByNamePath("INBOX");
    
    if (inboxFolder == null)
    {
-      logger.log("Command Processor: INBOX folder does't exists.");
+      logger.log("Command Processor: INBOX folder doesn't exist.");
       return;
    }
 

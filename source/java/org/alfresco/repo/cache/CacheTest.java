@@ -240,11 +240,11 @@ public class CacheTest extends TestCase
             // check that backing cache was updated with the in-transaction changes
             assertFalse("Item was not removed from backing cache", backingCache.contains(NEW_GLOBAL_ONE));
             assertNull("Item could still be fetched from backing cache", backingCache.get(NEW_GLOBAL_ONE));
-            assertEquals("Item not updated in backing cache", null, backingCache.get(UPDATE_TXN_THREE));
+            assertEquals("Item not updated in backing cache", "XXX", backingCache.get(UPDATE_TXN_THREE));
             
             // Check that the transactional cache serves get requests
-            assertEquals("Transactional cache must serve post-commit get requests",
-                    null, transactionalCache.get(UPDATE_TXN_THREE));
+            assertEquals("Transactional cache must serve post-commit get requests", "XXX",
+                    transactionalCache.get(UPDATE_TXN_THREE));
         }
         catch (Throwable e)
         {

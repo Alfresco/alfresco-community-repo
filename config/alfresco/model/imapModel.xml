@@ -116,16 +116,25 @@
                <type>d:boolean</type>
             </property>          
           </properties>
-       </aspect>
-             <aspect name="imap:imapFolder">
+          </aspect>
+ 
+      <aspect name="imap:imapFolder">
          <properties>
             <property name="imap:uidValidity">
                <title>UIDVALIDITY</title>
                <type>d:long</type>
                <!-- <protected>true</protected>  -->
-            </property>            
+            </property>
+            <property name="imap:maxUid">
+               <title>MAXUID</title>
+               <type>d:long</type>
+            </property>
+            <property name="imap:changeToken">
+               <title>CHANGETOKEN</title>
+               <type>d:text</type>
+            </property>
          </properties>
-       </aspect>
+      </aspect>
        
       <aspect name="imap:nonSubscribed"/>
        <aspect name="imap:nonSelectable"/>

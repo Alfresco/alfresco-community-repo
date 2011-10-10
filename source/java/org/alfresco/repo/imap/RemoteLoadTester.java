@@ -27,6 +27,7 @@ import javax.mail.BodyPart;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
+import javax.mail.NoSuchProviderException;
 import javax.mail.Part;
 import javax.mail.Session;
 import javax.mail.Store;
@@ -46,6 +47,16 @@ public class RemoteLoadTester extends TestCase
     private static final String USER_NAME = "test_imap_user";
     private static final String USER_PASSWORD = "test_imap_user";
     private static final String TEST_FOLDER_NAME = "test_imap1000";
+    
+    private static final String ADMIN_USER_NAME = "admin";
+    private static String REMOTE_HOST = "127.0.0.1";
+    
+    public static void main(String[] args)
+    {
+        if (args.length > 0)
+            REMOTE_HOST = args[0];
+        new RemoteLoadTester().testListSequence();
+    }
 
     @Override
     public void setUp() throws Exception
@@ -54,17 +65,75 @@ public class RemoteLoadTester extends TestCase
 
     public void tearDown() throws Exception
     {
-
     }
 
+    public void testListSequence()
+    {
+        System.out.println(String.format("Connecting to remote server '%s'", REMOTE_HOST));
+        Properties props = System.getProperties();
+        props.setProperty("mail.imap.partialfetch", "false");
+        Session session = Session.getDefaultInstance(props, null);
+        
+        Store store = null;
+        long startTime = 0;
+        long endTime = 0;
+        try
+        {
+            store = session.getStore("imap");
+            store.connect(REMOTE_HOST, ADMIN_USER_NAME, ADMIN_USER_NAME);
+            Folder[] folders = null;
+            
+            startTime = System.currentTimeMillis();
+            folders = store.getDefaultFolder().list("");
+            endTime = System.currentTimeMillis();
+            System.out.println(String.format("LIST '', folders.length = %d, execTime = %d sec", folders.length, (endTime - startTime)/1000));
+            
+            startTime = System.currentTimeMillis();
+            folders = store.getDefaultFolder().list("*");
+            endTime = System.currentTimeMillis();
+            System.out.println(String.format("LIST *, folders.length = %d, execTime = %d sec", folders.length, (endTime - startTime)/1000));
+            
+            startTime = System.currentTimeMillis();
+            folders = store.getDefaultFolder().listSubscribed("*");
+            endTime = System.currentTimeMillis();
+            System.out.println(String.format("LSUB *, folders.length = %d, execTime = %d sec", folders.length, (endTime - startTime)/1000));
+            
+            startTime = System.currentTimeMillis();
+            for (Folder folder : folders)
+            {
+                folder.getMessageCount();
+                //Folder f = store.getFolder(folder.getFullName());
+            }
+            endTime = System.currentTimeMillis();
+            System.out.println(String.format("Folders Loop, folders.length = %d, execTime = %d sec", folders.length, (endTime - startTime)/1000));
+            
+        }
+        catch (NoSuchProviderException e)
+        {
+            e.printStackTrace();
+        }
+        catch (MessagingException e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            try
+            {
+                store.close();
+            }
+            catch (MessagingException e)
+            {
+                System.err.println(e.getMessage());
+            }
+        }
+    }
 
     public void testMailbox()
     {
         logger.info("Getting folder...");
         long t = System.currentTimeMillis();
         
-        String host = "localhost";
-
         // Create empty properties
         Properties props = new Properties();
         props.setProperty("mail.imap.partialfetch", "false");
@@ -78,7 +147,7 @@ public class RemoteLoadTester extends TestCase
         {
             // Get the store
             store = session.getStore("imap");
-            store.connect(host, USER_NAME, USER_PASSWORD);
+            store.connect(REMOTE_HOST, USER_NAME, USER_PASSWORD);
 
             // Get folder
             folder = store.getFolder(TEST_FOLDER_NAME);

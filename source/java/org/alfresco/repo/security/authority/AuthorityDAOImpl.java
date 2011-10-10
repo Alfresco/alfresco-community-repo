@@ -20,13 +20,16 @@ package org.alfresco.repo.security.authority;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
@@ -122,8 +125,15 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
     
     /** The number of authorities in a zone to pre-cache, allowing quick generation of 'first n' results. */
     private int zoneAuthoritySampleSize = 10000;
-    
+        
     private NamedObjectRegistry<CannedQueryFactory<AuthorityInfo>> cannedQueryRegistry;
+
+    private static final Collection<AuthorityType> SEARCHABLE_AUTHORITY_TYPES = new LinkedList<AuthorityType>();
+    static
+    {
+        SEARCHABLE_AUTHORITY_TYPES.add(AuthorityType.ROLE);
+        SEARCHABLE_AUTHORITY_TYPES.add(AuthorityType.GROUP);
+    }
     
     public AuthorityDAOImpl()
     {
@@ -541,19 +551,38 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             query.append("TYPE:\"").append(ContentModel.TYPE_AUTHORITY_CONTAINER).append("\"");
             if (displayNamePattern != null)
             {
-                query.append(" AND (@").append(
-                        AbstractLuceneQueryParser.escape("{" + ContentModel.PROP_AUTHORITY_NAME.getNamespaceURI() + "}"
-                                + ISO9075.encode(ContentModel.PROP_AUTHORITY_NAME.getLocalName()))).append(":\"");
-                // Allow for the appropriate type prefix in the authority name
-                if (type == null && !displayNamePattern.startsWith("*"))
+                query.append(" AND (");
+                if (!displayNamePattern.startsWith("*"))
                 {
-                    query.append("*").append(AbstractLuceneQueryParser.escape(displayNamePattern));
+                    // Allow for the appropriate type prefix in the authority name
+                    Collection<AuthorityType> authorityTypes = type == null ? SEARCHABLE_AUTHORITY_TYPES
+                            : Collections.singleton(type);
+                    boolean first = true;
+                    for (AuthorityType subType: authorityTypes)
+                    {
+                        if (first)
+                        {
+                            first = false;
+                        }
+                        else
+                        {
+                            query.append(" OR ");
+                        }
+                        query.append("@").append(
+                        AbstractLuceneQueryParser.escape("{" + ContentModel.PROP_AUTHORITY_NAME.getNamespaceURI() + "}"
+                                        + ISO9075.encode(ContentModel.PROP_AUTHORITY_NAME.getLocalName()))).append(":\"");
+                        query.append(getName(subType, AbstractLuceneQueryParser.escape(displayNamePattern))).append("\"");
+                        
+                    }
                 }
                 else
                 {
+                    query.append("@").append(
+                            AbstractLuceneQueryParser.escape("{" + ContentModel.PROP_AUTHORITY_NAME.getNamespaceURI() + "}"
+                                    + ISO9075.encode(ContentModel.PROP_AUTHORITY_NAME.getLocalName()))).append(":\"");
                     query.append(getName(type, AbstractLuceneQueryParser.escape(displayNamePattern)));
                 }
-                query.append("\" OR @").append(
+                query.append(" OR @").append(
                         AbstractLuceneQueryParser.escape("{" + ContentModel.PROP_AUTHORITY_DISPLAY_NAME.getNamespaceURI() + "}"
                                 + ISO9075.encode(ContentModel.PROP_AUTHORITY_DISPLAY_NAME.getLocalName()))).append(
                         ":\"").append(AbstractLuceneQueryParser.escape(displayNamePattern)).append("\")");
@@ -608,9 +637,8 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             for (ResultSetRow row : rs)
             {
                 NodeRef nodeRef = row.getNodeRef();
-                QName idProp = type != AuthorityType.USER
-                        || dictionaryService.isSubClass(nodeService.getType(nodeRef),
-                                ContentModel.TYPE_AUTHORITY_CONTAINER) ? ContentModel.PROP_AUTHORITY_NAME
+                QName idProp = dictionaryService.isSubClass(nodeService.getType(nodeRef),
+                        ContentModel.TYPE_AUTHORITY_CONTAINER) ? ContentModel.PROP_AUTHORITY_NAME
                         : ContentModel.PROP_USERNAME;
                 addAuthorityNameIfMatches(authorities, DefaultTypeConverter.INSTANCE.convert(String.class, nodeService
                         .getProperty(nodeRef, idProp)), type, pattern);

@@ -162,37 +162,6 @@ public abstract class AbstractImapFolder implements MailFolder
 
     
     /**
-     * Returns the number of the first unseen message.
-     * 
-     * @return Number of the first unseen message.
-     */
-    public int getFirstUnseen()
-    {
-        return getFirstUnseenInternal();
-    }
-
-    
-    /**
-     * Returns full name of the folder with namespace and full path delimited with the hierarchy delimiter
-     * (see {@link AlfrescoImapConst#HIERARCHY_DELIMITER})
-     * <p/> E.g.: <br/>
-     * #mail.admin."Repository_archive.Data Dictionary.Space Templates.Software Engineering Project" <br/>
-     * This is required by GreenMail implementation.
-     */
-    public String getFullName()
-    {
-        CommandCallback<String> command = new CommandCallback<String>()
-        {
-            public String command() throws Throwable
-            {
-                return getFullNameInternal();
-            }
-        };
-        return command.run();
-    }
-    
-    
-    /**
      * Returns message by its UID.
      * 
      * @param uid - UID of the message.
@@ -210,23 +179,6 @@ public abstract class AbstractImapFolder implements MailFolder
         return command.run();
     }
     
-    /**
-     * Returns count of the messages in the folder.
-     * 
-     * @return Count of the messages.
-     */
-    public int getMessageCount()
-    {
-        CommandCallback<Integer> command = new CommandCallback<Integer>()
-        {
-            public Integer command() throws Throwable
-            {
-                return getMessageCountInternal();
-            }
-        };
-        return command.run();
-    }
-   
     /**
      * Returns list of all messages in the folder.
      * 
@@ -263,59 +215,6 @@ public abstract class AbstractImapFolder implements MailFolder
     }
 
     /**
-     * Returns message sequence number in the folder by its UID.
-     * 
-     * @param uid - message UID.
-     * @return message sequence number.
-     * @throws FolderException if no message with given UID.
-     */
-    public int getMsn(final long uid) throws FolderException
-    {
-        CommandCallback<Integer> command = new CommandCallback<Integer>()
-        {
-            public Integer command() throws Throwable
-            {
-                return getMsnInternal(uid);
-            }
-        };
-        return command.runFeedback(true);
-    }
-
-    /**
-     * Returns folder name.
-     * 
-     * @return folder name.
-     */
-    public String getName()
-    {
-        CommandCallback<String> command = new CommandCallback<String>()
-        {
-            public String command() throws Throwable
-            {
-                return getNameInternal();
-            }
-        };
-        return command.run();
-    }
-
-    /**
-     * Returns UIDs of all messages in the folder.
-     * 
-     * @return UIDS of the messages.
-     */
-    public long[] getMessageUids()
-    {
-        CommandCallback<Object> command = new CommandCallback<Object>()
-        {
-            public Object command() throws Throwable
-            {
-                return getMessageUidsInternal();
-            }
-        };
-        return (long[])command.run();
-    }
-
-    /**
      * Returns the list of messages that have no {@link Flags.Flag#DELETED} flag set for current user.
      * 
      * @return the list of non-deleted messages.
@@ -331,110 +230,6 @@ public abstract class AbstractImapFolder implements MailFolder
         };
         List<SimpleStoredMessage> result = (List<SimpleStoredMessage>)command.run();
         return result;
-    }
-
-    /**
-     * Returns permanent flags.
-     * 
-     * @return {@link Flags} object containing flags.
-     */
-    public Flags getPermanentFlags()
-    {
-        CommandCallback<Flags> command = new CommandCallback<Flags>()
-        {
-            public Flags command() throws Throwable
-            {
-                return getPermanentFlagsInternal();
-            }
-        };
-        return command.run(true);
-    }
-
-    /**
-     * Returns count of messages with {@link Flags.Flag#RECENT} flag. If {@code reset} parameter is {@code true} -
-     * removes {@link Flags.Flag#RECENT} flag from the message for current user.
-     * 
-     * @param reset - if true the {@link Flags.Flag#RECENT} will be deleted for current user if exists.
-     * @return returns count of recent messages.
-     */
-    public int getRecentCount(final boolean reset)
-    {
-        CommandCallback<Integer> command = new CommandCallback<Integer>()
-        {
-            public Integer command() throws Throwable
-            {
-                return getRecentCountInternal(reset);
-            }
-        };
-        return command.run();
-    }
-
-    /**
-     * Returns UIDNEXT value of the folder.
-     * 
-     * @return UIDNEXT value.
-     */
-    public long getUidNext()
-    {
-        CommandCallback<Long> command = new CommandCallback<Long>()
-        {
-            public Long command() throws Throwable
-            {
-                return getUidNextInternal();
-            }
-        };
-        return command.run(false);
-    }
-
-    /**
-     * Returns UIDVALIDITY value of the folder.
-     * 
-     * @return UIDVALIDITY value.
-     */
-    public long getUidValidity()
-    {
-        CommandCallback<Long> command = new CommandCallback<Long>()
-        {
-            public Long command() throws Throwable
-            {
-                return getUidValidityInternal();
-            }
-        };
-        return command.run(false);
-    }
-
-    /**
-     * Returns count of the messages with {@link Flags.Flag#SEEN} in the folder for the current user.
-     * 
-     * @return Count of the unseen messages for current user.
-     */
-    public int getUnseenCount()
-    {
-        CommandCallback<Integer> command = new CommandCallback<Integer>()
-        {
-            public Integer command() throws Throwable
-            {
-                return getUnseenCountInternal();
-            }
-        };
-        return command.run();
-    }
-
-    /**
-     * Whether the folder is selectable.
-     * 
-     * @return {@code boolean}.
-     */
-    public boolean isSelectable()
-    {
-        CommandCallback<Boolean> command = new CommandCallback<Boolean>()
-        {
-            public Boolean command() throws Throwable
-            {
-                return isSelectableInternal();
-            }
-        };
-        return command.run(true);
     }
 
     /**
@@ -587,38 +382,14 @@ public abstract class AbstractImapFolder implements MailFolder
 
     protected abstract void expungeInternal() throws Exception;
 
-    protected abstract int getFirstUnseenInternal();
-
-    protected abstract String getFullNameInternal() throws Exception;
-    
     protected abstract SimpleStoredMessage getMessageInternal(long uid) throws Exception;
-
-    protected abstract int getMessageCountInternal();
 
     protected abstract List<SimpleStoredMessage> getMessagesInternal();
     
     protected abstract List<SimpleStoredMessage> getMessagesInternal(MsgRangeFilter msgRangeFilter);
 
-    protected abstract int getMsnInternal(long uid) throws Exception;
-   
-    protected abstract String getNameInternal();
-    
-    protected abstract long[] getMessageUidsInternal();
-
     protected abstract List<SimpleStoredMessage> getNonDeletedMessagesInternal();
 
-    protected abstract Flags getPermanentFlagsInternal();
-
-    protected abstract int getRecentCountInternal(boolean reset);
-    
-    protected abstract long getUidNextInternal();
-
-    protected abstract long getUidValidityInternal();
-      
-    protected abstract int getUnseenCountInternal();
-  
-    protected abstract boolean isSelectableInternal();
-    
     protected abstract void replaceFlagsInternal(Flags flags, long uid, FolderListener silentListener, boolean addUid) throws Exception;
 
     protected abstract void setFlagsInternal(Flags flags, boolean value, long uid, FolderListener silentListener, boolean addUid) throws Exception;

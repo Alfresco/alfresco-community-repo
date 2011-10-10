@@ -340,6 +340,17 @@ public interface FileFolderService
     public FileInfo resolveNamePath(NodeRef rootNodeRef, List<String> pathElements) throws FileNotFoundException;
     
     /**
+     * Resolve a file or folder name path from a given root node down to the final node.
+     * 
+     * @param rootNodeRef the start point node - a cm:folder type or subtype, e.g. the Company Home's nodeRef
+     * @param pathElements a list of names in the path. Do not include the referenced rootNodeRef's path element.
+     * @return Returns the info of the file or folder or <code>null</code> if <code>mustExist</code> is <code>false</code> and the file does not exist
+     * @throws FileNotFoundException if no file or folder exists along the path and <code>mustExist</code> is <code>true</code> 
+     */
+    @Auditable(parameters = {"rootNodeRef", "pathElements", "mustExist"})
+    public FileInfo resolveNamePath(NodeRef rootNodeRef, List<String> pathElements, boolean mustExist) throws FileNotFoundException;
+
+    /**
      * Get the file info (name, folder, etc) for the given node
      * 
      * @param nodeRef the node to get info for

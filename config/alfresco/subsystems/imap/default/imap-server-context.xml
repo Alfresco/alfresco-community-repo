@@ -19,8 +19,8 @@
         <property name="imapServerEnabled">
             <value>${imap.server.enabled}</value>
         </property>
-        <property name="imapHostManager">
-            <ref local="imapHostManager" />
+        <property name="imapService">
+            <ref bean="ImapService" /> 
         </property>
         <property name="imapUserManager">
             <ref local="imapUserManager" />
@@ -84,49 +84,11 @@
         </property>
         <property name="transactionAttributes">
             <props>
-                <prop key="search*">${server.transaction.mode.readOnly}</prop>
-                <prop key="getFolder">${server.transaction.mode.default}</prop>
-                <prop key="getFlags">${server.transaction.mode.default}</prop>
-                <prop key="get*">${server.transaction.mode.readOnly}</prop>
                 <prop key="*">${server.transaction.mode.default}</prop>
             </props>
         </property>
     </bean>
     
-
-<bean id="imap.foldersCache" class="org.alfresco.repo.cache.EhCacheAdapter">
-        <property name="cache">
-            <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
-               <property name="cacheManager">
-                  <ref bean="internalEHCacheManager" />
-               </property>
-               <property name="cacheName">
-                  <value>org.alfresco.cache.imapFoldersCache</value>
-               </property>
-            </bean>
-        </property>
-    </bean>
-    
-    <bean id="imap.folderAccessInterceptor" class="org.alfresco.repo.imap.AlfrescoImapFolderAccessInterceptor">
-        <property name="permissionService">
-            <ref bean="PermissionService"/>
-        </property>
-    </bean>
-    
-    <bean id="imap.foldersCacheSecured" class="org.springframework.aop.framework.ProxyFactoryBean">
-        <property name="proxyInterfaces">
-            <value>org.alfresco.repo.cache.SimpleCache</value>
-        </property>
-        <property name="target">
-            <ref bean="imap.foldersCache"/>
-        </property>
-        <property name="interceptorNames">
-            <list>
-                <idref bean="imap.folderAccessInterceptor"/>
-            </list>
-        </property>
-    </bean>
-
     <bean id="imapService" class="org.alfresco.repo.imap.ImapServiceImpl" init-method="init">
         <property name="sysAdminParams">
             <ref bean="sysAdminParams" />
@@ -134,8 +96,8 @@
         <property name="fileFolderService">
             <ref bean="FileFolderService"/>
         </property>
-        <property name="foldersCache">
-            <ref bean="imap.foldersCacheSecured"/>
+        <property name="messageCache">
+            <ref bean="imapMessageCache"/>
         </property>
         <property name="nodeService">
             <ref bean="NodeService"/>
@@ -148,9 +110,8 @@
         </property>
         <property name="policyFilter">
             <ref bean="policyBehaviourFilter"/>
-        </property>
-        
-<property name="imapConfigMountPoints">
+        </property>        
+        <property name="imapConfigMountPoints">
             <ref bean="imap.config.server.mountPoints" />
         </property>
         <property name="ignoreExtractionFolders">
@@ -173,6 +134,9 @@
         </property>
         <property name="mimetypeService">
             <ref bean="mimetypeService" />
+        </property>
+        <property name="folderCacheSize">
+            <value>${imap.server.folder.cache.size}</value>
         </property>
         <property name="imapServerEnabled">
             <value>${imap.server.enabled}</value>
@@ -197,16 +161,6 @@
         </property>
     </bean>
     
-
-    <bean id="imapHostManager" class="org.alfresco.repo.imap.AlfrescoImapHostManager">
-        <property name="imapService">
-            <ref bean="ImapService" /> 
-        </property>
-        <property name="transactionService">
-            <ref bean="transactionService" /> 
-        </property>
-    </bean>
-
     <bean id="imapUserManager" class="org.alfresco.repo.imap.AlfrescoImapUserManager">
         <property name="authenticationService" ref="AuthenticationService" />
         <property name="personService" ref="PersonService" />

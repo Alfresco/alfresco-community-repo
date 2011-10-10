@@ -21,7 +21,9 @@ package org.alfresco.repo.imap;
 import java.io.IOException;
 import java.io.InputStream;
 
+import javax.activation.DataHandler;
 import javax.mail.MessagingException;
+import javax.mail.internet.MimePartDataSource;
 import javax.mail.util.SharedByteArrayInputStream;
 
 import org.alfresco.model.ContentModel;
@@ -80,22 +82,31 @@ public class ImapModelMessage extends AbstractMimeMessage
     {
         ContentService contentService = serviceRegistry.getContentService();
         ContentReader reader = contentService.getReader(messageFileInfo.getNodeRef(), ContentModel.PROP_CONTENT);
+        InputStream is = null;
         try
         {
-            InputStream is = reader.getContentInputStream();
+            is = reader.getContentInputStream();
             this.parse(is);
-            is.close();
-            is = null;
         }
         catch (ContentIOException e)
         {
             //logger.error(e);
             throw new MessagingException("The error occured during message creation from content stream.", e);
         }
-        catch (IOException e)
+        finally
         {
-            //logger.error(e);
-            throw new MessagingException("The error occured during message creation from content stream.", e);
+            if (is != null)
+            {
+                try
+                {
+                    is.close();
+                }
+                catch (IOException e)
+                {
+                    throw new MessagingException("The error occured during message creation from content stream.", e);
+                }
+                is = null;
+            }
         }
     }
 
@@ -122,7 +133,7 @@ public class ImapModelMessage extends AbstractMimeMessage
             throw new MessagingException(e.getMessage(),e);
         }
     }
-
+    
     /*
     protected void parse(InputStream inputstream) throws MessagingException
     {
@@ -130,5 +141,4 @@ public class ImapModelMessage extends AbstractMimeMessage
         contentStream = inputstream;
     }
     */
-    
 }

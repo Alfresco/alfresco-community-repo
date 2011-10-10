@@ -39,7 +39,7 @@ public class AlfrescoImapUser implements GreenMailUser
     {
         this.email = email;
         this.userName = login;
-        this.password = password.toCharArray();
+        this.password = password == null ? null : password.toCharArray();
     }
 
     public void authenticate(String password) throws UserException

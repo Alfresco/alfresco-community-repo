@@ -25,6 +25,7 @@ import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Properties;
 
 import javax.mail.Flags;
@@ -229,9 +230,11 @@ public class ImapServiceImplTest extends TestCase
 
     private boolean checkMailbox(AlfrescoImapUser user, String mailboxName)
     {
-        AlfrescoImapFolder mailFolder = (AlfrescoImapFolder)imapService.getFolder(user, mailboxName);
-
-        if (mailFolder.getFolderInfo() == null)
+        try
+        {
+            imapService.getOrCreateMailbox(user, mailboxName, true, false);
+        }
+        catch (AlfrescoRuntimeException e)
         {
             return false;
         }
@@ -240,7 +243,7 @@ public class ImapServiceImplTest extends TestCase
 
     private boolean checkSubscribedMailbox(AlfrescoImapUser user, String mailboxName)
     {
-        List<AlfrescoImapFolder> aifs = imapService.listSubscribedMailboxes(user, mailboxName);
+        List<AlfrescoImapFolder> aifs = imapService.listMailboxes(user, mailboxName, true);
         boolean present = false;
         for (AlfrescoImapFolder aif : aifs)
         {
@@ -262,15 +265,15 @@ public class ImapServiceImplTest extends TestCase
 
     public void testGetFolder() throws Exception
     {
-        imapService.createMailbox(user, MAILBOX_NAME_A);
+        imapService.getOrCreateMailbox(user, MAILBOX_NAME_A, false, true);
         assertTrue(checkMailbox(user, MAILBOX_NAME_A));
     }
     
     public void testListMailbox() throws Exception
     {
-        imapService.createMailbox(user, MAILBOX_NAME_A);
-        imapService.createMailbox(user, MAILBOX_NAME_B);
-        List<AlfrescoImapFolder> mf = imapService.listMailboxes(user, MAILBOX_PATTERN);
+        imapService.getOrCreateMailbox(user, MAILBOX_NAME_A, false, true);
+        imapService.getOrCreateMailbox(user, MAILBOX_NAME_B, false, true);
+        List<AlfrescoImapFolder> mf = imapService.listMailboxes(user, MAILBOX_PATTERN, false);
         assertEquals(2, mf.size());
         
         boolean foundA = false;
@@ -291,33 +294,33 @@ public class ImapServiceImplTest extends TestCase
         assertTrue("folder A found", foundA);
         assertTrue("folder B found", foundB);
         
-        mf = imapService.listMailboxes(user, MAILBOX_PATTERN);
+        mf = imapService.listMailboxes(user, MAILBOX_PATTERN, false);
         assertEquals("can't repeat the listing of folders", 2, mf.size());
         
-        mf = imapService.listMailboxes(user, MAILBOX_PATTERN);
+        mf = imapService.listMailboxes(user, MAILBOX_PATTERN, false);
         assertEquals("can't repeat the listing of folders", 2, mf.size());
         
         /**
          * The new mailboxes should be subscribed?
          */
-        List<AlfrescoImapFolder> aif = imapService.listSubscribedMailboxes(user, MAILBOX_PATTERN);
+        List<AlfrescoImapFolder> aif = imapService.listMailboxes(user, MAILBOX_PATTERN, true);
         assertEquals("not subscribed to two mailboxes", 2, aif.size());
         
         /**
          * Unsubscribe to one of the mailboxes.
          */
         imapService.unsubscribe(user, MAILBOX_NAME_B);
-        List<AlfrescoImapFolder> aif2 = imapService.listSubscribedMailboxes(user, MAILBOX_PATTERN);
+        List<AlfrescoImapFolder> aif2 = imapService.listMailboxes(user, MAILBOX_PATTERN, true);
         assertEquals("not subscribed to one mailbox", 1, aif2.size());
     }
     
     public void testListSubscribedMailbox() throws Exception
     {
-        imapService.createMailbox(user, MAILBOX_NAME_A);
-        imapService.createMailbox(user, MAILBOX_NAME_B);
+        imapService.getOrCreateMailbox(user, MAILBOX_NAME_A, false, true);
+        imapService.getOrCreateMailbox(user, MAILBOX_NAME_B, false, true);
         imapService.subscribe(user, MAILBOX_NAME_A);
         imapService.subscribe(user, MAILBOX_NAME_B);
-        List<AlfrescoImapFolder> aif = imapService.listSubscribedMailboxes(user, MAILBOX_PATTERN);
+        List<AlfrescoImapFolder> aif = imapService.listMailboxes(user, MAILBOX_PATTERN, true);
         assertEquals(aif.size(), 2);
         
         assertTrue("Can't subscribe mailbox A", checkSubscribedMailbox(user, MAILBOX_NAME_A));
@@ -326,16 +329,16 @@ public class ImapServiceImplTest extends TestCase
 
     public void testCreateMailbox() throws Exception
     {
-        imapService.createMailbox(user, MAILBOX_NAME_A);
+        imapService.getOrCreateMailbox(user, MAILBOX_NAME_A, false, true);
         assertTrue("Mailbox isn't created", checkMailbox(user, MAILBOX_NAME_A));
     }
 
     public void testDuplicateMailboxes() throws Exception
     {
-        imapService.createMailbox(user, MAILBOX_NAME_A);
+        imapService.getOrCreateMailbox(user, MAILBOX_NAME_A, false, true);
         try
         {
-            imapService.createMailbox(user, MAILBOX_NAME_A);
+            imapService.getOrCreateMailbox(user, MAILBOX_NAME_A, false, true);
             fail("Duplicate Mailbox was created");
         }
         catch (AlfrescoRuntimeException e)
@@ -347,7 +350,7 @@ public class ImapServiceImplTest extends TestCase
 
     public void testRenameMailbox() throws Exception
     {
-        imapService.createMailbox(user, MAILBOX_NAME_A);
+        imapService.getOrCreateMailbox(user, MAILBOX_NAME_A, false, true);
         imapService.renameMailbox(user, MAILBOX_NAME_A, MAILBOX_NAME_B);
         assertFalse("Can't rename mailbox", checkMailbox(user, MAILBOX_NAME_A));
         assertTrue("Can't rename mailbox", checkMailbox(user, MAILBOX_NAME_B));
@@ -355,8 +358,8 @@ public class ImapServiceImplTest extends TestCase
 
     public void testRenameMailboxDuplicate() throws Exception
     {
-        imapService.createMailbox(user, MAILBOX_NAME_A);
-        imapService.createMailbox(user, MAILBOX_NAME_B);
+        imapService.getOrCreateMailbox(user, MAILBOX_NAME_A, false, true);
+        imapService.getOrCreateMailbox(user, MAILBOX_NAME_B, false, true);
         try
         {
             imapService.renameMailbox(user, MAILBOX_NAME_A, MAILBOX_NAME_B);
@@ -370,7 +373,7 @@ public class ImapServiceImplTest extends TestCase
 
     public void testDeleteMailbox() throws Exception
     {
-        imapService.createMailbox(user, MAILBOX_NAME_B);
+        imapService.getOrCreateMailbox(user, MAILBOX_NAME_B, false, true);
         imapService.deleteMailbox(user, MAILBOX_NAME_B);
         assertFalse("Can't delete mailbox", checkMailbox(user, MAILBOX_NAME_B));
     }
@@ -424,7 +427,7 @@ public class ImapServiceImplTest extends TestCase
 
     public void testSubscribe() throws Exception
     {
-        imapService.createMailbox(user, MAILBOX_NAME_A);
+        imapService.getOrCreateMailbox(user, MAILBOX_NAME_A, false, true);
 
         imapService.subscribe(user, MAILBOX_NAME_A);
         assertTrue("Can't subscribe mailbox", checkSubscribedMailbox(user, MAILBOX_NAME_A));
@@ -432,7 +435,7 @@ public class ImapServiceImplTest extends TestCase
 
     public void testUnsubscribe() throws Exception
     {
-        imapService.createMailbox(user, MAILBOX_NAME_A);
+        imapService.getOrCreateMailbox(user, MAILBOX_NAME_A, false, true);
         imapService.subscribe(user, MAILBOX_NAME_A);
         imapService.unsubscribe(user, MAILBOX_NAME_A);
         // TODO MER 21/05/2010 : line below looks like a bug to me.
@@ -453,10 +456,10 @@ public class ImapServiceImplTest extends TestCase
 
     public void testSetFlags() throws Exception
     {
-        List<FileInfo> fis = imapService.searchMails(testImapFolderNodeRef, ImapViewMode.ARCHIVE);
+        NavigableMap<Long, FileInfo> fis = imapService.getFolderStatus(authenticationService.getCurrentUserName(), testImapFolderNodeRef, ImapViewMode.ARCHIVE).search;
         if (fis != null && fis.size() > 0)
         {
-            FileInfo messageFileInfo = fis.get(0);
+            FileInfo messageFileInfo = fis.firstEntry().getValue();
             try
             {
                 setFlags(messageFileInfo);
@@ -486,10 +489,10 @@ public class ImapServiceImplTest extends TestCase
     
     public void testSetFlag() throws Exception
     {
-        List<FileInfo> fis = imapService.searchMails(testImapFolderNodeRef, ImapViewMode.ARCHIVE);
+        NavigableMap<Long, FileInfo> fis = imapService.getFolderStatus(authenticationService.getCurrentUserName(), testImapFolderNodeRef, ImapViewMode.ARCHIVE).search;
         if (fis != null && fis.size() > 0)
         {
-            FileInfo messageFileInfo = fis.get(0);
+            FileInfo messageFileInfo = fis.firstEntry().getValue();
             
             reauthenticate(USER_NAME, USER_PASSWORD);
             
@@ -506,10 +509,10 @@ public class ImapServiceImplTest extends TestCase
 
     public void testGetFlags() throws Exception
     {
-        List<FileInfo> fis = imapService.searchMails(testImapFolderNodeRef, ImapViewMode.ARCHIVE);
+        NavigableMap<Long, FileInfo> fis = imapService.getFolderStatus(authenticationService.getCurrentUserName(), testImapFolderNodeRef, ImapViewMode.ARCHIVE).search;
         if (fis != null && fis.size() > 0)
         {
-            FileInfo messageFileInfo = fis.get(0);
+            FileInfo messageFileInfo = fis.firstEntry().getValue();
             
             reauthenticate(USER_NAME, USER_PASSWORD);
             
@@ -526,13 +529,13 @@ public class ImapServiceImplTest extends TestCase
     
     public void testRenameAccentedMailbox() throws Exception
     {
-        String MAILBOX_ACCENTED_NAME_A = "H�tel";
-        String MAILBOX_ACCENTED_NAME_B = "H�telXX";
+        String MAILBOX_ACCENTED_NAME_A = "Hôtel";
+        String MAILBOX_ACCENTED_NAME_B = "HôtelXX";
         
-        imapService.createMailbox(user, MAILBOX_ACCENTED_NAME_A);
+        imapService.getOrCreateMailbox(user, MAILBOX_ACCENTED_NAME_A, false, true);
         imapService.deleteMailbox(user, MAILBOX_ACCENTED_NAME_A);
         
-        imapService.createMailbox(user, MAILBOX_ACCENTED_NAME_A);
+        imapService.getOrCreateMailbox(user, MAILBOX_ACCENTED_NAME_A, false, true);
         imapService.renameMailbox(user, MAILBOX_ACCENTED_NAME_A, MAILBOX_ACCENTED_NAME_B);
         assertFalse("Can't rename mailbox", checkMailbox(user, MAILBOX_ACCENTED_NAME_A));
         assertTrue("Can't rename mailbox", checkMailbox(user, MAILBOX_ACCENTED_NAME_B));

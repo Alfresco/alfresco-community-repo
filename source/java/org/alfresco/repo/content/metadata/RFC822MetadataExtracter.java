@@ -134,7 +134,7 @@ public class RFC822MetadataExtracter extends AbstractMappingMetadataExtracter
                     {
                         String lastReceived = rx[0];    
                         lastReceived = MimeUtility.unfold(lastReceived);
-                        int x = lastReceived.indexOf(';');
+                        int x = lastReceived.lastIndexOf(';');
                         if(x > 0)
                         {
                             String dateStr = lastReceived.substring(x + 1).trim();

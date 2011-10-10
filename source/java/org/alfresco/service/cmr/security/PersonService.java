@@ -49,8 +49,9 @@ public interface PersonService
     /**
      * Get a person by userName. The person is store in the repository. The
      * person may be created as a side effect of this call, depending on the
-     * setting to
-     * {@link #setCreateMissingPeople(boolean) create missing people or not}.
+     * setting of
+     * {@link #setCreateMissingPeople(boolean) to create missing people or not}.
+     * The home folder will also be created as a side effect if it does not exist.
      * 
      * @param userName -
      *            the userName key to find the person
@@ -66,20 +67,27 @@ public interface PersonService
     public NodeRef getPerson(String userName);
 
     /**
-     * Retrieve the person NodeRef for a username key. Depending on the <code>autoCreate</code> parameter and
-     * configuration missing people will be created if not found, else a NoSuchPersonException exception will be thrown.
+     * Retrieve the person NodeRef for a {@code username}, optionally creating
+     * the home folder if it does not exist and optionally creating the person
+     * if they don't exist AND the PersonService is configured to allow the
+     * creation of missing persons {@see #setCreateMissingPeople(boolean)}.
+     * 
+     * If not allowed to create missing persons and the person does not exist
+     * a {@code NoSuchPersonException} exception will be thrown.
      * 
      * @param userName
      *            of the person NodeRef to retrieve
-     * @param autoCreate
-     *            should we auto-create the person node and home folder if they don't exist? (and configuration allows
-     *            us to)
+     * @param autoCreateHomeFolderAndMissingPersonIfAllowed
+     *            If the person exits:
+     *               should we create the home folder if it does not exist?
+     *            If the person exists AND the creation of missing persons is allowed
+     *               should we create both the person and home folder.
      * @return NodeRef of the person as specified by the username
      * @throws NoSuchPersonException
      *             if the person doesn't exist and can't be created
      */
     @Auditable(parameters = {"userName", "autoCreate"})
-    public NodeRef getPerson(final String userName, final boolean autoCreate);
+    public NodeRef getPerson(final String userName, final boolean autoCreateHomeFolderAndMissingPersonIfAllowed);
 
     /**
      * Check if a person exists.
@@ -124,7 +132,7 @@ public interface PersonService
 
     /**
      * Set the properties on a person - some of these may be persisted in
-     * different locations.
+     * different locations - <b>the home folder is created if it doesn't exist</b>
      * 
      * @param userName -
      *            the user for which the properties should be set.
@@ -142,11 +150,11 @@ public interface PersonService
      *            - the user for which the properties should be set.
      * @param properties
      *            - the map of properties to set (as the NodeService)
-     * @param autoCreate
-     *            should we auto-create the home folder if it doesn't exist? (and configuration allows us to)
+     * @param autoCreateHomeFolder
+     *            should we auto-create the home folder if it doesn't exist.
      */
     @Auditable(parameters = {"userName", "properties", "autoCreate"})
-    public void setPersonProperties(String userName, Map<QName, Serializable> properties, boolean autoCreate);
+    public void setPersonProperties(String userName, Map<QName, Serializable> properties, boolean autoCreateHomeFolder);
     
     /**
      * Can this service create, delete and update person information?

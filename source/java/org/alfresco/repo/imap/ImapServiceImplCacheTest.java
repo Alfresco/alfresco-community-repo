@@ -10,6 +10,7 @@ import junit.framework.TestCase;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -21,6 +22,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.config.RepositoryFolderConfigBean;
 import org.springframework.context.ApplicationContext;
@@ -47,6 +49,8 @@ public class ImapServiceImplCacheTest extends TestCase
     private NamespaceService namespaceService;
     private FileFolderService fileFolderService;
     private ContentService contentService;
+    private TransactionService transactionService;
+    private FileInfo oldFile;
     
     private ImapService imapService;
 
@@ -63,6 +67,7 @@ public class ImapServiceImplCacheTest extends TestCase
         namespaceService = serviceRegistry.getNamespaceService();
         fileFolderService = serviceRegistry.getFileFolderService();
         contentService = serviceRegistry.getContentService();
+        transactionService = serviceRegistry.getTransactionService();
         
         authenticationService.authenticate(USER_NAME, USER_PASSWORD.toCharArray());
 
@@ -78,12 +83,13 @@ public class ImapServiceImplCacheTest extends TestCase
 
         ChildApplicationContextFactory imap = (ChildApplicationContextFactory) ctx.getBean("imap");
         ApplicationContext imapCtx = imap.getApplicationContext();
-        ImapServiceImpl imapServiceImpl = (ImapServiceImpl)imapCtx.getBean("imapService");
+        final ImapServiceImpl imapServiceImpl = (ImapServiceImpl)imapCtx.getBean("imapService");
 
         // Creating IMAP test folder for IMAP root
         LinkedList<String> folders = new LinkedList<String>();
         folders.add(TEST_IMAP_FOLDER_NAME);
-        FileFolderServiceImpl.makeFolders(fileFolderService, companyHomeNodeRef, folders, ContentModel.TYPE_FOLDER);
+        FileInfo folder = FileFolderServiceImpl.makeFolders(fileFolderService, companyHomeNodeRef, folders, ContentModel.TYPE_FOLDER);
+        oldFile = fileFolderService.create(folder.getNodeRef(), "oldFile", ContentModel.TYPE_CONTENT);
         
         // Setting IMAP root
         RepositoryFolderConfigBean imapHome = new RepositoryFolderConfigBean();
@@ -93,7 +99,15 @@ public class ImapServiceImplCacheTest extends TestCase
         imapServiceImpl.setImapHome(imapHome);
         
         // Starting IMAP
-        imapServiceImpl.startup();
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                imapServiceImpl.startup();
+                return null;
+            }
+        });
         
         nodeRefs = searchService.selectNodes(storeRootNodeRef,
                 companyHomePathInStore + "/" + NamespaceService.CONTENT_MODEL_PREFIX + ":" + TEST_IMAP_FOLDER_NAME,
@@ -136,31 +150,33 @@ public class ImapServiceImplCacheTest extends TestCase
         // Create content within 'Alfresco IMAP/aaa/ALF9361'
         createTestContent(localRootFolder, contentItemsCount);
         // Load the cache
-        imapService.listMailboxes(localUser, "*");
-        imapService.listSubscribedMailboxes(localUser, "*");
+        imapService.listMailboxes(localUser, "*", false);
+        imapService.listMailboxes(localUser, "*", true);
         // Get the folder to examine
-        AlfrescoImapFolder folder = imapService.getFolder(localUser, mailbox);
+        AlfrescoImapFolder folder = imapService.getOrCreateMailbox(localUser, mailbox, true, false);
         // Check the folder exist via IMAP
         assertNotNull("Folder wasn't successfully gotten from IMAP", folder);
         assertEquals(contentItemsCount, folder.getMessageCount());
         // Check UIDVALIDITY
         long uidValidityBefore = folder.getUidValidity();
+        // Move in an old file with a smaller UID
+        fileFolderService.move(oldFile.getNodeRef(), folder.getFolderInfo().getNodeRef(), folder.getName());
+        // Get the folder once more and check it was changed since an old child was moved in
+        folder = imapService.getOrCreateMailbox(localUser, mailbox, true, false);
+        // Content count should be increased
+        assertEquals(++contentItemsCount, folder.getMessageCount());
+        long uidValidity = folder.getUidValidity();
+        assertTrue("UIDVALIDITY wasn't incremented", (uidValidity - uidValidityBefore) > 0);
         // Delete first childMailbox 'ALF9361/ALF9361_0'
         //System.out.println(" --------------------- DELETE FOLDER --------------------");
         //System.out.println(" Parent " + localRootFolder.getNodeRef());
         fileFolderService.delete(subFolders.get(0).getNodeRef());
-        // Get the folder once more and check it was changed since child was removed
-        folder = imapService.getFolder(localUser, mailbox);
-        // Content count should be the same since we havn't deleted a content yet
-        assertEquals(contentItemsCount, folder.getMessageCount());
-        long uidValidity = folder.getUidValidity();
-        assertTrue("UIDVALIDITY wasn't incremented", (uidValidity - uidValidityBefore) > 0);
         uidValidityBefore = uidValidity;
         // Try to get deleted child
         try
         {
             String subFolderName = mailbox + AlfrescoImapConst.HIERARCHY_DELIMITER + folderName + "_0";
-            folder = imapService.getFolder(localUser, subFolderName);
+            folder = imapService.getOrCreateMailbox(localUser, subFolderName, true, false);
             fail("The folder still in the cache");
         }
         catch (RuntimeException e)
@@ -173,7 +189,7 @@ public class ImapServiceImplCacheTest extends TestCase
         try
         {
             String subSubFolderName = mailbox + AlfrescoImapConst.HIERARCHY_DELIMITER + mailbox + "_0" + AlfrescoImapConst.HIERARCHY_DELIMITER + "sub_0";
-            folder = imapService.getFolder(localUser, subSubFolderName);
+            folder = imapService.getOrCreateMailbox(localUser, subSubFolderName, true, false);
             fail("The folder still in the cache");
         }
         catch (RuntimeException e)
@@ -181,7 +197,7 @@ public class ImapServiceImplCacheTest extends TestCase
             // expected
         }
         // Do manipulations with a content in the folder to check the cache behaviour
-        folder = imapService.getFolder(localUser, mailbox);
+        folder = imapService.getOrCreateMailbox(localUser, mailbox, true, false);
         SimpleStoredMessage message = folder.getMessages().get(0);
         AbstractMimeMessage alfrescoMessage = (AbstractMimeMessage) message.getMimeMessage();
         long uid = message.getUid();
@@ -191,10 +207,7 @@ public class ImapServiceImplCacheTest extends TestCase
         fileFolderService.delete(alfrescoMessage.getMessageInfo().getNodeRef());
         // Get a folder once again. We expect that the folder would be retrieved from the repo,
         // since its' cache should be invalidated
-        folder = imapService.getFolder(localUser, mailbox);
-        // Get UIDVALIDITY. It should be changed, since we removed a message form the mailbox.
-        uidValidity = folder.getUidValidity();
-        assertTrue("UIDVALIDITY wasn't incremented", (uidValidity - uidValidityBefore) > 0);
+        folder = imapService.getOrCreateMailbox(localUser, mailbox, true, false);
         // Additional check whether messages cache is valid. Messages cache should be recreated
         //with the new inctance of AlfrescoImapMessage
         assertTrue("Messages cache is stale", contentItemsCount > folder.getMessageCount());

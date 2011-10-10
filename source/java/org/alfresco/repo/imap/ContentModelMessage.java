@@ -35,20 +35,18 @@ import javax.mail.internet.MimeUtility;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.imap.ImapService.EmailBodyFormat;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 public class ContentModelMessage extends AbstractMimeMessage
 {
     private Log logger = LogFactory.getLog(ContentModelMessage.class);
     
-    protected static final String DEFAULT_EMAIL_FROM = "alfresco@alfresco.org";
-    protected static final String DEFAULT_EMAIL_TO = "alfresco@alfresco.org";
+    protected static final String DEFAULT_EMAIL_FROM = "alfresco" + DEFAULT_SUFFIX;
+    protected static final String DEFAULT_EMAIL_TO = DEFAULT_EMAIL_FROM;
 
     public ContentModelMessage(FileInfo fileInfo, ServiceRegistry serviceRegistry, boolean generateBody) throws MessagingException
     {

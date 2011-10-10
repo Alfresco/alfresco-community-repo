@@ -415,12 +415,9 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
     {
         String filter = shortNameFilter;
         
-        /**
-         * Modify shortNameFilter to be "shortName*"
-         */
         if (shortNameFilter.length() != 0)
         {
-            filter = filter.replace("\"", "") + "*";
+            filter = filter.replace("\"", "");
         }
         
         Set<String> authorities;

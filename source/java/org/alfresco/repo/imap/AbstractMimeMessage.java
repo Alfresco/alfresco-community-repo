@@ -21,24 +21,18 @@ package org.alfresco.repo.imap;
 import static org.alfresco.repo.imap.AlfrescoImapConst.MIME_VERSION;
 import static org.alfresco.repo.imap.AlfrescoImapConst.X_ALF_NODEREF_ID;
 
-import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.mail.Address;
 import javax.mail.Flags;
 import javax.mail.MessagingException;
 import javax.mail.Session;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.imap.ImapService.EmailBodyFormat;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -47,7 +41,6 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -56,6 +49,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public abstract class AbstractMimeMessage extends MimeMessage
 {    
+    protected static final String DEFAULT_SUFFIX = "@alfresco.org";
+
     protected static int MAX_RETRIES = 1;
 
     private Log logger = LogFactory.getLog(AbstractMimeMessage.class);
@@ -238,6 +233,6 @@ public abstract class AbstractMimeMessage extends MimeMessage
 
     protected void updateMessageID() throws MessagingException
     {
-        setHeader("Message-ID", this.messageFileInfo.getNodeRef().getId());
+        setHeader("Message-ID", "<" + this.messageFileInfo.getNodeRef().getId() + DEFAULT_SUFFIX + ">");
     }   
 }

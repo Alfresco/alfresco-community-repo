@@ -20,6 +20,7 @@ package org.alfresco.repo.imap;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.NavigableMap;
 
 import javax.mail.Flags;
 import javax.mail.MessagingException;
@@ -29,6 +30,8 @@ import javax.mail.internet.MimeMessage;
 import org.alfresco.repo.imap.AlfrescoImapConst.ImapViewMode;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
+
+import com.icegreen.greenmail.store.SimpleStoredMessage;
 
 /**
  * @author Arseny Kovalchuk
@@ -85,36 +88,18 @@ public interface ImapService
      * Returns an collection of mailboxes. This method serves LIST command of the IMAP protocol.
      * 
      * @param user User making the request
-     * @param mailboxPattern String name of a mailbox encoded in MUTF-7, possible including a wildcard.
+     * @param mailboxPattern String name of a mailbox, possible including a wildcard.
+     * @param listSubscribed list only subscribed folders?
      * @return Collection of mailboxes matching the pattern.
      */
-    public List<AlfrescoImapFolder> listMailboxes(AlfrescoImapUser user, String mailboxPattern);
-
-    /**
-     * Returns an collection of subscribed mailboxes. This method serves LSUB command of the IMAP protocol.
-     * 
-     * @param user User making the request
-     * @param mailboxPattern String name of a mailbox encoded in MUTF-7, possible including a wildcard.
-     * @return Collection of mailboxes matching the pattern.
-     */
-    public List<AlfrescoImapFolder> listSubscribedMailboxes(AlfrescoImapUser user, String mailboxPattern);
-
-    /**
-     * Returns a reference to a newly created mailbox. The request should specify a mailbox that does not already exist on this server, that could exist on this server and that the
-     * user has rights to create. This method serves CREATE command of the IMAP protocol.
-     * 
-     * @param user User making the request.
-     * @param mailboxName String name of the target encoded in MUTF-7,
-     * @return an Mailbox reference.
-     */
-    public AlfrescoImapFolder createMailbox(AlfrescoImapUser user, String mailboxName);
+    public List<AlfrescoImapFolder> listMailboxes(AlfrescoImapUser user, String mailboxPattern, boolean listSubscribed);
 
     /**
      * Deletes an existing MailBox. Specified mailbox must already exist on this server, and the user must have rights to delete it. This method serves DELETE command of the IMAP
      * protocol.
      * 
      * @param user User making the request.
-     * @param mailboxName String name of the target encoded in MUTF-7,
+     * @param mailboxName String name of the target,
      * @throws com.icegreen.greenmail.store.FolderException if mailbox has a non-selectable store with children
      */
     public void deleteMailbox(AlfrescoImapUser user, String mailboxName);
@@ -126,35 +111,40 @@ public interface ImapService
      * protocol.
      * 
      * @param user User making the request.
-     * @param oldMailboxName String name of the existing folder encoded in MUTF-7,
-     * @param newMailboxName String target new name encoded in MUTF-7,
+     * @param oldMailboxName String name of the existing folder
+     * @param newMailboxName String target new name
      */
     public void renameMailbox(AlfrescoImapUser user, String oldMailboxName, String newMailboxName);
 
     /**
-     * Returns a reference to an existing Mailbox. The requested mailbox must already exists on this server and the requesting user must have at least lookup rights. <p/> It is
-     * also can be used by to obtain hierarchy delimiter by the LIST command: <p/> C: 2 list "" "" <p/> S: * LIST () "." "" <p/> S: 2 OK LIST completed.
+     * Returns a reference to a mailbox, either creating a new one or retrieving an existing one.
      * 
-     * @param user User making the request.
-     * @param mailboxName String name of the target encoded in MUTF-7,.
-     * @return an Mailbox reference.
+     * @param user
+     *            User making the request.
+     * @param mailboxName
+     *            String name of the target.
+     * @param mayExist
+     * Is the mailbox allowed to exist already? If <code>false</code> and the mailbox already exists, an error will be thrown
+     * @param mayCreate
+     * If the mailbox does not exist, can one be created? If <code>false</code> then an error is thrown if the folder does not exist 
+     * @return a Mailbox reference
      */
-    public AlfrescoImapFolder getFolder(AlfrescoImapUser user, String mailboxName);
+    public AlfrescoImapFolder getOrCreateMailbox(AlfrescoImapUser user, String mailboxName, boolean mayExist, boolean mayCreate);
 
     /**
-     * Get root reference for the specified mailbox
+     * Get the node ref of the user's imap home.   Will create it on demand if it 
+     * does not already exist.
      * 
-     * @param mailboxName mailbox name in IMAP client.
-     * @param userName
-     * @return NodeRef of root reference for the specified mailbox
+     * @param userName user name
+     * @return user IMAP home reference and create it if it doesn't exist.
      */
-    public NodeRef getMailboxRootRef(String mailboxName, String userName);
+    public NodeRef getUserImapHomeRef(final String userName);
 
     /**
      * Subscribes a user to a mailbox. The mailbox must exist locally and the user must have rights to modify it. <p/> This method serves SUBSCRIBE command of the IMAP protocol.
      * 
      * @param user User making the request
-     * @param mailbox String representation of a mailbox name encoded in MUTF-7,.
+     * @param mailbox String representation of a mailbox name.
      */
     public void subscribe(AlfrescoImapUser user, String mailbox);
 
@@ -162,7 +152,7 @@ public interface ImapService
      * Unsubscribes from a given mailbox. <p/> This method serves UNSUBSCRIBE command of the IMAP protocol.
      * 
      * @param user User making the request
-     * @param mailbox String representation of a mailbox name encoded in MUTF-7,.
+     * @param mailbox String representation of a mailbox name.
      */
     public void unsubscribe(AlfrescoImapUser user, String mailbox);
 
@@ -196,7 +186,30 @@ public interface ImapService
      * @param includeSubFolders includeSubFolders
      * @return list of emails that context folder contains.
      */
-    public List<FileInfo> searchMails(NodeRef contextNodeRef, ImapViewMode viewMode);
+    public FolderStatus getFolderStatus(final String userName, final NodeRef contextNodeRef, ImapViewMode viewMode);
+
+    /**
+     * Gets a cached MIME message for the given file, complete with message body.
+     * 
+     * @param messageFileInfo imap file info.
+     * @return a message.
+     */
+    public SimpleStoredMessage getMessage(FileInfo messageFileInfo) throws MessagingException;
+
+    /**
+     * Creates a MIME message for the given file
+     * 
+     * @param messageFileInfo imap file info.
+     * @param generateBody Should the message body be generated?
+     * @return a message.
+     */
+    public SimpleStoredMessage createImapMessage(FileInfo messageFileInfo, boolean generateBody) throws MessagingException;
+
+    /**
+     * Expunges (deletes) an IMAP message if its flags indicates
+     * @param messageFileInfo imap file info.
+     */
+    public void expungeMessage(FileInfo messageFileInfo);    
 
     /**
      * Return flags that belong to the specified imap folder.
@@ -291,4 +304,27 @@ public interface ImapService
      * @return true if enabled
      */
     public boolean getImapServerEnabled();  
+    
+    static class FolderStatus
+    {        
+        public final int messageCount;
+        public final int recentCount;
+        public final int firstUnseen;
+        public final int unseenCount;
+        public final long uidValidity;
+        public final String changeToken;
+        public final NavigableMap<Long, FileInfo> search;
+
+        public FolderStatus(int messageCount, int recentCount, int firstUnseen, int unseenCount, long uidValidity,
+                String changeToken, NavigableMap<Long, FileInfo> search)
+        {
+            this.messageCount = messageCount;
+            this.recentCount = recentCount;
+            this.firstUnseen = firstUnseen;
+            this.unseenCount = unseenCount;
+            this.uidValidity = uidValidity;
+            this.changeToken = changeToken;
+            this.search = search;
+        }
+    }
 }

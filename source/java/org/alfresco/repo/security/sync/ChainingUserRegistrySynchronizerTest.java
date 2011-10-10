@@ -39,10 +39,12 @@ import junit.framework.TestCase;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextManager;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
+import org.alfresco.repo.security.person.PersonServiceImpl;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
@@ -91,6 +93,9 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
 
     /** The retrying transaction helper. */
     private RetryingTransactionHelper retryingTransactionHelper;
+    
+    /** The value given to the person service. */
+    private boolean homeFolderCreationEager;
 
     /*
      * (non-Javadoc)
@@ -114,6 +119,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
 
         this.retryingTransactionHelper = (RetryingTransactionHelper) ChainingUserRegistrySynchronizerTest.context
                 .getBean("retryingTransactionHelper");
+        setHomeFolderCreationEager(false); // the normal default if using LDAP
     }
 
     /*
@@ -124,6 +130,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
     protected void tearDown() throws Exception
     {
         this.authenticationContext.clearCurrentSecurityContext();
+        setHomeFolderCreationEager(true); // the normal default if not using LDAP
     }
 
     /**
@@ -229,6 +236,12 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
                 return null;
             }
         }, false, true);
+    }
+
+    public void setHomeFolderCreationEager(boolean homeFolderCreationEager)
+    {
+        this.homeFolderCreationEager = homeFolderCreationEager;
+        ((PersonServiceImpl)personService).setHomeFolderCreationEager(homeFolderCreationEager);
     }
 
     /**
@@ -438,6 +451,24 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
 
         tearDownTestUsersAndGroups();
     }
+    
+    public void testDifferentialUpdateWithHomeFolderCreation() throws Exception
+    {
+        setHomeFolderCreationEager(!homeFolderCreationEager);
+        testDifferentialUpdate();
+    }
+
+    public void testForcedUpdateWithHomeFolderCreation() throws Exception
+    {
+        setHomeFolderCreationEager(!homeFolderCreationEager);
+        testDifferentialUpdate();
+    }
+
+    public void testCaseChangeWithHomeFolderCreation() throws Exception
+    {
+        setHomeFolderCreationEager(!homeFolderCreationEager);
+        testDifferentialUpdate();
+    }
 
     /**
      * Tests synchronization with a zone with a larger volume of authorities.
@@ -592,6 +623,21 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
 
             // Check case matches
             assertEquals(this.personService.getUserIdentifier(name), name);
+            
+            // Check the person exist.
+            NodeRef person = personService.getPerson(name, false);
+            assertNotNull("Person for "+name+" should exist", person);
+            
+            // Check the home folder exists or not.
+            NodeRef homeFolder = DefaultTypeConverter.INSTANCE.convert(NodeRef.class, nodeService.getProperty(person, ContentModel.PROP_HOMEFOLDER));
+            if (homeFolderCreationEager)
+            {
+                assertNotNull("Home folder for "+name+" should exist", homeFolder);
+            }
+            else
+            {
+                assertNull("Home folder for "+name+" should not exist", homeFolder);
+            }
         }
     }
 
@@ -626,7 +672,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
      */
     private void assertEmailEquals(String personName, String email)
     {
-        NodeRef personRef = this.personService.getPerson(personName);
+        NodeRef personRef = this.personService.getPerson(personName, false);
         assertEquals(email, this.nodeService.getProperty(personRef, ContentModel.PROP_EMAIL));
     }
 

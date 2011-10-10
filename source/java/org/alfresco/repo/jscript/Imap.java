@@ -22,7 +22,6 @@ import org.alfresco.repo.model.Repository;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.springframework.extensions.surf.util.ParameterCheck;
 
 public final class Imap extends BaseScopableProcessorExtension
 {
@@ -74,13 +73,12 @@ public final class Imap extends BaseScopableProcessorExtension
     /**
      * Searches NodeRef to the IMAP home for specified user
      * 
-     * @param mailboxName  the name of the mailbox
      * @param userName  the name of the user
      */
-    public ScriptNode getImapHomeRef(String mailboxName, String userName)
+    public ScriptNode getImapHomeRef(String userName)
     {
         ScriptNode result = null;
-        NodeRef nodeRef = services.getImapService().getMailboxRootRef(mailboxName, userName);
+        NodeRef nodeRef = services.getImapService().getUserImapHomeRef(userName);
         if (nodeRef != null)
         {
             result = new ScriptNode(nodeRef, this.services, getScope());

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -20,10 +20,13 @@ package org.alfresco.repo.imap;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.repo.imap.exception.AlfrescoImapFolderException;
-import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.Utf7;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -34,14 +37,27 @@ import com.icegreen.greenmail.store.MailFolder;
 import com.icegreen.greenmail.user.GreenMailUser;
 
 /**
+ * This Host Manager is assumed to be session local, i.e. there is one instance per IMAP TCP connection. This means that
+ * it can locally cache items being interacted with during the session and its knowledge of which folders / messages do
+ * or do not exist will match that of the client.
+ * 
  * @author Mike Shavnev
+ * @author David Ward
  */
 public class AlfrescoImapHostManager implements ImapHostManager
 {
     private ImapService imapService;
-    private TransactionService transactionService;
+    private Map<String, AlfrescoImapFolder> folderCache;
     
     private static Log logger = LogFactory.getLog(AlfrescoImapHostManager.class);
+    
+    /**
+     * @param imapService
+     */
+    public AlfrescoImapHostManager(ImapService imapService)
+    {
+        this.imapService = imapService;
+    }
 
     /**
      * Returns the hierarchy delimiter for mailboxes on this host.
@@ -67,13 +83,9 @@ public class AlfrescoImapHostManager implements ImapHostManager
     {
         try
         {
-            return new ArrayList<MailFolder>(
-                    imapService.listMailboxes(
-                            new AlfrescoImapUser(
-                                    user.getEmail(),
-                                    user.getLogin(),
-                                    user.getPassword()),
-                                    mailboxPattern));
+            AlfrescoImapUser alfrescoUser = new AlfrescoImapUser(user.getEmail(), user.getLogin(), user.getPassword());
+            return registerMailboxes(imapService.listMailboxes(alfrescoUser, getUnqualifiedMailboxPattern(
+                    alfrescoUser, mailboxPattern), false));
         }
         catch (Throwable e)
         {
@@ -93,18 +105,15 @@ public class AlfrescoImapHostManager implements ImapHostManager
      * @return Collection of mailboxes matching the pattern.
      * @throws com.icegreen.greenmail.store.FolderException
      */
-    public Collection<MailFolder> listSubscribedMailboxes(GreenMailUser user, String mailboxPattern) throws FolderException
+    public Collection<MailFolder> listSubscribedMailboxes(GreenMailUser user, String mailboxPattern)
+            throws FolderException
     {
         try
-            {
-            return new ArrayList<MailFolder>(
-                    imapService.listSubscribedMailboxes(
-                            new AlfrescoImapUser(
-                                    user.getEmail(),
-                                    user.getLogin(),
-                                    user.getPassword()),
-                                    mailboxPattern));
-            }
+        {
+            AlfrescoImapUser alfrescoUser = new AlfrescoImapUser(user.getEmail(), user.getLogin(), user.getPassword());
+            return registerMailboxes(imapService.listMailboxes(alfrescoUser, getUnqualifiedMailboxPattern(
+                    alfrescoUser, mailboxPattern), true));
+        }
         catch (Throwable e)
         {
             logger.debug(e.getMessage(), e);
@@ -129,12 +138,21 @@ public class AlfrescoImapHostManager implements ImapHostManager
      */
     public void renameMailbox(GreenMailUser user, String oldMailboxName, String newMailboxName) throws FolderException, AuthorizationException
     {
-                try
-                {
-            imapService.renameMailbox(new AlfrescoImapUser(user.getEmail(), user.getLogin(), user.getPassword()), oldMailboxName, newMailboxName);
-                    }
+        try
+        {
+            AlfrescoImapUser alfrescoUser = new AlfrescoImapUser(user.getEmail(), user.getLogin(), user.getPassword());
+            String oldFolderPath = getUnqualifiedMailboxPattern(alfrescoUser,
+                    oldMailboxName);
+            String newFolderpath = getUnqualifiedMailboxPattern(alfrescoUser, newMailboxName);
+            imapService.renameMailbox(alfrescoUser, oldFolderPath, newFolderpath);
+            if (folderCache != null)
+            {
+                folderCache.remove(oldFolderPath);
+                folderCache.remove(newFolderpath);
+            }
+        }
         catch (Throwable e)
-                    {
+        {
             logger.debug(e.getMessage(), e);
             throw new FolderException(e.getMessage());
         }
@@ -154,11 +172,13 @@ public class AlfrescoImapHostManager implements ImapHostManager
     public MailFolder createMailbox(GreenMailUser user, String mailboxName) throws AuthorizationException, FolderException
     {
         try
-                {
-            return imapService.createMailbox(new AlfrescoImapUser(user.getEmail(), user.getLogin(), user.getPassword()), mailboxName);
-                }
+        {
+            AlfrescoImapUser alfrescoUser = new AlfrescoImapUser(user.getEmail(), user.getLogin(), user.getPassword());
+            return registerMailBox(imapService.getOrCreateMailbox(alfrescoUser, getUnqualifiedMailboxPattern(
+                    alfrescoUser, mailboxName), false, true));
+        }
         catch (Throwable e)
-                {
+        {
             logger.debug(e.getMessage(), e);
             throw new FolderException(e.getMessage());
         }
@@ -175,11 +195,17 @@ public class AlfrescoImapHostManager implements ImapHostManager
     public void deleteMailbox(GreenMailUser user, String mailboxName) throws FolderException, AuthorizationException
     {
         try
-                {
-            imapService.deleteMailbox(new AlfrescoImapUser(user.getEmail(), user.getLogin(), user.getPassword()), mailboxName);
-                }
-        catch (Throwable e)
+        {
+            AlfrescoImapUser alfrescoUser = new AlfrescoImapUser(user.getEmail(), user.getLogin(), user.getPassword());
+            String folderPath = getUnqualifiedMailboxPattern(alfrescoUser, mailboxName);
+            imapService.deleteMailbox(alfrescoUser, folderPath);
+            if (folderCache != null)
             {
+                folderCache.remove(folderPath);
+            }
+        }
+        catch (Throwable e)
+        {
             logger.debug(e.getMessage(), e);
             throw new FolderException(e.getMessage());
         }
@@ -199,23 +225,32 @@ public class AlfrescoImapHostManager implements ImapHostManager
      */
     public MailFolder getFolder(GreenMailUser user, String mailboxName)
     {
-        return imapService.getFolder(new AlfrescoImapUser(user.getEmail(), user.getLogin(), user.getPassword()), mailboxName);
-            }
+        AlfrescoImapUser alfrescoUser = new AlfrescoImapUser(user.getEmail(), user.getLogin(), user.getPassword());
+        String folderPath = getUnqualifiedMailboxPattern(
+                alfrescoUser, mailboxName);
+        // Warm up the cache if necessary
+        if (folderCache == null)
+        {
+            registerMailboxes(imapService.listMailboxes(alfrescoUser, "*", true));
+        }
+        // Try to retrieve from the cache
+        AlfrescoImapFolder result = folderCache.get(folderPath);
+        if (result != null && result.reset())
+        {
+            return result;
+        }
+        
+        // Look up and cache as a last resort
+        return registerMailBox(imapService.getOrCreateMailbox(alfrescoUser, folderPath, true, false));
+    }
 
     /**
      * Simply calls {@link #getFolder(GreenMailUser, String)}. <p/> Added to implement {@link ImapHostManager}.
      */
-    public MailFolder getFolder(final GreenMailUser user, final String mailboxName, boolean mustExist) throws FolderException
-            {
-        try
-                {
-            return getFolder(new AlfrescoImapUser(user.getEmail(), user.getLogin(), user.getPassword()), mailboxName);
-                }
-        catch (Throwable e)
-                {
-            logger.debug(e.getMessage(), e);
-            throw new FolderException(e.getMessage());
-    }
+    public MailFolder getFolder(final GreenMailUser user, final String mailboxName, boolean mustExist)
+            throws FolderException
+    {
+        return getFolder(user, mailboxName);
     }
 
     /**
@@ -226,15 +261,7 @@ public class AlfrescoImapHostManager implements ImapHostManager
      */
     public MailFolder getInbox(GreenMailUser user) throws FolderException
     {
-        try
-        {
-            return getFolder(new AlfrescoImapUser(user.getEmail(), user.getLogin(), user.getPassword()), AlfrescoImapConst.INBOX_NAME);
-        }
-        catch (Throwable e)
-        {
-            logger.debug(e.getMessage(), e);
-            throw new FolderException(e.getMessage());
-        }
+        return getFolder(new AlfrescoImapUser(user.getEmail(), user.getLogin(), user.getPassword()), AlfrescoImapConst.INBOX_NAME);
     }
 
     /**
@@ -257,7 +284,8 @@ public class AlfrescoImapHostManager implements ImapHostManager
     {
         try
         {
-            imapService.subscribe(new AlfrescoImapUser(user.getEmail(), user.getLogin(), user.getPassword()), mailbox);
+            AlfrescoImapUser alfrescoUser = new AlfrescoImapUser(user.getEmail(), user.getLogin(), user.getPassword());
+            imapService.subscribe(alfrescoUser, getUnqualifiedMailboxPattern(alfrescoUser, mailbox));
         }
         catch (Throwable e)
         {
@@ -276,7 +304,8 @@ public class AlfrescoImapHostManager implements ImapHostManager
     {
         try
         {
-            imapService.unsubscribe(new AlfrescoImapUser(user.getEmail(), user.getLogin(), user.getPassword()), mailbox);
+            AlfrescoImapUser alfrescoUser = new AlfrescoImapUser(user.getEmail(), user.getLogin(), user.getPassword());
+            imapService.unsubscribe(alfrescoUser, getUnqualifiedMailboxPattern(alfrescoUser, mailbox));
         }
         catch (Throwable e)
         {
@@ -291,28 +320,70 @@ public class AlfrescoImapHostManager implements ImapHostManager
     public List<?> getAllMessages()
     {
         throw new UnsupportedOperationException();
+    }    
+
+    private String getUnqualifiedMailboxPattern(AlfrescoImapUser user, String mailboxPattern)
+    {
+        mailboxPattern = Utf7.decode(mailboxPattern, Utf7.UTF7_MODIFIED);
+        if (mailboxPattern.startsWith(AlfrescoImapConst.NAMESPACE_PREFIX))
+        {
+            int sepIndex = mailboxPattern.indexOf(AlfrescoImapConst.HIERARCHY_DELIMITER);
+            return sepIndex == -1 ? mailboxPattern.endsWith("*") ? "*" : "" : mailboxPattern.substring(sepIndex + 1);
+        }
+        return mailboxPattern;
+    }
+
+
+    /**
+     * Caches returned mail folder collection and converts to a generic MailFolder collection.
+     * 
+     * @param mailboxes
+     *            a Collection of Alfresco mailboxes
+     * @return a generic MailFolder collection associated with the session
+     */
+    private Collection<MailFolder> registerMailboxes(Collection<AlfrescoImapFolder> mailboxes)
+    {
+        int size = mailboxes.size();
+        if (size == 0)
+        {
+            return Collections.emptyList();
+        }
+        Collection<MailFolder> result = new ArrayList<MailFolder>(size);
+        if (folderCache == null)
+        {
+            folderCache = new HashMap<String, AlfrescoImapFolder>(size * 2);
+        }
+        for (AlfrescoImapFolder mailbox : mailboxes)
+        {
+            result.add(registerMailBox(mailbox));
+        }
+        return result;
     }
     
-    // ----------------------Getters and Setters----------------------------
-
-    public ImapService getImapService()
+    /**
+     * Caches a returned mail folder and converts to a generic MailFolder.
+     * 
+     * @param mailbox
+     *            an Alfresco mailbox
+     * @return a generic MailFolder associated with the session
+     */
+    private MailFolder registerMailBox(AlfrescoImapFolder mailbox)
     {
-        return imapService;
+        String folderPath = mailbox.getFolderPath();
+        if ((mailbox.isSelectable() || folderPath.isEmpty()) && folderCache != null)
+        {
+            AlfrescoImapFolder oldFolder = folderCache.get(folderPath);
+            if (oldFolder != null
+                    && oldFolder.getFolderInfo().getNodeRef().equals(mailbox.getFolderInfo().getNodeRef())
+                    && oldFolder.reset())
+            {
+                mailbox = oldFolder;
+            }
+            else
+            {
+                folderCache.put(folderPath, mailbox);
+            }
+        }
+        return mailbox;
     }
-
-    public void setImapService(ImapService imapService)
-    {
-        this.imapService = imapService;
-    }
-
-    public TransactionService getTransactionService()
-    {
-        return transactionService;
-    }
-
-    public void setTransactionService(TransactionService transactionService)
-    {
-        this.transactionService = transactionService;
-    }
-
 }

@@ -18,14 +18,17 @@
  */
 package org.alfresco.repo.imap;
 
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
 import com.icegreen.greenmail.Managers;
 import com.icegreen.greenmail.imap.ImapHostManager;
 import com.icegreen.greenmail.imap.ImapServer;
+import com.icegreen.greenmail.store.FolderException;
 import com.icegreen.greenmail.user.UserManager;
 import com.icegreen.greenmail.util.ServerSetup;
 
@@ -41,9 +44,9 @@ public class AlfrescoImapServer extends AbstractLifecycleBean
 
     private int port = 143;
     private String host = "0.0.0.0";
-    private ImapHostManager imapHostManager;
 
     private UserManager imapUserManager;
+    private ImapService imapService;
     
     private boolean imapServerEnabled;
     
@@ -78,9 +81,9 @@ public class AlfrescoImapServer extends AbstractLifecycleBean
         return host;
     }
 
-    public void setImapHostManager(ImapHostManager imapHostManager)
+    public void setImapService(ImapService imapService)
     {
-        this.imapHostManager = imapHostManager;
+        this.imapService = imapService;
     }
 
     public void setImapUserManager(UserManager imapUserManager)
@@ -113,11 +116,12 @@ public class AlfrescoImapServer extends AbstractLifecycleBean
     {
         if(serverImpl == null)
         {
-            Managers imapManagers = new Managers()
+            final Managers imapManagers = new Managers()
             {
+                // We create a new Host Manager instance per session to allow for session state tracking
                 public ImapHostManager getImapHostManager()
                 {
-                    return imapHostManager;
+                    return new AlfrescoImapHostManager(AlfrescoImapServer.this.imapService);
                 }
     
                 public UserManager getUserManager()
@@ -128,6 +132,7 @@ public class AlfrescoImapServer extends AbstractLifecycleBean
             
             serverImpl = new ImapServer(new ServerSetup(port, host, ServerSetup.PROTOCOL_IMAP), imapManagers);
             serverImpl.startService(null);
+                            
             if (logger.isInfoEnabled())
             {
                 logger.info("IMAP service started on host:port " + host + ":" + this.port + ".");

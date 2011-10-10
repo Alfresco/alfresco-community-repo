@@ -57,5 +57,7 @@ public interface ImapModel
     static final QName PROP_ATTACH_ID = QName.createQName(IMAP_MODEL_1_0_URI, "attachID");
 
     static final QName PROP_UIDVALIDITY = QName.createQName(IMAP_MODEL_1_0_URI, "uidValidity");
+    static final QName PROP_MAXUID = QName.createQName(IMAP_MODEL_1_0_URI, "maxUid");
+    static final QName PROP_CHANGE_TOKEN = QName.createQName(IMAP_MODEL_1_0_URI, "changeToken");
 
 }

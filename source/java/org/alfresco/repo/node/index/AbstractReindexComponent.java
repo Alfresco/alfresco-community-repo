@@ -440,17 +440,22 @@ public abstract class AbstractReindexComponent implements IndexRecovery
         // Check if the txn ID is present in every applicable store's index
         for (Map.Entry<StoreRef, List<NodeRef.Status>> entry : storeStatusMap.entrySet())
         {
-            StoreRef storeRef = entry.getKey();
             List<NodeRef.Status> storeStatuses = entry.getValue();
+            if (storeStatuses.isEmpty())
+            {
+                // Nothing to check
+                continue;
+            }
+            StoreRef storeRef = entry.getKey();
 
             // Establish the number of deletes and updates for this storeRef
-            int deleteCount = 0;
+            List<NodeRef> deletedNodes = new LinkedList<NodeRef>();
             int updateCount = 0;
             for (NodeRef.Status nodeStatus : storeStatuses)
             {
                 if (nodeStatus.isDeleted())
                 {
-                    deleteCount++;
+                    deletedNodes.add(nodeStatus.getNodeRef());
                 }
                 else
                 {
@@ -458,6 +463,15 @@ public abstract class AbstractReindexComponent implements IndexRecovery
                 }                
             }
             
+            // There were deleted nodes. Check that all the deleted nodes (including containers) were removed from the
+            // index - otherwise it is out of date. If all nodes have been removed from the index then the result is that the index is OK
+            // ETWOTWO-1387
+            // ALF-1989 - even if the nodes have not been found it is no good to use for AUTO index checking
+            if (!deletedNodes.isEmpty() && !haveNodesBeenRemovedFromIndex(storeRef, deletedNodes, txn))
+            {
+                result = InIndex.NO;
+                break;
+            }
             if (updateCount > 0)
             {
                 // Check the index
@@ -471,15 +485,6 @@ public abstract class AbstractReindexComponent implements IndexRecovery
                     result = InIndex.NO;
                     break;
                 }
-            }
-            // There were deleted nodes only. Check that all the deleted nodes were removed from the index otherwise it
-            // is out of date. If all nodes have been removed from the index then the result is that the index is OK            
-            // ETWOTWO-1387
-            // ALF-1989 - even if the nodes have not been found it is no good to use for AUTO index checking 
-            else if (deleteCount > 0 && !haveNodesBeenRemovedFromIndex(storeRef, storeStatuses, txn))
-            {
-                result = InIndex.NO;
-                break;
             }
         }
 
@@ -631,14 +636,13 @@ public abstract class AbstractReindexComponent implements IndexRecovery
         }
     }
     
-    private boolean haveNodesBeenRemovedFromIndex(final StoreRef storeRef, List<NodeRef.Status> nodeStatuses, final Transaction txn)
+    private boolean haveNodesBeenRemovedFromIndex(final StoreRef storeRef, List<NodeRef> nodeRefs, final Transaction txn)
     {
         final Long txnId = txn.getId();
         // there have been deletes, so we have to ensure that none of the nodes deleted are present in the index
         boolean foundNodeRef = false;
-        for (NodeRef.Status nodeStatus : nodeStatuses)
+        for (NodeRef nodeRef : nodeRefs)
         {
-            NodeRef nodeRef = nodeStatus.getNodeRef();
             if (logger.isTraceEnabled())
             {
                 logger.trace(

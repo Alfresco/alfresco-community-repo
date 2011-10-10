@@ -415,7 +415,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     /**
      * {@inheritDoc}
      */
-    public NodeRef getPerson(final String userName, final boolean autoCreate)
+    public NodeRef getPerson(final String userName, final boolean autoCreateHomeFolderAndMissingPersonIfAllowed)
     {
         // MT share - for activity service system callback
         if (tenantService.isEnabled() && (AuthenticationUtil.SYSTEM_USER_NAME.equals(AuthenticationUtil.getRunAsUser())) && tenantService.isTenantUser(userName))
@@ -426,17 +426,17 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             {
                 public NodeRef doWork() throws Exception
                 {
-                    return getPersonImpl(userName, autoCreate);
+                    return getPersonImpl(userName, autoCreateHomeFolderAndMissingPersonIfAllowed);
                 }
             }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
         }
         else
         {
-            return getPersonImpl(userName, autoCreate);
+            return getPersonImpl(userName, autoCreateHomeFolderAndMissingPersonIfAllowed);
         }
     }
 
-    private NodeRef getPersonImpl(String userName, boolean autoCreate)
+    private NodeRef getPersonImpl(String userName, boolean autoCreateHomeFolderAndMissingPersonIfAllowed)
     {
         if(userName == null)
         {
@@ -450,17 +450,18 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         if (personNode == null)
         {
             TxnReadState txnReadState = AlfrescoTransactionSupport.getTransactionReadState();
-            if (autoCreate && createMissingPeople() && txnReadState == TxnReadState.TXN_READ_WRITE)
+            if (autoCreateHomeFolderAndMissingPersonIfAllowed && createMissingPeople() &&
+                txnReadState == TxnReadState.TXN_READ_WRITE)
             {
                 // We create missing people AND are in a read-write txn
-                return createMissingPerson(userName);
+                return createMissingPerson(userName, true);
             }
             else
             {
                 throw new NoSuchPersonException(userName);
             }
         }
-        else if (autoCreate)
+        else if (autoCreateHomeFolderAndMissingPersonIfAllowed)
         {
             makeHomeFolderIfRequired(personNode);
         }
@@ -749,14 +750,14 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     /**
      * {@inheritDoc}
      */
-    public void setPersonProperties(String userName, Map<QName, Serializable> properties, boolean autoCreate)
+    public void setPersonProperties(String userName, Map<QName, Serializable> properties, boolean autoCreateHomeFolder)
     {
         NodeRef personNode = getPersonOrNull(userName);
         if (personNode == null)
         {
             if (createMissingPeople())
             {
-                personNode = createMissingPerson(userName);
+                personNode = createMissingPerson(userName, autoCreateHomeFolder);
             }
             else
             {
@@ -765,7 +766,8 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         }
         else
         {
-            if (autoCreate)
+            // Must create the home folder first as a property holds its location.
+            if (autoCreateHomeFolder)
             {
                 makeHomeFolderIfRequired(personNode);                
             }
@@ -794,10 +796,18 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         return true;
     }
     
-    private NodeRef createMissingPerson(String userName)
+    private NodeRef createMissingPerson(String userName, boolean autoCreateHomeFolder)
     {
         HashMap<QName, Serializable> properties = getDefaultProperties(userName);
         NodeRef person = createPerson(properties);
+        
+        // The home folder will ONLY exist after the the person is created if
+        // homeFolderCreationEager == true
+        if (autoCreateHomeFolder && homeFolderCreationEager == false)
+        {
+            makeHomeFolderIfRequired(person);                
+        }
+
         return person;
     }
     

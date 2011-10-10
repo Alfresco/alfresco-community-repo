@@ -856,7 +856,11 @@ public class TransactionalCache<K extends Serializable, V extends Object>
             else
             {
                 // Mutable, read-write
-                if (sharedObj != null)
+                if (sharedObj == null)
+                {
+                    sharedCache.put(key, value);                    
+                }
+                else
                 {
                     // Remove new value in the cache
                     sharedCache.remove(key);

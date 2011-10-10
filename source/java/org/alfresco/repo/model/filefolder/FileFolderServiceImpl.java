@@ -1322,6 +1322,11 @@ public class FileFolderServiceImpl implements FileFolderService
 
     public FileInfo resolveNamePath(NodeRef rootNodeRef, List<String> pathElements) throws FileNotFoundException
     {
+        return resolveNamePath(rootNodeRef, pathElements, true);        
+    }
+
+    public FileInfo resolveNamePath(NodeRef rootNodeRef, List<String> pathElements, boolean mustExist) throws FileNotFoundException
+    {
         if (pathElements.size() == 0)
         {
             throw new IllegalArgumentException("Path elements list is empty");
@@ -1347,9 +1352,14 @@ public class FileFolderServiceImpl implements FileFolderService
         NodeRef fileNodeRef = searchSimple(parentNodeRef, pathElement);
         if (fileNodeRef == null)
         {
-            StringBuilder sb = new StringBuilder(128);
-            sb.append("File not found: " + currentPath);
-            throw new FileNotFoundException(sb.toString());
+            if (mustExist)
+            {
+                throw new FileNotFoundException("File not found: " + currentPath);
+            }
+            else
+            {
+                return null;
+            }
         }
         FileInfo result = getFileInfo(fileNodeRef);
         // found it

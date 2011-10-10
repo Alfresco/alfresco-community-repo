@@ -1420,7 +1420,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                                 zones);
                         ChainingUserRegistrySynchronizer.this.authorityService.addAuthorityToZones(personName, zoneSet);
                         ChainingUserRegistrySynchronizer.this.personService.setPersonProperties(personName,
-                                personProperties);
+                                personProperties, false);
                     }
                     else
                     {

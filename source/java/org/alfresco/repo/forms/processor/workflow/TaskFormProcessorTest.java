@@ -319,6 +319,16 @@ public class TaskFormProcessorTest extends TestCase
         assertEquals(value, actualProperties.get(DESC_NAME));
     }
 
+    public void testPersistConvertsPropertyValueToCorrectType()
+    {
+        String fieldName = PROP_PRIORITY.toPrefixString(namespaceService);
+        String dataKey = makeDataKeyName(fieldName);
+        String value = "2"; // String value for property of type Integer!
+
+        processPersist(dataKey, value);
+        assertEquals(2, actualProperties.get(PROP_PRIORITY));
+    }
+    
     public void testPersistPropertyWith_() throws Exception
     {
         String fieldName = PROP_WITH_.toPrefixString(namespaceService);
@@ -671,6 +681,13 @@ public class TaskFormProcessorTest extends TestCase
         PropertyDefinition pckgItemAction = MockClassAttributeDefinition.mockPropertyDefinition(pckgItemActionGroup,
                     textType, "read_package_item_actions");
         properties.put(pckgItemActionGroup, pckgItemAction);
+        
+        
+        // Add a priority property
+        QName priorityName = PROP_PRIORITY;
+        PropertyDefinition priorityDef = 
+            MockClassAttributeDefinition.mockPropertyDefinition(priorityName, DataTypeDefinition.INT, Integer.class, "0");
+        properties.put(priorityName, priorityDef);
 
         return properties;
     }

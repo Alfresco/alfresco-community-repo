@@ -90,6 +90,9 @@ public class PropertyFieldProcessor extends QNameFieldProcessor<PropertyDefiniti
         return propDef;
     }
 
+    /**
+    * {@inheritDoc}
+     */
     @Override
     public Field makeField(PropertyDefinition propDef, Object value, FieldGroup group)
     {

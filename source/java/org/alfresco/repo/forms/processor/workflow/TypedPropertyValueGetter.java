@@ -27,6 +27,7 @@ import java.util.List;
 import org.alfresco.repo.forms.FormException;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -48,19 +49,20 @@ public class TypedPropertyValueGetter
             return null;
         }
 
-        Serializable typedValue = null;
         // before persisting check data type of property
         if (propDef.isMultiValued()) 
         {
-            typedValue = processMultiValuedType(value);
+            return processMultiValuedType(value);
         }
-        else if (isBooleanProperty(propDef)) 
+        
+        
+        if (isBooleanProperty(propDef)) 
         {
-            typedValue = processBooleanValue(value);
+            return processBooleanValue(value);
         }
         else if (isLocaleProperty(propDef)) 
         {
-            typedValue = processLocaleValue(value);
+            return processLocaleValue(value);
         }
         else if (value instanceof String)
         {
@@ -68,24 +70,23 @@ public class TypedPropertyValueGetter
 
             // make sure empty strings stay as empty strings, everything else
             // should be represented as null
-            if (valStr.length() == 0 && !isTextProperty(propDef))
+            if (isTextProperty(propDef))
             {
-                // Do nothing, leave typedValue as null.
+                return valStr;
             }
-            else
+            if(valStr.isEmpty())
             {
-                typedValue = valStr;
+                return null;
             }
         }
-        else if (value instanceof Serializable)
+        if (value instanceof Serializable)
         {
-            typedValue = (Serializable) value;
+            return (Serializable) DefaultTypeConverter.INSTANCE.convert(propDef.getDataType(), value);
         }
         else
         {
             throw new FormException("Property values must be of a Serializable type! Value type: " + value.getClass());
         }
-        return typedValue;
     }
 
     private boolean isTextProperty(PropertyDefinition propDef)

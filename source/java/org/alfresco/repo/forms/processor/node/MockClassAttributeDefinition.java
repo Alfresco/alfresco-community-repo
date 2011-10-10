@@ -72,14 +72,19 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
     public static MockClassAttributeDefinition mockPropertyDefinition(QName name, QName dataTypeName)
     {
         MockClassAttributeDefinition mock = new MockClassAttributeDefinition(name);
-        mockDataTypeName(dataTypeName, mock);
+        mockDataTypeName(mock, dataTypeName, null);
         return mock;
     }
     
     public static MockClassAttributeDefinition mockPropertyDefinition(QName name, QName dataTypeName, String defaultValue)
     {
+        return mockPropertyDefinition(name, dataTypeName, null, defaultValue);
+    }
+    
+    public static MockClassAttributeDefinition mockPropertyDefinition(QName name, QName dataTypeName, Class<?> typeClass, String defaultValue)
+    {
         MockClassAttributeDefinition mock = new MockClassAttributeDefinition(name);
-        mockDataTypeName(dataTypeName, mock);
+        mockDataTypeName(mock, dataTypeName, typeClass);
         mock.defaultValue = defaultValue;
         return mock;
     }
@@ -94,7 +99,7 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
                 boolean multiValued)
     {
         MockClassAttributeDefinition mock = new MockClassAttributeDefinition(name, title, description, isProtected);
-        mockDataTypeName(dataTypeName, mock);
+        mockDataTypeName(mock, dataTypeName, null);
         mock.defaultValue = defaultValue;
         mock.mandatory = Mandatory;
         mock.multiValued = multiValued;
@@ -123,9 +128,13 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
         return mock;
     }
 
-    private static void mockDataTypeName(QName dataTypeName, MockClassAttributeDefinition mock)
+    private static void mockDataTypeName(MockClassAttributeDefinition mock, QName dataTypeName, Class<?> javaClass)
     {
         when(mock.dataType.getName()).thenReturn(dataTypeName);
+        if (javaClass!=null)
+        {
+            when(mock.dataType.getJavaClassName()).thenReturn(javaClass.getName());
+        }
     }
 
     private static void mockTargetClassName(QName targetClassName, MockClassAttributeDefinition mock)

@@ -27,6 +27,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -513,9 +514,25 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
 
             if(includeProperties)
             {
-                props = nodeDAO.getNodeProperties(nodeId);
+                // ALF-10641
+                // Residual properties are un-indexed -> break serlialisation
+                Map<QName, Serializable> sourceProps = nodeDAO.getNodeProperties(nodeId);
+                props = new HashMap<QName, Serializable>((int)(sourceProps.size() * 1.3));
+                for(QName propertyQName : sourceProps.keySet())
+                {
+                    PropertyDefinition propDef = dictionaryService.getProperty(propertyQName);
+                    if(propDef != null)
+                    {
+                        props.put(propertyQName, sourceProps.get(propertyQName));
+                    }
+                }
+                nodeMetaData.setProperties(props);
             }
-            nodeMetaData.setProperties(props);
+            else
+            {
+                nodeMetaData.setProperties(Collections.<QName, Serializable>emptyMap());
+            }
+            
 
             if(includeAspects)
             {

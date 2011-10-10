@@ -696,17 +696,6 @@ public class GroupsTest extends BaseWebScriptTest
 			assertEquals("", ADMIN_GROUP, authority.getString("shortName"));
     	}
     	
-    	// Search on partial short name, Query should be extended by a *.
-    	{
-		    Response response = sendRequest(new GetRequest(URL_GROUPS + "?shortNameFilter=" + "ALF"), Status.STATUS_OK);
-		    JSONObject top = new JSONObject(response.getContentAsString());
-		    logger.debug(response.getContentAsString());
-		    JSONArray data = top.getJSONArray("data");
-		    assertEquals("length not 1", 1, data.length());
- 			JSONObject authority = data.getJSONObject(0);
-			assertEquals("", ADMIN_GROUP, authority.getString("shortName"));
-    	}
-    	
     	// Negative test.
     	{
 		    Response response = sendRequest(new GetRequest(URL_GROUPS + "?shortNameFilter=" + "XX?X"), Status.STATUS_OK);

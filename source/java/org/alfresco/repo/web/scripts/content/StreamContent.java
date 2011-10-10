@@ -344,28 +344,31 @@ public class StreamContent extends AbstractWebScript implements ResourceLoaderAw
        
         // check If-Modified-Since header and set Last-Modified header as appropriate
         Date modified = (Date)nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
-        long modifiedSince = -1;
-        String modifiedSinceStr = req.getHeader("If-Modified-Since");
-        if (modifiedSinceStr != null)
+        if (modified != null)
         {
-            try
+            long modifiedSince = -1;
+            String modifiedSinceStr = req.getHeader("If-Modified-Since");
+            if (modifiedSinceStr != null)
             {
-                modifiedSince = dateFormat.parse(modifiedSinceStr).getTime();
-            }
-            catch (Throwable e)
-            {
-                if (logger.isInfoEnabled())
-                    logger.info("Browser sent badly-formatted If-Modified-Since header: " + modifiedSinceStr);
-            }
-            
-            if (modifiedSince > 0L)
-            {
-                // round the date to the ignore millisecond value which is not supplied by header
-                long modDate = (modified.getTime() / 1000L) * 1000L;
-                if (modDate <= modifiedSince)
+                try
                 {
-                    res.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
-                    return;
+                    modifiedSince = dateFormat.parse(modifiedSinceStr).getTime();
+                }
+                catch (Throwable e)
+                {
+                    if (logger.isInfoEnabled())
+                        logger.info("Browser sent badly-formatted If-Modified-Since header: " + modifiedSinceStr);
+                }
+                
+                if (modifiedSince > 0L)
+                {
+                    // round the date to the ignore millisecond value which is not supplied by header
+                    long modDate = (modified.getTime() / 1000L) * 1000L;
+                    if (modDate <= modifiedSince)
+                    {
+                        res.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+                        return;
+                    }
                 }
             }
         }
@@ -378,7 +381,7 @@ public class StreamContent extends AbstractWebScript implements ResourceLoaderAw
         }
         
         // Stream the content
-        streamContentImpl(req, res, reader, attach, modified, String.valueOf(modified.getTime()), attachFileName);
+        streamContentImpl(req, res, reader, attach, modified, modified == null ? null : String.valueOf(modified.getTime()), attachFileName);
     }
 
     /**

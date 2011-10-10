@@ -1,0 +1,11 @@
+<webscript>
+  <shortname>Bulk Filesystem Import - AJAX Auto Suggest for Space Names</shortname>
+  <description>Web Script that returns a list of spaces for the AJAX auto-suggest control in the bulk import initiation form.</description>
+  <url>/bulk/import/filesystem/ajax/suggest/spaces?query={query}</url>
+  <authentication>admin</authentication>
+  <format default="json">any</format>
+  <family>Bulk Filesystem Import</family>
+  <cache>
+    <never>true</never>
+  </cache>
+</webscript>

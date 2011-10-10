@@ -1752,5 +1752,53 @@
          class="org.alfresco.repo.web.scripts.calendar.UserCalendarEntriesGet"
          parent="abstractCalendarWebScript">
    </bean>
+
+  <!-- Java-backed Web Scripts for the bulk filesystem importer -->
+  
+  <!-- work only with the default contentStore. -->
+  <bean id="streamingStoreMapProvider" class="org.alfresco.repo.bulkimport.impl.stores.DefaultContentStoreMapProvider">
+    <property name="contentStore">
+      <ref bean="fileContentStore" />
+    </property>
+    <property name="defaultStoreName"  value="default" />
+  </bean>
+
+  <!-- Custom javascript root object that interfaces to batch import. -->  
+  <bean id="bfsiScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.bulkimport.script.BulkImport">
+       <property name="extensionName"    value="bulkFSImport" />
+       <property name="storeMapProvider" ref="streamingStoreMapProvider" />
+  </bean>
+  
+  <bean id="bfsiAbstractImportWebscript"
+        class="org.alfresco.repo.web.scripts.bulkimport.AbstractBulkFileSystemImportWebScript"
+        parent="webscript" abstract="true">
+       <property name="fileFolderService" ref="fileFolderService" />
+       <property name="repository"        ref="repositoryHelper" />
+  </bean>
+
+  <!-- content streaming -->
+  <bean id="webscript.org.alfresco.repository.bulkfilesystemimport.initiate.post"
+        class="org.alfresco.repo.web.scripts.bulkimport.copy.BulkFilesystemImportWebScript"
+        parent="bfsiAbstractImportWebscript">
+       <property name="bulkImporter"         ref="bulkFilesystemImporter" />
+       <property name="nodeImporterFactory"  ref="streamingNodeImporterFactory" />
+  </bean>
+
+  <!-- status -->
+  <bean id="webscript.org.alfresco.repository.bulkfilesystemimport.status.get"
+        class="org.alfresco.repo.web.scripts.bulkimport.BulkFilesystemImportStatusWebScript"
+        parent="webscript">
+       <property name="bulkImporter" ref="bulkFilesystemImporter" />
+  </bean>
+
+  <!-- i18n bundles for the templates -->
+  <bean id="bfsi.i18n.bundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+    <property name="resourceBundles">
+      <list>
+        <value>alfresco.messages.ui-inplace</value>
+        <value>alfresco.messages.initiate-inplace</value>
+      </list>
+    </property>
+  </bean>
    
 </beans>

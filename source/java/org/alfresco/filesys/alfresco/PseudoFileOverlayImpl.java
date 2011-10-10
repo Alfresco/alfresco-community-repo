@@ -26,6 +26,9 @@ import org.alfresco.jlan.server.filesys.pseudo.MemoryPseudoFile;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoFile;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoFileList;
 import org.alfresco.jlan.util.WildCard;
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.admin.SysAdminParams;
+import org.alfresco.repo.site.SiteModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.util.PropertyCheck;
@@ -41,6 +44,7 @@ import org.apache.commons.logging.LogFactory;
  * */
 public class PseudoFileOverlayImpl implements PseudoFileOverlay
 {
+    private SysAdminParams sysAdminParams;
     private AlfrescoContext context;
     private NodeService nodeService;
     
@@ -52,6 +56,7 @@ public class PseudoFileOverlayImpl implements PseudoFileOverlay
     {
         PropertyCheck.mandatory(this, "nodeService", getNodeService());
         PropertyCheck.mandatory(this, "context", context);
+        PropertyCheck.mandatory(this, "sysAdminParams", sysAdminParams);
     
         DesktopActionTable actions = context.getDesktopActions();
 
@@ -76,9 +81,9 @@ public class PseudoFileOverlayImpl implements PseudoFileOverlay
         }
     }
     
-    private PseudoFile generateURLShortcut(NodeRef nodeRef)
+    private PseudoFile generateAlfrescoURLShortcut(NodeRef nodeRef)
     {
-        if ( context.hasURLFile())
+        if ( context.isAlfrescoURLEnabled())
         {
             // Make sure the state has the associated node details
       
@@ -88,7 +93,7 @@ public class PseudoFileOverlayImpl implements PseudoFileOverlay
       
             urlStr.append("[InternetShortcut]\r\n");
             urlStr.append("URL=");
-            urlStr.append(context.getURLPrefix());
+            urlStr.append(getAlfrescoURLPrefix());
             urlStr.append("navigate/browse/workspace/SpacesStore/");
             urlStr.append( nodeRef.getId());
             urlStr.append("\r\n");
@@ -102,6 +107,109 @@ public class PseudoFileOverlayImpl implements PseudoFileOverlay
         }
         return null;
     }
+
+    /**
+     * Return the site name if the node ref is in a document library
+     * Return null if the document is not in a site
+     */
+    // MER URRGH - copied from IMAP service - I don't like it there either!
+    private String getSiteForNode(NodeRef nodeRef)
+    {
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("get site for node:" + nodeRef);
+        }
+        boolean isInDocLibrary = false;
+        
+        NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
+        
+        while (parent != null && !nodeService.getType(parent).equals(SiteModel.TYPE_SITE))
+        {
+            String parentName = (String) nodeService.getProperty(parent, ContentModel.PROP_NAME);
+            if (parentName.equalsIgnoreCase("documentlibrary"))
+            {
+                isInDocLibrary = true;
+            }
+            
+            parent = nodeService.getPrimaryParent(parent).getParentRef();  
+        }
+        
+        if (parent == null)
+        {
+            logger.debug("folder is not in a site");
+            return null;
+        }
+        else
+        {
+            if(isInDocLibrary)
+            {
+                if(nodeService.getType(parent).equals(SiteModel.TYPE_SITE))
+                {
+                    String siteName = (String)nodeService.getProperty(parent, ContentModel.PROP_NAME);
+                    if(logger.isDebugEnabled())
+                    {
+                        logger.debug("got a site:" + siteName);
+                    }
+                    return siteName;
+                }
+            }
+            logger.debug("folder is not in doc library");
+            
+            return null;
+        }
+        
+    }
+
+    private PseudoFile generateShareURLShortcut(NodeRef nodeRef)
+    {
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("generateShareURLShortcut nodeRef" + nodeRef);
+        }
+        if ( context.isShareURLEnabled())
+        {
+//            try
+//            {
+            String site = getSiteForNode(nodeRef);
+//              String site = "wibble";
+            if(site != null)
+            {
+                // Make sure the state has the associated node details      
+                // Build the URL file data
+ 
+                StringBuilder urlStr = new StringBuilder();
+      
+                urlStr.append("[InternetShortcut]\r\n");
+                urlStr.append("URL=");
+                urlStr.append(getShareURLPrefix());
+                urlStr.append("page/site/");
+                urlStr.append(site + "/folder-details?nodeRef=");
+                urlStr.append(nodeRef.getStoreRef() + "/");                
+                urlStr.append( nodeRef.getId());
+                urlStr.append("\r\n");
+
+                // Create the in memory pseudo file for the URL link
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("generateShareURLShortcut url as string:" + urlStr);
+                }
+//          
+                byte[] urlData = urlStr.toString().getBytes();
+//          
+                MemoryPseudoFile urlFile = new MemoryPseudoFile( context.getShareURLFileName(), urlData);
+                return urlFile;
+//            }
+            }
+//            catch (Throwable t)
+//            {
+//                logger.error("unexpected exception ", t);
+//                return null;
+//            }
+            
+        }
+          return null;
+    }
+
    
     /**
      * 
@@ -111,6 +219,22 @@ public class PseudoFileOverlayImpl implements PseudoFileOverlay
         if ( parentDir == null) 
         {
             return false;
+        }
+        
+        if(context.isAlfrescoURLEnabled())
+        {
+            if(context.getURLFileName().equals(name))
+            {
+                return true;
+            }
+        }
+        
+        if(context.isShareURLEnabled())
+        {
+            if(context.getShareURLFileName().equals(name))
+            {
+                return true;
+            }            
         }
 
         if(getPseudoFile(parentDir, name) != null)
@@ -136,7 +260,7 @@ public class PseudoFileOverlayImpl implements PseudoFileOverlay
             return null;
         }
         
-        if(context.hasURLFile())
+        if(context.isAlfrescoURLEnabled())
         {
             if(context.getURLFileName().equals(fname))
             {
@@ -144,7 +268,19 @@ public class PseudoFileOverlayImpl implements PseudoFileOverlay
                 {
                     logger.debug("returning URL pseudo file");
                 }
-                return generateURLShortcut(parentDir);
+                return generateAlfrescoURLShortcut(parentDir);
+            }
+        }
+        
+        if(context.isShareURLEnabled())
+        {
+            if(context.getShareURLFileName().equals(fname))
+            {
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("returning Share URL pseudo file");
+                }
+                return generateShareURLShortcut(parentDir);
             }
         }
         
@@ -194,9 +330,19 @@ public class PseudoFileOverlayImpl implements PseudoFileOverlay
                 }
                 
                 // The URL file is dependent upon the parent dir
-                if(context.hasURLFile())
+                if(context.isAlfrescoURLEnabled())
                 {
-                    filterList.addFile(generateURLShortcut(parentDir));
+                    filterList.addFile(generateAlfrescoURLShortcut(parentDir));
+                }
+                
+                if(context.isShareURLEnabled())
+                {
+                    PseudoFile sharePseudoFile = generateShareURLShortcut(parentDir);
+                    
+                    if(sharePseudoFile != null)
+                    {
+                        filterList.addFile(sharePseudoFile);
+                    }
                 }
                     
                 return filterList;
@@ -219,11 +365,24 @@ public class PseudoFileOverlayImpl implements PseudoFileOverlay
                 }
                 
                 // The URL file is dependent upon the parent dir
-                if(context.hasURLFile())
+                if(context.isAlfrescoURLEnabled())
                 {
                     if(wildCard.matchesPattern(context.getURLFileName()))
                     {
-                        filterList.addFile(generateURLShortcut(parentDir));
+                        filterList.addFile(generateAlfrescoURLShortcut(parentDir));
+                    }
+                }
+                
+                if(context.isShareURLEnabled())
+                {
+                    if(wildCard.matchesPattern(context.getShareURLFileName()))
+                    {
+                        PseudoFile sharePseudoFile = generateShareURLShortcut(parentDir);
+                        
+                        if(sharePseudoFile != null)
+                        {
+                            filterList.addFile(sharePseudoFile);
+                        }
                     }
                 }
                 
@@ -265,5 +424,24 @@ public class PseudoFileOverlayImpl implements PseudoFileOverlay
     public AlfrescoContext getContext()
     {
         return context;
+    }
+    
+    private final String getAlfrescoURLPrefix()
+    {
+        return sysAdminParams.getAlfrescoProtocol() + "://" + sysAdminParams.getAlfrescoHost() + ":" + sysAdminParams.getAlfrescoPort() + "/" + sysAdminParams.getAlfrescoContext() + "/";
+    }
+    private final String getShareURLPrefix()
+    {
+        return sysAdminParams.getShareProtocol() + "://" + sysAdminParams.getShareHost() + ":" + sysAdminParams.getSharePort() + "/" + sysAdminParams.getShareContext() + "/";
+    }
+    
+    public void setSysAdminParams(SysAdminParams sysAdminParams)
+    {
+        this.sysAdminParams = sysAdminParams;
+    }
+    
+    public SysAdminParams getSysAdminParams()
+    {
+        return sysAdminParams;
     }
 }

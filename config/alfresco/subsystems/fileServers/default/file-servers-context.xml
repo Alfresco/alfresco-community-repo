@@ -386,10 +386,7 @@
                <property name="renameShufflePattern">
                   <value>${filesystem.renameShufflePattern}</value>
                </property>
-               <!-- Add a URL file to each folder that links back to the web client -->
-               <property name="URLFileName">
-                  <value>__Alfresco.url</value>
-               </property>
+               
                <!-- Mark locked files as offline -->
                <property name="offlineFiles">
                   <value>true</value>
@@ -399,6 +396,27 @@
 			   <property name="quotaManager">
 				   <ref bean="filesystemQuotaManager" />
 			   </property>
+		
+			   <!--  Enables and disables pseudo files - cifs DesktopActions and URL shortcuts. -->
+			   <property name="pseudoFilesEnabled">
+                  <value>${cifs.pseudoFiles.enabled}</value>
+               </property>
+               
+               <!-- Add a pseudo links back to the alfresco explorer -->
+               <property name="alfrescoURLEnabled">
+                  <value>${cifs.pseudoFiles.explorerURL.enabled}</value>
+               </property>
+               <property name="URLFileName">
+                  <value>${cifs.pseudoFiles.explorerURL.fileName}</value>
+               </property>
+               
+               <!-- Add a pseudo links back to the alfresco share -->
+               <property name="shareURLEnabled">
+                  <value>${cifs.pseudoFiles.shareURL.enabled}</value>
+               </property>
+               <property name="shareURLFileName">
+                  <value>${cifs.pseudoFiles.shareURL.fileName}</value>
+               </property>
 				   
                <!-- Desktop actions -->
                <!-- Uses a client-side application to trigger a server-side action                         -->
@@ -468,6 +486,8 @@
                   <property name="defaultAccessLevel"> <value>Write</value> </property> </bean> </property>
                -->
             </bean>
+            
+            
             <!-- AVM virtualization view of all stores/versions for WCM -->
             <!-- virtual view stores filter can be any of the following: normal, site, staging, author, preview -->
             <bean class="org.alfresco.filesys.avm.AVMContext">

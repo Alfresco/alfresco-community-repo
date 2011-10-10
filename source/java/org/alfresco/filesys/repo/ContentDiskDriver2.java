@@ -601,6 +601,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
          PseudoFileOverlayImpl ps = new PseudoFileOverlayImpl();
          ps.setContext(context);
          ps.setNodeService(nodeService);
+         ps.setSysAdminParams(context.getSysAdminParams());
          context.setPseudoFileOverlay(ps);
          ps.init();
     }
@@ -651,7 +652,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             FileInfo finfo = null;
             
             // Is the node a pseudo file ?
-            if(session.isPseudoFilesEnabled())
+            if(session.isPseudoFilesEnabled() && ctx.isPseudoFilesEnabled())
             {   
                 String[] paths = FileName.splitPath(path);
                 // lookup parent directory
@@ -798,7 +799,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
              * Search pseudo files if they are enabled
              */
             PseudoFileList pseudoList = null;
-            if(session.isPseudoFilesEnabled())
+            if(session.isPseudoFilesEnabled() && ctx.isPseudoFilesEnabled())
             {   
                 logger.debug("search pseudo files");
                 pseudoList = ctx.getPseudoFileOverlay().searchPseudoFiles(dirNodeRef, searchFileSpec);
@@ -829,11 +830,11 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         }
         catch (AlfrescoRuntimeException ex)
         {
-            // Debug
+            // This is an error even though we "handle" it here.
             
-            if ( logger.isDebugEnabled())
+            if ( logger.isErrorEnabled())
             {
-                logger.debug("Exception in Start search", ex);
+                logger.error("Exception in Start search", ex);
             }
             
             // Convert to a file not found status
@@ -862,7 +863,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         int status = FileStatus.Unknown;        
         try
         {
-            if(session.isPseudoFilesEnabled())
+            if(session.isPseudoFilesEnabled() && ctx.isPseudoFilesEnabled())
             {
                 String[] paths = FileName.splitPath(name);
                 // lookup parent directory
@@ -945,7 +946,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         {  
             String name = params.getPath();
 
-            if(session.isPseudoFilesEnabled())
+            if(session.isPseudoFilesEnabled() && ctx.isPseudoFilesEnabled())
             {
                 String[] paths = FileName.splitPath(name);
                 // lookup parent directory
@@ -1683,7 +1684,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         
         try
         {
-            if(session.isPseudoFilesEnabled())
+            if(session.isPseudoFilesEnabled() && ctx.isPseudoFilesEnabled())
             {
                 String[] paths = FileName.splitPath(name);
                 // lookup parent directory
@@ -1919,7 +1920,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         try
         {
             
-            if(sess.isPseudoFilesEnabled())
+            if(sess.isPseudoFilesEnabled() && ctx.isPseudoFilesEnabled())
             {
                 String[] paths = FileName.splitPath(name);
                 // lookup parent directory

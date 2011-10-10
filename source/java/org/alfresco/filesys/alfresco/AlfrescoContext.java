@@ -54,6 +54,10 @@ import org.springframework.extensions.config.element.GenericConfigElement;
 public abstract class AlfrescoContext extends DiskDeviceContext
 {
     private SysAdminParams sysAdminParams;
+    
+    private boolean pseudoFilesEnabled = false;
+    private boolean isAlfrescoURLEnabled = false;
+    private boolean isShareURLEnabled = false;
 
 	// Debug levels
 	
@@ -72,6 +76,7 @@ public abstract class AlfrescoContext extends DiskDeviceContext
     // URL pseudo file web path prefix (server/port/webapp) and link file name
     
     private String m_urlFileName;
+    private String m_shareUrlFileName;
     
     // Pseudo file interface
     
@@ -233,20 +238,21 @@ public abstract class AlfrescoContext extends DiskDeviceContext
     }
 
     
-    /**
-     * Determine if the URL pseudo file is enabled
-     * 
-     * @return boolean
-     */
-    public final boolean hasURLFile()
-    {
-        if (m_urlFileName != null)
-            return true;
-        return false;
-    }
-    
+//    /**
+//     * Determine if the URL pseudo file is enabled
+//     * 
+//     * @return boolean
+//     */
+//    public final boolean hasURLFile()
+//    {
+//        if (m_urlFileName != null)
+//            return true;
+//        return false;
+//    }
+//     
     /**
      * Return the URL pseudo file path prefix
+     * @deprecated - does not know about share
      * 
      * @return String
      */
@@ -266,6 +272,17 @@ public abstract class AlfrescoContext extends DiskDeviceContext
     }
     
     /**
+     * Return the Share URL pseudo file name
+     * 
+     * @return String
+     */
+    public final String getShareURLFileName()
+    {
+        return m_shareUrlFileName;
+    }
+
+    
+    /**
      * Set the URL pseudo file name
      * 
      * @param urlFileName String
@@ -279,6 +296,25 @@ public abstract class AlfrescoContext extends DiskDeviceContext
         {
             if (!urlFileName.endsWith(".url"))
                 throw new AlfrescoRuntimeException("URL link file must end with .url, " + urlFileName);
+
+            enabledPseudoFileInterface();
+        }
+    }
+    
+    /**
+     * Set the Share URL pseudo file name
+     * 
+     * @param urlFileName String
+     */
+    public final void setShareURLFileName(String urlFileName)
+    {
+        m_shareUrlFileName = urlFileName;
+
+        // URL file name must end with .url
+        if (urlFileName != null)
+        {
+            if (!urlFileName.endsWith(".url"))
+                throw new AlfrescoRuntimeException("URL Share link file must end with .url, " + urlFileName);
 
             enabledPseudoFileInterface();
         }
@@ -442,6 +478,36 @@ public abstract class AlfrescoContext extends DiskDeviceContext
     public void setOpLockManager(OpLockManager opLockManager) 
     {
         this.opLockManager = opLockManager;
+    }
+
+    public void setPseudoFilesEnabled(boolean enablePseudoFiles)
+    {
+        this.pseudoFilesEnabled = enablePseudoFiles;
+    }
+
+    public boolean isPseudoFilesEnabled()
+    {
+        return pseudoFilesEnabled;
+    }
+
+    public void setAlfrescoURLEnabled(boolean isAlfrescoURLEnabled)
+    {
+        this.isAlfrescoURLEnabled = isAlfrescoURLEnabled;
+    }
+
+    public boolean isAlfrescoURLEnabled()
+    {
+        return isAlfrescoURLEnabled;
+    }
+
+    public void setShareURLEnabled(boolean isShareURLEnabled)
+    {
+        this.isShareURLEnabled = isShareURLEnabled;
+    }
+
+    public boolean isShareURLEnabled()
+    {
+        return isShareURLEnabled;
     }
 
 }

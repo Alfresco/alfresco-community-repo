@@ -93,7 +93,7 @@ public class PseudoFileImpl implements PseudoFileInterface
 	
 	        	// Check if the URL file is enabled
 	        		
-	    		if ( isPseudo == false && ctx.hasURLFile())
+	    		if ( isPseudo == false && ctx.isAlfrescoURLEnabled())
 	    		{
 	    			// Check if it is the URL file name
 	    			
@@ -204,7 +204,7 @@ public class PseudoFileImpl implements PseudoFileInterface
 
         // Add the URL link pseudo file, if enabled
         
-        if ( isCIFS && ctx.hasURLFile())
+        if ( isCIFS && ctx.isAlfrescoURLEnabled())
         {
             // Make sure the state has the associated node details
             

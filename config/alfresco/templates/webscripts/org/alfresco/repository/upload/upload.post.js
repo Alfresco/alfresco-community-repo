@@ -1,3 +1,15 @@
+function extractMetadata(file)
+{
+   // Extract metadata - via repository action for now.
+   // This should use the MetadataExtracter API to fetch properties, allowing for possible failures.
+   var emAction = actions.create("extract-metadata");
+   if (emAction != null)
+   {
+      // Call using readOnly = false, newTransaction = false
+      emAction.execute(file, false, false);
+   }
+}
+
 function main()
 {
    try
@@ -226,6 +238,12 @@ function main()
          // check it in again, with supplied version history note
          updateNode = updateNode.checkin(description, majorVersion);
 
+         // Extract the metadata
+         // (The overwrite policy controls which if any parts of
+         //  the document's properties are updated from this)
+         extractMetadata(updateNode);
+
+         // Record the file details ready for generating the response
          model.document = updateNode;
       }
       else
@@ -262,7 +280,14 @@ function main()
                existingFile.properties.content.guessEncoding();
                existingFile.save();
 
+               // Extract the metadata
+               // (The overwrite policy controls which if any parts of
+               //  the document's properties are updated from this)
+               extractMetadata(existingFile);
+
+               // Record the file details ready for generating the response
                model.document = existingFile;
+
                // We're finished - bail out here
                return;
             }
@@ -337,15 +362,10 @@ function main()
             }
          }
 
-         // Extract metadata - via repository action for now.
-         // This should use the MetadataExtracter API to fetch properties, allowing for possible failures.
-         var emAction = actions.create("extract-metadata");
-         if (emAction != null)
-         {
-            // Call using readOnly = false, newTransaction = false
-            emAction.execute(newFile, false, false);
-         }
+         // Extract the metadata
+         extractMetadata(newFile);
 
+         // Record the file details ready for generating the response
          model.document = newFile;
       }
    }

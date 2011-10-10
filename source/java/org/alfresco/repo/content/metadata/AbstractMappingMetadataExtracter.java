@@ -656,6 +656,12 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
             filterSystemProperties(systemProperties, destination);            
             // Now use the proper overwrite policy
             changedProperties = overwritePolicy.applyProperties(systemProperties, destination);
+            
+            if(logger.isDebugEnabled())
+            {
+               logger.debug("Extracted Metadata from " + reader + "\n  Found: " +
+                            rawMetadata + "\n  Mapped and Accepted: " + changedProperties);
+            }
         }
         catch (Throwable e)
         {

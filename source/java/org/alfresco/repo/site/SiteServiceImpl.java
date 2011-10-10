@@ -1002,12 +1002,16 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
             @Override
             public boolean includeAuthority(String authority)
             {
-                String siteName = resolveSite(authority);
-                if (siteName == null)
+                if (siteNames.size() < maxResults)
                 {
-                    return false;
+                    String siteName = resolveSite(authority);
+                    if (siteName == null)
+                    {
+                        return false;
+                    }
+                    return siteNames.add(siteName);
                 }
-                return siteNames.add(siteName);
+                return false;
             }}, maxResults);
         if (siteNames.isEmpty())
         {

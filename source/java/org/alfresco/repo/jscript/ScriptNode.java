@@ -3454,7 +3454,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         }
         
         /**
-         * Set the content stream from another content object
+         * Set the content stream from another content object.
          *  
          * @param content  ScriptContent to set
          */
@@ -3469,9 +3469,39 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
             // update cached variables after putContent()
             this.contentData = (ContentData) services.getNodeService().getProperty(nodeRef, this.property);
         }
+        
+        /**
+         * Set the content stream from another content object.
+         * 
+         * @param content       ScriptContent to set
+         * @param applyMimetype If true, apply the mimetype from the Content object, else leave the original mimetype
+         * @param guessEncoding If true, guess the encoding from the underlying input stream, else use encoding set in
+         *                      the Content object as supplied.
+         */
+        public void write(Content content, boolean applyMimetype, boolean guessEncoding)
+        {
+            ContentService contentService = services.getContentService();
+            ContentWriter writer = contentService.getWriter(nodeRef, this.property, true);
+            if (applyMimetype)
+            {
+                writer.setMimetype(content.getMimetype());
+            }
+            if (guessEncoding)
+            {
+                writer.setEncoding(guessEncoding(content.getInputStream()));
+            }
+            else
+            {
+                writer.setEncoding(content.getEncoding());
+            }
+            writer.putContent(content.getInputStream());
+            
+            // update cached variables after putContent()
+            this.contentData = (ContentData) services.getNodeService().getProperty(nodeRef, this.property);
+        }
 
         /**
-         * Set the content stream from another input stream
+         * Set the content stream from another input stream.
          *  
          * @param inputStream
          */
@@ -3588,11 +3618,14 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
          */
         public void guessEncoding()
         {
+            setEncoding(guessEncoding(getInputStream()));
+        }
+        
+        private String guessEncoding(InputStream in)
+        {
             String encoding = "UTF-8";
-            InputStream in = null;
             try
             {
-                in = getInputStream();
                 if (in != null)
                 {
                     Charset charset = services.getMimetypeService().getContentCharsetFinder().getCharset(in, getMimetype());
@@ -3612,7 +3645,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
                 {
                 }
             }
-            setEncoding(encoding);
+            return encoding;
         }
         
         private ContentData contentData;

@@ -400,13 +400,6 @@
         </if>
     </update>
     
-    <update id="update_NodePatchAcl" parameterType="NodeUpdate">
-        update alf_node set
-            <if test="updateAclId == true">       acl_id            = #{aclId,jdbcType=BIGINT}</if>
-        where
-            id = #{id}
-    </update>
-    
     <update id="update_NodeAssoc" parameterType="NodeAssoc">
         update alf_node_assoc set
             assoc_index = #{assocIndex}

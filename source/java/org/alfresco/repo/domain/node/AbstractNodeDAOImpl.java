@@ -1574,17 +1574,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         invalidateCachesByNodeId(primaryParentNodeId, null, nodesCache);
     }
     
-    @Override
-    public void setNodeDefiningAclId(Long nodeId, long aclId)
-    {
-        NodeUpdateEntity nodeUpdateEntity = new NodeUpdateEntity();
-        nodeUpdateEntity.setId(nodeId);
-        nodeUpdateEntity.setAclId(aclId);
-        nodeUpdateEntity.setUpdateAclId(true);
-        updateNodePatchAcl(nodeUpdateEntity);
-        invalidateCachesByNodeId(null, nodeId, nodesCache);
-    }
-
     public void deleteNode(Long nodeId)
     {
         Node node = getNodeNotNull(nodeId);
@@ -3058,11 +3047,11 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     
     /**
      * Potentially cheaper than evaluating all of a node's paths to check for child association cycles
+     * <p/>
+     * TODO: When is it cheaper to go up and when is it cheaper to go down?
+     *       Look at using direct queries to pass through layers both up and down.
      * 
-     * @param nodePair
-     *            the node to check
-     * @param path
-     *            a set containing the nodes in the path to the node
+     * @param nodePair          the node to check
      */
     public void cycleCheck(Pair<Long, NodeRef> nodePair)
     {
@@ -3074,7 +3063,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }        
     }    
 
-    class CycleCallBack implements ChildAssocRefQueryCallback
+    private class CycleCallBack implements ChildAssocRefQueryCallback
     {
         final Set<ChildAssociationRef> path = new HashSet<ChildAssociationRef>(97);
         CyclicChildRelationshipException toThrow;
@@ -3085,7 +3074,9 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
 
         @Override
-        public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair, Pair<Long, NodeRef> parentNodePair,
+        public boolean handle(
+                Pair<Long, ChildAssociationRef> childAssocPair,
+                Pair<Long, NodeRef> parentNodePair,
                 Pair<Long, NodeRef> childNodePair)
         {
             ChildAssociationRef childAssociationRef = childAssocPair.getSecond();
@@ -3845,7 +3836,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     protected abstract int updateStore(StoreEntity store);
     protected abstract Long insertNode(NodeEntity node);
     protected abstract int updateNode(NodeUpdateEntity nodeUpdate);
-    protected abstract int updateNodePatchAcl(NodeUpdateEntity nodeUpdate);
     protected abstract void updatePrimaryChildrenSharedAclId(
             Long txnId,
             Long primaryParentNodeId,

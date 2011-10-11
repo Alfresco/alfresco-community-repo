@@ -182,7 +182,7 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
                     }
                     Acl newAcl = aclDaoComponent.createAccessControlList(properties, existing.getEntries(), actuallyInherited);
                     newDefiningAcl = newAcl.getId();
-                    nodeDAO.setNodeDefiningAclId(nodeId, newDefiningAcl);
+                    nodeDAO.setNodeAclId(nodeId, newDefiningAcl);
                 }
                 else if (existing.getProperties().getAclType() == ACLType.SHARED)
                 {
@@ -207,12 +207,12 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
                     AccessControlListProperties properties = aclDaoComponent.getDefaultProperties();
                     Acl newAcl = aclDaoComponent.createAccessControlList(properties);
                     newDefiningAcl = newAcl.getId();
-                    nodeDAO.setNodeDefiningAclId(nodeId, newDefiningAcl);
+                    nodeDAO.setNodeAclId(nodeId, newDefiningAcl);
                 }
                 else
                 {
                     // Unset - simple inherit
-                    nodeDAO.setNodeDefiningAclId(nodeId, inheritedAclId);
+                    nodeDAO.setNodeAclId(nodeId, inheritedAclId);
                 }
             }
         }

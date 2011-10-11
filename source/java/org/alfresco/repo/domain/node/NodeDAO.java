@@ -711,30 +711,16 @@ public interface NodeDAO extends NodeBulkLoader
     public Long getMaxTxnCommitTime();
     
     /**
-     * 
-     * @param parentNodeId
-     * @param childNodeTypeQNames
-     * @param value
-     * @param resultsCallback
+     * Select children by property values
      */
-    public void getChildAssocsByPropertyValue(Long parentNodeId,
+    public void getChildAssocsByPropertyValue(
+            Long parentNodeId,
             QName propertyQName, 
             Serializable nodeValue,
             ChildAssocRefQueryCallback resultsCallback);
 
     /**
-     * Used in ACL upgrade only to set the acl id with mimimal overhead
-     * 
-     * @param nodeId
-     * @param id
-     */
-    public void setNodeDefiningAclId(Long nodeId, long id);
- 
-    /**
      * Used by the re-encryptor to re-encrypt encryptable properties with a new encryption key.
-     * 
-     * @param propertyDefs
-     * @return
      */
     public List<NodePropertyEntity> selectProperties(Collection<PropertyDefinition> propertyDefs);
 }

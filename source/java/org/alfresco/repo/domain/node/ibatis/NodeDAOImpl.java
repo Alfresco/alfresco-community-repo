@@ -85,7 +85,6 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String SELECT_STORE_ROOT_NODE_BY_REF = "alfresco.node.select_StoreRootNodeByRef";
     private static final String INSERT_NODE = "alfresco.node.insert.insert_Node";
     private static final String UPDATE_NODE = "alfresco.node.update_Node";
-    private static final String UPDATE_NODE_PATCH_ACL = "alfresco.node.update_NodePatchAcl";
     private static final String DELETE_NODE_BY_ID = "alfresco.node.delete_NodeById";
     private static final String DELETE_NODES_BY_TXN_COMMIT_TIME = "alfresco.node.delete_NodesByTxnCommitTime";
     private static final String SELECT_NODE_BY_ID = "alfresco.node.select_NodeById";
@@ -318,12 +317,6 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         return template.update(UPDATE_NODE, nodeUpdate);
     }
     
-    @Override
-    protected int updateNodePatchAcl(NodeUpdateEntity nodeUpdate)
-    {
-        return template.update(UPDATE_NODE_PATCH_ACL, nodeUpdate);
-    }
-
     @Override
     protected void updatePrimaryChildrenSharedAclId(
             Long txnId,

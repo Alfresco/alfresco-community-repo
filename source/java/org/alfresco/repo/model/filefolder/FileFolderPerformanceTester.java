@@ -49,6 +49,7 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
@@ -82,6 +83,7 @@ public class FileFolderPerformanceTester extends TestCase
     private AuthenticationComponent authenticationComponent;
     private FileFolderService fileFolderService;
     private SearchService searchService;
+    private NamespaceService namespaceService;
     private NodeRef rootFolderRef;
     private File dataFile;
     
@@ -103,6 +105,7 @@ public class FileFolderPerformanceTester extends TestCase
         
         fileFolderService = serviceRegistry.getFileFolderService();
         searchService = serviceRegistry.getSearchService();
+        namespaceService = serviceRegistry.getNamespaceService();
         nodeService = getNodeService();
         
         authenticate(USERNAME);
@@ -134,23 +137,23 @@ public class FileFolderPerformanceTester extends TestCase
     {
         // find the company home folder
         StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
-        ResultSet rs = searchService.query(storeRef, SearchService.LANGUAGE_XPATH, "/app:company_home");
-        try
+        NodeRef storeRootNodeRef = nodeService.getRootNode(storeRef);
+        List<NodeRef> results = searchService.selectNodes(
+                storeRootNodeRef,
+                "/app:company_home",
+                null,
+                namespaceService,
+                false,
+                SearchService.LANGUAGE_XPATH);
+        if (results.size() == 0)
         {
-            if (rs.length() == 0)
-            {
-                throw new AlfrescoRuntimeException("Didn't find Company Home");
-            }
-            NodeRef companyHomeNodeRef = rs.getNodeRef(0);
-            return fileFolderService.create(
-                    companyHomeNodeRef,
-                    getName() + "_" + System.currentTimeMillis(),
-                    ContentModel.TYPE_FOLDER).getNodeRef();
+            throw new AlfrescoRuntimeException("Didn't find Company Home");
         }
-        finally
-        {
-            rs.close();
-        }
+        NodeRef companyHomeNodeRef = results.get(0);
+        return fileFolderService.create(
+                companyHomeNodeRef,
+                getName() + "_" + System.currentTimeMillis(),
+                ContentModel.TYPE_FOLDER).getNodeRef();
     }
     
     /**

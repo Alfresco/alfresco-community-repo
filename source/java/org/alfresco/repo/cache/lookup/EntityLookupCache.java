@@ -459,7 +459,7 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
         // Check if the value is already mapped to a key
         if (key != null && !key.equals(VALUE_NOT_FOUND))
         {
-            return new Pair<K, V>(key, value);
+            return getByKey(key);
         }
         // Resolve it
         Pair<K, V> entityPair = entityLookup.findByValue(value);

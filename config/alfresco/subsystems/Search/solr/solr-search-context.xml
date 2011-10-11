@@ -91,7 +91,19 @@
         
     </bean>
    
-   <!-- TODO: XPATH -->
+    <bean id="search.lucene.xpath" class="org.alfresco.repo.search.impl.solr.SolrXPathQueryLanguage" >
+        <property name="solrQueryLanguage" >
+	        <ref bean="search.solr.fts.alfresco" />
+	    </property>
+	    <property name="factories">
+			<list>
+			    <ref bean="search.indexerAndSearcherFactory" />
+			</list>
+        </property>
+        <property name="name">
+            <value>xpath</value>
+        </property>
+    </bean>
 	
 	<bean id="search.lucene.fts.alfresco" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage" >
 	    <property name="factories">

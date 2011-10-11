@@ -81,7 +81,6 @@ public class ConcurrentNodeServiceTest extends TestCase
     private TransactionService transactionService;
     private RetryingTransactionHelper retryingTransactionHelper;
     private NodeRef rootNodeRef;
-    private FullTextSearchIndexer luceneFTS;
     private AuthenticationComponent authenticationComponent;
 
     public ConcurrentNodeServiceTest()
@@ -107,7 +106,6 @@ public class ConcurrentNodeServiceTest extends TestCase
         nodeService = (NodeService) ctx.getBean("dbNodeService");
         transactionService = (TransactionService) ctx.getBean("transactionComponent");
         retryingTransactionHelper = (RetryingTransactionHelper) ctx.getBean("retryingTransactionHelper");
-        luceneFTS = (FullTextSearchIndexer) ctx.getBean("LuceneFullTextSearchIndexer");
         this.authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
 
         this.authenticationComponent.setSystemUserAsCurrentUser();
@@ -205,10 +203,6 @@ public class ConcurrentNodeServiceTest extends TestCase
 
     public void testConcurrent() throws Exception
     {
-        luceneFTS.pause();
-        // TODO: LUCENE UPDATE ISSUE fix commit lock time out
-        // IndexWriter.COMMIT_LOCK_TIMEOUT = 100000;
-
         Map<QName, ChildAssociationRef> assocRefs = commitNodeGraph();
         Thread runner = null;
 
@@ -251,33 +245,7 @@ public class ConcurrentNodeServiceTest extends TestCase
                 SearchService searcher = (SearchService) ctx.getBean(ServiceRegistry.SEARCH_SERVICE.getLocalName());
                 assertEquals(
                         2 * ((COUNT * REPEATS) + 1),
-                        searcher.selectNodes(rootNodeRef, "/*", null, getNamespacePrefixReolsver(""), false).size());
-                ResultSet results = null;
-
-                results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*\"");
-                // n6 has root aspect - there are three things at the root level in the index
-                assertEquals(3 * ((COUNT * REPEATS) + 1), results.length());
-                results.close();
-
-                results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*\"");
-                // n6 has root aspect - there are three things at the root level in the index
-                assertEquals(4 * ((COUNT * REPEATS) + 1), results.length());
-                results.close();
-
-                results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*/*\"");
-                // n6 has root aspect - there are three things at the root level in the index
-                assertEquals(2 * ((COUNT * REPEATS) + 1), results.length());
-                results.close();
-
-                results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*/*/*\"");
-                // n6 has root aspect - there are three things at the root level in the index
-                assertEquals(1 * ((COUNT * REPEATS) + 1), results.length());
-                results.close();
-
-                results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*/*/*/*\"");
-                // n6 has root aspect - there are three things at the root level in the index
-                assertEquals(0 * ((COUNT * REPEATS) + 1), results.length());
-                results.close();
+                        searcher.selectNodes(rootNodeRef, "/*", null, getNamespacePrefixResolver(""), false).size());
 
                 return null;
             }
@@ -352,7 +320,6 @@ public class ConcurrentNodeServiceTest extends TestCase
     {
         final List<Thread> threads = new ArrayList<Thread>();
         final int loops = 200;
-        luceneFTS.pause();
 
         // Have 5 threads, each trying to edit their own properties on the same node
         // Loop repeatedly
@@ -493,7 +460,7 @@ public class ConcurrentNodeServiceTest extends TestCase
         transactionService.getRetryingTransactionHelper().doInTransaction(checkCallback, true);
     }
 
-    private NamespacePrefixResolver getNamespacePrefixReolsver(String defaultURI)
+    private NamespacePrefixResolver getNamespacePrefixResolver(String defaultURI)
     {
         DynamicNamespacePrefixResolver nspr = new DynamicNamespacePrefixResolver(null);
         nspr.registerNamespace(NamespaceService.SYSTEM_MODEL_PREFIX, NamespaceService.SYSTEM_MODEL_1_0_URI);

@@ -237,11 +237,11 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
                     }
                     catch (Exception ex)
                     {
+                        indexCompleted(toIndex, 0, ex);
                         if (s_logger.isWarnEnabled())
                         {
                             s_logger.warn("FTS Job threw exception", ex);
                         }
-                        done = 1; // better luck next time
                     }
                 }
                 else

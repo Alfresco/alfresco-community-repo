@@ -31,12 +31,14 @@ import java.util.Set;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WebDAVModel;
+import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.version.common.VersionUtil;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -74,6 +76,7 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
     private static final String UPDATED_VALUE_3 = "updatedValue3";
     private static final String UPDATED_CONTENT_1 = "updatedContent1";
     private static final String UPDATED_CONTENT_2 = "updatedContent2";
+    private static final String UPDATED_CONTENT_3 = "updatedContent3";
     
     private static final String PWD_A = "passA";
     private static final String USER_NAME_A = "userA";
@@ -433,6 +436,65 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
     	
     	// Check that the version label is still the same
         assertEquals(versionLabel, this.dbNodeService.getProperty(versionableNode, ContentModel.PROP_VERSION_LABEL));        
+    }
+    
+    /**
+     * Test reverting from Share
+     */
+    @SuppressWarnings("unused")
+    public void testScriptNodeRevert()
+    {
+        CheckOutCheckInService checkOutCheckIn =
+            (CheckOutCheckInService) applicationContext.getBean("checkOutCheckInService");
+        
+        // Create a versionable node
+        NodeRef versionableNode = createNewVersionableNode();
+        NodeRef checkedOut = checkOutCheckIn.checkout(versionableNode);
+        
+        Version version1 = createVersion(checkedOut);
+        
+        // Create a new version
+        ContentWriter contentWriter = this.contentService.getWriter(checkedOut, ContentModel.PROP_CONTENT, true);
+        assertNotNull(contentWriter);
+        contentWriter.putContent(UPDATED_CONTENT_1);
+        checkOutCheckIn.checkin(checkedOut, null, contentWriter.getContentUrl(), false);
+        Version version2 = createVersion(versionableNode);
+        checkedOut = checkOutCheckIn.checkout(versionableNode);
+        
+        // Create another new version
+        contentWriter = this.contentService.getWriter(checkedOut, ContentModel.PROP_CONTENT, true);
+        assertNotNull(contentWriter);
+        contentWriter.putContent(UPDATED_CONTENT_2);
+        checkOutCheckIn.checkin(checkedOut, null, contentWriter.getContentUrl(), false);
+        Version version3 = createVersion(versionableNode);
+        checkedOut = checkOutCheckIn.checkout(versionableNode);
+        
+        // Yet another version
+        contentWriter = this.contentService.getWriter(checkedOut, ContentModel.PROP_CONTENT, true);
+        assertNotNull(contentWriter);
+        contentWriter.putContent(UPDATED_CONTENT_3);
+        checkOutCheckIn.checkin(checkedOut, null, contentWriter.getContentUrl(), false);
+        Version version4 = createVersion(versionableNode);
+        
+        // Create a ScriptNode as used in Share
+        ServiceRegistry services = applicationContext.getBean(ServiceRegistry.class); 
+        ScriptNode scriptNode = new ScriptNode(versionableNode, services);
+        
+        // Revert to version2
+        ScriptNode newNode = scriptNode.revert("History", false, version2.getVersionLabel());
+        ContentReader contentReader = this.contentService.getReader(newNode.getNodeRef(), ContentModel.PROP_CONTENT);
+        assertNotNull(contentReader);
+        assertEquals(UPDATED_CONTENT_1, contentReader.getContentString());
+        
+        setComplete();
+        try
+        {
+            endTransaction();
+        }
+        catch(Throwable e)
+        {
+            fail("Transaction failed: " + e);
+        }
     }
     
     /**

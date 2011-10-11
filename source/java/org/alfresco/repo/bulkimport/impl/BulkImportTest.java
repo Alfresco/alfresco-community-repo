@@ -45,7 +45,7 @@ import org.springframework.util.ResourceUtils;
 /**
  * @since 4.0
  */
-public class BulkImportTests extends AbstractBulkImportTests
+public class BulkImportTest extends AbstractBulkImportTests
 {
 	private StreamingNodeImporterFactory streamingNodeImporterFactory;
 

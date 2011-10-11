@@ -371,85 +371,95 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     	
     protected void executeImpl(final RenditionDefinition renditionDef, final NodeRef sourceNode)
     {
-        if (logger.isDebugEnabled())
+        if (nodeService.exists(sourceNode) == true)
         {
-            StringBuilder msg = new StringBuilder();
-            msg.append("Rendering node ").append(sourceNode).append(" with rendition definition ").append(
-            		renditionDef.getRenditionName());
-            msg.append("\n").append("  parameters:").append("\n");
-            if (renditionDef.getParameterValues().isEmpty() == false)
+            if (logger.isDebugEnabled())
             {
-            	for (String paramKey : renditionDef.getParameterValues().keySet())
-            	{
-            		msg.append("    ").append(paramKey).append("=").append(renditionDef.getParameterValue(paramKey)).append("\n");
-            	}
+                StringBuilder msg = new StringBuilder();
+                msg.append("Rendering node ").append(sourceNode).append(" with rendition definition ").append(
+                		renditionDef.getRenditionName());
+                msg.append("\n").append("  parameters:").append("\n");
+                if (renditionDef.getParameterValues().isEmpty() == false)
+                {
+                	for (String paramKey : renditionDef.getParameterValues().keySet())
+                	{
+                		msg.append("    ").append(paramKey).append("=").append(renditionDef.getParameterValue(paramKey)).append("\n");
+                	}
+                }
+                else
+                {
+                	msg.append("    [None]");
+                }
+                logger.debug(msg.toString());
             }
-            else
+    
+            Serializable runAsParam = renditionDef.getParameterValue(AbstractRenderingEngine.PARAM_RUN_AS);
+            String runAsName = runAsParam == null ? DEFAULT_RUN_AS_NAME : (String) runAsParam;
+    
+            // Renditions should all be created by system by default.
+            // When renditions are created by a user and are to be created under a
+            // node
+            // other than the source node, it is possible that the user will not
+            // have
+            // permissions to create content under that node.
+            // For that reason, we execute all rendition actions as system
+            // by default.
+            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
             {
-            	msg.append("    [None]");
-            }
-            logger.debug(msg.toString());
+                @Override
+                public Void doWork() throws Exception
+                {
+                	ChildAssociationRef result = null;
+                	try
+                	{
+                	    // Check whether this rendition is a component of a larger CompositeRendition
+    					boolean isComponentRendition = isComponentRendition(renditionDef);
+    					if (isComponentRendition == false)
+    					{
+    					    // Request that the rendition is initially created
+    					    //  as a child of the source node
+    				        setTemporaryRenditionProperties(sourceNode, renditionDef);					    
+    					    
+    					    // Add renditioned aspect to the source node
+    				        tagSourceNodeAsRenditioned(renditionDef, sourceNode);
+    					}
+    
+    				    // Have the concrete implementation do the actual rendition
+    					executeRenditionImpl(renditionDef, sourceNode);
+    
+    					// 
+                        if (isComponentRendition == false)
+                        {
+                            // Currently the rendition is on a temporary node, which may
+                            //  have the wrong name on it, and for path based renditions is
+                            //  in the wrong place
+                            // So, have the correct node created, and switch everything to use it
+                            switchToFinalRenditionNode(renditionDef, sourceNode);
+                        }
+    					
+    					// Grab a link to the rendition node - it's been saved as a parameter for us
+                        // (Wait until now to fetch in case it was moved)
+    					result = (ChildAssociationRef)renditionDef.getParameterValue(PARAM_RESULT);
+    				} catch (Throwable t)
+    	            {
+    	                notifyCallbackOfException(renditionDef, t);
+    	                throwWrappedException(t);
+    	            }
+    	            if (result != null)
+    	            {
+    	                notifyCallbackOfResult(renditionDef, result);
+    	            }
+    	            	return null;
+    	            }
+            }, runAsName);
         }
-
-        Serializable runAsParam = renditionDef.getParameterValue(AbstractRenderingEngine.PARAM_RUN_AS);
-        String runAsName = runAsParam == null ? DEFAULT_RUN_AS_NAME : (String) runAsParam;
-
-        // Renditions should all be created by system by default.
-        // When renditions are created by a user and are to be created under a
-        // node
-        // other than the source node, it is possible that the user will not
-        // have
-        // permissions to create content under that node.
-        // For that reason, we execute all rendition actions as system
-        // by default.
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
+        else
         {
-            @Override
-            public Void doWork() throws Exception
+            if (logger.isDebugEnabled() == true)
             {
-            	ChildAssociationRef result = null;
-            	try
-            	{
-            	    // Check whether this rendition is a component of a larger CompositeRendition
-					boolean isComponentRendition = isComponentRendition(renditionDef);
-					if (isComponentRendition == false)
-					{
-					    // Request that the rendition is initially created
-					    //  as a child of the source node
-				        setTemporaryRenditionProperties(sourceNode, renditionDef);					    
-					    
-					    // Add renditioned aspect to the source node
-				        tagSourceNodeAsRenditioned(renditionDef, sourceNode);
-					}
-
-				    // Have the concrete implementation do the actual rendition
-					executeRenditionImpl(renditionDef, sourceNode);
-
-					// 
-                    if (isComponentRendition == false)
-                    {
-                        // Currently the rendition is on a temporary node, which may
-                        //  have the wrong name on it, and for path based renditions is
-                        //  in the wrong place
-                        // So, have the correct node created, and switch everything to use it
-                        switchToFinalRenditionNode(renditionDef, sourceNode);
-                    }
-					
-					// Grab a link to the rendition node - it's been saved as a parameter for us
-                    // (Wait until now to fetch in case it was moved)
-					result = (ChildAssociationRef)renditionDef.getParameterValue(PARAM_RESULT);
-				} catch (Throwable t)
-	            {
-	                notifyCallbackOfException(renditionDef, t);
-	                throwWrappedException(t);
-	            }
-	            if (result != null)
-	            {
-	                notifyCallbackOfResult(renditionDef, result);
-	            }
-	            	return null;
-	            }
-        }, runAsName);
+                logger.debug("Rendition has not been created, because the node no longer exitst.  (sourceNode=" + sourceNode + ")");
+            }
+        }
     }
 
     /**

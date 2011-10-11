@@ -1565,7 +1565,12 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             Long optionalOldSharedAlcIdInAdditionToNull,
             Long newSharedAclId)
     {
-        updatePrimaryChildrenSharedAclId(primaryParentNodeId, optionalOldSharedAlcIdInAdditionToNull, newSharedAclId);
+        Long txnId = getCurrentTransactionId();
+        updatePrimaryChildrenSharedAclId(
+                txnId,
+                primaryParentNodeId,
+                optionalOldSharedAlcIdInAdditionToNull,
+                newSharedAclId);
         invalidateCachesByNodeId(primaryParentNodeId, null, nodesCache);
     }
     
@@ -3362,12 +3367,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         throw new DataIntegrityViolationException("Stale cache detected for Node #" + nodeId);
     }
     
-    private ParentAssocsInfo getParentAssocsCacheOnly(Long nodeId)
-    {
-        // can be null
-        return parentAssocsCache.getValue(nodeId);
-    }
-    
     /**
      * Update a node's parent associations.
      */
@@ -3848,6 +3847,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     protected abstract int updateNode(NodeUpdateEntity nodeUpdate);
     protected abstract int updateNodePatchAcl(NodeUpdateEntity nodeUpdate);
     protected abstract void updatePrimaryChildrenSharedAclId(
+            Long txnId,
             Long primaryParentNodeId,
             Long optionalOldSharedAlcIdInAdditionToNull,
             Long newSharedAlcId);

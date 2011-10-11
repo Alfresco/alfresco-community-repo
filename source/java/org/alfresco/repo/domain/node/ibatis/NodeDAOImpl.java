@@ -326,11 +326,13 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
 
     @Override
     protected void updatePrimaryChildrenSharedAclId(
+            Long txnId,
             Long primaryParentNodeId,
             Long optionalOldSharedAlcIdInAdditionToNull,
             Long newSharedAlcId)
     {
         PrimaryChildrenAclUpdateEntity primaryChildrenAclUpdateEntity = new PrimaryChildrenAclUpdateEntity();
+        primaryChildrenAclUpdateEntity.setTxnId(txnId);
         primaryChildrenAclUpdateEntity.setPrimaryParentNodeId(primaryParentNodeId);
         primaryChildrenAclUpdateEntity.setOptionalOldSharedAclIdInAdditionToNull(optionalOldSharedAlcIdInAdditionToNull);
         primaryChildrenAclUpdateEntity.setNewSharedAclId(newSharedAlcId);

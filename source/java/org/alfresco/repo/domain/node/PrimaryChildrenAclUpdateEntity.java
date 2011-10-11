@@ -27,12 +27,23 @@ package org.alfresco.repo.domain.node;
  */
 public class PrimaryChildrenAclUpdateEntity
 {
+    Long txnId;
     Long primaryParentNodeId; 
     Long optionalOldSharedAclIdInAdditionToNull;
     Long newSharedAclId;
     
     public PrimaryChildrenAclUpdateEntity()
     {
+    }
+
+    public Long getTxnId()
+    {
+        return txnId;
+    }
+
+    public void setTxnId(Long txnId)
+    {
+        this.txnId = txnId;
     }
 
     public Long getPrimaryParentNodeId()

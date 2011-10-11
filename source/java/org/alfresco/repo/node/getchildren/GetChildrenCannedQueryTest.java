@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import junit.framework.TestCase;
@@ -50,6 +51,8 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.rating.RatingScheme;
+import org.alfresco.service.cmr.rating.RatingService;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -90,6 +93,11 @@ public class GetChildrenCannedQueryTest extends TestCase
     private PersonService personService;
     private MutableAuthenticationService authenticationService;
     private PermissionService permissionService;
+    private RatingService ratingService;
+    
+    private RatingScheme fiveStarRatingScheme;
+    private RatingScheme likesRatingScheme;
+    private Random random = new Random();
     
     private static boolean setupTestData = false;
     
@@ -121,6 +129,7 @@ public class GetChildrenCannedQueryTest extends TestCase
         personService = (PersonService)ctx.getBean("PersonService");
         authenticationService = (MutableAuthenticationService)ctx.getBean("AuthenticationService");
         permissionService = (PermissionService)ctx.getBean("PermissionService");
+        ratingService = (RatingService)ctx.getBean("RatingService");
         
         cannedQueryRegistry = new NamedObjectRegistry<CannedQueryFactory>();
         cannedQueryRegistry.setStorageType(CannedQueryFactory.class);
@@ -141,6 +150,11 @@ public class GetChildrenCannedQueryTest extends TestCase
         getChildrenCannedQueryFactory.setMethodSecurity((MethodSecurityBean<NodeRef>)ctx.getBean("FileFolderService_security_list"));
         
         getChildrenCannedQueryFactory.afterPropertiesSet();
+
+        fiveStarRatingScheme = ratingService.getRatingScheme("fiveStarRatingScheme");
+        assertNotNull(fiveStarRatingScheme);
+        likesRatingScheme = ratingService.getRatingScheme("likesRatingScheme");
+        assertNotNull(likesRatingScheme);
 
         if (! setupTestData)
         {
@@ -429,10 +443,63 @@ public class GetChildrenCannedQueryTest extends TestCase
         }
     }
     
+    private float getFiveStarRating()
+    {
+    	float rating = random.nextFloat() * (fiveStarRatingScheme.getMaxRating() - fiveStarRatingScheme.getMinRating()) + fiveStarRatingScheme.getMinRating();
+    	assertTrue("Five star rating is out of range: " + rating, (rating >= fiveStarRatingScheme.getMinRating() && rating <= fiveStarRatingScheme.getMaxRating()));
+    	return rating;
+    }
+
     public void testPropertySorting() throws Exception
     {
         NodeRef parentNodeRef = repositoryHelper.getCompanyHome();
+        NodeRef nodeRef1 = null;
+        NodeRef nodeRef2 = null;
+        NodeRef nodeRef3 = null;
+        NodeRef nodeRef4 = null;
+        NodeRef nodeRef5 = null;
+        NodeRef nodeRef6 = null;
+        NodeRef nodeRef7 = null;
+        NodeRef nodeRef8 = null;
+        NodeRef nodeRef9 = null;
+        NodeRef nodeRef10 = null;
         
+        // Create some nodes with integer properties on which to sort, in this case cm:fiveStarRatingScheme and cm:likesRatingScheme
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        try
+        {
+	        nodeRef1 = createContent(parentNodeRef, "rating1", ContentModel.TYPE_CONTENT);
+	        nodeRef2 = createContent(parentNodeRef, "rating2", ContentModel.TYPE_CONTENT);
+	        nodeRef3 = createContent(parentNodeRef, "rating3", ContentModel.TYPE_CONTENT);
+	        nodeRef4 = createContent(parentNodeRef, "rating4", ContentModel.TYPE_CONTENT);
+	        nodeRef5 = createContent(parentNodeRef, "rating5", ContentModel.TYPE_CONTENT);
+	        
+	        nodeRef6 = createContent(parentNodeRef, "rating6", ContentModel.TYPE_CONTENT);
+	        nodeRef7 = createContent(parentNodeRef, "rating7", ContentModel.TYPE_CONTENT);
+	        nodeRef8 = createContent(parentNodeRef, "rating8", ContentModel.TYPE_CONTENT);
+	        nodeRef9 = createContent(parentNodeRef, "rating9", ContentModel.TYPE_CONTENT);
+	        nodeRef10 = createContent(parentNodeRef, "rating10", ContentModel.TYPE_CONTENT);
+        }
+        finally
+        {
+            AuthenticationUtil.popAuthentication();
+        }
+        
+        // apply some ratings to these nodes
+        ratingService.applyRating(nodeRef1, getFiveStarRating(), "fiveStarRatingScheme");
+        ratingService.applyRating(nodeRef2, getFiveStarRating(), "fiveStarRatingScheme");
+        ratingService.applyRating(nodeRef3, getFiveStarRating(), "fiveStarRatingScheme");
+        ratingService.applyRating(nodeRef4, getFiveStarRating(), "fiveStarRatingScheme");
+        ratingService.applyRating(nodeRef5, getFiveStarRating(), "fiveStarRatingScheme");
+        
+        ratingService.applyRating(nodeRef6, 1.0f, "likesRatingScheme");
+        ratingService.applyRating(nodeRef7, 1.0f, "likesRatingScheme");
+        ratingService.applyRating(nodeRef8, 1.0f, "likesRatingScheme");
+        ratingService.applyRating(nodeRef9, 1.0f, "likesRatingScheme");
+        ratingService.applyRating(nodeRef10, 1.0f, "likesRatingScheme");
+
+        // do children canned query
         PagingResults<NodeRef> results = list(parentNodeRef, -1, -1, 0);
         
         List<QName> sortQNames = new ArrayList<QName>(3);
@@ -449,8 +516,10 @@ public class GetChildrenCannedQueryTest extends TestCase
         sortQNames.add(GetChildrenCannedQuery.SORT_QNAME_CONTENT_SIZE);
         sortQNames.add(GetChildrenCannedQuery.SORT_QNAME_CONTENT_MIMETYPE);
         sortQNames.add(GetChildrenCannedQuery.SORT_QNAME_NODE_TYPE);
-        
-        // TODO pending merge to HEAD: sortQNames.add(ContentModel... cm:likesRatingSchemeCount ...);
+
+        // Add in the ratings properties on which to sort
+        sortQNames.add(QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "fiveStarRatingSchemeCount"));
+        sortQNames.add(QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "likesRatingSchemeCount"));
         
         // sort with one prop
         for (QName sortQName : sortQNames)
@@ -832,6 +901,10 @@ public class GetChildrenCannedQueryTest extends TestCase
                 else if (val instanceof Long)
                 {
                     result = ((Long)val).compareTo((Long)prevVal);
+                }
+                else if (val instanceof Integer)
+                {
+                    result = ((Integer)val).compareTo((Integer)prevVal);
                 }
                 else if (val instanceof QName)
                 {

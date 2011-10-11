@@ -414,6 +414,10 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
             {
                 result = (((Long)pv1).compareTo((Long)pv2));
             }
+            else if (pv1 instanceof Integer)
+            {
+                result = (((Integer)pv1).compareTo((Integer)pv2));
+            }
             else if (pv1 instanceof QName)
             {
                 result = (((QName)pv1).compareTo((QName)pv2));

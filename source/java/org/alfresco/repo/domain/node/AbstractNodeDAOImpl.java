@@ -562,6 +562,9 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
     }
     
+    /**
+     * @return          Returns a new transaction or an existing one if already active
+     */
     private TransactionEntity getCurrentTransaction()
     {
         TransactionEntity txn = AlfrescoTransactionSupport.getResource(KEY_TRANSACTION);
@@ -1216,6 +1219,9 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             }
         }
         
+        // Need the child node's name here in case it gets removed
+        final String childNodeName = (String) getNodeProperty(childNodeId, ContentModel.PROP_NAME);
+        
         // First attempt to move the node, which may rollback to a savepoint
         Node newChildNode = childNode;
         // Store
@@ -1281,11 +1287,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 // Because we are retrying in-transaction i.e. absorbing exceptions, we need a Savepoint
                 Savepoint savepoint = controlDAO.createSavepoint("DuplicateChildNodeNameException");
                 // We use the child node's UUID if there is no cm:name
-                String childNodeName = (String) getNodeProperty(childNodeId, ContentModel.PROP_NAME);
-                if (childNodeName == null)
-                {
-                    childNodeName = childNode.getUuid();
-                }
+                String childNodeNameToUse = childNodeName == null ? childNode.getUuid() : childNodeName;
 
                 try
                 {
@@ -1294,7 +1296,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                             newParentNodeId,
                             assocTypeQName,
                             assocQName,
-                            childNodeName);
+                            childNodeNameToUse);
                     controlDAO.releaseSavepoint(savepoint);
                     return updated;
                 }
@@ -1565,7 +1567,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             Long optionalOldSharedAlcIdInAdditionToNull,
             Long newSharedAclId)
     {
-        Long txnId = getCurrentTransactionId();
+        Long txnId = getCurrentTransaction().getId();
         updatePrimaryChildrenSharedAclId(
                 txnId,
                 primaryParentNodeId,
@@ -2101,6 +2103,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             throw new DataIntegrityViolationException("Invalid node ID: " + nodeId);
         }
         Map<QName, Serializable> cachedProperties = cacheEntry.getSecond();
+        // Need to return a harmlessly mutable map
         Map<QName, Serializable> properties = copyPropertiesAgainstModification(cachedProperties);
         // Done
         return properties;
@@ -2153,7 +2156,27 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
 
         public Pair<Long, Map<QName, Serializable>> findByKey(Long nodeId)
         {
-            Map<NodePropertyKey, NodePropertyValue> propsRaw = selectNodeProperties(nodeId);
+            NodeVersionKey nodeVersionKey = getNodeNotNull(nodeId).getNodeVersionKey();
+            Map<NodeVersionKey, Map<NodePropertyKey, NodePropertyValue>> propsRawByNodeVersionKey = selectNodeProperties(nodeId);
+            // Check the node Txn ID for mismatch
+            Map<NodePropertyKey, NodePropertyValue> propsRaw = propsRawByNodeVersionKey.get(nodeVersionKey);
+            if (propsRaw == null)
+            {
+                // Didn't find a match.  Is this because there are none?
+                if (propsRawByNodeVersionKey.size() == 0)
+                {
+                    // This is OK.  The node has no properties
+                    propsRaw = Collections.emptyMap();
+                }
+                else
+                {
+                    // We found properties associated with a different node ID and txn
+                    invalidateNodeCaches(nodeId);
+                    throw new DataIntegrityViolationException(
+                            "Detected stale node entry: " + nodeVersionKey +
+                            " (now " + propsRawByNodeVersionKey.keySet() + ")");
+                }
+            }
             // Convert to public properties
             Map<QName, Serializable> props = nodePropertyHelper.convertToPublicProperties(propsRaw);
             // Done
@@ -2351,9 +2374,27 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
 
         public Pair<Long, Set<QName>> findByKey(Long nodeId)
         {
-            Set<Long> nodeAspectQNameIds = selectNodeAspectIds(nodeId);
-            // Convert to QNames
-            Set<QName> nodeAspectQNames = qnameDAO.convertIdsToQNames(nodeAspectQNameIds);
+            NodeVersionKey nodeVersionKey = getNodeNotNull(nodeId).getNodeVersionKey();
+            Set<Long> nodeIds = Collections.singleton(nodeId);
+            Map<NodeVersionKey, Set<QName>> nodeAspectQNameIdsByVersionKey = selectNodeAspects(nodeIds);
+            Set<QName> nodeAspectQNames = nodeAspectQNameIdsByVersionKey.get(nodeVersionKey);
+            if (nodeAspectQNames == null)
+            {
+                // Didn't find a match.  Is this because there are none?
+                if (nodeAspectQNameIdsByVersionKey.size() == 0)
+                {
+                    // This is OK.  The node has no properties
+                    nodeAspectQNames = Collections.emptySet();
+                }
+                else
+                {
+                    // We found properties associated with a different node ID and txn
+                    invalidateNodeCaches(nodeId);
+                    throw new DataIntegrityViolationException(
+                            "Detected stale node entry: " + nodeVersionKey +
+                            " (now " + nodeAspectQNameIdsByVersionKey.keySet() + ")");
+                }
+            }
             // Done
             return new Pair<Long, Set<QName>>(nodeId, Collections.unmodifiableSet(nodeAspectQNames));
         }
@@ -3619,9 +3660,11 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // Get the nodes
         SortedSet<Long> aspectNodeIds = new TreeSet<Long>();
         SortedSet<Long> propertiesNodeIds = new TreeSet<Long>();
+        Map<Long, NodeVersionKey> nodeVersionKeysFromCache = new HashMap<Long, NodeVersionKey>(nodes.size()*2);    // Keep for quick lookup
         for (Node node : nodes)
         {
             Long nodeId = node.getId();
+            NodeVersionKey nodeVersionKey = node.getNodeVersionKey();
             nodesCache.setValue(nodeId, node);
             if (propertiesCache.getValue(nodeId) == null)
             {
@@ -3631,6 +3674,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             {
                 aspectNodeIds.add(nodeId);
             }
+            nodeVersionKeysFromCache.put(nodeId, nodeVersionKey);
         }
         
         if(logger.isDebugEnabled())
@@ -3639,14 +3683,13 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             logger.debug("Pre-loaded " + propertiesNodeIds.size() + " aspects");
         }
         
-        List<NodeAspectsEntity> nodeAspects = selectNodeAspects(aspectNodeIds);
-        for (NodeAspectsEntity nodeAspect : nodeAspects)
+        Map<NodeVersionKey, Set<QName>> nodeAspects = selectNodeAspects(aspectNodeIds);
+        for (Map.Entry<NodeVersionKey, Set<QName>> entry : nodeAspects.entrySet())
         {
-            Long nodeId = nodeAspect.getNodeId();
-            List<Long> qnameIds = nodeAspect.getAspectQNameIds();
-            HashSet<Long> qnameIdsSet = new HashSet<Long>(qnameIds);
-            Set<QName> qnames = qnameDAO.convertIdsToQNames(qnameIdsSet);
-            aspectsCache.setValue(nodeId, qnames);
+            NodeVersionKey nodeVersionKeyFromDb = entry.getKey();
+            Long nodeId = nodeVersionKeyFromDb.getNodeId();
+            Set<QName> qnames = entry.getValue();
+            setNodeAspectsCached(nodeId, qnames);
             aspectNodeIds.remove(nodeId);
         }
         // Cache the absence of aspects too!
@@ -3655,13 +3698,13 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             aspectsCache.setValue(nodeId, Collections.<QName>emptySet());            
         }
 
-        Map<Long, Map<NodePropertyKey, NodePropertyValue>> propsByNodeId = selectNodeProperties(propertiesNodeIds);
-        for (Map.Entry<Long, Map<NodePropertyKey, NodePropertyValue>> entry : propsByNodeId.entrySet())
+        Map<NodeVersionKey, Map<NodePropertyKey, NodePropertyValue>> propsByNodeId = selectNodeProperties(propertiesNodeIds);
+        for (Map.Entry<NodeVersionKey, Map<NodePropertyKey, NodePropertyValue>> entry : propsByNodeId.entrySet())
         {
-            Long nodeId = entry.getKey();
+            Long nodeId = entry.getKey().getNodeId();
             Map<NodePropertyKey, NodePropertyValue> propertyValues = entry.getValue();
             Map<QName, Serializable> props = nodePropertyHelper.convertToPublicProperties(propertyValues);
-            propertiesCache.setValue(nodeId, props);
+            setNodePropertiesCached(nodeId, props);
         }
     }
 
@@ -3847,14 +3890,13 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     protected abstract NodeEntity selectNodeByNodeRef(NodeRef nodeRef, Boolean deleted);
     protected abstract List<Node> selectNodesByUuids(Long storeId, SortedSet<String> uuids);
     protected abstract List<Node> selectNodesByIds(SortedSet<Long> ids);
-    protected abstract Map<Long, Map<NodePropertyKey, NodePropertyValue>> selectNodeProperties(Set<Long> nodeIds);
-    protected abstract List<NodeAspectsEntity> selectNodeAspects(Set<Long> nodeIds);
-    protected abstract Map<NodePropertyKey, NodePropertyValue> selectNodeProperties(Long nodeId);
-    protected abstract Map<NodePropertyKey, NodePropertyValue> selectNodeProperties(Long nodeId, Set<Long> qnameIds);
+    protected abstract Map<NodeVersionKey, Map<NodePropertyKey, NodePropertyValue>> selectNodeProperties(Set<Long> nodeIds);
+    protected abstract Map<NodeVersionKey, Map<NodePropertyKey, NodePropertyValue>> selectNodeProperties(Long nodeId);
+    protected abstract Map<NodeVersionKey, Map<NodePropertyKey, NodePropertyValue>> selectNodeProperties(Long nodeId, Set<Long> qnameIds);
     protected abstract int deleteNodeProperties(Long nodeId, Set<Long> qnameIds);
     protected abstract int deleteNodeProperties(Long nodeId, List<NodePropertyKey> propKeys);
     protected abstract void insertNodeProperties(Long nodeId, Map<NodePropertyKey, NodePropertyValue> persistableProps);
-    protected abstract Set<Long> selectNodeAspectIds(Long nodeId);
+    protected abstract Map<NodeVersionKey, Set<QName>> selectNodeAspects(Set<Long> nodeIds);
     protected abstract void insertNodeAspect(Long nodeId, Long qnameId);
     protected abstract int deleteNodeAspects(Long nodeId, Set<Long> qnameIds);
     protected abstract void selectNodesWithAspects(

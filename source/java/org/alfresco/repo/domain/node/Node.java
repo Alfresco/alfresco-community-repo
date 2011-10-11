@@ -29,6 +29,11 @@ import org.alfresco.util.Pair;
 public interface Node extends NodeIdAndAclId
 {
     /**
+     * Helper method to get a key that includes the node and its current version number
+     */
+    public NodeVersionKey getNodeVersionKey();
+    
+    /**
      * Helper method to force the instance to be read-only
      */
     public void lock();

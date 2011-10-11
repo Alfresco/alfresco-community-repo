@@ -29,6 +29,7 @@ import java.util.List;
 public class NodePropertyEntity
 {
     private Long nodeId;
+    private Long nodeVersion;
     private NodePropertyKey key;
     private NodePropertyValue value;
     /** Carries data for queries and updates */
@@ -46,7 +47,7 @@ public class NodePropertyEntity
     @Override
     public String toString()
     {
-        return "NodePropertyEntity [node=" + nodeId + ", key=" + key + ", value=" + value + "]";
+        return "NodePropertyEntity [node=" + nodeId + ", nodeVersion=" + nodeVersion + ", key=" + key + ", value=" + value + "]";
     }
 
     public Long getNodeId()
@@ -57,6 +58,16 @@ public class NodePropertyEntity
     public void setNodeId(Long nodeId)
     {
         this.nodeId = nodeId;
+    }
+
+    public Long getNodeVersion()
+    {
+        return nodeVersion;
+    }
+
+    public void setNodeVersion(Long nodeVersion)
+    {
+        this.nodeVersion = nodeVersion;
     }
 
     public NodePropertyKey getKey()

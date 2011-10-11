@@ -105,6 +105,17 @@ public class NodeEntity implements Node, PermissionCheckValue
         return sb.toString();
     }
     
+    @Override
+    // TODO: Must cache the key
+    public NodeVersionKey getNodeVersionKey()
+    {
+        if (id == null || version == null)
+        {
+            throw new IllegalStateException("The NodeEntity has not be filled: " + this);
+        }
+        return new NodeVersionKey(id, version);
+    }
+    
     /**
      * Lock the entity against further updates to prevent accidental modification
      */
@@ -125,8 +136,9 @@ public class NodeEntity implements Node, PermissionCheckValue
         }
     }
     
-    public void incrementVersion()
+    public synchronized void incrementVersion()
     {
+        checkLock();
         if (version >= Short.MAX_VALUE)
         {
             this.version = 0L;
@@ -162,7 +174,7 @@ public class NodeEntity implements Node, PermissionCheckValue
         return id;
     }
 
-    public void setId(Long id)
+    public synchronized void setId(Long id)
     {
         checkLock();
         this.id = id;
@@ -174,7 +186,7 @@ public class NodeEntity implements Node, PermissionCheckValue
         return version;
     }
 
-    public void setVersion(Long version)
+    public synchronized void setVersion(Long version)
     {
         checkLock();
         this.version = version;
@@ -186,7 +198,7 @@ public class NodeEntity implements Node, PermissionCheckValue
         return store;
     }
 
-    public void setStore(StoreEntity store)
+    public synchronized void setStore(StoreEntity store)
     {
         checkLock();
         this.store = store;
@@ -198,7 +210,7 @@ public class NodeEntity implements Node, PermissionCheckValue
         return uuid;
     }
 
-    public void setUuid(String uuid)
+    public synchronized void setUuid(String uuid)
     {
         checkLock();
         this.uuid = uuid;
@@ -210,7 +222,7 @@ public class NodeEntity implements Node, PermissionCheckValue
         return typeQNameId;
     }
 
-    public void setTypeQNameId(Long typeQNameId)
+    public synchronized void setTypeQNameId(Long typeQNameId)
     {
         checkLock();
         this.typeQNameId = typeQNameId;
@@ -222,7 +234,7 @@ public class NodeEntity implements Node, PermissionCheckValue
         return localeId;
     }
 
-    public void setLocaleId(Long localeId)
+    public synchronized void setLocaleId(Long localeId)
     {
         this.localeId = localeId;
     }
@@ -233,7 +245,7 @@ public class NodeEntity implements Node, PermissionCheckValue
         return aclId;
     }
 
-    public void setAclId(Long aclId)
+    public synchronized void setAclId(Long aclId)
     {
         checkLock();
         this.aclId = aclId;
@@ -245,7 +257,7 @@ public class NodeEntity implements Node, PermissionCheckValue
         return deleted;
     }
 
-    public void setDeleted(Boolean deleted)
+    public synchronized void setDeleted(Boolean deleted)
     {
         checkLock();
         this.deleted = deleted;
@@ -257,7 +269,7 @@ public class NodeEntity implements Node, PermissionCheckValue
         return transaction;
     }
 
-    public void setTransaction(TransactionEntity transaction)
+    public synchronized void setTransaction(TransactionEntity transaction)
     {
         checkLock();
         this.transaction = transaction;
@@ -269,7 +281,7 @@ public class NodeEntity implements Node, PermissionCheckValue
         return auditableProperties;
     }
 
-    public void setAuditableProperties(AuditablePropertiesEntity auditableProperties)
+    public synchronized void setAuditableProperties(AuditablePropertiesEntity auditableProperties)
     {
         checkLock();
         this.auditableProperties = auditableProperties;

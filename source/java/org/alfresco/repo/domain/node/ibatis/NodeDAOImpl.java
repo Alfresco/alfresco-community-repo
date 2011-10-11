@@ -42,6 +42,7 @@ import org.alfresco.repo.domain.node.NodePropertyEntity;
 import org.alfresco.repo.domain.node.NodePropertyKey;
 import org.alfresco.repo.domain.node.NodePropertyValue;
 import org.alfresco.repo.domain.node.NodeUpdateEntity;
+import org.alfresco.repo.domain.node.NodeVersionKey;
 import org.alfresco.repo.domain.node.PrimaryChildrenAclUpdateEntity;
 import org.alfresco.repo.domain.node.ServerEntity;
 import org.alfresco.repo.domain.node.StoreEntity;
@@ -418,21 +419,23 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     /**
      * Pull out the key-value pairs from the rows
      */
-    private Map<Long, Map<NodePropertyKey, NodePropertyValue>> makePersistentPropertiesMap(List<NodePropertyEntity> rows)
+    private Map<NodeVersionKey, Map<NodePropertyKey, NodePropertyValue>> makePersistentPropertiesMap(List<NodePropertyEntity> rows)
     {
-        Map<Long, Map<NodePropertyKey, NodePropertyValue>> results = new HashMap<Long, Map<NodePropertyKey, NodePropertyValue>>(3);
+        Map<NodeVersionKey, Map<NodePropertyKey, NodePropertyValue>> results = new HashMap<NodeVersionKey, Map<NodePropertyKey, NodePropertyValue>>(3);
         for (NodePropertyEntity row : rows)
         {
             Long nodeId = row.getNodeId();
-            if (nodeId == null)
+            Long nodeVersion = row.getNodeVersion();
+            if (nodeId == null || nodeVersion == null)
             {
-                throw new RuntimeException("Expect results with a Node ID: " + row);
+                throw new RuntimeException("Expect results with a Node and Version: " + row);
             }
-            Map<NodePropertyKey, NodePropertyValue> props = results.get(nodeId);
+            NodeVersionKey nodeTxnKey = new NodeVersionKey(nodeId, nodeVersion);
+            Map<NodePropertyKey, NodePropertyValue> props = results.get(nodeTxnKey);
             if (props == null)
             {
                 props = new HashMap<NodePropertyKey, NodePropertyValue>(17);
-                results.put(nodeId, props);
+                results.put(nodeTxnKey, props);
             }
             props.put(row.getKey(), row.getValue());
         }
@@ -460,22 +463,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     
     @Override
     @SuppressWarnings("unchecked")
-    protected List<NodeAspectsEntity> selectNodeAspects(Set<Long> nodeIds)
-    {
-        if (nodeIds.size() == 0)
-        {
-            return Collections.emptyList();
-        }
-        NodeAspectsEntity aspects = new NodeAspectsEntity();
-        aspects.setNodeIds(new ArrayList<Long>(nodeIds));
-
-        List<NodeAspectsEntity> rows = (List<NodeAspectsEntity>) template.selectList(SELECT_NODE_ASPECTS, aspects);
-        return rows;
-    }
-    
-    @Override
-    @SuppressWarnings("unchecked")
-    protected Map<Long, Map<NodePropertyKey, NodePropertyValue>> selectNodeProperties(Set<Long> nodeIds)
+    protected Map<NodeVersionKey, Map<NodePropertyKey, NodePropertyValue>> selectNodeProperties(Set<Long> nodeIds)
     {
         if (nodeIds.size() == 0)
         {
@@ -488,13 +476,13 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         return makePersistentPropertiesMap(rows);
     }
     @Override
-    protected Map<NodePropertyKey, NodePropertyValue> selectNodeProperties(Long nodeId)
+    protected Map<NodeVersionKey, Map<NodePropertyKey, NodePropertyValue>> selectNodeProperties(Long nodeId)
     {
         return selectNodeProperties(nodeId, Collections.<Long>emptySet());
     }
     @Override
     @SuppressWarnings("unchecked")
-    protected Map<NodePropertyKey, NodePropertyValue> selectNodeProperties(Long nodeId, Set<Long> qnameIds)
+    protected Map<NodeVersionKey, Map<NodePropertyKey, NodePropertyValue>> selectNodeProperties(Long nodeId, Set<Long> qnameIds)
     {
         NodePropertyEntity prop = new NodePropertyEntity();
         // Node
@@ -514,16 +502,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         }
 
         List<NodePropertyEntity> rows = (List<NodePropertyEntity>) template.selectList(SELECT_NODE_PROPERTIES, prop);
-        Map<Long, Map<NodePropertyKey, NodePropertyValue>> results = makePersistentPropertiesMap(rows);
-        Map<NodePropertyKey, NodePropertyValue> props = results.get(nodeId);
-        if (props == null)
-        {
-            return Collections.emptyMap();
-        }
-        else
-        {
-            return props;
-        }
+        return makePersistentPropertiesMap(rows);
     }
 
     @Override
@@ -601,19 +580,34 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    protected Set<Long> selectNodeAspectIds(Long nodeId)
+    protected Map<NodeVersionKey, Set<QName>> selectNodeAspects(Set<Long> nodeIds)
     {
-    	Set<Long> aspectIds = new HashSet<Long>();
-    	Set<Long> nodeIds = new HashSet<Long>();
-    	nodeIds.add(nodeId);
-    	List<NodeAspectsEntity> nodeAspectEntities = selectNodeAspects(nodeIds);
-    	if(nodeAspectEntities.size() > 0)
-    	{
-    		NodeAspectsEntity nodeAspects = nodeAspectEntities.get(0);
-    		aspectIds.addAll(nodeAspects.getAspectQNameIds());
-    	}
-		return aspectIds;
+        if (nodeIds.size() == 0)
+        {
+            return Collections.emptyMap();
+        }
+        NodeAspectsEntity aspects = new NodeAspectsEntity();
+        aspects.setNodeIds(new ArrayList<Long>(nodeIds));
+
+        List<NodeAspectsEntity> rows = (List<NodeAspectsEntity>) template.selectList(SELECT_NODE_ASPECTS, aspects);
+        
+        Map<NodeVersionKey, Set<QName>> results = new HashMap<NodeVersionKey, Set<QName>>(rows.size()*2);
+        for (NodeAspectsEntity nodeAspectsEntity : rows)
+        {
+            Long nodeId = nodeAspectsEntity.getNodeId();
+            Long nodeVersion = nodeAspectsEntity.getNodeVersion();
+            NodeVersionKey nodeVersionKey = new NodeVersionKey(nodeId, nodeVersion);
+            if (results.containsKey(nodeVersionKey))
+            {
+                throw new IllegalStateException("Found existing key while querying for node aspects: " + nodeIds);
+            }
+            Set<Long> aspectIds = new HashSet<Long>(nodeAspectsEntity.getAspectQNameIds());
+            Set<QName> aspectQNames = qnameDAO.convertIdsToQNames(aspectIds);
+            results.put(nodeVersionKey, aspectQNames);
+        }
+        return results;
     }
 
     @Override

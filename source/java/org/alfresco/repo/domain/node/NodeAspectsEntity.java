@@ -28,7 +28,8 @@ import java.util.List;
  */
 public class NodeAspectsEntity
 {
-	private Long nodeId;
+    private Long nodeId;
+	private Long nodeVersion;
     private List<Long> aspectQNameIds;
 
     /** Carries data for queries */
@@ -47,6 +48,7 @@ public class NodeAspectsEntity
         StringBuilder sb = new StringBuilder(512);
         sb.append("NodeAspectsEntity")
           .append(", nodeId=").append(nodeId)
+          .append(", nodeVersion=").append(nodeVersion)
           .append(", aspects=").append(aspectQNameIds)
           .append("]");
         return sb.toString();
@@ -62,6 +64,16 @@ public class NodeAspectsEntity
         this.nodeId = nodeId;
     }
     
+    public Long getNodeVersion()
+    {
+        return nodeVersion;
+    }
+
+    public void setNodeVersion(Long nodeVersion)
+    {
+        this.nodeVersion = nodeVersion;
+    }
+
     public List<Long> getAspectQNameIds()
     {
         return aspectQNameIds;

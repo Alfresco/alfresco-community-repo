@@ -82,6 +82,7 @@
     <resultMap id="result_NodeAspects" type="NodeAspects" groupBy="nodeId"> -->
     <resultMap id="result_NodeAspects" type="NodeAspects">
         <id property="nodeId" column="node_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <id property="nodeVersion" column="node_version" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <association property="aspectQNameIds" resultMap="alfresco.node.result_AspectQNameIds"/>
 <!--
         <result property="aspectQNameIds" column="qname_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -89,6 +90,7 @@
     </resultMap>
     <resultMap id="result_NodeProperty" type="NodeProperty">
         <result property="nodeId" column="node_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="nodeVersion" column="node_version" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="key.qnameId" column="qname_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="key.localeId" column="locale_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="key.listIndex" column="list_index" jdbcType="INTEGER" javaType="java.lang.Integer"/>
@@ -720,7 +722,8 @@
     
     <sql id="select_NodeProperty_Results">
         select
-            prop.node_id            as node_id,
+            node.id                 as node_id,
+            node.version            as node_version,
             prop.qname_id           as qname_id,
             prop.locale_id          as locale_id,
             prop.list_index         as list_index,
@@ -737,7 +740,8 @@
     <select id="select_NodeProperties" parameterType="NodeProperty" resultMap="result_NodeProperty">
         <include refid="alfresco.node.select_NodeProperty_Results"/>
         from
-            alf_node_properties prop
+            alf_node node
+            join alf_node_properties prop on (prop.node_id = node.id)
         <where>
             <if test="nodeId != null">prop.node_id = #{nodeId}</if>
             <if test="nodeIds != null">
@@ -759,7 +763,8 @@
     <select id="select_PropertiesByTypes" parameterType="Ids" resultMap="result_NodeProperty">
         <include refid="alfresco.node.select_NodeProperty_Results"/>
         from
-            alf_node_properties prop
+            alf_node node
+            join alf_node_properties prop on (prop.node_id = node.id)
         <where>
             qname_id in
             <foreach item="item" index="index" collection="ids" open="(" separator="," close=")">
@@ -770,14 +775,16 @@
 
     <sql id="select_NodeAspects_Results">
         select
-            aspects.node_id            as node_id,
+            node.id                    as node_id,
+            node.version               as node_version,
             aspects.qname_id           as qname_id
     </sql>
     
     <select id="select_NodeAspects" parameterType="Ids" resultMap="result_NodeAspects">
         <include refid="alfresco.node.select_NodeAspects_Results"/>
         from
-            alf_node_aspects aspects
+            alf_node node
+            join alf_node_aspects aspects on (aspects.node_id = node.id)
         <where>
             <if test="nodeId != null">aspects.node_id = #{nodeId}</if>
             <if test="nodeIds != null">
@@ -786,15 +793,6 @@
                     #{item}
                 </foreach>
             </if>
-<!--
-            <if test="key != null and key.qnameId">and qname_id = #{key.qnameId}</if>
-            <if test="qnameIds">
-                and qname_id in
-                <foreach item="item" index="index" collection="qnameIds" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
--->
         </where>
     </select>
     

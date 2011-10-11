@@ -838,12 +838,9 @@ public class TransactionalCache<K extends Serializable, V extends Object>
             Object sharedObj = sharedCache.get(key);
             if (!mutable)
             {
-                // Value can't change
-                if (sharedObj == null)
-                {
-                    // Still nothing in the cache
-                    sharedCache.put(key, value);
-                }
+                // The value can't change so we can write through on the assumption
+                // that the value is always correct
+                sharedCache.put(key, value);
             }
             else if (readOnly)
             {

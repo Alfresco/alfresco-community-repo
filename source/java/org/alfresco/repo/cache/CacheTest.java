@@ -776,6 +776,33 @@ public class CacheTest extends TestCase
     }
     /**
      * <ul>
+     *   <li>Remove from the backing cache</li>
+     *   <li>Add to the transactional cache</li>
+     *   <li>Add to the backing cache</li>
+     *   <li>Commit</li>
+     * </ul>
+     */
+    public void testConcurrentAddAgainstAdd_NoPreExisting()throws Throwable
+    {
+        RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Throwable
+            {
+                backingCache.remove(COMMON_KEY);
+                transactionalCache.put(COMMON_KEY, "aaa2-x");
+                backingCache.put(COMMON_KEY, "aaa2");
+                return null;
+            }
+        };
+        transactionalCache.setMutable(true);
+        executeAndCheck(callback, false, COMMON_KEY, null);
+        executeAndCheck(callback, true, COMMON_KEY, "aaa2");    // Doesn't write through
+        transactionalCache.setMutable(false);
+        executeAndCheck(callback, false, COMMON_KEY, "aaa2-x"); // Always overwrites
+        executeAndCheck(callback, true, COMMON_KEY, "aaa2-x");  // Always overwrites
+    }
+    /**
+     * <ul>
      *   <li>Add to the backing cache</li>
      *   <li>Remove from the transactional cache</li>
      *   <li>Add to the backing cache</li>

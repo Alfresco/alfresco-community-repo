@@ -108,7 +108,7 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
     private boolean enabled = false;
     
     /** GoogleDoc base feed url */
-    private String url = "http://docs.google.com/feeds/default/private/full";
+    private String url = "https://docs.google.com/feeds/default/private/full";
     private String downloadUrl = "https://docs.google.com/feeds/download";
     private String spreadsheetDownloadUrl = "https://spreadsheet.google.com/feeds/download";
     

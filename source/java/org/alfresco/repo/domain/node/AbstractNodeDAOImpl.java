@@ -160,11 +160,11 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     private EntityLookupCache<Long, Set<QName>, Serializable> aspectsCache;
     /**
      * Cache for the Node properties:<br/>
-     * KEY: ID<br/>
+     * KEY: NodeVersionKey<br/>
      * VALUE: Map&lt;QName, Serializable&gt;<br/>
      * VALUE KEY: None<br/>
      */
-    private EntityLookupCache<Long, Map<QName, Serializable>, Serializable> propertiesCache;
+    private EntityLookupCache<NodeVersionKey, Map<QName, Serializable>, Serializable> propertiesCache;
     /**
      * Cache for the Node parent assocs:<br/>
      * KEY: ID<br/>
@@ -185,7 +185,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         rootNodesCache = new EntityLookupCache<StoreRef, Node, Serializable>(new RootNodesCacheCallbackDAO());
         nodesCache = new EntityLookupCache<Long, Node, NodeRef>(new NodesCacheCallbackDAO());
         aspectsCache = new EntityLookupCache<Long, Set<QName>, Serializable>(new AspectsCallbackDAO());
-        propertiesCache = new EntityLookupCache<Long, Map<QName, Serializable>, Serializable>(new PropertiesCallbackDAO());
+        propertiesCache = new EntityLookupCache<NodeVersionKey, Map<QName, Serializable>, Serializable>(new PropertiesCallbackDAO());
         parentAssocsCache = new EntityLookupCache<Long, ParentAssocsInfo, ChildByNameKey>(new ParentAssocsCallbackDAO());
     }
 
@@ -327,7 +327,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      */
     public void setPropertiesCache(SimpleCache<Long, Map<QName, Serializable>> propertiesCache)
     {
-        this.propertiesCache = new EntityLookupCache<Long, Map<QName, Serializable>, Serializable>(
+        this.propertiesCache = new EntityLookupCache<NodeVersionKey, Map<QName, Serializable>, Serializable>(
                 propertiesCache,
                 CACHE_REGION_PROPERTIES,
                 new PropertiesCallbackDAO());
@@ -527,10 +527,20 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      */
     private void invalidateNodeCaches(Long nodeId)
     {
-        invalidateCachesByNodeId(null, nodeId, nodesCache);
-        invalidateCachesByNodeId(null, nodeId, propertiesCache);
-        invalidateCachesByNodeId(null, nodeId, aspectsCache);
-        invalidateCachesByNodeId(null, nodeId, parentAssocsCache);
+        // Take the current value from the nodesCache and use that to invalidate the other caches
+        Pair<Long, Node> nodePair = nodesCache.getByKey(nodeId);
+        if (nodePair != null)
+        {
+            NodeVersionKey nodeVersionKey = nodePair.getSecond().getNodeVersionKey();
+            // Properties
+            propertiesCache.removeByKey(nodeVersionKey);
+            // Aspects
+            aspectsCache.removeByKey(nodeId);
+            // Parent Assocs
+            parentAssocsCache.removeByKey(nodeId);
+        }
+        // Finally remove the node reference
+        nodesCache.removeByKey(nodeId);
     }
 
     /*
@@ -1631,16 +1641,13 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             allRootNodesCache.remove(node.getNodePair().getSecond().getStoreRef());            
         }
         
-        // Remove value from the cache 
-        nodesCache.removeByKey(nodeId);
-        
         // Remove aspects
         deleteNodeAspects(nodeId, null);
-        aspectsCache.removeByKey(nodeId);
+        setNodeAspectsCached(nodeId, Collections.<QName>emptySet());
         
         // Remove properties
         deleteNodeProperties(nodeId, (Set<Long>) null);
-        propertiesCache.removeByKey(nodeId);
+        setNodePropertiesCached(nodeId, Collections.<QName,Serializable>emptyMap());
         
         // Remove associations
         invalidateCachesByNodeId(nodeId, nodeId, parentAssocsCache);
@@ -1659,6 +1666,9 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             throw new ConcurrencyFailureException("Failed to update node: " + nodeUpdate);
         }
 
+        // Remove value from the cache
+        nodesCache.removeByKey(nodeId);
+        
         // Remove ACLs
         if (aclId != null)
         {
@@ -1938,8 +1948,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             }
             catch (Throwable e)
             {
-                // Don't trust the properties cache for the node
-                propertiesCache.removeByKey(nodeId);
+                // Don't trust the caches for the node
+                invalidateNodeCaches(nodeId);
                 // Focused error
                 throw new AlfrescoRuntimeException(
                         "Failed to write property deltas: \n" +
@@ -2097,7 +2107,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      */
     private Map<QName, Serializable> getNodePropertiesCached(Long nodeId)
     {
-        Pair<Long, Map<QName, Serializable>> cacheEntry = propertiesCache.getByKey(nodeId);
+        NodeVersionKey nodeVersionKey = getNodeNotNull(nodeId).getNodeVersionKey();
+        Pair<NodeVersionKey, Map<QName, Serializable>> cacheEntry = propertiesCache.getByKey(nodeVersionKey);
         if (cacheEntry == null)
         {
             throw new DataIntegrityViolationException("Invalid node ID: " + nodeId);
@@ -2117,8 +2128,9 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      */
     private void setNodePropertiesCached(Long nodeId, Map<QName, Serializable> properties)
     {
+        NodeVersionKey nodeVersionKey = getNodeNotNull(nodeId).getNodeVersionKey();
         properties = copyPropertiesAgainstModification(properties);
-        propertiesCache.setValue(nodeId, Collections.unmodifiableMap(properties));
+        propertiesCache.setValue(nodeVersionKey, Collections.unmodifiableMap(properties));
     }
     
     /**
@@ -2147,16 +2159,16 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      * @author Derek Hulley
      * @since 3.4
      */
-    private class PropertiesCallbackDAO extends EntityLookupCallbackDAOAdaptor<Long, Map<QName, Serializable>, Serializable>
+    private class PropertiesCallbackDAO extends EntityLookupCallbackDAOAdaptor<NodeVersionKey, Map<QName, Serializable>, Serializable>
     {
-        public Pair<Long, Map<QName, Serializable>> createValue(Map<QName, Serializable> value)
+        public Pair<NodeVersionKey, Map<QName, Serializable>> createValue(Map<QName, Serializable> value)
         {
             throw new UnsupportedOperationException("A node always has a 'map' of properties.");
         }
 
-        public Pair<Long, Map<QName, Serializable>> findByKey(Long nodeId)
+        public Pair<NodeVersionKey, Map<QName, Serializable>> findByKey(NodeVersionKey nodeVersionKey)
         {
-            NodeVersionKey nodeVersionKey = getNodeNotNull(nodeId).getNodeVersionKey();
+            Long nodeId = nodeVersionKey.getNodeId();
             Map<NodeVersionKey, Map<NodePropertyKey, NodePropertyValue>> propsRawByNodeVersionKey = selectNodeProperties(nodeId);
             // Check the node Txn ID for mismatch
             Map<NodePropertyKey, NodePropertyValue> propsRaw = propsRawByNodeVersionKey.get(nodeVersionKey);
@@ -2180,7 +2192,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             // Convert to public properties
             Map<QName, Serializable> props = nodePropertyHelper.convertToPublicProperties(propsRaw);
             // Done
-            return new Pair<Long, Map<QName, Serializable>>(nodeId, Collections.unmodifiableMap(props));
+            return new Pair<NodeVersionKey, Map<QName, Serializable>>(nodeVersionKey, Collections.unmodifiableMap(props));
         }
     }
     
@@ -3666,7 +3678,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             Long nodeId = node.getId();
             NodeVersionKey nodeVersionKey = node.getNodeVersionKey();
             nodesCache.setValue(nodeId, node);
-            if (propertiesCache.getValue(nodeId) == null)
+            if (propertiesCache.getValue(nodeVersionKey) == null)
             {
                 propertiesNodeIds.add(nodeId);
             }

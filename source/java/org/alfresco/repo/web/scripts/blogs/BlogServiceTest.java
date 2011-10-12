@@ -577,19 +577,15 @@ public class BlogServiceTest extends BaseWebScriptTest
 
         
         // Ensure that paging behaves properly
-        // TODO: Fix the webscripts so that this works - ALF-10429
-if(1==0)
-{
         response = sendRequest(new GetRequest(url + "?pageSize=2&startIndex=0"), 200);
         result = new JSONObject(response.getContentAsString());
-System.err.println(result.toString());        
         assertEquals(3, result.getInt("total"));
         assertEquals(0, result.getInt("startIndex"));
         assertEquals(2, result.getInt("itemCount"));
         assertEquals(2, result.getJSONArray("items").length());
 
-        assertEquals(TITLE_1, result.getJSONArray("items").getJSONObject(0).get("title"));
-        assertEquals(TITLE_2, result.getJSONArray("items").getJSONObject(1).get("title"));
+        assertEquals(TITLE_3, result.getJSONArray("items").getJSONObject(0).get("title"));
+        assertEquals(TITLE_1, result.getJSONArray("items").getJSONObject(1).get("title"));
         
         
         response = sendRequest(new GetRequest(url + "?pageSize=2&startIndex=1"), 200);
@@ -599,8 +595,8 @@ System.err.println(result.toString());
         assertEquals(2, result.getInt("itemCount"));
         assertEquals(2, result.getJSONArray("items").length());
 
-        assertEquals(TITLE_2, result.getJSONArray("items").getJSONObject(0).get("title"));
-        assertEquals(TITLE_3, result.getJSONArray("items").getJSONObject(1).get("title"));
+        assertEquals(TITLE_1, result.getJSONArray("items").getJSONObject(0).get("title"));
+        assertEquals(TITLE_2, result.getJSONArray("items").getJSONObject(1).get("title"));
         
         
         response = sendRequest(new GetRequest(url + "?pageSize=2&startIndex=2"), 200);
@@ -610,8 +606,8 @@ System.err.println(result.toString());
         assertEquals(1, result.getInt("itemCount"));
         assertEquals(1, result.getJSONArray("items").length());
 
-        assertEquals(TITLE_3, result.getJSONArray("items").getJSONObject(0).get("title"));
-}
+        assertEquals(TITLE_2, result.getJSONArray("items").getJSONObject(0).get("title"));
+
         
         // Switch user, check that permissions are correct
         // (Drafts won't be seen)

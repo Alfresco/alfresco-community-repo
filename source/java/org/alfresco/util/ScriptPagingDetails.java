@@ -2,6 +2,9 @@ package org.alfresco.util;
 
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * A simple paging details wrapper, to hold things like the 
@@ -39,6 +42,90 @@ public class ScriptPagingDetails extends PagingRequest
     public ScriptPagingDetails(int maxItems, int skipCount, String queryExecutionId)
     {
         super(skipCount, maxItems, queryExecutionId);
+    }
+    
+    public ScriptPagingDetails(PagingRequest paging)
+    {
+       super(paging.getSkipCount(), paging.getMaxItems(), paging.getQueryExecutionId());
+       setRequestTotalCountMax(paging.getRequestTotalCountMax());
+    }
+    
+    /**
+     * Creates a new {@link PagingRequest} object (in the form of
+     *  {@link ScriptPagingDetails}), based on the standard URL
+     *  parameters for webscript paging.
+     *  
+     * @param req The request object to extract parameters from
+     * @param maxResultCount The maximum results count if none is specified
+     */
+    public ScriptPagingDetails(WebScriptRequest req, int maxResultCount) throws WebScriptException
+    {
+       this(buildPagingRequest(req, maxResultCount));
+    }
+    /**
+     * Creates a new {@link PagingRequest} object, based on the standard URL
+     *  parameters for webscript paging.
+     *  
+     * @param req The request object to extract parameters from
+     * @param maxResultCount The maximum results count if none is specified
+     */
+    public static PagingRequest buildPagingRequest(WebScriptRequest req, int maxResultCount) throws WebScriptException
+    {
+       int pageSize = maxResultCount;
+       int startIndex = 0;
+       
+       String queryId = req.getParameter("queryId");
+
+       String pageSizeS = req.getParameter("pageSize");
+       if (pageSizeS != null)
+       {
+          try
+          {
+             pageSize = Integer.parseInt(pageSizeS);
+          }
+          catch (NumberFormatException e)
+          {
+             throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Paging size parameters invalid");
+          }
+       }
+       
+       String startIndexS = req.getParameter("startIndex");
+       if (startIndexS != null)
+       {
+          try
+          {
+             startIndex = Integer.parseInt(startIndexS);
+          }
+          catch (NumberFormatException e)
+          {
+             throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Paging size parameters invalid");
+          }
+       }
+       else
+       {
+          // No Start Index given, did they supply a Page Number?
+          String pageNumberS = req.getParameter("page");
+          if(pageNumberS != null)
+          {
+             try
+             {
+                int pageNumber = Integer.parseInt(pageNumberS);
+                startIndex = (pageNumber-1) * pageSize;
+             }
+             catch (NumberFormatException e)
+             {
+                throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Paging size parameters invalid");
+             }
+          }
+       }
+       
+       PagingRequest paging = new PagingRequest( startIndex, pageSize, queryId );
+       
+       // The default total count is the higher of page 10, or 2 pages further
+       paging.setRequestTotalCountMax( Math.max(10*pageSize,startIndex+2*pageSize) );
+       
+       // All done
+       return paging;
     }
     
     public ItemsSizeConfidence getConfidence()

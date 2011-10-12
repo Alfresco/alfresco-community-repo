@@ -38,6 +38,7 @@ import org.alfresco.repo.blog.cannedqueries.GetBlogPostsCannedQueryFactory;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.search.impl.lucene.LuceneUtils;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.site.SiteServiceImpl;
 import org.alfresco.service.cmr.blog.BlogPostInfo;
 import org.alfresco.service.cmr.blog.BlogService;
@@ -61,6 +62,8 @@ import org.alfresco.util.ISO9075;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.registry.NamedObjectRegistry;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * @author Neil Mc Erlean (based on existing webscript controllers in the REST API)
@@ -76,6 +79,11 @@ public class BlogServiceImpl implements BlogService
     private static final int MAX_QUERY_ENTRY_COUNT = 10000;
     
     public static final String BLOG_COMPONENT = "blog";
+    
+    /**
+     * The logger
+     */
+    private static Log logger = LogFactory.getLog(BlogServiceImpl.class);
     
     // Injected services
     private NamedObjectRegistry<CannedQueryFactory<BlogPostInfo>> cannedQueryRegistry;
@@ -175,6 +183,25 @@ public class BlogServiceImpl implements BlogService
              siteService, transactionService, taggingService);
     }
     
+    /**
+     * Builds up a {@link BlogPostInfo} object for the given node
+     */
+    private BlogPostInfo buildBlogPost(NodeRef nodeRef, NodeRef parentNodeRef, String postName)
+    {
+       BlogPostInfoImpl post = new BlogPostInfoImpl(nodeRef, postName);
+       
+       // Grab all the properties, we need the bulk of them anyway
+       Map<QName,Serializable> props = nodeService.getProperties(nodeRef);
+
+       // TODO Populate them
+       
+       // Finally set tags
+       // TODO
+       
+       // All done
+       return post;
+    }
+    
     @Override
     public boolean isDraftBlogPost(NodeRef blogPostNode)
     {
@@ -251,6 +278,65 @@ public class BlogServiceImpl implements BlogService
 
     
     @Override
+    public BlogPostInfo getForNodeRef(NodeRef nodeRef) 
+    {
+       QName type = nodeService.getType(nodeRef);
+
+       // Note - there isn't a special blog type!
+       //  The nodes are just created as cm:Content 
+       if (type.equals(ContentModel.TYPE_CONTENT))
+       {
+          ChildAssociationRef ref = nodeService.getPrimaryParent(nodeRef);
+          String postName = ref.getQName().getLocalName();
+          NodeRef container = ref.getParentRef();
+          return buildBlogPost(nodeRef, container, postName);
+       }
+       else
+       {
+          logger.debug("Invalid type " + type + " found");
+          return null;
+       }
+    }
+
+    @Override
+    public BlogPostInfo getBlogPost(String siteShortName, String postName) 
+    {
+       NodeRef container = getSiteBlogContainer(siteShortName, false);
+       if (container == null)
+       {
+          // No blog posts yet
+          return null;
+       }
+       
+       // We can now fetch by parent nodeRef
+       return getBlogPost(container, postName);
+    }
+
+    @Override
+    public BlogPostInfo getBlogPost(NodeRef parentNodeRef, String postName) 
+    {
+       NodeRef postNode;
+       try
+       {
+          postNode = nodeService.getChildByName(parentNodeRef, ContentModel.ASSOC_CONTAINS, postName);
+       }
+       catch(AccessDeniedException e)
+       {
+          // You can't see that blog post
+          // For compatibility with the old webscripts, rather than
+          //  reporting permission denied, pretend it isn't there
+          postNode = null;
+       }
+
+       // If we found a node, wrap it as a BlogPostInfo
+       if (postNode != null)
+       {
+          return buildBlogPost(postNode, parentNodeRef, postName);
+       }
+       return null;
+    }
+
+   @Override
     public PagingResults<BlogPostInfo> getDrafts(String siteShortName,
           String username, PagingRequest pagingReq) 
     {

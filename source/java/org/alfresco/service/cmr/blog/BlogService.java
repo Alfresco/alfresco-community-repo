@@ -24,6 +24,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.blog.BlogIntegrationService;
+import org.alfresco.service.NotAuditable;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteService;
@@ -80,6 +81,28 @@ public interface BlogService
      * Deletes an existing {@link BlogPostInfo} from the repository.
      */
     void deleteBlogPost(BlogPostInfo post);
+    
+    /**
+     * For a given NodeRef corresponding to a {@link BlogPostInfo}, 
+     *  returns the object wrapping the Node.
+     *  
+     * For anything else, the response is null.
+     */
+    @NotAuditable
+    BlogPostInfo getForNodeRef(NodeRef nodeRef);
+    
+    /**
+     * Retrieves an existing {@link BlogPostInfo} from the repository,
+     *  which is within a site
+     */
+    BlogPostInfo getBlogPost(String siteShortName, String postName);
+    
+    /**
+     * Retrieves an existing {@link BlogPostInfo} from the repository,
+     *  which is attached to the specified Node.
+     * The parent Node should normally be a Site Container
+     */
+    BlogPostInfo getBlogPost(NodeRef parentNodeRef, String postName);
     
     /**
      * Gets the draft blog posts created by the specified user.

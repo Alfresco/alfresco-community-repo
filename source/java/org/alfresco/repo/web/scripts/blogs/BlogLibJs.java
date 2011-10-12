@@ -24,8 +24,7 @@ import java.util.Map;
 
 import org.alfresco.model.BlogIntegrationModel;
 import org.alfresco.service.namespace.QName;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.json.simple.JSONObject;
 
 /**
  * This class is a port of a previous JavaScript library.
@@ -57,15 +56,9 @@ public class BlogLibJs
     private static void putJSONEntryInMap(JSONObject json,
             Map<QName, Serializable> arr, String jsonKey, QName mapKey)
     {
-        try
-        {
-            if (json.has(jsonKey))
-            {
-                arr.put(mapKey, json.getString(jsonKey));
-            }
-        } catch (JSONException ignored)
-        {
-            // Intentionally empty
-        }
+         if (json.containsKey(jsonKey))
+         {
+             arr.put(mapKey, (Serializable)json.get(jsonKey));
+         }
     }
 }

@@ -25,6 +25,7 @@ import org.alfresco.query.PagingResults;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.blog.BlogPostInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.site.SiteInfo;
 
 /**
  * This class is the controller for the blog-posts-mypublished.get web script.
@@ -35,9 +36,17 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public class BlogPostsMyPublishedGet extends AbstractGetBlogWebScript
 {
     @Override
-    protected PagingResults<BlogPostInfo> getBlogResultsImpl(NodeRef node, Date fromDate, Date toDate, PagingRequest pagingReq)
+    protected PagingResults<BlogPostInfo> getBlogResultsImpl(
+          SiteInfo site, NodeRef node, Date fromDate, Date toDate, PagingRequest pagingReq)
     {
         String fullyAuthenticatedUser = AuthenticationUtil.getFullyAuthenticatedUser();
-        return blogService.getPublished(node, fromDate, toDate, fullyAuthenticatedUser, pagingReq);
+        if(site != null)
+        {
+           return blogService.getPublished(site.getShortName(), fromDate, toDate, fullyAuthenticatedUser, pagingReq);
+        }
+        else
+        {
+           return blogService.getPublished(node, fromDate, toDate, fullyAuthenticatedUser, pagingReq);
+        }
     }
 }

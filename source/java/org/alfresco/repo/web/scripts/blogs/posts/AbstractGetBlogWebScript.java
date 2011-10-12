@@ -29,13 +29,15 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.web.scripts.blogs.AbstractBlogWebScript;
 import org.alfresco.repo.web.scripts.blogs.BlogPostLibJs;
-import org.alfresco.repo.web.scripts.blogs.RequestUtilsLibJs;
 import org.alfresco.service.cmr.blog.BlogPostInfo;
 import org.alfresco.service.cmr.blog.BlogService.RangedDateProperty;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.util.Pair;
+import org.alfresco.util.ScriptPagingDetails;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.simple.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -49,12 +51,10 @@ public abstract class AbstractGetBlogWebScript extends AbstractBlogWebScript
     private static final Log log = LogFactory.getLog(AbstractGetBlogWebScript.class);
 
     @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
+    protected Map<String, Object> executeImpl(SiteInfo site, NodeRef nonSiteContainer,
+         BlogPostInfo blog, WebScriptRequest req, JSONObject json, Status status, Cache cache) 
     {
         Map<String, Object> model = new HashMap<String, Object>();
-        
-        // get requested node
-        NodeRef node = RequestUtilsLibJs.getRequestNode(req, services);
         
         // process additional parameters. <index, count>
         PagingRequest pagingReq = parsePagingParams(req);
@@ -85,9 +85,18 @@ public abstract class AbstractGetBlogWebScript extends AbstractBlogWebScript
             }
         }
         
-        // fetch and assign the data
-        PagingResults<BlogPostInfo> blogPostList = getBlogPostList(node, fromDate, toDate,
-                                          tag, pagingReq);
+        // Fetch and assign the data
+        PagingResults<BlogPostInfo> blogPostList = 
+           getBlogPostList(site, nonSiteContainer, fromDate, toDate, tag, pagingReq);
+        
+        // We need the container for various bits
+        NodeRef container = nonSiteContainer;
+        if(container == null)
+        {
+           // Container mustn't exist yet
+           // Fake it with the site for permissions checking reasons
+           container = site.getNodeRef();
+        }
                                           
         if (log.isDebugEnabled())
         {
@@ -96,7 +105,7 @@ public abstract class AbstractGetBlogWebScript extends AbstractBlogWebScript
             log.debug(msg.toString());
         }
         
-        createFtlModel(req, model, node, pagingReq, blogPostList);
+        createFtlModel(req, model, container, pagingReq, blogPostList);
         
         return model;
     }
@@ -135,28 +144,20 @@ public abstract class AbstractGetBlogWebScript extends AbstractBlogWebScript
     
     private PagingRequest parsePagingParams(WebScriptRequest req)
     {
-        Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
-        String startIndexStr = templateVars.get("startIndex");
-        String pageSizeStr = templateVars.get("pageSize");
-        
-        int startIndex = 0;
-        int pageSize = 10;
-        if (startIndexStr != null)
-        {
-            startIndex = Integer.parseInt(startIndexStr);
-        }
-        if (pageSizeStr != null)
-        {
-            pageSize = Integer.parseInt(pageSizeStr);
-        }
-        return new PagingRequest(startIndex, pageSize, null);
+        return ScriptPagingDetails.buildPagingRequest(req, 1000);
     }
 
     private Date parseDateParam(WebScriptRequest req, String paramName)
     {
         Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
         String dateStr = templateVars.get(paramName);
+        if(dateStr == null)
+        {
+           // Try on the parameters instead
+           dateStr = req.getParameter(paramName);
+        }
         
+        // Parse if available
         Date result = null;
         if (dateStr != null)
         {
@@ -169,18 +170,28 @@ public abstract class AbstractGetBlogWebScript extends AbstractBlogWebScript
     /**
      * Fetches all posts of the given blog
      */
-    private PagingResults<BlogPostInfo> getBlogPostList(NodeRef node, Date fromDate, Date toDate, String tag, PagingRequest pagingReq)
+    private PagingResults<BlogPostInfo> getBlogPostList(SiteInfo site, NodeRef nonSiteContainer, 
+          Date fromDate, Date toDate, String tag, PagingRequest pagingReq)
     {
         // Currently we only support CannedQuery-based gets without tags:
         if (tag == null || tag.trim().isEmpty())
         {
-            return getBlogResultsImpl(node, fromDate, toDate, pagingReq);
+            return getBlogResultsImpl(site, nonSiteContainer, fromDate, toDate, pagingReq);
         }
         else
         {
-            return blogService.findBlogPosts(node, new RangedDateProperty(fromDate, toDate, ContentModel.PROP_CREATED), tag, pagingReq);
+            RangedDateProperty dateRange = new RangedDateProperty(fromDate, toDate, ContentModel.PROP_CREATED);  
+            if(site != null)
+            {
+               return blogService.findBlogPosts(site.getShortName(), dateRange, tag, pagingReq);
+            }
+            else
+            {
+               return blogService.findBlogPosts(nonSiteContainer, dateRange, tag, pagingReq);
+            }
         }
     }
     
-    protected abstract PagingResults<BlogPostInfo> getBlogResultsImpl(NodeRef node, Date fromDate, Date toDate, PagingRequest pagingReq);
+    protected abstract PagingResults<BlogPostInfo> getBlogResultsImpl(
+          SiteInfo site, NodeRef nonSiteContainer, Date fromDate, Date toDate, PagingRequest pagingReq);
 }

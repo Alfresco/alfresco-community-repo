@@ -30,6 +30,7 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.service.cmr.blog.BlogPostInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.site.SiteInfo;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
@@ -41,9 +42,17 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 public class BlogPostsPerMonthGet extends AbstractGetBlogWebScript
 {
     @Override
-    protected PagingResults<BlogPostInfo> getBlogResultsImpl(NodeRef node, Date fromDate, Date toDate, PagingRequest pagingReq)
+    protected PagingResults<BlogPostInfo> getBlogResultsImpl(
+          SiteInfo site, NodeRef node, Date fromDate, Date toDate, PagingRequest pagingReq)
     {
-        return blogService.getPublished(node, fromDate, toDate, null, pagingReq);
+        if(site != null)
+        {
+           return blogService.getPublished(site.getShortName(), fromDate, toDate, null, pagingReq);
+        }
+        else
+        {
+           return blogService.getPublished(node, fromDate, toDate, null, pagingReq);
+        }
     }
 
     @Override

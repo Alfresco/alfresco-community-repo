@@ -50,6 +50,8 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 /**
  * Unit Test to test Blog Web Script API
  * 
+ * TODO Add unit tests for the Blog Integration part
+ * 
  * @author mruflin
  */
 public class BlogServiceTest extends BaseWebScriptTest
@@ -510,7 +512,7 @@ public class BlogServiceTest extends BaseWebScriptTest
         JSONObject metadata = result.getJSONObject("metadata");
         JSONObject perms = metadata.getJSONObject("blogPermissions");
         assertEquals(false, metadata.getBoolean("externalBlogConfig"));
-        assertEquals(true, perms.getBoolean("delete"));
+        assertEquals(false, perms.getBoolean("delete")); // No container yet
         assertEquals(true, perms.getBoolean("edit"));
         assertEquals(true, perms.getBoolean("create"));
         
@@ -530,6 +532,14 @@ public class BlogServiceTest extends BaseWebScriptTest
         assertEquals(2, result.getInt("itemCount"));
         assertEquals(2, result.getJSONArray("items").length());
 
+        // Check the core permissions
+        metadata = result.getJSONObject("metadata");
+        perms = metadata.getJSONObject("blogPermissions");
+        assertEquals(false, metadata.getBoolean("externalBlogConfig"));
+        assertEquals(true, perms.getBoolean("delete")); // On the container itself
+        assertEquals(true, perms.getBoolean("edit"));
+        assertEquals(true, perms.getBoolean("create"));
+        
         // Check each one in detail, they'll come back Published
         //  then draft (newest first within that)
         blog = result.getJSONArray("items").getJSONObject(0);

@@ -21,15 +21,14 @@ package org.alfresco.repo.web.scripts.blogs.post;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.web.scripts.blogs.AbstractBlogWebScript;
-import org.alfresco.repo.web.scripts.blogs.RequestUtilsLibJs;
-import org.alfresco.service.cmr.activities.ActivityService;
+import org.alfresco.service.cmr.blog.BlogPostInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.json.JSONException;
-import org.json.JSONStringer;
+import org.alfresco.service.cmr.site.SiteInfo;
+import org.json.simple.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
@@ -40,59 +39,30 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class BlogPostDelete extends AbstractBlogWebScript
 {
-    private ActivityService activityService;
-    
-    public void setActivityService(ActivityService activityService)
-    {
-        this.activityService = activityService;
-    }
-    
-    @SuppressWarnings("deprecation")
     @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
+    protected Map<String, Object> executeImpl(SiteInfo site, NodeRef nodeRef,
+         BlogPostInfo blog, WebScriptRequest req, JSONObject json, Status status, Cache cache) 
     {
-        Map<String, Object> model = new HashMap<String, Object>();
+        if (blog == null)
+        {
+           throw new WebScriptException(Status.STATUS_NOT_FOUND, "Blog Post Not Found");
+        }
         
-        // get requested node
-        NodeRef node = RequestUtilsLibJs.getRequestNode(req, services);
+        // TODO Get this from the BlogPostInfo Object
+        final boolean isDraftBlogPost = blogService.isDraftBlogPost(blog.getNodeRef());
         
-        // Map<String, Object> item = BlogPostLibJs.getBlogPostData(node, services);
+        // Have it deleted
+        blogService.deleteBlogPost(blog);
         
-        final String title = (String) nodeService.getProperty(node, ContentModel.PROP_TITLE);
-        final String site = req.getServiceMatch().getTemplateVars().get("site");
-        final String page = req.getParameter("page");
-        final boolean isDraftBlogPost = blogService.isDraftBlogPost(node);
-        
-        nodeService.deleteNode(node);
-        
-        model.put("message", "Node " + node + " deleted");
-        
+        // If we're in a site, and it isn't a draft, add an activity
         if (site != null && !isDraftBlogPost)
         {
-            sendActivityReport(title, site, page);
+            addActivityEntry("deleted", blog, site, req, json);
         }
-        
-        return model;
-    }
 
-    private void sendActivityReport(final String title, final String site,
-            final String page)
-    {
-        String data = null;
-        try
-        {
-            data = new JSONStringer()
-                .object()
-                    .key(TITLE).value(title)
-                    .key(PAGE).value(page)
-                .endObject().toString();
-        } catch (JSONException e)
-        {
-            // Intentionally empty
-        }
-        if (data != null)
-        {
-            activityService.postActivity("org.alfresco.blog.post-deleted", site, "blog", data);
-        }
+        // Report it as deleted
+        Map<String, Object> model = new HashMap<String, Object>();
+        model.put("message", "Blog " + blog.getNodeRef() + " deleted");
+        return model;
     }
 }

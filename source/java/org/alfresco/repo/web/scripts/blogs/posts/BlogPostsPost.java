@@ -18,30 +18,23 @@
  */
 package org.alfresco.repo.web.scripts.blogs.posts;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.web.scripts.blogs.AbstractBlogWebScript;
 import org.alfresco.repo.web.scripts.blogs.BlogPostLibJs;
-import org.alfresco.repo.web.scripts.blogs.RequestUtilsLibJs;
-import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.blog.BlogPostInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONStringer;
-import org.json.JSONTokener;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
@@ -55,13 +48,7 @@ public class BlogPostsPost extends AbstractBlogWebScript
     private static final Log log = LogFactory.getLog(BlogPostsPost.class);
 
     // Injected services
-    private ActivityService activityService;
     private TaggingService taggingService;
-    
-    public void setActivityService(ActivityService activityService)
-    {
-        this.activityService = activityService;
-    }
     
     public void setTaggingService(TaggingService taggingService)
     {
@@ -69,20 +56,25 @@ public class BlogPostsPost extends AbstractBlogWebScript
     }
     
     @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
+    protected Map<String, Object> executeImpl(SiteInfo site, NodeRef nodeRef,
+         BlogPostInfo blog, WebScriptRequest req, JSONObject json, Status status, Cache cache) 
     {
         Map<String, Object> model = new HashMap<String, Object>();
         
-        JsonParams jsonPostParams = parsePostParams(req);
+        // If they're doing Path Based rather than Site Based, ensure
+        //  that the Container is a Tag Scope
+        if(site == null && nodeRef != null)
+        {
+           ensureTagScope(nodeRef);
+        }
+
+        // Have the Blog Post created
+        JsonParams jsonPostParams = parsePostParams(json);
+        BlogPostInfo post = createBlogPost(jsonPostParams, site, nodeRef);
         
-        NodeRef node = RequestUtilsLibJs.getRequestNode(req, services);
-        ensureTagScope(node);
-        
-        NodeRef post = createBlogPost(jsonPostParams, node);
-        
-        Map<String, Object> blogPostData = BlogPostLibJs.getBlogPostData(post, services);
+        Map<String, Object> blogPostData = BlogPostLibJs.getBlogPostData(post.getNodeRef(), services);
         model.put(ITEM, blogPostData);
-        model.put(EXTERNAL_BLOG_CONFIG, BlogPostLibJs.hasExternalBlogConfiguration(node, services));
+        model.put(EXTERNAL_BLOG_CONFIG, BlogPostLibJs.hasExternalBlogConfiguration(nodeRef, services));
         
         boolean isDraft = blogPostData.get(ITEM) != null &&
                           ((Boolean)blogPostData.get(ITEM)).booleanValue();
@@ -91,92 +83,62 @@ public class BlogPostsPost extends AbstractBlogWebScript
                 jsonPostParams.getPage() != null &&
                 !isDraft)
         {
-            final NodeRef nodeParam = (NodeRef)blogPostData.get(NODE);
-            String postNodeName = (String)nodeService.getProperty(nodeParam, ContentModel.PROP_NAME);
-            String postNodeTitle = (String)nodeService.getProperty(nodeParam, ContentModel.PROP_TITLE);
-            String data = null;
-            try
-            {
-                data = new JSONStringer()
-                    .object()
-                        .key(TITLE).value(postNodeTitle)
-                        .key(PAGE).value(jsonPostParams.getPage() + "?postId=" + postNodeName)
-                    .endObject().toString();
-            } catch (JSONException e)
-            {
-                // Intentionally empty
-            }
-            if (data != null)
-            {
-                activityService.postActivity("org.alfresco.blog.post-created", jsonPostParams.getSite(), "blog", data);
-            }
+            addActivityEntry("created", post, site, req, json);
         }
         
         return model;
     }
     
-    private JsonParams parsePostParams(WebScriptRequest req)
+    private JsonParams parsePostParams(JSONObject json)
     {
-        try
-        {
-            JSONObject json = new JSONObject(new JSONTokener(req.getContent().getContent()));
-            
-            JsonParams result = new JsonParams();
-            if (json.has(TITLE))
-            {
-                result.setTitle(json.getString(TITLE));
-            }
-            if (json.has(CONTENT))
-            {
-                result.setContent(json.getString(CONTENT));
-            }
-            if (json.has(DRAFT))
-            {
-                result.setIsDraft(json.getString(DRAFT));
-            }
-            // If there are no tags, this is a java.lang.String "".
-            // If there are any tags, it's a JSONArray of strings. One or more.
-            if (json.has(TAGS))
-            {
-                Object tagsObj = json.get(TAGS);
-                List<String> tags = new ArrayList<String>();
-                if (tagsObj instanceof JSONArray)
-                {
-                    JSONArray tagsJsonArray = (JSONArray)tagsObj;
-                    for (int i = 0; i < tagsJsonArray.length(); i++)
-                    {
-                        tags.add(tagsJsonArray.getString(i));
-                    }
-                }
-                else
-                {
-                    tags.add(tagsObj.toString());
-                }
-                result.setTags(tags);
-            }
-            if (json.has(SITE))
-            {
-                result.setSite(json.getString(SITE));
-            }
-            if (json.has(PAGE))
-            {
-                result.setPage(json.getString(PAGE));
-            }
-            if (json.has(CONTAINER))
-            {
-                result.setContainer(json.getString(CONTAINER));
-            }
-            
-            return result;
-        }
-        catch (IOException iox)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not read content from req.", iox);
-        }
-        catch (JSONException je)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not parse JSON from req.", je);
-        }
+       JsonParams result = new JsonParams();
+       if (json.containsKey(TITLE))
+       {
+          result.setTitle((String)json.get(TITLE));
+       }
+       if (json.containsKey(CONTENT))
+       {
+          result.setContent((String)json.get(CONTENT));
+       }
+       if (json.containsKey(DRAFT))
+       {
+          result.setIsDraft((Boolean)json.get(DRAFT));
+       }
+       
+       // If there are no tags, this is a java.lang.String "".
+       // If there are any tags, it's a JSONArray of strings. One or more.
+       if (json.containsKey(TAGS))
+       {
+          Object tagsObj = json.get(TAGS);
+          List<String> tags = new ArrayList<String>();
+          if (tagsObj instanceof JSONArray)
+          {
+             JSONArray tagsJsonArray = (JSONArray)tagsObj;
+             for (int i = 0; i < tagsJsonArray.size(); i++)
+             {
+                tags.add( (String)tagsJsonArray.get(i) );
+             }
+          }
+          else
+          {
+             tags.add(tagsObj.toString());
+          }
+          result.setTags(tags);
+       }
+       if (json.containsKey(SITE))
+       {
+          result.setSite((String)json.get(SITE));
+       }
+       if (json.containsKey(PAGE))
+       {
+          result.setPage((String)json.get(PAGE));
+       }
+       if (json.containsKey(CONTAINER))
+       {
+          result.setContainer((String)json.get(CONTAINER));
+       }
+
+       return result;
     }
     
     /**
@@ -202,11 +164,11 @@ public class BlogPostsPost extends AbstractBlogWebScript
     /**
      * Creates a blog post
      */
-    private NodeRef createBlogPost(JsonParams jsonParams, NodeRef blogNode)
+    private BlogPostInfo createBlogPost(JsonParams jsonParams, SiteInfo site, NodeRef blogNode)
     {
         String titleParam = jsonParams.getTitle() == null ? "" : jsonParams.getTitle();
         String contentParam = jsonParams.getContent() == null ? "" : jsonParams.getContent();
-        boolean isDraftParam = jsonParams.getIsDraft() == null ? false : Boolean.parseBoolean(jsonParams.getIsDraft());
+        boolean isDraftParam = jsonParams.getIsDraft();
         
         if (log.isDebugEnabled())
         {
@@ -225,7 +187,17 @@ public class BlogPostsPost extends AbstractBlogWebScript
             tagsParam.addAll(jsonParams.getTags());
         }
         
-        BlogPostInfo newPostNode = blogService.createBlogPost(blogNode, titleParam, contentParam, isDraftParam);
+        BlogPostInfo newPostNode;
+        if(site != null)
+        {
+           newPostNode = blogService.createBlogPost(
+                 site.getShortName(), titleParam, contentParam, isDraftParam);
+        }
+        else
+        {
+           newPostNode = blogService.createBlogPost(
+                 blogNode, titleParam, contentParam, isDraftParam);
+        }
         
         // Ignore empty string tags
         List<String> nonEmptyTags = new ArrayList<String>();
@@ -241,7 +213,7 @@ public class BlogPostsPost extends AbstractBlogWebScript
             taggingService.setTags(newPostNode.getNodeRef(), nonEmptyTags);
         }
         
-        return newPostNode.getNodeRef();
+        return newPostNode;
     }
     
     /**
@@ -251,7 +223,7 @@ public class BlogPostsPost extends AbstractBlogWebScript
     {
         private String title;
         private String content;
-        private String isDraft; //This is a String, not a boolean
+        private boolean isDraft = false;
         private List<String> tags;
         private String site;
         private String container;
@@ -273,11 +245,11 @@ public class BlogPostsPost extends AbstractBlogWebScript
         {
             this.content = content;
         }
-        public String getIsDraft()
+        public boolean getIsDraft()
         {
             return isDraft;
         }
-        public void setIsDraft(String isDraft)
+        public void setIsDraft(boolean isDraft)
         {
             this.isDraft = isDraft;
         }

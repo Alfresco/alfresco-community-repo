@@ -18,62 +18,59 @@
  */
 package org.alfresco.repo.web.scripts.blogs.blog;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.BlogIntegrationModel;
+import org.alfresco.repo.blog.BlogServiceImpl;
 import org.alfresco.repo.web.scripts.blogs.AbstractBlogWebScript;
 import org.alfresco.repo.web.scripts.blogs.BlogLibJs;
-import org.alfresco.repo.web.scripts.blogs.RequestUtilsLibJs;
+import org.alfresco.service.cmr.blog.BlogPostInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.namespace.QName;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
+import org.json.simple.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
- * This class is the controller for the blog.get web script.
+ * This class is the controller for the blog.put web script.
+ * 
+ * TODO Push most of the logic from this into the BlogService
  * 
  * @author Neil Mc Erlean (based on existing JavaScript webscript controllers)
  * @since 4.0
  */
 public class BlogPut extends AbstractBlogWebScript
 {
-    @SuppressWarnings("deprecation")
     @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
+    protected Map<String, Object> executeImpl(SiteInfo site, NodeRef containerNodeRef,
+         BlogPostInfo blog, WebScriptRequest req, JSONObject json, Status status, Cache cache) 
     {
-        Map<String, Object> model = new HashMap<String, Object>();
+       if (blog != null)
+       {
+          // They appear to have supplied a blog post itself...
+          // Oh well, let's hope for the best!
+       }
+       
+       if (site != null && containerNodeRef == null)
+       {
+          // Force the lazy creation
+          // This is a bit icky, but it'll have to do for now...
+          containerNodeRef = siteService.createContainer(
+                site.getShortName(), BlogServiceImpl.BLOG_COMPONENT, null, null);
+       }
         
-        // get requested node
-        NodeRef node = RequestUtilsLibJs.getRequestNode(req, services);
-        
-        // parse the JSON
-        JSONObject json = null;
-        try
-        {
-            json = new JSONObject(new JSONTokener(req.getContent().getContent()));
-        } 
-        catch (JSONException jsonX)
-        {
-            throw new AlfrescoRuntimeException("Could not parse JSON", jsonX);
-        } 
-        catch (IOException iox)
-        {
-            throw new AlfrescoRuntimeException("Could not parse JSON", iox);
-        }
-        
-        updateBlog(node, json);
-        
-        model.put("item", node);
-        
-        return model;
+       // Do the work
+       updateBlog(containerNodeRef, json);
+
+       // Record it as done
+       Map<String, Object> model = new HashMap<String, Object>();
+       model.put("item", containerNodeRef);
+
+       return model;
     }
     
     /**

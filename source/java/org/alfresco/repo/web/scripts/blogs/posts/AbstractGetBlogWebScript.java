@@ -30,7 +30,7 @@ import org.alfresco.query.PagingResults;
 import org.alfresco.repo.web.scripts.blogs.AbstractBlogWebScript;
 import org.alfresco.repo.web.scripts.blogs.BlogPostLibJs;
 import org.alfresco.repo.web.scripts.blogs.RequestUtilsLibJs;
-import org.alfresco.service.cmr.blog.BlogService.BlogPostInfo;
+import org.alfresco.service.cmr.blog.BlogPostInfo;
 import org.alfresco.service.cmr.blog.BlogService.RangedDateProperty;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.Pair;

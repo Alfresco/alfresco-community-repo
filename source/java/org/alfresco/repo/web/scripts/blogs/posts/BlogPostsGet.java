@@ -22,7 +22,7 @@ import java.util.Date;
 
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
-import org.alfresco.service.cmr.blog.BlogService.BlogPostInfo;
+import org.alfresco.service.cmr.blog.BlogPostInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -39,7 +39,6 @@ public class BlogPostsGet extends AbstractGetBlogWebScript
     {
         // This intentionally uses the deprecated method in the foundation service.
         // In fact the method is there specifically for this class.
-        
         return blogService.getMyDraftsAndAllPublished(node, fromDate, toDate, pagingReq);
     }
 }

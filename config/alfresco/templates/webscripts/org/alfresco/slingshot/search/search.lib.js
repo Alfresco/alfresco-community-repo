@@ -73,30 +73,16 @@ function getPersonDisplayName(userId)
  * same blog post match the search criteria
  */
 var processedCache = {};
-function addToProcessed(category, key)
+function checkProcessedCache(key)
 {
-   var cat = processedCache[category];
-   if (typeof cat !== "object")
+   var found = processedCache.hasOwnProperty(key);
+   if (!found)
    {
-      processedCache[category] = [];
-      cat = processedCache[category];
+      processedCache[key] = true;
    }
-   cat.push(key);
-}
-function checkProcessed(category, key)
-{
-   var cat = processedCache[category];
-   if (typeof cat === "object")
-   {
-      for (var x in cat)
-      {
-         if (cat[x] == key)
-         {
-            return true;
-         }
-      }
-   }
-   return false;
+   else if (found && logger.isLoggingEnabled())
+      logger.log("...already processed item with key: " + key);
+   return found;
 }
 
 /**
@@ -105,12 +91,10 @@ function checkProcessed(category, key)
 function getRepositoryItem(folderPath, node)
 {
    // check whether we already processed this document
-   var cat = "repository", refkey = "" + node.nodeRef.toString();
-   if (checkProcessed(cat, refkey))
+   if (checkProcessedCache("" + node.nodeRef.toString()))
    {
       return null;
    }
-   addToProcessed(cat, refkey);
    
    // check whether this is a valid folder or a file
    var item = t = null;
@@ -160,12 +144,10 @@ function getDocumentItem(siteId, containerId, pathParts, node)
    //          be returned instead
    
    // check whether we already processed this document
-   var cat = siteId + containerId, refkey = "" + node.nodeRef.toString();
-   if (checkProcessed(cat, refkey))
+   if (checkProcessedCache("" + node.nodeRef.toString()))
    {
       return null;
    }
-   addToProcessed(cat, refkey);
    
    // check whether this is a valid folder or a file
    var item = t = null;
@@ -236,12 +218,10 @@ function getBlogPostItem(siteId, containerId, pathParts, node)
    }
    
    // check whether we already added this blog post
-   var cat = siteId + containerId, refkey = "" + child.nodeRef.toString();
-   if (checkProcessed(cat, refkey))
+   if (checkProcessedCache("" + child.nodeRef.toString()))
    {
       return null;
    }
-   addToProcessed(cat, refkey);
    
    // child is our blog post
    var item, t = null;
@@ -280,12 +260,10 @@ function getForumPostItem(siteId, containerId, pathParts, node)
    }
    
    // make sure we haven't already added the post
-   var cat = siteId + containerId, refkey = "" + topicNode.nodeRef.toString();
-   if (checkProcessed(cat, refkey))
+   if (checkProcessedCache("" + topicNode.nodeRef.toString()))
    {
       return null;
    }
-   addToProcessed(cat, refkey);
    
    // find the first post, which contains the post title
    // PENDING: error prone
@@ -323,13 +301,11 @@ function getCalendarItem(siteId, containerId, pathParts, node)
       return null;
    }
    
-   // make sure we haven't already added the post
-   var cat = siteId + containerId, refkey = "" + node.nodeRef.toString();
-   if (checkProcessed(cat, refkey))
+   // make sure we haven't already added the event
+   if (checkProcessedCache("" + node.nodeRef.toString()))
    {
       return null;
    }
-   addToProcessed(cat, refkey);
    
    var item, t = null;
    item =
@@ -363,12 +339,10 @@ function getWikiItem(siteId, containerId, pathParts, node)
    }
    
    // make sure we haven't already added the page
-   var cat = siteId + containerId, refkey = "" + node.nodeRef.toString();
-   if (checkProcessed(cat, refkey))
+   if (checkProcessedCache("" + node.nodeRef.toString()))
    {
       return null;
    }
-   addToProcessed(cat, refkey);
    
    var item, t = null;
    item =
@@ -402,12 +376,10 @@ function getLinkItem(siteId, containerId, pathParts, node)
    }
    
    // make sure we haven't already added this link
-   var cat = siteId + containerId, refkey = "" + node.nodeRef.toString();
-   if (checkProcessed(cat, refkey))
+   if (checkProcessedCache("" + node.nodeRef.toString()))
    {
       return null;
    }
-   addToProcessed(cat, refkey);
    
    var item = t = null;
    if (node.qnamePath.indexOf(COMMENT_QNAMEPATH) == -1 &&
@@ -439,12 +411,10 @@ function getLinkItem(siteId, containerId, pathParts, node)
 function getDataItem(siteId, containerId, pathParts, node)
 {
    // make sure we haven't already added this item
-   var cat = siteId + containerId, refkey = "" + node.nodeRef.toString();
-   if (checkProcessed(cat, refkey))
+   if (checkProcessedCache("" + node.nodeRef.toString()))
    {
       return null;
    }
-   addToProcessed(cat, refkey);
    
    var item = null;
    
@@ -547,14 +517,14 @@ function getItem(siteId, containerId, pathParts, node)
  */
 function splitQNamePath(node)
 {
-   var path = node.qnamePath;
-   var displayPath = node.displayPath.split("/");
-   var parts = null;
+   var path = node.qnamePath,
+       displayPath = node.displayPath.split("/"),
+       parts = null;
    
    if (path.match("^"+SITES_SPACE_QNAME_PATH) == SITES_SPACE_QNAME_PATH)
    {
-      var tmp = path.substring(SITES_SPACE_QNAME_PATH.length);
-      var pos = tmp.indexOf('/');
+      var tmp = path.substring(SITES_SPACE_QNAME_PATH.length),
+          pos = tmp.indexOf('/');
       if (pos >= 1)
       {
          // site id is the cm:name for the site - we cannot use the encoded QName version
@@ -572,7 +542,7 @@ function splitQNamePath(node)
       }
    }
    
-   return (parts != null ? parts : [ null, null, displayPath ]);
+   return (parts !== null ? parts : [ null, null, displayPath ]);
 }
 
 /**
@@ -586,7 +556,11 @@ function processResults(nodes, maxResults)
       added = 0,
       parts,
       item,
+      failed = 0,
       i, j;
+   
+   if (logger.isLoggingEnabled())
+      logger.log("Processing resultset of length: " + nodes.length);
    
    for (i = 0, j = nodes.length; i < j && added < maxResults; i++)
    {
@@ -595,16 +569,20 @@ function processResults(nodes, maxResults)
        * let the per-container helper function decide what to do.
        */
       parts = splitQNamePath(nodes[i]);
-      if (parts !== null)
+      item = getItem(parts[0], parts[1], parts[2], nodes[i]);
+      if (item !== null)
       {
-         item = getItem(parts[0], parts[1], parts[2], nodes[i]);
-         if (item !== null)
-         {
-            results.push(item);
-            added++;
-         }
+         results.push(item);
+         added++;
+      }
+      else
+      {
+         failed++;
       }
    }
+   
+   if (logger.isLoggingEnabled())
+      logger.log("Filtered resultset to length: " + results.length + ". Discarded item count: " + failed);
    
    return (
    {
@@ -807,6 +785,12 @@ function getSearchResults(params)
    
    if (ftsQuery.length !== 0)
    {
+      // ensure a TYPE is specified - if no add one to remove system objects from result sets
+      if (ftsQuery.indexOf("TYPE:\"") === -1 && ftsQuery.indexOf("TYPE:'") === -1)
+      {
+         ftsQuery += ' AND (+TYPE:"cm:content" +TYPE:"cm:folder")';
+      }
+      
       // we processed the search terms, so suffix the PATH query
       var path = null;
       if (!params.repo)
@@ -830,7 +814,7 @@ function getSearchResults(params)
          }
       }
       
-      if (path != null)
+      if (path !== null)
       {
          ftsQuery = 'PATH:"' + path + '/*" AND (' + ftsQuery + ') ';
       }
@@ -875,13 +859,13 @@ function getSearchResults(params)
       }
       
       if (logger.isLoggingEnabled())
-         logger.log("Search query: " + ftsQuery);
+         logger.log("Query:\r\n" + ftsQuery + "\r\nSortby: " + (sort != null ? sort : ""));
       
       // perform fts-alfresco language query
       var queryDef = {
          query: ftsQuery,
          language: "fts-alfresco",
-         page: {maxItems: params.maxResults},
+         page: {maxItems: params.maxResults * 2},    // allow for space for filtering out results
          templates: getQueryTemplate(),
          defaultField: "keywords",
          onerror: "no-results",

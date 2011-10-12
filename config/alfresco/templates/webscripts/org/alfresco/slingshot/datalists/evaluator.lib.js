@@ -130,7 +130,6 @@ var Evaluator =
          {
             return false;
          }
-         objData.type = "subtype";
          objData.displayValue = obj.properties["cm:name"];
          objData.metadata = obj.isContainer ? "container" : "document";
       }

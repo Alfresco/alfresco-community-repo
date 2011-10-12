@@ -42,7 +42,15 @@ function main()
             nodeRef = String(nodes[0].nodeRef);
          }
       }
-      
+
+      // default to max of 100 results
+      var maxResults = 100;
+      if (argsMaxResults != null)
+      {
+         // force the argsMaxResults var to be treated as a number
+         maxResults = parseInt(argsMaxResults, 10) || maxResults;
+      }
+
       // if the last path element is 'doclib' or 'siblings' find parent node
       if (pathElements.length > 0)
       {
@@ -96,7 +104,7 @@ function main()
          }
 
          // retrieve the children of this node
-         var childNodes = parent.childFileFolders(true, true, ignoreTypes, -1, -1, 0, "cm:name", true, null).getPage();
+         var childNodes = parent.childFileFolders(true, true, ignoreTypes, -1, maxResults, 0, "cm:name", true, null).getPage();
 
          // Ensure folders and folderlinks appear at the top of the list
          var containerResults = new Array(),
@@ -176,14 +184,6 @@ function main()
       }
       else if (url.templateArgs.type == "authority")
       {
-         // default to max of 100 results
-         var maxResults = 100;
-         if (argsMaxResults != null)
-         {
-            // force the argsMaxResults var to be treated as a number
-            maxResults = argsMaxResults + 0;
-         }
-         
          if (argsSelectableType == "cm:person")
          {
             findUsers(argsSearchTerm, maxResults, results);

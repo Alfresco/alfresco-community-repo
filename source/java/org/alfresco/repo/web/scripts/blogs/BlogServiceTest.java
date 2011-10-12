@@ -40,6 +40,7 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONStringer;
+import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
@@ -74,8 +75,8 @@ public class BlogServiceTest extends BaseWebScriptTest
                                                           "/" + COMPONENT_BLOG + "/posts/mypublished";
 
 
-    private List<String> posts = new ArrayList<String>(5);
-    private List<String> drafts = new ArrayList<String>(5);
+    private List<String> posts;
+    private List<String> drafts;
 
     
     // General methods
@@ -105,6 +106,10 @@ public class BlogServiceTest extends BaseWebScriptTest
         createUser(USER_ONE, SiteModel.SITE_COLLABORATOR);
         createUser(USER_TWO, SiteModel.SITE_COLLABORATOR);
 
+        // Blank our lists used to track things the test creates
+        posts = new ArrayList<String>(5);
+        drafts = new ArrayList<String>(5);
+        
         // Do tests as inviter user
         this.authenticationComponent.setCurrentUser(USER_ONE);
     }
@@ -114,18 +119,24 @@ public class BlogServiceTest extends BaseWebScriptTest
     {
         super.tearDown();
         
-        // admin user required to delete user
+        // admin user required to delete things
         this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
-        
-        // TODO don't delete them as it seems they don't get cleaned up correctly
-        // delete the inviter user
-      //  personService.deletePerson(USER_ONE);
-      //  this.authenticationService.deleteAuthentication(USER_ONE);
-      //  personService.deletePerson(USER_TWO);
-      //  this.authenticationService.deleteAuthentication(USER_TWO);
         
         // delete invite site
         siteService.deleteSite(SITE_SHORT_NAME_BLOG);
+        
+        // delete the users
+        personService.deletePerson(USER_ONE);
+        if (this.authenticationService.authenticationExists(USER_ONE))
+        {
+           this.authenticationService.deleteAuthentication(USER_ONE);
+        }
+        
+        personService.deletePerson(USER_TWO);
+        if (this.authenticationService.authenticationExists(USER_TWO))
+        {
+           this.authenticationService.deleteAuthentication(USER_TWO);
+        }
     }
     
     private void createUser(String userName, String role)
@@ -484,9 +495,138 @@ public class BlogServiceTest extends BaseWebScriptTest
         String url = URL_BLOG_POSTS;
         Response response = sendRequest(new GetRequest(url), 200);
         JSONObject result = new JSONObject(response.getContentAsString());
+        JSONObject blog;
         
-        // we should have posts.size + drafts.size together
-        assertEquals(this.posts.size() + this.drafts.size(), result.getInt("total"));
+        // We shouldn't have any posts at this point
+        assertEquals(0, this.posts.size());
+        assertEquals(0, this.drafts.size());
+        
+        assertEquals(0, result.getInt("total"));
+        assertEquals(0, result.getInt("startIndex"));
+        assertEquals(0, result.getInt("itemCount"));
+        assertEquals(0, result.getJSONArray("items").length());
+        
+        // Check that the permissions are correct
+        JSONObject metadata = result.getJSONObject("metadata");
+        JSONObject perms = metadata.getJSONObject("blogPermissions");
+        assertEquals(false, metadata.getBoolean("externalBlogConfig"));
+        assertEquals(true, perms.getBoolean("delete"));
+        assertEquals(true, perms.getBoolean("edit"));
+        assertEquals(true, perms.getBoolean("create"));
+        
+
+        // Create a draft and a full post
+        String TITLE_1 = "Published";
+        String TITLE_2 = "Draft";
+        String TITLE_3 = "Another Published";
+        createPost(TITLE_1, "Stuff", null, false, Status.STATUS_OK);
+        createPost(TITLE_2, "Draft Stuff", null, true, Status.STATUS_OK);
+        
+        // Check now
+        response = sendRequest(new GetRequest(url), 200);
+        result = new JSONObject(response.getContentAsString());
+        assertEquals(2, result.getInt("total"));
+        assertEquals(0, result.getInt("startIndex"));
+        assertEquals(2, result.getInt("itemCount"));
+        assertEquals(2, result.getJSONArray("items").length());
+
+        // Check each one in detail, they'll come back Published
+        //  then draft (newest first within that)
+        blog = result.getJSONArray("items").getJSONObject(0);
+        assertEquals(TITLE_1, blog.get("title"));
+        assertEquals(false, blog.getBoolean("isDraft"));
+        perms = blog.getJSONObject("permissions");
+        assertEquals(true, perms.getBoolean("delete"));
+        assertEquals(true, perms.getBoolean("edit"));
+        
+        blog = result.getJSONArray("items").getJSONObject(1);
+        assertEquals(TITLE_2, blog.get("title"));
+        assertEquals(true, blog.getBoolean("isDraft"));
+        perms = blog.getJSONObject("permissions");
+        assertEquals(true, perms.getBoolean("delete"));
+        assertEquals(true, perms.getBoolean("edit"));
+        
+        
+        // Add a third post
+        createPost(TITLE_3, "Still Stuff", null, false, Status.STATUS_OK);
+        
+        response = sendRequest(new GetRequest(url), 200);
+        result = new JSONObject(response.getContentAsString());
+        assertEquals(3, result.getInt("total"));
+        assertEquals(0, result.getInt("startIndex"));
+        assertEquals(3, result.getInt("itemCount"));
+        assertEquals(3, result.getJSONArray("items").length());
+
+        // Published then draft, newest first
+        blog = result.getJSONArray("items").getJSONObject(0);
+        assertEquals(TITLE_3, blog.get("title"));
+        blog = result.getJSONArray("items").getJSONObject(1);
+        assertEquals(TITLE_1, blog.get("title"));
+        blog = result.getJSONArray("items").getJSONObject(2);
+        assertEquals(TITLE_2, blog.get("title"));
+
+        
+        // Ensure that paging behaves properly
+        // TODO: Fix the webscripts so that this works - ALF-10429
+if(1==0)
+{
+        response = sendRequest(new GetRequest(url + "?pageSize=2&startIndex=0"), 200);
+        result = new JSONObject(response.getContentAsString());
+System.err.println(result.toString());        
+        assertEquals(3, result.getInt("total"));
+        assertEquals(0, result.getInt("startIndex"));
+        assertEquals(2, result.getInt("itemCount"));
+        assertEquals(2, result.getJSONArray("items").length());
+
+        assertEquals(TITLE_1, result.getJSONArray("items").getJSONObject(0).get("title"));
+        assertEquals(TITLE_2, result.getJSONArray("items").getJSONObject(1).get("title"));
+        
+        
+        response = sendRequest(new GetRequest(url + "?pageSize=2&startIndex=1"), 200);
+        result = new JSONObject(response.getContentAsString());
+        assertEquals(3, result.getInt("total"));
+        assertEquals(1, result.getInt("startIndex"));
+        assertEquals(2, result.getInt("itemCount"));
+        assertEquals(2, result.getJSONArray("items").length());
+
+        assertEquals(TITLE_2, result.getJSONArray("items").getJSONObject(0).get("title"));
+        assertEquals(TITLE_3, result.getJSONArray("items").getJSONObject(1).get("title"));
+        
+        
+        response = sendRequest(new GetRequest(url + "?pageSize=2&startIndex=2"), 200);
+        result = new JSONObject(response.getContentAsString());
+        assertEquals(3, result.getInt("total"));
+        assertEquals(2, result.getInt("startIndex"));
+        assertEquals(1, result.getInt("itemCount"));
+        assertEquals(1, result.getJSONArray("items").length());
+
+        assertEquals(TITLE_3, result.getJSONArray("items").getJSONObject(0).get("title"));
+}
+        
+        // Switch user, check that permissions are correct
+        // (Drafts won't be seen)
+        this.authenticationComponent.setCurrentUser(USER_TWO);
+        
+        response = sendRequest(new GetRequest(url), 200);
+        result = new JSONObject(response.getContentAsString());
+        assertEquals(2, result.getInt("total"));
+        assertEquals(0, result.getInt("startIndex"));
+        assertEquals(2, result.getInt("itemCount"));
+        
+        assertEquals(2, result.getJSONArray("items").length());
+        blog = result.getJSONArray("items").getJSONObject(0);
+        assertEquals(TITLE_3, blog.get("title"));
+        assertEquals(false, blog.getBoolean("isDraft"));
+        perms = blog.getJSONObject("permissions");
+        assertEquals(false, perms.getBoolean("delete"));
+        assertEquals(true, perms.getBoolean("edit"));
+        
+        blog = result.getJSONArray("items").getJSONObject(1);
+        assertEquals(TITLE_1, blog.get("title"));
+        assertEquals(false, blog.getBoolean("isDraft"));
+        perms = blog.getJSONObject("permissions");
+        assertEquals(false, perms.getBoolean("delete"));
+        assertEquals(true, perms.getBoolean("edit"));
     }
     
     public void testGetNew() throws Exception

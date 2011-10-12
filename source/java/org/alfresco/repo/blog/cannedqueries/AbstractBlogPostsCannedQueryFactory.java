@@ -35,7 +35,7 @@ import org.alfresco.util.Pair;
  * @author Neil Mc Erlean, janv
  * @since 4.0
  */
-public abstract class AbstractBlogPostsCannedQueryFactory extends AbstractQNameAwareCannedQueryFactory<BlogPostInfo>
+public abstract class AbstractBlogPostsCannedQueryFactory extends AbstractQNameAwareCannedQueryFactory<BlogEntity>
 {
     protected CannedQuerySortDetails createCQSortDetails(QName sortProp, SortOrder sortOrder)
     {

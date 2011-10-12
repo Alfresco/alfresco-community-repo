@@ -46,14 +46,14 @@ import org.alfresco.util.ParameterCheck;
 public class GetBlogPostsCannedQueryFactory extends AbstractBlogPostsCannedQueryFactory
 {
     @Override
-    public CannedQuery<BlogPostInfo> getCannedQuery(CannedQueryParameters parameters)
+    public CannedQuery<BlogEntity> getCannedQuery(CannedQueryParameters parameters)
     {
         final GetBlogPostsCannedQuery cq = new GetBlogPostsCannedQuery(cannedQueryDAO, methodSecurity, parameters);
         
-        return (CannedQuery<BlogPostInfo>) cq;
+        return (CannedQuery<BlogEntity>) cq;
     }
     
-    public CannedQuery<BlogPostInfo> getGetDraftsCannedQuery(NodeRef blogContainerNode, String username, PagingRequest pagingReq)
+    public CannedQuery<BlogEntity> getGetDraftsCannedQuery(NodeRef blogContainerNode, String username, PagingRequest pagingReq)
     {
         ParameterCheck.mandatory("blogContainerNode", blogContainerNode);
         ParameterCheck.mandatory("pagingReq", pagingReq);
@@ -81,7 +81,7 @@ public class GetBlogPostsCannedQueryFactory extends AbstractBlogPostsCannedQuery
         return getCannedQuery(params);
     }
     
-    public CannedQuery<BlogPostInfo> getGetPublishedExternallyCannedQuery(NodeRef blogContainerNode, PagingRequest pagingReq)
+    public CannedQuery<BlogEntity> getGetPublishedExternallyCannedQuery(NodeRef blogContainerNode, PagingRequest pagingReq)
     {
         ParameterCheck.mandatory("blogContainerNode", blogContainerNode);
         ParameterCheck.mandatory("pagingReq", pagingReq);
@@ -118,7 +118,7 @@ public class GetBlogPostsCannedQueryFactory extends AbstractBlogPostsCannedQuery
         return getCannedQuery(params);
     }
     
-    public CannedQuery<BlogPostInfo> getGetPublishedCannedQuery(NodeRef blogContainerNode, Date fromDate, Date toDate, String byUser, PagingRequest pagingReq)
+    public CannedQuery<BlogEntity> getGetPublishedCannedQuery(NodeRef blogContainerNode, Date fromDate, Date toDate, String byUser, PagingRequest pagingReq)
     {
         ParameterCheck.mandatory("blogContainerNode", blogContainerNode);
         ParameterCheck.mandatory("pagingReq", pagingReq);

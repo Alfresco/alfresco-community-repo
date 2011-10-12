@@ -29,7 +29,6 @@ import org.alfresco.query.CannedQueryPageDetails;
 import org.alfresco.query.CannedQueryParameters;
 import org.alfresco.query.CannedQuerySortDetails;
 import org.alfresco.query.PagingRequest;
-import org.alfresco.service.cmr.blog.BlogPostInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
@@ -44,16 +43,16 @@ import org.alfresco.util.ParameterCheck;
 public class DraftsAndPublishedBlogPostsCannedQueryFactory extends AbstractBlogPostsCannedQueryFactory
 {
     @Override
-    public CannedQuery<BlogPostInfo> getCannedQuery(CannedQueryParameters parameters)
+    public CannedQuery<BlogEntity> getCannedQuery(CannedQueryParameters parameters)
     {
         final DraftsAndPublishedBlogPostsCannedQuery cq = new DraftsAndPublishedBlogPostsCannedQuery(
                 cannedQueryDAO,
                 methodSecurity,
                 parameters);
-        return (CannedQuery<BlogPostInfo>) cq;
+        return (CannedQuery<BlogEntity>) cq;
     }
     
-    public CannedQuery<BlogPostInfo> getCannedQuery(NodeRef blogContainerNode, Date fromDate, Date toDate, String byUser, PagingRequest pagingReq)
+    public CannedQuery<BlogEntity> getCannedQuery(NodeRef blogContainerNode, Date fromDate, Date toDate, String byUser, PagingRequest pagingReq)
     {
         ParameterCheck.mandatory("blogContainerNode", blogContainerNode);
         ParameterCheck.mandatory("pagingReq", pagingReq);

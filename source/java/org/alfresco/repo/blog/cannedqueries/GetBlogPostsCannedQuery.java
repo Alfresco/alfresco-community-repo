@@ -27,13 +27,11 @@ import java.util.List;
 import org.alfresco.query.CannedQuery;
 import org.alfresco.query.CannedQueryParameters;
 import org.alfresco.query.CannedQuerySortDetails.SortOrder;
-import org.alfresco.repo.blog.BlogPostInfoImpl;
 import org.alfresco.repo.blog.cannedqueries.AbstractBlogPostsCannedQueryFactory.BlogEntityComparator;
 import org.alfresco.repo.domain.node.AuditablePropertiesEntity;
 import org.alfresco.repo.domain.query.CannedQueryDAO;
 import org.alfresco.repo.security.permissions.impl.acegi.AbstractCannedQueryPermissions;
 import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean;
-import org.alfresco.service.cmr.blog.BlogPostInfo;
 import org.alfresco.service.cmr.blog.BlogService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
@@ -48,7 +46,7 @@ import org.apache.commons.logging.LogFactory;
  * @author Neil Mc Erlean, janv
  * @since 4.0
  */
-public class GetBlogPostsCannedQuery extends AbstractCannedQueryPermissions<BlogPostInfo>
+public class GetBlogPostsCannedQuery extends AbstractCannedQueryPermissions<BlogEntity>
 {
     private Log logger = LogFactory.getLog(getClass());
     
@@ -59,7 +57,7 @@ public class GetBlogPostsCannedQuery extends AbstractCannedQueryPermissions<Blog
     
     public GetBlogPostsCannedQuery(
             CannedQueryDAO cannedQueryDAO,
-            MethodSecurityBean<BlogPostInfo> methodSecurity,
+            MethodSecurityBean<BlogEntity> methodSecurity,
             CannedQueryParameters params)
     {
         super(params, methodSecurity);
@@ -67,7 +65,7 @@ public class GetBlogPostsCannedQuery extends AbstractCannedQueryPermissions<Blog
     }
     
     @Override
-    protected List<BlogPostInfo> queryAndFilter(CannedQueryParameters parameters)
+    protected List<BlogEntity> queryAndFilter(CannedQueryParameters parameters)
     {
         Long start = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
         
@@ -151,18 +149,12 @@ public class GetBlogPostsCannedQuery extends AbstractCannedQueryPermissions<Blog
             Collections.sort(filtered, comparator);
         }
         
-        List<BlogPostInfo> blogPostInfos = new ArrayList<BlogPostInfo>(filtered.size());
-        for (BlogEntity result : filtered)
-        {
-            blogPostInfos.add(new BlogPostInfoImpl(result.getNodeRef(), result.getName()));
-        }
-        
         if (start != null)
         {
-            logger.debug("Base query: "+blogPostInfos.size()+" in "+(System.currentTimeMillis()-start)+" msecs");
+            logger.debug("Base query: "+filtered.size()+" in "+(System.currentTimeMillis()-start)+" msecs");
         }
         
-        return blogPostInfos;
+        return filtered;
     }
     
     @Override

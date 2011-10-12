@@ -19,7 +19,6 @@
 package org.alfresco.repo.blog;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.security.permissions.PermissionCheckValue;
 import org.alfresco.service.cmr.blog.BlogPostInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -32,11 +31,14 @@ import org.alfresco.service.cmr.repository.NodeRef;
  public class BlogPostInfoImpl implements BlogPostInfo
  {
      private final NodeRef nodeRef;
+     private final NodeRef containerNodeRef;
      private final String systemName;
+     private String title;
      
-     public BlogPostInfoImpl(NodeRef nodeRef, String systemName)
+     public BlogPostInfoImpl(NodeRef nodeRef, NodeRef containerNodeRef, String systemName)
      {
          this.nodeRef = nodeRef;
+         this.containerNodeRef = containerNodeRef;
          this.systemName = systemName;
      }
      
@@ -52,8 +54,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
      @Override
      public NodeRef getContainerNodeRef() 
      {
-        //return containerNodeRef; // TODO
-        return null;
+        return containerNodeRef;
      }
      
      /**
@@ -69,9 +70,17 @@ import org.alfresco.service.cmr.repository.NodeRef;
      /**
       * @return the Title of the blog post.
       */
+     @Override
      public String getTitle()
      {
-        // TODO
-        return null;
+        return title;
+     }
+     /**
+      * Set the Title of the blog post.
+      */
+     @Override
+     public void setTitle(String title)
+     {
+        this.title = title;
      }
  }

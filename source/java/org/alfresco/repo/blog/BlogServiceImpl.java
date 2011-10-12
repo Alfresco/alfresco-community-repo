@@ -31,6 +31,7 @@ import org.alfresco.query.CannedQueryResults;
 import org.alfresco.query.EmptyPagingResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.blog.cannedqueries.BlogEntity;
 import org.alfresco.repo.blog.cannedqueries.DraftsAndPublishedBlogPostsCannedQuery;
 import org.alfresco.repo.blog.cannedqueries.DraftsAndPublishedBlogPostsCannedQueryFactory;
 import org.alfresco.repo.blog.cannedqueries.GetBlogPostsCannedQuery;
@@ -188,12 +189,14 @@ public class BlogServiceImpl implements BlogService
      */
     private BlogPostInfo buildBlogPost(NodeRef nodeRef, NodeRef parentNodeRef, String postName)
     {
-       BlogPostInfoImpl post = new BlogPostInfoImpl(nodeRef, postName);
+       BlogPostInfoImpl post = new BlogPostInfoImpl(nodeRef, parentNodeRef, postName);
        
        // Grab all the properties, we need the bulk of them anyway
        Map<QName,Serializable> props = nodeService.getProperties(nodeRef);
 
-       // TODO Populate them
+       // Populate them
+       post.setTitle((String)props.get(ContentModel.PROP_TITLE));
+       // TODO Populate the rest
        
        // Finally set tags
        // TODO
@@ -252,7 +255,7 @@ public class BlogServiceImpl implements BlogService
             setOrUpdateReleasedAndUpdatedDates(postNode.getChildRef());
         }
         
-        return new BlogPostInfoImpl(postNode.getChildRef(), nodeName);
+        return new BlogPostInfoImpl(postNode.getChildRef(), blogContainerNode, nodeName);
     }
    
     @Override
@@ -263,7 +266,7 @@ public class BlogServiceImpl implements BlogService
        }
        
        // TODO Implement, once BlogPostInfo is finished
-       return null;
+       throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
@@ -362,8 +365,8 @@ public class BlogServiceImpl implements BlogService
         GetBlogPostsCannedQuery cq = (GetBlogPostsCannedQuery)draftPostsCannedQueryFactory.getGetDraftsCannedQuery(blogContainerNode, username, pagingReq);
             
         // execute canned query
-        CannedQueryResults<BlogPostInfo> results = cq.execute();
-        return results;
+        CannedQueryResults<BlogEntity> results = cq.execute();
+        return wrap(results, blogContainerNode);
     }
     
     @Override
@@ -392,8 +395,8 @@ public class BlogServiceImpl implements BlogService
         GetBlogPostsCannedQuery cq = (GetBlogPostsCannedQuery)publishedExternallyPostsCannedQueryFactory.getGetPublishedExternallyCannedQuery(blogContainerNode, pagingReq);
             
         // execute canned query
-        CannedQueryResults<BlogPostInfo> results = cq.execute();
-        return results;
+        CannedQueryResults<BlogEntity> results = cq.execute();
+        return wrap(results, blogContainerNode);
     }
     
     @Override
@@ -422,8 +425,8 @@ public class BlogServiceImpl implements BlogService
         GetBlogPostsCannedQuery cq = (GetBlogPostsCannedQuery)publishedPostsCannedQueryFactory.getGetPublishedCannedQuery(blogContainerNode, fromDate, toDate, byUser, pagingReq);
             
         // execute canned query
-        CannedQueryResults<BlogPostInfo> results = cq.execute();
-        return results;
+        CannedQueryResults<BlogEntity> results = cq.execute();
+        return wrap(results, blogContainerNode);
     }
     
     /**
@@ -441,8 +444,8 @@ public class BlogServiceImpl implements BlogService
         DraftsAndPublishedBlogPostsCannedQuery cq = (DraftsAndPublishedBlogPostsCannedQuery)draftsAndPublishedBlogPostsCannedQueryFactory.getCannedQuery(blogContainerNode, createdFrom, createdTo, currentUser, pagingReq);
             
         // execute canned query
-        CannedQueryResults<BlogPostInfo> results = cq.execute();
-        return results;
+        CannedQueryResults<BlogEntity> results = cq.execute();
+        return wrap(results, blogContainerNode);
     }
     
     private String getUniqueChildName(NodeRef parentNode, String prefix)
@@ -498,7 +501,9 @@ public class BlogServiceImpl implements BlogService
     }
 
     @Override
-    public PagingResults<BlogPostInfo> findBlogPosts(NodeRef blogContainerNode, RangedDateProperty dateRange, String tag, PagingRequest pagingReq)
+    public PagingResults<BlogPostInfo> findBlogPosts(
+          final NodeRef blogContainerNode, final RangedDateProperty dateRange, 
+          final String tag, final PagingRequest pagingReq)
     {
         StringBuilder luceneQuery = new StringBuilder();
         luceneQuery.append("+TYPE:\"").append(ContentModel.TYPE_CONTENT).append("\" ")
@@ -538,7 +543,8 @@ public class BlogServiceImpl implements BlogService
                     List<BlogPostInfo> blogPostInfos = new ArrayList<BlogPostInfo>(nodeRefs.size());
                     for (NodeRef nodeRef : nodeRefs)
                     {
-                        blogPostInfos.add(new BlogPostInfoImpl(nodeRef, (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME)));
+                        String postName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME); 
+                        blogPostInfos.add(new BlogPostInfoImpl(nodeRef, blogContainerNode, postName));
                     }
                     return blogPostInfos;
                 }
@@ -572,6 +578,43 @@ public class BlogServiceImpl implements BlogService
         
         
         return results;
+    }
+    
+    private PagingResults<BlogPostInfo> wrap(final CannedQueryResults<BlogEntity> results, final NodeRef containerNodeRef)
+    {
+       // TODO Pre-load all the nodes via the NodeDAO cache
+       
+       // Wrap
+       return new PagingResults<BlogPostInfo>() {
+          @Override
+          public String getQueryExecutionId() {
+             return results.getQueryExecutionId();
+          }
+
+          @Override
+          public Pair<Integer, Integer> getTotalResultCount() {
+             return results.getTotalResultCount();
+          }
+
+          @Override
+          public boolean hasMoreItems() {
+             return results.hasMoreItems();
+          }
+
+          @Override
+          public List<BlogPostInfo> getPage() {
+             List<BlogEntity> entities = results.getPage();
+             List<BlogPostInfo> posts = new ArrayList<BlogPostInfo>(entities.size());
+             
+             for (BlogEntity entity : entities)
+             {
+                posts.add(new BlogPostInfoImpl(
+                      entity.getNodeRef(), containerNodeRef, entity.getName()
+                ));
+             }
+             return posts;
+          }
+       };
     }
 
     /**

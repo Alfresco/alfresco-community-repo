@@ -52,5 +52,11 @@ import org.alfresco.service.cmr.repository.NodeRef;
       */
      String getTitle();
      
+     /**
+      * Sets the Title of the blog post.
+      */
+     void setTitle(String title);
+     
      // TODO Remaining fields
+     // TODO Tags
  }

@@ -153,11 +153,11 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     private EntityLookupCache<Long, Node, NodeRef> nodesCache;
     /**
      * Cache for the QName values:<br/>
-     * KEY: ID<br/>
+     * KEY: NodeVersionKey<br/>
      * VALUE: Set&lt;QName&gt;<br/>
      * VALUE KEY: None<br/>
      */
-    private EntityLookupCache<Long, Set<QName>, Serializable> aspectsCache;
+    private EntityLookupCache<NodeVersionKey, Set<QName>, Serializable> aspectsCache;
     /**
      * Cache for the Node properties:<br/>
      * KEY: NodeVersionKey<br/>
@@ -184,7 +184,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // Caches
         rootNodesCache = new EntityLookupCache<StoreRef, Node, Serializable>(new RootNodesCacheCallbackDAO());
         nodesCache = new EntityLookupCache<Long, Node, NodeRef>(new NodesCacheCallbackDAO());
-        aspectsCache = new EntityLookupCache<Long, Set<QName>, Serializable>(new AspectsCallbackDAO());
+        aspectsCache = new EntityLookupCache<NodeVersionKey, Set<QName>, Serializable>(new AspectsCallbackDAO());
         propertiesCache = new EntityLookupCache<NodeVersionKey, Map<QName, Serializable>, Serializable>(new PropertiesCallbackDAO());
         parentAssocsCache = new EntityLookupCache<Long, ParentAssocsInfo, ChildByNameKey>(new ParentAssocsCallbackDAO());
     }
@@ -312,9 +312,9 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      * 
      * @param aspectsCache          the cache
      */
-    public void setAspectsCache(SimpleCache<Long, Set<QName>> aspectsCache)
+    public void setAspectsCache(SimpleCache<NodeVersionKey, Set<QName>> aspectsCache)
     {
-        this.aspectsCache = new EntityLookupCache<Long, Set<QName>, Serializable>(
+        this.aspectsCache = new EntityLookupCache<NodeVersionKey, Set<QName>, Serializable>(
                 aspectsCache,
                 CACHE_REGION_ASPECTS,
                 new AspectsCallbackDAO());
@@ -325,7 +325,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      * 
      * @param propertiesCache       the cache
      */
-    public void setPropertiesCache(SimpleCache<Long, Map<QName, Serializable>> propertiesCache)
+    public void setPropertiesCache(SimpleCache<NodeVersionKey, Map<QName, Serializable>> propertiesCache)
     {
         this.propertiesCache = new EntityLookupCache<NodeVersionKey, Map<QName, Serializable>, Serializable>(
                 propertiesCache,
@@ -535,10 +535,11 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             // Properties
             propertiesCache.removeByKey(nodeVersionKey);
             // Aspects
-            aspectsCache.removeByKey(nodeId);
+            aspectsCache.removeByKey(nodeVersionKey);
             // Parent Assocs
             parentAssocsCache.removeByKey(nodeId);
         }
+        invalidateCachesByNodeId(nodeId, null, parentAssocsCache);
         // Finally remove the node reference
         nodesCache.removeByKey(nodeId);
     }
@@ -893,6 +894,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return nodeTxnId.equals(currentTxnId);
     }
 
+    // TODO: Restore to simple version
+    // TODO: Add read-through option for caches
     public Status getNodeRefStatus(NodeRef nodeRef)
     {
         Node node = null;
@@ -971,7 +974,23 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         Pair<Long, Node> pair = nodesCache.getByKey(nodeId);
         if (pair == null || pair.getSecond().getDeleted())
         {
-            throw new ConcurrencyFailureException("No live node exists for ID " + nodeId);
+            // Go back to the database and get what is there
+            NodeEntity dbNode = selectNodeById(nodeId, null);
+            if (pair == null)
+            {
+                throw new ConcurrencyFailureException(
+                        "No node exists: \n" +
+                        "   ID:        " + nodeId + "\n" +
+                        "   DB row:    " + dbNode);
+            }
+            else
+            {
+                throw new ConcurrencyFailureException(
+                        "No live node exists: \n" +
+                        "   ID:        " + nodeId + "\n" +
+                        "   Cache row: " + pair.getSecond() + "\n" +
+                        "   DB row:    " + dbNode);
+            }
         }
         else
         {
@@ -2111,6 +2130,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         Pair<NodeVersionKey, Map<QName, Serializable>> cacheEntry = propertiesCache.getByKey(nodeVersionKey);
         if (cacheEntry == null)
         {
+            invalidateNodeCaches(nodeId);
             throw new DataIntegrityViolationException("Invalid node ID: " + nodeId);
         }
         Map<QName, Serializable> cachedProperties = cacheEntry.getSecond();
@@ -2258,7 +2278,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         catch (RuntimeException e)
         {
             // This could be because the cache is out of date
-            aspectsCache.removeByKey(nodeId);
+            invalidateNodeCaches(nodeId);
             throw e;
         }
         finally
@@ -2297,12 +2317,12 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
 
         // Just delete all the node's aspects
         int deleteCount = deleteNodeAspects(nodeId, null);
-        // Manually update the cache
-        aspectsCache.setValue(nodeId, Collections.<QName>emptySet());
-
         // Touch to bring into current txn
         touchNodeImpl(nodeId);
         
+        // Manually update the cache
+        setNodeAspectsCached(nodeId, Collections.<QName>emptySet());
+
         // Done
         return deleteCount > 0;
     }
@@ -2315,11 +2335,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         Set<Long> aspectQNameIdsToRemove = qnameDAO.convertQNamesToIds(aspectQNames, false);
         int deleteCount = deleteNodeAspects(nodeId, aspectQNameIdsToRemove);
         
-        // Manually update the cache
-        Set<QName> newAspectQNames = new HashSet<QName>(existingAspectQNames);
-        newAspectQNames.removeAll(aspectQNames);
-        aspectsCache.setValue(nodeId, newAspectQNames);
-
         // If we are removing the sys:aspect_root, then the parent assocs cache is unreliable
         if (aspectQNames.contains(ContentModel.ASPECT_ROOT))
         {
@@ -2331,6 +2346,11 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // Touch to bring into current txn
         touchNodeImpl(nodeId);
         
+        // Manually update the cache
+        Set<QName> newAspectQNames = new HashSet<QName>(existingAspectQNames);
+        newAspectQNames.removeAll(aspectQNames);
+        setNodeAspectsCached(nodeId, newAspectQNames);
+
         // Done
         return deleteCount > 0;
     }
@@ -2355,9 +2375,11 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      */
     private Set<QName> getNodeAspectsCached(Long nodeId)
     {
-        Pair<Long, Set<QName>> cacheEntry = aspectsCache.getByKey(nodeId);
+        NodeVersionKey nodeVersionKey = getNodeNotNull(nodeId).getNodeVersionKey();
+        Pair<NodeVersionKey, Set<QName>> cacheEntry = aspectsCache.getByKey(nodeVersionKey);
         if (cacheEntry == null)
         {
+            invalidateNodeCaches(nodeId);
             throw new DataIntegrityViolationException("Invalid node ID: " + nodeId);
         }
         return new HashSet<QName>(cacheEntry.getSecond());
@@ -2368,7 +2390,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      */
     private void setNodeAspectsCached(Long nodeId, Set<QName> aspects)
     {
-        aspectsCache.setValue(nodeId, Collections.unmodifiableSet(aspects));
+        NodeVersionKey nodeVersionKey = getNodeNotNull(nodeId).getNodeVersionKey();
+        aspectsCache.setValue(nodeVersionKey, Collections.unmodifiableSet(aspects));
     }
     
     /**
@@ -2377,16 +2400,16 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      * @author Derek Hulley
      * @since 3.4
      */
-    private class AspectsCallbackDAO extends EntityLookupCallbackDAOAdaptor<Long, Set<QName>, Serializable>
+    private class AspectsCallbackDAO extends EntityLookupCallbackDAOAdaptor<NodeVersionKey, Set<QName>, Serializable>
     {
-        public Pair<Long, Set<QName>> createValue(Set<QName> value)
+        public Pair<NodeVersionKey, Set<QName>> createValue(Set<QName> value)
         {
             throw new UnsupportedOperationException("A node always has a 'set' of aspects.");
         }
 
-        public Pair<Long, Set<QName>> findByKey(Long nodeId)
+        public Pair<NodeVersionKey, Set<QName>> findByKey(NodeVersionKey nodeVersionKey)
         {
-            NodeVersionKey nodeVersionKey = getNodeNotNull(nodeId).getNodeVersionKey();
+            Long nodeId = nodeVersionKey.getNodeId();
             Set<Long> nodeIds = Collections.singleton(nodeId);
             Map<NodeVersionKey, Set<QName>> nodeAspectQNameIdsByVersionKey = selectNodeAspects(nodeIds);
             Set<QName> nodeAspectQNames = nodeAspectQNameIdsByVersionKey.get(nodeVersionKey);
@@ -2408,7 +2431,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 }
             }
             // Done
-            return new Pair<Long, Set<QName>>(nodeId, Collections.unmodifiableSet(nodeAspectQNames));
+            return new Pair<NodeVersionKey, Set<QName>>(nodeVersionKey, Collections.unmodifiableSet(nodeAspectQNames));
         }
     }
     
@@ -3682,7 +3705,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             {
                 propertiesNodeIds.add(nodeId);
             }
-            if (aspectsCache.getValue(nodeId) == null)
+            if (aspectsCache.getValue(nodeVersionKey) == null)
             {
                 aspectNodeIds.add(nodeId);
             }
@@ -3707,7 +3730,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // Cache the absence of aspects too!
         for (Long nodeId: aspectNodeIds)
         {
-            aspectsCache.setValue(nodeId, Collections.<QName>emptySet());            
+            setNodeAspectsCached(nodeId, Collections.<QName>emptySet());
         }
 
         Map<NodeVersionKey, Map<NodePropertyKey, NodePropertyValue>> propsByNodeId = selectNodeProperties(propertiesNodeIds);

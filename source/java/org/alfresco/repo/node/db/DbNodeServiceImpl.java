@@ -2326,6 +2326,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
         ChildAssociationRef oldParentAssocRef = oldParentAssocPair.getSecond();
         
+        // Get the aspects for later use
+        Set<QName> nodeToMoveAspectQNames = nodeDAO.getNodeAspects(nodeToMoveId);
+        
         boolean movingStore = !oldStoreRef.equals(newStoreRef);
         
         // Invoke "Before"policy behaviour
@@ -2375,7 +2378,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             propagateTimeStamps(oldParentAssocRef);
             propagateTimeStamps(newParentAssocRef);
 
-            Set<QName> nodeToMoveAspectQNames = nodeDAO.getNodeAspects(nodeToMoveId);
             // The Node changes NodeRefs, so this is really the deletion of the old node and creation
             // of a node in a new store as far as the clients are concerned.
             invokeOnDeleteNode(oldParentAssocRef, nodeToMoveTypeQName, nodeToMoveAspectQNames, true);

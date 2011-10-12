@@ -85,7 +85,8 @@ public class NodeEntity implements Node, PermissionCheckValue
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("NodeEntity")
-          .append("[ ID=").append(id);
+          .append("[ ID=").append(id)
+          .append(", version=").append(version);
         if (store != null)
         {
             sb.append(", store=").append(store.getProtocol()).append("://").append(store.getIdentifier());

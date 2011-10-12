@@ -41,6 +41,7 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.ISO8601DateFormat;
+import org.alfresco.util.ScriptPagingDetails;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
@@ -279,10 +280,7 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
      */
     protected PagingRequest buildPagingRequest(WebScriptRequest req)
     {
-       // TODO Check the request for standard paging options
-       PagingRequest paging = new PagingRequest(MAX_QUERY_ENTRY_COUNT);
-       paging.setRequestTotalCountMax(MAX_QUERY_ENTRY_COUNT);
-       return paging;
+       return new ScriptPagingDetails(req, MAX_QUERY_ENTRY_COUNT);
     }
     
     /**

@@ -35,6 +35,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.util.ScriptPagingDetails;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONArray;
@@ -145,28 +146,11 @@ public abstract class AbstractLinksWebScript extends DeclarativeWebScript
      */
     protected PagingRequest buildPagingRequest(WebScriptRequest req)
     {
-       String pageNumberS = req.getParameter("page");
-       String pageSizeS = req.getParameter("pageSize");
-       if (pageNumberS == null || pageSizeS == null)
+       if (req.getParameter("page") == null || req.getParameter("pageSize") == null)
        {
           throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Paging size parameters missing");
        }
-       
-       int pageNumber;
-       int pageSize;
-       try
-       {
-          pageNumber = Integer.parseInt(pageNumberS);
-          pageSize = Integer.parseInt(pageSizeS);
-       }
-       catch (NumberFormatException e)
-       {
-          throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Paging size parameters invalid");
-       }
-
-       PagingRequest paging = new PagingRequest( (pageNumber-1) * pageSize, pageSize );
-       paging.setRequestTotalCountMax( Math.max(10, pageNumber) * pageSize );
-       return paging;
+       return new ScriptPagingDetails(req, 100);
     }
     
     /**

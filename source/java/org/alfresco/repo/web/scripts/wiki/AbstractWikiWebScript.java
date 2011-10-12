@@ -33,6 +33,7 @@ import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.wiki.WikiPageInfo;
 import org.alfresco.service.cmr.wiki.WikiService;
+import org.alfresco.util.ScriptPagingDetails;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONObject;
@@ -108,38 +109,7 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
      */
     protected PagingRequest buildPagingRequest(WebScriptRequest req)
     {
-       int pageSize = MAX_QUERY_ENTRY_COUNT;
-       int pageNumber = 1;
-       
-       String pageSizeS = req.getParameter("pageSize");
-       if (pageSizeS != null)
-       {
-          try
-          {
-             pageSize = Integer.parseInt(pageSizeS);
-          }
-          catch (NumberFormatException e)
-          {
-             throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Paging size parameters invalid");
-          }
-       }
-       
-       String pageNumberS = req.getParameter("page");
-       if (pageNumberS != null)
-       {
-          try
-          {
-             pageNumber = Integer.parseInt(pageNumberS);
-          }
-          catch (NumberFormatException e)
-          {
-             throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Paging size parameters invalid");
-          }
-       }
-
-       PagingRequest paging = new PagingRequest( (pageNumber-1) * pageSize, pageSize );
-       paging.setRequestTotalCountMax( Math.max(10, pageNumber) * pageSize );
-       return paging;
+       return new ScriptPagingDetails(req, MAX_QUERY_ENTRY_COUNT);
     }
     
     /**

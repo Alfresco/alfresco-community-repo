@@ -43,6 +43,7 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.util.Pair;
+import org.alfresco.util.ScriptPagingDetails;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONArray;
@@ -131,38 +132,7 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
      */
     protected PagingRequest buildPagingRequest(WebScriptRequest req)
     {
-       int pageSize = MAX_QUERY_ENTRY_COUNT;
-       int startIndex = 0;
-       
-       String pageSizeS = req.getParameter("pageSize");
-       if (pageSizeS != null)
-       {
-          try
-          {
-             pageSize = Integer.parseInt(pageSizeS);
-          }
-          catch (NumberFormatException e)
-          {
-             throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Paging size parameters invalid");
-          }
-       }
-       
-       String startIndexS = req.getParameter("startIndex");
-       if (startIndexS != null)
-       {
-          try
-          {
-             startIndex = Integer.parseInt(startIndexS);
-          }
-          catch (NumberFormatException e)
-          {
-             throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Paging size parameters invalid");
-          }
-       }
-
-       PagingRequest paging = new PagingRequest( startIndex, pageSize );
-       paging.setRequestTotalCountMax( Math.max(10*pageSize,startIndex+2*pageSize) );
-       return paging;
+       return new ScriptPagingDetails(req, MAX_QUERY_ENTRY_COUNT);
     }
     
     protected List<String> getTags(JSONObject json)

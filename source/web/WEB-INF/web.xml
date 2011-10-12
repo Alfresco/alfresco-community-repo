@@ -779,6 +779,30 @@
       <res-sharing-scope>Unshareable</res-sharing-scope>
    </resource-ref>
 
+   <security-constraint>
+      <web-resource-collection>
+         <web-resource-name>SOLR</web-resource-name>
+         <url-pattern>/service/api/solr/*</url-pattern>
+      </web-resource-collection>
+
+      <auth-constraint>
+         <role-name>repoclient</role-name>
+      </auth-constraint>
+
+      <user-data-constraint>
+         <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+      </user-data-constraint>
+   </security-constraint>
+   
+   <login-config>
+      <auth-method>CLIENT-CERT</auth-method>
+      <realm-name>Repository</realm-name>
+   </login-config>
+
+   <security-role>
+     <role-name>repoclient</role-name>
+   </security-role>
+
    <env-entry>
       <description>A flag that globally enables or disables startup of the major Alfresco subsystems.</description>
       <env-entry-name>properties/startup.enable</env-entry-name>
@@ -830,28 +854,5 @@
       <env-entry-value/> <!-- Empty value included for JBoss compatibility -->
       <env-entry-type>java.lang.String</env-entry-type>
    </env-entry>
-
-   <security-constraint>
-      <web-resource-collection>
-         <url-pattern>/service/api/solr/*</url-pattern>
-      </web-resource-collection>
-
-      <auth-constraint>
-         <role-name>repoclient</role-name>
-      </auth-constraint>
-
-      <user-data-constraint>
-         <transport-guarantee>CONFIDENTIAL</transport-guarantee>
-      </user-data-constraint>
-   </security-constraint>
-
-   <login-config>
-      <auth-method>CLIENT-CERT</auth-method>
-      <realm-name>Repository</realm-name>
-   </login-config>
-
-   <security-role>
-     <role-name>repoclient</role-name>
-   </security-role>
 
 </web-app>

@@ -117,7 +117,8 @@ public interface MetadataExtracter extends ContentWorker
                     
                     // If the property is media related, always extract
                     String propertyNS = propertyQName.getNamespaceURI();
-                    if(propertyNS.equals(NamespaceService.EXIF_MODEL_1_0_URI))
+                    if(propertyNS.equals(NamespaceService.EXIF_MODEL_1_0_URI) ||
+                       propertyNS.equals(NamespaceService.AUDIO_MODEL_1_0_URI))
                     {
                        targetProperties.put(propertyQName, extractedValue);
                        modifiedProperties.put(propertyQName, extractedValue);

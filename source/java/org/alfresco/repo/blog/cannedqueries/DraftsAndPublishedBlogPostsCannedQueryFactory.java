@@ -29,7 +29,7 @@ import org.alfresco.query.CannedQueryPageDetails;
 import org.alfresco.query.CannedQueryParameters;
 import org.alfresco.query.CannedQuerySortDetails;
 import org.alfresco.query.PagingRequest;
-import org.alfresco.service.cmr.blog.BlogService.BlogPostInfo;
+import org.alfresco.service.cmr.blog.BlogPostInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;

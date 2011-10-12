@@ -37,6 +37,7 @@ import org.alfresco.repo.blog.cannedqueries.GetBlogPostsCannedQueryFactory;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.search.impl.lucene.LuceneUtils;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.blog.BlogPostInfo;
 import org.alfresco.service.cmr.blog.BlogService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -145,7 +146,16 @@ public class BlogServiceImpl implements BlogService
         return nodeService.getProperty(blogPostNode, ContentModel.PROP_PUBLISHED) == null;
     }
     
+    
     @Override
+    public BlogPostInfo createBlogPost(String siteShortName, String blogTitle,
+         String blogContent, boolean isDraft) 
+    {
+      // TODO Implement
+      return null;
+    }
+
+   @Override
     public BlogPostInfo createBlogPost(NodeRef blogContainerNode, String blogTitle,
                                               String blogContent, boolean isDraft)
     {
@@ -177,9 +187,39 @@ public class BlogServiceImpl implements BlogService
             setOrUpdateReleasedAndUpdatedDates(postNode.getChildRef());
         }
         
-        return new BlogPostInfo(postNode.getChildRef(), nodeName);
+        return new BlogPostInfoImpl(postNode.getChildRef(), nodeName);
     }
+   
+    @Override
+    public BlogPostInfo updateBlogPost(BlogPostInfo post) {
+       if (post.getNodeRef() == null)
+       {
+          throw new IllegalArgumentException("Can't update a post that was never persisted, call create instead");
+       }
+       
+       // TODO Implement
+       return null;
+    }
+
+    @Override
+    public void deleteBlogPost(BlogPostInfo post) {
+       if (post.getNodeRef() == null)
+       {
+          throw new IllegalArgumentException("Can't delete a post that was never persisted");
+       }
+       
+       nodeService.deleteNode(post.getNodeRef());
+    }
+
     
+    @Override
+    public PagingResults<BlogPostInfo> getDrafts(String siteShortName,
+          String username, PagingRequest pagingReq) 
+    {
+       // TODO Implement
+       return null;
+    }
+
     @Override
     public PagingResults<BlogPostInfo> getDrafts(NodeRef blogContainerNode, String username, PagingRequest pagingReq)
     {
@@ -194,6 +234,15 @@ public class BlogServiceImpl implements BlogService
         CannedQueryResults<BlogPostInfo> results = cq.execute();
         return results;
     }
+    
+    @Override
+    public PagingResults<BlogPostInfo> getPublishedExternally(
+          String siteShortName, PagingRequest pagingReq) 
+    {
+       // TODO Implement
+       return null;
+    }
+
     @Override
     public PagingResults<BlogPostInfo> getPublishedExternally(NodeRef blogContainerNode, PagingRequest pagingReq)
     {
@@ -209,6 +258,14 @@ public class BlogServiceImpl implements BlogService
         return results;
     }
     
+    @Override
+    public PagingResults<BlogPostInfo> getPublished(String siteShortName,
+         Date fromDate, Date toDate, String byUser, PagingRequest pagingReq) 
+    {
+       // TODO Implement
+       return null;
+    }
+
     @Override
     public PagingResults<BlogPostInfo> getPublished(NodeRef blogContainerNode, Date fromDate, Date toDate, String byUser, PagingRequest pagingReq)
     {
@@ -281,6 +338,14 @@ public class BlogServiceImpl implements BlogService
     }
     
     @Override
+    public PagingResults<BlogPostInfo> findBlogPosts(String siteShortName,
+         RangedDateProperty dateRange, String tag, PagingRequest pagingReq) 
+    {
+       // TODO Implement
+       return null;
+    }
+
+    @Override
     public PagingResults<BlogPostInfo> findBlogPosts(NodeRef blogContainerNode, RangedDateProperty dateRange, String tag, PagingRequest pagingReq)
     {
         StringBuilder luceneQuery = new StringBuilder();
@@ -321,7 +386,7 @@ public class BlogServiceImpl implements BlogService
                     List<BlogPostInfo> blogPostInfos = new ArrayList<BlogPostInfo>(nodeRefs.size());
                     for (NodeRef nodeRef : nodeRefs)
                     {
-                        blogPostInfos.add(new BlogPostInfo(nodeRef, (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME)));
+                        blogPostInfos.add(new BlogPostInfoImpl(nodeRef, (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME)));
                     }
                     return blogPostInfos;
                 }

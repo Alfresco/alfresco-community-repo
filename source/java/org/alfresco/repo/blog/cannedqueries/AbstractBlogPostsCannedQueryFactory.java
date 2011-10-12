@@ -26,7 +26,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQuerySortDetails;
 import org.alfresco.query.CannedQuerySortDetails.SortOrder;
 import org.alfresco.repo.query.AbstractQNameAwareCannedQueryFactory;
-import org.alfresco.service.cmr.blog.BlogService.BlogPostInfo;
+import org.alfresco.service.cmr.blog.BlogPostInfo;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 

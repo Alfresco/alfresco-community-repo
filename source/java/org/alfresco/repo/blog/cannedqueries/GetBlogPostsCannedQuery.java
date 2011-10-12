@@ -27,13 +27,14 @@ import java.util.List;
 import org.alfresco.query.CannedQuery;
 import org.alfresco.query.CannedQueryParameters;
 import org.alfresco.query.CannedQuerySortDetails.SortOrder;
+import org.alfresco.repo.blog.BlogPostInfoImpl;
 import org.alfresco.repo.blog.cannedqueries.AbstractBlogPostsCannedQueryFactory.BlogEntityComparator;
 import org.alfresco.repo.domain.node.AuditablePropertiesEntity;
 import org.alfresco.repo.domain.query.CannedQueryDAO;
 import org.alfresco.repo.security.permissions.impl.acegi.AbstractCannedQueryPermissions;
 import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean;
+import org.alfresco.service.cmr.blog.BlogPostInfo;
 import org.alfresco.service.cmr.blog.BlogService;
-import org.alfresco.service.cmr.blog.BlogService.BlogPostInfo;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
@@ -153,7 +154,7 @@ public class GetBlogPostsCannedQuery extends AbstractCannedQueryPermissions<Blog
         List<BlogPostInfo> blogPostInfos = new ArrayList<BlogPostInfo>(filtered.size());
         for (BlogEntity result : filtered)
         {
-            blogPostInfos.add(new BlogPostInfo(result.getNodeRef(), result.getName()));
+            blogPostInfos.add(new BlogPostInfoImpl(result.getNodeRef(), result.getName()));
         }
         
         if (start != null)

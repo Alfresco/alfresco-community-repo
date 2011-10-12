@@ -5,7 +5,7 @@
 <#escape x as jsonUtils.encodeJSONString(x)>
 {
    "qnamePath": "${item.qnamePath}",
-   "url": "blog/node/${item.nodeRef?replace('://', '/')}",
+   "detailsUrl": "blog/node/${item.nodeRef?replace('://', '/')}",
    "blogPostsUrl": "blog/node/${item.nodeRef?replace('://', '/')}/posts",
    "type": "${item.properties["blg:blogImplementation"]!''}",
    "id": "${item.properties["blg:id"]!'0'}",

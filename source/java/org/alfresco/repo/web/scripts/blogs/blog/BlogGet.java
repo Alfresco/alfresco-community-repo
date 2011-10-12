@@ -64,9 +64,10 @@ public class BlogGet extends AbstractBlogWebScript
        }
 
        // Build the response
+       // (For now, we just supply the noderef, but when we have a 
+       //  proper blog details object we'll use that)
        Map<String, Object> model = new HashMap<String, Object>();
-       model.put(POST, blog);
-       model.put(ITEM, blog.getNodeRef());
+       model.put(ITEM, containerNodeRef);
 
        return model;
     }

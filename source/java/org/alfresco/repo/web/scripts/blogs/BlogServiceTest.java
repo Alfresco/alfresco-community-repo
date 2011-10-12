@@ -50,8 +50,6 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 /**
  * Unit Test to test Blog Web Script API
  * 
- * TODO Add unit tests for the Blog Integration part
- * 
  * @author mruflin
  */
 public class BlogServiceTest extends BaseWebScriptTest
@@ -70,7 +68,8 @@ public class BlogServiceTest extends BaseWebScriptTest
     private static final String COMPONENT_BLOG = "blog";
 
     private static final String URL_BLOG_POST = "/api/blog/post/site/" + SITE_SHORT_NAME_BLOG + "/" + COMPONENT_BLOG + "/";
-    private static final String URL_BLOG_POSTS = "/api/blog/site/" + SITE_SHORT_NAME_BLOG + "/" + COMPONENT_BLOG + "/posts";
+    private static final String URL_BLOG_CORE = "/api/blog/site/" + SITE_SHORT_NAME_BLOG + "/" + COMPONENT_BLOG;
+    private static final String URL_BLOG_POSTS = URL_BLOG_CORE + "/posts";
     private static final String URL_MY_DRAFT_BLOG_POSTS = "/api/blog/site/" + SITE_SHORT_NAME_BLOG +
                                                           "/" + COMPONENT_BLOG + "/posts/mydrafts";
     private static final String URL_MY_PUBLISHED_BLOG_POSTS = "/api/blog/site/" + SITE_SHORT_NAME_BLOG +
@@ -711,6 +710,62 @@ public class BlogServiceTest extends BaseWebScriptTest
         JSONObject commentTwoUpdated = updateComment(commentTwo.getString("nodeRef"), "new title", "new content", 200);
         assertEquals("new title", commentTwoUpdated.getString("title"));
         assertEquals("new content", commentTwoUpdated.getString("content"));
+    }
+    
+    /**
+     * You can attach information to the blog container relating
+     *  to integration with external blogs.
+     * This tests that feature
+     */
+    public void testBlogIntegration() throws Exception
+    {
+       // Try to fetch the details on a new site
+       Response response = sendRequest(new GetRequest(URL_BLOG_CORE), 200);
+       String json = response.getContentAsString();
+       JSONObject result = new JSONObject(json);
+       
+       assertEquals("No item in:\n"+json, true, result.has("item"));
+       JSONObject item = result.getJSONObject("item");
+       
+       assertEquals("Missing key in: " + item, true, item.has("qnamePath"));
+       assertEquals("Missing key in: " + item, true, item.has("detailsUrl"));
+       assertEquals("Missing key in: " + item, true, item.has("blogPostsUrl"));
+       
+       // Blog properties are empty to start
+       assertEquals("", item.getString("type"));
+       assertEquals("", item.getString("name"));
+       assertEquals("", item.getString("description"));
+       assertEquals("", item.getString("url"));
+       assertEquals("", item.getString("username"));
+       assertEquals("", item.getString("password"));
+       
+       
+       // Have it updated
+       JSONObject blog = new JSONObject();
+       blog.put("blogType", "wordpress");
+       blog.put("blogName", "A Blog!");
+       blog.put("username", "guest");
+       sendRequest(new PutRequest(URL_BLOG_CORE, blog.toString(), "application/json"), Status.STATUS_OK);
+       
+       // Check again now
+       response = sendRequest(new GetRequest(URL_BLOG_CORE), 200);
+       json = response.getContentAsString();
+       result = new JSONObject(json);
+       
+       assertEquals("No item in:\n"+json, true, result.has("item"));
+       item = result.getJSONObject("item");
+       
+       assertEquals("Missing key in: " + item, true, item.has("qnamePath"));
+       assertEquals("Missing key in: " + item, true, item.has("detailsUrl"));
+       assertEquals("Missing key in: " + item, true, item.has("blogPostsUrl"));
+       
+       // Blog properties should now be set
+       assertEquals("wordpress", item.getString("type"));
+       assertEquals("A Blog!", item.getString("name"));
+       assertEquals("", item.getString("description"));
+       assertEquals("", item.getString("url"));
+       assertEquals("guest", item.getString("username"));
+       assertEquals("", item.getString("password"));
     }
  
     /**

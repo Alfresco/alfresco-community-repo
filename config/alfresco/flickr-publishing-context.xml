@@ -10,6 +10,14 @@
         </property>
     </bean>
 
+    <bean id="flickrChannelMessageBundle" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+        <property name="resourceBundles">
+            <list>
+                <value>org.alfresco.repo.publishing.flickr.flickr-publishing</value>
+            </list>
+        </property>
+    </bean>
+
     <bean id="flickrDeliveryChannelType" class="org.alfresco.repo.publishing.flickr.FlickrChannelType" parent="baseChannelType" >
         <property name="connectionFactory" ref="flickrConnectionFactory" />
         <property name="taggingService" ref="TaggingService" />

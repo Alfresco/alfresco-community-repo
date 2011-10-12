@@ -35,6 +35,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * @author Nick Smith
@@ -75,6 +76,13 @@ public abstract class AbstractChannelType implements ChannelType, ChannelTypePub
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+
+    @Override
+    public String getTitle()
+    {
+        String title = I18NUtil.getMessage("publishing.channel-type." + getId() + ".title");
+        return title == null ? getId() : title;
     }
 
     /**

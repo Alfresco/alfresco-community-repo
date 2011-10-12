@@ -10,6 +10,14 @@
       </property>
    </bean>
 
+    <bean id="facebookChannelMessageBundle" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+        <property name="resourceBundles">
+            <list>
+                <value>org.alfresco.repo.publishing.facebook.facebook-publishing</value>
+            </list>
+        </property>
+    </bean>
+
    <bean id="facebookDeliveryChannelType" class="org.alfresco.repo.publishing.facebook.FacebookChannelType" parent="baseChannelType">
       <property name="publishingHelper" ref="facebookPublishingHelper" />
    </bean>

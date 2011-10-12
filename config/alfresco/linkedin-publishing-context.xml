@@ -10,6 +10,14 @@
       </property>
    </bean>
 
+    <bean id="linkedinChannelMessageBundle" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+        <property name="resourceBundles">
+            <list>
+                <value>org.alfresco.repo.publishing.linkedin.linkedin-publishing</value>
+            </list>
+        </property>
+    </bean>
+
    <bean id="linkedInDeliveryChannelType" class="org.alfresco.repo.publishing.linkedin.LinkedInChannelType" parent="baseChannelType">
       <property name="nodeService" ref="NodeService" />
       <property name="connectionFactory" ref="linkedinConnectionFactory" />

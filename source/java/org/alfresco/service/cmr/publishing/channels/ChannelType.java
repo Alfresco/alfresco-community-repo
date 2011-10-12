@@ -41,6 +41,13 @@ public interface ChannelType
     String getId();
     
     /**
+     * Returns the title (display name) of this channel type.
+     * The title may be localised, but this is implementation specific
+     * @return
+     */
+    String getTitle();
+    
+    /**
      * Each channel is stored in the repository as a node. This operation returns
      * the qualified name of the type of that node.
      * @return

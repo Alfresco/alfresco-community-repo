@@ -10,6 +10,14 @@
         </property>
     </bean>
 
+    <bean id="youtubeChannelMessageBundle" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+        <property name="resourceBundles">
+            <list>
+                <value>org.alfresco.repo.publishing.youtube.youtube-publishing</value>
+            </list>
+        </property>
+    </bean>
+
     <bean id="youtubePublishingHelper" class="org.alfresco.repo.publishing.youtube.YouTubePublishingHelper">
         <property name="encryptor" ref="metadataEncryptor" />
     </bean>

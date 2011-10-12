@@ -10,6 +10,14 @@
         </property>
     </bean>
 
+    <bean id="slideshareChannelMessageBundle" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+        <property name="resourceBundles">
+            <list>
+                <value>org.alfresco.repo.publishing.slideshare.slideshare-publishing</value>
+            </list>
+        </property>
+    </bean>
+
     <bean id="slidesharePublishingHelper" class="org.alfresco.repo.publishing.slideshare.SlideSharePublishingHelper">
         <property name="slideshareConnector" ref="slideshareApiConnector" />
         <property name="encryptor" ref="metadataEncryptor" />

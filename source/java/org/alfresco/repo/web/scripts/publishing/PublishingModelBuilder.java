@@ -143,8 +143,7 @@ public class PublishingModelBuilder implements PublishingWebScriptConstants
     {
         Map<String, Object> model = new HashMap<String, Object>();
         model.put(ID, type.getId());
-        //TODO Localize the title.
-        model.put(TITLE, type.getId());
+        model.put(TITLE, type.getTitle());
         model.put(URL, getUrl(type));
         
         model.put(CHANNEL_NODE_TYPE, type.getChannelNodeType().toString());

@@ -66,8 +66,11 @@
        <property name="dictionaryService" ref="DictionaryService"/>
        <property name="namespaceService" ref="NamespaceService"/>
        <property name="nodeService" ref="NodeService"/>
-       <property name="permissionService" ref="PermissionService"/>
+       <property name="siteService" ref="SiteService"/>
        <property name="searchService" ref="SearchService"/>
+       <property name="taggingService" ref="TaggingService"/>
+       <property name="permissionService" ref="PermissionService"/>
+       <property name="transactionService" ref="transactionService" />
        
        <property name="draftBlogPostsCannedQueryFactory" ref="getDraftBlogPostsCannedQueryFactory"/>
        <property name="publishedBlogPostsCannedQueryFactory" ref="getPublishedBlogPostsCannedQueryFactory"/>

@@ -28,6 +28,7 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQueryFactory;
 import org.alfresco.query.CannedQueryResults;
+import org.alfresco.query.EmptyPagingResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.blog.cannedqueries.DraftsAndPublishedBlogPostsCannedQuery;
@@ -37,6 +38,7 @@ import org.alfresco.repo.blog.cannedqueries.GetBlogPostsCannedQueryFactory;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.search.impl.lucene.LuceneUtils;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.site.SiteServiceImpl;
 import org.alfresco.service.cmr.blog.BlogPostInfo;
 import org.alfresco.service.cmr.blog.BlogService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -50,8 +52,11 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ISO9075;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
@@ -70,6 +75,8 @@ public class BlogServiceImpl implements BlogService
      */
     private static final int MAX_QUERY_ENTRY_COUNT = 10000;
     
+    public static final String BLOG_COMPONENT = "blog";
+    
     // Injected services
     private NamedObjectRegistry<CannedQueryFactory<BlogPostInfo>> cannedQueryRegistry;
     private GetBlogPostsCannedQueryFactory draftPostsCannedQueryFactory;
@@ -82,7 +89,10 @@ public class BlogServiceImpl implements BlogService
     private DictionaryService dictionaryService;
     private NamespaceService namespaceService;
     private NodeService nodeService;
+    private SiteService siteService;
+    private TransactionService transactionService;
     private PermissionService permissionService;
+    private TaggingService taggingService;
     private SearchService searchService;
     
     public void setCannedQueryRegistry(NamedObjectRegistry<CannedQueryFactory<BlogPostInfo>> cannedQueryRegistry)
@@ -130,14 +140,39 @@ public class BlogServiceImpl implements BlogService
         this.nodeService = nodeService;
     }
     
+    public void setSiteService(SiteService siteService)
+    {
+        this.siteService = siteService;
+    }
+    
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
+    
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
     }
     
+    public void setTaggingService(TaggingService taggingService)
+    {
+        this.taggingService = taggingService;
+    }
+    
     public void setSearchService(SearchService searchService)
     {
         this.searchService = searchService;
+    }
+    
+    /**
+     * Fetches the Blogs Container on a site, creating as required if requested.
+     */
+    protected NodeRef getSiteBlogContainer(final String siteShortName, boolean create)
+    {
+       return SiteServiceImpl.getSiteContainer(
+             siteShortName, BLOG_COMPONENT, create,
+             siteService, transactionService, taggingService);
     }
     
     @Override
@@ -151,11 +186,14 @@ public class BlogServiceImpl implements BlogService
     public BlogPostInfo createBlogPost(String siteShortName, String blogTitle,
          String blogContent, boolean isDraft) 
     {
-      // TODO Implement
-      return null;
+      // Grab the location to stor ein
+      NodeRef container = getSiteBlogContainer(siteShortName, true);
+      
+      // Add by Parent NodeRef
+      return createBlogPost(container, blogTitle, blogContent, isDraft);
     }
 
-   @Override
+    @Override
     public BlogPostInfo createBlogPost(NodeRef blogContainerNode, String blogTitle,
                                               String blogContent, boolean isDraft)
     {
@@ -197,7 +235,7 @@ public class BlogServiceImpl implements BlogService
           throw new IllegalArgumentException("Can't update a post that was never persisted, call create instead");
        }
        
-       // TODO Implement
+       // TODO Implement, once BlogPostInfo is finished
        return null;
     }
 
@@ -216,8 +254,15 @@ public class BlogServiceImpl implements BlogService
     public PagingResults<BlogPostInfo> getDrafts(String siteShortName,
           String username, PagingRequest pagingReq) 
     {
-       // TODO Implement
-       return null;
+       NodeRef container = getSiteBlogContainer(siteShortName, false);
+       if (container == null)
+       {
+          // No blog posts yet
+          return new EmptyPagingResults<BlogPostInfo>();
+       }
+       
+       // We can now fetch by parent nodeRef
+       return getDrafts(container, username, pagingReq);
     }
 
     @Override
@@ -239,8 +284,15 @@ public class BlogServiceImpl implements BlogService
     public PagingResults<BlogPostInfo> getPublishedExternally(
           String siteShortName, PagingRequest pagingReq) 
     {
-       // TODO Implement
-       return null;
+       NodeRef container = getSiteBlogContainer(siteShortName, false);
+       if (container == null)
+       {
+          // No blog posts yet
+          return new EmptyPagingResults<BlogPostInfo>();
+       }
+       
+       // We can now fetch by parent nodeRef
+       return getPublishedExternally(container, pagingReq);
     }
 
     @Override
@@ -262,8 +314,15 @@ public class BlogServiceImpl implements BlogService
     public PagingResults<BlogPostInfo> getPublished(String siteShortName,
          Date fromDate, Date toDate, String byUser, PagingRequest pagingReq) 
     {
-       // TODO Implement
-       return null;
+       NodeRef container = getSiteBlogContainer(siteShortName, false);
+       if (container == null)
+       {
+          // No blog posts yet
+          return new EmptyPagingResults<BlogPostInfo>();
+       }
+       
+       // We can now fetch by parent nodeRef
+       return getPublished(container, fromDate, toDate, byUser, pagingReq);
     }
 
     @Override
@@ -341,8 +400,15 @@ public class BlogServiceImpl implements BlogService
     public PagingResults<BlogPostInfo> findBlogPosts(String siteShortName,
          RangedDateProperty dateRange, String tag, PagingRequest pagingReq) 
     {
-       // TODO Implement
-       return null;
+        NodeRef container = getSiteBlogContainer(siteShortName, false);
+        if (container == null)
+        {
+           // No blog posts yet
+           return new EmptyPagingResults<BlogPostInfo>();
+        }
+        
+        // We can now fetch by parent nodeRef
+        return findBlogPosts(container, dateRange, tag, pagingReq);
     }
 
     @Override

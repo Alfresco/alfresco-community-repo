@@ -54,7 +54,6 @@ import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.tagging.TaggingService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.Pair;
@@ -101,6 +100,7 @@ public class BlogServiceImplTest
      */
     private static List<NodeRef> CLASS_TEST_NODES_TO_TIDY = new ArrayList<NodeRef>();
 
+    private static SiteInfo BLOG_SITE;
     private static NodeRef BLOG_CONTAINER_NODE;
     
     @BeforeClass public static void initTestsContext() throws Exception
@@ -125,24 +125,35 @@ public class BlogServiceImplTest
     
     private static void createTestSiteWithBlogContainer() throws Exception
     {
-        BLOG_CONTAINER_NODE = TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
+        BLOG_SITE = TRANSACTION_HELPER.doInTransaction(
+            new RetryingTransactionHelper.RetryingTransactionCallback<SiteInfo>()
             {
                 @Override
-                public NodeRef execute() throws Throwable
+                public SiteInfo execute() throws Throwable
                 {
                     SiteInfo site = SITE_SERVICE.createSite("BlogSitePreset", BlogServiceImplTest.class.getSimpleName() + "_testSite" + System.currentTimeMillis(),
                                             "test site title", "test site description", SiteVisibility.PUBLIC);
                     CLASS_TEST_NODES_TO_TIDY.add(site.getNodeRef());
+                    return site;
+                }
+            });
                     
-                    NodeRef result = SITE_SERVICE.getContainer(site.getShortName(), "blog");
-                    
+        BLOG_CONTAINER_NODE = TRANSACTION_HELPER.doInTransaction(
+            new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
+            {
+                @Override
+                public NodeRef execute() throws Throwable
+                {
+                    SiteInfo site = BLOG_SITE;
+                    NodeRef result = SITE_SERVICE.getContainer(site.getShortName(), BlogServiceImpl.BLOG_COMPONENT);
+                      
                     if (result == null)
                     {
-                        result = NODE_SERVICE.createNode(site.getNodeRef(), ContentModel.ASSOC_CONTAINS,
-                                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "blog"), ContentModel.TYPE_FOLDER, null).getChildRef();
-                        CLASS_TEST_NODES_TO_TIDY.add(result);
+                       result = SITE_SERVICE.createContainer(site.getShortName(), BlogServiceImpl.BLOG_COMPONENT,
+                             ContentModel.TYPE_FOLDER, null);
+                       CLASS_TEST_NODES_TO_TIDY.add(result);
                     }
-                    
+                      
                     return result;
                 }
             });
@@ -215,7 +226,17 @@ public class BlogServiceImplTest
                     
                     for (int i = 0; i < arbitraryNumberGreaterThanPageSize; i++)
                     {
-                        BlogPostInfo newBlogPost = BLOG_SERVICE.createBlogPost(BLOG_CONTAINER_NODE, "title_" + i, "Hello world", true);
+                        BlogPostInfo newBlogPost;
+                        if(i % 2 == 0)
+                        {
+                           // By container ref
+                           newBlogPost = BLOG_SERVICE.createBlogPost(BLOG_CONTAINER_NODE, "title_" + i, "Hello world", true);
+                        }
+                        else
+                        {
+                           // By site name
+                           newBlogPost = BLOG_SERVICE.createBlogPost(BLOG_SITE.getShortName(), "title_" + i, "Hello world", true);
+                        }
                         
                         results.add(newBlogPost.getNodeRef());
                         testNodesToTidy.add(newBlogPost.getNodeRef());

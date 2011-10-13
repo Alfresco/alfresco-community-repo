@@ -75,7 +75,7 @@
          <allow-guest-config>false</allow-guest-config>
          
          <!-- the URL to the client Help file -->
-         <help-url>http://docs.alfresco.com/{version.major}.{version.minor}/topic/com.alfresco.{version.edition}_{version.major}_{version.minor}_0.doc/topics/guh-wcm-welcome-explorer.html</help-url>
+         <help-url>http://docs.alfresco.com/{version.major}.{version.minor}/topic/com.alfresco.enterprise.doc/topics/guh-wcm-welcome-explorer.html</help-url>
          
          <!-- the type of edit link to use, NOTE: inline editable will always take precedence -->
          <!-- can be: http|webdav -->

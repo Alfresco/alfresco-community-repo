@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.jscript;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -3488,7 +3489,16 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
             }
             if (guessEncoding)
             {
-                writer.setEncoding(guessEncoding(content.getInputStream()));
+                InputStream is = new BufferedInputStream(content.getInputStream());
+                is.mark(1024);
+                writer.setEncoding(guessEncoding(is, false));
+                try
+                {
+                    is.reset();
+                }
+                catch (IOException e)
+                {
+                }
             }
             else
             {
@@ -3618,10 +3628,10 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
          */
         public void guessEncoding()
         {
-            setEncoding(guessEncoding(getInputStream()));
+            setEncoding(guessEncoding(getInputStream(), true));
         }
         
-        private String guessEncoding(InputStream in)
+        private String guessEncoding(InputStream in, boolean close)
         {
             String encoding = "UTF-8";
             try
@@ -3636,7 +3646,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
             {
                 try
                 {
-                    if (in != null)
+                    if (close && in != null)
                     {
                         in.close();
                     }

@@ -18,10 +18,6 @@
  */
 package org.alfresco.repo.solr;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -36,24 +32,19 @@ import java.util.Set;
 import java.util.zip.CRC32;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.dictionary.CompiledModel;
 import org.alfresco.repo.dictionary.DictionaryDAO;
-import org.alfresco.repo.dictionary.DictionaryDAOImpl;
-import org.alfresco.repo.domain.CrcHelper;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.NodeDAO.ChildAssocRefQueryCallback;
 import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.domain.solr.SOLRDAO;
-import org.alfresco.repo.solr.AlfrescoModelDiff.TYPE;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.cmr.dictionary.ModelDefinition.XMLBindingType;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -64,7 +55,6 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
-import org.alfresco.util.TempFileProvider;
 
 /**
  * Component providing data for SOLR tracking
@@ -334,74 +324,82 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
             LinkedList<Pair<Path, QName>> aspectPaths = new LinkedList<Pair<Path, QName>>();
             for (PropertyDefinition propDef : aspDef.getProperties().values())
             {
-                if (propDef.getDataType().getName().equals(DataTypeDefinition.CATEGORY))
+                if (!propDef.getDataType().getName().equals(DataTypeDefinition.CATEGORY))
                 {
-                    for (NodeRef catRef : DefaultTypeConverter.INSTANCE.getCollection(NodeRef.class, properties.get(propDef.getName())))
+                    // The property is not a category
+                    continue;
+                }
+                // Don't try to iterate if the property is null
+                Serializable propVal = properties.get(propDef.getName());
+                if (propVal == null)
+                {
+                    continue;
+                }
+                for (NodeRef catRef : DefaultTypeConverter.INSTANCE.getCollection(NodeRef.class, propVal))
+                {
+                    if (catRef == null)
                     {
-                        if (catRef == null)
-                        {
-                            continue;
-                        }
-                        // can be running in context of System user, hence use input nodeRef
-                        catRef = tenantService.getName(nodeRef, catRef);
+                        continue;
+                    }
+                    // can be running in context of System user, hence use input nodeRef
+                    catRef = tenantService.getName(nodeRef, catRef);
 
-                        try
+                    try
+                    {
+                        Pair<Long, NodeRef> pair = nodeDAO.getNodePair(catRef);
+                        for (Path path : nodeDAO.getPaths(pair, false))
                         {
-                            Pair<Long, NodeRef> pair = nodeDAO.getNodePair(catRef);
-                            for (Path path : nodeDAO.getPaths(pair, false))
+                            if ((path.size() > 1) && (path.get(1) instanceof Path.ChildAssocElement))
                             {
-                                if ((path.size() > 1) && (path.get(1) instanceof Path.ChildAssocElement))
+                                Path.ChildAssocElement cae = (Path.ChildAssocElement) path.get(1);
+                                boolean isFakeRoot = true;
+
+                                final List<ChildAssociationRef> results = new ArrayList<ChildAssociationRef>(10);
+                                // We have a callback handler to filter results
+                                ChildAssocRefQueryCallback callback = new ChildAssocRefQueryCallback()
                                 {
-                                    Path.ChildAssocElement cae = (Path.ChildAssocElement) path.get(1);
-                                    boolean isFakeRoot = true;
-
-                                    final List<ChildAssociationRef> results = new ArrayList<ChildAssociationRef>(10);
-                                    // We have a callback handler to filter results
-                                    ChildAssocRefQueryCallback callback = new ChildAssocRefQueryCallback()
+                                    public boolean preLoadNodes()
                                     {
-                                        public boolean preLoadNodes()
-                                        {
-                                            return false;
-                                        }
-                                        
-                                        public boolean handle(
-                                                Pair<Long, ChildAssociationRef> childAssocPair,
-                                                Pair<Long, NodeRef> parentNodePair,
-                                                Pair<Long, NodeRef> childNodePair)
-                                        {
-                                            results.add(childAssocPair.getSecond());
-                                            return true;
-                                        }
-
-                                        public void done()
-                                        {
-                                        }                               
-                                    };
-                                    
-                                    Pair<Long, NodeRef> caePair = nodeDAO.getNodePair(cae.getRef().getChildRef());
-                                    nodeDAO.getParentAssocs(caePair.getFirst(), null, null, false, callback);
-                                    for (ChildAssociationRef car : results)
-                                    {
-                                        if (cae.getRef().equals(car))
-                                        {
-                                            isFakeRoot = false;
-                                            break;
-                                        }
+                                        return false;
                                     }
-                                    if (isFakeRoot)
+                                    
+                                    public boolean handle(
+                                            Pair<Long, ChildAssociationRef> childAssocPair,
+                                            Pair<Long, NodeRef> parentNodePair,
+                                            Pair<Long, NodeRef> childNodePair)
                                     {
-                                        if (path.toString().indexOf(aspDef.getName().toString()) != -1)
-                                        {
-                                            aspectPaths.add(new Pair<Path, QName>(path, aspDef.getName()));
-                                        }
+                                        results.add(childAssocPair.getSecond());
+                                        return true;
+                                    }
+
+                                    public void done()
+                                    {
+                                    }                               
+                                };
+                                
+                                Pair<Long, NodeRef> caePair = nodeDAO.getNodePair(cae.getRef().getChildRef());
+                                nodeDAO.getParentAssocs(caePair.getFirst(), null, null, false, callback);
+                                for (ChildAssociationRef car : results)
+                                {
+                                    if (cae.getRef().equals(car))
+                                    {
+                                        isFakeRoot = false;
+                                        break;
+                                    }
+                                }
+                                if (isFakeRoot)
+                                {
+                                    if (path.toString().indexOf(aspDef.getName().toString()) != -1)
+                                    {
+                                        aspectPaths.add(new Pair<Path, QName>(path, aspDef.getName()));
                                     }
                                 }
                             }
                         }
-                        catch (InvalidNodeRefException e)
-                        {
-                            // If the category does not exists we move on the next
-                        }
+                    }
+                    catch (InvalidNodeRefException e)
+                    {
+                        // If the category does not exists we move on the next
                     }
                 }
             }

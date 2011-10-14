@@ -26,7 +26,6 @@ import java.util.TreeMap;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transfer.reportd.XMLTransferDestinationReportWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferProgress;
 import org.alfresco.service.cmr.transfer.TransferProgress.Status;
@@ -173,7 +172,7 @@ public abstract class AbstractTransferProgressMonitor implements TransferProgres
             NodeRef sourceNode,
             NodeRef destNode,
             NodeRef parentNodeRef,
-            Path parentPath, 
+            String parentPath, 
             boolean orphan)
     {
         TransferDestinationReportWriter writer = getLogWriter(transferId);
@@ -182,7 +181,7 @@ public abstract class AbstractTransferProgressMonitor implements TransferProgres
     
     @Override
     public void logUpdated(String transferId, NodeRef sourceNodeRef,
-            NodeRef destNodeRef, Path path)
+            NodeRef destNodeRef, String path)
     {
         TransferDestinationReportWriter writer = getLogWriter(transferId);
         writer.writeUpdated(sourceNodeRef, destNodeRef, path);       
@@ -190,7 +189,7 @@ public abstract class AbstractTransferProgressMonitor implements TransferProgres
     
     @Override
     public void logMoved(String transferId, NodeRef sourceNodeRef,
-            NodeRef destNodeRef, Path oldPath, NodeRef newParentNodeRef, Path newPath)
+            NodeRef destNodeRef, String oldPath, NodeRef newParentNodeRef, String newPath)
     {
         TransferDestinationReportWriter writer = getLogWriter(transferId);
         writer.writeMoved(sourceNodeRef, destNodeRef, oldPath, newParentNodeRef, newPath);       
@@ -200,7 +199,7 @@ public abstract class AbstractTransferProgressMonitor implements TransferProgres
     public void logDeleted(String transferId, 
             NodeRef sourceNodeRef,
             NodeRef destNodeRef, 
-            Path oldPath)
+            String oldPath)
     {
         TransferDestinationReportWriter writer = getLogWriter(transferId);
         writer.writeDeleted(sourceNodeRef, destNodeRef, oldPath);

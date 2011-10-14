@@ -21,7 +21,6 @@ package org.alfresco.repo.transfer;
 import java.io.Writer;
 
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.Path;
 
 /**
  * 
@@ -56,22 +55,22 @@ public interface TransferDestinationReportWriter
     /**
      * Reporting creation of a new node
      */
-    public void writeCreated(NodeRef sourceNodeRef, NodeRef newNodeRef, NodeRef newParentNodeRef, Path newPath);
+    public void writeCreated(NodeRef sourceNodeRef, NodeRef newNodeRef, NodeRef newParentNodeRef, String newPath);
     
     /**
      * Reporting update of an existing node
      */
-    public void writeUpdated(NodeRef sourceNodeRef, NodeRef updatedNode, Path updatedPath);
+    public void writeUpdated(NodeRef sourceNodeRef, NodeRef updatedNode, String updatedPath);
     
     /**
      * Reporting a node moved
      */
-    public void writeMoved(NodeRef sourceNodeRef, NodeRef movedNodeRef, Path oldPath, NodeRef newParentNodeRef, Path newPath);
+    public void writeMoved(NodeRef sourceNodeRef, NodeRef movedNodeRef, String oldPath, NodeRef newParentNodeRef, String newPath);
     
     /**
      * Reporting a node deleted
      */
-    public void writeDeleted(NodeRef sourceNodeRef, NodeRef deletedNode, Path oldPath);
+    public void writeDeleted(NodeRef sourceNodeRef, NodeRef deletedNode, String oldPath);
     
     /**
      * Reporting an exception

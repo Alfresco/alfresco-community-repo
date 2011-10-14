@@ -46,7 +46,6 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -156,7 +155,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
                         + "  - deleting");
             }
             
-            logDeleted(node.getNodeRef(), exNode, nodeService.getPath(exNode));    
+            logDeleted(node.getNodeRef(), exNode, nodeService.getPath(exNode).toString());    
             
             delete(node, exNode);
         }
@@ -303,7 +302,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             log.debug("Created new node (" + newNode.getChildRef() + ") parented by node " + newNode.getParentRef());
         }
         
-        logCreated(node.getNodeRef(), newNode.getChildRef(), newNode.getParentRef(), nodeService.getPath(newNode.getChildRef()), false);
+        logCreated(node.getNodeRef(), newNode.getChildRef(), newNode.getParentRef(), nodeService.getPath(newNode.getChildRef()).toString(), false);
         
         // Deal with the content properties
         writeContent(newNode.getChildRef(), contentProps);
@@ -388,7 +387,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             }
             
             // Not alien or from another repo - delete it.
-            logDeleted(node.getNodeRef(), nodeToDelete, nodeService.getPath(nodeToDelete));
+            logDeleted(node.getNodeRef(), nodeToDelete, nodeService.getPath(nodeToDelete).toString());
             
             nodeService.deleteNode(nodeToDelete);
             if (log.isDebugEnabled())
@@ -489,7 +488,8 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             
             // Yes, we need to move the node
             ChildAssociationRef newNode = nodeService.moveNode(nodeToUpdate, parentNodeRef, parentAssocType, parentAssocName);
-            logMoved(node.getNodeRef(), nodeToUpdate, node.getParentPath(), newNode.getParentRef(), nodeService.getPath(newNode.getChildRef()));
+            logMoved(node.getNodeRef(), nodeToUpdate, node.getParentPath().toString(), newNode.getParentRef(), 
+                    nodeService.getPath(newNode.getChildRef()).toString());
             
             /**
              * are we adding an alien node here? The transfer service has policies disabled 
@@ -517,7 +517,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
         if (updateNeeded(node, nodeToUpdate))
         {
 
-            logUpdated(node.getNodeRef(), nodeToUpdate, nodeService.getPath(nodeToUpdate));
+            logUpdated(node.getNodeRef(), nodeToUpdate, nodeService.getPath(nodeToUpdate).toString());
             
             // We need to process content properties separately.
             // First, create a shallow copy of the supplied property map...
@@ -941,7 +941,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
         /**
          * For each property
          */
-        List<String> contentProps = new ArrayList();
+        List<String> contentProps = new ArrayList<String>();
         for (Serializable value : props.values())
         {
             if ((value != null) && ContentData.class.isAssignableFrom(value.getClass()))

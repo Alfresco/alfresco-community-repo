@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.TreeMap;
 
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferProgress;
 import org.alfresco.service.cmr.transfer.TransferProgress.Status;
@@ -106,14 +105,14 @@ import org.alfresco.service.cmr.transfer.TransferProgress.Status;
         delegate.logComment(transferId, obj);
     }
 
-    public void logCreated(String transferId, NodeRef sourceNode, NodeRef destNode, NodeRef newParent, Path newPath,
+    public void logCreated(String transferId, NodeRef sourceNode, NodeRef destNode, NodeRef newParent, String newPath,
             boolean orphan)
     {
         delegate.logCreated(transferId, sourceNode, destNode, newParent, newPath, orphan);
         getChangesRecord(transferId).addCreatedNode(destNode);
     }
 
-    public void logDeleted(String transferId, NodeRef sourceNode, NodeRef destNode, Path parentPath)
+    public void logDeleted(String transferId, NodeRef sourceNode, NodeRef destNode, String parentPath)
     {
         delegate.logDeleted(transferId, sourceNode, destNode, parentPath);
         getChangesRecord(transferId).addDeletedNode(destNode);
@@ -124,13 +123,13 @@ import org.alfresco.service.cmr.transfer.TransferProgress.Status;
         delegate.logException(transferId, obj, ex);
     }
 
-    public void logMoved(String transferId, NodeRef sourceNodeRef, NodeRef destNodeRef, Path oldPath,
-            NodeRef newParent, Path newPath)
+    public void logMoved(String transferId, NodeRef sourceNodeRef, NodeRef destNodeRef, String oldPath,
+            NodeRef newParent, String newPath)
     {
         delegate.logMoved(transferId, sourceNodeRef, destNodeRef, oldPath, newParent, newPath);
     }
 
-    public void logUpdated(String transferId, NodeRef sourceNode, NodeRef destNode, Path parentPath)
+    public void logUpdated(String transferId, NodeRef sourceNode, NodeRef destNode, String parentPath)
     {
         delegate.logUpdated(transferId, sourceNode, destNode, parentPath);
         getChangesRecord(transferId).addUpdatedNode(destNode);

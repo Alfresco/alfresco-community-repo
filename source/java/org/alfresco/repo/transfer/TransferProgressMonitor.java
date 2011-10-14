@@ -22,7 +22,6 @@ package org.alfresco.repo.transfer;
 import java.io.InputStream;
 
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferProgress;
 
@@ -61,17 +60,17 @@ public interface TransferProgressMonitor
      * @param newPath
      * @param orphan
      */
-    void logCreated(String transferId, NodeRef sourceNode, NodeRef destNode, NodeRef newParent, Path newPath, boolean orphan);
+    void logCreated(String transferId, NodeRef sourceNode, NodeRef destNode, NodeRef newParent, String newPath, boolean orphan);
     
     /**
      * Log the creation of a new node
      * @param transferId
      * @param sourceNode
      * @param destNode
-     * @param parentPath
+     * @param path The path of the updated node
      * @param orphan
      */
-    void logUpdated(String transferId, NodeRef sourceNode, NodeRef destNode, Path parentPath);
+    void logUpdated(String transferId, NodeRef sourceNode, NodeRef destNode, String path);
   
     
     /**
@@ -79,10 +78,10 @@ public interface TransferProgressMonitor
      * @param transferId
      * @param sourceNode
      * @param destNode
-     * @param parentPath
+     * @param path The path of the deleted node
      * @param orphan
      */
-    void logDeleted(String transferId, NodeRef sourceNode, NodeRef destNode, Path parentPath);
+    void logDeleted(String transferId, NodeRef sourceNode, NodeRef destNode, String path);
     
     /**
      * After the transfer has completed this method reads the log.
@@ -91,7 +90,7 @@ public interface TransferProgressMonitor
      */
 
     void logMoved(String transferId, NodeRef sourceNodeRef,
-            NodeRef destNodeRef, Path oldPath, NodeRef newParent, Path newPath);
+            NodeRef destNodeRef, String oldPath, NodeRef newParent, String newPath);
     
     /**
      * update the progress of the specified transfer 

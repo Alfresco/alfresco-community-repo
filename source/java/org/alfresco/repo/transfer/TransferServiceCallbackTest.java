@@ -612,9 +612,9 @@ public class TransferServiceCallbackTest extends TestCase
                         reportWriter.startTransferReport("UTF-8", writer);
                         reportWriter.writeComment("This is a comment");
                         reportWriter.writeChangeState("COMMITTING");
-                        reportWriter.writeCreated(file1, file1, folder1, new Path());
-                        reportWriter.writeDeleted(file3, file3, new Path());
-                        reportWriter.writeMoved(file2, file2, new Path(), folder1, new Path());
+                        reportWriter.writeCreated(file1, file1, folder1, "");
+                        reportWriter.writeDeleted(file3, file3, "");
+                        reportWriter.writeMoved(file2, file2, "", folder1, "");
                         reportWriter.endTransferReport();
                         return null;
                     }

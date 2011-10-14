@@ -22,7 +22,6 @@ package org.alfresco.repo.transfer;
 import java.io.InputStream;
 
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferProgress;
 import org.alfresco.service.cmr.transfer.TransferProgress.Status;
@@ -83,28 +82,28 @@ public class LoggingTransferProgressMonitorImpl implements TransferProgressMonit
     
     @Override
     public void logCreated(String transferId, NodeRef sourceNode,
-            NodeRef destNode, NodeRef parentNode, Path parentPath, boolean orphan)
+            NodeRef destNode, NodeRef parentNode, String parentPath, boolean orphan)
     {
         delegate.logCreated(transferId, sourceNode, destNode, parentNode, parentPath, orphan);
     }
     
     @Override
     public void logUpdated(String transferId, NodeRef sourceNode,
-            NodeRef destNode, Path parentPath)
+            NodeRef destNode, String parentPath)
     {
         delegate.logUpdated(transferId, sourceNode, destNode, parentPath);
     }
     
     @Override
     public void logMoved(String transferId, NodeRef sourceNode,
-            NodeRef destNode, Path oldPath, NodeRef parentNodeRef, Path parentPath)
+            NodeRef destNode, String oldPath, NodeRef parentNodeRef, String parentPath)
     {
         delegate.logMoved(transferId, sourceNode, destNode, oldPath, parentNodeRef, parentPath);
     }
     
     @Override
     public void logDeleted(String transferId, NodeRef sourceNode,
-            NodeRef destNode, Path parentPath)
+            NodeRef destNode, String parentPath)
     {
         delegate.logDeleted(transferId, sourceNode, destNode, parentPath);
         

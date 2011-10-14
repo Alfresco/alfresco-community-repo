@@ -30,7 +30,6 @@ import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestProcessor;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferProgress;
 import org.alfresco.service.cmr.transfer.TransferReceiver;
@@ -208,19 +207,19 @@ public abstract class AbstractManifestProcessorBase implements TransferManifestP
     {
         receiver.getProgressMonitor().logComment(transferId, message);
     }
-    protected void logCreated(NodeRef sourceNode, NodeRef destNode, NodeRef newParentNode, Path parentPath, boolean orphan)
+    protected void logCreated(NodeRef sourceNode, NodeRef destNode, NodeRef newParentNode, String parentPath, boolean orphan)
     {
         receiver.getProgressMonitor().logCreated(transferId, sourceNode, destNode, newParentNode, parentPath, orphan);
     }
-    protected void logDeleted(NodeRef sourceNode, NodeRef destNode, Path parentPath)
+    protected void logDeleted(NodeRef sourceNode, NodeRef destNode, String parentPath)
     {
         receiver.getProgressMonitor().logDeleted(transferId, sourceNode, destNode, parentPath);
     }
-    protected void logUpdated(NodeRef sourceNode, NodeRef destNode, Path newPath)
+    protected void logUpdated(NodeRef sourceNode, NodeRef destNode, String newPath)
     {
         receiver.getProgressMonitor().logUpdated(transferId, sourceNode, destNode, newPath);
     }
-    protected void logMoved(NodeRef sourceNode, NodeRef destNode, Path oldPath, NodeRef newParent, Path newPath)
+    protected void logMoved(NodeRef sourceNode, NodeRef destNode, String oldPath, NodeRef newParent, String newPath)
     {
         receiver.getProgressMonitor().logMoved(transferId, sourceNode, destNode, oldPath, newParent, newPath);
     }

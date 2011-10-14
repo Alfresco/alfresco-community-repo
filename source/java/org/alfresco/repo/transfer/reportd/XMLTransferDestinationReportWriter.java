@@ -25,7 +25,6 @@ import java.util.Date;
 import org.alfresco.repo.transfer.TransferDestinationReportWriter;
 import org.alfresco.repo.transfer.report.TransferReportModel;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.Path;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
@@ -157,7 +156,7 @@ public class XMLTransferDestinationReportWriter implements TransferDestinationRe
     }
 
     @Override
-    public void writeCreated(NodeRef sourceNodeRef, NodeRef newNode, NodeRef newParentNodeRef, Path newPath)
+    public void writeCreated(NodeRef sourceNodeRef, NodeRef newNode, NodeRef newParentNodeRef, String newPath)
     {
         try
         {
@@ -179,7 +178,7 @@ public class XMLTransferDestinationReportWriter implements TransferDestinationRe
     }
 
     @Override
-    public void writeDeleted(NodeRef sourceNodeRef, NodeRef deletedNode, Path oldPath)
+    public void writeDeleted(NodeRef sourceNodeRef, NodeRef deletedNode, String oldPath)
     {
         try
         {
@@ -200,7 +199,7 @@ public class XMLTransferDestinationReportWriter implements TransferDestinationRe
     }
 
     @Override
-    public void writeMoved(NodeRef sourceNodeRef, NodeRef updatedNode, Path oldPath, NodeRef newParentNodeRef, Path newPath)
+    public void writeMoved(NodeRef sourceNodeRef, NodeRef updatedNode, String oldPath, NodeRef newParentNodeRef, String newPath)
     {
         try
         {
@@ -222,7 +221,7 @@ public class XMLTransferDestinationReportWriter implements TransferDestinationRe
     }
 
     @Override
-    public void writeUpdated(NodeRef sourceNodeRef, NodeRef updatedNode, Path updatedPath)
+    public void writeUpdated(NodeRef sourceNodeRef, NodeRef updatedNode, String updatedPath)
     {
         try
         {
@@ -243,15 +242,14 @@ public class XMLTransferDestinationReportWriter implements TransferDestinationRe
     }
     
     
-    public void writeOldPath(Path path)
+    public void writeOldPath(String path)
     {
         try
         {
             AttributesImpl attributes = new AttributesImpl();
            
             writer.startElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_TRANSFER_OLD_PATH, PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_TRANSFER_OLD_PATH, attributes);        
-            String sPath = path.toString();
-            writer.characters(sPath.toCharArray(), 0, sPath.length());
+            writer.characters(path.toCharArray(), 0, path.length());
             writer.endElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_TRANSFER_OLD_PATH, PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_TRANSFER_OLD_PATH);        
         }
         catch (SAXException se)
@@ -261,15 +259,14 @@ public class XMLTransferDestinationReportWriter implements TransferDestinationRe
         }    
     }
     
-    public void writeDestinationPath(Path path)
+    public void writeDestinationPath(String path)
     {
         try
         {
             AttributesImpl attributes = new AttributesImpl();
            
             writer.startElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_TRANSFER_DEST_PATH, PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_TRANSFER_DEST_PATH, attributes);        
-            String sPath = path.toString();
-            writer.characters(sPath.toCharArray(), 0, sPath.length());
+            writer.characters(path.toCharArray(), 0, path.length());
             writer.endElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_TRANSFER_DEST_PATH, PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_TRANSFER_DEST_PATH);        
         }
         catch (SAXException se)

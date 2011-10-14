@@ -18,7 +18,6 @@
  */
 package org.alfresco.util.schemacomp.model;
 
-import java.util.List;
 
 /**
  * TODO: comment me!

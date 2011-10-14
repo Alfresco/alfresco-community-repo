@@ -21,11 +21,8 @@ package org.alfresco.util.schemacomp;
 
 import org.alfresco.util.schemacomp.model.Schema;
 import org.alfresco.util.schemacomp.model.Table;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 /**
  * TODO: comment me!
@@ -44,19 +41,19 @@ public class SchemaComparatorTest
         right = new Schema();
     }
 
-    @Test
-    public void canDetermineSameTables()
-    {
-        left.put(new Table("alf_node"));
-        left.put(new Table("table_in_left"));
-        left.put(new Table("in_both_but_different"));
-        right.put(new Table("alf_node"));
-        // Note this table is in different position in the RHS list.
-        Table rightTable = new Table("in_both_but_different");
-        right.put(rightTable);
-        right.put(new Table("table_in_right"));
-        
-        comparator = new SchemaComparator(left, right);
-        comparator.compare();
-    }
+//    @Test
+//    public void canDetermineSameTables()
+//    {
+//        left.put(new Table("alf_node"));
+//        left.put(new Table("table_in_left"));
+//        left.put(new Table("in_both_but_different"));
+//        right.put(new Table("alf_node"));
+//        // Note this table is in different position in the RHS list.
+//        Table rightTable = new Table("in_both_but_different");
+//        right.put(rightTable);
+//        right.put(new Table("table_in_right"));
+//        
+//        comparator = new SchemaComparator(left, right);
+//        comparator.compare();
+//    }
 }

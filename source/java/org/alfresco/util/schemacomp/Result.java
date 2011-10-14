@@ -18,9 +18,6 @@
  */
 package org.alfresco.util.schemacomp;
 
-import java.util.List;
-
-import org.alfresco.util.Pair;
 import org.alfresco.util.schemacomp.model.DbObject;
 
 /**

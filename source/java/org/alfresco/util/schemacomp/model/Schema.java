@@ -18,7 +18,6 @@
  */
 package org.alfresco.util.schemacomp.model;
 
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;

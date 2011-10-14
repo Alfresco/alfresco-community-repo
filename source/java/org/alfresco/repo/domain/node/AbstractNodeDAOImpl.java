@@ -169,9 +169,9 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      * Cache for the Node parent assocs:<br/>
      * KEY: NodeVersionKey<br/>
      * VALUE: ParentAssocs<br/>
-     * VALUE KEY: ChildByNameKey<br/s>
+     * VALUE KEY: None<br/s>
      */
-    private EntityLookupCache<NodeVersionKey, ParentAssocsInfo, ChildByNameKey> parentAssocsCache;
+    private EntityLookupCache<NodeVersionKey, ParentAssocsInfo, Serializable> parentAssocsCache;
         
     /**
      * Constructor.  Set up various instance-specific members such as caches and locks.
@@ -186,7 +186,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         nodesCache = new EntityLookupCache<Long, Node, NodeRef>(new NodesCacheCallbackDAO());
         aspectsCache = new EntityLookupCache<NodeVersionKey, Set<QName>, Serializable>(new AspectsCallbackDAO());
         propertiesCache = new EntityLookupCache<NodeVersionKey, Map<QName, Serializable>, Serializable>(new PropertiesCallbackDAO());
-        parentAssocsCache = new EntityLookupCache<NodeVersionKey, ParentAssocsInfo, ChildByNameKey>(new ParentAssocsCallbackDAO());
+        parentAssocsCache = new EntityLookupCache<NodeVersionKey, ParentAssocsInfo, Serializable>(new ParentAssocsCallbackDAO());
     }
 
     /**
@@ -338,9 +338,9 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      * 
      * @param parentAssocsCache     the cache
      */
-    public void setParentAssocsCache(SimpleCache<NodeVersionKey, ParentAssocsInfo> parentAssocsCache)
+    public void setParentAssocsCache(SimpleCache<NodeVersionKey, Serializable> parentAssocsCache)
     {
-        this.parentAssocsCache = new EntityLookupCache<NodeVersionKey, ParentAssocsInfo, ChildByNameKey>(
+        this.parentAssocsCache = new EntityLookupCache<NodeVersionKey, ParentAssocsInfo, Serializable>(
                 parentAssocsCache,
                 CACHE_REGION_PARENT_ASSOCS,
                 new ParentAssocsCallbackDAO());
@@ -2990,52 +2990,9 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
     }
 
-    // TODO: Take out the reverse-entity lookup, which is broken for non-primary assocs
     public Pair<Long, ChildAssociationRef> getChildAssoc(Long parentNodeId, QName assocTypeQName, String childName)
     {
-        ChildByNameKey valueKey = new ChildByNameKey(parentNodeId, assocTypeQName, childName);
-        
-        // cache-only operation: try reverse lookup on parentAssocs (note: for primary assoc only)
-        NodeVersionKey childNodeVersionKey = parentAssocsCache.getKey(valueKey);
-        if (childNodeVersionKey != null)
-        {
-            Long childNodeId = childNodeVersionKey.getNodeId();
-            NodeVersionKey nodeVersionKeyInCache = getNodeNotNull(childNodeId).getNodeVersionKey();
-            if (!nodeVersionKeyInCache.equals(childNodeVersionKey))
-            {
-                // The child node linked in the cache does not match our current node entry
-                invalidateNodeCaches(childNodeId);
-                throw new ConcurrencyFailureException(
-                        "Child node found in parent-child lookup does not match current node entry: \n" +
-                        "   Child node from parentAssocsCache: " + childNodeVersionKey + "\n" +
-                        "   Child node from nodeCache:         " + nodeVersionKeyInCache);
-            }
-            Pair<NodeVersionKey, ParentAssocsInfo> value = parentAssocsCache.getByKey(childNodeVersionKey);
-            if (value != null)
-            {
-                ChildAssocEntity assoc = value.getSecond().getPrimaryParentAssoc();
-                if (assoc == null)
-                {
-                    return null;
-                }
-                
-                Pair<Long, ChildAssociationRef> result = assoc.getPair(qnameDAO);
-                if (result.getSecond().getTypeQName().equals(assocTypeQName))
-                {
-                    return result;
-                }
-            }
-        }
-        
-        // TODO could refactor as single select to get parent assocs by child name
         ChildAssocEntity assoc = selectChildAssoc(parentNodeId, assocTypeQName, childName);
-        if (assoc != null)
-        {
-            childNodeVersionKey = assoc.getChildNode().getNodeVersionKey();
-            // additional lookup to populate cache - note: also pulls in 2ndary assocs
-            parentAssocsCache.getByKey(childNodeVersionKey);
-        }
-        
         return assoc == null ? null : assoc.getPair(qnameDAO);
     }
 
@@ -3476,7 +3433,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      * @author Derek Hulley
      * @since 3.4
      */
-    private class ParentAssocsCallbackDAO extends EntityLookupCallbackDAOAdaptor<NodeVersionKey, ParentAssocsInfo, ChildByNameKey>
+    private class ParentAssocsCallbackDAO extends EntityLookupCallbackDAOAdaptor<NodeVersionKey, ParentAssocsInfo, Serializable>
     {
         public Pair<NodeVersionKey, ParentAssocsInfo> createValue(ParentAssocsInfo value)
         {
@@ -3518,24 +3475,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             
             // Done
             return new Pair<NodeVersionKey, ParentAssocsInfo>(nodeVersionKey, value);
-        }
-        
-        @Override
-        public ChildByNameKey getValueKey(ParentAssocsInfo value)
-        {
-            ChildAssocEntity entity = value.getPrimaryParentAssoc();
-            
-            if (entity != null)
-            {
-                return new ChildByNameKey(entity.getParentNode().getId(), qnameDAO.getQName(entity.getTypeQNameId()).getSecond(), entity.getChildNodeName());
-            }
-            
-            return null;
-        }
-        
-        public Pair<NodeVersionKey, ParentAssocsInfo> findByValue(ParentAssocsInfo value)
-        {
-            return findByKey(value.getPrimaryParentAssoc().getChildNode().getNodeVersionKey());
         }
     }
     

@@ -44,7 +44,6 @@ import org.apache.commons.logging.LogFactory;
     
     private static Set<Long> warnedDuplicateParents = new HashSet<Long>(3);
 
-    private final Long txnId;
     private final boolean isRoot;
     private final boolean isStoreRoot;
     private final Long primaryAssocId;
@@ -53,16 +52,15 @@ import org.apache.commons.logging.LogFactory;
     /**
      * Constructor to provide clean initial version of a Node's parent association
      */
-    ParentAssocsInfo(Long txnId, boolean isRoot, boolean isStoreRoot, ChildAssocEntity parent)
+    ParentAssocsInfo(boolean isRoot, boolean isStoreRoot, ChildAssocEntity parent)
     {
-        this(txnId, isRoot, isStoreRoot, Collections.singletonList(parent));
+        this(isRoot, isStoreRoot, Collections.singletonList(parent));
     }
     /**
      * Constructor to provide clean initial version of a Node's parent associations
      */
-    ParentAssocsInfo(Long txnId, boolean isRoot, boolean isStoreRoot, List<? extends ChildAssocEntity> parents)
+    ParentAssocsInfo(boolean isRoot, boolean isStoreRoot, List<? extends ChildAssocEntity> parents)
     {
-        this.txnId = txnId;
         this.isRoot = isRoot;
         this.isStoreRoot = isStoreRoot;
         Long primaryAssocId = null;
@@ -107,13 +105,11 @@ import org.apache.commons.logging.LogFactory;
      * Private constructor used to copy existing values.
      */
     private ParentAssocsInfo(
-            Long txnId,
             boolean isRoot,
             boolean isStoreRoot,
             Map<Long, ChildAssocEntity> parentAssocsById,
             Long primaryAssocId)
     {
-        this.txnId = txnId;
         this.isRoot = isRoot;
         this.isStoreRoot = isStoreRoot;
         this.parentAssocsById = Collections.unmodifiableMap(parentAssocsById);
@@ -125,18 +121,12 @@ import org.apache.commons.logging.LogFactory;
     {
         StringBuilder builder = new StringBuilder();
         builder.append("ParentAssocsInfo ")
-               .append("[txnId=").append(txnId)
-			   .append(", isRoot=").append(isRoot)
+               .append("[isRoot=").append(isRoot)
                .append(", isStoreRoot=").append(isStoreRoot)
                .append(", parentAssocsById=").append(parentAssocsById)
                .append(", primaryAssocId=").append(primaryAssocId)
                .append("]");
         return builder.toString();
-    }
-
-    public Long getTxnId()
-    {
-        return txnId;
     }
 
     public boolean isRoot()
@@ -161,25 +151,25 @@ import org.apache.commons.logging.LogFactory;
     
     public ParentAssocsInfo changeIsRoot(boolean isRoot, Long txnId)
     {
-        return new ParentAssocsInfo(txnId, isRoot, this.isRoot, parentAssocsById, primaryAssocId);
+        return new ParentAssocsInfo(isRoot, this.isRoot, parentAssocsById, primaryAssocId);
     }
 
     public ParentAssocsInfo changeIsStoreRoot(boolean isStoreRoot, Long txnId)
     {
-        return new ParentAssocsInfo(txnId, this.isRoot, isStoreRoot, parentAssocsById, primaryAssocId);
+        return new ParentAssocsInfo(this.isRoot, isStoreRoot, parentAssocsById, primaryAssocId);
     }
 
     public ParentAssocsInfo addAssoc(Long assocId, ChildAssocEntity parentAssoc, Long txnId)
     {
         Map<Long, ChildAssocEntity> parentAssocs = new HashMap<Long, ChildAssocEntity>(parentAssocsById);
         parentAssocs.put(parentAssoc.getId(), parentAssoc);
-        return new ParentAssocsInfo(txnId, isRoot, isStoreRoot, parentAssocs, primaryAssocId);
+        return new ParentAssocsInfo(isRoot, isStoreRoot, parentAssocs, primaryAssocId);
     }
 
     public ParentAssocsInfo removeAssoc(Long assocId, Long txnId)
     {
         Map<Long, ChildAssocEntity> parentAssocs = new HashMap<Long, ChildAssocEntity>(parentAssocsById);
         parentAssocs.remove(assocId);
-        return new ParentAssocsInfo(txnId, isRoot, isStoreRoot, parentAssocs, primaryAssocId);
+        return new ParentAssocsInfo(isRoot, isStoreRoot, parentAssocs, primaryAssocId);
     }
 }

@@ -119,10 +119,12 @@
     <resultMap id="result_ChildAssoc" type="ChildAssoc">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="parentNode.id" column="parentNodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="parentNode.version" column="parentNodeVersion" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="parentNode.store.protocol" column="parentNodeProtocol" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="parentNode.store.identifier" column="parentNodeIdentifier" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="parentNode.uuid" column="parentNodeUuid" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="childNode.id" column="childNodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="childNode.version" column="childNodeVersion" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="childNode.store.protocol" column="childNodeProtocol" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="childNode.store.identifier" column="childNodeIdentifier" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="childNode.uuid" column="childNodeUuid" jdbcType="VARCHAR" javaType="java.lang.String"/>
@@ -880,10 +882,12 @@
         select
             assoc.id                    as id,
             parentNode.id               as parentNodeId,
+            parentNode.version          as parentNodeVersion,
             parentStore.protocol        as parentNodeProtocol,
             parentStore.identifier      as parentNodeIdentifier,
             parentNode.uuid             as parentNodeUuid,
             childNode.id                as childNodeId,
+            childNode.version           as childNodeVersion,
             childStore.protocol         as childNodeProtocol,
             childStore.identifier       as childNodeIdentifier,
             childNode.uuid              as childNodeUuid,
@@ -894,10 +898,6 @@
             assoc.qname_localname       as qname_localname,
             assoc.is_primary            as is_primary,
             assoc.assoc_index           as assoc_index
-    </sql>
-    <sql id="select_ChildAssocTxnId_Results">
-        <include refid="alfresco.node.select_ChildAssoc_Results"/>
-            ,childNode.transaction_id   as childNodeTxnId
     </sql>
     <sql id="select_ChildAssoc_FromSimple">
         from
@@ -1140,7 +1140,7 @@
     </select>
 
     <select id="select_ParentAssocsOfChild" parameterType="ChildAssoc" resultMap="result_ChildAssocTxnId">
-        <include refid="alfresco.node.select_ChildAssocTxnId_Results"/>
+        <include refid="alfresco.node.select_ChildAssoc_Results"/>
         <include refid="alfresco.node.select_ChildAssoc_FromSimple"/>
         where
             childNode.id = #{childNode.id}

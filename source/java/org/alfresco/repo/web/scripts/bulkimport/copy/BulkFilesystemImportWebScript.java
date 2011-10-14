@@ -36,8 +36,6 @@ import org.alfresco.repo.bulkimport.impl.StreamingNodeImporterFactory;
 import org.alfresco.repo.web.scripts.bulkimport.AbstractBulkFileSystemImportWebScript;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
@@ -51,8 +49,6 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class BulkFilesystemImportWebScript extends AbstractBulkFileSystemImportWebScript
 {
-    private final static Log logger = LogFactory.getLog(BulkFilesystemImportWebScript.class);
-    
     private MultiThreadedBulkFilesystemImporter bulkImporter;
 	private StreamingNodeImporterFactory nodeImporterFactory;
 
@@ -79,6 +75,7 @@ public class BulkFilesystemImportWebScript extends AbstractBulkFileSystemImportW
         String replaceExistingStr = null;
         String batchSizeStr = null;
         String numThreadsStr = null;
+        String disableRulesStr = null;
 
         cache.setNeverCache(true);
         
@@ -91,6 +88,7 @@ public class BulkFilesystemImportWebScript extends AbstractBulkFileSystemImportW
                 boolean replaceExisting = false;
                 int batchSize = bulkImporter.getDefaultBatchSize();
                 int numThreads = bulkImporter.getDefaultNumThreads();
+                boolean disableRules = false;
                 
                 // Retrieve, validate and convert parameters
                 targetNodeRefStr = request.getParameter(PARAMETER_TARGET_NODEREF);
@@ -99,6 +97,7 @@ public class BulkFilesystemImportWebScript extends AbstractBulkFileSystemImportW
                 replaceExistingStr = request.getParameter(PARAMETER_REPLACE_EXISTING);
                 batchSizeStr = request.getParameter(PARAMETER_BATCH_SIZE);
                 numThreadsStr = request.getParameter(PARAMETER_NUM_THREADS);
+                disableRulesStr = request.getParameter(PARAMETER_DISABLE_RULES);
 
                 targetNodeRef = getTargetNodeRef(targetNodeRefStr, targetPath);
                 
@@ -114,9 +113,13 @@ public class BulkFilesystemImportWebScript extends AbstractBulkFileSystemImportW
                     replaceExisting = PARAMETER_VALUE_REPLACE_EXISTING.equals(replaceExistingStr);
                 }
 
+                if (disableRulesStr != null && disableRulesStr.trim().length() > 0)
+                {
+                    disableRules = PARAMETER_VALUE_DISABLE_RULES.equals(disableRulesStr);
+                }
+
                 // Initiate the import
                 NodeImporter nodeImporter = nodeImporterFactory.getNodeImporter(sourceDirectory);
-                //bulkImporter.asyncBulkImport(targetNodeRef, nodeImporter, replaceExisting);
                 BulkImportParameters bulkImportParameters = new BulkImportParameters();
                 
                 if (numThreadsStr != null && numThreadsStr.trim().length() > 0)
@@ -155,6 +158,7 @@ public class BulkFilesystemImportWebScript extends AbstractBulkFileSystemImportW
 
                 bulkImportParameters.setReplaceExisting(replaceExisting);
                 bulkImportParameters.setTarget(targetNodeRef);
+                bulkImportParameters.setDisableRulesService(disableRules);
 
                 bulkImporter.asyncBulkImport(bulkImportParameters, nodeImporter);
 

@@ -30,11 +30,14 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Date;
 
+import org.alfresco.repo.bulkimport.BulkFilesystemImporter;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.WebScriptException;
 
@@ -43,6 +46,8 @@ import org.springframework.extensions.webscripts.WebScriptException;
  */
 public class AbstractBulkFileSystemImportWebScript extends DeclarativeWebScript
 {
+    protected static final Log logger = LogFactory.getLog(BulkFilesystemImporter.class);
+    
     protected static final String WEB_SCRIPT_URI_BULK_FILESYSTEM_IMPORT_STATUS = "/bulk/import/filesystem/status";
     
 	protected static final String PARAMETER_TARGET_NODEREF = "targetNodeRef";
@@ -55,13 +60,15 @@ public class AbstractBulkFileSystemImportWebScript extends DeclarativeWebScript
 	protected static final String PARAMETER_REPLACE_EXISTING        = "replaceExisting";
 	protected static final String PARAMETER_VALUE_REPLACE_EXISTING 	= "replaceExisting";
 	protected static final String PARAMETER_SOURCE_DIRECTORY       	= "sourceDirectory";
-	
+	protected static final String PARAMETER_DISABLE_RULES		    = "disableRules";
+	protected static final String PARAMETER_VALUE_DISABLE_RULES		= "disableRules";
+
 	protected static final String IMPORT_ALREADY_IN_PROGRESS_MODEL_KEY = "importInProgress";
 	protected static final String IMPORT_ALREADY_IN_PROGRESS_ERROR_KEY ="bfsit.error.importAlreadyInProgress";
 
 	protected static final String PARAMETER_BATCH_SIZE              = "batchSize";
 	protected static final String PARAMETER_NUM_THREADS             = "numThreads";
-
+	
 	protected FileFolderService fileFolderService;
 	protected Repository repository;
 	   

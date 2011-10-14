@@ -82,6 +82,9 @@
           <td colspan="3">&nbsp;</td>
         </tr>
         <tr>
+          <td><label for="disableRules">Disable rules:</label></td><td><input type="checkbox" id="disableRules" name="disableRules" value="disableRules" unchecked/> (unchecked means rules are enabled during the import)</td><td></td>
+        </tr>
+        <tr>
           <td><label for="replaceExisting">Replace existing files:</label></td><td><input type="checkbox" id="replaceExisting" name="replaceExisting" value="replaceExisting" unchecked/> (unchecked means skip files that already exist in the repository)</td><td></td>
         </tr>
         <tr>

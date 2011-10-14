@@ -41,8 +41,7 @@ public interface BulkFilesystemImporter
      * @param source         The source directory on the local filesystem to read content from <i>(must not be null and must be a valid, readable directory on the local filesystem)</i>.
      * @param replaceExisting A flag indicating whether to replace (true) or skip (false) files that are already in the repository.
      */
-//    void bulkImport(NodeRef target, NodeImporter importStrategy, boolean replaceExisting);
-    public void bulkImport(BulkImportParameters bulkImportParameters, NodeImporter nodeImporter);
+    void bulkImport(BulkImportParameters bulkImportParameters, NodeImporter nodeImporter);
 
     /**
      * Initiates a bulk filesystem import asynchronously i.e. in a background thread.
@@ -52,8 +51,7 @@ public interface BulkFilesystemImporter
      * @param source         The source directory on the local filesystem to read content from <i>(must not be null and must be a valid, readable directory on the local filesystem)</i>.
      * @param replaceExisting A flag indicating whether to replace (true) or skip (false) files that are already in the repository.
      */
-//    void asyncBulkImport(NodeRef target, NodeImporter nodeImporter, boolean replaceExisting);
-    public void asyncBulkImport(BulkImportParameters bulkImportParameters, NodeImporter nodeImporter);
+    void asyncBulkImport(BulkImportParameters bulkImportParameters, NodeImporter nodeImporter);
     
     /**
      * @return A status object that describes the current state of the bulk filesystem importer.

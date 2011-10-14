@@ -67,6 +67,7 @@
     <property name="permissionService"   ref="permissionService" />
     <property name="jobLockService"      ref="jobLockService"/>
     <property name="behaviourFilter"     ref="policyBehaviourFilter" />
+    <property name="ruleService"         ref="ruleService" />
 
     <property name="directoryAnalyser"   ref="bfsiDirectoryAnalyser" />    
     <property name="importStatus"        ref="bfsiStatus" />

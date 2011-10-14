@@ -5,11 +5,20 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public class BulkImportParameters
 {
 	private NodeRef target;
-	private boolean replaceExisting;
+	private boolean replaceExisting = false;
 	private Integer batchSize;
 	private Integer numThreads;
 	private Integer loggingInterval;
+	private boolean disableRulesService = false;
 	
+	public boolean isDisableRulesService()
+	{
+		return disableRulesService;
+	}
+	public void setDisableRulesService(boolean disableRulesService)
+	{
+		this.disableRulesService = disableRulesService;
+	}
 	public Integer getLoggingInterval()
 	{
 		return loggingInterval;

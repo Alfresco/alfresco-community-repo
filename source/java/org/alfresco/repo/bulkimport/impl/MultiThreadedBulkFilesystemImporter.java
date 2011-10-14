@@ -32,6 +32,7 @@ import org.alfresco.repo.bulkimport.BulkImportParameters;
 import org.alfresco.repo.bulkimport.FilesystemTracker;
 import org.alfresco.repo.bulkimport.ImportableItem;
 import org.alfresco.repo.bulkimport.NodeImporter;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -64,11 +65,17 @@ public abstract class MultiThreadedBulkFilesystemImporter extends AbstractBulkFi
     {
         return bulkImportParameters.getNumThreads() != null ? bulkImportParameters.getNumThreads() : defaultNumThreads;    	
     }
+    
+    protected void handleRuleService(final BulkImportParameters bulkImportParameters)
+    {
+    	
+    }
 
     protected BatchProcessor.BatchProcessWorker<ImportableItem> getWorker(final BulkImportParameters bulkImportParameters, final String lockToken,
     		final NodeImporter nodeImporter, final FilesystemTracker filesystemTracker)
     {
         final int batchSize = bulkImportParameters.getBatchSize() != null ? bulkImportParameters.getBatchSize() : defaultBatchSize;
+        final boolean rulesEnabled = ruleService.isEnabled();
 
         BatchProcessor.BatchProcessWorker<ImportableItem> worker = new BatchProcessor.BatchProcessWorker<ImportableItem>()
         {
@@ -80,30 +87,47 @@ public abstract class MultiThreadedBulkFilesystemImporter extends AbstractBulkFi
             public void beforeProcess() throws Throwable
             {
                 refreshLock(lockToken, batchSize * 250L);
-                // TODO this throws exception txn not started??
+                if(bulkImportParameters.isDisableRulesService() && rulesEnabled)
+                {
+                	ruleService.disableRules();
+                }
+                
                 // Disable the auditable aspect's behaviours for this transaction only, to allow creation & modification dates to be set 
-            	//behaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
+                transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+				{
+					@Override
+					public Void execute() throws Throwable
+					{
+		            	behaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
+						return null;
+					}
+				});
             }
 
             public void afterProcess() throws Throwable
             {
+                if(bulkImportParameters.isDisableRulesService() && rulesEnabled)
+                {
+                	ruleService.enableRules();
+                }
+
             	importStatus.incrementNumberOfBatchesCompleted();
-        		//behaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
+
+                transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+				{
+					@Override
+					public Void execute() throws Throwable
+					{
+						behaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
+						return null;
+					}
+				});
             }
-            
+
             public void process(final ImportableItem importableItem) throws Throwable
             {
-            	try
-            	{
-	            	behaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
-	            	NodeRef nodeRef = nodeImporter.importImportableItem(importableItem, bulkImportParameters.isReplaceExisting());
-	            	filesystemTracker.itemImported(nodeRef, importableItem);
-//	            	importableItem.setNodeRef(nodeRef);
-            	}
-            	finally
-            	{
-            		behaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
-            	}
+            	NodeRef nodeRef = nodeImporter.importImportableItem(importableItem, bulkImportParameters.isReplaceExisting());
+            	filesystemTracker.itemImported(nodeRef, importableItem);
             }
         };
 

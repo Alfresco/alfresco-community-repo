@@ -47,6 +47,7 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -76,6 +77,7 @@ public abstract class AbstractBulkFilesystemImporter implements BulkFilesystemIm
     protected TransactionService transactionService;
     protected PermissionService permissionService;
     protected RetryingTransactionHelper transactionHelper;
+    protected RuleService ruleService;
 
     protected BulkImportStatusImpl importStatus;
     protected DirectoryAnalyser directoryAnalyser = null;
@@ -84,6 +86,11 @@ public abstract class AbstractBulkFilesystemImporter implements BulkFilesystemIm
     
     protected BehaviourFilter behaviourFilter;
     
+	public void setRuleService(RuleService ruleService)
+	{
+		this.ruleService = ruleService;
+	}
+
 	public void setBehaviourFilter(BehaviourFilter behaviourFilter)
 	{
 		this.behaviourFilter = behaviourFilter;

@@ -242,6 +242,8 @@ public class FileFolderPerformanceTester extends TestCase
                                     NodeRef nodeRef = fileInfo.getNodeRef();
                                     // write the content
                                     ContentWriter writer = fileFolderService.getWriter(nodeRef);
+                                    writer.setEncoding("UTF-8");
+                                    writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
                                     writer.putContent(dataFile);
                                 }
                                 // done

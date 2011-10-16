@@ -149,24 +149,24 @@ import org.apache.commons.logging.LogFactory;
         return (primaryAssocId != null) ? parentAssocsById.get(primaryAssocId) : null;
     }
     
-    public ParentAssocsInfo changeIsRoot(boolean isRoot, Long txnId)
+    public ParentAssocsInfo changeIsRoot(boolean isRoot)
     {
         return new ParentAssocsInfo(isRoot, this.isRoot, parentAssocsById, primaryAssocId);
     }
 
-    public ParentAssocsInfo changeIsStoreRoot(boolean isStoreRoot, Long txnId)
+    public ParentAssocsInfo changeIsStoreRoot(boolean isStoreRoot)
     {
         return new ParentAssocsInfo(this.isRoot, isStoreRoot, parentAssocsById, primaryAssocId);
     }
 
-    public ParentAssocsInfo addAssoc(Long assocId, ChildAssocEntity parentAssoc, Long txnId)
+    public ParentAssocsInfo addAssoc(Long assocId, ChildAssocEntity parentAssoc)
     {
         Map<Long, ChildAssocEntity> parentAssocs = new HashMap<Long, ChildAssocEntity>(parentAssocsById);
         parentAssocs.put(parentAssoc.getId(), parentAssoc);
         return new ParentAssocsInfo(isRoot, isStoreRoot, parentAssocs, primaryAssocId);
     }
 
-    public ParentAssocsInfo removeAssoc(Long assocId, Long txnId)
+    public ParentAssocsInfo removeAssoc(Long assocId)
     {
         Map<Long, ChildAssocEntity> parentAssocs = new HashMap<Long, ChildAssocEntity>(parentAssocsById);
         parentAssocs.remove(assocId);

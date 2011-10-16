@@ -40,6 +40,12 @@ public class SchemaComparatorTest
         left = new Schema();
         right = new Schema();
     }
+    
+    @Test
+    public void check()
+    {
+        
+    }
 
 //    @Test
 //    public void canDetermineSameTables()

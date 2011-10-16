@@ -91,27 +91,16 @@
    <!-- Rule triggers -->
    
    <bean id="rule-trigger-base" abstract="true" init-method="registerRuleTrigger">
-      <property name="policyComponent">
-         <ref bean="policyComponent"/>
-      </property>
-      <property name="nodeService">
-         <ref bean="nodeService"/>
-      </property>
-      <property name="contentService">
-         <ref bean="contentService"/>
-      </property>
-      <property name="authenticationComponent">
-         <ref bean="authenticationComponent"/>
-      </property>
-      <property name="dictionaryService">
-         <ref bean="dictionaryService"/>
-      </property>
+      <property name="policyComponent" ref="policyComponent"/>
+      <property name="nodeService" ref="nodeService"/>
+      <property name="contentService" ref="contentService"/>
+      <property name="authenticationComponent" ref="authenticationComponent"/>
+      <property name="dictionaryService" ref="dictionaryService"/>
+      <property name="ruleService" ref="ruleService"/>
    </bean>
    
    <bean id="on-create-node-trigger" class="org.alfresco.repo.rule.ruletrigger.CreateNodeRuleTrigger" parent="rule-trigger-base">
-      <property name="ruleService">
-          <ref bean="ruleService"/>
-      </property>
+      <property name="runtimeRuleService" ref="ruleService"/>
       <property name="isClassBehaviour">
            <value>true</value>
       </property>

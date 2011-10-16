@@ -21,7 +21,6 @@ package org.alfresco.service.cmr.rule;
 import java.util.List;
 
 import org.alfresco.service.Auditable;
-import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 

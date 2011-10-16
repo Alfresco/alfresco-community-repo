@@ -40,6 +40,7 @@ import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListener;
+import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ActionServiceException;
@@ -79,6 +80,12 @@ public class RuleServiceImpl
                 NodeServicePolicies.OnUpdateNodePolicy,
                 NodeServicePolicies.OnAddAspectPolicy
 {
+    /** key against which to store disabled rule types in the current txn */
+    private static final String KEY_DISABLED_RULE_TYPES = "RuleServiceImpl.disabledRuleTypes";
+    
+    /** key against which to store disabled rule nodes in the current txn */
+    private static final String KEY_DISABLED_RULE_NODES = "RuleServiceImpl.disabledRuleNodes";
+    
     /** key against which to store rules pending on the current transaction */
     private static final String KEY_RULES_PENDING = "RuleServiceImpl.PendingRules";
     
@@ -117,22 +124,11 @@ public class RuleServiceImpl
     private SimpleCache<NodeRef, List<Rule>> nodeRulesCache;
        
     /**
-     * List of disabled node refs.  The rules associated with these nodes will node be added to the pending list, and
-     * therefore not fired.  This list is transient.
-     * 
-     * TODO: (DH) Make this txn-local
-     */
-    private Set<NodeRef> disabledNodeRefs = new HashSet<NodeRef>(5);
-    
-    /**
      * List of disabled rules.  Any rules that appear in this list will not be added to the pending list and therefore
      * not fired.
      */
     private Set<Rule> disabledRules = new HashSet<Rule>(5);
     
-    /** List of disables rule types */
-    private Set<String> disabledRuleTypes = new HashSet<String>(3);
-
     /**
      * All the rule type currently registered
      */
@@ -388,21 +384,22 @@ public class RuleServiceImpl
     @Override
     public boolean rulesEnabled(NodeRef nodeRef)
     {
-        return (this.disabledNodeRefs.contains(nodeRef) == false);
+        Set<NodeRef> disabledRuleNodes = TransactionalResourceHelper.getSet(KEY_DISABLED_RULE_NODES);
+        return !disabledRuleNodes.contains(nodeRef);
     }
 
     @Override
     public void disableRules(NodeRef nodeRef)
     {
-        // Add the node to the set of disabled nodes
-        this.disabledNodeRefs.add(nodeRef);
+        Set<NodeRef> disabledRuleNodes = TransactionalResourceHelper.getSet(KEY_DISABLED_RULE_NODES);
+        disabledRuleNodes.add(nodeRef);
     }
 
     @Override
     public void enableRules(NodeRef nodeRef)
     {
-        // Remove the node from the set of disabled nodes
-        this.disabledNodeRefs.remove(nodeRef);
+        Set<NodeRef> disabledRuleNodes = TransactionalResourceHelper.getSet(KEY_DISABLED_RULE_NODES);
+        disabledRuleNodes.remove(nodeRef);
     }
     
     @Override
@@ -420,24 +417,22 @@ public class RuleServiceImpl
     @Override
     public void disableRuleType(String ruleType)
     {
+        Set<String> disabledRuleTypes = TransactionalResourceHelper.getSet(KEY_DISABLED_RULE_TYPES);
     	disabledRuleTypes.add(ruleType);
     }
 
     @Override
     public void enableRuleType(String ruleType)
     {
-    	disabledRuleTypes.remove(ruleType);
+        Set<String> disabledRuleTypes = TransactionalResourceHelper.getSet(KEY_DISABLED_RULE_TYPES);
+        disabledRuleTypes.remove(ruleType);
     }
     
     @Override
     public boolean isRuleTypeEnabled(String ruleType)
     {
-    	boolean result = true;
-    	if (disabledRuleTypes.contains(ruleType) == true)
-    	{
-    		result = false;    		
-    	}
-    	return result;
+        Set<String> disabledRuleTypes = TransactionalResourceHelper.getSet(KEY_DISABLED_RULE_TYPES);
+        return !disabledRuleTypes.contains(ruleType);
     }
     
     @Override
@@ -1021,7 +1016,7 @@ public class RuleServiceImpl
         
         // First check to see if the node has been disabled
         if (this.isEnabled() == true &&
-            this.disabledNodeRefs.contains(this.getOwningNodeRef(rule)) == false &&
+            this.rulesEnabled(this.getOwningNodeRef(rule)) &&
             this.disabledRules.contains(rule) == false)
         {
             PendingRuleData pendingRuleData = new PendingRuleData(actionableNodeRef, actionedUponNodeRef, rule, executeAtEnd);

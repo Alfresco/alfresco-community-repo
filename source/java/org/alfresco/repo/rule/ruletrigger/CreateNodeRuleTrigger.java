@@ -59,7 +59,7 @@ public class CreateNodeRuleTrigger extends RuleTriggerAbstractBase
     private boolean isClassBehaviour = false;
 	
     /** Runtime rule service */
-	RuntimeRuleService ruleService;
+	RuntimeRuleService runtimeRuleService;
     
 	/**
 	 * Set whether this is a class behaviour or not
@@ -72,9 +72,9 @@ public class CreateNodeRuleTrigger extends RuleTriggerAbstractBase
     /**
      * Set the rule service
      */
-    public void setRuleService(RuntimeRuleService ruleService)
+    public void setRuntimeRuleService(RuntimeRuleService runtimeRuleService)
     {
-        this.ruleService = ruleService;
+        this.runtimeRuleService = runtimeRuleService;
     }
     
     /**
@@ -113,6 +113,11 @@ public class CreateNodeRuleTrigger extends RuleTriggerAbstractBase
      */
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
+        // Break out early if rules are not enabled
+        if (!areRulesEnabled())
+        {
+            return;
+        }
         NodeRef nodeRef = childAssocRef.getChildRef();
 
         // Keep track of new nodes to prevent firing of updates in the same transaction
@@ -156,7 +161,7 @@ public class CreateNodeRuleTrigger extends RuleTriggerAbstractBase
         }
         
         // Removes any rules that have already been triggered for that node
-        ruleService.removeRulePendingExecution(nodeRef);
+        runtimeRuleService.removeRulePendingExecution(nodeRef);
     }
     
     /**

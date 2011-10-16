@@ -925,7 +925,7 @@ public class RuleServiceCoverageTest extends TestCase
         
         this.ruleService.saveRule(this.nodeRef, rule);
 
-        MailActionExecuter mailService = (MailActionExecuter) ((ApplicationContextFactory) this.applicationContext
+        MailActionExecuter mailService = (MailActionExecuter) ((ApplicationContextFactory) applicationContext
                     .getBean("OutboundSMTP")).getApplicationContext().getBean("mail");
         mailService.setTestMode(true);
         mailService.clearLastTestMessage();
@@ -965,7 +965,7 @@ public class RuleServiceCoverageTest extends TestCase
 
         String illegalName = "MyName.txt "; // space at end
         
-        MailActionExecuter mailService = (MailActionExecuter) ((ApplicationContextFactory) this.applicationContext
+        MailActionExecuter mailService = (MailActionExecuter) ((ApplicationContextFactory) applicationContext
                     .getBean("OutboundSMTP")).getApplicationContext().getBean("mail");
         mailService.setTestMode(true);
         mailService.clearLastTestMessage();
@@ -1399,28 +1399,45 @@ public class RuleServiceCoverageTest extends TestCase
         		NoConditionEvaluator.NAME, 
         		null);
         
-        this.ruleService.saveRule(this.nodeRef, rule);        
-        this.ruleService.disableRules(this.nodeRef);
-        
-        NodeRef newNodeRef = this.nodeService.createNode(
-                this.nodeRef,
-                ContentModel.ASSOC_CHILDREN,                
-                QName.createQName(TEST_NAMESPACE, "children"),
-                ContentModel.TYPE_CONTENT,
-                getContentProperties()).getChildRef();         
-        addContentToNode(newNodeRef);
-        assertFalse(this.nodeService.hasAspect(newNodeRef, ContentModel.ASPECT_VERSIONABLE));      
-        
-        this.ruleService.enableRules(this.nodeRef);
-        
-        NodeRef newNodeRef2 = this.nodeService.createNode(
-                this.nodeRef,
-                ContentModel.ASSOC_CHILDREN,                
-                QName.createQName(TEST_NAMESPACE, "children"),
-                ContentModel.TYPE_CONTENT,
-                getContentProperties()).getChildRef();        
-        addContentToNode(newNodeRef2);
-        assertTrue(this.nodeService.hasAspect(newNodeRef2, ContentModel.ASPECT_VERSIONABLE));       
+        this.ruleService.saveRule(this.nodeRef, rule);
+
+        RetryingTransactionCallback<NodeRef> noRulesWork = new RetryingTransactionCallback<NodeRef>()
+        {
+            @Override
+            public NodeRef execute() throws Throwable
+            {
+                ruleService.disableRules(nodeRef);
+                
+                NodeRef newNodeRef = nodeService.createNode(
+                        nodeRef,
+                        ContentModel.ASSOC_CHILDREN,                
+                        QName.createQName(TEST_NAMESPACE, "children"),
+                        ContentModel.TYPE_CONTENT,
+                        getContentProperties()).getChildRef();         
+                addContentToNode(newNodeRef);
+                return newNodeRef;
+            }
+        };
+        NodeRef newNodeRef = transactionService.getRetryingTransactionHelper().doInTransaction(noRulesWork);
+        assertFalse(nodeService.hasAspect(newNodeRef, ContentModel.ASPECT_VERSIONABLE));      
+
+        RetryingTransactionCallback<NodeRef> withRulesWork = new RetryingTransactionCallback<NodeRef>()
+        {
+            @Override
+            public NodeRef execute() throws Throwable
+            {
+                NodeRef newNodeRef2 = nodeService.createNode(
+                        nodeRef,
+                        ContentModel.ASSOC_CHILDREN,                
+                        QName.createQName(TEST_NAMESPACE, "children"),
+                        ContentModel.TYPE_CONTENT,
+                        getContentProperties()).getChildRef();        
+                addContentToNode(newNodeRef2);
+                return newNodeRef2;
+            }
+        };
+        NodeRef newNodeRef2 = transactionService.getRetryingTransactionHelper().doInTransaction(withRulesWork);
+        assertTrue(nodeService.hasAspect(newNodeRef2, ContentModel.ASPECT_VERSIONABLE));
     }
     
     /**

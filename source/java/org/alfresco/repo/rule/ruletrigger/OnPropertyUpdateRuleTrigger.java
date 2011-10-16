@@ -125,6 +125,11 @@ public class OnPropertyUpdateRuleTrigger extends RuleTriggerAbstractBase
      */
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
+        // Break out early if rules are not enabled
+        if (!areRulesEnabled())
+        {
+            return;
+        }
         // Do not fire if the node has been created in this transaction
         Set<NodeRef> newNodeRefSet = TransactionalResourceHelper.getSet(RULE_TRIGGER_NEW_NODES);
         boolean wasCreatedInTxn = newNodeRefSet.contains(nodeRef);

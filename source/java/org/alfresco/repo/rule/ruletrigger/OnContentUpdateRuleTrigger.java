@@ -88,6 +88,11 @@ public class OnContentUpdateRuleTrigger extends RuleTriggerAbstractBase
      */
     public void onContentUpdate(NodeRef nodeRef, boolean newContent)
     {
+        // Break out early if rules are not enabled
+        if (!areRulesEnabled())
+        {
+            return;
+        }
         
         // Check the new content and make sure that we do indeed want to trigger the rule
         boolean fail = false;

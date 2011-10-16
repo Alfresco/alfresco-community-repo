@@ -67,6 +67,11 @@ public class SingleNodeRefPolicyRuleTrigger extends RuleTriggerAbstractBase
 
     public void policyBehaviour(NodeRef nodeRef)
     {
+        // Break out early if rules are not enabled
+        if (!areRulesEnabled())
+        {
+            return;
+        }
         if (triggerParentRules == true)
         {
             List<ChildAssociationRef> parentsAssocRefs = this.nodeService.getParentAssocs(nodeRef);

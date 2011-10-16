@@ -82,6 +82,12 @@ public class BeforeDeleteChildAssociationRuleTrigger
 
     public void beforeDeleteChildAssociation(ChildAssociationRef childAssocRef)
     {
+        // Break out early if rules are not enabled
+        if (!areRulesEnabled())
+        {
+            return;
+        }
+
         NodeRef childNodeRef = childAssocRef.getChildRef();
 
         // Avoid renamed nodes

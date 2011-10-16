@@ -39,6 +39,11 @@ public class OnMoveNodeRuleTrigger extends RuleTriggerAbstractBase implements No
 
     public void onMoveNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
     {
+        // Break out early if rules are not enabled
+        if (!areRulesEnabled())
+        {
+            return;
+        }
         // Check that it is not rename operation.
         if (!oldChildAssocRef.getParentRef().equals(newChildAssocRef.getParentRef()))
         {
@@ -48,6 +53,11 @@ public class OnMoveNodeRuleTrigger extends RuleTriggerAbstractBase implements No
 
     private void triggerChildrenRules(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
     {
+        // Break out early if rules are not enabled
+        if (!areRulesEnabled())
+        {
+            return;
+        }
         triggerRules(newChildAssocRef.getParentRef(), newChildAssocRef.getChildRef());
         for (ChildAssociationRef ref : nodeService.getChildAssocs(newChildAssocRef.getChildRef()))
         {

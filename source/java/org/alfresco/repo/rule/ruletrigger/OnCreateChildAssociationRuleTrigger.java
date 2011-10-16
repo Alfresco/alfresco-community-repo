@@ -81,6 +81,12 @@ public class OnCreateChildAssociationRuleTrigger
 
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
     {
+        // Break out early if rules are not enabled
+        if (!areRulesEnabled())
+        {
+            return;
+        }
+
         // Avoid new nodes
         if (isNewNode)
         {

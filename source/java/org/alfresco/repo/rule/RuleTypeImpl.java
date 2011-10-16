@@ -20,8 +20,6 @@ package org.alfresco.repo.rule;
 
 import java.util.List;
 
-import org.springframework.extensions.surf.util.I18NUtil;
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.CommonResourceAbstractBase;
 import org.alfresco.repo.rule.ruletrigger.RuleTrigger;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -31,6 +29,7 @@ import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.rule.RuleType;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Rule type implementation class.
@@ -44,30 +43,30 @@ public class RuleTypeImpl extends CommonResourceAbstractBase implements RuleType
      */
     private static Log logger = LogFactory.getLog(RuleTypeImpl.class); 
     
-	/**
-	 * The rule service
-	 */
-	private RuleService ruleService;
-	
-	/**
-	 * The node service
-	 */
-	private NodeService nodeService;
+    /**
+     * The rule service
+     */
+    private RuleService ruleService;
+    
+    /**
+     * The node service
+     */
+    private NodeService nodeService;
     
     /**
      * Constructor
      * 
-     * @param ruleTriggers	the rule triggers
+     * @param ruleTriggers    the rule triggers
      */
     public RuleTypeImpl(List<RuleTrigger> ruleTriggers)
     {
-    	if (ruleTriggers != null)
-    	{
-	    	for (RuleTrigger trigger : ruleTriggers)
-			{
-				trigger.registerRuleType(this);
-			}
-    	}
+        if (ruleTriggers != null)
+        {
+            for (RuleTrigger trigger : ruleTriggers)
+            {
+                trigger.registerRuleType(this);
+            }
+        }
     }
     
     /**
@@ -76,18 +75,18 @@ public class RuleTypeImpl extends CommonResourceAbstractBase implements RuleType
      * @param ruleService  the rule service
      */
     public void setRuleService(RuleService ruleService)
-	{
-		this.ruleService = ruleService;
-	}
+    {
+        this.ruleService = ruleService;
+    }
     
     /**
      * Set the node service
      * 
-     * @param nodeService	the node service
+     * @param nodeService    the node service
      */
     public void setNodeService(NodeService nodeService)
     {
-    	this.nodeService = nodeService;
+        this.nodeService = nodeService;
     }
 
     /**
@@ -95,7 +94,7 @@ public class RuleTypeImpl extends CommonResourceAbstractBase implements RuleType
      */
     public void init()
     {
-    	((RuntimeRuleService)this.ruleService).registerRuleType(this);
+        ((RuntimeRuleService)this.ruleService).registerRuleType(this);
     }
     
     /**
@@ -117,21 +116,18 @@ public class RuleTypeImpl extends CommonResourceAbstractBase implements RuleType
     /**
      * @see org.alfresco.service.cmr.rule.RuleType#triggerRuleType(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
      */
-	public void triggerRuleType(NodeRef nodeRef, NodeRef actionedUponNodeRef, boolean executeRuleImmediately)
-	{
-		if (ruleService.isEnabled() == true && 
-        	nodeService.exists(actionedUponNodeRef) == true && 
-            nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_TEMPORARY) == false &&
-            // Temporary workaround to prevent rules running on cm:rating nodes (which happened for 'liked' folders ALF-8308 & ALF-8382)
-            ContentModel.TYPE_RATING.equals(nodeService.getType(actionedUponNodeRef)) == false &&
-        	ruleService.isRuleTypeEnabled(this.getName()) == true)
+    public void triggerRuleType(NodeRef nodeRef, NodeRef actionedUponNodeRef, boolean executeRuleImmediately)
+    {
+        if (ruleService.isEnabled() == true &&
+            nodeService.exists(actionedUponNodeRef) == true && 
+            ruleService.isRuleTypeEnabled(this.getName()) == true)
         {
-			List<Rule> rules = ruleService.getRules(
-            		nodeRef, 
+            List<Rule> rules = ruleService.getRules(
+                    nodeRef, 
                     true,
                     this.name);
-			
-    		if (rules.size() != 0)
+            
+            if (rules.size() != 0)
             {
                for (Rule rule : rules)
                 {   
@@ -168,5 +164,5 @@ public class RuleTypeImpl extends CommonResourceAbstractBase implements RuleType
                 }
             }
         }
-	}
+    }
 }

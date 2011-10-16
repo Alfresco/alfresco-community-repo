@@ -85,6 +85,7 @@ import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.ReadWriteLockExecuter;
 import org.alfresco.util.SerializationUtils;
 import org.alfresco.util.EqualsHelper.MapValueComparison;
+import org.apache.commons.lang.mutable.MutableInt;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.dao.ConcurrencyFailureException;
@@ -447,13 +448,14 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      * where the child associations or nodes are modified en-masse.
      * 
      * @param parentNodeId          the parent node of all child nodes to be invalidated (may be <tt>null</tt>)
+     * @return                      the number of child associations found (might be capped)
      */
-    private void invalidateNodeChildrenCaches(Long parentNodeId)
+    private int invalidateNodeChildrenCaches(Long parentNodeId)
     {
         // Select all children
+        final MutableInt count = new MutableInt(0);
         ChildAssocRefQueryCallback callback = new ChildAssocRefQueryCallback()
         {
-            private int count = 0;
             private boolean isClearOn = false;
             
             public boolean preLoadNodes()
@@ -471,7 +473,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                     // We have already decided to drop ALL cache entries
                     return false;
                 }
-                else if (count >= 1000)
+                else if (count.intValue() >= 1000)
                 {
                     // That's enough.  Instead of walking thousands of entries
                     // we just drop the cache at this stage
@@ -479,7 +481,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                     isClearOn = true;
                     return false;               // No more, please
                 }
-                count++;
+                count.increment();
                 invalidateNodeCaches(childNodePair.getFirst());
                 return true;
             }
@@ -489,6 +491,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             }                               
         };
         selectChildAssocs(parentNodeId, null, null, null, null, null, callback);
+        return count.intValue();
     }
 
     /**
@@ -1676,15 +1679,18 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             allRootNodesCache.remove(node.getNodePair().getSecond().getStoreRef());
         }
         
+        // Remove peer associations (no associated cache)
+        deleteNodeAssocsToAndFrom(nodeId);
+        
+        // Remove child associations (invalidate children)
+        invalidateNodeChildrenCaches(nodeId);
+        deleteChildAssocsToAndFrom(nodeId);
+        
         // Remove aspects
         deleteNodeAspects(nodeId, null);
         
         // Remove properties
         deleteNodeProperties(nodeId, (Set<Long>) null);
-        
-        // Remove associations
-        deleteNodeAssocsToAndFrom(nodeId);
-        deleteChildAssocsToAndFrom(nodeId);
         
         // Remove subscriptions
         deleteSubscriptions(nodeId);
@@ -2742,7 +2748,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // Touch the node; all caches are fine
         touchNode(childNodeId, null, false, false, false);
         // update cache
-        parentAssocInfo = parentAssocInfo.addAssoc(assocId, assoc, getCurrentTransactionId());
+        parentAssocInfo = parentAssocInfo.addAssoc(assocId, assoc);
         setParentAssocsCached(childNodeId, parentAssocInfo);
         // Done
         return assoc.getPair(qnameDAO);
@@ -2767,7 +2773,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // Touch the node; all caches are fine
         touchNode(childNodeId, null, false, false, false);
         // Update cache
-        parentAssocInfo = parentAssocInfo.removeAssoc(assocId, getCurrentTransactionId());
+        parentAssocInfo = parentAssocInfo.removeAssoc(assocId);
         setParentAssocsCached(childNodeId, parentAssocInfo);
     }
 
@@ -2810,7 +2816,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         if (count > 0)
         {
             // Touch the node; parent assocs are out of sync
-            touchNode(childNodeId, null, false, false, false);
+            touchNode(childNodeId, null, false, false, true);
         }
         
         if (isDebugEnabled)

@@ -21,6 +21,7 @@ package org.alfresco.repo.node;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -31,6 +32,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -422,5 +424,42 @@ public class NodeServiceTest extends TestCase
         {
             // Expected
         }
+    }
+    
+    /**
+     * Checks that the node caches react correct when a node is deleted
+     */
+    public void testCaches_DeleteNode()
+    {
+        final NodeRef[] liveNodeRefs = new NodeRef[10];
+        final NodeRef workspaceRootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+
+        buildNodeHierarchy(workspaceRootNodeRef, liveNodeRefs);
+        nodeService.addAspect(liveNodeRefs[3], ContentModel.ASPECT_TEMPORARY, null);
+        
+        // Create a child under node 2
+        Map<QName, Serializable> props = new HashMap<QName, Serializable>(3);
+        props.put(ContentModel.PROP_NAME, "Secondary");
+        NodeRef secondaryNodeRef = nodeService.createNode(
+                liveNodeRefs[2],
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName(NAMESPACE, "secondary"),
+                ContentModel.TYPE_FOLDER,
+                props).getChildRef();
+        // Make it a child of node 3
+        nodeService.addChild(liveNodeRefs[3], secondaryNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName(NAMESPACE, "secondary"));
+        // Make it a child of node 4
+        nodeService.addChild(liveNodeRefs[4], secondaryNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName(NAMESPACE, "secondary"));
+        
+        // Check
+        List<ChildAssociationRef> parentAssocsPre = nodeService.getParentAssocs(secondaryNodeRef);
+        assertEquals("Incorrect number of parent assocs", 3, parentAssocsPre.size());
+        
+        // Delete node 3 (should affect 2 of the parent associations);
+        nodeService.deleteNode(liveNodeRefs[3]);
+        
+        // Check
+        List<ChildAssociationRef> parentAssocsPost = nodeService.getParentAssocs(secondaryNodeRef);
+        assertEquals("Incorrect number of parent assocs", 1, parentAssocsPost.size());
     }
 }

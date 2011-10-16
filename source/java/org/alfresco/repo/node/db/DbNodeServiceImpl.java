@@ -172,7 +172,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         Pair<Long, NodeRef> unchecked = nodeDAO.getNodePair(nodeRef);
         if (unchecked == null)
         {
-            throw new InvalidNodeRefException("Node does not exist: " + nodeRef, nodeRef);
+            Status nodeStatus = nodeDAO.getNodeRefStatus(nodeRef);
+            throw new InvalidNodeRefException("Node does not exist: " + nodeRef + "(" + nodeStatus + ")", nodeRef);
         }
         return unchecked;
     }

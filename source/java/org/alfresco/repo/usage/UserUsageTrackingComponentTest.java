@@ -87,6 +87,13 @@ public class UserUsageTrackingComponentTest extends TestCase
         contentUsageService = (ContentUsageService)applicationContext.getBean("ContentUsageService");
         
         userUsageTrackingComponent = (UserUsageTrackingComponent)applicationContext.getBean("userUsageTrackingComponent");
+
+        // Enable
+        ContentUsageImpl contentUsage = (ContentUsageImpl)applicationContext.getBean("contentUsageImpl");
+        contentUsage.setEnabled(true);
+        contentUsage.init();
+        userUsageTrackingComponent.setEnabled(true);
+        userUsageTrackingComponent.bootstrapInternal();
         
         AuthenticationUtil.setRunAsUserSystem();
         
@@ -95,6 +102,13 @@ public class UserUsageTrackingComponentTest extends TestCase
     
     protected void tearDown() throws Exception
     {
+        // Disable
+        ContentUsageImpl contentUsage = (ContentUsageImpl)applicationContext.getBean("contentUsageImpl");
+        contentUsage.setEnabled(false);
+        contentUsage.init();
+        userUsageTrackingComponent.setEnabled(false);
+        userUsageTrackingComponent.bootstrapInternal();
+
         if (clean)
         {
             deleteUsersAndContent();

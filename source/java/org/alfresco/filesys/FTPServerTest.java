@@ -36,6 +36,8 @@ import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.usage.ContentUsageImpl;
+import org.alfresco.repo.usage.UserUsageTrackingComponent;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
@@ -76,9 +78,6 @@ public class FTPServerTest extends TestCase
     private final String PASSWORD_THREE="Password03";
     private final String HOSTNAME="localhost";
     
-    private final String TEST_FOLDER = "FTPServerTest";
-    
-    
     private NodeService nodeService;
     private PersonService personService;
     private MutableAuthenticationService authenticationService;
@@ -102,7 +101,6 @@ public class FTPServerTest extends TestCase
         permissionService = (PermissionService)applicationContext.getBean("permissionService");
         ServerConfigurationAccessor fileServerConfiguration = (ServerConfigurationAccessor)applicationContext.getBean("fileServerConfiguration");
         ftpConfigSection = (FTPConfigSection) fileServerConfiguration.getConfigSection( FTPConfigSection.SectionName);
-        
         
         assertNotNull("nodeService is null", nodeService);
         assertNotNull("reporitoryHelper is null", repositoryHelper);
@@ -588,6 +586,14 @@ public class FTPServerTest extends TestCase
      */
     public void testFtpQuotaAndFtp() throws Exception
     {
+        // Enable usages
+        ContentUsageImpl contentUsage = (ContentUsageImpl)applicationContext.getBean("contentUsageImpl");
+        contentUsage.setEnabled(true);
+        contentUsage.init();
+        UserUsageTrackingComponent userUsageTrackingComponent = (UserUsageTrackingComponent)applicationContext.getBean("userUsageTrackingComponent");
+        userUsageTrackingComponent.setEnabled(true);
+        userUsageTrackingComponent.bootstrapInternal();
+        
         final String TEST_DIR="/Alfresco/User Homes/" + USER_THREE;
      
         final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
@@ -630,6 +636,13 @@ public class FTPServerTest extends TestCase
         } 
         finally
         {
+            // Disable usages
+            contentUsage.setEnabled(false);
+            contentUsage.init();
+            userUsageTrackingComponent.setEnabled(false);
+            userUsageTrackingComponent.bootstrapInternal();
+            
+            
             ftpOne.dele(TEST_DIR);
             if(ftpOne != null)
             {

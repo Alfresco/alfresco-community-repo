@@ -44,7 +44,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeansException;
@@ -52,7 +51,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
-
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
 /**
  * Provision of Repository Context
@@ -280,26 +279,33 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
     public NodeRef getUserHome(NodeRef person)
     {
         NodeRef homeFolderRef = (NodeRef)nodeService.getProperty(person, ContentModel.PROP_HOMEFOLDER);
-        return nodeService.exists(homeFolderRef) ? homeFolderRef : null;
+        if (homeFolderRef != null && nodeService.exists(homeFolderRef))
+        {
+            return homeFolderRef;
+        }
+        else
+        {
+            return null;
+        }
     }
     
     /**
      * Helper to convert a Web Script Request URL to a Node Ref
-     * 
+     * <p/>
      * 1) Node - {store_type}/{store_id}/{node_id} 
-     *
+     * <br/>
      *    Resolve to node via its Node Reference.
-     *     
+     * <br/>
      * 2) Path - {store_type}/{store_id}/{path}
-     * 
+     * <br/>
      *    Resolve to node via its display path.
-     *  
+     * <br/>
      * 3) AVM Path - {store_id}/{path}
-     * 
+     * <br/>
      *    Resolve to AVM node via its display path
-     *    
+     * <br/>
      * 4) QName - {store_type}/{store_id}/{child_qname_path}  TODO: Implement
-     * 
+     * <br/>
      *    Resolve to node via its child qname path.
      * 
      * @param  referenceType  one of node, path, avmpath or qname

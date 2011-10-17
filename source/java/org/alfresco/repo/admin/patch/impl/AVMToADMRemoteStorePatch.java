@@ -553,6 +553,9 @@ public class AVMToADMRemoteStorePatch extends AbstractPatch
                         // create new node and perform writer content copy of the content from the AVM to the DM store
                         FileInfo fileInfo = fileFolderService.create(
                                 parentFolder, avmNode.getName(), ContentModel.TYPE_CONTENT);
+                        Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(1, 1.0f);
+                        aspectProperties.put(ContentModel.PROP_IS_INDEXED, false);
+                        nodeService.addAspect(fileInfo.getNodeRef(), ContentModel.ASPECT_INDEX_CONTROL, aspectProperties);
                         ContentWriter writer = contentService.getWriter(
                                 fileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true);
                         writer.putContent(avmService.getContentReader(-1, avmNode.getPath()));
@@ -567,6 +570,9 @@ public class AVMToADMRemoteStorePatch extends AbstractPatch
                     // create new node and perform writer content copy of the content from the AVM to the DM store
                     FileInfo fileInfo = fileFolderService.create(
                             parentFolder, avmNode.getName(), ContentModel.TYPE_CONTENT);
+                    Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(1, 1.0f);
+                    aspectProperties.put(ContentModel.PROP_IS_INDEXED, false);
+                    nodeService.addAspect(fileInfo.getNodeRef(), ContentModel.ASPECT_INDEX_CONTROL, aspectProperties);
                     ContentWriter writer = contentService.getWriter(
                             fileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true);
                     writer.putContent(avmService.getContentReader(-1, avmNode.getPath()));

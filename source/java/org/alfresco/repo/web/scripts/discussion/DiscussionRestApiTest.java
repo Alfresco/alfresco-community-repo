@@ -159,13 +159,19 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
         this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         
         // delete the discussions users
-        personService.deletePerson(USER_ONE);
+        if(personService.personExists(USER_ONE))
+        {
+           personService.deletePerson(USER_ONE);
+        }
         if (this.authenticationService.authenticationExists(USER_ONE))
         {
            this.authenticationService.deleteAuthentication(USER_ONE);
         }
         
-        personService.deletePerson(USER_TWO);
+        if(personService.personExists(USER_TWO))
+        {
+           personService.deletePerson(USER_TWO);
+        }
         if (this.authenticationService.authenticationExists(USER_TWO))
         {
            this.authenticationService.deleteAuthentication(USER_TWO);
@@ -697,6 +703,33 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
        
        // On a private site we're not a member of, shouldn't be visable at all
        getPost(name, Status.STATUS_NOT_FOUND);
+    }
+       
+    /**
+     * ALF-1973 - If the user who added a reply has been deleted, don't break
+     */
+    public void testViewReplyByDeletedUser() throws Exception
+    {
+       // Create a post
+       JSONObject item = createSitePost("test", "test", Status.STATUS_OK);
+       String name = item.getString("name");
+       NodeRef topicNodeRef = new NodeRef(item.getString("nodeRef"));
+       
+       // Now create a reply as a different user
+       this.authenticationComponent.setCurrentUser(USER_TWO);
+       createReply(topicNodeRef, "Reply", "By the other user", Status.STATUS_OK);
+       
+       // Should see the reply
+       item = getReplies(name, Status.STATUS_OK);
+       assertEquals(1, item.getJSONArray("items").length());
+       
+       // Delete the user, check that the reply still shows
+       this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+       personService.deletePerson(USER_TWO);
+       this.authenticationComponent.setCurrentUser(USER_ONE);
+       
+       item = getReplies(name, Status.STATUS_OK);
+       assertEquals(1, item.getJSONArray("items").length());
     }
     
     public void testAddReply() throws Exception

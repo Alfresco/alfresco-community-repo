@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
@@ -272,15 +273,25 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
     
     protected Object buildPerson(String username)
     {
+       // Empty string needed if the user can't be found
+       Object noSuchPersonResponse = "";
+       
        if (username == null || username.length() == 0)
        {
-          // Empty string needed
-          return "";
+          return noSuchPersonResponse;
        }
        
-       // Will turn into a Script Node needed of the person
-       NodeRef person = personService.getPerson(username);
-       return person;
+       try
+       {
+          // Will turn into a Script Node needed of the person
+          NodeRef person = personService.getPerson(username);
+          return person;
+       }
+       catch(NoSuchPersonException e)
+       {
+          // This is normally caused by the person having been deleted
+          return noSuchPersonResponse;
+       }
     }
     
     /*

@@ -3,12 +3,14 @@
 <#escape x as jsonUtils.encodeJSONString(x)>
 	"${fieldName}":
 	{
+	<#if person?has_content>
 		<#if person.assocs["cm:avatar"]??>
 		"avatarRef": "${person.assocs["cm:avatar"][0].nodeRef?string}",
 		</#if>
 		"username": "${person.properties["cm:userName"]}",
 		"firstName": "${person.properties["cm:firstName"]!""}",
 		"lastName": "${person.properties["cm:lastName"]!""}"
+	</#if>
 	},
 </#escape>
 </#macro>

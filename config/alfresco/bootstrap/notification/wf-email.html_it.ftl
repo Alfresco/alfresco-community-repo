@@ -60,6 +60,10 @@
                                              
                                              <p><b>"${args.workflowTitle}"</b></p>
                                              
+                                             <#if (args.workflowDescription)??>                                             
+                                             	<p>${args.workflowDescription}</p>                                             
+                                             </#if>
+                                             
                                              <p>
                                                 <#if (args.workflowDueDate)??>Due:&nbsp;&nbsp;<b>${args.workflowDueDate?date?string.full}</b><br></#if>
                                                 <#if (args.workflowPriority)??>

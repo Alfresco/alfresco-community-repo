@@ -172,11 +172,7 @@ public abstract class WorkflowNotificationUtils
         
         // Get the title and description
         String title = workflowTask.getTitle();
-        String description = (String)props.get(WorkflowModel.PROP_DESCRIPTION);
-        if (description == null)
-        {
-            description = workflowTask.getDescription();
-        }
+        String description = (String)props.get(WorkflowModel.PROP_DESCRIPTION);        
         
         // Get the duedate, priority and workflow package
         Date dueDate = (Date)props.get(WorkflowModel.PROP_DUE_DATE);

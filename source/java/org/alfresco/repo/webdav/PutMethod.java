@@ -26,6 +26,8 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.executer.ContentMetadataExtracter;
+import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -167,6 +169,14 @@ public class PutMethod extends WebDAVMethod
 
         // Write the new data to the content node
         writer.putContent(is);
+        
+        // Ask for the document metadata to be extracted
+        Action extract = getActionService().createAction(ContentMetadataExtracter.EXECUTOR_NAME);
+        if(extract != null)
+        {
+           extract.setExecuteAsynchronously(true);
+           getActionService().executeAction(extract, contentNodeInfo.getNodeRef());
+        }
 
         // Set the response status, depending if the node existed or not
         m_response.setStatus(created ? HttpServletResponse.SC_CREATED : HttpServletResponse.SC_NO_CONTENT);

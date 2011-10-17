@@ -27,6 +27,7 @@ import java.util.StringTokenizer;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -75,6 +76,7 @@ public class WebDAVHelper
     private DictionaryService m_dictionaryService;
     private MimetypeService m_mimetypeService;
     private LockService m_lockService;
+    private ActionService m_actionService;
     private AuthenticationService m_authService;
     private PermissionService m_permissionService;
     
@@ -96,6 +98,7 @@ public class WebDAVHelper
         m_dictionaryService = m_serviceRegistry.getDictionaryService();
         m_mimetypeService   = m_serviceRegistry.getMimetypeService();
         m_lockService       = m_serviceRegistry.getLockService();
+        m_actionService     = m_serviceRegistry.getActionService();
         m_permissionService = m_serviceRegistry.getPermissionService();
         
         m_authService       = authService;
@@ -168,6 +171,14 @@ public class WebDAVHelper
     public final LockService getLockService()
     {
         return m_lockService;
+    }
+    
+    /**
+     * @return          Return the action service
+     */
+    public final ActionService getActionService()
+    {
+        return m_actionService;
     }
     
     /**

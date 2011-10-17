@@ -51,6 +51,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
@@ -660,6 +661,16 @@ public abstract class WebDAVMethod
     protected final LockService getLockService()
     {
         return m_davHelper.getLockService();
+    }
+    
+    /**
+     * Convenience method to return the action service
+     * 
+     * @return ActionService
+     */
+    protected final ActionService getActionService()
+    {
+        return m_davHelper.getActionService();
     }
     
     /**
@@ -1474,9 +1485,24 @@ public abstract class WebDAVMethod
         }
     }
 
-        
-        
-        
-    
-    
+    public String toString()
+    {
+       StringBuffer sb = new StringBuffer();
+       
+       if(m_request != null)
+       {
+          sb.append("WebDAV ");
+          sb.append(m_request.getMethod());
+          sb.append(" request for ");
+          sb.append(m_strPath);
+       }
+       else
+       {
+          sb.append("Inactive WebDAV request via ");
+          String clz = getClass().getName();
+          sb.append(clz.substring(clz.lastIndexOf('.')+1));
+       }
+       
+       return sb.toString();
+    }
 }

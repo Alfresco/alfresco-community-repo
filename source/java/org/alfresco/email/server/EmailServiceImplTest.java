@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Vector;
 
 import javax.mail.Message;
 import javax.mail.Session;
@@ -511,7 +512,40 @@ public class EmailServiceImplTest extends TestCase
        assertEquals("assocs not 4", 4, assocs.size());
        emailService.importMessage(m);
        assocs = nodeService.getChildAssocs(testUserHomeFolder, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
-       assertEquals("assocs not 5", 5, assocs.size());   
+       assertEquals("assocs not 5", 5, assocs.size());
+       
+       /**
+        * Check assoc rename with long names and an extension. So truncation and rename need to 
+        * work together and not muck up a .extension.
+        */
+       logger.debug("Step 4: turn off Overwite Duplicates with long subject name with extension");
+       String EXT_NAME = "Blob.xls";
+       
+       msg.setSubject(EXT_NAME);
+       ByteArrayOutputStream bos3 = new ByteArrayOutputStream();
+       msg.writeTo(bos3);
+       is = new StringInputStream(bos3.toString());
+       assertNotNull("is is null", is);
+       m = new SubethaEmailMessage(is);  
+       folderEmailMessageHandler.setOverwriteDuplicates(false);
+       emailService.importMessage(m);
+       emailService.importMessage(m);
+       emailService.importMessage(m);
+       assocs = nodeService.getChildAssocs(testUserHomeFolder, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+
+       List<QName> assocNames = new Vector<QName>(); 
+       for(ChildAssociationRef assoc : assocs)
+       {
+           logger.debug("assocName: " + assoc.getQName());
+           System.out.println(assoc.getQName());
+           assocNames.add(assoc.getQName());
+       }
+       assertTrue(EXT_NAME + "not found", assocNames.contains(QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Blob.xls")));
+       assertTrue("Blob(1).xls not found", assocNames.contains(QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Blob(1).xls")));   
+       assertTrue("Blob(2).xls not found", assocNames.contains(QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Blob(2).xls")));      
+       assertTrue(TEST_SUBJECT + "not found", assocNames.contains(QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, TEST_SUBJECT)));   
+       assertTrue(TEST_SUBJECT+"(1) not found", assocNames.contains(QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Practical Bee Keeping(1)")));      
+    
    }
  
 }

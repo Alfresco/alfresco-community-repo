@@ -465,11 +465,12 @@ public class SubethaEmailMessage implements EmailMessage
      * @param subject String representing subject
      * @return Encoded string
      */
+    // MER Removed . * ,  { ".", "%2e" }
     static private String encodeSubject(String subject)
     {
         String result = subject.trim();
         String[][] s = new String[][] { { "\\", "%5c" }, { "/", "%2f" }, { "*", "%2a" }, { "|", "%7c" }, { ":", "%3a" }, { "\"", "%22" }, { "<", "%3c" }, { ">", "%3e" },
-                { "?", "%3f" },  { ".", "%2e" } };
+                { "?", "%3f" }};
 
         for (int i = 0; i < s.length; i++)
         {

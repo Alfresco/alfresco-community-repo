@@ -27,9 +27,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.email.server.EmailServiceImpl;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.email.EmailMessage;
@@ -42,10 +42,10 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.sun.star.auth.InvalidArgumentException;
 
 /**
  * Abstract class implements common logic for processing email messages.
@@ -61,6 +61,8 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
     private NodeService nodeService;
     private ContentService contentService;
     private MimetypeService mimetypeService;
+    
+    private static Log logger = LogFactory.getLog(AbstractEmailMessageHandler.class);
 
     /**
      * @return Alfresco Content Service.
@@ -277,7 +279,16 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
         
         String workingName = name;
         
-        for(int counter = 0; counter < 10000; counter++)
+        // Need to work out a new safe name.
+        String baseName = FilenameUtils.getBaseName(name);
+        String extension = FilenameUtils.getExtension(name);
+        
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("addContentNode name:" + name);
+        }
+          
+        for(int counter = 1; counter < 10000; counter++)
         {
             QName safeQName = QName.createQNameWithValidLocalName(NamespaceService.CONTENT_MODEL_1_0_URI, workingName);
 
@@ -287,31 +298,42 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
             {
                 if(overwrite)
                 {
+                    if(logger.isDebugEnabled())
+                    {
+                        logger.debug("overwriting existing node :" + name);
+                    }
                     childNodeRef=childNodeRefs.get(0).getChildRef();
                 
                     // Node already exists
                     // The node is present already.  Make sure the name case is correct
-                    nodeService.setProperty(childNodeRef, ContentModel.PROP_NAME, name);
+                    nodeService.setProperty(childNodeRef, ContentModel.PROP_NAME, baseName);
                     return childNodeRef;
                 }
+                
+                // Node already exists and not overwrite
+                String postFix = "(" + counter + ")";
             
-                // Need to work out a new safe name.
-
-                String postFix = " (" + counter + ")";
-            
-                if(name.length() + postFix.length() > QName.MAX_LENGTH )
+                if(baseName.length() + extension.length() + postFix.length() > QName.MAX_LENGTH )
                 {
-                    workingName =  name.substring(0, QName.MAX_LENGTH-postFix.length()) + postFix;
-                    // Need to truncate name     
+                    // Need to truncate base name   
+                    workingName =  baseName.substring(0, QName.MAX_LENGTH - postFix.length() - extension.length() -1) + postFix;  
                 }
                 else
                 {
-                    workingName = name + postFix;
+                    workingName = baseName + postFix ;
+                }
+                if(extension.length() > 0)
+                {
+                    workingName = workingName + "." + extension;
                 }
             }
             else
             {
                 // Here if child node ref does not already exist
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("child node ref does not already exist :" + workingName);
+                }
                 Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
                 contentProps.put(ContentModel.PROP_NAME, workingName);
                     
@@ -338,7 +360,10 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
      * @param nodeService Alfresco Node Service
      * @param parent Parent node
      * @param name Name of the new node
+     * @param overwrite whether a new node should overwrite an existing node with the same name or have its name
+     * mangled to be alongside the existing node.
      * @return Reference to created node
+     * 
      */
     protected NodeRef addContentNode(NodeService nodeService, NodeRef parent, String name, boolean overwrite)
     {

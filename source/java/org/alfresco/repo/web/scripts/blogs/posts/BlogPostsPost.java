@@ -102,7 +102,15 @@ public class BlogPostsPost extends AbstractBlogWebScript
        }
        if (json.containsKey(DRAFT))
        {
-          result.setIsDraft((Boolean)json.get(DRAFT));
+          Object draft = json.get(DRAFT);
+          if (draft instanceof Boolean)
+          {
+             result.setIsDraft((Boolean)draft);
+          }
+          else
+          {
+             result.setIsDraft( Boolean.parseBoolean((String)draft) );
+          }
        }
        
        // If there are no tags, this is a java.lang.String "".

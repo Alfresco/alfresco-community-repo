@@ -50,7 +50,6 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Re-encrypts encryptable repository properties using a new set of encryption keys.
@@ -95,7 +94,6 @@ public class ReEncryptor implements ApplicationContextAware
     {
     	this.transactionService = transactionService;
         this.transactionHelper = transactionService.getRetryingTransactionHelper();
-        this.transactionHelper.setForceWritable(true);
     }
     
 	public void setMetadataEncryptor(MetadataEncryptor metadataEncryptor)

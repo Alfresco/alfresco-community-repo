@@ -41,16 +41,12 @@ import java.util.Map;
 public class AnalysedDirectory
 {
     private List<File> originalListing = null;
-    // All importable items (files and directories)
-//    private List<ImportableItem> importableItems = null;
     private Map<File, ImportableItem> importableItems = null;
-    // keep track of directories in this list as well as importedItems
     private List<ImportableItem> importableDirectories = null;
 
     public AnalysedDirectory(File[] files)
     {
         originalListing = Arrays.asList(files);
-//        importableItems = new ArrayList<ImportableItem>();
         importableItems = new HashMap<File, ImportableItem>();
         importableDirectories = new ArrayList<ImportableItem>();    	
     }
@@ -59,11 +55,6 @@ public class AnalysedDirectory
 	{
 		return originalListing;
 	}
-
-//	public List<ImportableItem> getImportableItems()
-//	{
-//		return importableItems;
-//	}
     
 	public Collection<ImportableItem> getImportableItems()
 	{
@@ -77,7 +68,6 @@ public class AnalysedDirectory
 
 	public void addImportableItem(ImportableItem importableItem)
     {
-//    	importableItems.add(importableItem);
         if(importableItem.getHeadRevision().contentFileExists() &&
         		ImportableItem.FileType.DIRECTORY.equals(importableItem.getHeadRevision().getContentFileType()))
         {
@@ -92,18 +82,7 @@ public class AnalysedDirectory
     public ImportableItem findImportableItem(File contentFile)
     {
     	ImportableItem result = null;
-
-    	// TODO perhaps a map structure here to make lookups faster?
-//        for (ImportableItem importableItem : importableItems)
-//        {
-//            if (contentFile.equals(importableItem.getHeadRevision().getContentFile()))
-//            {
-//                result = importableItem;
-//                break;
-//            }
-//        }
     	result = importableItems.get(contentFile);
-
         return result;
     }
 }

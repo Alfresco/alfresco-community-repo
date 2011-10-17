@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.alfresco.model.ImapModel;
+import org.alfresco.repo.action.executer.ContentMetadataExtracter;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.CopyServicePolicies.OnCopyNodePolicy;
@@ -78,7 +79,7 @@ public class ImapContentPolicy
         // ensure the aspect is the one we expect
         if (aspectTypeQName.equals(ImapModel.ASPECT_IMAP_CONTENT))
         {
-            Action action = getActionService().createAction("extract-metadata");
+            Action action = getActionService().createAction(ContentMetadataExtracter.EXECUTOR_NAME);
             if(action != null)
             {
                 getActionService().executeAction(action, nodeRef);

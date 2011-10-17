@@ -55,6 +55,8 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
 {
     private static Log logger = LogFactory.getLog(ContentMetadataExtracter.class);
     
+    public static final String EXECUTOR_NAME = "extract-metadata";
+    
     private NodeService nodeService;
     private ContentService contentService;
     private DictionaryService dictionaryService;

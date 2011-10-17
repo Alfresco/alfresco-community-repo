@@ -82,6 +82,7 @@ import org.alfresco.jlan.smb.server.SMBSrvSession;
 import org.alfresco.jlan.util.MemorySize;
 import org.alfresco.jlan.util.WildCard;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.executer.ContentMetadataExtracter;
 import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.node.archive.NodeArchiveService;
@@ -4267,7 +4268,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
         }
 
         // Extract metadata pending change for ALF-5082
-        Action action = getActionService().createAction("extract-metadata");
+        Action action = getActionService().createAction(ContentMetadataExtracter.EXECUTOR_NAME);
         if(action != null)
         {
             getActionService().executeAction(action, toNode);

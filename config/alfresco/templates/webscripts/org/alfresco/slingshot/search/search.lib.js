@@ -72,7 +72,7 @@ function getPersonDisplayName(userId)
  * Cache to not display twice the same element (e.g. if two comments of the
  * same blog post match the search criteria
  */
-var processedCache = {};
+var processedCache;
 function checkProcessedCache(key)
 {
    var found = processedCache.hasOwnProperty(key);
@@ -363,7 +363,7 @@ function getWikiItem(siteId, containerId, pathParts, node)
    };
    item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
    item.createdBy = getPersonDisplayName(item.createdByUser);
-      
+   
    return item;
 }
 
@@ -551,7 +551,9 @@ function splitQNamePath(node)
  * @return the final search results object
  */
 function processResults(nodes, maxResults)
-{    
+{
+   // empty cache state
+   processedCache = {};
    var results = [],
       added = 0,
       parts,

@@ -354,6 +354,9 @@ public class ADMRemoteStore extends BaseRemoteStore
                         }
                         FileInfo fileInfo = fileFolderService.create(
                                 parentFolder.getNodeRef(), encpath.substring(off + 1), ContentModel.TYPE_CONTENT);
+                        Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(1, 1.0f);
+                        aspectProperties.put(ContentModel.PROP_IS_INDEXED, false);
+                        nodeService.addAspect(fileInfo.getNodeRef(), ContentModel.ASPECT_INDEX_CONTROL, aspectProperties);
                         contentService.getWriter(
                                 fileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true).putContent(content);
                         if (logger.isDebugEnabled())

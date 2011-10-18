@@ -637,8 +637,10 @@ public class AssetServiceImpl implements AssetService
                 titledProps.put(ContentModel.PROP_TITLE, fileName);
                 
                 createFileAVM(avmPath, fileName, new BufferedInputStream(new FileInputStream(file), BUFFER_SIZE));
-                
-                addAspect(avmPath, ContentModel.ASPECT_TITLED, titledProps);
+
+                String filePath = avmPath + '/' + fileName;
+
+                addAspect(filePath, ContentModel.ASPECT_TITLED, titledProps);
              }
              else
              {

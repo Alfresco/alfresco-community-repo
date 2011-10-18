@@ -20,8 +20,12 @@ package org.alfresco.util.schemacomp.model;
 
 import java.util.List;
 
+import org.alfresco.util.schemacomp.Differences;
+import org.alfresco.util.schemacomp.SchemaUtils;
+
 /**
- * TODO: comment me!
+ * Primary key on a table.
+ * 
  * @author Matt Ward
  */
 public class PrimaryKey extends AbstractDbObject
@@ -67,5 +71,12 @@ public class PrimaryKey extends AbstractDbObject
         }
         else if (!this.columnNames.equals(other.columnNames)) return false;
         return true;
+    }
+
+    @Override
+    protected void doDiff(DbObject right, Differences differences)
+    {
+        PrimaryKey rightPK = (PrimaryKey) right;        
+        SchemaUtils.compareSimpleCollections(columnNames, rightPK.columnNames, differences);
     }
 }

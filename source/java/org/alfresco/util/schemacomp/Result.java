@@ -18,39 +18,73 @@
  */
 package org.alfresco.util.schemacomp;
 
-import org.alfresco.util.schemacomp.model.DbObject;
+
 
 /**
  * Result of a comparison between two database objects.
  * 
  * @author Matt Ward
  */
-public class Result
+public final class Result
 {
-    public enum Type { ONLY_IN_LEFT, ONLY_IN_RIGHT, IN_BOTH_NO_DIFFERENCE, IN_BOTH_BUT_DIFFERENCE };
-    private Type type;
-    
-    // Field list, where differences lie - recorded for single level only, otherwise, an error deep down would end
-    // up having the whole schema as being different, but that isn't useful. During reporting, climb back up the tree
-    // to produce a path, e.g. "my_schema.my_table.my_column.nullable has differences"
-    
-    
-    // Could hold the two items that (may - see type above) differ?
-    // These objects are already structured, no field names required.
-    DbObject left;
-    DbObject right;
-    
-    // or, could...
-    // Have differences
+    /** Specifies the type of differences */
+    public enum Where { ONLY_IN_LEFT, ONLY_IN_RIGHT, IN_BOTH_NO_DIFFERENCE, IN_BOTH_BUT_DIFFERENCE };
+    private final Where where;
+    private final Object left;
+    private final Object right;
+    private final String path;
     
     
-    public static class DiffField
+    public Result(Where where, Object left, Object right, String path)
     {
-        String leftFieldName;
-        String leftVal;
-        
-        String rightFieldName;
-        String rightVal;
+        this.where = where;
+        this.left = left;
+        this.right = right;
+        this.path = path;
     }
+
+
+    /**
+     * @return the where
+     */
+    public Where getWhere()
+    {
+        return this.where;
+    }
+
+
+    /**
+     * @return the left
+     */
+    public Object getLeft()
+    {
+        return this.left;
+    }
+
+
+    /**
+     * @return the right
+     */
+    public Object getRight()
+    {
+        return this.right;
+    }
+
     
+    
+    /**
+     * @return the path
+     */
+    public String getPath()
+    {
+        return this.path;
+    }
+
+
+    @Override
+    public String toString()
+    {
+        return "Result [where=" + this.where + ", left=" + this.left + ", right=" + this.right
+                    + ", path=" + this.path + "]";
+    }
 }

@@ -18,10 +18,13 @@
  */
 package org.alfresco.util.schemacomp.model;
 
+
 /**
- * TODO: comment me!
+ * Represents a database sequence.
+ * 
  * @author Matt Ward
  */
 public class Sequence extends AbstractDbObject
 {
+    // No subclass specific data/behaviour at present.
 }

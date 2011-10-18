@@ -22,8 +22,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.alfresco.util.schemacomp.Differences;
+import org.alfresco.util.schemacomp.SchemaUtils;
+
 /**
- * Instances of this class will represent a database table.
+ * Instances of this class represent a database table.
  * 
  * @author Matt Ward
  */
@@ -31,23 +34,26 @@ public class Table extends AbstractDbObject
 {
     private List<Column> columns = new ArrayList<Column>();
     private PrimaryKey primaryKey;
-    private ForeignKey foreignKey;
+    private List<ForeignKey> foreignKeys = new ArrayList<ForeignKey>();
     private List<Index> indexes = new ArrayList<Index>();
     
     
     public Table(String name, Collection<Column> columns, PrimaryKey primaryKey, 
-                ForeignKey foreignKey, Collection<Index> indexes)
+                Collection<ForeignKey> foreignKeys, Collection<Index> indexes)
     {
         super(name);
         if (columns != null)
         {
-            columns.addAll(columns);
+            this.columns.addAll(columns);
         }
         this.primaryKey = primaryKey;
-        this.foreignKey = foreignKey;
+        if (foreignKeys != null)
+        {
+            this.foreignKeys.addAll(foreignKeys);
+        }
         if (indexes != null)
         {
-            indexes.addAll(indexes);
+            this.indexes.addAll(indexes);
         }
     }
 
@@ -89,20 +95,20 @@ public class Table extends AbstractDbObject
 
 
     /**
-     * @return the foreignKey
+     * @return the foreignKeys
      */
-    public ForeignKey getForeignKey()
+    public List<ForeignKey> getForeignKeys()
     {
-        return this.foreignKey;
+        return this.foreignKeys;
     }
 
 
     /**
-     * @param foreignKey the foreignKey to set
+     * @param foreignKeys the foreignKeys to set
      */
-    public void setForeignKey(ForeignKey foreignKey)
+    public void setForeignKeys(List<ForeignKey> foreignKeys)
     {
-        this.foreignKey = foreignKey;
+        this.foreignKeys = foreignKeys;
     }
 
 
@@ -130,7 +136,7 @@ public class Table extends AbstractDbObject
         final int prime = 31;
         int result = super.hashCode();
         result = prime * result + ((this.columns == null) ? 0 : this.columns.hashCode());
-        result = prime * result + ((this.foreignKey == null) ? 0 : this.foreignKey.hashCode());
+        result = prime * result + ((this.foreignKeys == null) ? 0 : this.foreignKeys.hashCode());
         result = prime * result + ((this.indexes == null) ? 0 : this.indexes.hashCode());
         result = prime * result + ((this.primaryKey == null) ? 0 : this.primaryKey.hashCode());
         return result;
@@ -149,21 +155,34 @@ public class Table extends AbstractDbObject
             if (other.columns != null) return false;
         }
         else if (!this.columns.equals(other.columns)) return false;
-        if (this.foreignKey == null)
+        if (this.foreignKeys == null)
         {
-            if (other.foreignKey != null) return false;
+            if (other.foreignKeys != null) return false;
         }
-        else if (!this.foreignKey.equals(other.foreignKey)) return false;
+        else if (!this.foreignKeys.equals(other.foreignKeys)) return false;
         if (this.indexes == null)
         {
             if (other.indexes != null) return false;
         }
         else if (!this.indexes.equals(other.indexes)) return false;
-        if (this.primaryKey == null)
-        {
-            if (other.primaryKey != null) return false;
-        }
-        else if (!this.primaryKey.equals(other.primaryKey)) return false;
+        // TODO: this is difficult, equals probably should include this, but diffs shouldn't -
+        // decide what to do about this.
+//        if (this.primaryKey == null)
+//        {
+//            if (other.primaryKey != null) return false;
+//        }
+//        else if (!this.primaryKey.equals(other.primaryKey)) return false;
         return true;
-    }    
+    }
+
+
+    @Override
+    protected void doDiff(DbObject other, Differences differences)
+    {        
+        Table rightTable = (Table) other; 
+        SchemaUtils.compareCollections(columns, rightTable.columns, differences);
+        primaryKey.diff(rightTable.primaryKey, differences);
+        SchemaUtils.compareCollections(foreignKeys, rightTable.foreignKeys, differences);
+        SchemaUtils.compareCollections(indexes, rightTable.indexes, differences);
+    }
 }

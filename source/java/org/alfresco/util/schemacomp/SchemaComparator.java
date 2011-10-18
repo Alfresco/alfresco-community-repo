@@ -18,17 +18,19 @@
  */
 package org.alfresco.util.schemacomp;
 
-import org.alfresco.util.schemacomp.model.DbObject;
 import org.alfresco.util.schemacomp.model.Schema;
 
 /**
- * TODO: comment me!
+ * Compares two abstract database schemas, a 'left' schema and a 'right' schema. The left schema is the primary
+ * schema and all objects in the right schema are judged relative to it.
+ * 
  * @author Matt Ward
  */
 public class SchemaComparator
 {
-    private Schema leftSchema;
-    private Schema rightSchema;
+    private final Schema leftSchema;
+    private final Schema rightSchema;
+    private final Differences differences = new Differences();
     
     /**
      * Construct a comparator to compare schemas left and right.
@@ -42,34 +44,19 @@ public class SchemaComparator
         this.rightSchema = right;
     }
     
+    
     public void compare()
     {
-        for (DbObject leftObj : leftSchema)
-        {
-            DbObject rightObj = rightSchema.get(leftObj.getIdentifier());
-            if (rightObj != null)
-            {
-                // There is an equivalent object in the right hand schema as in the left.
-                System.out.println("Both schemas have object: " + leftObj.getIdentifier() + 
-                            "(" + leftObj.getClass().getSimpleName() + ")");
-            }
-            else
-            {
-                // No equivalent object in the right hand schema.
-                System.out.println("No matching object in right schema: " + leftObj.getIdentifier() + 
-                            "(" + leftObj.getClass().getSimpleName() + ")");
-            }
-        }
-        
-        // Identify objects in the right schema but not the left
-        for (DbObject rightObj : rightSchema)
-        {
-            if (!leftSchema.contains(rightObj.getIdentifier()))
-            {
-             // No equivalent object in the left hand schema.
-                System.out.println("No matching object in left schema: " + rightObj.getIdentifier() + 
-                            "(" + rightObj.getClass().getSimpleName() + ")");
-            }
-        }
+        // Check the left schema against the right schema and record any differences.
+        leftSchema.diff(rightSchema, differences);
+    }
+
+
+    /**
+     * @return the differences
+     */
+    public Differences getDifferences()
+    {
+        return this.differences;
     }
 }

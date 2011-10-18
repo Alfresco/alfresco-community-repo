@@ -18,9 +18,14 @@
  */
 package org.alfresco.util.schemacomp.model;
 
+import org.alfresco.util.schemacomp.Differences;
+import org.alfresco.util.schemacomp.SchemaUtils;
+
 
 /**
- * TODO: comment me!
+ * Represents a foreign key on a database table (<code>localColumn</code>) that references
+ * <code>targetTable.targetColumn</code>
+ * 
  * @author Matt Ward
  */
 public class ForeignKey extends AbstractDbObject
@@ -31,12 +36,29 @@ public class ForeignKey extends AbstractDbObject
     
     
     /**
+     * Constructor.
+     * 
+     * @param fkName
+     * @param localColumn
+     * @param targetTable
+     * @param targetColumn
+     */
+    public ForeignKey(String fkName, String localColumn, String targetTable, String targetColumn)
+    {
+        super(fkName);
+        this.localColumn = localColumn;
+        this.targetTable = targetTable;
+        this.targetColumn = targetColumn;
+    }
+    
+    /**
      * @return the localColumn
      */
     public String getLocalColumn()
     {
         return this.localColumn;
     }
+    
     /**
      * @param localColumn the localColumn to set
      */
@@ -44,6 +66,7 @@ public class ForeignKey extends AbstractDbObject
     {
         this.localColumn = localColumn;
     }
+    
     /**
      * @return the targetTable
      */
@@ -51,6 +74,7 @@ public class ForeignKey extends AbstractDbObject
     {
         return this.targetTable;
     }
+    
     /**
      * @param targetTable the targetTable to set
      */
@@ -58,6 +82,7 @@ public class ForeignKey extends AbstractDbObject
     {
         this.targetTable = targetTable;
     }
+    
     /**
      * @return the targetColumn
      */
@@ -65,6 +90,7 @@ public class ForeignKey extends AbstractDbObject
     {
         return this.targetColumn;
     }
+    
     /**
      * @param targetColumn the targetColumn to set
      */
@@ -107,5 +133,15 @@ public class ForeignKey extends AbstractDbObject
         }
         else if (!this.targetTable.equals(other.targetTable)) return false;
         return true;
+    }
+    
+    
+    @Override
+    protected void doDiff(DbObject right, Differences differences)
+    {
+        ForeignKey rightFK = (ForeignKey) right;
+        SchemaUtils.compareSimple(localColumn, rightFK.localColumn, differences);
+        SchemaUtils.compareSimple(targetTable, rightFK.targetTable, differences);
+        SchemaUtils.compareSimple(targetColumn, rightFK.targetColumn, differences);        
     }    
 }

@@ -18,8 +18,13 @@
  */
 package org.alfresco.util.schemacomp.model;
 
+import org.alfresco.util.schemacomp.Differences;
+import org.alfresco.util.schemacomp.SchemaUtils;
+import org.springframework.util.StringUtils;
+
 /**
- * TODO: comment me!
+ * Useful base class for many, if not all the {@link DbObject} implementations.
+ * 
  * @author Matt Ward
  */
 public abstract class AbstractDbObject implements DbObject
@@ -60,9 +65,18 @@ public abstract class AbstractDbObject implements DbObject
     }
     
     @Override
-    public Object getIdentifier()
+    public boolean sameAs(DbObject other)
     {
-        return getName();
+        if (getName() != null && other != null && other.getName() != null)
+        {
+            return getName().equals(other.getName());
+        }
+        else
+        {
+            // Only other way we can know if they are the same is if they are
+            // the exact same object reference.
+            return this == other;
+        }
     }
 
     @Override
@@ -87,5 +101,61 @@ public abstract class AbstractDbObject implements DbObject
         }
         else if (!this.name.equals(other.name)) return false;
         return true;
+    }
+    
+    @Override
+    public String toString()
+    {
+        StringBuffer sb = new StringBuffer();
+        sb.append(getClass().getSimpleName());
+        sb.append("[name=");
+        
+        if (getName() != null)
+        {
+            sb.append(getName());
+        }
+        else
+        {
+            sb.append("null");
+        }
+        
+        sb.append("]");
+        
+        return sb.toString();
+    }
+
+    /**
+     * Provides an implementation of {@link DbObject#diff(DbObject, Differences)}. The template
+     * method {@link #doDiff(DbObject, Differences)} provides the subclass specific diffing logic,
+     * whilst this method handles the workflow required in most cases: set the path's prefix that will be
+     * used to explain where differences occur; compare the name fields of the two objects; delegate to the
+     * subclass specific diffing (if any); remove the last path addition ready for the next object to perform
+     * its diff correctly.
+     */
+    @Override
+    public void diff(DbObject right, Differences differences)
+    {
+        if (name != null && StringUtils.hasText(name))
+        {
+            differences.pushPath(name);
+        }
+        else
+        {
+            differences.pushPath("<" + getClass().getSimpleName() + ">");
+        }
+        SchemaUtils.compareSimple(name, right.getName(), differences);
+        doDiff(right, differences);
+        differences.popPath();
+    }
+
+
+    /**
+     * Override this method to provide subclass specific diffing logic.
+     * 
+     * @param right
+     * @param differences
+     */
+    protected void doDiff(DbObject right, Differences differences)
+    {
     }
 }

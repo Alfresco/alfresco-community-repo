@@ -18,50 +18,50 @@
  */
 package org.alfresco.util.schemacomp.model;
 
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.List;
+
+import org.alfresco.util.schemacomp.Differences;
+import org.alfresco.util.schemacomp.SchemaUtils;
 
 /**
- * Instances of this class will represent a database schema.
+ * Instances of this class represent a database schema.
  * 
  * @author Matt Ward
  */
-public class 
-Schema extends AbstractDbObject implements Iterable<DbObject>
+public class Schema extends AbstractDbObject implements Iterable<DbObject>
 {
-    private final Map<Object, DbObject> objects = new LinkedHashMap<Object, DbObject>();
+    private final List<DbObject> objects = new ArrayList<DbObject>();
 
     /**
-     * @param key
-     * @return
+     * Construct a schema with the given name.
+     * 
+     * @param name
      */
-    public DbObject get(Object key)
+    public Schema(String name)
     {
-        return this.objects.get(key);
+        super(name);
     }
 
-    /**
-     * @param table
-     */
-    public void put(DbObject dbObject)
+    public void add(DbObject dbObject)
     {
-        objects.put(dbObject.getIdentifier(), dbObject);
+        objects.add(dbObject);
     }
-
+    
     @Override
     public Iterator<DbObject> iterator()
     {
-        return objects.values().iterator();
+        return objects.iterator();
     }
 
     /**
      * @param identifier
      * @return
      */
-    public boolean contains(Object identifier)
+    public boolean contains(DbObject object)
     {
-        return objects.containsKey(identifier);
+        return objects.contains(object);
     }
 
     @Override
@@ -86,5 +86,13 @@ Schema extends AbstractDbObject implements Iterable<DbObject>
         }
         else if (!this.objects.equals(other.objects)) return false;
         return true;
+    }
+    
+    
+    @Override
+    protected void doDiff(DbObject right, Differences differences)
+    {
+        Schema rightSchema = (Schema) right;
+        SchemaUtils.compareCollections(objects, rightSchema.objects, differences);
     }
 }

@@ -18,8 +18,12 @@
  */
 package org.alfresco.util.schemacomp.model;
 
+import org.alfresco.util.schemacomp.Differences;
+import org.alfresco.util.schemacomp.SchemaUtils;
+
 /**
- * TODO: comment me!
+ * Represents a column in a database table.
+ * 
  * @author Matt Ward
  */
 public class Column extends AbstractDbObject
@@ -27,6 +31,21 @@ public class Column extends AbstractDbObject
     private String type;
     private boolean nullable;
     
+    
+    /**
+     * Construct a Column.
+     * 
+     * @param name
+     * @param type
+     * @param nullable
+     */
+    public Column(String name, String type, boolean nullable)
+    {
+        super(name);
+        this.type = type;
+        this.nullable = nullable;
+    }
+
     /**
      * @return the type
      */
@@ -83,5 +102,13 @@ public class Column extends AbstractDbObject
         }
         else if (!this.type.equals(other.type)) return false;
         return true;
+    }
+
+    @Override
+    protected void doDiff(DbObject right, Differences differences)
+    {
+        Column rightColumn = (Column) right;
+        SchemaUtils.compareSimple(type, rightColumn.type, differences);
+        SchemaUtils.compareSimple(nullable, rightColumn.nullable, differences);        
     }
 }

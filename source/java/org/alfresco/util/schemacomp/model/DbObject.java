@@ -18,12 +18,39 @@
  */
 package org.alfresco.util.schemacomp.model;
 
+import org.alfresco.util.schemacomp.Differences;
+
 /**
- * All database objects to be modelled for schema comparisons must implement this interface.
+ * All database objects to be modelled for schema comparisons must implement this interface, examples
+ * of which include: schemas, tables, indexes, primary keys, foreign keys, sequences and columns.
  * 
  * @author Matt Ward
  */
 public interface DbObject
 {
-    Object getIdentifier();
+    /**
+     * Are the two <code>DbObject</code>s logically the same? For example two Index objects may have
+     * different names, but are the same index as they both index the same columns for the same table.
+     *  
+     * @param other
+     * @return
+     */
+    boolean sameAs(DbObject other);
+    
+    /**
+     * All items can be asked for their name, but it may be null.
+     * 
+     * @return Name if available, null otherwise.
+     */
+    String getName();
+    
+    /**
+     * Generate a report of differences between this object ('left') and another object ('right').
+     * Differences between the left and right objects under inspection are captured in the {@link Differences}
+     * object passed in to this method.
+     * 
+     * @param right The object to compare against.
+     * @param differences A collector of differences.
+     */
+    void diff(DbObject right, Differences differences);
 }

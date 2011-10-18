@@ -20,8 +20,12 @@ package org.alfresco.util.schemacomp.model;
 
 import java.util.List;
 
+import org.alfresco.util.schemacomp.Differences;
+import org.alfresco.util.schemacomp.SchemaUtils;
+
 /**
- * TODO: comment me!
+ * Represents an index on a table.
+ * 
  * @author Matt Ward
  */
 public class Index extends AbstractDbObject
@@ -29,6 +33,15 @@ public class Index extends AbstractDbObject
     private List<String> columnNames;
 
     
+    /**
+     * @param columnNames
+     */
+    public Index(String name, List<String> columnNames)
+    {
+        super(name);
+        this.columnNames = columnNames;
+    }
+
     /**
      * @return the columnNames
      */
@@ -43,18 +56,6 @@ public class Index extends AbstractDbObject
     public void setColumnNames(List<String> columnNames)
     {
         this.columnNames = columnNames;
-    }
-
-    /**
-     * TODO: column names should be fully qualified, OR an Index should have a table name field
-     * and the identifier should include it.
-     * 
-     * @return the Index identifier
-     */
-    @Override
-    public Object getIdentifier()
-    {
-        return getColumnNames();
     }
 
     @Override
@@ -79,5 +80,35 @@ public class Index extends AbstractDbObject
         }
         else if (!this.columnNames.equals(other.columnNames)) return false;
         return true;
+    }
+
+    @Override
+    public boolean sameAs(DbObject o)
+    {
+        if (o != null && o instanceof Index)
+        {
+            Index other = (Index) o;
+            
+            if (getName() != null)
+            {
+                if (getName().equals(other.getName()))
+                {
+                    return true;
+                }
+                else
+                {
+                    return columnNames.equals(other.getColumnNames());
+                }
+            }
+        }
+        
+        return false;
+    }
+
+    @Override
+    protected void doDiff(DbObject right, Differences differences)
+    {
+        Index rightIndex = (Index) right;
+        SchemaUtils.compareSimpleCollections(columnNames, rightIndex.columnNames, differences);
     }
 }

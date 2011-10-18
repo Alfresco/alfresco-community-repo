@@ -151,7 +151,10 @@ public class MLPropertyInterceptor implements MethodInterceptor
 
         // What locale must be used for filtering
         Locale contentLocale = I18NUtil.getContentLocale();
-        
+
+        // ALF-3756 fix, ignore the country and variant
+        contentLocale = new Locale(contentLocale.getLanguage());
+
         if (methodName.equals("getProperty"))
         {
             NodeRef nodeRef = (NodeRef) args[0];

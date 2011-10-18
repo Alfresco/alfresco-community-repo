@@ -117,17 +117,13 @@ public class ScheduledPersistedActionServiceTest extends TestCase
       testAction = new TestAction(actionService
             .createAction(SleepActionExecuter.NAME));
       runtimeActionService.createActionNodeRef(
-            //
-            testAction,
-            ScheduledPersistedActionServiceImpl.SCHEDULED_ACTION_ROOT_NODE_REF,
+            testAction, serviceImpl.SCHEDULED_ACTION_ROOT_NODE_REF,
             ContentModel.ASSOC_CONTAINS, QName.createQName("TestAction"));
 
       testAction2 = new TestAction(actionService
             .createAction(SleepActionExecuter.NAME));
       runtimeActionService.createActionNodeRef(
-            //
-            testAction2,
-            ScheduledPersistedActionServiceImpl.SCHEDULED_ACTION_ROOT_NODE_REF,
+            testAction2, serviceImpl.SCHEDULED_ACTION_ROOT_NODE_REF,
             ContentModel.ASSOC_CONTAINS, QName.createQName("TestAction2"));
 
       testAction3 = new TestAction(actionService
@@ -182,8 +178,7 @@ public class ScheduledPersistedActionServiceTest extends TestCase
       // Persist the 3rd action
       runtimeActionService.createActionNodeRef(
             //
-            testAction3,
-            ScheduledPersistedActionServiceImpl.SCHEDULED_ACTION_ROOT_NODE_REF,
+            testAction3, serviceImpl.SCHEDULED_ACTION_ROOT_NODE_REF,
             ContentModel.ASSOC_CONTAINS, QName.createQName("TestAction3"));
 
       assertEquals(null, schedule.getPersistedAtNodeRef());
@@ -673,9 +668,7 @@ public class ScheduledPersistedActionServiceTest extends TestCase
             .getPersistedAtNodeRef());
 
       runtimeActionService.createActionNodeRef(
-            //
-            testAction3,
-            ScheduledPersistedActionServiceImpl.SCHEDULED_ACTION_ROOT_NODE_REF,
+            testAction3, serviceImpl.SCHEDULED_ACTION_ROOT_NODE_REF,
             ContentModel.ASSOC_CONTAINS, QName.createQName("TestAction3"));
 
       assertNotNull(schedule.getActionNodeRef());

@@ -76,8 +76,7 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
     protected static final String JOB_SCHEDULE_NODEREF = "ScheduleNodeRef";
     protected static final String JOB_ACTION_NODEREF = "ActionNodeRef";
     
-    // TODO: Should be private NodeRef scheduledActionRootNodeRef;
-    protected static NodeRef SCHEDULED_ACTION_ROOT_NODE_REF;
+    protected NodeRef SCHEDULED_ACTION_ROOT_NODE_REF;
 
     protected static final Set<QName> ACTION_TYPES = new HashSet<QName>(Arrays
                 .asList(new QName[] { ActionModel.TYPE_ACTION_SCHEDULE }));

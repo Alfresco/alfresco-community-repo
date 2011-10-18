@@ -45,6 +45,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.GUID;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -143,7 +144,7 @@ public class CommentsTest
     private NodeRef createNode(NodeRef parentNode, String name, QName type)
     {
         Map<QName, Serializable> props = new HashMap<QName, Serializable>();
-        String fullName = name + System.currentTimeMillis();
+        String fullName = name + "-" + GUID.generate();
         props.put(ContentModel.PROP_NAME, fullName);
         QName docContentQName = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, fullName);
         NodeRef node = nodeService.createNode(parentNode,

@@ -76,6 +76,7 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
     protected static final String JOB_SCHEDULE_NODEREF = "ScheduleNodeRef";
     protected static final String JOB_ACTION_NODEREF = "ActionNodeRef";
     
+    // TODO: Should be private NodeRef scheduledActionRootNodeRef;
     protected static NodeRef SCHEDULED_ACTION_ROOT_NODE_REF;
 
     protected static final Set<QName> ACTION_TYPES = new HashSet<QName>(Arrays
@@ -123,6 +124,9 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
 
     protected void locatePersistanceFolder()
     {
+        // TODO: Use SearchService.selectNodes(repositoryHelper.getCompanyHome(), "/app:dictionary/Scheduled Actions");
+        //       Log error if result not found
+        //       Log warning if multiple results found
         List<ChildAssociationRef> dictionaryAssocs = startupNodeService.getChildAssocs(
                 repositoryHelper.getCompanyHome(),
                 ContentModel.ASSOC_CONTAINS,

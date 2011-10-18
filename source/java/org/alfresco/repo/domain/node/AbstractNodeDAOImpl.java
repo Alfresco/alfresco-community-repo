@@ -55,9 +55,9 @@ import org.alfresco.repo.domain.usage.UsageDAO;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.permissions.AccessControlListProperties;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.TransactionAwareSingleton;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
@@ -71,20 +71,20 @@ import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.InvalidStoreRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.ReadOnlyServerException;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.EqualsHelper;
+import org.alfresco.util.EqualsHelper.MapValueComparison;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.ReadWriteLockExecuter;
 import org.alfresco.util.SerializationUtils;
-import org.alfresco.util.EqualsHelper.MapValueComparison;
 import org.apache.commons.lang.mutable.MutableInt;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -2900,7 +2900,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      */
     private class ChildAssocRefBatchingQueryCallback implements ChildAssocRefQueryCallback
     {
-        private static final int BATCH_SIZE = 256 * 4;
         private final ChildAssocRefQueryCallback callback;
         private final boolean preload;
         private final List<NodeRef> nodeRefs;
@@ -2935,18 +2934,10 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 Pair<Long, NodeRef> parentNodePair,
                 Pair<Long, NodeRef> childNodePair)
         {
-            if (!preload)
+            if (preload)
             {
-                return callback.handle(childAssocPair, parentNodePair, childNodePair);
+                nodeRefs.add(childNodePair.getSecond());
             }
-            // Batch it
-            if (nodeRefs.size() >= BATCH_SIZE)
-            {
-                cacheNodes(nodeRefs);
-                nodeRefs.clear();
-            }
-            nodeRefs.add(childNodePair.getSecond());
-            
             return callback.handle(childAssocPair, parentNodePair, childNodePair);
         }
         public void done()
@@ -2957,7 +2948,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 cacheNodes(nodeRefs);
                 nodeRefs.clear();
             }
-            
+            // Done
             callback.done();
         }                               
     }
@@ -2974,6 +2965,23 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         selectChildAssocs(
                 parentNodeId, childNodeId,
                 assocTypeQName, assocQName, isPrimary, sameStore,
+                new ChildAssocRefBatchingQueryCallback(resultsCallback));
+    }
+
+    @Override
+    public void getChildAssocs(
+            Long parentNodeId,
+            QName assocTypeQName,
+            QName assocQName,
+            int maxResults,
+            ChildAssocRefQueryCallback resultsCallback)
+    {
+        selectChildAssocs(
+                parentNodeId,
+                assocTypeQName,
+                assocQName,
+                null,
+                maxResults,
                 new ChildAssocRefBatchingQueryCallback(resultsCallback));
     }
 
@@ -3925,6 +3933,13 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             QName assocQName,
             Boolean isPrimary,
             Boolean sameStore,
+            ChildAssocRefQueryCallback resultsCallback);
+    protected abstract void selectChildAssocs(
+            Long parentNodeId,
+            QName assocTypeQName,
+            QName assocQName,
+            Long minAssocIdInclusive,
+            int maxResults,
             ChildAssocRefQueryCallback resultsCallback);
     protected abstract void selectChildAssocs(
             Long parentNodeId,

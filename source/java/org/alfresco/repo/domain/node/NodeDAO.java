@@ -503,15 +503,15 @@ public interface NodeDAO extends NodeBulkLoader
      * @param assocQName            the association qname to filter on; <tt>null</tt> for no filtering
      * @param maxResults            the maximum number of results to return. The query will be terminated efficiently
      *                              after that number of results                             
-     * @param preload          should the child nodes be batch loaded?
+     * @param resultsCallback       the callback that will be called with the results
      * @return a list of child associations
      */
-    public List<ChildAssociationRef> getChildAssocs(
+    public void getChildAssocs(
             Long parentNodeId,
             QName assocTypeQName,
             QName assocQName,
             final int maxResults,
-            boolean preload);
+            ChildAssocRefQueryCallback resultsCallback);
     
    /**
      * Get the child associations of a given parent node, optionally filtering on type <tt>QName</tt>.

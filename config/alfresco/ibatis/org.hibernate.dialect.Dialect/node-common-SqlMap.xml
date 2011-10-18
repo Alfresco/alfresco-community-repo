@@ -917,6 +917,7 @@
         <include refid="alfresco.node.select_ChildAssoc_FromSimple"/>
         where
             parentNode.id = #{parentNode.id}
+            <if test="id != null"><![CDATA[and assoc.id >= #{id}]]></if>
             <if test="childNode != null">and assoc.child_node_id = #{childNode.id}</if>
             <if test="typeQNameIds != null">
                 and assoc.type_qname_id in 

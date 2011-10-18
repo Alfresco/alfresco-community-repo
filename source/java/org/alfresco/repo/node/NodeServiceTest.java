@@ -241,10 +241,15 @@ public class NodeServiceTest extends TestCase
     public void testConcurrentArchive() throws Exception
     {
         final NodeRef workspaceRootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        final NodeRef[] nodesPrimer = new NodeRef[1];
+        buildNodeHierarchy(workspaceRootNodeRef, nodesPrimer);
         final NodeRef[] nodesOne = new NodeRef[10];
         buildNodeHierarchy(workspaceRootNodeRef, nodesOne);
         final NodeRef[] nodesTwo = new NodeRef[10];
         buildNodeHierarchy(workspaceRootNodeRef, nodesTwo);
+        
+        // Prime the root of the archive store (first child adds inherited ACL)
+        nodeService.deleteNode(nodesPrimer[0]);
         
         RetryingTransactionCallback<Void> outerCallback = new RetryingTransactionCallback<Void>()
         {
@@ -426,8 +431,41 @@ public class NodeServiceTest extends TestCase
         }
     }
     
+    public void testGetChildren_Limited()
+    {
+        // Create a node and loads of children
+        final NodeRef[] liveNodeRefs = new NodeRef[10];
+        final NodeRef workspaceRootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+
+        buildNodeHierarchy(workspaceRootNodeRef, liveNodeRefs);
+        
+        // Hook 3rd and subsequent children into 1st child
+        for (int i = 2; i < liveNodeRefs.length; i++)
+        {
+            nodeService.addChild(
+                    liveNodeRefs[0],
+                    liveNodeRefs[i],
+                    ContentModel.ASSOC_CONTAINS,
+                    QName.createQName(NAMESPACE, "secondary"));
+        }
+        
+        // Do limited queries each time
+        for (int i = 1; i < liveNodeRefs.length; i++)
+        {
+            List<ChildAssociationRef> childAssocRefs = nodeService.getChildAssocs(liveNodeRefs[0], null, null, i, true);
+            assertEquals("Expected exact number of child assocs", i, childAssocRefs.size());
+        }
+        
+        // Repeat, but don't preload
+        for (int i = 1; i < liveNodeRefs.length; i++)
+        {
+            List<ChildAssociationRef> childAssocRefs = nodeService.getChildAssocs(liveNodeRefs[0], null, null, i, false);
+            assertEquals("Expected exact number of child assocs", i, childAssocRefs.size());
+        }
+    }
+    
     /**
-     * Checks that the node caches react correct when a node is deleted
+     * Checks that the node caches react correctly when a node is deleted
      */
     public void testCaches_DeleteNode()
     {

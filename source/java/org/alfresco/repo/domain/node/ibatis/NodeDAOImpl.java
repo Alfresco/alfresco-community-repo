@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1014,6 +1013,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         {
             if (!assoc.setTypeQNameAll(qnameDAO, assocTypeQName, false))
             {
+                resultsCallback.done();
                 return;                     // Shortcut
             }
         }
@@ -1022,6 +1022,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         {
             if (!assoc.setQNameAll(qnameDAO, assocQName, false))
             {
+                resultsCallback.done();
                 return;                     // Shortcut
             }
         }
@@ -1045,25 +1046,29 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         resultsCallback.done();
     }
 
-    public List<ChildAssociationRef> getChildAssocs(
+    @Override
+    public void selectChildAssocs(
             Long parentNodeId,
             QName assocTypeQName,
             QName assocQName,
+            Long minAssocIdInclusive,
             final int maxResults,
-            boolean preload)
+            ChildAssocRefQueryCallback resultsCallback)
     {
         ChildAssocEntity assoc = new ChildAssocEntity();
         // Parent
         NodeEntity parentNode = new NodeEntity();
         parentNode.setId(parentNodeId);
         assoc.setParentNode(parentNode);
+        assoc.setId(minAssocIdInclusive);
 
         // Type QName
         if (assocTypeQName != null)
         {
             if (!assoc.setTypeQNameAll(qnameDAO, assocTypeQName, false))
             {
-                return Collections.emptyList();                     // Shortcut
+                resultsCallback.done();
+                return;                 // Shortcut
             }
         }
         // QName
@@ -1071,49 +1076,23 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         {
             if (!assoc.setQNameAll(qnameDAO, assocQName, false))
             {
-                return Collections.emptyList();                     // Shortcut
+                resultsCallback.done();
+                return;                 // Shortcut
             }
         }
 
-        final List<ChildAssociationRef> result = new LinkedList<ChildAssociationRef>();
-        final List<NodeRef> toLoad = new LinkedList<NodeRef>();
-
-        // We can't invoke the row handler whilst the limited query is running as it's illegal on some databases (MySQL)
-        List<?> entities = template.selectList(SELECT_CHILD_ASSOCS_OF_PARENT_LIMITED, assoc, new RowBounds(0,
-                maxResults));
-        ChildAssocResultHandler rowHandler = new ChildAssocResultHandler(new ChildAssocRefQueryCallback(){
-
-            @Override
-            public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair, Pair<Long, NodeRef> parentNodePair,
-                    Pair<Long, NodeRef> childNodePair)
-            {
-                result.add(childAssocPair.getSecond());
-                toLoad.add(childNodePair.getSecond());
-                return true;
-            }
-
-            @Override
-            public void done()
-            {
-            }
-
-            @Override
-            public boolean preLoadNodes()
-            {
-                return false;
-            }});
+        ChildAssocResultHandler resultHandler = new ChildAssocResultHandler(resultsCallback);
+        
+        RowBounds rowBounds = new RowBounds(0, maxResults);
+        List<?> entities = template.selectList(SELECT_CHILD_ASSOCS_OF_PARENT_LIMITED, assoc, rowBounds);
         final DefaultResultContext resultContext = new DefaultResultContext();
         for (Object entity : entities)
         {
               resultContext.nextResultObject(entity);
-              rowHandler.handleResult(resultContext);
-        }
-        if (preload && !toLoad.isEmpty())
-        {
-            cacheNodes(toLoad);
+              resultHandler.handleResult(resultContext);
         }
         
-        return result;
+        resultsCallback.done();
     }
 
     @Override

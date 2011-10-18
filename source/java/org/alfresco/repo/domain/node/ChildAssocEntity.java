@@ -185,7 +185,7 @@ public class ChildAssocEntity
      */
     public ChildAssocEntity()
     {
-        ordered = true;
+        ordered = false;
     }
 
     @Override

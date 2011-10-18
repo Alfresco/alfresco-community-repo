@@ -1707,8 +1707,33 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     {
         // Get the node
         Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
+        
+        // We have a callback handler to filter results
+        final List<ChildAssociationRef> results = new ArrayList<ChildAssociationRef>(10);
+        ChildAssocRefQueryCallback callback = new ChildAssocRefQueryCallback()
+        {
+            public boolean preLoadNodes()
+            {
+                return preload;
+            }
+            
+            public boolean handle(
+                    Pair<Long, ChildAssociationRef> childAssocPair,
+                    Pair<Long, NodeRef> parentNodePair,
+                    Pair<Long, NodeRef> childNodePair)
+            {
+                results.add(childAssocPair.getSecond());
+                return true;
+            }
+
+            public void done()
+            {
+            }                               
+        };
         // Get the assocs pointing to it
-        return nodeDAO.getChildAssocs(nodePair.getFirst(), typeQName, qname, maxResults, preload);
+        nodeDAO.getChildAssocs(nodePair.getFirst(), typeQName, qname, maxResults, callback);
+        // Done
+        return results;
     }
 
     public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, Set<QName> childNodeTypeQNames)

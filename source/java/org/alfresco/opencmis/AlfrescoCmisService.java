@@ -1747,7 +1747,22 @@ public class AlfrescoCmisService extends AbstractCmisService
                             }
 
                             // attempt to delete the node
-                            connector.getNodeService().deleteNode(nodeRef);
+                            if (allVersions)
+                            {
+                                connector.getNodeService().deleteNode(nodeRef);
+                            } else
+                            {
+                                CMISNodeInfoImpl infoImpl = ((CMISNodeInfoImpl) info);
+                                Version version = infoImpl.getVersion();
+
+                                if (infoImpl.getVersionHistory().getPredecessor(version) == null)
+                                {
+                                    connector.getNodeService().deleteNode(nodeRef);
+                                } else
+                                {
+                                    connector.getVersionService().deleteVersion(nodeRef, version);
+                                }
+                            }
                             return true;
                         } catch (AccessDeniedException ade)
                         {
@@ -2007,7 +2022,7 @@ public class AlfrescoCmisService extends AbstractCmisService
                             NodeRef pwcNodeRef = connector.getCheckOutCheckInService().checkout(nodeRef);
                             CMISNodeInfo pwcNodeInfo = createNodeInfo(pwcNodeRef);
                             objectId.setValue(pwcNodeInfo.getObjectId());
-                            
+
                             if (contentCopied != null)
                             {
                                 contentCopied.setValue(connector.getFileFolderService().getReader(pwcNodeRef) != null);

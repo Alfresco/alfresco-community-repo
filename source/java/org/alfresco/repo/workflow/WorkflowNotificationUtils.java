@@ -60,7 +60,7 @@ public abstract class WorkflowNotificationUtils
     public static final String ARG_WF_DOCUMENTS = "workflowDocuments";
 
     /** Standard workflow assigned template */
-    private static final NodeRef WF_ASSIGNED_TEMPLATE = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "wf-email-html-ftl");
+    public static final NodeRef WF_ASSIGNED_TEMPLATE = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "wf-email-html-ftl");
     
     /**
      * 

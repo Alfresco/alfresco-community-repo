@@ -3062,5 +3062,17 @@
         <property name="permissionService" ref="permissionService" />
         <property name="importerBootstrap" ref="spacesBootstrap" />
     </bean>
+    
+    <bean id="patch.updateWorkflowNotificationTemplates" class="org.alfresco.repo.admin.patch.impl.UpdateWorkflowNotificationTemplatesPatch" parent="basePatch">
+        <property name="id"><value>patch.updateWorkflowNotificationTemplates</value></property>
+        <property name="description"><value>patch.updateWorkflowNotificationTemplates.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>5018</value></property>
+        <property name="targetSchema"><value>5019</value></property>
+        <property name="requiresTransaction"><value>true</value></property>
+        <property name="applyToTenants"><value>true</value></property>
+        <property name="contentService" ref="ContentService"/>
+        <property name="fileFolderService" ref="FileFolderService"/>
+    </bean>
 
 </beans>

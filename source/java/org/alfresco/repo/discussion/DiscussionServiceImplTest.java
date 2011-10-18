@@ -41,6 +41,7 @@ import org.alfresco.service.cmr.discussion.DiscussionService;
 import org.alfresco.service.cmr.discussion.PostInfo;
 import org.alfresco.service.cmr.discussion.PostWithReplies;
 import org.alfresco.service.cmr.discussion.TopicInfo;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
@@ -1637,6 +1638,62 @@ public class DiscussionServiceImplTest
        {
           PUBLIC_NODE_SERVICE.deleteNode(topic.getNodeRef());
        }
+    }
+    
+    /**
+     * Tests that "fm:post" content is not archived.
+     */
+    @Test public void alf_9460()
+    {
+        TopicInfo siteTopic;
+        TopicInfo nodeTopic;
+        PostInfo post;
+        PostInfo reply;
+        
+        // Nothing to start with
+        PagingResults<TopicInfo> results = 
+           DISCUSSION_SERVICE.listTopics(DISCUSSION_SITE.getShortName(), true, new PagingRequest(10));
+        assertEquals(0, results.getPage().size());
+        
+        results = DISCUSSION_SERVICE.listTopics(FORUM_NODE, true, new PagingRequest(10));
+        assertEquals(0, results.getPage().size());
+
+        
+        // Create two topics, one node and one site based
+        siteTopic = DISCUSSION_SERVICE.createTopic(DISCUSSION_SITE.getShortName(), "Site Title");
+        nodeTopic = DISCUSSION_SERVICE.createTopic(FORUM_NODE, "Node Title");
+        
+        testNodesToTidy.add(siteTopic.getNodeRef());
+        testNodesToTidy.add(nodeTopic.getNodeRef());
+        
+        for (TopicInfo topic : new TopicInfo[] {siteTopic, nodeTopic})
+        {
+            // Create the first post
+            String contents = "This Is Some Content";
+            post = DISCUSSION_SERVICE.createPost(topic, contents);
+            
+            // Add a reply
+            String reply1Contents = "Reply Contents";
+            reply = DISCUSSION_SERVICE.createReply(post, reply1Contents);
+            
+            List<AssociationRef> assocs = NODE_SERVICE.getTargetAssocs(reply.getNodeRef(), ContentModel.ASSOC_REFERENCES);
+            
+            // check that reply has an association with original post
+            assertNotNull(assocs);
+            assertEquals(1, assocs.size());
+            assertEquals(post.getNodeRef(), assocs.get(0).getTargetRef());
+            
+            // delete the original post
+            DISCUSSION_SERVICE.deletePost(post);
+            
+            // check that post was deleted
+            assertFalse(NODE_SERVICE.exists(post.getNodeRef()));
+            
+            // check that associations to the original post was also deleted
+            assocs = NODE_SERVICE.getTargetAssocs(reply.getNodeRef(), ContentModel.ASSOC_REFERENCES);
+            assertNotNull(assocs);
+            assertEquals(0, assocs.size());
+        }
     }
     
     

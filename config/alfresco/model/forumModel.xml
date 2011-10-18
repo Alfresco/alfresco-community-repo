@@ -33,6 +33,7 @@
       
       <type name="fm:post">
          <parent>cm:content</parent>
+         <archive>false</archive>
       </type>
     </types>
     

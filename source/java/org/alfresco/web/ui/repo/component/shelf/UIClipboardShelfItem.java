@@ -36,11 +36,13 @@ import javax.faces.event.FacesEvent;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.clipboard.ClipboardItem;
 import org.alfresco.web.bean.clipboard.ClipboardStatus;
+import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.repo.WebResources;
@@ -217,7 +219,7 @@ public class UIClipboardShelfItem extends UIShelfItem
                // output as a content download link
                out.write("<a href='");
                out.write(context.getExternalContext().getRequestContextPath());
-               out.write(DownloadContentServlet.generateBrowserURL(item.getNodeRef(), item.getName()));
+               out.write(generateBrowserURL(dd, nodeService, item));
                out.write("' target='new'>");
                out.write(Utils.cropEncode(item.getName()));
                out.write("</a>");
@@ -354,6 +356,32 @@ public class UIClipboardShelfItem extends UIShelfItem
       buf.append("</a>");
       
       return buf.toString();
+   }
+   
+   /**
+    * Build the browser url for an item, if item represents the link url is generated for
+    * link destination
+    *
+    * @param dd the dictionary service
+    * @param nodeService the node service
+    * @param item the item to build browser url for
+    * 
+    * @return the browser url for provided item
+    */
+   private String generateBrowserURL(DictionaryService dd, NodeService nodeService, ClipboardItem item)
+   {
+       Node document = new Node(item.getNodeRef());
+       
+       if (dd.isSubClass(item.getType(), ContentModel.TYPE_LINK))
+       {
+           NodeRef destNodeRef = (NodeRef) nodeService.getProperty(item.getNodeRef(), ContentModel.PROP_LINK_DESTINATION);
+           if (nodeService.exists(destNodeRef))
+           {
+               document = new Node(destNodeRef);
+           }           
+       }
+       
+       return DownloadContentServlet.generateBrowserURL(document.getNodeRef(), document.getName());
    }
    
    

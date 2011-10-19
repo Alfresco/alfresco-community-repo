@@ -78,7 +78,7 @@ public class WebDAVServlet extends HttpServlet
     protected Hashtable<String,Class<? extends WebDAVMethod>> m_davMethods;
     
     // Root node
-    private MTNodesCache m_rootNodes;
+    private static MTNodesCache m_rootNodes;
     
     // WebDAV helper class
     private WebDAVHelper m_davHelper;
@@ -349,6 +349,15 @@ public class WebDAVServlet extends HttpServlet
 
             authComponent.clearCurrentSecurityContext();
         }
+    }
+    
+    /**
+     * 
+     * @return root node for WebDAV
+     */
+    public static NodeRef getWebdavRootNode()
+    {
+        return m_rootNodes.getNodeForCurrentTenant();
     }
     
     /**

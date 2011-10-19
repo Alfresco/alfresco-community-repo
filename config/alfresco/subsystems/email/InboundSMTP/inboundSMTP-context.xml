@@ -67,8 +67,11 @@
 			<value>${email.inbound.enabled}</value>
 		</property>
 		<property name="unknownUser">
-         <value>${email.inbound.unknownUser}</value>
+           <value>${email.inbound.unknownUser}</value>
 		</property>
+		<property name="emailContributorsAuthority">
+           <value>${email.inbound.emailContributorsAuthority}</value>
+        </property>
 		<property name="emailMessageHandlerMap">
 			<map>
 				<entry key="cm:folder">

@@ -45,6 +45,7 @@
     <!-- MyBatis config for Activities domain -->
     
     <bean id="activitiesSqlSessionFactory" class="org.alfresco.ibatis.HierarchicalSqlSessionFactoryBean">
+        <property name="useLocalCaches" value="${mybatis.useLocalCaches}"/>
         <property name="resourceLoader" ref="dialectResourceLoader"/>
         <property name="dataSource" ref="activitiesDataSource"/>
         <property name="configLocation">
@@ -59,6 +60,7 @@
     
     <!-- MyBatis config for Alfresco (using common datasource) -->
     <bean id="repoSqlSessionFactory" class="org.alfresco.ibatis.HierarchicalSqlSessionFactoryBean">
+        <property name="useLocalCaches" value="${mybatis.useLocalCaches}"/>
         <property name="resourceLoader" ref="dialectResourceLoader"/>
         <property name="dataSource" ref="dataSource"/>
         <property name="configLocation">

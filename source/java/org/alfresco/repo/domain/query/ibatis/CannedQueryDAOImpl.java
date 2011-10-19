@@ -199,11 +199,7 @@ public class CannedQueryDAOImpl extends AbstractCannedQueryDAOImpl
         ResultHandlerTranslator<R> resultHandler = new ResultHandlerTranslator<R>(handler);
         try
         {
-            // TODO MyBatis workaround
-            // http://code.google.com/p/mybatis/issues/detail?id=58 (and #139, #234, ...)
-            template.clearCache();
-            
-            if ((offset == 0) && (limit == Integer.MAX_VALUE))
+        	if ((offset == 0) && (limit == Integer.MAX_VALUE))
             {
                 template.select(query, parameterObj, resultHandler);
             }

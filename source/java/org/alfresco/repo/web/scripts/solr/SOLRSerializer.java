@@ -35,13 +35,13 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.Path.AttributeElement;
 import org.alfresco.service.cmr.repository.Path.ChildAssocElement;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.alfresco.service.cmr.repository.datatype.TypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConverter.Converter;
 import org.alfresco.service.namespace.NamespaceService;
@@ -52,6 +52,7 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.extensions.webscripts.json.JSONUtils;
 
 /**
  * SOLR conversions of values to JSON-compatible <tt>String</tt>.
@@ -61,6 +62,8 @@ import org.json.JSONObject;
 /* package */ class SOLRSerializer
 {
     protected static final Log logger = LogFactory.getLog(SOLRSerializer.class);
+ 
+    private JSONUtils jsonUtils = new JSONUtils();
     
     private Set<QName> NUMBER_TYPES;
 
@@ -93,7 +96,7 @@ import org.json.JSONObject;
         this.namespaceService = namespaceService;
     }
 
-    public String serializeToString(Serializable value)
+    public String serializeToJSONString(Serializable value)
     {
         if (value != null && typeConverter.INSTANCE.getConverter(value.getClass(), String.class) == null)
         {
@@ -123,7 +126,7 @@ import org.json.JSONObject;
         if (propertyDef == null)
         {
             // Treat it as text
-            return new PropertyValue(true, serializeToString(value));
+            return new PropertyValue(true, serializeToJSONString(value));
         }
         else if (propertyDef.isMultiValued())
         {
@@ -137,7 +140,7 @@ import org.json.JSONObject;
             JSONArray body = new JSONArray();
             for(Serializable o : c)
             {
-                body.put(serializeToString(o));
+                body.put(serializeToJSONString(o));
             }
             
             return new PropertyValue(false, body.toString());
@@ -159,7 +162,15 @@ import org.json.JSONObject;
             {
                 encodeString = true;
             }
-            return new PropertyValue(encodeString, serializeToString(value));
+
+            String sValue = null;
+            if (value instanceof String && encodeString) {
+            	sValue = (String)jsonUtils.encodeJSONString(value);
+            } else {
+            	sValue = serializeToJSONString(value);
+            }
+
+            return new PropertyValue(encodeString, sValue);
         }
     }
     
@@ -245,7 +256,30 @@ import org.json.JSONObject;
                     }
                 }
             });
-                    
+
+            INSTANCE.addConverter(ContentData.class, String.class, new TypeConverter.Converter<ContentData, String>()
+                    {
+                        public String convert(ContentData source)
+                        {
+                            JSONObject json = new JSONObject();
+                            try
+                            {
+                                String locale = INSTANCE.convert(String.class, source.getLocale());
+                                json.put("locale", locale == null ? JSONObject.NULL : locale);
+                                String encoding = source.getEncoding();
+                                json.put("encoding", encoding == null ? JSONObject.NULL : encoding);
+                                String mimetype = source.getMimetype();
+                                json.put("mimetype", mimetype == null ? JSONObject.NULL : mimetype);
+                                json.put("size", String.valueOf(source.getSize()));
+                                return json.toString(3);
+                            }
+                            catch(JSONException e)
+                            {
+                                throw new AlfrescoRuntimeException("Unable to serialize content data to JSON", e);
+                            }
+                        }
+                    });
+            
             // node refs
             INSTANCE.addConverter(NodeRef.class, String.class, new TypeConverter.Converter<NodeRef, String>()
             {
@@ -414,7 +448,6 @@ import org.json.JSONObject;
                     return source.toString();
                 }
             });
-
         }
     }
 }

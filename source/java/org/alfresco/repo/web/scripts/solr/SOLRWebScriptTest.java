@@ -137,136 +137,136 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
         return transactions;
     }
 
-    public void testAclChangeSetsGet() throws Exception
-    {
-        String url = "/api/solr/aclchangesets?fromTime=" + 0L + "&fromId=" + 0L;
-        TestWebScriptServer.GetRequest req = new TestWebScriptServer.GetRequest(url);
-        long startTime = System.currentTimeMillis();
-        Response response = sendRequest(req, Status.STATUS_OK, admin);
-        long endTime = System.currentTimeMillis();
-
-        if(logger.isDebugEnabled())
-        {
-            logger.debug(response.getContentAsString());
-        }
-        JSONObject json = new JSONObject(response.getContentAsString());
-
-        JSONArray aclChangeSets = json.getJSONArray("aclChangeSets");
-        
-        logger.debug("Got " + aclChangeSets.length() + " txns in " + (endTime - startTime) + " ms");
-    }
-
-    public void testAclsGet() throws Exception
-    {
-        List<AclChangeSet> aclChangeSets = solrTrackingComponent.getAclChangeSets(null, null, 100);
-        if (aclChangeSets.size() == 0)
-        {
-            return;         // Can't test, but very unlikely
-        }
-        // Build JSON using these
-        JSONObject json = new JSONObject();
-        JSONArray aclChangeSetIdsJSON = new JSONArray();
-        int count = 0;
-        List<Long> aclChangeSetIds = new ArrayList<Long>();
-        for (AclChangeSet aclChangeSet : aclChangeSets)
-        {
-            if (count >= 512)
-            {
-                break;
-            }
-            if (aclChangeSet.getAclCount() == 0)
-            {
-                continue;           // No ACLs
-            }
-            Long aclChangeSetId = aclChangeSet.getId();
-            aclChangeSetIdsJSON.put(aclChangeSetId);
-            aclChangeSetIds.add(aclChangeSetId);
-            count++;
-        }
-        json.put("aclChangeSetIds", aclChangeSetIdsJSON);
-        
-        String url = "/api/solr/acls";
-        TestWebScriptServer.PostRequest req = new TestWebScriptServer.PostRequest(url, json.toString(), "application/json");
-        Response response = sendRequest(req, Status.STATUS_OK, admin);
-        if(logger.isDebugEnabled())
-        {
-            logger.debug(response.getContentAsString());
-        }
-        json = new JSONObject(response.getContentAsString());
-        JSONArray acls = json.getJSONArray("acls");
-        
-        // Check
-        List<Acl> aclsCheck = solrTrackingComponent.getAcls(aclChangeSetIds, null, 512);
-        assertEquals("Script and API returned different number of results", aclsCheck.size(), acls.length());
-    }
-    
-    public void testAclReadersGet() throws Exception
-    {
-        List<AclChangeSet> aclChangeSets = solrTrackingComponent.getAclChangeSets(null, null, 1024);
-        List<Long> aclChangeSetIds = new ArrayList<Long>(50);
-        for (AclChangeSet aclChangeSet : aclChangeSets)
-        {
-            if (aclChangeSet.getAclCount() > 0)
-            {
-                aclChangeSetIds.add(aclChangeSet.getId());
-                break;
-            }
-        }
-        if (aclChangeSetIds.size() == 0)
-        {
-            // No ACLs; not likely
-        }
-        List<Acl> acls = solrTrackingComponent.getAcls(aclChangeSetIds, null, 1024);
-        List<Long> aclIds = new ArrayList<Long>(acls.size());
-        JSONObject json = new JSONObject();
-        JSONArray aclIdsJSON = new JSONArray();
-        for (Acl acl : acls)
-        {
-            Long aclId = acl.getId();
-            aclIds.add(aclId);
-            aclIdsJSON.put(aclId);
-        }
-        json.put("aclIds", aclIdsJSON);
-        
-        // Now get the readers
-        List<AclReaders> aclsReaders = solrTrackingComponent.getAclsReaders(aclIds);
-        assertEquals("Should have same number of ACLs as supplied", aclIds.size(), aclsReaders.size());
-        assertTrue("Must have *some* ACLs here", aclIds.size() > 0);
-        Map<Long, Set<String>> readersByAclId = new HashMap<Long, Set<String>>();
-        for (AclReaders aclReaders : aclsReaders)
-        {
-            readersByAclId.put(aclReaders.getAclId(), aclReaders.getReaders());
-        }
-        
-        // Now query using the webscript
-        String url = "/api/solr/aclsReaders";
-        TestWebScriptServer.PostRequest req = new TestWebScriptServer.PostRequest(url, json.toString(), "application/json");
-        Response response = sendRequest(req, Status.STATUS_OK, admin);
-        if(logger.isDebugEnabled())
-        {
-            logger.debug(response.getContentAsString());
-        }
-        json = new JSONObject(response.getContentAsString());
-        JSONArray aclsReadersJSON = json.getJSONArray("aclsReaders");
-        // Check
-        assertEquals("Script and API returned different number of results", readersByAclId.size(), aclsReadersJSON.length());
-        
-        // Iterate of the JSON and ensure that the list of ACL readers is correct
-        for (int i = 0; i < aclsReadersJSON.length(); i++)
-        {
-            // Choose an ACL and check the readers
-            JSONObject aclReadersJSON = aclsReadersJSON.getJSONObject(i);
-            Long aclIdJSON = aclReadersJSON.getLong("aclId");
-            Set<String> readersCheck = readersByAclId.get(aclIdJSON);
-            JSONArray readersJSON = aclReadersJSON.getJSONArray("readers");
-            assertEquals("Readers list for ACL " + aclIdJSON + " is wrong. ", readersCheck.size(), readersJSON.length());
-            for (int j = 0; j < readersJSON.length(); j++)
-            {
-                String readerJSON = readersJSON.getString(j);
-                assertTrue("Found reader not in check set: " + readerJSON, readersCheck.contains(readerJSON));
-            }
-        }
-    }
+//    public void testAclChangeSetsGet() throws Exception
+//    {
+//        String url = "/api/solr/aclchangesets?fromTime=" + 0L + "&fromId=" + 0L;
+//        TestWebScriptServer.GetRequest req = new TestWebScriptServer.GetRequest(url);
+//        long startTime = System.currentTimeMillis();
+//        Response response = sendRequest(req, Status.STATUS_OK, admin);
+//        long endTime = System.currentTimeMillis();
+//
+//        if(logger.isDebugEnabled())
+//        {
+//            logger.debug(response.getContentAsString());
+//        }
+//        JSONObject json = new JSONObject(response.getContentAsString());
+//
+//        JSONArray aclChangeSets = json.getJSONArray("aclChangeSets");
+//        
+//        logger.debug("Got " + aclChangeSets.length() + " txns in " + (endTime - startTime) + " ms");
+//    }
+//
+//    public void testAclsGet() throws Exception
+//    {
+//        List<AclChangeSet> aclChangeSets = solrTrackingComponent.getAclChangeSets(null, null, 100);
+//        if (aclChangeSets.size() == 0)
+//        {
+//            return;         // Can't test, but very unlikely
+//        }
+//        // Build JSON using these
+//        JSONObject json = new JSONObject();
+//        JSONArray aclChangeSetIdsJSON = new JSONArray();
+//        int count = 0;
+//        List<Long> aclChangeSetIds = new ArrayList<Long>();
+//        for (AclChangeSet aclChangeSet : aclChangeSets)
+//        {
+//            if (count >= 512)
+//            {
+//                break;
+//            }
+//            if (aclChangeSet.getAclCount() == 0)
+//            {
+//                continue;           // No ACLs
+//            }
+//            Long aclChangeSetId = aclChangeSet.getId();
+//            aclChangeSetIdsJSON.put(aclChangeSetId);
+//            aclChangeSetIds.add(aclChangeSetId);
+//            count++;
+//        }
+//        json.put("aclChangeSetIds", aclChangeSetIdsJSON);
+//        
+//        String url = "/api/solr/acls";
+//        TestWebScriptServer.PostRequest req = new TestWebScriptServer.PostRequest(url, json.toString(), "application/json");
+//        Response response = sendRequest(req, Status.STATUS_OK, admin);
+//        if(logger.isDebugEnabled())
+//        {
+//            logger.debug(response.getContentAsString());
+//        }
+//        json = new JSONObject(response.getContentAsString());
+//        JSONArray acls = json.getJSONArray("acls");
+//        
+//        // Check
+//        List<Acl> aclsCheck = solrTrackingComponent.getAcls(aclChangeSetIds, null, 512);
+//        assertEquals("Script and API returned different number of results", aclsCheck.size(), acls.length());
+//    }
+//    
+//    public void testAclReadersGet() throws Exception
+//    {
+//        List<AclChangeSet> aclChangeSets = solrTrackingComponent.getAclChangeSets(null, null, 1024);
+//        List<Long> aclChangeSetIds = new ArrayList<Long>(50);
+//        for (AclChangeSet aclChangeSet : aclChangeSets)
+//        {
+//            if (aclChangeSet.getAclCount() > 0)
+//            {
+//                aclChangeSetIds.add(aclChangeSet.getId());
+//                break;
+//            }
+//        }
+//        if (aclChangeSetIds.size() == 0)
+//        {
+//            // No ACLs; not likely
+//        }
+//        List<Acl> acls = solrTrackingComponent.getAcls(aclChangeSetIds, null, 1024);
+//        List<Long> aclIds = new ArrayList<Long>(acls.size());
+//        JSONObject json = new JSONObject();
+//        JSONArray aclIdsJSON = new JSONArray();
+//        for (Acl acl : acls)
+//        {
+//            Long aclId = acl.getId();
+//            aclIds.add(aclId);
+//            aclIdsJSON.put(aclId);
+//        }
+//        json.put("aclIds", aclIdsJSON);
+//        
+//        // Now get the readers
+//        List<AclReaders> aclsReaders = solrTrackingComponent.getAclsReaders(aclIds);
+//        assertEquals("Should have same number of ACLs as supplied", aclIds.size(), aclsReaders.size());
+//        assertTrue("Must have *some* ACLs here", aclIds.size() > 0);
+//        Map<Long, Set<String>> readersByAclId = new HashMap<Long, Set<String>>();
+//        for (AclReaders aclReaders : aclsReaders)
+//        {
+//            readersByAclId.put(aclReaders.getAclId(), aclReaders.getReaders());
+//        }
+//        
+//        // Now query using the webscript
+//        String url = "/api/solr/aclsReaders";
+//        TestWebScriptServer.PostRequest req = new TestWebScriptServer.PostRequest(url, json.toString(), "application/json");
+//        Response response = sendRequest(req, Status.STATUS_OK, admin);
+//        if(logger.isDebugEnabled())
+//        {
+//            logger.debug(response.getContentAsString());
+//        }
+//        json = new JSONObject(response.getContentAsString());
+//        JSONArray aclsReadersJSON = json.getJSONArray("aclsReaders");
+//        // Check
+//        assertEquals("Script and API returned different number of results", readersByAclId.size(), aclsReadersJSON.length());
+//        
+//        // Iterate of the JSON and ensure that the list of ACL readers is correct
+//        for (int i = 0; i < aclsReadersJSON.length(); i++)
+//        {
+//            // Choose an ACL and check the readers
+//            JSONObject aclReadersJSON = aclsReadersJSON.getJSONObject(i);
+//            Long aclIdJSON = aclReadersJSON.getLong("aclId");
+//            Set<String> readersCheck = readersByAclId.get(aclIdJSON);
+//            JSONArray readersJSON = aclReadersJSON.getJSONArray("readers");
+//            assertEquals("Readers list for ACL " + aclIdJSON + " is wrong. ", readersCheck.size(), readersJSON.length());
+//            for (int j = 0; j < readersJSON.length(); j++)
+//            {
+//                String readerJSON = readersJSON.getString(j);
+//                assertTrue("Found reader not in check set: " + readerJSON, readersCheck.contains(readerJSON));
+//            }
+//        }
+//    }
 
     private JSONArray getNodes(GetNodesParameters parameters, int maxResults, int expectedNumNodes) throws Exception
     {
@@ -476,7 +476,16 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
             logger.debug("nodesMetaData = " + content);
         }
 
-        JSONObject jsonResponse = new JSONObject(content);
+        JSONObject jsonResponse = null;
+
+        try
+        {
+        	jsonResponse = new JSONObject(content);
+        }
+        catch(JSONException e)
+        {
+        	fail(e.getMessage());
+        }
 
         JSONArray nodes = jsonResponse.getJSONArray("nodes");
 
@@ -523,11 +532,92 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
         });
     }
     
-    public void testNodeMetaData() throws Exception
+//    public void testNodeMetaData() throws Exception
+//    {
+//        long fromCommitTime = System.currentTimeMillis();
+//
+//        buildTransactions5();
+//
+//        JSONArray transactions = getTransactions(fromCommitTime);
+//        assertEquals("Number of transactions is incorrect", 1, transactions.length());
+//
+//        List<Long> transactionIds = getTransactionIds(transactions);
+//
+//        GetNodesParameters params = new GetNodesParameters();
+//        params.setTransactionIds(transactionIds);
+//        JSONArray nodes = getNodes(params, 0, 2);
+//        
+//        List<Long> nodeIds = new ArrayList<Long>(nodes.length());
+//        for(int i = 0; i < nodes.length(); i++)
+//        {
+//            JSONObject node = nodes.getJSONObject(i);
+//            nodeIds.add(node.getLong("id"));
+//        }
+//        
+//        JSONArray nodesMetaData = getNodesMetaData(nodeIds, 0, 2);
+//
+//        // test second entry (second node created in buildTransactions)
+//        NodeRef expectedNodeRef = contents.get(0);
+//        
+//        JSONObject node = nodesMetaData.getJSONObject(1);
+//        NodeRef nodeRef = new NodeRef(node.getString("nodeRef"));
+//
+//        assertEquals("NodeRef is incorrect", expectedNodeRef, nodeRef);
+//        
+//        JSONArray aspects = node.getJSONArray("aspects");
+//        JSONObject properties = node.getJSONObject("properties");
+//        Map<QName, String> propertyMap = getPropertyMap(properties);
+//        
+//        assertTrue("Expected author aspect", containsAspect(aspects, ContentModel.ASPECT_AUTHOR));
+//        assertTrue("Expected author property", containsProperty(propertyMap, ContentModel.PROP_AUTHOR, "steve"));
+//        
+//        JSONArray paths = node.getJSONArray("paths");
+//        List<Path> expectedPaths = nodeService.getPaths(expectedNodeRef, false);
+//        for(int i = 0; i < paths.length(); i++)
+//        {
+//            JSONObject o = paths.getJSONObject(i);
+//            String path = o.getString("path");
+//            String qname = o.has("qname") ? o.getString("qname") : null;
+//            String expectedPath = expectedPaths.get(i).toString();
+//            assertEquals("Path element " + i + " is incorrect", expectedPath, path);
+//            assertNull("qname should be null", qname);
+//        }
+//    }
+
+    private NodeRef container7;
+    
+    private void buildTransactions7()
+    {
+        txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                PropertyMap props = new PropertyMap();
+                props.put(ContentModel.PROP_NAME, "Container7");
+                container7 = nodeService.createNode(
+                        rootNodeRef,
+                        ContentModel.ASSOC_CHILDREN,
+                        ContentModel.ASSOC_CHILDREN,
+                        ContentModel.TYPE_FOLDER,
+                        props).getChildRef();
+
+                FileInfo contentInfo = fileFolderService.create(container7, "Content1", ContentModel.TYPE_CONTENT);
+                contents.add(contentInfo.getNodeRef());
+
+                Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>();
+                aspectProperties.put(ContentModel.PROP_AUTHOR, "ste\"ve");
+                nodeService.addAspect(contentInfo.getNodeRef(), ContentModel.ASPECT_AUTHOR, aspectProperties);
+
+                return null;
+            }
+        });
+    }
+    
+    public void testNodeMetaDataStringEscaping() throws Exception
     {
         long fromCommitTime = System.currentTimeMillis();
 
-        buildTransactions5();
+        buildTransactions7();
 
         JSONArray transactions = getTransactions(fromCommitTime);
         assertEquals("Number of transactions is incorrect", 1, transactions.length());
@@ -558,72 +648,60 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
         JSONArray aspects = node.getJSONArray("aspects");
         JSONObject properties = node.getJSONObject("properties");
         Map<QName, String> propertyMap = getPropertyMap(properties);
-        
+
         assertTrue("Expected author aspect", containsAspect(aspects, ContentModel.ASPECT_AUTHOR));
-        assertTrue("Expected author property", containsProperty(propertyMap, ContentModel.PROP_AUTHOR, "steve"));
-        
-        JSONArray paths = node.getJSONArray("paths");
-        List<Path> expectedPaths = nodeService.getPaths(expectedNodeRef, false);
-        for(int i = 0; i < paths.length(); i++)
-        {
-            JSONObject o = paths.getJSONObject(i);
-            String path = o.getString("path");
-            String qname = o.has("qname") ? o.getString("qname") : null;
-            String expectedPath = expectedPaths.get(i).toString();
-            assertEquals("Path element " + i + " is incorrect", expectedPath, path);
-            assertNull("qname should be null", qname);
-        }
+        assertTrue("Expected author property", containsProperty(propertyMap, ContentModel.PROP_AUTHOR, "ste\"ve"));
     }
-
-    public void testNodeMetaDataManyNodes() throws Exception
-    {
-        long fromCommitTime = System.currentTimeMillis();
-
-        buildTransactions6();
-
-        JSONArray transactions = getTransactions(fromCommitTime);
-        assertEquals("Number of transactions is incorrect", 1, transactions.length());
-
-        List<Long> transactionIds = getTransactionIds(transactions);
-
-        GetNodesParameters params = new GetNodesParameters();
-        params.setTransactionIds(transactionIds);
-        JSONArray nodes = getNodes(params, 0, 2001);
-        
-        List<Long> nodeIds = new ArrayList<Long>(nodes.length());
-        for(int i = 0; i < nodes.length(); i++)
-        {
-            JSONObject node = nodes.getJSONObject(i);
-            nodeIds.add(node.getLong("id"));
-        }
-
-        // make sure caches are warm - time last call
-        @SuppressWarnings("unused")
-        JSONArray nodesMetaData = getNodesMetaData(nodeIds, 0, 2001);
-        nodesMetaData = getNodesMetaData(nodeIds, 0, 2001);
-
-        // sleep for a couple of seconds
-        try
-        {
-            Thread.sleep(2000);
-        }
-        catch(InterruptedException e)
-        {
-            // ignore
-        }
-        nodesMetaData = getNodesMetaData(nodeIds, 0, 2001);
-        
-        nodesMetaData = getNodesMetaData(nodeIds, 1000, 1000);
-        nodesMetaData = getNodesMetaData(nodeIds, 600, 600);
-        nodesMetaData = getNodesMetaData(nodeIds, 300, 300);
-        nodesMetaData = getNodesMetaData(nodeIds, 100, 100);
-        nodesMetaData = getNodesMetaData(nodeIds, 50, 50);
-
-        // clear out caches
-        nodeDAO.clear();
-
-        nodesMetaData = getNodesMetaData(nodeIds, 0, 2001);
-    }
+    
+//    public void testNodeMetaDataManyNodes() throws Exception
+//    {
+//        long fromCommitTime = System.currentTimeMillis();
+//
+//        buildTransactions6();
+//
+//        JSONArray transactions = getTransactions(fromCommitTime);
+//        assertEquals("Number of transactions is incorrect", 1, transactions.length());
+//
+//        List<Long> transactionIds = getTransactionIds(transactions);
+//
+//        GetNodesParameters params = new GetNodesParameters();
+//        params.setTransactionIds(transactionIds);
+//        JSONArray nodes = getNodes(params, 0, 2001);
+//        
+//        List<Long> nodeIds = new ArrayList<Long>(nodes.length());
+//        for(int i = 0; i < nodes.length(); i++)
+//        {
+//            JSONObject node = nodes.getJSONObject(i);
+//            nodeIds.add(node.getLong("id"));
+//        }
+//
+//        // make sure caches are warm - time last call
+//        @SuppressWarnings("unused")
+//        JSONArray nodesMetaData = getNodesMetaData(nodeIds, 0, 2001);
+//        nodesMetaData = getNodesMetaData(nodeIds, 0, 2001);
+//
+//        // sleep for a couple of seconds
+//        try
+//        {
+//            Thread.sleep(2000);
+//        }
+//        catch(InterruptedException e)
+//        {
+//            // ignore
+//        }
+//        nodesMetaData = getNodesMetaData(nodeIds, 0, 2001);
+//        
+//        nodesMetaData = getNodesMetaData(nodeIds, 1000, 1000);
+//        nodesMetaData = getNodesMetaData(nodeIds, 600, 600);
+//        nodesMetaData = getNodesMetaData(nodeIds, 300, 300);
+//        nodesMetaData = getNodesMetaData(nodeIds, 100, 100);
+//        nodesMetaData = getNodesMetaData(nodeIds, 50, 50);
+//
+//        // clear out caches
+//        nodeDAO.clear();
+//
+//        nodesMetaData = getNodesMetaData(nodeIds, 0, 2001);
+//    }
     
     private boolean containsAspect(JSONArray aspectsArray, QName aspect) throws Exception
     {

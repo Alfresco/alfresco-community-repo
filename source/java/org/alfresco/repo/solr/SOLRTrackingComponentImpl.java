@@ -363,6 +363,12 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                                         return false;
                                     }
                                     
+                                    @Override
+                                    public boolean orderResults()
+                                    {
+                                        return false;
+                                    }
+
                                     public boolean handle(
                                             Pair<Long, ChildAssociationRef> childAssocPair,
                                             Pair<Long, NodeRef> parentNodePair,
@@ -570,6 +576,12 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                     }
                     
                     @Override
+                    public boolean orderResults()
+                    {
+                        return false;
+                    }
+
+                    @Override
                     public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair, Pair<Long, NodeRef> parentNodePair,
                             Pair<Long, NodeRef> childNodePair)
                     {
@@ -597,6 +609,12 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                     }
                     
                     @Override
+                    public boolean orderResults()
+                    {
+                        return false;
+                    }
+
+                    @Override
                     public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair, Pair<Long, NodeRef> parentNodePair,
                             Pair<Long, NodeRef> childNodePair)
                     {
@@ -618,17 +636,23 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                 nodeDAO.getParentAssocs(nodeId, null, null, null, new ChildAssocRefQueryCallback()
                 {
                     @Override
+                    public boolean preLoadNodes()
+                    {
+                        return false;
+                    }
+                    
+                    @Override
+                    public boolean orderResults()
+                    {
+                        return false;
+                    }
+
+                    @Override
                     public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair,
                             Pair<Long, NodeRef> parentNodePair, Pair<Long, NodeRef> childNodePair)
                     {
                         parentAssocs.add(childAssocPair.getSecond());
                         return true;
-                    }
-
-                    @Override
-                    public boolean preLoadNodes()
-                    {
-                        return false;
                     }
 
                     @Override

@@ -463,6 +463,12 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 return false;
             }
             
+            @Override
+            public boolean orderResults()
+            {
+                return false;
+            }
+
             public boolean handle(
                     Pair<Long, ChildAssociationRef> childAssocPair,
                     Pair<Long, NodeRef> parentNodePair,
@@ -1333,7 +1339,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         childAssocRetryingHelper.doWithRetry(callback);
         
         // Check for cyclic relationships
-        cycleCheck(newChildNode.getNodePair());
+        cycleCheck(newChildNodeId);
 
         // Update ACLs for moved tree
         Long newParentAclId = newParentNode.getAclId();
@@ -2893,7 +2899,9 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     }
     
     /**
-     * Callback that applies node preloading.  Instances must be used and discarded per query.
+     * Callback that applies node preloading if required.
+     * <p/>
+     * Instances must be used and discarded per query.
      * 
      * @author Derek Hulley
      * @since 3.4
@@ -2920,11 +2928,19 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             }
         }
         /**
-         * @return              Returns <tt>false</tt> always as batching is applied
+         * @throws UnsupportedOperationException always
          */
         public boolean preLoadNodes()
         {
-            return false;
+            throw new UnsupportedOperationException("Expected to be used internally only.");
+        }
+        /**
+         * Defers to delegate
+         */
+        @Override
+        public boolean orderResults()
+        {
+            return callback.orderResults();
         }
         /**
          * {@inheritDoc}
@@ -3143,19 +3159,18 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
     }
     
-    
     /**
      * Potentially cheaper than evaluating all of a node's paths to check for child association cycles
      * <p/>
      * TODO: When is it cheaper to go up and when is it cheaper to go down?
      *       Look at using direct queries to pass through layers both up and down.
      * 
-     * @param nodePair          the node to check
+     * @param nodeId                    the node to start with
      */
-    public void cycleCheck(Pair<Long, NodeRef> nodePair)
+    public void cycleCheck(Long nodeId)
     {
         CycleCallBack callback = new CycleCallBack();
-        callback.cycleCheck(nodePair);
+        callback.cycleCheck(nodeId);
         if (callback.toThrow != null)
         {
             throw callback.toThrow;
@@ -3164,7 +3179,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
 
     private class CycleCallBack implements ChildAssocRefQueryCallback
     {
-        final Set<ChildAssociationRef> path = new HashSet<ChildAssociationRef>(97);
+        final Set<Long> nodeIds = new HashSet<Long>(97);
         CyclicChildRelationshipException toThrow;
 
         @Override
@@ -3178,27 +3193,42 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 Pair<Long, NodeRef> parentNodePair,
                 Pair<Long, NodeRef> childNodePair)
         {
-            ChildAssociationRef childAssociationRef = childAssocPair.getSecond();
-            if (!path.add(childAssociationRef))
+            Long nodeId = childNodePair.getFirst();
+            if (!nodeIds.add(nodeId))
             {
+                ChildAssociationRef childAssociationRef = childAssocPair.getSecond();
                 // Remember exception we want to throw and exit. If we throw within here, it will be wrapped by IBatis
-                toThrow = new CyclicChildRelationshipException("Child Association Cycle Detected " + path, childAssociationRef);
+                toThrow = new CyclicChildRelationshipException(
+                        "Child Association Cycle detected hitting nodes: " + nodeIds,
+                        childAssociationRef);
                 return false;
             }
-            cycleCheck(childNodePair);
-            path.remove(childAssociationRef);
+            cycleCheck(nodeId);
+            nodeIds.remove(nodeId);
             return toThrow == null;
         }
 
+        /**
+         * No preloading required
+         */
         @Override
         public boolean preLoadNodes()
         {
             return false;
         }
 
-        public void cycleCheck(Pair<Long, NodeRef> nodePair)
+        /**
+         * No ordering required
+         */
+        @Override
+        public boolean orderResults()
         {
-            getChildAssocs(nodePair.getFirst(), null, null, null, null, null, this);
+            return false;
+        }
+
+        public void cycleCheck(Long nodeId)
+        {
+            getChildAssocs(nodeId, null, null, null, null, null, this);
         }    
     };
 

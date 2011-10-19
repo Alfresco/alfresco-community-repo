@@ -393,6 +393,12 @@ public interface NodeDAO extends NodeBulkLoader
         boolean preLoadNodes();
         
         /**
+         * @return              Return <tt>true</tt> if child associations must be ordered by
+         *                      index and ID
+         */
+        boolean orderResults();
+        
+        /**
          * Called once the iteration of results has concluded
          */
         void done();
@@ -621,12 +627,9 @@ public interface NodeDAO extends NodeBulkLoader
     public List<Path> getPaths(Pair<Long, NodeRef> nodePair, boolean primaryOnly) throws InvalidNodeRefException;
     
     /**
-     * Potentially cheaper than evaluating all of a node's paths to check for child association cycles.
-     * 
-     * @param nodePair
-     *            the node to check
+     * Perform a check for cyclic relationships
      */
-    public void cycleCheck(Pair<Long, NodeRef> nodePair);
+    public void cycleCheck(Long nodeId);
 
     /*
      * Transactions

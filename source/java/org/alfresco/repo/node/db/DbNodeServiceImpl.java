@@ -837,7 +837,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     public void removeAspect(NodeRef nodeRef, QName aspectTypeQName)
             throws InvalidNodeRefException, InvalidAspectException
     {
-        /**
+        /*
          * Note: Aspect and property removal is resilient to missing dictionary definitions
          */
         // get the node
@@ -869,6 +869,17 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             final List<Pair<Long, NodeRef>> nodesToDelete = new ArrayList<Pair<Long, NodeRef>>(5);
             NodeDAO.ChildAssocRefQueryCallback callback = new NodeDAO.ChildAssocRefQueryCallback()
             {
+                public boolean preLoadNodes()
+                {
+                    return true;
+                }
+
+                @Override
+                public boolean orderResults()
+                {
+                    return false;
+                }
+
                 public boolean handle(
                         Pair<Long, ChildAssociationRef> childAssocPair,
                         Pair<Long, NodeRef> parentNodePair,
@@ -886,11 +897,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                         assocsToDelete.add(childAssocPair);
                     }
                     // More results
-                    return true;
-                }
-
-                public boolean preLoadNodes()
-                {
                     return true;
                 }
 
@@ -1077,6 +1083,17 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         final Map<Long, ChildAssociationRef> childAssocRefsByChildId = new HashMap<Long, ChildAssociationRef>(5);
         NodeDAO.ChildAssocRefQueryCallback callback = new NodeDAO.ChildAssocRefQueryCallback()
         {
+            public boolean preLoadNodes()
+            {
+                return true;
+            }
+
+            @Override
+            public boolean orderResults()
+            {
+                return false;
+            }
+
             public boolean handle(
                     Pair<Long, ChildAssociationRef> childAssocPair,
                     Pair<Long, NodeRef> parentNodePair,
@@ -1087,11 +1104,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 childNodePairs.add(childNodePair);
                 childAssocRefsByChildId.put(childNodePair.getFirst(), childAssocPair.getSecond());
                 // More results
-                return true;
-            }
-
-            public boolean preLoadNodes()
-            {
                 return true;
             }
 
@@ -1178,7 +1190,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
         
         // check that the child addition of the child has not created a cyclic relationship
-        nodeDAO.cycleCheck(childNodePair);
+        nodeDAO.cycleCheck(childNodeId);
 
         // Invoke policy behaviours
         for (ChildAssociationRef childAssocRef : childAssociationRefs)
@@ -1227,6 +1239,17 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         final List<Pair<Long, ChildAssociationRef>> assocsToDelete = new ArrayList<Pair<Long, ChildAssociationRef>>(5);
         NodeDAO.ChildAssocRefQueryCallback callback = new NodeDAO.ChildAssocRefQueryCallback()
         {
+            public boolean preLoadNodes()
+            {
+                return true;
+            }
+
+            @Override
+            public boolean orderResults()
+            {
+                return false;
+            }
+
             public boolean handle(
                     Pair<Long, ChildAssociationRef> childAssocPair,
                     Pair<Long, NodeRef> parentNodePair,
@@ -1241,11 +1264,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 assocsToDelete.add(childAssocPair);
                 // More results
                 return true;
-            }
-
-            public boolean preLoadNodes()
-            {
-                return false;
             }
 
             public void done()
@@ -1601,6 +1619,12 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 return false;
             }
             
+            @Override
+            public boolean orderResults()
+            {
+                return false;
+            }
+
             public boolean handle(
                     Pair<Long, ChildAssociationRef> childAssocPair,
                     Pair<Long, NodeRef> parentNodePair,
@@ -1662,6 +1686,12 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 return preload;
             }
             
+            @Override
+            public boolean orderResults()
+            {
+                return true;
+            }
+
             public boolean handle(
                     Pair<Long, ChildAssociationRef> childAssocPair,
                     Pair<Long, NodeRef> parentNodePair,
@@ -1689,10 +1719,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         QName qname = (qnamePattern instanceof QName) ? (QName) qnamePattern : null;
         
         nodeDAO.getChildAssocs(nodeId, null, typeQName, qname, null, null, callback);
-        // sort the results
-        List<ChildAssociationRef> orderedList = reorderChildAssocs(results);
         // Done
-        return orderedList;
+        return results;
     }
     
     /**
@@ -1717,6 +1745,12 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 return preload;
             }
             
+            @Override
+            public boolean orderResults()
+            {
+                return true;
+            }
+
             public boolean handle(
                     Pair<Long, ChildAssociationRef> childAssocPair,
                     Pair<Long, NodeRef> parentNodePair,
@@ -1746,6 +1780,17 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         
         NodeDAO.ChildAssocRefQueryCallback callback = new NodeDAO.ChildAssocRefQueryCallback()
         {
+            public boolean preLoadNodes()
+            {
+                return true;
+            }
+
+            @Override
+            public boolean orderResults()
+            {
+                return true;
+            }
+
             public boolean handle(
                     Pair<Long, ChildAssociationRef> childAssocPair,
                     Pair<Long, NodeRef> parentNodePair,
@@ -1756,45 +1801,14 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 return true;
             }
 
-            public boolean preLoadNodes()
-            {
-                return true;
-            }
-
             public void done()
             {
             }                               
         };
         // Get all child associations with the specific qualified name
         nodeDAO.getChildAssocsByChildTypes(nodeId, childNodeTypeQNames, callback);
-        // Sort the results
-        List<ChildAssociationRef> orderedList = reorderChildAssocs(results);
         // Done
-        return orderedList;
-    }
-
-    private List<ChildAssociationRef> reorderChildAssocs(Collection<ChildAssociationRef> childAssocRefs)
-    {
-        // shortcut if there are no assocs
-        if (childAssocRefs.size() == 0)
-        {
-            return Collections.emptyList();
-        }
-        // sort results
-        ArrayList<ChildAssociationRef> orderedList = new ArrayList<ChildAssociationRef>(childAssocRefs);
-        Collections.sort(orderedList);
-        
-        // list of results
-        int nthSibling = 0;
-        Iterator<ChildAssociationRef> iterator = orderedList.iterator();
-        while(iterator.hasNext())
-        {
-            ChildAssociationRef childAssocRef = iterator.next();
-            childAssocRef.setNthSibling(nthSibling);
-            nthSibling++;
-        }
-        // done
-        return orderedList;
+        return results;
     }
 
     public NodeRef getChildByName(NodeRef nodeRef, QName assocTypeQName, String childName)
@@ -1824,6 +1838,17 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         
         NodeDAO.ChildAssocRefQueryCallback callback = new NodeDAO.ChildAssocRefQueryCallback()
         {
+            public boolean preLoadNodes()
+            {
+                return true;
+            }            
+
+            @Override
+            public boolean orderResults()
+            {
+                return true;
+            }
+
             public boolean handle(
                     Pair<Long, ChildAssociationRef> childAssocPair,
                     Pair<Long, NodeRef> parentNodePair,
@@ -1834,21 +1859,14 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 return true;
             }
 
-            public boolean preLoadNodes()
-            {
-                return true;
-            }            
-
             public void done()
             {
             }                               
         };
         // Get all child associations with the specific qualified name
         nodeDAO.getChildAssocs(nodeId, assocTypeQName, childNames, callback);
-        // Sort the results
-        List<ChildAssociationRef> orderedList = reorderChildAssocs(results);
         // Done
-        return orderedList;
+        return results;
     }
 
     public ChildAssociationRef getPrimaryParent(NodeRef nodeRef) throws InvalidNodeRefException
@@ -1957,6 +1975,17 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
 
         NodeDAO.ChildAssocRefQueryCallback callback = new NodeDAO.ChildAssocRefQueryCallback()
         {
+            public boolean preLoadNodes()
+            {
+                return false;
+            }
+
+            @Override
+            public boolean orderResults()
+            {
+                return false;
+            }
+
             public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair, Pair<Long, NodeRef> parentNodePair,
                     Pair<Long, NodeRef> childNodePair)
             {
@@ -1965,19 +1994,12 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 return true;
             }
 
-            public boolean preLoadNodes()
-            {
-                return false;
-            }
-
             public void done()
             {
             }                               
         };
-
         // Get the child associations that meet the criteria
         nodeDAO.getChildAssocsWithoutParentAssocsOfType(parentNodeId, assocTypeQName, callback);
-
         // done
         return results;
     }
@@ -2024,6 +2046,12 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 return false;
             }
             
+            @Override
+            public boolean orderResults()
+            {
+                return true;
+            }
+
             public boolean handle(
                     Pair<Long, ChildAssociationRef> childAssocPair,
                     Pair<Long, NodeRef> parentNodePair,
@@ -2037,15 +2065,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             {
             }                               
         };
-        
         // Get the assocs pointing to it
         nodeDAO.getChildAssocsByPropertyValue(nodeId, propertyQName, value, callback);
-        
-        // sort the results
-        List<ChildAssociationRef> orderedList = reorderChildAssocs(results);
-        
         // Done
-        return orderedList;
+        return results;
     }
 
     public void removeAssociation(NodeRef sourceRef, NodeRef targetRef, QName assocTypeQName)
@@ -2441,6 +2464,17 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         final List<Pair<Long, NodeRef>> childNodePairs = new ArrayList<Pair<Long, NodeRef>>(5);
         NodeDAO.ChildAssocRefQueryCallback callback = new NodeDAO.ChildAssocRefQueryCallback()
         {
+            public boolean preLoadNodes()
+            {
+                return true;
+            }
+
+            @Override
+            public boolean orderResults()
+            {
+                return false;
+            }
+
             public boolean handle(
                     Pair<Long, ChildAssociationRef> childAssocPair,
                     Pair<Long, NodeRef> parentNodePair,
@@ -2450,11 +2484,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 // Add it
                 childNodePairs.add(childNodePair);
                 // More results
-                return true;
-            }
-
-            public boolean preLoadNodes()
-            {
                 return true;
             }
 

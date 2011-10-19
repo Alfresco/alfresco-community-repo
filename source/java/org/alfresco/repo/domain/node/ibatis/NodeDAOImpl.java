@@ -922,6 +922,8 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         {
             return Collections.emptyList();     // Shortcut
         }
+        // Ordered
+        assoc.setOrdered(false);
         
         return (List<ChildAssocEntity>) template.selectList(SELECT_CHILD_ASSOCS_OF_PARENT, assoc);
     }
@@ -1036,6 +1038,8 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         {
             assoc.setSameStore(sameStore);
         }
+        // Ordered
+        assoc.setOrdered(resultsCallback.orderResults());
         
         ChildAssocResultHandler resultHandler = new ChildAssocResultHandler(resultsCallback);
         
@@ -1080,6 +1084,8 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
                 return;                 // Shortcut
             }
         }
+        // Order
+        assoc.setOrdered(resultsCallback.orderResults());
 
         ChildAssocResultHandler resultHandler = new ChildAssocResultHandler(resultsCallback);
         
@@ -1110,9 +1116,12 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         Set<Long> assocTypeQNameIds = qnameDAO.convertQNamesToIds(assocTypeQNames, false);
         if (assocTypeQNameIds.size() == 0)
         {
+            resultsCallback.done();
             return;                         // Shortcut as they don't exist
         }
         assoc.setTypeQNameIds(new ArrayList<Long>(assocTypeQNameIds));
+        // Ordered
+        assoc.setOrdered(resultsCallback.orderResults());
         
         ChildAssocResultHandler resultHandler = new ChildAssocResultHandler(resultsCallback);
         
@@ -1138,6 +1147,8 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         }
         // Child name
         assoc.setChildNodeNameAll(null, assocTypeQName, childName);
+        // Ordered
+        assoc.setOrdered(false);
         
         // Note: This single results was assumed from inception of the original method.  It's correct.
         return (ChildAssocEntity) template.selectOne(SELECT_CHILD_ASSOC_OF_PARENT_BY_NAME, assoc);
@@ -1152,6 +1163,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     {
         if (childNames.size() == 0)
         {
+            resultsCallback.done();
             return;
         }
         else if (childNames.size() > 1000)
@@ -1188,11 +1200,14 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         {
             if (!assoc.setTypeQNameAll(qnameDAO, assocTypeQName, false))
             {
+                resultsCallback.done();
                 return;                         // Shortcut
             }
         }
         // Child names
         assoc.setChildNodeNameCrcs(childNamesCrc);
+        // Ordered
+        assoc.setOrdered(resultsCallback.orderResults());
         
         ChildAssocResultHandler resultHandler = new ChildAssocResultHandler(filter, resultsCallback);
         
@@ -1203,6 +1218,32 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         resultsCallback.done();
     }
 
+    @Override
+    protected void selectChildAssocsByPropertyValue(Long parentNodeId,
+            QName propertyQName, 
+            NodePropertyValue nodeValue,
+            ChildAssocRefQueryCallback resultsCallback)
+    {
+        ChildPropertyEntity assocProp = new ChildPropertyEntity();
+        // Parent
+        assocProp.setParentNodeId(parentNodeId);
+        // Property name
+        Pair<Long,QName> propName = qnameDAO.getQName(propertyQName);
+        if (propName == null)
+        {
+            resultsCallback.done();
+            return;
+        }
+        
+        // Property
+        assocProp.setValue(nodeValue);
+        assocProp.setPropertyQNameId(propName.getFirst());
+    
+        ChildAssocResultHandler resultHandler = new ChildAssocResultHandler(resultsCallback);
+        template.select(SELECT_CHILD_ASSOCS_BY_PROPERTY_VALUE, assocProp, resultHandler);
+        resultsCallback.done();
+    }
+    
     @Override
     protected void selectChildAssocsByChildTypes(
             Long parentNodeId,
@@ -1218,9 +1259,12 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         Set<Long> childNodeTypeQNameIds = qnameDAO.convertQNamesToIds(childNodeTypeQNames, false);
         if (childNodeTypeQNameIds.size() == 0)
         {
+            resultsCallback.done();
             return;                         // Shortcut as they don't exist
         }
         assoc.setChildNodeTypeQNameIds(new ArrayList<Long>(childNodeTypeQNameIds));
+        // Ordered
+        assoc.setOrdered(resultsCallback.orderResults());
         
         ChildAssocResultHandler resultHandler = new ChildAssocResultHandler(resultsCallback);
         // TODO MyBatis workaround - see also http://code.google.com/p/mybatis/issues/detail?id=58 (and #139, #234, ...)
@@ -1244,8 +1288,11 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         // Type QName
         if (!assoc.setTypeQNameAll(qnameDAO, assocTypeQName, false))
         {
+            resultsCallback.done();
             return;                         // Shortcut
         }
+        // Ordered
+        assoc.setOrdered(resultsCallback.orderResults());
 
         ChildAssocResultHandler resultHandler = new ChildAssocResultHandler(resultsCallback);
         
@@ -1289,6 +1336,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         {
             if (!assoc.setTypeQNameAll(qnameDAO, assocTypeQName, false))
             {
+                resultsCallback.done();
                 return;                         // Shortcut
             }
         }
@@ -1297,6 +1345,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         {
             if (!assoc.setQNameAll(qnameDAO, assocQName, false))
             {
+                resultsCallback.done();
                 return;                         // Shortcut
             }
         }
@@ -1537,32 +1586,6 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         return (Long) template.selectOne(SELECT_TXN_MAX_COMMIT_TIME);
     }
 
-    @Override
-    protected void selectChildAssocsByPropertyValue(Long parentNodeId,
-            QName propertyQName, 
-            NodePropertyValue nodeValue,
-            ChildAssocRefQueryCallback resultsCallback)
-    {
-        ChildPropertyEntity assocProp = new ChildPropertyEntity();
-     
-        // Parent
-        assocProp.setParentNodeId(parentNodeId);
-        
-        // Property name
-        Pair<Long,QName> propName = qnameDAO.getQName(propertyQName);
-        
-        if(propName != null)
-        {
-            // Property
-            assocProp.setValue(nodeValue);
-            assocProp.setPropertyQNameId(propName.getFirst());
-        
-            ChildAssocResultHandler resultHandler = new ChildAssocResultHandler(resultsCallback);
-            template.select(SELECT_CHILD_ASSOCS_BY_PROPERTY_VALUE, assocProp, resultHandler);
-            resultsCallback.done();
-        }
-    }
-    
     @Override
     public List<NodePropertyEntity> selectProperties(Collection<PropertyDefinition> propertyDefs)
     {

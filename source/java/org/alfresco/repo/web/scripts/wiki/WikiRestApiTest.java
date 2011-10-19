@@ -148,13 +148,19 @@ public class WikiRestApiTest extends BaseWebScriptTest
         siteService.deleteSite(SITE_SHORT_NAME_WIKI);
         
         // delete the users
-        personService.deletePerson(USER_ONE);
+        if(personService.personExists(USER_ONE))
+        {
+           personService.deletePerson(USER_ONE);
+        }
         if(this.authenticationService.authenticationExists(USER_ONE))
         {
            this.authenticationService.deleteAuthentication(USER_ONE);
         }
         
-        personService.deletePerson(USER_TWO);
+        if(personService.personExists(USER_TWO))
+        {
+           personService.deletePerson(USER_TWO);
+        }
         if(this.authenticationService.authenticationExists(USER_TWO))
         {
            this.authenticationService.deleteAuthentication(USER_TWO);
@@ -782,8 +788,43 @@ public class WikiRestApiTest extends BaseWebScriptTest
        assertEquals(PAGE_TITLE_TWO, entries.getJSONObject(1).getString("title"));
        assertEquals(PAGE_TITLE_ONE, entries.getJSONObject(2).getString("title"));
 //       assertEquals(PAGE_TITLE_THREE, entries.getJSONObject(2).getString("title"));
+       
+       
+       // Change the owner+creator of one of the pages to System, ensure that 
+       //  this doesn't break anything in the process
+       String pageTwoName = entries.getJSONObject(1).getString("name");
+       WikiPageInfo pageTwo = wikiService.getWikiPage(SITE_SHORT_NAME_WIKI, pageTwoName);
+       nodeService.setProperty(pageTwo.getNodeRef(), ContentModel.PROP_OWNER, AuthenticationUtil.SYSTEM_USER_NAME);
+       nodeService.setProperty(pageTwo.getNodeRef(), ContentModel.PROP_CREATOR, AuthenticationUtil.SYSTEM_USER_NAME);
+       nodeService.setProperty(pageTwo.getNodeRef(), ContentModel.PROP_MODIFIER, AuthenticationUtil.SYSTEM_USER_NAME);
+       
+       // Check the listing still works (note - order will have changed)
+       pages = getPages("recentlyModified", null);
+       assertEquals(3, pages.getInt("totalPages"));
+       
+       entries = pages.getJSONArray("pages");
+       assertEquals(3, entries.length());
+       assertEquals(PAGE_TITLE_TWO, entries.getJSONObject(0).getString("title"));
+       assertEquals(PAGE_TITLE_THREE, entries.getJSONObject(1).getString("title"));
+       assertEquals(PAGE_TITLE_ONE, entries.getJSONObject(2).getString("title"));
 
        
+       // Delete User Two, who owns the 3rd page, and ensure that this
+       //  doesn't break anything
+       this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+       personService.deletePerson(USER_TWO);
+       this.authenticationComponent.setCurrentUser(USER_ONE);
+       
+       // Check the listing still works
+       pages = getPages("recentlyModified", null);
+       assertEquals(3, pages.getInt("totalPages"));
+       
+       entries = pages.getJSONArray("pages");
+       assertEquals(3, entries.length());
+       assertEquals(PAGE_TITLE_TWO, entries.getJSONObject(0).getString("title"));
+       assertEquals(PAGE_TITLE_THREE, entries.getJSONObject(1).getString("title"));
+       assertEquals(PAGE_TITLE_ONE, entries.getJSONObject(2).getString("title"));
+
        
        // Now hide the site, and remove the user from it, won't be allowed to see it
        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());

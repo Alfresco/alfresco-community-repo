@@ -28,6 +28,7 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
@@ -155,17 +156,24 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
        }
     }
     
-    protected Object buildPerson(String username)
+    protected NodeRef personForModel(String username)
     {
        if (username == null || username.length() == 0)
        {
-          // Empty string needed
-          return "";
+          return null;
        }
        
-       // Will turn into a Script Node needed of the person
-       NodeRef person = personService.getPerson(username);
-       return person;
+       try
+       {
+          // Will turn into a Script Node needed of the person
+          NodeRef person = personService.getPerson(username);
+          return person;
+       }
+       catch(NoSuchPersonException e)
+       {
+          // This is normally caused by the person having been deleted
+          return null;
+       }
     }
     
     protected Map<String, Object> renderWikiPage(WikiPageInfo page)
@@ -184,11 +192,7 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
        res.put("created", page.getCreatedAt());
        res.put("modified", page.getModifiedAt());
        
-       // FTL needs a script node of the people
-       res.put("createdBy", buildPerson(page.getCreator()));
-       res.put("modifiedBY", buildPerson(page.getModifier()));
-       
-       // We want blank instead of null
+       // For most things, we want blank instead of null
        for (String key : res.keySet())
        {
           if (res.get(key) == null)
@@ -197,6 +201,11 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
           }
        }
        
+       // FTL needs a script node of the people, or null if unavailable
+       res.put("createdBy", personForModel(page.getCreator()));
+       res.put("modifiedBy", personForModel(page.getModifier()));
+       
+       // All done
        return res;
     }
     

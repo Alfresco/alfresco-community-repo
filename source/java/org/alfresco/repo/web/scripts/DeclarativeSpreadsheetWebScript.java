@@ -122,13 +122,13 @@ public abstract class DeclarativeSpreadsheetWebScript extends DeclarativeWebScri
         if("csv".equals(format) || "xls".equals(format) ||
            "xlsx".equals(format) || "excel".equals(format))
         {
-        	// Identify the thing to process
-        	Object resource = identifyResource(format, req);
+            // Identify the thing to process
+            Object resource = identifyResource(format, req);
         	
-        	// Generate the spreadsheet
+            // Generate the spreadsheet
             try
             {
-            	generateSpreadsheet(resource, format, req, status, model);
+                generateSpreadsheet(resource, format, req, status, model);
                 return model;
             }
             catch(IOException e)
@@ -146,7 +146,7 @@ public abstract class DeclarativeSpreadsheetWebScript extends DeclarativeWebScri
         }
         else
         {
-        	throw new WebScriptException("Web Script format '" + format + "' is not supported");
+           throw new WebScriptException("Web Script format '" + format + "' is not supported");
         }
     }
     
@@ -209,12 +209,12 @@ public abstract class DeclarativeSpreadsheetWebScript extends DeclarativeWebScri
         List<QName> properties = new ArrayList<QName>(propertyDetails.size());
         for(Pair<QName,Boolean> p : propertyDetails)
         {
-        	QName qn = null;
-        	if(p != null)
-        	{
-        		qn = p.getFirst();
-        	}
-        	properties.add(qn);
+           QName qn = null;
+           if(p != null)
+           {
+              qn = p.getFirst();
+           }
+           properties.add(qn);
         }
         
         
@@ -338,6 +338,7 @@ public abstract class DeclarativeSpreadsheetWebScript extends DeclarativeWebScri
             this.res = res;
             this.model = model;
             this.format = format;
+            this.filenameBase = filenameBase;
         }
         public void write() throws IOException
         {

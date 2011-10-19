@@ -37,6 +37,8 @@ public class RemoveNoContentFileOnError implements Command
     public RemoveNoContentFileOnError(String name, NodeRef rootNode, String path)
     {
         this.name = name;
+        this.rootNode = rootNode;
+        this.path = path;
     }
 
     public String getName()

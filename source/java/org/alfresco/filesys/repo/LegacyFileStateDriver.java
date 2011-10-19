@@ -272,6 +272,13 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
                 FileStateCache cache = tctx.getStateCache();
                 FileState fstate = cache.findFileState( param.getFullName(), true);
                 
+                // MER Experiment Need to reset shared access
+                if(fstate.getOpenCount() ==0 )
+                {
+                    logger.debug("reset shared access to READWRITEDELETE");
+                    fstate.setSharedAccess( SharingMode.READWRITE + SharingMode.DELETE);
+                }
+                
                 if(fstate != null && param.getAccessToken() != null)
                 {
                     FileAccessToken token = param.getAccessToken();

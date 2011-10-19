@@ -199,6 +199,10 @@ public class CifsHelper
         // retrieve required properties and create new JLAN file info
         ContentFileInfo fileInfo = new ContentFileInfo(nodeRef);
         
+        // Set the file id from the node's DBID
+        long id = DefaultTypeConverter.INSTANCE.convert(Long.class, nodeService.getProperty(nodeRef, ContentModel.PROP_NODE_DBID));
+        fileInfo.setFileId((int) (id & 0xFFFFFFFFL));    
+        
         // unset all attribute flags
         int fileAttributes = 0;
         fileInfo.setFileAttributes(fileAttributes);
@@ -226,7 +230,9 @@ public class CifsHelper
             // Set the allocation size by rounding up the size to a 512 byte block boundary
             
             if ( size > 0)
+            {
                 fileInfo.setAllocationSize((size + 512L) & 0xFFFFFFFFFFFFFE00L);
+            }
             
             // Check the lock status of the file
             
@@ -252,7 +258,9 @@ public class CifsHelper
             // Check if it is a link node
             
             if ( fileFolderInfo.isLink())
+            {
             	fileInfo.setLinkNodeRef( fileFolderInfo.getLinkNodeRef());
+            }
         }
         
         // created

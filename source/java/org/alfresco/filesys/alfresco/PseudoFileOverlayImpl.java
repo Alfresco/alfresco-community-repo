@@ -168,17 +168,16 @@ public class PseudoFileOverlayImpl implements PseudoFileOverlay
         }
         if ( context.isShareURLEnabled())
         {
-//            try
-//            {
             String site = getSiteForNode(nodeRef);
-//              String site = "wibble";
             if(site != null)
             {
                 // Make sure the state has the associated node details      
                 // Build the URL file data
  
                 StringBuilder urlStr = new StringBuilder();
-      
+
+// This is the URL generated                
+// http://markr:8080/share/page/site/wibble/folder-details?nodeRef=workspace://SpacesStore/f72b2475-7571-46fe-947b-b0ee1b6a82ea
                 urlStr.append("[InternetShortcut]\r\n");
                 urlStr.append("URL=");
                 urlStr.append(getShareURLPrefix());
@@ -188,23 +187,20 @@ public class PseudoFileOverlayImpl implements PseudoFileOverlay
                 urlStr.append( nodeRef.getId());
                 urlStr.append("\r\n");
 
+                // Should this be the URL instead                              
+//                http://markr:8080/share/page/site/wibble/documentlibrary#filter=path%7C%2Ffolder%2520A%2FFolderB&page=1
+
                 // Create the in memory pseudo file for the URL link
                 if(logger.isDebugEnabled())
                 {
                     logger.debug("generateShareURLShortcut url as string:" + urlStr);
-                }
-//          
+                }         
                 byte[] urlData = urlStr.toString().getBytes();
-//          
+        
                 MemoryPseudoFile urlFile = new MemoryPseudoFile( context.getShareURLFileName(), urlData);
                 return urlFile;
-//            }
             }
-//            catch (Throwable t)
-//            {
-//                logger.error("unexpected exception ", t);
-//                return null;
-//            }
+
             
         }
           return null;

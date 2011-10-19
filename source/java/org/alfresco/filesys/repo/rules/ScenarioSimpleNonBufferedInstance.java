@@ -90,7 +90,7 @@ public class ScenarioSimpleNonBufferedInstance implements ScenarioInstance
             
             commands.add(new CloseFileCommand(c.getName(), file, c.getRootNodeRef(), c.getPath()));
             
-            postErrorCommands.add(new RemoveNoContentFileOnError(c.getName(), c.getRootNodeRef(), c.getPath()));
+            // postErrorCommands.add(new RemoveNoContentFileOnError(c.getName(), c.getRootNodeRef(), c.getPath()));
             
             if(c.isDeleteOnClose())
             {

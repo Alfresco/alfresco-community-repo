@@ -268,7 +268,7 @@ class ScenarioOpenFileInstance implements ScenarioInstance
                                 
                                 commands.add(new CloseFileCommand(c.getName(), file, c.getRootNodeRef(), c.getPath()));
                                 
-                                postErrorCommands.add(new RemoveNoContentFileOnError(c.getName(), c.getRootNodeRef(), c.getPath()));
+                                //postErrorCommands.add(new RemoveNoContentFileOnError(c.getName(), c.getRootNodeRef(), c.getPath()));
                                 
                                 if(c.isDeleteOnClose())
                                 {
@@ -306,7 +306,7 @@ class ScenarioOpenFileInstance implements ScenarioInstance
                     
                     if(name != null && name.equalsIgnoreCase(o.getName()))
                     {
-                        if(o.getMode() == OpenFileMode.WRITE)
+                        if(o.getMode() == OpenFileMode.READ_WRITE)
                         {
                             // This is an open of a read write access
                             if(openReadWriteCount == 0)

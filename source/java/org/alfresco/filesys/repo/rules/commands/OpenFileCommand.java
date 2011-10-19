@@ -31,7 +31,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public class OpenFileCommand implements Command
 {
     private String name;
-    private OpenFileMode mode = OpenFileMode.READ;
+    private OpenFileMode mode = OpenFileMode.READ_ONLY;
     private boolean truncate = false;
     private String path;
     private NodeRef rootNode;

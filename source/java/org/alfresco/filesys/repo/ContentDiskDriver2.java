@@ -685,10 +685,11 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 {
                     logger.debug("getFileInformation found nodeRef for nodeRef :"+ nodeRef + ", path: " + path);
                 }
-            	
-            	// Set the file id from the node's DBID
-                long id = DefaultTypeConverter.INSTANCE.convert(Long.class, nodeService.getProperty(nodeRef, ContentModel.PROP_NODE_DBID));
-                finfo.setFileId((int) (id & 0xFFFFFFFFL));    
+
+                // Moved to CIFS Helper
+//            	// Set the file id from the node's DBID
+//                long id = DefaultTypeConverter.INSTANCE.convert(Long.class, nodeService.getProperty(nodeRef, ContentModel.PROP_NODE_DBID));
+//                finfo.setFileId((int) (id & 0xFFFFFFFFL));    
             }
             
             // Return the file information or null if the node ref does not exist
@@ -805,7 +806,11 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 pseudoList = ctx.getPseudoFileOverlay().searchPseudoFiles(dirNodeRef, searchFileSpec);
             }
             
-            SearchContext searchCtx = new ContentSearchContext(getCifsHelper(), results, searchFileSpec, pseudoList, paths[0]);          
+            DotDotContentSearchContext searchCtx = new DotDotContentSearchContext(getCifsHelper(), results, searchFileSpec, pseudoList, paths[0]);          
+            
+            // Need to set dot and dotdot
+            //searchCtx.setDotInfo(finfo);
+            //searchCtx.setDotDotInfo(finfo);
             
             // Debug
             if (logger.isDebugEnabled())
@@ -975,6 +980,10 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             if ( params.hasAccessMode(AccessMode.NTRead) &&
                     permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.DENIED)
             {
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("about to throw an no read access denied exception path:" +params.getFullPath());
+                }
                 throw new AccessDeniedException("No read access to " + params.getFullPath());
             }
 
@@ -982,6 +991,11 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             if ( params.hasAccessMode(AccessMode.NTWrite) &&
                     permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.DENIED)
             {
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("about to throw an no write access denied exception path:" +params.getFullPath());
+                }
+ 
                 throw new AccessDeniedException("No write access to " + params.getFullPath());
             }
 
@@ -1000,6 +1014,8 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
 
             if ( linkRef == null)
             {
+                // A normal node, not a link node
+                
                 // TODO MER REWRITE HERE
                 FileInfo fileInfo = cifsHelper.getFileInformation(nodeRef, "", false, false);
 
@@ -1011,6 +1027,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 }
                 else
                 {
+                    // A normal file
                     if(params.isReadOnlyAccess())
                     {
                         logger.debug("open file for read only");
@@ -1042,8 +1059,26 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
 
                         netFile = new TempNetworkFile(file, name);
 
-                        // Always allow write access to a newly created file
-                        netFile.setGrantedAccess(NetworkFile.READWRITE);
+                        // Generate a file id for the file
+
+                        if ( netFile != null) 
+                        {
+                            long id = DefaultTypeConverter.INSTANCE.convert(Long.class, nodeService.getProperty(nodeRef, ContentModel.PROP_NODE_DBID));
+                            netFile.setFileId((int) (id & 0xFFFFFFFFL));
+                        }
+
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("Created file: path=" + name + " node=" + nodeRef + " network file=" + netFile);
+                        }
+                    }
+                    else
+                    {
+                        // Write only or AttributesOnly
+                        logger.debug("open file write or attributes only");
+                        File file = TempFileProvider.createTempFile("cifs", ".bin");
+
+                        netFile = new TempNetworkFile(file, name);
 
                         // Generate a file id for the file
 
@@ -1058,7 +1093,21 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                             logger.debug("Created file: path=" + name + " node=" + nodeRef + " network file=" + netFile);
                         }
                     }
-                }
+                    
+                    if ( params.isReadOnlyAccess())
+                    {
+                        netFile.setGrantedAccess( NetworkFile.READONLY);
+                    }
+                    else if ( params.isWriteOnlyAccess())
+                    {
+                        netFile.setGrantedAccess( NetworkFile.WRITEONLY);
+                    }
+                    else
+                    {
+                        netFile.setGrantedAccess( NetworkFile.READWRITE);
+                    }
+                    
+                } // end of a normal file
             }
             else
             {
@@ -2672,8 +2721,8 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             
             // Always allow write access to a newly created file
             netFile.setGrantedAccess(NetworkFile.READWRITE);
-            
-                      
+            netFile.setAllowedAccess(NetworkFile.READWRITE);
+                             
             // Truncate the file so that the content stream is created
             //netFile.truncateFile( 0L);
 
@@ -2773,11 +2822,22 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             {
                 logger.debug("closeFile has delete on close set");
             }
- 
-            NodeRef target = getCifsHelper().getNodeRef(rootNode, path);
-            if(target!=null)
+            try
             {
-                nodeService.deleteNode(target);
+                NodeRef target = getCifsHelper().getNodeRef(rootNode, path);
+                if(target!=null)
+                {
+                    nodeService.deleteNode(target);
+                }
+            }
+            catch (org.alfresco.repo.security.permissions.AccessDeniedException ex)
+            {
+                if ( logger.isDebugEnabled())
+                {   
+                    logger.debug("Delete file from close file- access denied", ex);
+                }
+                // Convert to a filesystem access denied status
+                throw new AccessDeniedException("Unable to delete " + path);
             }
             
             // Still need to close the open file handle.
@@ -2786,8 +2846,8 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             if (logger.isDebugEnabled())
             {
                 logger.debug("Closed file: network file=" + file + " delete on close=" + file.hasDeleteOnClose());
-            }            
-  
+            }
+          
             return;
         }
         

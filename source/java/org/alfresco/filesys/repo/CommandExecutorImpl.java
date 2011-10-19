@@ -209,10 +209,51 @@ public class CommandExecutorImpl implements CommandExecutor
             OpenFileCommand o = (OpenFileCommand)command;
             int openAction = FileAction.OpenIfExists;
             
-            // TODO Open Action FileAction.NTOverwrite o.truncate
-            // TODO ATTRIBUTES ONLY and DELETE ONLY
-            FileOpenParams params = new FileOpenParams(o.getPath(), openAction, o.getMode() == OpenFileMode.WRITE ? AccessMode.ReadWrite : AccessMode.ReadOnly, FileAttribute.NTNormal, 0);
+            OpenFileMode mode = o.getMode();
+            int jlanAccessMode = 0;
+            switch (mode)
+            {
+                case ATTRIBUTES_ONLY:
+                    jlanAccessMode = AccessMode.ReadWrite;
+                    break;
+                case READ_ONLY:
+                    jlanAccessMode = AccessMode.ReadOnly;
+                    break;
+                case READ_WRITE:
+                    jlanAccessMode = AccessMode.ReadWrite;
+                    break;
+                case DELETE:
+                    // Don't care file is being deleted
+                    jlanAccessMode = AccessMode.ReadOnly;
+                    break;
+                case WRITE_ONLY:
+                    jlanAccessMode = AccessMode.WriteOnly;
+                    break;
+            }
+            
+            FileOpenParams params = new FileOpenParams(o.getPath(), openAction, jlanAccessMode, FileAttribute.NTNormal, 0);
           
+            if(logger.isDebugEnabled())
+            {
+                int sharedAccess = params.getSharedAccess();
+                String strSharedAccess = SharingMode.getSharingModeAsString(sharedAccess);
+                    
+                logger.debug("openFile:" + o.getPath() 
+                + ", isDirectory: " + params.isDirectory()
+                + ", isStream: " + params.isStream()
+                + ", readOnlyAccess: " + params.isReadOnlyAccess()
+                + ", readWriteAccess: " + params.isReadWriteAccess()
+                + ", writeOnlyAccess:" +params.isWriteOnlyAccess()
+                + ", attributesOnlyAccess:" +params.isAttributesOnlyAccess()
+                + ", sequentialAccessOnly:" + params.isSequentialAccessOnly()
+                + ", requestBatchOpLock:" +params.requestBatchOpLock()
+                + ", requestExclusiveOpLock:" +params.requestExclusiveOpLock()  
+                + ", isDeleteOnClose:" +params.isDeleteOnClose()
+                + ", allocationSize:" + params.getAllocationSize()
+                + ", sharedAccess: " + strSharedAccess
+                );
+            }
+
             return diskInterface.openFile(sess, tree, params);
         }
         else if(command instanceof CloseFileCommand)

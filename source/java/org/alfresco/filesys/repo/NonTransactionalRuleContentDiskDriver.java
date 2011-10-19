@@ -178,29 +178,9 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
     {
         if(logger.isDebugEnabled())
         {
-          
-                int sharedAccess = params.getSharedAccess();
-                String strSharedAccess = "none"; 
-                
-                switch(sharedAccess)
-                {
-                    case SharingMode.NOSHARING:
-                        strSharedAccess = "nosharing"; 
-                        break;
-                    case SharingMode.READ: 
-                        strSharedAccess = "read"; 
-                        break;
-                    case SharingMode.WRITE:
-                        strSharedAccess = "write"; 
-                        break;
-                    case SharingMode.READWRITE: 
-                        strSharedAccess = "read-write"; 
-                        break;
-                    case SharingMode.DELETE: 
-                        strSharedAccess = "delete"; 
-                        break;
-                }
-                
+            int sharedAccess = params.getSharedAccess();
+            String strSharedAccess = SharingMode.getSharingModeAsString(sharedAccess);
+           
             logger.debug("createFile:" + params.getPath() 
                     + ", isDirectory: " + params.isDirectory()
                     + ", isStream: " + params.isStream()
@@ -219,8 +199,6 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
         ContentContext tctx = (ContentContext) tree.getContext();
         NodeRef rootNode = tctx.getRootNode();
         
-
-        
         String[] paths = FileName.splitPath(params.getPath());
         String folder = paths[0];
         String file = paths[1];
@@ -235,7 +213,6 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
         
         if(ret != null && ret instanceof NetworkFile)
         {   
-            
             return (NetworkFile)ret;
         }
         else
@@ -309,27 +286,8 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
         if(logger.isDebugEnabled())
         {
             int sharedAccess = param.getSharedAccess();
-            String strSharedAccess = "none"; 
-            
-            switch(sharedAccess)
-            {
-                case SharingMode.NOSHARING:
-                    strSharedAccess = "nosharing"; 
-                    break;
-                case SharingMode.READ: 
-                    strSharedAccess = "read"; 
-                    break;
-                case SharingMode.WRITE:
-                    strSharedAccess = "write"; 
-                    break;
-                case SharingMode.READWRITE: 
-                    strSharedAccess = "read-write"; 
-                    break;
-                case SharingMode.DELETE: 
-                    strSharedAccess = "delete"; 
-                    break;
-            }
-            
+            String strSharedAccess = SharingMode.getSharingModeAsString(sharedAccess);
+                
             logger.debug("openFile:" + path 
             + ", isDirectory: " + param.isDirectory()
             + ", isStream: " + param.isStream()
@@ -358,32 +316,50 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
         
         EvaluatorContext ctx = getEvaluatorContext(driverState, folder);
         
-        // Todo what about attributes only and writeOnly ?
-        OpenFileMode writeAccess = param.isReadWriteAccess() ? OpenFileMode.WRITE : OpenFileMode.READ ;
+        // Todo what about attributes only ?
         
-        if(param.isDeleteOnClose())
+        OpenFileMode openMode = OpenFileMode.READ_WRITE;
+        
+        if(param.isAttributesOnlyAccess())
+        {
+            openMode = OpenFileMode.ATTRIBUTES_ONLY;
+        }
+        else if (param.isReadWriteAccess())
+        {
+            openMode = OpenFileMode.READ_WRITE;
+        }
+        else if (param.isWriteOnlyAccess())
+        {
+            openMode = OpenFileMode.WRITE_ONLY;
+        } 
+        else if (param.isReadOnlyAccess())
+        {
+            openMode = OpenFileMode.READ_ONLY;
+        } 
+        else if(param.isDeleteOnClose())
         {
             if(logger.isDebugEnabled())
             {
                 logger.debug("open file has delete on close");
             }
-            writeAccess = OpenFileMode.DELETE;
+            openMode = OpenFileMode.DELETE;
         }
             
         boolean truncate = param.isOverwrite();
         
-        Operation o = new OpenFileOperation(file, writeAccess, truncate, rootNode, path);
+        Operation o = new OpenFileOperation(file, openMode, truncate, rootNode, path);
         Command c = ruleEvaluator.evaluate(ctx, o);
         Object ret = commandExecutor.execute(sess, tree, c);
 
         if(ret != null && ret instanceof NetworkFile)
         {
-             
+            NetworkFile x = (NetworkFile)ret; 
+                         
             if(logger.isDebugEnabled())
             {
                 logger.debug("returning open file: for path:" + path +", ret:" + ret);
             }
-            return (NetworkFile)ret;
+            return x;
         }
         else
         {

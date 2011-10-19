@@ -363,17 +363,25 @@ public final class Utils extends StringUtils
                   context).getFileFolderService();
             try
             {
-               List<FileInfo> paths = fileFolderService.getNamePath(null, node.getNodeRef());
-               
-               // build up the webdav url
-               StringBuilder path = new StringBuilder("/").append(WebDAVServlet.WEBDAV_PREFIX);
-               
-               // build up the path skipping the first path as it is the root folder
-               for (int x = 1; x < paths.size(); x++)
+               NodeRef rootNode = WebDAVServlet.getWebdavRootNode();
+               if (rootNode != null)
                {
-                  path.append("/").append(WebDAVHelper.encodeURL(paths.get(x).getName(), getUserAgent(context)));
+                  // build up the webdav url
+                  StringBuilder path = new StringBuilder("/").append(WebDAVServlet.WEBDAV_PREFIX);
+
+                  if (!rootNode.equals(node.getNodeRef()))
+                  {
+                  
+                     List<FileInfo> paths = fileFolderService.getNamePath(rootNode, node.getNodeRef());
+               
+                     // build up the path skipping the first path as it is the root folder
+                     for (int x = 0; x < paths.size(); x++)
+                     {
+                        path.append("/").append(WebDAVHelper.encodeURL(paths.get(x).getName(), getUserAgent(context)));
+                     }
+                  }
+                     url = path.toString();
                }
-               url = path.toString();
             }
             catch (AccessDeniedException e)
             {

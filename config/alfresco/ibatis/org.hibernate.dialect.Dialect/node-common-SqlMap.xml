@@ -116,6 +116,10 @@
         <result property="typeQNameId" column="type_qname_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="assocIndex" column="assoc_index" jdbcType="INTEGER" javaType="java.lang.Integer"/>
     </resultMap>
+    <resultMap id="result_ChildAssocIds" type="ChildAssoc">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="childNode.id" column="child_node_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </resultMap>
     <resultMap id="result_ChildAssoc" type="ChildAssoc">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="parentNode.id" column="parentNodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -402,6 +406,17 @@
         <if test="version gt 0">
             and version = (#{version} - 1)
         </if>
+    </update>
+    
+    <update id="update_NodeBulkTouch" parameterType="Ids">
+        update alf_node set
+            version           = version + 1,
+            transaction_id    = #{idOne}
+        where
+            id in
+            <foreach item="item" index="index" collection="ids" open="(" separator="," close=")">
+                #{item}
+            </foreach>
     </update>
     
     <update id="update_NodeAssoc" parameterType="NodeAssoc">

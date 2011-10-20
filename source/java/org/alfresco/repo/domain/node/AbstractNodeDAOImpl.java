@@ -85,7 +85,6 @@ import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.ReadWriteLockExecuter;
 import org.alfresco.util.SerializationUtils;
-import org.apache.commons.lang.mutable.MutableInt;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.dao.ConcurrencyFailureException;
@@ -448,56 +447,55 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      * where the child associations or nodes are modified en-masse.
      * 
      * @param parentNodeId          the parent node of all child nodes to be invalidated (may be <tt>null</tt>)
+     * @param touchNodes            <tt>true<tt> to also touch the nodes
      * @return                      the number of child associations found (might be capped)
      */
-    private int invalidateNodeChildrenCaches(Long parentNodeId)
+    private int invalidateNodeChildrenCaches(Long parentNodeId, boolean primary, boolean touchNodes)
     {
-        // Select all children
-        final MutableInt count = new MutableInt(0);
-        ChildAssocRefQueryCallback callback = new ChildAssocRefQueryCallback()
+        Long txnId = getCurrentTransaction().getId();
+
+        int count = 0;
+        List<Long> childNodeIds = new ArrayList<Long>(256);
+        Long minAssocIdInclusive = Long.MIN_VALUE;
+        while (minAssocIdInclusive != null)
         {
-            private boolean isClearOn = false;
-            
-            public boolean preLoadNodes()
+            childNodeIds.clear();
+            List<ChildAssocEntity> childAssocs = selectChildNodeIds(
+                    parentNodeId,
+                    Boolean.valueOf(primary),
+                    minAssocIdInclusive,
+                    256);
+            // Remove the cache entries as we go
+            for (ChildAssocEntity childAssoc : childAssocs)
             {
-                return false;
-            }
-            
-            @Override
-            public boolean orderResults()
-            {
-                return false;
-            }
-
-            public boolean handle(
-                    Pair<Long, ChildAssociationRef> childAssocPair,
-                    Pair<Long, NodeRef> parentNodePair,
-                    Pair<Long, NodeRef> childNodePair)
-            {
-                if (isClearOn)
+                Long childAssocId = childAssoc.getId();
+                if (childAssocId.compareTo(minAssocIdInclusive) < 0)
                 {
-                    // We have already decided to drop ALL cache entries
-                    return false;
+                    throw new RuntimeException("Query results did not increase for assoc ID");
                 }
-                else if (count.intValue() >= 1000)
+                else
                 {
-                    // That's enough.  Instead of walking thousands of entries
-                    // we just drop the cache at this stage
-                    AbstractNodeDAOImpl.this.clearCaches();
-                    isClearOn = true;
-                    return false;               // No more, please
+                    minAssocIdInclusive = new Long(childAssocId.longValue() + 1L);
                 }
-                count.increment();
-                invalidateNodeCaches(childNodePair.getFirst());
-                return true;
+                // Invalidate the node cache
+                Long childNodeId = childAssoc.getChildNode().getId();
+                childNodeIds.add(childNodeId);
+                invalidateNodeCaches(childNodeId);
+                count++;
             }
-
-            public void done()
+            // Bring all the nodes into the transaction, if required
+            if (touchNodes)
             {
-            }                               
-        };
-        selectChildAssocs(parentNodeId, null, null, null, null, null, callback);
-        return count.intValue();
+                updateNodes(txnId, childNodeIds);
+            }
+            // Now break out if we didn't have the full set of results
+            if (childAssocs.size() < 256)
+            {
+                break;
+            }
+        }
+        // Done
+        return count;
     }
 
     /**
@@ -508,10 +506,10 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     private void invalidateNodeCaches(Long nodeId)
     {
         // Take the current value from the nodesCache and use that to invalidate the other caches
-        Pair<Long, Node> nodePair = nodesCache.getByKey(nodeId);
-        if (nodePair != null)
+        Node node = nodesCache.getValue(nodeId);
+        if (node != null)
         {
-            NodeVersionKey nodeVersionKey = nodePair.getSecond().getNodeVersionKey();
+            NodeVersionKey nodeVersionKey = node.getNodeVersionKey();
             invalidateNodeCaches(nodeVersionKey, true, true, true);
         }
         // Finally remove the node reference
@@ -1279,7 +1277,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             // The new node will have new data not present in the cache, yet
             // TODO: Look to move the data in a cache-efficient way
             invalidateNodeCaches(newChildNodeId);
-            invalidateNodeChildrenCaches(newChildNodeId);
+            invalidateNodeChildrenCaches(newChildNodeId, true, true);
+            invalidateNodeChildrenCaches(newChildNodeId, false, true);
             // Now update the original to be 'deleted'
             NodeUpdateEntity childNodeUpdate = new NodeUpdateEntity();
             childNodeUpdate.setId(childNodeId);
@@ -1339,7 +1338,11 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         childAssocRetryingHelper.doWithRetry(callback);
         
         // Check for cyclic relationships
-        cycleCheck(newChildNodeId);
+        // TODO: This adds a lot of overhead when moving hierarchies.
+        //       While getPaths is faster, it would be better to avoid the parentAssocsCache
+        //       completely.
+        getPaths(newChildNode.getNodePair(), false);
+//        cycleCheck(newChildNodeId);
 
         // Update ACLs for moved tree
         Long newParentAclId = newParentNode.getAclId();
@@ -1637,7 +1640,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 primaryParentNodeId,
                 optionalOldSharedAlcIdInAdditionToNull,
                 newSharedAclId);
-        invalidateNodeChildrenCaches(primaryParentNodeId);
+        invalidateNodeChildrenCaches(primaryParentNodeId, true, false);
     }
     
     public void deleteNode(Long nodeId)
@@ -1689,7 +1692,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         deleteNodeAssocsToAndFrom(nodeId);
         
         // Remove child associations (invalidate children)
-        invalidateNodeChildrenCaches(nodeId);
+        invalidateNodeChildrenCaches(nodeId, true, true);
+        invalidateNodeChildrenCaches(nodeId, false, true);
         deleteChildAssocsToAndFrom(nodeId);
         
         // Remove aspects
@@ -2996,7 +3000,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 parentNodeId,
                 assocTypeQName,
                 assocQName,
-                null,
                 maxResults,
                 new ChildAssocRefBatchingQueryCallback(resultsCallback));
     }
@@ -3902,6 +3905,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     protected abstract int updateStore(StoreEntity store);
     protected abstract Long insertNode(NodeEntity node);
     protected abstract int updateNode(NodeUpdateEntity nodeUpdate);
+    protected abstract int updateNodes(Long txnId, List<Long> nodeIds);
     protected abstract void updatePrimaryChildrenSharedAclId(
             Long txnId,
             Long primaryParentNodeId,
@@ -3947,6 +3951,11 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     protected abstract int updateChildAssocsUniqueName(Long childNodeId, String name);
     protected abstract int deleteChildAssocsToAndFrom(Long nodeId);
     protected abstract ChildAssocEntity selectChildAssoc(Long assocId);
+    protected abstract List<ChildAssocEntity> selectChildNodeIds(
+            Long nodeId,
+            Boolean isPrimary,
+            Long minAssocIdInclusive,
+            int maxResults);
     protected abstract List<NodeIdAndAclId> selectPrimaryChildAcls(Long nodeId);
     protected abstract List<ChildAssocEntity> selectChildAssoc(
             Long parentNodeId,
@@ -3968,7 +3977,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             Long parentNodeId,
             QName assocTypeQName,
             QName assocQName,
-            Long minAssocIdInclusive,
             int maxResults,
             ChildAssocRefQueryCallback resultsCallback);
     protected abstract void selectChildAssocs(

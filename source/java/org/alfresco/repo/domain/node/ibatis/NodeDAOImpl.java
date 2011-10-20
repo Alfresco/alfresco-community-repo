@@ -85,6 +85,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String SELECT_STORE_ROOT_NODE_BY_REF = "alfresco.node.select_StoreRootNodeByRef";
     private static final String INSERT_NODE = "alfresco.node.insert.insert_Node";
     private static final String UPDATE_NODE = "alfresco.node.update_Node";
+    private static final String UPDATE_NODE_BULK_TOUCH = "alfresco.node.update_NodeBulkTouch";
     private static final String DELETE_NODE_BY_ID = "alfresco.node.delete_NodeById";
     private static final String DELETE_NODES_BY_TXN_COMMIT_TIME = "alfresco.node.delete_NodesByTxnCommitTime";
     private static final String SELECT_NODE_BY_ID = "alfresco.node.select_NodeById";
@@ -109,6 +110,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String SELECT_NODE_ASSOCS_BY_TARGET = "alfresco.node.select_NodeAssocsByTarget";
     private static final String SELECT_NODE_ASSOC_BY_ID = "alfresco.node.select_NodeAssocById";
     private static final String SELECT_NODE_ASSOCS_MAX_INDEX = "alfresco.node.select_NodeAssocsMaxId";
+    private static final String SELECT_CHILD_NODE_IDS = "alfresco.node.select.children.select_ChildNodeIds_Limited";
     private static final String SELECT_NODE_PRIMARY_CHILD_ACLS = "alfresco.node.select_NodePrimaryChildAcls";
     private static final String INSERT_CHILD_ASSOC = "alfresco.node.insert.insert_ChildAssoc";
     private static final String DELETE_CHILD_ASSOC_BY_ID = "alfresco.node.delete_ChildAssocById";
@@ -317,6 +319,19 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         return template.update(UPDATE_NODE, nodeUpdate);
     }
     
+    @Override
+    protected int updateNodes(Long txnId, List<Long> nodeIds)
+    {
+        if (nodeIds.size() == 0)
+        {
+            return 0;
+        }
+        IdsEntity ids = new IdsEntity();
+        ids.setIdOne(txnId);
+        ids.setIds(nodeIds);
+        return template.update(UPDATE_NODE_BULK_TOUCH, ids);
+    }
+
     @Override
     protected void updatePrimaryChildrenSharedAclId(
             Long txnId,
@@ -882,6 +897,25 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     
     @SuppressWarnings("unchecked")
     @Override
+    protected List<ChildAssocEntity> selectChildNodeIds(
+            Long nodeId,
+            Boolean isPrimary,
+            Long minAssocIdInclusive,
+            int maxResults)
+    {
+        ChildAssocEntity assoc = new ChildAssocEntity();
+        NodeEntity parentNode = new NodeEntity();
+        parentNode.setId(nodeId);
+        assoc.setParentNode(parentNode);
+        assoc.setPrimary(isPrimary);
+        assoc.setId(minAssocIdInclusive);
+        
+        RowBounds rowBounds = new RowBounds(0, maxResults);
+        return (List<ChildAssocEntity>) template.selectList(SELECT_CHILD_NODE_IDS, assoc, rowBounds);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
     public List<NodeIdAndAclId> selectPrimaryChildAcls(Long nodeId)
     {
         ChildAssocEntity assoc = new ChildAssocEntity();
@@ -1053,7 +1087,6 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
             Long parentNodeId,
             QName assocTypeQName,
             QName assocQName,
-            Long minAssocIdInclusive,
             final int maxResults,
             ChildAssocRefQueryCallback resultsCallback)
     {
@@ -1062,7 +1095,6 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         NodeEntity parentNode = new NodeEntity();
         parentNode.setId(parentNodeId);
         assoc.setParentNode(parentNode);
-        assoc.setId(minAssocIdInclusive);
 
         // Type QName
         if (assocTypeQName != null)

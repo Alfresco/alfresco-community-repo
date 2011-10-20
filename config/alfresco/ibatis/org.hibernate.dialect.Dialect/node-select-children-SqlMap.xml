@@ -11,4 +11,20 @@
         </if>
     </select>
 
+    <select id="select_ChildNodeIds_Limited" parameterType="ChildAssoc" resultMap="result_ChildAssocIds">
+        <![CDATA[
+        select
+            ca.id               as id,
+            ca.child_node_id    as child_node_id
+        from
+            alf_child_assoc ca
+        where
+            ca.parent_node_id = #{parentNode.id} and
+            ca.is_primary = #{isPrimary} and
+            ca.id >= #{id}
+        order by
+            ca.id
+        ]]>
+    </select>
+
 </mapper>

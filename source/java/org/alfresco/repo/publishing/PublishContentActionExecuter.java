@@ -19,12 +19,14 @@
 package org.alfresco.repo.publishing;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
@@ -32,12 +34,16 @@ import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.action.ParameterizedItem;
 import org.alfresco.service.cmr.action.ParameterizedItemDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.publishing.PublishingDetails;
 import org.alfresco.service.cmr.publishing.PublishingService;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.RuleServiceException;
+import org.alfresco.service.namespace.QName;
 
 /**
  * This class defines an action that publishes or unpublishes the acted-upon
@@ -48,29 +54,29 @@ import org.alfresco.service.cmr.rule.RuleServiceException;
  */
 public class PublishContentActionExecuter extends ActionExecuterAbstractBase
 {
-    public final static String NAME = "publish_content";
+    public final static String NAME = "publish-content";
 
     /**
      * A single-valued, optional text parameter that names the publishing
      * channel to which the specified content is to be published. Although this
-     * is optional, one of either "publish-channel-name" or "publish-channel-id"
-     * MUST be specified. If both are specified then "publish-channel-id" takes
+     * is optional, one of either "publishChannelName" or "publishChannelId"
+     * MUST be specified. If both are specified then "publishChannelId" takes
      * precedence.
      * 
      * @see PublishContentActionExecuter#PARAM_PUBLISH_CHANNEL_ID
      */
-    public final static String PARAM_PUBLISH_CHANNEL_NAME = "publish-channel-name";
+    public final static String PARAM_PUBLISH_CHANNEL_NAME = "publishChannelName";
 
     /**
      * A single-valued, optional text parameter that identifies the publishing
      * channel to which the specified content is to be published. Although this
-     * is optional, one of either "publish-channel-name" or "publish-channel-id"
-     * MUST be specified. If both are specified then "publish-channel-id" takes
+     * is optional, one of either "publishChannelName" or "publishChannelId"
+     * MUST be specified. If both are specified then "publishChannelId" takes
      * precedence.
      * 
      * @see PublishContentActionExecuter#PARAM_PUBLISH_CHANNEL_NAME
      */
-    public final static String PARAM_PUBLISH_CHANNEL_ID = "publish-channel-id";
+    public final static String PARAM_PUBLISH_CHANNEL_ID = "publishChannelId";
 
     /**
      * A single-valued, optional boolean parameter that indicates whether the
@@ -86,7 +92,7 @@ public class PublishContentActionExecuter extends ActionExecuterAbstractBase
      * 
      * @see PublishContentActionExecuter#PARAM_STATUS_UPDATE_CHANNEL_NAMES
      */
-    public final static String PARAM_STATUS_UPDATE = "status-update";
+    public final static String PARAM_STATUS_UPDATE = "statusUpdate";
 
     /**
      * A single-valued, optional boolean parameter that specifies whether a link
@@ -96,35 +102,47 @@ public class PublishContentActionExecuter extends ActionExecuterAbstractBase
      * @see PublishContentActionExecuter#PARAM_STATUS_UPDATE_CHANNEL_NAMES
      * @see PublishContentActionExecuter#PARAM_STATUS_UPDATE
      */
-    public final static String PARAM_INCLUDE_LINK_IN_STATUS_UPDATE = "include-link-in-status-update";
+    public final static String PARAM_INCLUDE_LINK_IN_STATUS_UPDATE = "includeLinkInStatusUpdate";
 
+    /**
+     * A single-valued, optional NodeRef parameter that specifies which published node should be
+     * referenced by the status update. This is only relevant if the "includeLinkInStatusUpdate" is
+     * true AND the node being acted upon is a folder AND the "unpublish" parameter value is false. 
+     * If the node being acted on is not a folder then 
+     * the link appended to the status update will always be a link to the published node. If the "unpublish"
+     * parameter is set to true then no link is appended to the status update.
+     * @see PublishContentActionExecuter#PARAM_INCLUDE_LINK_IN_STATUS_UPDATE
+     * @see PublishContentActionExecuter#PARAM_UNPUBLISH
+     */
+    public final static String PARAM_NODE_TO_LINK_STATUS_UPDATE_TO = "nodeToLinkStatusUpdateTo";
+    
     /**
      * A multi-valued, optional text parameter that identifies by name the
      * publishing channels to which the status update (if any) should be sent.
-     * If both this parameter and the "status-update-channel-ids" parameter are
+     * If both this parameter and the "statusUpdateChannelIds" parameter are
      * given values then they are combined.
      * 
      * @see PublishContentActionExecuter#PARAM_STATUS_UPDATE
      * @see PublishContentActionExecuter#PARAM_STATUS_UPDATE_CHANNEL_IDS
      */
-    public final static String PARAM_STATUS_UPDATE_CHANNEL_NAMES = "status-update-channel-names";
+    public final static String PARAM_STATUS_UPDATE_CHANNEL_NAMES = "statusUpdateChannelNames";
 
     /**
      * A multi-valued, optional text parameter that identifies the publishing
      * channels to which the status update (if any) should be sent. If both this
-     * parameter and the "status-update-channel-names" parameter are given
+     * parameter and the "statusUpdateChannelNames" parameter are given
      * values then they are combined.
      * 
      * @see PublishContentActionExecuter#PARAM_STATUS_UPDATE
      * @see PublishContentActionExecuter#PARAM_STATUS_UPDATE_CHANNEL_NAMES
      */
-    public final static String PARAM_STATUS_UPDATE_CHANNEL_IDS = "status-update-channel-ids";
+    public final static String PARAM_STATUS_UPDATE_CHANNEL_IDS = "statusUpdateChannelIds";
 
     /**
      * A single-valued, optional datetime parameter that specifies when the
      * publish should happen.
      */
-    public final static String PARAM_SCHEDULED_TIME = "scheduled-time";
+    public final static String PARAM_SCHEDULED_TIME = "scheduledTime";
 
     /**
      * A single-valued, optional text parameter that is stored on the publishing
@@ -137,6 +155,8 @@ public class PublishContentActionExecuter extends ActionExecuterAbstractBase
 
     private PublishingService publishingService;
     private ChannelService channelService;
+    private NodeService nodeService;
+    private DictionaryService dictionaryService;
 
     public void setPublishingService(PublishingService publishingService)
     {
@@ -148,36 +168,40 @@ public class PublishContentActionExecuter extends ActionExecuterAbstractBase
         this.channelService = channelService;
     }
 
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
         Boolean isUnpublish = (Boolean) action.getParameterValue(PARAM_UNPUBLISH);
-        boolean unpublish = ((isUnpublish == null) || isUnpublish);
+        boolean unpublish = ((isUnpublish != null) && isUnpublish);
         String publishChannelId = (String) action.getParameterValue(PARAM_PUBLISH_CHANNEL_ID);
         String publishChannelName = (String) action.getParameterValue(PARAM_PUBLISH_CHANNEL_NAME);
         String statusUpdate = (String) action.getParameterValue(PARAM_STATUS_UPDATE);
-        List<String> statusUpdateChannelNames = buildStringList(action.getParameterValue(PARAM_STATUS_UPDATE_CHANNEL_NAMES));
+        List<String> statusUpdateChannelNames = buildStringList(action
+                .getParameterValue(PARAM_STATUS_UPDATE_CHANNEL_NAMES));
         List<String> statusUpdateChannelIds = buildStringList(action.getParameterValue(PARAM_STATUS_UPDATE_CHANNEL_IDS));
         Boolean includeLinkInStatusUpdate = (Boolean) action.getParameterValue(PARAM_INCLUDE_LINK_IN_STATUS_UPDATE);
         boolean appendLink = ((includeLinkInStatusUpdate == null) || includeLinkInStatusUpdate);
         Date scheduledTime = (Date) action.getParameterValue(PARAM_SCHEDULED_TIME);
         String comment = (String) action.getParameterValue(PARAM_COMMENT);
 
-        Channel publishChannel = publishChannelId == null ? channelService.getChannelByName(publishChannelName) :
-            channelService.getChannelById(publishChannelId);
+        Channel publishChannel = publishChannelId == null ? channelService.getChannelByName(publishChannelName)
+                : channelService.getChannelById(publishChannelId);
         if (publishChannel != null)
         {
             PublishingDetails details = publishingService.createPublishingDetails();
             details.setPublishChannelId(publishChannel.getId());
-            if (unpublish)
-            {
-                details.addNodesToUnpublish(actionedUponNodeRef);
-            }
-            else
-            {
-                details.addNodesToPublish(actionedUponNodeRef);
-            }
+            List<NodeRef> nodes = setNodes(actionedUponNodeRef, unpublish, details);
             if (statusUpdateChannelNames != null)
             {
                 for (String statusUpdateChannelName : statusUpdateChannelNames)
@@ -200,12 +224,25 @@ public class PublishContentActionExecuter extends ActionExecuterAbstractBase
                     }
                 }
             }
-            if (!details.getStatusUpdateChannels().isEmpty())
+            if (!unpublish && !details.getStatusUpdateChannels().isEmpty())
             {
                 details.setStatusMessage(statusUpdate);
                 if (appendLink)
                 {
-                    details.setStatusNodeToLinkTo(actionedUponNodeRef);
+                    NodeRef nodeToLinkTo = (NodeRef) action.getParameterValue(PARAM_NODE_TO_LINK_STATUS_UPDATE_TO);
+                    if (nodeToLinkTo == null)
+                    {
+                        //No node has been specified explicitly as being the one to link to
+                        //We'll make an assumption if only one node is being published...
+                        if (nodes.size() == 1)
+                        {
+                            nodeToLinkTo = nodes.get(0);
+                        }
+                    }
+                    if ((nodeToLinkTo != null) && nodes.contains(nodeToLinkTo))
+                    {
+                        details.setStatusNodeToLinkTo(nodeToLinkTo);
+                    }
                 }
             }
             if (scheduledTime != null)
@@ -219,8 +256,48 @@ public class PublishContentActionExecuter extends ActionExecuterAbstractBase
         }
         else
         {
-            throw new AlfrescoRuntimeException(MSG_CHANNEL_NOT_FOUND, new Object[] { publishChannelId == null ? publishChannelName : publishChannelId});
+            throw new AlfrescoRuntimeException(MSG_CHANNEL_NOT_FOUND,
+                    new Object[] { publishChannelId == null ? publishChannelName : publishChannelId });
         }
+    }
+
+    /**
+     * This method sets the node(s) to publish or unpublish on the supplied publishing details.
+     * If the actionedUponNode is a folder then it will include all content nodes within that folder. 
+     * @param actionedUponNodeRef
+     * @param unpublish
+     * @param details
+     */
+    private List<NodeRef> setNodes(NodeRef actionedUponNodeRef, boolean unpublish, PublishingDetails details)
+    {
+        List<NodeRef> nodes = new ArrayList<NodeRef>();
+        QName nodeType = nodeService.getType(actionedUponNodeRef);
+        if (dictionaryService.isSubClass(nodeType, ContentModel.TYPE_FOLDER))
+        {
+            List<ChildAssociationRef> children = nodeService.getChildAssocs(actionedUponNodeRef);
+            for (ChildAssociationRef childRef : children)
+            {
+                NodeRef child = childRef.getChildRef();
+                if (dictionaryService.isSubClass(nodeService.getType(child), ContentModel.TYPE_CONTENT))
+                {
+                    nodes.add(child);
+                }
+            }
+        }
+        else
+        {
+            nodes.add(actionedUponNodeRef);
+        }
+        
+        if (unpublish)
+        {
+            details.addNodesToUnpublish(nodes);
+        }
+        else
+        {
+            details.addNodesToPublish(nodes);
+        }
+        return nodes;
     }
 
     private List<String> buildStringList(Serializable parameterValue)
@@ -228,7 +305,7 @@ public class PublishContentActionExecuter extends ActionExecuterAbstractBase
         List<String> result = null;
         if (parameterValue != null && String.class.isAssignableFrom(parameterValue.getClass()))
         {
-            String[] split = ((String)parameterValue).split(",");
+            String[] split = ((String) parameterValue).split(",");
             result = Arrays.asList(split);
         }
         return result;
@@ -260,6 +337,9 @@ public class PublishContentActionExecuter extends ActionExecuterAbstractBase
 
         paramList.add(new ParameterDefinitionImpl(PARAM_SCHEDULED_TIME, DataTypeDefinition.DATETIME, false,
                 getParamDisplayLabel(PARAM_SCHEDULED_TIME), false));
+
+        paramList.add(new ParameterDefinitionImpl(PARAM_NODE_TO_LINK_STATUS_UPDATE_TO, DataTypeDefinition.NODE_REF, false,
+                getParamDisplayLabel(PARAM_NODE_TO_LINK_STATUS_UPDATE_TO), false));
 
         paramList.add(new ParameterDefinitionImpl(PARAM_COMMENT, DataTypeDefinition.TEXT, false,
                 getParamDisplayLabel(PARAM_COMMENT), false));

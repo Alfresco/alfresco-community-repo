@@ -75,12 +75,10 @@
     <bean id="publish-content" class="org.alfresco.repo.publishing.PublishContentActionExecuter" parent="action-executer">
         <property name="channelService" ref="ChannelService" />
         <property name="publishingService" ref="PublishingService" />
+        <property name="nodeService" ref="NodeService" />
+        <property name="dictionaryService" ref="DictionaryService" />
         <property name="ignoreLock" value="true" />
-        <property name="applicableTypes">
-            <list>
-                <value>{http://www.alfresco.org/model/content/1.0}content</value>
-            </list>
-        </property>
+        <property name="publicAction" value="false" />
     </bean>
 
     <bean id="ac-publishing-channels" class="org.alfresco.repo.publishing.PublishingChannelParameterConstraint"

@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import javax.transaction.UserTransaction;
@@ -35,6 +36,8 @@ import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.repo.dictionary.M2Aspect;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.M2Property;
+import org.alfresco.repo.jscript.CategoryNode;
+import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.search.IndexerAndSearcher;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -45,6 +48,8 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.ScriptLocation;
+import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.CategoryService;
 import org.alfresco.service.cmr.search.ResultSet;
@@ -70,7 +75,9 @@ public class ADMLuceneCategoryTest extends TestCase
     
     static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     NodeService nodeService;
+    NodeService publicNodeService;
     DictionaryService dictionaryService;
+    ScriptService scriptService;
     private NodeRef rootNodeRef;
     private NodeRef n1;
     private NodeRef n2;
@@ -133,6 +140,7 @@ public class ADMLuceneCategoryTest extends TestCase
     public void setUp() throws Exception
     {
         nodeService = (NodeService)ctx.getBean("dbNodeService");
+        publicNodeService = (NodeService)ctx.getBean("NodeService");
         dictionaryService = (DictionaryService)ctx.getBean("dictionaryService");
         luceneFTS = (FullTextSearchIndexer) ctx.getBean("LuceneFullTextSearchIndexer");
         dictionaryDAO = (DictionaryDAO) ctx.getBean("dictionaryDAO");
@@ -142,6 +150,7 @@ public class ADMLuceneCategoryTest extends TestCase
         categoryService = (CategoryService) ctx.getBean("categoryService");
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         tenantService = (TenantService) ctx.getBean("tenantService");
+        scriptService = (ScriptService) ctx.getBean("scriptService");
 
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
         
@@ -383,7 +392,7 @@ public class ADMLuceneCategoryTest extends TestCase
         searcher.setNodeService(nodeService);
         searcher.setDictionaryService(dictionaryService);
         searcher.setTenantService(tenantService);
-        searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver(""));
+        searcher.setNamespacePrefixResolver(getNamespacePrefixResolver(""));
         searcher.setQueryLanguages(indexerAndSearcher.getQueryLanguages());
         return searcher;
     }
@@ -599,7 +608,8 @@ public class ADMLuceneCategoryTest extends TestCase
         
         LuceneCategoryServiceImpl impl = new LuceneCategoryServiceImpl();
         impl.setNodeService(nodeService);
-        impl.setNamespacePrefixResolver(getNamespacePrefixReolsver(""));
+        impl.setPublicNodeService(publicNodeService);
+        impl.setNamespacePrefixResolver(getNamespacePrefixResolver(""));
         impl.setIndexerAndSearcher(indexerAndSearcher);
         impl.setTenantService(tenantService);
         impl.setDictionaryService(dictionaryService);
@@ -640,10 +650,57 @@ public class ADMLuceneCategoryTest extends TestCase
         Collection<QName> aspects = impl.getClassificationAspects();
         assertEquals(7, aspects.size());    
        
+        
+        // Add an additional subcategory, and check it shows up
+        result = impl.getChildren(catACBase , CategoryService.Mode.SUB_CATEGORIES, CategoryService.Depth.ANY);
+        assertEquals(3, result.size());
+
+        String newName = "TestSub";
+        impl.createCategory(catACBase, newName);
+        
+        result = impl.getChildren(catACBase , CategoryService.Mode.SUB_CATEGORIES, CategoryService.Depth.ANY);
+        assertEquals(4, result.size());
+        
+        
+        // Tidy up
         tx.rollback();
     }
     
-    private NamespacePrefixResolver getNamespacePrefixReolsver(String defaultURI)
+    /**
+     * JavaScript tests for the Category Service.
+     * Note that this test lives here because that's where the Java
+     *  CategeoryService tests are, and this also has all the required
+     *  SetUp and TearDown to make it easier.
+     */
+    public void testJavascriptAPI() throws Exception
+    {
+       TransactionService transactionService = serviceRegistry.getTransactionService();
+       UserTransaction tx = transactionService.getUserTransaction();
+       tx.begin();
+       buildBaseIndex();
+       
+       ServiceRegistry services = (ServiceRegistry)ctx.getBean("ServiceRegistry");
+       
+       // Call the test 
+       Map<String, Object> model = new HashMap<String, Object>();
+       model.put("catRoot",   new CategoryNode(catRoot, services));
+       model.put("catACBase", new CategoryNode(catACBase, services));
+       model.put("catACOne",  new CategoryNode(catACOne, services));
+       model.put("catACTwo",  new CategoryNode(catACTwo, services));
+       model.put("catACThree",  new CategoryNode(catACThree, services));
+       model.put("catRBase",  new CategoryNode(catRBase, services));
+       model.put("catROne",   new CategoryNode(catROne, services));
+       model.put("catRTwo",   new CategoryNode(catRTwo, services));
+       model.put("catRThree", new CategoryNode(catRThree, services));
+       
+       ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/search/impl/lucene/test_categoryService.js");
+       this.scriptService.executeScript(location, model);
+       
+       // Tidy up
+       tx.rollback();
+    }
+    
+    private NamespacePrefixResolver getNamespacePrefixResolver(String defaultURI)
     {
         DynamicNamespacePrefixResolver nspr = new DynamicNamespacePrefixResolver(null);
         nspr.registerNamespace(NamespaceService.CONTENT_MODEL_PREFIX, NamespaceService.CONTENT_MODEL_1_0_URI);

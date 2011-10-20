@@ -187,8 +187,13 @@ public class LuceneCategoryServiceImpl implements CategoryService
                 break;
             }
 
-            resultSet = indexerAndSearcher.getSearcher(categoryRef.getStoreRef(), false).query(categoryRef.getStoreRef(), "lucene", luceneQuery.toString(), null);
+            // Get a searcher that will include Categories added in this transaction
+            SearchService searcher = indexerAndSearcher.getSearcher(categoryRef.getStoreRef(), true);
+            
+            // Perform the search
+            resultSet = searcher.query(categoryRef.getStoreRef(), "lucene", luceneQuery.toString(), null);
 
+            // Convert from search results to the required Child Assocs
             return resultSetToChildAssocCollection(resultSet);
         }
         finally

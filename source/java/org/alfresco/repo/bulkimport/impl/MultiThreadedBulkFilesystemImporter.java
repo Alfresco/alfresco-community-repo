@@ -32,13 +32,13 @@ import org.alfresco.repo.bulkimport.BulkImportParameters;
 import org.alfresco.repo.bulkimport.FilesystemTracker;
 import org.alfresco.repo.bulkimport.ImportableItem;
 import org.alfresco.repo.bulkimport.NodeImporter;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Performs a filesystem import into the repository using the {@link BatchProcessor} in multiple threads.
+ * Performs a multi-threaded filesystem import into the repository using the {@link BatchProcessor}.
  * 
  * @since 4.0
  *
@@ -65,17 +65,13 @@ public abstract class MultiThreadedBulkFilesystemImporter extends AbstractBulkFi
     {
         return bulkImportParameters.getNumThreads() != null ? bulkImportParameters.getNumThreads() : defaultNumThreads;    	
     }
-    
-    protected void handleRuleService(final BulkImportParameters bulkImportParameters)
-    {
-    	
-    }
 
     protected BatchProcessor.BatchProcessWorker<ImportableItem> getWorker(final BulkImportParameters bulkImportParameters, final String lockToken,
     		final NodeImporter nodeImporter, final FilesystemTracker filesystemTracker)
     {
         final int batchSize = bulkImportParameters.getBatchSize() != null ? bulkImportParameters.getBatchSize() : defaultBatchSize;
         final boolean rulesEnabled = ruleService.isEnabled();
+        final String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
 
         BatchProcessor.BatchProcessWorker<ImportableItem> worker = new BatchProcessor.BatchProcessWorker<ImportableItem>()
         {
@@ -86,22 +82,14 @@ public abstract class MultiThreadedBulkFilesystemImporter extends AbstractBulkFi
 
             public void beforeProcess() throws Throwable
             {
+                // Run as the correct user
+                AuthenticationUtil.setRunAsUser(currentUser);
+
                 refreshLock(lockToken, batchSize * 250L);
                 if(bulkImportParameters.isDisableRulesService() && rulesEnabled)
                 {
                 	ruleService.disableRules();
                 }
-                
-                // Disable the auditable aspect's behaviours for this transaction only, to allow creation & modification dates to be set 
-                transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-				{
-					@Override
-					public Void execute() throws Throwable
-					{
-		            	behaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
-						return null;
-					}
-				});
             }
 
             public void afterProcess() throws Throwable
@@ -113,21 +101,22 @@ public abstract class MultiThreadedBulkFilesystemImporter extends AbstractBulkFi
 
             	importStatus.incrementNumberOfBatchesCompleted();
 
-                transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-				{
-					@Override
-					public Void execute() throws Throwable
-					{
-						behaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
-						return null;
-					}
-				});
+                AuthenticationUtil.clearCurrentSecurityContext();
             }
 
             public void process(final ImportableItem importableItem) throws Throwable
             {
-            	NodeRef nodeRef = nodeImporter.importImportableItem(importableItem, bulkImportParameters.isReplaceExisting());
-            	filesystemTracker.itemImported(nodeRef, importableItem);
+                try
+                {
+                    behaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
+
+                    NodeRef nodeRef = nodeImporter.importImportableItem(importableItem, bulkImportParameters.isReplaceExisting());
+                    filesystemTracker.itemImported(nodeRef, importableItem);
+                }
+                finally
+                {
+                    behaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
+                }
             }
         };
 
@@ -173,5 +162,22 @@ public abstract class MultiThreadedBulkFilesystemImporter extends AbstractBulkFi
 	{
 		return defaultBatchSize;
 	}
+	
+	   /**
+     * Method that does the work of importing a filesystem using the BatchProcessor.
+     * 
+     * @param bulkImportParameters  The bulk import parameters to apply to this bulk import.
+     * @param nodeImporter          The node importer implementation that will import each node.
+     * @param lockToken             The lock token to use during the bulk import.
+     */
+    @Override
+    protected void bulkImportImpl(final BulkImportParameters bulkImportParameters, final NodeImporter nodeImporter, final String lockToken)
+    {
+        final int batchSize = getBatchSize(bulkImportParameters);
+        final int numThreads = getNumThreads(bulkImportParameters);
+
+        importStatus.setNumThreads(numThreads);
+        importStatus.setBatchSize(batchSize);
+    }
 
 }

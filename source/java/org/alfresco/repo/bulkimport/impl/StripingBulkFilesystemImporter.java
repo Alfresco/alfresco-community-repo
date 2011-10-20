@@ -42,14 +42,15 @@ public class StripingBulkFilesystemImporter extends MultiThreadedBulkFilesystemI
 	/**
      * Method that does the work of importing a filesystem using the BatchProcessor.
      * 
-     * @param target          The target space to ingest the content into <i>(must not be null and must be a valid, writable space in the repository)</i>.
-     * @param sourceFolder    The original directory from which this import was initiated <i>(must not be null)</i>.
-     * @param source          The source directory on the local filesystem to read content from <i>(must not be null and must be a valid, readable directory on the local filesystem)</i>.
-     * @param replaceExisting A flag indicating whether to replace (true) or skip (false) files that are already in the repository.
+     * @param bulkImportParameters  The bulk import parameters to apply to this bulk import.
+     * @param nodeImporter          The node importer implementation that will import each node.
+     * @param lockToken             The lock token to use during the bulk import.
      */
     @Override
-    protected void bulkImportImpl(final BulkImportParameters bulkImportParameters, final NodeImporter nodeImporter, final String lockToken) throws Throwable
+    protected void bulkImportImpl(final BulkImportParameters bulkImportParameters, final NodeImporter nodeImporter, final String lockToken)
     {
+        super.bulkImportImpl(bulkImportParameters, nodeImporter, lockToken);
+
     	final File sourceFolder = nodeImporter.getSourceFolder();
         final int batchSize = getBatchSize(bulkImportParameters);
         final int loggingInterval = getLoggingInterval(bulkImportParameters);

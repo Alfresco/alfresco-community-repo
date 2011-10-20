@@ -43,6 +43,7 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -50,6 +51,7 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
@@ -70,10 +72,13 @@ public class AbstractBulkImportTests
     protected TransactionService transactionService;
 	protected ContentService contentService;
 	protected UserTransaction txn = null;
+	protected RuleService ruleService;
+    protected ActionService actionService;
 	protected MultiThreadedBulkFilesystemImporter bulkImporter;
 
 	protected NodeRef rootNodeRef;
 	protected FileInfo topLevelFolder;
+	protected NodeRef top;
 
 	protected static void startContext()
 	{
@@ -100,22 +105,26 @@ public class AbstractBulkImportTests
 	    	transactionService = (TransactionService)ctx.getBean("transactionService");
 	    	bulkImporter = (MultiThreadedBulkFilesystemImporter)ctx.getBean("bulkFilesystemImporter");
 	    	contentService = (ContentService)ctx.getBean("contentService");
-	    	
-	        AuthenticationUtil.setRunAsUserSystem();
+	        actionService = (ActionService)ctx.getBean("actionService");
+	    	ruleService = (RuleService)ctx.getBean("ruleService");
+
+	        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
 			String s = "BulkFilesystemImport" + System.currentTimeMillis();
 	
 			txn = transactionService.getUserTransaction();
 			txn.begin();
+			
+			AuthenticationUtil.pushAuthentication();
+			AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
 	        StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, s);
 	        rootNodeRef = nodeService.getRootNode(storeRef);
-	        NodeRef top = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}top"), ContentModel.TYPE_FOLDER).getChildRef();
+	        top = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}top"), ContentModel.TYPE_FOLDER).getChildRef();
 	        
 	        topLevelFolder = fileFolderService.create(top, s, ContentModel.TYPE_FOLDER);
-	        txn.commit();
 
-			txn = transactionService.getUserTransaction();
-			txn.begin();
+	        txn.commit();
     	}
     	catch(Throwable e)
     	{
@@ -126,6 +135,7 @@ public class AbstractBulkImportTests
     @After
 	public void teardown() throws Exception
 	{
+        AuthenticationUtil.popAuthentication();
 		if(txn != null)
 		{
 			txn.commit();

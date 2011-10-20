@@ -146,7 +146,7 @@ public abstract class AbstractBulkFilesystemImporter implements BulkFilesystemIm
         this.transactionHelper = transactionService.getRetryingTransactionHelper();
 	}
 
-    protected abstract void bulkImportImpl(BulkImportParameters bulkImportParameters, NodeImporter nodeImporter, String lockToken) throws Throwable;
+    protected abstract void bulkImportImpl(BulkImportParameters bulkImportParameters, NodeImporter nodeImporter, String lockToken);
 
     /**
      * Attempts to get the lock. If the lock couldn't be taken, then <tt>null</tt> is returned.
@@ -357,7 +357,6 @@ public abstract class AbstractBulkFilesystemImporter implements BulkFilesystemIm
         };
 
         Thread backgroundThread = new Thread(backgroundLogic, "BulkFilesystemImport-BackgroundThread");
-        //backgroundThread.setDaemon(true);
         backgroundThread.start();
     }
     
@@ -374,51 +373,51 @@ public abstract class AbstractBulkFilesystemImporter implements BulkFilesystemIm
     		@Override
     		public Void execute() throws Throwable
     		{
-    			String sourceDirectory = getFileName(sourceFolder);
-    			String targetSpace = getRepositoryPath(bulkImportParameters.getTarget());
+    		    final String sourceDirectory = getFileName(sourceFolder);
+    		    final String targetSpace = getRepositoryPath(bulkImportParameters.getTarget());
+    		    final String lockToken = getLockToken();
 
-				String lockToken = getLockToken();
+    		    try
+    		    {
+    		        importStatus.startImport(sourceDirectory, targetSpace);
 
-    			try
-    			{
-    				importStatus.startImport(sourceDirectory, targetSpace);
-    				
-    				BulkFSImportEvent bulkImportEvent = new BulkFSImportEvent(importer);
-    				applicationContext.publishEvent(bulkImportEvent);
-    				
-    				validateNodeRefIsWritableSpace(bulkImportParameters.getTarget());
-    				validateSourceIsReadableDirectory(sourceFolder);
-    				
-    				if(logger.isDebugEnabled())
-    				{
-    					logger.debug("Bulk import started from '" + sourceFolder.getAbsolutePath() + "'...");
-    				}
-    				
-    				bulkImportImpl(bulkImportParameters, nodeImporter, lockToken);
-    				
-    				importStatus.stopImport();
-    				
-    				if(logger.isDebugEnabled())
-    				{
-    					logger.debug("Bulk import from '" + getFileName(sourceFolder) + "' succeeded.");
-    				}
-    				
-    				return null;
-    			}
-    			catch(Throwable e)
-    			{
-    				logger.error("Bulk import from '" + getFileName(sourceFolder) + "' failed.", e);
-    				importStatus.stopImport(e);
-    				throw new AlfrescoRuntimeException("Bulk filesystem import failed", e);
-    			}
-    			finally
-    			{
-    				BulkFSImportEvent bulkImportEvent = new BulkFSImportEvent(importer);
-    				applicationContext.publishEvent(bulkImportEvent);
+    		        BulkFSImportEvent bulkImportEvent = new BulkFSImportEvent(importer);
+    		        applicationContext.publishEvent(bulkImportEvent);
 
-    				releaseLock(lockToken);
-    			}
-            }
+    		        validateNodeRefIsWritableSpace(bulkImportParameters.getTarget());
+    		        validateSourceIsReadableDirectory(sourceFolder);
+
+    		        if(logger.isDebugEnabled())
+    		        {
+    		            logger.debug("Bulk import started from '" + sourceFolder.getAbsolutePath() + "'...");
+    		        }
+
+
+    		        bulkImportImpl(bulkImportParameters, nodeImporter, lockToken);
+
+    		        importStatus.stopImport();
+
+    		        if(logger.isDebugEnabled())
+    		        {
+    		            logger.debug("Bulk import from '" + getFileName(sourceFolder) + "' succeeded.");
+    		        }
+
+    		        return null;
+    		    }
+    		    catch(Throwable e)
+    		    {
+    		        logger.error("Bulk import from '" + getFileName(sourceFolder) + "' failed.", e);
+    		        importStatus.stopImport(e);
+    		        throw new AlfrescoRuntimeException("Bulk filesystem import failed", e);
+    		    }
+    		    finally
+    		    {
+    		        BulkFSImportEvent bulkImportEvent = new BulkFSImportEvent(importer);
+    		        applicationContext.publishEvent(bulkImportEvent);
+
+    		        releaseLock(lockToken);
+    		    }
+    		}
     	}, false, true);
     }
         

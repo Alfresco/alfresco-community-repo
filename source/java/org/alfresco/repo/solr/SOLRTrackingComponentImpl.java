@@ -461,6 +461,26 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
         return nodeIds;
     }
 
+    protected Map<QName, Serializable> getProperties(Long nodeId)
+    {
+        Map<QName, Serializable> props = null;
+
+        // ALF-10641
+        // Residual properties are un-indexed -> break serlialisation
+        Map<QName, Serializable> sourceProps = nodeDAO.getNodeProperties(nodeId);
+        props = new HashMap<QName, Serializable>((int)(sourceProps.size() * 1.3));
+        for(QName propertyQName : sourceProps.keySet())
+        {
+            PropertyDefinition propDef = dictionaryService.getProperty(propertyQName);
+            if(propDef != null)
+            {
+                props.put(propertyQName, sourceProps.get(propertyQName));
+            }
+        }
+
+        return props;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -518,25 +538,13 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
 
             if(includeProperties)
             {
-                // ALF-10641
-                // Residual properties are un-indexed -> break serlialisation
-                Map<QName, Serializable> sourceProps = nodeDAO.getNodeProperties(nodeId);
-                props = new HashMap<QName, Serializable>((int)(sourceProps.size() * 1.3));
-                for(QName propertyQName : sourceProps.keySet())
-                {
-                    PropertyDefinition propDef = dictionaryService.getProperty(propertyQName);
-                    if(propDef != null)
-                    {
-                        props.put(propertyQName, sourceProps.get(propertyQName));
-                    }
-                }
+                props = getProperties(nodeId);
                 nodeMetaData.setProperties(props);
             }
             else
             {
                 nodeMetaData.setProperties(Collections.<QName, Serializable>emptyMap());
             }
-            
 
             if(includeAspects)
             {
@@ -546,6 +554,10 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
             
             if(includePaths)
             {
+                if(props == null)
+                {
+                    props = getProperties(nodeId);
+                }
                 Collection<Pair<Path, QName>> categoryPaths = getCategoryPaths(pair.getSecond(), aspects, props);
                 List<Path> directPaths = nodeDAO.getPaths(pair, false);
 

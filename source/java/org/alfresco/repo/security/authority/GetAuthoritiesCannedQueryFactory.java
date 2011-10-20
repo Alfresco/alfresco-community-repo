@@ -21,7 +21,6 @@ package org.alfresco.repo.security.authority;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.AbstractCannedQueryFactory;
 import org.alfresco.query.CannedQuery;
@@ -103,10 +102,17 @@ public class GetAuthoritiesCannedQueryFactory extends AbstractCannedQueryFactory
         
         Long containerNodeId = nodePair.getFirst();
         
+        Long qnameAuthDisplayNameId = Long.MIN_VALUE;           // We query but using a value that won't return results
+        Pair<Long, QName> qnameAuthDisplayNamePair = qnameDAO.getQName(ContentModel.PROP_AUTHORITY_DISPLAY_NAME);
+        if (qnameAuthDisplayNamePair != null)
+        {
+            qnameAuthDisplayNameId = qnameAuthDisplayNamePair.getFirst();
+        }
+        
         // specific query params
         GetAuthoritiesCannedQueryParams paramBean = new GetAuthoritiesCannedQueryParams(type,
                                                                                         containerNodeId,
-                                                                                        getQNameId(ContentModel.PROP_AUTHORITY_DISPLAY_NAME),
+                                                                                        qnameAuthDisplayNameId,
                                                                                         displayNameFilter);
         
         // page details
@@ -126,16 +132,6 @@ public class GetAuthoritiesCannedQueryFactory extends AbstractCannedQueryFactory
         
         // return canned query instance
         return getCannedQuery(params);
-    }
-    
-    private Long getQNameId(QName qname)
-    {
-        Pair<Long, QName> qnamePair = qnameDAO.getQName(qname);
-        if (qnamePair == null)
-        {
-            throw new AlfrescoRuntimeException("QName does not exist: " + qname);
-        }
-        return qnamePair.getFirst();
     }
     
     @Override

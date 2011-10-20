@@ -459,6 +459,12 @@ public class CategoriesDialog extends BaseDialogBean implements IContextListener
       this.setCurrentCategory(ref);
    }
    
+   /**
+    * If category.equals(handler.label) then the breadcrumb reverts one step back
+    * (needed for deleting)
+    * Else current breadcrumb is updated accordingly to the current category
+    * (needed for editing)
+    */
    protected void removeFromBreadcrumb(String category)
    {
       // remove this node from the breadcrumb if required
@@ -476,6 +482,12 @@ public class CategoriesDialog extends BaseDialogBean implements IContextListener
             handler = (CategoryBreadcrumbHandler) location.get(location.size() - 1);
             this.setCurrentCategory(handler.nodeRef); 
          }
+      }
+      else 
+      {
+          handler=new CategoryBreadcrumbHandler (getCategory().getNodeRef(), Repository.getNameForNode(getNodeService(), getCategory().getNodeRef()));
+          location.set(location.size() - 1, handler);
+          this.setCurrentCategory(handler.nodeRef); 
       }
    }
    

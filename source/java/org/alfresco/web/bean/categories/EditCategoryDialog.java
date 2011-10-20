@@ -98,6 +98,17 @@ public class EditCategoryDialog extends BaseDialogBean
       setActionCategory(category);
    }
    
+   @Override
+   protected String doPostCommitProcessing(FacesContext context, String outcome)
+   {
+      // add the category to the request object so it gets picked up by
+      // category dialog, this will allow it to be edited in the breadcrumb
+      context.getExternalContext().getRequestMap().put(
+               CategoriesDialog.KEY_CATEGORY, this.category.getName());
+      
+      return outcome;
+   }
+   
    public String getName()
    {
       return name;
@@ -277,17 +288,11 @@ public class EditCategoryDialog extends BaseDialogBean
          }
 
          // edit the node in the breadcrumb if required
+         CategoriesDialog categoriesDialog = new CategoriesDialog();
          List<IBreadcrumbHandler> location = getLocation();
-         IBreadcrumbHandler handler = location.get(location.size() - 1);
-
-         // see if the current breadcrumb location is our node
-         if (nodeRef.equals(((IRepoBreadcrumbHandler) handler).getNodeRef()))
-         {
-            // and update with the modified node details
-            CategoriesDialog categoriesDialog = new CategoriesDialog();
-            IBreadcrumbHandler newHandler = categoriesDialog.new CategoryBreadcrumbHandler(nodeRef, Repository.getNameForNode(getNodeService(), nodeRef));
-            location.set(location.size() - 1, newHandler);
-         }
+         IBreadcrumbHandler handler = categoriesDialog.new CategoryBreadcrumbHandler(nodeRef, Repository.getNameForNode(getNodeService(), nodeRef));
+         location.set(location.size() - 1, handler);
+         setCategory(new Node(nodeRef));
       }
       catch (Throwable err)
       {

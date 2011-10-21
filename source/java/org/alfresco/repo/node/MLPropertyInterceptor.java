@@ -145,6 +145,8 @@ public class MLPropertyInterceptor implements MethodInterceptor
             return invocation.proceed();
         }
         
+        Locale contentLangLocale = I18NUtil.getContentLocaleLang();
+        
         Object ret = null;
         
         final String methodName = invocation.getMethod().getName();
@@ -160,7 +162,7 @@ public class MLPropertyInterceptor implements MethodInterceptor
             
             // What locale must be used for filtering - ALF-3756 fix, ignore the country and variant
             Serializable value = (Serializable) invocation.proceed();
-            ret = convertOutboundProperty(I18NUtil.getContentLocaleLang(), nodeRef, pivotNodeRef, propertyQName, value);
+            ret = convertOutboundProperty(contentLangLocale, nodeRef, pivotNodeRef, propertyQName, value);
         }
         else if (methodName.equals("getProperties"))
         {
@@ -176,7 +178,7 @@ public class MLPropertyInterceptor implements MethodInterceptor
             {
                 QName propertyQName = entry.getKey();
                 Serializable value = entry.getValue();
-                Serializable convertedValue = convertOutboundProperty(I18NUtil.getContentLocaleLang(), nodeRef, pivotNodeRef, propertyQName, value);
+                Serializable convertedValue = convertOutboundProperty(contentLangLocale, nodeRef, pivotNodeRef, propertyQName, value);
                 // Add it to the return map
                 convertedProperties.put(propertyQName, convertedValue);
             }
@@ -204,7 +206,7 @@ public class MLPropertyInterceptor implements MethodInterceptor
             Map<QName, Serializable> convertedProperties = convertInboundProperties(
                     currentProperties,
                     newProperties,
-                    I18NUtil.getContentLocaleLang(),
+                    contentLangLocale,
                     nodeRef,
                     pivotNodeRef);
             // Now complete the call by passing the converted properties
@@ -225,7 +227,7 @@ public class MLPropertyInterceptor implements MethodInterceptor
             Map<QName, Serializable> convertedProperties = convertInboundProperties(
                     currentProperties,
                     newProperties,
-                    I18NUtil.getContentLocaleLang(),
+                    contentLangLocale,
                     nodeRef,
                     pivotNodeRef);
             // Now complete the call by passing the converted properties
@@ -242,7 +244,7 @@ public class MLPropertyInterceptor implements MethodInterceptor
             NodeRef pivotNodeRef = getPivotNodeRef(nodeRef);
             
             // Convert the property
-            inboundValue = convertInboundProperty(I18NUtil.getContentLocaleLang(), nodeRef, pivotNodeRef, propertyQName, inboundValue, null);
+            inboundValue = convertInboundProperty(contentLangLocale, nodeRef, pivotNodeRef, propertyQName, inboundValue, null);
             
             // Pass this through to the node service
             nodeService.setProperty(nodeRef, propertyQName, inboundValue);
@@ -268,7 +270,7 @@ public class MLPropertyInterceptor implements MethodInterceptor
             Map<QName, Serializable> convertedProperties = convertInboundProperties(
                     null,
                     newProperties,
-                    I18NUtil.getContentLocaleLang(),
+                    contentLangLocale,
                     nodeRef,
                     pivotNodeRef);
             // Now complete the call by passing the converted properties
@@ -290,7 +292,7 @@ public class MLPropertyInterceptor implements MethodInterceptor
             Map<QName, Serializable> convertedProperties = convertInboundProperties(
                     currentProperties,
                     newProperties,
-                    I18NUtil.getContentLocaleLang(),
+                    contentLangLocale,
                     nodeRef,
                     pivotNodeRef);
             // Now complete the call by passing the converted properties

@@ -468,7 +468,7 @@ public abstract class Sort
    
    // TODO: make this configurable
    /** config value whether to use strong collation Key string comparisons */
-   private boolean strongStringCompare = false;
+   private boolean strongStringCompare = true;
    
    private static Log    s_logger = LogFactory.getLog(IDataContainer.class);
    

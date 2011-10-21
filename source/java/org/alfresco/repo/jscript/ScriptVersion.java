@@ -19,6 +19,7 @@
 package org.alfresco.repo.jscript;
 
 import java.io.Serializable;
+import java.util.Date;
 
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -56,9 +57,9 @@ public final class ScriptVersion implements Serializable
      * 
      * @return  the date the version was created
      */
-    public Object getCreatedDate()
+    public Date getCreatedDate()
     {
-        return converter.convertValueForScript(services, scope, null, version.getCreatedDate());
+        return version.getCreatedDate();
     }
     
     /**
@@ -88,7 +89,14 @@ public final class ScriptVersion implements Serializable
      */
     public String getType()
     {
-        return version.getVersionType().name();
+        if (version.getVersionType() != null)
+        {
+            return version.getVersionType().name();
+        }
+        else
+        {
+            return "";
+        }
     }
     
     /**

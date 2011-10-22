@@ -310,6 +310,39 @@
    </bean>
    
    <!-- ===================================== -->
+   <!-- Child by cm:name lookup for nodes  -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for Child-by-name -->
+   
+   <bean name="node.childByNameSharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+      <property name="cache">
+         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheManager">
+               <ref bean="internalEHCacheManager" />
+            </property>
+            <property name="cacheName">
+               <value>org.alfresco.cache.node.childByNameCache</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
+   <!-- The transactional cache for Child-by-name -->
+   
+   <bean name="node.childByNameCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache">
+         <ref bean="node.parentAssocsSharedCache" />
+      </property>
+      <property name="name">
+         <value>org.alfresco.cache.node.childByNameTransactionalCache</value>
+      </property>
+      <property name="maxCacheSize" value="65000" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
+   </bean>
+   
+   <!-- ===================================== -->
    <!-- Rules lookup for nodes                -->
    <!-- ===================================== -->
 

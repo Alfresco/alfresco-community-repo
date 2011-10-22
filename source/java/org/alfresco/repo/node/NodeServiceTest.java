@@ -500,4 +500,39 @@ public class NodeServiceTest extends TestCase
         List<ChildAssociationRef> parentAssocsPost = nodeService.getParentAssocs(secondaryNodeRef);
         assertEquals("Incorrect number of parent assocs", 1, parentAssocsPost.size());
     }
+    
+    /**
+     * Checks that file renames are handled when getting children
+     */
+    public void testCaches_RenameNode()
+    {
+        final NodeRef[] nodeRefs = new NodeRef[2];
+        final NodeRef workspaceRootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        buildNodeHierarchy(workspaceRootNodeRef, nodeRefs);
+        
+        // What is the name of the first child?
+        String name = (String) nodeService.getProperty(nodeRefs[1], ContentModel.PROP_NAME);
+        // Now query for it
+        NodeRef nodeRefCheck = nodeService.getChildByName(nodeRefs[0], ContentModel.ASSOC_CONTAINS, name);
+        assertNotNull("Did not find node by name", nodeRefCheck);
+        assertEquals("Node found was not correct", nodeRefs[1], nodeRefCheck);
+        
+        // Rename the node
+        nodeService.setProperty(nodeRefs[1], ContentModel.PROP_NAME, "New Name");
+        // Should find nothing
+        nodeRefCheck = nodeService.getChildByName(nodeRefs[0], ContentModel.ASSOC_CONTAINS, name);
+        assertNull("Should not have found anything", nodeRefCheck);
+        
+        // Add another child with the same original name
+        NodeRef newChildNodeRef = nodeService.createNode(
+                nodeRefs[0],
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName(NAMESPACE, name),
+                ContentModel.TYPE_FOLDER,
+                Collections.singletonMap(ContentModel.PROP_NAME, (Serializable)name)).getChildRef();
+        // We should find this new node when looking for the name
+        nodeRefCheck = nodeService.getChildByName(nodeRefs[0], ContentModel.ASSOC_CONTAINS, name);
+        assertNotNull("Did not find node by name", nodeRefCheck);
+        assertEquals("Node found was not correct", newChildNodeRef, nodeRefCheck);
+    }
 }

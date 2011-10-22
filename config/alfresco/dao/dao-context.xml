@@ -120,6 +120,7 @@
       <property name="aspectsCache" ref="node.aspectsCache"/>
       <property name="propertiesCache" ref="node.propertiesCache"/>
       <property name="parentAssocsCache" ref="node.parentAssocsCache"/>
+      <property name="childByNameCache" ref="node.childByNameCache"/>
    </bean>
    <bean id="nodeDAO.org.hibernate.dialect.Dialect" class="org.alfresco.repo.domain.node.ibatis.NodeDAOImpl" parent="nodeDAObase" />
    <bean id="nodeDAO.org.alfresco.repo.domain.hibernate.dialect.AlfrescoSQLServerDialect" class="org.alfresco.repo.domain.node.ibatis.NodeDAOImpl$MSSQL" parent="nodeDAO.org.hibernate.dialect.Dialect" />

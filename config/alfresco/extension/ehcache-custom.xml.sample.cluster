@@ -197,6 +197,16 @@
                                 replicateAsynchronously = false"/>
     </cache>
 
+    <cache
+        name="org.alfresco.cache.node.childByNameCache"
+        maxElementsInMemory="130000"
+        eternal="true"
+        overflowToDisk="false"
+        statistics="false"
+        >
+        <!-- Not clustered -->
+    </cache>
+
     <cache 
         name="org.alfresco.cache.avm.avmEntityCache"
         maxElementsInMemory="10000"

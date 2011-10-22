@@ -42,6 +42,7 @@ import org.alfresco.ibatis.BatchingDAO;
 import org.alfresco.ibatis.RetryingCallbackHelper;
 import org.alfresco.ibatis.RetryingCallbackHelper.RetryingCallback;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.cache.NullCache;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache.EntityLookupCallbackDAOAdaptor;
@@ -174,6 +175,11 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     private EntityLookupCache<NodeVersionKey, ParentAssocsInfo, Serializable> parentAssocsCache;
         
     /**
+     * Cache for fast lookups of child nodes by <b>cm:name</b>. 
+     */
+    private SimpleCache<ChildByNameKey, ChildAssocEntity> childByNameCache;
+    
+    /**
      * Constructor.  Set up various instance-specific members such as caches and locks.
      */
     public AbstractNodeDAOImpl()
@@ -187,6 +193,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         aspectsCache = new EntityLookupCache<NodeVersionKey, Set<QName>, Serializable>(new AspectsCallbackDAO());
         propertiesCache = new EntityLookupCache<NodeVersionKey, Map<QName, Serializable>, Serializable>(new PropertiesCallbackDAO());
         parentAssocsCache = new EntityLookupCache<NodeVersionKey, ParentAssocsInfo, Serializable>(new ParentAssocsCallbackDAO());
+        childByNameCache = new NullCache<ChildByNameKey, ChildAssocEntity>();
     }
 
     /**
@@ -345,7 +352,17 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 CACHE_REGION_PARENT_ASSOCS,
                 new ParentAssocsCallbackDAO());
     }
-    
+
+    /**
+     * Set the cache that maintains lookups by child <b>cm:name</b>
+     * 
+     * @param childByNameCache      the cache
+     */
+    public void setChildByNameCache(SimpleCache<ChildByNameKey, ChildAssocEntity> childByNameCache)
+    {
+        this.childByNameCache = childByNameCache;
+    }
+
     /*
      * Initialize
      */
@@ -2018,6 +2035,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // Touch to bring into current transaction
         if (updated)
         {
+            // We have to explicitly update the node (sys:locale or cm:auditable)
             updateNodeImpl(node, nodeUpdate);
         }
         
@@ -3023,9 +3041,59 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
     }
 
+    /**
+     * Checks a cache and then queries.
+     * <p/>
+     * Note: If we were to cach misses, then we would have to ensure that the cache is
+     *       kept up to date whenever any affection association is changed.  This is actually
+     *       not possible without forcing the cache to be fully clustered.  So to
+     *       avoid clustering the cache, we instead watch the node child version,
+     *       which relies on a cache that is already clustered.
+     */
     public Pair<Long, ChildAssociationRef> getChildAssoc(Long parentNodeId, QName assocTypeQName, String childName)
     {
-        ChildAssocEntity assoc = selectChildAssoc(parentNodeId, assocTypeQName, childName);
+        ChildByNameKey key = new ChildByNameKey(parentNodeId, assocTypeQName, childName);
+        ChildAssocEntity assoc = childByNameCache.get(key);
+        boolean query = false;
+        if (assoc == null)
+        {
+            query = true;
+        }
+        else
+        {
+            // Check that the resultant child node has not moved on
+            Node childNode = assoc.getChildNode();
+            Long childNodeId = childNode.getId();
+            NodeVersionKey childNodeVersionKey = childNode.getNodeVersionKey();
+            Pair<Long, Node> childNodeFromCache = nodesCache.getByKey(childNodeId);
+            if (childNodeFromCache == null)
+            {
+                // Child node no longer exists (or never did)
+                query = true;
+            }
+            else
+            {
+                NodeVersionKey childNodeFromCacheVersionKey = childNodeFromCache.getSecond().getNodeVersionKey();
+                if (!childNodeFromCacheVersionKey.equals(childNodeVersionKey))
+                {
+                    // The child node has moved on.  We don't know why, but must query again.
+                    query = true;
+                }
+            }
+        }
+        if (query)
+        {
+            assoc = selectChildAssoc(parentNodeId, assocTypeQName, childName);
+            if (assoc != null)
+            {
+                childByNameCache.put(key, assoc);
+            }
+            else
+            {
+                // We do not cache misses.  See javadoc.
+            }
+        }
+        // Now return, checking the assoc's ID for null
         return assoc == null ? null : assoc.getPair(qnameDAO);
     }
 

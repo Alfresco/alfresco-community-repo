@@ -812,17 +812,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
      */
     public void applyVersioningState(NodeRef nodeRef, VersioningState versioningState)
     {
-        if (versioningState == VersioningState.CHECKEDOUT)
-        {
-            if (!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
-            {
-                Map<QName, Serializable> props = new HashMap<QName, Serializable>();
-                props.put(ContentModel.PROP_INITIAL_VERSION, false);
-                props.put(ContentModel.PROP_AUTO_VERSION, false);
-                nodeService.addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, props);
-            }
-            getCheckOutCheckInService().checkout(nodeRef);
-        } else if ((versioningState == VersioningState.MAJOR) || (versioningState == VersioningState.MINOR))
+        if ((versioningState == VersioningState.MAJOR) || (versioningState == VersioningState.MINOR)
+                || (versioningState == VersioningState.CHECKEDOUT))
         {
             if (!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
             {
@@ -833,11 +824,16 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             }
 
             Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(5);
-            versionProperties.put(VersionModel.PROP_VERSION_TYPE,
-                    versioningState == VersioningState.MAJOR ? VersionType.MAJOR : VersionType.MINOR);
+            versionProperties.put(VersionModel.PROP_VERSION_TYPE, versioningState == VersioningState.MAJOR
+                    || versioningState == VersioningState.CHECKEDOUT ? VersionType.MAJOR : VersionType.MINOR);
             versionProperties.put(VersionModel.PROP_DESCRIPTION, "Initial Version");
 
             versionService.createVersion(nodeRef, versionProperties);
+        }
+
+        if (versioningState == VersioningState.CHECKEDOUT)
+        {
+            getCheckOutCheckInService().checkout(nodeRef);
         }
     }
 

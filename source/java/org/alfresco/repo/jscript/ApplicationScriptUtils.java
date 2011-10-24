@@ -255,6 +255,10 @@ public final class ApplicationScriptUtils extends BaseScopableProcessorExtension
                         }
                     }
                 }
+                else
+                {
+                    json.put(key, null);
+                }
             }
             catch (NamespaceException ne)
             {

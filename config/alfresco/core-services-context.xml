@@ -800,8 +800,9 @@
         <property name="checkOutCheckInService" ref="CheckoutCheckinService" />
     </bean>
 
-
-   
+    <bean id="checkedOutAspect" class="org.alfresco.repo.coci.CheckedOutAspect" init-method="init">
+        <property name="policyComponent" ref="policyComponent" />
+    </bean>   
 
     <!-- Multilingual Document-->
     <bean id="multilingualDocumentAspect" class="org.alfresco.repo.model.ml.MultilingualDocumentAspect" init-method="init">

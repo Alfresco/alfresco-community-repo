@@ -46,7 +46,6 @@ import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.aop.framework.ProxyFactory;
-import org.springframework.util.FileCopyUtils;
 
 /**
  * Implements all the convenience methods of the interface.  The only methods
@@ -434,7 +433,7 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
         try
         {
             OutputStream os = getContentOutputStream();
-            FileCopyUtils.copy(is, os);     // both streams are closed
+            copyStreams(is, os);     // both streams are closed
             // done
         }
         catch (IOException e)
@@ -451,7 +450,7 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
         {
             OutputStream os = getContentOutputStream();
             FileInputStream is = new FileInputStream(file);
-            FileCopyUtils.copy(is, os);     // both streams are closed
+            copyStreams(is, os);     // both streams are closed
             // done
         }
         catch (IOException e)
@@ -461,6 +460,55 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
                     "   file: " + file,
                     e);
         }
+    }
+    
+    /**
+     * Copy of the the Spring FileCopyUtils, but does not silently absorb IOExceptions
+     * when the streams are closed.  We require the stream write to happen successfully.
+     * <p/>
+     * Both streams are closed but any IOExceptions are thrown
+     */
+    private final int copyStreams(InputStream in, OutputStream out) throws IOException
+    {
+        int byteCount = 0;
+        IOException error = null;
+        try
+        {
+            byte[] buffer = new byte[4096];
+            int bytesRead = -1;
+            while ((bytesRead = in.read(buffer)) != -1)
+            {
+                out.write(buffer, 0, bytesRead);
+                byteCount += bytesRead;
+            }
+            out.flush();
+        }
+        finally
+        {
+            try
+            {
+                in.close();
+            }
+            catch (IOException e)
+            {
+                error = e;
+                logger.error("Failed to close output stream: " + this, e);
+            }
+            try
+            {
+                out.close();
+            }
+            catch (IOException e)
+            {
+                error = e;
+                logger.error("Failed to close output stream: " + this, e);
+            }
+        }
+        if (error != null)
+        {
+            throw error;
+        }
+        return byteCount;
     }
     
     /**
@@ -490,7 +538,7 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
             // get the stream
             OutputStream os = getContentOutputStream();
             ByteArrayInputStream is = new ByteArrayInputStream(bytes);
-            FileCopyUtils.copy(is, os);     // both streams are closed
+            copyStreams(is, os);     // both streams are closed
             // done
         }
         catch (IOException e)

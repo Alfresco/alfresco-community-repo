@@ -206,7 +206,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
     /**
      * Constructor
      * 
-     * @param nodeRef   The NodeRef this Node wrapper represents
+     * @param nodeInfo  The FileInfo this Node wrapper represents
      * @param services  The ServiceRegistry the Node can use to access services
      * @param scope     Root scope for this Node
      */
@@ -217,6 +217,13 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         this.nodeInfo = nodeInfo;
     }
     
+    /**
+     * Constructor
+     * 
+     * @param nodeRef   The NodeRef this Node wrapper represents
+     * @param services  The ServiceRegistry the Node can use to access services
+     * @param scope     Root scope for this Node
+     */
     public ScriptNode(NodeRef nodeRef, ServiceRegistry services, Scriptable scope)
     {
         if (nodeRef == null)

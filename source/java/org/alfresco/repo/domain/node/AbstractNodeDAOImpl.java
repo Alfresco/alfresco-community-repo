@@ -1606,7 +1606,16 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
         
         // The node is remaining in the current store
-        int count = updateNode(nodeUpdate);
+        int count = 0;
+        Throwable concurrencyException = null;
+        try
+        {
+            count = updateNode(nodeUpdate);
+        }
+        catch (Throwable e)
+        {
+            concurrencyException = e;
+        }
         // Do concurrency check
         if (count != 1)
         {
@@ -1614,7 +1623,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             nodesCache.removeByKey(nodeId);
             nodesCache.removeByValue(nodeUpdate);
             
-            throw new ConcurrencyFailureException("Failed to update node " + nodeId);
+            throw new ConcurrencyFailureException("Failed to update node " + nodeId, concurrencyException);
         }
         else
         {
@@ -1622,7 +1631,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             nodeUpdate.lock();
             nodesCache.setValue(nodeId, nodeUpdate);
             // The node's version has moved on so no need to invalidate caches
-            // TODO: Should we copy values between the cache keys?
         }
 
         // Done
@@ -1969,7 +1977,18 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         boolean modifyProps = propsToDelete.size() > 0 || propsToAdd.size() > 0;
         boolean updated = modifyProps || nodeUpdate.isUpdateAnything();
         
-        // Touch to bring into current txn
+        // Now we know that the node needs modification or not; grab the lock
+        if (nodeUpdate.isUpdateAnything())
+        {
+            // We have to explicitly update the node (sys:locale or cm:auditable)
+            updateNodeImpl(node, nodeUpdate);
+        }
+        else if (modifyProps)
+        {
+            // Touch the node; all caches are fine
+            touchNode(nodeId, null, false, false, false);
+        }
+        
         if (modifyProps)
         {
             // Clean up content properties
@@ -2032,12 +2051,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             // Update cache
             setNodePropertiesCached(nodeId, propsToCache);
         }
-        // Touch to bring into current transaction
-        if (updated)
-        {
-            // We have to explicitly update the node (sys:locale or cm:auditable)
-            updateNodeImpl(node, nodeUpdate);
-        }
         
         // Done
         if (isDebugEnabled && updated)
@@ -2099,12 +2112,12 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
 
         if (deleteCount > 0)
         {
+            // Touch the node; all caches are fine
+            touchNode(nodeId, null, false, false, false);
             // Update cache
             Map<QName, Serializable> cachedProps = getNodePropertiesCached(nodeId);
             cachedProps.keySet().removeAll(propertyQNames);
             setNodePropertiesCached(nodeId, cachedProps);
-            // Touch the node; all caches are fine
-            touchNode(nodeId, null, false, false, false);
         }
         // Done
         return deleteCount > 0;
@@ -2333,11 +2346,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             executeBatch();
         }
         
-        // Manually update the cache
-        Set<QName> newAspectQNames = new HashSet<QName>(existingAspectQNames);
-        newAspectQNames.addAll(aspectQNamesToAdd);
-        setNodeAspectsCached(nodeId, newAspectQNames);
-        
+        // Bring the node into the transaction
         if (aspectQNamesToAdd.contains(ContentModel.ASPECT_ROOT))
         {
             // This is a special case.  The presence of the aspect affects the path
@@ -2349,6 +2358,11 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             // Touch the node; all caches are fine
             touchNode(nodeId, null, false, false, false);
         }
+        
+        // Manually update the cache
+        Set<QName> newAspectQNames = new HashSet<QName>(existingAspectQNames);
+        newAspectQNames.addAll(aspectQNamesToAdd);
+        setNodeAspectsCached(nodeId, newAspectQNames);
 
         // Done
         return true;
@@ -2745,13 +2759,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         Long assocId = childAssocRetryingHelper.doWithRetry(callback);
         // Persist it
         assoc.setId(assocId);
-        
-        // Primary associations accompany new nodes, so we only have to bring the
-        // node into the current transaction for secondary associations
-        if (!isPrimary)
-        {
-            updateNode(childNodeId, null, null);
-        }
         
         // Done
         if (isDebugEnabled)

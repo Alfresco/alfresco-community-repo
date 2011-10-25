@@ -19,6 +19,7 @@
 package org.alfresco.util.schemacomp.model;
 
 import org.alfresco.util.schemacomp.Differences;
+import org.alfresco.util.schemacomp.Result.Strength;
 
 /**
  * All database objects to be modelled for schema comparisons must implement this interface, examples
@@ -31,6 +32,11 @@ public interface DbObject
     /**
      * Are the two <code>DbObject</code>s logically the same? For example two Index objects may have
      * different names, but are the same index as they both index the same columns for the same table.
+     * <p>
+     * If two objects a and b have the same logical identity, it does not mean that <code>a.equals(b) == true</code>.
+     * The two objects may well have differences and will be flagged as such by the schema comparison tool. When
+     * <code>a.sameAs(b) == true</code> it makes it easier to show the differences as related, i.e. a and b are
+     * different rather than, a is only in the 'left' tree and b is only in the 'right' tree. 
      *  
      * @param other
      * @return
@@ -52,5 +58,5 @@ public interface DbObject
      * @param right The object to compare against.
      * @param differences A collector of differences.
      */
-    void diff(DbObject right, Differences differences);
+    void diff(DbObject right, Differences differences, Strength strength);
 }

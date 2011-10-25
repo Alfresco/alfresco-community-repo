@@ -29,18 +29,25 @@ public final class Result
 {
     /** Specifies the type of differences */
     public enum Where { ONLY_IN_LEFT, ONLY_IN_RIGHT, IN_BOTH_NO_DIFFERENCE, IN_BOTH_BUT_DIFFERENCE };
+    public enum Strength { WARN, ERROR };
     private final Where where;
     private final Object left;
     private final Object right;
     private final String path;
-    
+    private final Strength strength;
     
     public Result(Where where, Object left, Object right, String path)
+    {
+        this(where, left, right, path, null);
+    }
+    
+    public Result(Where where, Object left, Object right, String path, Strength strength)
     {
         this.where = where;
         this.left = left;
         this.right = right;
         this.path = path;
+        this.strength = (strength != null ? strength : Strength.ERROR);
     }
 
 
@@ -80,11 +87,22 @@ public final class Result
         return this.path;
     }
 
+    
+    
+    /**
+     * @return the strength
+     */
+    public Strength getStrength()
+    {
+        return this.strength;
+    }
 
+    
+    
     @Override
     public String toString()
     {
         return "Result [where=" + this.where + ", left=" + this.left + ", right=" + this.right
-                    + ", path=" + this.path + "]";
+                    + ", path=" + this.path + ", strength=" + this.strength + "]";
     }
 }

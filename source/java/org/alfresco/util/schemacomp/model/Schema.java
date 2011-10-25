@@ -23,7 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.alfresco.util.schemacomp.Differences;
-import org.alfresco.util.schemacomp.SchemaUtils;
+import org.alfresco.util.schemacomp.Result.Strength;
 
 /**
  * Instances of this class represent a database schema.
@@ -32,7 +32,7 @@ import org.alfresco.util.schemacomp.SchemaUtils;
  */
 public class Schema extends AbstractDbObject implements Iterable<DbObject>
 {
-    private final List<DbObject> objects = new ArrayList<DbObject>();
+    protected final List<DbObject> objects = new ArrayList<DbObject>();
 
     /**
      * Construct a schema with the given name.
@@ -90,9 +90,9 @@ public class Schema extends AbstractDbObject implements Iterable<DbObject>
     
     
     @Override
-    protected void doDiff(DbObject right, Differences differences)
+    protected void doDiff(DbObject right, Differences differences, Strength strength)
     {
         Schema rightSchema = (Schema) right;
-        SchemaUtils.compareCollections(objects, rightSchema.objects, differences);
+        comparisonUtils.compareCollections(objects, rightSchema.objects, differences);
     }
 }

@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
 
+import org.alfresco.util.schemacomp.Result.Strength;
 import org.alfresco.util.schemacomp.Result.Where;
 import org.alfresco.util.schemacomp.model.DbObject;
 import org.apache.commons.lang.StringUtils;
@@ -61,10 +62,11 @@ public class Differences implements Iterable<Result>
      * @param where The type of difference, see {@link Where}
      * @param left Left value, or null if the item appears in the right, but not left schema.
      * @param right Right value, or null if the item appears in the left, but not right schema.
+     * @param strength The Result.Strength of the difference, e.g. WARN or ERROR.
      */
-    public void add(Where where, Object left, Object right)
+    public void add(Where where, Object left, Object right, Strength strength)
     {
-        Result result = new Result(where, left, right, path.getCurrentPath());
+        Result result = new Result(where, left, right, path.getCurrentPath(), strength);
         items.add(result);
     }
     

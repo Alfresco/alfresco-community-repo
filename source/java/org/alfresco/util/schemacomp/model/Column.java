@@ -19,7 +19,7 @@
 package org.alfresco.util.schemacomp.model;
 
 import org.alfresco.util.schemacomp.Differences;
-import org.alfresco.util.schemacomp.SchemaUtils;
+import org.alfresco.util.schemacomp.Result.Strength;
 
 /**
  * Represents a column in a database table.
@@ -105,10 +105,10 @@ public class Column extends AbstractDbObject
     }
 
     @Override
-    protected void doDiff(DbObject right, Differences differences)
+    protected void doDiff(DbObject right, Differences differences, Strength strength)
     {
         Column rightColumn = (Column) right;
-        SchemaUtils.compareSimple(type, rightColumn.type, differences);
-        SchemaUtils.compareSimple(nullable, rightColumn.nullable, differences);        
+        comparisonUtils.compareSimple(type, rightColumn.type, differences);
+        comparisonUtils.compareSimple(nullable, rightColumn.nullable, differences);        
     }
 }

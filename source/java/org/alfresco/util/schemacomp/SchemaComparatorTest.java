@@ -19,15 +19,19 @@
 package org.alfresco.util.schemacomp;
 
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import org.alfresco.util.schemacomp.Result.Strength;
 import org.alfresco.util.schemacomp.Result.Where;
 import org.alfresco.util.schemacomp.model.Column;
+import org.alfresco.util.schemacomp.model.DbObject;
 import org.alfresco.util.schemacomp.model.ForeignKey;
 import org.alfresco.util.schemacomp.model.Index;
 import org.alfresco.util.schemacomp.model.PrimaryKey;
@@ -55,11 +59,6 @@ public class SchemaComparatorTest
         right = new Schema("right_schema");
     }
     
-    @Test
-    public void check()
-    {
-        
-    }
 
     @Test
     public void canPerformDiff()
@@ -87,6 +86,8 @@ public class SchemaComparatorTest
         dumpDiffs(comparator.getDifferences(), true);
 
         Iterator<Result> it = comparator.getDifferences().iterator();
+        
+        assertHasDifference("left_schema", "left_schema", "right_schema", it.next()); // schema names
         assertNoDifference("left_schema.tbl_no_diff", "tbl_no_diff", it.next());
         assertNoDifference("left_schema.tbl_no_diff.id", "id", it.next());
         assertNoDifference("left_schema.tbl_no_diff.id", "NUMBER(10)", it.next());        
@@ -126,19 +127,71 @@ public class SchemaComparatorTest
         assertOnlyInOne("left_schema.tbl_has_diff_pk.pk_is_diff", Where.ONLY_IN_RIGHT, "nodeRef", it.next()); // first (& only) column of list
         
         // Items that are ONLY_IN_RIGHT always come at the end
+        assertEquals("Should be table with correct name", "tbl_has_diff_pk", ((DbObject) it.next().getRight()).getName());
         assertOnlyInOne("left_schema", Where.ONLY_IN_RIGHT, table("table_in_right"), it.next());
     }
     
     
+    @Test
+    public void canReportWarnings()
+    {
+        // Left hand side's database objects.
+        left.add(new Table("tbl_example", columns("id NUMBER(10)"), pk("pk_tbl_example", "id"), fkeys(),
+                    indexes("idx_specified_name id")));
+        
+        // Right hand side's database objects.
+        right.add(new Table("tbl_example", columns("id NUMBER(10)"), pk("pk_tbl_example", "id"), fkeys(),
+                    indexes("sys_random_idx_name id")));
+        
+        
+        comparator = new SchemaComparator(left, right);
+        comparator.compare();
+        
+        dumpDiffs(comparator.getDifferences(), true);
+
+        Iterator<Result> it = comparator.getDifferences().iterator();
+        assertHasDifference("left_schema", "left_schema", "right_schema", it.next());
+        assertNoDifference("left_schema.tbl_example", "tbl_example", it.next());
+        assertNoDifference("left_schema.tbl_example.id", "id", it.next());
+        assertNoDifference("left_schema.tbl_example.id", "NUMBER(10)", it.next());        
+        assertNoDifference("left_schema.tbl_example.id", Boolean.FALSE, it.next());
+        assertNoDifference("left_schema.tbl_example.pk_tbl_example", "pk_tbl_example", it.next());
+        assertNoDifference("left_schema.tbl_example.pk_tbl_example", "id", it.next());
+        
+        assertHasWarning(
+                    "left_schema.tbl_example.idx_specified_name",
+                    "idx_specified_name",
+                    "sys_random_idx_name",
+                    it.next());
+    }
+    
     /**
      * Assert that the result shows the value to have different values in the left and right items.
      */
-    private void assertHasDifference(String path, Object leftValue, Object rightValue, Result result)
+    private void assertHasDifference(String path, Object leftValue, Object rightValue,
+                Result result, Strength strength)
     {
+        assertEquals(strength, result.getStrength());
         assertEquals(Where.IN_BOTH_BUT_DIFFERENCE, result.getWhere());
         assertEquals(path, result.getPath());
         assertEquals(leftValue, result.getLeft());
         assertEquals(rightValue, result.getRight());
+    }
+    
+    /**
+     * @see #assertHasDifference(String, Object, Object, Result, Strength)
+     */
+    private void assertHasDifference(String path, Object leftValue, Object rightValue, Result result)
+    {
+        assertHasDifference(path, leftValue, rightValue, result, Strength.ERROR);
+    }
+    
+    /**
+     * @see #assertHasDifference(String, Object, Object, Result, Strength)
+     */
+    private void assertHasWarning(String path, Object leftValue, Object rightValue, Result result)
+    {
+        assertHasDifference(path, leftValue, rightValue, result, Strength.WARN);
     }
 
     /**
@@ -212,9 +265,7 @@ public class SchemaComparatorTest
     private PrimaryKey pk(String name, String... columnNames)
     {
         assertTrue("No columns specified", columnNames.length > 0);
-        PrimaryKey pk = new PrimaryKey();
-        pk.setName(name);
-        pk.setColumnNames(Arrays.asList(columnNames));
+        PrimaryKey pk = new PrimaryKey(name, Arrays.asList(columnNames));
         return pk;
     }
     

@@ -18,8 +18,10 @@
  */
 package org.alfresco.util.schemacomp.model;
 
+import org.alfresco.util.schemacomp.ComparisonUtils;
 import org.alfresco.util.schemacomp.Differences;
-import org.alfresco.util.schemacomp.SchemaUtils;
+import org.alfresco.util.schemacomp.Result.Strength;
+import org.alfresco.util.schemacomp.DefaultComparisonUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -30,7 +32,10 @@ import org.springframework.util.StringUtils;
 public abstract class AbstractDbObject implements DbObject
 {
     private String name;
-
+    /** How differences in the name field should be reported */
+    private Strength nameStrength = Strength.ERROR;
+    protected ComparisonUtils comparisonUtils = new DefaultComparisonUtils();
+    
     /**
      * Default constructor
      */
@@ -64,6 +69,22 @@ public abstract class AbstractDbObject implements DbObject
         this.name = name;
     }
     
+    /**
+     * @return the nameStrength
+     */
+    public Strength getNameStrength()
+    {
+        return this.nameStrength;
+    }
+
+    /**
+     * @param nameStrength the nameStrength to set
+     */
+    public void setNameStrength(Strength nameStrength)
+    {
+        this.nameStrength = nameStrength;
+    }
+
     @Override
     public boolean sameAs(DbObject other)
     {
@@ -133,7 +154,7 @@ public abstract class AbstractDbObject implements DbObject
      * its diff correctly.
      */
     @Override
-    public void diff(DbObject right, Differences differences)
+    public void diff(DbObject right, Differences differences, Strength strength)
     {
         if (name != null && StringUtils.hasText(name))
         {
@@ -143,19 +164,30 @@ public abstract class AbstractDbObject implements DbObject
         {
             differences.pushPath("<" + getClass().getSimpleName() + ">");
         }
-        SchemaUtils.compareSimple(name, right.getName(), differences);
-        doDiff(right, differences);
+        comparisonUtils.compareSimple(name, right.getName(), differences, getNameStrength());
+        doDiff(right, differences, strength);
         differences.popPath();
     }
-
 
     /**
      * Override this method to provide subclass specific diffing logic.
      * 
      * @param right
      * @param differences
+     * @param strength
      */
-    protected void doDiff(DbObject right, Differences differences)
+    protected void doDiff(DbObject right, Differences differences, Strength strength)
     {
+    }
+
+    /**
+     * If a ComparisonUtils other than the default is required, then this setter can be used.
+     * Useful for testing, where a mock can be injected.
+     * 
+     * @param comparisonUtils the comparisonUtils to set
+     */
+    public void setComparisonUtils(ComparisonUtils comparisonUtils)
+    {
+        this.comparisonUtils = comparisonUtils;
     }
 }

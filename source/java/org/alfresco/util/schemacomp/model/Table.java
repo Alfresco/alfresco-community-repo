@@ -23,7 +23,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.alfresco.util.schemacomp.Differences;
-import org.alfresco.util.schemacomp.SchemaUtils;
+import org.alfresco.util.schemacomp.Result.Strength;
 
 /**
  * Instances of this class represent a database table.
@@ -165,24 +165,22 @@ public class Table extends AbstractDbObject
             if (other.indexes != null) return false;
         }
         else if (!this.indexes.equals(other.indexes)) return false;
-        // TODO: this is difficult, equals probably should include this, but diffs shouldn't -
-        // decide what to do about this.
-//        if (this.primaryKey == null)
-//        {
-//            if (other.primaryKey != null) return false;
-//        }
-//        else if (!this.primaryKey.equals(other.primaryKey)) return false;
+        if (this.primaryKey == null)
+        {
+            if (other.primaryKey != null) return false;
+        }
+        else if (!this.primaryKey.equals(other.primaryKey)) return false;
         return true;
     }
 
 
     @Override
-    protected void doDiff(DbObject other, Differences differences)
+    protected void doDiff(DbObject other, Differences differences, Strength strength)
     {        
         Table rightTable = (Table) other; 
-        SchemaUtils.compareCollections(columns, rightTable.columns, differences);
-        primaryKey.diff(rightTable.primaryKey, differences);
-        SchemaUtils.compareCollections(foreignKeys, rightTable.foreignKeys, differences);
-        SchemaUtils.compareCollections(indexes, rightTable.indexes, differences);
+        comparisonUtils.compareCollections(columns, rightTable.columns, differences);
+        primaryKey.diff(rightTable.primaryKey, differences, strength);
+        comparisonUtils.compareCollections(foreignKeys, rightTable.foreignKeys, differences);
+        comparisonUtils.compareCollections(indexes, rightTable.indexes, differences);
     }
 }

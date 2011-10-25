@@ -21,7 +21,7 @@ package org.alfresco.util.schemacomp.model;
 import java.util.List;
 
 import org.alfresco.util.schemacomp.Differences;
-import org.alfresco.util.schemacomp.SchemaUtils;
+import org.alfresco.util.schemacomp.Result.Strength;
 
 /**
  * Primary key on a table.
@@ -32,6 +32,17 @@ public class PrimaryKey extends AbstractDbObject
 {
     private List<String> columnNames;
 
+
+    /**
+     * Constructor
+     * @param name
+     * @param columnNames
+     */
+    public PrimaryKey(String name, List<String> columnNames)
+    {
+        super(name);
+        this.columnNames = columnNames;
+    }
 
     /**
      * @return the columnNames
@@ -74,9 +85,9 @@ public class PrimaryKey extends AbstractDbObject
     }
 
     @Override
-    protected void doDiff(DbObject right, Differences differences)
+    protected void doDiff(DbObject right, Differences differences, Strength strength)
     {
         PrimaryKey rightPK = (PrimaryKey) right;        
-        SchemaUtils.compareSimpleCollections(columnNames, rightPK.columnNames, differences);
+        comparisonUtils.compareSimpleCollections(columnNames, rightPK.columnNames, differences, strength);
     }
 }

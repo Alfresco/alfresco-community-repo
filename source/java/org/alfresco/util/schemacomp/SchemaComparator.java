@@ -18,6 +18,7 @@
  */
 package org.alfresco.util.schemacomp;
 
+import org.alfresco.util.schemacomp.Result.Strength;
 import org.alfresco.util.schemacomp.model.Schema;
 
 /**
@@ -48,7 +49,7 @@ public class SchemaComparator
     public void compare()
     {
         // Check the left schema against the right schema and record any differences.
-        leftSchema.diff(rightSchema, differences);
+        leftSchema.diff(rightSchema, differences, Strength.ERROR);
     }
 
 

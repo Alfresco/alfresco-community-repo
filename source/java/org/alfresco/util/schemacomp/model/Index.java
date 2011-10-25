@@ -21,7 +21,7 @@ package org.alfresco.util.schemacomp.model;
 import java.util.List;
 
 import org.alfresco.util.schemacomp.Differences;
-import org.alfresco.util.schemacomp.SchemaUtils;
+import org.alfresco.util.schemacomp.Result.Strength;
 
 /**
  * Represents an index on a table.
@@ -40,6 +40,7 @@ public class Index extends AbstractDbObject
     {
         super(name);
         this.columnNames = columnNames;
+        setNameStrength(Strength.WARN);
     }
 
     /**
@@ -105,10 +106,11 @@ public class Index extends AbstractDbObject
         return false;
     }
 
+    
     @Override
-    protected void doDiff(DbObject right, Differences differences)
+    protected void doDiff(DbObject right, Differences differences, Strength strength)
     {
         Index rightIndex = (Index) right;
-        SchemaUtils.compareSimpleCollections(columnNames, rightIndex.columnNames, differences);
+        comparisonUtils.compareSimpleCollections(columnNames, rightIndex.columnNames, differences, strength);
     }
 }

@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.alfresco.util.schemacomp.DiffContext;
 import org.alfresco.util.schemacomp.Differences;
 import org.alfresco.util.schemacomp.Result.Strength;
 
@@ -175,12 +176,13 @@ public class Table extends AbstractDbObject
 
 
     @Override
-    protected void doDiff(DbObject other, Differences differences, Strength strength)
-    {        
+    protected void doDiff(DbObject other, DiffContext ctx, Strength strength)
+    {
+        Differences differences = ctx.getDifferences();
         Table rightTable = (Table) other; 
-        comparisonUtils.compareCollections(columns, rightTable.columns, differences);
-        primaryKey.diff(rightTable.primaryKey, differences, strength);
-        comparisonUtils.compareCollections(foreignKeys, rightTable.foreignKeys, differences);
-        comparisonUtils.compareCollections(indexes, rightTable.indexes, differences);
+        comparisonUtils.compareCollections(columns, rightTable.columns, ctx);
+        primaryKey.diff(rightTable.primaryKey, ctx, strength);
+        comparisonUtils.compareCollections(foreignKeys, rightTable.foreignKeys, ctx);
+        comparisonUtils.compareCollections(indexes, rightTable.indexes, ctx);
     }
 }

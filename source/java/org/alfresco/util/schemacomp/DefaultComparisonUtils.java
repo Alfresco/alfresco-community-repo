@@ -55,8 +55,9 @@ public class DefaultComparisonUtils implements ComparisonUtils
     
     @Override
     public void compareSimpleCollections(Collection<? extends Object> leftCollection,
-                Collection<? extends Object> rightCollection, Differences differences, Strength strength)
+                Collection<? extends Object> rightCollection, DiffContext ctx, Strength strength)
     {
+        Differences differences = ctx.getDifferences();
         for (Object leftObj : leftCollection)
         {
             if (rightCollection.contains(leftObj))
@@ -92,9 +93,9 @@ public class DefaultComparisonUtils implements ComparisonUtils
      */
     @Override
     public void compareCollections(Collection<? extends DbObject> leftCollection,
-                Collection<? extends DbObject> rightCollection, Differences differences)
+                Collection<? extends DbObject> rightCollection, DiffContext ctx)
     {
-        compareCollections(leftCollection, rightCollection, differences, null);
+        compareCollections(leftCollection, rightCollection, ctx, null);
     }
     
     /**
@@ -108,8 +109,9 @@ public class DefaultComparisonUtils implements ComparisonUtils
      */
     @Override
     public void compareCollections(Collection<? extends DbObject> leftCollection,
-                Collection<? extends DbObject> rightCollection, Differences differences, Strength strength)
+                Collection<? extends DbObject> rightCollection, DiffContext ctx, Strength strength)
     {
+        Differences differences = ctx.getDifferences();
         for (DbObject leftObj : leftCollection)
         {
             DbObject rightObj = findSameObjectAs(rightCollection, leftObj);
@@ -118,7 +120,7 @@ public class DefaultComparisonUtils implements ComparisonUtils
             {
                 // There is an equivalent object in the right hand collection as
                 // in the left.
-                leftObj.diff(rightObj, differences, strength);
+                leftObj.diff(rightObj, ctx, strength);
             }
             else
             {
@@ -144,9 +146,9 @@ public class DefaultComparisonUtils implements ComparisonUtils
      * @see #compareSimple(Object, Object, Differences, Strength)
      */
     @Override
-    public void compareSimple(Object left, Object right, Differences differences)
+    public void compareSimple(Object left, Object right, DiffContext ctx)
     {
-        compareSimple(left, right, differences, null);
+        compareSimple(left, right, ctx, null);
     }
     
     /**
@@ -159,7 +161,7 @@ public class DefaultComparisonUtils implements ComparisonUtils
      * @param strength
      */
     @Override
-    public void compareSimple(Object left, Object right, Differences differences, Strength strength)
+    public void compareSimple(Object left, Object right, DiffContext ctx, Strength strength)
     {
         
         Where where = null;
@@ -192,6 +194,6 @@ public class DefaultComparisonUtils implements ComparisonUtils
             }
         }
         
-        differences.add(where, left, right, strength);
+        ctx.getDifferences().add(where, left, right, strength);
     }
 }

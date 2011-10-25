@@ -24,8 +24,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.util.schemacomp.ComparisonUtils;
+import org.alfresco.util.schemacomp.DiffContext;
 import org.alfresco.util.schemacomp.Differences;
 import org.alfresco.util.schemacomp.Result.Strength;
+import org.hibernate.dialect.Dialect;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,18 +43,21 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public abstract class DbObjectTestBase<T extends AbstractDbObject>
 {
+    protected @Mock Dialect dialect;
     protected @Mock Differences differences;
+    protected DiffContext ctx;
     protected @Mock ComparisonUtils comparisonUtils;
     protected InOrder inOrder;
     protected abstract T getThisObject();
     protected abstract T getThatObject();
     
     @Before
-    public void setUpMockito()
+    public void baseSetUp()
     {
         // Check that the correct calls happened in the correct order.
         List<Object> mocks = getMocksUsedInDiff();
         inOrder = inOrder(mocks.toArray());
+        ctx = new DiffContext(dialect, differences);
     }
     
     
@@ -79,7 +84,7 @@ public abstract class DbObjectTestBase<T extends AbstractDbObject>
         thatObject.setComparisonUtils(comparisonUtils);
         
         // Invoke the method under test
-        thisObject.diff(thatObject, differences, Strength.ERROR);
+        thisObject.diff(thatObject, ctx, Strength.ERROR);
         
         // The name of the object should be pushed on to the differences path.
         inOrder.verify(differences).pushPath(thisObject.getName());
@@ -88,7 +93,7 @@ public abstract class DbObjectTestBase<T extends AbstractDbObject>
         inOrder.verify(comparisonUtils).compareSimple(
                     thisObject.getName(),
                     thatObject.getName(),
-                    differences,
+                    ctx,
                     thisObject.getNameStrength());
         
         // Then the doDiff() method should be processed...

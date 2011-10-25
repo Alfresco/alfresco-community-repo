@@ -60,7 +60,7 @@ public class IndexTest extends DbObjectTestBase<Index>
         inOrder.verify(comparisonUtils).compareSimpleCollections(
                     thisIndex.getColumnNames(), 
                     thatIndex.getColumnNames(), 
-                    differences, 
+                    ctx, 
                     Strength.ERROR);
     }
 

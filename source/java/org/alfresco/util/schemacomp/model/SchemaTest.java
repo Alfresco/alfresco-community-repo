@@ -57,6 +57,6 @@ public class SchemaTest extends DbObjectTestBase<Schema>
     {
         // In addition to the base class functionality, Schema.diff() compares
         // the DbObjects held in the other schema with its own DbObjects.
-        inOrder.verify(comparisonUtils).compareCollections(left.objects, right.objects, differences);
+        inOrder.verify(comparisonUtils).compareCollections(left.objects, right.objects, ctx);
     }
 }

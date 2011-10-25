@@ -18,6 +18,7 @@
  */
 package org.alfresco.util.schemacomp.model;
 
+import org.alfresco.util.schemacomp.DiffContext;
 import org.alfresco.util.schemacomp.Differences;
 import org.alfresco.util.schemacomp.Result.Strength;
 
@@ -56,7 +57,7 @@ public interface DbObject
      * object passed in to this method.
      * 
      * @param right The object to compare against.
-     * @param differences A collector of differences.
+     * @param ctx The DiffContext
      */
-    void diff(DbObject right, Differences differences, Strength strength);
+    void diff(DbObject right, DiffContext ctx, Strength strength);
 }

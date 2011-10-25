@@ -20,6 +20,7 @@ package org.alfresco.util.schemacomp.model;
 
 import java.util.List;
 
+import org.alfresco.util.schemacomp.DiffContext;
 import org.alfresco.util.schemacomp.Differences;
 import org.alfresco.util.schemacomp.Result.Strength;
 
@@ -85,9 +86,10 @@ public class PrimaryKey extends AbstractDbObject
     }
 
     @Override
-    protected void doDiff(DbObject right, Differences differences, Strength strength)
+    protected void doDiff(DbObject right, DiffContext ctx, Strength strength)
     {
+        Differences differences = ctx.getDifferences();
         PrimaryKey rightPK = (PrimaryKey) right;        
-        comparisonUtils.compareSimpleCollections(columnNames, rightPK.columnNames, differences, strength);
+        comparisonUtils.compareSimpleCollections(columnNames, rightPK.columnNames, ctx, strength);
     }
 }

@@ -56,8 +56,8 @@ public class ForeignKeyTest extends DbObjectTestBase<ForeignKey>
     @Override
     protected void doDiffTests()
     {
-        inOrder.verify(comparisonUtils).compareSimple(thisFK.getLocalColumn(), thatFK.getLocalColumn(), differences);
-        inOrder.verify(comparisonUtils).compareSimple(thisFK.getTargetTable(), thatFK.getTargetTable(), differences);
-        inOrder.verify(comparisonUtils).compareSimple(thisFK.getTargetColumn(), thatFK.getTargetColumn(), differences);
+        inOrder.verify(comparisonUtils).compareSimple(thisFK.getLocalColumn(), thatFK.getLocalColumn(), ctx);
+        inOrder.verify(comparisonUtils).compareSimple(thisFK.getTargetTable(), thatFK.getTargetTable(), ctx);
+        inOrder.verify(comparisonUtils).compareSimple(thisFK.getTargetColumn(), thatFK.getTargetColumn(), ctx);
     }
 }

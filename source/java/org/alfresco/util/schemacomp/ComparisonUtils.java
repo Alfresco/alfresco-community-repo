@@ -38,8 +38,7 @@ public interface ComparisonUtils
     DbObject findSameObjectAs(Collection<? extends DbObject> objects, final DbObject objToFind);
 
     void compareSimpleCollections(Collection<? extends Object> leftCollection,
-                Collection<? extends Object> rightCollection, Differences differences,
-                Strength strength);
+                Collection<? extends Object> rightCollection, DiffContext ctx, Strength strength);
 
     /**
      * Compare collections, reporting differences using the default {@link Result.Strength}
@@ -47,7 +46,7 @@ public interface ComparisonUtils
      * @see #compareCollections(Collection, Collection, Differences, Strength)
      */
     void compareCollections(Collection<? extends DbObject> leftCollection,
-                Collection<? extends DbObject> rightCollection, Differences differences);
+                Collection<? extends DbObject> rightCollection, DiffContext ctx);
 
     /**
      * Compare collections of {@link DbObject}s using their {@link DbObject#diff(DbObject, Differences)} method.
@@ -59,7 +58,7 @@ public interface ComparisonUtils
      * @param strength
      */
     void compareCollections(Collection<? extends DbObject> leftCollection,
-                Collection<? extends DbObject> rightCollection, Differences differences,
+                Collection<? extends DbObject> rightCollection, DiffContext ctx,
                 Strength strength);
 
     /**
@@ -67,7 +66,7 @@ public interface ComparisonUtils
      * 
      * @see #compareSimple(Object, Object, Differences, Strength)
      */
-    void compareSimple(Object left, Object right, Differences differences);
+    void compareSimple(Object left, Object right, DiffContext ctx);
 
     /**
      * Compare two 'simple' (i.e. non-{@link DbObject} objects) using their {@link Object#equals(Object)} method
@@ -78,6 +77,6 @@ public interface ComparisonUtils
      * @param differences
      * @param strength
      */
-    void compareSimple(Object left, Object right, Differences differences, Strength strength);
+    void compareSimple(Object left, Object right, DiffContext ctx, Strength strength);
 
 }

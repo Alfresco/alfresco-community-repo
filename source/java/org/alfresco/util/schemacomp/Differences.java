@@ -69,6 +69,13 @@ public class Differences implements Iterable<Result>
         Result result = new Result(where, left, right, path.getCurrentPath(), strength);
         items.add(result);
     }
+   
+
+    public void add(Where where, Object left, Object right)
+    {
+        add(where, left, right, null);
+    }
+    
     
     /**
      * Obtain an iterator for the top-level items held in this schema - since this is a hierarchical model,
@@ -126,7 +133,6 @@ public class Differences implements Iterable<Result>
         private void makeCurrentPath()
         {
             current = StringUtils.join(components, ".");
-        }
-        
+        }        
     }
 }

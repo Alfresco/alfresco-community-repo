@@ -74,18 +74,18 @@ public class TableTest extends DbObjectTestBase<Table>
     public void doDiffTests()
     {
         // Check columns
-        inOrder.verify(comparisonUtils).compareCollections(table.getColumns(), otherTable.getColumns(), differences);
+        inOrder.verify(comparisonUtils).compareCollections(table.getColumns(), otherTable.getColumns(), ctx);
         
         // Check primary key
-        inOrder.verify(primaryKey).diff(otherTable.getPrimaryKey(), differences, Strength.ERROR);
+        inOrder.verify(primaryKey).diff(otherTable.getPrimaryKey(), ctx, Strength.ERROR);
         
         // Check foreign keys
         inOrder.verify(comparisonUtils).compareCollections(
-                    table.getForeignKeys(), otherTable.getForeignKeys(), differences);
+                    table.getForeignKeys(), otherTable.getForeignKeys(), ctx);
                 
         // Check indexes
         inOrder.verify(comparisonUtils).compareCollections(
-                    table.getIndexes(), otherTable.getIndexes(), differences);
+                    table.getIndexes(), otherTable.getIndexes(), ctx);
     }
 
     @Override

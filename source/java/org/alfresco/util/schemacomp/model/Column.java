@@ -18,6 +18,7 @@
  */
 package org.alfresco.util.schemacomp.model;
 
+import org.alfresco.util.schemacomp.DiffContext;
 import org.alfresco.util.schemacomp.Differences;
 import org.alfresco.util.schemacomp.Result.Strength;
 
@@ -105,10 +106,11 @@ public class Column extends AbstractDbObject
     }
 
     @Override
-    protected void doDiff(DbObject right, Differences differences, Strength strength)
+    protected void doDiff(DbObject right, DiffContext ctx, Strength strength)
     {
+        Differences differences = ctx.getDifferences();
         Column rightColumn = (Column) right;
-        comparisonUtils.compareSimple(type, rightColumn.type, differences);
-        comparisonUtils.compareSimple(nullable, rightColumn.nullable, differences);        
+        comparisonUtils.compareSimple(type, rightColumn.type, ctx);
+        comparisonUtils.compareSimple(nullable, rightColumn.nullable, ctx);        
     }
 }

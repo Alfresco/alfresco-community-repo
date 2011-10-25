@@ -19,6 +19,7 @@
 package org.alfresco.util.schemacomp.model;
 
 import org.alfresco.util.schemacomp.ComparisonUtils;
+import org.alfresco.util.schemacomp.DiffContext;
 import org.alfresco.util.schemacomp.Differences;
 import org.alfresco.util.schemacomp.Result.Strength;
 import org.alfresco.util.schemacomp.DefaultComparisonUtils;
@@ -154,8 +155,10 @@ public abstract class AbstractDbObject implements DbObject
      * its diff correctly.
      */
     @Override
-    public void diff(DbObject right, Differences differences, Strength strength)
+    public void diff(DbObject right, DiffContext ctx, Strength strength)
     {
+        Differences differences = ctx.getDifferences();
+        
         if (name != null && StringUtils.hasText(name))
         {
             differences.pushPath(name);
@@ -164,10 +167,11 @@ public abstract class AbstractDbObject implements DbObject
         {
             differences.pushPath("<" + getClass().getSimpleName() + ">");
         }
-        comparisonUtils.compareSimple(name, right.getName(), differences, getNameStrength());
-        doDiff(right, differences, strength);
+        comparisonUtils.compareSimple(name, right.getName(), ctx, getNameStrength());
+        doDiff(right, ctx, strength);
         differences.popPath();
     }
+    
 
     /**
      * Override this method to provide subclass specific diffing logic.
@@ -176,9 +180,10 @@ public abstract class AbstractDbObject implements DbObject
      * @param differences
      * @param strength
      */
-    protected void doDiff(DbObject right, Differences differences, Strength strength)
+    protected void doDiff(DbObject right, DiffContext ctx, Strength strength)
     {
     }
+    
 
     /**
      * If a ComparisonUtils other than the default is required, then this setter can be used.

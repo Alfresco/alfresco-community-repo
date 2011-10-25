@@ -59,7 +59,7 @@ public class PrimaryKeyTest extends DbObjectTestBase<PrimaryKey>
         inOrder.verify(comparisonUtils).compareSimpleCollections(
                     thisPK.getColumnNames(), 
                     thatPK.getColumnNames(), 
-                    differences, 
+                    ctx, 
                     Strength.ERROR);
     }
 

@@ -18,48 +18,44 @@
  */
 package org.alfresco.util.schemacomp;
 
-import org.alfresco.util.schemacomp.Result.Strength;
-import org.alfresco.util.schemacomp.model.Schema;
 import org.hibernate.dialect.Dialect;
 
 /**
- * Compares two abstract database schemas, a 'left' schema and a 'right' schema. The left schema is the primary
- * schema and all objects in the right schema are judged relative to it.
+ * A context made available to schema differencing and validation operations. It supplies information
+ * about the {@link Dialect database dialect} that should be used when validating database properties
+ * and the {@link Differences} object that should be populated with schema differences and validation errors.
  * 
  * @author Matt Ward
  */
-public class SchemaComparator
+public class DiffContext
 {
-    private final Schema leftSchema;
-    private final Schema rightSchema;
-    private final DiffContext ctx;
+    private final Dialect dialect;
+    private final Differences differences;
+    
     
     /**
-     * Construct a comparator to compare schemas left and right.
-     * 
-     * @param left
-     * @param right
+     * @param dialect
+     * @param differences
      */
-    public SchemaComparator(Schema left, Schema right, Dialect dialect)
+    public DiffContext(Dialect dialect, Differences differences)
     {
-        this.leftSchema = left;
-        this.rightSchema = right;
-        this.ctx = new DiffContext(dialect, new Differences());
-    }
-    
-    
-    public void compare()
-    {
-        // Check the left schema against the right schema and record any differences.
-        leftSchema.diff(rightSchema, ctx, Strength.ERROR);
+        this.dialect = dialect;
+        this.differences = differences;
     }
 
+    /**
+     * @return the dialect
+     */
+    public Dialect getDialect()
+    {
+        return this.dialect;
+    }
 
     /**
      * @return the differences
      */
     public Differences getDifferences()
     {
-        return this.ctx.getDifferences();
+        return this.differences;
     }
 }

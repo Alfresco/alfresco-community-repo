@@ -18,6 +18,7 @@
  */
 package org.alfresco.util.schemacomp.model;
 
+import org.alfresco.util.schemacomp.DiffContext;
 import org.alfresco.util.schemacomp.Differences;
 import org.alfresco.util.schemacomp.Result.Strength;
 
@@ -137,11 +138,12 @@ public class ForeignKey extends AbstractDbObject
     
     
     @Override
-    protected void doDiff(DbObject right, Differences differences, Strength strength)
+    protected void doDiff(DbObject right, DiffContext ctx, Strength strength)
     {
+        Differences differences = ctx.getDifferences();
         ForeignKey rightFK = (ForeignKey) right;
-        comparisonUtils.compareSimple(localColumn, rightFK.localColumn, differences);
-        comparisonUtils.compareSimple(targetTable, rightFK.targetTable, differences);
-        comparisonUtils.compareSimple(targetColumn, rightFK.targetColumn, differences);        
+        comparisonUtils.compareSimple(localColumn, rightFK.localColumn, ctx);
+        comparisonUtils.compareSimple(targetTable, rightFK.targetTable, ctx);
+        comparisonUtils.compareSimple(targetColumn, rightFK.targetColumn, ctx);        
     }    
 }

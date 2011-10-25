@@ -53,8 +53,8 @@ public class ColumnTest extends DbObjectTestBase<Column>
     @Override
     protected void doDiffTests()
     {
-        inOrder.verify(comparisonUtils).compareSimple(thisColumn.getType(), thatColumn.getType(), differences);
-        inOrder.verify(comparisonUtils).compareSimple(thisColumn.isNullable(), thatColumn.isNullable(), differences);
+        inOrder.verify(comparisonUtils).compareSimple(thisColumn.getType(), thatColumn.getType(), ctx);
+        inOrder.verify(comparisonUtils).compareSimple(thisColumn.isNullable(), thatColumn.isNullable(), ctx);
     }
 
 }

@@ -33,6 +33,7 @@ import java.util.List;
 import org.alfresco.util.schemacomp.Result.Strength;
 import org.alfresco.util.schemacomp.Result.Where;
 import org.alfresco.util.schemacomp.model.DbObject;
+import org.hibernate.dialect.Dialect;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -49,29 +50,32 @@ public class DefaultComparisonUtilsTest
 {
     private @Mock Differences differences;
     private DefaultComparisonUtils comparisonUtils;
+    private DiffContext ctx;
+    private @Mock Dialect dialect;
     
     @Before
     public void setUp()
     {
         comparisonUtils = new DefaultComparisonUtils();
+        ctx = new DiffContext(dialect, differences);
     }
     
     @Test
     public void compareSimple()
     {
-        comparisonUtils.compareSimple(null, null, differences, Strength.ERROR);
+        comparisonUtils.compareSimple(null, null, ctx, Strength.ERROR);
         verify(differences).add(Where.IN_BOTH_NO_DIFFERENCE, null, null, Strength.ERROR);
         
-        comparisonUtils.compareSimple("not_null_string", "not_null_string", differences, Strength.ERROR);
+        comparisonUtils.compareSimple("not_null_string", "not_null_string", ctx, Strength.ERROR);
         verify(differences).add(Where.IN_BOTH_NO_DIFFERENCE, "not_null_string", "not_null_string", Strength.ERROR);
         
-        comparisonUtils.compareSimple("left", "right", differences, Strength.ERROR);
+        comparisonUtils.compareSimple("left", "right", ctx, Strength.ERROR);
         verify(differences).add(Where.IN_BOTH_BUT_DIFFERENCE, "left", "right", Strength.ERROR);
         
-        comparisonUtils.compareSimple("left", null, differences, Strength.ERROR);
+        comparisonUtils.compareSimple("left", null, ctx, Strength.ERROR);
         verify(differences).add(Where.ONLY_IN_LEFT, "left", null, Strength.ERROR);
         
-        comparisonUtils.compareSimple(null, "right", differences, Strength.ERROR);
+        comparisonUtils.compareSimple(null, "right", ctx, Strength.ERROR);
         verify(differences).add(Where.ONLY_IN_RIGHT, null, "right", Strength.ERROR);
     }
     
@@ -94,11 +98,11 @@ public class DefaultComparisonUtilsTest
         Collection<DbObject> right = new ArrayList<DbObject>();
         Collections.addAll(right, db1, db3, db4);
         
-        comparisonUtils.compareCollections(left, right, differences, Strength.ERROR);
+        comparisonUtils.compareCollections(left, right, ctx, Strength.ERROR);
         
         // Objects in both are asked for their differences
-        verify(db1).diff(db1, differences, Strength.ERROR);
-        verify(db4).diff(db4, differences, Strength.ERROR);
+        verify(db1).diff(db1, ctx, Strength.ERROR);
+        verify(db4).diff(db4, ctx, Strength.ERROR);
         
         // Objects in only one collections are marked as such
         verify(differences).add(Where.ONLY_IN_LEFT, db2, null, Strength.ERROR);
@@ -130,7 +134,7 @@ public class DefaultComparisonUtilsTest
         rightCollection.add("both");
         rightCollection.add("one more right only");
         
-        comparisonUtils.compareSimpleCollections(leftCollection, rightCollection, differences, Strength.WARN);
+        comparisonUtils.compareSimpleCollections(leftCollection, rightCollection, ctx, Strength.WARN);
         
         verify(differences).add(Where.IN_BOTH_NO_DIFFERENCE, 123, 123, Strength.WARN);
         verify(differences).add(Where.IN_BOTH_NO_DIFFERENCE, "both", "both", Strength.WARN);

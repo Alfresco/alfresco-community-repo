@@ -23,9 +23,11 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.inOrder;
 
+import org.alfresco.util.schemacomp.DiffContext;
 import org.alfresco.util.schemacomp.Differences;
 import org.alfresco.util.schemacomp.Result.Strength;
 import org.alfresco.util.schemacomp.Result.Where;
+import org.hibernate.dialect.Dialect;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,6 +45,8 @@ public class AbstractDbObjectTest
 {
     private ConcreteDbObject dbObject;
     private @Mock Differences differences;
+    private DiffContext ctx;
+    private @Mock Dialect dialect;
     
     /**
      * @throws java.lang.Exception
@@ -51,6 +55,7 @@ public class AbstractDbObjectTest
     public void setUp() throws Exception
     {
         dbObject = new ConcreteDbObject("the_object");
+        ctx = new DiffContext(dialect, differences);
     }
 
     @Test
@@ -81,7 +86,7 @@ public class AbstractDbObjectTest
         ConcreteDbObject otherObject = new ConcreteDbObject("the_other_object");
         dbObject.setNameStrength(Strength.WARN);
         
-        dbObject.diff(otherObject, differences, Strength.ERROR);
+        dbObject.diff(otherObject, ctx, Strength.ERROR);
         
         InOrder inOrder = inOrder(differences);
         // The name of the object should be pushed on to the differences path.
@@ -89,7 +94,7 @@ public class AbstractDbObjectTest
         // The name of the object should be diffed
         inOrder.verify(differences).add(Where.IN_BOTH_BUT_DIFFERENCE, "the_object", "the_other_object", Strength.WARN);
         // Then the doDiff() method should be processed
-        inOrder.verify(differences).add(Where.IN_BOTH_BUT_DIFFERENCE, "left", "right", Strength.ERROR);
+        inOrder.verify(differences).add(Where.IN_BOTH_BUT_DIFFERENCE, "left", "right");
         // Later, the path should be popped again
         inOrder.verify(differences).popPath();
     }
@@ -106,9 +111,10 @@ public class AbstractDbObjectTest
         }
 
         @Override
-        protected void doDiff(DbObject right, Differences differences, Strength strength)
+        protected void doDiff(DbObject right, DiffContext ctx, Strength strength)
         {
-            differences.add(Where.IN_BOTH_BUT_DIFFERENCE, "left", "right", strength);
+            Differences differences = ctx.getDifferences();
+            differences.add(Where.IN_BOTH_BUT_DIFFERENCE, "left", "right");
         }
     }
 }

@@ -38,6 +38,8 @@ import org.alfresco.util.schemacomp.model.PrimaryKey;
 import org.alfresco.util.schemacomp.model.Schema;
 import org.alfresco.util.schemacomp.model.Table;
 import org.apache.commons.lang.ArrayUtils;
+import org.hibernate.dialect.Dialect;
+import org.hibernate.dialect.MySQL5InnoDBDialect;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -51,12 +53,14 @@ public class SchemaComparatorTest
     private SchemaComparator comparator;
     private Schema left;
     private Schema right;
+    private Dialect dialect;
     
     @Before
     public void setup()
     {
         left = new Schema("left_schema");
         right = new Schema("right_schema");
+        dialect = new MySQL5InnoDBDialect();
     }
     
 
@@ -80,7 +84,7 @@ public class SchemaComparatorTest
         right.add(table("table_in_right"));
         
         
-        comparator = new SchemaComparator(left, right);
+        comparator = new SchemaComparator(left, right, dialect);
         comparator.compare();
         
         dumpDiffs(comparator.getDifferences(), true);
@@ -144,7 +148,7 @@ public class SchemaComparatorTest
                     indexes("sys_random_idx_name id")));
         
         
-        comparator = new SchemaComparator(left, right);
+        comparator = new SchemaComparator(left, right, dialect);
         comparator.compare();
         
         dumpDiffs(comparator.getDifferences(), true);

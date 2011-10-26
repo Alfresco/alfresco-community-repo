@@ -24,6 +24,7 @@ import org.alfresco.util.schemacomp.Result.Strength;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.verify;
 
 
 /**
@@ -89,5 +90,14 @@ public class IndexTest extends DbObjectTestBase<Index>
        
        assertFalse("Indexes should be identified different (different name & different columns)",
                    thisIndex.sameAs(new Index("different_name", Arrays.asList("node_ref", "url"))));
+    }
+    
+    
+    @Test
+    public void acceptVisitor()
+    {
+       thisIndex.accept(visitor);
+       
+       verify(visitor).visit(thisIndex);
     }
 }

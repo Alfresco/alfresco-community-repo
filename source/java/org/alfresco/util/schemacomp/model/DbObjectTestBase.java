@@ -18,15 +18,17 @@
  */
 package org.alfresco.util.schemacomp.model;
 
-import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.util.schemacomp.ComparisonUtils;
+import org.alfresco.util.schemacomp.DbObjectVisitor;
 import org.alfresco.util.schemacomp.DiffContext;
 import org.alfresco.util.schemacomp.Differences;
 import org.alfresco.util.schemacomp.Result.Strength;
+import org.alfresco.util.schemacomp.ValidationResult;
 import org.hibernate.dialect.Dialect;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,14 +52,15 @@ public abstract class DbObjectTestBase<T extends AbstractDbObject>
     protected InOrder inOrder;
     protected abstract T getThisObject();
     protected abstract T getThatObject();
+    protected @Mock DbObjectVisitor visitor;
     
     @Before
-    public void baseSetUp()
+    public final void baseSetUp()
     {
         // Check that the correct calls happened in the correct order.
         List<Object> mocks = getMocksUsedInDiff();
         inOrder = inOrder(mocks.toArray());
-        ctx = new DiffContext(dialect, differences);
+        ctx = new DiffContext(dialect, differences, new ArrayList<ValidationResult>());
     }
     
     

@@ -19,7 +19,10 @@
 package org.alfresco.util.schemacomp.model;
 
 
+import static org.mockito.Mockito.verify;
+
 import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for the ForeignKey class.
@@ -59,5 +62,13 @@ public class ForeignKeyTest extends DbObjectTestBase<ForeignKey>
         inOrder.verify(comparisonUtils).compareSimple(thisFK.getLocalColumn(), thatFK.getLocalColumn(), ctx);
         inOrder.verify(comparisonUtils).compareSimple(thisFK.getTargetTable(), thatFK.getTargetTable(), ctx);
         inOrder.verify(comparisonUtils).compareSimple(thisFK.getTargetColumn(), thatFK.getTargetColumn(), ctx);
+    }
+    
+    @Test
+    public void acceptVisitor()
+    {
+       thisFK.accept(visitor);
+       
+       verify(visitor).visit(thisFK);
     }
 }

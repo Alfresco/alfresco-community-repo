@@ -18,21 +18,27 @@
  */
 package org.alfresco.util.schemacomp;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-
 /**
- * Test suite for tests in the schemacomp package.
- * 
+ * TODO: comment me!
  * @author Matt Ward
  */
-@RunWith(Suite.class)
-@Suite.SuiteClasses(
+public class ValidationResult
 {
-            DefaultComparisonUtilsTest.class,
-            SchemaComparatorTest.class,
-            ValidatingVisitorTest.class
-})
-public class SchemaCompTestSuite
-{
+    private Object value;
+
+    /**
+     * @param value
+     */
+    public ValidationResult(Object value)
+    {
+        this.value = value;
+    }
+
+    /**
+     * @return the value
+     */
+    public Object getValue()
+    {
+        return this.value;
+    }
 }

@@ -18,6 +18,8 @@
  */
 package org.alfresco.util.schemacomp.model;
 
+import org.alfresco.util.schemacomp.DbObjectVisitor;
+
 
 /**
  * Represents a database sequence.
@@ -26,5 +28,14 @@ package org.alfresco.util.schemacomp.model;
  */
 public class Sequence extends AbstractDbObject
 {
-    // No subclass specific data/behaviour at present.
+    public Sequence(String name)
+    {
+        super(name);
+    }
+    
+    @Override
+    public void accept(DbObjectVisitor visitor)
+    {
+        visitor.visit(this);
+    }
 }

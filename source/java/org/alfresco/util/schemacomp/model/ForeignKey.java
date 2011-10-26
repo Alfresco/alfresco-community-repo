@@ -18,6 +18,7 @@
  */
 package org.alfresco.util.schemacomp.model;
 
+import org.alfresco.util.schemacomp.DbObjectVisitor;
 import org.alfresco.util.schemacomp.DiffContext;
 import org.alfresco.util.schemacomp.Differences;
 import org.alfresco.util.schemacomp.Result.Strength;
@@ -145,5 +146,11 @@ public class ForeignKey extends AbstractDbObject
         comparisonUtils.compareSimple(localColumn, rightFK.localColumn, ctx);
         comparisonUtils.compareSimple(targetTable, rightFK.targetTable, ctx);
         comparisonUtils.compareSimple(targetColumn, rightFK.targetColumn, ctx);        
+    }
+
+    @Override
+    public void accept(DbObjectVisitor visitor)
+    {
+        visitor.visit(this);
     }    
 }

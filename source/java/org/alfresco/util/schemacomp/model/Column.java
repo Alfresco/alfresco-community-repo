@@ -18,6 +18,7 @@
  */
 package org.alfresco.util.schemacomp.model;
 
+import org.alfresco.util.schemacomp.DbObjectVisitor;
 import org.alfresco.util.schemacomp.DiffContext;
 import org.alfresco.util.schemacomp.Differences;
 import org.alfresco.util.schemacomp.Result.Strength;
@@ -112,5 +113,11 @@ public class Column extends AbstractDbObject
         Column rightColumn = (Column) right;
         comparisonUtils.compareSimple(type, rightColumn.type, ctx);
         comparisonUtils.compareSimple(nullable, rightColumn.nullable, ctx);        
+    }
+
+    @Override
+    public void accept(DbObjectVisitor visitor)
+    {
+        visitor.visit(this);
     }
 }

@@ -16,23 +16,16 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.util.schemacomp;
+package org.alfresco.util.schemacomp.validator;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
-/**
- * Test suite for tests in the schemacomp package.
- * 
- * @author Matt Ward
- */
 @RunWith(Suite.class)
 @Suite.SuiteClasses(
 {
-            DefaultComparisonUtilsTest.class,
-            SchemaComparatorTest.class,
-            ValidatingVisitorTest.class
+            NameValidatorTest.class
 })
-public class SchemaCompTestSuite
+public class ValidatorTestSuite
 {
 }

@@ -18,6 +18,8 @@
  */
 package org.alfresco.util.schemacomp;
 
+import java.util.List;
+
 import org.hibernate.dialect.Dialect;
 
 /**
@@ -31,16 +33,17 @@ public class DiffContext
 {
     private final Dialect dialect;
     private final Differences differences;
-    
+    private final List<ValidationResult> validationResults;
     
     /**
      * @param dialect
      * @param differences
      */
-    public DiffContext(Dialect dialect, Differences differences)
+    public DiffContext(Dialect dialect, Differences differences, List<ValidationResult> validationResults)
     {
         this.dialect = dialect;
         this.differences = differences;
+        this.validationResults = validationResults;
     }
 
     /**
@@ -58,4 +61,14 @@ public class DiffContext
     {
         return this.differences;
     }
+
+    /**
+     * @return the validationResults
+     */
+    public List<ValidationResult> getValidationResults()
+    {
+        return this.validationResults;
+    }
+    
+    
 }

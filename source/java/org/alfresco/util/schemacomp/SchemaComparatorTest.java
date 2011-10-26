@@ -85,10 +85,11 @@ public class SchemaComparatorTest
         
         
         comparator = new SchemaComparator(left, right, dialect);
-        comparator.compare();
+        comparator.validateAndCompare();
         
-        dumpDiffs(comparator.getDifferences(), true);
-
+        dumpDiffs(comparator.getDifferences(), false);
+        dumpValidation(comparator.getValidationResults());
+        
         Iterator<Result> it = comparator.getDifferences().iterator();
         
         assertHasDifference("left_schema", "left_schema", "right_schema", it.next()); // schema names
@@ -136,6 +137,16 @@ public class SchemaComparatorTest
     }
     
     
+    private void dumpValidation(List<ValidationResult> validationResults)
+    {
+        System.out.println("Validation Results (" + validationResults.size() + ")");
+        for (ValidationResult r : validationResults)
+        {
+            System.out.println(r);
+        }
+    }
+
+
     @Test
     public void canReportWarnings()
     {
@@ -149,10 +160,11 @@ public class SchemaComparatorTest
         
         
         comparator = new SchemaComparator(left, right, dialect);
-        comparator.compare();
+        comparator.validateAndCompare();
         
         dumpDiffs(comparator.getDifferences(), true);
-
+        dumpValidation(comparator.getValidationResults());
+        
         Iterator<Result> it = comparator.getDifferences().iterator();
         assertHasDifference("left_schema", "left_schema", "right_schema", it.next());
         assertNoDifference("left_schema.tbl_example", "tbl_example", it.next());
@@ -233,9 +245,7 @@ public class SchemaComparatorTest
         assertEquals(value, result.getRight());
     }
 
-    /**
-     * @param differences
-     */
+    
     private void dumpDiffs(Differences differences, boolean showNonDifferences)
     {
         System.out.println("Differences (" + differences.size() + ")");

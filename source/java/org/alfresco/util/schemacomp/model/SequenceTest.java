@@ -18,6 +18,9 @@
  */
 package org.alfresco.util.schemacomp.model;
 
+import static org.mockito.Mockito.verify;
+
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -25,12 +28,41 @@ import org.junit.Test;
  * Tests for the Sequence class.
  * @author Matt Ward
  */
-public class SequenceTest
+public class SequenceTest extends DbObjectTestBase<Sequence>
 {
-    @Ignore
-    @Test
-    public void noTestsRequired()
+    private Sequence thisSequence;
+    private Sequence thatSequence;
+
+    @Before
+    public void setUp()
     {
-        // No functionality over and above AbstractDbObject at present.
+        thisSequence = new Sequence("this_sequence");
+        thatSequence = new Sequence("that_sequence");
+    }
+    
+    @Test
+    public void acceptVisitor()
+    {
+       thisSequence.accept(visitor);
+       
+       verify(visitor).visit(thisSequence);
+    }
+
+    @Override
+    protected Sequence getThisObject()
+    {
+        return thisSequence;
+    }
+
+    @Override
+    protected Sequence getThatObject()
+    {
+        return thatSequence;
+    }
+
+    @Override
+    protected void doDiffTests()
+    {
+        // Nothing extra to diff.
     }
 }

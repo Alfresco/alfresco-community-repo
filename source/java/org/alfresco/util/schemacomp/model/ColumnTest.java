@@ -20,6 +20,8 @@ package org.alfresco.util.schemacomp.model;
 
 
 import org.junit.Before;
+import org.junit.Test;
+import static org.mockito.Mockito.*;
 
 /**
  * Tests for the Column class.
@@ -55,6 +57,14 @@ public class ColumnTest extends DbObjectTestBase<Column>
     {
         inOrder.verify(comparisonUtils).compareSimple(thisColumn.getType(), thatColumn.getType(), ctx);
         inOrder.verify(comparisonUtils).compareSimple(thisColumn.isNullable(), thatColumn.isNullable(), ctx);
+    }
+    
+    @Test
+    public void acceptVisitor()
+    {
+       thisColumn.accept(visitor);
+       
+       verify(visitor).visit(thisColumn);
     }
 
 }

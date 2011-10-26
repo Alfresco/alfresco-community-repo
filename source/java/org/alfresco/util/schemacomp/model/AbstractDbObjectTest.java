@@ -23,10 +23,14 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.inOrder;
 
+import java.util.ArrayList;
+
+import org.alfresco.util.schemacomp.DbObjectVisitor;
 import org.alfresco.util.schemacomp.DiffContext;
 import org.alfresco.util.schemacomp.Differences;
 import org.alfresco.util.schemacomp.Result.Strength;
 import org.alfresco.util.schemacomp.Result.Where;
+import org.alfresco.util.schemacomp.ValidationResult;
 import org.hibernate.dialect.Dialect;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,7 +59,7 @@ public class AbstractDbObjectTest
     public void setUp() throws Exception
     {
         dbObject = new ConcreteDbObject("the_object");
-        ctx = new DiffContext(dialect, differences);
+        ctx = new DiffContext(dialect, differences, new ArrayList<ValidationResult>());
     }
 
     @Test
@@ -115,6 +119,11 @@ public class AbstractDbObjectTest
         {
             Differences differences = ctx.getDifferences();
             differences.add(Where.IN_BOTH_BUT_DIFFERENCE, "left", "right");
+        }
+
+        @Override
+        public void accept(DbObjectVisitor visitor)
+        {
         }
     }
 }

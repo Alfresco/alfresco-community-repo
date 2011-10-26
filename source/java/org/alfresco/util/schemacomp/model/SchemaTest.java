@@ -18,8 +18,12 @@
  */
 package org.alfresco.util.schemacomp.model;
 
+import static org.mockito.Mockito.verify;
+
 import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 /**
@@ -58,5 +62,23 @@ public class SchemaTest extends DbObjectTestBase<Schema>
         // In addition to the base class functionality, Schema.diff() compares
         // the DbObjects held in the other schema with its own DbObjects.
         inOrder.verify(comparisonUtils).compareCollections(left.objects, right.objects, ctx);
+    }
+    
+    @Test
+    public void acceptVisitor()
+    {
+       DbObject dbo1 = Mockito.mock(DbObject.class);
+       left.add(dbo1);
+       DbObject dbo2 = Mockito.mock(DbObject.class);
+       left.add(dbo2);
+       DbObject dbo3 = Mockito.mock(DbObject.class);
+       left.add(dbo3);
+       
+       left.accept(visitor);
+       
+       verify(dbo1).accept(visitor);
+       verify(dbo2).accept(visitor);
+       verify(dbo3).accept(visitor);
+       verify(visitor).visit(left);
     }
 }

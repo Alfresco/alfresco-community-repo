@@ -18,10 +18,13 @@
  */
 package org.alfresco.util.schemacomp.model;
 
+import static org.mockito.Mockito.verify;
+
 import java.util.Arrays;
 
 import org.alfresco.util.schemacomp.Result.Strength;
 import org.junit.Before;
+import org.junit.Test;
 
 
 /**
@@ -63,4 +66,11 @@ public class PrimaryKeyTest extends DbObjectTestBase<PrimaryKey>
                     Strength.ERROR);
     }
 
+    @Test
+    public void acceptVisitor()
+    {
+       thisPK.accept(visitor);
+       
+       verify(visitor).visit(thisPK);
+    }
 }

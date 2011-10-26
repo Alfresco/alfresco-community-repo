@@ -18,6 +18,7 @@
  */
 package org.alfresco.util.schemacomp.model;
 
+import org.alfresco.util.schemacomp.DbObjectVisitor;
 import org.alfresco.util.schemacomp.DiffContext;
 import org.alfresco.util.schemacomp.Differences;
 import org.alfresco.util.schemacomp.Result.Strength;
@@ -60,4 +61,13 @@ public interface DbObject
      * @param ctx The DiffContext
      */
     void diff(DbObject right, DiffContext ctx, Strength strength);
+    
+    
+    /**
+     * Allows a visitor to be invoked against this DbObject. Implementations should ensure that child
+     * objects are visited first (by calling accept on them) before invoking the visitor on itself.
+     * 
+     * @param visitor
+     */
+    void accept(DbObjectVisitor visitor);
 }

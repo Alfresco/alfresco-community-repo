@@ -16,23 +16,20 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.util.schemacomp;
+package org.alfresco.util.schemacomp.validator;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import org.alfresco.util.schemacomp.DiffContext;
+import org.alfresco.util.schemacomp.model.DbObject;
 
 /**
- * Test suite for tests in the schemacomp package.
- * 
+ * TODO: comment me!
  * @author Matt Ward
  */
-@RunWith(Suite.class)
-@Suite.SuiteClasses(
+public class NullValidator implements DbValidator
 {
-            DefaultComparisonUtilsTest.class,
-            SchemaComparatorTest.class,
-            ValidatingVisitorTest.class
-})
-public class SchemaCompTestSuite
-{
+    @Override
+    public void validate(DbObject dbo, DiffContext ctx)
+    {
+        // Do nothing
+    }
 }

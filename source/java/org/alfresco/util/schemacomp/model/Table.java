@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.alfresco.util.schemacomp.DbObjectVisitor;
 import org.alfresco.util.schemacomp.DiffContext;
 import org.alfresco.util.schemacomp.Differences;
 import org.alfresco.util.schemacomp.Result.Strength;
@@ -184,5 +185,28 @@ public class Table extends AbstractDbObject
         primaryKey.diff(rightTable.primaryKey, ctx, strength);
         comparisonUtils.compareCollections(foreignKeys, rightTable.foreignKeys, ctx);
         comparisonUtils.compareCollections(indexes, rightTable.indexes, ctx);
+    }
+    
+
+    private List<DbObject> getChildren()
+    {
+        List<DbObject> children = new ArrayList<DbObject>();
+        children.addAll(columns); 
+        children.add(primaryKey);
+        children.addAll(foreignKeys);
+        children.addAll(indexes);
+        return children;
+    }
+
+
+    @Override
+    public void accept(DbObjectVisitor visitor)
+    {
+        for (DbObject child : getChildren())
+        {
+            child.accept(visitor);
+        }
+        
+        visitor.visit(this);
     }
 }

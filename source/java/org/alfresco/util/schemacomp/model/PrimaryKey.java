@@ -20,6 +20,7 @@ package org.alfresco.util.schemacomp.model;
 
 import java.util.List;
 
+import org.alfresco.util.schemacomp.DbObjectVisitor;
 import org.alfresco.util.schemacomp.DiffContext;
 import org.alfresco.util.schemacomp.Differences;
 import org.alfresco.util.schemacomp.Result.Strength;
@@ -91,5 +92,11 @@ public class PrimaryKey extends AbstractDbObject
         Differences differences = ctx.getDifferences();
         PrimaryKey rightPK = (PrimaryKey) right;        
         comparisonUtils.compareSimpleCollections(columnNames, rightPK.columnNames, ctx, strength);
+    }
+
+    @Override
+    public void accept(DbObjectVisitor visitor)
+    {
+        visitor.visit(this);
     }
 }

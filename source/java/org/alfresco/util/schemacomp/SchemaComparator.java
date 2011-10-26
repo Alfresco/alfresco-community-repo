@@ -18,6 +18,9 @@
  */
 package org.alfresco.util.schemacomp;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.alfresco.util.schemacomp.Result.Strength;
 import org.alfresco.util.schemacomp.model.Schema;
 import org.hibernate.dialect.Dialect;
@@ -44,14 +47,34 @@ public class SchemaComparator
     {
         this.leftSchema = left;
         this.rightSchema = right;
-        this.ctx = new DiffContext(dialect, new Differences());
+        this.ctx = new DiffContext(dialect, new Differences(), new ArrayList<ValidationResult>());
     }
     
     
-    public void compare()
+    public void validateAndCompare()
     {
-        // Check the left schema against the right schema and record any differences.
+        validate();
+        compare();
+    }
+
+
+    /**
+     * Check the left schema against the right schema and record any differences.
+     */
+    private void compare()
+    {
         leftSchema.diff(rightSchema, ctx, Strength.ERROR);
+    }
+
+
+    /**
+     * Validate both schemas.
+     */
+    private void validate()
+    {
+        ValidatingVisitor validatingVisitor = new ValidatingVisitor(ctx);
+        leftSchema.accept(validatingVisitor);
+        rightSchema.accept(validatingVisitor);
     }
 
 
@@ -60,6 +83,15 @@ public class SchemaComparator
      */
     public Differences getDifferences()
     {
-        return this.ctx.getDifferences();
+        return ctx.getDifferences();
     }
+
+
+    /**
+     * @return the validation results.
+     */
+    public List<ValidationResult> getValidationResults()
+    {
+        return ctx.getValidationResults();
+    }    
 }

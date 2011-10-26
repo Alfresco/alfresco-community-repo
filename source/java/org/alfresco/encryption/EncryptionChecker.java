@@ -21,8 +21,6 @@ package org.alfresco.encryption;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.transaction.TransactionService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
@@ -39,7 +37,6 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
  */
 public class EncryptionChecker extends AbstractLifecycleBean
 {
-    private static Log logger = LogFactory.	getLog(EncryptionChecker.class);
     private TransactionService transactionService;
     private KeyStoreChecker keyStoreChecker;
 
@@ -72,7 +69,7 @@ public class EncryptionChecker extends AbstractLifecycleBean
 
 				return null;
 			}
-		});
+		}, true, false);
 	}
 
 	@Override

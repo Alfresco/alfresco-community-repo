@@ -255,7 +255,9 @@ public class BlogServiceImpl implements BlogService
             setOrUpdateReleasedAndUpdatedDates(postNode.getChildRef());
         }
         
-        return new BlogPostInfoImpl(postNode.getChildRef(), blogContainerNode, nodeName);
+        BlogPostInfo post = new BlogPostInfoImpl(postNode.getChildRef(), blogContainerNode, nodeName);
+        post.setTitle(blogTitle);
+        return post;
     }
    
     @Override

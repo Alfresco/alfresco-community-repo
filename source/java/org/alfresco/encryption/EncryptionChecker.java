@@ -19,6 +19,7 @@
 package org.alfresco.encryption;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.transaction.TransactionService;
 import org.springframework.context.ApplicationEvent;
@@ -53,7 +54,10 @@ public class EncryptionChecker extends AbstractLifecycleBean
 	@Override
 	protected void onBootstrap(ApplicationEvent event)
 	{
-		transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+	    RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+	    txnHelper.setForceWritable(true);      // Force write in case server is read-only
+	    
+	    txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
 		{
 			public Void execute() throws Throwable
 			{
@@ -69,7 +73,7 @@ public class EncryptionChecker extends AbstractLifecycleBean
 
 				return null;
 			}
-		}, true, false);
+		});
 	}
 
 	@Override

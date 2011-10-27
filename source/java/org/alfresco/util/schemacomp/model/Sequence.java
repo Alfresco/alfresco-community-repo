@@ -28,9 +28,9 @@ import org.alfresco.util.schemacomp.DbObjectVisitor;
  */
 public class Sequence extends AbstractDbObject
 {
-    public Sequence(String name)
+    public Sequence(DbObject parent, String name)
     {
-        super(name);
+        super(parent, name);
     }
     
     @Override

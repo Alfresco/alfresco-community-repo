@@ -19,8 +19,9 @@
 package org.alfresco.util.schemacomp.model;
 
 import org.alfresco.util.schemacomp.DbObjectVisitor;
+import org.alfresco.util.schemacomp.DbProperty;
 import org.alfresco.util.schemacomp.DiffContext;
-import org.alfresco.util.schemacomp.Differences;
+import org.alfresco.util.schemacomp.Results;
 import org.alfresco.util.schemacomp.Result.Strength;
 
 /**
@@ -37,13 +38,14 @@ public class Column extends AbstractDbObject
     /**
      * Construct a Column.
      * 
+     * @table the parent table
      * @param name
      * @param type
      * @param nullable
      */
-    public Column(String name, String type, boolean nullable)
+    public Column(Table table, String name, String type, boolean nullable)
     {
-        super(name);
+        super(table, name);
         this.type = type;
         this.nullable = nullable;
     }
@@ -109,10 +111,16 @@ public class Column extends AbstractDbObject
     @Override
     protected void doDiff(DbObject right, DiffContext ctx, Strength strength)
     {
-        Differences differences = ctx.getDifferences();
-        Column rightColumn = (Column) right;
-        comparisonUtils.compareSimple(type, rightColumn.type, ctx);
-        comparisonUtils.compareSimple(nullable, rightColumn.nullable, ctx);        
+        Results differences = ctx.getDifferences();
+        DbProperty thisTypeProp = new DbProperty(this, "type");
+        DbProperty thisNullableProp = new DbProperty(this, "nullable");
+        
+        Column thatColumn = (Column) right;
+        DbProperty thatTypeProp = new DbProperty(thatColumn, "type");
+        DbProperty thatNullableProp = new DbProperty(thatColumn, "nullable");
+        
+        comparisonUtils.compareSimple(thisTypeProp, thatTypeProp, ctx);
+        comparisonUtils.compareSimple(thisNullableProp, thatNullableProp, ctx);        
     }
 
     @Override

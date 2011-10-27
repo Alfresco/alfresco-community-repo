@@ -20,7 +20,7 @@ package org.alfresco.util.schemacomp.model;
 
 import org.alfresco.util.schemacomp.DbObjectVisitor;
 import org.alfresco.util.schemacomp.DiffContext;
-import org.alfresco.util.schemacomp.Differences;
+import org.alfresco.util.schemacomp.Results;
 import org.alfresco.util.schemacomp.Result.Strength;
 
 /**
@@ -54,7 +54,7 @@ public interface DbObject
     
     /**
      * Generate a report of differences between this object ('left') and another object ('right').
-     * Differences between the left and right objects under inspection are captured in the {@link Differences}
+     * Differences between the left and right objects under inspection are captured in the {@link Results}
      * object passed in to this method.
      * 
      * @param right The object to compare against.
@@ -70,4 +70,20 @@ public interface DbObject
      * @param visitor
      */
     void accept(DbObjectVisitor visitor);
+    
+    /**
+     * Get the parent object for which this object is a child. If this is the root object
+     * then null should be returned.
+     * 
+     * @return Parent reference or null
+     */
+    DbObject getParent();
+    
+    /**
+     * Sets the parent object.
+     * 
+     * @see #getParent()
+     * @param parent
+     */
+    void setParent(DbObject parent);
 }

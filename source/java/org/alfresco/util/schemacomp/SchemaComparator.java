@@ -47,7 +47,7 @@ public class SchemaComparator
     {
         this.leftSchema = left;
         this.rightSchema = right;
-        this.ctx = new DiffContext(dialect, new Differences(), new ArrayList<ValidationResult>());
+        this.ctx = new DiffContext(dialect, new Results(), new ArrayList<ValidationResult>());
     }
     
     
@@ -81,7 +81,7 @@ public class SchemaComparator
     /**
      * @return the differences
      */
-    public Differences getDifferences()
+    public Results getDifferences()
     {
         return ctx.getDifferences();
     }

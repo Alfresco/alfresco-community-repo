@@ -37,11 +37,11 @@ public interface ComparisonUtils
      */
     DbObject findSameObjectAs(Collection<? extends DbObject> objects, final DbObject objToFind);
 
-    void compareSimpleCollections(Collection<? extends Object> leftCollection,
-                Collection<? extends Object> rightCollection, DiffContext ctx, Strength strength);
+    void compareSimpleCollections(DbProperty leftProperty, DbProperty rightProperty,
+                DiffContext ctx, Strength strength);
 
     /**
-     * Compare collections, reporting differences using the default {@link Result.Strength}
+     * Compare collections, reporting differences using the default {@link Difference.Strength}
      * 
      * @see #compareCollections(Collection, Collection, Differences, Strength)
      */
@@ -50,7 +50,7 @@ public interface ComparisonUtils
 
     /**
      * Compare collections of {@link DbObject}s using their {@link DbObject#diff(DbObject, Differences)} method.
-     * Differences are reported using the specified {@link Result.Strength}.
+     * Differences are reported using the specified {@link Difference.Strength}.
      * 
      * @param leftCollection
      * @param rightCollection
@@ -66,7 +66,7 @@ public interface ComparisonUtils
      * 
      * @see #compareSimple(Object, Object, Differences, Strength)
      */
-    void compareSimple(Object left, Object right, DiffContext ctx);
+    void compareSimple(DbProperty left, DbProperty right, DiffContext ctx);
 
     /**
      * Compare two 'simple' (i.e. non-{@link DbObject} objects) using their {@link Object#equals(Object)} method
@@ -77,6 +77,6 @@ public interface ComparisonUtils
      * @param differences
      * @param strength
      */
-    void compareSimple(Object left, Object right, DiffContext ctx, Strength strength);
+    void compareSimple(DbProperty left, DbProperty right, DiffContext ctx, Strength strength);
 
 }

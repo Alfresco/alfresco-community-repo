@@ -18,27 +18,14 @@
  */
 package org.alfresco.util.schemacomp;
 
-import org.alfresco.util.schemacomp.model.Column;
 import org.alfresco.util.schemacomp.model.DbObject;
-import org.alfresco.util.schemacomp.model.ForeignKey;
-import org.alfresco.util.schemacomp.model.Index;
-import org.alfresco.util.schemacomp.model.PrimaryKey;
-import org.alfresco.util.schemacomp.model.Schema;
-import org.alfresco.util.schemacomp.model.Sequence;
-import org.alfresco.util.schemacomp.model.Table;
 
 /**
  * Defines a visitor that can operate on a DbObject.
+ * 
  * @author Matt Ward
  */
 public interface DbObjectVisitor
 {
     void visit(DbObject dbObject);
-//    void visit(Column column);
-//    void visit(ForeignKey fk);
-//    void visit(Index index);
-//    void visit(PrimaryKey pk);
-//    void visit(Schema schema);
-//    void visit(Sequence sequence);
-//    void visit(Table table);
 }

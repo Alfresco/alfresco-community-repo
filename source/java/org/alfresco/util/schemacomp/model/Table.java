@@ -24,7 +24,6 @@ import java.util.List;
 
 import org.alfresco.util.schemacomp.DbObjectVisitor;
 import org.alfresco.util.schemacomp.DiffContext;
-import org.alfresco.util.schemacomp.Differences;
 import org.alfresco.util.schemacomp.Result.Strength;
 
 /**
@@ -34,28 +33,29 @@ import org.alfresco.util.schemacomp.Result.Strength;
  */
 public class Table extends AbstractDbObject
 {
-    private List<Column> columns = new ArrayList<Column>();
+    private final List<Column> columns = new ArrayList<Column>();
     private PrimaryKey primaryKey;
-    private List<ForeignKey> foreignKeys = new ArrayList<ForeignKey>();
-    private List<Index> indexes = new ArrayList<Index>();
+    private final List<ForeignKey> foreignKeys = new ArrayList<ForeignKey>();
+    private final List<Index> indexes = new ArrayList<Index>();
     
     
-    public Table(String name, Collection<Column> columns, PrimaryKey primaryKey, 
+    public Table(Schema parentSchema, String name, Collection<Column> columns, PrimaryKey primaryKey, 
                 Collection<ForeignKey> foreignKeys, Collection<Index> indexes)
     {
-        super(name);
+        super(parentSchema, name);
         if (columns != null)
         {
-            this.columns.addAll(columns);
+            setColumns(columns);
         }
+        primaryKey.setParent(this);
         this.primaryKey = primaryKey;
         if (foreignKeys != null)
         {
-            this.foreignKeys.addAll(foreignKeys);
+            setForeignKeys(foreignKeys);
         }
         if (indexes != null)
         {
-            this.indexes.addAll(indexes);
+            setIndexes(indexes);
         }
     }
 
@@ -72,9 +72,15 @@ public class Table extends AbstractDbObject
     /**
      * @param columns the columns to set
      */
-    public void setColumns(List<Column> columns)
+    public void setColumns(Collection<Column> columns)
     {
-        this.columns = columns;
+        this.columns.clear();
+        this.columns.addAll(columns);
+
+        for (Column column : columns)
+        {
+            column.setParent(this);
+        }
     }
 
 
@@ -92,6 +98,7 @@ public class Table extends AbstractDbObject
      */
     public void setPrimaryKey(PrimaryKey primaryKey)
     {
+        primaryKey.setParent(this);
         this.primaryKey = primaryKey;
     }
 
@@ -108,9 +115,15 @@ public class Table extends AbstractDbObject
     /**
      * @param foreignKeys the foreignKeys to set
      */
-    public void setForeignKeys(List<ForeignKey> foreignKeys)
+    public void setForeignKeys(Collection<ForeignKey> foreignKeys)
     {
-        this.foreignKeys = foreignKeys;
+        this.foreignKeys.clear();
+        this.foreignKeys.addAll(foreignKeys);
+        
+        for (ForeignKey fk : foreignKeys)
+        {
+            fk.setParent(this);
+        }
     }
 
 
@@ -126,9 +139,15 @@ public class Table extends AbstractDbObject
     /**
      * @param indexes the indexes to set
      */
-    public void setIndexes(List<Index> indexes)
+    public void setIndexes(Collection<Index> indexes)
     {
-        this.indexes = indexes;
+        this.indexes.clear();
+        this.indexes.addAll(indexes);
+        
+        for (Index index : indexes)
+        {
+            index.setParent(this);
+        }
     }
 
 
@@ -179,7 +198,6 @@ public class Table extends AbstractDbObject
     @Override
     protected void doDiff(DbObject other, DiffContext ctx, Strength strength)
     {
-        Differences differences = ctx.getDifferences();
         Table rightTable = (Table) other; 
         comparisonUtils.compareCollections(columns, rightTable.columns, ctx);
         primaryKey.diff(rightTable.primaryKey, ctx, strength);

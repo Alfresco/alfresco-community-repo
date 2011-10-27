@@ -21,7 +21,6 @@ package org.alfresco.util.schemacomp.model;
 import static org.mockito.Mockito.verify;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -36,8 +35,8 @@ public class SequenceTest extends DbObjectTestBase<Sequence>
     @Before
     public void setUp()
     {
-        thisSequence = new Sequence("this_sequence");
-        thatSequence = new Sequence("that_sequence");
+        thisSequence = new Sequence(null, "this_sequence");
+        thatSequence = new Sequence(null, "that_sequence");
     }
     
     @Test

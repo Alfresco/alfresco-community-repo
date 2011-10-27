@@ -19,15 +19,16 @@
 package org.alfresco.util.schemacomp.validator;
 
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.alfresco.util.schemacomp.DiffContext;
-import org.alfresco.util.schemacomp.Differences;
+import org.alfresco.util.schemacomp.Results;
 import org.alfresco.util.schemacomp.ValidationResult;
 import org.alfresco.util.schemacomp.model.DbObject;
 import org.alfresco.util.schemacomp.model.Index;
@@ -35,8 +36,6 @@ import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.Oracle10gDialect;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 /**
  * Tests for the NameValidator class.
@@ -54,7 +53,7 @@ public class NameValidatorTest
     {
         validator = new NameValidator();
         validationResults = new ArrayList<ValidationResult>();
-        ctx = new DiffContext(new Oracle10gDialect(), new Differences(), validationResults);
+        ctx = new DiffContext(new Oracle10gDialect(), new Results(), validationResults);
     }
 
     @Test
@@ -88,6 +87,6 @@ public class NameValidatorTest
     
     private DbObject indexForName(String name)
     {
-        return new Index(name, new ArrayList<String>());
+        return new Index(null, name, new ArrayList<String>());
     }
 }

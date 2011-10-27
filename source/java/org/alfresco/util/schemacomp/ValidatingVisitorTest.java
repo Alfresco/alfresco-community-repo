@@ -19,10 +19,9 @@
 package org.alfresco.util.schemacomp;
 
 
-import java.util.ArrayList;
-import java.util.Collections;
+import static org.junit.Assert.assertSame;
 
-import javax.faces.validator.Validator;
+import java.util.ArrayList;
 
 import org.alfresco.util.schemacomp.model.Column;
 import org.alfresco.util.schemacomp.model.ForeignKey;
@@ -33,17 +32,14 @@ import org.alfresco.util.schemacomp.model.Sequence;
 import org.alfresco.util.schemacomp.model.Table;
 import org.alfresco.util.schemacomp.validator.DbValidator;
 import org.alfresco.util.schemacomp.validator.NameValidator;
-import org.alfresco.util.schemacomp.validator.NullValidator;
 import org.hibernate.dialect.MySQL5InnoDBDialect;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.validateMockitoUsage;
-
 /**
- * TODO: comment me!
+ * Tests for the ValidatingVisitor class.
+ * 
  * @author Matt Ward
  */
 public class ValidatingVisitorTest
@@ -54,7 +50,7 @@ public class ValidatingVisitorTest
     @Before
     public void setUp() throws Exception
     {
-        ctx = new DiffContext(new MySQL5InnoDBDialect(), new Differences(), new ArrayList<ValidationResult>());
+        ctx = new DiffContext(new MySQL5InnoDBDialect(), new Results(), new ArrayList<ValidationResult>());
         visitor = new ValidatingVisitor(ctx);
     }
 
@@ -78,7 +74,7 @@ public class ValidatingVisitorTest
     public void canValidate()
     {
         visitor.indexNameValidator = Mockito.mock(NameValidator.class);
-        Index index = new Index("index_name", new ArrayList<String>());
+        Index index = new Index(null, "index_name", new ArrayList<String>());
         
         visitor.visit(index);
         

@@ -24,7 +24,7 @@ import java.util.List;
 
 import org.alfresco.util.schemacomp.DbObjectVisitor;
 import org.alfresco.util.schemacomp.DiffContext;
-import org.alfresco.util.schemacomp.Differences;
+import org.alfresco.util.schemacomp.Results;
 import org.alfresco.util.schemacomp.Result.Strength;
 
 /**
@@ -43,11 +43,18 @@ public class Schema extends AbstractDbObject implements Iterable<DbObject>
      */
     public Schema(String name)
     {
-        super(name);
+        super(null, name);
     }
 
+    /**
+     * Add an object to this schema - this method will set this schema
+     * as the object's parent.
+     * 
+     * @param dbObject
+     */
     public void add(DbObject dbObject)
     {
+        dbObject.setParent(this);
         objects.add(dbObject);
     }
     
@@ -94,7 +101,6 @@ public class Schema extends AbstractDbObject implements Iterable<DbObject>
     @Override
     protected void doDiff(DbObject right, DiffContext ctx, Strength strength)
     {
-        Differences differences = ctx.getDifferences();
         Schema rightSchema = (Schema) right;
         comparisonUtils.compareCollections(objects, rightSchema.objects, ctx);
     }

@@ -21,6 +21,7 @@ package org.alfresco.util.schemacomp.model;
 
 import static org.mockito.Mockito.verify;
 
+import org.alfresco.util.schemacomp.DbProperty;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -37,8 +38,8 @@ public class ForeignKeyTest extends DbObjectTestBase<ForeignKey>
     @Before
     public void setUp() throws Exception
     {
-        thisFK = new ForeignKey("this_fk", "local_col", "target_table", "target_col");
-        thatFK = new ForeignKey("that_fk", "local_col", "target_table", "target_col");
+        thisFK = new ForeignKey(null, "this_fk", "local_col", "target_table", "target_col");
+        thatFK = new ForeignKey(null, "that_fk", "local_col", "target_table", "target_col");
     }
 
 
@@ -59,9 +60,18 @@ public class ForeignKeyTest extends DbObjectTestBase<ForeignKey>
     @Override
     protected void doDiffTests()
     {
-        inOrder.verify(comparisonUtils).compareSimple(thisFK.getLocalColumn(), thatFK.getLocalColumn(), ctx);
-        inOrder.verify(comparisonUtils).compareSimple(thisFK.getTargetTable(), thatFK.getTargetTable(), ctx);
-        inOrder.verify(comparisonUtils).compareSimple(thisFK.getTargetColumn(), thatFK.getTargetColumn(), ctx);
+        inOrder.verify(comparisonUtils).compareSimple(
+                    new DbProperty(thisFK, "localColumn"),
+                    new DbProperty(thatFK, "localColumn"),
+                    ctx);
+        inOrder.verify(comparisonUtils).compareSimple(
+                    new DbProperty(thisFK, "targetTable"),
+                    new DbProperty(thatFK, "targetTable"),
+                    ctx);
+        inOrder.verify(comparisonUtils).compareSimple(
+                    new DbProperty(thisFK, "targetColumn"),
+                    new DbProperty(thatFK, "targetColumn"),
+                    ctx);
     }
     
     @Test

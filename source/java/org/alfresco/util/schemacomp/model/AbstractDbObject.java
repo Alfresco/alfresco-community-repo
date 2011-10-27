@@ -18,17 +18,12 @@
  */
 package org.alfresco.util.schemacomp.model;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import org.alfresco.util.schemacomp.ComparisonUtils;
-import org.alfresco.util.schemacomp.DbObjectVisitor;
-import org.alfresco.util.schemacomp.DiffContext;
-import org.alfresco.util.schemacomp.Differences;
-import org.alfresco.util.schemacomp.Result.Strength;
+import org.alfresco.util.schemacomp.DbProperty;
 import org.alfresco.util.schemacomp.DefaultComparisonUtils;
-import org.springframework.util.StringUtils;
+import org.alfresco.util.schemacomp.DiffContext;
+import org.alfresco.util.schemacomp.Result.Strength;
+import org.alfresco.util.schemacomp.Results;
 
 /**
  * Useful base class for many, if not all the {@link DbObject} implementations.
@@ -37,25 +32,22 @@ import org.springframework.util.StringUtils;
  */
 public abstract class AbstractDbObject implements DbObject
 {
+    private DbObject parent;
     private String name;
     /** How differences in the name field should be reported */
     private Strength nameStrength = Strength.ERROR;
     protected ComparisonUtils comparisonUtils = new DefaultComparisonUtils();
     
-    /**
-     * Default constructor
-     */
-    public AbstractDbObject()
-    {
-    }
 
     /**
-     * Instantiate, giving the object a name.
+     * Instantiate, giving the object a parent and a name.
      * 
+     * @param parent
      * @param name
      */
-    public AbstractDbObject(String name)
+    public AbstractDbObject(DbObject parent, String name)
     {
+        this.parent = parent;
         this.name = name;
     }
 
@@ -152,8 +144,8 @@ public abstract class AbstractDbObject implements DbObject
     }
 
     /**
-     * Provides an implementation of {@link DbObject#diff(DbObject, Differences)}. The template
-     * method {@link #doDiff(DbObject, Differences)} provides the subclass specific diffing logic,
+     * Provides an implementation of {@link DbObject#diff(DbObject, Results)}. The template
+     * method {@link #doDiff(DbObject, Results)} provides the subclass specific diffing logic,
      * whilst this method handles the workflow required in most cases: set the path's prefix that will be
      * used to explain where differences occur; compare the name fields of the two objects; delegate to the
      * subclass specific diffing (if any); remove the last path addition ready for the next object to perform
@@ -161,23 +153,30 @@ public abstract class AbstractDbObject implements DbObject
      */
     @Override
     public void diff(DbObject right, DiffContext ctx, Strength strength)
-    {
-        Differences differences = ctx.getDifferences();
+    {   
+        DbProperty leftNameProp = new DbProperty(this, "name");
+        DbProperty rightNameProp = new DbProperty(right, "name");
         
-        if (name != null && StringUtils.hasText(name))
-        {
-            differences.pushPath(name);
-        }
-        else
-        {
-            differences.pushPath("<" + getClass().getSimpleName() + ">");
-        }
-        comparisonUtils.compareSimple(name, right.getName(), ctx, getNameStrength());
+        comparisonUtils.compareSimple(leftNameProp, rightNameProp, ctx, getNameStrength());
+        
         doDiff(right, ctx, strength);
-        differences.popPath();
     }
     
+    
+    @Override
+    public DbObject getParent()
+    {
+        return parent;
+    }
+    
+    
+    @Override
+    public void setParent(DbObject parent)
+    {
+        this.parent = parent;
+    }
 
+    
     /**
      * Override this method to provide subclass specific diffing logic.
      * 

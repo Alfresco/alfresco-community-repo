@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.alfresco.util.schemacomp.DbProperty;
 import org.alfresco.util.schemacomp.DiffContext;
 import org.alfresco.util.schemacomp.ValidationResult;
 import org.alfresco.util.schemacomp.model.DbObject;
@@ -47,7 +48,7 @@ public class NameValidator implements DbValidator
         
         Pattern pattern = namePatterns.get(ctx.getDialect().getClass());
         
-        ValidationResult result = new ValidationResult(name);
+        ValidationResult result = new ValidationResult(new DbProperty(dbo, "name"));
         
         if (pattern != null && !pattern.matcher(name).matches())
         {

@@ -26,10 +26,11 @@ import static org.mockito.Mockito.inOrder;
 import java.util.ArrayList;
 
 import org.alfresco.util.schemacomp.DbObjectVisitor;
+import org.alfresco.util.schemacomp.DbProperty;
 import org.alfresco.util.schemacomp.DiffContext;
-import org.alfresco.util.schemacomp.Differences;
+import org.alfresco.util.schemacomp.Difference.Where;
 import org.alfresco.util.schemacomp.Result.Strength;
-import org.alfresco.util.schemacomp.Result.Where;
+import org.alfresco.util.schemacomp.Results;
 import org.alfresco.util.schemacomp.ValidationResult;
 import org.hibernate.dialect.Dialect;
 import org.junit.Before;
@@ -48,7 +49,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class AbstractDbObjectTest
 {
     private ConcreteDbObject dbObject;
-    private @Mock Differences differences;
+    private @Mock Results differences;
     private DiffContext ctx;
     private @Mock Dialect dialect;
     
@@ -93,37 +94,52 @@ public class AbstractDbObjectTest
         dbObject.diff(otherObject, ctx, Strength.ERROR);
         
         InOrder inOrder = inOrder(differences);
-        // The name of the object should be pushed on to the differences path.
-        inOrder.verify(differences).pushPath("the_object");
+
         // The name of the object should be diffed
-        inOrder.verify(differences).add(Where.IN_BOTH_BUT_DIFFERENCE, "the_object", "the_other_object", Strength.WARN);
+        inOrder.verify(differences).add(
+                    Where.IN_BOTH_BUT_DIFFERENCE,
+                    new DbProperty(dbObject, "name"),
+                    new DbProperty(otherObject, "name"),
+                    Strength.WARN);
+        
         // Then the doDiff() method should be processed
-        inOrder.verify(differences).add(Where.IN_BOTH_BUT_DIFFERENCE, "left", "right");
-        // Later, the path should be popped again
-        inOrder.verify(differences).popPath();
+        inOrder.verify(differences).add(
+                    Where.IN_BOTH_BUT_DIFFERENCE,
+                    new DbProperty(dbObject, "someProp"),
+                    new DbProperty(otherObject, "someProp"));
     }
 
     
     /**
      * Concrete DbObject for testing the AbstractDbObject base class.
      */
-    private static class ConcreteDbObject extends AbstractDbObject
+    public static class ConcreteDbObject extends AbstractDbObject
     {
+        private String someProp = "property value";
+        
         public ConcreteDbObject(String name)
         {
-            super(name);
+            super(null, name);
         }
 
         @Override
         protected void doDiff(DbObject right, DiffContext ctx, Strength strength)
         {
-            Differences differences = ctx.getDifferences();
-            differences.add(Where.IN_BOTH_BUT_DIFFERENCE, "left", "right");
+            Results differences = ctx.getDifferences();
+            differences.add(
+                        Where.IN_BOTH_BUT_DIFFERENCE,
+                        new DbProperty(this, "someProp"),
+                        new DbProperty(right, "someProp"));
         }
 
         @Override
         public void accept(DbObjectVisitor visitor)
         {
+        }
+
+        public String getSomeProp()
+        {
+            return this.someProp;
         }
     }
 }

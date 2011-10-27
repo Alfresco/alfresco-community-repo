@@ -19,8 +19,9 @@
 package org.alfresco.util.schemacomp.model;
 
 import org.alfresco.util.schemacomp.DbObjectVisitor;
+import org.alfresco.util.schemacomp.DbProperty;
 import org.alfresco.util.schemacomp.DiffContext;
-import org.alfresco.util.schemacomp.Differences;
+import org.alfresco.util.schemacomp.Results;
 import org.alfresco.util.schemacomp.Result.Strength;
 
 
@@ -40,14 +41,15 @@ public class ForeignKey extends AbstractDbObject
     /**
      * Constructor.
      * 
+     * @param table the parent table
      * @param fkName
      * @param localColumn
      * @param targetTable
      * @param targetColumn
      */
-    public ForeignKey(String fkName, String localColumn, String targetTable, String targetColumn)
+    public ForeignKey(Table table, String fkName, String localColumn, String targetTable, String targetColumn)
     {
-        super(fkName);
+        super(table, fkName);
         this.localColumn = localColumn;
         this.targetTable = targetTable;
         this.targetColumn = targetColumn;
@@ -141,11 +143,19 @@ public class ForeignKey extends AbstractDbObject
     @Override
     protected void doDiff(DbObject right, DiffContext ctx, Strength strength)
     {
-        Differences differences = ctx.getDifferences();
-        ForeignKey rightFK = (ForeignKey) right;
-        comparisonUtils.compareSimple(localColumn, rightFK.localColumn, ctx);
-        comparisonUtils.compareSimple(targetTable, rightFK.targetTable, ctx);
-        comparisonUtils.compareSimple(targetColumn, rightFK.targetColumn, ctx);        
+        ForeignKey thatFK = (ForeignKey) right;
+        comparisonUtils.compareSimple(
+                    new DbProperty(this, "localColumn"),
+                    new DbProperty(thatFK, "localColumn"),
+                    ctx);
+        comparisonUtils.compareSimple(
+                    new DbProperty(this, "targetTable"),
+                    new DbProperty(thatFK, "targetTable"),
+                    ctx);
+        comparisonUtils.compareSimple(
+                    new DbProperty(this, "targetColumn"),
+                    new DbProperty(thatFK, "targetColumn"),
+                    ctx);        
     }
 
     @Override

@@ -22,7 +22,8 @@ import org.alfresco.util.schemacomp.DiffContext;
 import org.alfresco.util.schemacomp.model.DbObject;
 
 /**
- * TODO: comment me!
+ * A 'do nothing' validator
+ * 
  * @author Matt Ward
  */
 public class NullValidator implements DbValidator

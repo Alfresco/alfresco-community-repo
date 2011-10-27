@@ -20,6 +20,7 @@ package org.alfresco.util.schemacomp.model;
 
 import java.util.Arrays;
 
+import org.alfresco.util.schemacomp.DbProperty;
 import org.alfresco.util.schemacomp.Result.Strength;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,8 +40,8 @@ public class IndexTest extends DbObjectTestBase<Index>
     @Before
     public void setUp()
     {
-        thisIndex = new Index("this_index", Arrays.asList("id", "name", "age"));
-        thatIndex = new Index("that_index", Arrays.asList("a", "b"));        
+        thisIndex = new Index(null, "this_index", Arrays.asList("id", "name", "age"));
+        thatIndex = new Index(null, "that_index", Arrays.asList("a", "b"));        
     }
     
     @Override
@@ -59,8 +60,8 @@ public class IndexTest extends DbObjectTestBase<Index>
     protected void doDiffTests()
     {
         inOrder.verify(comparisonUtils).compareSimpleCollections(
-                    thisIndex.getColumnNames(), 
-                    thatIndex.getColumnNames(), 
+                    new DbProperty(thisIndex, "columnNames"), 
+                    new DbProperty(thatIndex, "columnNames"),
                     ctx, 
                     Strength.ERROR);
     }
@@ -77,19 +78,19 @@ public class IndexTest extends DbObjectTestBase<Index>
     public void sameAs()
     {
        assertTrue("Indexes should be logically the same.",
-                   thisIndex.sameAs(new Index("this_index", Arrays.asList("id", "name", "age"))));
+                   thisIndex.sameAs(new Index(null, "this_index", Arrays.asList("id", "name", "age"))));
        
        assertTrue("Indexes should be logically the same, despite different names (as same column order)",
-                   thisIndex.sameAs(new Index("different_name", Arrays.asList("id", "name", "age")))); 
+                   thisIndex.sameAs(new Index(null, "different_name", Arrays.asList("id", "name", "age")))); 
 
        assertTrue("Indexes should be identified as the same despite different column order (as same name).",
-                   thisIndex.sameAs(new Index("this_index", Arrays.asList("name", "id", "age")))); 
+                   thisIndex.sameAs(new Index(null, "this_index", Arrays.asList("name", "id", "age")))); 
 
        assertFalse("Indexes should be identified different (different name and column order)",
-                   thisIndex.sameAs(new Index("different_name", Arrays.asList("name", "id", "age")))); 
+                   thisIndex.sameAs(new Index(null, "different_name", Arrays.asList("name", "id", "age")))); 
        
        assertFalse("Indexes should be identified different (different name & different columns)",
-                   thisIndex.sameAs(new Index("different_name", Arrays.asList("node_ref", "url"))));
+                   thisIndex.sameAs(new Index(null, "different_name", Arrays.asList("node_ref", "url"))));
     }
     
     

@@ -22,7 +22,9 @@ import org.alfresco.util.schemacomp.DiffContext;
 import org.alfresco.util.schemacomp.model.DbObject;
 
 /**
- * TODO: comment me!
+ * DbObject validators must implement this interface. DbValidator instances
+ * are used by the ValidatingVisitor class.
+ * 
  * @author Matt Ward
  */
 public interface DbValidator

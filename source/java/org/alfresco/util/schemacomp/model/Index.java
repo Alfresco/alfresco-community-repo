@@ -21,8 +21,8 @@ package org.alfresco.util.schemacomp.model;
 import java.util.List;
 
 import org.alfresco.util.schemacomp.DbObjectVisitor;
+import org.alfresco.util.schemacomp.DbProperty;
 import org.alfresco.util.schemacomp.DiffContext;
-import org.alfresco.util.schemacomp.Differences;
 import org.alfresco.util.schemacomp.Result.Strength;
 
 /**
@@ -36,11 +36,12 @@ public class Index extends AbstractDbObject
 
     
     /**
+     * @param table the parent table
      * @param columnNames
      */
-    public Index(String name, List<String> columnNames)
+    public Index(Table table, String name, List<String> columnNames)
     {
-        super(name);
+        super(table, name);
         this.columnNames = columnNames;
         setNameStrength(Strength.WARN);
     }
@@ -112,9 +113,12 @@ public class Index extends AbstractDbObject
     @Override
     protected void doDiff(DbObject right, DiffContext ctx, Strength strength)
     {
-        Differences differences = ctx.getDifferences();
         Index rightIndex = (Index) right;
-        comparisonUtils.compareSimpleCollections(columnNames, rightIndex.columnNames, ctx, strength);
+        comparisonUtils.compareSimpleCollections(
+                    new DbProperty(this, "columnNames"),
+                    new DbProperty(rightIndex, "columnNames"),
+                    ctx,
+                    strength);
     }
 
     

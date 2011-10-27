@@ -22,6 +22,7 @@ import static org.mockito.Mockito.verify;
 
 import java.util.Arrays;
 
+import org.alfresco.util.schemacomp.DbProperty;
 import org.alfresco.util.schemacomp.Result.Strength;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,8 +41,8 @@ public class PrimaryKeyTest extends DbObjectTestBase<PrimaryKey>
     @Before
     public void setUp()
     {
-        thisPK = new PrimaryKey("this_pk", Arrays.asList("id", "name", "age"));
-        thatPK = new PrimaryKey("that_pk", Arrays.asList("a", "b"));        
+        thisPK = new PrimaryKey(null, "this_pk", Arrays.asList("id", "name", "age"));
+        thatPK = new PrimaryKey(null, "that_pk", Arrays.asList("a", "b"));        
     }
     
     @Override
@@ -60,8 +61,8 @@ public class PrimaryKeyTest extends DbObjectTestBase<PrimaryKey>
     protected void doDiffTests()
     {
         inOrder.verify(comparisonUtils).compareSimpleCollections(
-                    thisPK.getColumnNames(), 
-                    thatPK.getColumnNames(), 
+                    new DbProperty(thisPK, "columnNames"),
+                    new DbProperty(thatPK, "columnNames"), 
                     ctx, 
                     Strength.ERROR);
     }

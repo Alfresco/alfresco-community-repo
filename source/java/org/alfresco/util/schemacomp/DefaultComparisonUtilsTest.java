@@ -30,8 +30,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.alfresco.util.schemacomp.Difference.Where;
 import org.alfresco.util.schemacomp.Result.Strength;
-import org.alfresco.util.schemacomp.Result.Where;
+import org.alfresco.util.schemacomp.model.AbstractDbObject;
 import org.alfresco.util.schemacomp.model.DbObject;
 import org.hibernate.dialect.Dialect;
 import org.junit.Before;
@@ -48,7 +49,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class DefaultComparisonUtilsTest
 {
-    private @Mock Differences differences;
+    private @Mock Results differences;
     private DefaultComparisonUtils comparisonUtils;
     private DiffContext ctx;
     private @Mock Dialect dialect;
@@ -63,22 +64,27 @@ public class DefaultComparisonUtilsTest
     @Test
     public void compareSimple()
     {
-        comparisonUtils.compareSimple(null, null, ctx, Strength.ERROR);
-        verify(differences).add(Where.IN_BOTH_NO_DIFFERENCE, null, null, Strength.ERROR);
+        comparisonUtils.compareSimple(prop(null), prop(null), ctx, Strength.ERROR);
+        verify(differences).add(Where.IN_BOTH_NO_DIFFERENCE, prop(null), prop(null), Strength.ERROR);
         
-        comparisonUtils.compareSimple("not_null_string", "not_null_string", ctx, Strength.ERROR);
-        verify(differences).add(Where.IN_BOTH_NO_DIFFERENCE, "not_null_string", "not_null_string", Strength.ERROR);
+        comparisonUtils.compareSimple(prop("not_null_string"), prop("not_null_string"), ctx, Strength.ERROR);
+        verify(differences).add(Where.IN_BOTH_NO_DIFFERENCE, prop("not_null_string"), prop("not_null_string"), Strength.ERROR);
         
-        comparisonUtils.compareSimple("left", "right", ctx, Strength.ERROR);
-        verify(differences).add(Where.IN_BOTH_BUT_DIFFERENCE, "left", "right", Strength.ERROR);
+        comparisonUtils.compareSimple(prop("left"), prop("right"), ctx, Strength.ERROR);
+        verify(differences).add(Where.IN_BOTH_BUT_DIFFERENCE, prop("left"), prop("right"), Strength.ERROR);
         
-        comparisonUtils.compareSimple("left", null, ctx, Strength.ERROR);
-        verify(differences).add(Where.ONLY_IN_LEFT, "left", null, Strength.ERROR);
+        comparisonUtils.compareSimple(prop("left"), prop(null), ctx, Strength.ERROR);
+        verify(differences).add(Where.ONLY_IN_LEFT, prop("left"), prop(null), Strength.ERROR);
         
-        comparisonUtils.compareSimple(null, "right", ctx, Strength.ERROR);
-        verify(differences).add(Where.ONLY_IN_RIGHT, null, "right", Strength.ERROR);
+        comparisonUtils.compareSimple(prop(null), prop("right"), ctx, Strength.ERROR);
+        verify(differences).add(Where.ONLY_IN_RIGHT, prop(null), prop("right"), Strength.ERROR);
     }
     
+    public DbProperty prop(String propValue)
+    {
+        DbObject dbo = new DbObjectWithCollection("dbo", null);
+        return dbPropForValue(dbo, "someProperty", propValue);
+    }
     
     @Test
     public void compareCollections()
@@ -105,8 +111,8 @@ public class DefaultComparisonUtilsTest
         verify(db4).diff(db4, ctx, Strength.ERROR);
         
         // Objects in only one collections are marked as such
-        verify(differences).add(Where.ONLY_IN_LEFT, db2, null, Strength.ERROR);
-        verify(differences).add(Where.ONLY_IN_RIGHT, null, db3, Strength.ERROR);
+        verify(differences).add(Where.ONLY_IN_LEFT, new DbProperty(db2), null, Strength.ERROR);
+        verify(differences).add(Where.ONLY_IN_RIGHT, null, new DbProperty(db3), Strength.ERROR);
     }
     
     
@@ -124,6 +130,8 @@ public class DefaultComparisonUtilsTest
         leftCollection.add(subCollectionLeft);
         leftCollection.add(456);
         leftCollection.add("left only");
+        DbObject leftDbObj = new DbObjectWithCollection("left", leftCollection);
+        DbProperty leftCollProp = new DbProperty(leftDbObj, "collection");
         
         Collection<Object> rightCollection = new ArrayList<Object>();
         rightCollection.add(123);
@@ -133,20 +141,59 @@ public class DefaultComparisonUtilsTest
         rightCollection.add("right only");
         rightCollection.add("both");
         rightCollection.add("one more right only");
+        DbObject rightDbObj = new DbObjectWithCollection("right", rightCollection);
+        DbProperty rightCollProp = new DbProperty(rightDbObj, "collection");
         
-        comparisonUtils.compareSimpleCollections(leftCollection, rightCollection, ctx, Strength.WARN);
+        comparisonUtils.compareSimpleCollections(leftCollProp, rightCollProp, ctx, Strength.WARN);
         
-        verify(differences).add(Where.IN_BOTH_NO_DIFFERENCE, 123, 123, Strength.WARN);
-        verify(differences).add(Where.IN_BOTH_NO_DIFFERENCE, "both", "both", Strength.WARN);
-        verify(differences).add(Where.IN_BOTH_NO_DIFFERENCE, subCollectionLeft, subCollectionRight, Strength.WARN);
-        verify(differences).add(Where.ONLY_IN_LEFT, 456, null, Strength.WARN);
-        verify(differences).add(Where.ONLY_IN_LEFT, "left only", null, Strength.WARN);
+        
+        verify(differences).add(
+                    Where.IN_BOTH_NO_DIFFERENCE, 
+                    dbPropForValue(leftDbObj, "collection[0]", 123), 
+                    dbPropForValue(rightDbObj, "collection[0]", 123), 
+                    Strength.WARN);
+        verify(differences).add(
+                    Where.IN_BOTH_NO_DIFFERENCE,
+                    dbPropForValue(leftDbObj, "collection[1]", "both"),
+                    dbPropForValue(rightDbObj, "collection[4]", "both"),
+                    Strength.WARN);
+        verify(differences).add(
+                    Where.IN_BOTH_NO_DIFFERENCE,
+                    dbPropForValue(leftDbObj, "collection[2]", subCollectionLeft),
+                    dbPropForValue(rightDbObj, "collection[2]", subCollectionRight),
+                    Strength.WARN);
+        verify(differences).add(
+                    Where.ONLY_IN_LEFT,
+                    dbPropForValue(leftDbObj, "collection[3]", 456),
+                    dbPropForValue(rightDbObj, "collection", rightCollection),
+                    Strength.WARN);
+        verify(differences).add(
+                    Where.ONLY_IN_LEFT,
+                    dbPropForValue(leftDbObj, "collection[4]", "left only"),
+                    dbPropForValue(rightDbObj, "collection", rightCollection),
+                    Strength.WARN);
 
-        verify(differences).add(Where.ONLY_IN_RIGHT, null, 789, Strength.WARN);
-        verify(differences).add(Where.ONLY_IN_RIGHT, null, "right only", Strength.WARN);
-        verify(differences).add(Where.ONLY_IN_RIGHT, null, "one more right only", Strength.WARN);
+        verify(differences).add(
+                    Where.ONLY_IN_RIGHT,
+                    dbPropForValue(leftDbObj, "collection", leftCollection),
+                    dbPropForValue(rightDbObj, "collection[1]", 789),
+                    Strength.WARN);
+        verify(differences).add(
+                    Where.ONLY_IN_RIGHT,
+                    dbPropForValue(leftDbObj, "collection", leftCollection),
+                    dbPropForValue(rightDbObj, "collection[3]", "right only"),
+                    Strength.WARN);
+        verify(differences).add(
+                    Where.ONLY_IN_RIGHT,
+                    dbPropForValue(leftDbObj, "collection", leftCollection),
+                    dbPropForValue(rightDbObj, "collection[5]", "one more right only"),
+                    Strength.WARN);
     }
     
+    private DbProperty dbPropForValue(DbObject obj, String propName, Object propValue)
+    {
+        return new DbProperty(obj, propName, -1, true, propValue);
+    }
     
     @Test
     public void findSameObjectAsSuccessfulFind()
@@ -193,5 +240,27 @@ public class DefaultComparisonUtilsTest
             dbObjects.add(dbo);
         }
         return dbObjects;
+    }
+    
+    
+    public static class DbObjectWithCollection extends AbstractDbObject
+    {
+        private Collection<Object> collection;
+        
+        public DbObjectWithCollection(String name, Collection<Object> collection)
+        {
+            super(null, name);
+            this.collection = collection;
+        }
+
+        @Override
+        public void accept(DbObjectVisitor visitor)
+        {
+        }
+
+        public Collection<Object> getCollection()
+        {
+            return this.collection;
+        }
     }
 }

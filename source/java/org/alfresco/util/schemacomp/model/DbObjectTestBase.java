@@ -25,8 +25,9 @@ import java.util.List;
 
 import org.alfresco.util.schemacomp.ComparisonUtils;
 import org.alfresco.util.schemacomp.DbObjectVisitor;
+import org.alfresco.util.schemacomp.DbProperty;
 import org.alfresco.util.schemacomp.DiffContext;
-import org.alfresco.util.schemacomp.Differences;
+import org.alfresco.util.schemacomp.Results;
 import org.alfresco.util.schemacomp.Result.Strength;
 import org.alfresco.util.schemacomp.ValidationResult;
 import org.hibernate.dialect.Dialect;
@@ -46,7 +47,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public abstract class DbObjectTestBase<T extends AbstractDbObject>
 {
     protected @Mock Dialect dialect;
-    protected @Mock Differences differences;
+    protected @Mock Results differences;
     protected DiffContext ctx;
     protected @Mock ComparisonUtils comparisonUtils;
     protected InOrder inOrder;
@@ -89,21 +90,15 @@ public abstract class DbObjectTestBase<T extends AbstractDbObject>
         // Invoke the method under test
         thisObject.diff(thatObject, ctx, Strength.ERROR);
         
-        // The name of the object should be pushed on to the differences path.
-        inOrder.verify(differences).pushPath(thisObject.getName());
-        
         // The name of the object should be diffed
         inOrder.verify(comparisonUtils).compareSimple(
-                    thisObject.getName(),
-                    thatObject.getName(),
+                    new DbProperty(thisObject, "name"),
+                    new DbProperty(thatObject, "name"),
                     ctx,
                     thisObject.getNameStrength());
         
         // Then the doDiff() method should be processed...
         doDiffTests();
-        
-        // Later, the path should be popped again
-        inOrder.verify(differences).popPath();
     }
     
     protected abstract void doDiffTests();

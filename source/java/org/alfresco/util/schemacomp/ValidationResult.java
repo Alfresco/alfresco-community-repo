@@ -19,26 +19,48 @@
 package org.alfresco.util.schemacomp;
 
 /**
- * TODO: comment me!
+ * Results of a validation operation.
+ * 
  * @author Matt Ward
  */
-public class ValidationResult
+public class ValidationResult extends Result
 {
-    private Object value;
+    private DbProperty dbProperty;
 
-    /**
-     * @param value
-     */
-    public ValidationResult(Object value)
+    
+    public ValidationResult(DbProperty dbProperty)
     {
-        this.value = value;
+        this(dbProperty, null);
+    }
+
+    public ValidationResult(DbProperty dbProperty, Strength strength)
+    {
+        super(strength);
+        this.dbProperty = dbProperty;
+    }
+
+    
+    /**
+     * @return the dbProperty that was rejected.
+     */
+    public DbProperty getDbProperty()
+    {
+        return this.dbProperty;
     }
 
     /**
-     * @return the value
+     * @param dbProperty the dbProperty to set
+     */
+    public void setDbProperty(DbProperty dbProperty)
+    {
+        this.dbProperty = dbProperty;
+    }
+
+    /**
+     * @return the value that was rejected.
      */
     public Object getValue()
     {
-        return this.value;
+        return this.dbProperty.getPropertyValue();
     }
 }

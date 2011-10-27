@@ -19,6 +19,7 @@
 package org.alfresco.util.schemacomp.model;
 
 
+import org.alfresco.util.schemacomp.DbProperty;
 import org.junit.Before;
 import org.junit.Test;
 import static org.mockito.Mockito.*;
@@ -36,8 +37,8 @@ public class ColumnTest extends DbObjectTestBase<Column>
     @Before
     public void setUp() throws Exception
     {
-        thisColumn = new Column("this_column", "VARCHAR2(100)", false);
-        thatColumn = new Column("this_column", "NUMBER(10)", true);
+        thisColumn = new Column(null, "this_column", "VARCHAR2(100)", false);
+        thatColumn = new Column(null, "that_column", "NUMBER(10)", true);
     }
 
     @Override
@@ -55,8 +56,14 @@ public class ColumnTest extends DbObjectTestBase<Column>
     @Override
     protected void doDiffTests()
     {
-        inOrder.verify(comparisonUtils).compareSimple(thisColumn.getType(), thatColumn.getType(), ctx);
-        inOrder.verify(comparisonUtils).compareSimple(thisColumn.isNullable(), thatColumn.isNullable(), ctx);
+        DbProperty thisTypeProp = new DbProperty(thisColumn, "type");
+        DbProperty thatTypeProp = new DbProperty(thatColumn, "type");
+        inOrder.verify(comparisonUtils).compareSimple(thisTypeProp, thatTypeProp, ctx);
+        
+        DbProperty thisNullableProp = new DbProperty(thisColumn, "nullable");
+        DbProperty thatNullableProp = new DbProperty(thatColumn, "nullable");
+        
+        inOrder.verify(comparisonUtils).compareSimple(thisNullableProp, thatNullableProp, ctx);
     }
     
     @Test

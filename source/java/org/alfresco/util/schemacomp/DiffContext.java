@@ -25,21 +25,21 @@ import org.hibernate.dialect.Dialect;
 /**
  * A context made available to schema differencing and validation operations. It supplies information
  * about the {@link Dialect database dialect} that should be used when validating database properties
- * and the {@link Differences} object that should be populated with schema differences and validation errors.
+ * and the {@link Results} object that should be populated with schema differences and validation errors.
  * 
  * @author Matt Ward
  */
 public class DiffContext
 {
     private final Dialect dialect;
-    private final Differences differences;
+    private final Results differences;
     private final List<ValidationResult> validationResults;
     
     /**
      * @param dialect
      * @param differences
      */
-    public DiffContext(Dialect dialect, Differences differences, List<ValidationResult> validationResults)
+    public DiffContext(Dialect dialect, Results differences, List<ValidationResult> validationResults)
     {
         this.dialect = dialect;
         this.differences = differences;
@@ -57,7 +57,7 @@ public class DiffContext
     /**
      * @return the differences
      */
-    public Differences getDifferences()
+    public Results getDifferences()
     {
         return this.differences;
     }

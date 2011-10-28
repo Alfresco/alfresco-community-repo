@@ -209,6 +209,36 @@ public class ContentDiskDriverTest extends TestCase
         DiskSharedDevice share = new DiskSharedDevice("test", driver, ctx);        
         return share;
     }
+    
+    /**
+     * Test Get File Information
+     */
+    public void testGetFileInformation() throws Exception
+    {
+        logger.debug("testGetFileInformation");
+        ServerConfiguration scfg = new ServerConfiguration("testServer");
+        TestServer testServer = new TestServer("testServer", scfg);
+        final SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
+        DiskSharedDevice share = getDiskSharedDevice();
+        
+        final TreeConnection testConnection = testServer.getTreeConnection(share);
+        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
+        
+        class TestContext
+        {     
+            NodeRef testNodeRef;    
+        };
+        
+        final TestContext testContext = new TestContext();
+
+        /**
+         * Test 1 : Get the root info
+         */
+        FileInfo finfo = driver.getFileInformation(testSession, testConnection, "");
+        assertNotNull("root info is null", finfo);
+        assertEquals("root has a unexpected file name", "", finfo.getFileName());
+        
+    }
 
     /**
      * Test Create File

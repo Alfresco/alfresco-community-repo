@@ -199,6 +199,7 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
                     fstate.setProcessId(params.getProcessId());
                     fstate.setSharedAccess( params.getSharedAccess());
                     fstate.setFileStatus(FileStatus.FileExists);
+                    fstate.updateAccessDateTime();
                 }
             }
 
@@ -214,6 +215,7 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
                     fstate.setFileStatus(FileStatus.FileExists);
                     fstate.setProcessId(params.getProcessId());
                     fstate.setSharedAccess( params.getSharedAccess());
+                    fstate.updateAccessDateTime();
                 }
             }
 
@@ -228,6 +230,7 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
                     fstate.setFileStatus(FileStatus.DirectoryExists);
                     fstate.setProcessId(params.getProcessId());
                     fstate.setSharedAccess( params.getSharedAccess());
+                    fstate.updateAccessDateTime();
                 }
             }
 

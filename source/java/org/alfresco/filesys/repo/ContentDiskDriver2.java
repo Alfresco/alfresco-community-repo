@@ -679,6 +679,14 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 // Get the file information for the node
                 
                 finfo = getCifsHelper().getFileInformation(nodeRef, false, isLockedFilesAsOffline);
+                
+                /**
+                 * Special processing for root node
+                 */
+                if(path.equals(FileName.DOS_SEPERATOR_STR))
+                {
+                    finfo.setFileName("");
+                }
 
                 // DEBUG
                 if ( logger.isDebugEnabled())
@@ -2995,6 +3003,11 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         catch(IOException ne)
         {
             // Do nothing
+            if ( logger.isDebugEnabled())
+            {   
+                logger.debug("Unable to delete empty file:" + path, ne);
+            }
+      
         }
     }
 

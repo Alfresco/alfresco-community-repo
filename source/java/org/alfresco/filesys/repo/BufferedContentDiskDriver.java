@@ -21,6 +21,7 @@ package org.alfresco.filesys.repo;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Date;
 
 import org.alfresco.filesys.config.ServerConfigurationBean;
 import org.alfresco.filesys.alfresco.ExtendedDiskInterface;
@@ -204,22 +205,22 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
         
         if(info != null)
         {
-            fileInfoCache.put(key, info);
+            /**
+             * Don't cache directories since the modification date is important.
+             */
+            if(!info.isDirectory())
+            {
+                fileInfoCache.put(key, info);
+            }
         }
-        
-        /**
-         * Some information is not persisted by the repo
-         */
-        
-        
+         
         /*
          * Dual Key the cache so it can be looked up by NodeRef or Path
          */
         if(info instanceof ContentFileInfo)
         {
             ContentFileInfo cinfo = (ContentFileInfo)info;
-            fileInfoCache.put(cinfo.getNodeRef(), info);
-            
+            fileInfoCache.put(cinfo.getNodeRef(), info);    
         }
         
         return info;
@@ -243,6 +244,10 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
             FileState fstate = cache.findFileState(path, false);
             if(fstate != null)
             {
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("state cache available - overwriting from state cache");
+                }
                 FileInfo finfo = new FileInfo();
                 finfo.copyFrom(info);
 
@@ -271,10 +276,12 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
                 if(logger.isDebugEnabled())
                 {
                     logger.debug("getFileInformation path" + path + ", returning:" + finfo  + 
-                            ", readOnly:"+info.isReadOnly() +
-                            ", fileId:"+info.getFileId() +
-                            ", directoryId:" + info.getDirectoryId() + 
-                            ", mode" + info.getMode());
+                            ", readOnly:" +finfo.isReadOnly() +
+                            ", fileId:" +finfo.getFileId() +
+                            ", directoryId:" + finfo.getDirectoryId() + 
+                            ", accessDate:" + new Date(finfo.getAccessDateTime()) +
+                            ", modifiedDate:" + new Date(finfo.getModifyDateTime()) +
+                            ", mode" + finfo.getMode());
                 }
                 
                 return finfo;

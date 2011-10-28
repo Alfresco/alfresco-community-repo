@@ -19,25 +19,35 @@
 package org.alfresco.repo.node;
 
 import java.io.InputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+
+import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 
-import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
+import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.tagging.TaggingServiceImpl;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.namespace.DynamicNamespacePrefixResolver;
+import org.alfresco.service.namespace.NamespacePrefixResolver;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
@@ -69,6 +79,7 @@ public class ConcurrentNodeServiceTest extends TestCase
 
     private NodeService nodeService;
     private TransactionService transactionService;
+    private RetryingTransactionHelper retryingTransactionHelper;
     private NodeRef rootNodeRef;
     private AuthenticationComponent authenticationComponent;
 
@@ -92,10 +103,10 @@ public class ConcurrentNodeServiceTest extends TestCase
         model = M2Model.createModel(modelStream);
         dictionaryDao.putModel(model);
 
-        ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        nodeService = serviceRegistry.getNodeService();
-        transactionService = serviceRegistry.getTransactionService();
-        authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
+        nodeService = (NodeService) ctx.getBean("dbNodeService");
+        transactionService = (TransactionService) ctx.getBean("transactionComponent");
+        retryingTransactionHelper = (RetryingTransactionHelper) ctx.getBean("retryingTransactionHelper");
+        this.authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
 
         this.authenticationComponent.setSystemUserAsCurrentUser();
 
@@ -110,7 +121,7 @@ public class ConcurrentNodeServiceTest extends TestCase
                 return null;
             }
         };
-        transactionService.getRetryingTransactionHelper().doInTransaction(createRootNodeCallback);
+        retryingTransactionHelper.doInTransaction(createRootNodeCallback);
     }
 
     @Override
@@ -118,6 +129,184 @@ public class ConcurrentNodeServiceTest extends TestCase
     {
         authenticationComponent.clearCurrentSecurityContext();
         super.tearDown();
+    }
+
+    protected Map<QName, ChildAssociationRef> buildNodeGraph() throws Exception
+    {
+        return BaseNodeServiceTest.buildNodeGraph(nodeService, rootNodeRef);
+    }
+
+    protected Map<QName, ChildAssociationRef> commitNodeGraph() throws Exception
+    {
+        RetryingTransactionCallback<Map<QName, ChildAssociationRef>> buildGraphCallback =
+            new RetryingTransactionCallback<Map<QName, ChildAssociationRef>>()
+        {
+            public Map<QName, ChildAssociationRef> execute() throws Exception
+            {
+
+                Map<QName, ChildAssociationRef> answer = buildNodeGraph();
+                return answer;
+            }
+        };
+        return retryingTransactionHelper.doInTransaction(buildGraphCallback);
+    }
+
+    public void xtest1() throws Exception
+    {
+        testConcurrent();
+    }
+
+    public void xtest2() throws Exception
+    {
+        testConcurrent();
+    }
+
+    public void xtest3() throws Exception
+    {
+        testConcurrent();
+    }
+
+    public void xtest4() throws Exception
+    {
+        testConcurrent();
+    }
+
+    public void xtest5() throws Exception
+    {
+        testConcurrent();
+    }
+
+    public void xtest6() throws Exception
+    {
+        testConcurrent();
+    }
+
+    public void xtest7() throws Exception
+    {
+        testConcurrent();
+    }
+
+    public void xtest8() throws Exception
+    {
+        testConcurrent();
+    }
+
+    public void xtest9() throws Exception
+    {
+        testConcurrent();
+    }
+
+    public void xtest10() throws Exception
+    {
+        testConcurrent();
+    }
+
+    public void testConcurrent() throws Exception
+    {
+        Map<QName, ChildAssociationRef> assocRefs = commitNodeGraph();
+        Thread runner = null;
+
+        for (int i = 0; i < COUNT; i++)
+        {
+            runner = new Nester("Concurrent-" + i, runner, REPEATS);
+        }
+        if (runner != null)
+        {
+            runner.start();
+
+            try
+            {
+                runner.join();
+                System.out.println("Query thread has waited for " + runner.getName());
+            }
+            catch (InterruptedException e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        /*
+         * Builds a graph of child associations as follows:
+         * <pre>
+         * Level 0:     root
+         * Level 1:     root_p_n1   root_p_n2
+         * Level 2:     n1_p_n3     n2_p_n4     n1_n4       n2_p_n5     n1_n8
+         * Level 3:     n3_p_n6     n4_n6       n5_p_n7
+         * Level 4:     n6_p_n8     n7_n8
+         * </pre>
+         */
+        RetryingTransactionCallback<Object> testCallback = new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Exception
+            {
+                // There are two nodes at the base level in each test
+                assertEquals(2 * ((COUNT * REPEATS) + 1), nodeService.getChildAssocs(rootNodeRef).size());
+
+                SearchService searcher = (SearchService) ctx.getBean(ServiceRegistry.SEARCH_SERVICE.getLocalName());
+                assertEquals(
+                        2 * ((COUNT * REPEATS) + 1),
+                        searcher.selectNodes(rootNodeRef, "/*", null, getNamespacePrefixResolver(""), false).size());
+
+                return null;
+            }
+        };
+        retryingTransactionHelper.doInTransaction(testCallback);
+    }
+
+    /**
+     * Daemon thread
+     */
+    private class Nester extends Thread
+    {
+        Thread waiter;
+
+        int repeats;
+
+        Nester(String name, Thread waiter, int repeats)
+        {
+            super(name);
+            this.setDaemon(true);
+            this.waiter = waiter;
+            this.repeats = repeats;
+        }
+
+        public void run()
+        {
+            authenticationComponent.setSystemUserAsCurrentUser();
+
+            if (waiter != null)
+            {
+                System.out.println("Starting " + waiter.getName());
+                waiter.start();
+            }
+            try
+            {
+                System.out.println("Start " + this.getName());
+                for (int i = 0; i < repeats; i++)
+                {
+                    Map<QName, ChildAssociationRef> assocRefs = commitNodeGraph();
+                    System.out.println(" " + this.getName() + " " + i);
+                }
+                System.out.println("End " + this.getName());
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+            if (waiter != null)
+            {
+                try
+                {
+                    waiter.join();
+                    System.out.println("Thread "
+                            + this.getName() + " has waited for " + (waiter == null ? "null" : waiter.getName()));
+                }
+                catch (InterruptedException e)
+                {
+                    System.err.println(e);
+                }
+            }
+        }
     }
     
     /**
@@ -127,7 +316,7 @@ public class ConcurrentNodeServiceTest extends TestCase
      *  
      * @since 3.4 
      */
-    public void testMultiThreaded_PropertyWrites() throws Exception
+    public void testMultiThreadedNodePropertiesWrites() throws Exception
     {
         final List<Thread> threads = new ArrayList<Thread>();
         final int loops = 200;
@@ -139,13 +328,11 @@ public class ConcurrentNodeServiceTest extends TestCase
                 QName.createQName("test2", "MadeUp2"),
                 QName.createQName("test3", "MadeUp3"),
                 QName.createQName("test4", "MadeUp4"),
-                QName.createQName("test4", "MadeUp5"),
+                QName.createQName("test5", "MadeUp5")
         };
-        final int[] propCounts = new int[properties.length];
-        for (int propNum = 0; propNum < properties.length; propNum++)
+        for(QName prop : properties)
         {
-            final QName property = properties[propNum];
-            final int propNumberFinal = propNum;
+            final QName property = prop;
 
             // Zap the property if it is there
             transactionService.getRetryingTransactionHelper().doInTransaction(
@@ -177,7 +364,7 @@ public class ConcurrentNodeServiceTest extends TestCase
 
                     // Loop, incrementing each time
                     // If we miss an update, then at the end it'll be obvious
-                    AuthenticationUtil.setRunAsUserSystem();
+                    AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
                     for (int i = 0; i < loops; i++)
                     {
                         RetryingTransactionCallback<Integer> callback = new RetryingTransactionCallback<Integer>()
@@ -194,21 +381,14 @@ public class ConcurrentNodeServiceTest extends TestCase
                                 }
                                 // Increment by one. Really should be this!
                                 current++;
+                                // Save the new value
                                 nodeService.setProperty(rootNodeRef, property, Integer.valueOf(current));
                                 return current;
                             }
                         };
-                        try
-                        {
-                            RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
-                            txnHelper.setMaxRetries(loops);
-                            Integer newCount = txnHelper.doInTransaction(callback, false, true);
-                            System.out.println("Set value: " + Thread.currentThread().getName() + " " + newCount);
-                        }
-                        catch (Throwable e)
-                        {
-                            logger.error("Failed to set value: ", e);
-                        }
+                        RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+                        txnHelper.setMaxRetries(loops);
+                        txnHelper.doInTransaction(callback, false, true);
                     }
 
                     // Report us as finished
@@ -231,102 +411,63 @@ public class ConcurrentNodeServiceTest extends TestCase
         {
             t.join();
         }
-        
-        // Force a clear to see if we are seeing old values
-        SimpleCache nodesCache = (SimpleCache) ctx.getBean("node.nodesSharedCache");
-        nodesCache.clear();
-        SimpleCache propsCache = (SimpleCache) ctx.getBean("node.propertiesSharedCache");
-        propsCache.clear();
 
-        Map<QName, Serializable> nodeProperties = nodeService.getProperties(rootNodeRef);
-        List<String> errors = new ArrayList<String>();
-        for (int i =0; i < properties.length; i++)
+        // Check each property in turn
+        RetryingTransactionCallback<Void> checkCallback = new RetryingTransactionCallback<Void>()
         {
-            Integer value = (Integer) nodeProperties.get(properties[i]);
-            if (value == null)
+            @Override
+            public Void execute() throws Throwable
             {
-                errors.add("\n   Prop " + properties[i] + " : " + value);
-            }
-            if (!value.equals(new Integer(loops)))
-            {
-                // Check against the number of loops actually executed
-                if (propCounts[i] == value.intValue())
+                HashMap<QName, Integer> values = new HashMap<QName, Integer>();
+                for(QName prop : properties)
                 {
-                    System.out.println("Actually, not all counts done.");
-                }
-                errors.add("\n   Prop " + properties[i] + " : " + value);
-            }
-        }
-        if (errors.size() > 0)
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.append("Incorrect counts recieved for " + loops + " loops.");
-            for (String error : errors)
-            {
-                sb.append(error);
-            }
-            fail(sb.toString());
-        }
-    }
-    
-    /**
-     * Adds 'residual' aspects that are named according to the thread.  Multiple threads should all
-     * get their changes in. 
-     */
-    public void testMultithreaded_AspectWrites() throws Exception
-    {
-        final Thread[] threads = new Thread[2];
-        final int loops = 10;
-        
-        for (int i = 0; i < threads.length; i++)
-        {
-            final String name = "Thread-" + i + "-";
-            Runnable runnable = new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    AuthenticationUtil.setRunAsUserSystem();
-                    for (int loop = 0; loop < loops; loop++)
+                    Object val = nodeService.getProperty(rootNodeRef, prop);
+                    Integer value = -1;
+                    if(val instanceof MLText)
                     {
-                        final String nameWithLoop = name + loop;
-                        RetryingTransactionCallback<Void> runCallback = new RetryingTransactionCallback<Void>()
+                        value = Integer.valueOf( ((MLText)val).getValues().iterator().next() );
+                    }
+                    else
+                    {
+                        value = (Integer)val;
+                    }
+                    
+                    values.put(prop,value);
+                }
+                
+                List<String> errors = new ArrayList<String>();
+                for(QName prop : properties)
+                {
+                    Integer value = values.get(prop);
+                    if (value == null || !value.equals(new Integer(loops)))
+                    {
+                        errors.add("\n   Prop " + prop + " : " + value);
+                    }
+                    if (errors.size() > 0)
+                    {
+                        StringBuilder sb = new StringBuilder();
+                        sb.append("Incorrect counts recieved for " + loops + " loops.");
+                        for (String error : errors)
                         {
-                            @Override
-                            public Void execute() throws Throwable
-                            {
-                                // Add another aspect to the node
-                                QName qname = QName.createQName(NAMESPACE, nameWithLoop);
-                                nodeService.addAspect(rootNodeRef, qname, null);
-                                return null;
-                            }
-                        };
-                        transactionService.getRetryingTransactionHelper().doInTransaction(runCallback);
+                            sb.append(error);
+                        }
+                        fail(sb.toString());
                     }
                 }
-            };
-            threads[i] = new Thread(runnable, name);
-        }
-        // Start all the threads
-        for (int i = 0; i < threads.length; i++)
-        {
-            threads[i].start();
-        }
-        // Wait for them all to finish
-        for (int i = 0; i < threads.length; i++)
-        {
-            threads[i].join();
-        }
-        // Check the aspects
-        Set<QName> aspects = nodeService.getAspects(rootNodeRef);
-        for (int i = 0; i < threads.length; i++)
-        {
-            for (int j = 0; j < loops; j++)
-            {
-                String nameWithLoop = "Thread-" + i + "-" + j;
-                QName qname = QName.createQName(NAMESPACE, nameWithLoop);
-                assertTrue("Missing aspect: "+ nameWithLoop, aspects.contains(qname));
+                return null;
             }
-        }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(checkCallback, true);
+    }
+
+    private NamespacePrefixResolver getNamespacePrefixResolver(String defaultURI)
+    {
+        DynamicNamespacePrefixResolver nspr = new DynamicNamespacePrefixResolver(null);
+        nspr.registerNamespace(NamespaceService.SYSTEM_MODEL_PREFIX, NamespaceService.SYSTEM_MODEL_1_0_URI);
+        nspr.registerNamespace(NamespaceService.CONTENT_MODEL_PREFIX, NamespaceService.CONTENT_MODEL_1_0_URI);
+        nspr.registerNamespace(NamespaceService.APP_MODEL_PREFIX, NamespaceService.APP_MODEL_1_0_URI);
+        nspr.registerNamespace("namespace", "namespace");
+        nspr.registerNamespace(NamespaceService.DEFAULT_PREFIX, defaultURI);
+        return nspr;
     }
 }

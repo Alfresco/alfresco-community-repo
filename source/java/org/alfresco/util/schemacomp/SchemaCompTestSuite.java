@@ -29,10 +29,12 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses(
 {
+            DbObjectXMLTransformerTest.class,
             DbPropertyTest.class,
             DefaultComparisonUtilsTest.class,
             SchemaComparatorTest.class,
-            ValidatingVisitorTest.class
+            ValidatingVisitorTest.class,
+            SchemaToXMLTest.class,
 })
 public class SchemaCompTestSuite
 {

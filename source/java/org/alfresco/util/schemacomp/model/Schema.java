@@ -24,7 +24,6 @@ import java.util.List;
 
 import org.alfresco.util.schemacomp.DbObjectVisitor;
 import org.alfresco.util.schemacomp.DiffContext;
-import org.alfresco.util.schemacomp.Results;
 import org.alfresco.util.schemacomp.Result.Strength;
 
 /**
@@ -108,12 +107,12 @@ public class Schema extends AbstractDbObject implements Iterable<DbObject>
 
     @Override
     public void accept(DbObjectVisitor visitor)
-    {
+    {        
+        visitor.visit(this);
+        
         for (DbObject child : objects)
         {
             child.accept(visitor);
         }
-        
-        visitor.visit(this);
     }
 }

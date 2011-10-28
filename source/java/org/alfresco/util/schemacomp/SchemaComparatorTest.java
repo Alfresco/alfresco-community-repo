@@ -19,23 +19,23 @@
 package org.alfresco.util.schemacomp;
 
 
+import static org.alfresco.util.schemacomp.SchemaCompTestingUtils.columns;
+import static org.alfresco.util.schemacomp.SchemaCompTestingUtils.dumpDiffs;
+import static org.alfresco.util.schemacomp.SchemaCompTestingUtils.dumpValidation;
+import static org.alfresco.util.schemacomp.SchemaCompTestingUtils.fk;
+import static org.alfresco.util.schemacomp.SchemaCompTestingUtils.fkeys;
+import static org.alfresco.util.schemacomp.SchemaCompTestingUtils.indexes;
+import static org.alfresco.util.schemacomp.SchemaCompTestingUtils.pk;
+import static org.alfresco.util.schemacomp.SchemaCompTestingUtils.table;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 
 import org.alfresco.util.schemacomp.Difference.Where;
-import org.alfresco.util.schemacomp.model.Column;
-import org.alfresco.util.schemacomp.model.ForeignKey;
-import org.alfresco.util.schemacomp.model.Index;
-import org.alfresco.util.schemacomp.model.PrimaryKey;
 import org.alfresco.util.schemacomp.model.Schema;
 import org.alfresco.util.schemacomp.model.Table;
-import org.apache.commons.lang.ArrayUtils;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.MySQL5InnoDBDialect;
 import org.junit.Before;
@@ -136,75 +136,5 @@ public class SchemaComparatorTest
         assertEquals("nodeRef", diff.getRight().getPropertyValue());
         
         // Table table_in_right does not exist in the left schema
-    }
-    
-    
-    private void dumpValidation(List<ValidationResult> validationResults)
-    {
-        System.out.println("Validation Results (" + validationResults.size() + ")");
-        for (ValidationResult r : validationResults)
-        {
-            System.out.println(r);
-        }
-    }
-        
-    private void dumpDiffs(Results differences, boolean showNonDifferences)
-    {
-        System.out.println("Differences (" + differences.size() + ")");
-        for (Difference d : differences)
-        {
-            if (d.getWhere() != Where.IN_BOTH_NO_DIFFERENCE || showNonDifferences)
-            {
-                System.out.println(d);
-            }
-        }
-    }
-
-    private Table table(String name)
-    {
-        return new Table(null, name, columns("id NUMBER(10)"), pk("pk_" + name, "id"), fkeys(), indexes());
-    }
-    
-    private Collection<Column> columns(String... colDefs)
-    {
-        assertTrue("Tables must have columns", colDefs.length > 0);
-        Column[] columns = new Column[colDefs.length];
-
-        for (int i = 0; i < colDefs.length; i++)
-        {
-            String[] parts = colDefs[i].split(" ");
-            columns[i] = new Column(null, parts[0], parts[1], false);
-        }
-        return Arrays.asList(columns);
-    }
-    
-    private PrimaryKey pk(String name, String... columnNames)
-    {
-        assertTrue("No columns specified", columnNames.length > 0);
-        PrimaryKey pk = new PrimaryKey(null, name, Arrays.asList(columnNames));
-        return pk;
-    }
-    
-    private List<ForeignKey> fkeys(ForeignKey... fkeys)
-    {
-        return Arrays.asList(fkeys);
-    }
-    
-    private ForeignKey fk(String fkName, String localColumn, String targetTable, String targetColumn)
-    {
-        return new ForeignKey(null, fkName, localColumn, targetTable, targetColumn);
-    }
-    
-    private Collection<Index> indexes(String... indexDefs)
-    {
-        Index[] indexes = new Index[indexDefs.length];
-        for (int i = 0; i < indexDefs.length; i++)
-        {
-            String[] parts = indexDefs[i].split(" ");
-            String name = parts[0];
-            String[] columns = (String[]) ArrayUtils.subarray(parts, 1, parts.length);
-            indexes[i] = new Index(null, name, Arrays.asList(columns));
-        }
-        return Arrays.asList(indexes);
     }
 }

@@ -220,11 +220,11 @@ public class Table extends AbstractDbObject
     @Override
     public void accept(DbObjectVisitor visitor)
     {
+        visitor.visit(this);
+
         for (DbObject child : getChildren())
         {
             child.accept(visitor);
         }
-        
-        visitor.visit(this);
     }
 }

@@ -77,6 +77,12 @@ public class MimetypeMapContentTest extends TestCase
                 "image/bmp", // Officially image/x-ms-bmp 
                 mimetypeService.guessMimetype("image.bmp", openQuickTestFile("quick.bmp"))
         );
+        
+        // Alfresco Specific ones, that Tika doesn't know about
+        assertEquals(
+              "application/acp", 
+              mimetypeService.guessMimetype("something.acp", openQuickTestFile("quick.acp"))
+        );
 
         
         // Where the file is corrupted
@@ -96,13 +102,23 @@ public class MimetypeMapContentTest extends TestCase
         // So, it'll fall back to just OLE2, but it won't fail
         assertEquals(
                 "application/x-tika-msoffice", 
-                mimetypeService.guessMimetype("something.doc", truncReader)
+                mimetypeService.guessMimetype(null, truncReader)
         );
+        // But with the filename it'll be able to use the .doc extension
+        //  to guess at it being a .Doc file
+        assertEquals(
+              "application/msword", 
+              mimetypeService.guessMimetype("something.doc", truncReader)
+      );
     }
     
     private ContentReader openQuickTestFile(String filename)
     {
         URL url = getClass().getClassLoader().getResource("quick/" + filename);
+        if(url == null)
+        {
+           fail("Quick test file \"" + filename + "\" wasn't found");
+        }
         File file = new File(url.getFile());
         return new FileContentReader(file);
     }

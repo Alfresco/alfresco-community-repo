@@ -455,12 +455,6 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
          handleImage(stream, filename, type);
       }
 
-      @Override
-      public void parse(InputStream stream, ContentHandler handler,
-            Metadata metadata) throws IOException, SAXException, TikaException {
-         parse(stream, handler, metadata, new ParseContext());
-      }
-      
       private void handleImage(InputStream stream, String filename, String type) {
          count++;
          

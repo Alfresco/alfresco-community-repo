@@ -2952,6 +2952,7 @@ public class AlfrescoCmisService extends AbstractCmisService
         }
 
         int bufferSize = 40 * 1014;
+        long count = 0;
 
         try
         {
@@ -2966,6 +2967,7 @@ public class AlfrescoCmisService extends AbstractCmisService
                 while ((i = in.read(buffer)) > -1)
                 {
                     out.write(buffer, 0, i);
+                    count += i;
                 }
 
                 in.close();
@@ -2973,7 +2975,15 @@ public class AlfrescoCmisService extends AbstractCmisService
             }
         } catch (Exception e)
         {
+            removeTempFile(tempFile);
             throw new CmisStorageException("Unable to store content: " + e.getMessage(), e);
+        }
+
+        if (contentStream.getLength() > -1 && contentStream.getLength() != count)
+        {
+            removeTempFile(tempFile);
+            throw new CmisStorageException("Expected " + contentStream.getLength() + " bytes but retrieved " + count
+                    + "bytes!");
         }
 
         return tempFile;

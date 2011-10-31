@@ -26,10 +26,11 @@ function getPermissions()
       }
    }
 
-   // If this node lives within a Site, then append the Site-specific roles
+   // Get array of settable permissions
    var settable = node.getSettablePermissions(),
       location = Common.getLocation(node);
    
+   // If this node lives within a Site, then append the Site-specific roles
    if (location.siteNode != null)
    {
       settable = settable.concat(location.siteNode.getNode().getSettablePermissions());
@@ -82,14 +83,23 @@ function parsePermissions(p_permissions, p_settable)
       authorityId = tokens[1];
       role = tokens[2];
 
-      // Only return ALLOWED permissions NOT assigned to ROLEs and that are settable
-      if ((tokens[0] == "ALLOWED") && (authorityId.indexOf("ROLE_") !== 0) && (role in settable))
+      // Only return ALLOWED permissions
+      if (tokens[0] == "ALLOWED")
       {
          // Resolve to group or user as appropriate
          if (authorityId.indexOf("GROUP_") === 0)
          {
             authority = Common.getGroup(authorityId);
             nameProperty = "shortName";
+         }
+         else if (authorityId.indexOf("ROLE_") === 0)
+         {
+            authority =
+            {
+               avatar: null,
+               name: authorityId
+            };
+            nameProperty = "name";
          }
          else
          {

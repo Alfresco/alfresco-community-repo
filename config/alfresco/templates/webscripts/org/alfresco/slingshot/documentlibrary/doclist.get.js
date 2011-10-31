@@ -2,6 +2,8 @@
 <import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/documentlibrary/filters.lib.js">
 <import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/documentlibrary/parse-args.lib.js">
 
+const REQUEST_MAX = 1000;
+
 /**
  * Main entry point: Create collection of documents and folders in the given space
  *
@@ -22,7 +24,7 @@ function getDoclist()
    // Try to find a filter query based on the passed-in arguments
    var allNodes = [],
       totalRecords = 0,
-      totalRecordsUpper = 0,
+      requestTotalCountMax = 0,
       paged = false,
       favourites = Common.getFavourites(),
       filterParams = Filters.getFilterParams(filter, parsedArgs,
@@ -57,14 +59,12 @@ function getDoclist()
           var sortField = (args.sortField == null ? "cm:name" : args.sortField),
             sortAsc = (((args.sortAsc == null) || (args.sortAsc == "true")) ? true : false);
 
-          // TODO review
-          var pagedResult = parentNode.childFileFolders(true, true, ignoreTypes, skip, max, (skip + 1000), sortField, sortAsc, "TODO");
-          
+          // Get paged set
+          requestTotalCountMax = skip + REQUEST_MAX;
+          var pagedResult = parentNode.childFileFolders(true, true, ignoreTypes, skip, max, requestTotalCountMax, sortField, sortAsc, "TODO");
+
           allNodes = pagedResult.page;
-          
-          totalRecords      = pagedResult.totalResultCountLower;
-          totalRecordsUpper = pagedResult.totalResultCountUpper;
-          
+          totalRecords = pagedResult.totalResultCountUpper;
           paged = true;
        }
    }
@@ -122,7 +122,6 @@ function getDoclist()
    {
       nodes = documentNodes;
       totalRecords -= folderNodesCount;
-      totalRecordsUpper -= folderNodesCount;
    }
    else
    {
@@ -212,7 +211,6 @@ function getDoclist()
       else
       {
          --totalRecords;
-         --totalRecordsUpper;
       }
    }
 
@@ -240,7 +238,6 @@ function getDoclist()
             {
                fnArrayRemove(items, i);
                --totalRecords;
-               --totalRecordsUpper;
                break;
             }
          }
@@ -253,9 +250,9 @@ function getDoclist()
       startIndex: startIndex
    };
    
-   if (paged && (totalRecords != totalRecordsUpper))
+   if (paged && (totalRecords == requestTotalCountMax))
    {
-      paging.totalRecordsUpper = totalRecordsUpper;
+      paging.requestTotalCountMax = requestTotalCountMax;
    }
    
    return (

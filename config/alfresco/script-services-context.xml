@@ -102,6 +102,9 @@
     <bean id="searchScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.jscript.Search">
         <property name="extensionName">
             <value>search</value>
+        </property>
+        <property name="searchSubsystem">
+            <value>${index.subsystem.name}</value>
         </property>        
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry"/>

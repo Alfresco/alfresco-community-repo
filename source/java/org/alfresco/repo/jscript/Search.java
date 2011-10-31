@@ -77,6 +77,7 @@ public class Search extends BaseScopableProcessorExtension
     /** Repository helper */
     protected Repository repository;
 
+    private String searchSubsystem;
 
     /**
      * Set the default store reference
@@ -112,9 +113,18 @@ public class Search extends BaseScopableProcessorExtension
     {
         this.repository = repository;
     }
-
+    
+    public void setSearchSubsystem(String searchSubsystem)
+    {
+        this.searchSubsystem = searchSubsystem;
+    }
     
     // JavaScript API
+    
+    public String getSearchSubsystem()
+    {
+        return searchSubsystem;
+    }
     
     /**
      * Find a single Node by the Node reference

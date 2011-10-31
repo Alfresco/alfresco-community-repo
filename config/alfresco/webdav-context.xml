@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <bean id="webdavRootNode" class="org.alfresco.repo.webdav.MTNodesCache2" 
+        init-method="init">
+       <property name="nodeService" ref="NodeService" />
+       <property name="searchService" ref="SearchService" />
+       <property name="tenantService" ref="tenantService" />
+       <property name="namespaceService" ref="NamespaceService" />
+       <property name="storeName"><value>${system.webdav.storeName}</value></property>
+       <property name="rootPath"><value>${system.webdav.rootPath}</value></property>  
+       <property name="enabled" ><value>${system.webdav.servlet.enabled}</value></property> 
+    </bean>
+    
+   <!--  WebDav Client -->
+    <bean id="webdavService" class="org.alfresco.repo.webdav.WebDavServiceImpl" 
+        init-method="init">
+        <property name="dictionaryService" ref="dictionaryService" />
+        <property name="nodeService" ref="NodeService" />
+        <property name="fileFolderService" ref="FileFolderService" />
+        <property name="rootNode" ref="webdavRootNode" />
+        <property name="enabled" ><value>${system.webdav.servlet.enabled}</value></property>
+    </bean>
+ 
+
+</beans>

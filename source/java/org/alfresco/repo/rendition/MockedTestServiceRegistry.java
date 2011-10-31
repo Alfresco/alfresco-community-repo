@@ -76,6 +76,7 @@ import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.view.ExporterService;
 import org.alfresco.service.cmr.view.ImporterService;
+import org.alfresco.service.cmr.webdav.WebDavService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -544,6 +545,14 @@ public class MockedTestServiceRegistry implements ServiceRegistry
 
     @Override
     public BlogService getBlogService()
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+
+    @Override
+    public WebDavService getWebDavService()
     {
         // TODO Auto-generated method stub
         return null;

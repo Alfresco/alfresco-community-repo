@@ -74,6 +74,7 @@ import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.view.ExporterService;
 import org.alfresco.service.cmr.view.ImporterService;
+import org.alfresco.service.cmr.webdav.WebDavService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -636,5 +637,11 @@ public class ServiceDescriptorRegistry
     {
         final String beanName = "sysAdminParams";
         return (SysAdminParams) beanFactory.getBean(beanName);
+    }
+    
+    @Override
+    public WebDavService getWebDavService()
+    {
+        return (WebDavService)getService(WEBDAV_SERVICE);
     }
 }

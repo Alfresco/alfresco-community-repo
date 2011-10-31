@@ -26,31 +26,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.InetAddress;
-import java.nio.channels.Channels;
 import java.nio.charset.Charset;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.filesys.alfresco.AlfrescoClientInfo;
 import org.alfresco.filesys.alfresco.AlfrescoContext;
 import org.alfresco.filesys.alfresco.AlfrescoDiskDriver;
-import org.alfresco.filesys.alfresco.AlfrescoNetworkFile;
-import org.alfresco.filesys.alfresco.DesktopAction;
-import org.alfresco.filesys.alfresco.DesktopActionTable;
-import org.alfresco.filesys.alfresco.DesktopParams;
-import org.alfresco.filesys.alfresco.DesktopResponse;
-import org.alfresco.filesys.alfresco.DesktopTarget;
 import org.alfresco.filesys.alfresco.ExtendedDiskInterface;
-import org.alfresco.filesys.alfresco.IOControl;
-import org.alfresco.filesys.alfresco.IOControlHandler;
 import org.alfresco.filesys.alfresco.PseudoFileOverlayImpl;
 import org.alfresco.filesys.alfresco.RepositoryDiskInterface;
-import org.alfresco.filesys.alfresco.ShuffleCache;
-import org.alfresco.filesys.config.ServerConfigurationBean;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.core.DeviceContext;
 import org.alfresco.jlan.server.core.DeviceContextException;
@@ -73,10 +60,7 @@ import org.alfresco.jlan.server.filesys.SearchContext;
 import org.alfresco.jlan.server.filesys.SrvDiskInfo;
 import org.alfresco.jlan.server.filesys.TreeConnection;
 import org.alfresco.jlan.server.filesys.cache.FileState;
-import org.alfresco.jlan.server.filesys.cache.FileStateLockManager;
-import org.alfresco.jlan.server.filesys.pseudo.MemoryPseudoFile;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoFile;
-import org.alfresco.jlan.server.filesys.pseudo.PseudoFileInterface;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoFileList;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoNetworkFile;
 import org.alfresco.jlan.server.filesys.quota.QuotaManager;
@@ -87,29 +71,19 @@ import org.alfresco.jlan.server.locking.OpLockInterface;
 import org.alfresco.jlan.server.locking.OpLockManager;
 import org.alfresco.jlan.smb.SMBException;
 import org.alfresco.jlan.smb.SMBStatus;
-import org.alfresco.jlan.smb.nt.NTIOCtl;
 import org.alfresco.jlan.smb.server.SMBServer;
-import org.alfresco.jlan.smb.server.SMBSrvSession;
-import org.alfresco.jlan.smb.server.disk.JavaNetworkFile;
-import org.alfresco.jlan.server.filesys.FileAttribute;
 import org.alfresco.jlan.util.DataBuffer;
 import org.alfresco.jlan.util.MemorySize;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.repo.content.filestore.FileContentReader;
-import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
-import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.lock.LockService;
-import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.lock.NodeLockedException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -125,7 +99,6 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthenticationService;
-import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -133,7 +106,6 @@ import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.james.mime4j.storage.TempFileStorageProvider;
 import org.springframework.extensions.config.ConfigElement;
 
 /**
@@ -762,19 +734,20 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         try
         {
             String searchFileSpec = searchPath;
-            
+                
             NodeRef searchRootNodeRef = ctx.getRootNode();
                         
             String[] paths = FileName.splitPath(searchPath);
+            String dotPath = paths[0];
             
             // lookup parent directory
-            NodeRef dirNodeRef = getNodeForPath(tree, paths[0]);
+            NodeRef dirNodeRef = getNodeForPath(tree, dotPath);
             if(dirNodeRef != null)
             {
                 searchRootNodeRef = dirNodeRef;
                 searchFileSpec    = paths[1];
             }
-                       
+            
             // Convert the all files wildcard
             if ( searchFileSpec.equals( "*.*"))
             {
@@ -815,10 +788,31 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             }
             
             DotDotContentSearchContext searchCtx = new DotDotContentSearchContext(getCifsHelper(), results, searchFileSpec, pseudoList, paths[0]);          
+
+            FileInfo dotInfo = getCifsHelper().getFileInformation(searchRootNodeRef, false, isLockedFilesAsOffline);
             
-            // Need to set dot and dotdot
-            //searchCtx.setDotInfo(finfo);
-            //searchCtx.setDotDotInfo(finfo);
+            if ( searchPath.equals( FileName.DOS_SEPERATOR_STR)) {
+                // Searching the root folder, re-use the search folder file information for the '..' pseudo entry    
+                FileInfo dotDotInfo = new FileInfo();
+                dotDotInfo.copyFrom(dotInfo);
+                searchCtx.setDotInfo(dotInfo);
+                searchCtx.setDotDotInfo( dotDotInfo);
+            }
+            else
+            {
+                String[] parent = FileName.splitPath(dotPath);
+                NodeRef parentNodeRef = getNodeForPath(tree, parent[0]);
+                if(parentNodeRef != null)
+                {
+                    FileInfo dotDotInfo = getCifsHelper().getFileInformation(parentNodeRef, false, isLockedFilesAsOffline);
+                    searchCtx.setDotDotInfo(dotDotInfo);
+                }
+                
+                // Searching a normal, non root, folder
+                // Need to set dot and dotdot
+                searchCtx.setDotInfo(dotInfo);
+               
+            }
             
             // Debug
             if (logger.isDebugEnabled())

@@ -73,6 +73,7 @@ import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.view.ExporterService;
 import org.alfresco.service.cmr.view.ImporterService;
+import org.alfresco.service.cmr.webdav.WebDavService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -166,7 +167,7 @@ public interface ServiceRegistry
     
     static final QName PUBLIC_SERVICE_ACCESS_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "PublicServiceAccessService");
     
-    
+    static final QName WEBDAV_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "webdavService");
 
     /**
      * Get the list of services provided by the Repository
@@ -602,4 +603,13 @@ public interface ServiceRegistry
      */
     @NotAuditable
     SysAdminParams getSysAdminParams();
+    
+    /**
+     * Get the webdav service / helper bean.
+     * @return the webdav service / helper bean
+     */
+    @NotAuditable
+    WebDavService getWebDavService();
+    
+    
 }

@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.FileTypeImageSize;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
+import org.alfresco.service.cmr.webdav.WebDavService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ISO9075;
@@ -422,31 +423,8 @@ public abstract class BaseContentNode implements TemplateContent
      */
     public String getWebdavUrl()
     {
-        try
-        {
-            if (getIsContainer() || getIsDocument())
-            {
-                List<FileInfo> paths = this.services.getFileFolderService().getNamePath(null, getNodeRef());
-                
-                // build up the webdav url
-                StringBuilder path = new StringBuilder(128);
-                path.append("/webdav");
-                
-                // build up the path skipping the first path as it is the root folder
-                for (int i=1; i<paths.size(); i++)
-                {
-                    path.append("/")
-                        .append(URLEncoder.encode(paths.get(i).getName()));
-                }
-                return path.toString();
-            }
-        }
-        catch (FileNotFoundException nodeErr)
-        {
-            // cannot build path if file no longer exists
-            return "";
-        }
-        return "";
+        WebDavService webDavService = this.services.getWebDavService();
+        return webDavService.getWebdavUrl(getNodeRef());       
     }
     
     /**

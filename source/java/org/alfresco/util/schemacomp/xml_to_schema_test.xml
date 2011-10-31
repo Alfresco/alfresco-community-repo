@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+      Test data used by the XMLToSchemaTest junit test class. 
+  -->
+<schema name="alfresco">
+  <objects>
+    <table name="node">
+      <columns>
+        <column name="id">
+          <type>NUMBER(10)</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="nodeRef">
+          <type>VARCHAR2(200)</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="name">
+          <type>VARCHAR2(150)</type>
+          <nullable>true</nullable>
+        </column>
+      </columns>
+      <primarykey name="pk_node">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys>
+        <foreignkey name="fk_node_noderef">
+          <localcolumn>nodeRef</localcolumn>
+          <targettable>node</targettable>
+          <targetcolumn>nodeRef</targetcolumn>
+        </foreignkey>
+      </foreignkeys>
+      <indexes>
+        <index name="idx_node_by_id">
+          <columnnames>
+            <columnname>id</columnname>
+            <columnname>nodeRef</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <sequence name="node_seq"/>
+    <sequence name="person_seq"/>
+    <sequence name="content_seq"/>    
+  </objects>
+</schema>

@@ -34,7 +34,8 @@ import org.junit.runners.Suite;
             DefaultComparisonUtilsTest.class,
             SchemaComparatorTest.class,
             ValidatingVisitorTest.class,
-            SchemaToXMLTest.class
+            SchemaToXMLTest.class,
+            XMLToSchemaTest.class
 })
 public class SchemaCompTestSuite
 {

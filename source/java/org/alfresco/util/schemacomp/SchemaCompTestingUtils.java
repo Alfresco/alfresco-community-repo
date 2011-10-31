@@ -29,6 +29,7 @@ import org.alfresco.util.schemacomp.model.Column;
 import org.alfresco.util.schemacomp.model.ForeignKey;
 import org.alfresco.util.schemacomp.model.Index;
 import org.alfresco.util.schemacomp.model.PrimaryKey;
+import org.alfresco.util.schemacomp.model.Sequence;
 import org.alfresco.util.schemacomp.model.Table;
 import org.apache.commons.lang.ArrayUtils;
 
@@ -111,5 +112,10 @@ public class SchemaCompTestingUtils
             indexes[i] = new Index(null, name, Arrays.asList(columns));
         }
         return Arrays.asList(indexes);
+    }
+    
+    public static Sequence sequence(String name)
+    {
+        return new Sequence(name);
     }
 }

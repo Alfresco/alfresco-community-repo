@@ -35,6 +35,11 @@ public class Column extends AbstractDbObject
     private boolean nullable;
     
     
+    public Column(String name)
+    {
+        super(null, name);
+    }
+    
     /**
      * Construct a Column.
      * 

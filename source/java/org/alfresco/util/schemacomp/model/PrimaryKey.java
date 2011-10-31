@@ -18,6 +18,7 @@
  */
 package org.alfresco.util.schemacomp.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.util.schemacomp.DbObjectVisitor;
@@ -32,9 +33,14 @@ import org.alfresco.util.schemacomp.Result.Strength;
  */
 public class PrimaryKey extends AbstractDbObject
 {
-    private List<String> columnNames;
+    private final List<String> columnNames = new ArrayList<String>();
 
 
+    public PrimaryKey(String name)
+    {
+        super(null, name);
+    }
+    
     /**
      * Constructor
      * @param table the parent table
@@ -44,7 +50,7 @@ public class PrimaryKey extends AbstractDbObject
     public PrimaryKey(Table table, String name, List<String> columnNames)
     {
         super(table, name);
-        this.columnNames = columnNames;
+        this.columnNames.addAll(columnNames);
     }
 
     /**
@@ -60,7 +66,8 @@ public class PrimaryKey extends AbstractDbObject
      */
     public void setColumnNames(List<String> columnNames)
     {
-        this.columnNames = columnNames;
+        this.columnNames.clear();
+        this.columnNames.addAll(columnNames);
     }
 
     @Override

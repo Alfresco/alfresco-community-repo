@@ -21,7 +21,6 @@ package org.alfresco.util.schemacomp.model;
 import org.alfresco.util.schemacomp.DbObjectVisitor;
 import org.alfresco.util.schemacomp.DbProperty;
 import org.alfresco.util.schemacomp.DiffContext;
-import org.alfresco.util.schemacomp.Results;
 import org.alfresco.util.schemacomp.Result.Strength;
 
 
@@ -37,6 +36,11 @@ public class ForeignKey extends AbstractDbObject
     private String targetTable;
     private String targetColumn;
     
+    
+    public ForeignKey(String name)
+    {
+        super(null, name);
+    }
     
     /**
      * Constructor.

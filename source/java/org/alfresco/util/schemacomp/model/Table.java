@@ -39,6 +39,17 @@ public class Table extends AbstractDbObject
     private final List<Index> indexes = new ArrayList<Index>();
     
     
+    public Table(String name)
+    {
+        super(null, name);
+    }
+    
+    public Table(String name, Collection<Column> columns, PrimaryKey primaryKey, 
+                Collection<ForeignKey> foreignKeys, Collection<Index> indexes)
+    {
+        this(null, name, columns, primaryKey, foreignKeys, indexes);
+    }
+    
     public Table(Schema parentSchema, String name, Collection<Column> columns, PrimaryKey primaryKey, 
                 Collection<ForeignKey> foreignKeys, Collection<Index> indexes)
     {

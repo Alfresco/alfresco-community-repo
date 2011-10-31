@@ -25,6 +25,7 @@ import static org.alfresco.util.schemacomp.SchemaCompTestingUtils.fkeys;
 import static org.alfresco.util.schemacomp.SchemaCompTestingUtils.indexes;
 import static org.alfresco.util.schemacomp.SchemaCompTestingUtils.pk;
 import static org.alfresco.util.schemacomp.SchemaCompTestingUtils.table;
+import static org.alfresco.util.schemacomp.SchemaCompTestingUtils.sequence;
 import static org.junit.Assert.assertEquals;
 
 import java.io.BufferedReader;
@@ -65,7 +66,9 @@ public class SchemaToXMLTest
                                   "name VARCHAR2(150)"), 
                           pk("pk_node", "id"),
                           fkeys(fk("fk_node_noderef", "nodeRef", "node", "nodeRef")),
-                          indexes("idx_node_by_id id nodeRef")) );
+                          indexes("idx_node_by_id id nodeRef")));
+        schema.add(sequence("node_seq"));
+        schema.add(sequence("content_seq"));
         
         SchemaToXML transformer = new SchemaToXML(schema, out);
         

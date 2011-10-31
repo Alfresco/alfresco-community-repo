@@ -250,9 +250,6 @@ public class CreateSpaceWizard extends BaseWizardBean
          }
       }
 
-      setTitle("");
-      setDescription("");
-
       return outcome;
    }
 

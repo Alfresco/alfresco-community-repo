@@ -349,58 +349,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                         Pair<Long, NodeRef> pair = nodeDAO.getNodePair(catRef);
                         for (Path path : nodeDAO.getPaths(pair, false))
                         {
-                            if ((path.size() > 1) && (path.get(1) instanceof Path.ChildAssocElement))
-                            {
-                                Path.ChildAssocElement cae = (Path.ChildAssocElement) path.get(1);
-                                boolean isFakeRoot = true;
-
-                                final List<ChildAssociationRef> results = new ArrayList<ChildAssociationRef>(10);
-                                // We have a callback handler to filter results
-                                ChildAssocRefQueryCallback callback = new ChildAssocRefQueryCallback()
-                                {
-                                    public boolean preLoadNodes()
-                                    {
-                                        return false;
-                                    }
-                                    
-                                    @Override
-                                    public boolean orderResults()
-                                    {
-                                        return false;
-                                    }
-
-                                    public boolean handle(
-                                            Pair<Long, ChildAssociationRef> childAssocPair,
-                                            Pair<Long, NodeRef> parentNodePair,
-                                            Pair<Long, NodeRef> childNodePair)
-                                    {
-                                        results.add(childAssocPair.getSecond());
-                                        return true;
-                                    }
-
-                                    public void done()
-                                    {
-                                    }                               
-                                };
-                                
-                                Pair<Long, NodeRef> caePair = nodeDAO.getNodePair(cae.getRef().getChildRef());
-                                nodeDAO.getParentAssocs(caePair.getFirst(), null, null, false, callback);
-                                for (ChildAssociationRef car : results)
-                                {
-                                    if (cae.getRef().equals(car))
-                                    {
-                                        isFakeRoot = false;
-                                        break;
-                                    }
-                                }
-                                if (isFakeRoot)
-                                {
-                                    if (path.toString().indexOf(aspDef.getName().toString()) != -1)
-                                    {
-                                        aspectPaths.add(new Pair<Path, QName>(path, aspDef.getName()));
-                                    }
-                                }
-                            }
+                            aspectPaths.add(new Pair<Path, QName>(path, aspDef.getName()));   
                         }
                     }
                     catch (InvalidNodeRefException e)

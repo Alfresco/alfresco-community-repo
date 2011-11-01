@@ -628,6 +628,9 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
      */
     public void testDeleteVersion()
     {
+        // Use 1.0, 2.0 etc for the main part
+        versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
+       
         // Create a versionable node
         NodeRef versionableNode = createNewVersionableNode();
         
@@ -644,106 +647,169 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         assertNull(version);
         
         // Create a couple of versions
-        Version version0 = createVersion(versionableNode);
         Version version1 = createVersion(versionableNode);
+        Version version2 = createVersion(versionableNode);
         
         // Check that the version label is correct on the versionable node
         String versionLabel1 = (String)this.dbNodeService.getProperty(versionableNode, ContentModel.PROP_VERSION_LABEL);
-        assertEquals("first version label", "0.2", versionLabel1);
-        assertEquals(version1.getVersionLabel(), versionLabel1);
+        assertEquals("first version label", "2.0", versionLabel1);
+        assertEquals(version2.getVersionLabel(), versionLabel1);
         
         // Check the version history
         List<Version> expectedVersions = new ArrayList<Version>(2);
-        expectedVersions.add(version1);    // 0.1
-        expectedVersions.add(version0);    // 0.2
+        expectedVersions.add(version2);    // 2.0
+        expectedVersions.add(version1);    // 1.0
         versionHistory = this.versionService.getVersionHistory(versionableNode);
         assertEquals(2, versionHistory.getAllVersions().size());
         CheckVersionHistory(versionHistory, expectedVersions);
         
+        // Check the versions on the history
+        Version[] versions = versionHistory.getAllVersions().toArray(new Version[2]);
+        assertEquals("2.0", versions[0].getVersionLabel()); 
+        assertEquals("1.0", versions[1].getVersionLabel()); 
+        
+        
         // Check current version
         Version currentVersion = this.versionService.getCurrentVersion(versionableNode);
-        assertEquals(currentVersion.getVersionLabel(), version1.getVersionLabel());
-        assertEquals(currentVersion.getFrozenStateNodeRef(), version1.getFrozenStateNodeRef());
+        assertEquals(currentVersion.getVersionLabel(), version2.getVersionLabel());
+        assertEquals(currentVersion.getFrozenStateNodeRef(), version2.getFrozenStateNodeRef());
         
         // Create a couple more versions
-        Version version2 = createVersion(versionableNode);  // 0.3
-        Version version3 = createVersion(versionableNode);  //0.4
+        Version version3 = createVersion(versionableNode);  // 3.0
+        Version version4 = createVersion(versionableNode);  // 4.0
         
         // Check that the version label is correct on the versionable node
-        String versionLabel3 = (String)this.dbNodeService.getProperty(versionableNode, ContentModel.PROP_VERSION_LABEL);
-        assertEquals("0.4", versionLabel3);
-        assertEquals(version3.getVersionLabel(), versionLabel3);
+        String versionLabel4 = (String)this.dbNodeService.getProperty(versionableNode, ContentModel.PROP_VERSION_LABEL);
+        assertEquals("4.0", versionLabel4);
+        assertEquals(version4.getVersionLabel(), versionLabel4);
         
         // Check the version history
         expectedVersions = new ArrayList<Version>(4);
+        expectedVersions.add(version4);
         expectedVersions.add(version3);
         expectedVersions.add(version2);
         expectedVersions.add(version1);
-        expectedVersions.add(version0);
         versionHistory = this.versionService.getVersionHistory(versionableNode);
         assertEquals(4, versionHistory.getAllVersions().size());
         CheckVersionHistory(versionHistory, expectedVersions);
         
         // Check current version
         currentVersion = this.versionService.getCurrentVersion(versionableNode);
-        assertEquals(currentVersion.getVersionLabel(), version3.getVersionLabel());
-        assertEquals(currentVersion.getFrozenStateNodeRef(), version3.getFrozenStateNodeRef());
+        assertEquals(currentVersion.getVersionLabel(), version4.getVersionLabel());
+        assertEquals(currentVersion.getFrozenStateNodeRef(), version4.getFrozenStateNodeRef());
+        assertEquals("4.0", currentVersion.getVersionLabel());
 
-        // Delete version 2
-        this.versionService.deleteVersion(versionableNode, version2);
+        // Delete version 3.0
+        this.versionService.deleteVersion(versionableNode, version3);
         
-        // Delete version 0
-        this.versionService.deleteVersion(versionableNode, version0);
+        // Delete version 1.0
+        this.versionService.deleteVersion(versionableNode, version1);
         
         // Check the version history
         expectedVersions = new ArrayList<Version>(2);
-        expectedVersions.add(version3);
-        expectedVersions.add(version1);
+        expectedVersions.add(version4);
+        expectedVersions.add(version2);
         versionHistory = this.versionService.getVersionHistory(versionableNode);
         assertEquals(2, versionHistory.getAllVersions().size());
         CheckVersionHistory(versionHistory, expectedVersions);
         
         // Check current version is unchanged
         currentVersion = this.versionService.getCurrentVersion(versionableNode);
-        assertEquals(currentVersion.getVersionLabel(), version3.getVersionLabel());
-        assertEquals(currentVersion.getFrozenStateNodeRef(), version3.getFrozenStateNodeRef());
+        assertEquals(currentVersion.getVersionLabel(), version4.getVersionLabel());
+        assertEquals(currentVersion.getFrozenStateNodeRef(), version4.getFrozenStateNodeRef());
         
-        // Delete version 3
-        this.versionService.deleteVersion(versionableNode, version3);
+        // Delete version 4
+        this.versionService.deleteVersion(versionableNode, version4);
         
         // Check the version history size
         expectedVersions = new ArrayList<Version>(1);
-        expectedVersions.add(version1);
+        expectedVersions.add(version2);
         versionHistory = this.versionService.getVersionHistory(versionableNode);
         assertEquals(1, versionHistory.getAllVersions().size());
         CheckVersionHistory(versionHistory, expectedVersions);
         
-        // Check current version has changed to version 1
+        // Check current version has changed to version 2.0
         currentVersion = this.versionService.getCurrentVersion(versionableNode);
-        assertEquals(currentVersion.getVersionLabel(), version1.getVersionLabel());
-        assertEquals(currentVersion.getFrozenStateNodeRef(), version1.getFrozenStateNodeRef());
+        assertEquals(currentVersion.getVersionLabel(), version2.getVersionLabel());
+        assertEquals(currentVersion.getFrozenStateNodeRef(), version2.getFrozenStateNodeRef());
         
-        // Create version 4
-        Version version4 = createVersion(versionableNode);
+        
+        // Create a new version. As 3.0 and 4.0 have been deleted, will be 3.0 again
+        Version version3n = createVersion(versionableNode);
         
         // Check the version history size
         expectedVersions = new ArrayList<Version>(2);
-        expectedVersions.add(version4);
-        expectedVersions.add(version1);
+        expectedVersions.add(version3n);
+        expectedVersions.add(version2);
         versionHistory = this.versionService.getVersionHistory(versionableNode);
         assertEquals(2, versionHistory.getAllVersions().size());
         CheckVersionHistory(versionHistory, expectedVersions);
         
-        // Check current version has changed to version 4
+        // Check current version has changed to version 3.0
         currentVersion = this.versionService.getCurrentVersion(versionableNode);
-        assertEquals(currentVersion.getVersionLabel(), version4.getVersionLabel());
-        assertEquals(currentVersion.getFrozenStateNodeRef(), version4.getFrozenStateNodeRef());
+        assertEquals(currentVersion.getVersionLabel(), version3n.getVersionLabel());
+        assertEquals(currentVersion.getFrozenStateNodeRef(), version3n.getFrozenStateNodeRef());
+        assertEquals("3.0", currentVersion.getVersionLabel());
         
-        // Delete version 1
-        this.versionService.deleteVersion(versionableNode, version1);
         
-        // Delete version 4
-        this.versionService.deleteVersion(versionableNode, version4);
+        // Create versions 3.1 and 3.2
+        versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);        
+        Version version31 = createVersion(versionableNode);
+        Version version32 = createVersion(versionableNode);
+        
+        versionHistory = this.versionService.getVersionHistory(versionableNode);
+        assertEquals(4, versionHistory.getAllVersions().size());
+        expectedVersions = new ArrayList<Version>(2);
+        expectedVersions.add(version32);
+        expectedVersions.add(version31);
+        expectedVersions.add(version3n);
+        expectedVersions.add(version2);
+        CheckVersionHistory(versionHistory, expectedVersions);
+        
+        // Check the current version is now 3.2
+        currentVersion = this.versionService.getCurrentVersion(versionableNode);
+        assertEquals(currentVersion.getVersionLabel(), version32.getVersionLabel());
+        assertEquals(currentVersion.getFrozenStateNodeRef(), version32.getFrozenStateNodeRef());
+        assertEquals("3.2", currentVersion.getVersionLabel());
+        
+        
+        // Delete version 3.1
+        versionService.deleteVersion(versionableNode, version31);
+        
+        versionHistory = this.versionService.getVersionHistory(versionableNode);
+        assertEquals(3, versionHistory.getAllVersions().size());
+        expectedVersions.remove(version31);
+        CheckVersionHistory(versionHistory, expectedVersions);
+        
+        // Current version is still 3.2
+        currentVersion = this.versionService.getCurrentVersion(versionableNode);
+        assertEquals(currentVersion.getVersionLabel(), version32.getVersionLabel());
+        assertEquals(currentVersion.getFrozenStateNodeRef(), version32.getFrozenStateNodeRef());
+
+        
+        // Delete version 3.2
+        versionService.deleteVersion(versionableNode, version32);
+        
+        versionHistory = this.versionService.getVersionHistory(versionableNode);
+        assertEquals(2, versionHistory.getAllVersions().size());
+        expectedVersions.remove(version32);
+        CheckVersionHistory(versionHistory, expectedVersions);
+        
+        // Check current version is back to 3.0
+        currentVersion = this.versionService.getCurrentVersion(versionableNode);
+        assertEquals(currentVersion.getVersionLabel(), version3n.getVersionLabel());
+        assertEquals(currentVersion.getFrozenStateNodeRef(), version3n.getFrozenStateNodeRef());
+        assertEquals("3.0", currentVersion.getVersionLabel());
+        
+        
+        // Delete version 2.0
+        this.versionService.deleteVersion(versionableNode, version2);
+        currentVersion = this.versionService.getCurrentVersion(versionableNode);
+        assertEquals(currentVersion.getVersionLabel(), version3n.getVersionLabel());
+        assertEquals(currentVersion.getFrozenStateNodeRef(), version3n.getFrozenStateNodeRef());
+        
+        // Delete version 3.0 (our last version)
+        this.versionService.deleteVersion(versionableNode, version3n);
         
         // Check the version history is empty
         versionHistory = this.versionService.getVersionHistory(versionableNode);

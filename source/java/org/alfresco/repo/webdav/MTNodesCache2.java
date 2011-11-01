@@ -63,45 +63,9 @@ public class MTNodesCache2
         PropertyCheck.mandatory(this, "nodeService", getNodeService());
         PropertyCheck.mandatory(this, "searchService", getSearchService());
         PropertyCheck.mandatory(this, "namespaceService", getNamespaceService());
-        PropertyCheck.mandatory(this, "tenantService", getTenantService());
-            
-        if(!enabled)
-        {
-            return;
-        }
-        
+        PropertyCheck.mandatory(this, "tenantService", getTenantService());     
         PropertyCheck.mandatory(this, "storeName", storeName);
         PropertyCheck.mandatory(this, "rootPath", rootPath);
-        
-        AuthenticationUtil.setRunAsUserSystem();
-        try
-        {
-            StoreRef storeRef = new StoreRef(storeName);
-        
-            if (nodeService.exists(storeRef) == false)
-            {
-                throw new RuntimeException("No store for path: " + storeName);
-            }
-
-            NodeRef storeRootNodeRef = nodeService.getRootNode(storeRef);
-
-            List<NodeRef> nodeRefs = getSearchService().selectNodes(storeRootNodeRef, rootPath, null, getNamespaceService(), false);
-
-            if (nodeRefs.size() > 1)
-            {
-                throw new RuntimeException("Multiple possible children for : \n" + "   path: " + rootPath + "\n" + "   results: " + nodeRefs);
-            }
-            else if (nodeRefs.size() == 0)
-            {
-                throw new RuntimeException("Node is not found for : \n" + "   root path: " + rootPath);
-            }
-
-            defaultNode = nodeRefs.get(0);
-        }
-        finally
-        {
-            AuthenticationUtil.clearCurrentSecurityContext();
-        }
     }
     
     public void setNodeService(NodeService nodeService)
@@ -141,6 +105,48 @@ public class MTNodesCache2
         }
         return result;
     }
+
+    
+    public void onBootstrap()
+    {
+        if(!enabled)
+        {
+            return;
+        }
+        
+        nodesCache.clear();
+        
+        AuthenticationUtil.setRunAsUserSystem();
+        try
+        {
+            StoreRef storeRef = new StoreRef(storeName);
+    
+            if (nodeService.exists(storeRef) == false)
+            {
+                throw new RuntimeException("No store for path: " + storeName);
+            }
+
+            NodeRef storeRootNodeRef = nodeService.getRootNode(storeRef);
+
+            List<NodeRef> nodeRefs = getSearchService().selectNodes(storeRootNodeRef, rootPath, null, getNamespaceService(), false);
+
+            if (nodeRefs.size() > 1)
+            {
+                throw new RuntimeException("Multiple possible children for : \n" + "   path: " + rootPath + "\n" + "   results: " + nodeRefs);
+            }
+            else if (nodeRefs.size() == 0)
+            {
+                throw new RuntimeException("Node is not found for : \n" + "   root path: " + rootPath);
+            }
+
+            defaultNode = nodeRefs.get(0);
+        }
+        finally
+        {
+            AuthenticationUtil.clearCurrentSecurityContext();
+        }
+    }
+
     
     /**
      * @return              Returns the name of the store

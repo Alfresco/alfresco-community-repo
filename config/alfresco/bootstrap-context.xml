@@ -801,6 +801,12 @@
           <ref bean="repositoryState"/>
        </property>
     </bean>
+    
+    <bean id="webDavBootstrapBean" class="org.alfresco.repo.webdav.WebDavBootstrap" >
+       <property name="rootNode">
+          <ref bean="webdavRootNode"/>
+       </property>
+    </bean>
 
     <!-- Startup Message -->
 

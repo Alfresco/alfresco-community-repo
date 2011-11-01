@@ -19,6 +19,8 @@
 package org.alfresco.util.schemacomp;
 
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.BufferedInputStream;
@@ -31,7 +33,6 @@ import org.alfresco.util.schemacomp.model.Sequence;
 import org.alfresco.util.schemacomp.model.Table;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  * Tests for the XMLToSchema class.
@@ -89,6 +90,7 @@ public class XMLToSchemaTest
         
         assertEquals(1, table.getIndexes().size());
         assertEquals("idx_node_by_id", table.getIndexes().get(0).getName());
+        assertEquals(true, table.getIndexes().get(0).isUnique());        
         assertEquals(2, table.getIndexes().get(0).getColumnNames().size());
         assertEquals("id", table.getIndexes().get(0).getColumnNames().get(0));
         assertEquals("nodeRef", table.getIndexes().get(0).getColumnNames().get(1));

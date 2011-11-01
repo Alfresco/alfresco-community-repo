@@ -32,7 +32,7 @@
         </foreignkey>
       </foreignkeys>
       <indexes>
-        <index name="idx_node_by_id">
+        <index name="idx_node_by_id" unique="true">
           <columnnames>
             <columnname>id</columnname>
             <columnname>nodeRef</columnname>

@@ -68,7 +68,10 @@ public class DbObjectXMLTransformer
         String tagName = dbObject.getClass().getSimpleName().toLowerCase();   
         final AttributesImpl attribs = new AttributesImpl();
         attribs.addAttribute("", "", "name", "CDATA", dbObject.getName());
+        // Add class-specific attributes.
+        addAttributes(dbObject, attribs);
         xmlOut.startElement("", "", tagName, attribs);
+        
         
         // The element's contents can optionally be populated with class-specific content.
         transformDbObject(dbObject);
@@ -77,6 +80,21 @@ public class DbObjectXMLTransformer
         xmlOut.endElement("", "", tagName);
     }
     
+    /**
+     * Add class-specific attributes.
+     * 
+     * @param dbObject
+     * @param attribs
+     */
+    private void addAttributes(DbObject dbObject, AttributesImpl attribs)
+    {
+        if (dbObject instanceof Index)
+        {
+            Index index = (Index) dbObject;
+            attribs.addAttribute("", "", "unique", "CDATA", Boolean.toString(index.isUnique()));
+        }
+    }
+
     private void transformDbObject(DbObject dbObject) throws SAXException
     {
         if (dbObject instanceof Schema)

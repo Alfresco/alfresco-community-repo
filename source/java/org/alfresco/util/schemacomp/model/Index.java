@@ -34,7 +34,7 @@ import org.alfresco.util.schemacomp.Result.Strength;
 public class Index extends AbstractDbObject
 {
     private final List<String> columnNames = new ArrayList<String>();
-
+    private boolean unique;
     
     public Index(String name)
     {
@@ -69,12 +69,33 @@ public class Index extends AbstractDbObject
         this.columnNames.addAll(columnNames);
     }
 
+    /**
+     * Does this index have the unique attribute?
+     * 
+     * @return unique
+     */
+    public boolean isUnique()
+    {
+        return this.unique;
+    }
+
+    /**
+     * @see #isUnique()
+     * @param unique
+     */
+    public void setUnique(boolean unique)
+    {
+        this.unique = unique;
+    }
+
+
     @Override
     public int hashCode()
     {
         final int prime = 31;
         int result = super.hashCode();
         result = prime * result + ((this.columnNames == null) ? 0 : this.columnNames.hashCode());
+        result = prime * result + (this.unique ? 1231 : 1237);
         return result;
     }
 
@@ -90,6 +111,7 @@ public class Index extends AbstractDbObject
             if (other.columnNames != null) return false;
         }
         else if (!this.columnNames.equals(other.columnNames)) return false;
+        if (this.unique != other.unique) return false;
         return true;
     }
 
@@ -126,6 +148,10 @@ public class Index extends AbstractDbObject
                     new DbProperty(rightIndex, "columnNames"),
                     ctx,
                     strength);
+        comparisonUtils.compareSimple(
+                    new DbProperty(this, "unique"),
+                    new DbProperty(rightIndex, "unique"),
+                    ctx);
     }
 
     

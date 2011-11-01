@@ -142,7 +142,7 @@ public class DbObjectXMLTransformerTest
         BufferedReader reader = new BufferedReader(new StringReader(writer.toString()));
         dumpOutput();
         assertHasPreamble(reader);
-        assertEquals("<index name=\"index_name\">", reader.readLine());
+        assertEquals("<index name=\"index_name\" unique=\"false\">", reader.readLine());
         assertEquals("  <columnnames>", reader.readLine());
         assertEquals("    <columnname>first</columnname>", reader.readLine());
         assertEquals("    <columnname>second</columnname>", reader.readLine());                

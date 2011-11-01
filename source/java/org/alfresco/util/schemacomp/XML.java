@@ -43,4 +43,5 @@ public abstract class XML
     public static final String EL_TARGET_TABLE = "targettable";
     
     public static final String ATTR_NAME = "name";
+    public static final String ATTR_UNIQUE = "unique";
 }

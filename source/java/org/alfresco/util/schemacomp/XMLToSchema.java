@@ -162,7 +162,10 @@ public class XMLToSchema extends DefaultHandler
         }
         else if (qName.equals(XML.EL_INDEX))
         {
-            dboStack.push(new Index(atts.getValue(XML.ATTR_NAME)));
+            Index index = new Index(atts.getValue(XML.ATTR_NAME));
+            boolean unique = Boolean.parseBoolean(atts.getValue(XML.ATTR_UNIQUE));
+            index.setUnique(unique);
+            dboStack.push(index);
         }
         else if (qName.equals(XML.EL_SEQUENCE))
         {

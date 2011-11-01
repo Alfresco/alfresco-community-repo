@@ -28,6 +28,7 @@ import static org.alfresco.util.schemacomp.SchemaCompTestingUtils.indexes;
 import static org.alfresco.util.schemacomp.SchemaCompTestingUtils.pk;
 import static org.alfresco.util.schemacomp.SchemaCompTestingUtils.table;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 
 import java.util.Arrays;
@@ -71,14 +72,14 @@ public class SchemaComparatorTest
                     indexes("idx_node id nodeRef")));
         left.add(table("table_in_left"));
         left.add(new Table(left, "tbl_has_diff_pk", columns("id NUMBER(10)", "nodeRef VARCHAR2(200)"),
-                    pk("pk_is_diff", "id"), fkeys(), indexes()));
+                    pk("pk_is_diff", "id"), fkeys(), indexes("idx_one id nodeRef", "idx_two id")));
         
         // Right hand side's database objects.
         right.add(new Table(right, "tbl_no_diff", columns("id NUMBER(10)", "nodeRef VARCHAR2(200)", "name VARCHAR2(150)"), 
                     pk("pk_tbl_no_diff", "id"), fkeys(fk("fk_tbl_no_diff", "nodeRef", "node", "nodeRef")),
                     indexes("idx_node id nodeRef")));
         right.add(new Table(right, "tbl_has_diff_pk", columns("id NUMBER(10)", "nodeRef VARCHAR2(200)"),
-                    pk("pk_is_diff", "nodeRef"), fkeys(), indexes()));
+                    pk("pk_is_diff", "nodeRef"), fkeys(), indexes("idx_one id nodeRef", "idx_two [unique] id")));
         right.add(table("table_in_right"));
         
         
@@ -91,7 +92,6 @@ public class SchemaComparatorTest
         
 
         Results differences = comparator.getDifferences();
-        assertEquals(5, differences.size());
         
         Iterator<Difference> it = differences.iterator();
         
@@ -135,6 +135,23 @@ public class SchemaComparatorTest
         assertEquals("columnNames[0]", diff.getRight().getPropertyName());
         assertEquals("nodeRef", diff.getRight().getPropertyValue());
         
+        // idx_two is unique in the righ_schema but not in the left
+        diff = it.next();
+        assertEquals("left_schema.tbl_has_diff_pk.idx_two.unique", diff.getLeft().getPath());
+        assertEquals("right_schema.tbl_has_diff_pk.idx_two.unique", diff.getRight().getPath());
+        assertEquals("unique", diff.getLeft().getPropertyName());
+        assertEquals(false, diff.getLeft().getPropertyValue());
+        assertEquals("unique", diff.getRight().getPropertyName());
+        assertEquals(true, diff.getRight().getPropertyValue());
+        
         // Table table_in_right does not exist in the left schema
+        diff = it.next();
+        assertEquals(Where.ONLY_IN_RIGHT, diff.getWhere());
+        assertEquals("right_schema.table_in_right", diff.getRight().getPath());
+        assertEquals(null, diff.getLeft());
+        assertEquals(null, diff.getRight().getPropertyName());
+        assertEquals(null, diff.getRight().getPropertyValue());
+        
+        assertFalse("There should be no more differences", it.hasNext());
     }
 }

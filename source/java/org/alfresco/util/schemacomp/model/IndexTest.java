@@ -64,6 +64,10 @@ public class IndexTest extends DbObjectTestBase<Index>
                     new DbProperty(thatIndex, "columnNames"),
                     ctx, 
                     Strength.ERROR);
+        inOrder.verify(comparisonUtils).compareSimple(
+                    new DbProperty(thisIndex, "unique"),
+                    new DbProperty(thatIndex, "unique"),
+                    ctx);
     }
 
     

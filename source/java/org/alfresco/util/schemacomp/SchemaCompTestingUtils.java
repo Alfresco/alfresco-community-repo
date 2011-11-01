@@ -108,11 +108,23 @@ public class SchemaCompTestingUtils
         {
             String[] parts = indexDefs[i].split(" ");
             String name = parts[0];
-            String[] columns = (String[]) ArrayUtils.subarray(parts, 1, parts.length);
+            
+            boolean unique = false;
+            int columnsStart = 1;
+            
+            if (parts[1].equals("[unique]"))
+            {
+                unique = true;
+                columnsStart++;
+            }
+            
+            String[] columns = (String[]) ArrayUtils.subarray(parts, columnsStart, parts.length);
             indexes[i] = new Index(null, name, Arrays.asList(columns));
+            indexes[i].setUnique(unique);
         }
         return Arrays.asList(indexes);
     }
+    
     
     public static Sequence sequence(String name)
     {

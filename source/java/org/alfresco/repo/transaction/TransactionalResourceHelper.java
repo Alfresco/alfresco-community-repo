@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.apache.commons.lang.mutable.MutableInt;
+
 /**
  * Helper class that will look up or create transactional resources.
  * This shortcuts some of the "<i>if not existing, then create</i>" code.
@@ -35,6 +37,83 @@ import java.util.TreeSet;
  */
 public abstract class TransactionalResourceHelper
 {
+    /**
+     * Get the current count value for a named key
+     * 
+     * @param resourceKey               the key to count against
+     * @return                          the current value for the named key
+     */
+    public static final int getCount(Object resourceKey)
+    {
+        MutableInt counter = (MutableInt) AlfrescoTransactionSupport.getResource(resourceKey);
+        return counter == null ? 0 : counter.intValue();
+    }
+    
+    /**
+     * Reset the current count value for a named key.  After this operation, the effective
+     * value will be 0.
+     * 
+     * @param resourceKey               the key to count against
+     */
+    public static final void resetCount(Object resourceKey)
+    {
+        AlfrescoTransactionSupport.unbindResource(resourceKey);
+    }
+    
+    /**
+     * Increment a count value for named key
+     * 
+     * @param resourceKey               the key to count against
+     * @return                          the newly-incremented value
+     */
+    public static final int incrementCount(Object resourceKey)
+    {
+        MutableInt counter = (MutableInt) AlfrescoTransactionSupport.getResource(resourceKey);
+        if (counter == null)
+        {
+            counter = new MutableInt(0);
+            AlfrescoTransactionSupport.bindResource(resourceKey, counter);
+        }
+        counter.increment();
+        return counter.intValue();
+    }
+    
+    /**
+     * Decrement a count value for a named key
+     * 
+     * @param resourceKey               the key to count against
+     * @param allowNegative             <tt>true</tt> to allow negative values otherwise zero will be the floor
+     * @return                          the newly-decremented value (negative, if allowed)
+     */
+    public static final int decrementCount(Object resourceKey, boolean allowNegative)
+    {
+        MutableInt counter = (MutableInt) AlfrescoTransactionSupport.getResource(resourceKey);
+        if (counter == null)
+        {
+            counter = new MutableInt(0);
+            AlfrescoTransactionSupport.bindResource(resourceKey, counter);
+        }
+        if (counter.intValue() > 0 || allowNegative)
+        {
+            counter.decrement();
+        }
+        return counter.intValue();
+    }
+    
+    /**
+     * Support method to determine if there is already a resource associated with the
+     * given key.  This method allows quick conditional checking of the key without
+     * building a new collection.
+     * 
+     * @param resourceKey   the key of the resource to check
+     * @return              <tt>true</tt> if a resource is already present at the key
+     */
+    public static final boolean isResourcePresent(Object resourceKey)
+    {
+        Object resource = AlfrescoTransactionSupport.getResource(resourceKey);
+        return resource != null;
+    }
+    
     /**
      * Support method to retrieve or create and bind a <tt>HashMap</tt> to the current transaction.
      * 
@@ -106,53 +185,5 @@ public abstract class TransactionalResourceHelper
             AlfrescoTransactionSupport.bindResource(resourceKey, list);
         }
         return list;
-    }
-    
-    /**
-     * Support method to set a boolean (true) value in the current transaction.
-     * @param resourceKey   the key under which the resource will be stored
-     * @return true - the value of resourceKey, was set to true, false - the value was already true
-     */
-    public static final boolean setBoolean(Object resourceKey)
-    {
-        Boolean value = AlfrescoTransactionSupport.getResource(resourceKey);
-        if(value == null)
-        {
-            AlfrescoTransactionSupport.bindResource(resourceKey, Boolean.TRUE);
-            return true;
-        }
-       
-        return false;
-    }
-    
-    /**
-     * Support method to reset (make false) a boolean value in the current transaction.
-     * @param resourceKey   the key under which the resource is stored.
-     */
-    public static final void resetBoolean(Object resourceKey)
-    {
-        Boolean value = AlfrescoTransactionSupport.getResource(resourceKey);
-        if(value == null)
-        {
-            AlfrescoTransactionSupport.unbindResource(resourceKey);
-        }
-    }
-    
-    /**
-     * Is there a boolean value in the current transaction
-     * @param resourceKey   the key under which the resource will be stored
-     * @return true - thre is, false no.
-     */
-    public static final boolean testBoolean(Object resourceKey)
-    {
-        Boolean value = AlfrescoTransactionSupport.getResource(resourceKey);
-        if(value == null)
-        {
-            return false;
-        }
-        else
-        {
-            return true;
-        }
     }
 }

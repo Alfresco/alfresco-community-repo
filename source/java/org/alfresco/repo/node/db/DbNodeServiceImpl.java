@@ -2181,17 +2181,14 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
      */
     private void archiveNode(NodeRef nodeRef, StoreRef archiveStoreRef)
     {
-        boolean wasDisabled = policyBehaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
+        policyBehaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
         try
         {
             archiveNodeImpl(nodeRef, archiveStoreRef);
         }
         finally
         {
-            if (!wasDisabled)
-            {
-                policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
-            }
+            policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
         }
     }
     
@@ -2256,17 +2253,14 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
      */
     public NodeRef restoreNode(NodeRef archivedNodeRef, NodeRef destinationParentNodeRef, QName assocTypeQName, QName assocQName)
     {
-        boolean wasDisabled = policyBehaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
+        policyBehaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
         try
         {
             return restoreNodeImpl(archivedNodeRef, destinationParentNodeRef, assocTypeQName, assocQName);
         }
         finally
         {
-            if (!wasDisabled)
-            {
-                policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
-            }
+            policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
         }
     }
     

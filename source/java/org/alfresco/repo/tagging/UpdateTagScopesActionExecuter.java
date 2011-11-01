@@ -378,7 +378,7 @@ public class UpdateTagScopesActionExecuter extends ActionExecuterAbstractBase
           
           // Changing the tag scope values is a system operation
           // As such, don't fire policies/behaviours during this
-          behaviourFilter.disableAllBehaviours();
+          behaviourFilter.disableBehaviour();
           
           // Get the current tags
           ContentReader contentReader = contentService.getReader(tagScopeNode, ContentModel.PROP_TAGSCOPE_CACHE);
@@ -452,7 +452,7 @@ public class UpdateTagScopesActionExecuter extends ActionExecuterAbstractBase
           
           // We're done making our changes
           // Allow behaviours to fire again if they want to
-          behaviourFilter.enableAllBehaviours();
+          behaviourFilter.enableBehaviour();
           
           // Log this if required
           if(logger.isDebugEnabled())

@@ -262,7 +262,7 @@ public class CopiedFromAspectPatch extends AbstractPatch
             public void process(Pair<Long, NodeRef> entry) throws Throwable
             {
                 // Disable auditable aspect
-                behaviourFilter.disableAllBehaviours();
+                behaviourFilter.disableBehaviour();
                 // Disable rules
                 ruleService.disableRules();
                 try
@@ -272,7 +272,7 @@ public class CopiedFromAspectPatch extends AbstractPatch
                 finally
                 {
                     ruleService.enableRules();
-                    behaviourFilter.enableAllBehaviours();
+                    behaviourFilter.enableBehaviour();
                 }
             }
             @Override

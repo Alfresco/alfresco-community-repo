@@ -20,7 +20,9 @@ package org.alfresco.repo.audit;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.policy.BehaviourFilter;
@@ -32,7 +34,7 @@ import org.aopalliance.intercept.MethodInvocation;
 /**
  * An interceptor that disables and then enables ASPECT_AUDITABLE behaviours
  * around method calls.
- * 
+ * <ul>
  * <li>The name of the method must match a supplied list (See
  *     {@link #setMethodNames(List)}).</li>
  * <li>For this interceptor to disable and enable policy behaviour, the first
@@ -42,16 +44,18 @@ import org.aopalliance.intercept.MethodInvocation;
  *     values (See {@link #setArgumentValues(List)}. The second argument must be
  *     a QName. If a list is not supplied the second argument is not checked.</li>
  * <li>The BehaviourFilter to be enabled or disabled must be set (See
- *     {@link #setBehaviourFilter(BehaviourFilter)}).
+ *     {@link #setBehaviourFilter(BehaviourFilter)}).</li>
+ * </ul>
  *     
  * @author Stas Sokolovsky
  */
 public class DisableAuditableBehaviourInterceptor implements MethodInterceptor
 {
     private BehaviourFilter behaviourFilter;
-    private List<String> methodNames;
-    private List<String> argumentValues;
+    private Set<String> methodNames = new HashSet<String>(0);
+    private Set<QName> argumentQNameValues = new HashSet<QName>(0);
 
+    @SuppressWarnings("unchecked")
     public Object invoke(MethodInvocation methodInvocation) throws Throwable
     {
         String methodName = methodInvocation.getMethod().getName();
@@ -77,7 +81,7 @@ public class DisableAuditableBehaviourInterceptor implements MethodInterceptor
 
         if (behaviourFilter != null &&
             methodNames.contains(methodName) &&
-            (arg1 == null || argumentValues.contains(arg1.toString())))
+            (arg1 == null || argumentQNameValues.contains(arg1)))
         {
             for (NodeRef nodeRef : nodes)
             {
@@ -108,11 +112,16 @@ public class DisableAuditableBehaviourInterceptor implements MethodInterceptor
 
     public void setMethodNames(List<String> methodNames)
     {
-        this.methodNames = methodNames;
+        this.methodNames = new HashSet<String>(methodNames);
     }
 
     public void setArgumentValues(List<String> argumentValues)
     {
-        this.argumentValues = argumentValues;
+        this.argumentQNameValues = new HashSet<QName>(argumentValues.size()*2+1);
+        for (String argumentValue : argumentValues)
+        {
+            QName argumentQNameValue = QName.createQName(argumentValue);
+            argumentQNameValues.add(argumentQNameValue);
+        }
     }
 }

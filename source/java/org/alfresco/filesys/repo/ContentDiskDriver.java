@@ -37,11 +37,8 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.alfresco.AlfrescoContext;
-import org.alfresco.filesys.alfresco.AlfrescoDiskDriver;
 import org.alfresco.filesys.alfresco.AlfrescoNetworkFile;
-import org.alfresco.filesys.config.ServerConfigurationBean;
 import org.alfresco.filesys.alfresco.AlfrescoTxDiskDriver;
-import org.alfresco.filesys.alfresco.ShuffleCache;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.core.DeviceContext;
 import org.alfresco.jlan.server.core.DeviceContextException;
@@ -4228,7 +4225,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
 
         // copy over the node creator and owner properties
         // need to disable the auditable aspect first to prevent default audit behaviour
-        boolean alreadyDisabled = policyBehaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
+        policyBehaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
         try
         {
         	nodeService.setProperty(toNode, ContentModel.PROP_CREATOR, nodeService.getProperty(fromNode, ContentModel.PROP_CREATOR));
@@ -4236,10 +4233,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
         }
         finally
         {
-            if(!alreadyDisabled)
-            {
-                policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
-            }
+            policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
         }
         
         Set<AccessPermission> permissions = permissionService.getAllSetPermissions(fromNode);

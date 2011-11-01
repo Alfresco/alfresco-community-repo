@@ -32,6 +32,7 @@ import org.alfresco.repo.policy.Policy.Arg;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
@@ -50,6 +51,7 @@ public class PolicyComponentTransactionTest extends TestCase
     private static ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();
     private static ClassPolicyDelegate<SideEffectTestPolicy> sideEffectDelegate = null;
     private PolicyComponent policyComponent;
+    private BehaviourFilter behaviourFilter;
     private TransactionService trxService;
     private AuthenticationComponent authenticationComponent;
 
@@ -68,6 +70,7 @@ public class PolicyComponentTransactionTest extends TestCase
         
         // retrieve policy component
         this.policyComponent = (PolicyComponent)applicationContext.getBean("policyComponent");
+        this.behaviourFilter = (BehaviourFilter) applicationContext.getBean("policyBehaviourFilter");
         this.trxService = (TransactionService) applicationContext.getBean("transactionComponent");
         this.authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
         this.authenticationComponent.setSystemUserAsCurrentUser();
@@ -283,9 +286,100 @@ public class PolicyComponentTransactionTest extends TestCase
         {
             try { userTransaction2.rollback(); } catch (IllegalStateException ee) {}
             throw e;
+        }
+        
+        NodeRef nodeRef = new NodeRef(TEST_NAMESPACE, "test", "123");
+        // Check enabling and disabling of behaviours within the transaction
+        // We disable multiple times and enable, including enabling when not disabled
+        UserTransaction userTransaction3 = trxService.getUserTransaction();
+        try
+        {
+            userTransaction3.begin();
+
+            // Check all enabled to start
+            checkBehaviour(BASE_TYPE, nodeRef, true, true, true, true);
+            
+            // Check instance with nesting
+            behaviourFilter.enableBehaviour(nodeRef);
+            checkBehaviour(BASE_TYPE, nodeRef, true, true, true, true);
+            behaviourFilter.disableBehaviour(nodeRef);
+            checkBehaviour(BASE_TYPE, nodeRef, true, true, false, false);
+            behaviourFilter.disableBehaviour(nodeRef);
+            checkBehaviour(BASE_TYPE, nodeRef, true, true, false, false);
+            behaviourFilter.enableBehaviour(nodeRef);
+            checkBehaviour(BASE_TYPE, nodeRef, true, true, false, false);
+            behaviourFilter.enableBehaviour(nodeRef);
+            checkBehaviour(BASE_TYPE, nodeRef, true, true, true, true);
+            
+            // Check class and instance with nesting
+            behaviourFilter.enableBehaviour(nodeRef, BASE_TYPE);
+            checkBehaviour(BASE_TYPE, nodeRef, true, true, true, true);
+            behaviourFilter.disableBehaviour(nodeRef, BASE_TYPE);
+            checkBehaviour(BASE_TYPE, nodeRef, true, true, false, true);
+            behaviourFilter.disableBehaviour(nodeRef, BASE_TYPE);
+            checkBehaviour(BASE_TYPE, nodeRef, true, true, false, true);
+            behaviourFilter.enableBehaviour(nodeRef, BASE_TYPE);
+            checkBehaviour(BASE_TYPE, nodeRef, true, true, false, true);
+            behaviourFilter.enableBehaviour(nodeRef, BASE_TYPE);
+            checkBehaviour(BASE_TYPE, nodeRef, true, true, true, true);
+            
+            // Check class with nesting
+            behaviourFilter.enableBehaviour(BASE_TYPE);
+            checkBehaviour(BASE_TYPE, nodeRef, true, true, true, true);
+            behaviourFilter.disableBehaviour(BASE_TYPE);
+            checkBehaviour(BASE_TYPE, nodeRef, true, false, false, true);
+            behaviourFilter.disableBehaviour(BASE_TYPE);
+            checkBehaviour(BASE_TYPE, nodeRef, true, false, false, true);
+            behaviourFilter.enableBehaviour(BASE_TYPE);
+            checkBehaviour(BASE_TYPE, nodeRef, true, false, false, true);
+            behaviourFilter.enableBehaviour(BASE_TYPE);
+            checkBehaviour(BASE_TYPE, nodeRef, true, true, true, true);
+            
+            // Check global with nesting
+            behaviourFilter.enableBehaviour();
+            checkBehaviour(BASE_TYPE, nodeRef, true, true, true, true);
+            behaviourFilter.disableBehaviour();
+            checkBehaviour(BASE_TYPE, nodeRef, false, false, false, false);
+            behaviourFilter.disableBehaviour();
+            checkBehaviour(BASE_TYPE, nodeRef, false, false, false, false);
+            behaviourFilter.enableBehaviour();
+            checkBehaviour(BASE_TYPE, nodeRef, false, false, false, false);
+            behaviourFilter.enableBehaviour();
+            checkBehaviour(BASE_TYPE, nodeRef, true, true, true, true);
+            
+            userTransaction3.commit();
+        }
+        catch(Exception e)
+        {
+            try { userTransaction3.rollback(); } catch (IllegalStateException ee) {}
+            throw e;
         }        
     }
 
+    /**
+     * @param className                 the class to check
+     * @param nodeRef                   the node instance to check
+     * @param globalEnabled             <tt>true</tt> if the global filter should be enabled
+     * @param classEnabled              <tt>true</tt> if the class should be enabled
+     * @param classInstanceEnabled      <tt>true</tt> if the class and instance should be enabled
+     * @param instanceEnabled           <tt>true</tt> if the instance should be enabled
+     */
+    private void checkBehaviour(
+            QName className, NodeRef nodeRef,
+            boolean globalEnabled,
+            boolean classEnabled,
+            boolean classInstanceEnabled,
+            boolean instanceEnabled)
+            
+    {
+        assertEquals("Incorrect behaviour state: global: ", globalEnabled, behaviourFilter.isEnabled());
+        assertEquals("Incorrect behaviour state: class: ", classEnabled, behaviourFilter.isEnabled(className));
+        assertEquals("Incorrect behaviour state: classAndInstance", classInstanceEnabled, behaviourFilter.isEnabled(nodeRef, className));
+        assertEquals("Incorrect behaviour state: instance", instanceEnabled, behaviourFilter.isEnabled(nodeRef));
+        assertEquals("'Active' flag incorrect: ",
+                !(globalEnabled && classEnabled && classInstanceEnabled && instanceEnabled),
+                behaviourFilter.isActivated());
+    }
 
     //
     // Behaviour Implementations

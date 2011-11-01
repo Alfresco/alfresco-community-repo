@@ -35,8 +35,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.importer.view.NodeContext;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.TransactionListener;
 import org.alfresco.repo.version.Version2Model;
 import org.alfresco.repo.version.common.VersionUtil;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
@@ -65,16 +63,15 @@ import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.view.ImportPackageHandler;
 import org.alfresco.service.cmr.view.ImporterBinding;
+import org.alfresco.service.cmr.view.ImporterBinding.UUID_BINDING;
 import org.alfresco.service.cmr.view.ImporterException;
 import org.alfresco.service.cmr.view.ImporterProgress;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
-import org.alfresco.service.cmr.view.ImporterBinding.UUID_BINDING;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.engine.TransactionHelper;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -774,7 +771,7 @@ public class ImporterComponent
          */
         public void childrenImported(NodeRef nodeRef)
         {
-            behaviourFilter.enableBehaviours(nodeRef);
+            behaviourFilter.enableBehaviour(nodeRef);
             ruleService.enableRules(nodeRef);
         }
 
@@ -845,12 +842,12 @@ public class ImporterComponent
                 }
                 
                 // Set node reference on source node
-                Set<QName> disabledBehaviours = getDisabledBehaviours(importedRef.context);
+                Set<QName> nodeTypeAndAspects = getNodeTypeAndAspects(importedRef.context);
                 try
                 {
-                    for (QName disabledBehaviour: disabledBehaviours)
+                    for (QName typeOrAspect: nodeTypeAndAspects)
                     {
-                        behaviourFilter.disableBehaviour(importedRef.context.getNodeRef(), disabledBehaviour);
+                        behaviourFilter.disableBehaviour(importedRef.context.getNodeRef(), typeOrAspect);
                     }
                     nodeService.setProperty(importedRef.context.getNodeRef(), importedRef.property, refProperty);
                     if (progress != null)
@@ -860,7 +857,10 @@ public class ImporterComponent
                 }
                 finally
                 {
-                    behaviourFilter.enableBehaviours(importedRef.context.getNodeRef());
+                    for (QName typeOrAspect: nodeTypeAndAspects)
+                    {
+                        behaviourFilter.enableBehaviour(importedRef.context.getNodeRef(), typeOrAspect);
+                    }
                 }
             }
             
@@ -873,7 +873,7 @@ public class ImporterComponent
          */
         public void error(Throwable e)
         {
-            behaviourFilter.enableAllBehaviours();
+            behaviourFilter.enableBehaviour();
             reportError(e);
         }
 
@@ -1001,12 +1001,12 @@ public class ImporterComponent
         }
         
         /**
-         * For the given import node, return the behaviours to disable during import
+         * For the given import node, return the type and aspects to import
          * 
          * @param context  import node
-         * @return  the disabled behaviours
+         * @return  the type and aspects in the import
          */
-        private Set<QName> getDisabledBehaviours(ImportNode context)
+        private Set<QName> getNodeTypeAndAspects(ImportNode context)
         {
             Set<QName> classNames = new HashSet<QName>();
             
@@ -1352,18 +1352,12 @@ public class ImporterComponent
                     throw new ImporterException("Cannot determine child name of node (type: " + nodeType.getName() + ")");
                 }
 
-                // Create initial node (but, first disable behaviour for the node to be created)
-                Set<QName> disabledBehaviours = getDisabledBehaviours(node);
-                List<QName> alreadyDisabledBehaviours = new ArrayList<QName>(); 
-                for (QName disabledBehaviour: disabledBehaviours)
+                // Disable the import-wide behaviours (because the node doesn't exist, yet)
+                Set<QName> nodeTypeAndAspects = getNodeTypeAndAspects(node);
+                for (QName typeOrAspect: nodeTypeAndAspects)
                 {
-                    boolean alreadyDisabled = behaviourFilter.disableBehaviour(disabledBehaviour);
-                    if (alreadyDisabled)
-                    {
-                        alreadyDisabledBehaviours.add(disabledBehaviour);
-                    }
+                    behaviourFilter.disableBehaviour(typeOrAspect);
                 }
-                disabledBehaviours.removeAll(alreadyDisabledBehaviours);
                 
                 // Build initial map of properties
                 Map<QName, Serializable> initialProperties = bindProperties(node);
@@ -1403,15 +1397,13 @@ public class ImporterComponent
                     }
                 }
                 
+                // Re-enable the import-wide behaviours
                 // Disable behaviour for the node until the complete node (and its children have been imported)
-                for (QName disabledBehaviour : disabledBehaviours)
+                for (QName typeOrAspect: nodeTypeAndAspects)
                 {
-                    behaviourFilter.enableBehaviour(disabledBehaviour);
+                    behaviourFilter.enableBehaviour(typeOrAspect);
                 }
-                for (QName disabledBehaviour : disabledBehaviours)
-                {
-                    behaviourFilter.disableBehaviour(nodeRef, disabledBehaviour);
-                }
+                behaviourFilter.disableBehaviour(nodeRef);
                 // TODO: Replace this with appropriate rule/action import handling
                 ruleService.disableRules(nodeRef);
 

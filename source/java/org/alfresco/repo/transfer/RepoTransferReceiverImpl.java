@@ -901,7 +901,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
                             XMLTransferManifestReader reader = new XMLTransferManifestReader(processor);
 
                             //behaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
-                            behaviourFilter.disableAllBehaviours();
+                            behaviourFilter.disableBehaviour();
 
                             try
                             {
@@ -909,8 +909,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
                             }
                             finally
                             {
-                              //  behaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
-                                behaviourFilter.enableAllBehaviours();
+                                behaviourFilter.enableBehaviour();
                             }
                             parser.reset();
                         }

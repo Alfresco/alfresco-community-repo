@@ -277,11 +277,27 @@ public class AlfrescoTransactionSupportTest extends TestCase
         {
             public Object execute() throws Exception
             {
+                // Check map access
                 Map<String, String> map = TransactionalResourceHelper.getMap("abc");
                 assertNotNull("Map not created", map);
                 map.put("1", "ONE");
                 Map<String, String> mapCheck = TransactionalResourceHelper.getMap("abc");
                 assertTrue("Same map not retrieved", map == mapCheck);
+                // Check counter
+                assertEquals("Transactional count incorrect. ", 0, TransactionalResourceHelper.getCount("myCount"));
+                assertEquals("Transactional count incorrect. ", -1, TransactionalResourceHelper.decrementCount("myCount", true));
+                assertEquals("Transactional count incorrect. ", -2, TransactionalResourceHelper.decrementCount("myCount", true));
+                assertEquals("Transactional count incorrect. ", -2, TransactionalResourceHelper.getCount("myCount"));
+                assertEquals("Transactional count incorrect. ", -1, TransactionalResourceHelper.incrementCount("myCount"));
+                assertEquals("Transactional count incorrect. ", 0, TransactionalResourceHelper.incrementCount("myCount"));
+                assertEquals("Transactional count incorrect. ", 1, TransactionalResourceHelper.incrementCount("myCount"));
+                assertEquals("Transactional count incorrect. ", 1, TransactionalResourceHelper.getCount("myCount"));
+                assertEquals("Transactional count incorrect. ", 1, TransactionalResourceHelper.getCount("myCount"));
+                TransactionalResourceHelper.resetCount("myCount");
+                assertEquals("Transactional count incorrect. ", 0, TransactionalResourceHelper.getCount("myCount"));
+                assertEquals("Transactional count incorrect. ", 0, TransactionalResourceHelper.decrementCount("myCount", false));
+                assertEquals("Transactional count incorrect. ", 0, TransactionalResourceHelper.decrementCount("myCount", false));
+                // Done
                 return null;
             }
         };

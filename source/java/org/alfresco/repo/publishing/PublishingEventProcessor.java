@@ -73,13 +73,13 @@ public class PublishingEventProcessor
                     {
                         try
                         {
-                            behaviourFilter.disableAllBehaviours();
+                            behaviourFilter.disableBehaviour();
                             channel.publishEvent(event);
                             sendStatusUpdate(channel, event.getStatusUpdate());
                         }
                         finally
                         {
-                            behaviourFilter.enableAllBehaviours();
+                            behaviourFilter.enableBehaviour();
                         }
                         return null;
                     }

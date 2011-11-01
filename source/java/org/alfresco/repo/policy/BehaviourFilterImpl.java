@@ -37,31 +37,6 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  * resources.  Behaviour will therefore never span transactions; the filter state has
  * the same lifespan as the transaction in which it was created.
  * <p/>
- * Since 4.0, the behaviour enabling/disabling is recorded using reference counting,
- * meaning that the outermost disable call in a stack has an effective veto.  Use
- * proper try-finally patterns to ensure behaviour is released after it is no longer
- * needed.
- * <pre><code>
- * behaviourFilter.disableBehaviour(abc);
- * try
- * {
- *    behaviourFilter.disableBehaviour(abc);
- *    try
- *    {
- *       // Do something that might have triggered 'abc' but will not
- *    }
- *    finally
- *    {
- *        behaviourFilter.enableBehaviour(abc);
- *    }
- *    // Do something that might have triggered 'abc' but will not despite the last enable call
- * }
- * finally
- * {
- *     behaviourFilter.enableBehaviour(abc);
- * }
- * </code></pre>
- * <p/>
  * <b>Multitenancy and disabling by <tt>NodeRef</tt>:</b><br/>
  * Conversions based on the current tenant context are done automatically.
  * 

@@ -21,6 +21,7 @@ package org.alfresco.web.bean.coci;
 import javax.faces.context.FacesContext;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.ui.common.ReportedException;
@@ -41,8 +42,24 @@ public class CancelEditingDialog extends CheckinCheckoutDialog
     protected String finishImpl(FacesContext context, String outcome) throws Exception
     {
         undoCheckoutFile(context, outcome);
-        return "dialog:close[2]";
+        return outcome;
     }
+    
+    @Override 
+    protected String getDefaultCancelOutcome() 
+    { 
+       return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + 
+              AlfrescoNavigationHandler.OUTCOME_SEPARATOR + 
+              AlfrescoNavigationHandler.OUTCOME_BROWSE; 
+    } 
+
+    @Override 
+    protected String getDefaultFinishOutcome() 
+    { 
+        return AlfrescoNavigationHandler.CLOSE_DIALOG_OUTCOME + 
+               AlfrescoNavigationHandler.OUTCOME_SEPARATOR + 
+               AlfrescoNavigationHandler.OUTCOME_BROWSE; 
+    } 
 
     @Override
     public String getContainerTitle()

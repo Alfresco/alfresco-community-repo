@@ -1485,6 +1485,162 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         });
     }
     
+    public void testAutoVersionWithPropsOnRevert()
+    {
+       // test auto-version props on - without any excludes
+       final NodeRef versionableNode = createNewVersionableNode();
+       nodeService.setProperty(versionableNode, ContentModel.PROP_AUTO_VERSION_PROPS, true);
+       nodeService.setProperty(versionableNode, ContentModel.PROP_DESCRIPTION, "description 0");
+       nodeService.setProperty(versionableNode, PROP_1, VALUE_1);
+       
+       // Force it to be 2.0
+       Map<String,Serializable> vprops = new HashMap<String, Serializable>();
+       vprops.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
+       versionService.createVersion(versionableNode, vprops);
+       versionService.createVersion(versionableNode, vprops);
+       
+       // Check it's 2.0
+       assertEquals("2.0", nodeService.getProperty(versionableNode, ContentModel.PROP_VERSION_LABEL));
+       
+       // Zap 1.0
+       versionService.deleteVersion(versionableNode,
+            versionService.getVersionHistory(versionableNode).getVersion("1.0"));
+       
+       // Ready to test
+       setComplete();
+       endTransaction();
+       
+       // Check the first version is now 2.0
+       transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+       {
+          public Object execute() throws Exception
+          {
+             VersionHistory versionHistory = versionService.getVersionHistory(versionableNode);
+             assertNotNull(versionHistory);
+             assertEquals(1, versionHistory.getAllVersions().size());
+
+             assertEquals("2.0", versionHistory.getHeadVersion().getVersionLabel());
+             assertEquals("2.0", nodeService.getProperty(versionableNode, ContentModel.PROP_VERSION_LABEL));
+             return null;
+          }
+       });
+       
+       // Create a few more versions
+       transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+       {
+          public Object execute() throws Exception
+          {
+             nodeService.setProperty(versionableNode, ContentModel.PROP_AUTHOR, "ano author 2");
+             nodeService.setProperty(versionableNode, ContentModel.PROP_DESCRIPTION, "description 2");
+             nodeService.setProperty(versionableNode, PROP_1, VALUE_2);
+             return null;
+          }
+       });
+       transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+       {
+          public Object execute() throws Exception
+          {
+             nodeService.setProperty(versionableNode, ContentModel.PROP_AUTHOR, "ano author 3");
+             nodeService.setProperty(versionableNode, ContentModel.PROP_DESCRIPTION, "description 3");
+             nodeService.setProperty(versionableNode, PROP_1, VALUE_3);
+             return null;
+          }
+       });
+       
+       // Check the history is correct
+       transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+       {
+          public Object execute() throws Exception
+          {
+             VersionHistory versionHistory = versionService.getVersionHistory(versionableNode);
+             assertNotNull(versionHistory);
+             assertEquals(3, versionHistory.getAllVersions().size());
+
+             assertEquals("2.2", versionHistory.getHeadVersion().getVersionLabel());
+             assertEquals("2.2", nodeService.getProperty(versionableNode, ContentModel.PROP_VERSION_LABEL));
+             
+             // Check the version 
+             Version[] versions = versionHistory.getAllVersions().toArray(new Version[3]);
+             assertEquals("2.2", versions[0].getVersionLabel());
+             assertEquals("2.1", versions[1].getVersionLabel());
+             assertEquals("2.0", versions[2].getVersionLabel());
+             return null;
+          }
+       });
+       
+       // Delete the middle version
+       transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+       {
+          public Object execute() throws Exception
+          {
+             VersionHistory versionHistory = versionService.getVersionHistory(versionableNode);
+             Version v21 = versionHistory.getVersion("2.1");
+             versionService.deleteVersion(versionableNode, v21);
+             return null;
+          }
+       });
+       // Check the history now
+       transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+       {
+          public Object execute() throws Exception
+          {
+             VersionHistory versionHistory = versionService.getVersionHistory(versionableNode);
+             assertNotNull(versionHistory);
+             assertEquals(2, versionHistory.getAllVersions().size());
+
+             assertEquals("2.2", versionHistory.getHeadVersion().getVersionLabel());
+             assertEquals("2.2", nodeService.getProperty(versionableNode, ContentModel.PROP_VERSION_LABEL));
+             
+             // Check the version 
+             Version[] versions = versionHistory.getAllVersions().toArray(new Version[2]);
+             assertEquals("2.2", versions[0].getVersionLabel());
+             assertEquals("2.0", versions[1].getVersionLabel());
+             return null;
+          }
+       });
+       
+       // Revert to V2.0
+       transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+       {
+          public Object execute() throws Exception
+          {
+             VersionHistory versionHistory = versionService.getVersionHistory(versionableNode);
+             Version v20 = versionHistory.getVersion("2.0");
+             versionService.revert(versionableNode, v20);
+             return null;
+          }
+       });
+       
+       // Check things went back as expected
+       transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+       {
+          public Object execute() throws Exception
+          {
+             // Still has two in the version history
+             VersionHistory versionHistory = versionService.getVersionHistory(versionableNode);
+             assertNotNull(versionHistory);
+             assertEquals(2, versionHistory.getAllVersions().size());
+
+             Version[] versions = versionHistory.getAllVersions().toArray(new Version[2]);
+             assertEquals("2.2", versions[0].getVersionLabel());
+             assertEquals("2.0", versions[1].getVersionLabel());
+             
+             // Head version is still 2.2
+             assertEquals("2.2", versionHistory.getHeadVersion().getVersionLabel());
+             
+             // But the node is back at 2.0
+             // TODO Shouldn't the node be at 2.0 now, not 2.2?
+             //assertEquals("2.0", nodeService.getProperty(versionableNode, ContentModel.PROP_VERSION_LABEL));
+             assertEquals("2.2", nodeService.getProperty(versionableNode, ContentModel.PROP_VERSION_LABEL));
+             
+             // And the properties show it has gone back
+             assertEquals(VALUE_1, nodeService.getProperty(versionableNode, PROP_1));
+             assertEquals("description 0", nodeService.getProperty(versionableNode, ContentModel.PROP_DESCRIPTION));
+             return null;
+          }
+       });
+    }
+    
     public void testALF5618()
     {
         final NodeRef versionableNode = createNewVersionableNode();

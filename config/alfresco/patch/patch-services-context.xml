@@ -2620,30 +2620,22 @@
     </bean>
     
     <bean id="patch.activitiesEmailTemplateUpdate" class="org.alfresco.repo.admin.patch.impl.ActivitiesTemplatesUpdatePatch" parent="basePatch">
-		<property name="id">
-			<value>patch.activitiesTemplatesUpdate</value>
-		</property>
-		<property name="description">
-			<value>patch.activitiesTemplatesUpdate.description</value>
-		</property>
-		<property name="fixesFromSchema" value="0" />
-		<property name="fixesToSchema" value="5010" />
-		<property name="targetSchema" value="5011" />
-		<property name="dependsOn">
-			<list>
-				<ref bean="patch.activitiesEmailTemplate" />
-			</list>
-		</property>
-		<property name="fileFolderService">
-			<ref bean="fileFolderService" />
-		</property>
-		<property name="versionService">
-			<ref bean="versionService" />
-		</property>
-		<property name="newTemplatesFile">
-			<value>alfresco/templates/activities-email-templates/activities-email-templates.xml</value>
-		</property>
-	</bean>
+        <property name="id"><value>patch.activitiesTemplatesUpdate</value></property>
+        <property name="description"><value>patch.activitiesTemplatesUpdate.description</value></property>
+        <property name="fixesFromSchema" value="0" />
+        <property name="fixesToSchema" value="5010" />
+        <property name="targetSchema" value="5011" />
+        <property name="dependsOn">
+            <list>
+                <ref bean="patch.activitiesEmailTemplate" />
+            </list>
+        </property>
+        <property name="fileFolderService" ref="fileFolderService" />
+        <property name="versionService" ref="versionService" />
+        <property name="newTemplatesFile">
+            <value>alfresco/templates/activities-email-templates/activities-email-templates.xml</value>
+        </property>
+    </bean>
 
     <bean id="patch.followingMailTemplates" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
         <property name="id"><value>patch.followingMailTemplates</value></property>

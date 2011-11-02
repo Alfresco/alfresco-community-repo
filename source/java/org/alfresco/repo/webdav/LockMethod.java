@@ -255,6 +255,14 @@ public class LockMethod extends WebDAVMethod
             // create the file
             lockNodeInfo = createNode(dirInfo.getNodeRef(), splitPath[1], ContentModel.TYPE_CONTENT);
             
+            // ALF-10309 fix, mark created node with webdavNoContent aspect, we assume that save operation
+            // is performed by client, webdavNoContent aspect normally removed in put method unless there
+            // is a cancel before the PUT request takes place
+            if (!getNodeService().hasAspect(lockNodeInfo.getNodeRef(), ContentModel.ASPECT_WEBDAV_NO_CONTENT))
+            {
+                getNodeService().addAspect(lockNodeInfo.getNodeRef(), ContentModel.ASPECT_WEBDAV_NO_CONTENT, null);
+            }
+            
             if (logger.isDebugEnabled())
             {
                 logger.debug("Created new node for lock: \n" +

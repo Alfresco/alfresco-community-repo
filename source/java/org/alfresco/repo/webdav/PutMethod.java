@@ -28,12 +28,15 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.ContentMetadataExtracter;
 import org.alfresco.service.cmr.action.Action;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.springframework.dao.ConcurrencyFailureException;
 
@@ -122,11 +125,6 @@ public class PutMethod extends WebDAVMethod
                 contentNodeInfo = fileFolderService.create(parentNodeInfo.getNodeRef(), paths[1], ContentModel.TYPE_CONTENT);
                 created = true;
                 
-                // apply the titled aspect - title and description
-                Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(3, 1.0f);
-                titledProps.put(ContentModel.PROP_TITLE, paths[1]);
-                titledProps.put(ContentModel.PROP_DESCRIPTION, "");
-                getNodeService().addAspect(contentNodeInfo.getNodeRef(), ContentModel.ASPECT_TITLED, titledProps);
             }
             catch (FileNotFoundException ee)
             {
@@ -150,35 +148,67 @@ public class PutMethod extends WebDAVMethod
             throw new WebDAVServerException(WebDAV.WEBDAV_SC_LOCKED);
         }
 
-        // Access the content
-        ContentWriter writer = fileFolderService.getWriter(contentNodeInfo.getNodeRef());
+        try
+        {
+            // Access the content
+            ContentWriter writer = fileFolderService.getWriter(contentNodeInfo.getNodeRef());
         
-        // Set content properties
-        if (m_strContentType != null)
-        {
-            writer.setMimetype(m_strContentType);
-        }
-        else
-        {
-            writer.guessMimetype(contentNodeInfo.getName());
-        }
-        writer.guessEncoding();
-
-        // Get the input stream from the request data
-        InputStream is = m_request.getInputStream();
-
-        // Write the new data to the content node
-        writer.putContent(is);
+            // set content properties
+            if (m_strContentType != null)
+            {
+                writer.setMimetype(m_strContentType);
+            }
+            else
+            {
+                writer.guessMimetype(contentNodeInfo.getName());
+            }
+            writer.guessEncoding();
+    
+            // Get the input stream from the request data
+            InputStream is = m_request.getInputStream();
         
-        // Ask for the document metadata to be extracted
-        Action extract = getActionService().createAction(ContentMetadataExtracter.EXECUTOR_NAME);
-        if(extract != null)
-        {
-           extract.setExecuteAsynchronously(true);
-           getActionService().executeAction(extract, contentNodeInfo.getNodeRef());
-        }
+    
+            // Write the new data to the content node
+            writer.putContent(is);
+            
+            // Ask for the document metadata to be extracted
+            Action extract = getActionService().createAction(ContentMetadataExtracter.EXECUTOR_NAME);
+            if(extract != null)
+            {
+               extract.setExecuteAsynchronously(true);
+               getActionService().executeAction(extract, contentNodeInfo.getNodeRef());
+            }
 
-        // Set the response status, depending if the node existed or not
-        m_response.setStatus(created ? HttpServletResponse.SC_CREATED : HttpServletResponse.SC_NO_CONTENT);
+    
+            // write content was successful -> remove noContent aspect
+            if (getNodeService().hasAspect(contentNodeInfo.getNodeRef(), ContentModel.ASPECT_WEBDAV_NO_CONTENT))
+            {
+                getNodeService().removeAspect(contentNodeInfo.getNodeRef(), ContentModel.ASPECT_WEBDAV_NO_CONTENT);
+            }
+
+            // Set the response status, depending if the node existed or not
+            m_response.setStatus(created ? HttpServletResponse.SC_CREATED : HttpServletResponse.SC_NO_CONTENT);
+        }
+        catch (Throwable e) 
+        {
+            // check if the node was marked with noContent aspect previously by lock method
+            if (RetryingTransactionHelper.extractRetryCause(e) == null
+                    && getNodeService().hasAspect(contentNodeInfo.getNodeRef(), ContentModel.ASPECT_WEBDAV_NO_CONTENT))
+            {
+                // remove the 0 bytes content if save operation failed or was cancelled
+                final NodeRef nodeRef = contentNodeInfo.getNodeRef();
+                getTransactionService().getRetryingTransactionHelper().doInTransaction(
+                        new RetryingTransactionCallback<String>()
+                        {
+                            public String execute() throws Throwable
+                            {
+                                getNodeService().removeAspect(nodeRef, ContentModel.ASPECT_WEBDAV_NO_CONTENT);
+                                getNodeService().deleteNode(nodeRef);
+                                return null;
+                            }
+                        }, false, true);
+            }
+            throw new WebDAVServerException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e);
+        }
     }
 }

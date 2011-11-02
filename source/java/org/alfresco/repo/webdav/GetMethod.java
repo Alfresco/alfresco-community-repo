@@ -464,10 +464,16 @@ public class GetMethod extends WebDAVMethod
                 else
                 {
                     ContentReader reader = fileFolderService.getReader(childNodeInfo.getNodeRef());
-                    String mimetype = "";
+                    String mimetype = "&nbsp;";
                     if (reader != null)
                     {
-                        mimetype = mimeTypeService.getDisplaysByMimetype().get(reader.getMimetype());
+                        mimetype = reader.getMimetype();
+                        String displayType = mimeTypeService.getDisplaysByMimetype().get(reader.getMimetype());
+
+                        if (displayType != null)
+                        {
+                            mimetype = displayType;
+                        }
                         if (mimetype == null)
                         {
                            mimetype = reader.getMimetype();

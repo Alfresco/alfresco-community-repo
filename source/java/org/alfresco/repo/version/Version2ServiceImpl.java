@@ -31,6 +31,7 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
 import org.alfresco.repo.policy.PolicyScope;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.version.common.VersionHistoryImpl;
@@ -1368,6 +1369,9 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
                 if (headVersion != null)
                 {
                     // Reset the version label property on the versionable node to new head version
+                    // Disable the VersionableAspect for this change though, we don't want
+                    //  to have this create a new version for the property change!
+                    policyBehaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
                     this.nodeService.setProperty(nodeRef, ContentModel.PROP_VERSION_LABEL, headVersion.getVersionLabel());
                 }
                 else

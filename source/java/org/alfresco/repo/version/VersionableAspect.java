@@ -35,6 +35,7 @@ import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.DictionaryListener;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
 import org.alfresco.repo.policy.Behaviour;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -219,7 +220,7 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
         
         onUpdatePropertiesBehaviour = new JavaBehaviour(this, "onUpdateProperties", Behaviour.NotificationFrequency.TRANSACTION_COMMIT);
         this.policyComponent.bindClassBehaviour(
-            QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"),
+            OnUpdatePropertiesPolicy.QNAME,
             ContentModel.ASPECT_VERSIONABLE,
             onUpdatePropertiesBehaviour);
         

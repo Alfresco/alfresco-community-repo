@@ -1193,9 +1193,14 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
                 assertNotNull(versionHistory);
                 assertEquals(2, versionHistory.getAllVersions().size());
                 
+                // Check version labels, should be 0.2 and 0.1 as property changes
+                //  are minor updates, and we had no initial label set
+                Version[] versions = versionHistory.getAllVersions().toArray(new Version[2]);
+                assertEquals("0.2", versions[0].getVersionLabel());
+                assertEquals("0.1", versions[1].getVersionLabel());
+                
                 return null;
             }
-        
         });
         
         List<String> excludedOnUpdateProps = new ArrayList<String>(1);
@@ -1222,6 +1227,7 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         });
         
         // Now lets have a look and make sure we have the correct number of entries in the version history
+        // (The property changes were excluded so there should have been no changes)
         transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
         {
             public Object execute() throws Exception
@@ -1250,7 +1256,6 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         });
         
         // test auto-version props on - with a non-excluded prop change
-        
         transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
         {
             public Object execute() throws Exception
@@ -1266,6 +1271,7 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         });
         
         // Now lets have a look and make sure we have the correct number of entries in the version history
+        // (We should have gained one more)
         transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
         {
             public Object execute() throws Exception
@@ -1274,9 +1280,70 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
                 assertNotNull(versionHistory);
                 assertEquals(3, versionHistory.getAllVersions().size());
                 
+                // Check the versions, 
+                Version[] versions = versionHistory.getAllVersions().toArray(new Version[3]);
+                assertEquals("0.3", versions[0].getVersionLabel());
+                assertEquals("0.2", versions[1].getVersionLabel());
+                assertEquals("0.1", versions[2].getVersionLabel());
+                
                 return null;
             }
+        });
         
+        // Delete version 0.2, auto changes won't affect this
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Exception
+            {
+               VersionHistory versionHistory = versionService.getVersionHistory(versionableNode);
+               Version[] versions = versionHistory.getAllVersions().toArray(new Version[3]);
+               
+               Version v = versions[1];
+               assertEquals("0.2", v.getVersionLabel());
+               versionService.deleteVersion(versionableNode, v);
+               return null;
+            }
+        });
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Exception
+            {
+                VersionHistory versionHistory = versionService.getVersionHistory(versionableNode);
+                assertNotNull(versionHistory);
+                assertEquals(2, versionHistory.getAllVersions().size());
+                
+                // Check the versions, will now have a gap 
+                Version[] versions = versionHistory.getAllVersions().toArray(new Version[2]);
+                assertEquals("0.3", versions[0].getVersionLabel());
+                assertEquals("0.1", versions[1].getVersionLabel());
+                return null;
+            }
+        });
+        
+        // Delete the head version, will revert back to 0.1
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Exception
+            {
+               Version v = versionService.getCurrentVersion(versionableNode);
+               assertEquals("0.3", v.getVersionLabel());
+               versionService.deleteVersion(versionableNode, v);
+               return null;
+            }
+        });
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Exception
+            {
+                VersionHistory versionHistory = versionService.getVersionHistory(versionableNode);
+                assertNotNull(versionHistory);
+                assertEquals(1, versionHistory.getAllVersions().size());
+                
+                // Check the version 
+                Version[] versions = versionHistory.getAllVersions().toArray(new Version[1]);
+                assertEquals("0.1", versions[0].getVersionLabel());
+                return null;
+            }
         });
     }
     

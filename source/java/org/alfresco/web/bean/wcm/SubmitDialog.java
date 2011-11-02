@@ -19,6 +19,7 @@
 package org.alfresco.web.bean.wcm;
 
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -83,6 +84,10 @@ public class SubmitDialog extends BaseDialogBean
    private static final String MSG_DELETED_ITEM = "avm_node_deleted";
    private static final String MSG_ERR_WORKFLOW_CONFIG = "submit_workflow_config_error";
 
+    public static final String MSG_ERR_INVALID_LAUNCH_DATE = "msg_err_invalid_launch_date_on_submit";
+    public static final String MSG_ERR_INVALID_EXPIRATION_DATE = "msg_err_invalid_expiration_date_on_submit";
+    public static final String MSG_ERR_PATTERN_INVALID_EXPIRATION_DATE = "msg_err_pattern_invalid_expiration_date_on_submit";
+   
    private String comment;
    private String label;
    private String[] workflowSelectedValue;
@@ -338,6 +343,63 @@ public class SubmitDialog extends BaseDialogBean
              for (ItemWrapper wrapper : items)
              {
                  relativePaths.add(AVMUtil.getStoreRelativePath(wrapper.getDescriptor().getPath()));
+             }
+
+             Date currentDate = new Date();
+             if (launchDate !=null)
+             {
+                if (launchDate.before(currentDate))
+                {
+                   Utils.addErrorMessage(Application.getMessage(context, MSG_ERR_INVALID_LAUNCH_DATE));
+                   return null;
+                }
+             }
+
+             if ((submitItems != null) && (!submitItems.isEmpty()) && (expirationDates != null) && (!expirationDates.isEmpty()))
+             {
+                StringBuilder errorMessage = new StringBuilder();
+                byte errFlag = 0;
+                for (ItemWrapper wrapper : submitItems)
+                {
+                   String key = wrapper.descriptor.getPath();
+                   Date expiritionDate = expirationDates.get(key);
+                   if (expiritionDate != null)
+                   {
+                      if (launchDate != null)
+                      {
+                         if (expiritionDate.before(launchDate))
+                         {
+                            errFlag = 1;
+                            errorMessage.append(wrapper.descriptor.getName()).append(", ");
+                         }
+                      }
+                      else
+                      {
+                         if (expiritionDate.before(currentDate))
+                         {
+                            errorMessage.append(wrapper.descriptor.getName()).append(", ");
+                            errFlag = 2;
+                         }
+                      }
+                   }
+                }
+                if (errorMessage.length()>0)
+                {
+                   errorMessage.delete(errorMessage.length()-2, errorMessage.length());
+                }
+                switch (errFlag)
+                {
+                  case 1:
+                    {
+                       Utils.addErrorMessage(MessageFormat.format(Application.getMessage(context, MSG_ERR_PATTERN_INVALID_EXPIRATION_DATE), errorMessage.toString()));
+                       return null;
+                    }
+                  case 2:
+                    {
+                       Utils.addErrorMessage(MessageFormat.format(Application.getMessage(context, MSG_ERR_INVALID_EXPIRATION_DATE), errorMessage.toString()));
+                       return null;
+                    }
+                }
              }
 
              final String sbStoreId = this.avmBrowseBean.getSandbox();

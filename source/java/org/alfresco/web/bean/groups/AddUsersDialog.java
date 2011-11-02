@@ -22,6 +22,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
@@ -96,9 +97,14 @@ public class AddUsersDialog extends BaseDialogBean
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
       // add each selected user to the current group in turn
+      Set<String> containedAuthorities = getAuthService().getContainedAuthorities(null, this.group, true);      
       for (UserAuthorityDetails wrapper : this.usersForGroup)
       {
-         this.getAuthService().addAuthority(this.group, wrapper.getAuthority());
+         String user = wrapper.getAuthority();
+         if (!containedAuthorities.contains(user))
+         {
+            this.getAuthService().addAuthority(this.group, user);
+         }
       }
       
       return outcome;

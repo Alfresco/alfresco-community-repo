@@ -189,7 +189,8 @@ public abstract class Sort
          }
          else
          {
-            s_logger.warn("Unsupported sort data type: " + returnType + " defaulting to .toString()");
+            if (s_logger.isDebugEnabled())
+                s_logger.debug("Unsupported sort data type: " + returnType + " defaulting to .toString()");
             this.comparator = new SimpleComparator();
             bknownType = false;
          }
@@ -339,7 +340,7 @@ public abstract class Sort
          if (obj1 == null && obj2 == null) return 0;
          if (obj1 == null) return -1;
          if (obj2 == null) return 1;
-         return ((String)obj1).compareToIgnoreCase((String)obj2);
+         return (obj1.toString()).compareToIgnoreCase(obj2.toString());
       }
    }
    

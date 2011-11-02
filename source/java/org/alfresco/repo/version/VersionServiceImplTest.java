@@ -359,83 +359,136 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
     @SuppressWarnings("unused")
     public void testRevert()
     {
-    	// Create a versionable node
-    	NodeRef versionableNode = createNewVersionableNode();
-    	
-    	// Store the node details for later
-    	Set<QName> origAspects = this.dbNodeService.getAspects(versionableNode);
-    	
-    	// Create the initial version
-    	Version version1 = createVersion(versionableNode);
-    	
-    	// Change the property and content values
-    	this.dbNodeService.setProperty(versionableNode, PROP_1, UPDATED_VALUE_1);
-    	this.dbNodeService.setProperty(versionableNode, PROP_2, null);
-    	ContentWriter contentWriter = this.contentService.getWriter(versionableNode, ContentModel.PROP_CONTENT, true);
-    	assertNotNull(contentWriter);
-    	contentWriter.putContent(UPDATED_CONTENT_1);
-    	
-    	// Change the aspects on the node
-    	this.dbNodeService.addAspect(versionableNode, ApplicationModel.ASPECT_SIMPLE_WORKFLOW, null);
-    	
-    	// Store the node details for later
-    	Set<QName> origAspects2 = this.dbNodeService.getAspects(versionableNode);
-    	
-    	// Create a new version
-    	Version version2 = createVersion(versionableNode);
-    	
-    	// Change the property and content values
-    	this.dbNodeService.setProperty(versionableNode, PROP_1, UPDATED_VALUE_2);
-    	this.dbNodeService.setProperty(versionableNode, PROP_2, UPDATED_VALUE_3);
-    	this.dbNodeService.setProperty(versionableNode, PROP_3, null);
-    	ContentWriter contentWriter2 = this.contentService.getWriter(versionableNode, ContentModel.PROP_CONTENT, true);
-    	assertNotNull(contentWriter2);
-    	contentWriter2.putContent(UPDATED_CONTENT_2);
-        
-        String versionLabel = (String)this.dbNodeService.getProperty(versionableNode, ContentModel.PROP_VERSION_LABEL);
-    	
-    	// Revert to the previous version
-    	this.versionService.revert(versionableNode);
-    	
-    	// Check that the version label is unchanged
-        assertEquals(versionLabel, this.dbNodeService.getProperty(versionableNode, ContentModel.PROP_VERSION_LABEL));
-    	
-    	// Check that the properties have been reverted
-    	assertEquals(UPDATED_VALUE_1, this.dbNodeService.getProperty(versionableNode, PROP_1));
-    	assertNull(this.dbNodeService.getProperty(versionableNode, PROP_2));
-    	assertEquals(VALUE_3, this.dbNodeService.getProperty(versionableNode, PROP_3));
-    	
-    	// Check that the content has been reverted
-    	ContentReader contentReader1 = this.contentService.getReader(versionableNode, ContentModel.PROP_CONTENT);
-    	assertNotNull(contentReader1);
-    	assertEquals(UPDATED_CONTENT_1, contentReader1.getContentString());
-    	
-    	// Check that the aspects have been reverted correctly
-    	Set<QName> aspects1 = this.dbNodeService.getAspects(versionableNode);
-    	assertEquals(aspects1.size(), origAspects2.size());
-    	
-    	// Revert to the first version
-    	this.versionService.revert(versionableNode, version1);
-    	
-    	// Check that the version label is correct
-        assertEquals(versionLabel, this.dbNodeService.getProperty(versionableNode, ContentModel.PROP_VERSION_LABEL));
-    	
-    	// Check that the properties are correct
-    	assertEquals(VALUE_1, this.dbNodeService.getProperty(versionableNode, PROP_1));
-    	assertEquals(VALUE_2, this.dbNodeService.getProperty(versionableNode, PROP_2));
-    	assertEquals(VALUE_3, this.dbNodeService.getProperty(versionableNode, PROP_3));
-    	
-    	// Check that the content is correct
-    	ContentReader contentReader2 = this.contentService.getReader(versionableNode, ContentModel.PROP_CONTENT);
-    	assertNotNull(contentReader2);
-    	assertEquals(TEST_CONTENT, contentReader2.getContentString());
-    	
-    	// Check that the aspects have been reverted correctly
-    	Set<QName> aspects2 = this.dbNodeService.getAspects(versionableNode);
-    	assertEquals(aspects2.size(), origAspects.size());
-    	
-    	// Check that the version label is still the same
-        assertEquals(versionLabel, this.dbNodeService.getProperty(versionableNode, ContentModel.PROP_VERSION_LABEL));        
+       // Create a versionable node
+       NodeRef versionableNode = createNewVersionableNode();
+
+       // Store the node details for later
+       Set<QName> origAspects = this.dbNodeService.getAspects(versionableNode);
+
+       // Create the initial version
+       Version version1 = createVersion(versionableNode);
+
+       // Check the history is correct
+       VersionHistory history = versionService.getVersionHistory(versionableNode);
+       assertEquals(version1.getVersionLabel(), history.getHeadVersion().getVersionLabel());
+       assertEquals(version1.getVersionedNodeRef(), history.getHeadVersion().getVersionedNodeRef());
+       assertEquals(1, history.getAllVersions().size());
+       Version[] versions = history.getAllVersions().toArray(new Version[1]);
+       assertEquals("0.1", versions[0].getVersionLabel());
+       assertEquals("0.1", nodeService.getProperty(versionableNode, ContentModel.PROP_VERSION_LABEL));
+
+       // Change the property and content values
+       this.dbNodeService.setProperty(versionableNode, PROP_1, UPDATED_VALUE_1);
+       this.dbNodeService.setProperty(versionableNode, PROP_2, null);
+       ContentWriter contentWriter = this.contentService.getWriter(versionableNode, ContentModel.PROP_CONTENT, true);
+       assertNotNull(contentWriter);
+       contentWriter.putContent(UPDATED_CONTENT_1);
+
+       // Change the aspects on the node
+       this.dbNodeService.addAspect(versionableNode, ApplicationModel.ASPECT_SIMPLE_WORKFLOW, null);
+
+       // Store the node details for later
+       Set<QName> origAspects2 = this.dbNodeService.getAspects(versionableNode);
+
+       // Record this as a new version
+       Version version2 = createVersion(versionableNode);
+       
+       // Check we're now seeing both versions in the history
+       history = versionService.getVersionHistory(versionableNode);
+       assertEquals(version2.getVersionLabel(), history.getHeadVersion().getVersionLabel());
+       assertEquals(version2.getVersionedNodeRef(), history.getHeadVersion().getVersionedNodeRef());
+       assertEquals(2, history.getAllVersions().size());
+       
+       versions = history.getAllVersions().toArray(new Version[2]);
+       assertEquals("0.2", versions[0].getVersionLabel());
+       assertEquals("0.1", versions[1].getVersionLabel());
+       assertEquals("0.2", nodeService.getProperty(versionableNode, ContentModel.PROP_VERSION_LABEL));
+
+       
+       // Change the property and content values
+       this.dbNodeService.setProperty(versionableNode, PROP_1, UPDATED_VALUE_2);
+       this.dbNodeService.setProperty(versionableNode, PROP_2, UPDATED_VALUE_3);
+       this.dbNodeService.setProperty(versionableNode, PROP_3, null);
+       ContentWriter contentWriter2 = this.contentService.getWriter(versionableNode, ContentModel.PROP_CONTENT, true);
+       assertNotNull(contentWriter2);
+       contentWriter2.putContent(UPDATED_CONTENT_2);
+
+       String versionLabel = (String)this.dbNodeService.getProperty(versionableNode, ContentModel.PROP_VERSION_LABEL);
+
+       
+       // Revert to the previous version, which will loose these changes
+       this.versionService.revert(versionableNode);
+
+       // Check that the version label is unchanged
+       assertEquals(versionLabel, this.dbNodeService.getProperty(versionableNode, ContentModel.PROP_VERSION_LABEL));
+
+       // Check that the properties have been reverted
+       assertEquals(UPDATED_VALUE_1, this.dbNodeService.getProperty(versionableNode, PROP_1));
+       assertNull(this.dbNodeService.getProperty(versionableNode, PROP_2));
+       assertEquals(VALUE_3, this.dbNodeService.getProperty(versionableNode, PROP_3));
+
+       // Check that the content has been reverted
+       ContentReader contentReader1 = this.contentService.getReader(versionableNode, ContentModel.PROP_CONTENT);
+       assertNotNull(contentReader1);
+       assertEquals(UPDATED_CONTENT_1, contentReader1.getContentString());
+
+       // Check that the aspects have been reverted correctly
+       Set<QName> aspects1 = this.dbNodeService.getAspects(versionableNode);
+       assertEquals(aspects1.size(), origAspects2.size());
+       
+       // Check that the history is back how it was
+       history = versionService.getVersionHistory(versionableNode);
+       assertEquals(version2.getVersionLabel(), history.getHeadVersion().getVersionLabel());
+       assertEquals(version2.getVersionedNodeRef(), history.getHeadVersion().getVersionedNodeRef());
+       assertEquals(2, history.getAllVersions().size());
+       
+       versions = history.getAllVersions().toArray(new Version[2]);
+       assertEquals("0.2", versions[0].getVersionLabel());
+       assertEquals("0.1", versions[1].getVersionLabel());
+       assertEquals("0.2", nodeService.getProperty(versionableNode, ContentModel.PROP_VERSION_LABEL));
+       assertEquals("0.2", history.getHeadVersion().getVersionLabel());
+
+       
+       // Revert to the first version
+       this.versionService.revert(versionableNode, version1);
+
+       // Check that the version label is correct
+       assertEquals(versionLabel, this.dbNodeService.getProperty(versionableNode, ContentModel.PROP_VERSION_LABEL));
+
+       // Check that the properties are correct
+       assertEquals(VALUE_1, this.dbNodeService.getProperty(versionableNode, PROP_1));
+       assertEquals(VALUE_2, this.dbNodeService.getProperty(versionableNode, PROP_2));
+       assertEquals(VALUE_3, this.dbNodeService.getProperty(versionableNode, PROP_3));
+
+       // Check that the content is correct
+       ContentReader contentReader2 = this.contentService.getReader(versionableNode, ContentModel.PROP_CONTENT);
+       assertNotNull(contentReader2);
+       assertEquals(TEST_CONTENT, contentReader2.getContentString());
+
+       // Check that the aspects have been reverted correctly
+       Set<QName> aspects2 = this.dbNodeService.getAspects(versionableNode);
+       assertEquals(aspects2.size(), origAspects.size());
+
+       // Check that the version label is still the same
+       assertEquals(versionLabel, this.dbNodeService.getProperty(versionableNode, ContentModel.PROP_VERSION_LABEL));
+       
+       
+       // Check the history still has 2 versions
+       // The head version remains as 0.2, but version on the node is 0.1
+       history = versionService.getVersionHistory(versionableNode);
+       assertEquals(version2.getVersionLabel(), history.getHeadVersion().getVersionLabel());
+       assertEquals(version2.getVersionedNodeRef(), history.getHeadVersion().getVersionedNodeRef());
+       assertEquals(2, history.getAllVersions().size());
+       
+       versions = history.getAllVersions().toArray(new Version[2]);
+       assertEquals("0.2", versions[0].getVersionLabel());
+       assertEquals("0.1", versions[1].getVersionLabel());
+       
+       // Head is 0.2, but the node is at 0.1
+       assertEquals("0.2", history.getHeadVersion().getVersionLabel());
+       
+       // TODO Shouldn't the node now be at 0.1 not 0.2?
+       //assertEquals("0.1", nodeService.getProperty(versionableNode, ContentModel.PROP_VERSION_LABEL));
     }
     
     /**
@@ -451,41 +504,87 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         NodeRef versionableNode = createNewVersionableNode();
         NodeRef checkedOut = checkOutCheckIn.checkout(versionableNode);
         
-        Version version1 = createVersion(checkedOut);
+        Version versionC1 = createVersion(checkedOut);
+
         
-        // Create a new version
+        // Create a new, first proper version
         ContentWriter contentWriter = this.contentService.getWriter(checkedOut, ContentModel.PROP_CONTENT, true);
         assertNotNull(contentWriter);
         contentWriter.putContent(UPDATED_CONTENT_1);
+        nodeService.setProperty(checkedOut, PROP_1, VALUE_1);
         checkOutCheckIn.checkin(checkedOut, null, contentWriter.getContentUrl(), false);
-        Version version2 = createVersion(versionableNode);
+        Version version1 = createVersion(versionableNode);
         checkedOut = checkOutCheckIn.checkout(versionableNode);
+        
         
         // Create another new version
         contentWriter = this.contentService.getWriter(checkedOut, ContentModel.PROP_CONTENT, true);
         assertNotNull(contentWriter);
         contentWriter.putContent(UPDATED_CONTENT_2);
+        nodeService.setProperty(checkedOut, PROP_1, VALUE_2);
         checkOutCheckIn.checkin(checkedOut, null, contentWriter.getContentUrl(), false);
-        Version version3 = createVersion(versionableNode);
+        Version version2 = createVersion(versionableNode);
         checkedOut = checkOutCheckIn.checkout(versionableNode);
         
-        // Yet another version
+        // Check we're now up to two versions
+        // (The version created on the working copy doesn't count)
+        VersionHistory history = versionService.getVersionHistory(versionableNode);
+        assertEquals(version2.getVersionLabel(), history.getHeadVersion().getVersionLabel());
+        assertEquals(version2.getVersionedNodeRef(), history.getHeadVersion().getVersionedNodeRef());
+        assertEquals(2, history.getAllVersions().size());
+        
+        Version[] versions = history.getAllVersions().toArray(new Version[2]);
+        assertEquals("0.2", versions[0].getVersionLabel());
+        assertEquals("0.1", versions[1].getVersionLabel());
+        
+        
+        // Add yet another version
         contentWriter = this.contentService.getWriter(checkedOut, ContentModel.PROP_CONTENT, true);
         assertNotNull(contentWriter);
         contentWriter.putContent(UPDATED_CONTENT_3);
+        nodeService.setProperty(checkedOut, PROP_1, VALUE_3);
         checkOutCheckIn.checkin(checkedOut, null, contentWriter.getContentUrl(), false);
-        Version version4 = createVersion(versionableNode);
+        Version version3 = createVersion(versionableNode);
+        
+        // Verify that the version labels are as we expect them to be
+        history = versionService.getVersionHistory(versionableNode);
+        assertEquals(version3.getVersionLabel(), history.getHeadVersion().getVersionLabel());
+        assertEquals(version3.getVersionedNodeRef(), history.getHeadVersion().getVersionedNodeRef());
+        assertEquals(3, history.getAllVersions().size());
+        
+        versions = history.getAllVersions().toArray(new Version[3]);
+        assertEquals("0.3", versions[0].getVersionLabel());
+        assertEquals("0.2", versions[1].getVersionLabel());
+        assertEquals("0.1", versions[2].getVersionLabel());
+        
         
         // Create a ScriptNode as used in Share
         ServiceRegistry services = applicationContext.getBean(ServiceRegistry.class); 
         ScriptNode scriptNode = new ScriptNode(versionableNode, services);
+        assertEquals("0.3", nodeService.getProperty(scriptNode.getNodeRef(), ContentModel.PROP_VERSION_LABEL));
+        assertEquals(VALUE_3, nodeService.getProperty(scriptNode.getNodeRef(), PROP_1));
         
         // Revert to version2
+        // The content and properties will be the same as on Version 2, but we'll
+        //  actually be given a new version number for it
         ScriptNode newNode = scriptNode.revert("History", false, version2.getVersionLabel());
         ContentReader contentReader = this.contentService.getReader(newNode.getNodeRef(), ContentModel.PROP_CONTENT);
         assertNotNull(contentReader);
-        assertEquals(UPDATED_CONTENT_1, contentReader.getContentString());
+        assertEquals(UPDATED_CONTENT_2, contentReader.getContentString());
+        assertEquals(VALUE_2, nodeService.getProperty(newNode.getNodeRef(), PROP_1));
+        // Will be a new version though - TODO Is this correct?
+        assertEquals("0.4", nodeService.getProperty(newNode.getNodeRef(), ContentModel.PROP_VERSION_LABEL));
         
+        // Revert to version1
+        newNode = scriptNode.revert("History", false, version1.getVersionLabel());
+        contentReader = this.contentService.getReader(newNode.getNodeRef(), ContentModel.PROP_CONTENT);
+        assertNotNull(contentReader);
+        assertEquals(UPDATED_CONTENT_1, contentReader.getContentString());
+        assertEquals(VALUE_1, nodeService.getProperty(newNode.getNodeRef(), PROP_1));
+        // Will be a new version though - TODO Is this correct?
+        assertEquals("0.5", nodeService.getProperty(newNode.getNodeRef(), ContentModel.PROP_VERSION_LABEL));
+
+        // All done
         setComplete();
         try
         {
@@ -520,10 +619,13 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         // Create a versionable node
         NodeRef versionableNode = createNewVersionableNode();
         
+        // It isn't currently versionable
+        assertEquals(null, versionService.getVersionHistory(versionableNode));
+        
         // Store the node details for later
         Set<QName> origAspects = this.dbNodeService.getAspects(versionableNode);
         
-        // Try and restore the node (fail since exist!!)
+        // Try and restore the node (won't be allowed as it already exists!)
         try
         {
             this.versionService.restore(
@@ -538,14 +640,28 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
             // We where expecting this exception
         }
         
-        // Version it
+        // Version it twice
+        this.versionService.createVersion(versionableNode, null);
         this.versionService.createVersion(versionableNode, null);
         
-        // Delete it
+        // Check we're now have a version history
+        VersionHistory history = versionService.getVersionHistory(versionableNode);
+        assertEquals("0.2", nodeService.getProperty(versionableNode, ContentModel.PROP_VERSION_LABEL));
+        assertEquals("0.2", history.getHeadVersion().getVersionLabel());
+        assertEquals(2, history.getAllVersions().size());
+        
+        
+        // Delete the node
         this.dbNodeService.deleteNode(versionableNode);
         assertFalse(this.dbNodeService.exists(versionableNode));
         
-        // Try and resotre it
+        // You can still get the history of the node even though it's deleted
+        history = versionService.getVersionHistory(versionableNode);
+        assertEquals("0.2", history.getHeadVersion().getVersionLabel());
+        assertEquals(2, history.getAllVersions().size());
+        
+        
+        // Try and restore the node
         NodeRef restoredNode = this.versionService.restore(
                 versionableNode, 
                 this.rootNodeRef, 
@@ -568,6 +684,28 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         // Check that the aspects have been reverted correctly
         Set<QName> aspects2 = this.dbNodeService.getAspects(restoredNode);
         assertEquals(aspects2.size(), origAspects.size());
+        
+        // Check the version is back to what it was
+        history = versionService.getVersionHistory(restoredNode);
+        assertEquals("0.2", history.getHeadVersion().getVersionLabel());
+        assertEquals(2, history.getAllVersions().size());
+        
+        Version[] versions = history.getAllVersions().toArray(new Version[2]);
+        assertEquals("0.2", versions[0].getVersionLabel());
+        assertEquals("0.1", versions[1].getVersionLabel());
+        
+        // TODO Shouldn't these point to the restored node?
+        //assertEquals(restoredNode, versions[0].getFrozenStateNodeRef());
+        //assertEquals(restoredNode, versions[1].getFrozenStateNodeRef());
+        
+        // TODO Should we really be having reference to version store
+        //  as the frozen state noderef?
+        assertEquals(VersionService.VERSION_STORE_PROTOCOL, versions[0].getFrozenStateNodeRef().getStoreRef().getProtocol());
+        assertEquals(VersionService.VERSION_STORE_PROTOCOL, versions[1].getFrozenStateNodeRef().getStoreRef().getProtocol());
+        
+        // The restored node won't have a version label set though
+        // TODO Is this correct?
+        assertEquals(null, nodeService.getProperty(restoredNode, ContentModel.PROP_VERSION_LABEL));
     }
     
     /**

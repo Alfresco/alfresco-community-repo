@@ -18,8 +18,6 @@
  */
 package org.alfresco.repo.workflow.jbpm;
 
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.jbpm.JbpmContext;
 import org.jbpm.graph.exe.Token;
 import org.jbpm.job.Timer;
@@ -66,40 +64,21 @@ public class AlfrescoTimer extends Timer
     {
         // establish authentication context
         final TaskInstance taskInstance = getTaskInstance();
-        String username = getActorId(taskInstance);
         
         // execute timer
-        return AuthenticationUtil.runAs(new RunAsWork<Boolean>()
+        boolean deleteTimer = AlfrescoTimer.super.execute(jbpmContext);
+        
+        // End the task if timer does not repeat.
+        // Note the order is a little odd here as the task will be ended
+        // after the token has been signalled to move to the next node.
+        if (deleteTimer
+            && taskInstance != null 
+            && taskInstance.isOpen())
         {
-            public Boolean doWork() throws Exception
-            {
-                boolean deleteTimer = AlfrescoTimer.super.execute(jbpmContext);
-                // End the task if timer does not repeat.
-                // Note the order is a little odd here as the task will be ended
-                // after the token has been signalled to move to the next node.
-                if (deleteTimer
-                    && taskInstance != null 
-                    && taskInstance.isOpen())
-                {
-                    taskInstance.setSignalling(false);
-                    taskInstance.end();
-                }
-                return deleteTimer;
-            }
-        }, username);
-    }
-
-    private String getActorId(TaskInstance taskInstance)
-    {
-        if (taskInstance != null)
-        {
-            String actorId = taskInstance.getActorId();
-            if (actorId != null && actorId.length() > 0)
-            {
-                return actorId;
-            }
+            taskInstance.setSignalling(false);
+                	taskInstance.end();
         }
-        return AuthenticationUtil.getSystemUserName();
+        
+        return deleteTimer;
     }
-
 }

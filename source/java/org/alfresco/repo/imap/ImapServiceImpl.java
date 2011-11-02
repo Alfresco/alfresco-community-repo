@@ -204,27 +204,24 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
         @Override
         protected void onBootstrap(ApplicationEvent event)
         {
-            service.serviceRegistry.getTransactionService().getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-            {
-                @Override
-                public Void execute() throws Throwable
-                {
-                    if (service.getImapServerEnabled())
-                    {
-                        service.startup();
-                    }
-                    return null;
-                }
-            });
+            service.startupInTxn();
         }
 
         @Override
         protected void onShutdown(ApplicationEvent event)
         {
-            if (service.getImapServerEnabled())
+            AuthenticationUtil.runAs(new RunAsWork<Void>()
             {
-                service.shutdown();
-            }
+                @Override
+                public Void doWork() throws Exception
+                {
+                    if (service.getImapServerEnabled())
+                    {
+                        service.shutdown();
+                    }
+                    return null;
+                }
+            }, AuthenticationUtil.getSystemUserName());
         }
     }
 
@@ -390,6 +387,9 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
         }
     }
 
+    /**
+     * This method is run as System within a single transaction on startup.
+     */
     public void startup()
     {
         bindBehaviour();
@@ -398,60 +398,61 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
         final SearchService searchService = serviceRegistry.getSearchService();
                 
         // Get NodeRefs for folders to ignore
-        this.ignoreExtractionFolders = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Set<NodeRef>>()
+        this.ignoreExtractionFolders = new HashSet<NodeRef>(ignoreExtractionFoldersBeans.length * 2);
+
+        for (RepositoryFolderConfigBean ignoreExtractionFoldersBean : ignoreExtractionFoldersBeans)
         {
-            public Set<NodeRef> doWork() throws Exception
+            NodeRef nodeRef = ignoreExtractionFoldersBean.getFolderPath(namespaceService, nodeService, searchService,
+                    fileFolderService);
+
+            if (!ignoreExtractionFolders.add(nodeRef))
             {
-                Set<NodeRef> result = new HashSet<NodeRef>(ignoreExtractionFoldersBeans.length * 2);
-
-                for (RepositoryFolderConfigBean ignoreExtractionFoldersBean : ignoreExtractionFoldersBeans)
-                {
-                    NodeRef nodeRef = ignoreExtractionFoldersBean.getFolderPath(
-                            namespaceService, nodeService, searchService, fileFolderService);
-
-                    if (!result.add(nodeRef))
-                    {
-                        // It was already in the set
-                        throw new AlfrescoRuntimeException(
-                                "The folder extraction path has been referenced already: \n" +
-                                "   Folder: " + ignoreExtractionFoldersBean);
-                    }
-                }
-
-                return result;
+                // It was already in the set
+                throw new AlfrescoRuntimeException("The folder extraction path has been referenced already: \n"
+                        + "   Folder: " + ignoreExtractionFoldersBean);
             }
-        }, AuthenticationUtil.getSystemUserName());
+        }
         
         // Locate or create IMAP home
-        imapHomeNodeRef = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
-        {
-            public NodeRef doWork() throws Exception
-            {
-                return imapHomeConfigBean.getOrCreateFolderPath(namespaceService, nodeService, searchService, fileFolderService);
-            }
-        }, AuthenticationUtil.getSystemUserName());
+        imapHomeNodeRef = imapHomeConfigBean.getOrCreateFolderPath(namespaceService, nodeService, searchService, fileFolderService);
         
         // Hit the mount points and warm the caches for early failure
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
+        for (String mountPointName : imapConfigMountPoints.keySet())
         {
-            public Void doWork() throws Exception
+            for (AlfrescoImapFolder mailbox : listMailboxes(new AlfrescoImapUser(null, AuthenticationUtil
+                    .getSystemUserName(), null), mountPointName + "*", false))
             {
-                for (String mountPointName: imapConfigMountPoints.keySet())
-                {
-                    for (AlfrescoImapFolder mailbox : listMailboxes(new AlfrescoImapUser(null, AuthenticationUtil
-                            .getSystemUserName(), null), mountPointName + "*", false))
-                    {
-                        mailbox.getUidNext();
-                    }
-                }
-                return null;
+                mailbox.getUidNext();
             }
-        }, AuthenticationUtil.getSystemUserName());
-        
+        }
     }
 
     public void shutdown()
     {
+    }
+    
+    protected void startupInTxn()
+    {
+        if (getImapServerEnabled())
+        {
+            AuthenticationUtil.runAs(new RunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    return serviceRegistry.getTransactionService().getRetryingTransactionHelper().doInTransaction(
+                            new RetryingTransactionCallback<Void>()
+                            {
+                                @Override
+                                public Void execute() throws Throwable
+                                {
+                                    startup();
+                                    return null;
+                                }
+                            });
+                }
+            }, AuthenticationUtil.getSystemUserName());
+        }
     }
 
     protected void bindBehaviour()

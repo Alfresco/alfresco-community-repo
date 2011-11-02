@@ -1461,7 +1461,6 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         // Build an array of name filter tokens pre lowercased to test against person properties
         // We require that matching people have at least one match against one of these on
         //  either their firstname or last name
-        // For groups, we require a match against the whole filter on the group name or display name
         String nameFilterLower = null;
         String[] nameFilters = new String[0];
         if (nameFilter != null && nameFilter.length() != 0)

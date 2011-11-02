@@ -26,6 +26,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 
@@ -57,7 +58,7 @@ import org.springframework.beans.factory.InitializingBean;
  * 
  * @author Derek Hulley
  */
-public class ThreadPoolExecutorFactoryBean implements FactoryBean, InitializingBean
+public class ThreadPoolExecutorFactoryBean implements FactoryBean, InitializingBean, DisposableBean
 {
     private static final int DEFAULT_CORE_POOL_SIZE = 20;
     private static final int DEFAULT_MAXIMUM_POOL_SIZE = -1;        // -1 is a sign that it must match the core pool size
@@ -244,4 +245,10 @@ public class ThreadPoolExecutorFactoryBean implements FactoryBean, InitializingB
     {
     	this.poolName = poolName;
     }
+
+    public void destroy()
+    {
+        this.instance.shutdown();
+    }
+
 }

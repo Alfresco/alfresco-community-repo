@@ -13,6 +13,9 @@
                 <value>classpath:alfresco/remote-email-service-test.properties</value>
             </list>
         </property>
+        <property name="searchSystemEnvironment">
+            <value>false</value>
+        </property>
     </bean>
 
     <!-- Remote email-service. -->

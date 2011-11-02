@@ -14,6 +14,9 @@
             <prop key="db.testurl">${db.url}_test</prop>
          </props>
       </property>
+      <property name="searchSystemEnvironment">
+          <value>false</value>
+      </property>
    </bean>
 
    <import resource="classpath*:alfresco/extension/dev-context.xml" />

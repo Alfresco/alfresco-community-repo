@@ -695,7 +695,13 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
         }
         if (direction == CMISRelationshipDirectionEnum.TARGET || direction == CMISRelationshipDirectionEnum.EITHER)
         {
-            assocs.addAll(nodeService.getSourceAssocs(node, RegexQNamePattern.MATCH_ALL));
+            try
+            {
+                assocs.addAll(nodeService.getSourceAssocs(node, RegexQNamePattern.MATCH_ALL));
+            }
+            catch (UnsupportedOperationException uoe) {
+                // NodeServiceImpl#getSourceAssocs - This operation is not supported for a version store
+            }
         }
 
         // filter association by type

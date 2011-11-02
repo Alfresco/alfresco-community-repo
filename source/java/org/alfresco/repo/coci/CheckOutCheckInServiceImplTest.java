@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
@@ -53,6 +54,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TestWithUserUtils;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Version operations service implementation unit tests
@@ -218,12 +220,20 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
 		
 		// Check that the working copy owner has been set correctly
 		assertEquals(this.userNodeRef, nodeService.getProperty(workingCopy, ContentModel.PROP_WORKING_COPY_OWNER));
+
 		
 		// Check that the working copy name has been set correctly
-        String name = (String)nodeService.getProperty(this.nodeRef, PROP_NAME_QNAME);
-        String workingCopyLabel = CheckOutCheckInServiceImpl.createWorkingCopyName(name);
-        String workingCopyName = (String)nodeService.getProperty(workingCopy, PROP_NAME_QNAME);
-        assertEquals(workingCopyLabel, workingCopyName);
+        String name = (String)this.nodeService.getProperty(this.nodeRef, PROP_NAME_QNAME);
+        String expectedWorkingCopyLabel = I18NUtil.getMessage("coci_service.working_copy_label");
+        String expectedWorkingCopyName = 
+            ((CheckOutCheckInServiceImpl)this.cociService).createWorkingCopyName(name, expectedWorkingCopyLabel);
+        String workingCopyName = (String)this.nodeService.getProperty(workingCopy, PROP_NAME_QNAME);
+        assertEquals(expectedWorkingCopyName, workingCopyName);
+        // Check a record has been kept of the working copy label used to create the working copy name
+        assertEquals(
+                    "No record of working copy label kept",
+                    expectedWorkingCopyLabel,
+                    nodeService.getProperty(workingCopy, ContentModel.PROP_WORKING_COPY_LABEL));
 		
 		// Ensure that the content has been copied correctly
 		ContentReader contentReader = this.contentService.getReader(this.nodeRef, ContentModel.PROP_CONTENT);
@@ -298,9 +308,62 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
 		NodeRef workingCopy2 = checkout();		
 		Map<String, Serializable> versionProperties2 = new HashMap<String, Serializable>();
 		versionProperties2.put(Version.PROP_DESCRIPTION, "Another version test");		
-		cociService.checkin(workingCopy2, versionProperties2, null, true);
-		cociService.checkin(workingCopy2, new HashMap<String, Serializable>(), null, true);	
+		this.cociService.checkin(workingCopy2, versionProperties2, null, true);
+		this.cociService.checkin(workingCopy2, new HashMap<String, Serializable>(), null, true);	
 	}
+	
+	public void testCheckOutCheckInWithDifferentLocales()
+	{
+	    // Check-out nodeRef using the locale fr_FR
+	    Locale.setDefault(Locale.FRANCE);
+        NodeRef workingCopy = this.cociService.checkout(
+                this.nodeRef, 
+                this.rootNodeRef, 
+                ContentModel.ASSOC_CHILDREN, 
+                QName.createQName("workingCopy"));
+        assertNotNull(workingCopy);
+        
+        // Check that the working copy name has been set correctly
+        String workingCopyName = (String) nodeService.getProperty(workingCopy, PROP_NAME_QNAME);
+        assertEquals("Working copy name not correct", "myDocument (Copie de Travail).doc", workingCopyName);
+        
+        // Check-in using the locale en_GB
+        Locale.setDefault(Locale.UK);
+        Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
+        versionProperties.put(Version.PROP_DESCRIPTION, "This is a test version");      
+        cociService.checkin(workingCopy, versionProperties);
+        
+        String name = (String) nodeService.getProperty(nodeRef, PROP_NAME_QNAME);
+        assertEquals("Working copy label was not removed.", "myDocument.doc", name);
+	}
+	
+	public void testCheckOutCheckInWithAlteredWorkingCopyName()
+    {
+        // Check-out nodeRef using the locale fr_FR
+        Locale.setDefault(Locale.FRANCE);
+        NodeRef workingCopy = this.cociService.checkout(
+                this.nodeRef, 
+                this.rootNodeRef, 
+                ContentModel.ASSOC_CHILDREN, 
+                QName.createQName("workingCopy"));
+        assertNotNull(workingCopy);
+        
+        // Check that the working copy name has been set correctly
+        String workingCopyName = (String) nodeService.getProperty(workingCopy, PROP_NAME_QNAME);
+        assertEquals("Working copy name not correct", "myDocument (Copie de Travail).doc", workingCopyName);
+        
+        // Alter the working copy name
+        nodeService.setProperty(workingCopy, PROP_NAME_QNAME, "newName (Copie de Travail).doc");
+        
+        // Check-in using the locale en_GB
+        Locale.setDefault(Locale.UK);
+        Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
+        versionProperties.put(Version.PROP_DESCRIPTION, "This is a test version");      
+        cociService.checkin(workingCopy, versionProperties);
+        
+        String name = (String) nodeService.getProperty(nodeRef, PROP_NAME_QNAME);
+        assertEquals("File not renamed correctly.", "newName.doc", name);
+    }
 	
     public void testCheckInWithNameChange()
     {

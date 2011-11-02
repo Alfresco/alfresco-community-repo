@@ -1767,6 +1767,50 @@ public class RuleServiceCoverageTest extends TestCase
         });
     }
     
+    public void testAssociationUpdateRule()
+    {
+        //ALF-9661 test
+        NodeRef sourceFolder = this.nodeService.createNode(
+                this.rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName("{test}sourceFolder"),
+                ContentModel.TYPE_FOLDER).getChildRef();       
+        Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+        params.put("aspect-name", ContentModel.ASPECT_VERSIONABLE);        
+        //create a rule that adds an aspect after a property is updated
+        Rule rule = createRule(
+                RuleType.UPDATE, 
+                AddFeaturesActionExecuter.NAME, 
+                params, 
+                NoConditionEvaluator.NAME, 
+                null);
+
+        this.ruleService.saveRule(sourceFolder, rule);     
+        //create folders
+        NodeRef testNodeOneRef = this.nodeService.createNode(
+                sourceFolder,
+                ContentModel.ASSOC_CONTAINS,                
+                QName.createQName(TEST_NAMESPACE, "original1"),
+                ContentModel.TYPE_CONTENT,
+                getContentProperties()).getChildRef(); 
+        addContentToNode(testNodeOneRef);
+        
+        NodeRef testNodeTwoRef = this.nodeService.createNode(
+                sourceFolder,
+                ContentModel.ASSOC_CONTAINS,                
+                QName.createQName(TEST_NAMESPACE, "original2"),
+                ContentModel.TYPE_CONTENT,
+                getContentProperties()).getChildRef(); 
+        addContentToNode(testNodeTwoRef);                
+        //there is no aspect
+        assertFalse(this.nodeService.hasAspect(testNodeOneRef, ContentModel.ASPECT_VERSIONABLE));
+        //create an association
+        this.nodeService.addAspect(testNodeOneRef, ContentModel.ASPECT_REFERENCING, null);        
+        this.nodeService.createAssociation(testNodeOneRef, testNodeTwoRef, ContentModel.ASSOC_REFERENCES);
+        //there should be the versionable aspect added
+        assertTrue(this.nodeService.hasAspect(testNodeOneRef, ContentModel.ASPECT_VERSIONABLE));        
+    }
+    
     /**
      * Test:
      *          rule type:  outbound

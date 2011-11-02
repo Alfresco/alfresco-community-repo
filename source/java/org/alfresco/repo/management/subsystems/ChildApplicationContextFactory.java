@@ -417,6 +417,7 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
             PropertyPlaceholderConfigurer configurer = new PropertyPlaceholderConfigurer();
             configurer.setProperties(properties);
             configurer.setIgnoreUnresolvablePlaceholders(true);
+            configurer.setSearchSystemEnvironment(false);
             addBeanFactoryPostProcessor(configurer);
 
             // Add all the post processors of the parent, e.g. to make sure system placeholders get expanded properly

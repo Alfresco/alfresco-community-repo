@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.error.StackTraceUtil;
 import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.domain.schema.SchemaBootstrap;
@@ -216,8 +217,8 @@ public class AuditMethodInterceptor implements MethodInterceptor
         }
         catch (Throwable e)
         {
-            // Failure to audit should not break the invocation
-            logger.error(
+            // Failure to audit must stop the process: ALF-11139
+            throw new AlfrescoRuntimeException(
                     "Failed to audit pre-invocation: \n" +
                     "   Invocation: " + mi,
                     e);
@@ -243,8 +244,8 @@ public class AuditMethodInterceptor implements MethodInterceptor
         }
         catch (Throwable e)
         {
-            // Failure to audit should not break the invocation
-            logger.error(
+            // Failure to audit must stop the process: ALF-11139
+            throw new AlfrescoRuntimeException(
                     "Failed to audit post-invocation: \n" +
                     "   Invocation: " + mi,
                     e);

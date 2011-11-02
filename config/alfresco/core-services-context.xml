@@ -64,6 +64,9 @@
         <property name="ignoreUnresolvablePlaceholders">
             <value>true</value>
         </property>
+        <property name="searchSystemEnvironment">
+            <value>false</value>
+        </property>        
     </bean>
     
     <!-- Expand global properties and version information in bean definitions -->
@@ -108,6 +111,9 @@
         </property>
         <property name="order">
             <value>10</value>
+        </property>
+        <property name="searchSystemEnvironment">
+            <value>false</value>
         </property>
     </bean>
     

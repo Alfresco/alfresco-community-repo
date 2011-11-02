@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
+   <!-- This sample configures xpdf as the pdf -> text and ??? -> pdf -> text transformer rather than PDFBox. -->
+
+  <!-- disable standard pdfbox text transformer -->
+  <bean id="transformer.PdfBox" class="java.lang.String"/>
+  <!-- has the above injected, is newly created below -->
+  <bean id="transformer.complex.OpenOffice.PdfBox" class="java.lang.String"/>
+  
+  <bean id="transformer.complex.JodConverter.PdfBox" class="java.lang.String"/>
+  
+  <!-- pdftotext command line binary -->
+  <bean id="transformer.worker.PdfToTextTool" class="org.alfresco.repo.content.transform.RuntimeExecutableContentTransformerWorker">
+    <property name="mimetypeService">
+      <ref bean="mimetypeService"/>
+    </property>
+    <property name="transformCommand">
+      <bean name="transformer.pdftotext.Command" class="org.alfresco.util.exec.RuntimeExec">
+        <property name="commandMap">
+          <map>
+            <entry key="Linux.*">
+              <value>${pdftotext.root}/pdftotext -enc UTF-8 ${source} ${target}</value>
+            </entry>
+            <entry key="Windows.*">
+              <value>${pdftotext.root}/pdftotext.exe -enc UTF-8 ${source} ${target}</value>
+            </entry>
+          </map>
+        </property>
+        <property name="defaultProperties">
+          <props>
+            <prop key="options"/>
+          </props>
+        </property>
+      </bean>
+    </property>
+    <!-- ensure executable bits of binaries on unix -->
+    <property name="checkCommand">
+      <bean name="transformer.pdftotext.checkCommand" class="org.alfresco.util.exec.RuntimeExec">
+        <property name="commandMap">
+          <map>
+            <entry key="Linux.*">
+              <value>chmod 775 ${pdftotext.root}/pdftotext</value>
+            </entry>
+            <entry key="Windows.*">
+              <!--  dummy value -->
+              <value>cmd.exe /C dir</value>
+            </entry>
+          </map>
+        </property>
+        <property name="defaultProperties">
+          <props>
+            <prop key="options"/>
+          </props>
+        </property>
+      </bean>
+    </property>
+    <property name="explicitTransformations">
+      <list>
+        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
+          <property name="sourceMimetype">
+            <value>application/pdf</value>
+          </property>
+          <property name="targetMimetype">
+            <value>text/plain</value>
+          </property>
+        </bean>
+      </list>
+    </property>
+  </bean>
+  
+  <bean id="transformer.proxy.PdfToTextTool" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+    <property name="sourceApplicationContextFactory">
+      <ref bean="thirdparty"/>
+    </property>
+    <property name="sourceBeanName">
+      <value>transformer.worker.PdfToTextTool</value>
+    </property>
+    <property name="interfaces">
+      <list>
+        <value>org.alfresco.repo.content.transform.ContentTransformerWorker</value>
+      </list>
+    </property>
+  </bean>
+  <bean id="transformer.PdfToTextTool" class="org.alfresco.repo.content.transform.ProxyContentTransformer" parent="baseContentTransformer">
+    <property name="worker">
+      <ref bean="transformer.proxy.PdfToTextTool"/>
+    </property>
+  </bean>
+  
+  <!-- replaces bean transformer.complex.OpenOffice.PdfBox -->
+  <bean id="transformer.complex.OpenOffice.PdfToTextTool" class="org.alfresco.repo.content.transform.ComplexContentTransformer" parent="baseContentTransformer">
+    <property name="transformers">
+      <list>
+        <ref bean="transformer.OpenOffice"/>
+        <ref bean="transformer.PdfToTextTool"/>
+      </list>
+    </property>
+    <property name="intermediateMimetypes">
+      <list>
+        <value>application/pdf</value>
+      </list>
+    </property>
+  </bean>
+</beans>

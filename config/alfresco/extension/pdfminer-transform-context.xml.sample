@@ -1,0 +1,119 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+   <!-- This sample configures PdfMiner as the pdf -> text and ??? -> pdf -> text transformer rather than PDFBox.
+        PdfMiner is slower but does handle vertical text. -->
+      
+   <!-- Add html -> text transformer using PdfMiner and disable PdfBox version -->
+   <bean id="transformer.complex.JodConverter.PdfBox" class="java.lang.String"/>
+   <bean id="transformer.complex.JodConverter.PdfMiner"
+        class="org.alfresco.repo.content.transform.ComplexContentTransformer"
+        parent="baseContentTransformer" >
+      <property name="transformers">
+         <list>
+            <ref bean="transformer.JodConverter" />
+            <ref bean="transformer.PdfMiner" />
+         </list>
+      </property>
+      <property name="intermediateMimetypes">
+         <list>
+            <value>application/pdf</value>
+         </list>    
+      </property>
+   </bean>
+
+   <!-- Add ??? -> pdf -> text transformer using PdfMiner and disable PdfBox version -->
+   <bean id="transformer.complex.OpenOffice.PdfBox" class="java.lang.String"/>
+   <bean id="transformer.complex.OpenOffice.PdfMiner"
+        class="org.alfresco.repo.content.transform.ComplexContentTransformer"
+        parent="baseContentTransformer" >
+      <property name="transformers">
+         <list>
+            <ref bean="transformer.OpenOffice" />
+            <ref bean="transformer.PdfMiner" />
+         </list>
+      </property>
+      <property name="intermediateMimetypes">
+         <list>
+            <value>application/pdf</value>
+         </list>    
+      </property>
+   </bean>
+
+   <!-- Add pdf -> text transformer using PdfMiner and disable PdfBox version -->
+   <bean id="transformer.PdfBox" class="java.lang.String"/>
+   <bean id="transformer.PdfMiner" class="org.alfresco.repo.content.transform.ProxyContentTransformer"
+      parent="baseContentTransformer">
+      <property name="worker">
+         <ref bean="transformer.worker.PdfMiner"/>
+      </property>
+      <property name="explicitTransformations">
+         <list>
+            <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
+                <property name="sourceMimetype"><value>application/pdf</value></property>
+                <property name="targetMimetype"><value>text/plain</value></property>
+            </bean>
+         </list>
+      </property>     
+   </bean>
+
+   <!-- Add the pdf -> text worker for PdfMiner -->
+   <bean id="transformer.worker.PdfMiner" class="org.alfresco.repo.content.transform.RuntimeExecutableContentTransformerWorker">
+      <property name="mimetypeService">
+         <ref bean="mimetypeService" />
+      </property>
+      <property name="checkCommand">
+         <bean name="transformer.PdfMiner.CheckCommand" class="org.alfresco.util.exec.RuntimeExec">
+            <property name="commandsAndArguments">
+               <map>
+                  <entry key=".*">
+                     <list>
+                        <value>${python.exe}</value>
+                        <value>${pdf2txt.py}</value>
+                     </list>
+                  </entry>
+               </map>
+            </property>
+            <!-- Should result in exit code of 100 - usage message from pdfminer -->
+            <property name="errorCodes">
+               <value>1</value>
+            </property>
+         </bean>
+      </property>
+      <property name="transformCommand">
+         <bean name="transformer.PdfMiner.Command" class="org.alfresco.util.exec.RuntimeExec">
+            <property name="commandsAndArguments">
+               <map>
+                  <entry key=".*">
+                     <list>
+                        <value>${python.exe}</value>
+                        <value>${pdf2txt.py}</value>
+                        <value>-V</value>
+                        <value>-o</value>
+                        <value>${target}</value>
+                        <value>${source}</value>
+                     </list>
+                  </entry>
+               </map>
+            </property>
+            <property name="errorCodes">
+               <value>1</value>
+            </property>
+         </bean>
+      </property>
+      <property name="explicitTransformations">
+         <list>
+            <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
+               <property name="sourceMimetype">
+                  <value>application/pdf</value>
+               </property>
+               <property name="targetMimetype">
+                  <value>text/plain</value>
+               </property>
+            </bean>
+         </list>
+      </property>
+   </bean>
+
+</beans>

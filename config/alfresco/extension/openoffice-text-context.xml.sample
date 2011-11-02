@@ -1,0 +1,91 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+ 
+<beans>
+   <!-- This sample configures OpenOffice as the default handler for text to PDF conversions -->
+   
+   <!-- This transformer is not used alone but only as part of a failover sequence. -->
+   <!-- For this reason it does not extend the baseContentTransformer bean and so will not be registered. -->
+   <bean id="transformer.complex.JodConverter.Pdf2swf"
+        class="org.alfresco.repo.content.transform.ComplexContentTransformer">
+      <property name="transformers">
+         <list>
+            <ref bean="transformer.JodConverter" />
+            <ref bean="transformer.Pdf2swf" />
+         </list>
+      </property>
+      <property name="intermediateMimetypes">
+         <list>
+            <value>application/pdf</value>
+         </list>
+      </property>
+      <property name="mimetypeService" ref="mimetypeService"/>
+   </bean>
+   
+   <bean id="transformer.complex.enterprise.Txt.Pdf2swf"
+       class="org.alfresco.repo.content.transform.FailoverContentTransformer"
+       parent="baseContentTransformer" >
+     <property name="transformers">
+        <list>
+           <!-- Use OpenOffice first as it does a better job of producing PDFs from non-Western text -->
+           <!-- Note that the use of OpenOffice as a first choice for txt-pdf-swf transforms will have a performance impact.
+                For this reason, we do not recommend this configuration for normal usage. -->
+           <ref bean="transformer.complex.JodConverter.Pdf2swf"/>
+           <!-- Fail over to PDFBox as it is fine for Western text. -->
+           <ref bean="transformer.complex.Text.Pdf2swf"/>
+        </list>
+     </property>
+   </bean>
+
+   <!-- These transformers are not used alone but only as part of a failover sequence. -->
+   <!-- For this reason they do not extend the baseContentTransformer bean and so will not be registered. -->
+   <bean id="transformer.complex.OpenOffice.Pdf2swf"
+        class="org.alfresco.repo.content.transform.ComplexContentTransformer">
+      <property name="transformers">
+         <list>
+            <ref bean="transformer.OpenOffice" />
+            <ref bean="transformer.Pdf2swf" />
+         </list>
+      </property>
+      <property name="intermediateMimetypes">
+         <list>
+            <value>application/pdf</value>
+         </list>
+      </property>
+      <property name="mimetypeService" ref="mimetypeService"/>
+   </bean>
+   
+   <bean id="transformer.complex.Text.Pdf2swf"
+        class="org.alfresco.repo.content.transform.ComplexContentTransformer">
+      <property name="transformers">
+         <list>
+            <ref bean="transformer.PdfBox.TextToPdf" />
+            <ref bean="transformer.Pdf2swf" />
+         </list>
+      </property>
+      <property name="intermediateMimetypes">
+         <list>
+            <value>application/pdf</value>
+         </list>
+      </property>
+      <property name="mimetypeService" ref="mimetypeService"/>
+   </bean>
+   
+   <!-- The two transformer beans above are now injected into a FailoverContentTransformer which
+        does extend baseContentTransformer and therefore is registered. -->
+   <bean id="transformer.complex.Txt.Pdf2swf"
+       class="org.alfresco.repo.content.transform.FailoverContentTransformer"
+       parent="baseContentTransformer" >
+     <property name="transformers">
+        <list>
+           <!-- Use OpenOffice first as it does a better job of producing PDFs from non-Western text -->
+           <!-- Note that the use of OpenOffice as a first choice for txt-pdf-swf transforms will have a performance impact.
+                For this reason, we do not recommend this configuration for normal usage. -->
+           <ref bean="transformer.complex.OpenOffice.Pdf2swf"/>
+           <!-- Fail over to PDFBox as it is fine for Western text. -->
+           <ref bean="transformer.complex.Text.Pdf2swf"/>
+        </list>
+     </property>  
+   </bean>
+   
+</beans>

@@ -35,6 +35,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.usage.ContentQuotaException;
@@ -516,7 +517,14 @@ public class ContentUsageImpl implements ContentUsageService,
     public long getUserUsage(String userName)
     {
         ParameterCheck.mandatoryString("userName", userName);
-        return getUserUsage(getPerson(userName), false);
+
+        long currentUsage = 0;
+        NodeRef personNodeRef = getPerson(userName);
+        if (personNodeRef != null)
+        {
+            currentUsage = getUserUsage(personNodeRef, false);
+        }
+        return currentUsage;
     }
     
     public long getUserUsage(NodeRef personNodeRef, boolean removeDeltas)
@@ -587,7 +595,15 @@ public class ContentUsageImpl implements ContentUsageService,
         NodeRef personNodeRef = null;
         try
         {
-            personNodeRef = personService.getPerson(userName);
+            // false to not force user home creation
+            personNodeRef = personService.getPerson(userName, false);
+        }
+        catch (NoSuchPersonException e)
+        {
+            // Can get this situation where the person does not exist and may not be created.
+            // Had to add this catch when not forcing user home folder creation.
+            // The boolean parameter to getPerson does two things. It should really be split into two booleans.
+            personNodeRef = null;
         }
         catch (RuntimeException e)
         {

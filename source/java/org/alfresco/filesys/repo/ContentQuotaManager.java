@@ -21,6 +21,7 @@ package org.alfresco.filesys.repo;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.filesys.DiskDeviceContext;
@@ -72,8 +73,8 @@ public class ContentQuotaManager implements QuotaManager, Runnable {
     
     // Track live usage of users that are writing files
     
-    private HashMap<String, UserQuotaDetails> m_liveUsage;
-    private Object m_addDetailsLock = new Object();
+    private Map<String, UserQuotaDetails> m_liveUsage;
+    private Object m_liveUsageLock = new Object();
     
     // User details inactivity checker thread
     
@@ -141,10 +142,12 @@ public class ContentQuotaManager implements QuotaManager, Runnable {
 	    // Check if there is a live usage record for the user
 	    
 	    UserQuotaDetails userQuota = getQuotaDetails(sess, true);
-	    if ( userQuota != null)
-	    {
-	        return userQuota.getAvailableSpace();
-	    }
+	    if ( userQuota != null) {
+            synchronized (userQuota) {
+    	        return userQuota.getAvailableSpace();
+            }
+        }
+	    
 	    // No quota details available
 	    
 		return 0L;
@@ -177,10 +180,10 @@ public class ContentQuotaManager implements QuotaManager, Runnable {
             
             // Check if the user has a usage quota
             
-            if ( userQuota.hasUserQuota()) {
+            synchronized ( userQuota) {
                 
-                synchronized ( userQuota) {
-                    
+                if ( userQuota.hasUserQuota()) {
+                        
                     // Check if the user has enough free space allocation
                     
                     if ( alloc > 0 && userQuota.getAvailableSpace() >= alloc) {
@@ -188,12 +191,9 @@ public class ContentQuotaManager implements QuotaManager, Runnable {
                         allowedAlloc = alloc;
                     }
                 }
-            }
-            else {
+                else {
                 
-                // Update the live usage
-                
-                synchronized ( userQuota) {
+                    // Update the live usage
                     userQuota.addToCurrentUsage( alloc);
                     allowedAlloc = alloc;
                 }
@@ -308,12 +308,14 @@ public class ContentQuotaManager implements QuotaManager, Runnable {
 	    }
 
 	    // Clear out the live usage details
-	    
-	    m_liveUsage.clear();
+	    synchronized (m_liveUsageLock)
+        {
+	        m_liveUsage.clear();
+	        m_shutdown = true;
+        }
 	    
 	    // Shutdown the checker thread
 	    
-	    m_shutdown = true;
 	    m_thread.interrupt();
 	}
 	
@@ -326,37 +328,40 @@ public class ContentQuotaManager implements QuotaManager, Runnable {
 	 */
 	private UserQuotaDetails getQuotaDetails(SrvSession sess, boolean loadDetails) {
 	    
-        UserQuotaDetails userQuota = null;
+	    synchronized (m_liveUsageLock) {
+	    
+          UserQuotaDetails userQuota = null;
         
         String userName = AuthenticationUtil.getFullyAuthenticatedUser();
-        
+            
         if ( sess != null && userName != null) 
         {        
-            // Get the live usage values
-
+              // Get the live usage values
             userQuota = m_liveUsage.get(userName);
             
             if ( userQuota == null && loadDetails == true) 
             {
-                // User is not in the live tracking table, load details for the user
+                  // User is not in the live tracking table, load details for the user
+                
                 try 
                 {
                     logger.debug("user is not in cache - load details");
                     userQuota = loadUsageDetails(userName);
-                }
+                  }
                 catch ( QuotaManagerException ex) 
                 {
-                    if ( logger.isDebugEnabled())
+                      if ( logger.isDebugEnabled())
                     {
                         logger.debug("Unable to load usage details", ex);
                     }
-                }
-            }
-        }
-        
-        // Return the user quota details
-        
-        return userQuota;
+                  }
+              }
+          }
+          
+          // Return the user quota details
+          
+          return userQuota;
+	    }
 	}
 	
 	/**
@@ -396,8 +401,6 @@ public class ContentQuotaManager implements QuotaManager, Runnable {
 	        
 	        // Add the details to the live tracking table
 	        
-	        synchronized ( m_addDetailsLock) {
-	            
 	            // Check if another thread has added the details
 	            
 	            UserQuotaDetails details = m_liveUsage.get( userName);
@@ -409,7 +412,6 @@ public class ContentQuotaManager implements QuotaManager, Runnable {
 	            {
 	                m_liveUsage.put( userName, quotaDetails);
 	            }
-            }
 	        
 	        // DEBUG
 	        
@@ -479,61 +481,66 @@ public class ContentQuotaManager implements QuotaManager, Runnable {
             }
             
             // Check if there are any user quota details to check
-            
-            if ( m_liveUsage != null && m_liveUsage.size() > 0)
+            synchronized (m_liveUsageLock)
             {
-                try
+                if ( m_liveUsage != null && m_liveUsage.size() > 0)
                 {
-                    // Timestamp to check if the quota details is inactive
+                    try
+                    {
+                        // Timestamp to check if the quota details is inactive
                     
-                    long checkTime = System.currentTimeMillis() - UserQuotaExpireInterval;
+                        long checkTime = System.currentTimeMillis() - UserQuotaExpireInterval;
                     
-                    // Loop through the user quota details
+                        // Loop through the user quota details
 
-                    removeNameList.remoteAllStrings();
-                    Iterator<String> userNames = m_liveUsage.keySet().iterator();
+                        removeNameList.remoteAllStrings();
+                        Iterator<String> userNames = m_liveUsage.keySet().iterator();
                     
-                    while ( userNames.hasNext()) {
+                        while ( userNames.hasNext()) {
                         
-                        // Get the user quota details and check if it has been inactive in the last check interval
+                            // Get the user quota details and check if it has been inactive in the last check interval
                         
-                        String userName = userNames.next();
-                        UserQuotaDetails quotaDetails =  m_liveUsage.get( userName);
+                            String userName = userNames.next();
+                            UserQuotaDetails quotaDetails =  m_liveUsage.get( userName);
                         
-                        if ( quotaDetails.getLastUpdated() < checkTime) {
-                            
-                            // Add the user name to the remove list, inactive
-                            
-                            removeNameList.addString( userName);
-                        }                            
-                    }
+                            synchronized (quotaDetails) {
+                              if ( quotaDetails.getLastUpdated() < checkTime) {
+                              
+                                  // Add the user name to the remove list, inactive
+                              
+                                  removeNameList.addString( userName);
+                              }
+                            }
+                        }
                     
-                    // Remove inactive records from the live quota tracking
+                        // Remove inactive records from the live quota tracking
                     
                     while ( removeNameList.numberOfStrings() > 0) 
                     {
                         
-                        // Get the current user name and remove the record
+                            // Get the current user name and remove the record
                         
-                        String userName = removeNameList.removeStringAt( 0);
-                        UserQuotaDetails quotaDetails = m_liveUsage.remove( userName);
+                            String userName = removeNameList.removeStringAt( 0);
+                            UserQuotaDetails quotaDetails = m_liveUsage.remove( userName);
                         
-                        // DEBUG
+                            // DEBUG
                         
-                        if ( logger.isDebugEnabled())
-                            logger.debug("Removed inactive usage tracking, " + quotaDetails);
+                            if ( logger.isDebugEnabled())
+                                logger.debug("Removed inactive usage tracking, " + quotaDetails);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log errors if not shutting down
+                    
+                        if ( m_shutdown == false)
+                            logger.debug(ex);
                     }
                 }
-                catch (Exception ex)
-                {
-                    // Log errors if not shutting down
-                    
-                    if ( m_shutdown == false)
-                        logger.debug(ex);
-                }
             }
-        }
-	}
+    	}
+
+    }
 
     public void setContentService(ContentService contentService)
     {

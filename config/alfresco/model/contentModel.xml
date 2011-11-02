@@ -910,6 +910,12 @@
             <property name="cm:workingCopyMode">
                <type>d:text</type>
             </property>
+            <!--  The label as added to the filename during checkout, e.g. "(Working Copy)" -->
+            <property name="cm:workingCopyLabel">
+               <type>d:text</type>
+               <protected>true</protected>
+               <mandatory>false</mandatory>
+            </property>
          </properties>
       </aspect>
    

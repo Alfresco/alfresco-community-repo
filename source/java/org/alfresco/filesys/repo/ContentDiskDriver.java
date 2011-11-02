@@ -200,8 +200,8 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
 
     private BehaviourFilter policyBehaviourFilter;
     private NodeMonitorFactory m_nodeMonitorFactory;
-	private static FileStateLockManager _lockManager;
-	
+    
+    
     /**
      * Class constructor
      * 
@@ -774,11 +774,11 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
             
             logger.info("Locked files will be marked as offline");
         }
+                
+        // Enable file state caching
         
-//        // Enable file state caching
-//        
 //        context.enableStateCache(serverConfig, true);
-               
+        
         // Install the node service monitor
         
         if ( !context.getDisableNodeMonitor() && m_nodeMonitorFactory != null) {
@@ -788,10 +788,6 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
             NodeMonitor nodeMonitor = m_nodeMonitorFactory.createNodeMonitor(context);
             context.setNodeMonitor( nodeMonitor);
         }
-        
-        // Create the lock manager
-        
-        _lockManager = new FileStateLockManager( context.getStateCache());
         
         // Check if oplocks are enabled
         
@@ -1719,7 +1715,8 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
             	// Check if the current file open allows the required shared access
             	
             	boolean nosharing = false;
-
+            	String noshrReason = null;
+            	
             	// TEST
             	
         		if ( params.getAccessMode() == AccessMode.NTFileGenericExecute && params.getPath().toLowerCase().endsWith( ".exe") == false) {
@@ -1736,45 +1733,53 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                 
                 if ( fstate.getOpenCount() > 0) {
                     
-                    // Check for impersonation security level from the original process that opened the file
-                    
-                    if ( params.getSecurityLevel() == WinNT.SecurityImpersonation && params.getProcessId() == fstate.getProcessId())
-                        nosharing = false;
-
-                    // Check if the caller wants read access, check the sharing mode
-                    
-                    else if ( params.isReadOnlyAccess() && (fstate.getSharedAccess() & SharingMode.READ) != 0)
-                        nosharing = false;
-                    
-                    // Check if the caller wants write access, check the sharing mode
-                    
-                    else if (( params.isReadWriteAccess() || params.isWriteOnlyAccess()) && (fstate.getSharedAccess() & SharingMode.WRITE) == 0)
-                    {
-                        // DEBUG
-                        
+    				// Check for impersonation security level from the original process that opened the file
+    				
+    				if ( params.getSecurityLevel() == WinNT.SecurityImpersonation && params.getProcessId() == fstate.getProcessId())
+    					nosharing = false;
+    	
+    				// Check if the caller wants read access, check the sharing mode
+    				// Check if the caller wants write access, check if the sharing mode allows write
+    				
+    		    	else if ( params.isReadOnlyAccess() && (fstate.getSharedAccess() & SharingMode.READ) != 0)
+    		    		nosharing = false;
+    				
+    				// Check if the caller wants write access, check the sharing mode
+    				
+    		    	else if (( params.isReadWriteAccess() || params.isWriteOnlyAccess()) && (fstate.getSharedAccess() & SharingMode.WRITE) == 0)
+    		    	{
+    					nosharing = true;
+    					noshrReason = "Sharing mode disallows write";
+    					
+    		    		// DEBUG
+    		    		
                         if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
-                            logger.debug("Sharing mode disallows write access path=" + params.getPath());
-                        
-                        // Access not allowed
-                        
-                        throw new AccessDeniedException( "Sharing mode (write)");
-                    }
-                    
-                    // Check if the file has been opened for exclusive access
-                    
-                    else if ( fstate.getSharedAccess() == SharingMode.NOSHARING)
-                        nosharing = true;
-                    
-                    // Check if the required sharing mode is allowed by the current file open
-                    
-                    else if ( ( fstate.getSharedAccess() & params.getSharedAccess()) != params.getSharedAccess())
-                        nosharing = true;
-                    
-                    // Check if the caller wants exclusive access to the file
-                    
-                    else if ( params.getSharedAccess() == SharingMode.NOSHARING)
-                        nosharing = true;
-                    
+    		    			logger.debug("Sharing mode disallows write access path=" + params.getPath());
+    		    	}
+    		    	
+    				// Check if the file has been opened for exclusive access
+    				
+    				else if ( fstate.getSharedAccess() == SharingMode.NOSHARING) {
+    					nosharing = true;
+    					noshrReason = "Sharing mode exclusive";
+    				}
+    				
+    				// Check if the required sharing mode is allowed by the current file open
+    				
+    				else if ((fstate.getSharedAccess() & params.getSharedAccess()) != params.getSharedAccess()) {
+    					nosharing = true;
+    					noshrReason = "Sharing mode mismatch";
+    					
+                        if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+    		    			logger.debug("Local share mode=0x" + Integer.toHexString(fstate.getSharedAccess()) + ", params share mode=0x" + Integer.toHexString(params.getSharedAccess()));
+    				}
+    				
+    				// Check if the caller wants exclusive access to the file
+    				
+    		    	else if ( params.getSharedAccess() == SharingMode.NOSHARING) {
+    		    		nosharing = true;
+    		    		noshrReason = "Requestor wants exclusive mode";
+    		    	}
                 }
                 
                 // Check if the file allows shared access
@@ -1786,7 +1791,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                         // DEBUG
                         
                         if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
-                            logger.debug("Sharing violation path=" + params.getPath() + ", sharing=0x" + Integer.toHexString(fstate.getSharedAccess()));
+                            logger.debug("Sharing violation path=" + params.getPath() + ", sharing=0x" + Integer.toHexString(fstate.getSharedAccess()) + ",reason=" + noshrReason);
                     
                         // File is locked by another user
                         
@@ -4024,7 +4029,8 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
      * @return LockManager
      */
     public LockManager getLockManager(SrvSession sess, TreeConnection tree) {
-        return _lockManager;
+        ContentContext ctx = (ContentContext) tree.getContext();
+        return ctx.getLockManager();
     }
     
     /**
@@ -4035,7 +4041,8 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
      * @return OpLockManager
      */
     public OpLockManager getOpLockManager(SrvSession sess, TreeConnection tree) {
-        return _lockManager;
+        ContentContext ctx = (ContentContext) tree.getContext();
+        return ctx.getLockManager();
     }
     
     /**

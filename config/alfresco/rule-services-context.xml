@@ -75,6 +75,8 @@
          <list>
             <ref bean="on-property-update-trigger"/>
             <ref bean="on-content-update-trigger"/>
+            <ref bean="on-create-association-trigger"/>
+            <ref bean="on-delete-association-trigger"/>
          </list>
       </constructor-arg>
    </bean>

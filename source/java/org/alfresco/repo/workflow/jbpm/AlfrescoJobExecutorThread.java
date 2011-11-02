@@ -25,6 +25,8 @@ import java.util.Collections;
 import java.util.Date;
 
 import org.alfresco.repo.lock.LockAcquisitionException;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.namespace.NamespaceService;
@@ -37,6 +39,7 @@ import org.jbpm.JbpmContext;
 import org.jbpm.db.JobSession;
 import org.jbpm.job.Job;
 import org.jbpm.job.executor.JobExecutorThread;
+import org.jbpm.taskmgmt.exe.TaskInstance;
 
 
 /**
@@ -170,6 +173,38 @@ public class AlfrescoJobExecutorThread extends JobExecutorThread
      */
     @Override
     protected void executeJob(final Job jobIn)
+    {
+        // execute the job as System (ALF-10776) so transaction commit level
+        // operations have a security context.
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        {
+            public Void doWork() throws Exception
+            {
+                executeJobImpl(jobIn);
+                return null;
+            }
+        }, getActorId(jobIn));
+        
+        // clear authentication context for this thread
+        AuthenticationUtil.clearCurrentSecurityContext();
+    }
+    
+    private String getActorId(final Job jobIn)
+    {
+        TaskInstance taskInstance = jobIn.getTaskInstance();
+        
+        if (taskInstance != null)
+        {
+            String actorId = taskInstance.getActorId();
+            if (actorId != null && actorId.length() > 0)
+            {
+                return actorId;
+            }
+        }
+        return AuthenticationUtil.getSystemUserName();
+    }
+    
+    private void executeJobImpl(final Job jobIn)
     {
         if ((!isActive) || (alfrescoJobExecutor.getTransactionService().isReadOnly()))
         {

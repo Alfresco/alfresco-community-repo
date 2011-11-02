@@ -282,9 +282,10 @@ public final class ScriptUtils extends BaseScopableProcessorExtension
     /**
      * Sets current Locale from string
      */
-    public void setLocale(String language)
+    public void setLocale(String localeStr)
     {
-        I18NUtil.setLocale(new Locale(language));
+        Locale newLocale = I18NUtil.parseLocale(localeStr);
+        I18NUtil.setLocale(newLocale);
     }
     
     /**

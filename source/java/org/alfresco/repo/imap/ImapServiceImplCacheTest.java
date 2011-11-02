@@ -10,7 +10,6 @@ import junit.framework.TestCase;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -99,15 +98,7 @@ public class ImapServiceImplCacheTest extends TestCase
         imapServiceImpl.setImapHome(imapHome);
         
         // Starting IMAP
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            @Override
-            public Void execute() throws Throwable
-            {
-                imapServiceImpl.startup();
-                return null;
-            }
-        });
+        imapServiceImpl.startupInTxn();
         
         nodeRefs = searchService.selectNodes(storeRootNodeRef,
                 companyHomePathInStore + "/" + NamespaceService.CONTENT_MODEL_PREFIX + ":" + TEST_IMAP_FOLDER_NAME,

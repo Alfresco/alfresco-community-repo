@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -56,6 +57,8 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
     protected void onSetUpInTransaction() throws Exception
     {
         super.onSetUpInTransaction();
+        Locale.setDefault(Locale.ENGLISH);
+        MLPropertyInterceptor.setMLAware(false);
     }
 
     public void testMLTextValues() throws Exception
@@ -73,7 +76,7 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
                 BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE,
                 mlTextProperty);
         
-        // Check filterered property retrieval
+        // Check filtered property retrieval
         Serializable textValueFiltered = nodeService.getProperty(
                 rootNodeRef,
                 BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE);
@@ -88,6 +91,139 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
                 "Default locale value not taken for ML text in Map",
                 mlTextProperty.getValue(Locale.ENGLISH),
                 propertiesFiltered.get(BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE));
+    }
+    
+    /**
+     * ALF-3756 - original fix didn't cope with existing MLText properties having one or more variants
+     * of a particular language. Upgrading to the fix would therefore not solve the problem properly.
+     * <p>
+     * For example, if a property has en_GB text in it, then 'updating' that property
+     * with a locale of en_US will result in the addition of the en_US text rather than a true update (they're both
+     * English, and using two slightly differently configured browsers in this way leads to confusion).
+     */
+    public void testMLTextUpdatedForCorrectLanguage() throws Exception
+    {
+        Locale.setDefault(Locale.UK);
+        MLPropertyInterceptor.setMLAware(true);
+        MLText mlTextProperty = new MLText();
+        mlTextProperty.addValue(Locale.UK, "en_GB String");
+        mlTextProperty.addValue(Locale.FRANCE, "fr_FR String");
+        
+        // Store the MLText property
+        nodeService.setProperty(
+                    rootNodeRef,
+                    BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE,
+                    mlTextProperty);
+        
+        // Pre-test check that an MLText property has been created with the correct locale/text pairs.
+        Serializable textValue = nodeService.getProperty(
+                    rootNodeRef,
+                    BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE);
+        assertEquals(2, ((MLText) textValue).size());
+        assertEquals("en_GB String", ((MLText) textValue).getValue(Locale.UK));
+        assertEquals("fr_FR String", ((MLText) textValue).getValue(Locale.FRANCE));
+        
+        // Enable MLText filtering - as this is how the repo will be used.
+        MLPropertyInterceptor.setMLAware(false);
+        
+        // Retrieve the MLText - but it is filtered into an appropriate String
+        textValue = nodeService.getProperty(
+                    rootNodeRef,
+                    BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE);
+        assertEquals("en_GB String", (String) textValue);
+        
+        // Update the property, only this time using a different English variant
+        Locale.setDefault(Locale.US); // en_US
+        nodeService.setProperty(
+                    rootNodeRef,
+                    BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE,
+                    "Not using MLText for this part.");
+        
+        // Check that the text was updated rather than added to
+        MLPropertyInterceptor.setMLAware(true); // no filtering - see real MLText
+        // Check that there are not too many English strings, we don't want one for en_GB and one for en_US
+        textValue = nodeService.getProperty(
+                    rootNodeRef,
+                    BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE);
+        assertEquals(2, ((MLText) textValue).size());
+        assertEquals("Text wasn't updated correctly",
+                    "Not using MLText for this part.",
+                    ((MLText) textValue).getValue(Locale.ENGLISH));
+        assertEquals("Failed to get text using locale it was added with",
+                    "Not using MLText for this part.",
+                    ((MLText) textValue).getClosestValue(Locale.US));
+        assertEquals("Failed to get text using original locale",
+                    "Not using MLText for this part.",
+                    ((MLText) textValue).getClosestValue(Locale.UK));
+        assertEquals("fr_FR String", ((MLText) textValue).getValue(Locale.FRANCE));
+    }
+    
+    @SuppressWarnings("unchecked")
+    public void testMLTextCollectionUpdatedForCorrectLanguage()
+    {
+        Locale.setDefault(Locale.UK);
+        MLPropertyInterceptor.setMLAware(true);
+        
+        ArrayList<Serializable> values = new ArrayList<Serializable>();
+        values.add(new MLText(Locale.UK, "en_GB text"));
+        values.add(new MLText(Locale.US, "en_US text"));
+        values.add(new MLText(Locale.FRANCE, "fr_FR text"));
+        
+        // Set the property with no MLText filtering
+        nodeService.setProperty(rootNodeRef, PROP_QNAME_MULTI_ML_VALUE, values);
+        
+        // Pre-test check
+        List<Serializable> checkValues = (List<Serializable>) nodeService.getProperty(
+                rootNodeRef, PROP_QNAME_MULTI_ML_VALUE);
+        assertEquals("Expected 3 MLText values back", 3, checkValues.size());
+        assertEquals("en_GB text", ((MLText) checkValues.get(0)).getValue(Locale.UK));
+        assertEquals("en_US text", ((MLText) checkValues.get(1)).getValue(Locale.US));
+        assertEquals("fr_FR text", ((MLText) checkValues.get(2)).getValue(Locale.FRANCE));
+        
+        // Enable MLText filtering - as this is how the repo will be used.
+        MLPropertyInterceptor.setMLAware(false);
+       
+        // Filtering will result in a list containing en_GB only
+        checkValues = (List<Serializable>) nodeService.getProperty(
+                    rootNodeRef,
+                    PROP_QNAME_MULTI_ML_VALUE);
+        assertEquals("Expected 1 MLText values back", 1, checkValues.size());
+        assertEquals("en_GB text", (String) checkValues.get(0));
+        
+        // Update the property, only this time using a different English variant
+        Locale.setDefault(Locale.US); // en_US
+        
+        values.clear();
+        values.add("text 1 added using en_US");
+        values.add("text 2 added using en_US");
+        values.add("text 3 added using en_US");
+        values.add("text 4 added using en_US");
+        nodeService.setProperty(rootNodeRef, PROP_QNAME_MULTI_ML_VALUE, values);
+        
+        // Check that the text was updated correctly
+        MLPropertyInterceptor.setMLAware(true); // no filtering - see real MLText
+        checkValues = (List<Serializable>) nodeService.getProperty(
+                    rootNodeRef,
+                    PROP_QNAME_MULTI_ML_VALUE);
+        
+        assertEquals("Expected 3 MLText values back", 4, checkValues.size());
+        
+        MLText mlText = ((MLText) checkValues.get(0));
+        assertEquals("en_GB should be replaced with new, not added to", 1, mlText.size());
+        assertEquals("text 1 added using en_US", mlText.getValue(Locale.ENGLISH));
+        
+        mlText = ((MLText) checkValues.get(1));
+        assertEquals("en_US should be replaced with new, not added to", 1, mlText.size());
+        assertEquals("text 2 added using en_US", mlText.getValue(Locale.ENGLISH));
+        
+        mlText = ((MLText) checkValues.get(2));
+        assertEquals("en_US should be added to fr_FR", 2, mlText.size());
+        assertEquals("fr_FR text", mlText.getValue(Locale.FRANCE));
+        assertEquals("text 3 added using en_US", mlText.getValue(Locale.ENGLISH));
+        
+        mlText = ((MLText) checkValues.get(3));
+        assertEquals("entirely new text value should be added", 1, mlText.size());
+        assertEquals("text 4 added using en_US", mlText.getValue(Locale.ENGLISH));
     }
     
     public void testLongMLTextValues() throws Exception

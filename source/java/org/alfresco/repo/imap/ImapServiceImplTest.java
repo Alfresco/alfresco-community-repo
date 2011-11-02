@@ -180,7 +180,7 @@ public class ImapServiceImplTest extends TestCase
         imapServiceImpl.setImapHome(imapHome);
         
         // Starting IMAP
-        imapServiceImpl.startup();
+        imapServiceImpl.startupInTxn();
         
         nodeRefs = searchService.selectNodes(storeRootNodeRef,
                 companyHomePathInStore + "/" + NamespaceService.CONTENT_MODEL_PREFIX + ":" + TEST_IMAP_FOLDER_NAME,

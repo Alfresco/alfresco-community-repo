@@ -205,7 +205,7 @@ public class ImapMessageTest extends TestCase
 
 
         // Starting IMAP
-        imapServiceImpl.startup();
+        imapServiceImpl.startupInTxn();
 
         nodeRefs = searchService.selectNodes(storeRootNodeRef, companyHomePathInStore + "/" + NamespaceService.CONTENT_MODEL_PREFIX + ":" + IMAP_FOLDER_NAME, null,
                 namespaceService, false);

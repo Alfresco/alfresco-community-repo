@@ -367,7 +367,7 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
             throw new CheckOutCheckInServiceException(MSG_ALREADY_CHECKEDOUT);
         }
     
-        // Make sure we are no checking out a working copy node
+        // Make sure we are not checking out a working copy node
         if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
         {
             throw new CheckOutCheckInServiceException(MSG_ERR_ALREADY_WORKING_COPY);
@@ -400,10 +400,6 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
         
         // Invoke before check out policy
         invokeBeforeCheckOut(nodeRef, destinationParentNodeRef, destinationAssocTypeQName, destinationAssocQName);
-        
-        // Rename the working copy
-        String copyName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-        copyName = createWorkingCopyName(copyName);        
 
         // Get the user 
         final String userName = getUserName();
@@ -411,7 +407,12 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
         NodeRef workingCopy = null;
         ruleService.disableRuleType(RuleType.UPDATE);
         try
-        {           
+        {
+            // Rename the working copy
+            String copyName = (String)this.nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+            String workingCopyLabel = getWorkingCopyLabel();
+            copyName = createWorkingCopyName(copyName, workingCopyLabel);        
+            
             // Make the working copy
             final QName copyQName = QName.createQName(destinationAssocQName.getNamespaceURI(), QName.createValidLocalName(copyName));
          
@@ -455,6 +456,7 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
             // Apply the working copy aspect to the working copy
             Map<QName, Serializable> workingCopyProperties = new HashMap<QName, Serializable>(1);
             workingCopyProperties.put(ContentModel.PROP_WORKING_COPY_OWNER, userName);
+            workingCopyProperties.put(ContentModel.PROP_WORKING_COPY_LABEL, workingCopyLabel);
             nodeService.addAspect(workingCopy, ContentModel.ASPECT_WORKING_COPY, workingCopyProperties);
             nodeService.addAspect(nodeRef, ContentModel.ASPECT_CHECKED_OUT, null);
             nodeService.createAssociation(nodeRef, workingCopy, ContentModel.ASSOC_WORKING_COPY_LINK);
@@ -572,36 +574,43 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
         {
             String origName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
             String name = (String)nodeService.getProperty(workingCopyNodeRef, ContentModel.PROP_NAME);
-            if (hasWorkingCopyNameChanged(name, origName))
+            String wcLabel = (String)this.nodeService.getProperty(workingCopyNodeRef, ContentModel.PROP_WORKING_COPY_LABEL);
+            if (wcLabel == null)
+            {
+                wcLabel = getWorkingCopyLabel();
+            }
+                
+            if (hasWorkingCopyNameChanged(name, origName, wcLabel))
             {
                 // ensure working copy has working copy label in its name to avoid name clash
-                if (!name.contains(" " + getWorkingCopyLabel()))
+                if (!name.contains(" " + wcLabel))
                 {
                     try
                     {
-                        fileFolderService.rename(workingCopyNodeRef, createWorkingCopyName(name));
+                         fileFolderService.rename(workingCopyNodeRef, createWorkingCopyName(name, wcLabel));
                     }
                     catch (FileExistsException e)
                     {
-                        throw new CheckOutCheckInServiceException(e, MSG_ERR_CANNOT_RENAME, name, createWorkingCopyName(name));
+                         throw new CheckOutCheckInServiceException(e, MSG_ERR_CANNOT_RENAME, name, wcLabel);
                     }
                     catch (FileNotFoundException e)
                     {
-                        throw new CheckOutCheckInServiceException(e, MSG_ERR_CANNOT_RENAME, name, createWorkingCopyName(name));
+                         throw new CheckOutCheckInServiceException(e, MSG_ERR_CANNOT_RENAME, name, wcLabel);
                     }
                 }
+                String newName = getNameFromWorkingCopyName(name, wcLabel);
                 try
                 {
                     // rename original to changed working name
-                    fileFolderService.rename(nodeRef, getNameFromWorkingCopyName(name));
+                    fileFolderService.rename(nodeRef, newName);
                 }
                 catch (FileExistsException e)
                 {
-                    throw new CheckOutCheckInServiceException(e, MSG_ERR_CANNOT_RENAME, origName, getNameFromWorkingCopyName(name));
+                    throw new CheckOutCheckInServiceException(e, MSG_ERR_CANNOT_RENAME, origName, newName);
                 }
                 catch (FileNotFoundException e)
                 {
-                    throw new CheckOutCheckInServiceException(e, MSG_ERR_CANNOT_RENAME, name, getNameFromWorkingCopyName(name));
+                    throw new CheckOutCheckInServiceException(e, MSG_ERR_CANNOT_RENAME, name, newName);
                 }
             }
         }
@@ -745,14 +754,25 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
     }
 
     /**
-     * Create working copy name
+     * Create a working copy name using the given fileName and workingCopyLabel. The label will be inserted before
+     * the file extension (if present), or else appended to the name (in either case a space is prepended to the
+     * workingCopyLabel).
+     * <p>
+     * Examples, where workingCopyLabel is "wc":
+     * <p>
+     * "Myfile.txt" becomes "Myfile wc.txt", "Myfile" becomes "Myfile wc".
+     * <p>
+     * In the event that fileName is empty or null, the workingCopyLabel is used for the new working copy name
+     * <p>
+     * Example: "" becomes "wc".
      * 
-     * @param name  name
-     * @return  working copy name
+     * @param name
+     * @param workingCopyLabel
+     * @return
      */
-    public static String createWorkingCopyName(String name)
+    public static String createWorkingCopyName(String name, final String workingCopyLabel)
     {
-        if (getWorkingCopyLabel() != null && getWorkingCopyLabel().length() != 0)
+        if (workingCopyLabel != null && workingCopyLabel.length() != 0)
         {
             if (name != null && name.length() != 0)
             {
@@ -760,30 +780,31 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
                 if (index > 0)
                 {
                     // Insert the working copy label before the file extension
-                    name = name.substring(0, index) + " " + getWorkingCopyLabel() + name.substring(index);
+                    name = name.substring(0, index) + " " + workingCopyLabel + name.substring(index);
                 }
                 else
                 {
                     // Simply append the working copy label onto the end of the existing name
-                    name = name + " " + getWorkingCopyLabel();
+                    name = name + " " + workingCopyLabel;
                 }
             }
             else
             {
-                name = getWorkingCopyLabel();
+                name = workingCopyLabel;
             }
         }
         return name;
     }
     
     /**
-     * Get original name from working copy name
+     * Get original name from the working copy name and the cm:workingCopyLabel
+     * that was used to create it.
      * 
+     * @param workingCopyLabel
      * @return  original name
      */
-    private String getNameFromWorkingCopyName(String workingCopyName)
+    private String getNameFromWorkingCopyName(String workingCopyName, String workingCopyLabel)
     {
-        String workingCopyLabel = getWorkingCopyLabel();
         String workingCopyLabelRegEx = workingCopyLabel.replaceAll("\\(", "\\\\(");
         workingCopyLabelRegEx = workingCopyLabelRegEx.replaceAll("\\)", "\\\\)");
         if (workingCopyName.contains(" " + workingCopyLabel))
@@ -800,13 +821,15 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
     /**
      * Has the working copy name changed compared to the original name
      * 
-     * @param name  working copy name
+     * @param workingCopyName  working copy name
      * @param origName  original name
+     * @param wcLabel that was inserted into origName to create the original working copy name
      * @return  true => if changed
      */
-    private boolean hasWorkingCopyNameChanged(String workingCopyName, String origName)
+    private boolean hasWorkingCopyNameChanged(String workingCopyName, String origName, String wcLabel)
     {
-        return !workingCopyName.equals(createWorkingCopyName(origName));
+        String origWorkingCopyName = createWorkingCopyName(origName, wcLabel);
+        return !workingCopyName.equals(origWorkingCopyName);
     }
     
     /**

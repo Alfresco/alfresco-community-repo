@@ -8,6 +8,9 @@
       class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
       <property name="ignoreUnresolvablePlaceholders" value="true" />
       <property name="location" value="classpath:alfresco/repository.properties" />
+      <property name="searchSystemEnvironment">
+          <value>false</value>
+      </property>
    </bean>
 
    <bean id="extension.dictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">

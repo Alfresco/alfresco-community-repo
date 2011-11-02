@@ -80,6 +80,7 @@ import org.alfresco.jlan.util.Platform;
 import org.alfresco.jlan.util.StringList;
 import org.alfresco.jlan.util.X64;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
+import org.springframework.beans.factory.DisposableBean;
 
 import com.hazelcast.core.HazelcastInstance;
 
@@ -95,7 +96,7 @@ import com.hazelcast.core.HazelcastInstance;
  * @author dward
  * @author mrogers
  */
-public class ServerConfigurationBean extends AbstractServerConfigurationBean
+public class ServerConfigurationBean extends AbstractServerConfigurationBean implements DisposableBean
 {
     private CIFSConfigBean cifsConfigBean;
     private FTPConfigBean ftpConfigBean;
@@ -104,6 +105,8 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean
     private boolean avmAllStores;
     private SecurityConfigBean securityConfigBean;
     private CoreServerConfigBean coreServerConfigBean;
+
+    private ThreadRequestPool threadPool;
     private ClusterConfigBean clusterConfigBean;
 
     /**
@@ -1983,6 +1986,9 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean
             // Configure a default thread pool size
 
             coreConfig.setThreadPool(DefaultThreadPoolInit, DefaultThreadPoolMax);
+
+            threadPool = coreConfig.getThreadPool();
+
             return;
         }
 
@@ -2021,6 +2027,8 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean
         // Configure the thread pool
 
         coreConfig.setThreadPool(initSize, maxSize);
+
+        threadPool = coreConfig.getThreadPool();
 
         // Check if thread pool debug output is enabled
 
@@ -2285,6 +2293,13 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean
             config.addChild(nearCacheCfg);
         }
         return config;
+    }
+
+    @Override
+    public void destroy() throws Exception
+    {
+        threadPool.shutdownThreadPool();
+        threadPool = null;
     }
 
 }

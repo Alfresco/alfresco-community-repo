@@ -32,6 +32,7 @@ import org.alfresco.jlan.server.filesys.DiskInterface;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
 import org.alfresco.jlan.server.filesys.FileName;
 import org.alfresco.jlan.server.filesys.FileSystem;
+import org.alfresco.jlan.server.filesys.cache.FileStateLockManager;
 import org.alfresco.jlan.server.filesys.quota.QuotaManagerException;
 import org.alfresco.jlan.server.thread.ThreadRequestPool;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -66,6 +67,10 @@ public class ContentContext extends AlfrescoContext
     
     private AccessControlListBean m_accessControlList;
         
+    // File state based lock/oplock manager
+    
+    private FileStateLockManager m_lockManager;
+
     // Enable/disable oplocks
     
     private boolean m_oplocksDisabled;
@@ -206,7 +211,15 @@ public class ContentContext extends AlfrescoContext
         if (m_rootPath == null || m_rootPath.length() == 0)
         {
             throw new AlfrescoRuntimeException("Device missing rootPath");
-        }        
+        }
+        
+        // Enable file state caching
+        
+        getStateCache().setCaseSensitive( false);
+
+        // Create the file state based lock manager
+        
+        m_lockManager = new FileStateLockManager( getStateCache());        
     }
     
     /**
@@ -279,6 +292,15 @@ public class ContentContext extends AlfrescoContext
     	return m_oplocksDisabled;
     }
     
+    /**
+     * Return the lock manager
+     * 
+     * @return FileStateLockManager
+     */
+    public FileStateLockManager getLockManager() {
+        return m_lockManager;
+    }
+
     /**
      * Determine if change notifications are disabled
      * 
@@ -385,6 +407,15 @@ public class ContentContext extends AlfrescoContext
         if ( coreConfig != null)
             m_threadPool = coreConfig.getThreadPool();
         
+        // Start the lock manager, use the thread pool if available
+        
+        if ( getLockManager() != null) {
+                    
+            // Start the lock manager
+            
+            m_lockManager.startLockManager( "OplockExpire_" + share.getName(), m_threadPool);
+        }
+
         // Start the node monitor, if enabled
         
         if ( m_nodeMonitor != null)

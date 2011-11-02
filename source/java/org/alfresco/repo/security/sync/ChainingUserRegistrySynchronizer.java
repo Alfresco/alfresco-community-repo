@@ -642,7 +642,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
             private final Map<String, Set<String>> groupParentAssocsToDelete = new TreeMap<String, Set<String>>();
             private final Map<String, Set<String>> finalGroupChildAssocs = new TreeMap<String, Set<String>>();
             private List<String> personsProcessed = new LinkedList<String>();
-            private Set<String> allZonePersons;
+            private Set<String> allZonePersons = Collections.emptySet();
             private Set<String> deletionCandidates;
 
             private long latestTime;
@@ -1090,9 +1090,10 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
 
             public void processGroups(UserRegistry userRegistry, boolean allowDeletions, boolean splitTxns)
             {
-                // If we got back some groups, we have to cross reference them with the set of known authorities
-                if (allowDeletions || !this.groupParentAssocsToDelete.isEmpty())
-                {
+               // If we got back some groups, we have to cross reference them with the set of known authorities
+               if (allowDeletions || !this.groupParentAssocsToCreate.isEmpty()
+                     || !this.personParentAssocsToCreate.isEmpty())
+               {
                     final Set<String> allZonePersons = newPersonSet();
                     final Set<String> allZoneGroups = new TreeSet<String>();
 

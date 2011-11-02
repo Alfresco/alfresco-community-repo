@@ -12,6 +12,9 @@
 				<value>config/alfresco/avm-test.properties</value>
 			</list>
 		</property>
+        <property name="searchSystemEnvironment">
+            <value>false</value>
+        </property>
 	</bean>
 	-->
     <import resource="file:config/alfresco/application-context.xml"/>

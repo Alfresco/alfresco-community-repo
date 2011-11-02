@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 
@@ -551,7 +552,7 @@ public class MLPropertyInterceptor implements MethodInterceptor
                         {
                             newMLValue = new MLText();
                         }
-                        newMLValue.addValue(contentLocale, current);
+                        replaceTextForLanguage(contentLocale, current, newMLValue);
                         if(count < returnMLList.size())
                         {
                             returnMLList.set(count, newMLValue);
@@ -602,8 +603,8 @@ public class MLPropertyInterceptor implements MethodInterceptor
                 }
                 // Force the inbound value to be a String (it isn't MLText)
                 String inboundValueStr = DefaultTypeConverter.INSTANCE.convert(String.class, inboundValue);
-                // Add it to the current MLValue
-                returnMLValue.put(contentLocale, inboundValueStr);
+                // Update the text for the appropriate language.
+                replaceTextForLanguage(contentLocale, inboundValueStr, returnMLValue);
                 // Done
                 ret = returnMLValue;
             }
@@ -640,5 +641,33 @@ public class MLPropertyInterceptor implements MethodInterceptor
                     "   After:      " + ret);
         }
         return ret;
+    }
+
+    /**
+     * Replace any text in mlText having the same language (but any variant) as contentLocale
+     * with updatedText keyed by the language of contentLocale. This ensures that the mlText
+     * will have no more than one entry for the particular language.
+     * 
+     * @param contentLocale
+     * @param updatedText
+     * @param mlText
+     */
+    private void replaceTextForLanguage(Locale contentLocale, String updatedText, MLText mlText)
+    {
+        String language = contentLocale.getLanguage();
+        // Remove all text entries having the same language as the chosen contentLocale
+        // (e.g. if contentLocale is en_GB, then remove text for en, en_GB, en_US etc.
+        Iterator<Locale> locales = mlText.getLocales().iterator();
+        while (locales.hasNext())
+        {
+            Locale locale = locales.next();
+            if (locale.getLanguage().equals(language))
+            {
+                locales.remove();
+            }
+        }
+        
+        // Add the new value for the specific language
+        mlText.addValue(new Locale(language), updatedText);
     }
 }

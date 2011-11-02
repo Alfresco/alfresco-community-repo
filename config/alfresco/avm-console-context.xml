@@ -11,6 +11,9 @@
 				<value>config/alfresco/avm-console.properties</value>
 			</list>
 		</property>
+        <property name="searchSystemEnvironment">
+            <value>false</value>
+        </property>
 	</bean>
 	
     <import resource="file:config/alfresco/avm-base-context.xml"/>

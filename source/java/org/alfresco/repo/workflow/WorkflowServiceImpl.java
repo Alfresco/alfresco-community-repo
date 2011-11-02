@@ -699,7 +699,8 @@ public class WorkflowServiceImpl implements WorkflowService
         // Expand authorities to include associated groups (and parent groups)
         List<String> authorities = new ArrayList<String>();
         authorities.add(authority);
-        Set<String> parents = authorityService.getContainingAuthorities(AuthorityType.GROUP, authority, false);
+        Set<String> parents = authorityService.getContainingAuthoritiesInZone(AuthorityType.GROUP, authority,
+                null, null, 100);
         authorities.addAll(parents);
         
         // Retrieve pooled tasks for authorities (from each of the registered

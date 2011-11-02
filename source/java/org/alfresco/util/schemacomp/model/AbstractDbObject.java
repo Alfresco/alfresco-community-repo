@@ -56,6 +56,10 @@ public abstract class AbstractDbObject implements DbObject
      */
     public String getName()
     {
+        if (this.name == null)
+        {
+            return "";
+        }
         return this.name;
     }
 

@@ -57,6 +57,8 @@ public class ExportDb
     private Schema schema;
 
     private Dialect dialect;
+
+    private String namePrefix = "%";
     
     
     
@@ -114,20 +116,34 @@ public class ExportDb
 
     
     
-    public void execute() throws Exception
+    public void execute()
     {
         PropertyCheck.mandatory(this, "dataSource", dataSource);
-        // Get a Connection
-        Connection connection = dataSource.getConnection();
         
+        Connection connection = null;
         try
         {
+            connection = dataSource.getConnection();
             connection.setAutoCommit(false);
             execute(connection);
         }
+        catch (Exception e)
+        {
+            throw new RuntimeException("Unable to execute export.", e);
+        }
         finally
         {
-            try { connection.close(); } catch (Throwable e) {}
+            try
+            {
+                if (connection != null)
+                {
+                    connection.close();
+                }
+            }
+            catch (Throwable e)
+            {
+                // Little can be done at this stage.
+            }
         }
     }
 
@@ -154,7 +170,7 @@ public class ExportDb
 
         schema = new Schema(schemaName);
         
-        final ResultSet tables = dbmd.getTables(null, schemaName, "%", new String[]
+        final ResultSet tables = dbmd.getTables(null, schemaName, namePrefixFilter(), new String[]
         {
             "TABLE", "VIEW"
         });
@@ -282,6 +298,7 @@ public class ExportDb
         tables.close();
     }
 
+
     /**
      * Convert a boolean string as used in the database, to a boolean value.
      * 
@@ -356,9 +373,31 @@ public class ExportDb
     {
         return this.schema;
     }
+
     
+    /**
+     * @return the namePrefix
+     */
+    public String getNamePrefix()
+    {
+        return this.namePrefix;
+    }
+
+    private String namePrefixFilter()
+    {
+        return namePrefix + "%";
+    }
+
     
-    
+    /**
+     * @param namePrefix the namePrefix to set
+     */
+    public void setNamePrefix(String namePrefix)
+    {
+        this.namePrefix = namePrefix;
+    }
+
+
     public static void main(String[] args) throws IllegalArgumentException, IllegalAccessException
     {
         ExportDb exportDb = null;

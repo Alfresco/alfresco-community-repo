@@ -18,27 +18,28 @@
  */
 package org.alfresco.util.schemacomp;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+
+import java.io.File;
+
+import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.TempFileProvider;
+import org.junit.Test;
+import org.springframework.context.ApplicationContext;
 
 /**
- * Test suite for tests in the schemacomp package.
+ * Tests for the DbToXML class.
  * 
  * @author Matt Ward
  */
-@RunWith(Suite.class)
-@Suite.SuiteClasses(
+public class DbToXMLTest
 {
-            DbObjectXMLTransformerTest.class,
-            DbPropertyTest.class,
-            DbToXMLTest.class,
-            DefaultComparisonUtilsTest.class,
-            ExportDbTest.class,
-            SchemaComparatorTest.class,
-            ValidatingVisitorTest.class,
-            SchemaToXMLTest.class,
-            XMLToSchemaTest.class
-})
-public class SchemaCompTestSuite
-{
+    @Test
+    public void execute()
+    {
+        ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+        File outFile = new File(TempFileProvider.getTempDir(), getClass().getSimpleName() + ".xml");
+        System.out.println("Writing to temp file: " + outFile);
+        DbToXML dbToXML = new DbToXML(ctx, outFile);
+        dbToXML.execute();
+    }
 }

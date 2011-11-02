@@ -19,6 +19,10 @@
 package org.alfresco.util.schemacomp;
 
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
 import java.util.Iterator;
 
 import org.alfresco.util.ApplicationContextHelper;
@@ -29,7 +33,6 @@ import org.alfresco.util.schemacomp.model.Index;
 import org.alfresco.util.schemacomp.model.Schema;
 import org.alfresco.util.schemacomp.model.Sequence;
 import org.alfresco.util.schemacomp.model.Table;
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
@@ -55,6 +58,7 @@ public class ExportDbTest
     @Test
     public void exportDb() throws Exception
     {       
+       exporter.setNamePrefix("alf_");
        exporter.execute();
        
        Schema schema = exporter.getSchema();
@@ -80,10 +84,30 @@ public class ExportDbTest
            }
        }
        
+       checkResultsFiltered(schema, "alf_");
        checkAppliedPatchTable(appliedPatchTable);
        checkQNameTable(qNameTable);
        // TODO: what to do about sequences? They can't easily be retrieved with JDBC's DatabaseMetaData
        //checkAuthoritySequence(authoritySeq);
+    }
+   
+    
+    /**
+     * Check that all top level database objects are prefixed as expected
+     * (no other objects should have been retrieved)
+     * 
+     * @param schema
+     * @param prefix
+     */
+    private void checkResultsFiltered(Schema schema, String prefix)
+    {
+        for (DbObject dbo : schema)
+        {
+            if (!dbo.getName().startsWith(prefix))
+            {
+                fail("Database object's name does not start with '" + prefix + "': " + dbo);
+            }
+        }
     }
 
 

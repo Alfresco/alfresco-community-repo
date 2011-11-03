@@ -2717,22 +2717,13 @@
         </property>
     </bean>
     
-    <bean id="patch.imapSpacesLocaleTemplates" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+    <!-- Used to bootstrap imapSpacesLocales Prior to share/alfresco split of 3.5  -->
+    <bean id="patch.imapSpacesLocaleTemplates" class="org.alfresco.repo.admin.patch.impl.NoOpPatch" parent="basePatch">
         <property name="id"><value>patch.imapSpacesLocaleTemplates</value></property>
-        <property name="description"><value>patch.imapSpacesLocaleTemplates.description</value></property>
+        <property name="description"><value>patch.noOpPatch.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>5005</value></property>
-        <property name="targetSchema"><value>5006</value></property>
-        <property name="importerBootstrap">
-            <ref bean="spacesBootstrap" />
-        </property>
-        <property name="bootstrapView">
-            <props>
-                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.imapConfig.childname}/${spaces.imap_templates.childname}</prop>
-                <prop key="location">alfresco/bootstrap/imapSpacesLocales.acp</prop>
-                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
-            </props>
-        </property>
+        <property name="fixesToSchema"><value>4302</value></property>
+        <property name="targetSchema"><value>4305</value></property>
     </bean>
     
     <!-- For importing whole sites -->
@@ -2859,8 +2850,8 @@
     </bean> 
     
     <bean id="patch.imapSpacesTemplates2" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
-        <property name="id"><value>patch.imapSpacesLocaleTemplates</value></property>
-        <property name="description"><value>patch.imapSpacesLocaleTemplates.description</value></property>
+        <property name="id"><value>patch.imapSpacesTemplates2</value></property>
+        <property name="description"><value>patch.imapSpacesLocaleTemplates2.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>5005</value></property>
         <property name="targetSchema"><value>5006</value></property>

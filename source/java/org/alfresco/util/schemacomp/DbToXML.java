@@ -93,8 +93,14 @@ public class DbToXML
         }
         String contextPath = args[0];
         File outputFile = new File(args[1]);
-        ApplicationContext context = new FileSystemXmlApplicationContext(contextPath);
+        
+        // Create the Spring context
+        FileSystemXmlApplicationContext context = new FileSystemXmlApplicationContext(contextPath);
         DbToXML dbToXML = new DbToXML(context, outputFile);
+        
         dbToXML.execute();
+        
+        // Shutdown the Spring context
+        context.close();
     }
 }

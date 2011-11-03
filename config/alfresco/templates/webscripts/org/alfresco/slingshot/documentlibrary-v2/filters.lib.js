@@ -153,16 +153,19 @@ var Filters =
 
          case "editingMe":
             filterQuery = this.constructPathQuery(parsedArgs);
-            filterQuery += " +ASPECT:\"workingcopy\"";
-            filterQuery += " +@cm\\:workingCopyOwner:\"" + person.properties.userName + '"';
+            filterQuery += " +((+ASPECT:\"workingcopy\"";
+            filterQuery += " +@cm\\:workingCopyOwner:\"" + person.properties.userName + '")';
+            filterQuery += " OR (+@cm\\:lockOwner:\"" + person.properties.userName + '"';
+            filterQuery += " +@cm\\:lockType:\"WRITE_LOCK\"))";
             filterParams.query = filterQuery;
             break;
 
          case "editingOthers":
             filterQuery = this.constructPathQuery(parsedArgs);
-            filterQuery += " +ASPECT:\"workingcopy\"";
-            filterQuery += " -@cm\\:workingCopyOwner:\"" + person.properties.userName + '"';
-            filterParams.query = filterQuery;
+            filterQuery += " +((+ASPECT:\"workingcopy\"";
+            filterQuery += " -@cm\\:workingCopyOwner:\"" + person.properties.userName + '")';
+            filterQuery += " OR (-@cm\\:lockOwner:\"" + person.properties.userName + '"';
+            filterQuery += " +@cm\\:lockType:\"WRITE_LOCK\"))";
             break;
 
          case "favourites":

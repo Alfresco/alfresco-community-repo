@@ -578,7 +578,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
                     query.append("@").append(
                             AbstractLuceneQueryParser.escape("{" + ContentModel.PROP_AUTHORITY_NAME.getNamespaceURI() + "}"
                                     + ISO9075.encode(ContentModel.PROP_AUTHORITY_NAME.getLocalName()))).append(":\"");
-                    query.append(getName(type, AbstractLuceneQueryParser.escape(displayNamePattern)));
+                    query.append(getName(type, AbstractLuceneQueryParser.escape(displayNamePattern))).append("\"");
                 }
                 query.append(" OR @").append(
                         AbstractLuceneQueryParser.escape("{" + ContentModel.PROP_AUTHORITY_DISPLAY_NAME.getNamespaceURI() + "}"

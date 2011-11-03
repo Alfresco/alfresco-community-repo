@@ -46,6 +46,8 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.PropertyMap;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -53,6 +55,8 @@ import org.springframework.util.ReflectionUtils;
  */
 public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpringTest
 {
+    private static final Log logger = LogFactory.getLog(AbstractInvitationServiceImplTest.class);
+    
     private SiteService siteService;
     protected AuthenticationComponent authenticationComponent;
     private PersonService personService;
@@ -157,14 +161,14 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
         workflowAdminService.setEnabledEngines(enabledEngines);
         workflowAdminService.setVisibleEngines(visibleEngines);
         
-        invitationServiceImpl.setSendEmails(startSendEmails);
-        siteService.deleteSite(SITE_SHORT_NAME_INVITE);
-        siteService.deleteSite(SITE_SHORT_NAME_RED);
-        siteService.deleteSite(SITE_SHORT_NAME_BLUE);
-        deletePersonByUserName(USER_ONE);
-        deletePersonByUserName(USER_TWO);
-        deletePersonByUserName(USER_EVE);
-        deletePersonByUserName(USER_MANAGER);
+//        invitationServiceImpl.setSendEmails(startSendEmails);
+//        siteService.deleteSite(SITE_SHORT_NAME_INVITE);
+//        siteService.deleteSite(SITE_SHORT_NAME_RED);
+//        siteService.deleteSite(SITE_SHORT_NAME_BLUE);
+//        deletePersonByUserName(USER_ONE);
+//        deletePersonByUserName(USER_TWO);
+//        deletePersonByUserName(USER_EVE);
+//        deletePersonByUserName(USER_MANAGER);
         super.onTearDownInTransaction();
     }
 
@@ -983,9 +987,41 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
 
     }
 
-    /**
-     * 
-     */
+    public void test100Invites() throws Exception
+    {
+        Invitation.ResourceType resourceType = Invitation.ResourceType.WEB_SITE;
+        String resourceName = SITE_SHORT_NAME_INVITE;
+        String inviteeRole = SiteModel.SITE_COLLABORATOR;
+        String serverPath = "wibble";
+        String acceptUrl = "froob";
+        String rejectUrl = "marshmallow";
+
+        authenticationComponent.setCurrentUser(USER_MANAGER);
+
+        // Create 1000 invites
+        for (int i = 0; i < 1000; i++)
+        {
+            invitationService.inviteNominated(USER_ONE, resourceType, resourceName, inviteeRole, serverPath, acceptUrl, rejectUrl);
+        }
+        
+        // Invite USER_TWO
+        NominatedInvitation invite = invitationService.inviteNominated(USER_TWO, resourceType, resourceName, inviteeRole, serverPath, acceptUrl, rejectUrl);
+        
+        InvitationSearchCriteriaImpl query = new InvitationSearchCriteriaImpl();
+        query.setInvitee(USER_TWO);
+        
+        long start = System.currentTimeMillis();
+        List<Invitation> results = invitationService.searchInvitation(query);
+        long end= System.currentTimeMillis();
+        System.out.println("Invitation Search took " + (end - start) + "ms.");
+        
+        assertEquals(1, results.size());
+        assertEquals(invite.getInviteId(), results.get(0).getInviteId());
+        this.setComplete();
+        this.endTransaction();
+
+    }
+
     public void testGetInvitation()
     {
         try

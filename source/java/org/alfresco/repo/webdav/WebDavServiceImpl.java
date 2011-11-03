@@ -102,8 +102,7 @@ public class WebDavServiceImpl implements WebDavService
                 StringBuilder path = new StringBuilder(128);
                 path.append("/" + WEBDAV_PREFIX);
                 
-                // build up the path skipping the first path as it is the root folder
-                for (int i=1; i<paths.size(); i++)
+                for (int i=0; i<paths.size(); i++)
                 {
                     path.append("/")
                         .append(URLEncoder.encode(paths.get(i).getName()));

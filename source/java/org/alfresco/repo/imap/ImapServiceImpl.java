@@ -204,7 +204,7 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
         @Override
         protected void onBootstrap(ApplicationEvent event)
         {
-            service.startupInTxn();
+            service.startupInTxn(false);
         }
 
         @Override
@@ -431,9 +431,9 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
     {
     }
     
-    protected void startupInTxn()
+    protected void startupInTxn(boolean force)
     {
-        if (getImapServerEnabled())
+        if (force || getImapServerEnabled())
         {
             AuthenticationUtil.runAs(new RunAsWork<Void>()
             {

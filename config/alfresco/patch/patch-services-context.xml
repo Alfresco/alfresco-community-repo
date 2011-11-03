@@ -2613,16 +2613,20 @@
         <property name="bootstrapView">
             <props>
                 <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}</prop>
-                <prop key="location">alfresco/templates/activities-email-templates/activities-email-templates.xml</prop>
+                <prop key="location">alfresco/templates/activities-email-templates.acp</prop>
                 <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
             </props>
         </property>
     </bean>
     
     <bean id="patch.activitiesEmailTemplateUpdate" class="org.alfresco.repo.admin.patch.impl.ActivitiesTemplatesUpdatePatch" parent="basePatch">
-        <property name="id"><value>patch.activitiesTemplatesUpdate</value></property>
-        <property name="description"><value>patch.activitiesTemplatesUpdate.description</value></property>
-        <property name="fixesFromSchema" value="0" />
+        <property name="id">
+            <value>patch.activitiesTemplatesUpdate</value>
+        </property>
+        <property name="description">
+            <value>patch.activitiesTemplatesUpdate.description</value>
+        </property>
+            <property name="fixesFromSchema" value="0" />
         <property name="fixesToSchema" value="5010" />
         <property name="targetSchema" value="5011" />
         <property name="dependsOn">
@@ -2630,10 +2634,14 @@
                 <ref bean="patch.activitiesEmailTemplate" />
             </list>
         </property>
-        <property name="fileFolderService" ref="fileFolderService" />
-        <property name="versionService" ref="versionService" />
+        <property name="fileFolderService">
+            <ref bean="fileFolderService" />
+        </property>
+        <property name="versionService">
+            <ref bean="versionService" />
+        </property>
         <property name="newTemplatesFile">
-            <value>alfresco/templates/activities-email-templates/activities-email-templates.xml</value>
+            <value>alfresco/templates/activities-email-templates.acp</value>
         </property>
     </bean>
 

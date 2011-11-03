@@ -170,17 +170,26 @@ var ParseArgs =
       {
          filter =
          {
-            filterId: args.filter
-         };
+            filterId: args.filter,
+            filterData: args.filterData
+         }
       }
       else if (typeof json !== "undefined" && json.has("filter"))
       {
-         filter = jsonUtils.toObject(json.get("filter"));
-         if (filter == null)
+         var filterJSON = json.get("filter");
+         if (filterJSON != null)
          {
             filter =
             {
-               filterId: ""
+               filterId: filterJSON.get("filterId"),
+               filterData: filterJSON.get("filterData")
+            }
+         }
+         else
+         {
+            filter =
+            {
+               filterId: "all"
             }
          }
       }

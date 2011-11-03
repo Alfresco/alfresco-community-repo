@@ -20,6 +20,18 @@
 var Filters =
 {
    /**
+    * Types that we want to suppress from the resultset
+    */
+   IGNORED_TYPES:
+   [
+      "cm:systemfolder",
+      "fm:forums",
+      "fm:forum",
+      "fm:topic",
+      "fm:post"
+   ],
+
+   /**
     * Create filter parameters based on input parameters
     *
     * @method getFilterParams
@@ -54,9 +66,7 @@ var Filters =
          filterQuery = filterParams.query;
 
       // Common types and aspects to filter from the UI
-      var filterQueryDefaults =
-         " -TYPE:\"cm:systemfolder\"" +
-         " -@cm\\:lockType:READ_ONLY_LOCK";
+      var filterQueryDefaults = ' -TYPE:"' + Filters.IGNORED_TYPES.join('" -TYPE:"') + '"';
 
       switch (String(filter.filterId))
       {

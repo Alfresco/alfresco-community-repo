@@ -2,6 +2,8 @@
 <import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/datalists/filters.lib.js">
 <import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/datalists/parse-args.lib.js">
 
+const REQUEST_MAX = 1000;
+
 /**
  * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
@@ -55,25 +57,41 @@ function getData()
       allNodes = [], node,
       items = [];
 
-   var filterParams = Filters.getFilterParams(filter, parsedArgs)
-      query = filterParams.query;
-
-   // Query the nodes - passing in default sort and result limit parameters
-   if (query !== "")
+   if (filter == null || filter.filterId == "all")
    {
-      allNodes = search.query(
+      // Use non-query method
+      var parentNode = parsedArgs.listNode;
+      if (parentNode != null)
       {
-         query: query,
-         language: filterParams.language,
-         page:
+         var pagedResult = parentNode.childFileFolders(true, false, Filters.IGNORED_TYPES, -1, -1, REQUEST_MAX, "cm:name", true, null);
+         allNodes = pagedResult.page;
+      }
+   }
+   else
+   {
+      var filterParams = Filters.getFilterParams(filter, parsedArgs)
+         query = filterParams.query;
+
+      // Query the nodes - passing in default sort and result limit parameters
+      if (query !== "")
+      {
+         allNodes = search.query(
          {
-            maxItems: (filterParams.limitResults ? parseInt(filterParams.limitResults, 10) : 0)
-         },
-         sort: filterParams.sort,
-         templates: filterParams.templates,
-         namespace: (filterParams.namespace ? filterParams.namespace : null)
-      });
-      
+            query: query,
+            language: filterParams.language,
+            page:
+            {
+               maxItems: (filterParams.limitResults ? parseInt(filterParams.limitResults, 10) : 0)
+            },
+            sort: filterParams.sort,
+            templates: filterParams.templates,
+            namespace: (filterParams.namespace ? filterParams.namespace : null)
+         });
+      }
+   }
+
+   if (allNodes.length > 0)
+   {
       for each (node in allNodes)
       {
          try
@@ -87,7 +105,6 @@ function getData()
    return (
    {
       fields: fields,
-      luceneQuery: query,
       paging:
       {
          totalRecords: items.length,

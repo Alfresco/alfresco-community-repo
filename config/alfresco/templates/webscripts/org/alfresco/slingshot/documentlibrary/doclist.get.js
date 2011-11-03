@@ -33,61 +33,59 @@ function getDoclist()
       }),
       query = filterParams.query;
    
-   var useDB = true;
-   
-   if ((useDB == true) && ((filter == "path") || (filter == "") || (filter == null)))
+   if ((filter || "path") == "path")
    {
-       // TODO also add DB filter by "node" (in addition to "path")
+      // TODO also add DB filter by "node" (in addition to "path")
        
-       var parentNode = parsedArgs.pathNode;
-       if (parentNode !== null)
-       {
-          var ignoreTypes = Filters.IGNORED_TYPES;
+      var parentNode = parsedArgs.pathNode;
+      if (parentNode !== null)
+      {
+         var ignoreTypes = Filters.IGNORED_TYPES;
             skip = -1,
             max = -1;
           
-          if (args.size != null)
-          {
-             max = args.size;
+         if (args.size != null)
+         {
+            max = args.size;
              
-             if (args.pos > 0)
-             {
-                skip = (args.pos - 1) * max;
-             }
-          }
+            if (args.pos > 0)
+            {
+               skip = (args.pos - 1) * max;
+            }
+         }
           
-          var sortField = (args.sortField == null ? "cm:name" : args.sortField),
+         var sortField = (args.sortField == null ? "cm:name" : args.sortField),
             sortAsc = (((args.sortAsc == null) || (args.sortAsc == "true")) ? true : false);
 
-          // Get paged set
-          requestTotalCountMax = skip + REQUEST_MAX;
-          var pagedResult = parentNode.childFileFolders(true, true, ignoreTypes, skip, max, requestTotalCountMax, sortField, sortAsc, "TODO");
+         // Get paged set
+         requestTotalCountMax = skip + REQUEST_MAX;
+         var pagedResult = parentNode.childFileFolders(true, true, ignoreTypes, skip, max, requestTotalCountMax, sortField, sortAsc, "TODO");
 
-          allNodes = pagedResult.page;
-          totalRecords = pagedResult.totalResultCountUpper;
-          paged = true;
-       }
+         allNodes = pagedResult.page;
+         totalRecords = pagedResult.totalResultCountUpper;
+         paged = true;
+      }
    }
    else
    {
-       // Query the nodes - passing in sort and result limit parameters
-       if (query !== "")
-       {
-          allNodes = search.query(
-          {
-             query: query,
-             language: filterParams.language,
-             page:
-             {
-                maxItems: (filterParams.limitResults ? parseInt(filterParams.limitResults, 10) : 0)
-             },
-             sort: filterParams.sort,
-             templates: filterParams.templates,
-             namespace: (filterParams.namespace ? filterParams.namespace : null)
-          });
+      // Query the nodes - passing in sort and result limit parameters
+      if (query !== "")
+      {
+         allNodes = search.query(
+         {
+            query: query,
+            language: filterParams.language,
+            page:
+            {
+               maxItems: (filterParams.limitResults ? parseInt(filterParams.limitResults, 10) : 0)
+            },
+            sort: filterParams.sort,
+            templates: filterParams.templates,
+            namespace: (filterParams.namespace ? filterParams.namespace : null)
+         });
 
-          totalRecords = allNodes.length;
-       }
+         totalRecords = allNodes.length;
+      }
    }
    
    // Ensure folders and folderlinks appear at the top of the list

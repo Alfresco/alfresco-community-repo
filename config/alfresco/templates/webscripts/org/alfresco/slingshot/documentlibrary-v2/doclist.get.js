@@ -33,9 +33,7 @@ function getDoclist()
       }),
       query = filterParams.query;
    
-   var useDB = true;
-   
-   if ((useDB == true) && ((filter == "path") || (filter == "") || (filter == null)))
+   if ((filter || "path") == "path")
    {
        // TODO also add DB filter by "node" (in addition to "path")
        

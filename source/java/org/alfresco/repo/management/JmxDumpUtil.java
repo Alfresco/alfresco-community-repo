@@ -21,7 +21,10 @@ package org.alfresco.repo.management;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Array;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -33,6 +36,7 @@ import javax.management.MBeanInfo;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import javax.management.openmbean.CompositeData;
+
 
 /**
  * A utility class providing a method to dump a local or remote MBeanServer's entire object tree for support purposes.
@@ -67,6 +71,8 @@ public class JmxDumpUtil
      */
     public static void dumpConnection(MBeanServerConnection connection, PrintWriter out) throws IOException
     {
+        JmxDumpUtil.showStartBanner(out);
+        
         // Get all the object names
         Set<ObjectName> objectNames = connection.queryNames(null, null);
 
@@ -81,6 +87,7 @@ public class JmxDumpUtil
         newObjectNames.addAll(objectNames);
         objectNames = newObjectNames;
 
+        
         // Dump each MBean
         for (ObjectName objectName : objectNames)
         {
@@ -350,5 +357,15 @@ public class JmxDumpUtil
         {
             return value.toString().length();
         }
+    }
+    
+    /**
+     * Show a message stating the JmxDumper has been started, with the current date and time. 
+     */
+    private static void showStartBanner(PrintWriter out)
+    {
+        DateFormat df = SimpleDateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG);
+        out.println(JmxDumpUtil.class.getSimpleName() + " started: " + df.format(new Date()));
+        out.println();
     }
 }

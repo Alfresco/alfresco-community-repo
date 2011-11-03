@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import junit.framework.TestCase;
 
@@ -38,6 +39,7 @@ import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -229,7 +231,36 @@ public class NodeServiceTest extends TestCase
         };
         txnService.getRetryingTransactionHelper().doInTransaction(setupCallback);
     }
-    
+
+    public void testRootAspect() throws Exception
+    {
+        final NodeRef workspaceRootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        final NodeRef[] nodes = new NodeRef[6];
+        buildNodeHierarchy(workspaceRootNodeRef, nodes);
+
+        Set<NodeRef> allRootNodes = nodeService.getAllRootNodes(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        int initialNumRootNodes = allRootNodes.size();
+
+        nodeService.addAspect(nodes[1], ContentModel.ASPECT_ROOT, null);
+        nodeService.addAspect(nodes[3], ContentModel.ASPECT_ROOT, null);
+        nodeService.addAspect(nodes[4], ContentModel.ASPECT_ROOT, null);
+
+        allRootNodes = nodeService.getAllRootNodes(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        assertEquals("", 3, allRootNodes.size() - initialNumRootNodes);
+        List<Path> paths = nodeService.getPaths(nodes[5], false);
+        assertEquals("", 4, paths.size());
+
+        nodeService.removeAspect(nodes[3], ContentModel.ASPECT_ROOT);
+        allRootNodes = nodeService.getAllRootNodes(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        assertEquals("", 2, allRootNodes.size() - initialNumRootNodes);
+        paths = nodeService.getPaths(nodes[5], false);
+        for(Path path : paths)
+        {
+            System.out.println("Path = " + path.toString());
+        }
+        assertEquals("", 3, paths.size());
+    }
+
     /**
      * Tests that two separate node trees can be deleted concurrently at the database level.
      * This is not a concurren thread issue; instead we delete a hierarchy and hold the txn

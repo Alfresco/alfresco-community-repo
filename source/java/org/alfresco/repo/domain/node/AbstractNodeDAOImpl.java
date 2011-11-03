@@ -1495,6 +1495,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                     invalidateNodePropertiesCache,
                     invalidateParentAssocsCache);
         }
+
         return updatedNode;
     }
     
@@ -2337,12 +2338,17 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         Set<QName> newAspectQNames = new HashSet<QName>(existingAspectQNames);
         newAspectQNames.addAll(aspectQNamesToAdd);
         setNodeAspectsCached(nodeId, newAspectQNames);
-        
+
         if (aspectQNamesToAdd.contains(ContentModel.ASPECT_ROOT))
         {
             // This is a special case.  The presence of the aspect affects the path
             // calculations, which are stored in the parent assocs cache
             touchNode(nodeId, null, false, false, true);
+
+            // invalidate root nodes cache for the store
+            Pair<Long, NodeRef> nodePair = getNodePair(nodeId);
+            StoreRef storeRef = nodePair.getSecond().getStoreRef();
+            allRootNodesCache.remove(storeRef);
         }
         else
         {
@@ -2384,14 +2390,29 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         {
             return false;
         }
-        
+
         // Manually update the cache
         Set<QName> newAspectQNames = new HashSet<QName>(existingAspectQNames);
         newAspectQNames.removeAll(aspectQNames);
         setNodeAspectsCached(nodeId, newAspectQNames);
 
-        // Touch the node; all caches are fine
-        touchNode(nodeId, null, false, false, false);
+        // If we are removing the sys:aspect_root, then the parent assocs cache is unreliable
+        if (aspectQNames.contains(ContentModel.ASPECT_ROOT))
+        {
+            // This is a special case.  The presence of the aspect affects the path
+            // calculations, which are stored in the parent assocs cache
+            touchNode(nodeId, null, false, false, true);
+            
+            // invalidate root nodes cache for the store
+            Pair<Long, NodeRef> nodePair = getNodePair(nodeId);
+            StoreRef storeRef = nodePair.getSecond().getStoreRef();
+            allRootNodesCache.remove(storeRef);
+        }
+        else
+        {
+            // Touch the node; all caches are fine
+            touchNode(nodeId, null, false, false, false);
+        }
 
         // Done
         return deleteCount > 0;

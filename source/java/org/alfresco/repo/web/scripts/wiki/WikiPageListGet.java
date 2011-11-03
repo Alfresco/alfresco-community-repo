@@ -64,6 +64,8 @@ public class WikiPageListGet extends AbstractWikiWebScript
    {
       // Decide on what kind of request they wanted
       String filter = req.getParameter("filter");
+      String strPageMetaOnly = req.getParameter("pageMetaOnly");
+      boolean pageMetaOnly = strPageMetaOnly != null ? Boolean.parseBoolean(strPageMetaOnly) : false;
       
       // User?
       boolean userFiltering = false;
@@ -178,6 +180,7 @@ public class WikiPageListGet extends AbstractWikiWebScript
       model.put("siteId", site.getShortName());
       model.put("site", site);
       model.put(TemplateService.KEY_SHARE_URL, UrlUtil.getShareUrl(sysAdminParams));
+      model.put("pageMetaOnly", pageMetaOnly);
       return model;
    }
 }

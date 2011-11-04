@@ -36,8 +36,8 @@ public interface WorkflowAdminService
     boolean isEngineEnabled(String engineId);
     
     /**
-     * Determines whether the JBPM workflow definitions are visible
-     * when the JBPM engine is enabled.
+     * Determines whether the workflow definitions are visible
+     * for the engine with the given id.
      * 
      * NOTE: Workflow definitions can always be retrieved directly 
      * i.e. via name or id

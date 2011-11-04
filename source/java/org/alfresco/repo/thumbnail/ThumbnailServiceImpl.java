@@ -239,38 +239,34 @@ public class ThumbnailServiceImpl implements ThumbnailService,
             logger.debug("Creating thumbnail (node=" + node.toString() + "; contentProperty="
                         + contentProperty.toString() + "; mimetype=" + mimetype);
         }
-        checkThumbnailNameIsUnique(node, thumbnailName, contentProperty, mimetype);
-        return AuthenticationUtil.runAs(
-                    new AuthenticationUtil.RunAsWork<NodeRef>()
-                    {
-                        public NodeRef doWork() throws Exception
-                        {
-                            return createThumbnailNode(node, contentProperty,
-                                        mimetype, transformationOptions, thumbnailName, assocDetails);
-                        }
-                    }, AuthenticationUtil.getSystemUserName());
-    }
-
-    /**
-     * Throws a ThumbnailException if a thumbnail of this name already exists.        
-     * @param node
-     * @param thumbnailName
-     * @param contentProperty
-     * @param mimetype
-     */
-    private void checkThumbnailNameIsUnique(final NodeRef node, final String thumbnailName,
-                final QName contentProperty, final String mimetype)
-    {
-        if (thumbnailName != null && getThumbnailByName(node, contentProperty, thumbnailName) != null)
+        
+        if (thumbnailName != null)
         {
-            if (logger.isDebugEnabled() == true)
+            NodeRef existingThumbnail = getThumbnailByName(node, contentProperty, thumbnailName);
+            if (existingThumbnail != null)
             {
-                logger.debug("Creating thumbnail: There is already a thumbnail with the name '" + thumbnailName + "' (node=" + node.toString() + "; contentProperty=" + contentProperty.toString() + "; mimetype=" + mimetype);
+                if (logger.isDebugEnabled() == true)
+                {
+                    logger.debug("Creating thumbnail: There is already a thumbnail with the name '" + thumbnailName + "' (node=" + node.toString() + "; contentProperty=" + contentProperty.toString() + "; mimetype=" + mimetype);
+                }
+                
+                // Return the thumbnail that has already been created
+                return existingThumbnail;
             }
-            
-            // We can't continue because there is already a thumbnail with the given name for that content property
-            throw new ThumbnailException(ERR_DUPLICATE_NAME);
         }
+        
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
+        {
+            public NodeRef doWork() throws Exception
+            {
+                return createThumbnailNode( node, 
+                                            contentProperty,
+                                            mimetype, 
+                                            transformationOptions, 
+                                            thumbnailName, 
+                                            assocDetails);
+            }
+        }, AuthenticationUtil.getSystemUserName());
     }
     
     private QName getThumbnailQName(String localThumbnailName)

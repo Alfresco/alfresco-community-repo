@@ -212,15 +212,17 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
      */
     private boolean hasAuthority(String authority, String parentAuthority)
     {
-        if (parentAuthority.equals(authority))
-        {
-            return true;
-        }
         // Even users are matched case sensitively in ACLs
         if (AuthorityType.getAuthorityType(parentAuthority) == AuthorityType.USER)
         {
             return false;
         }
+
+        if (parentAuthority.equals(authority))
+        {
+            return true;
+        }
+
         NodeRef nodeRef = authorityDAO.getAuthorityNodeRefOrNull(parentAuthority);
         if (nodeRef == null)
         {

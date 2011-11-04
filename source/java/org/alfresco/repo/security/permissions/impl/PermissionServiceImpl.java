@@ -768,6 +768,8 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         String username = user.getUsername();
         Set<String> auths = authorityService.getAuthoritiesForUser(username);
 
+        auths.add(username);
+
         for (GrantedAuthority grantedAuthority : auth.getAuthorities())
         {
             auths.add(grantedAuthority.getAuthority());

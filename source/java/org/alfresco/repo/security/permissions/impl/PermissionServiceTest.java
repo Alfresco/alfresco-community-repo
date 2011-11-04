@@ -62,7 +62,19 @@ public class PermissionServiceTest extends AbstractPermissionTest
         super();
         // TODO Auto-generated constructor stub
     }
-    
+
+    /*
+     * Tests that the current user is contained in the current authorisations set
+     */
+    public void testCurrentUserAuthority()
+    {
+        runAs("andy");
+        assertEquals("andy", authenticationComponent.getCurrentUserName());
+
+        Set<String> authorisations = permissionService.getAuthorisations();
+        assertTrue("", authorisations.contains("andy"));
+    }
+
     public void testMove()
     {
         runAs("admin");

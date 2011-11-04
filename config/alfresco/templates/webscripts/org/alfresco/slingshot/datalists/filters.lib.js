@@ -133,7 +133,7 @@ var Filters =
                filterQuery += "/*/cm:dataLists";
             }
             filterQuery += "\"";
-            filterQuery += " +@cm\\:modifier:\"" + person.properties.userName + '"';
+            filterQuery += " +@cm\\:creator:\"" + person.properties.userName + '"';
             filterQuery += " -TYPE:\"folder\"";
             filterParams.query = filterQuery + filterQueryDefaults;
             break;

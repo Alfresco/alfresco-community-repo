@@ -67,6 +67,12 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
         // state is not included into filters list as it will be taken into account before filtering
         WorkflowState state = getState(req);
         
+        // if no state is provided default to ACTIVE workflows only (ALF-10851)
+        if (state == null)
+        {
+            state = WorkflowState.ACTIVE;
+        }
+        
         // get filter param values
         Map<String, Object> filters = new HashMap<String, Object>(9);
         filters.put(PARAM_INITIATOR, req.getParameter(PARAM_INITIATOR));
@@ -96,12 +102,8 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
 
         List<WorkflowInstance> workflows;
 
-        // list workflows for specified workflow definition
-        if(state == null)
-        {
-            workflows = workflowService.getWorkflows(workflowDefinitionId);
-        }
-        else if (state == WorkflowState.ACTIVE)
+        // get workflows, if definition id is null all workflows are returned
+        if (state == WorkflowState.ACTIVE)
         {
             workflows = workflowService.getActiveWorkflows(workflowDefinitionId);
         }

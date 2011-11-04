@@ -231,7 +231,7 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
     {
         if (start)
         {
-            start(true);
+            start(true, false);
         }
         return this.state;
     }
@@ -470,7 +470,7 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
             this.lock.writeLock().lock();
             try
             {
-                start(false);
+                start(false, false);
             }
             catch (Exception e)
             {
@@ -496,7 +496,7 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
                     destroy(false);
                     // fall through
                 case UNINITIALIZED:
-                    start(false);                
+                    start(false, false);                
                 }
             }
             finally
@@ -595,7 +595,7 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
                 }
 
                 // Attempt to start locally
-                start(false);
+                start(false, true);
 
                 // We still haven't broadcast the start - a persist is required first so this will be done by the caller
             }
@@ -608,7 +608,7 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
                 }
                 
                 // Bring the bean back up across the cluster
-                start(true);
+                start(true, false);
                 if (e instanceof RuntimeException)
                 {
                     throw (RuntimeException) e;
@@ -630,7 +630,7 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
         this.lock.writeLock().lock();
         try
         {
-            start(true);
+            start(true, false);
         }
         finally
         {
@@ -641,10 +641,12 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
     /**
      * Starts the bean, optionally broadcasting the event to remote nodes.
      * 
-     * @param broadcast
-     *            Should the event be broadcast?
+     * @param broadcastNow
+     *            Should the event be broadcast immediately?
+     * @param broadcastLater
+     *            Should the event be broadcast ever?
      */
-    protected void start(boolean broadcast)
+    protected void start(boolean broadcastNow, boolean broadcastLater)
     {
         boolean hadWriteLock = this.lock.isWriteLockedByCurrentThread();
         if (this.runtimeState != RuntimeState.STARTED)
@@ -663,10 +665,10 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
                     // fall through
                 case STOPPED:
                     this.state.start();
-                    this.runtimeState = RuntimeState.PENDING_BROADCAST_START;
+                    this.runtimeState = broadcastLater ? RuntimeState.PENDING_BROADCAST_START : RuntimeState.STARTED;
                     // fall through
                 case PENDING_BROADCAST_START:
-                    if (broadcast)
+                    if (broadcastNow)
                     {
                         this.registry.broadcastStart(this);
                         this.runtimeState = RuntimeState.STARTED;

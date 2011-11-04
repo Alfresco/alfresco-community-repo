@@ -113,7 +113,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
 	{
 		// Set the services
 		this.nodeService = (NodeService)this.applicationContext.getBean("nodeService");
-		this.cociService = (CheckOutCheckInService)this.applicationContext.getBean("CheckoutCheckinService");
+		this.cociService = (CheckOutCheckInService)this.applicationContext.getBean("checkOutCheckInService");
 		this.contentService = (ContentService)this.applicationContext.getBean("contentService");
 		this.versionService = (VersionService)this.applicationContext.getBean("versionService");
         this.authenticationService = (MutableAuthenticationService)this.applicationContext.getBean("authenticationService");

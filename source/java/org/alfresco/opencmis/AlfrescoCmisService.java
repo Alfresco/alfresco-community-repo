@@ -2672,31 +2672,41 @@ public class AlfrescoCmisService extends AbstractCmisService
         {
             CMISNodeInfo nodeInfo = getOrCreateNodeInfo(objectId);
 
-            // object info has not been found -> create one
-            try
+            if (nodeInfo.getObjectVariant() == CMISObjectVariant.INVALID_ID
+                    || nodeInfo.getObjectVariant() == CMISObjectVariant.NOT_EXISTING
+                    || nodeInfo.getObjectVariant() == CMISObjectVariant.NOT_A_CMIS_OBJECT
+                    || nodeInfo.getObjectVariant() == CMISObjectVariant.PERMISSION_DENIED)
             {
-                if (filter == null)
-                {
-                    filter = MIN_FILTER;
-                } else if (!filter.equals("*"))
-                {
-                    filter = filter + "," + MIN_FILTER;
-                }
-
-                // get the object and its info
-                ObjectData object = connector.createCMISObject(nodeInfo, filter, false, includeRelationships, null,
-                        false, false);
-
-                info = getObjectInfoIntern(repositoryId, object);
-
-                // add object info
-                objectInfoMap.put(objectId, info);
-            } catch (Exception e)
-            {
-                e.printStackTrace();
                 info = null;
+            } else
+            {
+                // object info has not been found -> create one
+                try
+                {
+                    if (filter == null)
+                    {
+                        filter = MIN_FILTER;
+                    } else if (!filter.equals("*"))
+                    {
+                        filter = filter + "," + MIN_FILTER;
+                    }
+
+                    // get the object and its info
+                    ObjectData object = connector.createCMISObject(nodeInfo, filter, false, includeRelationships, null,
+                            false, false);
+
+                    info = getObjectInfoIntern(repositoryId, object);
+
+                    // add object info
+                    objectInfoMap.put(objectId, info);
+                } catch (Exception e)
+                {
+                    e.printStackTrace();
+                    info = null;
+                }
             }
         }
+
         return info;
     }
 

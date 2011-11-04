@@ -282,6 +282,12 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
         if (connector.getCheckOutCheckInService().isWorkingCopy(nodeRef))
         {
             NodeRef checkedOut = connector.getCheckOutCheckInService().getCheckedOut(nodeRef);
+            if (checkedOut == null)
+            {
+                // catch a rare audit case
+                checkedOut = nodeRef;
+            }
+
             objecVariant = CMISObjectVariant.PWC;
             objectId = checkedOut.toString() + CMISConnector.ID_SEPERATOR + CMISConnector.PWC_VERSION_LABEL;
             versionLabel = CMISConnector.PWC_VERSION_LABEL;

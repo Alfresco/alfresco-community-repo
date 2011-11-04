@@ -170,12 +170,8 @@ public class Search extends BaseScopableProcessorExtension
      * 3) AVM Path - {store_id}/{path}
      * 
      *    Resolve to AVM node via its display path
-     *    
-     * 4) QName - {store_type}/{store_id}/{child_qname_path}
      * 
-     *    Resolve to node via its child qname path.
-     * 
-     * @param  referenceType    one of node, path, avmpath or qname
+     * @param  referenceType    one of "node", "path", or "avmpath"
      * @param  reference        array of reference segments (as described above for each reference type)
      * @return ScriptNode       the script node
      */

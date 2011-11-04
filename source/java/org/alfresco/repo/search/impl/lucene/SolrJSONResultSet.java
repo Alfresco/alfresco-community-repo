@@ -28,6 +28,7 @@ import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.search.SimpleResultSetMetaData;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.PermissionEvaluationMode;
@@ -47,6 +48,8 @@ import org.json.JSONObject;
 public class SolrJSONResultSet implements ResultSet
 {
     private NodeDAO nodeDAO;
+    
+    private NodeService nodeService;
     
     private ArrayList<Pair<Long, Float>> page;
     
@@ -70,10 +73,11 @@ public class SolrJSONResultSet implements ResultSet
      * Detached result set based on that provided
      * @param resultSet
      */
-    public SolrJSONResultSet(JSONObject json, NodeDAO nodeDAO, SearchParameters searchParameters)
+    public SolrJSONResultSet(JSONObject json, NodeDAO nodeDAO, SearchParameters searchParameters, NodeService nodeService)
     {
         // Note all properties are returned as multi-valued from the WildcardField "*" definition in the SOLR schema.xml
         this.nodeDAO = nodeDAO;
+        this.nodeService = nodeService;
         this.resultSetMetaData = new SimpleResultSetMetaData(LimitBy.UNLIMITED, PermissionEvaluationMode.EAGER, searchParameters);
         try
         {
@@ -136,6 +140,12 @@ public class SolrJSONResultSet implements ResultSet
         
     }
     
+
+    public NodeService getNodeService()
+    {
+        return nodeService;
+    }
+
 
     /*
      * (non-Javadoc)

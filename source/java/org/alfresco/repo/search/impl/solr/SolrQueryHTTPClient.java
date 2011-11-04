@@ -30,12 +30,15 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.httpclient.HttpClientFactory;
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParserException;
 import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchParameters.FieldFacet;
 import org.alfresco.service.cmr.search.SearchParameters.FieldFacetMethod;
@@ -69,6 +72,8 @@ public class SolrQueryHTTPClient
     static Log s_logger = LogFactory.getLog(SolrQueryHTTPClient.class);
 
     private NodeDAO nodeDAO;
+    
+    private NodeService nodeService;
 
     private PermissionService permissionService;
 
@@ -105,6 +110,11 @@ public class SolrQueryHTTPClient
     public void setNodeDAO(NodeDAO nodeDAO)
     {
         this.nodeDAO = nodeDAO;
+    }
+
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
     }
 
     public void setPermissionService(PermissionService permissionService)
@@ -338,14 +348,14 @@ public class SolrQueryHTTPClient
                 Reader reader = new BufferedReader(new InputStreamReader(post.getResponseBodyAsStream()));
                 // TODO - replace with streaming-based solution e.g. SimpleJSON ContentHandler
                 JSONObject json = new JSONObject(new JSONTokener(reader));
-                SolrJSONResultSet results = new SolrJSONResultSet(json, nodeDAO, searchParameters);
+                SolrJSONResultSet results = new SolrJSONResultSet(json, nodeDAO, searchParameters, nodeService);
                 if (s_logger.isDebugEnabled())
                 {
                     s_logger.debug("Sent :" + url);
                     s_logger.debug("   with: " + body.toString());
                     s_logger.debug("Got: " + results.getNumberFound() + " in " + results.getQueryTime() + " ms");
                 }
-
+                
                 return results;
             }
             finally

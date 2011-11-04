@@ -18,11 +18,13 @@
  */
 package org.alfresco.repo.search.impl.lucene;
 
+import java.io.Serializable;
 import java.util.Map;
 
 import org.alfresco.repo.search.AbstractResultSetRow;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.namespace.QName;
 
 /**
  * @author Andy
@@ -77,6 +79,12 @@ public class SolrJSONResultSetRow extends AbstractResultSetRow
     public Map<String, Float> getScores()
     {
         throw new UnsupportedOperationException();
+    }
+    
+    protected Map<QName, Serializable> getDirectProperties()
+    {
+        SolrJSONResultSet rs = (SolrJSONResultSet) getResultSet();
+        return rs.getNodeService().getProperties(rs.getNodeRef(getIndex()));
     }
 
 }

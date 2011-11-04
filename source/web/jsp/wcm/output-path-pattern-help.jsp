@@ -9,6 +9,10 @@ xmlns:f="http://java.sun.com/jsf/core">
    function toggleOutputPathPatternHelp()
    {
       var d = document.getElementById('wizard:wizard-body:mainPanel');
+      if (d == null) 
+      { 
+         d = document.getElementById('dialog:dialog-body:mainPanel'); 
+      } 
       d.style.display = d.style.display == 'block' ? 'none' : 'block';
    }
 </script>

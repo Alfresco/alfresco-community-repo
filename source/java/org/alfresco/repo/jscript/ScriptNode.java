@@ -3490,13 +3490,14 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         {
             ContentService contentService = services.getContentService();
             ContentWriter writer = contentService.getWriter(nodeRef, this.property, true);
+            InputStream is = null;
             if (applyMimetype)
             {
                 writer.setMimetype(content.getMimetype());
             }
             if (guessEncoding)
             {
-                InputStream is = new BufferedInputStream(content.getInputStream());
+                is = new BufferedInputStream(content.getInputStream());
                 is.mark(1024);
                 writer.setEncoding(guessEncoding(is, false));
                 try
@@ -3510,8 +3511,9 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
             else
             {
                 writer.setEncoding(content.getEncoding());
+                is = content.getInputStream();
             }
-            writer.putContent(content.getInputStream());
+            writer.putContent(is);
             
             // update cached variables after putContent()
             this.contentData = (ContentData) services.getNodeService().getProperty(nodeRef, this.property);

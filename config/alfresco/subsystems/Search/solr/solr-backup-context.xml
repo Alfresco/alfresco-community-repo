@@ -1,0 +1,91 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    <!-- workspace://SpacesStore - alfresco -->
+  
+    <bean id="search.alfrescoCoreBackupJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass">
+            <value>org.alfresco.repo.search.impl.solr.SolrBackupJob</value>
+        </property>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="solrBackupClient">
+                    <ref bean="search.alfrescoCoreSolrBackupClient" />
+                </entry>
+            </map>
+        </property>
+    </bean>
+    
+    <bean id="search.alfrescoCoreBackupTrigger" class="org.alfresco.util.CronTriggerBean">
+        <property name="jobDetail">
+            <ref bean="search.alfrescoCoreBackupJobDetail" />
+        </property>
+        <property name="scheduler">
+            <ref bean="schedulerFactory" />
+        </property>
+        <!-- trigger at 3am each day -->
+        <property name="cronExpression">
+            <value>${solr.backup.alfresco.cronExpression}</value>
+        </property>
+    </bean>
+    
+    <bean id="search.alfrescoCoreSolrBackupClient" class="org.alfresco.repo.search.impl.solr.SolrBackupClient" >
+        <property name="jobLockService">
+            <ref bean="jobLockService" />
+        </property>
+        <property name="remoteBackupLocation">
+            <value>${solr.backup.alfresco.remoteBackupLocation}</value>
+        </property>
+        <property name="core">
+            <value>alfresco</value>
+        </property>
+        <property name="solrAdminClient">
+            <ref bean="solrAdminClient" />
+        </property>
+    </bean>
+    
+    <!--  archive://SpacesStore - archive -->
+  
+    <bean id="search.archiveCoreBackupJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass">
+            <value>org.alfresco.repo.search.impl.solr.SolrBackupJob</value>
+        </property>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="solrBackupClient">
+                    <ref bean="search.archiveCoreSolrBackupClient" />
+                </entry>
+            </map>
+        </property>
+    </bean>
+    
+    <bean id="search.archiveCoreBackupTrigger" class="org.alfresco.util.CronTriggerBean">
+        <property name="jobDetail">
+            <ref bean="search.archiveCoreBackupJobDetail" />
+        </property>
+        <property name="scheduler">
+            <ref bean="schedulerFactory" />
+        </property>
+        <!-- trigger at 3am each day -->
+        <property name="cronExpression">
+            <value>${solr.backup.archive.cronExpression}</value>
+        </property>
+    </bean>
+    
+    <bean id="search.archiveCoreSolrBackupClient" class="org.alfresco.repo.search.impl.solr.SolrBackupClient" >
+        <property name="jobLockService">
+            <ref bean="jobLockService" />
+        </property>
+        <property name="remoteBackupLocation">
+            <value>${solr.backup.archive.remoteBackupLocation}</value>
+        </property>
+        <property name="core">
+            <value>archive</value>
+        </property>
+        <property name="solrAdminClient">
+            <ref bean="solrAdminClient" />
+        </property>
+    </bean>
+   
+</beans>

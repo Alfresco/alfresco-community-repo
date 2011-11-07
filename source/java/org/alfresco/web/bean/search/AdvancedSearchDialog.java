@@ -21,6 +21,7 @@ package org.alfresco.web.bean.search;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -369,17 +370,49 @@ public class AdvancedSearchDialog extends BaseDialogBean
          search.setMimeType(properties.getContentFormat());
       }
       if (properties.isCreatedDateChecked())
-      {
+      {   
          SimpleDateFormat df = CachingDateFormat.getDateFormat();
-         String strCreatedDate = df.format(properties.getCreatedDateFrom());
-         String strCreatedDateTo = df.format(properties.getCreatedDateTo());
+         
+         Calendar cal = Calendar.getInstance();
+         cal.setTime(properties.getCreatedDateFrom());
+         cal.set(Calendar.HOUR_OF_DAY, cal.getMinimum(Calendar.HOUR_OF_DAY));
+         cal.set(Calendar.MINUTE, cal.getMinimum(Calendar.MINUTE));
+         cal.set(Calendar.SECOND, cal.getMinimum(Calendar.SECOND));
+         cal.set(Calendar.MILLISECOND, cal.getMinimum(Calendar.MILLISECOND)); 
+         String strCreatedDate = df.format(cal.getTime());
+         
+         cal.setTime(properties.getCreatedDateTo());
+         cal.set(Calendar.HOUR_OF_DAY, cal.getMinimum(Calendar.HOUR_OF_DAY));
+         cal.set(Calendar.MINUTE, cal.getMinimum(Calendar.MINUTE));
+         cal.set(Calendar.SECOND, cal.getMinimum(Calendar.SECOND));
+         cal.set(Calendar.MILLISECOND, cal.getMinimum(Calendar.MILLISECOND)); 
+         cal.add(Calendar.DAY_OF_YEAR, 1);
+         cal.add(Calendar.MILLISECOND, -1);
+         String strCreatedDateTo = df.format(cal.getTime());
+         
          search.addRangeQuery(ContentModel.PROP_CREATED, strCreatedDate, strCreatedDateTo, true);
       }
       if (properties.isModifiedDateChecked())
       {
          SimpleDateFormat df = CachingDateFormat.getDateFormat();
-         String strModifiedDate = df.format(properties.getModifiedDateFrom());
-         String strModifiedDateTo = df.format(properties.getModifiedDateTo());
+         
+         Calendar cal = Calendar.getInstance();
+         cal.setTime(properties.getModifiedDateFrom());
+         cal.set(Calendar.HOUR_OF_DAY, cal.getMinimum(Calendar.HOUR_OF_DAY));
+         cal.set(Calendar.MINUTE, cal.getMinimum(Calendar.MINUTE));
+         cal.set(Calendar.SECOND, cal.getMinimum(Calendar.SECOND));
+         cal.set(Calendar.MILLISECOND, cal.getMinimum(Calendar.MILLISECOND)); 
+         String strModifiedDate = df.format(cal.getTime());
+         
+         cal.setTime(properties.getModifiedDateTo());
+         cal.set(Calendar.HOUR_OF_DAY, cal.getMinimum(Calendar.HOUR_OF_DAY));
+         cal.set(Calendar.MINUTE, cal.getMinimum(Calendar.MINUTE));
+         cal.set(Calendar.SECOND, cal.getMinimum(Calendar.SECOND));
+         cal.set(Calendar.MILLISECOND, cal.getMinimum(Calendar.MILLISECOND)); 
+         cal.add(Calendar.DAY_OF_YEAR, 1);
+         cal.add(Calendar.MILLISECOND, -1);
+         String strModifiedDateTo = df.format(cal.getTime());
+         
          search.addRangeQuery(ContentModel.PROP_MODIFIED, strModifiedDate, strModifiedDateTo, true);
       }
 

@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
@@ -169,6 +170,14 @@ public class AlfrescoCmisService extends AbstractCmisService
     public void beginCall(CallContext context)
     {
         this.context = context;
+
+        if (connector.openHttpSession())
+        {
+            // create a session -> set a cookie
+            // if the CMIS client supports cookies that might help in clustered
+            // environments
+            ((HttpServletRequest) context.get(CallContext.HTTP_SERVLET_REQUEST)).getSession();
+        }
 
         AuthenticationUtil.pushAuthentication();
 

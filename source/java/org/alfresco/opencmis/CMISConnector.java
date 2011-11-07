@@ -251,6 +251,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     private Map<String, NodeRef> rootNodeRefs = new ConcurrentHashMap<String, NodeRef>(1);
     private Map<String, CMISRenditionMapping> renditionMapping = new ConcurrentHashMap<String, CMISRenditionMapping>(1);
     private String proxyUser;
+    private boolean openHttpSession = false;
 
     // OpenCMIS objects
     private BigInteger typesDefaultMaxItems = TYPES_DEFAULT_MAX_ITEMS;
@@ -333,6 +334,16 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     public void setRenditionKindMapping(Map<String, List<String>> renditionKinds)
     {
         this.kindToRenditionNames = renditionKinds;
+    }
+
+    public void setOpenHttpSession(boolean openHttpSession)
+    {
+        this.openHttpSession = openHttpSession;
+    }
+
+    public boolean openHttpSession()
+    {
+        return openHttpSession;
     }
 
     /**
@@ -812,8 +823,17 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
      */
     public void applyVersioningState(NodeRef nodeRef, VersioningState versioningState)
     {
-        if ((versioningState == VersioningState.MAJOR) || (versioningState == VersioningState.MINOR)
-                || (versioningState == VersioningState.CHECKEDOUT))
+        if (versioningState == VersioningState.CHECKEDOUT)
+        {
+            if (!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
+            {
+                Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+                props.put(ContentModel.PROP_INITIAL_VERSION, false);
+                props.put(ContentModel.PROP_AUTO_VERSION, false);
+                nodeService.addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, props);
+            }
+            getCheckOutCheckInService().checkout(nodeRef);
+        } else if ((versioningState == VersioningState.MAJOR) || (versioningState == VersioningState.MINOR))
         {
             if (!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
             {
@@ -824,16 +844,11 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             }
 
             Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(5);
-            versionProperties.put(VersionModel.PROP_VERSION_TYPE, versioningState == VersioningState.MAJOR
-                    || versioningState == VersioningState.CHECKEDOUT ? VersionType.MAJOR : VersionType.MINOR);
+            versionProperties.put(VersionModel.PROP_VERSION_TYPE,
+                    versioningState == VersioningState.MAJOR ? VersionType.MAJOR : VersionType.MINOR);
             versionProperties.put(VersionModel.PROP_DESCRIPTION, "Initial Version");
 
             versionService.createVersion(nodeRef, versionProperties);
-        }
-
-        if (versioningState == VersioningState.CHECKEDOUT)
-        {
-            getCheckOutCheckInService().checkout(nodeRef);
         }
     }
 

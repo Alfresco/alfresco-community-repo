@@ -59,6 +59,9 @@
                 </entry>
             </map>
         </property>
+        
+        <!-- Uncomment the following line to support sticky sessions. Make sure the CMIS client supports cookies. -->
+        <!-- <property name="openHttpSession"        value="true" />  -->
     
         <property name="OpenCMISDictionaryService" ref="OpenCMISDictionaryService" />
         <property name="OpenCMISQueryService"   ref="OpenCMISQueryService" />     

@@ -120,7 +120,7 @@ public class PublishContentActionExecuter extends ActionExecuterAbstractBase
      * A multi-valued, optional text parameter that identifies by name the
      * publishing channels to which the status update (if any) should be sent.
      * If both this parameter and the "statusUpdateChannelIds" parameter are
-     * given values then they are combined.
+     * given values then they are combined. 
      * 
      * @see PublishContentActionExecuter#PARAM_STATUS_UPDATE
      * @see PublishContentActionExecuter#PARAM_STATUS_UPDATE_CHANNEL_IDS
@@ -237,8 +237,8 @@ public class PublishContentActionExecuter extends ActionExecuterAbstractBase
                         if (nodes.size() == 1)
                         {
                             nodeToLinkTo = nodes.get(0);
-                        }
-                    }
+                }
+            }
                     if ((nodeToLinkTo != null) && nodes.contains(nodeToLinkTo))
                     {
                         details.setStatusNodeToLinkTo(nodeToLinkTo);
@@ -305,8 +305,20 @@ public class PublishContentActionExecuter extends ActionExecuterAbstractBase
         List<String> result = null;
         if (parameterValue != null && String.class.isAssignableFrom(parameterValue.getClass()))
         {
-            String[] split = ((String) parameterValue).split(",");
+            String[] split = ((String)parameterValue).split(",");
             result = Arrays.asList(split);
+        }
+        else if (parameterValue != null && Iterable.class.isAssignableFrom(parameterValue.getClass()))
+        {
+            result = new ArrayList<String>();
+            Iterable<?> iter = (Iterable<?>)parameterValue;
+            for (Object obj : iter)
+            {
+                if (obj != null && String.class.isAssignableFrom(obj.getClass()))
+                {
+                    result.add((String)obj);
+                }
+            }
         }
         return result;
     }
@@ -318,7 +330,7 @@ public class PublishContentActionExecuter extends ActionExecuterAbstractBase
                 getParamDisplayLabel(PARAM_PUBLISH_CHANNEL_NAME), false));
 
         paramList.add(new ParameterDefinitionImpl(PARAM_PUBLISH_CHANNEL_ID, DataTypeDefinition.TEXT, false,
-                getParamDisplayLabel(PARAM_PUBLISH_CHANNEL_ID), false, "ac-publishing-channels"));
+                getParamDisplayLabel(PARAM_PUBLISH_CHANNEL_ID), false));
 
         paramList.add(new ParameterDefinitionImpl(PARAM_UNPUBLISH, DataTypeDefinition.BOOLEAN, false,
                 getParamDisplayLabel(PARAM_UNPUBLISH), false));
@@ -333,7 +345,7 @@ public class PublishContentActionExecuter extends ActionExecuterAbstractBase
                 getParamDisplayLabel(PARAM_STATUS_UPDATE_CHANNEL_NAMES), true));
 
         paramList.add(new ParameterDefinitionImpl(PARAM_STATUS_UPDATE_CHANNEL_IDS, DataTypeDefinition.TEXT, false,
-                getParamDisplayLabel(PARAM_STATUS_UPDATE_CHANNEL_IDS), true, "ac-status-update-channels"));
+                getParamDisplayLabel(PARAM_STATUS_UPDATE_CHANNEL_IDS), true));
 
         paramList.add(new ParameterDefinitionImpl(PARAM_SCHEDULED_TIME, DataTypeDefinition.DATETIME, false,
                 getParamDisplayLabel(PARAM_SCHEDULED_TIME), false));

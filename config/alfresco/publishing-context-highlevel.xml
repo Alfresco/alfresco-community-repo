@@ -80,15 +80,5 @@
         <property name="ignoreLock" value="true" />
         <property name="publicAction" value="false" />
     </bean>
-
-    <bean id="ac-publishing-channels" class="org.alfresco.repo.publishing.PublishingChannelParameterConstraint"
-        parent="action-constraint">
-        <property name="channelService" ref="ChannelService" />
-    </bean>
-   
-    <bean id="ac-status-update-channels" class="org.alfresco.repo.publishing.StatusUpdateChannelParameterConstraint"
-        parent="action-constraint">
-        <property name="channelService" ref="ChannelService" />
-    </bean>
    
 </beans>

@@ -37,7 +37,9 @@ import org.alfresco.repo.template.HasAspectMethod;
 import org.alfresco.repo.template.I18NMessageMethod;
 import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
@@ -66,7 +68,7 @@ import org.springframework.mail.javamail.MimeMessagePreparator;
  * @author Roy Wetherall
  */
 public class MailActionExecuter extends ActionExecuterAbstractBase
-    implements InitializingBean, TestModeable
+                                implements InitializingBean, TestModeable
 {
     private static Log logger = LogFactory.getLog(MailActionExecuter.class);
     
@@ -303,19 +305,28 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     {
         if (sendAfterCommit(ruleAction))
         {
-        AlfrescoTransactionSupport.bindListener(new TransactionListenerAdapter()
-        {
-            @Override
-            public void afterCommit()
-                {                
-                    prepareAndSendEmail(ruleAction, actionedUponNodeRef);            
+            AlfrescoTransactionSupport.bindListener(new TransactionListenerAdapter()
+            {
+                @Override
+                public void afterCommit()
+                {                                    
+                    RetryingTransactionHelper helper = serviceRegistry.getRetryingTransactionHelper();
+                    helper.doInTransaction(new RetryingTransactionCallback<Void>()
+                    {
+                        @Override
+                        public Void execute() throws Throwable
+                        {
+                            prepareAndSendEmail(ruleAction, actionedUponNodeRef);  
+                            return null;
+                        }
+                    }, false, true);          
                 }
             });            
         }
         else
-            {
+        {
             prepareAndSendEmail(ruleAction, actionedUponNodeRef);            
-            }
+        }
     }
     
     private boolean sendAfterCommit(Action action)

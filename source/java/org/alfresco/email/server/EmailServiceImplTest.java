@@ -547,5 +547,105 @@ public class EmailServiceImplTest extends TestCase
        assertTrue(TEST_SUBJECT+"(1) not found", assocNames.contains(QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Practical Bee Keeping(1)")));      
     
    }
+   
+   /**
+    * The Email contributors authority controls who can add email.
+    * 
+    * This test switches between the EMAIL_CONTRIBUTORS group and EVERYONE
+    */
+   public void testEmailContributorsAuthority() throws Exception
+   {
+       EmailServiceImpl emailServiceImpl = (EmailServiceImpl)emailService;
+       
+       folderEmailMessageHandler.setOverwriteDuplicates(true);
+       
+       logger.debug("Start testEmailContributorsAuthority");
+       
+       String TEST_EMAIL="buffy@sunnydale.high";
+       
+       // TODO Investigate why setting PROP_EMAIL on createPerson does not work.
+       NodeRef person = personService.getPerson(TEST_USER);
+       if(person == null)
+       {
+           logger.debug("new person created");
+           Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+           props.put(ContentModel.PROP_USERNAME, TEST_USER);
+           props.put(ContentModel.PROP_EMAIL, TEST_EMAIL);
+           person = personService.createPerson(props);
+       }
+       nodeService.setProperty(person, ContentModel.PROP_EMAIL, TEST_EMAIL);
+
+       Set<String> auths = authorityService.getContainedAuthorities(null, "GROUP_EMAIL_CONTRIBUTORS", true);
+       if(auths.contains(TEST_USER))
+       {
+           authorityService.removeAuthority("GROUP_EMAIL_CONTRIBUTORS", TEST_USER);
+       }
+       
+       String companyHomePathInStore = "/app:company_home"; 
+       String storePath = "workspace://SpacesStore";
+       StoreRef storeRef = new StoreRef(storePath);
+
+       NodeRef storeRootNodeRef = nodeService.getRootNode(storeRef);
+       List<NodeRef> nodeRefs = searchService.selectNodes(storeRootNodeRef, companyHomePathInStore, null, namespaceService, false);
+       NodeRef companyHomeNodeRef = nodeRefs.get(0);
+       assertNotNull("company home is null", companyHomeNodeRef);
+       String companyHomeDBID = ((Long)nodeService.getProperty(companyHomeNodeRef, ContentModel.PROP_NODE_DBID)).toString() + "@Alfresco.com";
+       String testUserDBID = ((Long)nodeService.getProperty(person, ContentModel.PROP_NODE_DBID)).toString() + "@Alfresco.com";
+       NodeRef testUserHomeFolder = (NodeRef)nodeService.getProperty(person, ContentModel.PROP_HOMEFOLDER);
+       assertNotNull("testUserHomeFolder is null", testUserHomeFolder);
+       String testUserHomeDBID = ((Long)nodeService.getProperty(testUserHomeFolder, ContentModel.PROP_NODE_DBID)).toString() + "@Alfresco.com";
+       
+      /**
+       * Step 1
+       * Set the email contributors authority to EVERYONE 
+       * 
+       * Test that TEST_USER is allowed to send email - so even though TEST_USER is not 
+       * a contributor
+       */
+       emailServiceImpl.setEmailContributorsAuthority("EVERYONE");
+     
+       String from = "admin";
+       String to =  testUserHomeDBID;
+       String content = "hello world";
+       
+       Session sess = Session.getDefaultInstance(new Properties());
+       assertNotNull("sess is null", sess);
+       SMTPMessage msg = new SMTPMessage(sess);
+       InternetAddress[] toa =  { new InternetAddress(to) };
+       
+       msg.setFrom(new InternetAddress(TEST_EMAIL));
+       msg.setRecipients(Message.RecipientType.TO, toa);
+       msg.setSubject("JavaMail APIs transport.java Test");
+       msg.setContent(content, "text/plain");
+               
+       StringBuffer sb = new StringBuffer();
+       ByteArrayOutputStream bos = new ByteArrayOutputStream();
+       msg.writeTo(bos);
+       InputStream is = new StringInputStream(bos.toString());
+       assertNotNull("is is null", is);
+       
+       SubethaEmailMessage m = new SubethaEmailMessage(is);   
+
+       emailService.importMessage(m);
+       
+       /**
+        * Step 2
+        * Negative test
+        * 
+        * Send From the test user TEST_EMAIL to the test user's home
+        */
+       try 
+       {
+           logger.debug("Step 2");
+           emailServiceImpl.setEmailContributorsAuthority("EMAIL_CONTRIBUTORS");
+           emailService.importMessage(m);
+           fail("not thrown out");
+       }
+       catch (EmailMessageException e)
+       {
+         // Check the exception is for the anonymous user.
+         // assertTrue(e.getMessage().contains("anonymous"));
+       }
+   }
  
-}
+} // end of EmailServiceImplTest

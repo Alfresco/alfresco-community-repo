@@ -248,16 +248,12 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
         checkRenditioned(jpgOrig, "small");
         checkRendition("small", thumbnail1);
 
-        try
-        {
-            this.thumbnailService.createThumbnail(jpgOrig, ContentModel.PROP_CONTENT, MimetypeMap.MIMETYPE_IMAGE_JPEG,
+        // the origional thumbnail is returned if we are attempting to create a duplicate
+        NodeRef duplicate = this.thumbnailService.createThumbnail(jpgOrig, ContentModel.PROP_CONTENT, MimetypeMap.MIMETYPE_IMAGE_JPEG,
                         imageTransformationOptions, "small");
-            fail("A duplicate exception should have been raised");
-        }
-        catch (ThumbnailException exception)
-        {
-            // OK since this should have been thrown
-        }
+        assertNotNull(duplicate);
+        assertEquals(duplicate, thumbnail1);
+ 
     }
 
     /**

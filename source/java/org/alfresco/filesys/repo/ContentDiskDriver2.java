@@ -1968,6 +1968,8 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             logger.debug("setFileInformation name=" + name + ", info=" + info);
         }
         
+        NetworkFile networkFile = info.getNetworkFile();
+        
         try
         {
             
@@ -2057,12 +2059,28 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 // Set the creation date on the file/folder node
                 Date createDate = new Date( info.getCreationDateTime());
                 auditableProps.put(ContentModel.PROP_CREATED, createDate);
+                if ( logger.isDebugEnabled())
+                {
+                    logger.debug("Set creation date" + name + ", " + createDate);
+                }
             }
             if ( info.hasSetFlag(FileInfo.SetModifyDate)) 
-            {                    
-                // Set the modification date on the file/folder node
+            {                
+                 // Set the modification date on the file/folder node
                 Date modifyDate = new Date( info.getModifyDateTime());
                 auditableProps.put(ContentModel.PROP_MODIFIED, modifyDate);
+                
+                // Set the network file so we don't reverse this change in close file.
+                if(networkFile != null && !networkFile.isReadOnly())
+                {
+                    networkFile.setModifyDate(info.getModifyDateTime());
+                }
+                
+                if ( logger.isDebugEnabled())
+                {
+                    logger.debug("Set modification date" + name + ", " + modifyDate);
+                }
+                
             }
 
             // Did we have any cm:auditable properties?
@@ -2879,6 +2897,13 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 // Some content was written to the temp file.
                 tempFile.flushFile();
                 tempFile.close();
+                
+                /**
+                 * Take over the behaviour of the auditable aspect         
+                 */
+                getPolicyFilter().disableBehaviour(target, ContentModel.ASPECT_AUDITABLE);
+                nodeService.setProperty(target, ContentModel.PROP_MODIFIER, authService.getCurrentUserName());
+                nodeService.setProperty(target, ContentModel.PROP_MODIFIED, new Date(tempFile.getModifyDate()));               
             
                 // Take an initial guess at the mimetype (if it has not been set by something already)
                 String mimetype = mimetypeService.guessMimetype(tempFile.getFullName(), new FileContentReader(tempFile.getFile()));

@@ -20,6 +20,7 @@ package org.alfresco.filesys.repo;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -194,6 +195,12 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
                     + ", isDeleteOnClose:" +params.isDeleteOnClose()
                     + ", sharedAccess: " + strSharedAccess
                     + " allocationSize: " + params.getAllocationSize());
+        }
+        
+        long creationDateTime = params.getCreationDateTime();
+        if(creationDateTime != 0)
+        {
+            logger.debug("creationDateTime is set:" + new Date(creationDateTime));
         }
         
         ContentContext tctx = (ContentContext) tree.getContext();

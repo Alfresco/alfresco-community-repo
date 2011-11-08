@@ -277,6 +277,7 @@ public class CifsHelper
             long modified = DefaultTypeConverter.INSTANCE.longValue(modifiedDate);
             fileInfo.setModifyDateTime(modified);
             fileInfo.setAccessDateTime(modified);
+            fileInfo.setChangeDateTime(modified);
         }
         // name
         String name = fileFolderInfo.getName();

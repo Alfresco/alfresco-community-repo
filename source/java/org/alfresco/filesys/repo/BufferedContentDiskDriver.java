@@ -251,21 +251,40 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
                 FileInfo finfo = new FileInfo();
                 finfo.copyFrom(info);
 
-                // TODO what if file state cache is stale or wrong?  We are over-writing the "real" value.
+                /*
+                 * TODO what if file state cache is stale?  
+                 * We are over-writing the "real" value here.
+                 */ 
                 if(fstate.hasFileSize())
                 {
+                    if(logger.isDebugEnabled())
+                    {
+                        logger.debug("replace file size " + info.getSize() + " with " + fstate.getFileSize());
+                    }
                     finfo.setFileSize(fstate.getFileSize());
                 }
                 if ( fstate.hasAccessDateTime())
                 {
+                    if(logger.isDebugEnabled())
+                    {
+                        logger.debug("replace access date " + new Date(finfo.getAccessDateTime()) + " with " + new Date(fstate.getAccessDateTime()));
+                    }
                     finfo.setAccessDateTime(fstate.getAccessDateTime());
                 }
                 if ( fstate.hasChangeDateTime())
                 {
+                    if(logger.isDebugEnabled())
+                    {
+                        logger.debug("replace change date " + new Date(finfo.getChangeDateTime()) + " with " + new Date(fstate.getChangeDateTime()));
+                    }
                     finfo.setChangeDateTime(fstate.getChangeDateTime());
                 }
                 if ( fstate.hasModifyDateTime())
                 {
+                    if(logger.isDebugEnabled())
+                    {
+                        logger.debug("replace modified date " + new Date(finfo.getModifyDateTime()) + " with " + new Date(fstate.getModifyDateTime()));
+                    }
                     finfo.setModifyDateTime(fstate.getModifyDateTime());
                 }
                 if ( fstate.hasAllocationSize() && fstate.getAllocationSize() > info.getAllocationSize())
@@ -279,8 +298,10 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
                             ", readOnly:" +finfo.isReadOnly() +
                             ", fileId:" +finfo.getFileId() +
                             ", directoryId:" + finfo.getDirectoryId() + 
+                            ", createdDate: " + finfo.getCreationDateTime() + 
                             ", accessDate:" + new Date(finfo.getAccessDateTime()) +
                             ", modifiedDate:" + new Date(finfo.getModifyDateTime()) +
+                            ", changeDate:" + new Date(finfo.getChangeDateTime()) +
                             ", mode" + finfo.getMode());
                 }
                 

@@ -3763,6 +3763,122 @@ public class ContentDiskDriverTest extends TestCase
     } // Test Word Save Locked File
     
     /**
+     * ALF-10686
+     * This scenario is executed by windows explorer.
+     * 
+     * A file is created and the file handle kept open.
+     * stuff is written
+     * Then the modified date is set
+     * Then the file is closed.
+     * @throws Exception
+     */
+    public void testSetFileScenario() throws Exception
+    {
+        logger.debug("testSetFileInfo");
+        ServerConfiguration scfg = new ServerConfiguration("testServer");
+        TestServer testServer = new TestServer("testServer", scfg);
+        final SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
+        DiskSharedDevice share = getDiskSharedDevice();
+        final TreeConnection testConnection = testServer.getTreeConnection(share);
+        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
+        
+        Date now = new Date();
+        
+        // CREATE 6 hours ago
+        final Date CREATED = new Date(now.getTime() - 1000 * 60 * 60 * 6);
+        // Modify one hour ago
+        final Date MODIFIED = new Date(now.getTime() - 1000 * 60 * 60 * 1);
+        
+        class TestContext
+        {     
+            NodeRef testNodeRef;    
+        };
+        
+        final TestContext testContext = new TestContext();
+      
+        /**
+          * Step 1 : Create a new file in read/write mode and add some content.
+          * Call SetInfo to set the creation date
+          */
+        int openAction = FileAction.CreateNotExist;
+        
+        final String FILE_NAME="testSetFileScenario.txt";
+        final String FILE_PATH="\\"+FILE_NAME;
+        
+        // Clean up junk if it exists
+        try
+        {
+            driver.deleteFile(testSession, testConnection, FILE_PATH);
+        }
+        catch (IOException ie)
+        {
+           // expect to go here
+        }
+                  
+        final FileOpenParams params = new FileOpenParams(FILE_PATH, openAction, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                
+        final NetworkFile file = driver.createFile(testSession, testConnection, params);
+        assertNotNull("file is null", file);
+        assertFalse("file is read only, should be read-write", file.isReadOnly());
+        
+        RetryingTransactionCallback<Void> writeStuffCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                byte[] stuff = "Hello World".getBytes();
+                
+                driver.writeFile(testSession, testConnection, file, stuff, 0, stuff.length, 0);
+                              
+                FileInfo info = driver.getFileInformation(testSession, testConnection, FILE_PATH);
+                info.setFileInformationFlags(FileInfo.SetModifyDate);
+                info.setModifyDateTime(MODIFIED.getTime());
+                info.setNetworkFile(file);
+                driver.setFileInformation(testSession, testConnection, FILE_PATH, info);
+                
+                return null;
+            }
+        };
+        tran.doInTransaction(writeStuffCB);
+        
+        RetryingTransactionCallback<Void> closeFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                 // This close is in a different position to the simple setFileInformation scenarios above.
+                driver.closeFile(testSession, testConnection, file);
+
+                return null;
+            }
+        };
+        tran.doInTransaction(closeFileCB);
+        
+        RetryingTransactionCallback<Void> validateCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                NodeRef companyHome = repositoryHelper.getCompanyHome();
+                NodeRef newNode = nodeService.getChildByName(companyHome, ContentModel.ASSOC_CONTAINS, FILE_NAME);
+                testContext.testNodeRef = newNode;
+                assertNotNull("can't find new node", newNode);
+                Serializable content = nodeService.getProperty(newNode, ContentModel.PROP_CONTENT);
+                assertNotNull("content is null", content);     
+                Date modified = (Date)nodeService.getProperty(newNode, ContentModel.PROP_MODIFIED);
+                assertEquals("modified time not set correctly", MODIFIED, modified);
+                return null;
+            }
+        };
+        tran.doInTransaction(validateCB);
+        
+         
+        // clean up so we could run the test again
+        //driver.deleteFile(testSession, testConnection, FILE_PATH);    
+        
+    } // test set modified scenario
+    
+    /**
      * Test server
      */
     public class TestServer extends NetworkFileServer

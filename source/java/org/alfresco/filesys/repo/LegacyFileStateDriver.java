@@ -20,6 +20,7 @@ package org.alfresco.filesys.repo;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Date;
 
 import org.alfresco.filesys.alfresco.ExtendedDiskInterface;
 import org.alfresco.filesys.config.ServerConfigurationBean;
@@ -37,6 +38,7 @@ import org.alfresco.jlan.server.filesys.cache.FileState;
 import org.alfresco.jlan.server.filesys.cache.FileStateCache;
 import org.alfresco.jlan.server.filesys.cache.NetworkFileStateInterface;
 import org.alfresco.jlan.smb.SharingMode;
+import org.alfresco.model.ContentModel;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -392,7 +394,35 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
     public void setFileInformation(SrvSession sess, TreeConnection tree,
             String name, FileInfo info) throws IOException
     {
-        diskInterface.setFileInformation(sess, tree, name, info);        
+
+       diskInterface.setFileInformation(sess, tree, name, info);
+        
+       ContentContext tctx = (ContentContext) tree.getContext();
+        
+       if(tctx.hasStateCache())
+       {
+           FileStateCache cache = tctx.getStateCache();
+           FileState fstate = cache.findFileState( name, true);
+ 
+//           if ( info.hasSetFlag(FileInfo.SetCreationDate))
+//           {
+//               if ( logger.isDebugEnabled())
+//               {
+//                   logger.debug("Set creation date in file state cache" + name + ", " + info.getCreationDateTime());
+//               }
+//               Date createDate = new Date( info.getCreationDateTime());
+//               fstate.u(createDate.getTime()); 
+//           }
+           if ( info.hasSetFlag(FileInfo.SetModifyDate)) 
+           {   
+               if ( logger.isDebugEnabled())
+               {
+                   logger.debug("Set modification date in file state cache" + name + ", " + info.getModifyDateTime());
+               }
+               Date modifyDate = new Date( info.getModifyDateTime());
+               fstate.updateModifyDateTime(modifyDate.getTime()); 
+           }
+       }        
     }
 
     @Override

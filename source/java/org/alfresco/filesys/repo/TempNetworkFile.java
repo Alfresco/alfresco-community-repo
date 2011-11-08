@@ -76,6 +76,7 @@ public class TempNetworkFile extends JavaNetworkFile implements NetworkFileState
         if(fileState != null)
         {
             fileState.updateModifyDateTime();
+            fileState.updateAccessDateTime();
             fileState.setFileSize(size);
         }
     }
@@ -92,6 +93,7 @@ public class TempNetworkFile extends JavaNetworkFile implements NetworkFileState
         if(fileState != null)
         {
             fileState.updateModifyDateTime();
+            fileState.updateAccessDateTime();
             fileState.setFileSize(size);
         }
     }
@@ -105,6 +107,7 @@ public class TempNetworkFile extends JavaNetworkFile implements NetworkFileState
         if(fileState != null)
         {
             fileState.updateModifyDateTime();
+            fileState.updateAccessDateTime();
             fileState.setFileSize(size);
         }
     }

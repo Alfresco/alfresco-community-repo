@@ -34,6 +34,7 @@ import org.alfresco.util.schemacomp.model.Schema;
 import org.alfresco.util.schemacomp.model.Sequence;
 import org.alfresco.util.schemacomp.model.Table;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 
@@ -55,6 +56,7 @@ public class ExportDbTest
     }
 
     
+    @Ignore
     @Test
     public void exportDb() throws Exception
     {       

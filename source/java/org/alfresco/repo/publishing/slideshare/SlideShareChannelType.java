@@ -65,7 +65,7 @@ public class SlideShareChannelType extends AbstractChannelType
     private ContentService contentService;
     private TaggingService taggingService;
 
-    private long timeoutMilliseconds = 40L * 60L * 1000L; // 40 mins default
+    private long timeoutMilliseconds = 60L * 60L * 1000L; // 1 hour default
 
     public void setPublishingHelper(SlideSharePublishingHelper publishingHelper)
     {

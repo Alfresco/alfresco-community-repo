@@ -60,13 +60,13 @@ public class SlideShareApiImpl implements SlideShareApi
 
     static
     {
-        DEFAULT_API_URLS.put(URL_GET_SLIDESHOW, "http://www.slideshare.net/api/2/get_slideshow");
-        DEFAULT_API_URLS.put(URL_GET_SLIDESHOW_INFO, "http://www.slideshare.net/api/2/get_slideshow");
-        DEFAULT_API_URLS.put(URL_GET_SLIDESHOW_BY_USER, "http://www.slideshare.net/api/2/get_slideshow_by_user");
-        DEFAULT_API_URLS.put(URL_GET_SLIDESHOW_BY_TAG, "http://www.slideshare.net/api/2/get_slideshow_by_tag");
-        DEFAULT_API_URLS.put(URL_GET_SLIDESHOW_BY_GROUP, "http://www.slideshare.net/api/2/get_slideshow_from_group");
-        DEFAULT_API_URLS.put(URL_UPLOAD_SLIDESHOW, "http://www.slideshare.net/api/2/upload_slideshow");
-        DEFAULT_API_URLS.put(URL_DELETE_SLIDESHOW, "http://www.slideshare.net/api/2/delete_slideshow");
+        DEFAULT_API_URLS.put(URL_GET_SLIDESHOW, "https://www.slideshare.net/api/2/get_slideshow");
+        DEFAULT_API_URLS.put(URL_GET_SLIDESHOW_INFO, "https://www.slideshare.net/api/2/get_slideshow");
+        DEFAULT_API_URLS.put(URL_GET_SLIDESHOW_BY_USER, "https://www.slideshare.net/api/2/get_slideshow_by_user");
+        DEFAULT_API_URLS.put(URL_GET_SLIDESHOW_BY_TAG, "https://www.slideshare.net/api/2/get_slideshow_by_tag");
+        DEFAULT_API_URLS.put(URL_GET_SLIDESHOW_BY_GROUP, "https://www.slideshare.net/api/2/get_slideshow_from_group");
+        DEFAULT_API_URLS.put(URL_UPLOAD_SLIDESHOW, "https://www.slideshare.net/api/2/upload_slideshow");
+        DEFAULT_API_URLS.put(URL_DELETE_SLIDESHOW, "https://www.slideshare.net/api/2/delete_slideshow");
     }
 
     private Map<String, String> apiUrls = new TreeMap<String, String>(DEFAULT_API_URLS);

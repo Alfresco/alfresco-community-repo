@@ -142,7 +142,14 @@ public class CalendarEntryGet extends AbstractCalendarWebScript
          }
          else if ("DAILY".equals(freq))
          {
-            text.append("Occurs every day ");
+            if ("1".equals(interval))
+            {
+               text.append("Occurs every day ");
+            }
+            else
+            {
+               text.append("Occurs every " + interval + " days ");
+            }
          }
          else if ("MONTHLY".equals(freq))
          {

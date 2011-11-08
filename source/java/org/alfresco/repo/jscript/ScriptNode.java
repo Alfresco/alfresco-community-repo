@@ -2251,7 +2251,15 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
     public ScriptNode checkoutForUpload()
     {
         AlfrescoTransactionSupport.bindResource("checkoutforupload", Boolean.TRUE.toString());
-        return checkout();
+        services.getRuleService().disableRules();
+        try
+        {
+            return checkout();
+        }
+        finally
+        {
+            services.getRuleService().enableRules();
+        }
     }
     
     /**

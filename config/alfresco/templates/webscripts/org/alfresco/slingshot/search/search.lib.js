@@ -834,8 +834,8 @@ function getSearchResults(params)
          var separator = sort.indexOf("|");
          if (separator != -1)
          {
-            sort = sort.substring(0, separator);
             asc = (sort.substring(separator + 1) == "true");
+            sort = sort.substring(0, separator);
          }
          var column;
          if (sort.charAt(0) == '.')

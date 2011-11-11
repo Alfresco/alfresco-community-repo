@@ -46,7 +46,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.mail.Flags;
 import javax.mail.MessagingException;
 import javax.mail.Flags.Flag;
-import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.Part;
 import javax.mail.internet.ContentType;
@@ -92,7 +91,6 @@ import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -140,6 +138,8 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
     private ServiceRegistry serviceRegistry;
     private BehaviourFilter policyBehaviourFilter;
     private MimetypeService mimetypeService; 
+    private NamespaceService namespaceService;
+    private SearchService searchService;
 
     // Note that this cache need not be cluster synchronized, as it is keyed by the cluster-safe change token
     private Map<Pair<String, String>, FolderStatus> folderCache;
@@ -150,8 +150,6 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
     private RepositoryFolderConfigBean[] ignoreExtractionFoldersBeans;
     private RepositoryFolderConfigBean imapHomeConfigBean;
     
-
-
     private NodeRef imapHomeNodeRef;
     private Set<NodeRef> ignoreExtractionFolders;
 
@@ -361,6 +359,8 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
         PropertyCheck.mandatory(this, "repositoryTemplatePath", repositoryTemplatePath);
         PropertyCheck.mandatory(this, "policyBehaviourFilter", policyBehaviourFilter);
         PropertyCheck.mandatory(this, "mimetypeService", mimetypeService);
+        PropertyCheck.mandatory(this, "namespaceService", namespaceService);
+        PropertyCheck.mandatory(this, "searchService", getSearchService());
         this.folderCache = new MaxSizeMap<Pair<String,String>, FolderStatus>(folderCacheSize, false);
         
         // be sure that a default e-mail is correct
@@ -393,10 +393,7 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
     public void startup()
     {
         bindBehaviour();
-        
-        final NamespaceService namespaceService = serviceRegistry.getNamespaceService();
-        final SearchService searchService = serviceRegistry.getSearchService();
-                
+                        
         // Get NodeRefs for folders to ignore
         this.ignoreExtractionFolders = new HashSet<NodeRef>(ignoreExtractionFoldersBeans.length * 2);
 
@@ -561,7 +558,7 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
             ImapConfigMountPointsBean imapConfigMountPoint = this.imapConfigMountPoints.get(rootPath);
             if (imapConfigMountPoint != null)
             {
-                root = imapConfigMountPoint.getFolderPath(serviceRegistry.getNamespaceService(), nodeService, serviceRegistry.getSearchService(), fileFolderService);
+                root = imapConfigMountPoint.getFolderPath(serviceRegistry.getNamespaceService(), nodeService, searchService, fileFolderService);
                 pathElements = Arrays.asList(mailboxName.substring(index + 1).split(
                         String.valueOf(AlfrescoImapConst.HIERARCHY_DELIMITER)));
                 viewMode = imapConfigMountPoint.getMode();
@@ -1109,8 +1106,6 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
      */
     private NodeRef getMountPoint(String rootFolder)
     {
-        final NamespaceService namespaceService = serviceRegistry.getNamespaceService();
-        final SearchService searchService = serviceRegistry.getSearchService();
         final ImapConfigMountPointsBean config = imapConfigMountPoints.get(rootFolder);
         try
         {
@@ -1395,8 +1390,11 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
                         logger.debug("[getDefaultEmailBodyTemplate] Query: " + query);
                     }
                     StoreRef storeRef = new StoreRef(storePath);
-                    ResultSet resultSet = serviceRegistry.getSearchService().query(storeRef, "xpath", query);
-                    if (resultSet == null || resultSet.length() == 0)
+                    
+                    NodeRef rootNode = nodeService.getRootNode(storeRef);
+                    
+                    List<NodeRef> templates = searchService.selectNodes(rootNode, query, null, namespaceService, true);
+                    if (templates == null || templates.size() == 0)
                     {
                         if(logger.isDebugEnabled())
                         {
@@ -1404,18 +1402,29 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
                         }
                         throw new AlfrescoRuntimeException(String.format("[getDefaultEmailBodyTemplate] IMAP message template '%1$s' does not exist in the path '%2$s'.", templateName, repositoryTemplatePath));
                     }
-                    final NodeRef defaultLocaleTemplate = resultSet.getNodeRef(0);
-                    
+                    final NodeRef defaultLocaleTemplate = templates.get(0);
+      
+//                    ResultSet resultSet = serviceRegistry.getSearchService().query(storeRef, "xpath", query);
+//                    if (resultSet == null || resultSet.length() == 0)
+//                    {
+//                        if(logger.isDebugEnabled())
+//                        {
+//                            logger.debug("template not found:" + templateName);
+//                        }
+//                        throw new AlfrescoRuntimeException(String.format("[getDefaultEmailBodyTemplate] IMAP message template '%1$s' does not exist in the path '%2$s'.", templateName, repositoryTemplatePath));
+//                    }
+//                    final NodeRef defaultLocaleTemplate = resultSet.getNodeRef(0);
+//                    
                     NodeRef localisedSibling = serviceRegistry.getFileFolderService().getLocalizedSibling(defaultLocaleTemplate);
-
+//
                     result = localisedSibling.toString();
-                    
-                    resultSet.close();
+//                    
+//                    resultSet.close();
                 }
                 // We are catching all exceptions. E.g. search service can possibly throw an exceptions on malformed queries.
                 catch (Exception e)
                 {
-                    logger.error("[getDefaultEmailBodyTemplate]", e);
+                    logger.error("ImapServiceImpl [getDefaultEmailBodyTemplate]", e);
                 }
                 defaultBodyTemplates.put(onetype, result);
             }
@@ -1865,6 +1874,26 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
                 FileCopyUtils.copy(part.getInputStream(), os);
             }
         }
+    }
+
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
+    }
+
+    public NamespaceService getNamespaceService()
+    {
+        return namespaceService;
+    }
+
+    public void setSearchService(SearchService searchService)
+    {
+        this.searchService = searchService;
+    }
+
+    public SearchService getSearchService()
+    {
+        return searchService;
     }
 
     static class CacheItem

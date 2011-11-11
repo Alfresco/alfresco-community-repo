@@ -110,7 +110,13 @@
         </property>
         <property name="policyFilter">
             <ref bean="policyBehaviourFilter"/>
-        </property>        
+        </property>  
+        <property name="namespaceService">
+            <ref bean="namespaceService"/>
+        </property>   
+        <property name="searchService">
+            <ref bean="SearchService"/>
+        </property>   
         <property name="imapConfigMountPoints">
             <ref bean="imap.config.server.mountPoints" />
         </property>

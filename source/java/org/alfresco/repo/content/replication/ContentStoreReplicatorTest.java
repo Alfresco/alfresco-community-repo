@@ -28,6 +28,7 @@ import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.ContentStore.ContentUrlHandler;
 import org.alfresco.repo.content.filestore.FileContentStore;
+import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
@@ -143,10 +144,17 @@ public class ContentStoreReplicatorTest extends TestCase
             // put some content into both the target and source
             ContentWriter duplicateSourceWriter = sourceStore.getWriter(ContentStore.NEW_CONTENT_CONTEXT);
             duplicateUrl = duplicateSourceWriter.getContentUrl();
-            ContentContext targetContentCtx = new ContentContext(null, duplicateUrl);
-            ContentWriter duplicateTargetWriter = targetStore.getWriter(targetContentCtx); 
-            duplicateTargetWriter.putContent("Duplicate Target Content: " + i);
-            duplicateSourceWriter.putContent(duplicateTargetWriter.getReader());
+            try
+            {
+                ContentContext targetContentCtx = new ContentContext(null, duplicateUrl);
+                ContentWriter duplicateTargetWriter = targetStore.getWriter(targetContentCtx); 
+                duplicateTargetWriter.putContent("Duplicate Target Content: " + i);
+                duplicateSourceWriter.putContent(duplicateTargetWriter.getReader());
+            }
+            catch (ContentIOException e)
+            {
+                // This can happen because the replicator may have beaten us to it
+            }
             
             for (int j = 0; j < 100; j++)
             {

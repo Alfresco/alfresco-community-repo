@@ -468,6 +468,27 @@
          </properties>
       </aspect>
             
+      <aspect name="test:Thread-0-0" />
+      <aspect name="test:Thread-0-1" />
+      <aspect name="test:Thread-0-2" />
+      <aspect name="test:Thread-0-3" />
+      <aspect name="test:Thread-0-4" />
+      <aspect name="test:Thread-0-5" />
+      <aspect name="test:Thread-0-6" />
+      <aspect name="test:Thread-0-7" />
+      <aspect name="test:Thread-0-8" />
+      <aspect name="test:Thread-0-9" />
+      <aspect name="test:Thread-1-0" />
+      <aspect name="test:Thread-1-1" />
+      <aspect name="test:Thread-1-2" />
+      <aspect name="test:Thread-1-3" />
+      <aspect name="test:Thread-1-4" />
+      <aspect name="test:Thread-1-5" />
+      <aspect name="test:Thread-1-6" />
+      <aspect name="test:Thread-1-7" />
+      <aspect name="test:Thread-1-8" />
+      <aspect name="test:Thread-1-9" />
+            
    </aspects>
 
 </model>

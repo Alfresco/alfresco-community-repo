@@ -311,43 +311,50 @@ public class TransactionalCache<K extends Serializable, V extends Object>
             }
             else            // The txn is still active
             {
-                try
+                if (!txnData.isClearOn)   // deletions cache only useful before a clear
                 {
-                    if (!txnData.isClearOn)   // deletions cache only useful before a clear
+                    // check to see if the key is present in the transaction's removed items
+                    if (txnData.removedItemsCache.contains(key))
                     {
-                        // check to see if the key is present in the transaction's removed items
-                        if (txnData.removedItemsCache.contains(key))
-                        {
-                            // it has been removed in this transaction
-                            if (isDebugEnabled)
-                            {
-                                logger.debug("get returning null - item has been removed from transactional cache: \n" +
-                                        "   cache: " + this + "\n" +
-                                        "   key: " + key);
-                            }
-                            return null;
-                        }
-                    }
-                    
-                    // check for the item in the transaction's new/updated items
-                    CacheBucket<V> bucket = (CacheBucket<V>) txnData.updatedItemsCache.get(key);
-                    if (bucket != null)
-                    {
-                        V value = bucket.getValue();
-                        // element was found in transaction-specific updates/additions
+                        // it has been removed in this transaction
                         if (isDebugEnabled)
                         {
-                            logger.debug("Found item in transactional cache: \n" +
+                            logger.debug("get returning null - item has been removed from transactional cache: \n" +
                                     "   cache: " + this + "\n" +
-                                    "   key: " + key + "\n" +
-                                    "   value: " + value);
+                                    "   key: " + key);
                         }
-                        return value;
+                        return null;
                     }
                 }
-                catch (CacheException e)
+                
+                // check for the item in the transaction's new/updated items
+                CacheBucket<V> bucket = (CacheBucket<V>) txnData.updatedItemsCache.get(key);
+                if (bucket != null)
                 {
-                    throw new AlfrescoRuntimeException("Cache failure", e);
+                    V value = bucket.getValue();
+                    // element was found in transaction-specific updates/additions
+                    if (isDebugEnabled)
+                    {
+                        logger.debug("Found item in transactional cache: \n" +
+                                "   cache: " + this + "\n" +
+                                "   key: " + key + "\n" +
+                                "   value: " + value);
+                    }
+                    return value;
+                }
+                else if (txnData.isClearOn)
+                {
+                    // Can't store values in the current txn any more
+                    ignoreSharedCache = true;
+                }
+                else
+                {
+                    // There is no in-txn entry for the key
+                    // Use the value direct from the shared cache
+                    V value = getSharedCacheValue(key);
+                    bucket = new ReadCacheBucket<V>(value);
+                    txnData.updatedItemsCache.put(key, bucket);
+                    return value;
                 }
                 // check if the cleared flag has been set - cleared flag means ignore shared as unreliable
                 ignoreSharedCache = txnData.isClearOn;
@@ -926,6 +933,37 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                     sharedCache.remove(key);
                 }
             }
+        }
+    }
+    
+    /**
+     * Data holder to represent data read from the shared cache.  It will not attempt to
+     * update the shared cache.
+     */
+    private static class ReadCacheBucket<BV> implements CacheBucket<BV>
+    {
+        private static final long serialVersionUID = 7885689778259779578L;
+        
+        private final BV value;
+        public ReadCacheBucket(BV value)
+        {
+            this.value = value;
+        }
+        public BV getValue()
+        {
+            return value;
+        }
+        public void doPreCommit(
+                SimpleCache<Serializable, Object> sharedCache,
+                Serializable key,
+                boolean mutable, boolean readOnly)
+        {
+        }
+        public void doPostCommit(
+                SimpleCache<Serializable, Object> sharedCache,
+                Serializable key,
+                boolean mutable, boolean readOnly)
+        {
         }
     }
     

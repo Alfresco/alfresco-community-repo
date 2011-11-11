@@ -403,7 +403,7 @@
             </if>
         where
             id = #{id}
-        <if test="version gt 0">
+        <if test="version gt 0"><!-- Switches back to 0 after 32767 -->
             and version = (#{version} - 1)
         </if>
     </update>

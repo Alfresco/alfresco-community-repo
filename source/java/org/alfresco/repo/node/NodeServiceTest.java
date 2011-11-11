@@ -19,6 +19,7 @@
 package org.alfresco.repo.node;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -29,6 +30,11 @@ import java.util.Set;
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.domain.node.Node;
+import org.alfresco.repo.domain.node.NodeVersionKey;
+import org.alfresco.repo.domain.node.ParentAssocsInfo;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
@@ -45,6 +51,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.GUID;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -67,10 +74,15 @@ public class NodeServiceTest extends TestCase
     protected ServiceRegistry serviceRegistry;
     protected NodeService nodeService;
     private TransactionService txnService;
+    private SimpleCache<Serializable, Serializable> nodesCache;
+    private SimpleCache<Serializable, Serializable> propsCache;
+    private SimpleCache<Serializable, Serializable> aspectsCache;
+    private SimpleCache<Serializable, Serializable> parentAssocsCache;
     
     /** populated during setup */
     protected NodeRef rootNodeRef;
 
+    @SuppressWarnings("unchecked")
     @Override
     protected void setUp() throws Exception
     {
@@ -79,6 +91,18 @@ public class NodeServiceTest extends TestCase
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         nodeService = serviceRegistry.getNodeService();
         txnService = serviceRegistry.getTransactionService();
+        
+        // Get the caches for later testing
+        nodesCache = (SimpleCache<Serializable, Serializable>) ctx.getBean("node.nodesSharedCache");
+        propsCache = (SimpleCache<Serializable, Serializable>) ctx.getBean("node.propertiesSharedCache");
+        aspectsCache = (SimpleCache<Serializable, Serializable>) ctx.getBean("node.aspectsSharedCache");
+        parentAssocsCache = (SimpleCache<Serializable, Serializable>) ctx.getBean("node.parentAssocsSharedCache");
+        
+        // Clear the caches to remove fluff
+        nodesCache.clear();
+        propsCache.clear();
+        aspectsCache.clear();
+        parentAssocsCache.clear();
         
         AuthenticationUtil.setRunAsUserSystem();
         
@@ -210,14 +234,16 @@ public class NodeServiceTest extends TestCase
             @Override
             public Void execute() throws Throwable
             {
+                Map<QName, Serializable> props = new HashMap<QName, Serializable>(3);
+                props.put(ContentModel.PROP_NAME, "depth-" + 0 + "-" + GUID.generate());
                 liveNodeRefs[0] = nodeService.createNode(
                         workspaceRootNodeRef,
                         ContentModel.ASSOC_CHILDREN,
                         QName.createQName(NAMESPACE, "depth-" + 0),
-                        ContentModel.TYPE_FOLDER).getChildRef();
+                        ContentModel.TYPE_FOLDER,
+                        props).getChildRef();
                 for (int i = 1; i < liveNodeRefs.length; i++)
                 {
-                    Map<QName, Serializable> props = new HashMap<QName, Serializable>(3);
                     props.put(ContentModel.PROP_NAME, "depth-" + i);
                     liveNodeRefs[i] = nodeService.createNode(
                             liveNodeRefs[i-1],
@@ -565,5 +591,328 @@ public class NodeServiceTest extends TestCase
         nodeRefCheck = nodeService.getChildByName(nodeRefs[0], ContentModel.ASSOC_CONTAINS, name);
         assertNotNull("Did not find node by name", nodeRefCheck);
         assertEquals("Node found was not correct", newChildNodeRef, nodeRefCheck);
+    }
+    
+    /**
+     * Looks for a key that contains the toString() of the value
+     */
+    private Object findCacheValue(SimpleCache<Serializable, Serializable> cache, Serializable key)
+    {
+        Collection<Serializable> keys = cache.getKeys();
+        for (Serializable keyInCache : keys)
+        {
+            String keyInCacheStr = keyInCache.toString();
+            String keyStr = key.toString();
+            if (keyInCacheStr.endsWith(keyStr))
+            {
+                Object value = cache.get(keyInCache);
+                return value;
+            }
+        }
+        return null;
+    }
+    
+    private static final QName PROP_RESIDUAL = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, GUID.generate());
+    /**
+     * Check that simple node property modifications advance the node caches correctly
+     */
+    @SuppressWarnings("unchecked")
+    public void testCaches_ImmutableNodeCaches() throws Exception
+    {
+        final NodeRef[] nodeRefs = new NodeRef[2];
+        final NodeRef workspaceRootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        buildNodeHierarchy(workspaceRootNodeRef, nodeRefs);
+        final NodeRef nodeRef = nodeRefs[1];
+
+        // Get the current node cache key
+        Long nodeId = (Long) findCacheValue(nodesCache, nodeRef);
+        assertNotNull("Node not found in cache", nodeId);
+        Node nodeOne = (Node) findCacheValue(nodesCache, nodeId);
+        assertNotNull("Node not found in cache", nodeOne);
+        NodeVersionKey nodeKeyOne = nodeOne.getNodeVersionKey();
+        
+        // Get the node cached values
+        Map<QName, Serializable> nodePropsOne = (Map<QName, Serializable>) findCacheValue(propsCache, nodeKeyOne);
+        Set<QName> nodeAspectsOne = (Set<QName>) findCacheValue(aspectsCache, nodeKeyOne);
+        ParentAssocsInfo nodeParentAssocsOne = (ParentAssocsInfo) findCacheValue(parentAssocsCache, nodeKeyOne);
+        
+        // Check the values
+        assertEquals("The node version is incorrect", Long.valueOf(1L), nodeKeyOne.getVersion());
+        assertNotNull("No cache entry for properties", nodePropsOne);
+        assertNotNull("No cache entry for aspects", nodeAspectsOne);
+        assertNotNull("No cache entry for parent assocs", nodeParentAssocsOne);
+        assertEquals("Property count incorrect", 1, nodePropsOne.size());
+        assertNotNull("Expected a cm:name property", nodePropsOne.get(ContentModel.PROP_NAME));
+        assertEquals("Aspect count incorrect", 1, nodeAspectsOne.size());
+        assertTrue("Expected a cm:auditable aspect", nodeAspectsOne.contains(ContentModel.ASPECT_AUDITABLE));
+        assertEquals("Parent assoc count incorrect", 1, nodeParentAssocsOne.getParentAssocs().size());
+        
+        // Add a property
+        nodeService.setProperty(nodeRef, PROP_RESIDUAL, GUID.generate());
+        
+        // Get the values for the previous version
+        Map<QName, Serializable> nodePropsOneCheck = (Map<QName, Serializable>) findCacheValue(propsCache, nodeKeyOne);
+        Set<QName> nodeAspectsOneCheck = (Set<QName>) findCacheValue(aspectsCache, nodeKeyOne);
+        ParentAssocsInfo nodeParentAssocsOneCheck = (ParentAssocsInfo) findCacheValue(parentAssocsCache, nodeKeyOne);
+        assertTrue("Previous cache entries must be left alone", nodePropsOneCheck == nodePropsOne);
+        assertTrue("Previous cache entries must be left alone", nodeAspectsOneCheck == nodeAspectsOne);
+        assertTrue("Previous cache entries must be left alone", nodeParentAssocsOneCheck == nodeParentAssocsOne);
+
+        // Get the current node cache key
+        Node nodeTwo = (Node) findCacheValue(nodesCache, nodeId);
+        assertNotNull("Node not found in cache", nodeTwo);
+        NodeVersionKey nodeKeyTwo = nodeTwo.getNodeVersionKey();
+        
+        // Get the node cached values
+        Map<QName, Serializable> nodePropsTwo = (Map<QName, Serializable>) findCacheValue(propsCache, nodeKeyTwo);
+        Set<QName> nodeAspectsTwo = (Set<QName>) findCacheValue(aspectsCache, nodeKeyTwo);
+        ParentAssocsInfo nodeParentAssocsTwo = (ParentAssocsInfo) findCacheValue(parentAssocsCache, nodeKeyTwo);
+
+        // Check the values
+        assertEquals("The node version is incorrect", Long.valueOf(2L), nodeKeyTwo.getVersion());
+        assertNotNull("No cache entry for properties", nodePropsTwo);
+        assertNotNull("No cache entry for aspects", nodeAspectsTwo);
+        assertNotNull("No cache entry for parent assocs", nodeParentAssocsTwo);
+        assertTrue("Properties must have moved on", nodePropsTwo != nodePropsOne);
+        assertEquals("Property count incorrect", 2, nodePropsTwo.size());
+        assertNotNull("Expected a cm:name property", nodePropsTwo.get(ContentModel.PROP_NAME));
+        assertNotNull("Expected a residual property", nodePropsTwo.get(PROP_RESIDUAL));
+        assertTrue("Aspects must be carried", nodeAspectsTwo == nodeAspectsOne);
+        assertTrue("Parent assocs must be carried", nodeParentAssocsTwo == nodeParentAssocsOne);
+        
+        // Remove a property
+        nodeService.removeProperty(nodeRef, PROP_RESIDUAL);
+        
+        // Get the values for the previous version
+        Map<QName, Serializable> nodePropsTwoCheck = (Map<QName, Serializable>) findCacheValue(propsCache, nodeKeyTwo);
+        Set<QName> nodeAspectsTwoCheck = (Set<QName>) findCacheValue(aspectsCache, nodeKeyTwo);
+        ParentAssocsInfo nodeParentAssocsTwoCheck = (ParentAssocsInfo) findCacheValue(parentAssocsCache, nodeKeyTwo);
+        assertTrue("Previous cache entries must be left alone", nodePropsTwoCheck == nodePropsTwo);
+        assertTrue("Previous cache entries must be left alone", nodeAspectsTwoCheck == nodeAspectsTwo);
+        assertTrue("Previous cache entries must be left alone", nodeParentAssocsTwoCheck == nodeParentAssocsTwo);
+
+        // Get the current node cache key
+        Node nodeThree = (Node) findCacheValue(nodesCache, nodeId);
+        assertNotNull("Node not found in cache", nodeThree);
+        NodeVersionKey nodeKeyThree = nodeThree.getNodeVersionKey();
+        
+        // Get the node cached values
+        Map<QName, Serializable> nodePropsThree = (Map<QName, Serializable>) findCacheValue(propsCache, nodeKeyThree);
+        Set<QName> nodeAspectsThree = (Set<QName>) findCacheValue(aspectsCache, nodeKeyThree);
+        ParentAssocsInfo nodeParentAssocsThree = (ParentAssocsInfo) findCacheValue(parentAssocsCache, nodeKeyThree);
+
+        // Check the values
+        assertEquals("The node version is incorrect", Long.valueOf(3L), nodeKeyThree.getVersion());
+        assertNotNull("No cache entry for properties", nodePropsThree);
+        assertNotNull("No cache entry for aspects", nodeAspectsThree);
+        assertNotNull("No cache entry for parent assocs", nodeParentAssocsThree);
+        assertTrue("Properties must have moved on", nodePropsThree != nodePropsTwo);
+        assertEquals("Property count incorrect", 1, nodePropsThree.size());
+        assertNotNull("Expected a cm:name property", nodePropsThree.get(ContentModel.PROP_NAME));
+        assertNull("Expected no residual property", nodePropsThree.get(PROP_RESIDUAL));
+        assertTrue("Aspects must be carried", nodeAspectsThree == nodeAspectsTwo);
+        assertTrue("Parent assocs must be carried", nodeParentAssocsThree == nodeParentAssocsTwo);
+        
+        // Add an aspect
+        nodeService.addAspect(nodeRef, ContentModel.ASPECT_TITLED, null);
+        
+        // Get the values for the previous version
+        Map<QName, Serializable> nodePropsThreeCheck = (Map<QName, Serializable>) findCacheValue(propsCache, nodeKeyThree);
+        Set<QName> nodeAspectsThreeCheck = (Set<QName>) findCacheValue(aspectsCache, nodeKeyThree);
+        ParentAssocsInfo nodeParentAssocsThreeCheck = (ParentAssocsInfo) findCacheValue(parentAssocsCache, nodeKeyThree);
+        assertTrue("Previous cache entries must be left alone", nodePropsThreeCheck == nodePropsThree);
+        assertTrue("Previous cache entries must be left alone", nodeAspectsThreeCheck == nodeAspectsThree);
+        assertTrue("Previous cache entries must be left alone", nodeParentAssocsThreeCheck == nodeParentAssocsThree);
+
+        // Get the current node cache key
+        Node nodeFour = (Node) findCacheValue(nodesCache, nodeId);
+        assertNotNull("Node not found in cache", nodeFour);
+        NodeVersionKey nodeKeyFour = nodeFour.getNodeVersionKey();
+        
+        // Get the node cached values
+        Map<QName, Serializable> nodePropsFour = (Map<QName, Serializable>) findCacheValue(propsCache, nodeKeyFour);
+        Set<QName> nodeAspectsFour = (Set<QName>) findCacheValue(aspectsCache, nodeKeyFour);
+        ParentAssocsInfo nodeParentAssocsFour = (ParentAssocsInfo) findCacheValue(parentAssocsCache, nodeKeyFour);
+
+        // Check the values
+        assertEquals("The node version is incorrect", Long.valueOf(4L), nodeKeyFour.getVersion());
+        assertNotNull("No cache entry for properties", nodePropsFour);
+        assertNotNull("No cache entry for aspects", nodeAspectsFour);
+        assertNotNull("No cache entry for parent assocs", nodeParentAssocsFour);
+        assertTrue("Properties must be carried", nodePropsFour == nodePropsThree);
+        assertTrue("Aspects must have moved on", nodeAspectsFour != nodeAspectsThree);
+        assertTrue("Expected cm:titled aspect", nodeAspectsFour.contains(ContentModel.ASPECT_TITLED));
+        assertTrue("Parent assocs must be carried", nodeParentAssocsFour == nodeParentAssocsThree);
+        
+        // Remove an aspect
+        nodeService.removeAspect(nodeRef, ContentModel.ASPECT_TITLED);
+        
+        // Get the values for the previous version
+        Map<QName, Serializable> nodePropsFourCheck = (Map<QName, Serializable>) findCacheValue(propsCache, nodeKeyFour);
+        Set<QName> nodeAspectsFourCheck = (Set<QName>) findCacheValue(aspectsCache, nodeKeyFour);
+        ParentAssocsInfo nodeParentAssocsFourCheck = (ParentAssocsInfo) findCacheValue(parentAssocsCache, nodeKeyFour);
+        assertTrue("Previous cache entries must be left alone", nodePropsFourCheck == nodePropsFour);
+        assertTrue("Previous cache entries must be left alone", nodeAspectsFourCheck == nodeAspectsFour);
+        assertTrue("Previous cache entries must be left alone", nodeParentAssocsFourCheck == nodeParentAssocsFour);
+
+        // Get the current node cache key
+        Node nodeFive = (Node) findCacheValue(nodesCache, nodeId);
+        assertNotNull("Node not found in cache", nodeFive);
+        NodeVersionKey nodeKeyFive = nodeFive.getNodeVersionKey();
+        
+        // Get the node cached values
+        Map<QName, Serializable> nodePropsFive = (Map<QName, Serializable>) findCacheValue(propsCache, nodeKeyFive);
+        Set<QName> nodeAspectsFive = (Set<QName>) findCacheValue(aspectsCache, nodeKeyFive);
+        ParentAssocsInfo nodeParentAssocsFive = (ParentAssocsInfo) findCacheValue(parentAssocsCache, nodeKeyFive);
+
+        // Check the values
+        assertEquals("The node version is incorrect", Long.valueOf(5L), nodeKeyFive.getVersion());
+        assertNotNull("No cache entry for properties", nodePropsFive);
+        assertNotNull("No cache entry for aspects", nodeAspectsFive);
+        assertNotNull("No cache entry for parent assocs", nodeParentAssocsFive);
+        assertTrue("Properties must be carried", nodePropsFive == nodePropsFour);
+        assertTrue("Aspects must have moved on", nodeAspectsFive != nodeAspectsFour);
+        assertFalse("Expected no cm:titled aspect ", nodeAspectsFive.contains(ContentModel.ASPECT_TITLED));
+        assertTrue("Parent assocs must be carried", nodeParentAssocsFive == nodeParentAssocsFour);
+        
+        // Add an aspect, some properties and secondary association
+        RetryingTransactionCallback<Void> nodeSixWork = new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+                props.put(ContentModel.PROP_TITLE, "some title");
+                nodeService.addAspect(nodeRef, ContentModel.ASPECT_TITLED, props);
+                nodeService.setProperty(nodeRef, ContentModel.PROP_DESCRIPTION, "Some description");
+                nodeService.addChild(
+                        Collections.singletonList(workspaceRootNodeRef),
+                        nodeRef,
+                        ContentModel.ASSOC_CHILDREN,
+                        QName.createQName(TEST_PREFIX, "secondary"));
+                return null;
+            }
+        };
+        txnService.getRetryingTransactionHelper().doInTransaction(nodeSixWork);
+        
+        // Get the values for the previous version
+        Map<QName, Serializable> nodePropsFiveCheck = (Map<QName, Serializable>) findCacheValue(propsCache, nodeKeyFive);
+        Set<QName> nodeAspectsFiveCheck = (Set<QName>) findCacheValue(aspectsCache, nodeKeyFive);
+        ParentAssocsInfo nodeParentAssocsFiveCheck = (ParentAssocsInfo) findCacheValue(parentAssocsCache, nodeKeyFive);
+        assertTrue("Previous cache entries must be left alone", nodePropsFiveCheck == nodePropsFive);
+        assertTrue("Previous cache entries must be left alone", nodeAspectsFiveCheck == nodeAspectsFive);
+        assertTrue("Previous cache entries must be left alone", nodeParentAssocsFiveCheck == nodeParentAssocsFive);
+
+        // Get the current node cache key
+        Node nodeSix = (Node) findCacheValue(nodesCache, nodeId);
+        assertNotNull("Node not found in cache", nodeSix);
+        NodeVersionKey nodeKeySix = nodeSix.getNodeVersionKey();
+        
+        // Get the node cached values
+        Map<QName, Serializable> nodePropsSix = (Map<QName, Serializable>) findCacheValue(propsCache, nodeKeySix);
+        Set<QName> nodeAspectsSix = (Set<QName>) findCacheValue(aspectsCache, nodeKeySix);
+        ParentAssocsInfo nodeParentAssocsSix = (ParentAssocsInfo) findCacheValue(parentAssocsCache, nodeKeySix);
+
+        // Check the values
+        assertEquals("The node version is incorrect", Long.valueOf(6L), nodeKeySix.getVersion());
+        assertNotNull("No cache entry for properties", nodePropsSix);
+        assertNotNull("No cache entry for aspects", nodeAspectsSix);
+        assertNotNull("No cache entry for parent assocs", nodeParentAssocsSix);
+        assertTrue("Properties must have moved on", nodePropsSix != nodePropsFive);
+        assertEquals("Property count incorrect", 3, nodePropsSix.size());
+        assertNotNull("Expected a cm:name property", nodePropsSix.get(ContentModel.PROP_NAME));
+        assertNotNull("Expected a cm:title property", nodePropsSix.get(ContentModel.PROP_TITLE));
+        assertNotNull("Expected a cm:description property", nodePropsSix.get(ContentModel.PROP_DESCRIPTION));
+        assertTrue("Aspects must have moved on", nodeAspectsSix != nodeAspectsFive);
+        assertTrue("Expected cm:titled aspect ", nodeAspectsSix.contains(ContentModel.ASPECT_TITLED));
+        assertTrue("Parent assocs must have moved on", nodeParentAssocsSix != nodeParentAssocsFive);
+        assertEquals("Incorrect number of parent assocs", 2, nodeParentAssocsSix.getParentAssocs().size());
+        
+        // Remove an aspect, some properties and a secondary association
+        RetryingTransactionCallback<Void> nodeSevenWork = new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                nodeService.removeAspect(nodeRef, ContentModel.ASPECT_TITLED);
+                nodeService.removeChild(workspaceRootNodeRef, nodeRef);
+                return null;
+            }
+        };
+        txnService.getRetryingTransactionHelper().doInTransaction(nodeSevenWork);
+        
+        // Get the values for the previous version
+        Map<QName, Serializable> nodePropsSixCheck = (Map<QName, Serializable>) findCacheValue(propsCache, nodeKeySix);
+        Set<QName> nodeAspectsSixCheck = (Set<QName>) findCacheValue(aspectsCache, nodeKeySix);
+        ParentAssocsInfo nodeParentAssocsSixCheck = (ParentAssocsInfo) findCacheValue(parentAssocsCache, nodeKeySix);
+        assertTrue("Previous cache entries must be left alone", nodePropsSixCheck == nodePropsSix);
+        assertTrue("Previous cache entries must be left alone", nodeAspectsSixCheck == nodeAspectsSix);
+        assertTrue("Previous cache entries must be left alone", nodeParentAssocsSixCheck == nodeParentAssocsSix);
+
+        // Get the current node cache key
+        Node nodeSeven = (Node) findCacheValue(nodesCache, nodeId);
+        assertNotNull("Node not found in cache", nodeSeven);
+        NodeVersionKey nodeKeySeven = nodeSeven.getNodeVersionKey();
+        
+        // Get the node cached values
+        Map<QName, Serializable> nodePropsSeven = (Map<QName, Serializable>) findCacheValue(propsCache, nodeKeySeven);
+        Set<QName> nodeAspectsSeven = (Set<QName>) findCacheValue(aspectsCache, nodeKeySeven);
+        ParentAssocsInfo nodeParentAssocsSeven = (ParentAssocsInfo) findCacheValue(parentAssocsCache, nodeKeySeven);
+
+        // Check the values
+        assertEquals("The node version is incorrect", Long.valueOf(7L), nodeKeySeven.getVersion());
+        assertNotNull("No cache entry for properties", nodePropsSeven);
+        assertNotNull("No cache entry for aspects", nodeAspectsSeven);
+        assertNotNull("No cache entry for parent assocs", nodeParentAssocsSeven);
+        assertTrue("Properties must have moved on", nodePropsSeven != nodePropsSix);
+        assertEquals("Property count incorrect", 1, nodePropsSeven.size());
+        assertNotNull("Expected a cm:name property", nodePropsSeven.get(ContentModel.PROP_NAME));
+        assertTrue("Aspects must have moved on", nodeAspectsSeven != nodeAspectsSix);
+        assertFalse("Expected no cm:titled aspect ", nodeAspectsSeven.contains(ContentModel.ASPECT_TITLED));
+        assertTrue("Parent assocs must have moved on", nodeParentAssocsSeven != nodeParentAssocsSix);
+        assertEquals("Incorrect number of parent assocs", 1, nodeParentAssocsSeven.getParentAssocs().size());
+        
+        // Modify cm:auditable
+        RetryingTransactionCallback<Void> nodeEightWork = new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                BehaviourFilter behaviourFilter = (BehaviourFilter) ctx.getBean("policyBehaviourFilter");
+                // Disable behaviour for txn
+                behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+                nodeService.setProperty(nodeRef, ContentModel.PROP_MODIFIER, "Fred");
+                return null;
+            }
+        };
+        txnService.getRetryingTransactionHelper().doInTransaction(nodeEightWork);
+        
+        // Get the values for the previous version
+        Map<QName, Serializable> nodePropsSevenCheck = (Map<QName, Serializable>) findCacheValue(propsCache, nodeKeySeven);
+        Set<QName> nodeAspectsSevenCheck = (Set<QName>) findCacheValue(aspectsCache, nodeKeySeven);
+        ParentAssocsInfo nodeParentAssocsSevenCheck = (ParentAssocsInfo) findCacheValue(parentAssocsCache, nodeKeySeven);
+        assertTrue("Previous cache entries must be left alone", nodePropsSevenCheck == nodePropsSeven);
+        assertTrue("Previous cache entries must be left alone", nodeAspectsSevenCheck == nodeAspectsSeven);
+        assertTrue("Previous cache entries must be left alone", nodeParentAssocsSevenCheck == nodeParentAssocsSeven);
+
+        // Get the current node cache key
+        Node nodeEight = (Node) findCacheValue(nodesCache, nodeId);
+        assertNotNull("Node not found in cache", nodeEight);
+        NodeVersionKey nodeKeyEight = nodeEight.getNodeVersionKey();
+        
+        // Get the node cached values
+        Map<QName, Serializable> nodePropsEight = (Map<QName, Serializable>) findCacheValue(propsCache, nodeKeyEight);
+        Set<QName> nodeAspectsEight = (Set<QName>) findCacheValue(aspectsCache, nodeKeyEight);
+        ParentAssocsInfo nodeParentAssocsEight = (ParentAssocsInfo) findCacheValue(parentAssocsCache, nodeKeyEight);
+
+        // Check the values
+        assertEquals("The node version is incorrect", Long.valueOf(8L), nodeKeyEight.getVersion());
+        assertNotNull("No cache entry for properties", nodePropsEight);
+        assertNotNull("No cache entry for aspects", nodeAspectsEight);
+        assertNotNull("No cache entry for parent assocs", nodeParentAssocsEight);
+        assertEquals("Expected change to cm:modifier", "Fred", nodeEight.getAuditableProperties().getAuditModifier());
+        assertTrue("Properties must be carried", nodePropsEight == nodePropsSeven);
+        assertTrue("Aspects be carried", nodeAspectsEight == nodeAspectsSeven);
+        assertTrue("Parent assocs must be carried", nodeParentAssocsEight == nodeParentAssocsSeven);
     }
 }

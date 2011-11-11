@@ -36,7 +36,7 @@ import org.apache.commons.logging.LogFactory;
  * @author Derek Hulley
  * @since 3.4
  */
-/* package */ class ParentAssocsInfo implements Serializable
+public class ParentAssocsInfo implements Serializable
 {
     private static final long serialVersionUID = -2167221525380802365L;
     

@@ -1292,7 +1292,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                     childNode.getId(),
                     newChildNodeId);
             // The new node will have new data not present in the cache, yet
-            // TODO: Look to move the data in a cache-efficient way
             invalidateNodeCaches(newChildNodeId);
             invalidateNodeChildrenCaches(newChildNodeId, true, true);
             invalidateNodeChildrenCaches(newChildNodeId, false, true);
@@ -1309,13 +1308,13 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             childNodeUpdate.setUpdateDeleted(true);
             // Update the entity.
             // Note: We don't use delete here because that will attempt to clean everything up again.
-            updateNodeImpl(childNode, childNodeUpdate);
+            updateNodeImpl(childNode, childNodeUpdate, null);
             // There is no need to invalidate the caches as the touched node's version will have progressed
         }
         else
         {
             // Touch the node; make sure parent assocs are invalidated
-            touchNode(childNodeId, null, false, false, true);
+            touchNode(childNodeId, null, null, false, false, true);
         }
         
         final Long newChildNodeId = newChildNode.getId();
@@ -1417,7 +1416,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             nodeUpdate.setUpdateLocaleId(true);
         }
 
-        return updateNodeImpl(oldNode, nodeUpdate);
+        return updateNodeImpl(oldNode, nodeUpdate, null);
     }
     
     /**
@@ -1432,9 +1431,13 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      * node is modified but in the same transaction, then the cache entries are considered good and
      * pull forward against the current version of the node ... <b>unless</b> the cache was specicially
      * tagged for invalidation.
+     * <p/>
+     * It is sometime necessary to provide the node's current aspects, particularly during
+     * changes to the aspect list.  If not provided, they will be looked up.
      * 
      * @param nodeId                        the ID of the node (must refer to a live node)
      * @param auditableProps                optionally override the <b>cm:auditable</b> values
+     * @param nodeAspects                   the node's aspects or <tt>null</tt> to look them up
      * @param invalidateNodeAspectsCache    <tt>true</tt> if the node's cached aspects are unreliable
      * @param invalidateNodePropertiesCache <tt>true</tt> if the node's cached properties are unreliable
      * @param invalidateParentAssocsCache   <tt>true</tt> if the node's cached parent assocs are unreliable
@@ -1442,7 +1445,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      * @see #updateNodeImpl(NodeEntity, NodeUpdateEntity)
      */
     private boolean touchNode(
-            Long nodeId, AuditablePropertiesEntity auditableProps,
+            Long nodeId, AuditablePropertiesEntity auditableProps, Set<QName> nodeAspects,
             boolean invalidateNodeAspectsCache,
             boolean invalidateNodePropertiesCache,
             boolean invalidateParentAssocsCache)
@@ -1463,12 +1466,12 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         nodeUpdate.setId(nodeId);
         nodeUpdate.setAuditableProperties(auditableProps);
         // Update it
-        boolean updatedNode = updateNodeImpl(node, nodeUpdate);
+        boolean updatedNode = updateNodeImpl(node, nodeUpdate, nodeAspects);
         // Handle the cache invalidation requests
-        Node newNode = getNodeNotNull(nodeId);
         NodeVersionKey nodeVersionKey = node.getNodeVersionKey();
         if (updatedNode)
         {
+            Node newNode = getNodeNotNull(nodeId);
             NodeVersionKey newNodeVersionKey = newNode.getNodeVersionKey();
             // The version will have moved on, effectively rendering our caches invalid.
             // Copy over caches that DON'T need invalidating
@@ -1508,9 +1511,10 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      * 
      * @param oldNode               the existing node, fully populated
      * @param nodeUpdate            the node update with all update elements populated
+     * @param nodeAspects           the node's aspects or <tt>null</tt> to look them up
      * @return                      <tt>true</tt> if any updates were made
      */
-    private boolean updateNodeImpl(Node oldNode, NodeUpdateEntity nodeUpdate)
+    private boolean updateNodeImpl(Node oldNode, NodeUpdateEntity nodeUpdate, Set<QName> nodeAspects)
     {
         Long nodeId = oldNode.getId();
         
@@ -1552,7 +1556,10 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             nodeUpdate.setUpdateTransaction(true);
         }
         // Update auditable
-        Set<QName> nodeAspects = getNodeAspects(nodeId);
+        if (nodeAspects == null)
+        {
+            nodeAspects = getNodeAspects(nodeId);
+        }
         if (nodeAspects.contains(ContentModel.ASPECT_AUDITABLE))
         {
             NodeRef oldNodeRef = oldNode.getNodeRef();
@@ -1607,7 +1614,16 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
         
         // The node is remaining in the current store
-        int count = updateNode(nodeUpdate);
+        int count = 0;
+        Throwable concurrencyException = null;
+        try
+        {
+            count = updateNode(nodeUpdate);
+        }
+        catch (Throwable e)
+        {
+            concurrencyException = e;
+        }
         // Do concurrency check
         if (count != 1)
         {
@@ -1615,15 +1631,23 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             nodesCache.removeByKey(nodeId);
             nodesCache.removeByValue(nodeUpdate);
             
-            throw new ConcurrencyFailureException("Failed to update node " + nodeId);
+            throw new ConcurrencyFailureException("Failed to update node " + nodeId, concurrencyException);
         }
         else
         {
+            // Check for wrap-around in the version number
+            if (nodeUpdate.getVersion().equals(LONG_ZERO))
+            {
+                // The version was wrapped back to zero
+                // The caches that are keyed by version are now unreliable
+                propertiesCache.clear();
+                aspectsCache.clear();
+                parentAssocsCache.clear();
+            }
             // Update the caches
             nodeUpdate.lock();
             nodesCache.setValue(nodeId, nodeUpdate);
             // The node's version has moved on so no need to invalidate caches
-            // TODO: Should we copy values between the cache keys?
         }
 
         // Done
@@ -1644,7 +1668,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         nodeUpdateEntity.setId(nodeId);
         nodeUpdateEntity.setAclId(aclId);
         nodeUpdateEntity.setUpdateAclId(true);
-        updateNodeImpl(oldNode, nodeUpdateEntity);
+        updateNodeImpl(oldNode, nodeUpdateEntity, null);
     }
     
     public void setPrimaryChildrenSharedAclId(
@@ -1682,7 +1706,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         nodeUpdate.setTypeQNameId(deletedQNameId);
         nodeUpdate.setUpdateTypeQNameId(true);
         
-        boolean updated = updateNodeImpl(node, nodeUpdate);
+        boolean updated = updateNodeImpl(node, nodeUpdate, nodeAspects);
         if (!updated)
         {
             invalidateNodeCaches(nodeId);
@@ -1701,9 +1725,11 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // Delete content usage deltas
         usageDAO.deleteDeltas(nodeId);
 
+        // Handle sys:aspect_root
         if (nodeAspects.contains(ContentModel.ASPECT_ROOT))
         {
-            allRootNodesCache.remove(node.getNodePair().getSecond().getStoreRef());
+            StoreRef storeRef = node.getStore().getStoreRef();
+            allRootNodesCache.remove(storeRef);
         }
         
         // Remove peer associations (no associated cache)
@@ -1970,6 +1996,26 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         boolean modifyProps = propsToDelete.size() > 0 || propsToAdd.size() > 0;
         boolean updated = modifyProps || nodeUpdate.isUpdateAnything();
         
+        // Bring the node into the current transaction
+        if (nodeUpdate.isUpdateAnything())
+        {
+            // We have to explicitly update the node (sys:locale or cm:auditable)
+            if (updateNodeImpl(node, nodeUpdate, null))
+            {
+                // Copy the caches across
+                NodeVersionKey nodeVersionKey = node.getNodeVersionKey();
+                NodeVersionKey newNodeVersionKey = getNodeNotNull(nodeId).getNodeVersionKey();
+                copyNodeAspectsCached(nodeVersionKey, newNodeVersionKey);
+                copyNodePropertiesCached(nodeVersionKey, newNodeVersionKey);
+                copyParentAssocsCached(nodeVersionKey, newNodeVersionKey);
+            }
+        }
+        else if (modifyProps)
+        {
+            // Touch the node; all caches are fine
+            touchNode(nodeId, null, null, false, false, false);
+        }
+        
         // Touch to bring into current txn
         if (modifyProps)
         {
@@ -2033,12 +2079,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             // Update cache
             setNodePropertiesCached(nodeId, propsToCache);
         }
-        // Touch to bring into current transaction
-        if (updated)
-        {
-            // We have to explicitly update the node (sys:locale or cm:auditable)
-            updateNodeImpl(node, nodeUpdate);
-        }
         
         // Done
         if (isDebugEnabled && updated)
@@ -2100,12 +2140,12 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
 
         if (deleteCount > 0)
         {
+            // Touch the node; all caches are fine
+            touchNode(nodeId, null, null, false, false, false);
             // Update cache
             Map<QName, Serializable> cachedProps = getNodePropertiesCached(nodeId);
             cachedProps.keySet().removeAll(propertyQNames);
             setNodePropertiesCached(nodeId, cachedProps);
-            // Touch the node; all caches are fine
-            touchNode(nodeId, null, false, false, false);
         }
         // Done
         return deleteCount > 0;
@@ -2143,7 +2183,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             {
                 policyBehaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
                 // Touch the node; all caches are fine
-                return touchNode(nodeId, auditableProps, false, false, false);
+                return touchNode(nodeId, auditableProps, null, false, false, false);
             }
             finally
             {
@@ -2238,7 +2278,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         {
             Long nodeId = nodeVersionKey.getNodeId();
             Map<NodeVersionKey, Map<NodePropertyKey, NodePropertyValue>> propsRawByNodeVersionKey = selectNodeProperties(nodeId);
-            // Check the node Txn ID for mismatch
             Map<NodePropertyKey, NodePropertyValue> propsRaw = propsRawByNodeVersionKey.get(nodeVersionKey);
             if (propsRaw == null)
             {
@@ -2250,7 +2289,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 }
                 else
                 {
-                    // We found properties associated with a different node ID and txn
+                    // We found properties associated with a different node ID and version
                     invalidateNodeCaches(nodeId);
                     throw new DataIntegrityViolationException(
                             "Detected stale node entry: " + nodeVersionKey +
@@ -2334,27 +2373,27 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             executeBatch();
         }
         
-        // Manually update the cache
+        // Collate the new aspect set, so that touch recognizes the addtion of cm:auditable
         Set<QName> newAspectQNames = new HashSet<QName>(existingAspectQNames);
         newAspectQNames.addAll(aspectQNamesToAdd);
-        setNodeAspectsCached(nodeId, newAspectQNames);
 
-        if (aspectQNamesToAdd.contains(ContentModel.ASPECT_ROOT))
+        // Handle sys:aspect_root
+        if (aspectQNames.contains(ContentModel.ASPECT_ROOT))
         {
-            // This is a special case.  The presence of the aspect affects the path
-            // calculations, which are stored in the parent assocs cache
-            touchNode(nodeId, null, false, false, true);
-
             // invalidate root nodes cache for the store
-            Pair<Long, NodeRef> nodePair = getNodePair(nodeId);
-            StoreRef storeRef = nodePair.getSecond().getStoreRef();
+            StoreRef storeRef = getNodeNotNull(nodeId).getStore().getStoreRef();
             allRootNodesCache.remove(storeRef);
+            // Touch the node; parent assocs need invalidation
+            touchNode(nodeId, null, newAspectQNames, false, false, true);
         }
         else
         {
             // Touch the node; all caches are fine
-            touchNode(nodeId, null, false, false, false);
+            touchNode(nodeId, null, newAspectQNames, false, false, false);
         }
+
+        // Manually update the cache
+        setNodeAspectsCached(nodeId, newAspectQNames);
 
         // Done
         return true;
@@ -2362,14 +2401,16 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
 
     public boolean removeNodeAspects(Long nodeId)
     {
+        Set<QName> newAspectQNames = Collections.<QName>emptySet();
+        
+        // Touch the node; all caches are fine
+        touchNode(nodeId, null, newAspectQNames, false, false, false);
+
         // Just delete all the node's aspects
         int deleteCount = deleteNodeAspects(nodeId, null);
         
         // Manually update the cache
-        setNodeAspectsCached(nodeId, Collections.<QName>emptySet());
-
-        // Touch the node; all caches are fine
-        touchNode(nodeId, null, false, false, false);
+        setNodeAspectsCached(nodeId, newAspectQNames);
 
         // Done
         return deleteCount > 0;
@@ -2383,6 +2424,14 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
         // Get the current aspects
         Set<QName> existingAspectQNames = getNodeAspects(nodeId);
+
+        // Collate the new set of aspects so that touch works correctly against cm:auditable
+        Set<QName> newAspectQNames = new HashSet<QName>(existingAspectQNames);
+        newAspectQNames.removeAll(aspectQNames);
+
+        // Touch the node; all caches are fine
+        touchNode(nodeId, null, newAspectQNames, false, false, false);
+
         // Now remove each aspect
         Set<Long> aspectQNameIdsToRemove = qnameDAO.convertQNamesToIds(aspectQNames, false);
         int deleteCount = deleteNodeAspects(nodeId, aspectQNameIdsToRemove);
@@ -2391,28 +2440,23 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             return false;
         }
 
-        // Manually update the cache
-        Set<QName> newAspectQNames = new HashSet<QName>(existingAspectQNames);
-        newAspectQNames.removeAll(aspectQNames);
-        setNodeAspectsCached(nodeId, newAspectQNames);
-
-        // If we are removing the sys:aspect_root, then the parent assocs cache is unreliable
+        // Handle sys:aspect_root
         if (aspectQNames.contains(ContentModel.ASPECT_ROOT))
         {
-            // This is a special case.  The presence of the aspect affects the path
-            // calculations, which are stored in the parent assocs cache
-            touchNode(nodeId, null, false, false, true);
-            
             // invalidate root nodes cache for the store
-            Pair<Long, NodeRef> nodePair = getNodePair(nodeId);
-            StoreRef storeRef = nodePair.getSecond().getStoreRef();
+            StoreRef storeRef = getNodeNotNull(nodeId).getStore().getStoreRef();
             allRootNodesCache.remove(storeRef);
+            // Touch the node; parent assocs need invalidation
+            touchNode(nodeId, null, newAspectQNames, false, false, true);
         }
         else
         {
             // Touch the node; all caches are fine
-            touchNode(nodeId, null, false, false, false);
+            touchNode(nodeId, null, newAspectQNames, false, false, false);
         }
+
+        // Manually update the cache
+        setNodeAspectsCached(nodeId, newAspectQNames);
 
         // Done
         return deleteCount > 0;
@@ -2498,7 +2542,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 }
                 else
                 {
-                    // We found properties associated with a different node ID and txn
+                    // We found properties associated with a different node ID and version
                     invalidateNodeCaches(nodeId);
                     throw new DataIntegrityViolationException(
                             "Detected stale node entry: " + nodeVersionKey +
@@ -2523,7 +2567,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
         
         // Touch the node; all caches are fine
-        touchNode(sourceNodeId, null, false, false, false);
+        touchNode(sourceNodeId, null, null, false, false, false);
 
         // Resolve type QName
         Long assocTypeQNameId = qnameDAO.getOrCreateQName(assocTypeQName).getFirst();
@@ -2574,7 +2618,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         if (deleted > 0)
         {
             // Touch the node; all caches are fine
-            touchNode(sourceNodeId, null, false, false, false);
+            touchNode(sourceNodeId, null, null, false, false, false);
         }
         return deleted;
     }
@@ -2585,7 +2629,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         if (deleted > 0)
         {
             // Touch the node; all caches are fine
-            touchNode(nodeId, null, false, false, false);
+            touchNode(nodeId, null, null, false, false, false);
         }
         return deleted;
     }
@@ -2603,7 +2647,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         if (deleted > 0)
         {
             // Touch the node; all caches are fine
-            touchNode(nodeId, null, false, false, false);
+            touchNode(nodeId, null, null, false, false, false);
         }
         return deleted;
     }
@@ -2795,7 +2839,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 parentNodeId, childNodeId, false, assocTypeQName, assocQName, childNodeName);
         Long assocId = assoc.getId();
         // Touch the node; all caches are fine
-        touchNode(childNodeId, null, false, false, false);
+        touchNode(childNodeId, null, null, false, false, false);
         // update cache
         parentAssocInfo = parentAssocInfo.addAssoc(assocId, assoc);
         setParentAssocsCached(childNodeId, parentAssocInfo);
@@ -2820,7 +2864,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             throw new ConcurrencyFailureException("Child association not deleted: " + assocId);
         }
         // Touch the node; all caches are fine
-        touchNode(childNodeId, null, false, false, false);
+        touchNode(childNodeId, null, null, false, false, false);
         // Update cache
         parentAssocInfo = parentAssocInfo.removeAssoc(assocId);
         setParentAssocsCached(childNodeId, parentAssocInfo);
@@ -2832,7 +2876,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         if (count > 0)
         {
             // Touch the node; parent assocs are out of sync
-            touchNode(childNodeId, null, false, false, true);
+            touchNode(childNodeId, null, null, false, false, true);
         }
         return count;
     }
@@ -2865,7 +2909,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         if (count > 0)
         {
             // Touch the node; parent assocs are out of sync
-            touchNode(childNodeId, null, false, false, true);
+            touchNode(childNodeId, null, null, false, false, true);
         }
         
         if (isDebugEnabled)
@@ -3618,7 +3662,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      * Bulk caching
      */
 
-    // TODO there must be a way to limit the repeated code here and in cacheNodes(List<NodeRef>)
     public void cacheNodesById(List<Long> nodeIds)
     {
         /*

@@ -204,6 +204,13 @@ public class CacheTest extends TestCase
             assertNull("Get didn't return null", transactionalCache.get(NEW_GLOBAL_ONE));
             assertTrue("Item was removed from backing cache", backingCache.contains(NEW_GLOBAL_ONE));
             
+            // read 2 from the cache
+            assertEquals("Item not read from backing cache", NEW_GLOBAL_TWO, transactionalCache.get(NEW_GLOBAL_TWO));
+            // Change the backing cache
+            backingCache.put(NEW_GLOBAL_TWO, NEW_GLOBAL_TWO + "-updated");
+            // Ensure read-committed
+            assertEquals("Read-committed not preserved", NEW_GLOBAL_TWO, transactionalCache.get(NEW_GLOBAL_TWO));
+            
             // update 3 in the cache
             transactionalCache.put(UPDATE_TXN_THREE, "XXX");
             assertEquals("Item not updated in txn cache", "XXX", transactionalCache.get(UPDATE_TXN_THREE));

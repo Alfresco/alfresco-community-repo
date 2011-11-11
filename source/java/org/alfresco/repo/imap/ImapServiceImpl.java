@@ -1404,22 +1404,8 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
                     }
                     final NodeRef defaultLocaleTemplate = templates.get(0);
       
-//                    ResultSet resultSet = serviceRegistry.getSearchService().query(storeRef, "xpath", query);
-//                    if (resultSet == null || resultSet.length() == 0)
-//                    {
-//                        if(logger.isDebugEnabled())
-//                        {
-//                            logger.debug("template not found:" + templateName);
-//                        }
-//                        throw new AlfrescoRuntimeException(String.format("[getDefaultEmailBodyTemplate] IMAP message template '%1$s' does not exist in the path '%2$s'.", templateName, repositoryTemplatePath));
-//                    }
-//                    final NodeRef defaultLocaleTemplate = resultSet.getNodeRef(0);
-//                    
                     NodeRef localisedSibling = serviceRegistry.getFileFolderService().getLocalizedSibling(defaultLocaleTemplate);
-//
                     result = localisedSibling.toString();
-//                    
-//                    resultSet.close();
                 }
                 // We are catching all exceptions. E.g. search service can possibly throw an exceptions on malformed queries.
                 catch (Exception e)

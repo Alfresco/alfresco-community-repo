@@ -42,7 +42,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
@@ -332,20 +331,36 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
             {
                 throw new LuceneIndexException(event + " failed - node is not in the required store");
             }
-            NodeRef parentRef = relationshipRef.getParentRef();
-            NodeRef childRef = relationshipRef.getChildRef(); 
+            final NodeRef parentRef = relationshipRef.getParentRef();
+            final NodeRef childRef = relationshipRef.getChildRef(); 
             if (parentRef != null)
             {
-                // If the child has a lot of secondary parents, its cheaper to cascade reindex its parent rather than itself
-                if (nodeService.getParentAssocs(childRef).size() > PATH_GENERATION_FACTOR)
+                // If the child has a lot of secondary parents, its cheaper to cascade reindex its parent
+                // rather than itself
+                if (doInReadthroughTransaction(new RetryingTransactionCallback<Boolean>()
                 {
-                    reindex(parentRef, true);                
+                    @Override
+                    public Boolean execute() throws Throwable
+                    {
+                        try
+                        {
+                            return nodeService.getParentAssocs(childRef).size() > PATH_GENERATION_FACTOR;
+                        }
+                        catch (InvalidNodeRefException e)
+                        {
+                            // The node may have disappeared under our feet!
+                            return false;
+                        }
+                    }
+                }))
+                {
+                    reindex(parentRef, true);
                     reindex(childRef, false);
                 }
                 // Otherwise, it's cheaper to re-evaluate all the paths to this node
                 else
                 {
-                    reindex(childRef, true);                                                    
+                    reindex(childRef, true);
                 }
             }
             else
@@ -947,7 +962,6 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
             // First, apply deletions and work out a 'flattened' list of reindex actions
             mainReader = getReader();
             IndexReader deltaReader = getDeltaReader();
-            Set<String> deletionsSinceFlush = new TreeSet<String>();
             for (Command<NodeRef> command : commandList)
             {
                 if (s_logger.isDebugEnabled())
@@ -978,10 +992,27 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                         nodeActionMap.put(nodeRef, Action.REINDEX);
                     }
                     break;
+                case DELETE:
+                    // First ensure leaves with secondary references to the deleted node are reindexed
+                    Set<String> nodeRefSet = Collections.singleton(nodeRef);
+                    deleteReference(nodeRefSet, deltaReader, true);
+                    Set<String> temp = deleteReference(nodeRefSet, mainReader, false);
+                    if (!temp.isEmpty())
+                    {
+                        deletions.addAll(temp);
+                        for (String ref : temp)
+                        {
+                            if (!nodeActionMap.containsKey(ref))
+                            {
+                                nodeActionMap.put(ref, Action.REINDEX);
+                            }
+                        }
+                    }
+                    // Now fall through to cascade reindex case
                 case CASCADEREINDEX:
                     deleteContainerAndBelow(nodeRef, deltaReader, true, true);
                     // Only mask out the container if it is present in the main index
-                    Set<String> temp = deleteContainerAndBelow(nodeRef, mainReader, false, true);
+                    temp = deleteContainerAndBelow(nodeRef, mainReader, false, true);
                     if (!temp.isEmpty())
                     {
                         containerDeletions.add(nodeRef);
@@ -992,24 +1023,6 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                         deletions.add(nodeRef);
                     }
                     nodeActionMap.put(nodeRef, Action.CASCADEREINDEX);
-                    break;
-                case DELETE:
-                    // if already deleted don't do it again ...
-                    if(!deletionsSinceFlush.contains(nodeRef))
-                    {
-                        Set<String> refs = deleteImpl(nodeRef, deltaReader, mainReader);
-
-                        // do not delete anything we have deleted before in this flush
-                        // probably OK to cache for the TX as a whole but done per flush => See ALF-8007 
-                        deletionsSinceFlush.addAll(refs);                        
-                        for (String ref : refs)
-                        {
-                            if (!nodeActionMap.containsKey(ref))
-                            {
-                                nodeActionMap.put(ref, Action.REINDEX);
-                            }
-                        }
-                    }
                     break;
                 }
             }
@@ -1065,7 +1078,6 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
             
             commandList.clear();
             this.docs = writer.docCount();
-            deletionsSinceFlush.clear();
         }
         catch (IOException e)
         {

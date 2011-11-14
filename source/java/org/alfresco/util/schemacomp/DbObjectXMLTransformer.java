@@ -19,6 +19,7 @@
 package org.alfresco.util.schemacomp;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.alfresco.util.schemacomp.model.Column;
 import org.alfresco.util.schemacomp.model.DbObject;
@@ -27,6 +28,8 @@ import org.alfresco.util.schemacomp.model.Index;
 import org.alfresco.util.schemacomp.model.PrimaryKey;
 import org.alfresco.util.schemacomp.model.Schema;
 import org.alfresco.util.schemacomp.model.Table;
+import org.alfresco.util.schemacomp.validator.DbValidator;
+import org.apache.poi.hssf.record.DVALRecord;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -65,21 +68,62 @@ public class DbObjectXMLTransformer
         // All DbObjects result in an XML element with the DbObject's class name as the tag
         // and a name attribute corresponding to the value of getName(),
         // e.g. For an instance of a Column: <column name="the_column_name"/>
-        String tagName = dbObject.getClass().getSimpleName().toLowerCase();   
         final AttributesImpl attribs = new AttributesImpl();
-        attribs.addAttribute("", "", "name", "CDATA", dbObject.getName());
+        attribs.addAttribute("", "", XML.ATTR_NAME, "CDATA", dbObject.getName());
         // Add class-specific attributes.
         addAttributes(dbObject, attribs);
+        String tagName = dbObject.getClass().getSimpleName().toLowerCase();   
         xmlOut.startElement("", "", tagName, attribs);
         
         
         // The element's contents can optionally be populated with class-specific content.
         transformDbObject(dbObject);
         
+        // All DbObjects potentially have validator configuration present in the XML.
+        transformValidators(dbObject.getValidators());
+        
         // Provide the end tag, or close an empty element.
         xmlOut.endElement("", "", tagName);
     }
     
+    
+    /**
+     * @param validators
+     * @throws SAXException 
+     */
+    private void transformValidators(List<DbValidator<? extends DbObject>> validators) throws SAXException
+    {
+        if (validators.size() > 0)
+        {
+            simpleStartTag(XML.EL_VALIDATORS);
+            for (DbValidator<? extends DbObject> dbv : validators)
+            {
+                final AttributesImpl attribs = new AttributesImpl();
+                attribs.addAttribute("", "", XML.ATTR_CLASS, "CDATA", dbv.getClass().getName());
+                xmlOut.startElement("", "", XML.EL_VALIDATOR, attribs);
+                
+                if (dbv.getPropertyNames().size() > 0)
+                {
+                    simpleStartTag(XML.EL_PROPERTIES);
+                    for (String propName : dbv.getPropertyNames())
+                    {
+                        final AttributesImpl propAttrs = new AttributesImpl();
+                        propAttrs.addAttribute("", "", XML.ATTR_NAME, "CDATA", propName);
+                        xmlOut.startElement("", "", XML.EL_PROPERTY, propAttrs);
+                        String propValue = dbv.getProperty(propName);
+                        char[] chars = propValue.toCharArray();
+                        xmlOut.characters(chars, 0, chars.length);
+                        simpleEndTag(XML.EL_PROPERTY);
+                    }
+                    simpleEndTag(XML.EL_PROPERTIES);
+                }
+                
+                simpleEndTag(XML.EL_VALIDATOR);
+            }
+            simpleEndTag(XML.EL_VALIDATORS);
+        }
+    }
+
     /**
      * Add class-specific attributes.
      * 
@@ -91,7 +135,7 @@ public class DbObjectXMLTransformer
         if (dbObject instanceof Index)
         {
             Index index = (Index) dbObject;
-            attribs.addAttribute("", "", "unique", "CDATA", Boolean.toString(index.isUnique()));
+            attribs.addAttribute("", "", XML.ATTR_UNIQUE, "CDATA", Boolean.toString(index.isUnique()));
         }
     }
 
@@ -127,55 +171,55 @@ public class DbObjectXMLTransformer
 
     private void transformSchema(Schema schema) throws SAXException
     {
-        simpleStartTag("objects");
+        simpleStartTag(XML.EL_OBJECTS);
         for (DbObject dbo : schema)
         {
             output(dbo);
         }
-        simpleEndTag("objects");
+        simpleEndTag(XML.EL_OBJECTS);
     }
     
     private void transformTable(Table table) throws SAXException
     {
         // Output columns
-        simpleStartTag("columns");
+        simpleStartTag(XML.EL_COLUMNS);
         for (Column column : table.getColumns())
         {
             output(column);
         }
-        simpleEndTag("columns");
+        simpleEndTag(XML.EL_COLUMNS);
         
         // Output primary key
         output(table.getPrimaryKey());
         
         // Output foreign keys
-        simpleStartTag("foreignkeys");
+        simpleStartTag(XML.EL_FOREIGN_KEYS);
         for (ForeignKey fk : table.getForeignKeys())
         {
             output(fk);
         }
-        simpleEndTag("foreignkeys");
+        simpleEndTag(XML.EL_FOREIGN_KEYS);
 
         // Output indexes
-        simpleStartTag("indexes");
+        simpleStartTag(XML.EL_INDEXES);
         for (Index index : table.getIndexes())
         {
             output(index);
         }
-        simpleEndTag("indexes");
+        simpleEndTag(XML.EL_INDEXES);
     }
     
     private void transformColumn(Column column) throws SAXException
     {
-        simpleElement("type", column.getType());
-        simpleElement("nullable", Boolean.toString(column.isNullable()));
+        simpleElement(XML.EL_TYPE, column.getType());
+        simpleElement(XML.EL_NULLABLE, Boolean.toString(column.isNullable()));
     }
 
     private void transformForeignKey(ForeignKey fk) throws SAXException
     {
-        simpleElement("localcolumn", fk.getLocalColumn());
-        simpleElement("targettable", fk.getTargetTable());
-        simpleElement("targetcolumn", fk.getTargetColumn()); 
+        simpleElement(XML.EL_LOCAL_COLUMN, fk.getLocalColumn());
+        simpleElement(XML.EL_TARGET_TABLE, fk.getTargetTable());
+        simpleElement(XML.EL_TARGET_COLUMN, fk.getTargetColumn()); 
     }
 
     private void transformIndex(Index index) throws SAXException
@@ -219,11 +263,11 @@ public class DbObjectXMLTransformer
     
     private void columnNameList(Collection<String> columnNames) throws SAXException
     {
-        simpleStartTag("columnnames");
+        simpleStartTag(XML.EL_COLUMN_NAMES);
         for (String columnName : columnNames)
         {
-            simpleElement("columnname", columnName);
+            simpleElement(XML.EL_COLUMN_NAME, columnName);
         }
-        simpleEndTag("columnnames");
+        simpleEndTag(XML.EL_COLUMN_NAMES);
     }
 }

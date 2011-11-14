@@ -37,6 +37,13 @@
             <columnname>id</columnname>
             <columnname>nodeRef</columnname>
           </columnnames>
+          <validators>
+            <validator class="org.alfresco.util.schemacomp.validator.NameValidator">
+              <properties>
+                <property name="pattern">idx_.+</property>
+              </properties>
+            </validator>
+          </validators>
         </index>
       </indexes>
     </table>

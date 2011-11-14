@@ -24,6 +24,8 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.inOrder;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.alfresco.util.schemacomp.DbObjectVisitor;
 import org.alfresco.util.schemacomp.DbProperty;
@@ -32,6 +34,8 @@ import org.alfresco.util.schemacomp.Difference.Where;
 import org.alfresco.util.schemacomp.Result.Strength;
 import org.alfresco.util.schemacomp.Results;
 import org.alfresco.util.schemacomp.ValidationResult;
+import org.alfresco.util.schemacomp.validator.AbstractDbValidator;
+import org.alfresco.util.schemacomp.validator.DbValidator;
 import org.hibernate.dialect.Dialect;
 import org.junit.Before;
 import org.junit.Test;
@@ -83,8 +87,7 @@ public class AbstractDbObjectTest
         assertTrue("Logically the same object.", dbObject.sameAs(new ConcreteDbObject("the_name")));
         assertTrue("The very same object with non-null name", dbObject.sameAs(dbObject));
     }
-    
-    
+        
     @Test
     public void diff()
     {
@@ -109,6 +112,25 @@ public class AbstractDbObjectTest
                     new DbProperty(otherObject, "someProp"));
     }
 
+    
+    @SuppressWarnings("unchecked")
+    @Test
+    public void canGetValidators()
+    {
+        List<DbValidator<? extends DbObject>> validators = dbObject.getValidators();
+        assertEquals(0, validators.size());
+        
+        dbObject.setValidators(null);
+        validators = dbObject.getValidators();
+        assertEquals(0, validators.size());
+                
+        dbObject.setValidators(validatorList(new TestValidator1(), new TestValidator2()));
+        validators = dbObject.getValidators();
+        assertEquals(2, validators.size());
+        assertEquals(TestValidator1.class, validators.get(0).getClass());
+        assertEquals(TestValidator2.class, validators.get(1).getClass());
+    }
+    
     
     /**
      * Concrete DbObject for testing the AbstractDbObject base class.
@@ -141,5 +163,28 @@ public class AbstractDbObjectTest
         {
             return this.someProp;
         }
+    }
+    
+    
+    private List<DbValidator<? extends DbObject>> validatorList(DbValidator<? extends DbObject>... validators)
+    {
+        return Arrays.asList(validators);
+    }
+    
+    
+    private static class TestValidator extends AbstractDbValidator<DbObject>
+    {
+        @Override
+        public void validate(DbObject reference, DbObject target, DiffContext ctx)
+        {
+        }
+    }
+    
+    private static class TestValidator1 extends TestValidator
+    {
+    }
+    
+    private static class TestValidator2 extends TestValidator
+    {
     }
 }

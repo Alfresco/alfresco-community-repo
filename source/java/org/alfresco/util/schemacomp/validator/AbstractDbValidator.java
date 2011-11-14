@@ -18,19 +18,37 @@
  */
 package org.alfresco.util.schemacomp.validator;
 
-import org.alfresco.util.schemacomp.DiffContext;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
 import org.alfresco.util.schemacomp.model.DbObject;
 
 /**
- * A 'do nothing' validator
+ * Base class providing DbValidator support.
  * 
  * @author Matt Ward
  */
-public class NullValidator extends AbstractDbValidator<DbObject>
+public abstract class AbstractDbValidator<T extends DbObject> implements DbValidator<T>
 {
+    private final Map<String, String> properties = new HashMap<String, String>();
+
     @Override
-    public void validate(DbObject reference, DbObject target, DiffContext ctx)
+    public void setProperty(String name, String value)
     {
-        // Do nothing
+        properties.put(name, value);
     }
+
+    @Override
+    public String getProperty(String name)
+    {
+        return properties.get(name);
+    }
+
+    @Override
+    public Set<String> getPropertyNames()
+    {
+        return properties.keySet();
+    }
+    
 }

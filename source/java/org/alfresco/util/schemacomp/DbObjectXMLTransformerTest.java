@@ -31,8 +31,12 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -43,12 +47,15 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
 import org.alfresco.util.schemacomp.model.Column;
+import org.alfresco.util.schemacomp.model.DbObject;
 import org.alfresco.util.schemacomp.model.ForeignKey;
 import org.alfresco.util.schemacomp.model.Index;
 import org.alfresco.util.schemacomp.model.PrimaryKey;
 import org.alfresco.util.schemacomp.model.Schema;
 import org.alfresco.util.schemacomp.model.Sequence;
 import org.alfresco.util.schemacomp.model.Table;
+import org.alfresco.util.schemacomp.validator.DbValidator;
+import org.alfresco.util.schemacomp.validator.NameValidator;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -247,6 +254,53 @@ public class DbObjectXMLTransformerTest
         assertEquals("  </indexes>", reader.readLine());
         assertEquals("</table>", reader.readLine());
     }
+    
+    
+    @Test
+    public void transformObjectWithValidators() throws IOException
+    {
+        Collection<Column> columns = columns("one VARCHAR2(100)", "two NUMBER(10)");
+        PrimaryKey pk = new PrimaryKey(null, "pk_for_my_table", Arrays.asList("id")); 
+        Collection<ForeignKey> fks = fkeys(fk("fk_one", "lc", "tt", "tc"), fk("fk_two", "lc", "tt", "tc"));
+        Collection<Index> indexes = indexes("index_one col1 col2", "index_two col3 col4");
+        
+        Table table = new Table(null, "my_table", columns, pk, fks, indexes);
+        
+        NameValidator nameValidator = new NameValidator();
+        nameValidator.setPattern(Pattern.compile("match_me_if_you_can"));
+        List<DbValidator<? extends DbObject>> validators = new ArrayList<DbValidator<? extends DbObject>>();
+        validators.add(nameValidator);
+        table.setValidators(validators);
+        
+        transformer.output(table);
+        
+        BufferedReader reader = new BufferedReader(new StringReader(writer.toString()));
+        dumpOutput();
+        assertHasPreamble(reader);
+        assertEquals("<table name=\"my_table\">", reader.readLine());
+        assertEquals("  <columns>", reader.readLine());
+        skipUntilEnd("       {column}", reader);
+        skipUntilEnd("       {column}", reader);
+        assertEquals("  </columns>", reader.readLine());
+        skipUntilEnd("  {primarykey}", reader);
+        assertEquals("  <foreignkeys>", reader.readLine());
+        skipUntilEnd("       {foreignkey}", reader);
+        skipUntilEnd("       {foreignkey}", reader);
+        assertEquals("  </foreignkeys>", reader.readLine());
+        assertEquals("  <indexes>", reader.readLine());
+        skipUntilEnd("       {index}", reader);
+        skipUntilEnd("       {index}", reader);
+        assertEquals("  </indexes>", reader.readLine());
+        assertEquals("  <validators>", reader.readLine());
+        assertEquals("    <validator class=\"org.alfresco.util.schemacomp.validator.NameValidator\">", reader.readLine());        
+        assertEquals("      <properties>", reader.readLine());        
+        assertEquals("        <property name=\"pattern\">match_me_if_you_can</property>", reader.readLine());        
+        assertEquals("      </properties>", reader.readLine());        
+        assertEquals("    </validator>", reader.readLine());        
+        assertEquals("  </validators>", reader.readLine());
+        assertEquals("</table>", reader.readLine());
+    }
+    
     
     /**
      * Ignore lines that are tested elsewhere, e.g. ignore serialized Column objects

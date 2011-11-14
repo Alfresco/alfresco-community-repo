@@ -22,7 +22,10 @@ package org.alfresco.util.schemacomp.validator;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.alfresco.util.schemacomp.DiffContext;
@@ -79,6 +82,14 @@ public class NameValidatorTest
         assertEquals("SYS_MYINDEX", validationResults.get(0).getValue());
     }
 
+    
+    @Test
+    public void canSetPatternUsingProperties()
+    {
+        validator.setProperty("pattern", "ORA_[A-Z_]+");
+        assertEquals("ORA_[A-Z_]+", validator.getPattern().toString());
+    }
+    
     
     private DbObject indexForName(String name)
     {

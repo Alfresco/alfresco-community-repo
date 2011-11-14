@@ -30,9 +30,12 @@ public abstract class XML
     public static final String EL_SCHEMA = Schema.class.getSimpleName().toLowerCase();
     public static final String EL_TABLE = Table.class.getSimpleName().toLowerCase();
     public static final String EL_COLUMN = Column.class.getSimpleName().toLowerCase();
+    public static final String EL_COLUMNS = "columns";
     public static final String EL_PRIMARY_KEY = PrimaryKey.class.getSimpleName().toLowerCase();
     public static final String EL_FOREIGN_KEY = ForeignKey.class.getSimpleName().toLowerCase();
+    public static final String EL_FOREIGN_KEYS = "foreignkeys";
     public static final String EL_INDEX = Index.class.getSimpleName().toLowerCase();
+    public static final String EL_INDEXES = "indexes";
     public static final String EL_SEQUENCE = Sequence.class.getSimpleName().toLowerCase();    
     public static final String EL_TYPE = "type";
     public static final String EL_NULLABLE = "nullable";
@@ -41,7 +44,13 @@ public abstract class XML
     public static final String EL_LOCAL_COLUMN = "localcolumn";
     public static final String EL_TARGET_COLUMN = "targetcolumn";
     public static final String EL_TARGET_TABLE = "targettable";
+    public static final String EL_VALIDATORS = "validators";
+    public static final String EL_VALIDATOR = "validator";
+    public static final String EL_OBJECTS = "objects";
+    public static final String EL_PROPERTIES = "properties";
+    public static final String EL_PROPERTY = "property";
     
     public static final String ATTR_NAME = "name";
     public static final String ATTR_UNIQUE = "unique";
+    public static final String ATTR_CLASS = "class";
 }

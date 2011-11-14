@@ -18,12 +18,17 @@
  */
 package org.alfresco.util.schemacomp.model;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.alfresco.util.schemacomp.ComparisonUtils;
 import org.alfresco.util.schemacomp.DbProperty;
 import org.alfresco.util.schemacomp.DefaultComparisonUtils;
 import org.alfresco.util.schemacomp.DiffContext;
 import org.alfresco.util.schemacomp.Result.Strength;
 import org.alfresco.util.schemacomp.Results;
+import org.alfresco.util.schemacomp.validator.DbValidator;
 
 /**
  * Useful base class for many, if not all the {@link DbObject} implementations.
@@ -37,6 +42,7 @@ public abstract class AbstractDbObject implements DbObject
     /** How differences in the name field should be reported */
     private Strength nameStrength = Strength.ERROR;
     protected ComparisonUtils comparisonUtils = new DefaultComparisonUtils();
+    private List<DbValidator<?>> validators = new ArrayList<DbValidator<?>>();
     
 
     /**
@@ -202,5 +208,29 @@ public abstract class AbstractDbObject implements DbObject
     public void setComparisonUtils(ComparisonUtils comparisonUtils)
     {
         this.comparisonUtils = comparisonUtils;
+    }
+
+    
+    @Override
+    public List<DbValidator<? extends DbObject>> getValidators()
+    {
+        return validators;
+    }
+
+    
+    /**
+     * @param validators the validators to set
+     */
+    @Override
+    public void setValidators(List<DbValidator<? extends DbObject>> validators)
+    {
+        if (validators == null)
+        {
+            this.validators = Collections.emptyList();
+        }
+        else
+        {
+            this.validators = validators;
+        }
     }
 }

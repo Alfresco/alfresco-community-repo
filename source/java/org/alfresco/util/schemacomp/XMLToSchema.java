@@ -20,6 +20,8 @@ package org.alfresco.util.schemacomp;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Stack;
 
 import javax.xml.parsers.SAXParser;
@@ -33,6 +35,7 @@ import org.alfresco.util.schemacomp.model.PrimaryKey;
 import org.alfresco.util.schemacomp.model.Schema;
 import org.alfresco.util.schemacomp.model.Sequence;
 import org.alfresco.util.schemacomp.model.Table;
+import org.alfresco.util.schemacomp.validator.DbValidator;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -47,7 +50,7 @@ public class XMLToSchema extends DefaultHandler
     private SAXParser parser;
     private InputStream in;
     private Schema schema;
-    private Stack<DbObject> dboStack = new Stack<DbObject>();
+    private Stack<Object> stack = new Stack<Object>();
     private String lastTag;
     private String lastText;
     
@@ -97,43 +100,53 @@ public class XMLToSchema extends DefaultHandler
     {
         if (qName.equals(XML.EL_TABLE))
         {
-            Table table = (Table) dboStack.pop();
+            Table table = (Table) stack.pop();
             schema.add(table);
         }
         else if (qName.equals(XML.EL_COLUMN))
         {
-            Column column = (Column) dboStack.pop();
-            Table table = (Table) dboStack.peek();
+            Column column = (Column) stack.pop();
+            Table table = (Table) stack.peek();
             table.getColumns().add(column);
         }
         else if (qName.equals(XML.EL_PRIMARY_KEY))
         {
-            PrimaryKey pk = (PrimaryKey) dboStack.pop();
-            Table table = (Table) dboStack.peek();
+            PrimaryKey pk = (PrimaryKey) stack.pop();
+            Table table = (Table) stack.peek();
             table.setPrimaryKey(pk);
         }
         else if (qName.equals(XML.EL_FOREIGN_KEY))
         {
-            ForeignKey fk = (ForeignKey) dboStack.pop();
-            Table table = (Table) dboStack.peek();
+            ForeignKey fk = (ForeignKey) stack.pop();
+            Table table = (Table) stack.peek();
             table.getForeignKeys().add(fk);
         }
         else if (qName.equals(XML.EL_INDEX))
         {
-            Index index = (Index) dboStack.pop();
-            Table table = (Table) dboStack.peek();
+            Index index = (Index) stack.pop();
+            Table table = (Table) stack.peek();
             table.getIndexes().add(index);
         }
         else if (qName.equals(XML.EL_SEQUENCE))
         {
-            Sequence seq = (Sequence) dboStack.pop();
+            Sequence seq = (Sequence) stack.pop();
             schema.add(seq);
+        }
+        else if (qName.equals(XML.EL_VALIDATOR))
+        {
+            @SuppressWarnings("unchecked")
+            DbValidator<? extends DbObject> validator = (DbValidator<? extends DbObject>) stack.pop();
+            DbObject dbo = (DbObject) stack.peek();
+            dbo.getValidators().add(validator);
+        }
+        else if (qName.equals(XML.EL_PROPERTY))
+        {
+            //stack.pop();
         }
     }
 
-
     
-    
+    @SuppressWarnings("unchecked")
     @Override
     public void startElement(String uri, String localName, String qName, Attributes atts)
                 throws SAXException
@@ -146,30 +159,50 @@ public class XMLToSchema extends DefaultHandler
         }
         else if (qName.equals(XML.EL_TABLE))
         {
-            dboStack.push(new Table(atts.getValue(XML.ATTR_NAME)));
+            stack.push(new Table(atts.getValue(XML.ATTR_NAME)));
         }
         else if (qName.equals(XML.EL_COLUMN))
         {
-            dboStack.push(new Column(atts.getValue(XML.ATTR_NAME)));
+            stack.push(new Column(atts.getValue(XML.ATTR_NAME)));
         }
         else if (qName.equals(XML.EL_PRIMARY_KEY))
         {
-            dboStack.push(new PrimaryKey(atts.getValue(XML.ATTR_NAME)));
+            stack.push(new PrimaryKey(atts.getValue(XML.ATTR_NAME)));
         }
         else if (qName.equals(XML.EL_FOREIGN_KEY))
         {
-            dboStack.push(new ForeignKey(atts.getValue(XML.ATTR_NAME)));
+            stack.push(new ForeignKey(atts.getValue(XML.ATTR_NAME)));
         }
         else if (qName.equals(XML.EL_INDEX))
         {
             Index index = new Index(atts.getValue(XML.ATTR_NAME));
             boolean unique = Boolean.parseBoolean(atts.getValue(XML.ATTR_UNIQUE));
             index.setUnique(unique);
-            dboStack.push(index);
+            stack.push(index);
         }
         else if (qName.equals(XML.EL_SEQUENCE))
         {
-            dboStack.push(new Sequence(atts.getValue(XML.ATTR_NAME)));
+            stack.push(new Sequence(atts.getValue(XML.ATTR_NAME)));
+        }
+        else if (qName.equals(XML.EL_VALIDATOR))
+        {
+            String className = atts.getValue(XML.ATTR_CLASS);
+            DbValidator<? extends DbObject> validator = null;
+            try
+            {
+                validator = (DbValidator<? extends DbObject>) Class.forName(className).newInstance();
+            }
+            catch (Throwable e)
+            {
+                throw new RuntimeException("Couldn't create validator, class: " + className, e);
+            }
+            
+            stack.push(validator);
+        }
+        else if (qName.equals(XML.EL_PROPERTY))
+        {
+            String name = atts.getValue(XML.ATTR_NAME);
+            stack.push(name);
         }
     }
 
@@ -182,41 +215,52 @@ public class XMLToSchema extends DefaultHandler
         {
             if (lastTag.equals(XML.EL_TYPE))
             {
-                Column column = (Column) dboStack.peek();
+                Column column = (Column) stack.peek();
                 column.setType(lastText);
             }
             else if (lastTag.equals(XML.EL_NULLABLE))
             {
-                Column column = (Column) dboStack.peek();
+                Column column = (Column) stack.peek();
                 column.setNullable(Boolean.parseBoolean(lastText));
             }
             else if (lastTag.equals(XML.EL_COLUMN_NAME))
             {
-                if (dboStack.peek() instanceof PrimaryKey)
+                if (stack.peek() instanceof PrimaryKey)
                 {
-                    PrimaryKey pk = (PrimaryKey) dboStack.peek();
+                    PrimaryKey pk = (PrimaryKey) stack.peek();
                     pk.getColumnNames().add(lastText);
                 }
-                else if (dboStack.peek() instanceof Index)
+                else if (stack.peek() instanceof Index)
                 {
-                    Index index = (Index) dboStack.peek();
+                    Index index = (Index) stack.peek();
                     index.getColumnNames().add(lastText);
                 }
             }
             else if (lastTag.equals(XML.EL_LOCAL_COLUMN))
             {
-                ForeignKey fk = (ForeignKey) dboStack.peek();
+                ForeignKey fk = (ForeignKey) stack.peek();
                 fk.setLocalColumn(lastText);
             }
             else if (lastTag.equals(XML.EL_TARGET_TABLE))
             {
-                ForeignKey fk = (ForeignKey) dboStack.peek();
+                ForeignKey fk = (ForeignKey) stack.peek();
                 fk.setTargetTable(lastText);
             }
             else if (lastTag.equals(XML.EL_TARGET_COLUMN))
             {
-                ForeignKey fk = (ForeignKey) dboStack.peek();
+                ForeignKey fk = (ForeignKey) stack.peek();
                 fk.setTargetColumn(lastText);
+            }
+            else if (lastTag.equals(XML.EL_PROPERTY))
+            {
+                String propValue = lastText;
+                String propName = (String) stack.pop();
+                if (stack.peek() instanceof DbValidator)
+                {
+                    @SuppressWarnings("unchecked")
+                    DbValidator<? extends DbObject> validator = (DbValidator<? extends DbObject>) stack.peek();
+                    validator.setProperty(propName, propValue);
+                }
             }
         }
     }

@@ -28,9 +28,12 @@ import java.io.InputStream;
 import java.util.Iterator;
 
 import org.alfresco.util.schemacomp.model.DbObject;
+import org.alfresco.util.schemacomp.model.Index;
 import org.alfresco.util.schemacomp.model.Schema;
 import org.alfresco.util.schemacomp.model.Sequence;
 import org.alfresco.util.schemacomp.model.Table;
+import org.alfresco.util.schemacomp.validator.DbValidator;
+import org.alfresco.util.schemacomp.validator.NameValidator;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -89,11 +92,17 @@ public class XMLToSchemaTest
         assertEquals("nodeRef", table.getForeignKeys().get(0).getTargetColumn());
         
         assertEquals(1, table.getIndexes().size());
-        assertEquals("idx_node_by_id", table.getIndexes().get(0).getName());
-        assertEquals(true, table.getIndexes().get(0).isUnique());        
-        assertEquals(2, table.getIndexes().get(0).getColumnNames().size());
-        assertEquals("id", table.getIndexes().get(0).getColumnNames().get(0));
-        assertEquals("nodeRef", table.getIndexes().get(0).getColumnNames().get(1));
+        Index index = table.getIndexes().get(0);
+        assertEquals("idx_node_by_id", index.getName());
+        assertEquals(true, index.isUnique());        
+        assertEquals(2, index.getColumnNames().size());
+        assertEquals("id", index.getColumnNames().get(0));
+        assertEquals("nodeRef", index.getColumnNames().get(1));
+        assertEquals(1, index.getValidators().size());
+        DbValidator<? extends DbObject> validator = index.getValidators().get(0);
+        assertEquals(NameValidator.class, validator.getClass());
+        assertEquals(1, validator.getPropertyNames().size());
+        assertEquals("idx_.+", validator.getProperty("pattern"));
         
         assertEquals("node_seq", ((Sequence) objects.next()).getName());
         assertEquals("person_seq", ((Sequence) objects.next()).getName());

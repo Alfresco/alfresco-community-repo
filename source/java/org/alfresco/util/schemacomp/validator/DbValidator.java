@@ -18,6 +18,8 @@
  */
 package org.alfresco.util.schemacomp.validator;
 
+import java.util.Set;
+
 import org.alfresco.util.schemacomp.DiffContext;
 import org.alfresco.util.schemacomp.model.DbObject;
 
@@ -27,7 +29,13 @@ import org.alfresco.util.schemacomp.model.DbObject;
  * 
  * @author Matt Ward
  */
-public interface DbValidator
+public interface DbValidator<T extends DbObject>
 {
-    void validate(DbObject reference, DbObject target, DiffContext ctx);
+    void validate(T reference, T target, DiffContext ctx);
+    
+    void setProperty(String name, String value);
+    
+    String getProperty(String name);
+    
+    Set<String> getPropertyNames();
 }

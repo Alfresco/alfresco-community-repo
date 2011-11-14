@@ -18,10 +18,14 @@
  */
 package org.alfresco.util.schemacomp.model;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.alfresco.util.schemacomp.DbObjectVisitor;
 import org.alfresco.util.schemacomp.DiffContext;
 import org.alfresco.util.schemacomp.Results;
 import org.alfresco.util.schemacomp.Result.Strength;
+import org.alfresco.util.schemacomp.validator.DbValidator;
 
 /**
  * All database objects to be modelled for schema comparisons must implement this interface, examples
@@ -86,4 +90,20 @@ public interface DbObject
      * @param parent
      */
     void setParent(DbObject parent);
+    
+    
+    /**
+     * Retrieve the list of validators associated with this database object.
+     * 
+     * @see DbValidator
+     * @return DbValidator List
+     */
+    List<DbValidator<? extends DbObject>> getValidators();
+    
+    /**
+     * Set/override the validators associated with this database object.
+     * 
+     * @param validators
+     */
+    void setValidators(List<DbValidator<? extends DbObject>> validators);
 }

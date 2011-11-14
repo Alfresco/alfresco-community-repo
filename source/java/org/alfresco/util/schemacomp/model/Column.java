@@ -21,7 +21,6 @@ package org.alfresco.util.schemacomp.model;
 import org.alfresco.util.schemacomp.DbObjectVisitor;
 import org.alfresco.util.schemacomp.DbProperty;
 import org.alfresco.util.schemacomp.DiffContext;
-import org.alfresco.util.schemacomp.Results;
 import org.alfresco.util.schemacomp.Result.Strength;
 
 /**
@@ -116,7 +115,6 @@ public class Column extends AbstractDbObject
     @Override
     protected void doDiff(DbObject right, DiffContext ctx, Strength strength)
     {
-        Results differences = ctx.getDifferences();
         DbProperty thisTypeProp = new DbProperty(this, "type");
         DbProperty thisNullableProp = new DbProperty(this, "nullable");
         

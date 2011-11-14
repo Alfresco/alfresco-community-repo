@@ -18,8 +18,8 @@
  */
 package org.alfresco.util.schemacomp.validator;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import org.alfresco.util.schemacomp.DbProperty;
@@ -36,7 +36,7 @@ import org.hibernate.dialect.Dialect;
  * 
  * @author Matt Ward
  */
-public class NameValidator implements DbValidator
+public class NameValidator implements DbValidator<DbObject>
 {
     private Pattern pattern;
     
@@ -57,5 +57,42 @@ public class NameValidator implements DbValidator
     public void setPattern(Pattern pattern)
     {
         this.pattern = pattern; 
+    }
+
+    
+    public Pattern getPattern()
+    {
+        return this.pattern;
+    }
+
+    
+    @Override
+    public void setProperty(String name, String value)
+    {
+        if (name.equals("pattern") && value != null)
+        {
+            Pattern pattern = Pattern.compile(value); 
+            setPattern(pattern);
+        }
+    }
+
+
+    @Override
+    public String getProperty(String name)
+    {
+        if (name.equals("pattern") && pattern != null)
+        {
+            return pattern.toString();
+        }
+        return null;
+    }
+
+
+    @Override
+    public Set<String> getPropertyNames()
+    {
+        Set<String> props = new TreeSet<String>();
+        props.add("pattern");
+        return props;
     }
 }

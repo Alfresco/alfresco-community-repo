@@ -29,7 +29,7 @@ import org.alfresco.util.schemacomp.model.DbObject;
 public class NullValidator implements DbValidator
 {
     @Override
-    public void validate(DbObject dbo, DiffContext ctx)
+    public void validate(DbObject reference, DbObject target, DiffContext ctx)
     {
         // Do nothing
     }

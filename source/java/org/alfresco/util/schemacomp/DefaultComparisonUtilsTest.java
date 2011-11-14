@@ -58,7 +58,7 @@ public class DefaultComparisonUtilsTest
     public void setUp()
     {
         comparisonUtils = new DefaultComparisonUtils();
-        ctx = new DiffContext(dialect, differences, new ArrayList<ValidationResult>());
+        ctx = new DiffContext(dialect, differences, new ArrayList<ValidationResult>(), null, null);
     }
     
     @Test

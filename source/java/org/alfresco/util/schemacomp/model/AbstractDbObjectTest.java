@@ -60,7 +60,7 @@ public class AbstractDbObjectTest
     public void setUp() throws Exception
     {
         dbObject = new ConcreteDbObject("the_object");
-        ctx = new DiffContext(dialect, differences, new ArrayList<ValidationResult>());
+        ctx = new DiffContext(dialect, differences, new ArrayList<ValidationResult>(), null, null);
     }
 
     @Test

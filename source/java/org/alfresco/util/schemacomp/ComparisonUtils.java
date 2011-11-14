@@ -20,9 +20,11 @@
 package org.alfresco.util.schemacomp;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.alfresco.util.schemacomp.Result.Strength;
 import org.alfresco.util.schemacomp.model.DbObject;
+import org.alfresco.util.schemacomp.model.Schema;
 
 /**
  * Utilities for comparing data structures in the context of comparing two database schemas.
@@ -32,11 +34,14 @@ import org.alfresco.util.schemacomp.model.DbObject;
 public interface ComparisonUtils
 {
     /**
+     * @deprecated This method ignores the fact that multiple objects may match.
      * @param objToFind
      * @return
      */
     DbObject findSameObjectAs(Collection<? extends DbObject> objects, final DbObject objToFind);
 
+    List<DbObject> findEquivalentObjects(Schema schema, DbObject objToMatch);
+    
     void compareSimpleCollections(DbProperty leftProperty, DbProperty rightProperty,
                 DiffContext ctx, Strength strength);
 

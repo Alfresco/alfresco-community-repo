@@ -61,7 +61,7 @@ public abstract class DbObjectTestBase<T extends AbstractDbObject>
         // Check that the correct calls happened in the correct order.
         List<Object> mocks = getMocksUsedInDiff();
         inOrder = inOrder(mocks.toArray());
-        ctx = new DiffContext(dialect, differences, new ArrayList<ValidationResult>());
+        ctx = new DiffContext(dialect, differences, new ArrayList<ValidationResult>(), null, null);
     }
     
     

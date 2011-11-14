@@ -122,17 +122,24 @@ public class Index extends AbstractDbObject
         {
             Index other = (Index) o;
             
-            if (getName() != null)
+            // An index can only be 'the same' if it belongs to the correct table.
+            if (!getParent().sameAs(other.getParent()))
             {
-                if (getName().equals(other.getName()))
-                {
-                    return true;
-                }
-                else
-                {
-                    return columnNames.equals(other.getColumnNames());
-                }
+                return false;
             }
+            
+            // If it has the same name, then it is intended to be the same index
+            if (getName() != null && getName().equals(other.getName()))
+            {
+                return true;
+            }
+            else
+            {
+                // The name may be different, but if it has the same parent table (see above)
+                // and indexes the same columns, then it is the same index.
+                return columnNames.equals(other.getColumnNames());
+            }
+        
         }
         
         return false;

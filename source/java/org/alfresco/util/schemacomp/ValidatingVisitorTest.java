@@ -22,8 +22,10 @@ package org.alfresco.util.schemacomp;
 import static org.junit.Assert.assertSame;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.alfresco.util.schemacomp.model.Column;
+import org.alfresco.util.schemacomp.model.DbObject;
 import org.alfresco.util.schemacomp.model.ForeignKey;
 import org.alfresco.util.schemacomp.model.Index;
 import org.alfresco.util.schemacomp.model.PrimaryKey;
@@ -46,11 +48,17 @@ public class ValidatingVisitorTest
 {
     private DiffContext ctx;
     private ValidatingVisitor visitor;
+    private Table table;
+    private Schema refSchema;
+    private Schema targetSchema;
+    private Index index;
     
     @Before
     public void setUp() throws Exception
     {
-        ctx = new DiffContext(new MySQL5InnoDBDialect(), new Results(), new ArrayList<ValidationResult>());
+        index = new Index(table, "index_name", new ArrayList<String>());
+        ctx = new DiffContext(new MySQL5InnoDBDialect(), new Results(),
+                    new ArrayList<ValidationResult>(), refSchema, targetSchema);
         visitor = new ValidatingVisitor(ctx);
     }
 
@@ -58,7 +66,7 @@ public class ValidatingVisitorTest
     public void canGetCorrectValidator()
     {
        // Get references to the validator instances to test for
-       DbValidator nullValidator = visitor.nullValidator;
+       DbValidator nullValidator = visitor.defaultValidator;
        DbValidator nameValidator = visitor.indexNameValidator;
        
        assertSame(nullValidator, visitor.getValidatorFor(Column.class)); 
@@ -74,10 +82,13 @@ public class ValidatingVisitorTest
     public void canValidate()
     {
         visitor.indexNameValidator = Mockito.mock(NameValidator.class);
-        Index index = new Index(null, "index_name", new ArrayList<String>());
+        visitor.comparisonUtils = Mockito.mock(ComparisonUtils.class);
+        Mockito.when(visitor.comparisonUtils.findEquivalentObjects(refSchema, index)).
+            thenReturn(Arrays.asList((DbObject)index));
         
+        // Validate all instances of the target schema's indexes that are equivalent to this index
         visitor.visit(index);
         
-        Mockito.verify(visitor.indexNameValidator).validate(index, ctx);
+        Mockito.verify(visitor.indexNameValidator).validate(index, index, ctx);
     }
 }

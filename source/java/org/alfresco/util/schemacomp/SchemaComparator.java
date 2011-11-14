@@ -47,7 +47,7 @@ public class SchemaComparator
     {
         this.leftSchema = left;
         this.rightSchema = right;
-        this.ctx = new DiffContext(dialect, new Results(), new ArrayList<ValidationResult>());
+        this.ctx = new DiffContext(dialect, new Results(), new ArrayList<ValidationResult>(), leftSchema, rightSchema);
     }
     
     

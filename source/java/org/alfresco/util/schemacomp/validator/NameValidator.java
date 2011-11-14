@@ -38,49 +38,24 @@ import org.hibernate.dialect.Dialect;
  */
 public class NameValidator implements DbValidator
 {
-    private Map<Class<? extends Dialect>, Pattern> namePatterns = new HashMap<Class<? extends Dialect>, Pattern>();
-    private Pattern defaultNamePattern;
+    private Pattern pattern;
     
     @Override
-    public void validate(DbObject dbo, DiffContext ctx)
+    public void validate(DbObject reference, DbObject target, DiffContext ctx)
     {
-        String name = dbo.getName();
+        String name = target.getName();
         
-        Pattern pattern = namePatterns.get(ctx.getDialect().getClass());
-        
-        ValidationResult result = new ValidationResult(new DbProperty(dbo, "name"));
+        ValidationResult result = new ValidationResult(new DbProperty(target, "name"));
         
         if (pattern != null && !pattern.matcher(name).matches())
         {
             ctx.getValidationResults().add(result);
         }
-        else if (defaultNamePattern != null && !defaultNamePattern.matcher(name).matches())
-        {   
-            ctx.getValidationResults().add(result);
-        }
     }
 
 
-    /**
-     * Specify the set of mappings of database dialect to acceptable name patterns.
-     * 
-     * @param namePatterns
-     */
-    public void setNamePatterns(Map<Class<? extends Dialect>, Pattern> namePatterns)
+    public void setPattern(Pattern pattern)
     {
-        this.namePatterns = namePatterns; 
-    }
-    
-    /**
-     * If during validation, there is no specific name validation pattern for the supplied {@link Dialect}
-     * then the defaultNamePattern property will be used - if not null.
-     * <p>
-     * If defaultNamePattern is null then a validation failure will be produced.
-     * 
-     * @param defaultNamePattern
-     */
-    public void setDefaultNamePattern(Pattern defaultNamePattern)
-    {
-        this.defaultNamePattern = defaultNamePattern;
+        this.pattern = pattern; 
     }
 }

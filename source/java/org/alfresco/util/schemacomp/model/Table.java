@@ -220,8 +220,11 @@ public class Table extends AbstractDbObject
     private List<DbObject> getChildren()
     {
         List<DbObject> children = new ArrayList<DbObject>();
-        children.addAll(columns); 
-        children.add(primaryKey);
+        children.addAll(columns);
+        if (primaryKey != null)
+        {
+            children.add(primaryKey);
+        }
         children.addAll(foreignKeys);
         children.addAll(indexes);
         return children;

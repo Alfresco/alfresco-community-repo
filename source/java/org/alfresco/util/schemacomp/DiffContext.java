@@ -20,6 +20,7 @@ package org.alfresco.util.schemacomp;
 
 import java.util.List;
 
+import org.alfresco.util.schemacomp.model.Schema;
 import org.hibernate.dialect.Dialect;
 
 /**
@@ -34,16 +35,21 @@ public class DiffContext
     private final Dialect dialect;
     private final Results differences;
     private final List<ValidationResult> validationResults;
+    private final Schema referenceSchema;
+    private final Schema targetSchema;
     
     /**
      * @param dialect
      * @param differences
      */
-    public DiffContext(Dialect dialect, Results differences, List<ValidationResult> validationResults)
+    public DiffContext(Dialect dialect, Results differences, List<ValidationResult> validationResults,
+                Schema referenceSchema, Schema targetSchema)
     {
         this.dialect = dialect;
         this.differences = differences;
         this.validationResults = validationResults;
+        this.referenceSchema = referenceSchema;
+        this.targetSchema = targetSchema;
     }
 
     /**
@@ -69,6 +75,20 @@ public class DiffContext
     {
         return this.validationResults;
     }
-    
-    
+
+    /**
+     * @return the referenceSchema
+     */
+    public Schema getReferenceSchema()
+    {
+        return this.referenceSchema;
+    }
+
+    /**
+     * @return the targetSchema
+     */
+    public Schema getTargetSchema()
+    {
+        return this.targetSchema;
+    }
 }

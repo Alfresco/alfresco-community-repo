@@ -21,10 +21,12 @@ package org.alfresco.util.schemacomp;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
-import org.alfresco.util.schemacomp.Result.Strength;
 import org.alfresco.util.schemacomp.Difference.Where;
+import org.alfresco.util.schemacomp.Result.Strength;
 import org.alfresco.util.schemacomp.model.DbObject;
+import org.alfresco.util.schemacomp.model.Schema;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
 
@@ -54,6 +56,18 @@ public class DefaultComparisonUtils implements ComparisonUtils
     }
 
     
+    
+    @Override
+    public List<DbObject> findEquivalentObjects(Schema schema, DbObject objToMatch)
+    {
+        EquivalentObjectSeeker objectSeeker = new EquivalentObjectSeeker(objToMatch);
+        schema.accept(objectSeeker);
+        
+        return objectSeeker.getMatches();
+    }
+
+
+
     @Override
     public void compareSimpleCollections(DbProperty leftProp,
                 DbProperty rightProp, DiffContext ctx, Strength strength)
@@ -233,6 +247,35 @@ public class DefaultComparisonUtils implements ComparisonUtils
         {
             throw new IllegalArgumentException(
                         "Property value is a DbObject - this method shouldn't be used to compare this type: " + obj);
+        }
+    }
+    
+    
+    private static class EquivalentObjectSeeker implements DbObjectVisitor
+    {
+        private final List<DbObject> matches = new ArrayList<DbObject>();
+        private final DbObject objToMatch;
+        
+        public EquivalentObjectSeeker(DbObject objToMatch)
+        {
+            this.objToMatch = objToMatch;
+        }
+        
+        @Override
+        public void visit(DbObject dbObject)
+        {
+            if (objToMatch.sameAs(dbObject))
+            {
+                matches.add(dbObject);
+            }
+        }
+
+        /**
+         * @return the matches
+         */
+        public List<DbObject> getMatches()
+        {
+            return this.matches;
         }
     }
 }

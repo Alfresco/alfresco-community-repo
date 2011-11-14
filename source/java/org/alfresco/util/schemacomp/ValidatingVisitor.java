@@ -18,6 +18,9 @@
  */
 package org.alfresco.util.schemacomp;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.alfresco.util.schemacomp.model.DbObject;
 import org.alfresco.util.schemacomp.model.Index;
 import org.alfresco.util.schemacomp.validator.DbValidator;
@@ -33,7 +36,8 @@ public class ValidatingVisitor implements DbObjectVisitor
 {
     private DiffContext ctx;
     protected NameValidator indexNameValidator = new NameValidator();
-    protected NullValidator nullValidator = new NullValidator();
+    protected NullValidator defaultValidator = new NullValidator();
+    protected ComparisonUtils comparisonUtils = new DefaultComparisonUtils();
 
     public ValidatingVisitor(DiffContext ctx)
     {
@@ -49,14 +53,21 @@ public class ValidatingVisitor implements DbObjectVisitor
         }
         else
         {
-            return nullValidator;
+            return defaultValidator;
         }
     }
 
     @Override
-    public void visit(DbObject dbObject)
+    public void visit(DbObject referenceObj)
     {
-        DbValidator validator = getValidatorFor(dbObject.getClass());
-        validator.validate(dbObject, ctx);
+        DbValidator validator = getValidatorFor(referenceObj.getClass());
+        List<DbObject> matches = comparisonUtils.findEquivalentObjects(ctx.getTargetSchema(), referenceObj);
+        
+        // TODO: if matches.size() > 1 then warn of possible redundant database objects
+        
+        for (DbObject target : matches)
+        {
+            validator.validate(referenceObj, target, ctx);            
+        }
     }
 }

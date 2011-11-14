@@ -287,10 +287,11 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
                     }
                     finfo.setModifyDateTime(fstate.getModifyDateTime());
                 }
-                if ( fstate.hasAllocationSize() && fstate.getAllocationSize() > info.getAllocationSize())
-                {
-                    finfo.setAllocationSize( fstate.getAllocationSize());
-                }
+
+//                if ( fstate.hasAllocationSize() && fstate.getAllocationSize() > info.getAllocationSize())
+//                {
+//                    finfo.setAllocationSize( fstate.getAllocationSize());
+//                }
                 
                 if(logger.isDebugEnabled())
                 {

@@ -202,6 +202,10 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
                     fstate.setSharedAccess( params.getSharedAccess());
                     fstate.setFileStatus(FileStatus.FileExists);
                     fstate.updateAccessDateTime();
+                    
+                    fstate.setFileSize(x.getFileSize());
+                    fstate.updateChangeDateTime(x.getModifyDate());
+                    fstate.updateModifyDateTime(x.getModifyDate());
                 }
             }
 
@@ -218,6 +222,10 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
                     fstate.setProcessId(params.getProcessId());
                     fstate.setSharedAccess( params.getSharedAccess());
                     fstate.updateAccessDateTime();
+                    
+                    fstate.setFileSize(x.getFileSize());
+                    fstate.updateChangeDateTime(x.getModifyDate());
+                    fstate.updateModifyDateTime(x.getModifyDate());
                 }
             }
 
@@ -233,6 +241,10 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
                     fstate.setProcessId(params.getProcessId());
                     fstate.setSharedAccess( params.getSharedAccess());
                     fstate.updateAccessDateTime();
+                    
+                    fstate.setFileSize(x.getFileSize());
+                    fstate.updateChangeDateTime(x.getModifyDate());
+                    fstate.updateModifyDateTime(x.getModifyDate());
                 }
             }
 

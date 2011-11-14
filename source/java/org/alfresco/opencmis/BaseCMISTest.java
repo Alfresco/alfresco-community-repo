@@ -33,6 +33,7 @@ import org.alfresco.opencmis.mapping.CMISMapping;
 import org.alfresco.opencmis.search.CMISQueryService;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.NamespaceDAOImpl;
+import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
@@ -111,6 +112,8 @@ public abstract class BaseCMISTest extends TestCase
 
     protected VersionService versionService;
 
+    protected FullTextSearchIndexer luceneFTS;    
+
     public void setUp() throws Exception
     {
         serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");
@@ -144,6 +147,8 @@ public abstract class BaseCMISTest extends TestCase
         
         dictionaryDAO = (DictionaryDAO) ctx.getBean("dictionaryDAO");
         namespaceDao = (NamespaceDAOImpl) ctx.getBean("namespaceDAO");
+        luceneFTS = (FullTextSearchIndexer)ctx.getBean("LuceneFullTextSearchIndexer");
+        
         
         testTX = transactionService.getUserTransaction();
         testTX.begin();

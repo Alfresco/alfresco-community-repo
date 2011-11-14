@@ -241,6 +241,9 @@ public class QueryTest extends BaseCMISTest
     {
         super.setUp();
         
+        // If FTS kicks in at the wrong moment, it can skew the test results. Temporarily disable it during the test
+        this.luceneFTS.pause();
+
         DataTypeDefinition dataType = dictionaryService.getDataType(DataTypeDefinition.DATETIME);
         String analyserClassName = dataType.resolveAnalyserClassName();
         usesDateTimeAnalyser = analyserClassName.equals(DateTimeAnalyser.class.getCanonicalName());
@@ -493,6 +496,15 @@ public class QueryTest extends BaseCMISTest
         doc_count++;
         nodeService.setProperty(c10, ContentModel.PROP_VERSION_LABEL, "label");
     }
+    
+    @Override
+    protected void tearDown() throws Exception
+    {
+        super.tearDown();
+        this.luceneFTS.resume();
+    }
+
+
 
     private <T> T testQuery(String query, int size, boolean dump, String returnPropertyName, T returnType, boolean shouldThrow) throws Exception
     {

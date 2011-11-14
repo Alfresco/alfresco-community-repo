@@ -19,7 +19,6 @@
 
 package org.alfresco.repo.publishing;
 
-import static org.alfresco.model.ContentModel.ASSOC_CONTAINS;
 import static org.alfresco.repo.publishing.PublishingModel.ASPECT_PUBLISHED;
 import static org.alfresco.repo.publishing.PublishingModel.ASSOC_LAST_PUBLISHING_EVENT;
 import static org.alfresco.repo.publishing.PublishingModel.NAMESPACE;
@@ -272,7 +271,7 @@ public class ChannelImpl implements Channel
             name = GUID.generate();
         }
         QName assocName = QName.createQName(NAMESPACE, name);
-        ChildAssociationRef publishedAssoc = nodeService.createNode(root, ASSOC_CONTAINS, assocName, type, actualProps);
+        ChildAssociationRef publishedAssoc = nodeService.createNode(root, PublishingModel.ASSOC_PUBLISHED_NODES, assocName, type, actualProps);
         NodeRef publishedNode = publishedAssoc.getChildRef();
        return publishedNode;
     }

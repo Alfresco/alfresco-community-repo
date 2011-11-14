@@ -90,7 +90,8 @@ public interface PublishingModel
     public static final QName ASSOC_PUBLISHING_EVENT = QName.createQName(NAMESPACE, "publishingEventAssoc");
     public static final QName ASSOC_SOURCE = QName.createQName(NAMESPACE, "source");
     public static final QName ASSOC_LAST_PUBLISHING_EVENT= QName.createQName(NAMESPACE, "lastPublishingEvent");
-
+    public static final QName ASSOC_PUBLISHED_NODES = QName.createQName(NAMESPACE, "publishedNodes");
+    
     // Workflow Properties
     public static final QName PROP_WF_PUBLISHING_EVENT= QName.createQName(WF_NAMESPACE, "publishingEvent");
     public static final QName PROP_WF_SCHEDULED_PUBLISH_DATE= QName.createQName(WF_NAMESPACE, "scheduledPublishDate");

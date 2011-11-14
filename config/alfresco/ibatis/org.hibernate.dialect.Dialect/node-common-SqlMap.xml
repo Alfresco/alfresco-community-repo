@@ -735,6 +735,7 @@
             <foreach item="item" index="index" collection="ids" open="(" separator="," close=")">
                 #{item}
             </foreach>
+            <if test="deleted != null">and node.node_deleted = #{deleted}</if>
     </select>
     
     <sql id="select_NodeProperty_Results">

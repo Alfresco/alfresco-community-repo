@@ -3840,14 +3840,14 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             if (batch.size() >= batchSize)
             {
                 // Preload
-                cacheNodesNoBatch(selectNodesByIds(batch));
+                cacheNodesNoBatch(selectNodesByIds(batch, Boolean.FALSE));
                 batch.clear();
             }
         }
         // Load any remaining nodes
         if (batch.size() > 0)
         {
-            cacheNodesNoBatch(selectNodesByIds(batch));
+            cacheNodesNoBatch(selectNodesByIds(batch, Boolean.FALSE));
         }
     }
     
@@ -4048,7 +4048,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     protected abstract NodeEntity selectNodeById(Long id, Boolean deleted);
     protected abstract NodeEntity selectNodeByNodeRef(NodeRef nodeRef, Boolean deleted);
     protected abstract List<Node> selectNodesByUuids(Long storeId, SortedSet<String> uuids);
-    protected abstract List<Node> selectNodesByIds(SortedSet<Long> ids);
+    protected abstract List<Node> selectNodesByIds(SortedSet<Long> ids, Boolean deleted);
     protected abstract Map<NodeVersionKey, Map<NodePropertyKey, NodePropertyValue>> selectNodeProperties(Set<Long> nodeIds);
     protected abstract Map<NodeVersionKey, Map<NodePropertyKey, NodePropertyValue>> selectNodeProperties(Long nodeId);
     protected abstract Map<NodeVersionKey, Map<NodePropertyKey, NodePropertyValue>> selectNodeProperties(Long nodeId, Set<Long> qnameIds);

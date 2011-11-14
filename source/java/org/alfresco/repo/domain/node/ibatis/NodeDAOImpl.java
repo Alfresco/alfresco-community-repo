@@ -421,10 +421,16 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
 
     @SuppressWarnings("unchecked")
     @Override
-    protected List<Node> selectNodesByIds(SortedSet<Long> ids)
+    protected List<Node> selectNodesByIds(SortedSet<Long> ids, Boolean deleted)
     {
         NodeBatchLoadEntity nodeBatchLoadEntity = new NodeBatchLoadEntity();
+        // IDs
         nodeBatchLoadEntity.setIds(new ArrayList<Long>(ids));
+        // Deleted
+        if (deleted != null)
+        {
+            nodeBatchLoadEntity.setDeleted(deleted);
+        }
         
         return (List<Node>) template.selectList(SELECT_NODES_BY_IDS, nodeBatchLoadEntity);
     }

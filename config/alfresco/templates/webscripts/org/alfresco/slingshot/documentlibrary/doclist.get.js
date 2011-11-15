@@ -250,7 +250,7 @@ function getDoclist()
    
    if (paged && (totalRecords == requestTotalCountMax))
    {
-      paging.requestTotalCountMax = requestTotalCountMax;
+      paging.totalRecordsUpper = requestTotalCountMax;
    }
    
    return (

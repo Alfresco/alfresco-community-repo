@@ -44,13 +44,13 @@ public class SitesSpacePermissionsPatch extends AbstractPatch
 {
     // Message IDs
     private static final String MSG_SUCCESS = "patch.sitesSpacePermissions.result";
+    private static final String MSG_SUCCESS_NONE = "patch.sitesSpacePermissions.result.none";
     
     // Folders' names for path building
     private static final String PROPERTY_COMPANY_HOME_CHILDNAME = "spaces.company_home.childname";
     private static final String PROPERTY_SITES_CHILDNAME = "spaces.sites.childname";
     
     // Things we've found
-    private NodeRef companyHomeNodeRef;
     private NodeRef sitesNodeRef;
     
     // Dependencies
@@ -102,27 +102,13 @@ public class SitesSpacePermissionsPatch extends AbstractPatch
             throw new PatchException("Bootstrap property '" + PROPERTY_SITES_CHILDNAME + "' is not present");
         }
 
-        // Build the search string to get the company home node
+        // build the search string to get the sites node
         StringBuilder sb = new StringBuilder(256);
         sb.append("/").append(companyHomeChildName);
-        String xpath = sb.toString();
-        // get the company home
-        List<NodeRef> nodeRefs = searchService.selectNodes(storeRootNodeRef, xpath, null, namespaceService, false);
-        if (nodeRefs.size() == 0)
-        {
-            throw new PatchException("XPath didn't return any results: \n" + "   root: " + storeRootNodeRef + "\n" + "   xpath: " + xpath);
-        }
-        else if (nodeRefs.size() > 1)
-        {
-            throw new PatchException("XPath returned too many results: \n" + "   root: " + storeRootNodeRef + "\n" + "   xpath: " + xpath + "\n" + "   results: " + nodeRefs);
-        }
-        this.companyHomeNodeRef = nodeRefs.get(0);
-
-        // build the search string to get the sites node
         sb.append("/").append(sitesChildName);
-        xpath = sb.toString();
+        String xpath = sb.toString();
         // get the sites node
-        nodeRefs = searchService.selectNodes(storeRootNodeRef, xpath, null, namespaceService, false);
+        List<NodeRef> nodeRefs = searchService.selectNodes(storeRootNodeRef, xpath, null, namespaceService, false);
         if (nodeRefs.size() == 0)
         {
             throw new PatchException("XPath didn't return any results: \n" + "   root: " + storeRootNodeRef + "\n" + "   xpath: " + xpath);
@@ -146,15 +132,28 @@ public class SitesSpacePermissionsPatch extends AbstractPatch
           throw new IllegalStateException("Sites Space not found in Company Home!");
        }
        
-       // Remove the permission
-       permissionService.deletePermission(
-             sitesSpace,
-             PermissionService.ALL_AUTHORITIES,
-             PermissionService.CONTRIBUTOR
-       );
+       String msg = I18NUtil.getMessage(MSG_SUCCESS);
+       try
+       {
+           // Remove the permission
+           permissionService.deletePermission(
+                 sitesSpace,
+                 PermissionService.ALL_AUTHORITIES,
+                 PermissionService.CONTRIBUTOR
+           );
+       }
+       catch (IllegalStateException e)
+       {
+           if (e.getMessage().contains("SHARED"))
+           {
+               // ALF-11489: 'patch.sitesSpacePermissions' failed on upgrade 2.2.8 -> 3.4.6
+               // We are catching "Can not delete from this acl in a node context SHARED"
+               msg = I18NUtil.getMessage(MSG_SUCCESS_NONE);
+           }
+           // Something else
+       }
        
        // All done
-       String msg = I18NUtil.getMessage(MSG_SUCCESS);
        return msg;
     }
 }

@@ -20,6 +20,8 @@ package org.alfresco.repo.solr;
 
 import java.util.Set;
 
+import org.alfresco.repo.tenant.TenantService;
+
 /**
  * Bean for SOLR ACL readers.
  * 
@@ -31,11 +33,12 @@ public class AclReaders
     private Long aclId;
     private Set<String> readers;
     private long aclChangeSetId;
+    private String tenantDomain = TenantService.DEFAULT_DOMAIN;
     
     @Override
     public String toString()
     {
-        return "AclReaders [aclId=" + aclId + ", readers=" + readers + ", aclChangeSetId=" + aclChangeSetId + "]";
+        return "AclReaders [aclId=" + aclId + ", readers=" + readers + ", aclChangeSetId=" + aclChangeSetId + ", tenantDomain=" + tenantDomain + "]";
     }
     public Long getAclId()
     {
@@ -61,5 +64,12 @@ public class AclReaders
     {
         this.aclChangeSetId = aclChangeSetId;
     }
-    
+    public String getTenantDomain()
+    {
+        return tenantDomain;
+    }
+    public void setTenantDomain(String tenantDomain)
+    {
+        this.tenantDomain = tenantDomain;
+    }
 }

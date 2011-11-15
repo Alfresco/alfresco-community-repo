@@ -39,6 +39,7 @@ import org.alfresco.repo.domain.node.NodeDAO.ChildAssocRefQueryCallback;
 import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.domain.solr.SOLRDAO;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -185,6 +186,8 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
              * This is an N+1 query that should, in theory, make use of cached ACL readers data.
              */
 
+            Map<Long, String> aclChangeSetTenant = new HashMap<Long, String>(aclIds.size());
+            
             List<AclReaders> aclsReaders = new ArrayList<AclReaders>(aclIds.size() * 10);
             for (Long aclId : aclIds)
             {
@@ -192,10 +195,30 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                 AclReaders readers = new AclReaders();
                 readers.setAclId(aclId);
                 readers.setReaders(readersSet);
-                readers.setAclChangeSetId(aclDAO.getAccessControlList(aclId).getProperties().getAclChangeSetId());
+                
+                Long aclChangeSetId = aclDAO.getAccessControlList(aclId).getProperties().getAclChangeSetId();
+                readers.setAclChangeSetId(aclChangeSetId);
+                
+                if (AuthenticationUtil.isMtEnabled())
+                {
+                	// MT - for now, derive the tenant for acl (via acl change set)
+                    String tenantDomain = aclChangeSetTenant.get(aclChangeSetId);
+                    if (tenantDomain == null)
+                    {
+                        tenantDomain = getTenant(aclId, aclChangeSetId);
+                        if (tenantDomain == null)
+                        {
+                            // skip this acl !
+                            continue;
+                        }
+                        aclChangeSetTenant.put(aclChangeSetId, tenantDomain);
+                    }
+                    readers.setTenantDomain(tenantDomain);
+                }
+                
                 aclsReaders.add(readers);
             }
-
+            
             return aclsReaders;
         }
         else
@@ -203,7 +226,51 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
             return Collections.<AclReaders>emptyList();
         }
     }
-
+    
+    private String getTenant(long aclId, long aclChangeSetId)
+    {
+        String tenantDomain = getAclTenant(aclId);
+        if (tenantDomain == null)
+        {
+            List<Long> aclChangeSetIds = new ArrayList<Long>(1);
+            aclChangeSetIds.add(aclChangeSetId);
+            
+            List<Acl> acls = solrDAO.getAcls(aclChangeSetIds, null, 1024);
+            for (Acl acl : acls)
+            {
+                tenantDomain = getAclTenant(acl.getId());
+                if (tenantDomain != null)
+                {
+                    break;
+                }
+            }
+            
+            if (tenantDomain == null)
+            {
+                // tenant not found - log warning ?
+                tenantDomain = null; // temp - for debug breakpoint only
+            }
+        }
+        return tenantDomain;
+    }
+    
+    private String getAclTenant(long aclId)
+    {
+        List<Long> nodeIds = aclDAO.getADMNodesByAcl(aclId, 1);
+        if (nodeIds.size() == 0)
+        {
+            return null;
+        }
+        
+        Pair<Long, NodeRef> nodePair = nodeDAO.getNodePair(nodeIds.get(0));
+        if (nodePair == null)
+        {
+            return null;
+        }
+        
+        return tenantService.getDomain(nodePair.getSecond().getStoreRef().getIdentifier());
+    }
+    
     @Override
     public List<Transaction> getTransactions(Long minTxnId, Long fromCommitTime, int maxResults)
     {
@@ -519,12 +586,16 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
 
                 nodeMetaData.setPaths(paths);
             }
-
+            
+            NodeRef nodeRef = pair.getSecond();
+            
             if(includeNodeRef)
             {
-                nodeMetaData.setNodeRef(pair.getSecond());
+                nodeMetaData.setNodeRef(tenantService.getBaseName(nodeRef, true));
             }
-        
+            
+            nodeMetaData.setTenantDomain(tenantService.getDomain(nodeRef.getStoreRef().getIdentifier()));
+            
             if(includeChildAssociations)
             {
                 final List<ChildAssociationRef> childAssocs = new ArrayList<ChildAssociationRef>(100);
@@ -546,7 +617,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                     public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair, Pair<Long, NodeRef> parentNodePair,
                             Pair<Long, NodeRef> childNodePair)
                     {
-                        childAssocs.add(childAssocPair.getSecond());
+                        childAssocs.add(tenantService.getBaseName(childAssocPair.getSecond(), true));
                         return true;
                     }
                     
@@ -612,7 +683,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                     public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair,
                             Pair<Long, NodeRef> parentNodePair, Pair<Long, NodeRef> childNodePair)
                     {
-                        parentAssocs.add(childAssocPair.getSecond());
+                        parentAssocs.add(tenantService.getBaseName(childAssocPair.getSecond(), true));
                         return true;
                     }
 

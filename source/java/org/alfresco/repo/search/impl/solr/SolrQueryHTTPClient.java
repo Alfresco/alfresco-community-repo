@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -30,15 +30,14 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.httpclient.HttpClientFactory;
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParserException;
 import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchParameters.FieldFacet;
 import org.alfresco.service.cmr.search.SearchParameters.FieldFacetMethod;
@@ -76,6 +75,8 @@ public class SolrQueryHTTPClient
     private NodeService nodeService;
 
     private PermissionService permissionService;
+    
+    private TenantService tenantService;
 
     private Map<String, String> languageMappings;
 
@@ -121,6 +122,11 @@ public class SolrQueryHTTPClient
     {
         this.permissionService = permissionService;
     }
+    
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
 
     public void setLanguageMappings(Map<String, String> languageMappings)
     {
@@ -136,11 +142,6 @@ public class SolrQueryHTTPClient
     {   
         try
         {
-//            Simple demo
-//            FieldFacet ff = new FieldFacet("@"+ContentModel.PROP_NAME);
-//            ff.setLimit(2);
-//            searchParameters.addFieldFacet(ff);
-            
             URLCodec encoder = new URLCodec();
             StringBuilder url = new StringBuilder();
             url.append(baseUrl);
@@ -216,25 +217,9 @@ public class SolrQueryHTTPClient
             }
             url.append(sortBuffer);
 
-            // Authorities go over in body
-
-            StringBuilder authQuery = new StringBuilder();
-            for (String authority : permissionService.getAuthorisations())
-            {
-                if (authQuery.length() > 0)
-                {
-                    authQuery.append(" ");
-                }
-                authQuery.append("|AUTHORITY:\"").append(authority).append("\"");
-            }
-
-            // url.append("&fq=");
-            // encoder = new URLCodec();
-            // url.append(encoder.encode(authQuery.toString(), "UTF-8"));
-
             url.append("&fq=").append(encoder.encode("{!afts}AUTHORITY_FILTER_FROM_JSON", "UTF-8"));
-
-            // facets would go on url?
+            
+            url.append("&fq=").append(encoder.encode("{!afts}TENANT_FILTER_FROM_JSON", "UTF-8"));
 
             if(searchParameters.getFieldFacets().size() > 0)
             {
@@ -275,9 +260,20 @@ public class SolrQueryHTTPClient
             
             JSONObject body = new JSONObject();
             body.put("query", searchParameters.getQuery());
-            // body.put("defaultField", searchParameters.getDefaultFieldName());
 
-            body.put("filter", authQuery);
+            
+            // Authorities go over as is - and tenant mangling and query building takes place on the SOLR side
+
+            JSONArray authorities = new JSONArray();
+            for (String authority : permissionService.getAuthorisations())
+            {
+                authorities.put(authority);
+            }
+            body.put("authorities", authorities);
+            
+            JSONArray tenants = new JSONArray();
+            tenants.put(tenantService.getCurrentUserDomain());
+            body.put("tenants", tenants);
 
             JSONArray locales = new JSONArray();
             for (Locale currentLocale : searchParameters.getLocales())

@@ -277,10 +277,17 @@ public class MultiTServiceImpl implements TenantService
      * @see org.alfresco.repo.tenant.TenantService#getBaseName(org.alfresco.service.cmr.repository.NodeRef)
      */
     public NodeRef getBaseName(NodeRef nodeRef)
-    { 
+    {
+        return getBaseName(nodeRef, false);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantService#getBaseName(org.alfresco.service.cmr.repository.NodeRef, boolean)
+     */
+    public NodeRef getBaseName(NodeRef nodeRef, boolean forceForNonTenant)
+    {
         if (nodeRef == null) { return null; }
-
-        return new NodeRef(nodeRef.getStoreRef().getProtocol(), getBaseName(nodeRef.getStoreRef().getIdentifier()), nodeRef.getId());
+        return new NodeRef(nodeRef.getStoreRef().getProtocol(), getBaseName(nodeRef.getStoreRef().getIdentifier(), forceForNonTenant), nodeRef.getId());
     }
     
     /* (non-Javadoc)
@@ -298,13 +305,21 @@ public class MultiTServiceImpl implements TenantService
      */
     public ChildAssociationRef getBaseName(ChildAssociationRef childAssocRef)
     {
+        return getBaseName(childAssocRef, false);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantService#getBaseName(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
+     */
+    public ChildAssociationRef getBaseName(ChildAssociationRef childAssocRef, boolean forceForNonTenant)
+    {
         if (childAssocRef == null) { return null; }
         
         return new ChildAssociationRef(
                 childAssocRef.getTypeQName(),
-                getBaseName(childAssocRef.getParentRef()),
+                getBaseName(childAssocRef.getParentRef(), forceForNonTenant),
                 childAssocRef.getQName(),
-                getBaseName(childAssocRef.getChildRef()),
+                getBaseName(childAssocRef.getChildRef(), forceForNonTenant),
                 childAssocRef.isPrimary(), 
                 childAssocRef.getNthSibling());
     }

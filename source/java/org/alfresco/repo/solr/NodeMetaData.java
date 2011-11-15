@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.zip.CRC32;
 
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -50,6 +49,7 @@ public class NodeMetaData
     private Long parentAssocsCrc;
     private List<Long> childIds;
     private Long txnId;
+    private String tenantDomain;
     
     public String getOwner()
     {
@@ -156,6 +156,13 @@ public class NodeMetaData
     public void setTxnId(Long txnId)
     {
         this.txnId = txnId;
-    } 
-    
+    }
+    public String getTenantDomain()
+    {
+        return tenantDomain;
+    }
+    public void setTenantDomain(String tenantDomain)
+    {
+        this.tenantDomain = tenantDomain;
+    }
 }

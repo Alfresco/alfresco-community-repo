@@ -93,6 +93,7 @@ public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
         EXPOSED_FIELDS.add(AbstractLuceneQueryParser.FIELD_PRIMARYASSOCTYPEQNAME);
         EXPOSED_FIELDS.add(AbstractLuceneQueryParser.FIELD_DBID);
         EXPOSED_FIELDS.add(AbstractLuceneQueryParser.FIELD_TAG);
+        EXPOSED_FIELDS.add(AbstractLuceneQueryParser.FIELD_TENANT);
         EXPOSED_FIELDS.add(AbstractLuceneQueryParser.FIELD_ANCESTOR);
         
         

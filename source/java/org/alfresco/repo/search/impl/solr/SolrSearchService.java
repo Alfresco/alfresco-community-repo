@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -34,7 +34,6 @@ import org.alfresco.repo.search.impl.NodeSearcher;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryLanguageSPI;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.lucene.QueryParameterisationException;
-import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -46,8 +45,8 @@ import org.alfresco.service.cmr.search.QueryParameter;
 import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.search.SearchParameters.Operator;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO9075;
@@ -58,10 +57,7 @@ import org.alfresco.util.SearchLanguageConversion;
  */
 public class SolrSearchService implements SearchService
 {
-
     private NodeService nodeService;
-    
-    private TenantService tenantService;
     
     private NamespacePrefixResolver namespacePrefixResolver;
     
@@ -79,16 +75,6 @@ public class SolrSearchService implements SearchService
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
-    }
-
-    public TenantService getTenantService()
-    {
-        return tenantService;
-    }
-
-    public void setTenantService(TenantService tenantService)
-    {
-        this.tenantService = tenantService;
     }
 
     public NamespacePrefixResolver getNamespacePrefixResolver()
@@ -150,8 +136,6 @@ public class SolrSearchService implements SearchService
     @Override
     public ResultSet query(StoreRef store, String language, String query, QueryParameterDefinition[] queryParameterDefinitions)
     {
-        store = tenantService.getName(store);
-
         SearchParameters sp = new SearchParameters();
         sp.addStore(store);
         sp.setLanguage(language);
@@ -164,10 +148,10 @@ public class SolrSearchService implements SearchService
             }
         }
         sp.excludeDataInTheCurrentTransaction(true);
-
+        
         return query(sp);
     }
-
+    
     /*
      * (non-Javadoc)
      * @see org.alfresco.service.cmr.search.SearchService#query(org.alfresco.service.cmr.repository.StoreRef,
@@ -337,10 +321,7 @@ public class SolrSearchService implements SearchService
         {
             throw new IllegalStateException("Only one store can be searched at present");
         }
-
-        ArrayList<StoreRef> stores = searchParameters.getStores();
-        stores.set(0, tenantService.getName(searchParameters.getStores().get(0)));
-
+        
         String parameterisedQueryString;
         if (searchParameters.getQueryParameterDefinitions().size() > 0)
         {

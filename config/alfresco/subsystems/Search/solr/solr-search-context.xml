@@ -40,6 +40,9 @@
         <property name="permissionService">
             <ref bean="permissionService" />
         </property>
+        <property name="tenantService">
+            <ref bean="tenantService" />
+        </property>
         <property name="languageMappings">
             <map>
                 <entry key="lucene" value="alfresco" />
@@ -163,9 +166,6 @@
         class="org.alfresco.repo.search.impl.solr.SolrIndexerAndSearcherFactory">
         <property name="nodeService">
             <ref bean="mlAwareNodeService" />
-        </property>
-        <property name="tenantService">
-            <ref bean="tenantService"/>
         </property>
         <property name="dictionaryService">
             <ref bean="dictionaryService" />

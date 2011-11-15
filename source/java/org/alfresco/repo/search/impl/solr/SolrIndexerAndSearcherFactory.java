@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -23,9 +23,7 @@ import org.alfresco.repo.search.IndexerException;
 import org.alfresco.repo.search.QueryRegisterComponent;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.impl.NoActionIndexer;
-import org.alfresco.repo.search.impl.lucene.ADMLuceneSearcherImpl;
 import org.alfresco.repo.search.impl.lucene.AbstractIndexerAndSearcher;
-import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -43,7 +41,6 @@ public class SolrIndexerAndSearcherFactory extends AbstractIndexerAndSearcher
     private NamespacePrefixResolver namespacePrefixResolver;
     private NodeService nodeService;
     private QueryRegisterComponent queryRegister;
-    private TenantService tenantService;
     private String baseUrl;
     
     public DictionaryService getDictionaryService()
@@ -86,16 +83,6 @@ public class SolrIndexerAndSearcherFactory extends AbstractIndexerAndSearcher
         this.queryRegister = queryRegister;
     }
 
-    public TenantService getTenantService()
-    {
-        return tenantService;
-    }
-
-    public void setTenantService(TenantService tenantService)
-    {
-        this.tenantService = tenantService;
-    }
-
     public String getBaseUrl()
     {
         return baseUrl;
@@ -121,15 +108,12 @@ public class SolrIndexerAndSearcherFactory extends AbstractIndexerAndSearcher
     @Override
     public SearchService getSearcher(StoreRef storeRef, boolean searchDelta) throws SearcherException
     {
-        //storeRef = tenantService.getName(storeRef);
-
          SolrSearchService searchService = new SolrSearchService();
          searchService.setDictionaryService(dictionaryService);
          searchService.setNamespacePrefixResolver(namespacePrefixResolver);
          searchService.setNodeService(nodeService);
          searchService.setQueryLanguages(getQueryLanguages());
          searchService.setQueryRegister(queryRegister);
-         searchService.setTenantService(tenantService);
          return searchService;
     }
 

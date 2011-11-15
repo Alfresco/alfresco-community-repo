@@ -17,6 +17,7 @@
       {
          "aclId": ${aclReaders.aclId?c},
          "aclChangeSetId": ${aclReaders.aclChangeSetId?c},
+         "tenantDomain" : "${aclReaders.tenantDomain}",
          "readers" :
          [
             <#list aclReaders.readers as reader>
@@ -47,6 +48,7 @@
 <#macro nodeMetaDataJSON nodeMetaData filter>
       {
          "id": ${nodeMetaData.nodeId?c}
+         , "tenantDomain": "${nodeMetaData.tenantDomain}"
          <#if filter.includeNodeRef??><#if nodeMetaData.nodeRef??>, "nodeRef": "${nodeMetaData.nodeRef.toString()}"</#if></#if>
          <#if filter.includeType??><#if nodeMetaData.nodeType??>, "type": <@qNameJSON qName=nodeMetaData.nodeType/></#if></#if>
          <#if filter.includeAclId??><#if nodeMetaData.aclId??>, "aclId": ${nodeMetaData.aclId?c}</#if></#if>

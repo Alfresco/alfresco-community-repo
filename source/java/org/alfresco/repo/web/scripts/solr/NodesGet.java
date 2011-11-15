@@ -27,9 +27,13 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.repo.domain.node.Node;
+import org.alfresco.repo.domain.node.StoreEntity;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.solr.NodeParameters;
 import org.alfresco.repo.solr.SOLRTrackingComponent;
 import org.alfresco.repo.solr.SOLRTrackingComponent.NodeQueryCallback;
+import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -54,14 +58,21 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 public class NodesGet extends DeclarativeWebScript
 {
     protected static final Log logger = LogFactory.getLog(NodesGet.class);
-
+    
     private SOLRTrackingComponent solrTrackingComponent;
+    
+    private TenantService tenantService;
     
     public void setSolrTrackingComponent(SOLRTrackingComponent solrTrackingComponent)
     {
         this.solrTrackingComponent = solrTrackingComponent;
     }
-
+    
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
+    
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status)
     {
@@ -127,10 +138,10 @@ public class NodesGet extends DeclarativeWebScript
             
             // 0 or Integer.MAX_VALUE => ignore
             int maxResults = o.has("maxResults") ? o.getInt("maxResults") : 0;
-
+            
             String storeProtocol = o.has("storeProtocol") ? o.getString("storeProtocol") : null;
             String storeIdentifier = o.has("storeIdentifier") ? o.getString("storeIdentifier") : null;
-
+            
             List<Long> txnIds = null;
             if(aTxnIds != null)
             {
@@ -140,8 +151,7 @@ public class NodesGet extends DeclarativeWebScript
                     txnIds.add(aTxnIds.getLong(i));
                 }
             }
-
-            WebNodeQueryCallback nodeQueryCallback = new WebNodeQueryCallback(maxResults);
+            
             NodeParameters nodeParameters = new NodeParameters();
             nodeParameters.setTransactionIds(txnIds);
             nodeParameters.setFromTxnId(fromTxnId);
@@ -152,20 +162,36 @@ public class NodesGet extends DeclarativeWebScript
             nodeParameters.setIncludeAspects(includeAspects);
             nodeParameters.setExcludeNodeTypes(excludeNodeTypes);
             nodeParameters.setIncludeNodeTypes(includeNodeTypes);
-            nodeParameters.setStoreProtocol(storeProtocol);
-            nodeParameters.setStoreIdentifier(storeIdentifier);
+            
+            StoreRef storeRef = null;
+            
+            if (AuthenticationUtil.isMtEnabled())
+            {
+                // MT - use Java filter (post query) and then add tenant context for each node
+                storeRef = new StoreRef(storeProtocol, storeIdentifier);
+            }
+            else
+            {
+                // non-MT - use DB filter (in query)
+                nodeParameters.setStoreProtocol(storeProtocol);
+                nodeParameters.setStoreIdentifier(storeIdentifier);
+            }
+            
             nodeParameters.setMaxResults(maxResults);
+            
+            WebNodeQueryCallback nodeQueryCallback = new WebNodeQueryCallback(maxResults, storeRef, tenantService);
+            
             solrTrackingComponent.getNodes(nodeParameters, nodeQueryCallback);
-
+            
             Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);
             List<Node> nodes = nodeQueryCallback.getNodes();
             model.put("nodes", nodes);
-
+            
             if (logger.isDebugEnabled())
             {
                 logger.debug("Result: \n\tRequest: " + req + "\n\tModel: " + model);
             }
-
+            
             return model;
         }
         catch(IOException e)
@@ -181,28 +207,49 @@ public class NodesGet extends DeclarativeWebScript
     /**
      * Callback for DAO get nodes query
      */
-    private static class WebNodeQueryCallback implements NodeQueryCallback
+    private class WebNodeQueryCallback implements NodeQueryCallback
     {
-    	private ArrayList<Node> nodes;
-
-		public WebNodeQueryCallback(int count)
-		{
-			super();
-			nodes = new ArrayList<Node>(count == 0 || count == Integer.MAX_VALUE ? 100 : count);
-		}
-
-		@Override
-		public boolean handleNode(Node node)
-		{
-    		nodes.add(node);
-
-    		// continue - get next node
-    		return true;
-		}
-		
-		public List<Node> getNodes()
-		{
-		    return nodes;
-		}
+        private ArrayList<Node> nodes;
+        
+        private StoreRef storeRef;
+        
+        private TenantService tenantService;
+        
+        public WebNodeQueryCallback(int count, StoreRef storeRef, TenantService tenantService)
+        {
+            super();
+            
+            this.storeRef = storeRef;
+            this.tenantService = tenantService;
+           
+            nodes = new ArrayList<Node>(count == 0 || count == Integer.MAX_VALUE ? 100 : count);
+        }
+        
+        @Override
+        public boolean handleNode(Node node)
+        {
+            if (storeRef != null)
+            {
+                // MT - since storeRef is not null, filter by store here
+                StoreRef tenantStoreRef = node.getStore().getStoreRef();
+                StoreRef baseStoreRef = new StoreRef(tenantStoreRef.getProtocol(), tenantService.getBaseName(tenantStoreRef.getIdentifier(), true));
+                if (storeRef.equals(baseStoreRef))
+                {
+                    nodes.add(node);
+                }
+            }
+            else
+            {
+                nodes.add(node);
+            }
+            
+            // continue - get next node
+            return true;
+        }
+        
+        public List<Node> getNodes()
+        {
+            return nodes;
+        }
     }
 }

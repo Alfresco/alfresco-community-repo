@@ -1469,6 +1469,7 @@
          class="org.alfresco.repo.web.scripts.solr.NodesGet"
          parent="webscript">
       <property name="solrTrackingComponent" ref="solrTrackingComponent"/>
+      <property name="tenantService" ref="tenantService"/>
    </bean>
 
    <bean id="webscript.org.alfresco.repository.solr.nodesMetaData.post"

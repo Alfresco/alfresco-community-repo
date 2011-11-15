@@ -38,12 +38,10 @@ import org.alfresco.repo.solr.SOLRTrackingComponent.NodeMetaDataQueryCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
-import org.alfresco.service.cmr.repository.Path.Element;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.lucene.document.Field;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -252,10 +250,12 @@ public class NodesMetaDataGet extends DeclarativeWebScript
         private String owner;
         private Long txnId;
         private Set<String> ancestors;
-
+        private String tenantDomain;
+        
         public FreemarkerNodeMetaData(SOLRSerializer solrSerializer, NodeMetaData nodeMetaData) throws IOException, JSONException
         {
             setNodeId(nodeMetaData.getNodeId());
+            setTenantDomain(nodeMetaData.getTenantDomain());
             setAclId(nodeMetaData.getAclId());
             setNodeRef(nodeMetaData.getNodeRef());
             setNodeType(nodeMetaData.getNodeType());
@@ -416,6 +416,15 @@ public class NodesMetaDataGet extends DeclarativeWebScript
         public void setTxnId(Long txnId)
         {
             this.txnId = txnId;
+        }
+        
+        public String getTenantDomain()
+        {
+            return tenantDomain;
+        }
+        public void setTenantDomain(String tenantDomain)
+        {
+            this.tenantDomain = tenantDomain;
         }
         
         private ArrayList<NodeRef> getAncestors(Path path)

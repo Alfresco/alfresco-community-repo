@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -147,9 +147,9 @@ public class LuceneCategoryServiceImpl implements CategoryService
         {
             return Collections.<ChildAssociationRef> emptyList();
         }
-
-        categoryRef = tenantService.getName(categoryRef);
-
+        
+        categoryRef = tenantService.getBaseName(categoryRef); // for solr
+        
         ResultSet resultSet = null;
         try
         {
@@ -288,20 +288,18 @@ public class LuceneCategoryServiceImpl implements CategoryService
 
     private Set<NodeRef> getClassificationNodes(StoreRef storeRef, QName qname)
     {
-        storeRef = tenantService.getName(storeRef);
-
         ResultSet resultSet = null;
         try
         {
             resultSet = indexerAndSearcher.getSearcher(storeRef, false).query(storeRef, "lucene",
                     "PATH:\"/" + getPrefix(qname.getNamespaceURI()) + ISO9075.encode(qname.getLocalName()) + "\"", null);
-
+            
             Set<NodeRef> nodeRefs = new HashSet<NodeRef>(resultSet.length());
             for (ResultSetRow row : resultSet)
             {
                 nodeRefs.add(row.getNodeRef());
             }
-
+            
             return nodeRefs;
         }
         finally
@@ -315,8 +313,6 @@ public class LuceneCategoryServiceImpl implements CategoryService
 
     public Collection<ChildAssociationRef> getClassifications(StoreRef storeRef)
     {
-        storeRef = tenantService.getName(storeRef);
-
         ResultSet resultSet = null;
         try
         {

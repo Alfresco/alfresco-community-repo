@@ -410,11 +410,18 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
 
     @SuppressWarnings("unchecked")
     @Override
-    protected List<Node> selectNodesByUuids(Long storeId, SortedSet<String> uuids)
+    protected List<Node> selectNodesByUuids(Long storeId, SortedSet<String> uuids, Boolean deleted)
     {
         NodeBatchLoadEntity nodeBatchLoadEntity = new NodeBatchLoadEntity();
+        // Store ID
         nodeBatchLoadEntity.setStoreId(storeId);
+        // UUID
         nodeBatchLoadEntity.setUuids(new ArrayList<String>(uuids));
+        // Deleted
+        if (deleted != null)
+        {
+            nodeBatchLoadEntity.setDeleted(deleted);
+        }
         
         return (List<Node>) template.selectList(SELECT_NODES_BY_UUIDS, nodeBatchLoadEntity);
     }

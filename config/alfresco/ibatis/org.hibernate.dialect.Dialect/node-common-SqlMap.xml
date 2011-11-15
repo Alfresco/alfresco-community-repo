@@ -722,6 +722,7 @@
             <foreach item="item" index="index" collection="uuids" open="(" separator="," close=")">
                 #{item}
             </foreach>
+            <if test="deleted != null">and node.node_deleted = #{deleted}</if>
     </select>
     
     <select id="select_NodesByIds" parameterType="NodeBatchLoad" resultMap="result_Node">

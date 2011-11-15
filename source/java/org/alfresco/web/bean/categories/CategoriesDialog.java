@@ -485,7 +485,8 @@ public class CategoriesDialog extends BaseDialogBean implements IContextListener
       }
       else 
       {
-          handler=new CategoryBreadcrumbHandler (getCategory().getNodeRef(), Repository.getNameForNode(getNodeService(), getCategory().getNodeRef()));
+          handler = new CategoryBreadcrumbHandler(
+                  getCategory().getNodeRef(), Repository.getNameForNode(getNodeService(), getCategory().getNodeRef()));
           location.set(location.size() - 1, handler);
           this.setCurrentCategory(handler.nodeRef); 
       }
@@ -590,7 +591,7 @@ public class CategoriesDialog extends BaseDialogBean implements IContextListener
          // when selected we set the current category Id and return
          setCurrentCategory(this.nodeRef);
          setLocation((List)breadcrumb.getValue());
-
+         
          return null;
       }
       
@@ -625,14 +626,14 @@ public class CategoriesDialog extends BaseDialogBean implements IContextListener
    public void restored()
    {
 	   Object categoryToRemove = FacesContext.getCurrentInstance().getExternalContext().
-       getRequestMap().get(KEY_CATEGORY);
+	   getRequestMap().get(KEY_CATEGORY);
 	   if (categoryToRemove != null)
-	   	{
-		   	if (logger.isDebugEnabled())
-		   		logger.debug("Removing group '" + categoryToRemove + "' from breadcrumb");
-    
-		   	removeFromBreadcrumb((String)categoryToRemove);
-	   	}
+	   {
+	       if (logger.isDebugEnabled())
+	           logger.debug("Removing group '" + categoryToRemove + "' from breadcrumb");
+	       
+	       removeFromBreadcrumb((String)categoryToRemove);
+	   }
 	   contextUpdated();
    }
    

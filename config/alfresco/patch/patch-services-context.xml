@@ -2918,6 +2918,11 @@
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>5011</value></property>
         <property name="targetSchema"><value>5012</value></property>
+        <property name="alternatives" >
+            <list>
+                <ref bean="patch.sitesFolder" />
+            </list>
+        </property>
         <property name="requiresTransaction"><value>false</value></property>
         <property name="fileFolderService" ref="fileFolderService" />
         <property name="contentService" ref="contentService" />

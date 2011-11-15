@@ -18,13 +18,17 @@
  */
 package org.alfresco.repo.domain.schema;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.io.Writer;
 import java.sql.Array;
 import java.sql.Blob;
@@ -45,6 +49,7 @@ import java.sql.Statement;
 import java.sql.Struct;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +71,13 @@ import org.alfresco.repo.domain.hibernate.dialect.AlfrescoSybaseAnywhereDialect;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.LogUtil;
 import org.alfresco.util.TempFileProvider;
+import org.alfresco.util.schemacomp.Difference;
+import org.alfresco.util.schemacomp.ExportDb;
+import org.alfresco.util.schemacomp.Results;
+import org.alfresco.util.schemacomp.SchemaComparator;
+import org.alfresco.util.schemacomp.ValidationResult;
+import org.alfresco.util.schemacomp.XMLToSchema;
+import org.alfresco.util.schemacomp.model.Schema;
 import org.alfresco.util.schemadump.Main;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -91,6 +103,8 @@ import org.hibernate.engine.ActionQueue;
 import org.hibernate.tool.hbm2ddl.DatabaseMetadata;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
+import org.springframework.core.Conventions;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
@@ -1480,6 +1494,8 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                     setBootstrapCompleted(connection);
                 }
                 
+                validateSchema();
+                
                 // Report normalized dumps
                 if (executedStatements != null)
                 {
@@ -1578,6 +1594,115 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         }
     }
     
+    /**
+     * Collate differences and validation problems with the schema with respect to an appropriate
+     * reference schema.
+     */
+    private void validateSchema()
+    {
+        Date startTime = new Date(); 
+        String referenceFileName = dialect.getClass().getSimpleName() + "-Reference.xml";
+        
+        Resource referenceResource = rpr.getResource("classpath:org/alfresco/util/schemacomp/reference/"
+                    + referenceFileName);
+        
+        if (!referenceResource.exists())
+        {
+            logger.info("No reference schema file, expected: " + referenceResource);
+            return;
+        }
+        logger.info("Comparing database schema with reference schema: " + referenceResource);
+        
+        InputStream is = null;
+        try
+        {
+            is = new BufferedInputStream(referenceResource.getInputStream());
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException("Unable to open schema reference file: " + referenceResource);
+        }
+        
+        XMLToSchema xmlToSchema = new XMLToSchema(is);
+        xmlToSchema.parse();
+        Schema reference = xmlToSchema.getSchema();
+        
+        ExportDb exporter = new ExportDb(dataSource, dialect);
+        exporter.execute();
+        Schema target = exporter.getSchema();
+        
+        SchemaComparator schemaComparator = new SchemaComparator(reference, target, dialect);
+        
+        schemaComparator.validateAndCompare();
+        
+        Results differences = schemaComparator.getDifferences();
+        List<ValidationResult> validationResults = schemaComparator.getValidationResults();
+        
+        File outputFile = TempFileProvider.createTempFile(
+                    "Alfresco-" + dialect.getClass().getSimpleName() + "-Validation", ".txt");
+        
+        logger.info("Writing schema validation results to: " + outputFile);
+        
+        PrintWriter pw = null;
+        try
+        {
+            pw = new PrintWriter(outputFile);
+        }
+        catch (FileNotFoundException error)
+        {
+            throw new RuntimeException("Unable to open file for writing: " + outputFile);
+        }
+        
+        for (Difference difference : differences)
+        {
+            StringBuffer sb = new StringBuffer();
+            sb.append(difference.getStrength())
+                .append(" (diff): ")
+                .append(difference.getWhere());
+            
+            sb.append(" reference: ");
+            if (difference.getLeft() != null)
+            {
+                sb.append(difference.getLeft().getPath());
+            }
+            else
+            {
+                sb.append("null");
+            }
+            
+            sb.append(" target: ");
+            if (difference.getRight() != null)
+            {
+                sb.append(difference.getRight().getPath());
+            }
+            else
+            {
+                sb.append("null");
+            }
+            
+            pw.println(sb);
+        }
+        
+        for (ValidationResult validationResult : validationResults)
+        {
+            StringBuffer sb = new StringBuffer();
+            sb.append(validationResult.getStrength())
+                .append(" (validation): ")
+                .append("target: ")
+                .append(validationResult.getDbProperty().getPath())
+                .append(" value: ")
+                .append(validationResult.getValue());
+                
+            pw.println(sb);
+        }
+        
+        pw.close();
+        
+        Date endTime = new Date();
+        long durationMillis = endTime.getTime() - startTime.getTime();
+        logger.info("Schema validation took " + durationMillis + "ms");
+    }
+
     /**
      * @return                  Returns the file that was written to or <tt>null</tt> if it failed
      */

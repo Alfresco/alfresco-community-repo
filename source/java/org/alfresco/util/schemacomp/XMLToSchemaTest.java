@@ -22,6 +22,8 @@ package org.alfresco.util.schemacomp;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertNull;
 
 import java.io.BufferedInputStream;
 import java.io.InputStream;
@@ -61,31 +63,38 @@ public class XMLToSchemaTest
         Schema schema = xmlToSchema.getSchema();
         
         assertNotNull("A null Schema object was returned", schema);
+        assertNull("Schema isn't meant to have a parent", schema.getParent());
         assertEquals("alfresco", schema.getName());
         
         Iterator<DbObject> objects = schema.iterator();
         
         Table table = (Table) objects.next();
+        assertSame("Wrong or no parent set on table", schema, table.getParent());
         assertEquals("node", table.getName());
         assertEquals(3, table.getColumns().size());
         
+        assertSame("Wrong or no parent set", table, table.getColumns().get(0).getParent());
         assertEquals("id", table.getColumns().get(0).getName());
         assertEquals("NUMBER(10)", table.getColumns().get(0).getType());
         assertEquals(false, table.getColumns().get(0).isNullable());
         
+        assertSame("Wrong or no parent set", table, table.getColumns().get(1).getParent());
         assertEquals("nodeRef", table.getColumns().get(1).getName());
         assertEquals("VARCHAR2(200)", table.getColumns().get(1).getType());
         assertEquals(false, table.getColumns().get(1).isNullable());        
 
+        assertSame("Wrong or no parent set", table, table.getColumns().get(2).getParent());
         assertEquals("name", table.getColumns().get(2).getName());
         assertEquals("VARCHAR2(150)", table.getColumns().get(2).getType());
         assertEquals(true, table.getColumns().get(2).isNullable());
         
+        assertSame("Wrong or no parent set", table, table.getPrimaryKey().getParent());
         assertEquals("pk_node", table.getPrimaryKey().getName());
         assertEquals(1, table.getPrimaryKey().getColumnNames().size());
         assertEquals("id", table.getPrimaryKey().getColumnNames().get(0));
         
         assertEquals(1, table.getForeignKeys().size());
+        assertSame("Wrong or no parent set", table, table.getForeignKeys().get(0).getParent());
         assertEquals("fk_node_noderef", table.getForeignKeys().get(0).getName());
         assertEquals("nodeRef", table.getForeignKeys().get(0).getLocalColumn());
         assertEquals("node", table.getForeignKeys().get(0).getTargetTable());
@@ -93,20 +102,29 @@ public class XMLToSchemaTest
         
         assertEquals(1, table.getIndexes().size());
         Index index = table.getIndexes().get(0);
+        assertSame("Wrong or no parent set on index", table, index.getParent());
         assertEquals("idx_node_by_id", index.getName());
         assertEquals(true, index.isUnique());        
         assertEquals(2, index.getColumnNames().size());
         assertEquals("id", index.getColumnNames().get(0));
         assertEquals("nodeRef", index.getColumnNames().get(1));
         assertEquals(1, index.getValidators().size());
-        DbValidator<? extends DbObject> validator = index.getValidators().get(0);
+        DbValidator validator = index.getValidators().get(0);
         assertEquals(NameValidator.class, validator.getClass());
         assertEquals(1, validator.getPropertyNames().size());
         assertEquals("idx_.+", validator.getProperty("pattern"));
         
-        assertEquals("node_seq", ((Sequence) objects.next()).getName());
-        assertEquals("person_seq", ((Sequence) objects.next()).getName());
-        assertEquals("content_seq", ((Sequence) objects.next()).getName());
+        Sequence seq = (Sequence) objects.next();
+        assertSame("Wrong or no parent set", schema, seq.getParent());
+        assertEquals("node_seq", seq.getName());
+        
+        seq = (Sequence) objects.next();
+        assertSame("Wrong or no parent set", schema, seq.getParent());
+        assertEquals("person_seq", seq.getName());
+        
+        seq = (Sequence) objects.next();
+        assertSame("Wrong or no parent set", schema, seq.getParent());
+        assertEquals("content_seq", seq.getName());
         
         assertFalse("Should be no more DB objects", objects.hasNext());
     }

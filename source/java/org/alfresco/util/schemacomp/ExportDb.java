@@ -58,11 +58,12 @@ public class ExportDb
 
     private Dialect dialect;
 
-    private String namePrefix = "%";
+    /** Only top-level tables starting with namePrefix will be exported, set to empty string for all objects */
+    private String namePrefix = "alf_";
     
     
     
-    public ExportDb(ApplicationContext context) throws Exception
+    public ExportDb(ApplicationContext context)
     {
         this((DataSource) context.getBean("dataSource"),
              (Dialect) context.getBean("dialect"));
@@ -75,7 +76,7 @@ public class ExportDb
      * @param connection            the database connection to use for metadata queries
      * @param dialect               the Hibernate dialect
      */
-    public ExportDb(final DataSource dataSource, final Dialect dialect) throws Exception
+    public ExportDb(final DataSource dataSource, final Dialect dialect)
     {
         this.dataSource = dataSource;
         this.dialect = dialect;
@@ -83,12 +84,41 @@ public class ExportDb
     }
     
     
+    private void init()
+    {
+        try
+        {
+            attemptInit();
+        }
+        catch (SecurityException error)
+        {
+            throw new RuntimeException("Unable to generate type map using hibernate.", error);
+        }
+        catch (IllegalArgumentException error)
+        {
+            throw new RuntimeException("Unable to generate type map using hibernate.", error);
+        }
+        catch (NoSuchFieldException error)
+        {
+            throw new RuntimeException("Unable to generate type map using hibernate.", error);
+        }
+        catch (IllegalAccessException error)
+        {
+            throw new RuntimeException("Unable to generate type map using hibernate.", error);
+        }
+    }
+    
+    
     /**
      * Initializes the fields ready to perform the database metadata reading 
      * @param dialect               the Hibernate dialect
+     * @throws NoSuchFieldException 
+     * @throws SecurityException 
+     * @throws IllegalAccessException 
+     * @throws IllegalArgumentException 
      */
     @SuppressWarnings("unchecked")
-    private void init() throws Exception
+    private void attemptInit() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException
     {
         final Field typeNamesField = Dialect.class.getDeclaredField("typeNames");
         typeNamesField.setAccessible(true);
@@ -205,7 +235,7 @@ public class ExportDb
                 
                 String nullableString = columns.getString("IS_NULLABLE");
                 column.setNullable(parseBoolean(nullableString));
-                
+                column.setParent(table);
                 table.getColumns().add(column);
             }
             columns.close();
@@ -231,6 +261,7 @@ public class ExportDb
             // If this table has a primary key, add it. 
             if (pk != null)
             {
+                pk.setParent(table);
                 table.setPrimaryKey(pk);
             }
 
@@ -259,6 +290,7 @@ public class ExportDb
                 {
                     index = new Index(indexName);
                     index.setUnique(!indexes.getBoolean("NON_UNIQUE"));
+                    index.setParent(table);
                     table.getIndexes().add(index);
                     lastIndexName = indexName;
                 }
@@ -283,6 +315,7 @@ public class ExportDb
                 if (!keyName.equals(lastKeyName))
                 {
                     fk = new ForeignKey(keyName);
+                    fk.setParent(table);
                     table.getForeignKeys().add(fk);
                     lastKeyName = keyName;
                 }

@@ -21,6 +21,8 @@ package org.alfresco.util.schemacomp;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
 
 import java.util.Iterator;
@@ -30,6 +32,7 @@ import org.alfresco.util.schemacomp.model.Column;
 import org.alfresco.util.schemacomp.model.DbObject;
 import org.alfresco.util.schemacomp.model.ForeignKey;
 import org.alfresco.util.schemacomp.model.Index;
+import org.alfresco.util.schemacomp.model.PrimaryKey;
 import org.alfresco.util.schemacomp.model.Schema;
 import org.alfresco.util.schemacomp.model.Sequence;
 import org.alfresco.util.schemacomp.model.Table;
@@ -55,7 +58,6 @@ public class ExportDbTest
         exporter = new ExportDb(ctx);
     }
 
-    
     @Ignore
     @Test
     public void exportDb() throws Exception
@@ -64,6 +66,8 @@ public class ExportDbTest
        exporter.execute();
        
        Schema schema = exporter.getSchema();
+       
+       assertNull("Schema shouldn't have a parent", schema.getParent());
        System.out.println(schema);
        
        Table appliedPatchTable = null;
@@ -87,10 +91,10 @@ public class ExportDbTest
        }
        
        checkResultsFiltered(schema, "alf_");
-       checkAppliedPatchTable(appliedPatchTable);
-       checkQNameTable(qNameTable);
+       checkAppliedPatchTable(schema, appliedPatchTable);
+       checkQNameTable(schema, qNameTable);
        // TODO: what to do about sequences? They can't easily be retrieved with JDBC's DatabaseMetaData
-       //checkAuthoritySequence(authoritySeq);
+       //checkAuthoritySequence(schema, authoritySeq);
     }
    
     
@@ -116,7 +120,7 @@ public class ExportDbTest
     /**
      * @param qNameTable
      */
-    private void checkQNameTable(Table qNameTable)
+    private void checkQNameTable(Schema schema, Table qNameTable)
     {
         /*
             CREATE TABLE alf_qname
@@ -133,24 +137,30 @@ public class ExportDbTest
          */
         
         assertNotNull("Couldn't find table alf_qname", qNameTable);
+        assertSame("Incorrect parent or no parent set", schema, qNameTable.getParent());
         
         Iterator<Column> colIt = qNameTable.getColumns().iterator();
         Column col = colIt.next();
+        assertSame("Incorrect parent or no parent set", qNameTable, col.getParent());
         assertEquals("id", col.getName());
         assertEquals("int8", col.getType());
         assertEquals(false, col.isNullable());
         
         col = colIt.next();
+        assertSame("Incorrect parent or no parent set", qNameTable, col.getParent());
         assertEquals("version", col.getName());
         assertEquals("int8", col.getType());
         assertEquals(false, col.isNullable());
         
         col = colIt.next();
+        assertSame("Incorrect parent or no parent set", qNameTable, col.getParent());
         assertEquals("ns_id", col.getName());
         assertEquals("int8", col.getType());
         assertEquals(false, col.isNullable());
         
         col = colIt.next();
+        assertSame("Incorrect parent or no parent set", qNameTable, col.getParent());
+        assertSame("Incorrect parent or no parent set", qNameTable, col.getParent());
         assertEquals("local_name", col.getName());
         assertEquals("varchar(200)", col.getType());
         assertEquals(false, col.isNullable());
@@ -159,6 +169,7 @@ public class ExportDbTest
         Iterator<Index> indexIt = qNameTable.getIndexes().iterator();
         
         Index index = indexIt.next();
+        assertSame("Incorrect parent or no parent set", qNameTable, index.getParent());
         assertEquals("ns_id", index.getName());
         assertEquals(true, index.isUnique());
         assertEquals(2, index.getColumnNames().size());
@@ -166,14 +177,18 @@ public class ExportDbTest
         assertEquals("local_name", index.getColumnNames().get(1));
 
         index = indexIt.next();
+        assertSame("Incorrect parent or no parent set", qNameTable, index.getParent());
         assertEquals("fk_alf_qname_ns", index.getName());
         assertEquals(1, index.getColumnNames().size());
         assertEquals("ns_id", index.getColumnNames().get(0));
         
-        assertEquals("id", qNameTable.getPrimaryKey().getColumnNames().get(0));
+        PrimaryKey pk = qNameTable.getPrimaryKey();
+        assertSame("Incorrect parent or no parent set", qNameTable, pk.getParent());
+        assertEquals("id", pk.getColumnNames().get(0));
         
         assertEquals(1, qNameTable.getForeignKeys().size());
         ForeignKey fk = qNameTable.getForeignKeys().get(0);
+        assertSame("Incorrect parent or no parent set", qNameTable, fk.getParent());
         assertEquals("fk_alf_qname_ns", fk.getName());
         assertEquals("ns_id", fk.getLocalColumn());
         assertEquals("alf_namespace", fk.getTargetTable());
@@ -184,7 +199,7 @@ public class ExportDbTest
     /**
      * @param appliedPatch
      */
-    private void checkAppliedPatchTable(Table appliedPatch)
+    private void checkAppliedPatchTable(Schema schema, Table appliedPatch)
     {
         /*
              CREATE TABLE alf_applied_patch
@@ -205,73 +220,88 @@ public class ExportDbTest
         */
         assertNotNull("Couldn't find alf_applied_patch", appliedPatch);
         
+        assertSame("Incorrect parent or no parent set", schema, appliedPatch.getParent());
         assertEquals("alf_applied_patch", appliedPatch.getName());
         Iterator<Column> colIt = appliedPatch.getColumns().iterator();
         Column col = colIt.next();
+        assertSame("Incorrect parent or no parent set", appliedPatch, col.getParent());
         assertEquals("id", col.getName());
         assertEquals("varchar(64)", col.getType());
         assertEquals(false, col.isNullable());
         
         col = colIt.next();
+        assertSame("Incorrect parent or no parent set", appliedPatch, col.getParent());
         assertEquals("description", col.getName());
         assertEquals("varchar(1024)", col.getType());
         assertEquals(true, col.isNullable());
         
         col = colIt.next();
+        assertSame("Incorrect parent or no parent set", appliedPatch, col.getParent());
         assertEquals("fixes_from_schema", col.getName());
         assertEquals("int4", col.getType());
         assertEquals(true, col.isNullable());
         
         col = colIt.next();
+        assertSame("Incorrect parent or no parent set", appliedPatch, col.getParent());
         assertEquals("fixes_to_schema", col.getName());
         assertEquals("int4", col.getType());
         assertEquals(true, col.isNullable());
         
         col = colIt.next();
+        assertSame("Incorrect parent or no parent set", appliedPatch, col.getParent());
         assertEquals("applied_to_schema", col.getName());
         assertEquals("int4", col.getType());
         assertEquals(true, col.isNullable());
         
         col = colIt.next();
+        assertSame("Incorrect parent or no parent set", appliedPatch, col.getParent());
         assertEquals("target_schema", col.getName());
         assertEquals("int4", col.getType());
         assertEquals(true, col.isNullable());
         
         col = colIt.next();
+        assertSame("Incorrect parent or no parent set", appliedPatch, col.getParent());
         assertEquals("applied_on_date", col.getName());
         assertEquals("timestamp", col.getType());
         assertEquals(true, col.isNullable());
         
         col = colIt.next();
+        assertSame("Incorrect parent or no parent set", appliedPatch, col.getParent());
         assertEquals("applied_to_server", col.getName());
         assertEquals("varchar(64)", col.getType());
         assertEquals(true, col.isNullable());
         
         col = colIt.next();
+        assertSame("Incorrect parent or no parent set", appliedPatch, col.getParent());
         assertEquals("was_executed", col.getName());
         assertEquals("bool", col.getType());
         assertEquals(true, col.isNullable());
         
         col = colIt.next();
+        assertSame("Incorrect parent or no parent set", appliedPatch, col.getParent());
         assertEquals("succeeded", col.getName());
         assertEquals("bool", col.getType());
         assertEquals(true, col.isNullable());
         
         col = colIt.next();
+        assertSame("Incorrect parent or no parent set", appliedPatch, col.getParent());
         assertEquals("report", col.getName());
         assertEquals("varchar(1024)", col.getType());
         assertEquals(true, col.isNullable());
         
-        assertEquals("id", appliedPatch.getPrimaryKey().getColumnNames().get(0));
+        PrimaryKey pk = appliedPatch.getPrimaryKey();
+        assertSame("Incorrect parent or no parent set", appliedPatch, pk.getParent());
+        assertEquals("id", pk.getColumnNames().get(0));
     }
     
     
-    public void checkAuthoritySequence(Sequence seq)
+    public void checkAuthoritySequence(Schema schema, Sequence seq)
     {
         /*
             CREATE SEQUENCE alf_authority_seq START WITH 1 INCREMENT BY 1;
          */
         assertNotNull("Couldn't find sequence alf_authority_seq", seq);
+        assertSame("Incorrect parent or no parent set", schema, seq.getParent());
         assertEquals("alf_authority_seq", seq.getName());
     }
 }

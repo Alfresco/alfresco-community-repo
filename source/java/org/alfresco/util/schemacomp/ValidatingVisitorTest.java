@@ -19,21 +19,15 @@
 package org.alfresco.util.schemacomp;
 
 
-import static org.junit.Assert.assertSame;
-
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
-import org.alfresco.util.schemacomp.model.Column;
 import org.alfresco.util.schemacomp.model.DbObject;
-import org.alfresco.util.schemacomp.model.ForeignKey;
 import org.alfresco.util.schemacomp.model.Index;
-import org.alfresco.util.schemacomp.model.PrimaryKey;
 import org.alfresco.util.schemacomp.model.Schema;
-import org.alfresco.util.schemacomp.model.Sequence;
 import org.alfresco.util.schemacomp.model.Table;
 import org.alfresco.util.schemacomp.validator.DbValidator;
-import org.alfresco.util.schemacomp.validator.NameValidator;
 import org.hibernate.dialect.MySQL5InnoDBDialect;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,47 +42,59 @@ public class ValidatingVisitorTest
 {
     private DiffContext ctx;
     private ValidatingVisitor visitor;
-    private Table table;
+    private Table refTable;
+    private Table targetTable;
     private Schema refSchema;
     private Schema targetSchema;
-    private Index index;
+    private Index refIndex;
+    private Index targetIndex1;
+    private Index targetIndex2;    
+    private Index targetIndex3;    
+    private List<DbValidator> validators;
+    private ComparisonUtils comparisonUtils;
     
+
     @Before
     public void setUp() throws Exception
     {
-        index = new Index(table, "index_name", new ArrayList<String>());
+        refTable = new Table("reference_table");
+        refIndex = new Index(refTable, "index_name", Arrays.asList("a", "b", "c"));
         ctx = new DiffContext(new MySQL5InnoDBDialect(), new Results(),
                     new ArrayList<ValidationResult>(), refSchema, targetSchema);
         visitor = new ValidatingVisitor(ctx);
-    }
+        
+        validators = new ArrayList<DbValidator>();
+        validators.add(Mockito.mock(DbValidator.class));
+        validators.add(Mockito.mock(DbValidator.class));
+        refIndex.setValidators(validators);
 
-    @Test
-    public void canGetCorrectValidator()
-    {
-       // Get references to the validator instances to test for
-       DbValidator nullValidator = visitor.defaultValidator;
-       DbValidator nameValidator = visitor.indexNameValidator;
-       
-       assertSame(nullValidator, visitor.getValidatorFor(Column.class)); 
-       assertSame(nullValidator, visitor.getValidatorFor(ForeignKey.class));
-       assertSame(nameValidator, visitor.getValidatorFor(Index.class)); 
-       assertSame(nullValidator, visitor.getValidatorFor(PrimaryKey.class)); 
-       assertSame(nullValidator, visitor.getValidatorFor(Schema.class)); 
-       assertSame(nullValidator, visitor.getValidatorFor(Sequence.class)); 
-       assertSame(nullValidator, visitor.getValidatorFor(Table.class)); 
+        targetTable = new Table("target_table");
+        targetIndex1 = new Index(targetTable, "index_name", Arrays.asList("a", "b", "c"));
+        targetIndex2 = new Index(targetTable, "another_index", Arrays.asList("a", "b", "c"));
+        targetIndex3 = new Index(targetTable, "index_name", Arrays.asList("e", "f"));
+        
+        comparisonUtils = Mockito.mock(ComparisonUtils.class);
+        visitor.setComparisonUtils(comparisonUtils);
     }
+    
     
     @Test
     public void canValidate()
     {
-        visitor.indexNameValidator = Mockito.mock(NameValidator.class);
-        visitor.comparisonUtils = Mockito.mock(ComparisonUtils.class);
-        Mockito.when(visitor.comparisonUtils.findEquivalentObjects(refSchema, index)).
-            thenReturn(Arrays.asList((DbObject)index));
+        Mockito.when(comparisonUtils.findEquivalentObjects(refSchema, refIndex)).
+            thenReturn(Arrays.asList((DbObject) targetIndex1, targetIndex2, targetIndex3));
         
         // Validate all instances of the target schema's indexes that are equivalent to this index
-        visitor.visit(index);
+        visitor.visit(refIndex);
         
-        Mockito.verify(visitor.indexNameValidator).validate(index, index, ctx);
+        Mockito.verify(validators.get(0)).validate(refIndex, targetIndex1, ctx);
+        Mockito.verify(validators.get(0)).validate(refIndex, targetIndex2, ctx);
+        Mockito.verify(validators.get(0)).validate(refIndex, targetIndex3, ctx);
+
+        Mockito.verify(validators.get(1)).validate(refIndex, targetIndex1, ctx);
+        Mockito.verify(validators.get(1)).validate(refIndex, targetIndex2, ctx);
+        Mockito.verify(validators.get(1)).validate(refIndex, targetIndex3, ctx);
     }
+    
+    
 }

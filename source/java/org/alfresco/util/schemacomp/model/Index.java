@@ -25,6 +25,8 @@ import org.alfresco.util.schemacomp.DbObjectVisitor;
 import org.alfresco.util.schemacomp.DbProperty;
 import org.alfresco.util.schemacomp.DiffContext;
 import org.alfresco.util.schemacomp.Result.Strength;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Represents an index on a table.
@@ -35,6 +37,7 @@ public class Index extends AbstractDbObject
 {
     private final List<String> columnNames = new ArrayList<String>();
     private boolean unique;
+    private static Log logger = LogFactory.getLog(Index.class);
     
     public Index(String name)
     {

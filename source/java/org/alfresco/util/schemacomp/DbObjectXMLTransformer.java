@@ -29,7 +29,6 @@ import org.alfresco.util.schemacomp.model.PrimaryKey;
 import org.alfresco.util.schemacomp.model.Schema;
 import org.alfresco.util.schemacomp.model.Table;
 import org.alfresco.util.schemacomp.validator.DbValidator;
-import org.apache.poi.hssf.record.DVALRecord;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -91,12 +90,12 @@ public class DbObjectXMLTransformer
      * @param validators
      * @throws SAXException 
      */
-    private void transformValidators(List<DbValidator<? extends DbObject>> validators) throws SAXException
+    private void transformValidators(List<DbValidator> validators) throws SAXException
     {
         if (validators.size() > 0)
         {
             simpleStartTag(XML.EL_VALIDATORS);
-            for (DbValidator<? extends DbObject> dbv : validators)
+            for (DbValidator dbv : validators)
             {
                 final AttributesImpl attribs = new AttributesImpl();
                 attribs.addAttribute("", "", XML.ATTR_CLASS, "CDATA", dbv.getClass().getName());

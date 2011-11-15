@@ -34,7 +34,6 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -47,7 +46,6 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
 import org.alfresco.util.schemacomp.model.Column;
-import org.alfresco.util.schemacomp.model.DbObject;
 import org.alfresco.util.schemacomp.model.ForeignKey;
 import org.alfresco.util.schemacomp.model.Index;
 import org.alfresco.util.schemacomp.model.PrimaryKey;
@@ -268,7 +266,7 @@ public class DbObjectXMLTransformerTest
         
         NameValidator nameValidator = new NameValidator();
         nameValidator.setPattern(Pattern.compile("match_me_if_you_can"));
-        List<DbValidator<? extends DbObject>> validators = new ArrayList<DbValidator<? extends DbObject>>();
+        List<DbValidator> validators = new ArrayList<DbValidator>();
         validators.add(nameValidator);
         table.setValidators(validators);
         

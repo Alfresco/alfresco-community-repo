@@ -18,14 +18,10 @@
  */
 package org.alfresco.util.schemacomp;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.util.schemacomp.model.DbObject;
-import org.alfresco.util.schemacomp.model.Index;
 import org.alfresco.util.schemacomp.validator.DbValidator;
-import org.alfresco.util.schemacomp.validator.NameValidator;
-import org.alfresco.util.schemacomp.validator.NullValidator;
 
 /**
  * Invokes the correct validator for a given DbObject.
@@ -35,39 +31,38 @@ import org.alfresco.util.schemacomp.validator.NullValidator;
 public class ValidatingVisitor implements DbObjectVisitor
 {
     private DiffContext ctx;
-    protected NameValidator indexNameValidator = new NameValidator();
-    protected NullValidator defaultValidator = new NullValidator();
-    protected ComparisonUtils comparisonUtils = new DefaultComparisonUtils();
+    private ComparisonUtils comparisonUtils = new DefaultComparisonUtils();
 
     public ValidatingVisitor(DiffContext ctx)
     {
         this.ctx = ctx;
     }
     
-    
-    protected DbValidator getValidatorFor(Class<? extends DbObject> c)
-    {
-        if (c.equals(Index.class))
-        {
-            return indexNameValidator;
-        }
-        else
-        {
-            return defaultValidator;
-        }
-    }
 
     @Override
     public void visit(DbObject referenceObj)
     {
-        DbValidator validator = getValidatorFor(referenceObj.getClass());
         List<DbObject> matches = comparisonUtils.findEquivalentObjects(ctx.getTargetSchema(), referenceObj);
         
         // TODO: if matches.size() > 1 then warn of possible redundant database objects
         
-        for (DbObject target : matches)
+        // Validate each matching target object against the reference object
+        // using each of the available validators for that reference object.
+        for (DbValidator validator : referenceObj.getValidators())
         {
-            validator.validate(referenceObj, target, ctx);            
+            for (DbObject target : matches)
+            {
+                validator.validate(referenceObj, target, ctx);            
+            }
         }
+    }
+
+
+    /**
+     * @param comparisonUtils the comparisonUtils to set
+     */
+    public void setComparisonUtils(ComparisonUtils comparisonUtils)
+    {
+        this.comparisonUtils = comparisonUtils;
     }
 }

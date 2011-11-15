@@ -26,34 +26,35 @@ import org.alfresco.util.schemacomp.model.Schema;
 import org.hibernate.dialect.Dialect;
 
 /**
- * Compares two abstract database schemas, a 'left' schema and a 'right' schema. The left schema is the primary
- * schema and all objects in the right schema are judged relative to it.
+ * Compares two abstract database schemas, a reference schema and a target schema (the schema to check for validity).
+ * The reference schema is the primary schema and all objects in the right schema are judged relative to it.
  * 
  * @author Matt Ward
  */
 public class SchemaComparator
 {
-    private final Schema leftSchema;
-    private final Schema rightSchema;
+    private final Schema referenceSchema;
+    private final Schema targetSchema;
     private final DiffContext ctx;
     
     /**
-     * Construct a comparator to compare schemas left and right.
+     * Construct a comparator to compare a target schema against a reference schema. Validators supplied
+     * by the reference schema will be used to validate the target schema.
      * 
-     * @param left
-     * @param right
+     * @param referenceSchema
+     * @param targetSchema
      */
-    public SchemaComparator(Schema left, Schema right, Dialect dialect)
+    public SchemaComparator(Schema referenceSchema, Schema targetSchema, Dialect dialect)
     {
-        this.leftSchema = left;
-        this.rightSchema = right;
-        this.ctx = new DiffContext(dialect, new Results(), new ArrayList<ValidationResult>(), leftSchema, rightSchema);
+        this.referenceSchema = referenceSchema;
+        this.targetSchema = targetSchema;
+        this.ctx = new DiffContext(dialect, new Results(), new ArrayList<ValidationResult>(), referenceSchema, targetSchema);
     }
     
     
     public void validateAndCompare()
     {
-        validate();
+        validateTargetSchema();
         compare();
     }
 
@@ -63,18 +64,17 @@ public class SchemaComparator
      */
     private void compare()
     {
-        leftSchema.diff(rightSchema, ctx, Strength.ERROR);
+        referenceSchema.diff(targetSchema, ctx, Strength.ERROR);
     }
 
 
     /**
-     * Validate both schemas.
+     * Validate the target schema against the reference schema using the reference schema's validators.
      */
-    private void validate()
+    private void validateTargetSchema()
     {
         ValidatingVisitor validatingVisitor = new ValidatingVisitor(ctx);
-        leftSchema.accept(validatingVisitor);
-        rightSchema.accept(validatingVisitor);
+        referenceSchema.accept(validatingVisitor);
     }
 
 

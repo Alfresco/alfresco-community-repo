@@ -26,7 +26,7 @@ import org.alfresco.util.schemacomp.model.DbObject;
  * 
  * @author Matt Ward
  */
-public class NullValidator extends AbstractDbValidator<DbObject>
+public class NullValidator extends AbstractDbValidator
 {
     @Override
     public void validate(DbObject reference, DbObject target, DiffContext ctx)

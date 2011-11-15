@@ -42,7 +42,7 @@ public abstract class AbstractDbObject implements DbObject
     /** How differences in the name field should be reported */
     private Strength nameStrength = Strength.ERROR;
     protected ComparisonUtils comparisonUtils = new DefaultComparisonUtils();
-    private List<DbValidator<?>> validators = new ArrayList<DbValidator<?>>();
+    private List<DbValidator> validators = new ArrayList<DbValidator>();
     
 
     /**
@@ -212,7 +212,7 @@ public abstract class AbstractDbObject implements DbObject
 
     
     @Override
-    public List<DbValidator<? extends DbObject>> getValidators()
+    public List<DbValidator> getValidators()
     {
         return validators;
     }
@@ -222,7 +222,7 @@ public abstract class AbstractDbObject implements DbObject
      * @param validators the validators to set
      */
     @Override
-    public void setValidators(List<DbValidator<? extends DbObject>> validators)
+    public void setValidators(List<DbValidator> validators)
     {
         if (validators == null)
         {

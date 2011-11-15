@@ -113,11 +113,10 @@ public class AbstractDbObjectTest
     }
 
     
-    @SuppressWarnings("unchecked")
     @Test
     public void canGetValidators()
     {
-        List<DbValidator<? extends DbObject>> validators = dbObject.getValidators();
+        List<DbValidator> validators = dbObject.getValidators();
         assertEquals(0, validators.size());
         
         dbObject.setValidators(null);
@@ -166,13 +165,13 @@ public class AbstractDbObjectTest
     }
     
     
-    private List<DbValidator<? extends DbObject>> validatorList(DbValidator<? extends DbObject>... validators)
+    private List<DbValidator> validatorList(DbValidator... validators)
     {
         return Arrays.asList(validators);
     }
     
     
-    private static class TestValidator extends AbstractDbValidator<DbObject>
+    private static class TestValidator extends AbstractDbValidator
     {
         @Override
         public void validate(DbObject reference, DbObject target, DiffContext ctx)

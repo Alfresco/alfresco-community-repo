@@ -29,9 +29,9 @@ import org.alfresco.util.schemacomp.model.DbObject;
  * 
  * @author Matt Ward
  */
-public interface DbValidator<T extends DbObject>
+public interface DbValidator
 {
-    void validate(T reference, T target, DiffContext ctx);
+    void validate(DbObject reference, DbObject target, DiffContext ctx);
     
     void setProperty(String name, String value);
     

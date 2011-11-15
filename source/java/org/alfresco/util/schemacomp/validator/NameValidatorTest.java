@@ -22,10 +22,7 @@ package org.alfresco.util.schemacomp.validator;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.alfresco.util.schemacomp.DiffContext;

@@ -18,13 +18,12 @@
  */
 package org.alfresco.util.schemacomp.model;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.alfresco.util.schemacomp.DbObjectVisitor;
 import org.alfresco.util.schemacomp.DiffContext;
-import org.alfresco.util.schemacomp.Results;
 import org.alfresco.util.schemacomp.Result.Strength;
+import org.alfresco.util.schemacomp.Results;
 import org.alfresco.util.schemacomp.validator.DbValidator;
 
 /**
@@ -98,12 +97,12 @@ public interface DbObject
      * @see DbValidator
      * @return DbValidator List
      */
-    List<DbValidator<? extends DbObject>> getValidators();
+    List<DbValidator> getValidators();
     
     /**
      * Set/override the validators associated with this database object.
      * 
      * @param validators
      */
-    void setValidators(List<DbValidator<? extends DbObject>> validators);
+    void setValidators(List<DbValidator> validators);
 }

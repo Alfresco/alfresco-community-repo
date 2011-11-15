@@ -20,8 +20,6 @@ package org.alfresco.util.schemacomp;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Stack;
 
 import javax.xml.parsers.SAXParser;
@@ -107,6 +105,7 @@ public class XMLToSchema extends DefaultHandler
         {
             Column column = (Column) stack.pop();
             Table table = (Table) stack.peek();
+            column.setParent(table);
             table.getColumns().add(column);
         }
         else if (qName.equals(XML.EL_PRIMARY_KEY))
@@ -119,34 +118,31 @@ public class XMLToSchema extends DefaultHandler
         {
             ForeignKey fk = (ForeignKey) stack.pop();
             Table table = (Table) stack.peek();
+            fk.setParent(table);
             table.getForeignKeys().add(fk);
         }
         else if (qName.equals(XML.EL_INDEX))
         {
             Index index = (Index) stack.pop();
             Table table = (Table) stack.peek();
+            index.setParent(table);
             table.getIndexes().add(index);
         }
         else if (qName.equals(XML.EL_SEQUENCE))
         {
             Sequence seq = (Sequence) stack.pop();
+            seq.setParent(schema);
             schema.add(seq);
         }
         else if (qName.equals(XML.EL_VALIDATOR))
         {
-            @SuppressWarnings("unchecked")
-            DbValidator<? extends DbObject> validator = (DbValidator<? extends DbObject>) stack.pop();
+            DbValidator validator = (DbValidator) stack.pop();
             DbObject dbo = (DbObject) stack.peek();
             dbo.getValidators().add(validator);
-        }
-        else if (qName.equals(XML.EL_PROPERTY))
-        {
-            //stack.pop();
         }
     }
 
     
-    @SuppressWarnings("unchecked")
     @Override
     public void startElement(String uri, String localName, String qName, Attributes atts)
                 throws SAXException
@@ -187,10 +183,10 @@ public class XMLToSchema extends DefaultHandler
         else if (qName.equals(XML.EL_VALIDATOR))
         {
             String className = atts.getValue(XML.ATTR_CLASS);
-            DbValidator<? extends DbObject> validator = null;
+            DbValidator validator = null;
             try
             {
-                validator = (DbValidator<? extends DbObject>) Class.forName(className).newInstance();
+                validator = (DbValidator) Class.forName(className).newInstance();
             }
             catch (Throwable e)
             {
@@ -258,7 +254,7 @@ public class XMLToSchema extends DefaultHandler
                 if (stack.peek() instanceof DbValidator)
                 {
                     @SuppressWarnings("unchecked")
-                    DbValidator<? extends DbObject> validator = (DbValidator<? extends DbObject>) stack.peek();
+                    DbValidator validator = (DbValidator) stack.peek();
                     validator.setProperty(propName, propValue);
                 }
             }

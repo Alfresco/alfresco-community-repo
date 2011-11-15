@@ -36,7 +36,7 @@ import org.hibernate.dialect.Dialect;
  * 
  * @author Matt Ward
  */
-public class NameValidator implements DbValidator<DbObject>
+public class NameValidator implements DbValidator
 {
     private Pattern pattern;
     

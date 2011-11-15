@@ -22,14 +22,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.util.schemacomp.model.DbObject;
-
 /**
  * Base class providing DbValidator support.
  * 
  * @author Matt Ward
  */
-public abstract class AbstractDbValidator<T extends DbObject> implements DbValidator<T>
+public abstract class AbstractDbValidator implements DbValidator
 {
     private final Map<String, String> properties = new HashMap<String, String>();
 

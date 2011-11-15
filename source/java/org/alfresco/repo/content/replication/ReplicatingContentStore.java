@@ -31,10 +31,10 @@ import org.alfresco.repo.content.AbstractContentStreamListener;
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentExistsException;
 import org.alfresco.repo.content.ContentStore;
+import org.alfresco.repo.content.caching.CachingContentStore;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentStreamListener;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
@@ -86,6 +86,7 @@ import org.apache.commons.logging.LogFactory;
  * the content.
  * 
  * @author Derek Hulley
+ * @see CachingContentStore
  */
 public class ReplicatingContentStore extends AbstractContentStore
 {

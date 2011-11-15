@@ -2,6 +2,11 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
  
 <beans>
+
+   <!--
+      For a content cache, see <a href="http://wiki.alfresco.com/wiki/CachingContentStore">CachingContentStore</a>
+   -->
+
    <!--
     This file is not included in the application context by default.
     If you include this file, please ensure that you review the sample

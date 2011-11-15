@@ -57,7 +57,7 @@ public class LinkGenerator extends BaseComponentGenerator
             component = context.getApplication().createComponent(ComponentConstants.JAVAX_FACES_INPUT);
             component.setRendererType(ComponentConstants.JAVAX_FACES_TEXT);
         }
-            
+        
         FacesHelper.setupComponentId(context, component, id);    
         return component;
     }
@@ -85,7 +85,7 @@ public class LinkGenerator extends BaseComponentGenerator
         if (component.getRendererType().equals("javax.faces.Link") == true)
         {
             // Add child text component
-            UIOutput output = createOutputTextComponent(context, "label_" + component.getId());
+            UIOutput output = createOutputTextComponent(context, "linklabel_" + component.getId());
             output.setValueBinding("value", component.getValueBinding("value"));
             component.getChildren().add(output);
         }

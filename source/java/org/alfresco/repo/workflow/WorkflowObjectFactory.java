@@ -195,6 +195,15 @@ public class WorkflowObjectFactory
                     isTaskNode, transitions);
     }
     
+    public WorkflowTransition createTransition(String id,
+            String defaultTitle, String defaultDescription,
+            boolean isDefault, String... baseLabelKeys)
+    {
+        String title = getLabel(baseLabelKeys, TITLE_LABEL, defaultTitle);
+        String description = getLabel(baseLabelKeys, TITLE_LABEL, defaultDescription);
+        return new WorkflowTransition(id, title, description, isDefault);
+    }
+    
     public WorkflowTaskDefinition createTaskDefinition(String id, WorkflowNode node, String typeName, boolean isStart)
     {
         TypeDefinition metaData = getTaskTypeDefinition(typeName, isStart);
@@ -276,6 +285,28 @@ public class WorkflowObjectFactory
         String keyBase = displayId.replace(":", "_");
         String key = keyBase+ "." + labelKey;
         String label = messageService.getMessage(key);
+        return getDefaultLabel(label, defaults);
+    }
+
+    private String getLabel(String[] locations, String labelKey, String... defaults)
+    {
+        String label = null;
+        int i = 0;
+        while(label == null && i<locations.length)
+        {
+            label = getLabel(locations[i], labelKey);
+            i++;
+        }
+        return getDefaultLabel(label, defaults);
+    }
+
+    /**
+     * @param label
+     * @param defaults
+     * @return
+     */
+    private String getDefaultLabel(String label, String... defaults)
+    {
         int i = 0;
         while(label==null && i<defaults.length)
         {

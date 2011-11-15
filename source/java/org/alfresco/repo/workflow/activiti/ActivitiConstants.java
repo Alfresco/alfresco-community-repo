@@ -34,6 +34,7 @@ public interface ActivitiConstants
     public static final String START_TASK_PREFIX = "start";
 
     public static final String DEFAULT_TRANSITION_NAME = "Next";
+    public static final String DEFAULT_TRANSITION_DESCRIPTION = "Default Transition";
     public static final String START_TASK_PROPERTY_PREFIX = "_start_";
 
     public static final String USER_TASK_NODE_TYPE = "userTask";

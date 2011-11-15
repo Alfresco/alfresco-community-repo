@@ -587,14 +587,14 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         }
         
         // Add start task definition
-        defs.add(typeConverter.getTaskDefinition(startEvent, startTaskName, processDefinition.getId()));
+        defs.add(typeConverter.getTaskDefinition(startEvent, startTaskName, processDefinition.getId(), true));
         
         // Now, continue through process, finding all user-tasks
         Collection<PvmActivity> taskActivities = findUserTasks(startEvent);
         for(PvmActivity act : taskActivities)
         {
             String formKey = getFormKey(act);
-            defs.add(typeConverter.getTaskDefinition(act, formKey, processDefinition.getId()));
+            defs.add(typeConverter.getTaskDefinition(act, formKey, processDefinition.getId(), false));
         }
         
        return defs;

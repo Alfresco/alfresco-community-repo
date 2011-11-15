@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.alfresco.repo.workflow.activiti.ActivitiConstants.DEFAULT_TRANSITION_NAME;
+import static org.alfresco.repo.workflow.activiti.ActivitiConstants.DEFAULT_TRANSITION_DESCRIPTION;
 import org.activiti.engine.FormService;
 import org.activiti.engine.HistoryService;
 import org.activiti.engine.ProcessEngine;
@@ -65,11 +67,9 @@ import org.alfresco.util.collections.Function;
  */
 public class ActivitiTypeConverter
 {
-    /**
-     * Default transition provided for all Nodes when using Activiti engine.
-     */
-    private static final WorkflowTransition NEXT_TRANSITION = new WorkflowTransition(ActivitiConstants.DEFAULT_TRANSITION_NAME, 
-                ActivitiConstants.DEFAULT_TRANSITION_NAME, "Default Transition", true);
+    private static final String TRANSITION_SUFFIX= ".transition";
+    private static final String DEFAULT_TRANSITION_KEY= "bpm_businessprocessmodel.transition";
+    
     
     private final RepositoryService repoService;
     private final RuntimeService runtimeService;
@@ -141,26 +141,28 @@ public class ActivitiTypeConverter
         
         ReadOnlyProcessDefinition def = activitiUtil.getDeployedProcessDefinition(defId);
         PvmActivity startEvent = def.getInitial();
-        WorkflowTaskDefinition startTask = getTaskDefinition(startEvent, startTaskName, definition.getKey());
+        WorkflowTaskDefinition startTask = getTaskDefinition(startEvent, startTaskName, definition.getKey(), true);
         
         return factory.createDefinition(defId,
                     defName, version, defaultTitle,
                     null, startTask);
     }
     
-    public WorkflowTaskDefinition getTaskDefinition(PvmActivity activity, String taskFormKey, String processDefinitionName)
+    public WorkflowTaskDefinition getTaskDefinition(PvmActivity activity, String taskFormKey, String processKey, boolean isStart)
     {
-        String startId = activity.getId();
-        String startTitle = (String) activity.getProperty(ActivitiConstants.NODE_NAME);
-        String startDescription= (String) activity.getProperty(ActivitiConstants.NODE_DESCRIPTION);
-        String startType = (String) activity.getProperty(ActivitiConstants.NODE_TYPE);
-        if(taskFormKey == null)
-        {
-            taskFormKey = startId;
-        }
-        WorkflowNode node = factory.createNode(startId, processDefinitionName, startTitle, startDescription, startType, true, NEXT_TRANSITION);
-        WorkflowTaskDefinition startTask = factory.createTaskDefinition(taskFormKey, node, taskFormKey, true);
-        return startTask;
+        WorkflowNode node = getNode(activity, processKey, true);
+        String taskDefId = taskFormKey == null ? node.getName() : taskFormKey;
+        return factory.createTaskDefinition(taskDefId, node, taskFormKey, isStart);
+    }
+
+    private WorkflowTransition getDefaultTransition(String processDefKey, String nodeId)
+    {
+        String processKey = processDefKey + TRANSITION_SUFFIX;
+        String nodeKey = processDefKey + ".node." + nodeId + TRANSITION_SUFFIX; 
+        String transitionId = DEFAULT_TRANSITION_NAME;
+        String title = DEFAULT_TRANSITION_NAME;
+        String description =DEFAULT_TRANSITION_DESCRIPTION;
+        return factory.createTransition(transitionId, title, description, true, nodeKey, processKey, DEFAULT_TRANSITION_KEY);
     }
 
     public WorkflowInstance convert(ProcessInstance instance)
@@ -230,7 +232,18 @@ public class ActivitiTypeConverter
     {
     	 String procDefId = activity.getProcessDefinition().getId();
          String key = activitiUtil.getProcessDefinition(procDefId).getKey();
-         String name = activity.getId();
+         return getNode(activity, key, forceIsTaskNode);
+    }
+
+    /**
+     * @param activity
+     * @param key
+     * @param forceIsTaskNode
+     * @return
+     */
+    private WorkflowNode getNode(PvmActivity activity, String key, boolean forceIsTaskNode)
+    {
+        String name = activity.getId();
          String defaultTitle = (String) activity.getProperty(ActivitiConstants.NODE_NAME);
          String defaultDescription = (String) activity.getProperty(ActivitiConstants.NODE_DESCRIPTION);
          String type = (String) activity.getProperty(ActivitiConstants.NODE_TYPE);
@@ -244,8 +257,8 @@ public class ActivitiTypeConverter
          {
          	defaultDescription = name;
          }
-
-        return factory.createNode(name, key, defaultTitle, defaultDescription, type, isTaskNode, NEXT_TRANSITION);
+        WorkflowTransition transition = getDefaultTransition(key, name);
+        return factory.createNode(name, key, defaultTitle, defaultDescription, type, isTaskNode, transition);
     }
     
     public WorkflowNode convert(PvmActivity activity)

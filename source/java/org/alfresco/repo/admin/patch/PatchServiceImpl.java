@@ -344,7 +344,7 @@ public class PatchServiceImpl implements PatchService
             {
                 // If the patch was executed, then this one was effectively executed
                 AppliedPatch appliedAlternative = appliedPatchDAO.getAppliedPatch(alternative.getId());
-                if (appliedAlternative != null && appliedAlternative.getSucceeded())
+                if (appliedAlternative != null && appliedAlternative.getWasExecuted() && appliedAlternative.getSucceeded())
                 {
                     return alternative.getId();
                 }

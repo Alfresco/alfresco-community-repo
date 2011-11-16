@@ -62,7 +62,9 @@ public class CMISResultSetRowImpl implements CMISResultSetRow
 
     private CMISDictionaryService cmisDictionaryService;
 
-    public CMISResultSetRowImpl(CMISResultSet resultSet, int index, Map<String, Float> scores, NodeService nodeService, Map<String, NodeRef> nodeRefs, Query query,
+    public CMISResultSetRowImpl(
+            CMISResultSet resultSet, int index, Map<String, Float> scores,
+            NodeService nodeService, Map<String, NodeRef> nodeRefs, Query query,
             CMISDictionaryService cmisDictionaryService)
     {
         this.resultSet = resultSet;
@@ -74,28 +76,19 @@ public class CMISResultSetRowImpl implements CMISResultSetRow
         this.cmisDictionaryService = cmisDictionaryService;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.search.CMISResultSetRow#getIndex()
-     */
+    @Override
     public int getIndex()
     {
         return index;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.search.CMISResultSetRow#getResultSet()
-     */
+    @Override
     public ResultSet getResultSet()
     {
         return new ResultSetSPIWrapper<CMISResultSetRow, CMISResultSetMetaData>(resultSet);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.search.CMISResultSetRow#getScore()
-     */
+    @Override
     public float getScore()
     {
         float count = 0;
@@ -107,46 +100,31 @@ public class CMISResultSetRowImpl implements CMISResultSetRow
         return overall;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.search.CMISResultSetRow#getScore(java.lang.String)
-     */
+    @Override
     public float getScore(String selectorName)
     {
         return scores.get(selectorName);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.search.CMISResultSetRow#getScores()
-     */
+    @Override
     public Map<String, Float> getScores()
     {
         return scores;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.search.CMISResultSetRow#getScore(java.lang.String)
-     */
+    @Override
     public NodeRef getNodeRef(String selectorName)
     {
         return nodeRefs.get(selectorName);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.search.CMISResultSetRow#getScores()
-     */
+    @Override
     public Map<String, NodeRef> getNodeRefs()
     {
         return nodeRefs;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.search.CMISResultSetRow#getValue(java.lang.String)
-     */
+    @Override
     public Serializable getValue(String columnName)
     {
         CmisFunctionEvaluationContext context = new CmisFunctionEvaluationContext();
@@ -202,10 +180,7 @@ public class CMISResultSetRowImpl implements CMISResultSetRow
         return null;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.search.CMISResultSetRow#getValues()
-     */
+    @Override
     public Map<String, Serializable> getValues()
     {
         LinkedHashMap<String, Serializable> answer = new LinkedHashMap<String, Serializable>();
@@ -216,17 +191,20 @@ public class CMISResultSetRowImpl implements CMISResultSetRow
         return answer;
     }
 
+    @Override
     public CMISResultSet getCMISResultSet()
     {
         return resultSet;
     }
 
+    @Override
     public ChildAssociationRef getChildAssocRef()
     {
         NodeRef nodeRef = getNodeRef();
         return nodeService.getPrimaryParent(nodeRef);
     }
 
+    @Override
     public NodeRef getNodeRef()
     {
         if (nodeRefs.size() == 1)
@@ -260,14 +238,15 @@ public class CMISResultSetRowImpl implements CMISResultSetRow
         return true;
     }
     
+    @Override
     public QName getQName()
     {
         return getChildAssocRef().getQName();
     }
 
+    @Override
     public Serializable getValue(QName qname)
     {
         throw new UnsupportedOperationException();
     }
-
 }

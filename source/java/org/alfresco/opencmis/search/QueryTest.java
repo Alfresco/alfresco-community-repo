@@ -3517,7 +3517,7 @@ public class QueryTest extends BaseCMISTest
         rs.close();
     }
 
-    public void DISABLED_testBasicAllFolderColumns()
+    public void testBasicAllFolderColumns()
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:folder AS DOC", cmisConnector.getRootStoreRef());
         CMISResultSet rs = cmisQueryService.query(options);

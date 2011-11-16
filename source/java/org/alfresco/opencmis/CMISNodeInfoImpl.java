@@ -20,6 +20,7 @@ package org.alfresco.opencmis;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
@@ -344,6 +345,11 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
     {
         type = null;
 
+        if((objecVariant == CMISObjectVariant.INVALID_ID) || (objecVariant == CMISObjectVariant.NOT_A_CMIS_OBJECT) || (objecVariant == CMISObjectVariant.NOT_EXISTING) || (objecVariant == CMISObjectVariant.PERMISSION_DENIED))
+        {
+            return;
+        }
+        
         if (nodeRef != null)
         {
             QName typeQName = connector.getNodeService().getType(nodeRef);
@@ -528,6 +534,11 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
 
     public String getName()
     {
+        if((objecVariant == CMISObjectVariant.INVALID_ID) || (objecVariant == CMISObjectVariant.NOT_A_CMIS_OBJECT) || (objecVariant == CMISObjectVariant.NOT_EXISTING) || (objecVariant == CMISObjectVariant.PERMISSION_DENIED))
+        {
+            return null;
+        }
+        
         if (name == null)
         {
             if (isRelationship())
@@ -545,6 +556,11 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
 
     public String getPath()
     {
+        if((objecVariant == CMISObjectVariant.INVALID_ID) || (objecVariant == CMISObjectVariant.NOT_A_CMIS_OBJECT) || (objecVariant == CMISObjectVariant.NOT_EXISTING) || (objecVariant == CMISObjectVariant.PERMISSION_DENIED))
+        {
+            return null;
+        }
+        
         if (cmisPath == null)
         {
             StringBuilder displayPath = new StringBuilder(64);
@@ -783,6 +799,11 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
     @Override
     public List<CMISNodeInfo> getParents()
     {
+        if((objecVariant == CMISObjectVariant.INVALID_ID) || (objecVariant == CMISObjectVariant.NOT_A_CMIS_OBJECT) || (objecVariant == CMISObjectVariant.NOT_EXISTING) || (objecVariant == CMISObjectVariant.PERMISSION_DENIED))
+        {
+            return Collections.<CMISNodeInfo>emptyList();
+        }
+        
         if (parents == null)
         {
             parents = new ArrayList<CMISNodeInfo>();

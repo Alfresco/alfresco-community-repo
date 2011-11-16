@@ -63,12 +63,7 @@ import org.alfresco.opencmis.mapping.VersionLabelProperty;
 import org.alfresco.opencmis.mapping.VersionSeriesCheckedOutByProperty;
 import org.alfresco.opencmis.mapping.VersionSeriesCheckedOutIdProperty;
 import org.alfresco.opencmis.mapping.VersionSeriesIdProperty;
-import org.alfresco.opencmis.search.CMISQueryOptions;
 import org.alfresco.opencmis.search.CMISQueryOptions.CMISQueryMode;
-import org.alfresco.opencmis.search.CMISResultSet;
-import org.alfresco.opencmis.search.CMISResultSetColumn;
-import org.alfresco.opencmis.search.CMISResultSetMetaData;
-import org.alfresco.opencmis.search.CMISResultSetRow;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.search.MLAnalysisMode;
@@ -95,14 +90,11 @@ import org.antlr.runtime.CharStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.tree.CommonTree;
-import org.apache.chemistry.abdera.ext.CMISTypeDefinition;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
-import org.apache.chemistry.opencmis.commons.data.PropertyId;
 import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
 import org.apache.chemistry.opencmis.commons.enums.Cardinality;
 import org.apache.chemistry.opencmis.commons.enums.PropertyType;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisBaseException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisInvalidArgumentException;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -3525,7 +3517,7 @@ public class QueryTest extends BaseCMISTest
         rs.close();
     }
 
-    public void testBasicAllFolderColumns()
+    public void DISABLED_testBasicAllFolderColumns()
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:folder AS DOC", cmisConnector.getRootStoreRef());
         CMISResultSet rs = cmisQueryService.query(options);

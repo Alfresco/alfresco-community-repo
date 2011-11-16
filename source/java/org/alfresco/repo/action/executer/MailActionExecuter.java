@@ -316,7 +316,11 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                         @Override
                         public Void execute() throws Throwable
                         {
-                            prepareAndSendEmail(ruleAction, actionedUponNodeRef);  
+                            // Only try and send the email if the actioned upon node reference still exists
+                            if (nodeService.exists(actionedUponNodeRef) == true)
+                            {
+                                prepareAndSendEmail(ruleAction, actionedUponNodeRef);
+                            }
                             return null;
                         }
                     }, false, true);          
@@ -325,7 +329,10 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         }
         else
         {
-            prepareAndSendEmail(ruleAction, actionedUponNodeRef);            
+            if (nodeService.exists(actionedUponNodeRef) == true)
+            {
+                prepareAndSendEmail(ruleAction, actionedUponNodeRef);
+            }
         }
     }
     

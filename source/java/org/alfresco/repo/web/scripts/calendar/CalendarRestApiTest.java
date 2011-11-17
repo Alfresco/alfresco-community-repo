@@ -880,5 +880,28 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        assertEquals("2011-07-27T", events.getJSONObject(6).getJSONObject("startAt").getString("iso8601").substring(0,11));
        // 3rd repeat Friday
        assertEquals("2011-07-29T", events.getJSONObject(7).getJSONObject("startAt").getString("iso8601").substring(0,11));
+       
+       
+       // Ask for events from a date in the future
+       // We shouldn't get either of the original events, but we 
+       //  should get the repeating instances of the 2nd one
+       result = getEntries("admin", "2011/08/20");
+       events = result.getJSONArray("events");
+       assertEquals(4, events.length());
+       
+       // The repeating event runs until 2011-09-11, a Sunday
+       assertEquals(entryName2, events.getJSONObject(0).getString("name"));
+       assertEquals(entryName2, events.getJSONObject(1).getString("name"));
+       assertEquals(entryName2, events.getJSONObject(2).getString("name"));
+       assertEquals(entryName2, events.getJSONObject(3).getString("name"));
+       
+       // First Wednesday after the start date
+       assertEquals("2011-08-24T", events.getJSONObject(0).getJSONObject("startAt").getString("iso8601").substring(0,11));
+       // Friday
+       assertEquals("2011-08-26T", events.getJSONObject(1).getJSONObject("startAt").getString("iso8601").substring(0,11));
+       // Wednesday, 2 weeks later
+       assertEquals("2011-09-07T", events.getJSONObject(2).getJSONObject("startAt").getString("iso8601").substring(0,11));
+       // Friday, final repeating instance date
+       assertEquals("2011-09-09T", events.getJSONObject(3).getJSONObject("startAt").getString("iso8601").substring(0,11));
     }
 }

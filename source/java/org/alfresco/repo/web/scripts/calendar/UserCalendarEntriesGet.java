@@ -196,7 +196,7 @@ public class UserCalendarEntriesGet extends AbstractCalendarWebScript
          results.add(result);
          
          // Handle recurring as needed
-         boolean orderChanged = handleRecurring(entry, result, results, fromDate, repeatingFirstOnly);
+         boolean orderChanged = handleRecurring(entry, result, results, fromDate, toDate, repeatingFirstOnly);
          if (orderChanged)
          {
             resortNeeded = true;
@@ -305,7 +305,7 @@ public class UserCalendarEntriesGet extends AbstractCalendarWebScript
     * @return If dates have been tweaked, and a sort may be required 
     */
    private boolean handleRecurring(CalendarEntry entry, Map<String, Object> entryResult, 
-         List<Map<String, Object>> allResults, Date from, boolean repeatingFirstOnly)
+         List<Map<String, Object>> allResults, Date from, Date until, boolean repeatingFirstOnly)
    {
       if (entry.getRecurrenceRule() == null)
       {
@@ -319,16 +319,20 @@ public class UserCalendarEntriesGet extends AbstractCalendarWebScript
          from = entry.getStart();
       }
       
+      // Do we nee dto limit ourselves?
       // Should we limit ourselves?
-      Date until = null;
       if (!repeatingFirstOnly)
       {
-         // Only repeating instances for the next 60 days, to keep the list sane
-         // (It's normally only used for a month view anyway)
-         Calendar c = Calendar.getInstance();
-         c.setTime(from);
-         c.add(Calendar.DATE, 60);
-         until = c.getTime();
+         if (until == null)
+         {
+            // If no end date was given, only allow repeating instances 
+            // for next 60 days, to keep the list sane
+            // (It's normally only used for a month view anyway)
+            Calendar c = Calendar.getInstance();
+            c.setTime(from);
+            c.add(Calendar.DATE, 60);
+            until = c.getTime();
+         }
       }
       
       // How long is it?

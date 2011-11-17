@@ -53,6 +53,11 @@ public class AllowedChildObjectTypeIdsProperty extends AbstractProperty
     @Override
     public Serializable getValueInternal(CMISNodeInfo nodeInfo)
     {
+        if(nodeInfo.getType() == null)
+        {
+            return (Serializable) Collections.emptyList();
+        }
+        
         TypeDefinition type = getServiceRegistry().getDictionaryService()
                 .getType(nodeInfo.getType().getAlfrescoClass());
         if ((type != null) && (type.getChildAssociations() != null) && (!type.getChildAssociations().isEmpty()))

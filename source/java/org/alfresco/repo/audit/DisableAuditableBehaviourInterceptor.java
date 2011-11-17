@@ -83,9 +83,15 @@ public class DisableAuditableBehaviourInterceptor implements MethodInterceptor
             methodNames.contains(methodName) &&
             (arg1 == null || argumentQNameValues.contains(arg1)))
         {
+            Set<NodeRef> disabledNodeRefs = new HashSet<NodeRef>(); // Avoid nested calls that enable the aspect early
             for (NodeRef nodeRef : nodes)
             {
-                behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+                if (!disabledNodeRefs.contains(nodeRef) &&
+                    behaviourFilter.isEnabled(nodeRef, ContentModel.ASPECT_AUDITABLE))
+                {
+                    behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+                    disabledNodeRefs.add(nodeRef);
+                }
             }
             try
             {
@@ -95,7 +101,10 @@ public class DisableAuditableBehaviourInterceptor implements MethodInterceptor
             {
                 for (NodeRef nodeRef : nodes)
                 {
-                    behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+                    if (disabledNodeRefs.contains(nodeRef))
+                    {
+                        behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+                    }
                 }
             }
         }

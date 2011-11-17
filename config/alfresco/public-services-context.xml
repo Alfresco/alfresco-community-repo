@@ -94,6 +94,7 @@
         <property name="methodNames">
             <list>
                 <value>setProperty</value>
+                <value>removeProperty</value>
             </list>
         </property>
         <property name="argumentValues">

@@ -88,8 +88,18 @@
       <property name="transferManifestNodeFactory" ref="transferManifestNodeFactory" />
       <property name="versionService" ref="VersionService" />
       <property name="workflowEngineId" value="activiti" />
+      <property name="excludedAspects" ref="excludedPublishingAspects" />     
    </bean>
-        
+
+   <bean id="excludedPublishingAspects" class="java.util.ArrayList">
+      <constructor-arg>
+         <list>
+            <value>{http://www.alfresco.org/model/rule/1.0}rules</value>
+            <value>{http://www.alfresco.org/model/content/1.0}mlDocument</value>
+            <value>{http://www.alfresco.org/model/forum/1.0}discussable</value>
+         </list>
+      </constructor-arg>
+   </bean>     
 
    <!--  Publish Event Action -->
     <bean id="pub_publishEvent" class="org.alfresco.repo.publishing.PublishEventAction" >

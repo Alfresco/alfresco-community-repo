@@ -46,6 +46,7 @@ import static org.alfresco.util.collections.CollectionUtils.transformFlat;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
@@ -81,6 +82,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.transfer.TransferDefinition;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
@@ -111,8 +113,10 @@ public class PublishingEventHelper
     private NodeSnapshotSerializer serializer;
     private PermissionService permissionService;
     private TransferManifestNodeFactory transferManifestNodeFactory;
+    private List<QName> excludedAspects = new ArrayList<QName>();
 
     private String workflowEngineId;
+    private TransferDefinition excludedAspectsTransferDefinition;
     
     /**
      * @param nodeService
@@ -559,7 +563,7 @@ public class PublishingEventHelper
     private NodeSnapshotTransferImpl createPublishSnapshot(NodeRef node)
     {
         versionService.createVersion(node, null);
-        TransferManifestNormalNode payload = (TransferManifestNormalNode) transferManifestNodeFactory.createTransferManifestNode(node, null);
+        TransferManifestNormalNode payload = (TransferManifestNormalNode) transferManifestNodeFactory.createTransferManifestNode(node, excludedAspectsTransferDefinition);
         NodeSnapshotTransferImpl snapshot = new NodeSnapshotTransferImpl(payload);
         return snapshot;
     }
@@ -662,4 +666,20 @@ public class PublishingEventHelper
     {
         return new PublishingDetailsImpl();
     }
+
+    /**
+     * Sets a list of excluded aspects, assumes the fully qualified name.  Replaces any exising excluded aspects.
+     * @param excludedAspects
+     */
+    public void setExcludedAspects(Collection<String> excludedAspects)
+    {
+        this.excludedAspects.clear();
+        
+        for (String aspect : excludedAspects)
+        {
+            this.excludedAspects.add(QName.createQName(aspect));
+        }
+        this.excludedAspectsTransferDefinition = new TransferDefinition();
+        excludedAspectsTransferDefinition.setExcludedAspects(this.excludedAspects);
+    }   
 }

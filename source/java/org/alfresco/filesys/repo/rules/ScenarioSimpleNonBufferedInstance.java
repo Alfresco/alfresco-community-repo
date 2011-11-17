@@ -56,7 +56,7 @@ public class ScenarioSimpleNonBufferedInstance implements ScenarioInstance
         if(operation instanceof CreateFileOperation)
         {
             CreateFileOperation c = (CreateFileOperation)operation;
-            return new CreateFileCommand(c.getName(), c.getRootNodeRef(), c.getPath());
+            return new CreateFileCommand(c.getName(), c.getRootNodeRef(), c.getPath(), c.getAllocationSize());
         }
         else if(operation instanceof DeleteFileOperation)
         {

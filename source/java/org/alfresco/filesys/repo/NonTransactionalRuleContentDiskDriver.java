@@ -194,7 +194,7 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
                     + ", requestExclusiveOpLock:" +params.requestExclusiveOpLock()  
                     + ", isDeleteOnClose:" +params.isDeleteOnClose()
                     + ", sharedAccess: " + strSharedAccess
-                    + " allocationSize: " + params.getAllocationSize());
+                    + ", allocationSize: " + params.getAllocationSize());
         }
         
         long creationDateTime = params.getCreationDateTime();
@@ -213,7 +213,7 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
         DriverState driverState = getDriverState(sess);
         EvaluatorContext ctx = getEvaluatorContext(driverState, folder);
 
-        Operation o = new CreateFileOperation(file, rootNode, params.getPath());
+        Operation o = new CreateFileOperation(file, rootNode, params.getPath(), params.getAllocationSize());
         Command c = ruleEvaluator.evaluate(ctx, o);
         
         Object ret = commandExecutor.execute(sess, tree, c);

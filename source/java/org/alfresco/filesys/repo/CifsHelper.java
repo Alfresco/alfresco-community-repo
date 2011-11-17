@@ -33,6 +33,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.jlan.server.filesys.FileAttribute;
 import org.alfresco.jlan.server.filesys.FileExistsException;
 import org.alfresco.jlan.server.filesys.FileName;
+import org.alfresco.jlan.server.filesys.FileType;
 import org.alfresco.jlan.util.WildCard;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
@@ -212,6 +213,7 @@ public class CifsHelper
             // add directory attribute
             fileAttributes |= FileAttribute.Directory;
             fileInfo.setFileAttributes(fileAttributes);
+            fileInfo.setFileType(FileType.Directory);
         }
         else
         {

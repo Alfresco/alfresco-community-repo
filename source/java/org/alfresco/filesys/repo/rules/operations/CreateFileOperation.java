@@ -31,12 +31,14 @@ public class CreateFileOperation implements Operation
     private String name;
     private NodeRef rootNodeRef;
     private String path;
+    private long allocationSize;
     
-    public CreateFileOperation(String name, NodeRef rootNodeRef, String path)
+    public CreateFileOperation(String name, NodeRef rootNodeRef, String path, long allocationSize)
     {
         this.name = name;
         this.rootNodeRef = rootNodeRef;
         this.path = path;
+        this.allocationSize = allocationSize;
     }
 
     public String getName()
@@ -75,5 +77,15 @@ public class CreateFileOperation implements Operation
             }
         }
         return false;
+    }
+
+    public void setAllocationSize(long allocationSize)
+    {
+        this.allocationSize = allocationSize;
+    }
+
+    public long getAllocationSize()
+    {
+        return allocationSize;
     }
 }

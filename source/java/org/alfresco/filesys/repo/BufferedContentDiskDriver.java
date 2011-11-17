@@ -236,7 +236,8 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
         FileInfo info = getFileInformationInternal(sess, tree, path);
         
         /*
-         *  Some information is not maintained by the repo
+         *  Some information is not maintained by the repo and represents an in-progress update.
+         *  For example as a file is being written the modification and access dates change.
          */        
         if(tctx.hasStateCache())
         {
@@ -246,64 +247,75 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
             {
                 if(logger.isDebugEnabled())
                 {
-                    logger.debug("state cache available - overwriting from state cache");
+                    logger.debug("state cache available - overwriting from state cache: isDirectory=" +info.isDirectory());
                 }
                 FileInfo finfo = new FileInfo();
                 finfo.copyFrom(info);
-
-                /*
-                 * TODO what if file state cache is stale?  
-                 * We are over-writing the "real" value here.
-                 */ 
-                if(fstate.hasFileSize())
-                {
-                    if(logger.isDebugEnabled())
+                
+                /**
+                 * File state is probably stale for directories which is why we don't attempt to 
+                 * cache.
+                 */     
+                if(!info.isDirectory())
+                {                  
+                    /*
+                     * What about stale file state values here?
+                     */
+                    if(fstate.hasFileSize())
                     {
-                        logger.debug("replace file size " + info.getSize() + " with " + fstate.getFileSize());
+                        if(logger.isDebugEnabled())
+                        {
+                            logger.debug("replace file size " + info.getSize() + " with " + fstate.getFileSize());
+                        }
+                        finfo.setFileSize(fstate.getFileSize());
                     }
-                    finfo.setFileSize(fstate.getFileSize());
-                }
-                if ( fstate.hasAccessDateTime())
-                {
-                    if(logger.isDebugEnabled())
+                    if ( fstate.hasAccessDateTime())
                     {
-                        logger.debug("replace access date " + new Date(finfo.getAccessDateTime()) + " with " + new Date(fstate.getAccessDateTime()));
+                        if(logger.isDebugEnabled())
+                        {
+                            logger.debug("replace access date " + new Date(finfo.getAccessDateTime()) + " with " + new Date(fstate.getAccessDateTime()));
+                        }
+                        finfo.setAccessDateTime(fstate.getAccessDateTime());
                     }
-                    finfo.setAccessDateTime(fstate.getAccessDateTime());
-                }
-                if ( fstate.hasChangeDateTime())
-                {
-                    if(logger.isDebugEnabled())
+                    if ( fstate.hasChangeDateTime())
                     {
-                        logger.debug("replace change date " + new Date(finfo.getChangeDateTime()) + " with " + new Date(fstate.getChangeDateTime()));
+                        if(logger.isDebugEnabled())
+                        {
+                            logger.debug("replace change date " + new Date(finfo.getChangeDateTime()) + " with " + new Date(fstate.getChangeDateTime()));
+                        }
+                        finfo.setChangeDateTime(fstate.getChangeDateTime());
                     }
-                    finfo.setChangeDateTime(fstate.getChangeDateTime());
-                }
-                if ( fstate.hasModifyDateTime())
-                {
-                    if(logger.isDebugEnabled())
+                    if ( fstate.hasModifyDateTime())
                     {
-                        logger.debug("replace modified date " + new Date(finfo.getModifyDateTime()) + " with " + new Date(fstate.getModifyDateTime()));
+                        if(logger.isDebugEnabled())
+                        {
+                            logger.debug("replace modified date " + new Date(finfo.getModifyDateTime()) + " with " + new Date(fstate.getModifyDateTime()));
+                        }
+                        finfo.setModifyDateTime(fstate.getModifyDateTime());
                     }
-                    finfo.setModifyDateTime(fstate.getModifyDateTime());
+                    if ( fstate.hasAllocationSize())
+                    {
+                        if(logger.isDebugEnabled())
+                        {
+                            logger.debug("replace allocation size" + finfo.getAllocationSize() + " with " + fstate.getAllocationSize());
+                        }
+                        finfo.setAllocationSize(fstate.getAllocationSize());
+                    }
                 }
-
-//                if ( fstate.hasAllocationSize() && fstate.getAllocationSize() > info.getAllocationSize())
-//                {
-//                    finfo.setAllocationSize( fstate.getAllocationSize());
-//                }
                 
                 if(logger.isDebugEnabled())
                 {
                     logger.debug("getFileInformation path" + path + ", returning:" + finfo  + 
                             ", readOnly:" +finfo.isReadOnly() +
                             ", fileId:" +finfo.getFileId() +
+                            ", fileSize:" +finfo.getSize() +
                             ", directoryId:" + finfo.getDirectoryId() + 
                             ", createdDate: " + finfo.getCreationDateTime() + 
                             ", accessDate:" + new Date(finfo.getAccessDateTime()) +
                             ", modifiedDate:" + new Date(finfo.getModifyDateTime()) +
                             ", changeDate:" + new Date(finfo.getChangeDateTime()) +
-                            ", mode" + finfo.getMode());
+                            ", fileAttributes: 0x"+ Integer.toHexString(info.getFileAttributes()) +
+                            ", mode: 0x" + Integer.toHexString(finfo.getMode()));
                 }
                 
                 return finfo;
@@ -414,6 +426,14 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
             NetworkFile param) throws IOException
     {
         diskInterface.closeFile(sess, tree, param);
+        
+        /**
+         * If the fileInfo cache may have just had some content updated.
+         */
+        if(!param.isDirectory() && !param.isReadOnly())
+        {
+            fileInfoCache.clear();
+        }
     }
 
     @Override

@@ -48,9 +48,10 @@ public interface RepositoryDiskInterface
      * @param rootNode
      * @param fromPath - the source node
      * @param toPath - the target node
+     * @param allocationSize size to allocate for new file
      * @throws FileNotFoundException 
      */
-    public NetworkFile createFile(NodeRef rootNode, String Path) throws IOException;
+    public NetworkFile createFile(NodeRef rootNode, String Path, long allocationSize) throws IOException;
     
     /**
      * CloseFile.

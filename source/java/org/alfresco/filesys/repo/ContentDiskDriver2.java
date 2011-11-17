@@ -1035,14 +1035,6 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                         logger.debug("open file for read only");
                         netFile = ContentNetworkFile.createFile(nodeService, contentService, mimetypeService, getCifsHelper(), nodeRef, params, session);
 
-                        if(!netFile.isReadOnly())
-                        {
-                            logger.debug("work around");
-                            // Bug work around fix for read only stuff
-                            int attrib = netFile.getFileAttributes();
-                            attrib = attrib + FileAttribute.ReadOnly;
-                            netFile.setAttributes(attrib);
-                        }
                     }
                     else if(params.isReadWriteAccess())
                     {
@@ -1237,7 +1229,6 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
     /**
      * Create a new file on the file system.
      * 
-     * 
      * @param sess Server session
      * @param tree Tree connection
      * @param params File create parameters
@@ -1246,130 +1237,8 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
      */
     public NetworkFile createFile(SrvSession sess, final TreeConnection tree, final FileOpenParams params) throws IOException
     {
+        // Obsolete
         return null;
-//        final ContentContext ctx = (ContentContext) tree.getContext();
-//        
-//        if (logger.isDebugEnabled())
-//        {
-//            logger.debug("createFile :" + params);
-//        }
-//        
-//        try
-//        {
-//            // Get the device root
-//
-//            NodeRef deviceRootNodeRef = ctx.getRootNode();
-//                    
-//            String path = params.getPath();
-//            //String parentPath = path;
-//            
-//            // MER NEW CODE BELOW
-//            //NodeRef parentNodeRef = cifsHelper.getNodeRef(deviceRootNodeRef, parentPath);
-//            
-//            // TODO Check whether node already exists
-//            
-//            // TODO Check permissions to create new node
-//            //ContentWriter writer = contentService.getTempWriter();
-//            
-//            //File file = TempFileProvider.createTempFile("cifs", ".bin");
-//            
-//            //TempNetworkFile netFile = new TempNetworkFile(file, path);
-//            
-//            //netFile.setFileId(12345);
-//            
-//            //tempFiles.put(path, netFile);
-//            
-//            //if(logger.isDebugEnabled())
-//            //{
-//            //    logger.debug("temp network file created:" + file);
-//            //}
-//            // MER NEW CODE ABOVE
-//            
-//            NodeRef nodeRef = cifsHelper.createNode(deviceRootNodeRef, path, ContentModel.TYPE_CONTENT);
-//
-//            nodeService.addAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT, null);
-//                        
-//            // Create the network file
-//            
-//            ContentNetworkFile netFile = ContentNetworkFile.createFile(nodeService, contentService, mimetypeService, getCifsHelper(), nodeRef, params, sess);
-//            
-//            // Always allow write access to a newly created file
-//            
-//            netFile.setGrantedAccess(NetworkFile.READWRITE);
-//            
-//            // Set the owner process id for this open file
-//            
-//            netFile.setProcessId( params.getProcessId());
-//            
-//            // Truncate the file so that the content stream is created
-//            netFile.truncateFile( 0L);
-//
-//            // Generate a file id for the file
-//            
-//            if ( netFile != null) 
-//            {
-//                long id = DefaultTypeConverter.INSTANCE.convert(Long.class, nodeService.getProperty(netFile.getNodeRef(), ContentModel.PROP_NODE_DBID));
-//                netFile.setFileId((int) (id & 0xFFFFFFFFL));
-//            }
-//           
-//            if (logger.isDebugEnabled())
-//            {
-//                logger.debug("Created file: path=" + params.getPath() + " file open parameters=" + params + " node=" + nodeRef + " network file=" + netFile);
-//            }
-//            
-//            // Return the new network file
-//            
-//            return netFile;
-//        }
-//        catch (org.alfresco.repo.security.permissions.AccessDeniedException ex)
-//        {
-//            // Debug
-//            
-//            if ( logger.isDebugEnabled())
-//            {
-//                logger.debug("Create file - access denied, " + params.getFullPath());
-//            }
-//            
-//            // Convert to a filesystem access denied status
-//            
-//            throw new AccessDeniedException("Unable to create file " + params.getFullPath());
-//        }
-//        catch (IOException ex)
-//        {
-//            // Debug
-//            
-//            if ( logger.isDebugEnabled())
-//            {
-//                logger.debug("Create file - content I/O error, " + params.getFullPath());
-//            }
-//            
-//            throw ex;
-//        }
-//        catch (ContentIOException ex)
-//        {
-//            // Debug
-//            
-//            if ( logger.isDebugEnabled())
-//            {
-//                logger.debug("Create file - content I/O error, " + params.getFullPath());
-//            }
-//            // Convert to a filesystem disk full status
-//            
-//            throw new DiskFullException("Unable to create file " + params.getFullPath());
-//        }
-//        catch (AlfrescoRuntimeException ex)
-//        {
-//            // Debug
-//            
-//            if ( logger.isDebugEnabled())
-//            {
-//                logger.debug("Create file error", ex);
-//            }
-//            
-//            // Convert to a general I/O exception
-//            
-//            throw new IOException("Unable to create file " + params.getFullPath(), ex);
-//        } 
     }
 
     /**
@@ -2699,7 +2568,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
     }
 
     @Override
-    public NetworkFile createFile(NodeRef rootNode, String path)
+    public NetworkFile createFile(NodeRef rootNode, String path, long allocationSize)
             throws IOException
     {
           
@@ -2742,9 +2611,8 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             // Always allow write access to a newly created file
             netFile.setGrantedAccess(NetworkFile.READWRITE);
             netFile.setAllowedAccess(NetworkFile.READWRITE);
-                             
-            // Truncate the file so that the content stream is created
-            //netFile.truncateFile( 0L);
+            
+         
 
             // Generate a file id for the file
             

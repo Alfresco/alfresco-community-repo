@@ -32,12 +32,14 @@ public class CreateFileCommand implements Command
     private String name;
     private NodeRef rootNode;
     private String path;
+    private long allocationSize;
     
-    public CreateFileCommand(String name, NodeRef rootNode, String path)
+    public CreateFileCommand(String name, NodeRef rootNode, String path, long allocationSize)
     {
         this.name = name;
         this.path = path;
         this.rootNode = rootNode;
+        this.allocationSize = allocationSize;
     }
 
     public String getName()
@@ -60,6 +62,16 @@ public class CreateFileCommand implements Command
     public TxnReadState getTransactionRequired()
     {
         return TxnReadState.TXN_READ_WRITE;
+    }
+
+    public void setAllocationSize(long allocationSize)
+    {
+        this.allocationSize = allocationSize;
+    }
+
+    public long getAllocationSize()
+    {
+        return allocationSize;
     }
     
 }

@@ -108,7 +108,13 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
             
                 // Indicate that the file is open
                 fstate.setFileStatus(newFile.isDirectory()? FileStatus.DirectoryExists : FileStatus.FileExists);
-                fstate.setAllocationSize( params.getAllocationSize());
+         
+                long allocationSize = params.getAllocationSize();
+                if(allocationSize > 0)
+                {
+                    fstate.setAllocationSize(allocationSize);
+                    fstate.setFileSize(allocationSize);
+                }
                 
                 if (newFile instanceof NodeRefNetworkFile)
                 {
@@ -201,7 +207,8 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
                     fstate.setProcessId(params.getProcessId());
                     fstate.setSharedAccess( params.getSharedAccess());
                     fstate.setFileStatus(FileStatus.FileExists);
-                    fstate.updateAccessDateTime();
+                    // Access date time is read/write time not open time
+                    // fstate.updateAccessDateTime();
                     
                     fstate.setFileSize(x.getFileSize());
                     fstate.updateChangeDateTime(x.getModifyDate());
@@ -221,7 +228,8 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
                     fstate.setFileStatus(FileStatus.FileExists);
                     fstate.setProcessId(params.getProcessId());
                     fstate.setSharedAccess( params.getSharedAccess());
-                    fstate.updateAccessDateTime();
+                    // access date time is read/write time not open time
+                    //fstate.updateAccessDateTime();
                     
                     fstate.setFileSize(x.getFileSize());
                     fstate.updateChangeDateTime(x.getModifyDate());
@@ -240,7 +248,8 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
                     fstate.setFileStatus(FileStatus.DirectoryExists);
                     fstate.setProcessId(params.getProcessId());
                     fstate.setSharedAccess( params.getSharedAccess());
-                    fstate.updateAccessDateTime();
+                    // Access date time is read/write time not open time
+                    //fstate.updateAccessDateTime();
                     
                     fstate.setFileSize(x.getFileSize());
                     fstate.updateChangeDateTime(x.getModifyDate());
@@ -289,11 +298,15 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
                 FileStateCache cache = tctx.getStateCache();
                 FileState fstate = cache.findFileState( param.getFullName(), true);
                 
-                // MER Experiment Need to reset shared access
                 if(fstate.getOpenCount() ==0 )
                 {
                     logger.debug("reset shared access to READWRITEDELETE");
                     fstate.setSharedAccess( SharingMode.READWRITE + SharingMode.DELETE);
+                    
+                    fstate.setAllocationSize(-1);
+                    fstate.setFileSize(-1);
+                    fstate.updateChangeDateTime(0);
+                    fstate.updateModifyDateTime(0);    
                 }
                 
                 if(fstate != null && param.getAccessToken() != null)

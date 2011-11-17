@@ -155,7 +155,7 @@ class ScenarioOpenFileInstance implements ScenarioInstance
                     {
                         ArrayList<Command> commands = new ArrayList<Command>();
                         ArrayList<Command> postCommitCommands = new ArrayList<Command>();
-                        commands.add(new CreateFileCommand(c.getName(), c.getRootNodeRef(), c.getPath()));
+                        commands.add(new CreateFileCommand(c.getName(), c.getRootNodeRef(), c.getPath(), c.getAllocationSize()));
                         postCommitCommands.add(newOpenFileCallbackCommand());
                         return new CompoundCommand(commands, postCommitCommands);
                     }
@@ -410,7 +410,9 @@ class ScenarioOpenFileInstance implements ScenarioInstance
                     
                     state = InternalState.OPEN;
                     
-                    if(fileHandle.isReadOnly())
+                    //
+                    if(fileHandle.getGrantedAccess() == NetworkFile.READONLY)
+                    //if(fileHandle.isReadOnly())
                     {
                         openReadOnlyCount++;
                         fileHandleReadOnly=fileHandle;

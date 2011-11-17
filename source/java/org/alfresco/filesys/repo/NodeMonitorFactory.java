@@ -72,7 +72,8 @@ public class NodeMonitorFactory {
             @Override
             public NodeMonitor execute() throws Throwable
             {                
-                NodeMonitor nodeMonitor = new NodeMonitor(filesysCtx, m_nodeService, m_policyComponent, m_fileFolderService,
+                NodeMonitor nodeMonitor = new NodeMonitor(
+                        filesysCtx, m_nodeService, m_policyComponent, m_fileFolderService,
                         m_permissionService, m_transService);
                 
                 return nodeMonitor;
@@ -80,7 +81,7 @@ public class NodeMonitorFactory {
         };
 	    
 	    
-        return tran.doInTransaction(initialiseCB); 
+        return tran.doInTransaction(initialiseCB, true); 
 
 	}
 	

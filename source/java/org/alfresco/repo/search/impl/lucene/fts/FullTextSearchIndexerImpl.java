@@ -233,7 +233,7 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
                                         }
                                         return 0;
                                     }
-                                });
+                                }, true);
                     }
                     catch (Exception ex)
                     {

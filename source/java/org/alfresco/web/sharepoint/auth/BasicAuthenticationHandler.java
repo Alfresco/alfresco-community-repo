@@ -43,7 +43,7 @@ public class BasicAuthenticationHandler extends AbstractAuthenticationHandler im
 {
     private final static String HEADER_AUTHORIZATION = "Authorization";
 
-    private final static String BASIC_START = "BASIC";
+    private final static String BASIC_START = "Basic";
 
     /*
      * (non-Javadoc)
@@ -152,6 +152,6 @@ public class BasicAuthenticationHandler extends AbstractAuthenticationHandler im
     @Override
     public String getWWWAuthenticate()
     {
-        return "BASIC realm=\"Alfresco Server\"";
+        return "Basic realm=\"Alfresco Server\"";
     }
 }

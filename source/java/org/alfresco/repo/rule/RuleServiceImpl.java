@@ -913,6 +913,18 @@ public class RuleServiceImpl
                 // If this was the last rule on the node, remove the aspect
                 if(countRules(nodeRef) == 0)
                 {
+                    // Since this is the last rule, unlink any linked rulesets
+                    List<NodeRef> linkedFrom = getLinkedFromRuleNodes(nodeRef);
+                    if (linkedFrom.isEmpty() == false)
+                    {
+                        for (NodeRef linkedFromNodeRef : linkedFrom)
+                        {
+                            NodeRef ruleFolder = getSavedRuleFolderAssoc(nodeRef).getChildRef();
+                            nodeService.removeChild(linkedFromNodeRef, ruleFolder);
+                            nodeService.removeAspect(linkedFromNodeRef, RuleModel.ASPECT_RULES);                            
+                        }
+                    }
+                    
                     this.nodeService.removeAspect(nodeRef, RuleModel.ASPECT_RULES);
                 }
             }

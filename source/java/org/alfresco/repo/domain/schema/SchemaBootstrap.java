@@ -48,6 +48,7 @@ import java.sql.Savepoint;
 import java.sql.Statement;
 import java.sql.Struct;
 import java.sql.Types;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -112,6 +113,7 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
 
+
 /**
  * Bootstraps the schema and schema update.  The schema is considered missing if the applied patch table
  * is not present, and the schema is considered empty if the applied patch table is empty.
@@ -121,7 +123,7 @@ import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
 public class SchemaBootstrap extends AbstractLifecycleBean
 {
     /** The placeholder for the configured <code>Dialect</code> class name: <b>${db.script.dialect}</b> */
-    private static final String PLACEHOLDER_SCRIPT_DIALECT = "\\$\\{db\\.script\\.dialect\\}";
+    private static final String PLACEHOLDER_DIALECT = "\\$\\{db\\.script\\.dialect\\}";
     
     /** The global property containing the default batch size used by --FOREACH */
     private static final String PROPERTY_DEFAULT_BATCH_SIZE = "system.upgrade.default.batchsize";
@@ -226,6 +228,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private boolean stopAfterSchemaBootstrap;
     private List<String> preCreateScriptUrls;
     private List<String> postCreateScriptUrls;
+    private String schemaReferenceUrl;
     private List<SchemaUpgradeScriptPatch> validateUpdateScriptPatches;
     private List<SchemaUpgradeScriptPatch> preUpdateScriptPatches;
     private List<SchemaUpgradeScriptPatch> postUpdateScriptPatches;
@@ -304,7 +307,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
      * 
      * @param postCreateScriptUrls file URLs
      * 
-     * @see #PLACEHOLDER_SCRIPT_DIALECT
+     * @see #PLACEHOLDER_DIALECT
      */
     public void setPreCreateScriptUrls(List<String> preUpdateScriptUrls)
     {
@@ -316,11 +319,26 @@ public class SchemaBootstrap extends AbstractLifecycleBean
      * 
      * @param postCreateScriptUrls file URLs
      * 
-     * @see #PLACEHOLDER_SCRIPT_DIALECT
+     * @see #PLACEHOLDER_DIALECT
      */
     public void setPostCreateScriptUrls(List<String> postUpdateScriptUrls)
     {
         this.postCreateScriptUrls = postUpdateScriptUrls;
+    }
+
+    
+    /**
+     * Specifies the schema reference file that will be used to validate the repository
+     * schema whenever changes have been made. The database dialect placeholder will be
+     * resolved so that the correct reference file is loaded for the current database
+     * type (e.g. PostgreSQL)
+     * 
+     * @param schemaReferenceUrl the schemaReferenceUrl to set
+     * @see #PLACEHOLDER_DIALECT
+     */
+    public void setSchemaReferenceUrl(String schemaReferenceUrl)
+    {
+        this.schemaReferenceUrl = schemaReferenceUrl;
     }
 
     /**
@@ -940,9 +958,44 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             try { scriptInputStream.close(); } catch (Throwable e) {}  // usually a duplicate close
         }
         // now execute it
-        String dialectScriptUrl = scriptUrl.replaceAll(PLACEHOLDER_SCRIPT_DIALECT, dialect.getClass().getName());
+        String dialectScriptUrl = scriptUrl.replaceAll(PLACEHOLDER_DIALECT, dialect.getClass().getName());
         // Replace the script placeholders
         executeScriptFile(cfg, connection, tempFile, dialectScriptUrl);
+    }
+    
+    /**
+     * Replaces the dialect placeholder in the resource URL and attempts to find a file for
+     * it.  If not found, the dialect hierarchy will be walked until a compatible resource is
+     * found.  This makes it possible to have resources that are generic to all dialects.
+     * 
+     * @return The Resource, otherwise null
+     */
+    private Resource getDialectResource(Class dialectClass, String resourceUrl)
+    {
+        // replace the dialect placeholder
+        String dialectResourceUrl = resourceUrl.replaceAll(PLACEHOLDER_DIALECT, dialectClass.getName());
+        // get a handle on the resource
+        Resource resource = rpr.getResource(dialectResourceUrl);
+        if (!resource.exists())
+        {
+            // it wasn't found.  Get the superclass of the dialect and try again
+            Class superClass = dialectClass.getSuperclass();
+            if (Dialect.class.isAssignableFrom(superClass))
+            {
+                // we still have a Dialect - try again
+                return getDialectResource(superClass, resourceUrl);
+            }
+            else
+            {
+                // we have exhausted all options
+                return null;
+            }
+        }
+        else
+        {
+            // we have a handle to it
+            return resource;
+        }
     }
     
     /**
@@ -954,30 +1007,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
      */
     private InputStream getScriptInputStream(Class dialectClazz, String scriptUrl) throws Exception
     {
-        // replace the dialect placeholder
-        String dialectScriptUrl = scriptUrl.replaceAll(PLACEHOLDER_SCRIPT_DIALECT, dialectClazz.getName());
-        // get a handle on the resource
-        Resource resource = rpr.getResource(dialectScriptUrl);
-        if (!resource.exists())
-        {
-            // it wasn't found.  Get the superclass of the dialect and try again
-            Class superClazz = dialectClazz.getSuperclass();
-            if (Dialect.class.isAssignableFrom(superClazz))
-            {
-                // we still have a Dialect - try again
-                return getScriptInputStream(superClazz, scriptUrl);
-            }
-            else
-            {
-                // we have exhausted all options
-                return null;
-            }
-        }
-        else
-        {
-            // we have a handle to it
-            return resource.getInputStream();
-        }
+        return getDialectResource(dialectClazz, scriptUrl).getInputStream();
     }
     
     /**
@@ -998,6 +1028,9 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         StringBuilder executedStatements = executedStatementsThreadLocal.get();
         if (executedStatements == null)
         {
+            // Validate the schema, pre-upgrade
+            validateSchema("Alfresco-{0}-Validation-Pre-Upgrade-");
+            
             // Dump the normalized, pre-upgrade Alfresco schema.  We keep the file for later reporting.
             xmlPreSchemaOutputFile = dumpSchema(
                     this.dialect,
@@ -1494,11 +1527,13 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                     setBootstrapCompleted(connection);
                 }
                 
-                validateSchema();
                 
                 // Report normalized dumps
                 if (executedStatements != null)
                 {
+                    // Validate the schema, post-upgrade
+                    validateSchema("Alfresco-{0}-Validation-Post-Upgrade-");
+                    
                     // Dump the normalized, post-upgrade Alfresco schema.
                     File xmlPostSchemaOutputFile = dumpSchema(
                             this.dialect,
@@ -1598,20 +1633,16 @@ public class SchemaBootstrap extends AbstractLifecycleBean
      * Collate differences and validation problems with the schema with respect to an appropriate
      * reference schema.
      */
-    private void validateSchema()
+    private void validateSchema(String outputFileNameTemplate)
     {
         Date startTime = new Date(); 
-        String referenceFileName = dialect.getClass().getSimpleName() + "-Reference.xml";
         
-        Resource referenceResource = rpr.getResource("classpath:org/alfresco/util/schemacomp/reference/"
-                    + referenceFileName);
-        
+        Resource referenceResource = getDialectResource(dialect.getClass(), schemaReferenceUrl);
         if (!referenceResource.exists())
         {
-            logger.info("No reference schema file, expected: " + referenceResource);
+            logger.debug("No reference schema file, expected: " + referenceResource);
             return;
         }
-        logger.info("Comparing database schema with reference schema: " + referenceResource);
         
         InputStream is = null;
         try
@@ -1638,10 +1669,13 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         Results differences = schemaComparator.getDifferences();
         List<ValidationResult> validationResults = schemaComparator.getValidationResults();
         
-        File outputFile = TempFileProvider.createTempFile(
-                    "Alfresco-" + dialect.getClass().getSimpleName() + "-Validation", ".txt");
+        String outputFileName = MessageFormat.format(
+                    outputFileNameTemplate,
+                    new Object[] { dialect.getClass().getSimpleName() });
         
-        logger.info("Writing schema validation results to: " + outputFile);
+        File outputFile = TempFileProvider.createTempFile(outputFileName, ".txt");
+        
+        
         
         PrintWriter pw = null;
         try
@@ -1660,20 +1694,27 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 .append(" (diff): ")
                 .append(difference.getWhere());
             
-            sb.append(" reference: ");
+            sb.append(" reference path:");
             if (difference.getLeft() != null)
             {
                 sb.append(difference.getLeft().getPath());
+                sb.append(" (value: ")
+                    .append(difference.getLeft().getPropertyValue())
+                    .append(")");
+                
             }
             else
             {
                 sb.append("null");
             }
             
-            sb.append(" target: ");
+            sb.append(" target path:");
             if (difference.getRight() != null)
             {
                 sb.append(difference.getRight().getPath());
+                sb.append(" (value: ")
+                .append(difference.getRight().getPropertyValue())
+                .append(")");
             }
             else
             {
@@ -1688,19 +1729,31 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             StringBuffer sb = new StringBuffer();
             sb.append(validationResult.getStrength())
                 .append(" (validation): ")
-                .append("target: ")
+                .append("target path:")
                 .append(validationResult.getDbProperty().getPath())
-                .append(" value: ")
-                .append(validationResult.getValue());
+                .append(" (value: ")
+                .append(validationResult.getValue())
+                .append(")");
                 
             pw.println(sb);
         }
         
         pw.close();
         
+        if (validationResults.size() == 0 && differences.size() == 0)
+        {            
+            logger.info("Compared database schema with reference schema (all OK): " + referenceResource);
+        }
+        else
+        {
+            int numProblems = validationResults.size() + differences.size();
+            logger.warn("Schema validation found " + numProblems +
+                        " potential problems, results written to: "
+                        + outputFile);
+        }
         Date endTime = new Date();
         long durationMillis = endTime.getTime() - startTime.getTime();
-        logger.info("Schema validation took " + durationMillis + "ms");
+        logger.debug("Schema validation took " + durationMillis + "ms");
     }
 
     /**

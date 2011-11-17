@@ -100,6 +100,9 @@
              <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoPostCreate-JBPM-FK-indexes.sql</value>
           </list>
        </property>
+       <property name="schemaReferenceUrl">
+          <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/Schema-Reference.xml</value>
+       </property>
        <property name="validateUpdateScriptPatches">
           <list>
           </list>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="wf:testTimerException">
+
+   <start-state name="start">
+      <task name="wf:submitAdhocTask" />
+      <transition name="" to="adhoc" />
+   </start-state>
+
+   <swimlane name="assignee">
+      <assignment class="org.alfresco.repo.workflow.jbpm.AlfrescoAssignment">
+         <actor>#{bpm_assignee}</actor>
+      </assignment>
+   </swimlane>
+
+   <task-node name="adhoc">
+      <task name="wf:adhocTask" swimlane="assignee">
+         <event type="task-create"/>
+
+         <timer name="reminder" duedate="1 second" repeat="10 minutes">
+            <action name="reminder" class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
+               <script>
+                  Packages.java.lang.System.out.println("Timer Fired");
+                  Packages.org.alfresco.repo.workflow.jbpm.JbpmTimerExceptionTest.throwException();
+               </script>
+            </action>
+         </timer>
+         
+      </task>
+      <transition name="Review Complete" to="end" />
+   </task-node>
+
+   <end-state name="end" />
+
+</process-definition>

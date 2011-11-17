@@ -78,7 +78,7 @@ public interface CalendarService
 
    /**
     * Retrieves all {@link CalendarEntry} instances in the repository
-    *  for the given sites, between the specified date range
+    *  for the given sites, between the specified date range.
     */
    @NotAuditable
    PagingResults<CalendarEntry> listCalendarEntries(String[] siteShortNames, Date from, Date to, PagingRequest paging);

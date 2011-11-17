@@ -103,8 +103,8 @@
         <property name="extensionName">
             <value>search</value>
         </property>
-        <property name="searchSubsystem">
-            <value>${index.subsystem.name}</value>
+        <property name="searchSubsystemSwitchableApplicationContextFactory">
+            <ref bean="Search" />
         </property>        
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry"/>

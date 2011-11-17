@@ -50,6 +50,11 @@ public class SwitchableApplicationContextFactory extends AbstractPropertyBackedB
         this.sourceBeanName = sourceBeanName;
     }
 
+    public String getCurrentSourceBeanName()
+    {
+        return getState(false).getProperty(SwitchableApplicationContextFactory.SOURCE_BEAN_PROPERTY);
+    }
+    
     /*
      * (non-Javadoc)
      * @see org.alfresco.repo.management.subsystems.ApplicationContextFactory#getApplicationContext()

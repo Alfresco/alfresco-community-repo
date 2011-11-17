@@ -19,6 +19,7 @@
 package org.alfresco.repo.node.index;
 
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,6 +57,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
@@ -450,7 +452,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
 
             // Establish the number of deletes and updates for this storeRef
             List<NodeRef> deletedNodes = new LinkedList<NodeRef>();
-            int updateCount = 0;
+            boolean hasUpdates = false;
             for (NodeRef.Status nodeStatus : storeStatuses)
             {
                 if (nodeStatus.isDeleted())
@@ -459,7 +461,33 @@ public abstract class AbstractReindexComponent implements IndexRecovery
                 }
                 else
                 {
-                    updateCount++;
+                    if(!hasUpdates)
+                    {
+                        Serializable serIsIndexed = nodeService.getProperty(nodeStatus.getNodeRef(), ContentModel.PROP_IS_INDEXED);
+                        if(serIsIndexed == null)
+                        {
+                            hasUpdates = true;
+                        }
+                        else
+                        {
+                            Boolean isIndexed = DefaultTypeConverter.INSTANCE.convert(Boolean.class, serIsIndexed);
+                            if(isIndexed == null)
+                            {
+                                hasUpdates = true;
+                            }
+                            else
+                            {
+                                if(isIndexed.booleanValue())
+                                {
+                                    hasUpdates = true;
+                                }
+                                else
+                                {
+                                    // Still do not know if there is anything to check .... 
+                                }
+                            }       
+                        }
+                    }
                 }                
             }
             
@@ -472,7 +500,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
                 result = InIndex.NO;
                 break;
             }
-            if (updateCount > 0)
+            if (hasUpdates)
             {
                 // Check the index
                 if (isTxnIdPresentInIndex(storeRef, txn))

@@ -28,6 +28,7 @@ import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.management.subsystems.SwitchableApplicationContextFactory;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -77,7 +78,7 @@ public class Search extends BaseScopableProcessorExtension
     /** Repository helper */
     protected Repository repository;
 
-    private String searchSubsystem;
+    private SwitchableApplicationContextFactory searchSubsystem;
 
     /**
      * Set the default store reference
@@ -114,7 +115,7 @@ public class Search extends BaseScopableProcessorExtension
         this.repository = repository;
     }
     
-    public void setSearchSubsystem(String searchSubsystem)
+    public void setSearchSubsystemSwitchableApplicationContextFactory(SwitchableApplicationContextFactory searchSubsystem)
     {
         this.searchSubsystem = searchSubsystem;
     }
@@ -123,7 +124,7 @@ public class Search extends BaseScopableProcessorExtension
     
     public String getSearchSubsystem()
     {
-        return searchSubsystem;
+        return (searchSubsystem == null) ? "" : searchSubsystem.getCurrentSourceBeanName();
     }
     
     /**

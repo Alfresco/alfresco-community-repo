@@ -1638,7 +1638,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         Date startTime = new Date(); 
         
         Resource referenceResource = getDialectResource(dialect.getClass(), schemaReferenceUrl);
-        if (!referenceResource.exists())
+        if (referenceResource == null || !referenceResource.exists())
         {
             logger.debug("No reference schema file, expected: " + referenceResource);
             return;

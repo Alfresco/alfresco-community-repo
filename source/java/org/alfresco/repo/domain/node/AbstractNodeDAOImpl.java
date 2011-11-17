@@ -1575,7 +1575,15 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 {
                     auditableProps = new AuditablePropertiesEntity(auditableProps);
                 }
-                boolean updateAuditableProperties = auditableProps.setAuditValues(null, null, false, 1000L);
+                long modifiedDateToleranceMs = 1000L;
+
+                if (nodeUpdate.isUpdateTransaction())
+                {
+                    // allow update cm:modified property for new transaction
+                    modifiedDateToleranceMs = 0L;
+                }
+
+                boolean updateAuditableProperties = auditableProps.setAuditValues(null, null, false, modifiedDateToleranceMs);
                 nodeUpdate.setAuditableProperties(auditableProps);
                 nodeUpdate.setUpdateAuditableProperties(updateAuditableProperties);
             }

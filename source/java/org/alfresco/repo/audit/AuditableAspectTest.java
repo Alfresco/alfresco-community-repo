@@ -27,14 +27,18 @@ import java.util.Set;
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
@@ -53,6 +57,7 @@ public class AuditableAspectTest extends TestCase
     
     private TransactionService transactionService;
     private NodeService nodeService;
+    private ContentService contentService;
     private BehaviourFilter behaviourFilter;
     
     private StoreRef storeRef;
@@ -65,6 +70,7 @@ public class AuditableAspectTest extends TestCase
         // Set the services
         this.transactionService = serviceRegistry.getTransactionService();
         this.nodeService = serviceRegistry.getNodeService();
+        this.contentService = serviceRegistry.getContentService();
         this.behaviourFilter = (BehaviourFilter) ctx.getBean("policyBehaviourFilter");
         
         AuthenticationUtil.setRunAsUserSystem();
@@ -300,6 +306,88 @@ public class AuditableAspectTest extends TestCase
         transactionService.getRetryingTransactionHelper().doInTransaction(setAuditableCallback2);
         // Check
         assertAuditableProperties(nodeRef, auditableProps);
+    }
+    
+    public void testPutContent() throws Exception
+    {
+        String fileName = "testContent";
+        Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+        props.put(ContentModel.PROP_NAME, fileName);
+        ChildAssociationRef childAssocRef = nodeService.createNode(
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQNameWithValidLocalName(NamespaceService.CONTENT_MODEL_1_0_URI, fileName),
+                ContentModel.TYPE_CONTENT,
+                props);
+        final NodeRef nodeRef = childAssocRef.getChildRef();
+        
+        final Date modified = (Date) nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
+        
+        RetryingTransactionCallback<Date> dateCallback = new RetryingTransactionCallback<Date>()
+        {
+            
+            @Override
+            public Date execute() throws Throwable
+            {
+                ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+                writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+                writer.setEncoding("UTF-8");
+                String text = "Test content";
+                
+                writer.putContent(text);
+                
+                return (Date) nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
+            }
+        };
+
+        final Date txnModified = transactionService.getRetryingTransactionHelper().doInTransaction(dateCallback);
+        assertTrue("Last modified date should be changed in individual transaction", modified.getTime() < txnModified.getTime());
+        
+        RetryingTransactionCallback<Integer> countCallback = new RetryingTransactionCallback<Integer>()
+        {
+            
+            @Override
+            public Integer execute() throws Throwable
+            {
+                int count = 0;
+                Date oldModified = txnModified;
+                
+                ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+                writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+                writer.setEncoding("UTF-8");
+                String text = "Test content update";
+                
+                writer.putContent(text);
+                Date newModified = (Date) nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
+                
+                if (newModified.getTime() > oldModified.getTime())
+                {
+                    count++;
+                }
+                
+                oldModified = newModified;
+
+                writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+                writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+                writer.setEncoding("UTF-8");
+                text = "Test content another update";
+                
+                writer.putContent(text);
+                
+                newModified = (Date) nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
+                
+                if (newModified.getTime() > oldModified.getTime())
+                {
+                    count++;
+                }
+                
+                return count;
+            }
+        };
+        
+        Integer count = transactionService.getRetryingTransactionHelper().doInTransaction(countCallback);
+        
+        assertTrue("Repeated content uploads in the same transaction should only modify the cm:modified once.", count == 1);
     }
     
     private void assertAuditableProperties(NodeRef nodeRef)

@@ -2193,6 +2193,8 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
      * 
      * @param history       Version history note
      * @param majorVersion  True to save as a major version increment, false for minor version.
+     * 
+     * @return ScriptVersion object representing the newly added version node
      */
     public ScriptVersion createVersion(String history, boolean majorVersion)
     {

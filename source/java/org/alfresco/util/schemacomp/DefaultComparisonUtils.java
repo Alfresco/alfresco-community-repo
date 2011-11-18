@@ -102,7 +102,7 @@ public class DefaultComparisonUtils implements ComparisonUtils
             {
                 // No equivalent object in the right hand collection.
                 // Using rightIndexedProperty would result in index out of bounds error.
-                differences.add(Where.ONLY_IN_LEFT, leftIndexedProp, rightProp, strength);
+                differences.add(Where.ONLY_IN_REFERENCE, leftIndexedProp, rightProp, strength);
             }
         }
 
@@ -114,7 +114,7 @@ public class DefaultComparisonUtils implements ComparisonUtils
             {
                 DbProperty rightIndexedProp = new DbProperty(rightProp.getDbObject(), rightProp.getPropertyName(), rightIndex);
                 // No equivalent object in the left hand collection.
-                differences.add(Where.ONLY_IN_RIGHT, leftProp, rightIndexedProp, strength);
+                differences.add(Where.ONLY_IN_TARGET, leftProp, rightIndexedProp, strength);
             }
         }
     }
@@ -158,7 +158,7 @@ public class DefaultComparisonUtils implements ComparisonUtils
             else
             {
                 // No equivalent object in the right hand collection.
-                differences.add(Where.ONLY_IN_LEFT, new DbProperty(leftObj, null), null, strength);
+                differences.add(Where.ONLY_IN_REFERENCE, new DbProperty(leftObj, null), null, strength);
             }
         }
 
@@ -170,7 +170,7 @@ public class DefaultComparisonUtils implements ComparisonUtils
             if (leftObj == null)
             {
                 // No equivalent object in the left hand collection.
-                differences.add(Where.ONLY_IN_RIGHT, null, new DbProperty(rightObj, null), strength);
+                differences.add(Where.ONLY_IN_TARGET, null, new DbProperty(rightObj, null), strength);
             }
         }
     }
@@ -214,12 +214,12 @@ public class DefaultComparisonUtils implements ComparisonUtils
         else if (left == null)
         {
             // right can't be null, or left == right would have been true
-            where = Where.ONLY_IN_RIGHT;
+            where = Where.ONLY_IN_TARGET;
         }
         else if (right == null)
         {
             // left can't be null, or left == right would have been true
-            where = Where.ONLY_IN_LEFT;
+            where = Where.ONLY_IN_REFERENCE;
         }
         else
         {

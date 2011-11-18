@@ -43,9 +43,9 @@ public class DifferenceTest
        DbProperty targetDbProp = mock(DbProperty.class);
        when(targetDbProp.getPath()).thenReturn("alfresco.some_table.some_column.name");
        when(targetDbProp.getPropertyValue()).thenReturn("nood_ref");
-       Difference diff = new Difference(Where.ONLY_IN_LEFT, refDbProp, targetDbProp);
+       Difference diff = new Difference(Where.ONLY_IN_REFERENCE, refDbProp, targetDbProp);
        
-       assertEquals("Difference: ONLY_IN_LEFT reference path:alfresco.some_table.some_column.name (value: node_ref) " +
+       assertEquals("Difference: ONLY_IN_REFERENCE reference path:alfresco.some_table.some_column.name (value: node_ref) " +
                    "target path:alfresco.some_table.some_column.name (value: nood_ref)", diff.describe());
    }
 }

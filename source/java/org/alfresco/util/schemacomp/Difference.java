@@ -28,7 +28,7 @@ package org.alfresco.util.schemacomp;
 public final class Difference extends Result
 {
     /** Specifies the type of differences */
-    public enum Where { ONLY_IN_LEFT, ONLY_IN_RIGHT, IN_BOTH_NO_DIFFERENCE, IN_BOTH_BUT_DIFFERENCE };
+    public enum Where { ONLY_IN_REFERENCE, ONLY_IN_TARGET, IN_BOTH_NO_DIFFERENCE, IN_BOTH_BUT_DIFFERENCE };
     private final Where where;
     private final DbProperty left;
     private final DbProperty right;

@@ -96,7 +96,7 @@ public class SchemaComparatorTest
         
         // Table table_in_reference only appears in the reference schema
         Difference diff = (Difference) it.next();
-        assertEquals(Where.ONLY_IN_LEFT, diff.getWhere());
+        assertEquals(Where.ONLY_IN_REFERENCE, diff.getWhere());
         assertEquals("schema.table_in_reference", diff.getLeft().getPath());
         assertEquals(null, diff.getRight());
         assertEquals(null, diff.getLeft().getPropertyName());
@@ -104,7 +104,7 @@ public class SchemaComparatorTest
         
         // Table tbl_has_diff_pk has PK of "id" in reference and "nodeRef" in target
         diff = (Difference) it.next();
-        assertEquals(Where.ONLY_IN_LEFT, diff.getWhere());
+        assertEquals(Where.ONLY_IN_REFERENCE, diff.getWhere());
         assertEquals("schema.tbl_has_diff_pk.pk_is_diff.columnNames[0]", diff.getLeft().getPath());
         assertEquals("schema.tbl_has_diff_pk.pk_is_diff.columnNames", diff.getRight().getPath());
         assertEquals("columnNames[0]", diff.getLeft().getPropertyName());
@@ -114,7 +114,7 @@ public class SchemaComparatorTest
         
         // Table tbl_has_diff_pk has PK of "id" in reference and "nodeRef" in target
         diff = (Difference) it.next();
-        assertEquals(Where.ONLY_IN_RIGHT, diff.getWhere());
+        assertEquals(Where.ONLY_IN_TARGET, diff.getWhere());
         assertEquals("schema.tbl_has_diff_pk.pk_is_diff.columnNames", diff.getLeft().getPath());
         assertEquals("schema.tbl_has_diff_pk.pk_is_diff.columnNames[0]", diff.getRight().getPath());
         assertEquals("columnNames", diff.getLeft().getPropertyName());
@@ -133,7 +133,7 @@ public class SchemaComparatorTest
         
         // Table table_in_target does not exist in the reference schema
         diff = (Difference) it.next();
-        assertEquals(Where.ONLY_IN_RIGHT, diff.getWhere());
+        assertEquals(Where.ONLY_IN_TARGET, diff.getWhere());
         assertEquals("schema.table_in_target", diff.getRight().getPath());
         assertEquals(null, diff.getLeft());
         assertEquals(null, diff.getRight().getPropertyName());

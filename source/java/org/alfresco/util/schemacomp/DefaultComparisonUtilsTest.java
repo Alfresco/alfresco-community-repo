@@ -74,10 +74,10 @@ public class DefaultComparisonUtilsTest
         verify(differences).add(Where.IN_BOTH_BUT_DIFFERENCE, prop("left"), prop("right"), Strength.ERROR);
         
         comparisonUtils.compareSimple(prop("left"), prop(null), ctx, Strength.ERROR);
-        verify(differences).add(Where.ONLY_IN_LEFT, prop("left"), prop(null), Strength.ERROR);
+        verify(differences).add(Where.ONLY_IN_REFERENCE, prop("left"), prop(null), Strength.ERROR);
         
         comparisonUtils.compareSimple(prop(null), prop("right"), ctx, Strength.ERROR);
-        verify(differences).add(Where.ONLY_IN_RIGHT, prop(null), prop("right"), Strength.ERROR);
+        verify(differences).add(Where.ONLY_IN_TARGET, prop(null), prop("right"), Strength.ERROR);
     }
     
     public DbProperty prop(String propValue)
@@ -111,8 +111,8 @@ public class DefaultComparisonUtilsTest
         verify(db4).diff(db4, ctx, Strength.ERROR);
         
         // Objects in only one collections are marked as such
-        verify(differences).add(Where.ONLY_IN_LEFT, new DbProperty(db2), null, Strength.ERROR);
-        verify(differences).add(Where.ONLY_IN_RIGHT, null, new DbProperty(db3), Strength.ERROR);
+        verify(differences).add(Where.ONLY_IN_REFERENCE, new DbProperty(db2), null, Strength.ERROR);
+        verify(differences).add(Where.ONLY_IN_TARGET, null, new DbProperty(db3), Strength.ERROR);
     }
     
     
@@ -163,28 +163,28 @@ public class DefaultComparisonUtilsTest
                     dbPropForValue(rightDbObj, "collection[2]", subCollectionRight),
                     Strength.WARN);
         verify(differences).add(
-                    Where.ONLY_IN_LEFT,
+                    Where.ONLY_IN_REFERENCE,
                     dbPropForValue(leftDbObj, "collection[3]", 456),
                     dbPropForValue(rightDbObj, "collection", rightCollection),
                     Strength.WARN);
         verify(differences).add(
-                    Where.ONLY_IN_LEFT,
+                    Where.ONLY_IN_REFERENCE,
                     dbPropForValue(leftDbObj, "collection[4]", "left only"),
                     dbPropForValue(rightDbObj, "collection", rightCollection),
                     Strength.WARN);
 
         verify(differences).add(
-                    Where.ONLY_IN_RIGHT,
+                    Where.ONLY_IN_TARGET,
                     dbPropForValue(leftDbObj, "collection", leftCollection),
                     dbPropForValue(rightDbObj, "collection[1]", 789),
                     Strength.WARN);
         verify(differences).add(
-                    Where.ONLY_IN_RIGHT,
+                    Where.ONLY_IN_TARGET,
                     dbPropForValue(leftDbObj, "collection", leftCollection),
                     dbPropForValue(rightDbObj, "collection[3]", "right only"),
                     Strength.WARN);
         verify(differences).add(
-                    Where.ONLY_IN_RIGHT,
+                    Where.ONLY_IN_TARGET,
                     dbPropForValue(leftDbObj, "collection", leftCollection),
                     dbPropForValue(rightDbObj, "collection[5]", "one more right only"),
                     Strength.WARN);

@@ -81,7 +81,7 @@ public class DefaultComparisonUtils implements ComparisonUtils
         ArrayList<? extends Object> leftList = new ArrayList<Object>(leftCollection);
         ArrayList<? extends Object> rightList = new ArrayList<Object>(rightCollection);
         
-        Results differences = ctx.getDifferences();
+        Results differences = ctx.getComparisonResults();
 
         for (int leftIndex = 0; leftIndex < leftList.size(); leftIndex++)
         {
@@ -144,7 +144,7 @@ public class DefaultComparisonUtils implements ComparisonUtils
     public void compareCollections(Collection<? extends DbObject> leftCollection,
                 Collection<? extends DbObject> rightCollection, DiffContext ctx, Strength strength)
     {
-        Results differences = ctx.getDifferences();
+        Results differences = ctx.getComparisonResults();
         for (DbObject leftObj : leftCollection)
         {
             DbObject rightObj = findSameObjectAs(rightCollection, leftObj);
@@ -234,7 +234,7 @@ public class DefaultComparisonUtils implements ComparisonUtils
             }
         }
         
-        ctx.getDifferences().add(where, leftProperty, rightProperty, strength);
+        ctx.getComparisonResults().add(where, leftProperty, rightProperty, strength);
     }
 
 

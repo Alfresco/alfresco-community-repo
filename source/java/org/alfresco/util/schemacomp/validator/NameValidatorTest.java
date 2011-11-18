@@ -22,7 +22,6 @@ package org.alfresco.util.schemacomp.validator;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Pattern;
 
 import org.alfresco.util.schemacomp.DiffContext;
@@ -43,14 +42,14 @@ public class NameValidatorTest
 {
     private NameValidator validator;
     private DiffContext ctx;
-    private List<ValidationResult> validationResults;
+    private Results validationResults;
     
     @Before
     public void setUp() throws Exception
     {
         validator = new NameValidator();
-        validationResults = new ArrayList<ValidationResult>();
-        ctx = new DiffContext(new Oracle10gDialect(), new Results(), validationResults, null, null);
+        validationResults = new Results();
+        ctx = new DiffContext(new Oracle10gDialect(), validationResults, null, null);
     }
 
     @Test
@@ -63,8 +62,8 @@ public class NameValidatorTest
         validator.validate(null, indexForName("MY_INDEX"), ctx);
         
         assertEquals(2, validationResults.size());
-        assertEquals("SYS_", validationResults.get(0).getValue());
-        assertEquals("MY_INDEX", validationResults.get(1).getValue());
+        assertEquals("SYS_", ((ValidationResult) validationResults.get(0)).getValue());
+        assertEquals("MY_INDEX", ((ValidationResult) validationResults.get(1)).getValue());
     }
     
     @Test
@@ -76,7 +75,7 @@ public class NameValidatorTest
         validator.validate(null, indexForName("SYS_MYINDEX"), ctx);
         
         assertEquals(1, validationResults.size());
-        assertEquals("SYS_MYINDEX", validationResults.get(0).getValue());
+        assertEquals("SYS_MYINDEX", ((ValidationResult) validationResults.get(0)).getValue());
     }
 
     

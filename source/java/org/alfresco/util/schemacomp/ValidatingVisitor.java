@@ -44,7 +44,10 @@ public class ValidatingVisitor implements DbObjectVisitor
     {
         List<DbObject> matches = comparisonUtils.findEquivalentObjects(ctx.getTargetSchema(), referenceObj);
         
-        // TODO: if matches.size() > 1 then warn of possible redundant database objects
+        if (matches.size() > 1)
+        {
+            ctx.getComparisonResults().add(new RedundantDbObject(referenceObj, matches));
+        }
         
         // Validate each matching target object against the reference object
         // using each of the available validators for that reference object.

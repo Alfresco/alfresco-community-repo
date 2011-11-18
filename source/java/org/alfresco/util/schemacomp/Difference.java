@@ -71,6 +71,43 @@ public final class Difference extends Result
         return this.right;
     }
 
+    
+    @Override
+    public String describe()
+    {
+        StringBuffer sb = new StringBuffer();
+        sb.append("Difference: ")
+            .append(getWhere());
+        
+        sb.append(" reference path:");
+        if (getLeft() != null)
+        {
+            sb.append(getLeft().getPath());
+            sb.append(" (value: ")
+                .append(getLeft().getPropertyValue())
+                .append(")");
+        }
+        else
+        {
+            sb.append("null");
+        }
+        
+        sb.append(" target path:");
+        if (getRight() != null)
+        {
+            sb.append(getRight().getPath());
+            sb.append(" (value: ")
+            .append(getRight().getPropertyValue())
+            .append(")");
+        }
+        else
+        {
+            sb.append("null");
+        }
+        
+        return sb.toString();
+    }
+
     @Override
     public String toString()
     {

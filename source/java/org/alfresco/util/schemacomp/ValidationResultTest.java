@@ -18,41 +18,31 @@
  */
 package org.alfresco.util.schemacomp;
 
+
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import org.junit.Test;
+
+
 /**
- * Base class for the result of a differencing or validation operation.
- *  
+ * Tests for the {@link ValidationResult} class.
+ * 
  * @author Matt Ward
  */
-public abstract class Result
+public class ValidationResultTest
 {
-    public enum Strength { WARN, ERROR };
-    protected final Strength strength;
-    
-    /**
-     * @param strength
-     */
-    public Result(Strength strength)
-    {
-        this.strength = (strength != null ? strength : Strength.ERROR);
-    }
-
-    /**
-     * @return the strength
-     */
-    public Strength getStrength()
-    {
-        return this.strength;
-    }
-    
-    /**
-     * A loggable message to describe the comparison result. Default implementation
-     * delegates to toString() but this should generally be overridden as toString()
-     * is used in a multitude of contexts.
-     * 
-     * @return 
-     */
-    public String describe()
-    {
-        return toString();
+    @Test
+    public void describe()
+    {        
+        DbProperty targetDbProp = mock(DbProperty.class);
+        when(targetDbProp.getPath()).thenReturn("alfresco.some_table.some_index.name");
+        when(targetDbProp.getPropertyValue()).thenReturn("ibx_my_index");
+        
+        ValidationResult validation = new ValidationResult(targetDbProp);
+        
+        assertEquals("Validation target path:alfresco.some_table.some_index.name (value: ibx_my_index)",
+                    validation.describe());
     }
 }

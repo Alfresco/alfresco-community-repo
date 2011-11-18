@@ -30,9 +30,9 @@ import org.alfresco.util.schemacomp.Result.Strength;
  * 
  * @author Matt Ward
  */
-public class Results implements Iterable<Difference>
+public class Results implements Iterable<Result>
 {
-    private final List<Difference> items = new ArrayList<Difference>();
+    private final List<Result> items = new ArrayList<Result>();
     /** Temporary step during refactor - Where.IN_BOTH_NO_DIFFERENCE will be going altogether */
     private boolean reportNonDifferences = false;
     
@@ -62,16 +62,32 @@ public class Results implements Iterable<Difference>
     }
     
     
+    public void add(Result result)
+    {
+        items.add(result);
+    }
+    
     /**
      * Obtain an iterator for the top-level items held in this schema - since this is a hierarchical model,
      * deeper items are obtained by navigating through the top-level items.
      */
     @Override
-    public Iterator<Difference> iterator()
+    public Iterator<Result> iterator()
     {
         return items.iterator();
     }
 
+    /**
+     * Get the ith result.
+     * 
+     * @param i
+     * @return Result
+     */
+    public Result get(int i)
+    {
+        return items.get(i);
+    }
+    
     /**
      * @return How many top-level items are in the schema.
      */

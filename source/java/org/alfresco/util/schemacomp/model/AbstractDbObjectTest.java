@@ -23,7 +23,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.inOrder;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -33,7 +32,6 @@ import org.alfresco.util.schemacomp.DiffContext;
 import org.alfresco.util.schemacomp.Difference.Where;
 import org.alfresco.util.schemacomp.Result.Strength;
 import org.alfresco.util.schemacomp.Results;
-import org.alfresco.util.schemacomp.ValidationResult;
 import org.alfresco.util.schemacomp.validator.AbstractDbValidator;
 import org.alfresco.util.schemacomp.validator.DbValidator;
 import org.hibernate.dialect.Dialect;
@@ -64,7 +62,7 @@ public class AbstractDbObjectTest
     public void setUp() throws Exception
     {
         dbObject = new ConcreteDbObject("the_object");
-        ctx = new DiffContext(dialect, differences, new ArrayList<ValidationResult>(), null, null);
+        ctx = new DiffContext(dialect, differences, null, null);
     }
 
     @Test
@@ -83,7 +81,8 @@ public class AbstractDbObjectTest
         
         dbObject.setName("the_name");
         assertFalse("Not the same.", dbObject.sameAs(null));
-        assertFalse("Not the same.", dbObject.sameAs(new ConcreteDbObject("different_name")));        
+        assertFalse("Not the same.", dbObject.sameAs(new ConcreteDbObject("different_name")));
+        assertFalse("Not the same type", dbObject.sameAs(new AnotherConcreteDbObject("the_name")));
         assertTrue("Logically the same object.", dbObject.sameAs(new ConcreteDbObject("the_name")));
         assertTrue("The very same object with non-null name", dbObject.sameAs(dbObject));
     }
@@ -146,7 +145,7 @@ public class AbstractDbObjectTest
         @Override
         protected void doDiff(DbObject right, DiffContext ctx, Strength strength)
         {
-            Results differences = ctx.getDifferences();
+            Results differences = ctx.getComparisonResults();
             differences.add(
                         Where.IN_BOTH_BUT_DIFFERENCE,
                         new DbProperty(this, "someProp"),
@@ -162,6 +161,19 @@ public class AbstractDbObjectTest
         {
             return this.someProp;
         }
+    }
+    
+    public static class AnotherConcreteDbObject extends AbstractDbObject
+    {
+        public AnotherConcreteDbObject(String name)
+        {
+            super(null, name);
+        }
+
+        @Override
+        public void accept(DbObjectVisitor visitor)
+        {
+        }  
     }
     
     

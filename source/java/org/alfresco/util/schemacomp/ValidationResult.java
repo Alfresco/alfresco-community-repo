@@ -56,6 +56,21 @@ public class ValidationResult extends Result
         this.dbProperty = dbProperty;
     }
 
+    
+    @Override
+    public String describe()
+    {
+        StringBuffer sb = new StringBuffer();
+        sb.append("Validation ")
+            .append("target path:")
+            .append(getDbProperty().getPath())
+            .append(" (value: ")
+            .append(getValue())
+            .append(")");
+        
+        return sb.toString();
+    }
+
     /**
      * @return the value that was rejected.
      */

@@ -18,8 +18,6 @@
  */
 package org.alfresco.util.schemacomp;
 
-import java.util.List;
-
 import org.alfresco.util.schemacomp.model.Schema;
 import org.hibernate.dialect.Dialect;
 
@@ -33,25 +31,39 @@ import org.hibernate.dialect.Dialect;
 public class DiffContext
 {
     private final Dialect dialect;
-    private final Results differences;
-    private final List<ValidationResult> validationResults;
+    private final Results results;
     private final Schema referenceSchema;
     private final Schema targetSchema;
     
     /**
+     * Constructor.
+     * 
      * @param dialect
-     * @param differences
+     * @param results
+     * @param referenceSchema
+     * @param targetSchema
      */
-    public DiffContext(Dialect dialect, Results differences, List<ValidationResult> validationResults,
-                Schema referenceSchema, Schema targetSchema)
+    public DiffContext(Dialect dialect, Results results, Schema referenceSchema, Schema targetSchema)
     {
         this.dialect = dialect;
-        this.differences = differences;
-        this.validationResults = validationResults;
+        this.results = results;
         this.referenceSchema = referenceSchema;
         this.targetSchema = targetSchema;
     }
 
+    /**
+     * Constructor.
+     * 
+     * @param dialect
+     * @param referenceSchema
+     * @param targetSchema
+     */
+    public DiffContext(Dialect dialect, Schema referenceSchema, Schema targetSchema)
+    {
+        this(dialect, new Results(), referenceSchema, targetSchema);
+    }
+    
+    
     /**
      * @return the dialect
      */
@@ -61,19 +73,11 @@ public class DiffContext
     }
 
     /**
-     * @return the differences
+     * @return the results of schema comparison: validation failures, differences etc.
      */
-    public Results getDifferences()
+    public Results getComparisonResults()
     {
-        return this.differences;
-    }
-
-    /**
-     * @return the validationResults
-     */
-    public List<ValidationResult> getValidationResults()
-    {
-        return this.validationResults;
+        return this.results;
     }
 
     /**

@@ -36,23 +36,30 @@ import org.apache.commons.lang.ArrayUtils;
 
 public class SchemaCompTestingUtils
 {
-    public static void dumpValidation(List<ValidationResult> validationResults)
+    public static void dumpValidation(Results results)
     {
-        System.out.println("Validation Results (" + validationResults.size() + ")");
-        for (ValidationResult r : validationResults)
+        System.out.println("Validation Results (" + results.size() + ")");
+        for (Result r : results)
         {
-            System.out.println(r);
+            if (r instanceof ValidationResult)
+            {
+                System.out.println(r);
+            }
         }
     }
         
     public static void dumpDiffs(Results differences, boolean showNonDifferences)
     {
         System.out.println("Differences (" + differences.size() + ")");
-        for (Difference d : differences)
+        for (Result d : differences)
         {
-            if (d.getWhere() != Where.IN_BOTH_NO_DIFFERENCE || showNonDifferences)
+            if (d instanceof Difference)
             {
-                System.out.println(d);
+                Difference diff = (Difference) d;
+                if (diff.getWhere() != Where.IN_BOTH_NO_DIFFERENCE || showNonDifferences)
+                {
+                    System.out.println(d);
+                }
             }
         }
     }

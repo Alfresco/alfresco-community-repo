@@ -74,6 +74,7 @@ import org.alfresco.util.LogUtil;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.schemacomp.Difference;
 import org.alfresco.util.schemacomp.ExportDb;
+import org.alfresco.util.schemacomp.Result;
 import org.alfresco.util.schemacomp.Results;
 import org.alfresco.util.schemacomp.SchemaComparator;
 import org.alfresco.util.schemacomp.ValidationResult;
@@ -104,8 +105,6 @@ import org.hibernate.engine.ActionQueue;
 import org.hibernate.tool.hbm2ddl.DatabaseMetadata;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
-import org.springframework.core.Conventions;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
@@ -1666,16 +1665,13 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         
         schemaComparator.validateAndCompare();
         
-        Results differences = schemaComparator.getDifferences();
-        List<ValidationResult> validationResults = schemaComparator.getValidationResults();
+        Results results = schemaComparator.getComparisonResults();
         
         String outputFileName = MessageFormat.format(
                     outputFileNameTemplate,
                     new Object[] { dialect.getClass().getSimpleName() });
         
         File outputFile = TempFileProvider.createTempFile(outputFileName, ".txt");
-        
-        
         
         PrintWriter pw = null;
         try
@@ -1687,66 +1683,21 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             throw new RuntimeException("Unable to open file for writing: " + outputFile);
         }
         
-        for (Difference difference : differences)
+        // Populate the file with details of the comparison's results.
+        for (Result result : results)
         {
-            StringBuffer sb = new StringBuffer();
-            sb.append(difference.getStrength())
-                .append(" (diff): ")
-                .append(difference.getWhere());
-            
-            sb.append(" reference path:");
-            if (difference.getLeft() != null)
-            {
-                sb.append(difference.getLeft().getPath());
-                sb.append(" (value: ")
-                    .append(difference.getLeft().getPropertyValue())
-                    .append(")");
-                
-            }
-            else
-            {
-                sb.append("null");
-            }
-            
-            sb.append(" target path:");
-            if (difference.getRight() != null)
-            {
-                sb.append(difference.getRight().getPath());
-                sb.append(" (value: ")
-                .append(difference.getRight().getPropertyValue())
-                .append(")");
-            }
-            else
-            {
-                sb.append("null");
-            }
-            
-            pw.println(sb);
+            pw.println(result.describe());
         }
-        
-        for (ValidationResult validationResult : validationResults)
-        {
-            StringBuffer sb = new StringBuffer();
-            sb.append(validationResult.getStrength())
-                .append(" (validation): ")
-                .append("target path:")
-                .append(validationResult.getDbProperty().getPath())
-                .append(" (value: ")
-                .append(validationResult.getValue())
-                .append(")");
-                
-            pw.println(sb);
-        }
-        
+
         pw.close();
         
-        if (validationResults.size() == 0 && differences.size() == 0)
+        if (results.size() == 0)
         {            
             logger.info("Compared database schema with reference schema (all OK): " + referenceResource);
         }
         else
         {
-            int numProblems = validationResults.size() + differences.size();
+            int numProblems = results.size();
             logger.warn("Schema validation found " + numProblems +
                         " potential problems, results written to: "
                         + outputFile);

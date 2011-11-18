@@ -33,8 +33,11 @@ import org.junit.runners.Suite;
             DbPropertyTest.class,
             DbToXMLTest.class,
             DefaultComparisonUtilsTest.class,
+            DifferenceTest.class,
             ExportDbTest.class,
+            RedundantDbObjectTest.class,
             SchemaComparatorTest.class,
+            ValidationResultTest.class,
             ValidatingVisitorTest.class,
             SchemaToXMLTest.class,
             XMLToSchemaTest.class

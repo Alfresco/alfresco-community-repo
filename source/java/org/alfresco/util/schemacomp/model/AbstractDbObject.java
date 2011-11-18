@@ -96,16 +96,35 @@ public abstract class AbstractDbObject implements DbObject
     @Override
     public boolean sameAs(DbObject other)
     {
+        if (other == null)
+        {
+            return false;
+        }
+        if (this == other)
+        {
+            return true;
+        }
+        if (!this.getClass().equals(other.getClass()))
+        {
+            // Objects are not the same type, even if they have the same name and parent
+            return false;
+        }
         if (getName() != null && other != null && other.getName() != null)
         {
-            return getName().equals(other.getName());
+            boolean sameParent = false;
+            
+            if (getParent() == null && other.getParent() == null)
+            {
+                sameParent = true;
+            }
+            else if (getParent() != null && getParent().sameAs(other.getParent()))
+            {
+                sameParent = true;
+            }
+            return sameParent && getName().equals(other.getName());
         }
-        else
-        {
-            // Only other way we can know if they are the same is if they are
-            // the exact same object reference.
-            return this == other;
-        }
+        
+        return false;
     }
 
     @Override

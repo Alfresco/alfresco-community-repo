@@ -29,7 +29,6 @@ import static org.alfresco.util.schemacomp.SchemaCompTestingUtils.pk;
 import static org.alfresco.util.schemacomp.SchemaCompTestingUtils.table;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -57,8 +56,8 @@ public class SchemaComparatorTest
     @Before
     public void setup()
     {
-        reference = new Schema("reference_schema");
-        target = new Schema("target_schema");
+        reference = new Schema("schema");
+        target = new Schema("schema");
         dialect = new MySQL5InnoDBDialect();
     }
     
@@ -87,67 +86,55 @@ public class SchemaComparatorTest
         comparator.validateAndCompare();
         
         // See stdout for diagnostics dump...
-        dumpDiffs(comparator.getDifferences(), false);
-        dumpValidation(comparator.getValidationResults());
+        dumpDiffs(comparator.getComparisonResults(), false);
+        dumpValidation(comparator.getComparisonResults());
         
 
-        Results differences = comparator.getDifferences();
+        Results results = comparator.getComparisonResults();
         
-        Iterator<Difference> it = differences.iterator();
-        
-        // Schema names are different ("reference_schema" vs "target_schema")
-        Difference diff = it.next();
-        assertEquals(Where.IN_BOTH_BUT_DIFFERENCE, diff.getWhere());
-        assertEquals("reference_schema.name", diff.getLeft().getPath());
-        assertEquals("target_schema.name", diff.getRight().getPath());
-        assertSame(reference, diff.getLeft().getDbObject());
-        assertSame(target, diff.getRight().getDbObject());
-        assertEquals("name", diff.getLeft().getPropertyName());
-        assertEquals("reference_schema", diff.getLeft().getPropertyValue());
-        assertEquals("name", diff.getRight().getPropertyName());
-        assertEquals("target_schema", diff.getRight().getPropertyValue());
+        Iterator<Result> it = results.iterator();
         
         // Table table_in_reference only appears in the reference schema
-        diff = it.next();
+        Difference diff = (Difference) it.next();
         assertEquals(Where.ONLY_IN_LEFT, diff.getWhere());
-        assertEquals("reference_schema.table_in_reference", diff.getLeft().getPath());
+        assertEquals("schema.table_in_reference", diff.getLeft().getPath());
         assertEquals(null, diff.getRight());
         assertEquals(null, diff.getLeft().getPropertyName());
         assertEquals(null, diff.getLeft().getPropertyValue());
         
         // Table tbl_has_diff_pk has PK of "id" in reference and "nodeRef" in target
-        diff = it.next();
+        diff = (Difference) it.next();
         assertEquals(Where.ONLY_IN_LEFT, diff.getWhere());
-        assertEquals("reference_schema.tbl_has_diff_pk.pk_is_diff.columnNames[0]", diff.getLeft().getPath());
-        assertEquals("target_schema.tbl_has_diff_pk.pk_is_diff.columnNames", diff.getRight().getPath());
+        assertEquals("schema.tbl_has_diff_pk.pk_is_diff.columnNames[0]", diff.getLeft().getPath());
+        assertEquals("schema.tbl_has_diff_pk.pk_is_diff.columnNames", diff.getRight().getPath());
         assertEquals("columnNames[0]", diff.getLeft().getPropertyName());
         assertEquals("id", diff.getLeft().getPropertyValue());
         assertEquals("columnNames", diff.getRight().getPropertyName());
         assertEquals(Arrays.asList("nodeRef"), diff.getRight().getPropertyValue());
         
         // Table tbl_has_diff_pk has PK of "id" in reference and "nodeRef" in target
-        diff = it.next();
+        diff = (Difference) it.next();
         assertEquals(Where.ONLY_IN_RIGHT, diff.getWhere());
-        assertEquals("reference_schema.tbl_has_diff_pk.pk_is_diff.columnNames", diff.getLeft().getPath());
-        assertEquals("target_schema.tbl_has_diff_pk.pk_is_diff.columnNames[0]", diff.getRight().getPath());
+        assertEquals("schema.tbl_has_diff_pk.pk_is_diff.columnNames", diff.getLeft().getPath());
+        assertEquals("schema.tbl_has_diff_pk.pk_is_diff.columnNames[0]", diff.getRight().getPath());
         assertEquals("columnNames", diff.getLeft().getPropertyName());
         assertEquals(Arrays.asList("id"), diff.getLeft().getPropertyValue());
         assertEquals("columnNames[0]", diff.getRight().getPropertyName());
         assertEquals("nodeRef", diff.getRight().getPropertyValue());
         
         // idx_two is unique in the righ_schema but not in the reference
-        diff = it.next();
-        assertEquals("reference_schema.tbl_has_diff_pk.idx_two.unique", diff.getLeft().getPath());
-        assertEquals("target_schema.tbl_has_diff_pk.idx_two.unique", diff.getRight().getPath());
+        diff = (Difference) it.next();
+        assertEquals("schema.tbl_has_diff_pk.idx_two.unique", diff.getLeft().getPath());
+        assertEquals("schema.tbl_has_diff_pk.idx_two.unique", diff.getRight().getPath());
         assertEquals("unique", diff.getLeft().getPropertyName());
         assertEquals(false, diff.getLeft().getPropertyValue());
         assertEquals("unique", diff.getRight().getPropertyName());
         assertEquals(true, diff.getRight().getPropertyValue());
         
         // Table table_in_target does not exist in the reference schema
-        diff = it.next();
+        diff = (Difference) it.next();
         assertEquals(Where.ONLY_IN_RIGHT, diff.getWhere());
-        assertEquals("target_schema.table_in_target", diff.getRight().getPath());
+        assertEquals("schema.table_in_target", diff.getRight().getPath());
         assertEquals(null, diff.getLeft());
         assertEquals(null, diff.getRight().getPropertyName());
         assertEquals(null, diff.getRight().getPropertyValue());

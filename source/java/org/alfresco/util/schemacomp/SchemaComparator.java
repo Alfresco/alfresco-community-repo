@@ -18,9 +18,6 @@
  */
 package org.alfresco.util.schemacomp;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.alfresco.util.schemacomp.Result.Strength;
 import org.alfresco.util.schemacomp.model.Schema;
 import org.hibernate.dialect.Dialect;
@@ -48,7 +45,7 @@ public class SchemaComparator
     {
         this.referenceSchema = referenceSchema;
         this.targetSchema = targetSchema;
-        this.ctx = new DiffContext(dialect, new Results(), new ArrayList<ValidationResult>(), referenceSchema, targetSchema);
+        this.ctx = new DiffContext(dialect, referenceSchema, targetSchema);
     }
     
     
@@ -79,19 +76,10 @@ public class SchemaComparator
 
 
     /**
-     * @return the differences
+     * @return the schema comparison results.
      */
-    public Results getDifferences()
+    public Results getComparisonResults()
     {
-        return ctx.getDifferences();
-    }
-
-
-    /**
-     * @return the validation results.
-     */
-    public List<ValidationResult> getValidationResults()
-    {
-        return ctx.getValidationResults();
+        return ctx.getComparisonResults();
     }    
 }

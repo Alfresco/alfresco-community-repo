@@ -31,6 +31,7 @@ import org.alfresco.util.schemacomp.validator.DbValidator;
 import org.hibernate.dialect.MySQL5InnoDBDialect;
 import org.junit.Before;
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.mockito.Mockito;
 
 /**
@@ -59,8 +60,7 @@ public class ValidatingVisitorTest
     {
         refTable = new Table("reference_table");
         refIndex = new Index(refTable, "index_name", Arrays.asList("a", "b", "c"));
-        ctx = new DiffContext(new MySQL5InnoDBDialect(), new Results(),
-                    new ArrayList<ValidationResult>(), refSchema, targetSchema);
+        ctx = new DiffContext(new MySQL5InnoDBDialect(), refSchema, targetSchema);
         visitor = new ValidatingVisitor(ctx);
         
         validators = new ArrayList<DbValidator>();
@@ -97,4 +97,29 @@ public class ValidatingVisitorTest
     }
     
     
+    @Test
+    public void redundantDbObjectsAreNoticed()
+    {
+        Mockito.when(comparisonUtils.findEquivalentObjects(refSchema, refIndex)).
+        thenReturn(Arrays.asList((DbObject) targetIndex1, targetIndex2, targetIndex3));
+    
+        // Validate all instances of the target schema's indexes that are equivalent to this index
+        visitor.visit(refIndex);
+        
+        assertEquals(1, ctx.getComparisonResults().size());
+        assertEquals(RedundantDbObject.class, ctx.getComparisonResults().get(0).getClass());
+    }
+    
+    
+    @Test
+    public void nonRedundantDbObjectsAreNoticed()
+    {
+        Mockito.when(comparisonUtils.findEquivalentObjects(refSchema, refIndex)).
+        thenReturn(Arrays.asList((DbObject) targetIndex1));
+    
+        // Validate all instances of the target schema's indexes that are equivalent to this index
+        visitor.visit(refIndex);
+        
+        assertEquals(0, ctx.getComparisonResults().size());
+    }
 }

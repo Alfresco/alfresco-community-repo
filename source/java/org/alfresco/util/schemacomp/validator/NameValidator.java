@@ -49,7 +49,7 @@ public class NameValidator implements DbValidator
         
         if (pattern != null && !pattern.matcher(name).matches())
         {
-            ctx.getValidationResults().add(result);
+            ctx.getComparisonResults().add(result);
         }
     }
 

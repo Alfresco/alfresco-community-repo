@@ -23,6 +23,7 @@ import org.alfresco.util.schemacomp.DbProperty;
 import org.junit.Before;
 import org.junit.Test;
 import static org.mockito.Mockito.*;
+import static org.junit.Assert.*;
 
 /**
  * Tests for the Column class.
@@ -72,6 +73,25 @@ public class ColumnTest extends DbObjectTestBase<Column>
        thisColumn.accept(visitor);
        
        verify(visitor).visit(thisColumn);
+    }
+    
+    @Test
+    public void sameAs()
+    {
+        Table thisTable = new Table("the_table");
+        thisColumn = new Column(thisTable, "this_column", "VARCHAR2(100)", false);
+        
+        Table thatTable = new Table("the_table");
+        thatColumn = new Column(thatTable, "this_column", "VARCHAR2(100)", false);
+        
+        // This column, whilst having the same name as thisColumn, has a different
+        // parent table - and so is not considered 'the same'.
+        Table anotherTable = new Table("another_table");
+        Column anotherColumn = new Column(anotherTable, "this_column", "VARCHAR2(100)", false);
+        
+        assertTrue("Column should always be the same as itself", thisColumn.sameAs(thisColumn));
+        assertTrue("Columns should be the same due to same parent table names", thisColumn.sameAs(thatColumn));
+        assertFalse("Should NOT be the same due to different parent table names", thisColumn.sameAs(anotherColumn));
     }
 
 }

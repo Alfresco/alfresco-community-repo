@@ -131,4 +131,28 @@ public class Column extends AbstractDbObject
     {
         visitor.visit(this);
     }
+
+    @Override
+    public boolean sameAs(DbObject other)
+    {
+        if (other == null)
+        {
+            return false;
+        }
+        if (this == other)
+        {
+            return true;
+        }
+        if (getClass().equals(other.getClass()))
+        {
+            if (getName() != null && other.getName() != null)
+            {
+                if (getParent() != null && other.getParent() != null && getParent().sameAs(other.getParent()))
+                {
+                    return getName().equals(other.getName());
+                }
+            }
+        }
+        return false;
+    }
 }

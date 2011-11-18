@@ -18,16 +18,16 @@
  */
 package org.alfresco.repo.jscript.app;
 
+import java.io.Serializable;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
-
-import java.io.Serializable;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * Username property decorator class.
@@ -52,15 +52,15 @@ public class UsernamePropertyDecorator implements PropertyDecorator
         String username = value.toString();
         String firstName = null;
         String lastName = null;
-        Map<String, Serializable> map = new LinkedHashMap<String, Serializable>(1);
+        Map<String, Serializable> map = new LinkedHashMap<String, Serializable>(4);
         map.put("userName", username);
 
         if (this.personService.personExists(username))
         {
             NodeRef personRef = this.personService.getPerson(username);
             Map<QName, Serializable> properties = this.nodeService.getProperties(personRef);
-            firstName = properties.get(ContentModel.PROP_FIRSTNAME).toString();
-            lastName = properties.get(ContentModel.PROP_LASTNAME).toString();
+            firstName = (String)properties.get(ContentModel.PROP_FIRSTNAME);
+            lastName = (String)properties.get(ContentModel.PROP_LASTNAME);
         }
         else if (username.equals("System") || username.startsWith("System@"))
         {
@@ -75,7 +75,7 @@ public class UsernamePropertyDecorator implements PropertyDecorator
 
         map.put("firstName", firstName);
         map.put("lastName", lastName);
-        map.put("displayName", (firstName + " " + lastName).replaceAll("^\\s+|\\s+$", ""));
+        map.put("displayName", (firstName != null ? firstName + " " : "" + lastName != null ? lastName : "").replaceAll("^\\s+|\\s+$", ""));
         return (Serializable)map;
     }
 }

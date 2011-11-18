@@ -19,6 +19,7 @@
 package org.alfresco.opencmis.mapping;
 
 import java.io.Serializable;
+import java.util.Collections;
 
 import org.alfresco.opencmis.CMISConnector;
 import org.alfresco.opencmis.dictionary.CMISDictionaryService;
@@ -46,6 +47,11 @@ public class ObjectTypeIdProperty extends AbstractProperty
 
     public Serializable getValueInternal(CMISNodeInfo nodeInfo)
     {
+        if(nodeInfo.getType() == null)
+        {
+            return (Serializable) Collections.emptyList();
+        }
+        
         return nodeInfo.getType().getTypeId();
     }
 }

@@ -43,7 +43,7 @@
 	            	<nobr><h:outputText id="titleConfigAdminConsole" styleClass="mainTitle" value="#{msg.title_configadmin_console}"/></nobr>
 	         	</td>
 				<td width="100%" align="right">
-					<h:commandButton value="#{msg.close}" action="adminConsole" />
+					<h:commandButton value="#{msg.close}" action="dialog:close" />
 				</td>
 	      	</tr>
 	   	</table>

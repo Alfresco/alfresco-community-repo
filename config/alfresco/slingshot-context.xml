@@ -11,7 +11,6 @@
                 <value>classpath*:alfresco/extension/custom-vti.properties</value>
             </list>
         </property>
-        <property name="nullValue" value="null" />
         <property name="properties">
             <props>
                 <prop key="vti.server.external.port">0</prop>
@@ -35,6 +34,8 @@
         </property>
     </bean>
 
+    <bean id="doclibCustomGoogleDocs" class="org.alfresco.repo.jscript.app.GoogleDocsCustomResponse"/>
+
     <bean id="slingshotDocLibCustomResponse" parent="baseJavaScriptExtension" class="org.alfresco.repo.jscript.SlingshotDocLibCustomResponse">
         <property name="extensionName">
             <value>slingshotDocLib</value>
@@ -44,6 +45,9 @@
                 <entry key="vtiServer">
                    <ref bean="doclibCustomVtiServer"/>
                 </entry>
+               <entry key="googleDocs">
+                  <ref bean="doclibCustomGoogleDocs"/>
+               </entry>
             </map>
         </property>
     </bean>

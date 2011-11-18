@@ -35,7 +35,6 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.springframework.extensions.config.element.GenericConfigElement;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.AbstractServerConfigurationBean;
 import org.alfresco.filesys.alfresco.AlfrescoContext;
@@ -43,7 +42,11 @@ import org.alfresco.filesys.alfresco.ExtendedDiskInterface;
 import org.alfresco.filesys.avm.AVMContext;
 import org.alfresco.filesys.avm.AVMDiskDriver;
 import org.alfresco.filesys.config.acl.AccessControlListBean;
+import org.alfresco.filesys.repo.BufferedContentDiskDriver;
 import org.alfresco.filesys.repo.ContentContext;
+import org.alfresco.filesys.repo.ContentDiskDriver2;
+import org.alfresco.filesys.repo.LegacyFileStateDriver;
+import org.alfresco.filesys.repo.NonTransactionalRuleContentDiskDriver;
 import org.alfresco.jlan.ftp.FTPAuthenticator;
 import org.alfresco.jlan.ftp.FTPConfigSection;
 import org.alfresco.jlan.ftp.FTPPath;
@@ -81,6 +84,7 @@ import org.alfresco.jlan.util.StringList;
 import org.alfresco.jlan.util.X64;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.extensions.config.element.GenericConfigElement;
 
 import com.hazelcast.core.HazelcastInstance;
 
@@ -1725,6 +1729,12 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
                             filesysContext.setOpLockManager(lockMgr);
                         }
                         
+                        if ((!cifsConfigBean.getServerEnabled() && !ftpConfigBean.getServerEnabled())
+                                    && isContentDiskDriver2(filesysDriver))
+                        {
+                            ((ContentContext) filesystem).setDisableNodeMonitor(true);
+                        }
+                        
                         filesysDriver.registerContext(filesystem);
 
                         // Check if an access control list has been specified
@@ -1830,6 +1840,42 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
         
 
         // home folder share mapper could be declared in security config
+    }
+
+    /**
+     * Returns true if either: the disk interface is a ContentDiskDriver2; or
+     * the disk interface is a {@link BufferedContentDiskDriver} and its disk
+     * interface is a ContentDiskDriver2 (wrapped by several other DiskInterface objects).
+     * 
+     * @param diskInterface
+     * @return
+     */
+    private boolean isContentDiskDriver2(ExtendedDiskInterface diskInterface)
+    {
+        if (diskInterface instanceof ContentDiskDriver2)
+        {
+            return true;
+        }
+        if (diskInterface instanceof BufferedContentDiskDriver)
+        {
+            BufferedContentDiskDriver bufferedDriver = (BufferedContentDiskDriver) diskInterface;
+            ExtendedDiskInterface underlyingDriver = bufferedDriver.getDiskInterface();
+            
+            if (underlyingDriver instanceof LegacyFileStateDriver)
+            {
+                LegacyFileStateDriver legacyDriver = (LegacyFileStateDriver) underlyingDriver;
+                underlyingDriver = legacyDriver.getDiskInterface();
+                
+                if (underlyingDriver instanceof NonTransactionalRuleContentDiskDriver)
+                {
+                    // This is the best we can do. The underlying driver of this driver (the
+                    // NonTransactionalRuleContentDiskDriver) is a dynamic proxy and we can't
+                    // say for sure if it is a ContentDiskDriver2.
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**

@@ -18,6 +18,9 @@
  */
 package org.alfresco.web.action.evaluator;
 
+import java.util.Map;
+
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.web.bean.repository.Node;
 
 /**
@@ -34,7 +37,16 @@ public class ApproveDocEvaluator extends BaseActionEvaluator
     */
    public boolean evaluate(Node node)
    {
-      return (node.getProperties().get("app:approveStep") != null &&
-              node.isLocked() == false);
+      Map<String,Object> properties = node.getProperties();
+      
+      Boolean approveMove = (Boolean) properties.get("app:approveMove");
+      boolean isMove = approveMove == null ? false : approveMove; 
+      
+      boolean canProceed = (properties.get("app:approveStep") != null) && !node.isLocked();
+      //If this approval is going to result in a move of the node then we check whether the user
+      //has permission. The delete permission is required in order to move a node (odd, perhaps, but true).
+      canProceed &= (!isMove || node.hasPermission(PermissionService.DELETE));
+      
+      return canProceed;
    }
 }

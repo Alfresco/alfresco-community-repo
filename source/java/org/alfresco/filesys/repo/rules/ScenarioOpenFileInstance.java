@@ -192,7 +192,7 @@ class ScenarioOpenFileInstance implements ScenarioInstance
                     if(name.equalsIgnoreCase(c.getName()))
                     {
                         NetworkFile file = c.getNetworkFile();
-                        if(file.isReadOnly())
+                        if(isReadOnly(file))
                         {
                             // Read Only File
                             if(openReadOnlyCount == 1)
@@ -410,9 +410,7 @@ class ScenarioOpenFileInstance implements ScenarioInstance
                     
                     state = InternalState.OPEN;
                     
-                    //
-                    if(fileHandle.getGrantedAccess() == NetworkFile.READONLY)
-                    //if(fileHandle.isReadOnly())
+                    if(isReadOnly(fileHandle))
                     {
                         openReadOnlyCount++;
                         fileHandleReadOnly=fileHandle;
@@ -442,6 +440,9 @@ class ScenarioOpenFileInstance implements ScenarioInstance
         };
     }
     
-
+    private boolean isReadOnly(NetworkFile file)
+    {
+        return (file.getGrantedAccess() == NetworkFile.READONLY);
+    }
 }
 

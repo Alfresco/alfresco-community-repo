@@ -1084,7 +1084,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
 
                         if (logger.isDebugEnabled())
                         {
-                            logger.debug("Created file: path=" + name + " node=" + nodeRef + " network file=" + netFile);
+                            logger.debug("Created temporary file: path=" + name + " node=" + nodeRef + " network file=" + netFile);
                         }
                     }
                     

@@ -285,20 +285,24 @@ public class FTPServerTest extends TestCase
             
             // Wild card
             reply = ftp.cwd("/Alfresco/User*Homes");
-            assertTrue(FTPReply.isPositiveCompletion(reply));
+            assertTrue("unable to change to /Alfresco User*Homes/", FTPReply.isPositiveCompletion(reply));
+            
+//            // Single char pattern match
+//            reply = ftp.cwd("/Alfre?co");
+//            assertTrue("Unable to match single char /Alfre?co", FTPReply.isPositiveCompletion(reply));
             
             // two level folder
             reply = ftp.cwd("/Alfresco/Data Dictionary");
-            assertTrue(FTPReply.isPositiveCompletion(reply));
+            assertTrue("unable to change to /Alfresco/Data Dictionary", FTPReply.isPositiveCompletion(reply));
             
             // go up one
             reply = ftp.cwd("..");
-            assertTrue(FTPReply.isPositiveCompletion(reply));
+            assertTrue("unable to change to ..", FTPReply.isPositiveCompletion(reply));
             
             reply = ftp.pwd();
             ftp.getStatus();
             
-            assertTrue(FTPReply.isPositiveCompletion(reply));
+            assertTrue("unable to get status", FTPReply.isPositiveCompletion(reply));
             
             // check we are at the correct point in the tree
             reply = ftp.cwd("Data Dictionary");
@@ -386,7 +390,7 @@ public class FTPServerTest extends TestCase
             InputStream is2 = ftp.retrieveFileStream(FILE1_NAME);
             
             String content2 = inputStreamToString(is2);
-            assertEquals("Content is not as expected", content2, FILE1_CONTENT_2);
+            assertEquals("Content is not as expected", FILE1_CONTENT_2, content2);
             ftp.completePendingCommand();
             
             // now delete the file we have been using.

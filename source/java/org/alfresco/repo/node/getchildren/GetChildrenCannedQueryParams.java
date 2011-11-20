@@ -39,7 +39,11 @@ public class GetChildrenCannedQueryParams
     private List<FilterProp> filterProps = Collections.emptyList();
     private String pattern = null;
     
-    public GetChildrenCannedQueryParams(NodeRef parentRef, Set<QName> childTypeQNames, List<FilterProp> filterProps, String pattern)
+    public GetChildrenCannedQueryParams(
+            NodeRef parentRef,
+            Set<QName> childTypeQNames,
+            List<FilterProp> filterProps,
+            String pattern)
     {
         this.parentRef = parentRef;
 

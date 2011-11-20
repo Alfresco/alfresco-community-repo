@@ -26,8 +26,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.namespace.QName;
 
 /**
- * A simple 1-1 property mapping from a CMIS property name to an alfresco
- * property
+ * A simple 1-1 property mapping from a CMIS property name to an alfresco property
  * 
  * @author florian.mueller
  */
@@ -37,10 +36,6 @@ public class DirectProperty extends AbstractProperty
 
     /**
      * Construct
-     * 
-     * @param serviceRegistry
-     * @param propertyName
-     * @param alfrescoName
      */
     public DirectProperty(ServiceRegistry serviceRegistry, CMISConnector connector, String propertyName,
             QName alfrescoName)
@@ -56,12 +51,20 @@ public class DirectProperty extends AbstractProperty
 
     public Serializable getValueInternal(CMISNodeInfo nodeInfo)
     {
+        if (nodeInfo.getType() == null)
+        {
+            // Invalid node
+            return null;
+        }
+        
         if (nodeInfo.getNodeRef() != null)
         {
             return getServiceRegistry().getNodeService().getProperty(nodeInfo.getNodeRef(), alfrescoName);
-        } else if (nodeInfo.getAssociationRef() != null)
+        }
+        else if (nodeInfo.getAssociationRef() != null)
         {
-            return getServiceRegistry().getNodeService().getProperty(nodeInfo.getAssociationRef().getSourceRef(),
+            return getServiceRegistry().getNodeService().getProperty(
+                    nodeInfo.getAssociationRef().getSourceRef(),
                     alfrescoName);
         }
 

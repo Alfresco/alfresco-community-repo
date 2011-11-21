@@ -22,7 +22,13 @@
 
    "docfolder": "${result.docfolder}",
    "recurrence": "${result.recurrence}",
-   "isoutlook": "${result.isoutlook?string}"
+   "isoutlook": "${result.isoutlook?string}",
+
+   "permissions":
+   {
+       "edit": ${result.canEdit?string},
+       "delete": ${result.canDelete?string}
+   }
 </#if>
 }
 </#escape>

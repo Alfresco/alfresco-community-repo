@@ -1722,6 +1722,7 @@
    <bean id="webscript.org.alfresco.slingshot.calendar.event.get"
          class="org.alfresco.repo.web.scripts.calendar.CalendarEntryGet"
          parent="abstractCalendarWebScript">
+      <property name="permissionService" ref="PermissionService" />
    </bean>
 
    <!-- Creates a new Calendar Event from the site calendar -->

@@ -26,6 +26,8 @@ import java.util.Map;
 import org.alfresco.service.cmr.calendar.CalendarEntry;
 import org.alfresco.service.cmr.calendar.CalendarEntryDTO;
 import org.alfresco.service.cmr.calendar.CalendarRecurrenceHelper;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -44,6 +46,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 public class CalendarEntryGet extends AbstractCalendarWebScript
 {
    private static Log logger = LogFactory.getLog(CalendarEntryGet.class);
+   private PermissionService permissionService;
    
    @Override
    protected Map<String, Object> executeImpl(SiteInfo site, String eventName,
@@ -80,6 +83,12 @@ public class CalendarEntryGet extends AbstractCalendarWebScript
             result.put(key, "");
          }
       }
+      
+      // Check the permissions the user has on the entry
+      AccessStatus canEdit = permissionService.hasPermission(entry.getNodeRef(), PermissionService.WRITE);
+      AccessStatus canDelete = permissionService.hasPermission(entry.getNodeRef(), PermissionService.DELETE);
+      result.put("canEdit", (canEdit == AccessStatus.ALLOWED)); 
+      result.put("canDelete", (canDelete == AccessStatus.ALLOWED)); 
       
       // All done
       Map<String, Object> model = new HashMap<String, Object>();
@@ -207,5 +216,10 @@ public class CalendarEntryGet extends AbstractCalendarWebScript
       
       // All done
       return text.toString();
+   }
+   
+   public void setPermissionService(PermissionService permissionService)
+   {
+      this.permissionService = permissionService;
    }
 }

@@ -413,6 +413,12 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        assertEquals("6/29/2011", entry.getJSONObject("endAt").get("legacyDate"));
        assertEquals("13:00", entry.getJSONObject("endAt").get("legacyTime"));
        
+       // Check the permissions on it
+       assertEquals(true, entry.has("permissions"));
+       JSONObject permissions = entry.getJSONObject("permissions");
+       assertEquals(true, permissions.getBoolean("edit"));
+       assertEquals(true, permissions.getBoolean("delete"));
+       
        
        // Edit
        entry = updateEntry(name, EVENT_TITLE_ONE, "More Where", "More Thing", false, Status.STATUS_OK);

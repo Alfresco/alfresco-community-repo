@@ -35,9 +35,11 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ScriptPagingDetails;
+import org.alfresco.util.UrlUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONObject;
+import org.springframework.extensions.surf.util.URLDecoder;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -65,7 +67,15 @@ public abstract class AbstractGetBlogWebScript extends AbstractBlogWebScript
         Date toDate = parseDateParam(req, "toDate");
         
         String tag = req.getParameter("tag");
-        if (tag != null && tag.length() == 0) tag = null;
+        if (tag == null || tag.length() == 0) 
+        {
+           tag = null;
+        }
+        else
+        {
+           // Tags can be full unicode strings, so decode
+           tag = URLDecoder.decode(tag);
+        }
         
         // One webscript (blog-posts-new.get) uses a 'numdays' parameter as a 'fromDate'.
         // This is a hacky solution to this special case. FIXME

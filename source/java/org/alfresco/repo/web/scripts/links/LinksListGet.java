@@ -32,6 +32,7 @@ import org.alfresco.service.cmr.links.LinkInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.json.simple.JSONObject;
+import org.springframework.extensions.surf.util.URLDecoder;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -60,6 +61,11 @@ public class LinksListGet extends AbstractLinksWebScript
       if (tag == null || tag.length() == 0)
       {
          tagFiltering = false;
+      }
+      else
+      {
+         // Tags can be full unicode strings, so decode
+         tag = URLDecoder.decode(tag);
       }
       
       // User?

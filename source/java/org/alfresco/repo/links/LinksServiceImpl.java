@@ -435,14 +435,33 @@ public class LinksServiceImpl implements LinksService
           @Override
           public boolean hasMoreItems() 
           {
-             return finalLuceneResults.hasMore();
+             try
+             {
+                return finalLuceneResults.hasMore();
+             }
+             catch(UnsupportedOperationException e)
+             {
+                // Not all lucene results support paging
+                return false;
+             }
           }
 
           @Override
           public Pair<Integer, Integer> getTotalResultCount() 
           {
-             int skipCount = finalLuceneResults.getStart();
-             int itemsRemainingAfterThisPage = finalLuceneResults.length();
+             int skipCount = 0;
+             int itemsRemainingAfterThisPage = 0;
+             try
+             {
+                skipCount = finalLuceneResults.getStart();
+             }
+             catch(UnsupportedOperationException e) {}
+             try
+             {
+                itemsRemainingAfterThisPage = finalLuceneResults.length();
+             }
+             catch(UnsupportedOperationException e) {}
+             
              final int totalItemsInUnpagedResultSet = skipCount + itemsRemainingAfterThisPage;
              return new Pair<Integer, Integer>(totalItemsInUnpagedResultSet, totalItemsInUnpagedResultSet);
           }

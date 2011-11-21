@@ -948,7 +948,15 @@ public class DiscussionServiceImpl implements DiscussionService
          @Override
          public boolean hasMoreItems() 
          {
-            return finalLuceneResults.hasMore();
+            try
+            {
+               return finalLuceneResults.hasMore();
+            }
+            catch(UnsupportedOperationException e)
+            {
+               // Not all lucene results support paging
+               return false;
+            }
          }
 
          @Override
@@ -959,6 +967,10 @@ public class DiscussionServiceImpl implements DiscussionService
             try
             {
                skipCount = finalLuceneResults.getStart();
+            }
+            catch(UnsupportedOperationException e) {}
+            try
+            {
                itemsRemainingAfterThisPage = finalLuceneResults.length();
             }
             catch(UnsupportedOperationException e) {}

@@ -153,7 +153,6 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
     public void init()
     {
         PropertyCheck.mandatory(this, "checkOutCheckInService", checkOutCheckInService);
-//        PropertyCheck.mandatory(this, "shuffleCache", shuffleCache);
         PropertyCheck.mandatory(this, "cifsHelper", cifsHelper);
         PropertyCheck.mandatory(this, "namespaceService", namespaceService);
         PropertyCheck.mandatory(this, "nodeService", nodeService);
@@ -1866,6 +1865,10 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                     
             if ( permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.DENIED)
             {
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("write access denied to : + name");
+                }
                 throw new AccessDeniedException("No write access to " + name);
             }
                                         
@@ -1875,6 +1878,16 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             // Check if the file is being marked for deletion, if so then check if the file is locked       
             if ( info.hasSetFlag(FileInfo.SetDeleteOnClose) && info.hasDeleteOnClose())
             {
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("delete access denied to : + name");
+                }
+                // Check for delete permission
+                if ( permissionService.hasPermission(nodeRef, PermissionService.DELETE) == AccessStatus.DENIED)
+                {
+                    throw new AccessDeniedException("No delete access to " + name);
+                }
+
                 // Check if the node is locked
                 lockService.checkForLock(nodeRef);
                                      
@@ -2599,11 +2612,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             NodeRef nodeRef = cifsHelper.createNode(dirNodeRef, folderName, ContentModel.TYPE_CONTENT);
 
             nodeService.addAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT, null);
-                        
-            // Create the network file
-            
-//            ContentNetworkFile netFile = ContentNetworkFile.createFile(nodeService, contentService, mimetypeService, getCifsHelper(), nodeRef, params, sess);
-            
+                                    
             File file = TempFileProvider.createTempFile("cifs", ".bin");
             
             TempNetworkFile netFile = new TempNetworkFile(file, path);
@@ -2897,7 +2906,6 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
       
         }
     }
-
 
     @Override
     public OpLockManager getOpLockManager(SrvSession sess, TreeConnection tree)

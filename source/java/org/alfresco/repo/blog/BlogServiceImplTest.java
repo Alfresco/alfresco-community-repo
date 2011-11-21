@@ -320,7 +320,9 @@ public class BlogServiceImplTest
     
     @Test public void createTaggedDraftBlogPost() throws Exception
     {
-        final List<String> tags = Arrays.asList(new String[]{"alpha", "beta", "gamma"});
+        // Our tags, which are a mixture of English, Accented European and Chinese
+        final List<String> tags = Arrays.asList(new String[]{
+              "alpha", "beta", "gamma", "fran\u00e7ais", "chinese_\u535a\u5ba2"});
         
         // Create a list of Blog Posts, all drafts, each with one of the tags above.
         TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<List<NodeRef>>()
@@ -344,6 +346,7 @@ public class BlogServiceImplTest
                 }
             });
         
+        // Check we get the correct tags back
         TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
             {
                 @Override
@@ -363,13 +366,35 @@ public class BlogServiceImplTest
                         NodeRef blogNode = bpi.getNodeRef();
                         List<String> recoveredTags = TAGGING_SERVICE.getTags(blogNode);
                         assertEquals("Wrong number of tags", 1, recoveredTags.size());
-                        assertTrue("Missing expected tag", expectedTags.remove(recoveredTags.get(0)));
+                        
+                        String tag = recoveredTags.get(0);
+                        assertTrue("Tag found on node but not expected: " + tag, expectedTags.remove(tag));
                     }
                     assertTrue("Not all tags were recovered from a blogpost", expectedTags.isEmpty());
                     
                     return null;
                 }
             });
+        
+        // Check we can find the posts by their tags
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                PagingRequest pagingReq = new PagingRequest(0, 10, null);
+                RangedDateProperty dates = new RangedDateProperty(null, null, ContentModel.PROP_CREATED); 
+                for (String tag : tags)
+                {
+                   PagingResults<BlogPostInfo> pagedResults = 
+                      BLOG_SERVICE.findBlogPosts(BLOG_CONTAINER_NODE, dates, tag, pagingReq);
+                   
+                   // Check we found our post
+                   assertEquals("Wrong number of blog posts for " + tag, 1, pagedResults.getPage().size());
+                }
+                return null;
+            }
+        });
     }
     
     /**

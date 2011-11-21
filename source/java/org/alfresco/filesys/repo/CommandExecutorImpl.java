@@ -215,7 +215,7 @@ public class CommandExecutorImpl implements CommandExecutor
             switch (mode)
             {
                 case ATTRIBUTES_ONLY:
-                    jlanAccessMode = AccessMode.ReadWrite;
+                    jlanAccessMode = AccessMode.ReadOnly;
                     break;
                 case READ_ONLY:
                     jlanAccessMode = AccessMode.ReadOnly;

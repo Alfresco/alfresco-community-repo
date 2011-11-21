@@ -239,8 +239,8 @@
          <value>org.alfresco.cache.node.aspectsTransactionalCache</value>
       </property>
       <property name="maxCacheSize" value="65000" />
-      <property name="mutable" value="true" />
-      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
+      <property name="mutable" value="false" />
+      <property name="disableSharedCache" value="${system.cache.disableImmutableSharedCaches}" />
    </bean>
    
    <!-- ===================================== -->
@@ -272,8 +272,8 @@
          <value>org.alfresco.cache.node.propertiesTransactionalCache</value>
       </property>
       <property name="maxCacheSize" value="65000" />
-      <property name="mutable" value="true" />
-      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
+      <property name="mutable" value="false" />
+      <property name="disableSharedCache" value="${system.cache.disableImmutableSharedCaches}" />
    </bean>
    
    <!-- ===================================== -->
@@ -305,8 +305,8 @@
          <value>org.alfresco.cache.node.parentAssocsTransactionalCache</value>
       </property>
       <property name="maxCacheSize" value="65000" />
-      <property name="mutable" value="true" />
-      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
+      <property name="mutable" value="false" />
+      <property name="disableSharedCache" value="${system.cache.disableImmutableSharedCaches}" />
    </bean>
    
    <!-- ===================================== -->
@@ -1280,7 +1280,7 @@
    <!-- IMAP caches                           -->
    <!-- ===================================== -->
 
-   <!-- The cross-transaction shared cache for tagscope summary properties -->
+   <!-- The cross-transaction shared cache for IMAP messages -->
    
    <bean name="imapMessageSharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
       <property name="cache">
@@ -1295,7 +1295,7 @@
       </property>
    </bean>
    
-   <!-- The transactional cache for tagscope summary properties -->
+   <!-- The transactional cache for IMAP messages -->
    
    <bean name="imapMessageCache" class="org.alfresco.repo.cache.TransactionalCache">
       <property name="sharedCache">

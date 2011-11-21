@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -29,11 +29,14 @@ import org.alfresco.cmis.CMISInvalidArgumentException;
 import org.alfresco.cmis.CMISServiceException;
 import org.alfresco.cmis.CMISTypesFilterEnum;
 import org.alfresco.cmis.PropertyFilter;
+import org.alfresco.query.PagingResults;
 import org.alfresco.repo.cmis.ws.utils.ExceptionUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.web.util.paging.Cursor;
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.Pair;
 
 /**
  * Port for navigation service
@@ -107,34 +110,54 @@ public class DMNavigationServicePort extends DMAbstractServicePort implements Na
     {
         checkRepositoryId(repositoryId);
         PropertyFilter propertyFilter = createPropertyFilter(filter);
-
+        
         try
         {
             NodeRef folderNodeRef = cmisService.getFolder(folderId);
-
-            NodeRef[] listing = cmisService.getChildren(folderNodeRef, CMISTypesFilterEnum.ANY, orderBy);
-
-            CmisObjectInFolderListType result = new CmisObjectInFolderListType();
-
-            Cursor cursor = createCursor(listing.length, skipCount, maxItems);
-
-            for (int index = cursor.getStartRow(); index <= cursor.getEndRow(); index++)
+            
+            PagingResults<FileInfo> pageOfNodeInfos = cmisService.getChildren(folderNodeRef, CMISTypesFilterEnum.ANY, maxItems, skipCount, orderBy);
+            
+            int pageCnt = pageOfNodeInfos.getPage().size();
+            NodeRef[] children = new NodeRef[pageCnt];
+            
+            int idx = 0;
+            for (FileInfo child : pageOfNodeInfos.getPage())
             {
-                CmisObjectType cmisObject = createCmisObject(listing[index], propertyFilter, includeRelationships,
+                children[idx] = child.getNodeRef();
+                idx++;
+            }
+            
+            CmisObjectInFolderListType result = new CmisObjectInFolderListType();
+            
+            // has more ?
+            result.setHasMoreItems(pageOfNodeInfos.hasMoreItems());
+            
+            // total count ?
+            Pair<Integer, Integer> totalCounts = pageOfNodeInfos.getTotalResultCount();
+            if (totalCounts != null)
+            {
+                Integer totalCountLower = totalCounts.getFirst();
+                Integer totalCountUpper = totalCounts.getSecond();
+                if ((totalCountLower != null) && (totalCountLower.equals(totalCountUpper)))
+                {
+                    result.setNumItems(BigInteger.valueOf(totalCountLower));
+                }
+            }
+            
+            for (int index = 0; index < pageCnt; index++)
+            {
+                CmisObjectType cmisObject = createCmisObject(children[index], propertyFilter, includeRelationships,
                         includeAllowableActions, renditionFilter);
                 CmisObjectInFolderType cmisObjectInFolder = new CmisObjectInFolderType();
                 cmisObjectInFolder.setObject(cmisObject);
                 if (includePathSegments != null && includePathSegments)
                 {
-                    cmisObjectInFolder.setPathSegment(propertiesUtil.getProperty(listing[index],
+                    cmisObjectInFolder.setPathSegment(propertiesUtil.getProperty(children[index],
                             CMISDictionaryModel.PROP_NAME, ""));
                 }
                 result.getObjects().add(cmisObjectInFolder);
             }
-
-            result.setHasMoreItems(cursor.getEndRow() < (listing.length - 1));
-            result.setNumItems(BigInteger.valueOf(listing.length));
-
+            
             // TODO: Process includeRelationships, includeACL
             return result;
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,6 +19,7 @@
 package org.alfresco.repo.cmis.rest;
 
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -59,6 +60,7 @@ import org.alfresco.cmis.CMISTypesFilterEnum;
 import org.alfresco.cmis.CMISVersioningStateEnum;
 import org.alfresco.cmis.CMISQueryOptions.CMISQueryMode;
 import org.alfresco.cmis.acl.CMISAccessControlEntryImpl;
+import org.alfresco.query.PagingResults;
 import org.alfresco.repo.cmis.reference.ObjectIdReference;
 import org.alfresco.repo.cmis.reference.ReferenceFactory;
 import org.alfresco.repo.jscript.Association;
@@ -70,8 +72,10 @@ import org.alfresco.repo.web.util.paging.Page;
 import org.alfresco.repo.web.util.paging.PagedResults;
 import org.alfresco.repo.web.util.paging.Paging;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.Pair;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
@@ -395,27 +399,53 @@ public class CMISScript extends BaseScopableProcessorExtension
      */
     public PagedResults queryChildren(ScriptNode parent, String typesFilter, String orderBy, Page page)
     {
-        CMISTypesFilterEnum filter = resolveTypesFilter(typesFilter);
-        NodeRef[] children;
         try
         {
-            children = cmisService.getChildren(parent.getNodeRef(), filter, orderBy);
+            CMISTypesFilterEnum filter = resolveTypesFilter(typesFilter);
+            
+            int maxItems = page.getSize();
+            int skipCount = (page.getNumber() - (page.isZeroBasedIdx() ? 0 : 1)) * maxItems;
+            
+            PagingResults<FileInfo> pageOfNodeInfos = cmisService.getChildren(parent.getNodeRef(), filter, BigInteger.valueOf(maxItems), BigInteger.valueOf(skipCount), orderBy);
+            
+            int pageCnt = pageOfNodeInfos.getPage().size();
+            NodeRef[] children = new NodeRef[pageCnt];
+            
+            int idx = 0;
+            for (FileInfo child : pageOfNodeInfos.getPage())
+            {
+                children[idx] = child.getNodeRef();
+                idx++;
+            }
+            
+            // total count ?
+            int totalCount = pageCnt;
+            Pair<Integer, Integer> totalCounts = pageOfNodeInfos.getTotalResultCount();
+            if (totalCounts != null)
+            {
+                Integer totalCountLower = totalCounts.getFirst();
+                Integer totalCountUpper = totalCounts.getSecond();
+                if ((totalCountLower != null) && (totalCountLower.equals(totalCountUpper)))
+                {
+                    totalCount = totalCountLower;
+                }
+            }
+            
+            Cursor cursor = paging.createCursor(totalCount, page);
+            
+            ScriptNode[] nodes = new ScriptNode[pageCnt];
+            for (int i = 0; i < pageCnt; i++)
+            {
+                nodes[i] = new ScriptNode(children[i], services, getScope());
+            }
+            
+            PagedResults results = paging.createPagedResults(nodes, cursor);
+            return results;
         }
         catch (CMISInvalidArgumentException e)
         {
             throw new WebScriptException(e.getStatusCode(), e.getMessage(), e);
         }
-        
-        Cursor cursor = paging.createCursor(children.length, page);
-        int cnt = (cursor.getRowCount() < 0 ? 0 : cursor.getRowCount());
-        ScriptNode[] nodes = new ScriptNode[cnt];
-        for (int i = cursor.getStartRow(); i <= cursor.getEndRow(); i++)
-        {
-            nodes[i - cursor.getStartRow()] = new ScriptNode(children[i], services, getScope());
-        }
-        
-        PagedResults results = paging.createPagedResults(nodes, cursor);
-        return results;
     }
 
     /**

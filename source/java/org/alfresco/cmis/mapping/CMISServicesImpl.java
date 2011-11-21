@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -20,6 +20,7 @@ package org.alfresco.cmis.mapping;
 
 import java.io.InputStream;
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -62,7 +63,11 @@ import org.alfresco.cmis.PropertyFilter;
 import org.alfresco.cmis.dictionary.CMISFolderTypeDefinition;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.query.EmptyPagingResults;
+import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.repo.model.Repository;
+import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -79,6 +84,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.InvalidAspectException;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -101,6 +107,9 @@ import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.Pair;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -117,10 +126,12 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
  */
 public class CMISServicesImpl implements CMISServices, ApplicationContextAware, ApplicationListener<ApplicationContextEvent>, TenantDeployer
 {
+    private static Log logger = LogFactory.getLog(CMISServicesImpl.class);
+    
     /** Query Parameters */
     private static final QName PARAM_PARENT = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "parent");
     private static final QName PARAM_USERNAME = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "username");
-
+    
     private static final String LUCENE_QUERY_CHECKEDOUT =
         "+@cm\\:workingCopyOwner:${cm:username}";
     
@@ -161,7 +172,7 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
     // data types for query
     private DataTypeDefinition nodeRefDataType;
     private DataTypeDefinition textDataType;
-
+    
     
     /**
      * Sets the supported version of the CMIS specification 
@@ -525,11 +536,9 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
     }
     
     /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.CMISServices#getChildren(org.alfresco.service.cmr.repository.NodeRef,
-     * org.alfresco.cmis.CMISTypesFilterEnum, java.lang.String)
+     * Lucene based getChildren - deactivated
      */
-    public NodeRef[] getChildren(NodeRef parent, CMISTypesFilterEnum typesFilter, String orderBy)
+    public NodeRef[] XgetChildren(NodeRef parent, CMISTypesFilterEnum typesFilter, String orderBy)
             throws CMISInvalidArgumentException
     {
         if (typesFilter == CMISTypesFilterEnum.POLICIES)
@@ -577,7 +586,124 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
             if (resultSet != null) resultSet.close();
         }
     }
-
+    
+    /* 
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISServices#getChildren(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.cmis.CMISTypesFilterEnum, java.lang.String)
+     */
+    public NodeRef[] getChildren(NodeRef folderNodeRef, CMISTypesFilterEnum typesFilter, String orderBy)
+            throws CMISInvalidArgumentException
+    {
+        PagingResults<FileInfo> pageOfNodeInfos =  getChildren(folderNodeRef, typesFilter, BigInteger.valueOf(Integer.MAX_VALUE), BigInteger.valueOf(0), orderBy);
+        
+        int pageCnt = pageOfNodeInfos.getPage().size();
+        NodeRef[] result = new NodeRef[pageCnt];
+        
+        int idx = 0;
+        for (FileInfo child : pageOfNodeInfos.getPage())
+        {
+            result[idx] = child.getNodeRef();
+            idx++;
+        }
+        
+        return result;
+    }
+    
+    public PagingResults<FileInfo> getChildren(NodeRef folderNodeRef, CMISTypesFilterEnum typesFilter, BigInteger maxItems, BigInteger skipCount, String orderBy)
+            throws CMISInvalidArgumentException
+    {
+        if (typesFilter == CMISTypesFilterEnum.POLICIES)
+        {
+            return new EmptyPagingResults<FileInfo>();
+        }
+        
+        long start = System.currentTimeMillis();
+        
+        boolean listFiles   = (typesFilter != CMISTypesFilterEnum.FOLDERS);
+        boolean listFolders = (typesFilter != CMISTypesFilterEnum.DOCUMENTS);
+        
+        // convert BigIntegers to int
+        int max = (maxItems == null ? Integer.MAX_VALUE : maxItems.intValue());
+        int skip = (skipCount == null || skipCount.intValue() < 0 ? 0 : skipCount.intValue());
+        
+        // convert orderBy to sortProps
+        List<Pair<QName, Boolean>> sortProps = null;
+        if (orderBy != null)
+        {
+            sortProps = new ArrayList<Pair<QName, Boolean>>(1);
+            
+            String[] parts = orderBy.split(",");
+            int len = parts.length;
+            final int origLen = len;
+            
+            if (origLen > 0)
+            {
+                int maxSortProps = GetChildrenCannedQuery.MAX_FILTER_SORT_PROPS;
+                if (len > maxSortProps)
+                {
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Too many sort properties in 'orderBy' - ignore those above max (max="
+                                + maxSortProps + ",actual=" + len + ")");
+                    }
+                    len = maxSortProps;
+                }
+                for (int i = 0; i < len; i++)
+                {
+                    String[] sort = parts[i].split(" +");
+                    
+                    if (sort.length > 0)
+                    {
+                        CMISPropertyDefinition propDef = cmisDictionaryService.findPropertyByQueryName(sort[0]);
+                        if (propDef != null)
+                        {
+                            QName sortProp = propDef.getPropertyAccessor().getMappedProperty();
+                            if (sortProp != null)
+                            {
+                                boolean sortAsc = (sort.length == 1) || sort[1].equalsIgnoreCase("asc");
+                                sortProps.add(new Pair<QName, Boolean>(sortProp, sortAsc));
+                            } else
+                            {
+                                if (logger.isDebugEnabled())
+                                {
+                                    logger.debug("Ignore sort property '" + sort[0] + " - mapping not found");
+                                }
+                            }
+                        } else
+                        {
+                            if (logger.isDebugEnabled())
+                            {
+                                logger.debug("Ignore sort property '" + sort[0] + " - query name not found");
+                            }
+                        }
+                    }
+                }
+            }
+            
+            if (sortProps.size() < origLen)
+            {
+                logger.warn("Sort properties trimmed - either too many and/or not found: \n" + "   orig:  " + orderBy
+                        + "\n" + "   final: " + sortProps);
+            }
+        }
+        
+        PagingRequest pageRequest = new PagingRequest(skip, max, null);
+        pageRequest.setRequestTotalCountMax(skip + 10000); // TODO make this
+                                                           // optional/configurable
+                                                           // - affects whether
+                                                           // numItems may be
+                                                           // returned
+        
+        PagingResults<FileInfo> result = fileFolderService.list(folderNodeRef, listFiles, listFolders, null, sortProps, pageRequest);
+        
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("getChildren: " + result.getPage().size() + " in " + (System.currentTimeMillis() - start) + " msecs");
+        }
+        
+        return result;
+    }
+    
     /*
      * (non-Javadoc)
      * @see org.alfresco.cmis.CMISServices#getCheckedOut(java.lang.String, org.alfresco.service.cmr.repository.NodeRef,

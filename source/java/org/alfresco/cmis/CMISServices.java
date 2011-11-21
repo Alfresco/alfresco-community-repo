@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -20,11 +20,14 @@ package org.alfresco.cmis;
 
 import java.io.InputStream;
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.query.PagingResults;
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -103,18 +106,37 @@ public interface CMISServices
             throws CMISFilterNotValidException;
     
     /**
-     * Query for node children
+     * Get node children
      * 
      * @param parent
-     *            node to query children for
+     *            parent node
      * @param typesFilter
      *            types filter
      * @param orderBy
-     *            comma-separated list of query names and the ascending modifier "ASC" or the descending modifier "DESC"
-     *            for each query name
+     *            comma-separated list of sort names and the ascending modifier "ASC" or the descending modifier "DESC"
+     *            for each sort name
      * @return children of node
      */
     public NodeRef[] getChildren(NodeRef parent, CMISTypesFilterEnum typesFilter, String orderBy)
+            throws CMISInvalidArgumentException;
+    
+    /**
+     * Get node children
+     * 
+     * @param parent
+     *            parent node
+     * @param typesFilter
+     *            types filter
+     * @param maxItems
+     *            number of items (in page)
+     * @param skipCount
+     *            number of items to skip (page starts at next item)
+     * @param orderBy
+     *            comma-separated list of sort names and the ascending modifier "ASC" or the descending modifier "DESC"
+     *            for each sort name
+     * @return children of node
+     */
+    public PagingResults<FileInfo> getChildren(NodeRef parent, CMISTypesFilterEnum typesFilter, BigInteger maxItems, BigInteger skipCount, String orderBy)
             throws CMISInvalidArgumentException;
 
     /**

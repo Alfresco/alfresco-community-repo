@@ -37,15 +37,9 @@
    </bean>
    
    <bean name="transactionalCache" class="org.alfresco.repo.cache.TransactionalCache">
-      <property name="sharedCache">
-         <ref bean="backingCache" />
-      </property>
-      <property name="name">
-         <value>transactionalCache</value>
-      </property>
-      <property name="maxCacheSize">
-         <value>200000</value>
-      </property>
+      <property name="sharedCache"><ref bean="backingCache" /></property>
+      <property name="name"><value>transactionalCache</value></property>
+      <property name="maxCacheSize"><value>200000</value></property>
    </bean>
    
    <bean name="objectCache" class="org.alfresco.repo.cache.EhCacheAdapter">

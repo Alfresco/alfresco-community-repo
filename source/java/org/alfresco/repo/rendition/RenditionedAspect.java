@@ -49,6 +49,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
+import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -326,14 +327,35 @@ public class RenditionedAspect implements NodeServicePolicies.OnUpdateProperties
     {
         private static final CopyBehaviourCallback INSTANCE = new RenditionedAspectCopyBehaviourCallback();
         
+        
+        
         /**
          * We do not copy the {@link RenditionModel#ASPECT_RENDITIONED rn:renditioned} aspect.
          */
         @Override
         public boolean getMustCopy(QName classQName, CopyDetails copyDetails)
         {
-            // Prevent the copying of the renditioned aspect only.
-            return (! RenditionModel.ASPECT_RENDITIONED.equals(classQName));
+            return false;
+        }
+        
+        @Override
+        public Pair<AssocCopySourceAction, AssocCopyTargetAction> getAssociationCopyAction(
+                QName classQName,
+                CopyDetails copyDetails,
+                CopyAssociationDetails assocCopyDetails)
+        {
+            return new Pair<AssocCopySourceAction, AssocCopyTargetAction>(
+                    AssocCopySourceAction.IGNORE,
+                    AssocCopyTargetAction.USE_COPIED_OTHERWISE_ORIGINAL_TARGET);
+        }
+        
+        @Override
+        public ChildAssocCopyAction getChildAssociationCopyAction(
+                QName classQName,
+                CopyDetails copyDetails,
+                CopyChildAssociationDetails childAssocCopyDetails)
+        {
+            return ChildAssocCopyAction.IGNORE;            
         }
     }
 }

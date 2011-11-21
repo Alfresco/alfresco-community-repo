@@ -1452,9 +1452,9 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         checkWorkflowForms("jbpm$wf:adhoc", "|Task Done");
     }
     
-    public void DISABLED_testActivitiWorkflowForm() throws Exception
+    public void testActivitiWorkflowForm() throws Exception
     {
-        checkWorkflowForms("activiti$activitiAdhoc", "Next|Next");
+        checkWorkflowForms("activiti$activitiAdhoc", "Next|Task Done");
     }
     
     private void checkWorkflowForms(String workflowDefName, String transitionLabels) throws Exception

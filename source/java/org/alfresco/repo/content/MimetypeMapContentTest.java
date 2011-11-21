@@ -78,6 +78,12 @@ public class MimetypeMapContentTest extends TestCase
                 mimetypeService.guessMimetype("image.bmp", openQuickTestFile("quick.bmp"))
         );
         
+        // Ones where we know about the parent, and Tika knows about the details
+        assertEquals(
+              "application/dita+xml", // Full version:  application/dita+xml;format=concept
+              mimetypeService.guessMimetype("concept.dita", openQuickTestFile("quickConcept.dita"))
+        );
+        
         // Alfresco Specific ones, that Tika doesn't know about
         assertEquals(
               "application/acp", 

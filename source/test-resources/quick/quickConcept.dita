@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/concept.dtd">
+<concept id="quickConcept">
+ <title>The quick brown fox jumps over the lazy dog</title>
+ <shortdesc>Gym class featuring a brown fox and lazy dog</shortdesc>
+ <prolog>
+  <author>Alfresco Documentation</author>
+  <copyright>
+   <copyryear year="2011"/>
+   <copyrholder>Alfresco Software, Inc.</copyrholder>
+  </copyright>
+  <metadata>
+   <audience experiencelevel="expert" job="Customizing" type="Administrator"/>
+   <category>Testing</category>
+   <keywords>
+    <keyword>Pangram</keyword>
+    <keyword>Fox</keyword>
+    <keyword>Dog</keyword>
+   </keywords>
+   <prodinfo>
+    <prodname>Enterprise</prodname>
+    <vrmlist>
+     <vrm version="3.4.x" release="Enterprise" modification="2011/11/11"/>
+    </vrmlist>
+   </prodinfo>
+  </metadata>
+ </prolog>
+ <conbody>
+   <p>The quick brown fox jumps over the lazy dog</p>
+ </conbody>
+</concept>

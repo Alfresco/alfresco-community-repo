@@ -99,7 +99,7 @@ public class ExportDbTest
        
        Table exampleTable = null;
        Table otherTable = null;
-       Sequence authoritySeq = null;
+       Sequence exampleSeq = null;
        
        for (DbObject dbo : schema)
        {
@@ -111,17 +111,16 @@ public class ExportDbTest
            {
                otherTable = (Table) dbo;
            }
-           if (dbo.getName().equals("export_test_authority_seq"))
+           if (dbo.getName().equals("export_test_example_seq"))
            {
-               authoritySeq = (Sequence) dbo;
+               exampleSeq = (Sequence) dbo;
            }
        }
        
        checkResultsFiltered(schema, "export_test_");
        checkExampleTable(schema, exampleTable);
        checkOtherTable(schema, otherTable);
-       // TODO: what to do about sequences? They can't easily be retrieved with JDBC's DatabaseMetaData
-       //checkAuthoritySequence(schema, authoritySeq);
+       checkExampleSequence(schema, exampleSeq);
     }
    
     
@@ -166,8 +165,8 @@ public class ExportDbTest
                     "DROP INDEX IF EXISTS export_test_idx_other_2",
                     "CREATE INDEX export_test_idx_other_2 ON export_test_other (ex_id)",
                     
-                    "DROP SEQUENCE IF EXISTS export_test_authority_seq",
-                    "CREATE SEQUENCE export_test_authority_seq START WITH 1 INCREMENT BY 1"
+                    "DROP SEQUENCE IF EXISTS export_test_example_seq",
+                    "CREATE SEQUENCE export_test_example_seq START WITH 1 INCREMENT BY 1"
         };
         
         TransactionTemplate tt = new TransactionTemplate(tx);
@@ -345,10 +344,10 @@ public class ExportDbTest
     }
     
     
-    public void checkAuthoritySequence(Schema schema, Sequence seq)
+    public void checkExampleSequence(Schema schema, Sequence seq)
     {
-        assertNotNull("Couldn't find sequence export_test_authority_seq", seq);
+        assertNotNull("Couldn't find sequence", seq);
         assertSame("Incorrect parent or no parent set", schema, seq.getParent());
-        assertEquals("export_test_authority_seq", seq.getName());
+        assertEquals("export_test_example_seq", seq.getName());
     }
 }

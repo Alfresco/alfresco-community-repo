@@ -22,6 +22,7 @@ import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -33,6 +34,7 @@ import org.alfresco.util.schemacomp.model.ForeignKey;
 import org.alfresco.util.schemacomp.model.Index;
 import org.alfresco.util.schemacomp.model.PrimaryKey;
 import org.alfresco.util.schemacomp.model.Schema;
+import org.alfresco.util.schemacomp.model.Sequence;
 import org.alfresco.util.schemacomp.model.Table;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.PostgreSQLDialect;
@@ -183,26 +185,13 @@ public class ExportDb
     {
         final DatabaseMetaData dbmd = con.getMetaData();
 
-        // Assume that if there are schemas, we want the one named after the connection user or the one called "dbo" (MS
-        // SQL hack)
-        String schemaName = null;
-        final ResultSet schemas = dbmd.getSchemas();
-        while (schemas.next())
-        {
-            final String thisSchema = schemas.getString("TABLE_SCHEM");
-            if (thisSchema.equals(dbmd.getUserName()) || thisSchema.equalsIgnoreCase("dbo"))
-            {
-                schemaName = thisSchema;
-                break;
-            }
-        }
-        schemas.close();
+        String schemaName = getSchemaName(dbmd);
 
         schema = new Schema(schemaName);
         
         final ResultSet tables = dbmd.getTables(null, schemaName, namePrefixFilter(), new String[]
         {
-            "TABLE", "VIEW"
+            "TABLE", "VIEW", "SEQUENCE"
         });
         
         
@@ -216,6 +205,13 @@ public class ExportDb
                 continue;
             }
 
+            if (tables.getString("TABLE_TYPE").equals("SEQUENCE"))
+            {
+                Sequence sequence = new Sequence(tableName);
+                schema.add(sequence);
+                continue;
+            }
+            
             Table table = new Table(tableName);
             schema.add(table);
             
@@ -329,6 +325,32 @@ public class ExportDb
             foreignkeys.close();
         }
         tables.close();
+    }
+
+
+    /**
+     * Assume that if there are schemas, we want the one named after the connection user
+     * or the one called "dbo" (MS SQL hack)
+     * 
+     * @param dbmd
+     * @return The schema name, or null otherwise.
+     * @throws SQLException
+     */
+    private String getSchemaName(final DatabaseMetaData dbmd) throws SQLException
+    {
+        String schemaName = null;
+        final ResultSet schemas = dbmd.getSchemas();
+        while (schemas.next())
+        {
+            final String thisSchema = schemas.getString("TABLE_SCHEM");
+            if (thisSchema.equals(dbmd.getUserName()) || thisSchema.equalsIgnoreCase("dbo"))
+            {
+                schemaName = thisSchema;
+                break;
+            }
+        }
+        schemas.close();
+        return schemaName;
     }
 
 

@@ -38,6 +38,8 @@ import org.alfresco.util.schemacomp.validator.DbValidator;
 import org.alfresco.util.schemacomp.validator.NameValidator;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 
 /**
  * Tests for the XMLToSchema class.
@@ -52,7 +54,8 @@ public class XMLToSchemaTest
     @Before
     public void setUp() throws Exception
     {
-        in = new BufferedInputStream(getClass().getResourceAsStream("xml_to_schema_test.xml"));
+        Resource testFileResource = new ClassPathResource("schemacomp/xml_to_schema_test.xml");
+        in = new BufferedInputStream(testFileResource.getInputStream());
         xmlToSchema = new XMLToSchema(in);
     }
 

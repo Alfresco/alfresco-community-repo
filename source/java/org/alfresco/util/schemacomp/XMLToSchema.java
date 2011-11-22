@@ -49,8 +49,7 @@ public class XMLToSchema extends DefaultHandler
     private InputStream in;
     private Schema schema;
     private Stack<Object> stack = new Stack<Object>();
-    private String lastTag;
-    private String lastText;
+    private StringBuilder lastText = new StringBuilder();
     
     
     public XMLToSchema(InputStream in, SAXParserFactory saxParserFactory)
@@ -140,6 +139,60 @@ public class XMLToSchema extends DefaultHandler
             DbObject dbo = (DbObject) stack.peek();
             dbo.getValidators().add(validator);
         }
+        
+        // Deal with elements that contain text.
+        if (lastText.length() != 0)
+        {
+            if (qName.equals(XML.EL_TYPE))
+            {
+                Column column = (Column) stack.peek();
+                column.setType(lastText.toString());
+            }
+            else if (qName.equals(XML.EL_NULLABLE))
+            {
+                Column column = (Column) stack.peek();
+                column.setNullable(Boolean.parseBoolean(lastText.toString()));
+            }
+            else if (qName.equals(XML.EL_COLUMN_NAME))
+            {
+                if (stack.peek() instanceof PrimaryKey)
+                {
+                    PrimaryKey pk = (PrimaryKey) stack.peek();
+                    pk.getColumnNames().add(lastText.toString());
+                }
+                else if (stack.peek() instanceof Index)
+                {
+                    Index index = (Index) stack.peek();
+                    index.getColumnNames().add(lastText.toString());
+                }
+            }
+            else if (qName.equals(XML.EL_LOCAL_COLUMN))
+            {
+                ForeignKey fk = (ForeignKey) stack.peek();
+                fk.setLocalColumn(lastText.toString());
+            }
+            else if (qName.equals(XML.EL_TARGET_TABLE))
+            {
+                ForeignKey fk = (ForeignKey) stack.peek();
+                fk.setTargetTable(lastText.toString());
+            }
+            else if (qName.equals(XML.EL_TARGET_COLUMN))
+            {
+                ForeignKey fk = (ForeignKey) stack.peek();
+                fk.setTargetColumn(lastText.toString());
+            }
+            else if (qName.equals(XML.EL_PROPERTY))
+            {
+                String propValue = lastText.toString();
+                String propName = (String) stack.pop();
+                if (stack.peek() instanceof DbValidator)
+                {
+                    @SuppressWarnings("unchecked")
+                    DbValidator validator = (DbValidator) stack.peek();
+                    validator.setProperty(propName, propValue);
+                }
+            }
+        }
     }
 
     
@@ -147,7 +200,7 @@ public class XMLToSchema extends DefaultHandler
     public void startElement(String uri, String localName, String qName, Attributes atts)
                 throws SAXException
     {
-        lastTag = qName;
+        lastText.setLength(0);
         
         if (qName.equals(XML.EL_SCHEMA))
         {
@@ -205,59 +258,10 @@ public class XMLToSchema extends DefaultHandler
     @Override
     public void characters(char[] ch, int start, int length) throws SAXException
     {
-        lastText = new String(ch, start, length).trim();            
-        
-        if (lastText.length() != 0)
+        String text = new String(ch, start, length).trim();
+        if (text.length() > 0)
         {
-            if (lastTag.equals(XML.EL_TYPE))
-            {
-                Column column = (Column) stack.peek();
-                column.setType(lastText);
-            }
-            else if (lastTag.equals(XML.EL_NULLABLE))
-            {
-                Column column = (Column) stack.peek();
-                column.setNullable(Boolean.parseBoolean(lastText));
-            }
-            else if (lastTag.equals(XML.EL_COLUMN_NAME))
-            {
-                if (stack.peek() instanceof PrimaryKey)
-                {
-                    PrimaryKey pk = (PrimaryKey) stack.peek();
-                    pk.getColumnNames().add(lastText);
-                }
-                else if (stack.peek() instanceof Index)
-                {
-                    Index index = (Index) stack.peek();
-                    index.getColumnNames().add(lastText);
-                }
-            }
-            else if (lastTag.equals(XML.EL_LOCAL_COLUMN))
-            {
-                ForeignKey fk = (ForeignKey) stack.peek();
-                fk.setLocalColumn(lastText);
-            }
-            else if (lastTag.equals(XML.EL_TARGET_TABLE))
-            {
-                ForeignKey fk = (ForeignKey) stack.peek();
-                fk.setTargetTable(lastText);
-            }
-            else if (lastTag.equals(XML.EL_TARGET_COLUMN))
-            {
-                ForeignKey fk = (ForeignKey) stack.peek();
-                fk.setTargetColumn(lastText);
-            }
-            else if (lastTag.equals(XML.EL_PROPERTY))
-            {
-                String propValue = lastText;
-                String propName = (String) stack.pop();
-                if (stack.peek() instanceof DbValidator)
-                {
-                    @SuppressWarnings("unchecked")
-                    DbValidator validator = (DbValidator) stack.peek();
-                    validator.setProperty(propName, propValue);
-                }
-            }
+            lastText.append(text);
         }
     }
 }

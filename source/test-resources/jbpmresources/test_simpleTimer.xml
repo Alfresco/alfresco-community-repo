@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="wf:testSimpleTimer">
+
+   <start-state name="start">
+      <task name="wf:submitAdhocTask" />
+      <transition name="" to="adhoc" />
+   </start-state>
+
+   <swimlane name="assignee">
+      <assignment class="org.alfresco.repo.workflow.jbpm.AlfrescoAssignment">
+         <actor>#{bpm_assignee}</actor>
+      </assignment>
+   </swimlane>
+
+   <task-node name="adhoc">
+      <task name="wf:adhocTask" swimlane="assignee">
+         <event type="task-create"/>
+
+         <timer name="timeout" duedate="1 second" transition="end">
+            <action name="reminder" class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
+               <script>
+                  Packages.java.lang.System.out.println("Timer Fired");
+               </script>
+            </action>
+         </timer>
+         
+      </task>
+      <transition name="end" to="end" />
+   </task-node>
+
+   <end-state name="end" />
+
+</process-definition>

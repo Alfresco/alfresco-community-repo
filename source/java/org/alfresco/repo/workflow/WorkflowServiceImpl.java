@@ -825,6 +825,8 @@ public class WorkflowServiceImpl implements WorkflowService
      */
     public boolean isTaskEditable(WorkflowTask task, String username)
     {
+        task = getTaskById(task.getId()); // Refresh the task.
+        
         // if the task is complete it is not editable
         if (task.getState() == WorkflowTaskState.COMPLETED)
         {
@@ -856,6 +858,8 @@ public class WorkflowServiceImpl implements WorkflowService
      */
     public boolean isTaskReassignable(WorkflowTask task, String username)
     {
+        task = getTaskById(task.getId()); // Refresh the task.
+        
         // if the task is complete it is not reassignable
         if (task.getState() == WorkflowTaskState.COMPLETED)
         {
@@ -898,6 +902,8 @@ public class WorkflowServiceImpl implements WorkflowService
      */
     public boolean isTaskClaimable(WorkflowTask task, String username)
     {
+        task = getTaskById(task.getId()); // Refresh the task.
+        
         // if the task is complete it is not claimable
         if (task.getState() == WorkflowTaskState.COMPLETED)
         {
@@ -920,6 +926,8 @@ public class WorkflowServiceImpl implements WorkflowService
      */
     public boolean isTaskReleasable(WorkflowTask task, String username)
     {
+        task = getTaskById(task.getId()); // Refresh the task.
+        
         // if the task is complete it is not releasable
         if (task.getState() == WorkflowTaskState.COMPLETED)
         {

@@ -20,6 +20,7 @@ package org.alfresco.util.schemacomp;
 
 import org.alfresco.util.schemacomp.Result.Strength;
 import org.alfresco.util.schemacomp.model.Schema;
+import org.apache.xml.serialize.LineSeparator;
 import org.hibernate.dialect.Dialect;
 
 /**
@@ -30,6 +31,8 @@ import org.hibernate.dialect.Dialect;
  */
 public class SchemaComparator
 {
+    public static final String CHAR_SET = "UTF-8";
+    public static final String LINE_SEPARATOR = LineSeparator.Windows;  
     private final Schema referenceSchema;
     private final Schema targetSchema;
     private final DiffContext ctx;

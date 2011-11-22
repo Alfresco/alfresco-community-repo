@@ -19,6 +19,11 @@
 package org.alfresco.util.schemacomp;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.util.Properties;
 
 import javax.xml.transform.stream.StreamResult;
 
@@ -77,12 +82,58 @@ public class DbToXML
         if (exporter != null)
         {
             Schema schema = exporter.getSchema();
-            SchemaToXML schemaToXML = new SchemaToXML(schema, new StreamResult(outputFile));
+            // Write to a string buffer and then write the results to a file
+            // since we need to write windows line endings - and even passing in a suitable
+            // PrintWriter to StreamResult does not seem to result in the correct line endings.
+            StringWriter stringWriter = new StringWriter(); 
+            SchemaToXML schemaToXML = new SchemaToXML(schema, new StreamResult(stringWriter));
             schemaToXML.execute();
+            writeToFile(stringWriter.getBuffer().toString());
         }
     }
     
-    
+    private void writeToFile(String content)
+    {
+        PrintWriter pw = printWriter(outputFile, SchemaComparator.CHAR_SET, SchemaComparator.LINE_SEPARATOR);
+        
+        String[] lines = content.split(System.getProperty("line.separator"));
+        for (String line : lines)
+        {
+            pw.println(line);
+        }
+        
+        pw.close();
+    }
+
+    private static PrintWriter printWriter(File file, String charSet, String lineSeparator)
+    {
+        Properties props = System.getProperties();
+        synchronized (props)
+        {
+            String oldLineSep = null;
+            try
+            {
+                oldLineSep = (String) props.setProperty("line.separator", lineSeparator);
+                return new PrintWriter(file, charSet);
+            }
+            catch (FileNotFoundException error)
+            {
+                throw new RuntimeException("Unable to write to file " + file, error);
+            }
+            catch (UnsupportedEncodingException error)
+            {
+                throw new RuntimeException("Unsupported encoding" + charSet, error);
+            }
+            finally
+            {
+                if (oldLineSep != null)
+                {
+                    props.put("line.separator", oldLineSep);
+                }
+            }
+        }
+    }
+
     public static void main(String[] args)
     {
         if (args.length != 2)

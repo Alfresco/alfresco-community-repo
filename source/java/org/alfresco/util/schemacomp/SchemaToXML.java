@@ -62,8 +62,8 @@ public class SchemaToXML
             // It was worth a try
         }
         t.setOutputProperty(OutputKeys.INDENT, "yes");
+        t.setOutputProperty(OutputKeys.ENCODING, SchemaComparator.CHAR_SET);
         xmlOut.setResult(streamResult);
-        
         
         this.schema = schema;
     }

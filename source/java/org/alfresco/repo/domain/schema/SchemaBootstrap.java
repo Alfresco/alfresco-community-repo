@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.sql.Array;
 import java.sql.Blob;
@@ -72,12 +73,10 @@ import org.alfresco.repo.domain.hibernate.dialect.AlfrescoSybaseAnywhereDialect;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.LogUtil;
 import org.alfresco.util.TempFileProvider;
-import org.alfresco.util.schemacomp.Difference;
 import org.alfresco.util.schemacomp.ExportDb;
 import org.alfresco.util.schemacomp.Result;
 import org.alfresco.util.schemacomp.Results;
 import org.alfresco.util.schemacomp.SchemaComparator;
-import org.alfresco.util.schemacomp.ValidationResult;
 import org.alfresco.util.schemacomp.XMLToSchema;
 import org.alfresco.util.schemacomp.model.Schema;
 import org.alfresco.util.schemadump.Main;
@@ -1676,17 +1675,22 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         PrintWriter pw = null;
         try
         {
-            pw = new PrintWriter(outputFile);
+            pw = new PrintWriter(outputFile, SchemaComparator.CHAR_SET);
         }
         catch (FileNotFoundException error)
         {
             throw new RuntimeException("Unable to open file for writing: " + outputFile);
         }
+        catch (UnsupportedEncodingException error)
+        {
+            throw new RuntimeException("Unsupported char set: " + SchemaComparator.CHAR_SET, error);
+        }
         
         // Populate the file with details of the comparison's results.
         for (Result result : results)
         {
-            pw.println(result.describe());
+            pw.print(result.describe());
+            pw.print(SchemaComparator.LINE_SEPARATOR);
         }
 
         pw.close();

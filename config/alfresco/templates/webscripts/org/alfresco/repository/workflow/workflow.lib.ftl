@@ -28,6 +28,8 @@
          </#if>
          "properties":
          <@propertiesJSON properties=task.properties />,
+         "propertyLabels":
+         <@propertyLabelsJSON propertyLabels=task.propertyLabels  />,
          "workflowInstance": 
          <@workflowInstanceJSON workflowInstance=task.workflowInstance/><#if detailed>,
          "definition":
@@ -88,6 +90,22 @@
       <#else>
          "${shortQName(val?string)}"
       </#if>
+   <#else>
+      null
+   </#if><#if (key_has_next)>,</#if>
+</#list>
+}
+</#escape>
+</#macro>
+
+<#-- Renders a map of property labels -->
+<#macro propertyLabelsJSON propertyLabels>
+<#escape x as jsonUtils.encodeJSONString(x)>
+{
+<#list propertyLabels?keys as key>
+   "${key}":
+   <#if propertyLabels[key]??>
+      "${propertyLabels[key]}"
    <#else>
       null
    </#if><#if (key_has_next)>,</#if>

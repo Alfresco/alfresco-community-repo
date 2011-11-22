@@ -26,12 +26,16 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
 import org.alfresco.repo.workflow.WorkflowModel;
+import org.alfresco.repo.workflow.WorkflowQNameConverter;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
+import org.alfresco.service.cmr.dictionary.Constraint;
+import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.AssociationRef;
@@ -50,9 +54,11 @@ import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.cmr.workflow.WorkflowTransition;
-import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
+import org.alfresco.util.collections.CollectionUtils;
+import org.alfresco.util.collections.Function;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 /**
@@ -67,6 +73,7 @@ public class WorkflowModelBuilder
     public static final String PERSON_AVATAR = "avatarUrl";
 
     public static final String TASK_PROPERTIES = "properties";
+    public static final String TASK_PROPERTIY_LABELS = "propertyLabels";
     public static final String TASK_OWNER = "owner";
     public static final String TASK_STATE = "state";
     public static final String TASK_DESCRIPTION = "description";
@@ -141,23 +148,21 @@ public class WorkflowModelBuilder
     public static final String WORKFLOW_DEFINITION_START_TASK_DEFINITION_TYPE = "startTaskDefinitionType";
     public static final String WORKFLOW_DEFINITION_TASK_DEFINITIONS = "taskDefinitions";
 
-    private static final String PREFIX_SEPARATOR = Character.toString(QName.NAMESPACE_PREFIX);
-
-    private final NamespaceService namespaceService;
     private final NodeService nodeService;
     private final PersonService personService;
     private final WorkflowService workflowService;
     private final AuthenticationService authenticationService;
-
+    private final WorkflowQNameConverter qNameConverter;
+    
     public WorkflowModelBuilder(NamespaceService namespaceService, NodeService nodeService, 
                 AuthenticationService authenticationService, PersonService personService, 
                 WorkflowService workflowService)
     {
-        this.namespaceService = namespaceService;
         this.nodeService = nodeService;
         this.personService = personService;
         this.workflowService = workflowService;
         this.authenticationService = authenticationService;
+        this.qNameConverter = new WorkflowQNameConverter(namespaceService);
     }
 
     /**
@@ -190,7 +195,9 @@ public class WorkflowModelBuilder
         model.put(TASK_OWNER, getPersonModel(owner));
 
         // task properties
-        model.put(TASK_PROPERTIES, buildProperties(task, propertyFilters));
+        Map<String, Object> propertyModel = buildProperties(task, propertyFilters);
+        model.put(TASK_PROPERTIES, propertyModel);
+        model.put(TASK_PROPERTIY_LABELS, buildPropertyLabels(task, propertyModel));
         
         // workflow instance part
         model.put(TASK_WORKFLOW_INSTANCE, buildSimple(task.getPath().getInstance()));
@@ -408,6 +415,36 @@ public class WorkflowModelBuilder
         }
         return buildQNameProperties(properties, keys);
     }
+    
+    private Map<String, String> buildPropertyLabels(WorkflowTask task, Map<String, Object> properties)
+    {
+        TypeDefinition taskType = task.getDefinition().getMetadata();
+        final Map<QName, PropertyDefinition> propDefs = taskType.getProperties();
+        return CollectionUtils.transform(properties, new Function<Entry<String, Object>, Pair<String, String>>()
+        {
+            @Override
+            public Pair<String, String> apply(Entry<String, Object> entry)
+            {
+                String propName = entry.getKey();
+                PropertyDefinition propDef = propDefs.get(qNameConverter.mapNameToQName(propName));
+                if(propDef != null )
+                {
+                    List<ConstraintDefinition> constraints = propDef.getConstraints();
+                    for (ConstraintDefinition constraintDef : constraints)
+                    {
+                        Constraint constraint = constraintDef.getConstraint();
+                        if (constraint instanceof ListOfValuesConstraint)
+                        {
+                            ListOfValuesConstraint listConstraint = (ListOfValuesConstraint) constraint;
+                            String label = listConstraint.getDisplayLabel(entry.getValue().toString());
+                            return new Pair<String, String>(propName, label);
+                        }
+                    }
+                }
+                return null;
+            }
+        });
+    }
 
     private Map<String, Object> buildQNameProperties(Map<QName, Serializable> properties, Collection<QName> keys)
     {
@@ -415,8 +452,7 @@ public class WorkflowModelBuilder
         for (QName key : keys)
         {
             Object value = convertValue(properties.get(key));
-            String prefixedKey = key.toPrefixString(namespaceService);
-            String strKey = prefixedKey.replace(PREFIX_SEPARATOR, "_");
+            String strKey = qNameConverter.mapQNameToName(key);
             model.put(strKey, value);
         }
         return model;
@@ -445,21 +481,14 @@ public class WorkflowModelBuilder
 
     private Collection<QName> buildQNameKeys(Collection<String> keys)
     {
-        List<QName> qKeys = new ArrayList<QName>(keys.size());
-        for (String key : keys)
+        return CollectionUtils.transform(keys, new Function<String, QName>()
         {
-            String prefixedName = key.replaceFirst("_", PREFIX_SEPARATOR);
-            try
+            @Override
+            public QName apply(String name)
             {
-                QName qKey = QName.createQName(prefixedName, namespaceService);
-                qKeys.add(qKey);
+                return qNameConverter.mapNameToQName(name);
             }
-            catch (NamespaceException e)
-            {
-                throw new AlfrescoRuntimeException("Invalid property key: " + key, e);
-            }
-        }
-        return qKeys;
+        });
     }
 
     private Map<String, Object> getPersonModel(Serializable nameSer)
@@ -622,7 +651,7 @@ public class WorkflowModelBuilder
 
     private String getUrl(TypeDefinition typeDefinition)
     {
-        return "api/classes/" + typeDefinition.getName().toPrefixString().replace(PREFIX_SEPARATOR, "_");
+        return "api/classes/" + qNameConverter.mapQNameToName(typeDefinition.getName());
     }
 
     private String getUrl(WorkflowPath path)

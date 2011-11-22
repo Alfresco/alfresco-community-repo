@@ -949,7 +949,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
 
         if(logger.isDebugEnabled())
         {
-            logger.debug("openFile :" + params + ", session:" + session.getUniqueId());
+            logger.debug("openFile :" + params + ", session:" + session.getUniqueId() + ", params:" + params);
         }
         try
         {  
@@ -1010,8 +1010,11 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             //                throw new AccessDeniedException("No delete access to " + params.getFullPath());
 
             // will throw a NodeLockedException is locked by somebody else
-            lockService.checkForLock(nodeRef);
-
+            if ( params.hasAccessMode(AccessMode.NTWrite))
+            {
+                lockService.checkForLock(nodeRef);
+            }
+            
             // Check if the node is a link node            
             NodeRef linkRef = (NodeRef) nodeService.getProperty(nodeRef, ContentModel.PROP_LINK_DESTINATION);
             NetworkFile netFile = null;
@@ -2699,6 +2702,14 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         } 
     }
     
+    /**
+     * Open the file
+     */
+    public NetworkFile openFile(String path, OpenFileMode mode, boolean truncate)
+    {
+        return null;
+        
+    }
     
     /**
      * Close the file.

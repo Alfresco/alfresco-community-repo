@@ -291,6 +291,8 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
     {
         String path = param.getPath();
         
+        boolean truncate = param.isOverwrite();
+        
         if(logger.isDebugEnabled())
         {
             int sharedAccess = param.getSharedAccess();
@@ -304,6 +306,8 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
             + ", writeOnlyAccess:" +param.isWriteOnlyAccess()
             + ", attributesOnlyAccess:" +param.isAttributesOnlyAccess()
             + ", sequentialAccessOnly:" + param.isSequentialAccessOnly()
+            + ", writeThrough:" + param.isWriteThrough()
+            + ", truncate:" + truncate 
             + ", requestBatchOpLock:" +param.requestBatchOpLock()
             + ", requestExclusiveOpLock:" +param.requestExclusiveOpLock()  
             + ", isDeleteOnClose:" +param.isDeleteOnClose()
@@ -321,8 +325,6 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
             {
                 logger.debug("NTOverwrite");
             }
-
-
         }
         
         ContentContext tctx = (ContentContext) tree.getContext();
@@ -336,9 +338,9 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
         
         EvaluatorContext ctx = getEvaluatorContext(driverState, folder);
         
-        // Todo what about attributes only ?
+
         
-        OpenFileMode openMode = OpenFileMode.READ_WRITE;
+        OpenFileMode openMode = OpenFileMode.READ_ONLY;
         
         if(param.isAttributesOnlyAccess())
         {
@@ -364,8 +366,6 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
             }
             openMode = OpenFileMode.DELETE;
         }
-            
-        boolean truncate = param.isOverwrite();
         
         Operation o = new OpenFileOperation(file, openMode, truncate, rootNode, path);
         Command c = ruleEvaluator.evaluate(ctx, o);

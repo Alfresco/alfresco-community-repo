@@ -492,13 +492,13 @@
             <!-- virtual view stores filter can be any of the following: normal, site, staging, author, preview -->
             <bean class="org.alfresco.filesys.avm.AVMContext">
                <property name="deviceName">
-                  <value>AVM</value>
+                  <value>${filesystem.avm.name}</value>
                </property>
                <property name="virtualView">
-                  <value>true</value>
+                  <value>${filesystem.avm.enabled}</value>
                </property>
                <property name="stores">
-                  <value>site,staging,author</value>
+                  <value>${filesystem.avm.stores}</value>
                </property>
             </bean>
          </list>

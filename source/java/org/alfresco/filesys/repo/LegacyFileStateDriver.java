@@ -289,6 +289,11 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
     {
         ContentContext tctx = (ContentContext) tree.getContext();
         
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("closeFile:" + param.getFullName() + ", accessToken:" + param.getAccessToken());
+        }
+        
         try
         {
             diskInterface.closeFile(sess, tree, param);
@@ -300,7 +305,7 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
                 
                 if(fstate.getOpenCount() ==0 )
                 {
-                    logger.debug("reset shared access to READWRITEDELETE");
+                    logger.debug("OpenCount = 0, reset shared access to READ WRITE DELETE");
                     fstate.setSharedAccess( SharingMode.READWRITE + SharingMode.DELETE);
                     
                     fstate.setAllocationSize(-1);
@@ -311,10 +316,11 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
                 
                 if(fstate != null && param.getAccessToken() != null)
                 {
+
                     FileAccessToken token = param.getAccessToken();
                     if(logger.isDebugEnabled() && token != null)
                     {
-                        logger.debug("close file release lock token:" + token);
+                        logger.debug("close file release access token:" + token);
                     }
                     cache.releaseFileAccess(fstate, token);
                 }

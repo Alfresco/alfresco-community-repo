@@ -39,6 +39,7 @@ import org.alfresco.filesys.repo.rules.operations.RenameFileOperation;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.core.DeviceContext;
 import org.alfresco.jlan.server.core.DeviceContextException;
+import org.alfresco.jlan.server.filesys.FileAction;
 import org.alfresco.jlan.server.filesys.FileInfo;
 import org.alfresco.jlan.server.filesys.FileName;
 import org.alfresco.jlan.server.filesys.FileOpenParams;
@@ -308,8 +309,20 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
             + ", isDeleteOnClose:" +param.isDeleteOnClose()
             + ", allocationSize:" + param.getAllocationSize()
             + ", sharedAccess: " + strSharedAccess
-
+            + ", openAction: " + param.getOpenAction()       
             );
+            
+            // TODO - If we are going to truncate then don't waste time copying content.
+            if (param.getOpenAction() == FileAction.NTOverwriteIf)
+            {
+                logger.debug("NTOverwriteIf");
+            }
+            if (param.getOpenAction() == FileAction.NTOverwrite)
+            {
+                logger.debug("NTOverwrite");
+            }
+
+
         }
         
         ContentContext tctx = (ContentContext) tree.getContext();

@@ -305,7 +305,8 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
                 
                 if(logger.isDebugEnabled())
                 {
-                    logger.debug("getFileInformation path" + path + ", returning:" + finfo  + 
+                    logger.debug("Return getFileInformation, path: " + path + 
+                            ", returning:" + finfo  + 
                             ", readOnly:" +finfo.isReadOnly() +
                             ", fileId:" +finfo.getFileId() +
                             ", fileSize:" +finfo.getSize() +
@@ -324,7 +325,7 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
         
         if(logger.isDebugEnabled())
         {
-            logger.debug("getFileInformation returning:" + path + " returning" + info);
+            logger.debug("getFileInformation Return:" + path + " returning" + info);
         }
 
         return info;

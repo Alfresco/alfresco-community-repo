@@ -818,6 +818,9 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             {
                 logger.debug("Started search: search path=" + searchPath + " attributes=" + attributes + ", ctx=" + searchCtx);
             }
+            
+            // TODO -- 
+            // Need to resolve the file info here so it's within the transaction boundary.
                        
             return searchCtx;
         }
@@ -1093,7 +1096,8 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                     }
                     else if ( params.isWriteOnlyAccess())
                     {
-                        netFile.setGrantedAccess( NetworkFile.WRITEONLY);
+                        // Needs to be READWRITE for JavaNetworkFile - there's no such thing as WRITEONLY!
+                        netFile.setGrantedAccess( NetworkFile.READWRITE);
                     }
                     else
                     {
@@ -1867,7 +1871,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             {
                 if(logger.isDebugEnabled())
                 {
-                    logger.debug("write access denied to : + name");
+                    logger.debug("write access denied to :" + name);
                 }
                 throw new AccessDeniedException("No write access to " + name);
             }
@@ -1880,12 +1884,12 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             {
                 if(logger.isDebugEnabled())
                 {
-                    logger.debug("delete access denied to : + name");
+                    logger.debug("Set Delete On Close for :" + name);
                 }
                 // Check for delete permission
                 if ( permissionService.hasPermission(nodeRef, PermissionService.DELETE) == AccessStatus.DENIED)
                 {
-                    throw new AccessDeniedException("No delete access to " + name);
+                    throw new AccessDeniedException("No delete access to :" + name);
                 }
 
                 // Check if the node is locked
@@ -2100,6 +2104,10 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         }
         catch (IOException ex) 
         {
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("unable to truncate the file + :" + file.getFullName(), ex);
+            }
             //  Check if we allocated space to the file
           
             if ( allocSize > 0 && quotaMgr != null)

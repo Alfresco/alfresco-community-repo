@@ -56,6 +56,7 @@ import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
 import org.junit.After;
@@ -131,7 +132,7 @@ public class BlogServiceImplTest
                 @Override
                 public SiteInfo execute() throws Throwable
                 {
-                    SiteInfo site = SITE_SERVICE.createSite("BlogSitePreset", BlogServiceImplTest.class.getSimpleName() + "_testSite" + System.currentTimeMillis(),
+                    SiteInfo site = SITE_SERVICE.createSite("BlogSitePreset", BlogServiceImplTest.class.getSimpleName() + "_testSite" + GUID.generate(),
                                             "test site title", "test site description", SiteVisibility.PUBLIC);
                     CLASS_TEST_NODES_TO_TIDY.add(site.getNodeRef());
                     return site;

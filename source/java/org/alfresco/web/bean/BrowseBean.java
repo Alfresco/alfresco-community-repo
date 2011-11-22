@@ -972,7 +972,6 @@ public class BrowseBean implements IContextListener, Serializable
                      node.addPropertyResolver("cifsPath", this.resolverLinkCifsPath);
                      node.addPropertyResolver("fileType16", this.resolverFileType16);
                      node.addPropertyResolver("fileType32", this.resolverFileType32);
-                     node.addPropertyResolver("size", this.resolverSize);
                      node.addPropertyResolver("lang", this.resolverLang);
    
                      this.contentNodes.add(node);
@@ -1151,7 +1150,6 @@ public class BrowseBean implements IContextListener, Serializable
                            node.addPropertyResolver("cifsPath", this.resolverLinkCifsPath);
                            node.addPropertyResolver("fileType16", this.resolverFileType16);
                            node.addPropertyResolver("fileType32", this.resolverFileType32);
-                           node.addPropertyResolver("size", this.resolverSize);
                            node.addPropertyResolver("lang", this.resolverLang);
                            node.addPropertyResolver("path", this.resolverPath);
                            node.addPropertyResolver("displayPath", this.resolverDisplayPath);

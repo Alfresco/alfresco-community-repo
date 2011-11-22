@@ -291,9 +291,7 @@ public class UIActions extends SelfRenderingComponent
       HtmlPanelGroup wrapper = (HtmlPanelGroup)facesApp.createComponent(ComponentConstants.JAVAX_FACES_PANELGROUP);
       wrapper.setId(createUniqueId());
       wrapper.getAttributes().put("contextId", contextId);
-      List children = this.getChildren();
-      children.clear();
-      children.add(wrapper);
+      this.getChildren().add(wrapper);
       this.groups.add(contextId);
       
       // process each ActionDefinition in the order they were defined

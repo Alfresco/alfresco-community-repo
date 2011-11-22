@@ -82,6 +82,11 @@ public class WorkflowQNameConverter
     
     private QName convertNameToQName(String name)
     {
+        return convertNameToQName(name, prefixResolver);
+    }
+    
+    public static QName convertNameToQName(String name, NamespacePrefixResolver prefixResolver)
+    {
         if (name.indexOf(QName.NAMESPACE_BEGIN)==0)
         {
             return QName.createQName(name);
@@ -100,8 +105,12 @@ public class WorkflowQNameConverter
 
     private String convertQNameToName(QName name)
     {
+        return convertQNameToName(name, prefixResolver);
+    }
+    
+    public static String convertQNameToName(QName name, NamespacePrefixResolver prefixResolver)
+    {
         // NOTE: Map names using old conversion scheme (i.e. : -> _) as well as new scheme (i.e. } -> _)
-        // NOTE: Use new scheme 
         String nameStr = name.toPrefixString(prefixResolver);
         if (nameStr.indexOf('_') != -1 && nameStr.indexOf('_') < nameStr.indexOf(':'))
         {

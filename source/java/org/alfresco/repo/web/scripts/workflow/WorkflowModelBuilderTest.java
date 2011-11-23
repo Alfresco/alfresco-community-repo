@@ -254,7 +254,8 @@ public class WorkflowModelBuilderTest extends TestCase
     public void testBuildWorkflowInstanceDetailed() throws Exception
     {
         WorkflowTaskDefinition workflowTaskDefinition = makeTaskDefinition();
-        when(workflowTaskDefinition.getMetadata().getName()).thenReturn(QName.createQName("The Type Name"));
+        QName taskTypeName = WorkflowModel.TYPE_WORKFLOW_TASK;
+        when(workflowTaskDefinition.getMetadata().getName()).thenReturn(taskTypeName);
         when(workflowTaskDefinition.getMetadata().getTitle()).thenReturn("The Type Title");
         when(workflowTaskDefinition.getMetadata().getDescription()).thenReturn("The Type Description");
         

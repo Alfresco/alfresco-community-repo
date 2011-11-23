@@ -103,6 +103,10 @@ public class UIActions extends SelfRenderingComponent
       this.showLink = (Boolean)values[2];
       this.verticalSpacing = (Integer)values[3];
       this.groups = new HashSet<String>(4);
+      
+      // when the state of the component is restored, clear the child list of components - they
+      // are always rebuilt on initial page render - otherwise the list will grow forever...
+      this.getChildren().clear();
    }
    
    /**
@@ -139,7 +143,7 @@ public class UIActions extends SelfRenderingComponent
       if (actionContext instanceof Node)
       {
          contextId = ((Node)actionContext).getType().toString();
-         if (groups.contains(contextId))
+         if (this.groups.contains(contextId))
          {
             if (logger.isDebugEnabled())
                logger.debug("---already built component tree for actions contextId: " + contextId);
@@ -149,7 +153,7 @@ public class UIActions extends SelfRenderingComponent
       else
       {
          contextId = CONTEXTID_DEFAULT;
-         if (groups.contains(contextId))
+         if (this.groups.contains(contextId))
          {
             if (logger.isDebugEnabled())
                logger.debug("---already built component tree for default actions.");
@@ -292,6 +296,8 @@ public class UIActions extends SelfRenderingComponent
       wrapper.setId(createUniqueId());
       wrapper.getAttributes().put("contextId", contextId);
       this.getChildren().add(wrapper);
+      if (logger.isDebugEnabled())
+         logger.debug("UIActions id: " + this.getId() + " Children() structure size: " + this.getChildren().size());
       this.groups.add(contextId);
       
       // process each ActionDefinition in the order they were defined
@@ -640,6 +646,8 @@ public class UIActions extends SelfRenderingComponent
    public void reset()
    {
       // clear any child components and reset the list of groups
+      if (logger.isDebugEnabled())
+         logger.debug("UIActions id: " + this.getId() + "reset() - clearing component child list.");
       this.getChildren().clear();
       this.groups.clear();
    }
@@ -655,7 +663,7 @@ public class UIActions extends SelfRenderingComponent
       }
       catch (UnsupportedEncodingException e)
       {
-	      throw new RuntimeException(e);
+          throw new RuntimeException(e);
       }
    }
    

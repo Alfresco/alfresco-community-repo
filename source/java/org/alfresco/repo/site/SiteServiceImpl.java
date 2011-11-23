@@ -498,6 +498,9 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
      * Setup the Site permissions.
      * <p>
      * Creates the top-level site group, plus all the Role groups required for users of the site.
+     * <p>
+     * Note - Changes here likely need to be replicated to the {@link #updateSite(SiteInfo)}
+     *  method too, as that also has to deal with Site Permissions.
      * 
      * @param siteNodeRef
      * @param shortName
@@ -574,9 +577,11 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                 else if (SiteVisibility.MODERATED.equals(visibility) == true &&
                          permissions.contains(SITE_CONSUMER))
                 {
-                    // for moderated sites, the Public Group has consumer access to the 
+                    // For moderated sites, the Public Group has consumer access to the 
                     //  site root, but not to site components.
                     permissionService.setPermission(siteNodeRef, sitePublicGroup, SITE_CONSUMER, true);
+                    
+                    // Permissions will be set on the site components as they get created
                 }
                 
                 // No matter what, everyone must be able to read permissions on 
@@ -1282,7 +1287,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         properties.put(ContentModel.PROP_TITLE, siteInfo.getTitle());
         properties.put(ContentModel.PROP_DESCRIPTION, siteInfo.getDescription());
 
-        // Update the isPublic flag
+        // Update the permissions based on the visibility
         SiteVisibility currentVisibility = getSiteVisibility(siteNodeRef);
         SiteVisibility updatedVisibility = siteInfo.getVisibility();
         if (currentVisibility.equals(updatedVisibility) == false)
@@ -1290,19 +1295,34 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
             // visibility has changed   
             logger.debug("site:" + shortName + " visibility has changed from: " + currentVisibility + "to: " + updatedVisibility);
             
-            // visibility has changed.
-            // Remove current visibility permissions
-            if (SiteVisibility.PUBLIC.equals(currentVisibility) == true)
+            // Grab the Public Site Group and validate
+            final String sitePublicGroup = sysAdminParams.getSitePublicGroup();
+            boolean publicGroupExists = authorityService.authorityExists(sitePublicGroup);
+            if (!PermissionService.ALL_AUTHORITIES.equals(sitePublicGroup) && !publicGroupExists)
             {
-                this.permissionService.deletePermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, SITE_CONSUMER);
+                // If the group specified in the settings does not exist, we cannot update the site.
+                throw new SiteServiceException(MSG_VISIBILITY_GROUP_MISSING, new Object[]{sitePublicGroup});
             }
-            else if (SiteVisibility.MODERATED.equals(currentVisibility) == true)
+            
+            // The site Visibility has changed.
+            // Remove current visibility permissions
+            if (SiteVisibility.PUBLIC.equals(currentVisibility) == true ||
+                SiteVisibility.MODERATED.equals(currentVisibility) == true)
             {
-                this.permissionService.deletePermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, SITE_CONSUMER);
-                
-                /**
-                 * update the containers
-                 */
+                // Remove the old Consumer permissions
+                // (Always remove both EVERYONE and the Publci Site Group, just to be safe)
+                this.permissionService.deletePermission(siteNodeRef, sitePublicGroup, SITE_CONSUMER);
+                if (sitePublicGroup.equals(PermissionService.ALL_AUTHORITIES))
+                {
+                   this.permissionService.deletePermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, SITE_CONSUMER);
+                }
+            }
+
+            // If the site was moderated before, undo the work of #setModeratedPermissions
+            //   by restoring inherited permissions on the containers
+            // (Leaving the old extra permissions on containers is fine)
+            if (SiteVisibility.MODERATED.equals(currentVisibility) == true)
+            {
                 List<FileInfo> folders = fileFolderService.listFolders(siteNodeRef);
                 for(FileInfo folder : folders)
                 {
@@ -1312,22 +1332,26 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
             }
             
             // Add new visibility permissions
+            // Note - these need to be kept in sync manually with those in #setupSitePermissions
             if (SiteVisibility.PUBLIC.equals(updatedVisibility) == true)
             {
-                this.permissionService.setPermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, SITE_CONSUMER, true);
+                this.permissionService.setPermission(siteNodeRef, sitePublicGroup, SITE_CONSUMER, true);
             }
             else if (SiteVisibility.MODERATED.equals(updatedVisibility) == true)
             {
-                this.permissionService.setPermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, SITE_CONSUMER, true);
-                /**
-                 * update the containers
-                 */
+                this.permissionService.setPermission(siteNodeRef, sitePublicGroup, SITE_CONSUMER, true);
+                
+                // Set the moderated permissions on all the containers the site already has
                 List<FileInfo> folders = fileFolderService.listFolders(siteNodeRef);
                 for(FileInfo folder : folders)
                 {
                     NodeRef containerNodeRef = folder.getNodeRef();
                     setModeratedPermissions(shortName, containerNodeRef);
                 }
+            }
+            else if (SiteVisibility.PRIVATE.equals(updatedVisibility))
+            {
+                // No additional permissions need to be granted for a site become private
             }
             
             // Update the site node reference with the updated visibility value

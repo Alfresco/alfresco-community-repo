@@ -1575,16 +1575,15 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
        
        // Check the permissions now
 
-       // TODO Fix this
-//       // Everyone still has read permissions everywhere, but nothing more
-//       assertEquals("ReadPermissions", getAllowedPermissionsMap(s1).get(PermissionService.ALL_AUTHORITIES));
-//       assertEquals("ReadPermissions", getAllowedPermissionsMap(s2).get(PermissionService.ALL_AUTHORITIES));
-//       assertEquals("ReadPermissions", getAllowedPermissionsMap(s3).get(PermissionService.ALL_AUTHORITIES));
-//       
-//       // The site public group has consumer permissions on mod+public
-//       assertEquals(SiteModel.SITE_CONSUMER, getAllowedPermissionsMap(s1).get(groupFour));
-//       assertEquals(SiteModel.SITE_CONSUMER, getAllowedPermissionsMap(s2).get(groupFour));
-//       assertEquals(null,                    getAllowedPermissionsMap(s3).get(groupFour));
+       // Everyone still has read permissions everywhere, but nothing more
+       assertEquals("ReadPermissions", getAllowedPermissionsMap(s1).get(PermissionService.ALL_AUTHORITIES));
+       assertEquals("ReadPermissions", getAllowedPermissionsMap(s2).get(PermissionService.ALL_AUTHORITIES));
+       assertEquals("ReadPermissions", getAllowedPermissionsMap(s3).get(PermissionService.ALL_AUTHORITIES));
+       
+       // The site public group has consumer permissions on mod+public
+       assertEquals(SiteModel.SITE_CONSUMER, getAllowedPermissionsMap(s1).get(groupFour));
+       assertEquals(SiteModel.SITE_CONSUMER, getAllowedPermissionsMap(s2).get(groupFour));
+       assertEquals(null,                    getAllowedPermissionsMap(s3).get(groupFour));
        
        // Our user is still the manager
        assertEquals(SiteModel.SITE_MANAGER, siteService.getMembersRole(s1.getShortName(), USER_ONE));
@@ -1602,16 +1601,15 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
        
        // Check the permissions have restored
 
-       // TODO Fix this
-//       // Everyone only has read permissions
-//       assertEquals("ReadPermissions", getAllowedPermissionsMap(s1).get(PermissionService.ALL_AUTHORITIES));
-//       assertEquals("ReadPermissions", getAllowedPermissionsMap(s2).get(PermissionService.ALL_AUTHORITIES));
-//       assertEquals("ReadPermissions", getAllowedPermissionsMap(s3).get(PermissionService.ALL_AUTHORITIES));
-//       
-//       // The site public group has consumer permissions on mod+public
-//       assertEquals(null,                    getAllowedPermissionsMap(s1).get(groupFour));
-//       assertEquals(SiteModel.SITE_CONSUMER, getAllowedPermissionsMap(s2).get(groupFour));
-//       assertEquals(SiteModel.SITE_CONSUMER, getAllowedPermissionsMap(s3).get(groupFour));
+       // Everyone only has read permissions
+       assertEquals("ReadPermissions", getAllowedPermissionsMap(s1).get(PermissionService.ALL_AUTHORITIES));
+       assertEquals("ReadPermissions", getAllowedPermissionsMap(s2).get(PermissionService.ALL_AUTHORITIES));
+       assertEquals("ReadPermissions", getAllowedPermissionsMap(s3).get(PermissionService.ALL_AUTHORITIES));
+       
+       // The site public group has consumer permissions on mod+public
+       assertEquals(null,                    getAllowedPermissionsMap(s1).get(groupFour));
+       assertEquals(SiteModel.SITE_CONSUMER, getAllowedPermissionsMap(s2).get(groupFour));
+       assertEquals(SiteModel.SITE_CONSUMER, getAllowedPermissionsMap(s3).get(groupFour));
        
        // Our user is still the manager
        assertEquals(SiteModel.SITE_MANAGER, siteService.getMembersRole(s1.getShortName(), USER_ONE));

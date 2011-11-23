@@ -1,0 +1,2307 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema name="">
+  <objects>
+    <sequence name="alf_access_control_entry_seq"/>
+    <sequence name="alf_access_control_list_seq"/>
+    <sequence name="alf_ace_context_seq"/>
+    <sequence name="alf_acl_change_set_seq"/>
+    <sequence name="alf_acl_member_seq"/>
+    <sequence name="alf_activity_feed_control_seq"/>
+    <sequence name="alf_activity_feed_seq"/>
+    <sequence name="alf_activity_post_seq"/>
+    <sequence name="alf_audit_app_seq"/>
+    <sequence name="alf_audit_entry_seq"/>
+    <sequence name="alf_audit_model_seq"/>
+    <sequence name="alf_authority_alias_seq"/>
+    <sequence name="alf_authority_seq"/>
+    <sequence name="alf_child_assoc_seq"/>
+    <sequence name="alf_content_data_seq"/>
+    <sequence name="alf_content_url_seq"/>
+    <sequence name="alf_encoding_seq"/>
+    <sequence name="alf_locale_seq"/>
+    <sequence name="alf_lock_resource_seq"/>
+    <sequence name="alf_lock_seq"/>
+    <sequence name="alf_mimetype_seq"/>
+    <sequence name="alf_namespace_seq"/>
+    <sequence name="alf_node_assoc_seq"/>
+    <sequence name="alf_node_seq"/>
+    <sequence name="alf_permission_seq"/>
+    <sequence name="alf_prop_class_seq"/>
+    <sequence name="alf_prop_double_value_seq"/>
+    <sequence name="alf_prop_root_seq"/>
+    <sequence name="alf_prop_serializable_value_seq"/>
+    <sequence name="alf_prop_string_value_seq"/>
+    <sequence name="alf_prop_unique_ctx_seq"/>
+    <sequence name="alf_prop_value_seq"/>
+    <sequence name="alf_qname_seq"/>
+    <sequence name="alf_server_seq"/>
+    <sequence name="alf_store_seq"/>
+    <sequence name="alf_transaction_seq"/>
+    <sequence name="alf_usage_delta_seq"/>
+    <table name="alf_access_control_entry">
+      <columns>
+        <column name="id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="version">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="permission_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="authority_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="allowed">
+          <type>bool</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="applies">
+          <type>int4</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="context_id">
+          <type>int8</type>
+          <nullable>true</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_access_control_entry_pkey">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys>
+        <foreignkey name="fk_alf_ace_ctx">
+          <localcolumn>context_id</localcolumn>
+          <targettable>alf_ace_context</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+        <foreignkey name="fk_alf_ace_auth">
+          <localcolumn>authority_id</localcolumn>
+          <targettable>alf_authority</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+        <foreignkey name="fk_alf_ace_perm">
+          <localcolumn>permission_id</localcolumn>
+          <targettable>alf_permission</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+      </foreignkeys>
+      <indexes>
+        <index name="permission_id" unique="true">
+          <columnnames>
+            <columnname>permission_id</columnname>
+            <columnname>authority_id</columnname>
+            <columnname>allowed</columnname>
+            <columnname>applies</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_ace_auth" unique="false">
+          <columnnames>
+            <columnname>authority_id</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_ace_ctx" unique="false">
+          <columnnames>
+            <columnname>context_id</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_ace_perm" unique="false">
+          <columnnames>
+            <columnname>permission_id</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_access_control_list">
+      <columns>
+        <column name="id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="version">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="acl_id">
+          <type>varchar(36)</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="latest">
+          <type>bool</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="acl_version">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="inherits">
+          <type>bool</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="inherits_from">
+          <type>int8</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="type">
+          <type>int4</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="inherited_acl">
+          <type>int8</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="is_versioned">
+          <type>bool</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="requires_version">
+          <type>bool</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="acl_change_set">
+          <type>int8</type>
+          <nullable>true</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_access_control_list_pkey">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys>
+        <foreignkey name="fk_alf_acl_acs">
+          <localcolumn>acl_change_set</localcolumn>
+          <targettable>alf_acl_change_set</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+      </foreignkeys>
+      <indexes>
+        <index name="acl_id" unique="true">
+          <columnnames>
+            <columnname>acl_id</columnname>
+            <columnname>latest</columnname>
+            <columnname>acl_version</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_acl_acs" unique="false">
+          <columnnames>
+            <columnname>acl_change_set</columnname>
+          </columnnames>
+        </index>
+        <index name="idx_alf_acl_inh" unique="false">
+          <columnnames>
+            <columnname>inherits</columnname>
+            <columnname>inherits_from</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_ace_context">
+      <columns>
+        <column name="id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="version">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="class_context">
+          <type>varchar(1024)</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="property_context">
+          <type>varchar(1024)</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="kvp_context">
+          <type>varchar(1024)</type>
+          <nullable>true</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_ace_context_pkey">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys/>
+      <indexes/>
+    </table>
+    <table name="alf_acl_change_set">
+      <columns>
+        <column name="id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="commit_time_ms">
+          <type>int8</type>
+          <nullable>true</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_acl_change_set_pkey">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys/>
+      <indexes>
+        <index name="idx_alf_acs_ctms" unique="false">
+          <columnnames>
+            <columnname>commit_time_ms</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_acl_member">
+      <columns>
+        <column name="id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="version">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="acl_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="ace_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="pos">
+          <type>int4</type>
+          <nullable>false</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_acl_member_pkey">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys>
+        <foreignkey name="fk_alf_aclm_ace">
+          <localcolumn>ace_id</localcolumn>
+          <targettable>alf_access_control_entry</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+        <foreignkey name="fk_alf_aclm_acl">
+          <localcolumn>acl_id</localcolumn>
+          <targettable>alf_access_control_list</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+      </foreignkeys>
+      <indexes>
+        <index name="aclm_acl_id" unique="true">
+          <columnnames>
+            <columnname>acl_id</columnname>
+            <columnname>ace_id</columnname>
+            <columnname>pos</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_aclm_ace" unique="false">
+          <columnnames>
+            <columnname>ace_id</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_aclm_acl" unique="false">
+          <columnnames>
+            <columnname>acl_id</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_activity_feed">
+      <columns>
+        <column name="id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="post_id">
+          <type>int8</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="post_date">
+          <type>timestamp</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="activity_summary">
+          <type>varchar(1024)</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="feed_user_id">
+          <type>varchar(255)</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="activity_type">
+          <type>varchar(255)</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="activity_format">
+          <type>varchar(10)</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="site_network">
+          <type>varchar(255)</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="app_tool">
+          <type>varchar(36)</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="post_user_id">
+          <type>varchar(255)</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="feed_date">
+          <type>timestamp</type>
+          <nullable>false</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_activity_feed_pkey">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys/>
+      <indexes>
+        <index name="feed_activityformat_idx" unique="false">
+          <columnnames>
+            <columnname>activity_format</columnname>
+          </columnnames>
+        </index>
+        <index name="feed_feeduserid_idx" unique="false">
+          <columnnames>
+            <columnname>feed_user_id</columnname>
+          </columnnames>
+        </index>
+        <index name="feed_postdate_idx" unique="false">
+          <columnnames>
+            <columnname>post_date</columnname>
+          </columnnames>
+        </index>
+        <index name="feed_postuserid_idx" unique="false">
+          <columnnames>
+            <columnname>post_user_id</columnname>
+          </columnnames>
+        </index>
+        <index name="feed_sitenetwork_idx" unique="false">
+          <columnnames>
+            <columnname>site_network</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_activity_feed_control">
+      <columns>
+        <column name="id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="feed_user_id">
+          <type>varchar(255)</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="site_network">
+          <type>varchar(255)</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="app_tool">
+          <type>varchar(36)</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="last_modified">
+          <type>timestamp</type>
+          <nullable>false</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_activity_feed_control_pkey">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys/>
+      <indexes>
+        <index name="feedctrl_feeduserid_idx" unique="false">
+          <columnnames>
+            <columnname>feed_user_id</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_activity_post">
+      <columns>
+        <column name="sequence_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="post_date">
+          <type>timestamp</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="status">
+          <type>varchar(10)</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="activity_data">
+          <type>varchar(1024)</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="post_user_id">
+          <type>varchar(255)</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="job_task_node">
+          <type>int4</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="site_network">
+          <type>varchar(255)</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="app_tool">
+          <type>varchar(36)</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="activity_type">
+          <type>varchar(255)</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="last_modified">
+          <type>timestamp</type>
+          <nullable>false</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_activity_post_pkey">
+        <columnnames>
+          <columnname>sequence_id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys/>
+      <indexes>
+        <index name="post_jobtasknode_idx" unique="false">
+          <columnnames>
+            <columnname>job_task_node</columnname>
+          </columnnames>
+        </index>
+        <index name="post_status_idx" unique="false">
+          <columnnames>
+            <columnname>status</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_applied_patch">
+      <columns>
+        <column name="id">
+          <type>varchar(64)</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="description">
+          <type>varchar(1024)</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="fixes_from_schema">
+          <type>int4</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="fixes_to_schema">
+          <type>int4</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="applied_to_schema">
+          <type>int4</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="target_schema">
+          <type>int4</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="applied_on_date">
+          <type>timestamp</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="applied_to_server">
+          <type>varchar(64)</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="was_executed">
+          <type>bool</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="succeeded">
+          <type>bool</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="report">
+          <type>varchar(1024)</type>
+          <nullable>true</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_applied_patch_pkey">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys/>
+      <indexes/>
+    </table>
+    <table name="alf_audit_app">
+      <columns>
+        <column name="id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="version">
+          <type>int4</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="app_name_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="audit_model_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="disabled_paths_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_audit_app_pkey">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys>
+        <foreignkey name="fk_alf_aud_app_mod">
+          <localcolumn>audit_model_id</localcolumn>
+          <targettable>alf_audit_model</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+        <foreignkey name="fk_alf_aud_app_dis">
+          <localcolumn>disabled_paths_id</localcolumn>
+          <targettable>alf_prop_root</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+        <foreignkey name="fk_alf_aud_app_an">
+          <localcolumn>app_name_id</localcolumn>
+          <targettable>alf_prop_value</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+      </foreignkeys>
+      <indexes>
+        <index name="idx_alf_aud_app_an" unique="true">
+          <columnnames>
+            <columnname>app_name_id</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_aud_app_dis" unique="false">
+          <columnnames>
+            <columnname>disabled_paths_id</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_aud_app_mod" unique="false">
+          <columnnames>
+            <columnname>audit_model_id</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_audit_entry">
+      <columns>
+        <column name="id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="audit_app_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="audit_time">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="audit_user_id">
+          <type>int8</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="audit_values_id">
+          <type>int8</type>
+          <nullable>true</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_audit_entry_pkey">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys>
+        <foreignkey name="fk_alf_aud_ent_app">
+          <localcolumn>audit_app_id</localcolumn>
+          <targettable>alf_audit_app</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+        <foreignkey name="fk_alf_aud_ent_pro">
+          <localcolumn>audit_values_id</localcolumn>
+          <targettable>alf_prop_root</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+        <foreignkey name="fk_alf_aud_ent_use">
+          <localcolumn>audit_user_id</localcolumn>
+          <targettable>alf_prop_value</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+      </foreignkeys>
+      <indexes>
+        <index name="fk_alf_aud_ent_app" unique="false">
+          <columnnames>
+            <columnname>audit_app_id</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_aud_ent_pro" unique="false">
+          <columnnames>
+            <columnname>audit_values_id</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_aud_ent_use" unique="false">
+          <columnnames>
+            <columnname>audit_user_id</columnname>
+          </columnnames>
+        </index>
+        <index name="idx_alf_aud_ent_tm" unique="false">
+          <columnnames>
+            <columnname>audit_time</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_audit_model">
+      <columns>
+        <column name="id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="content_data_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="content_crc">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_audit_model_pkey">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys>
+        <foreignkey name="fk_alf_aud_mod_cd">
+          <localcolumn>content_data_id</localcolumn>
+          <targettable>alf_content_data</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+      </foreignkeys>
+      <indexes>
+        <index name="idx_alf_aud_mod_cr" unique="true">
+          <columnnames>
+            <columnname>content_crc</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_aud_mod_cd" unique="false">
+          <columnnames>
+            <columnname>content_data_id</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_authority">
+      <columns>
+        <column name="id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="version">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="authority">
+          <type>varchar(100)</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="crc">
+          <type>int8</type>
+          <nullable>true</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_authority_pkey">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys/>
+      <indexes>
+        <index name="authority" unique="true">
+          <columnnames>
+            <columnname>authority</columnname>
+            <columnname>crc</columnname>
+          </columnnames>
+        </index>
+        <index name="idx_alf_auth_aut" unique="false">
+          <columnnames>
+            <columnname>authority</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_authority_alias">
+      <columns>
+        <column name="id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="version">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="auth_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="alias_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_authority_alias_pkey">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys>
+        <foreignkey name="fk_alf_autha_ali">
+          <localcolumn>alias_id</localcolumn>
+          <targettable>alf_authority</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+        <foreignkey name="fk_alf_autha_aut">
+          <localcolumn>auth_id</localcolumn>
+          <targettable>alf_authority</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+      </foreignkeys>
+      <indexes>
+        <index name="auth_id" unique="true">
+          <columnnames>
+            <columnname>auth_id</columnname>
+            <columnname>alias_id</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_autha_ali" unique="false">
+          <columnnames>
+            <columnname>alias_id</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_autha_aut" unique="false">
+          <columnnames>
+            <columnname>auth_id</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_child_assoc">
+      <columns>
+        <column name="id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="version">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="parent_node_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="type_qname_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="child_node_name_crc">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="child_node_name">
+          <type>varchar(50)</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="child_node_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="qname_ns_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="qname_localname">
+          <type>varchar(255)</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="qname_crc">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="is_primary">
+          <type>bool</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="assoc_index">
+          <type>int4</type>
+          <nullable>true</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_child_assoc_pkey">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys>
+        <foreignkey name="fk_alf_cass_qnns">
+          <localcolumn>qname_ns_id</localcolumn>
+          <targettable>alf_namespace</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+        <foreignkey name="fk_alf_cass_pnode">
+          <localcolumn>parent_node_id</localcolumn>
+          <targettable>alf_node</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+        <foreignkey name="fk_alf_cass_cnode">
+          <localcolumn>child_node_id</localcolumn>
+          <targettable>alf_node</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+        <foreignkey name="fk_alf_cass_tqn">
+          <localcolumn>type_qname_id</localcolumn>
+          <targettable>alf_qname</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+      </foreignkeys>
+      <indexes>
+        <index name="parent_node_id" unique="true">
+          <columnnames>
+            <columnname>parent_node_id</columnname>
+            <columnname>type_qname_id</columnname>
+            <columnname>child_node_name_crc</columnname>
+            <columnname>child_node_name</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_cass_cnode" unique="false">
+          <columnnames>
+            <columnname>child_node_id</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_cass_pnode" unique="false">
+          <columnnames>
+            <columnname>parent_node_id</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_cass_qnns" unique="false">
+          <columnnames>
+            <columnname>qname_ns_id</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_cass_tqn" unique="false">
+          <columnnames>
+            <columnname>type_qname_id</columnname>
+          </columnnames>
+        </index>
+        <index name="idx_alf_cass_pri" unique="false">
+          <columnnames>
+            <columnname>parent_node_id</columnname>
+            <columnname>is_primary</columnname>
+            <columnname>child_node_id</columnname>
+          </columnnames>
+        </index>
+        <index name="idx_alf_cass_qncrc" unique="false">
+          <columnnames>
+            <columnname>qname_crc</columnname>
+            <columnname>type_qname_id</columnname>
+            <columnname>parent_node_id</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_content_data">
+      <columns>
+        <column name="id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="version">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="content_url_id">
+          <type>int8</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="content_mimetype_id">
+          <type>int8</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="content_encoding_id">
+          <type>int8</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="content_locale_id">
+          <type>int8</type>
+          <nullable>true</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_content_data_pkey">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys>
+        <foreignkey name="fk_alf_cont_url">
+          <localcolumn>content_url_id</localcolumn>
+          <targettable>alf_content_url</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+        <foreignkey name="fk_alf_cont_enc">
+          <localcolumn>content_encoding_id</localcolumn>
+          <targettable>alf_encoding</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+        <foreignkey name="fk_alf_cont_loc">
+          <localcolumn>content_locale_id</localcolumn>
+          <targettable>alf_locale</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+        <foreignkey name="fk_alf_cont_mim">
+          <localcolumn>content_mimetype_id</localcolumn>
+          <targettable>alf_mimetype</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+      </foreignkeys>
+      <indexes>
+        <index name="fk_alf_cont_enc" unique="false">
+          <columnnames>
+            <columnname>content_encoding_id</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_cont_loc" unique="false">
+          <columnnames>
+            <columnname>content_locale_id</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_cont_mim" unique="false">
+          <columnnames>
+            <columnname>content_mimetype_id</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_cont_url" unique="false">
+          <columnnames>
+            <columnname>content_url_id</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_content_url">
+      <columns>
+        <column name="id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="content_url">
+          <type>varchar(255)</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="content_url_short">
+          <type>varchar(12)</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="content_url_crc">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="content_size">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="orphan_time">
+          <type>int8</type>
+          <nullable>true</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_content_url_pkey">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys/>
+      <indexes>
+        <index name="idx_alf_conturl_cr" unique="true">
+          <columnnames>
+            <columnname>content_url_short</columnname>
+            <columnname>content_url_crc</columnname>
+          </columnnames>
+        </index>
+        <index name="idx_alf_conturl_ot" unique="false">
+          <columnnames>
+            <columnname>orphan_time</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_encoding">
+      <columns>
+        <column name="id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="version">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="encoding_str">
+          <type>varchar(100)</type>
+          <nullable>false</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_encoding_pkey">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys/>
+      <indexes>
+        <index name="alf_encoding_encoding_str_key" unique="true">
+          <columnnames>
+            <columnname>encoding_str</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_locale">
+      <columns>
+        <column name="id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="version">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="locale_str">
+          <type>varchar(20)</type>
+          <nullable>false</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_locale_pkey">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys/>
+      <indexes>
+        <index name="locale_str" unique="true">
+          <columnnames>
+            <columnname>locale_str</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_lock">
+      <columns>
+        <column name="id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="version">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="shared_resource_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="excl_resource_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="lock_token">
+          <type>varchar(36)</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="start_time">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="expiry_time">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_lock_pkey">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys>
+        <foreignkey name="fk_alf_lock_excl">
+          <localcolumn>excl_resource_id</localcolumn>
+          <targettable>alf_lock_resource</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+        <foreignkey name="fk_alf_lock_shared">
+          <localcolumn>shared_resource_id</localcolumn>
+          <targettable>alf_lock_resource</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+      </foreignkeys>
+      <indexes>
+        <index name="idx_alf_lock_key" unique="true">
+          <columnnames>
+            <columnname>shared_resource_id</columnname>
+            <columnname>excl_resource_id</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_lock_excl" unique="false">
+          <columnnames>
+            <columnname>excl_resource_id</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_lock_resource">
+      <columns>
+        <column name="id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="version">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="qname_ns_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="qname_localname">
+          <type>varchar(255)</type>
+          <nullable>false</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_lock_resource_pkey">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys>
+        <foreignkey name="fk_alf_lockr_ns">
+          <localcolumn>qname_ns_id</localcolumn>
+          <targettable>alf_namespace</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+      </foreignkeys>
+      <indexes>
+        <index name="idx_alf_lockr_key" unique="true">
+          <columnnames>
+            <columnname>qname_ns_id</columnname>
+            <columnname>qname_localname</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_mimetype">
+      <columns>
+        <column name="id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="version">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="mimetype_str">
+          <type>varchar(100)</type>
+          <nullable>false</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_mimetype_pkey">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys/>
+      <indexes>
+        <index name="alf_mimetype_mimetype_str_key" unique="true">
+          <columnnames>
+            <columnname>mimetype_str</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_namespace">
+      <columns>
+        <column name="id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="version">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="uri">
+          <type>varchar(100)</type>
+          <nullable>false</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_namespace_pkey">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys/>
+      <indexes>
+        <index name="uri" unique="true">
+          <columnnames>
+            <columnname>uri</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_node">
+      <columns>
+        <column name="id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="version">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="store_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="uuid">
+          <type>varchar(36)</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="transaction_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="node_deleted">
+          <type>bool</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="type_qname_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="locale_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="acl_id">
+          <type>int8</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="audit_creator">
+          <type>varchar(255)</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="audit_created">
+          <type>varchar(30)</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="audit_modifier">
+          <type>varchar(255)</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="audit_modified">
+          <type>varchar(30)</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="audit_accessed">
+          <type>varchar(30)</type>
+          <nullable>true</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_node_pkey">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys>
+        <foreignkey name="fk_alf_node_acl">
+          <localcolumn>acl_id</localcolumn>
+          <targettable>alf_access_control_list</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+        <foreignkey name="fk_alf_node_loc">
+          <localcolumn>locale_id</localcolumn>
+          <targettable>alf_locale</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+        <foreignkey name="fk_alf_node_tqn">
+          <localcolumn>type_qname_id</localcolumn>
+          <targettable>alf_qname</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+        <foreignkey name="fk_alf_node_store">
+          <localcolumn>store_id</localcolumn>
+          <targettable>alf_store</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+        <foreignkey name="fk_alf_node_txn">
+          <localcolumn>transaction_id</localcolumn>
+          <targettable>alf_transaction</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+      </foreignkeys>
+      <indexes>
+        <index name="store_id" unique="true">
+          <columnnames>
+            <columnname>store_id</columnname>
+            <columnname>uuid</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_node_acl" unique="false">
+          <columnnames>
+            <columnname>acl_id</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_node_loc" unique="false">
+          <columnnames>
+            <columnname>locale_id</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_node_store" unique="false">
+          <columnnames>
+            <columnname>store_id</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_node_tqn" unique="false">
+          <columnnames>
+            <columnname>type_qname_id</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_node_txn" unique="false">
+          <columnnames>
+            <columnname>transaction_id</columnname>
+          </columnnames>
+        </index>
+        <index name="idx_alf_node_del" unique="false">
+          <columnnames>
+            <columnname>node_deleted</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_node_aspects">
+      <columns>
+        <column name="node_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="qname_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_node_aspects_pkey">
+        <columnnames>
+          <columnname>node_id</columnname>
+          <columnname>qname_id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys>
+        <foreignkey name="fk_alf_nasp_n">
+          <localcolumn>node_id</localcolumn>
+          <targettable>alf_node</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+        <foreignkey name="fk_alf_nasp_qn">
+          <localcolumn>qname_id</localcolumn>
+          <targettable>alf_qname</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+      </foreignkeys>
+      <indexes>
+        <index name="fk_alf_nasp_n" unique="false">
+          <columnnames>
+            <columnname>node_id</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_nasp_qn" unique="false">
+          <columnnames>
+            <columnname>qname_id</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_node_assoc">
+      <columns>
+        <column name="id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="version">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="source_node_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="target_node_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="type_qname_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="assoc_index">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_node_assoc_pkey">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys>
+        <foreignkey name="fk_alf_nass_tnode">
+          <localcolumn>target_node_id</localcolumn>
+          <targettable>alf_node</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+        <foreignkey name="fk_alf_nass_snode">
+          <localcolumn>source_node_id</localcolumn>
+          <targettable>alf_node</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+        <foreignkey name="fk_alf_nass_tqn">
+          <localcolumn>type_qname_id</localcolumn>
+          <targettable>alf_qname</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+      </foreignkeys>
+      <indexes>
+        <index name="source_node_id" unique="true">
+          <columnnames>
+            <columnname>source_node_id</columnname>
+            <columnname>target_node_id</columnname>
+            <columnname>type_qname_id</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_nass_snode" unique="false">
+          <columnnames>
+            <columnname>source_node_id</columnname>
+            <columnname>type_qname_id</columnname>
+            <columnname>assoc_index</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_nass_tnode" unique="false">
+          <columnnames>
+            <columnname>target_node_id</columnname>
+            <columnname>type_qname_id</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_nass_tqn" unique="false">
+          <columnnames>
+            <columnname>type_qname_id</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_node_properties">
+      <columns>
+        <column name="node_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="actual_type_n">
+          <type>int4</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="persisted_type_n">
+          <type>int4</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="boolean_value">
+          <type>bool</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="long_value">
+          <type>int8</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="float_value">
+          <type>float4</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="double_value">
+          <type>float8</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="string_value">
+          <type>varchar(1024)</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="serializable_value">
+          <type>bytea</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="qname_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="list_index">
+          <type>int4</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="locale_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_node_properties_pkey">
+        <columnnames>
+          <columnname>node_id</columnname>
+          <columnname>qname_id</columnname>
+          <columnname>list_index</columnname>
+          <columnname>locale_id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys>
+        <foreignkey name="fk_alf_nprop_loc">
+          <localcolumn>locale_id</localcolumn>
+          <targettable>alf_locale</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+        <foreignkey name="fk_alf_nprop_n">
+          <localcolumn>node_id</localcolumn>
+          <targettable>alf_node</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+        <foreignkey name="fk_alf_nprop_qn">
+          <localcolumn>qname_id</localcolumn>
+          <targettable>alf_qname</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+      </foreignkeys>
+      <indexes>
+        <index name="fk_alf_nprop_loc" unique="false">
+          <columnnames>
+            <columnname>locale_id</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_nprop_n" unique="false">
+          <columnnames>
+            <columnname>node_id</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_nprop_qn" unique="false">
+          <columnnames>
+            <columnname>qname_id</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_permission">
+      <columns>
+        <column name="id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="version">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="type_qname_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="name">
+          <type>varchar(100)</type>
+          <nullable>false</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_permission_pkey">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys>
+        <foreignkey name="fk_alf_perm_tqn">
+          <localcolumn>type_qname_id</localcolumn>
+          <targettable>alf_qname</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+      </foreignkeys>
+      <indexes>
+        <index name="type_qname_id" unique="true">
+          <columnnames>
+            <columnname>type_qname_id</columnname>
+            <columnname>name</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_perm_tqn" unique="false">
+          <columnnames>
+            <columnname>type_qname_id</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_prop_class">
+      <columns>
+        <column name="id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="java_class_name">
+          <type>varchar(255)</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="java_class_name_short">
+          <type>varchar(32)</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="java_class_name_crc">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_prop_class_pkey">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys/>
+      <indexes>
+        <index name="idx_alf_propc_crc" unique="true">
+          <columnnames>
+            <columnname>java_class_name_crc</columnname>
+            <columnname>java_class_name_short</columnname>
+          </columnnames>
+        </index>
+        <index name="idx_alf_propc_clas" unique="false">
+          <columnnames>
+            <columnname>java_class_name</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_prop_date_value">
+      <columns>
+        <column name="date_value">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="full_year">
+          <type>int4</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="half_of_year">
+          <type>int2</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="quarter_of_year">
+          <type>int2</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="month_of_year">
+          <type>int2</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="week_of_year">
+          <type>int2</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="week_of_month">
+          <type>int2</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="day_of_year">
+          <type>int4</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="day_of_month">
+          <type>int2</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="day_of_week">
+          <type>int2</type>
+          <nullable>false</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_prop_date_value_pkey">
+        <columnnames>
+          <columnname>date_value</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys/>
+      <indexes>
+        <index name="idx_alf_propdt_dt" unique="false">
+          <columnnames>
+            <columnname>full_year</columnname>
+            <columnname>month_of_year</columnname>
+            <columnname>day_of_month</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_prop_double_value">
+      <columns>
+        <column name="id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="double_value">
+          <type>float8</type>
+          <nullable>false</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_prop_double_value_pkey">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys/>
+      <indexes>
+        <index name="idx_alf_propd_val" unique="true">
+          <columnnames>
+            <columnname>double_value</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_prop_link">
+      <columns>
+        <column name="root_prop_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="prop_index">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="contained_in">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="key_prop_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="value_prop_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_prop_link_pkey">
+        <columnnames>
+          <columnname>root_prop_id</columnname>
+          <columnname>contained_in</columnname>
+          <columnname>prop_index</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys>
+        <foreignkey name="fk_alf_propln_root">
+          <localcolumn>root_prop_id</localcolumn>
+          <targettable>alf_prop_root</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+        <foreignkey name="fk_alf_propln_val">
+          <localcolumn>value_prop_id</localcolumn>
+          <targettable>alf_prop_value</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+        <foreignkey name="fk_alf_propln_key">
+          <localcolumn>key_prop_id</localcolumn>
+          <targettable>alf_prop_value</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+      </foreignkeys>
+      <indexes>
+        <index name="fk_alf_propln_key" unique="false">
+          <columnnames>
+            <columnname>key_prop_id</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_propln_val" unique="false">
+          <columnnames>
+            <columnname>value_prop_id</columnname>
+          </columnnames>
+        </index>
+        <index name="idx_alf_propln_for" unique="false">
+          <columnnames>
+            <columnname>root_prop_id</columnname>
+            <columnname>key_prop_id</columnname>
+            <columnname>value_prop_id</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_prop_root">
+      <columns>
+        <column name="id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="version">
+          <type>int4</type>
+          <nullable>false</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_prop_root_pkey">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys/>
+      <indexes/>
+    </table>
+    <table name="alf_prop_serializable_value">
+      <columns>
+        <column name="id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="serializable_value">
+          <type>bytea</type>
+          <nullable>false</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_prop_serializable_value_pkey">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys/>
+      <indexes/>
+    </table>
+    <table name="alf_prop_string_value">
+      <columns>
+        <column name="id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="string_value">
+          <type>varchar(1024)</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="string_end_lower">
+          <type>varchar(16)</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="string_crc">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_prop_string_value_pkey">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys/>
+      <indexes>
+        <index name="idx_alf_props_crc" unique="true">
+          <columnnames>
+            <columnname>string_end_lower</columnname>
+            <columnname>string_crc</columnname>
+          </columnnames>
+        </index>
+        <index name="idx_alf_props_str" unique="false">
+          <columnnames>
+            <columnname>string_value</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_prop_unique_ctx">
+      <columns>
+        <column name="id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="version">
+          <type>int4</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="value1_prop_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="value2_prop_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="value3_prop_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="prop1_id">
+          <type>int8</type>
+          <nullable>true</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_prop_unique_ctx_pkey">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys>
+        <foreignkey name="fk_alf_propuctx_p1">
+          <localcolumn>prop1_id</localcolumn>
+          <targettable>alf_prop_root</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+        <foreignkey name="fk_alf_propuctx_v3">
+          <localcolumn>value3_prop_id</localcolumn>
+          <targettable>alf_prop_value</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+        <foreignkey name="fk_alf_propuctx_v2">
+          <localcolumn>value2_prop_id</localcolumn>
+          <targettable>alf_prop_value</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+        <foreignkey name="fk_alf_propuctx_v1">
+          <localcolumn>value1_prop_id</localcolumn>
+          <targettable>alf_prop_value</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+      </foreignkeys>
+      <indexes>
+        <index name="idx_alf_propuctx" unique="true">
+          <columnnames>
+            <columnname>value1_prop_id</columnname>
+            <columnname>value2_prop_id</columnname>
+            <columnname>value3_prop_id</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_propuctx_p1" unique="false">
+          <columnnames>
+            <columnname>prop1_id</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_propuctx_v2" unique="false">
+          <columnnames>
+            <columnname>value2_prop_id</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_propuctx_v3" unique="false">
+          <columnnames>
+            <columnname>value3_prop_id</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_prop_value">
+      <columns>
+        <column name="id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="actual_type_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="persisted_type">
+          <type>int2</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="long_value">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_prop_value_pkey">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys/>
+      <indexes>
+        <index name="idx_alf_propv_act" unique="true">
+          <columnnames>
+            <columnname>actual_type_id</columnname>
+            <columnname>long_value</columnname>
+          </columnnames>
+        </index>
+        <index name="idx_alf_propv_per" unique="false">
+          <columnnames>
+            <columnname>persisted_type</columnname>
+            <columnname>long_value</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_qname">
+      <columns>
+        <column name="id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="version">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="ns_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="local_name">
+          <type>varchar(200)</type>
+          <nullable>false</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_qname_pkey">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys>
+        <foreignkey name="fk_alf_qname_ns">
+          <localcolumn>ns_id</localcolumn>
+          <targettable>alf_namespace</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+      </foreignkeys>
+      <indexes>
+        <index name="ns_id" unique="true">
+          <columnnames>
+            <columnname>ns_id</columnname>
+            <columnname>local_name</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_qname_ns" unique="false">
+          <columnnames>
+            <columnname>ns_id</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_server">
+      <columns>
+        <column name="id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="version">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="ip_address">
+          <type>varchar(39)</type>
+          <nullable>false</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_server_pkey">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys/>
+      <indexes>
+        <index name="ip_address" unique="true">
+          <columnnames>
+            <columnname>ip_address</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_store">
+      <columns>
+        <column name="id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="version">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="protocol">
+          <type>varchar(50)</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="identifier">
+          <type>varchar(100)</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="root_node_id">
+          <type>int8</type>
+          <nullable>true</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_store_pkey">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys>
+        <foreignkey name="fk_alf_store_root">
+          <localcolumn>root_node_id</localcolumn>
+          <targettable>alf_node</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+      </foreignkeys>
+      <indexes>
+        <index name="protocol" unique="true">
+          <columnnames>
+            <columnname>protocol</columnname>
+            <columnname>identifier</columnname>
+          </columnnames>
+        </index>
+        <index name="fk_alf_store_root" unique="false">
+          <columnnames>
+            <columnname>root_node_id</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_subscriptions">
+      <columns>
+        <column name="user_node_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="node_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_subscriptions_pkey">
+        <columnnames>
+          <columnname>user_node_id</columnname>
+          <columnname>node_id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys>
+        <foreignkey name="fk_alf_sub_node">
+          <localcolumn>node_id</localcolumn>
+          <targettable>alf_node</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+        <foreignkey name="fk_alf_sub_user">
+          <localcolumn>user_node_id</localcolumn>
+          <targettable>alf_node</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+      </foreignkeys>
+      <indexes>
+        <index name="fk_alf_sub_node" unique="false">
+          <columnnames>
+            <columnname>node_id</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_transaction">
+      <columns>
+        <column name="id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="version">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="server_id">
+          <type>int8</type>
+          <nullable>true</nullable>
+        </column>
+        <column name="change_txn_id">
+          <type>varchar(56)</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="commit_time_ms">
+          <type>int8</type>
+          <nullable>true</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_transaction_pkey">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys>
+        <foreignkey name="fk_alf_txn_svr">
+          <localcolumn>server_id</localcolumn>
+          <targettable>alf_server</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+      </foreignkeys>
+      <indexes>
+        <index name="fk_alf_txn_svr" unique="false">
+          <columnnames>
+            <columnname>server_id</columnname>
+          </columnnames>
+        </index>
+        <index name="idx_alf_txn_ctms" unique="false">
+          <columnnames>
+            <columnname>commit_time_ms</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_usage_delta">
+      <columns>
+        <column name="id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="version">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="node_id">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+        <column name="delta_size">
+          <type>int8</type>
+          <nullable>false</nullable>
+        </column>
+      </columns>
+      <primarykey name="alf_usage_delta_pkey">
+        <columnnames>
+          <columnname>id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys>
+        <foreignkey name="fk_alf_usaged_n">
+          <localcolumn>node_id</localcolumn>
+          <targettable>alf_node</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+      </foreignkeys>
+      <indexes>
+        <index name="fk_alf_usaged_n" unique="false">
+          <columnnames>
+            <columnname>node_id</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+  </objects>
+</schema>

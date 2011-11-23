@@ -21,6 +21,7 @@ package org.alfresco.util.schemacomp;
 import java.util.List;
 
 import org.alfresco.util.schemacomp.model.DbObject;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * If more than one DB item in the target schema matches a reference DB item
@@ -44,12 +45,37 @@ public class RedundantDbObject extends Result
     @Override
     public String describe()
     {
-        StringBuffer sb = new StringBuffer();
-        sb.append(matches.size())
-            .append(" redundant items? reference: ")
-            .append(dbObject)
-            .append(", matches: ");
-        
+        if (matches.size() > SHOW_MAX_MATCHES)
+        {
+            return I18NUtil.getMessage(
+                        "system.schema_comp.redundant_obj.many_matches",
+                        matches.size(),
+                        dbObject,
+                        describeMatches(),
+                        matches.size() - SHOW_MAX_MATCHES);            
+        }
+        else
+        {
+            return I18NUtil.getMessage(
+                        "system.schema_comp.redundant_obj",
+                        matches.size(),
+                        dbObject,
+                        describeMatches());
+        }
+    }
+
+    /**
+     * Produces a comma separated list of matching redundant database objects. For example:
+     * <pre>
+     *    MyDbObject[name=match1], MyDbObject[name=match2], MyDbObject[name=match3]
+     * </pre>
+     * At most {@link #SHOW_MAX_MATCHES} will be included.
+     * 
+     * @return String
+     */
+    private String describeMatches()
+    {
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < matches.size() && i < SHOW_MAX_MATCHES; i++)
         {
             if (i > 0)
@@ -57,13 +83,6 @@ public class RedundantDbObject extends Result
                 sb.append(", ");
             }
             sb.append(matches.get(i));
-        }
-        
-        if (matches.size() > SHOW_MAX_MATCHES)
-        {
-            sb.append(" and ")
-                .append(matches.size() - SHOW_MAX_MATCHES).append(" more...");
-            
         }
         return sb.toString();
     }

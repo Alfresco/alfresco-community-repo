@@ -27,6 +27,7 @@ import org.alfresco.util.schemacomp.DiffContext;
 import org.alfresco.util.schemacomp.ValidationResult;
 import org.alfresco.util.schemacomp.model.DbObject;
 import org.hibernate.dialect.Dialect;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Validates the name of a DbObject using a regular expression. A regular expression
@@ -44,11 +45,11 @@ public class NameValidator implements DbValidator
     public void validate(DbObject reference, DbObject target, DiffContext ctx)
     {
         String name = target.getName();
-        
-        ValidationResult result = new ValidationResult(new DbProperty(target, "name"));
-        
+                
         if (pattern != null && !pattern.matcher(name).matches())
         {
+            String message = I18NUtil.getMessage("system.schema_comp.name_validator", pattern);
+            ValidationResult result = new ValidationResult(new DbProperty(target, "name"), message);
             ctx.getComparisonResults().add(result);
         }
     }

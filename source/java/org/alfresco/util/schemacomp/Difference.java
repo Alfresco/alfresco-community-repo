@@ -18,6 +18,8 @@
  */
 package org.alfresco.util.schemacomp;
 
+import org.springframework.extensions.surf.util.I18NUtil;
+
 
 
 /**
@@ -42,6 +44,13 @@ public final class Difference extends Result
     public Difference(Where where, DbProperty left, DbProperty right, Strength strength)
     {
         super(null);
+
+        // Sanity check parameters
+        if (left == null && right == null)
+        {
+            throw new IllegalArgumentException("DbProperty parameters cannot BOTH be null.");
+        }
+        
         this.where = where;
         this.left = left;
         this.right = right;
@@ -75,37 +84,30 @@ public final class Difference extends Result
     @Override
     public String describe()
     {
-        StringBuffer sb = new StringBuffer();
-        sb.append("Difference: ")
-            .append(getWhere());
-        
-        sb.append(" reference path:");
-        if (getLeft() != null)
+        if (getLeft() == null)
         {
-            sb.append(getLeft().getPath());
-            sb.append(" (value: ")
-                .append(getLeft().getPropertyValue())
-                .append(")");
+            return I18NUtil.getMessage(
+                        "system.schema_comp.diff.target_only",
+                        getWhere(),
+                        getRight().getPath(),
+                        getRight().getPropertyValue());
         }
-        else
+        if (getRight() == null)
         {
-            sb.append("null");
-        }
-        
-        sb.append(" target path:");
-        if (getRight() != null)
-        {
-            sb.append(getRight().getPath());
-            sb.append(" (value: ")
-            .append(getRight().getPropertyValue())
-            .append(")");
-        }
-        else
-        {
-            sb.append("null");
+            return I18NUtil.getMessage(
+                        "system.schema_comp.diff.ref_only",
+                        getWhere(),
+                        getLeft().getPath(),
+                        getLeft().getPropertyValue());
         }
         
-        return sb.toString();
+        return I18NUtil.getMessage(
+                    "system.schema_comp.diff",
+                    getWhere(),
+                    getLeft().getPath(),
+                    getLeft().getPropertyValue(),
+                    getRight().getPath(),
+                    getRight().getPropertyValue());
     }
 
     @Override

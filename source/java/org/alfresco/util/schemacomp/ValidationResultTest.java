@@ -23,7 +23,9 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 
 /**
@@ -33,6 +35,12 @@ import org.junit.Test;
  */
 public class ValidationResultTest
 {
+    @Before
+    public void setUp()
+    {
+        I18NUtil.registerResourceBundle("alfresco.messages.system-messages");
+    }
+    
     @Test
     public void describe()
     {        
@@ -40,9 +48,9 @@ public class ValidationResultTest
         when(targetDbProp.getPath()).thenReturn("alfresco.some_table.some_index.name");
         when(targetDbProp.getPropertyValue()).thenReturn("ibx_my_index");
         
-        ValidationResult validation = new ValidationResult(targetDbProp);
+        ValidationResult validation = new ValidationResult(targetDbProp, "value must be 'xyz'");
         
-        assertEquals("Validation target path:alfresco.some_table.some_index.name (value: ibx_my_index)",
+        assertEquals("Validation: target path:alfresco.some_table.some_index.name (value: ibx_my_index, rule: value must be 'xyz')",
                     validation.describe());
     }
 }

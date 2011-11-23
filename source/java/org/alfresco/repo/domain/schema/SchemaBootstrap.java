@@ -154,11 +154,19 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private static final String ERR_STATEMENT_VAR_ASSIGNMENT_BEFORE_SQL = "schema.update.err.statement_var_assignment_before_sql";
     private static final String ERR_STATEMENT_VAR_ASSIGNMENT_FORMAT = "schema.update.err.statement_var_assignment_format";
     private static final String ERR_STATEMENT_TERMINATOR = "schema.update.err.statement_terminator";
+    private static final String DEBUG_SCHEMA_COMP_NO_REF_FILE = "system.schema_comp.debug.no_ref_file";
+    private static final String INFO_SCHEMA_COMP_ALL_OK = "system.schema_comp.info.all_ok";
+    private static final String WARN_SCHEMA_COMP_PROBLEMS_FOUND = "system.schema_comp.warn.problems_found";
+    private static final String DEBUG_SCHEMA_COMP_TIME_TAKEN = "system.schema_comp.debug.time_taken";
     
     public static final int DEFAULT_LOCK_RETRY_COUNT = 24;
     public static final int DEFAULT_LOCK_RETRY_WAIT_SECONDS = 5;
     
     public static final int DEFAULT_MAX_STRING_LENGTH = 1024;
+
+
+
+
     private static volatile int maxStringLength = DEFAULT_MAX_STRING_LENGTH;
     private Dialect dialect;
         
@@ -1638,7 +1646,8 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         Resource referenceResource = getDialectResource(dialect.getClass(), schemaReferenceUrl);
         if (referenceResource == null || !referenceResource.exists())
         {
-            logger.debug("No reference schema file, expected: " + referenceResource);
+            String resourceUrl = schemaReferenceUrl.replaceAll(PLACEHOLDER_DIALECT, dialect.getClass().getName());
+            LogUtil.debug(logger, DEBUG_SCHEMA_COMP_NO_REF_FILE, resourceUrl);
             return;
         }
         
@@ -1696,19 +1705,17 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         pw.close();
         
         if (results.size() == 0)
-        {            
-            logger.info("Compared database schema with reference schema (all OK): " + referenceResource);
+        {
+            LogUtil.info(logger, INFO_SCHEMA_COMP_ALL_OK, referenceResource);
         }
         else
         {
             int numProblems = results.size();
-            logger.warn("Schema validation found " + numProblems +
-                        " potential problems, results written to: "
-                        + outputFile);
+            LogUtil.warn(logger, WARN_SCHEMA_COMP_PROBLEMS_FOUND, numProblems, outputFile);
         }
         Date endTime = new Date();
         long durationMillis = endTime.getTime() - startTime.getTime();
-        logger.debug("Schema validation took " + durationMillis + "ms");
+        LogUtil.debug(logger, DEBUG_SCHEMA_COMP_TIME_TAKEN, durationMillis);
     }
 
     /**

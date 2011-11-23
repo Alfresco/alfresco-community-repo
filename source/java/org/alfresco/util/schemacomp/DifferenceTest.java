@@ -24,7 +24,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.alfresco.util.schemacomp.Difference.Where;
+import org.junit.Before;
 import org.junit.Test;
+import org.springframework.extensions.surf.util.I18NUtil;
  
 /**
  * Tests for the {@link Difference} class.
@@ -33,9 +35,16 @@ import org.junit.Test;
  */
 public class DifferenceTest
 {
+   @Before
+   public void setUp()
+   {
+       I18NUtil.registerResourceBundle("alfresco.messages.system-messages");       
+   }
+   
    @Test
    public void describe()
    {
+       
        DbProperty refDbProp = mock(DbProperty.class);
        when(refDbProp.getPath()).thenReturn("alfresco.some_table.some_column.name");
        when(refDbProp.getPropertyValue()).thenReturn("node_ref");
@@ -43,9 +52,38 @@ public class DifferenceTest
        DbProperty targetDbProp = mock(DbProperty.class);
        when(targetDbProp.getPath()).thenReturn("alfresco.some_table.some_column.name");
        when(targetDbProp.getPropertyValue()).thenReturn("nood_ref");
-       Difference diff = new Difference(Where.ONLY_IN_REFERENCE, refDbProp, targetDbProp);
+       Difference diff = new Difference(Where.IN_BOTH_BUT_DIFFERENCE, refDbProp, targetDbProp);
        
-       assertEquals("Difference: ONLY_IN_REFERENCE reference path:alfresco.some_table.some_column.name (value: node_ref) " +
-                   "target path:alfresco.some_table.some_column.name (value: nood_ref)", diff.describe());
+       assertEquals("Difference: IN_BOTH_BUT_DIFFERENCE, reference path:alfresco.some_table.some_column.name " +
+                   "(value: node_ref), target path:alfresco.some_table.some_column.name (value: nood_ref)",
+                   diff.describe());
+   }
+   
+   @Test
+   public void describeRefOnly()
+   {
+       DbProperty refDbProp = mock(DbProperty.class);
+       when(refDbProp.getPath()).thenReturn("alfresco.some_table.some_column.name");
+       when(refDbProp.getPropertyValue()).thenReturn("node_ref");
+       
+       Difference diff = new Difference(Where.ONLY_IN_REFERENCE, refDbProp, null);
+       
+       assertEquals("Difference: ONLY_IN_REFERENCE, reference path:alfresco.some_table.some_column.name " +
+                   "(value: node_ref)",
+                   diff.describe());
+   }
+   
+   @Test
+   public void describeTargetOnly()
+   {
+       DbProperty targetDbProp = mock(DbProperty.class);
+       when(targetDbProp.getPath()).thenReturn("alfresco.some_table.some_column.name");
+       when(targetDbProp.getPropertyValue()).thenReturn("node_ref");
+       
+       Difference diff = new Difference(Where.ONLY_IN_TARGET, null, targetDbProp);
+       
+       assertEquals("Difference: ONLY_IN_TARGET, target path:alfresco.some_table.some_column.name " +
+                   "(value: node_ref)",
+                   diff.describe());
    }
 }

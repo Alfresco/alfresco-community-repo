@@ -26,7 +26,9 @@ import java.util.List;
 
 import org.alfresco.util.schemacomp.model.AbstractDbObject;
 import org.alfresco.util.schemacomp.model.DbObject;
+import org.junit.Before;
 import org.junit.Test;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Tests for the {@link RedundantDbObject} class.
@@ -35,7 +37,12 @@ import org.junit.Test;
  */
 public class RedundantDbObjectTest
 {
-
+    @Before
+    public void setUp()
+    {
+        I18NUtil.registerResourceBundle("alfresco.messages.system-messages");
+    }
+    
     @Test
     public void describe()
     {

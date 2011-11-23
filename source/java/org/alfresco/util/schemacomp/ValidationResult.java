@@ -18,6 +18,8 @@
  */
 package org.alfresco.util.schemacomp;
 
+import org.springframework.extensions.surf.util.I18NUtil;
+
 /**
  * Results of a validation operation.
  * 
@@ -26,17 +28,19 @@ package org.alfresco.util.schemacomp;
 public class ValidationResult extends Result
 {
     private DbProperty dbProperty;
+    private String message;
 
     
-    public ValidationResult(DbProperty dbProperty)
+    public ValidationResult(DbProperty dbProperty, String message)
     {
-        this(dbProperty, null);
+        this(dbProperty, null, message);
     }
 
-    public ValidationResult(DbProperty dbProperty, Strength strength)
+    public ValidationResult(DbProperty dbProperty, Strength strength, String message)
     {
         super(strength);
         this.dbProperty = dbProperty;
+        this.message = message;
     }
 
     
@@ -60,15 +64,11 @@ public class ValidationResult extends Result
     @Override
     public String describe()
     {
-        StringBuffer sb = new StringBuffer();
-        sb.append("Validation ")
-            .append("target path:")
-            .append(getDbProperty().getPath())
-            .append(" (value: ")
-            .append(getValue())
-            .append(")");
-        
-        return sb.toString();
+        return I18NUtil.getMessage(
+                    "system.schema_comp.validation",
+                    getDbProperty().getPath(),
+                    getValue(),
+                    message);
     }
 
     /**

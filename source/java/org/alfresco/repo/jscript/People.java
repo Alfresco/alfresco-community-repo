@@ -534,8 +534,9 @@ public final class People extends BaseScopableProcessorExtension implements Init
                 String term = filter.replace("\\", "").replace("\"", "");
                 StringTokenizer t = new StringTokenizer(term, " ");
                 int propIndex = term.indexOf(':');
+                int wildPosition = term.indexOf('*');
                 
-                if ((t.countTokens() == 1) && (propIndex == -1))
+                if ((t.countTokens() == 1) && (propIndex == -1) && ((wildPosition == -1) || (wildPosition == (term.length() - 1) )))
                 {
                     // simple non-FTS filter: firstname or lastname or username starting with term (ignoring case)
                     
@@ -557,6 +558,8 @@ public final class People extends BaseScopableProcessorExtension implements Init
                  else
                  {
                      SearchParameters params = new SearchParameters();
+                     params.addQueryTemplate("_PERSON", "|%firstName OR |%lastName OR |%userName");
+                     params.setDefaultFieldName("_PERSON");
                      
                      StringBuilder query = new StringBuilder(256);
                      
@@ -564,11 +567,20 @@ public final class People extends BaseScopableProcessorExtension implements Init
                      
                      if (t.countTokens() == 1)
                      {
+                        // single word with no field will go against _PERSON and expand  
+                         
                         // fts-alfresco property search i.e. location:"maidenhead"
                         query.append(term.substring(0, propIndex+1))
                              .append('"')
-                             .append(term.substring(propIndex+1))
-                             .append('"');
+                             .append(term.substring(propIndex+1));
+                        if(propIndex > 0)
+                        {
+                            query.append('"');
+                        }
+                        else
+                        {
+                             query.append("*\"");
+                        }
                     }
                     else
                     {
@@ -595,13 +607,9 @@ public final class People extends BaseScopableProcessorExtension implements Init
                                 if (nonFtsTokens == 1)
                                 {
                                     // simple search: first name, last name and username starting with term
-                                    query.append("(firstName:\"");
+                                    query.append("_PERSON:\"");
                                     query.append(term);
-                                    query.append("*\" OR lastName:\"");
-                                    query.append(term);
-                                    query.append("*\" OR userName:\"");
-                                    query.append(term);
-                                    query.append("*\") ");
+                                    query.append("*\" ");
                                 }
                                 else
                                 {

@@ -2584,12 +2584,7 @@
         <property name="fixesToSchema"><value>5005</value></property>
         <property name="targetSchema"><value>5006</value></property>
         <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/3.4/${db.script.dialect}/AVM-rename-dupes.sql</value>
-        </property>
-        <property name="alternatives" >
-            <list>
-                <ref bean="patch.eliminateDuplicates" />
-            </list>
+            <value>classpath:alfresco/dbscripts/upgrade/3.4/${db.script.dialect}/AVM-rename-dupes.sql</value> 
         </property>
     </bean>
 

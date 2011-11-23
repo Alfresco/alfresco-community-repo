@@ -1638,8 +1638,10 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     /**
      * Collate differences and validation problems with the schema with respect to an appropriate
      * reference schema.
+     * 
+     * @return the number of potential problems found.
      */
-    private void validateSchema(String outputFileNameTemplate)
+    public int validateSchema(String outputFileNameTemplate)
     {
         Date startTime = new Date(); 
         
@@ -1648,7 +1650,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         {
             String resourceUrl = schemaReferenceUrl.replaceAll(PLACEHOLDER_DIALECT, dialect.getClass().getName());
             LogUtil.debug(logger, DEBUG_SCHEMA_COMP_NO_REF_FILE, resourceUrl);
-            return;
+            return 0;
         }
         
         InputStream is = null;
@@ -1716,6 +1718,8 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         Date endTime = new Date();
         long durationMillis = endTime.getTime() - startTime.getTime();
         LogUtil.debug(logger, DEBUG_SCHEMA_COMP_TIME_TAKEN, durationMillis);
+        
+        return results.size();
     }
 
     /**

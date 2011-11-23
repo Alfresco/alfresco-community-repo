@@ -518,6 +518,21 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                 shareZones.add(AuthorityService.ZONE_APP_SHARE);
                 shareZones.add(AuthorityService.ZONE_AUTH_ALFRESCO);
                 
+                // From Alfresco 3.4 the 'site public' group is configurable. Out of the box it is
+                // GROUP_EVERYONE so unconfigured behaviour is unchanged. But from 3.4, admins
+                // can change the value of property site.public.group via JMX/properties files
+                // to be another group of their choosing.
+                // This then is the group that is given SiteConsumer access to newly created 
+                //  public and moderated sites.
+                final String sitePublicGroup = sysAdminParams.getSitePublicGroup();
+                boolean publicGroupExists = authorityService.authorityExists(sitePublicGroup);
+                if (!PermissionService.ALL_AUTHORITIES.equals(sitePublicGroup) && !publicGroupExists
+                    && !SiteVisibility.PRIVATE.equals(visibility))
+                {
+                    // If the group specified in the settings does not exist, we cannot create the site.
+                    throw new SiteServiceException(MSG_VISIBILITY_GROUP_MISSING, new Object[]{sitePublicGroup});
+                }
+                
                 // Create the site's groups
                 String siteGroup = authorityService.createAuthority(
                         AuthorityType.GROUP, getSiteGroup(shortName, false), shortName, shareZones);
@@ -553,28 +568,19 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                 if (SiteVisibility.PUBLIC.equals(visibility) == true &&
                     permissions.contains(SITE_CONSUMER))
                 {
-                    // From Alfresco 3.4 the 'site public' group is configurable. Out of the box it is
-                    // GROUP_EVERYONE so unconfigured behaviour is unchanged. But from 3.4 admins
-                    // can change the value of property site.public.group via JMX/properties files
-                    // to be another group of their choosing.
-                    // This then is the group that is given SiteConsumer access to newly created sites.
-                    final String sitePublicGroup = sysAdminParams.getSitePublicGroup();
-                    
-                    boolean groupExists = authorityService.authorityExists(sitePublicGroup);
-                    if (!PermissionService.ALL_AUTHORITIES.equals(sitePublicGroup) && !groupExists)
-                    {
-                        // If the group does not exist, we cannot create the site.
-                        throw new SiteServiceException(MSG_VISIBILITY_GROUP_MISSING, new Object[]{sitePublicGroup});
-                    }
-                    
+                    // The public site group becomes the consumer
                     permissionService.setPermission(siteNodeRef, sitePublicGroup, SITE_CONSUMER, true);
                 }
                 else if (SiteVisibility.MODERATED.equals(visibility) == true &&
                          permissions.contains(SITE_CONSUMER))
                 {
-                    // for moderated site EVERYONE has consumer access but site components do not.
-                    permissionService.setPermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, SITE_CONSUMER, true);
+                    // for moderated sites, the Public Group has consumer access to the 
+                    //  site root, but not to site components.
+                    permissionService.setPermission(siteNodeRef, sitePublicGroup, SITE_CONSUMER, true);
                 }
+                
+                // No matter what, everyone must be able to read permissions on 
+                //  the site, so they can check to see if they're a member or not
                 permissionService.setPermission(siteNodeRef,
                         PermissionService.ALL_AUTHORITIES,
                         PermissionService.READ_PERMISSIONS, true);

@@ -244,4 +244,10 @@ public class SiteInfoImpl implements SiteInfo
     {
         return this.shortName.hashCode();
     }
+    
+    public String toString()
+    {
+        return visibility.name() + " Site " + shortName + " (" + title + ")" +
+               " @ " + nodeRef.toString();
+    }
 }

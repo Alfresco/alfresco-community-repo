@@ -3052,4 +3052,40 @@
         <property name="fileFolderService" ref="FileFolderService"/>
     </bean>
 
+    <bean id="patch.updateMimetypes4" class="org.alfresco.repo.admin.patch.impl.GenericMimetypeRenamePatch" parent="basePatch" >
+        <property name="id"><value>patch.updateMimetypes4</value></property>
+        <property name="description"><value>patch.updateMimetypes4.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>5019</value></property>
+        <property name="targetSchema"><value>5020</value></property>
+        <property name="applyToTenants"><value>false</value></property>
+        <property name="dependsOn">
+            <list>
+                <ref bean="patch.db-V3.2-ContentTables2"/>
+            </list>
+        </property>
+        <property name="mimetypeDAO">
+            <ref bean="mimetypeDAO"/>
+        </property>
+        <property name="patchDAO">
+            <ref bean="patchDAO"/>
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="indexerAndSearcher">
+            <ref bean="indexerAndSearcherFactory"/>
+        </property>
+        <property name="mimetypeMappings">
+            <map>
+                <entry key="image/x-dwg" value="image/vnd.dwg" />
+                <entry key="application/dwg" value="image/vnd.dwg" />
+                <entry key="application/photoshop" value="image/vnd.adobe.photoshop" />
+            </map>
+        </property>
+        <property name="reindex">
+            <value>true</value>
+        </property>
+    </bean>
+    
 </beans>

@@ -160,6 +160,10 @@ public abstract class AbstractImageMagickContentTransformerWorker extends Conten
         {
             return false;   // svg extension doesn't work
         }
+        else if (mimetype.equals(MimetypeMap.MIMETYPE_IMG_DWG))
+        {
+            return false;   // dwg extension doesn't work
+        }
         else
         {
             return true;

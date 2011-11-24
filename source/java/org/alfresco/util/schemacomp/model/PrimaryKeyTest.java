@@ -41,8 +41,16 @@ public class PrimaryKeyTest extends DbObjectTestBase<PrimaryKey>
     @Before
     public void setUp()
     {
-        thisPK = new PrimaryKey(null, "this_pk", Arrays.asList("id", "name", "age"));
-        thatPK = new PrimaryKey(null, "that_pk", Arrays.asList("a", "b"));        
+        thisPK = new PrimaryKey(
+                    null,
+                    "this_pk",
+                    Arrays.asList("id", "name", "age"),
+                    Arrays.asList(2, 1, 3));
+        thatPK = new PrimaryKey(
+                    null,
+                    "that_pk",
+                    Arrays.asList("a", "b"),
+                    Arrays.asList(1, 2));        
     }
     
     @Override
@@ -63,6 +71,11 @@ public class PrimaryKeyTest extends DbObjectTestBase<PrimaryKey>
         inOrder.verify(comparisonUtils).compareSimpleCollections(
                     new DbProperty(thisPK, "columnNames"),
                     new DbProperty(thatPK, "columnNames"), 
+                    ctx, 
+                    Strength.ERROR);
+        inOrder.verify(comparisonUtils).compareSimpleCollections(
+                    new DbProperty(thisPK, "columnOrders"),
+                    new DbProperty(thatPK, "columnOrders"), 
                     ctx, 
                     Strength.ERROR);
     }

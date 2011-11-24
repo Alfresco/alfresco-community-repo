@@ -63,8 +63,11 @@ public class ColumnTest extends DbObjectTestBase<Column>
         
         DbProperty thisNullableProp = new DbProperty(thisColumn, "nullable");
         DbProperty thatNullableProp = new DbProperty(thatColumn, "nullable");
-        
         inOrder.verify(comparisonUtils).compareSimple(thisNullableProp, thatNullableProp, ctx);
+        
+        DbProperty thisOrderProp = new DbProperty(thisColumn, "order");
+        DbProperty thatOrderProp = new DbProperty(thatColumn, "order");        
+        inOrder.verify(comparisonUtils).compareSimple(thisOrderProp, thatOrderProp, ctx);
     }
     
     @Test

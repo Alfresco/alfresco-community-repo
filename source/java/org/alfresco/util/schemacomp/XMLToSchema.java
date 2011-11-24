@@ -212,7 +212,22 @@ public class XMLToSchema extends DefaultHandler
         }
         else if (qName.equals(XML.EL_COLUMN))
         {
-            stack.push(new Column(atts.getValue(XML.ATTR_NAME)));
+            Column column = new Column(atts.getValue(XML.ATTR_NAME));
+            if (atts.getValue(XML.ATTR_ORDER) != null)
+            {
+                int order = Integer.parseInt(atts.getValue(XML.ATTR_ORDER));
+                column.setOrder(order);
+            }
+            stack.push(column);
+        }
+        else if (qName.equals(XML.EL_COLUMN_NAME))
+        {
+            if (stack.peek() instanceof PrimaryKey && atts.getValue(XML.ATTR_ORDER) != null)
+            {
+                PrimaryKey pk = (PrimaryKey) stack.peek();
+                Integer columnOrder = Integer.parseInt(atts.getValue(XML.ATTR_ORDER));
+                pk.getColumnOrders().add(columnOrder);
+            }
         }
         else if (qName.equals(XML.EL_PRIMARY_KEY))
         {

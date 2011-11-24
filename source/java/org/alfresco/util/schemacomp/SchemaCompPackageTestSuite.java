@@ -34,6 +34,6 @@ import org.junit.runners.Suite;
             ValidatorTestSuite.class,
             SchemaCompTestSuite.class
 })
-public class SchemaCompPackagetTestSuite
+public class SchemaCompPackageTestSuite
 {
 }

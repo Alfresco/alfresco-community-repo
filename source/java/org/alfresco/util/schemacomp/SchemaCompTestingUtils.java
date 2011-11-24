@@ -20,6 +20,7 @@ package org.alfresco.util.schemacomp;
 
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -84,6 +85,7 @@ public class SchemaCompTestingUtils
         {
             String[] parts = colDefs[i].split(" ");
             columns[i] = new Column(null, parts[0], parts[1], false);
+            columns[i].setOrder(i+1);
         }
         return Arrays.asList(columns);
     }
@@ -91,7 +93,14 @@ public class SchemaCompTestingUtils
     public static PrimaryKey pk(String name, String... columnNames)
     {
         assertTrue("No columns specified", columnNames.length > 0);
-        PrimaryKey pk = new PrimaryKey(null, name, Arrays.asList(columnNames));
+        // Create a list of column orders, ordered the same as the supplied column names
+        // i.e. 1, 2, 3... N
+        List<Integer> columnOrders = new ArrayList<Integer>(columnNames.length);
+        for (int i = 1; i <= columnNames.length; i++)
+        {
+            columnOrders.add(i);
+        }
+        PrimaryKey pk = new PrimaryKey(null, name, Arrays.asList(columnNames), columnOrders);
         return pk;
     }
     

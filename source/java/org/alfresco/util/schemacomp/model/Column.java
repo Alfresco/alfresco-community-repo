@@ -32,6 +32,7 @@ public class Column extends AbstractDbObject
 {
     private String type;
     private boolean nullable;
+    private int order;
     
     
     public Column(String name)
@@ -86,16 +87,34 @@ public class Column extends AbstractDbObject
         this.nullable = nullable;
     }
     
+    
+    /**
+     * @return the order
+     */
+    public int getOrder()
+    {
+        return this.order;
+    }
+
+    /**
+     * @param order the order to set
+     */
+    public void setOrder(int order)
+    {
+        this.order = order;
+    }
+
     @Override
     public int hashCode()
     {
         final int prime = 31;
         int result = super.hashCode();
         result = prime * result + (this.nullable ? 1231 : 1237);
+        result = prime * result + this.order;
         result = prime * result + ((this.type == null) ? 0 : this.type.hashCode());
         return result;
     }
-    
+
     @Override
     public boolean equals(Object obj)
     {
@@ -104,6 +123,7 @@ public class Column extends AbstractDbObject
         if (getClass() != obj.getClass()) return false;
         Column other = (Column) obj;
         if (this.nullable != other.nullable) return false;
+        if (this.order != other.order) return false;
         if (this.type == null)
         {
             if (other.type != null) return false;
@@ -117,13 +137,16 @@ public class Column extends AbstractDbObject
     {
         DbProperty thisTypeProp = new DbProperty(this, "type");
         DbProperty thisNullableProp = new DbProperty(this, "nullable");
+        DbProperty thisOrderProp = new DbProperty(this, "order");
         
         Column thatColumn = (Column) right;
         DbProperty thatTypeProp = new DbProperty(thatColumn, "type");
         DbProperty thatNullableProp = new DbProperty(thatColumn, "nullable");
+        DbProperty thatOrderProp = new DbProperty(thatColumn, "order");
         
         comparisonUtils.compareSimple(thisTypeProp, thatTypeProp, ctx);
         comparisonUtils.compareSimple(thisNullableProp, thatNullableProp, ctx);        
+        comparisonUtils.compareSimple(thisOrderProp, thatOrderProp, ctx);        
     }
 
     @Override

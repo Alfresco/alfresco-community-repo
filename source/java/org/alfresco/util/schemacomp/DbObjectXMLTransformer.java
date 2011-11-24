@@ -18,7 +18,6 @@
  */
 package org.alfresco.util.schemacomp;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.alfresco.util.schemacomp.model.Column;
@@ -136,6 +135,11 @@ public class DbObjectXMLTransformer
             Index index = (Index) dbObject;
             attribs.addAttribute("", "", XML.ATTR_UNIQUE, "CDATA", Boolean.toString(index.isUnique()));
         }
+        else if (dbObject instanceof Column)
+        {
+            Column column = (Column) dbObject;
+            attribs.addAttribute("", "", XML.ATTR_ORDER, "CDATA", Integer.toString(column.getOrder()));
+        }
     }
 
     private void transformDbObject(DbObject dbObject) throws SAXException
@@ -223,12 +227,12 @@ public class DbObjectXMLTransformer
 
     private void transformIndex(Index index) throws SAXException
     {
-        columnNameList(index.getColumnNames());
+        columnNameList(index.getColumnNames(), null);
     }
     
     private void transformPrimaryKey(PrimaryKey pk) throws SAXException
     {
-        columnNameList(pk.getColumnNames());
+        columnNameList(pk.getColumnNames(), pk.getColumnOrders());
     }
     
     
@@ -260,12 +264,40 @@ public class DbObjectXMLTransformer
         xmlOut.endElement("", "", tag);        
     }
     
-    private void columnNameList(Collection<String> columnNames) throws SAXException
+    /**
+     * Outputs a list of columnname elements sandwiched within a columnnames element.
+     * <p>
+     * The columnOrders parameter will provide a corresponding list of integers that will be
+     * provided in each columnname element's order attribute. This parameter may be null
+     * in which case order attributes will be ommitted.
+     *  
+     * @param columnNames
+     * @param columnOrders
+     * @throws SAXException
+     */
+    private void columnNameList(List<String> columnNames,
+                                List<Integer> columnOrders) throws SAXException
     {
         simpleStartTag(XML.EL_COLUMN_NAMES);
-        for (String columnName : columnNames)
+        for (int i = 0; i < columnNames.size(); i++)
         {
-            simpleElement(XML.EL_COLUMN_NAME, columnName);
+            String columnName = columnNames.get(i);
+            
+            final AttributesImpl attribs = new AttributesImpl();
+            if (columnOrders != null)
+            {
+                int columnOrder = columnOrders.get(i);   
+                attribs.addAttribute("", "", XML.ATTR_ORDER, "CDATA", Integer.toString(columnOrder));
+            }
+            // Create a <columnname> or <columnname order="n"> start tag
+            xmlOut.startElement("", "", XML.EL_COLUMN_NAME, attribs);
+            
+            // Provide the elements content
+            char[] chars = columnName.toCharArray();
+            xmlOut.characters(chars, 0, chars.length);
+            
+            // Provide the closing tag
+            simpleEndTag(XML.EL_COLUMN_NAME);
         }
         simpleEndTag(XML.EL_COLUMN_NAMES);
     }

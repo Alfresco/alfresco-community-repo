@@ -95,18 +95,21 @@ public class MySQLDialectExportTester extends AbstractExportTester
         assertEquals("id", col.getName());
         assertEquals("bigint", col.getType());
         assertEquals(false, col.isNullable());
+        assertEquals(1, col.getOrder());
         
         col = colIt.next();
         assertSame("Incorrect parent or no parent set", otherTable, col.getParent());
         assertEquals("version", col.getName());
         assertEquals("bigint", col.getType());
         assertEquals(false, col.isNullable());
+        assertEquals(2, col.getOrder());
         
         col = colIt.next();
         assertSame("Incorrect parent or no parent set", otherTable, col.getParent());
         assertEquals("ex_id", col.getName());
         assertEquals("bigint", col.getType());
         assertEquals(false, col.isNullable());
+        assertEquals(3, col.getOrder());
         
         col = colIt.next();
         assertSame("Incorrect parent or no parent set", otherTable, col.getParent());
@@ -114,6 +117,7 @@ public class MySQLDialectExportTester extends AbstractExportTester
         assertEquals("local_name", col.getName());
         assertEquals("varchar(200)", col.getType());
         assertEquals(false, col.isNullable());
+        assertEquals(4, col.getOrder());
         
         assertEquals(2, otherTable.getIndexes().size());
         Iterator<Index> indexIt = otherTable.getIndexes().iterator();
@@ -135,6 +139,7 @@ public class MySQLDialectExportTester extends AbstractExportTester
         PrimaryKey pk = otherTable.getPrimaryKey();
         assertSame("Incorrect parent or no parent set", otherTable, pk.getParent());
         assertEquals("id", pk.getColumnNames().get(0));
+        assertEquals(1, pk.getColumnOrders().get(0).intValue());
         
         assertEquals(1, otherTable.getForeignKeys().size());
         ForeignKey fk = otherTable.getForeignKeys().get(0);
@@ -158,70 +163,82 @@ public class MySQLDialectExportTester extends AbstractExportTester
         assertEquals("id", col.getName());
         assertEquals("bigint", col.getType());
         assertEquals(false, col.isNullable());
+        assertEquals(1, col.getOrder());
         
         col = colIt.next();
         assertSame("Incorrect parent or no parent set", exampleTable, col.getParent());
         assertEquals("description", col.getName());
         assertEquals("text", col.getType());
         assertEquals(true, col.isNullable());
+        assertEquals(2, col.getOrder());
         
         col = colIt.next();
         assertSame("Incorrect parent or no parent set", exampleTable, col.getParent());
         assertEquals("fixes_from_schema", col.getName());
         assertEquals("int", col.getType());
         assertEquals(true, col.isNullable());
+        assertEquals(3, col.getOrder());
         
         col = colIt.next();
         assertSame("Incorrect parent or no parent set", exampleTable, col.getParent());
         assertEquals("fixes_to_schema", col.getName());
         assertEquals("int", col.getType());
         assertEquals(true, col.isNullable());
+        assertEquals(4, col.getOrder());
         
         col = colIt.next();
         assertSame("Incorrect parent or no parent set", exampleTable, col.getParent());
         assertEquals("applied_to_schema", col.getName());
         assertEquals("int", col.getType());
         assertEquals(true, col.isNullable());
+        assertEquals(5, col.getOrder());
         
         col = colIt.next();
         assertSame("Incorrect parent or no parent set", exampleTable, col.getParent());
         assertEquals("target_schema", col.getName());
         assertEquals("int", col.getType());
         assertEquals(true, col.isNullable());
+        assertEquals(6, col.getOrder());
         
         col = colIt.next();
         assertSame("Incorrect parent or no parent set", exampleTable, col.getParent());
         assertEquals("applied_on_date", col.getName());
         assertEquals("datetime", col.getType());
         assertEquals(true, col.isNullable());
+        assertEquals(7, col.getOrder());
         
         col = colIt.next();
         assertSame("Incorrect parent or no parent set", exampleTable, col.getParent());
         assertEquals("applied_to_server", col.getName());
         assertEquals("varchar(64)", col.getType());
         assertEquals(true, col.isNullable());
+        assertEquals(8, col.getOrder());
         
         col = colIt.next();
         assertSame("Incorrect parent or no parent set", exampleTable, col.getParent());
         assertEquals("was_executed", col.getName());
         assertEquals("bit", col.getType());
         assertEquals(true, col.isNullable());
+        assertEquals(9, col.getOrder());
         
         col = colIt.next();
         assertSame("Incorrect parent or no parent set", exampleTable, col.getParent());
         assertEquals("succeeded", col.getName());
         assertEquals("bit", col.getType());
         assertEquals(true, col.isNullable());
+        assertEquals(10, col.getOrder());
         
         col = colIt.next();
         assertSame("Incorrect parent or no parent set", exampleTable, col.getParent());
         assertEquals("report", col.getName());
         assertEquals("text", col.getType());
         assertEquals(true, col.isNullable());
+        assertEquals(11, col.getOrder());
         
         PrimaryKey pk = exampleTable.getPrimaryKey();
         assertSame("Incorrect parent or no parent set", exampleTable, pk.getParent());
         assertEquals("id", pk.getColumnNames().get(0));
+        assertEquals(1, pk.getColumnOrders().get(0).intValue());
     }
     
    

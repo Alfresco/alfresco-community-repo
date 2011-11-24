@@ -80,21 +80,25 @@ public class XMLToSchemaTest
         assertEquals("id", table.getColumns().get(0).getName());
         assertEquals("NUMBER(10)", table.getColumns().get(0).getType());
         assertEquals(false, table.getColumns().get(0).isNullable());
+        assertEquals(1, table.getColumns().get(0).getOrder());
         
         assertSame("Wrong or no parent set", table, table.getColumns().get(1).getParent());
         assertEquals("nodeRef", table.getColumns().get(1).getName());
         assertEquals("VARCHAR2(200)", table.getColumns().get(1).getType());
         assertEquals(false, table.getColumns().get(1).isNullable());        
-
+        assertEquals(3, table.getColumns().get(1).getOrder());
+        
         assertSame("Wrong or no parent set", table, table.getColumns().get(2).getParent());
         assertEquals("name", table.getColumns().get(2).getName());
         assertEquals("VARCHAR2(150)", table.getColumns().get(2).getType());
         assertEquals(true, table.getColumns().get(2).isNullable());
+        assertEquals(2, table.getColumns().get(2).getOrder());
         
         assertSame("Wrong or no parent set", table, table.getPrimaryKey().getParent());
         assertEquals("pk_node", table.getPrimaryKey().getName());
         assertEquals(1, table.getPrimaryKey().getColumnNames().size());
         assertEquals("id", table.getPrimaryKey().getColumnNames().get(0));
+        assertEquals(1, table.getPrimaryKey().getColumnOrders().get(0).intValue());
         
         assertEquals(1, table.getForeignKeys().size());
         assertSame("Wrong or no parent set", table, table.getForeignKeys().get(0).getParent());

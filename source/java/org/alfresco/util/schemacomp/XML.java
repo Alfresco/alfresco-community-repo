@@ -51,6 +51,7 @@ public abstract class XML
     public static final String EL_PROPERTY = "property";
     
     public static final String ATTR_NAME = "name";
+    public static final String ATTR_ORDER = "order";
     public static final String ATTR_UNIQUE = "unique";
     public static final String ATTR_CLASS = "class";
 }

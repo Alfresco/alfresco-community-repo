@@ -230,6 +230,9 @@ public class ExportDb
                 
                 String nullableString = columns.getString("IS_NULLABLE");
                 column.setNullable(parseBoolean(nullableString));
+                
+                column.setOrder(columns.getInt("ORDINAL_POSITION"));
+                
                 column.setParent(table);
                 table.getColumns().add(column);
             }
@@ -250,6 +253,9 @@ public class ExportDb
                 }
                 String columnName = primarykeycols.getString("COLUMN_NAME");
                 pk.getColumnNames().add(columnName);
+                
+                int columnOrder = primarykeycols.getInt("KEY_SEQ");
+                pk.getColumnOrders().add(columnOrder);
             }
             primarykeycols.close();
             

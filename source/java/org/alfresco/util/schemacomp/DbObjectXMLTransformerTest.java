@@ -105,13 +105,13 @@ public class DbObjectXMLTransformerTest
     public void transformColumn() throws IOException
     {
         Column column = new Column(null, "last_name", "VARCHAR2(100)", true);
-        
+        column.setOrder(2);
         transformer.output(column);
         
         BufferedReader reader = new BufferedReader(new StringReader(writer.toString()));
         dumpOutput();
         assertHasPreamble(reader);
-        assertEquals("<column name=\"last_name\">", reader.readLine());
+        assertEquals("<column name=\"last_name\" order=\"2\">", reader.readLine());
         assertEquals("  <type>VARCHAR2(100)</type>", reader.readLine());
         assertEquals("  <nullable>true</nullable>", reader.readLine());        
         assertEquals("</column>", reader.readLine());
@@ -159,7 +159,11 @@ public class DbObjectXMLTransformerTest
     @Test
     public void transformPrimaryKey() throws IOException
     {
-        PrimaryKey pk = new PrimaryKey(null, "pk_name", Arrays.asList("first", "second"));
+        PrimaryKey pk = new PrimaryKey(
+                    null,
+                    "pk_name",
+                    Arrays.asList("a_column", "b_column"),
+                    Arrays.asList(2, 1));
         
         transformer.output(pk);
         
@@ -168,8 +172,8 @@ public class DbObjectXMLTransformerTest
         assertHasPreamble(reader);
         assertEquals("<primarykey name=\"pk_name\">", reader.readLine());        
         assertEquals("  <columnnames>", reader.readLine());
-        assertEquals("    <columnname>first</columnname>", reader.readLine());
-        assertEquals("    <columnname>second</columnname>", reader.readLine());                
+        assertEquals("    <columnname order=\"2\">a_column</columnname>", reader.readLine());
+        assertEquals("    <columnname order=\"1\">b_column</columnname>", reader.readLine());                
         assertEquals("  </columnnames>", reader.readLine());
         assertEquals("</primarykey>", reader.readLine());
     }
@@ -178,7 +182,7 @@ public class DbObjectXMLTransformerTest
     public void transformSchema() throws IOException
     {
         Collection<Column> columns = columns("one VARCHAR2(100)", "two NUMBER(10)");
-        PrimaryKey pk = new PrimaryKey(null, "pk_for_my_table", Arrays.asList("id")); 
+        PrimaryKey pk = new PrimaryKey(null, "pk_for_my_table", Arrays.asList("id"), Arrays.asList(1)); 
         Collection<ForeignKey> fks = fkeys(fk("fk_one", "lc", "tt", "tc"), fk("fk_two", "lc", "tt", "tc"));
         Collection<Index> indexes = indexes("index_one col1 col2", "index_two col3 col4");
         
@@ -225,7 +229,7 @@ public class DbObjectXMLTransformerTest
     public void transformTable() throws IOException
     {
         Collection<Column> columns = columns("one VARCHAR2(100)", "two NUMBER(10)");
-        PrimaryKey pk = new PrimaryKey(null, "pk_for_my_table", Arrays.asList("id")); 
+        PrimaryKey pk = new PrimaryKey(null, "pk_for_my_table", Arrays.asList("id"), Arrays.asList(1)); 
         Collection<ForeignKey> fks = fkeys(fk("fk_one", "lc", "tt", "tc"), fk("fk_two", "lc", "tt", "tc"));
         Collection<Index> indexes = indexes("index_one col1 col2", "index_two col3 col4");
         
@@ -258,7 +262,7 @@ public class DbObjectXMLTransformerTest
     public void transformObjectWithValidators() throws IOException
     {
         Collection<Column> columns = columns("one VARCHAR2(100)", "two NUMBER(10)");
-        PrimaryKey pk = new PrimaryKey(null, "pk_for_my_table", Arrays.asList("id")); 
+        PrimaryKey pk = new PrimaryKey(null, "pk_for_my_table", Arrays.asList("id"), Arrays.asList(1)); 
         Collection<ForeignKey> fks = fkeys(fk("fk_one", "lc", "tt", "tc"), fk("fk_two", "lc", "tt", "tc"));
         Collection<Index> indexes = indexes("index_one col1 col2", "index_two col3 col4");
         

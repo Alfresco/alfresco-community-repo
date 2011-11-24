@@ -6,22 +6,22 @@
   <objects>
     <table name="node">
       <columns>
-        <column name="id">
+        <column name="id" order="1">
           <type>NUMBER(10)</type>
           <nullable>false</nullable>
         </column>
-        <column name="nodeRef">
+        <column name="nodeRef" order="3">
           <type>VARCHAR2(200)</type>
           <nullable>false</nullable>
         </column>
-        <column name="name">
+        <column name="name" order="2">
           <type>VARCHAR2(150)</type>
           <nullable>true</nullable>
         </column>
       </columns>
       <primarykey name="pk_node">
         <columnnames>
-          <columnname>id</columnname>
+          <columnname order="1">id</columnname>
         </columnnames>
       </primarykey>
       <foreignkeys>

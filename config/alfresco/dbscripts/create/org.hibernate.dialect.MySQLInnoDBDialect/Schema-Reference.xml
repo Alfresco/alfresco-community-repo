@@ -4,31 +4,31 @@
     <table name="alf_access_control_entry">
       <columns>
         <column name="id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="version">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="permission_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="authority_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="allowed">
-          <type>BIT</type>
+          <type>bit</type>
           <nullable>false</nullable>
         </column>
         <column name="applies">
-          <type>INT</type>
+          <type>int</type>
           <nullable>false</nullable>
         </column>
         <column name="context_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>true</nullable>
         </column>
       </columns>
@@ -83,51 +83,51 @@
     <table name="alf_access_control_list">
       <columns>
         <column name="id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="version">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="acl_id">
-          <type>VARCHAR</type>
+          <type>varchar(36)</type>
           <nullable>false</nullable>
         </column>
         <column name="latest">
-          <type>BIT</type>
+          <type>bit</type>
           <nullable>false</nullable>
         </column>
         <column name="acl_version">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="inherits">
-          <type>BIT</type>
+          <type>bit</type>
           <nullable>false</nullable>
         </column>
         <column name="inherits_from">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>true</nullable>
         </column>
         <column name="type">
-          <type>INT</type>
+          <type>int</type>
           <nullable>false</nullable>
         </column>
         <column name="inherited_acl">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>true</nullable>
         </column>
         <column name="is_versioned">
-          <type>BIT</type>
+          <type>bit</type>
           <nullable>false</nullable>
         </column>
         <column name="requires_version">
-          <type>BIT</type>
+          <type>bit</type>
           <nullable>false</nullable>
         </column>
         <column name="acl_change_set">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>true</nullable>
         </column>
       </columns>
@@ -167,23 +167,23 @@
     <table name="alf_ace_context">
       <columns>
         <column name="id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="version">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="class_context">
-          <type>TEXT</type>
+          <type>text</type>
           <nullable>true</nullable>
         </column>
         <column name="property_context">
-          <type>TEXT</type>
+          <type>text</type>
           <nullable>true</nullable>
         </column>
         <column name="kvp_context">
-          <type>TEXT</type>
+          <type>text</type>
           <nullable>true</nullable>
         </column>
       </columns>
@@ -198,11 +198,11 @@
     <table name="alf_acl_change_set">
       <columns>
         <column name="id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="commit_time_ms">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>true</nullable>
         </column>
       </columns>
@@ -223,23 +223,23 @@
     <table name="alf_acl_member">
       <columns>
         <column name="id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="version">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="acl_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="ace_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="pos">
-          <type>INT</type>
+          <type>int</type>
           <nullable>false</nullable>
         </column>
       </columns>
@@ -283,47 +283,47 @@
     <table name="alf_activity_feed">
       <columns>
         <column name="id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="post_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>true</nullable>
         </column>
         <column name="post_date">
-          <type>DATETIME</type>
+          <type>datetime</type>
           <nullable>false</nullable>
         </column>
         <column name="activity_summary">
-          <type>TEXT</type>
+          <type>text</type>
           <nullable>true</nullable>
         </column>
         <column name="feed_user_id">
-          <type>VARCHAR</type>
+          <type>varchar(255)</type>
           <nullable>true</nullable>
         </column>
         <column name="activity_type">
-          <type>VARCHAR</type>
+          <type>varchar(255)</type>
           <nullable>false</nullable>
         </column>
         <column name="activity_format">
-          <type>VARCHAR</type>
+          <type>varchar(10)</type>
           <nullable>true</nullable>
         </column>
         <column name="site_network">
-          <type>VARCHAR</type>
+          <type>varchar(255)</type>
           <nullable>true</nullable>
         </column>
         <column name="app_tool">
-          <type>VARCHAR</type>
+          <type>varchar(36)</type>
           <nullable>true</nullable>
         </column>
         <column name="post_user_id">
-          <type>VARCHAR</type>
+          <type>varchar(255)</type>
           <nullable>false</nullable>
         </column>
         <column name="feed_date">
-          <type>DATETIME</type>
+          <type>datetime</type>
           <nullable>false</nullable>
         </column>
       </columns>
@@ -364,23 +364,23 @@
     <table name="alf_activity_feed_control">
       <columns>
         <column name="id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="feed_user_id">
-          <type>VARCHAR</type>
+          <type>varchar(255)</type>
           <nullable>false</nullable>
         </column>
         <column name="site_network">
-          <type>VARCHAR</type>
+          <type>varchar(255)</type>
           <nullable>true</nullable>
         </column>
         <column name="app_tool">
-          <type>VARCHAR</type>
+          <type>varchar(36)</type>
           <nullable>true</nullable>
         </column>
         <column name="last_modified">
-          <type>DATETIME</type>
+          <type>datetime</type>
           <nullable>false</nullable>
         </column>
       </columns>
@@ -401,43 +401,43 @@
     <table name="alf_activity_post">
       <columns>
         <column name="sequence_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="post_date">
-          <type>DATETIME</type>
+          <type>datetime</type>
           <nullable>false</nullable>
         </column>
         <column name="status">
-          <type>VARCHAR</type>
+          <type>varchar(10)</type>
           <nullable>false</nullable>
         </column>
         <column name="activity_data">
-          <type>TEXT</type>
+          <type>text</type>
           <nullable>false</nullable>
         </column>
         <column name="post_user_id">
-          <type>VARCHAR</type>
+          <type>varchar(255)</type>
           <nullable>false</nullable>
         </column>
         <column name="job_task_node">
-          <type>INT</type>
+          <type>int</type>
           <nullable>false</nullable>
         </column>
         <column name="site_network">
-          <type>VARCHAR</type>
+          <type>varchar(255)</type>
           <nullable>true</nullable>
         </column>
         <column name="app_tool">
-          <type>VARCHAR</type>
+          <type>varchar(36)</type>
           <nullable>true</nullable>
         </column>
         <column name="activity_type">
-          <type>VARCHAR</type>
+          <type>varchar(255)</type>
           <nullable>false</nullable>
         </column>
         <column name="last_modified">
-          <type>DATETIME</type>
+          <type>datetime</type>
           <nullable>false</nullable>
         </column>
       </columns>
@@ -463,47 +463,47 @@
     <table name="alf_applied_patch">
       <columns>
         <column name="id">
-          <type>VARCHAR</type>
+          <type>varchar(64)</type>
           <nullable>false</nullable>
         </column>
         <column name="description">
-          <type>TEXT</type>
+          <type>text</type>
           <nullable>true</nullable>
         </column>
         <column name="fixes_from_schema">
-          <type>INT</type>
+          <type>int</type>
           <nullable>true</nullable>
         </column>
         <column name="fixes_to_schema">
-          <type>INT</type>
+          <type>int</type>
           <nullable>true</nullable>
         </column>
         <column name="applied_to_schema">
-          <type>INT</type>
+          <type>int</type>
           <nullable>true</nullable>
         </column>
         <column name="target_schema">
-          <type>INT</type>
+          <type>int</type>
           <nullable>true</nullable>
         </column>
         <column name="applied_on_date">
-          <type>DATETIME</type>
+          <type>datetime</type>
           <nullable>true</nullable>
         </column>
         <column name="applied_to_server">
-          <type>VARCHAR</type>
+          <type>varchar(64)</type>
           <nullable>true</nullable>
         </column>
         <column name="was_executed">
-          <type>BIT</type>
+          <type>bit</type>
           <nullable>true</nullable>
         </column>
         <column name="succeeded">
-          <type>BIT</type>
+          <type>bit</type>
           <nullable>true</nullable>
         </column>
         <column name="report">
-          <type>TEXT</type>
+          <type>text</type>
           <nullable>true</nullable>
         </column>
       </columns>
@@ -518,23 +518,23 @@
     <table name="alf_audit_app">
       <columns>
         <column name="id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="version">
-          <type>SMALLINT</type>
+          <type>smallint</type>
           <nullable>false</nullable>
         </column>
         <column name="app_name_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="audit_model_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="disabled_paths_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
       </columns>
@@ -581,23 +581,23 @@
     <table name="alf_audit_entry">
       <columns>
         <column name="id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="audit_app_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="audit_time">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="audit_user_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>true</nullable>
         </column>
         <column name="audit_values_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>true</nullable>
         </column>
       </columns>
@@ -649,15 +649,15 @@
     <table name="alf_audit_model">
       <columns>
         <column name="id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="content_data_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="content_crc">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
       </columns>
@@ -689,19 +689,19 @@
     <table name="alf_authority">
       <columns>
         <column name="id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="version">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="authority">
-          <type>VARCHAR</type>
+          <type>varchar(100)</type>
           <nullable>true</nullable>
         </column>
         <column name="crc">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>true</nullable>
         </column>
       </columns>
@@ -728,19 +728,19 @@
     <table name="alf_authority_alias">
       <columns>
         <column name="id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="version">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="auth_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="alias_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
       </columns>
@@ -783,51 +783,51 @@
     <table name="alf_child_assoc">
       <columns>
         <column name="id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="version">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="parent_node_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="type_qname_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="child_node_name_crc">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="child_node_name">
-          <type>VARCHAR</type>
+          <type>varchar(50)</type>
           <nullable>false</nullable>
         </column>
         <column name="child_node_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="qname_ns_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="qname_localname">
-          <type>VARCHAR</type>
+          <type>varchar(255)</type>
           <nullable>false</nullable>
         </column>
         <column name="qname_crc">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="is_primary">
-          <type>BIT</type>
+          <type>bit</type>
           <nullable>true</nullable>
         </column>
         <column name="assoc_index">
-          <type>INT</type>
+          <type>int</type>
           <nullable>true</nullable>
         </column>
       </columns>
@@ -906,27 +906,27 @@
     <table name="alf_content_data">
       <columns>
         <column name="id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="version">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="content_url_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>true</nullable>
         </column>
         <column name="content_mimetype_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>true</nullable>
         </column>
         <column name="content_encoding_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>true</nullable>
         </column>
         <column name="content_locale_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>true</nullable>
         </column>
       </columns>
@@ -983,27 +983,27 @@
     <table name="alf_content_url">
       <columns>
         <column name="id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="content_url">
-          <type>VARCHAR</type>
+          <type>varchar(255)</type>
           <nullable>false</nullable>
         </column>
         <column name="content_url_short">
-          <type>VARCHAR</type>
+          <type>varchar(12)</type>
           <nullable>false</nullable>
         </column>
         <column name="content_url_crc">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="content_size">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="orphan_time">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>true</nullable>
         </column>
       </columns>
@@ -1030,15 +1030,15 @@
     <table name="alf_encoding">
       <columns>
         <column name="id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="version">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="encoding_str">
-          <type>VARCHAR</type>
+          <type>varchar(100)</type>
           <nullable>false</nullable>
         </column>
       </columns>
@@ -1059,15 +1059,15 @@
     <table name="alf_locale">
       <columns>
         <column name="id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="version">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="locale_str">
-          <type>VARCHAR</type>
+          <type>varchar(20)</type>
           <nullable>false</nullable>
         </column>
       </columns>
@@ -1088,31 +1088,31 @@
     <table name="alf_lock">
       <columns>
         <column name="id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="version">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="shared_resource_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="excl_resource_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="lock_token">
-          <type>VARCHAR</type>
+          <type>varchar(36)</type>
           <nullable>false</nullable>
         </column>
         <column name="start_time">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="expiry_time">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
       </columns>
@@ -1150,19 +1150,19 @@
     <table name="alf_lock_resource">
       <columns>
         <column name="id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="version">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="qname_ns_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="qname_localname">
-          <type>VARCHAR</type>
+          <type>varchar(255)</type>
           <nullable>false</nullable>
         </column>
       </columns>
@@ -1190,15 +1190,15 @@
     <table name="alf_mimetype">
       <columns>
         <column name="id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="version">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="mimetype_str">
-          <type>VARCHAR</type>
+          <type>varchar(100)</type>
           <nullable>false</nullable>
         </column>
       </columns>
@@ -1219,15 +1219,15 @@
     <table name="alf_namespace">
       <columns>
         <column name="id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="version">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="uri">
-          <type>VARCHAR</type>
+          <type>varchar(100)</type>
           <nullable>false</nullable>
         </column>
       </columns>
@@ -1248,59 +1248,59 @@
     <table name="alf_node">
       <columns>
         <column name="id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="version">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="store_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="uuid">
-          <type>VARCHAR</type>
+          <type>varchar(36)</type>
           <nullable>false</nullable>
         </column>
         <column name="transaction_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="node_deleted">
-          <type>BIT</type>
+          <type>bit</type>
           <nullable>false</nullable>
         </column>
         <column name="type_qname_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="locale_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="acl_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>true</nullable>
         </column>
         <column name="audit_creator">
-          <type>VARCHAR</type>
+          <type>varchar(255)</type>
           <nullable>true</nullable>
         </column>
         <column name="audit_created">
-          <type>VARCHAR</type>
+          <type>varchar(30)</type>
           <nullable>true</nullable>
         </column>
         <column name="audit_modifier">
-          <type>VARCHAR</type>
+          <type>varchar(255)</type>
           <nullable>true</nullable>
         </column>
         <column name="audit_modified">
-          <type>VARCHAR</type>
+          <type>varchar(30)</type>
           <nullable>true</nullable>
         </column>
         <column name="audit_accessed">
-          <type>VARCHAR</type>
+          <type>varchar(30)</type>
           <nullable>true</nullable>
         </column>
       </columns>
@@ -1378,11 +1378,11 @@
     <table name="alf_node_aspects">
       <columns>
         <column name="node_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="qname_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
       </columns>
@@ -1420,27 +1420,27 @@
     <table name="alf_node_assoc">
       <columns>
         <column name="id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="version">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="source_node_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="target_node_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="type_qname_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="assoc_index">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
       </columns>
@@ -1497,51 +1497,51 @@
     <table name="alf_node_properties">
       <columns>
         <column name="node_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="actual_type_n">
-          <type>INT</type>
+          <type>int</type>
           <nullable>false</nullable>
         </column>
         <column name="persisted_type_n">
-          <type>INT</type>
+          <type>int</type>
           <nullable>false</nullable>
         </column>
         <column name="boolean_value">
-          <type>BIT</type>
+          <type>bit</type>
           <nullable>true</nullable>
         </column>
         <column name="long_value">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>true</nullable>
         </column>
         <column name="float_value">
-          <type>FLOAT</type>
+          <type>float</type>
           <nullable>true</nullable>
         </column>
         <column name="double_value">
-          <type>DOUBLE</type>
+          <type>double</type>
           <nullable>true</nullable>
         </column>
         <column name="string_value">
-          <type>TEXT</type>
+          <type>text</type>
           <nullable>true</nullable>
         </column>
         <column name="serializable_value">
-          <type>BLOB</type>
+          <type>blob</type>
           <nullable>true</nullable>
         </column>
         <column name="qname_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="list_index">
-          <type>INT</type>
+          <type>int</type>
           <nullable>false</nullable>
         </column>
         <column name="locale_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
       </columns>
@@ -1591,19 +1591,19 @@
     <table name="alf_permission">
       <columns>
         <column name="id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="version">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="type_qname_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="name">
-          <type>VARCHAR</type>
+          <type>varchar(100)</type>
           <nullable>false</nullable>
         </column>
       </columns>
@@ -1636,19 +1636,19 @@
     <table name="alf_prop_class">
       <columns>
         <column name="id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="java_class_name">
-          <type>VARCHAR</type>
+          <type>varchar(255)</type>
           <nullable>false</nullable>
         </column>
         <column name="java_class_name_short">
-          <type>VARCHAR</type>
+          <type>varchar(32)</type>
           <nullable>false</nullable>
         </column>
         <column name="java_class_name_crc">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
       </columns>
@@ -1675,43 +1675,43 @@
     <table name="alf_prop_date_value">
       <columns>
         <column name="date_value">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="full_year">
-          <type>SMALLINT</type>
+          <type>smallint</type>
           <nullable>false</nullable>
         </column>
         <column name="half_of_year">
-          <type>TINYINT</type>
+          <type>tinyint</type>
           <nullable>false</nullable>
         </column>
         <column name="quarter_of_year">
-          <type>TINYINT</type>
+          <type>tinyint</type>
           <nullable>false</nullable>
         </column>
         <column name="month_of_year">
-          <type>TINYINT</type>
+          <type>tinyint</type>
           <nullable>false</nullable>
         </column>
         <column name="week_of_year">
-          <type>TINYINT</type>
+          <type>tinyint</type>
           <nullable>false</nullable>
         </column>
         <column name="week_of_month">
-          <type>TINYINT</type>
+          <type>tinyint</type>
           <nullable>false</nullable>
         </column>
         <column name="day_of_year">
-          <type>SMALLINT</type>
+          <type>smallint</type>
           <nullable>false</nullable>
         </column>
         <column name="day_of_month">
-          <type>TINYINT</type>
+          <type>tinyint</type>
           <nullable>false</nullable>
         </column>
         <column name="day_of_week">
-          <type>TINYINT</type>
+          <type>tinyint</type>
           <nullable>false</nullable>
         </column>
       </columns>
@@ -1734,11 +1734,11 @@
     <table name="alf_prop_double_value">
       <columns>
         <column name="id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="double_value">
-          <type>DOUBLE</type>
+          <type>double</type>
           <nullable>false</nullable>
         </column>
       </columns>
@@ -1759,23 +1759,23 @@
     <table name="alf_prop_link">
       <columns>
         <column name="root_prop_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="prop_index">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="contained_in">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="key_prop_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="value_prop_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
       </columns>
@@ -1826,11 +1826,11 @@
     <table name="alf_prop_root">
       <columns>
         <column name="id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="version">
-          <type>SMALLINT</type>
+          <type>smallint</type>
           <nullable>false</nullable>
         </column>
       </columns>
@@ -1845,11 +1845,11 @@
     <table name="alf_prop_serializable_value">
       <columns>
         <column name="id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="serializable_value">
-          <type>BLOB</type>
+          <type>blob</type>
           <nullable>false</nullable>
         </column>
       </columns>
@@ -1864,19 +1864,19 @@
     <table name="alf_prop_string_value">
       <columns>
         <column name="id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="string_value">
-          <type>TEXT</type>
+          <type>text</type>
           <nullable>false</nullable>
         </column>
         <column name="string_end_lower">
-          <type>VARCHAR</type>
+          <type>varchar(16)</type>
           <nullable>false</nullable>
         </column>
         <column name="string_crc">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
       </columns>
@@ -1903,27 +1903,27 @@
     <table name="alf_prop_unique_ctx">
       <columns>
         <column name="id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="version">
-          <type>SMALLINT</type>
+          <type>smallint</type>
           <nullable>false</nullable>
         </column>
         <column name="value1_prop_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="value2_prop_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="value3_prop_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="prop1_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>true</nullable>
         </column>
       </columns>
@@ -1982,19 +1982,19 @@
     <table name="alf_prop_value">
       <columns>
         <column name="id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="actual_type_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="persisted_type">
-          <type>TINYINT</type>
+          <type>tinyint</type>
           <nullable>false</nullable>
         </column>
         <column name="long_value">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
       </columns>
@@ -2022,19 +2022,19 @@
     <table name="alf_qname">
       <columns>
         <column name="id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="version">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="ns_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="local_name">
-          <type>VARCHAR</type>
+          <type>varchar(200)</type>
           <nullable>false</nullable>
         </column>
       </columns>
@@ -2067,15 +2067,15 @@
     <table name="alf_server">
       <columns>
         <column name="id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="version">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="ip_address">
-          <type>VARCHAR</type>
+          <type>varchar(39)</type>
           <nullable>false</nullable>
         </column>
       </columns>
@@ -2096,23 +2096,23 @@
     <table name="alf_store">
       <columns>
         <column name="id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="version">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="protocol">
-          <type>VARCHAR</type>
+          <type>varchar(50)</type>
           <nullable>false</nullable>
         </column>
         <column name="identifier">
-          <type>VARCHAR</type>
+          <type>varchar(100)</type>
           <nullable>false</nullable>
         </column>
         <column name="root_node_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>true</nullable>
         </column>
       </columns>
@@ -2145,11 +2145,11 @@
     <table name="alf_subscriptions">
       <columns>
         <column name="user_node_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="node_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
       </columns>
@@ -2182,23 +2182,23 @@
     <table name="alf_transaction">
       <columns>
         <column name="id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="version">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="server_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>true</nullable>
         </column>
         <column name="change_txn_id">
-          <type>VARCHAR</type>
+          <type>varchar(56)</type>
           <nullable>false</nullable>
         </column>
         <column name="commit_time_ms">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>true</nullable>
         </column>
       </columns>
@@ -2230,19 +2230,19 @@
     <table name="alf_usage_delta">
       <columns>
         <column name="id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="version">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="node_id">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
         <column name="delta_size">
-          <type>BIGINT</type>
+          <type>bigint</type>
           <nullable>false</nullable>
         </column>
       </columns>

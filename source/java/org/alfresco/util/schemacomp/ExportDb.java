@@ -37,7 +37,6 @@ import org.alfresco.util.schemacomp.model.Schema;
 import org.alfresco.util.schemacomp.model.Sequence;
 import org.alfresco.util.schemacomp.model.Table;
 import org.hibernate.dialect.Dialect;
-import org.hibernate.dialect.PostgreSQLDialect;
 import org.hibernate.dialect.TypeNames;
 import org.springframework.context.ApplicationContext;
 
@@ -130,7 +129,7 @@ public class ExportDb
         final Map<Integer, String> forwardMap2 = (Map<Integer, String>) defaultsField.get(typeNames);
         for (final Map.Entry<Integer, String> e : forwardMap2.entrySet())
         {
-            this.reverseTypeMap.put(e.getValue(), e.getKey());
+            this.reverseTypeMap.put(e.getValue().toLowerCase(), e.getKey());
         }
 
         final Field weightedField = TypeNames.class.getDeclaredField("weighted");
@@ -141,7 +140,7 @@ public class ExportDb
         {
             for (final String type : e.getValue().values())
             {
-                this.reverseTypeMap.put(type, e.getKey());
+                this.reverseTypeMap.put(type.toLowerCase(), e.getKey());
             }
         }
     }
@@ -378,27 +377,26 @@ public class ExportDb
         
     }
 
-    protected String generateType(final String dbType, int size, final int digits, int sqlType)
+    protected String generateType(final String dbTypeRaw, int size, final int digits, int sqlType)
         throws IllegalArgumentException, IllegalAccessException
     {
-        String dbName = dbType.toLowerCase() + "(" + size + ")";
-        if (this.reverseTypeMap.containsKey(dbName))
+        final String dbType = dbTypeRaw.toLowerCase();
+        
+        final String sizeType = dbType + "(" + size + ")";
+        if (this.reverseTypeMap.containsKey(sizeType))
         {
             // the map may contain an exact match, e.g. "char(1)"
-            return dbName;
+            return sizeType;
         }
 
-        dbName = dbType.toLowerCase() + "(" + size + ", " + digits + ")";
-        if (this.reverseTypeMap.containsKey(dbName))
+        final String precisionScaleType = dbType + "(" + size + ", " + digits + ")";
+        if (this.reverseTypeMap.containsKey(precisionScaleType))
         {
             // the map may contain an exact match, e.g. "numeric(3, 1)"
-            return dbName;
+            return precisionScaleType;
         }
         else
         {
-            String precisionScaleType = dbType + "(" + size + ", " + digits + ")";
-            String sizeType = dbType + "(" + size + ")";
-            
             for (String key : reverseTypeMap.keySet())
             {
                 // Populate the placeholders, examples:
@@ -450,28 +448,5 @@ public class ExportDb
     public void setNamePrefix(String namePrefix)
     {
         this.namePrefix = namePrefix;
-    }
-
-
-    public static void main(String[] args) throws IllegalArgumentException, IllegalAccessException
-    {
-        ExportDb exportDb = null;
-        try
-        {
-            exportDb = new ExportDb(null, new PostgreSQLDialect());
-        }
-        catch (Exception error)
-        {
-            throw new RuntimeException(error);
-        }
-        
-        if (exportDb != null)
-        {
-            String varchar = exportDb.generateType("varchar", 20, 0, 12);
-            System.out.println("varchar: " + varchar);
-            
-            String int4 = exportDb.generateType("int4", 20, 0, 4);
-            System.out.println("int4: " + int4);
-        }
     }
 }

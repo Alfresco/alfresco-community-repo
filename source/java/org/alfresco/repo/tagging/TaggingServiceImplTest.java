@@ -32,9 +32,9 @@ import org.alfresco.repo.action.ActionModel;
 import org.alfresco.repo.action.AsynchronousActionExecutionQueuePolicies;
 import org.alfresco.repo.action.AsynchronousActionExecutionQueuePolicies.OnAsyncActionExecute;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -1843,19 +1843,26 @@ public class TaggingServiceImplTest extends TestCase
 
                     // Do the updates
                     AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
-                    transactionService.getRetryingTransactionHelper().doInTransaction(
-                            new RetryingTransactionCallback<Void>()
-                            {
-                                public Void execute() throws Throwable
-                                {
-                                    taggingService.addTag(folder, tag);
-                                    taggingService.addTag(subFolder, tag);
-                                    taggingService.addTag(subDocument, tag);
-                                    logger.debug(Thread.currentThread() + " - Tagging for " + tag);
-                                    return null;
-                                }
-                            }, false, true
-                    );
+                    RetryingTransactionCallback<Void> txnCallback = new RetryingTransactionCallback<Void>()
+                    {
+                        @Override
+                        public Void execute() throws Throwable
+                        {
+                            taggingService.addTag(folder, tag);
+                            taggingService.addTag(subFolder, tag);
+                            taggingService.addTag(subDocument, tag);
+                            logger.debug(Thread.currentThread() + " - Tagging for " + tag);
+                            return null;
+                        }
+                    };
+                    try
+                    {
+                        transactionService.getRetryingTransactionHelper().doInTransaction(txnCallback);
+                    }
+                    catch (Throwable e)
+                    {
+                        logger.error("Tagging failed: " + e);
+                    }
                     logger.debug(Thread.currentThread() + " - Done tagging for " + tag);
                     
                     // Wait briefly for thing to catch up, before we

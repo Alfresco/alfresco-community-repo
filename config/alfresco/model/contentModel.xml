@@ -906,6 +906,11 @@
                <type>d:text</type>
                <protected>true</protected>
                <mandatory>true</mandatory>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored>
+                  <tokenised>false</tokenised>
+               </index>
             </property>
             <property name="cm:workingCopyMode">
                <type>d:text</type>

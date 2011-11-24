@@ -64,6 +64,7 @@
       <property name="maxItemsPerCycle" value="100"/>
       <property name="activityPostServiceImpl" ref="activityPostService"/>
       <property name="jobLockService" ref="jobLockService"/>
+      <property name="transactionService" ref="transactionService"/>
    </bean>
    
    

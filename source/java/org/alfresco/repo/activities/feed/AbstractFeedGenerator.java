@@ -26,6 +26,7 @@ import org.alfresco.repo.lock.JobLockService.JobLockRefreshCallback;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.VmShutdownListener;
 import org.apache.commons.logging.Log;
@@ -52,7 +53,7 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
     private ActivityPostDAO postDAO;
     private ActivityPostServiceImpl activityPostServiceImpl;
     private AuthenticationService authenticationService;
-    
+    private TransactionService transactionService;
     private JobLockService jobLockService;
     
     private String repoEndPoint; // http://hostname:port/webapp (eg. http://localhost:8080/alfresco)
@@ -112,8 +113,12 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
     {
         this.jobLockService = jobLockService;
     }
-    
    
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
+
     public RepoCtx getWebScriptsCtx()
     {
         return this.ctx;
@@ -147,6 +152,16 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
     public void execute() throws JobExecutionException
     {
         checkProperties();
+        
+        // Avoid running when in read-only mode
+        if (!transactionService.getAllowWrite())
+        {
+            if (logger.isTraceEnabled())
+            {
+                logger.trace("Activities feed generator not running due to read-only server");
+            }
+            return;
+        }
         
         String lockToken = null;
         

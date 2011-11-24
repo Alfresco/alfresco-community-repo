@@ -18,7 +18,6 @@
 */
 package org.alfresco.repo.transaction;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -46,36 +45,27 @@ public class RetryingTransactionInterceptor extends TransactionAspectSupport imp
         if ((null != target) && (null != target.getThis()) && (null != target.getMethod()))
         {
             final Method method = target.getMethod();
-            final TransactionAttribute transactionAttribute = getTransactionAttributeSource().getTransactionAttribute(method, target.getThis().getClass());
-            if (null != transactionAttribute)
+            final TransactionAttribute txnAttr = getTransactionAttributeSource().getTransactionAttribute(method, target.getThis().getClass());
+            if (null != txnAttr && txnAttr.getPropagationBehavior() != TransactionAttribute.PROPAGATION_SUPPORTS)
             {
-                return transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+                RetryingTransactionCallback<Object> txnCallback = new RetryingTransactionCallback<Object>()
                 {
+                    @Override
                     public Object execute() throws Throwable
                     {
-                        try
-                        {
-                            return method.invoke(target.getThis(), target.getArguments());
-                        }
-                        catch (InvocationTargetException e)
-                        {
-                            if (null != e.getTargetException())
-                            {
-                                throw e.getTargetException();
-                            }
-                            else
-                            {
-                                throw new AlfrescoRuntimeException(e.getMessage(), e);
-                            }
-                        }
+                        return target.proceed();
                     }
-                }, transactionAttribute.isReadOnly(), (TransactionAttribute.PROPAGATION_REQUIRES_NEW == transactionAttribute.getPropagationBehavior()));
+                };
+                return transactionService.getRetryingTransactionHelper().doInTransaction(
+                        txnCallback,
+                        txnAttr.isReadOnly(),
+                        (TransactionAttribute.PROPAGATION_REQUIRES_NEW == txnAttr.getPropagationBehavior()));
             }
             else
             {
-                return method.invoke(target.getThis(), target.getArguments());
+                return target.proceed();
             }
         }
-        throw new AlfrescoRuntimeException("Invalid undefined MethodInvocation instance");
+        throw new AlfrescoRuntimeException("Invalid or undefined MethodInvocation instance: " + target.getMethod());
     }
 }

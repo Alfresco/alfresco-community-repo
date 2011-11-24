@@ -987,7 +987,7 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
 
     }
 
-    public void test100Invites() throws Exception
+    public void disabled_test100Invites() throws Exception
     {
         Invitation.ResourceType resourceType = Invitation.ResourceType.WEB_SITE;
         String resourceName = SITE_SHORT_NAME_INVITE;

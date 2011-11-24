@@ -1,7 +1,22 @@
 /**
  * Document List Component: activity
  */
+var _regexNodeRef = new RegExp(/^[^\:^ ]+\:\/\/[^\:^ ]+\/[^ ]+$/);
+
 postActivity();
+
+function isNodeRef(value)
+{
+   var result = false;
+   try
+   {
+      result = _regexNodeRef.test(String(value));
+   }
+   catch (e)
+   {
+   }
+   return result;
+}
 
 /* Posts to the activities service after a Document Library action */
 function postActivity()
@@ -34,6 +49,31 @@ function postActivity()
       return;
    }
 
+   /*
+    * Check for known nodeRef values
+    */
+   var nodeRef = null,
+      parentNodeRef = null;
+   
+   if (json.has("nodeRef"))
+   {
+      nodeRef = json.get("nodeRef");
+      if (!isNodeRef(nodeRef))
+      {
+         status.setCode(status.STATUS_BAD_REQUEST, "'" + nodeRef + "' is not a valid NodeRef");
+         return;
+      }
+   }
+   if (json.has("parentNodeRef"))
+   {
+      parentNodeRef = json.get("parentNodeRef");
+      if (!isNodeRef(parentNodeRef))
+      {
+         status.setCode(status.STATUS_BAD_REQUEST, "'" + parentNodeRef + "' is not a valid parent NodeRef");
+         return;
+      }
+   }
+
    var strParams = "";
 
    switch (String(type).toLowerCase())
@@ -46,8 +86,8 @@ function postActivity()
       case "google-docs-checkin":
       case "inline-edit":
          data.title = json.get("fileName");
-         data.nodeRef = json.get("nodeRef");
-         strParams = "?nodeRef=" + json.get("nodeRef");
+         data.nodeRef = nodeRef;
+         strParams = "?nodeRef=" + nodeRef;
          break;
       
       case "files-added":
@@ -55,15 +95,15 @@ function postActivity()
       case "files-updated":
          data.title = json.get("fileCount");
          strParams = "?path=" + json.get("path");
-         if (json.has("parentNodeRef"))
+         if (parentNodeRef != null)
          {
-            data.parentNodeRef = json.get("parentNodeRef");
+            data.parentNodeRef = parentNodeRef;
          }
          break;
       
       case "file-deleted":
          data.title = json.get("fileName");
-         data.nodeRef = json.get("nodeRef");
+         data.nodeRef = nodeRef;
          strParams = "?path=" + json.get("path");
          break;
       

@@ -127,7 +127,8 @@ public class CalendarRecurrenceHelper
     * For the given Calendar Entry, return its subsequent Recurrence on or after
     *  the specified date, until the given limit. If it doesn't have any recurrences 
     *  on or after the start date (either no recurrence rules, or the last recurrence 
-    *  date is before then), null will be returned.
+    *  date is before then), null will be returned. (The onOrAfter and until dates
+    *  are treat as inclusive)
     * If requested, can stop after the first hit
     * @return The next recurrence on or after the given date, or null if there aren't any 
     */
@@ -143,7 +144,8 @@ public class CalendarRecurrenceHelper
     * For the given Calendar Entry, return its subsequent Recurrence on or after
     *  the specified date, until the given limit. If it doesn't have any recurrences 
     *  on or after the start date (either no recurrence rules, or the last recurrence 
-    *  date is before then), null will be returned.
+    *  date is before then), null will be returned. (The onOrAfter and until dates
+    *  are treat as inclusive)
     * If requested, can stop after the first hit
     * @return The next recurrence on or after the given date, or null if there aren't any 
     */
@@ -273,7 +275,7 @@ public class CalendarRecurrenceHelper
       else
       {
          // Run until the end
-         while (currentDate.getTime().before(until))
+         while (! currentDate.getTime().after(until))
          {
             dates.add(currentDate.getTime());
             currentDate.add(Calendar.DATE, 1);

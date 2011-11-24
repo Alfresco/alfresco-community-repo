@@ -201,6 +201,18 @@ public class CalendarHelpersTest
       assertEquals("2011-07-29", dateFmt.format(dates.get(9)));
       
       
+      // From before today, full time set
+      dates.clear();
+      currentDate.set(2011,11-1,24,10,30);
+      RecurrenceHelper.buildDailyRecurrences(
+            currentDate, dates, null,
+            date(2011,11,22,12,30), date(2011,11,25,12,30),
+            false, 1);
+      assertEquals(2, dates.size());
+      assertEquals("2011-11-24", dateFmt.format(dates.get(0))); // Thu
+      assertEquals("2011-11-25", dateFmt.format(dates.get(1))); // Fri
+      
+      
       // With no end date but only first, check it behaves
       dates.clear();
       currentDate.set(2011,7-1,19,10,30);
@@ -267,6 +279,17 @@ public class CalendarHelpersTest
       assertEquals(2, dates.size());
       assertEquals("2011-07-21", dateFmt.format(dates.get(0))); // Thu
       assertEquals("2011-07-25", dateFmt.format(dates.get(1))); // Mon
+      
+      
+      // Just before today, full time set
+      dates.clear();
+      currentDate.set(2011,11-1,24,10,30);
+      RecurrenceHelper.buildWeeklyRecurrences(
+            currentDate, dates, params,
+            date(2011,11,22,12,30), date(2011,11,25,12,30),
+            false, 1);
+      assertEquals(1, dates.size());
+      assertEquals("2011-11-24", dateFmt.format(dates.get(0))); // Thu
       
       
       // From today

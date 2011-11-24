@@ -38,7 +38,7 @@ import org.alfresco.util.ParameterCheck;
  */
 public class PublishServiceImpl implements PublishingService
 {
-    public static final String NAME = "publishingService";
+    public static final String NAME = "PublishingService";
 
     private PublishingEventHelper publishingEventHelper;
     private PublishingRootObject rootObject;

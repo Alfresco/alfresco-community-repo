@@ -37,9 +37,9 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.publishing.PublishingDetails;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
 import org.alfresco.service.cmr.publishing.PublishingPackageEntry;
-import org.alfresco.service.cmr.publishing.PublishingQueue;
+import org.alfresco.service.cmr.publishing.PublishingService;
 import org.alfresco.service.cmr.publishing.channels.Channel;
-import org.alfresco.service.cmr.publishing.channels.ChannelType;
+import org.alfresco.service.cmr.publishing.channels.ChannelService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.site.SiteService;
@@ -64,8 +64,8 @@ public class PublishingIntegratedTest extends BaseSpringTest
     protected WorkflowService workflowService;
     protected FileFolderService fileFolderService;
     protected SiteService siteService;
-    private ChannelServiceImpl channelService;
-    private PublishServiceImpl publishingService;
+    private ChannelService channelService;
+    private PublishingService publishingService;
 
     protected AuthenticationComponent authenticationComponent;
     private String siteId;
@@ -150,8 +150,8 @@ public class PublishingIntegratedTest extends BaseSpringTest
         nodeService = serviceRegistry.getNodeService();
         siteService = serviceRegistry.getSiteService();
 
-        channelService = (ChannelServiceImpl) applicationContext.getBean("channelService");
-        publishingService = (PublishServiceImpl) applicationContext.getBean("publishingService");
+        channelService = (ChannelService) applicationContext.getBean("ChannelService");
+        publishingService = (PublishingService) applicationContext.getBean("PublishingService");
         siteId = GUID.generate();
         siteService.createSite("test", siteId, "Test site created by ChannelServiceImplIntegratedTest",
                 "Test site created by PublishingIntegratedTest", SiteVisibility.PUBLIC);

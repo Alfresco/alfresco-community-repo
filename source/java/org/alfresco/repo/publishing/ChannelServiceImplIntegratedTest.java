@@ -29,12 +29,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.Resource;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.publishing.channels.Channel;
+import org.alfresco.service.cmr.publishing.channels.ChannelService;
 import org.alfresco.service.cmr.publishing.channels.ChannelType;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -52,8 +51,7 @@ public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrat
 {
     private static final String channelName = GUID.generate();
 
-    @Resource(name="channelService")
-    private ChannelServiceImpl channelService;
+    private ChannelService channelService;
     
     @Test
     public void testCreateChannel() throws Exception
@@ -295,7 +293,7 @@ public class ChannelServiceImplIntegratedTest extends AbstractPublishingIntegrat
     public void onSetUp() throws Exception
     {
         super.onSetUp();
-        this.channelService = (ChannelServiceImpl) getApplicationContext().getBean("channelService");
+        this.channelService = (ChannelService) getApplicationContext().getBean("ChannelService");
         testHelper.mockChannelType(channelTypeId);
     }
 }

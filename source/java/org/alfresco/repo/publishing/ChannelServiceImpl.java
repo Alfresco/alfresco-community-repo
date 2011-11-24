@@ -51,7 +51,7 @@ import org.alfresco.util.collections.Filter;
  */
 public class ChannelServiceImpl implements ChannelService
 {
-    public static final String NAME = "channelService";
+    public static final String NAME = "ChannelService";
 
     private final Map<String, ChannelType> channelTypes = new TreeMap<String, ChannelType>();
     private NodeService nodeService;

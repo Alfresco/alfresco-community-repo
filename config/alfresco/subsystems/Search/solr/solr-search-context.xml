@@ -31,9 +31,6 @@
 
     <bean id="search.solrQueryHTTPCLient" class="org.alfresco.repo.search.impl.solr.SolrQueryHTTPClient" init-method="init">
         <property name="httpClientFactory" ref="solrHttpClientFactory"/>
-        <property name="nodeDAO">
-            <ref bean="nodeDAO" />
-        </property>
         <property name="nodeService">
             <ref bean="mlAwareNodeService" />
         </property>

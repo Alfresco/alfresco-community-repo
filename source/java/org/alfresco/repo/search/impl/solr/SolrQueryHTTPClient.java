@@ -30,7 +30,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.httpclient.HttpClientFactory;
-import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParserException;
 import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
 import org.alfresco.repo.tenant.TenantService;
@@ -70,8 +69,6 @@ public class SolrQueryHTTPClient
 {
     static Log s_logger = LogFactory.getLog(SolrQueryHTTPClient.class);
 
-    private NodeDAO nodeDAO;
-    
     private NodeService nodeService;
 
     private PermissionService permissionService;
@@ -104,15 +101,10 @@ public class SolrQueryHTTPClient
     }
 
     public void setHttpClientFactory(HttpClientFactory httpClientFactory)
-	{
-		this.httpClientFactory = httpClientFactory;
-	}
-
-    public void setNodeDAO(NodeDAO nodeDAO)
     {
-        this.nodeDAO = nodeDAO;
+        this.httpClientFactory = httpClientFactory;
     }
-
+    
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
@@ -344,7 +336,7 @@ public class SolrQueryHTTPClient
                 Reader reader = new BufferedReader(new InputStreamReader(post.getResponseBodyAsStream()));
                 // TODO - replace with streaming-based solution e.g. SimpleJSON ContentHandler
                 JSONObject json = new JSONObject(new JSONTokener(reader));
-                SolrJSONResultSet results = new SolrJSONResultSet(json, nodeDAO, searchParameters, nodeService);
+                SolrJSONResultSet results = new SolrJSONResultSet(json, searchParameters, nodeService);
                 if (s_logger.isDebugEnabled())
                 {
                     s_logger.debug("Sent :" + url);

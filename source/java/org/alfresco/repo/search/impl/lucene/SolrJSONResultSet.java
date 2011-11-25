@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.search.SimpleResultSetMetaData;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -37,7 +36,6 @@ import org.alfresco.service.cmr.search.ResultSetMetaData;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.util.Pair;
-import org.apache.solr.client.solrj.response.FacetField;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -47,8 +45,6 @@ import org.json.JSONObject;
  */
 public class SolrJSONResultSet implements ResultSet
 {
-    private NodeDAO nodeDAO;
-    
     private NodeService nodeService;
     
     private ArrayList<Pair<Long, Float>> page;
@@ -73,10 +69,9 @@ public class SolrJSONResultSet implements ResultSet
      * Detached result set based on that provided
      * @param resultSet
      */
-    public SolrJSONResultSet(JSONObject json, NodeDAO nodeDAO, SearchParameters searchParameters, NodeService nodeService)
+    public SolrJSONResultSet(JSONObject json, SearchParameters searchParameters, NodeService nodeService)
     {
         // Note all properties are returned as multi-valued from the WildcardField "*" definition in the SOLR schema.xml
-        this.nodeDAO = nodeDAO;
         this.nodeService = nodeService;
         this.resultSetMetaData = new SimpleResultSetMetaData(LimitBy.UNLIMITED, PermissionEvaluationMode.EAGER, searchParameters);
         try
@@ -184,18 +179,17 @@ public class SolrJSONResultSet implements ResultSet
     @Override
     public ChildAssociationRef getChildAssocRef(int n)
     {
-        Pair<Long, ChildAssociationRef> primaryParentAssoc = nodeDAO.getPrimaryParentAssoc(page.get(n).getFirst());
+        ChildAssociationRef primaryParentAssoc = nodeService.getPrimaryParent(getNodeRef(n));
         if(primaryParentAssoc != null)
         {
-            return primaryParentAssoc.getSecond();
+            return primaryParentAssoc;
         }
         else
         {
             return null;
         }
-            
     }
-
+    
     /*
      * (non-Javadoc)
      * @see org.alfresco.service.cmr.search.ResultSetSPI#getChildAssocRefs()
@@ -219,10 +213,10 @@ public class SolrJSONResultSet implements ResultSet
     public NodeRef getNodeRef(int n)
     {
         // TODO: lost nodes?
-        Pair<Long, NodeRef> nodePair = nodeDAO.getNodePair(page.get(n).getFirst());
-        if(nodePair != null)
+        NodeRef nodeRef = nodeService.getNodeRef(page.get(n).getFirst());
+        if(nodeRef != null)
         {
-            return nodePair.getSecond();
+            return nodeRef;
         }
         else
         {

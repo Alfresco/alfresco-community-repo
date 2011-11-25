@@ -137,6 +137,40 @@ var Evaluator =
    },
    
    /**
+    * Translates a List fieldDefinition
+    *
+    * @method translateField
+    * @param objDef {FieldDefinition} objDef
+    * @param value {String} default value
+    */
+   translateField: function Evaluator_translateField(objDef, value)
+   {
+      if (objDef == null || objDef == "")
+      {
+         return null;
+      }
+      if (objDef.constraints != null) 
+      {
+         for ( var i=0, len= objDef.constraints.size(); i<len; ++i )
+         {          
+             if ("LIST" == objDef.constraints.get(i).type) 
+             {
+                var allowedV = objDef.constraints.get(i).parameters.allowedValues;
+                for (var j=0; j<allowedV.size(); ++j )
+                {   
+                    var allowedVasString = "" + allowedV.get(j);
+                    var allValSplit = allowedVasString.split("|");
+                    if (value == allValSplit[0]) {
+                       return allValSplit[1];
+                    }
+                }
+              }
+          }
+      }
+      return value;
+   },
+   
+   /**
     * Node Evaluator - main entrypoint
     */
    run: function Evaluator_run(node, fields)
@@ -213,8 +247,8 @@ var Evaluator =
          else
          {
             objData.value = value;
-            objData.displayValue = objData.value;
-
+            objData.displayValue = isAssoc ? value : Evaluator.translateField(objDefinitions[k],value);
+            
             if (Evaluator.decorateFieldData(objData, node))
             {
                nodeData[k] = objData;

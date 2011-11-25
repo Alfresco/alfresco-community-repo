@@ -98,6 +98,16 @@ public class ActivityServiceImplTest extends BaseSpringTest
         {
             assertTrue(iae.getMessage().contains("activityType is a mandatory parameter"));
         }
+        
+        try
+        {
+            this.activityService.postActivity("org.alfresco.testActivityType1", "", "", "{ \"nodeRef\" : \"notfound\" }");
+            fail("invalid post activity: bad nodeRef");
+        }
+        catch (IllegalArgumentException iae)
+        {
+            assertTrue(iae.getMessage().contains("Invalid node ref: notfound"));
+        }
     }   
         
     public void testGetEmptySiteFeed() throws Exception

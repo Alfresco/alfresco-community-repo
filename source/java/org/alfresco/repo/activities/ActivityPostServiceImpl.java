@@ -169,20 +169,27 @@ public class ActivityPostServiceImpl implements ActivityPostService
                 activityData = "";
             }
             
-            if (AuthenticationUtil.isMtEnabled())
+            try
             {
-                // MT share - add tenantDomain
-                try
+                if (activityData.length() > 0)
                 {
                     JSONObject jo = new JSONObject(new JSONTokener(activityData));
-                    jo.put(PostLookup.JSON_TENANT_DOMAIN, tenantService.getCurrentUserDomain());
-                    activityData = jo.toString();
-                }
-                catch (JSONException e)
-                {
-                    throw new IllegalArgumentException("Invalid activity data - not valid JSON: " + e);
+                    if (AuthenticationUtil.isMtEnabled())
+                    {
+                        // MT share - add tenantDomain
+                        jo.put(PostLookup.JSON_TENANT_DOMAIN, tenantService.getCurrentUserDomain());
+                        activityData = jo.toString();
+                    }
+                    checkNodeRef(jo);
                 }
             }
+            catch (JSONException e)
+            {
+                //throw new IllegalArgumentException("Invalid activity data - not valid JSON: " + e);
+                // According to test data in org/alfresco/repo/activities/script/test_activityService.js
+                // invalid JSON should be OK.
+            }
+
             
             if (activityData.length() > ActivityPostDAO.MAX_LEN_ACTIVITY_DATA)
             {
@@ -262,5 +269,29 @@ public class ActivityPostServiceImpl implements ActivityPostService
         }
         
         return userId;
+    }
+    
+    /**
+     * Validate that the nodeRef property - if present in the activity data - is valid
+     * on a basic level (it can be used to construct a NodeRef object).
+     * 
+     * @param activityPost
+     * @throws JSONException 
+     */
+    private void checkNodeRef(JSONObject jo) throws JSONException
+    {
+        String nodeRefStr = null;
+        try
+        {
+            if (jo.has(PostLookup.JSON_NODEREF))
+            {
+                nodeRefStr = jo.getString(PostLookup.JSON_NODEREF);
+                new NodeRef(nodeRefStr);
+            }
+        }
+        catch (Exception e)
+        {
+            throw new IllegalArgumentException("Invalid node ref: " + nodeRefStr);
+        }
     }
 }

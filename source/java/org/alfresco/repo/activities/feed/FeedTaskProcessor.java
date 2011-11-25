@@ -45,6 +45,7 @@ import org.alfresco.repo.domain.activities.ActivityPostEntity;
 import org.alfresco.repo.domain.activities.FeedControlEntity;
 import org.alfresco.repo.template.ISO8601DateFormatMethod;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.JSONtoFmModel;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -205,6 +206,24 @@ public abstract class FeedTaskProcessor
                 catch(JSONException je)
                 {
                     logger.error("Skipping activity post " + activityPost.getId() + " due to invalid activity data: " + je);
+                    updatePostStatus(activityPost.getId(), ActivityPostEntity.STATUS.ERROR);
+                    continue;
+                }
+                
+                String nodeRefStr = (String) model.get(PostLookup.JSON_NODEREF);
+                try
+                {
+                    // If a nodeRef is present, then it must be valid.
+                    if (nodeRefStr != null)
+                    {
+                        // Attempt to create a nodeRef, making use of the constructor's validation.
+                        new NodeRef(nodeRefStr);
+                    }
+                }
+                catch (Exception e)
+                {
+                    logger.error("Skipping activity post " + activityPost.getId() +
+                                " due to invalid nodeRef: " + nodeRefStr);
                     updatePostStatus(activityPost.getId(), ActivityPostEntity.STATUS.ERROR);
                     continue;
                 }

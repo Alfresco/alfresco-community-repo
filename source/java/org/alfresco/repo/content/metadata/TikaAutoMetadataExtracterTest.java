@@ -18,9 +18,7 @@
  */
 package org.alfresco.repo.content.metadata;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
@@ -36,7 +34,10 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.tika.config.TikaConfig;
+import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.AutoDetectParser;
@@ -55,6 +56,8 @@ import org.apache.tika.parser.odf.OpenDocumentParser;
  */
 public class TikaAutoMetadataExtracterTest extends AbstractMetadataExtracterTest
 {
+    private static Log logger = LogFactory.getLog(TikaAutoMetadataExtracterTest.class);
+    
     private TikaAutoMetadataExtracter extracter;
     private static final QName TIKA_MIMETYPE_TEST_PROPERTY =
        QName.createQName("TikaMimeTypeTestProp");
@@ -121,12 +124,14 @@ public class TikaAutoMetadataExtracterTest extends AbstractMetadataExtracterTest
         String[] testFiles = new String[] {
               ".doc", ".docx", ".xls", ".xlsx",
               ".ppt", ".pptx", 
-              //".vsd", // Not auto-detected properly yet
-              //"2010.dwg", // Not auto-detected properly yet
+              //".vsd", // Our sample file lacks suitable metadata
+              "2010.dwg",
+              "2003.mpp", "2007.mpp",
               ".pdf",
               ".odt",
         };
            
+        AutoDetectParser ap = new AutoDetectParser();
         for (String fileBase : testFiles)
         {
            String filename = "quick" + fileBase;
@@ -134,12 +139,15 @@ public class TikaAutoMetadataExtracterTest extends AbstractMetadataExtracterTest
            File file = new File(url.getFile());
            
            // Cheat and ask Tika for the mime type!
-           AutoDetectParser ap = new AutoDetectParser();
            Metadata metadata = new Metadata();
            metadata.set(Metadata.RESOURCE_NAME_KEY, filename);
-           MediaType mt = ap.getDetector().detect(
-                 new BufferedInputStream(new FileInputStream(file)), metadata);
+           MediaType mt = ap.getDetector().detect(TikaInputStream.get(file), metadata);
            String mimetype = mt.toString();
+           
+           if (logger.isDebugEnabled())
+           {
+              logger.debug("Detected mimetype " + mimetype + " for quick test file " + filename);
+           }
 
            // Have it processed
            Map<QName, Serializable> properties = extractFromFile(file, mimetype);
@@ -178,7 +186,7 @@ public class TikaAutoMetadataExtracterTest extends AbstractMetadataExtracterTest
       
       // Check for extra fields
       // Author isn't there for the OpenDocument ones
-      if(mimetype.indexOf(".oasis.") == -1 && !mimetype.endsWith("/ogg")) 
+      if(mimetype.indexOf(".oasis.") == -1 && !mimetype.endsWith("/ogg") && !mimetype.endsWith("dwg")) 
       {
          assertEquals(
                "Property " + ContentModel.PROP_AUTHOR + " not found for mimetype " + mimetype,
@@ -192,20 +200,23 @@ public class TikaAutoMetadataExtracterTest extends AbstractMetadataExtracterTest
             "Test Property " + TIKA_MIMETYPE_TEST_PROPERTY + " not found for mimetype " + mimetype,
             properties.containsKey(TIKA_MIMETYPE_TEST_PROPERTY)
       );
-      // TODO - uncomment this when TIKA-391 is properly fixed
-//      assertEquals(
-//            "Test Property " + TIKA_MIMETYPE_TEST_PROPERTY + " incorrect for mimetype " + mimetype,
-//            mimetype,
-//            DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(TIKA_MIMETYPE_TEST_PROPERTY)));
+      assertEquals(
+            "Test Property " + TIKA_MIMETYPE_TEST_PROPERTY + " incorrect for mimetype " + mimetype,
+            mimetype,
+            DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(TIKA_MIMETYPE_TEST_PROPERTY)));
       
       // Extra media checks for music formats
-      if(mimetype.endsWith("/ogg"))
+      if(mimetype.startsWith("audio"))
       {
-         // Pending ALF-6170 for proper music namespace
          assertEquals(
                "Property " + ContentModel.PROP_AUTHOR + " not found for mimetype " + mimetype,
                "Hauskaz",
                DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_AUTHOR)));
+         QName artistQ = QName.createQName(NamespaceService.AUDIO_MODEL_1_0_URI, "artist"); 
+         assertEquals(
+               "Property " + artistQ + " not found for mimetype " + mimetype,
+               "Hauskaz",
+               DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(artistQ)));
       }
    }
 

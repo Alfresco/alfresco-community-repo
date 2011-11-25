@@ -61,7 +61,6 @@ public class TikaAutoMetadataExtracter extends TikaPoweredMetadataExtracter
        parser = new AutoDetectParser(config);
 
        SUPPORTED_MIMETYPES = new ArrayList<String>();
-       parser = new AutoDetectParser();
        for(MediaType mt : parser.getParsers().keySet()) 
        {
           // Add the canonical mime type

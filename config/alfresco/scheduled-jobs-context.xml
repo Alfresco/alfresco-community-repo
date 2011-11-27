@@ -128,57 +128,6 @@
         </property>
     </bean>
     
-    <bean id="avmOrphanReaperJob" class="org.alfresco.util.TriggerBean">
-        <property name="jobDetail">
-            <bean id="avmOrphanReaperJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
-                <property name="jobClass">
-                    <value>org.alfresco.repo.avm.OrphanReaperJob</value>
-                </property>
-		        <property name="jobDataAsMap">
-            		<map>
-                		<entry key="orphanReaper">
-                    		<ref bean="orphanReaper"/>
-                		</entry>
-            		</map>
-        		</property>
-            </bean>
-        </property>
-        <property name="scheduler">
-            <ref bean="schedulerFactory"/>
-        </property>
-        <property name="startDelayMinutes">
-            <value>1</value>
-        </property>
-        <property name="repeatIntervalMinutes">
-            <value>1</value>
-        </property>
-    </bean>
-
-    <!-- Job to scan for expired content in website staging areas -->
-    <bean id="avmExpiredContentTrigger" class="org.alfresco.util.CronTriggerBean">
-        <property name="jobDetail">
-            <bean id="avmExpiredContentJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
-                <property name="jobClass">
-                    <value>org.alfresco.repo.avm.AVMExpiredContentJob</value>
-                </property>
-                <property name="jobDataAsMap">
-                    <map>
-                       <entry key="expiredContentProcessor">
-                           <ref bean="avmExpiredContentProcessor" />
-                       </entry>
-                    </map>
-                </property>
-            </bean>
-        </property>
-        <property name="scheduler">
-            <ref bean="schedulerFactory" />
-        </property>
-        <!-- trigger at 3:30am each day -->
-        <property name="cronExpression">
-            <value>0 30 3 * * ?</value>
-        </property>
-    </bean>
-        
     <!-- enable scheduler property to activate -->
     <bean id="userUsageCollapseJob" class="org.alfresco.util.TriggerBean">
         <property name="jobDetail">
@@ -211,12 +160,6 @@
         </property>
           
     </bean>
-    
-    <!-- There is a job available to purge old deploymentattempt nodes  -->
-    <!-- from the repository. The maximum age of the node can be configured. -->
-    <!-- See the wiki (http://wiki.alfresco.com/wikiDeployment) for details -->
-    <!-- and the deployment-attempt-cleaner-context.xml.sample file. -->
-    
     
     <!--  note: Activities (feed) jobs have moved to Activities subsystem (since 3.5) -->
     

@@ -288,7 +288,7 @@ public class OrphanReaper
                 String lockToken = getLock(20000L);
                 if (lockToken == null)
                 {
-                    fgLogger.warn("Can't get lock. Assume multiple reapers ...");
+                    fgLogger.info("Can't get lock. Assume multiple reapers ...");
                     fActive = false;
                     return null;
                 }
@@ -436,6 +436,8 @@ public class OrphanReaper
                     
                     reapCnt++;
                 }
+                
+                jobLockService.releaseLock(lockToken, LOCK);
                 
                 if (fgLogger.isDebugEnabled())
                 {

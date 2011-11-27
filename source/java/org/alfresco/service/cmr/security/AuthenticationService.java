@@ -22,7 +22,6 @@ import java.util.Set;
 
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.service.Auditable;
-import org.alfresco.service.PublicService;
 
 /**
  * The authentication service defines the API for managing authentication information 

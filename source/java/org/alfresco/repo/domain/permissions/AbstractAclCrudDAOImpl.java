@@ -258,6 +258,7 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
         int updated = aclEntityCache.updateValue(entity.getId(), entity);
         if (updated < 1)
         {
+            aclEntityCache.removeByKey(entity.getId());
             throw new ConcurrencyFailureException("AclEntity with ID (" + entity.getId() + ") no longer exists or has been updated concurrently");
         }
     }
@@ -273,6 +274,7 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
         int deleted = aclEntityCache.deleteByKey(id);
         if (deleted < 1)
         {
+            aclEntityCache.removeByKey(id);
             throw new ConcurrencyFailureException("AclEntity with ID " + id + " no longer exists");
         }
     }
@@ -432,6 +434,7 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
         
         if (updated < 1)
         {
+            aclEntityCache.removeByKey(entity.getId());
             throw new ConcurrencyFailureException("AclMemberEntity with ID (" + entity.getId() + ") no longer exists or has been updated concurrently");
         }
     }
@@ -514,6 +517,7 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
         int deleted = deleteAclChangeSetEntity(changeSetId);
         if (deleted != 1)
         {
+            aclEntityCache.removeByKey(changeSetId);
             throw new ConcurrencyFailureException("Deleted by ID should delete exactly 1: " + changeSetId);
         }
     }
@@ -738,6 +742,7 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
             int updated = permissionEntityCache.updateValue(permission.getId(), permission);
             if (updated < 1)
             {
+                aclEntityCache.removeByKey(permission.getId());
                 throw new ConcurrencyFailureException("PermissionEntity with ID (" + permission.getId() + ") no longer exists or has been updated concurrently");
             }
         }
@@ -754,6 +759,7 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
         int deleted = permissionEntityCache.deleteByKey(id);
         if (deleted < 1)
         {
+            aclEntityCache.removeByKey(id);
             throw new ConcurrencyFailureException("PermissionEntity with ID " + id + " no longer exists");
         }
     }
@@ -915,6 +921,7 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
             int updated = authorityEntityCache.updateValue(entity.getId(), entity);
             if (updated < 1)
             {
+                aclEntityCache.removeByKey(entity.getId());
                 throw new ConcurrencyFailureException("AuthorityEntity with ID (" + entity.getId() + ") no longer exists or has been updated concurrently");
             }
         }
@@ -931,6 +938,7 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
         int deleted = authorityEntityCache.deleteByKey(id);
         if (deleted < 1)
         {
+            aclEntityCache.removeByKey(id);
             throw new ConcurrencyFailureException("AuthorityEntity with ID " + id + " no longer exists");
         }
     }

@@ -33,9 +33,31 @@
         <property name="cmisServiceFactory"     ref="CMISServiceFactory" />
     </bean>
 
+    <!-- Factory providing OpenCMIS with a CMISService -->
     <bean id="CMISServiceFactory" class="org.alfresco.opencmis.AlfrescoCmisServiceFactory">
         <property name="cmisConnector"          ref="CMISConnector" />
+        <property name="cmisTransactions"       ref="CMISService_Transactions" />
+        <property name="cmisExceptions"         ref="CMISService_Exceptions" />
+        <property name="cmisControl"            ref="CMISService_Control" />
     </bean>
+
+    <bean id="CMISService_Transactions" class="org.alfresco.repo.transaction.RetryingTransactionInterceptor">
+        <property name="transactionService"     ref="TransactionService" />
+        <property name="transactionManager"     ref="transactionManager" />
+        <property name="transactionAttributes">
+            <props>
+                <prop key="get*">${server.transaction.mode.readOnly}</prop>
+                <prop key="query">${server.transaction.mode.readOnly}</prop>
+                <prop key="open">PROPAGATION_SUPPORTS, readOnly</prop>
+                <prop key="close">PROPAGATION_SUPPORTS, readOnly</prop>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="CMISService_Exceptions" class="org.alfresco.opencmis.AlfrescoCmisExceptionInterceptor" />
+
+    <bean id="CMISService_Control" class="org.alfresco.opencmis.AlfrescoCmisServiceInterceptor" />
 
     <bean id="CMISConnector" class="org.alfresco.opencmis.CMISConnector">
         <property name="store"                  value="${spaces.store}" />

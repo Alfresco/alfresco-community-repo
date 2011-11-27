@@ -174,6 +174,7 @@ import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyStringImpl
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyUriImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.RepositoryCapabilitiesImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.RepositoryInfoImpl;
+import org.apache.chemistry.opencmis.commons.server.CmisService;
 import org.apache.chemistry.opencmis.commons.spi.Holder;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -185,11 +186,14 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
 /**
  * Bridge connecting Alfresco and OpenCMIS.
+ * <p/>
+ * This class  provides many of the typical services that the {@link CmisService} implementation
+ * will need to use Alfresco.
  * 
  * @author florian.mueller
+ * @author Derek Hulley
  */
-public class CMISConnector implements ApplicationContextAware, ApplicationListener<ApplicationContextEvent>,
-        TenantDeployer
+public class CMISConnector implements ApplicationContextAware, ApplicationListener<ApplicationContextEvent>, TenantDeployer
 {
     public static final char ID_SEPERATOR = ';';
     public static final String ASSOC_ID_PREFIX = "assoc:";
@@ -565,9 +569,14 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         return dictionaryService;
     }
 
+    /**
+     * Not implemented
+     * @throws UnsupportedOperationException always
+     */
     public void setProxyUser(String proxyUser)
     {
-        this.proxyUser = proxyUser;
+//        this.proxyUser = proxyUser;
+        throw new UnsupportedOperationException("proxyUser setting not implemented.  Please raise a JIRA request.");
     }
 
     public String getProxyUser()

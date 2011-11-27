@@ -25,9 +25,6 @@ import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 
-import org.alfresco.cmis.CMISAccessControlService;
-import org.alfresco.cmis.CMISRenditionService;
-import org.alfresco.cmis.CMISServices;
 import org.alfresco.opencmis.dictionary.CMISDictionaryService;
 import org.alfresco.opencmis.mapping.CMISMapping;
 import org.alfresco.opencmis.search.CMISQueryService;

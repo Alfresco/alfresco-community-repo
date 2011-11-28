@@ -2844,9 +2844,16 @@ alfresco.xforms.VGroup = alfresco.xforms.AbstractGroup.extend({
     var contentDivWidth = "100%";
     // the following does avoid devision by zero ... in contentDiv.offsetLeft / child.domContainer.offsetWidth
     var ow = child.domContainer.offsetWidth;
-    if (!(child instanceof alfresco.xforms.AbstractGroup) && ow != 0)
+    if (!(child instanceof alfresco.xforms.AbstractGroup))
     {
-    	contentDivWidth = ((1 - (contentDiv.offsetLeft / ow)) * 100) + "%";
+        if (ow != 0)
+        {
+            contentDivWidth = ((1 - (contentDiv.offsetLeft / ow)) * 100) + "%";
+        }
+        else
+        {
+            contentDivWidth = "70%";
+        }
     }
     contentDiv.style.width = contentDivWidth;
     child.render(contentDiv);
@@ -2873,7 +2880,26 @@ alfresco.xforms.VGroup = alfresco.xforms.AbstractGroup.extend({
 //                                                                (.5 * contentDiv.labelNode.offsetHeight))) + "px";
       contentDiv.labelNode.style.position = "relative";
       contentDiv.labelNode.style.top = "0px";
-      contentDiv.labelNode.style.height = oh + "px";
+      if (oh)
+      {
+          contentDiv.labelNode.style.height = oh + "px";
+      }
+      else
+      {
+          var defaultHeight = 20;
+          if (child instanceof alfresco.xforms.RichTextEditor)
+          {
+              defaultHeight = 200;
+          }
+          contentDiv.labelNode.style.height = defaultHeight + "px";
+          contentDiv.style.top = "-" + defaultHeight + "px";
+          child.domContainer.style.height = defaultHeight + "px";
+      }
+
+      if (!contentDiv.labelNode.scrollWidth)
+      {
+          contentDiv.labelNode.style.width = "30%";
+      }
       contentDiv.labelNode.style.lineHeight = contentDiv.labelNode.style.height;
 
     }
@@ -4222,6 +4248,9 @@ alfresco.xforms.XForm = new Class({
     this.rootWidget = new alfresco.xforms.ViewRoot(this, rootGroup);
     this.rootWidget.render(alfUI);
 
+    //par variable is introduced for offline domNode editing, which improves performance
+    var par = this.rootWidget.domNode.parentNode;
+    par.removeChild(this.rootWidget.domNode);
     this.loadWidgets(rootGroup, this.rootWidget);
   },
 
@@ -4291,20 +4320,20 @@ alfresco.xforms.XForm = new Class({
       {
          if (alfresco.ieVersion == -1)
          {
-      	// fix for ETWOTWO-490, hide elements after rendering  (Mozila/Firefox)    
-	    if ((i == (xformsNode.childNodes.length - 1)) &&
-	        (parentWidget instanceof alfresco.xforms.SwitchGroup))
-	      {  
-	         for (var x = 0; x < parentWidget._children.length; x++)
-	         {
-	            if (parentWidget.triggers[x].getActions()["toggle"].properties["case"] != parentWidget._selectedCaseId)	            
-	            {
-	               parentWidget._children[x].domContainer.style.display = "none";
-	            }
-	         }
-	      }
-         }	      
-        continue;
+            // fix for ETWOTWO-490, hide elements after rendering  (Mozila/Firefox)    
+            if ((i == (xformsNode.childNodes.length - 1)) &&
+               (parentWidget instanceof alfresco.xforms.SwitchGroup))
+            {
+               for (var x = 0; x < parentWidget._children.length; x++)
+               {
+                  if (parentWidget.triggers[x].getActions()["toggle"].properties["case"] != parentWidget._selectedCaseId)	            
+                  {
+                     parentWidget._children[x].domContainer.style.display = "none";
+                  }
+               }
+            }
+         }
+         continue;
       }
       alfresco.log("loading " + xformsNode.childNodes[i].nodeName + 
                  " into " + parentWidget.id);

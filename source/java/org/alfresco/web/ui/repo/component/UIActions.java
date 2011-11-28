@@ -103,10 +103,6 @@ public class UIActions extends SelfRenderingComponent
       this.showLink = (Boolean)values[2];
       this.verticalSpacing = (Integer)values[3];
       this.groups = new HashSet<String>(4);
-      
-      // when the state of the component is restored, clear the child list of components - they
-      // are always rebuilt on initial page render - otherwise the list will grow forever...
-      this.getChildren().clear();
    }
    
    /**
@@ -158,6 +154,20 @@ public class UIActions extends SelfRenderingComponent
             if (logger.isDebugEnabled())
                logger.debug("---already built component tree for default actions.");
             return;
+         }
+      }
+      
+      // look to see if we built a component set for that component group on a previous render
+      // this will need removing from the child component set to ensure that it does not grow endlessly
+      for (Iterator i=getChildren().iterator(); i.hasNext(); /**/)
+      {
+         UIComponent child = (UIComponent)i.next();
+         if (contextId.equals(child.getAttributes().get("contextId")))
+         {
+            if (logger.isDebugEnabled())
+               logger.debug("***removing old child component set for contextId: " + contextId);
+            i.remove();
+            break;
          }
       }
       

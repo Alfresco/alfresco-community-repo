@@ -24,10 +24,9 @@
     </bean>
 
     <!-- Web Project service transaction bean -->
-    <bean id="WebProjectService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
-        <property name="transactionManager">
-            <ref bean="transactionManager"/>
-        </property>
+    <bean id="WebProjectService_transaction" class="org.alfresco.repo.transaction.RetryingTransactionInterceptor">
+        <property name="transactionManager" ref="transactionManager"/>
+        <property name="transactionService" ref="transactionService"/>
         <property name="transactionAttributes">
             <props>
                 <prop key="get*">${server.transaction.mode.readOnly}</prop>
@@ -80,10 +79,9 @@
     </bean>
 
     <!-- Asset service transaction bean -->
-    <bean id="AssetService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
-        <property name="transactionManager">
-            <ref bean="transactionManager"/>
-        </property>
+    <bean id="AssetService_transaction" class="org.alfresco.repo.transaction.RetryingTransactionInterceptor">
+        <property name="transactionManager" ref="transactionManager"/>
+        <property name="transactionService" ref="transactionService"/>
         <property name="transactionAttributes">
             <props>
                 <prop key="get*">${server.transaction.mode.readOnly}</prop>
@@ -172,10 +170,9 @@
     </bean>
 
     <!-- Sandbox service transaction bean -->
-    <bean id="SandboxService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
-        <property name="transactionManager">
-            <ref bean="transactionManager"/>
-        </property>
+    <bean id="SandboxService_transaction" class="org.alfresco.repo.transaction.RetryingTransactionInterceptor">
+        <property name="transactionManager" ref="transactionManager"/>
+        <property name="transactionService" ref="transactionService"/>
         <property name="transactionAttributes">
             <props>
                 <prop key="get*">${server.transaction.mode.readOnly}</prop>
@@ -257,10 +254,9 @@
     </bean>
 
     <!-- PreviewURI Service service transaction bean -->
-    <bean id="PreviewURIService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
-        <property name="transactionManager">
-            <ref bean="transactionManager"/>
-        </property>
+    <bean id="PreviewURIService_transaction" class="org.alfresco.repo.transaction.RetryingTransactionInterceptor">
+        <property name="transactionManager" ref="transactionManager"/>
+        <property name="transactionService" ref="transactionService"/>
         <property name="transactionAttributes">
             <props>
                 <prop key="get*">${server.transaction.mode.readOnly}</prop>

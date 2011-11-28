@@ -18,7 +18,9 @@
  */
 package org.alfresco.repo.security.permissions.impl;
 
+import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.tenant.TenantDisabledException;
 import org.alfresco.service.transaction.ReadOnlyServerException;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -60,6 +62,11 @@ public class ExceptionTranslatorMethodInterceptor implements MethodInterceptor
         {
             // this usually occurs when the server is in read-only mode
             throw new AccessDeniedException(ReadOnlyServerException.MSG_READ_ONLY, e);
+        }
+        catch (TenantDisabledException e)
+        {
+            // the cause already has an I18Nd message
+            throw new AuthenticationException(e.getMessage(), e);
         }
     }
 }

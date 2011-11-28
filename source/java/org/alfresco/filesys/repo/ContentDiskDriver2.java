@@ -1885,10 +1885,10 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             // Check if the file is being marked for deletion, if so then check if the file is locked       
             if ( info.hasSetFlag(FileInfo.SetDeleteOnClose) && info.hasDeleteOnClose())
             {
-                if(logger.isDebugEnabled())
+               if(logger.isDebugEnabled())
                 {
                     logger.debug("Set Delete On Close for :" + name);
-                }
+                } 
                 // Check for delete permission
                 if ( permissionService.hasPermission(nodeRef, PermissionService.DELETE) == AccessStatus.DENIED)
                 {
@@ -1917,13 +1917,17 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                     if ( isFolder == true && getCifsHelper().isFolderEmpty( nodeRef) == false)
                     {
                         throw new DirectoryNotEmptyException( name);
-                    }
-                                                    
-                    if ( logger.isDebugEnabled())
-                    {
-                        logger.debug("Set deleteOnClose=true file=" + name);
-                    }
+                    }                                                   
                 }
+            }
+            
+            if(info.isHidden())
+            {
+                if ( logger.isDebugEnabled())
+                {
+                    logger.debug("Set hidden attribute" + name);
+                }
+                // Not yet implemented
             }
             
             if( info.hasSetFlag(FileInfo.SetAllocationSize))
@@ -1943,17 +1947,17 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             // The NTProtocolHandler sets the deleteOnClose in both
             // info and the NetworkFile - it's the one in NetworkFile that works.
             
-            if ( info.hasSetFlag(FileInfo.SetCreationDate))
+            if ( info.hasSetFlag(FileInfo.SetCreationDate) && info.hasCreationDateTime())
             {
                 // Set the creation date on the file/folder node
-                Date createDate = new Date( info.getCreationDateTime());
+                Date createDate = new Date(info.getCreationDateTime());
                 auditableProps.put(ContentModel.PROP_CREATED, createDate);
                 if ( logger.isDebugEnabled())
                 {
                     logger.debug("Set creation date" + name + ", " + createDate);
                 }
             }
-            if ( info.hasSetFlag(FileInfo.SetModifyDate)) 
+            if ( info.hasSetFlag(FileInfo.SetModifyDate) && info.hasModifyDateTime()) 
             {                
                  // Set the modification date on the file/folder node
                 Date modifyDate = new Date( info.getModifyDateTime());

@@ -232,8 +232,10 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
                 // Check if the broadcast mask is a valid numeric IP address
 
                 if (IPAddress.isNumericAddress(broadcastAddess) == false)
-                    throw new AlfrescoRuntimeException("Invalid broadcast mask, must be n.n.n.n format");
-
+                {
+                    throw new AlfrescoRuntimeException("CIFS Invalid broadcast mask, must be n.n.n.n format");
+                }
+                
                 // Set the network broadcast mask
 
                 cifsConfig.setBroadcastMask(broadcastAddess);
@@ -243,8 +245,10 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
 
             String hostName = cifsConfigBean.getServerName();
             if (hostName == null || hostName.length() == 0)
-                throw new AlfrescoRuntimeException("Host name not specified or invalid");
-
+            {
+                throw new AlfrescoRuntimeException("CIFS Host name not specified or invalid");
+            }
+            
             // Check if the host name contains the local name token
 
             int pos = hostName.indexOf(TokenLocalName);
@@ -264,14 +268,19 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
 
                 pos += TokenLocalName.length();
                 if (pos < hostName.length())
+                {
                     hostStr.append(hostName.substring(pos));
-
+                }
+                
                 hostName = hostStr.toString();
 
                 // Make sure the CIFS server name does not match the local server name
 
                 if (hostName.equals(srvName) && getPlatformType() == Platform.Type.WINDOWS)
+                {
                     throw new AlfrescoRuntimeException("CIFS server name must be unique");
+            
+                }
             }
 
             // Check if the host name is longer than 15 characters. NetBIOS only allows a maximum of 16 characters in
@@ -316,9 +325,7 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
                     localDomain = "WORKGROUP";
 
                     // Output a warning
-
-                    logger.error("Failed to get local domain/workgroup name, using default of " + localDomain);
-                    logger.error("(This may be due to firewall settings or incorrect <broadcast> setting)");
+                    logger.warn("CIFS, Unable to get local domain/workgroup name, using default of " + localDomain + ". This may be due to firewall settings or incorrect <broadcast> setting)");
                 }
 
                 // Set the local domain/workgroup that the CIFS server belongs to
@@ -367,7 +374,7 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
                 }
                 catch (UnknownHostException ex)
                 {
-                    throw new AlfrescoRuntimeException("Invalid CIFS server bind address");
+                    throw new AlfrescoRuntimeException("CIFS Unable to bind to address :" + bindTo, ex);
                 }
             }
 
@@ -378,8 +385,10 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
                 cifsConfig.setAuthenticator(authenticator);
             }
             else
+            {
                 throw new AlfrescoRuntimeException("CIFS authenticator not specified");
-
+            }
+            
             // Check if the host announcer has been disabled
             
             if (!cifsConfigBean.getHostAccouncerEnabled())
@@ -390,7 +399,7 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
                 
                 // Log that host announcements are not enabled
                 
-                logger.info("Host announcements not enabled");
+                logger.info("CIFS Host announcements not enabled");
             }
             else
             {
@@ -406,8 +415,10 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
                 // host announcer is enabled
       
                 if (cifsConfig.getDomainName() == null)
-                    throw new AlfrescoRuntimeException("Domain name must be specified if host announcement is enabled");
-      
+                {
+                    throw new AlfrescoRuntimeException("CIFS Domain name must be specified if host announcement is enabled");
+                }
+                
                 // Enable host announcement
       
                 cifsConfig.setHostAnnouncer(true);
@@ -449,8 +460,10 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
                     // Check if the broadcast mask has been specified
 
                     if (cifsConfig.getBroadcastMask() == null)
-                        throw new AlfrescoRuntimeException("Network broadcast mask not specified");
-
+                    {
+                        throw new AlfrescoRuntimeException("CIFS Network broadcast mask not specified");
+                    }
+                    
                     // Check for a bind address
 
                     String bindto = netBIOSSMBConfigBean.getBindTo();
@@ -472,7 +485,7 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
                         }
                         catch (UnknownHostException ex)
                         {
-                            throw new AlfrescoRuntimeException("Invalid NetBIOS bind address");
+                            throw new AlfrescoRuntimeException("CIFS Invalid NetBIOS bind address:" + bindto, ex);
                         }
                     }
                     else if (cifsConfig.hasSMBBindAddress())
@@ -496,7 +509,7 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
                         }
                         catch (UnknownHostException ex)
                         {
-                            logger.error("Failed to get local address list", ex);
+                            logger.error("CIFS Failed to get local address list", ex);
                         }
 
                         // Check the address list for one or more valid local addresses filtering out the loopback
@@ -580,7 +593,9 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
                                             logger.debug("  Address: " + addrs[i]);
                                     }
                                     else
+                                    {
                                         logger.debug("  No addresses");
+                                    }
                                 }
 
                                 // Throw an exception to stop the CIFS/NetBIOS name server from starting
@@ -728,11 +743,14 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
                         // DEBUG
                         
                         if ( logger.isInfoEnabled())
+                        {
                             logger.info("Enabled CIFS IPv6 bind address for native SMB");
+                    
+                        }
                     }
                     catch ( UnknownHostException ex)
                     {
-                        throw new AlfrescoRuntimeException("Failed to enable IPv6 bind address, " + ex.getMessage());
+                        throw new AlfrescoRuntimeException("CIFS Failed to enable IPv6 bind address, " + ex.getMessage());
                     }
                 }
                 
@@ -1159,7 +1177,7 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
                 }
                 catch (UnknownHostException ex)
                 {
-                    throw new AlfrescoRuntimeException("Invalid FTP bindto address, " + bindText);
+                    throw new AlfrescoRuntimeException("Unable to find FTP bindto address, " + bindText, ex);
                 }
             }
 
@@ -1202,7 +1220,9 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
                     // Check if the anonymous account name is valid
 
                     if (ftpConfig.getAnonymousFTPAccount() == null || ftpConfig.getAnonymousFTPAccount().length() == 0)
+                    {
                         throw new AlfrescoRuntimeException("Anonymous FTP account invalid");
+                    }
                 }
                 else
                 {
@@ -1301,11 +1321,11 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
                 }
                 catch (IllegalCharsetNameException ex)
                 {
-                    throw new AlfrescoRuntimeException("Illegal character set name, " + charSet);
+                    throw new AlfrescoRuntimeException("FTP Illegal character set name, " + charSet);
                 }
                 catch (UnsupportedCharsetException ex)
                 {
-                    throw new AlfrescoRuntimeException("Unsupported character set name, " + charSet);
+                    throw new AlfrescoRuntimeException("FTP Unsupported character set name, " + charSet);
                 }
             }
 
@@ -1480,8 +1500,9 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
                 // Range check the pool size value
 
                 if (poolSize < 4)
+                {
                     throw new AlfrescoRuntimeException("NFS thread pool size is below minimum of 4");
-
+                }
                 // Set the thread pool size
 
                 nfsConfig.setNFSThreadPoolSize(poolSize);
@@ -1512,12 +1533,16 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
             if (portMapperPort != null)
             {
                 nfsConfig.setPortMapperPort(portMapperPort);
-                if ( nfsConfig.getPortMapperPort() == -1) {
+                if ( nfsConfig.getPortMapperPort() == -1) 
+                {
                 	logger.info("NFS portmapper registration disabled");
                 }
-                else {
+                else 
+                {
                 	if (nfsConfig.getPortMapperPort() <= 0 || nfsConfig.getPortMapperPort() >= 65535)
-                		throw new AlfrescoRuntimeException("Port mapper server port out of valid range");
+                	{
+                		throw new AlfrescoRuntimeException("NFS Port mapper server port out of valid range");
+                	}
                 }
             }
 
@@ -1528,7 +1553,9 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
             {
                 nfsConfig.setMountServerPort(mountServerPort);
                 if (nfsConfig.getMountServerPort() < 0 || nfsConfig.getMountServerPort() >= 65535)
-                    throw new AlfrescoRuntimeException("Mount server port out of valid range");
+                {
+                    throw new AlfrescoRuntimeException("NFS Mount server port out of valid range");
+                }
             }
 
             // Check for an NFS server port
@@ -1538,7 +1565,9 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
             {
                 nfsConfig.setNFSServerPort(nfsServerPort);
                 if (nfsConfig.getNFSServerPort() < 0 || nfsConfig.getNFSServerPort() >= 65535)
+                {
                     throw new AlfrescoRuntimeException("NFS server port out of valid range");
+                }
             }
 
             // Check for an RPC registration port
@@ -1548,7 +1577,9 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
             {
                 nfsConfig.setRPCRegistrationPort( rpcRegisterPort);
                 if ( nfsConfig.getRPCRegistrationPort() < 0 || nfsConfig.getRPCRegistrationPort() >= 65535)
+                {
                     throw new AlfrescoRuntimeException("RPC registrtion port out of valid range");
+                }
             }
             
             // Check for NFS debug flags
@@ -1608,7 +1639,9 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
                 nfsConfig.setRpcAuthenticator(rpcAuthenticator);
             }
             else
+            {
                 throw new AlfrescoRuntimeException("RPC authenticator configuration missing, require user mappings");
+            }
         }
         catch (InvalidConfigurationException ex)
         {

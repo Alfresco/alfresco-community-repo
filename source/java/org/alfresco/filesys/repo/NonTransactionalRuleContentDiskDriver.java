@@ -40,6 +40,7 @@ import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.core.DeviceContext;
 import org.alfresco.jlan.server.core.DeviceContextException;
 import org.alfresco.jlan.server.filesys.FileAction;
+import org.alfresco.jlan.server.filesys.FileAttribute;
 import org.alfresco.jlan.server.filesys.FileInfo;
 import org.alfresco.jlan.server.filesys.FileName;
 import org.alfresco.jlan.server.filesys.FileOpenParams;
@@ -182,6 +183,7 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
         {
             int sharedAccess = params.getSharedAccess();
             String strSharedAccess = SharingMode.getSharingModeAsString(sharedAccess);
+            int attr = params.getAttributes();
            
             logger.debug("createFile:" + params.getPath() 
                     + ", isDirectory: " + params.isDirectory()
@@ -195,7 +197,9 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
                     + ", requestExclusiveOpLock:" +params.requestExclusiveOpLock()  
                     + ", isDeleteOnClose:" +params.isDeleteOnClose()
                     + ", sharedAccess: " + strSharedAccess
-                    + ", allocationSize: " + params.getAllocationSize());
+                    + ", allocationSize: " + params.getAllocationSize()
+                    + ", isHidden:" + FileAttribute.isHidden(attr)
+                    + ", isSystem:" + FileAttribute.isSystem(attr));
         }
         
         long creationDateTime = params.getCreationDateTime();
@@ -313,19 +317,10 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
             + ", isDeleteOnClose:" +param.isDeleteOnClose()
             + ", allocationSize:" + param.getAllocationSize()
             + ", sharedAccess: " + strSharedAccess
-            + ", openAction: " + param.getOpenAction()       
-            );
-            
-            // TODO - If we are going to truncate then don't waste time copying content.
-            if (param.getOpenAction() == FileAction.NTOverwriteIf)
-            {
-                logger.debug("NTOverwriteIf");
-            }
-            if (param.getOpenAction() == FileAction.NTOverwrite)
-            {
-                logger.debug("NTOverwrite");
-            }
-        }
+            + ", openAction: " + param.getOpenAction()
+            + param
+            );           
+         }
         
         ContentContext tctx = (ContentContext) tree.getContext();
         NodeRef rootNode = tctx.getRootNode();

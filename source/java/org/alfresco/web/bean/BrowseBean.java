@@ -915,7 +915,7 @@ public class BrowseBean implements IContextListener, Serializable
             parentRef = new NodeRef(Repository.getStoreRef(), parentNodeId);
          }
 
-         List<FileInfo> children = this.getFileFolderService().list(parentRef);
+         List<FileInfo> children = this.getFileFolderService().removeHiddenFiles(this.getFileFolderService().list(parentRef));
          this.containerNodes = new ArrayList<Node>(children.size());
          this.contentNodes = new ArrayList<Node>(children.size());
          

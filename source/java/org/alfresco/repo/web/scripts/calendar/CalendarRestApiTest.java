@@ -109,7 +109,7 @@ public class CalendarRestApiTest extends BaseWebScriptTest
         
         // Create users
         createUser(USER_ONE, SiteModel.SITE_COLLABORATOR);
-        createUser(USER_TWO, SiteModel.SITE_COLLABORATOR);
+        createUser(USER_TWO, SiteModel.SITE_CONSUMER);
 
         // Do tests as inviter user
         this.authenticationComponent.setCurrentUser(USER_ONE);
@@ -418,6 +418,31 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        JSONObject permissions = entry.getJSONObject("permissions");
        assertEquals(true, permissions.getBoolean("edit"));
        assertEquals(true, permissions.getBoolean("delete"));
+       
+       
+       // Switch users, will be able to see it still, but not edit
+       this.authenticationComponent.setCurrentUser(USER_TWO);
+       entry = getEntry(name, Status.STATUS_OK);
+       
+       assertEquals("Error found " + entry.toString(), false, entry.has("error"));
+       assertEquals(EVENT_TITLE_ONE, entry.getString("what"));
+       assertEquals(name, entry.getString("name"));
+       
+       assertEquals("2011-06-29T12:00:00.000+01:00", entry.getJSONObject("startAt").get("iso8601"));
+       assertEquals("6/29/2011", entry.getJSONObject("startAt").get("legacyDate"));
+       assertEquals("12:00", entry.getJSONObject("startAt").get("legacyTime"));
+       assertEquals("2011-06-29T13:00:00.000+01:00", entry.getJSONObject("endAt").get("iso8601"));
+       assertEquals("6/29/2011", entry.getJSONObject("endAt").get("legacyDate"));
+       assertEquals("13:00", entry.getJSONObject("endAt").get("legacyTime"));
+       
+       // Check the other user sees different permissions
+       assertEquals(true, entry.has("permissions"));
+       permissions = entry.getJSONObject("permissions");
+       assertEquals(false, permissions.getBoolean("edit"));
+       assertEquals(false, permissions.getBoolean("delete"));
+       
+       // Back to the main user for more tests
+       this.authenticationComponent.setCurrentUser(USER_ONE);
        
        
        // Edit

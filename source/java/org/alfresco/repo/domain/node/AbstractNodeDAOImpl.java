@@ -1055,11 +1055,20 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         Long childAclId = null;
         if (parentAclId != null)
         {
-            AccessControlListProperties inheritedAcl = aclDAO.getAccessControlListProperties(
-                    aclDAO.getInheritedAccessControlList(parentAclId));
-            if (inheritedAcl != null)
+            try
             {
-                childAclId = inheritedAcl.getId();
+                Long inheritedACL = aclDAO.getInheritedAccessControlList(parentAclId);
+                AccessControlListProperties inheritedAcl = aclDAO.getAccessControlListProperties(inheritedACL);
+                if (inheritedAcl != null)
+                {
+                    childAclId = inheritedAcl.getId();
+                }
+            }
+            catch (Throwable e)
+            {
+                // The get* calls above actually do writes.  So pessimistically get rid of the
+                // parent node from the cache in case it was wrong somehow.
+                invalidateNodeCaches(parentNodeId);
             }
         }
         // Build the cm:auditable properties

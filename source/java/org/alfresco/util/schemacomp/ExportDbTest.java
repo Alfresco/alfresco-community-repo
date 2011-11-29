@@ -76,9 +76,9 @@ public class ExportDbTest
     {
         Class dialectClass = dialect.getClass();
         
-        if (logger.isInfoEnabled())
+        if (logger.isDebugEnabled())
         {
-            logger.info("Using dialect class " + dialectClass.getName());
+            logger.debug("Using dialect class " + dialectClass.getName());
         }
         
         if (PostgreSQLDialect.class.isAssignableFrom(dialectClass))
@@ -90,7 +90,17 @@ public class ExportDbTest
             exportTester = new MySQLDialectExportTester(exporter, tx, jdbcTemplate);
         }
         
-        // Run the DBMS specific tests.
-        exportTester.runExportTest();
+        if (exportTester != null)
+        {
+            // Run the DBMS specific tests.
+            exportTester.runExportTest();
+        }
+        else
+        {
+            if (logger.isInfoEnabled())
+            {
+                logger.info("Unsupported dialect for this test " + dialectClass.getName());
+            }
+        }
     }
 }

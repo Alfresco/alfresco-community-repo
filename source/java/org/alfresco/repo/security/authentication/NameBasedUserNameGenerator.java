@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.security.authentication;
 
+import java.text.Normalizer;
+
 import org.apache.commons.lang.RandomStringUtils;
 
 /**
@@ -79,8 +81,8 @@ public class NameBasedUserNameGenerator implements UserNameGenerator
     		
     	userName = pattern
     		.replace("%i%", initial)
-    		.replace("%firstName%", firstName.toLowerCase())
-    		.replace("%lastName%", lastName.toLowerCase())
+    		.replace("%firstName%", cleanseName(firstName))
+    		.replace("%lastName%", cleanseName(lastName))
     		.replace("%emailAddress%", emailAddress.toLowerCase());
     	
     	if(seed > 0)
@@ -97,5 +99,14 @@ public class NameBasedUserNameGenerator implements UserNameGenerator
     	}
     	
         return userName;
+    }
+    
+    private String cleanseName(String name)
+    {
+        // Replace whitespace with _
+        String result= name.trim().toLowerCase().replaceAll("\\s+", "_");
+        
+        // Remove accents from characters and strips out non-alphanumeric chars.
+        return Normalizer.normalize(result, Normalizer.Form.NFD).replaceAll("[^a-zA-z0-9_]+", "");
     }
 }

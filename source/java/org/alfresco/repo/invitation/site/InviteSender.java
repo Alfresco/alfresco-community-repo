@@ -39,7 +39,6 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.MailActionExecuter;
-import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.service.ServiceRegistry;
@@ -92,7 +91,7 @@ public class InviteSender
     private final Repository repository;
     private final MessageService messageService;
     private final FileFolderService fileFolderService;
-    private final SysAdminParams sysAdminParams;
+//    private final SysAdminParams sysAdminParams;
     private final RepoAdminService repoAdminService;
     private final NamespaceService namespaceService;
     
@@ -104,7 +103,7 @@ public class InviteSender
         this.searchService = services.getSearchService();
         this.siteService = services.getSiteService();
         this.fileFolderService = services.getFileFolderService();
-        this.sysAdminParams = services.getSysAdminParams();
+//        this.sysAdminParams = services.getSysAdminParams();
         this.repoAdminService = services.getRepoAdminService();
         this.namespaceService = services.getNamespaceService();
         this.repository = repository;

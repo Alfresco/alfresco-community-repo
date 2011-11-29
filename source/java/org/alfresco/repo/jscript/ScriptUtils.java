@@ -252,18 +252,6 @@ public final class ScriptUtils extends BaseScopableProcessorExtension
     }
     
     /**
-     * Get a localized message string, parameterized using standard MessageFormatter.
-     * 
-     * @param messageKey message key
-     * @param params format parameters
-     * @return the localized string, null if not found
-     */
-    public String toLocalizedString(String messageId, Object... params)
-    {
-        return I18NUtil.getMessage(messageId, params);
-    }
-    
-    /**
      * Disable rule execution for this thread
      */
     public void disableRules()

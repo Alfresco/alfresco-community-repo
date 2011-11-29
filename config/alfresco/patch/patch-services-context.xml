@@ -576,327 +576,161 @@
             <value>3.3.x</value>
         </property>
     </bean>
-    
-    <!--===========================-->
-    <!--====== LIVE PATCHES =======-->
-    <!--===========================-->
-
-    <bean id="patch.webscripts2" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+    <bean id="patch.webscripts2" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch" >
         <property name="id"><value>patch.webscripts2</value></property>
         <property name="description"><value>patch.webscripts2.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>100</value></property>
         <property name="targetSchema"><value>101</value></property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.updateDmPermissions" />
-            </list>
-        </property>
-        <property name="importerBootstrap">
-            <ref bean="spacesBootstrap" />
-        </property>
-        <property name="bootstrapView">
-            <props>
-                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
-                <prop key="location">alfresco/bootstrap/webScripts2.xml</prop>
-            </props>
+        <property name="lastSupportedVersion" >
+            <value>3.4.x</value>
         </property>
     </bean>
-
-    <bean id="patch.customModels" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+    <bean id="patch.customModels" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch" >
         <property name="id"><value>patch.customModels</value></property>
         <property name="description"><value>patch.customModels.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>101</value></property>
         <property name="targetSchema"><value>102</value></property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.updateDmPermissions" />
-            </list>
-        </property>
-        <property name="importerBootstrap">
-            <ref bean="spacesBootstrap" />
-        </property>
-        <property name="checkPath">
-            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/app:models</value>
-        </property>
-        <property name="bootstrapView">
-            <props>
-                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
-                <prop key="location">alfresco/bootstrap/customModelsSpace.acp</prop>
-                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
-            </props>
+        <property name="lastSupportedVersion" >
+            <value>3.4.x</value>
         </property>
     </bean>
-    
-    <bean id="patch.customMessages" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+    <bean id="patch.customMessages" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch" >
         <property name="id"><value>patch.customMessages</value></property>
         <property name="description"><value>patch.customMessages.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>101</value></property>
         <property name="targetSchema"><value>102</value></property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.updateDmPermissions" />
-            </list>
-        </property>
-        <property name="importerBootstrap">
-            <ref bean="spacesBootstrap" />
-        </property>
-        <property name="checkPath">
-            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/app:messages</value>
-        </property>
-        <property name="bootstrapView">
-            <props>
-                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
-                <prop key="location">alfresco/bootstrap/customMessagesSpace.xml</prop>
-                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
-            </props>
+        <property name="lastSupportedVersion" >
+            <value>3.4.x</value>
         </property>
     </bean>
-  
-    <bean id="patch.customWebClientExtension" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+    <bean id="patch.customWebClientExtension" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch" >
         <property name="id"><value>patch.customWebClientExtension</value></property>
         <property name="description"><value>patch.customWebClientExtension.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>101</value></property>
         <property name="targetSchema"><value>102</value></property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.updateDmPermissions" />
-            </list>
-        </property>
-        <property name="importerBootstrap">
-            <ref bean="spacesBootstrap" />
-        </property>
-        <property name="checkPath">
-            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/app:webclient_extension</value>
-        </property>
-        <property name="bootstrapView">
-            <props>
-                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
-                <prop key="location">alfresco/bootstrap/customWebClientExtensionSpace.xml</prop>
-                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
-            </props>
+        <property name="lastSupportedVersion" >
+            <value>3.4.x</value>
         </property>
     </bean>
-
-    <bean id="patch.redeploySubmitProcess2" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="basePatch" >
+    <bean id="patch.redeploySubmitProcess2" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch" >
         <property name="id"><value>patch.redeploySubmitProcess</value></property>
         <property name="description"><value>patch.redeploySubmitProcess.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>102</value></property>
         <property name="targetSchema"><value>103</value></property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.updateDmPermissions" />
-            </list>
-        </property>
-        <property name="workflowDefinitions">
-            <list>
-               <props>
-                    <!-- WCM workflow definition -->
-                    <prop key="engineId">jbpm</prop>
-                    <prop key="location">alfresco/workflow/submit_processdefinition.xml</prop>
-                    <prop key="mimetype">text/xml</prop>
-               </props>
-            </list>
+        <property name="lastSupportedVersion" >
+            <value>3.4.x</value>
         </property>
     </bean>
-
-    <bean id="patch.db-V2.1-RemoveWcmSubmittedAspect" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+    <bean id="patch.db-V2.1-RemoveWcmSubmittedAspect" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch">
         <property name="id"><value>patch.db-V2.1-RemoveWcmSubmittedAspect</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>103</value></property>
         <property name="targetSchema"><value>104</value></property>
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/2.1/${db.script.dialect}/AlfrescoSchemaUpdate-2.1-RemoveWcmSubmittedAspect.sql</value>
+        <property name="lastSupportedVersion" >
+            <value>3.4.x</value>
         </property>
     </bean>
-
-    <bean id="patch.webscripts3" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+    <bean id="patch.webscripts3" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch" >
         <property name="id"><value>patch.webscripts3</value></property>
         <property name="description"><value>patch.webscripts3.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>104</value></property>
         <property name="targetSchema"><value>105</value></property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.updateDmPermissions" />
-            </list>
-        </property>
-        <property name="importerBootstrap">
-            <ref bean="spacesBootstrap" />
-        </property>
-        <property name="bootstrapView">
-            <props>
-                <prop key="path">/</prop>
-                <prop key="location">alfresco/bootstrap/webScriptsReadme2.xml</prop>
-            </props>
+        <property name="lastSupportedVersion" >
+            <value>3.4.x</value>
         </property>
     </bean>
-
-    <bean id="patch.customWorkflowDefs" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+    <bean id="patch.customWorkflowDefs" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch" >
         <property name="id"><value>patch.customWorkflowDefs</value></property>
         <property name="description"><value>patch.customWorkflowDefs.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>105</value></property>
         <property name="targetSchema"><value>106</value></property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.updateDmPermissions" />
-            </list>
-        </property>
-        <property name="importerBootstrap">
-            <ref bean="spacesBootstrap" />
-        </property>
-        <property name="checkPath">
-            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/app:workflow_defs</value>
-        </property>
-        <property name="bootstrapView">
-            <props>
-                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
-                <prop key="location">alfresco/bootstrap/customWorkflowDefsSpace.acp</prop>
-                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
-            </props>
+        <property name="lastSupportedVersion" >
+            <value>3.4.x</value>
         </property>
     </bean>
-
-    <bean id="patch.avmStoreAsIdentifier" class="org.alfresco.repo.admin.patch.impl.AVMStorePropertyTokenisationPatch" parent="basePatch" >
+    <bean id="patch.avmStoreAsIdentifier" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch" >
         <property name="id"><value>patch.avmStoreAsIdentifier</value></property>
         <property name="description"><value>patch.avmStoreAsIdentifier.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>109</value></property>
         <property name="targetSchema"><value>110</value></property>
-        <property name="spacesImporterBootstrap">
-            <ref bean="spacesBootstrap" />
-        </property>
-        <property name="indexerAndSearcher">
-            <ref bean="indexerAndSearcherFactory" />
+        <property name="lastSupportedVersion" >
+            <value>3.4.x</value>
         </property>
     </bean>
-    
-    <bean id="patch.avmFormPropertyIdentifier" class="org.alfresco.repo.admin.patch.impl.AVMFormsPropertyTokenisationPatch" parent="basePatch" >
+    <bean id="patch.avmFormPropertyIdentifier" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch" >
         <property name="id"><value>patch.avmFormPropertyIdentifier</value></property>
         <property name="description"><value>patch.avmFormPropertyIdentifier.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>111</value></property>
         <property name="targetSchema"><value>112</value></property>
-        <property name="spacesImporterBootstrap">
-            <ref bean="spacesBootstrap" />
-        </property>
-        <property name="indexerAndSearcher">
-            <ref bean="indexerAndSearcherFactory" />
+        <property name="lastSupportedVersion" >
+            <value>3.4.x</value>
         </property>
     </bean>
-  
-    <bean id="patch.formsFolder" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+    <bean id="patch.formsFolder" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch" >
         <property name="id"><value>patch.formsFolder</value></property>
         <property name="description"><value>patch.formsFolder.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>112</value></property>
         <property name="targetSchema"><value>113</value></property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.updateDmPermissions" />
-            </list>
-        </property>
-        <property name="importerBootstrap">
-            <ref bean="spacesBootstrap" />
-        </property>
-        <property name="checkPath">
-            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/app:forms</value>
-        </property>
-        <property name="bootstrapView">
-            <props>
-                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
-                <prop key="location">alfresco/bootstrap/formsSpace.xml</prop>
-            </props>
+        <property name="lastSupportedVersion" >
+            <value>3.4.x</value>
         </property>
     </bean>
-    
-    <bean id="patch.tagRootCategory" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+    <bean id="patch.tagRootCategory" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch" >
         <property name="id"><value>patch.tagRootCategory</value></property>
         <property name="description"><value>patch.tagRootCategory.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>113</value></property>
         <property name="targetSchema"><value>114</value></property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.updateDmPermissions" />
-            </list>
-        </property>
-        <property name="importerBootstrap">
-            <ref bean="spacesBootstrap" />
-        </property>
-        <property name="checkPath">
-            <value>/cm:categoryRoot/cm:taggable</value>
-        </property>
-        <property name="bootstrapView">
-            <props>
-                <prop key="path">/cm:categoryRoot</prop>
-                <prop key="location">alfresco/bootstrap/tagRootCategory.xml</prop>
-            </props>
+        <property name="lastSupportedVersion" >
+            <value>3.4.x</value>
         </property>
     </bean>
-    
-   <bean id="patch.db-V3.4-UsageTables" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+   <bean id="patch.db-V3.4-UsageTables" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch">
         <property name="id"><value>patch.db-V3.4-UsageTables</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>113</value></property>
         <property name="targetSchema"><value>114</value></property>
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-UsageTables.sql</value>
+        <property name="lastSupportedVersion" >
+            <value>3.4.x</value>
         </property>
     </bean>
-    
-    <bean id="patch.deploymentMigration" class="org.alfresco.repo.admin.patch.impl.DeploymentMigrationPatch" parent="basePatch" >
+    <bean id="patch.deploymentMigration" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch" >
         <property name="id"><value>patch.deploymentMigration</value></property>
         <property name="description"><value>patch.deploymentMigration.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>116</value></property>
         <property name="targetSchema"><value>117</value></property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.updateDmPermissions" />
-            </list>
-        </property>
-        <property name="importerBootstrap">
-            <ref bean="spacesBootstrap" />
-        </property>
-        <property name="indexerAndSearcher">
-            <ref bean="indexerAndSearcherFactory" />
-        </property>
-        <property name="avmService">
-            <ref bean="avmService" />
+        <property name="lastSupportedVersion" >
+            <value>3.4.x</value>
         </property>
     </bean>
-    
-    <bean id="patch.redeploySubmitProcess3" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="basePatch" >
+    <bean id="patch.redeploySubmitProcess3" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch" >
         <property name="id"><value>patch.redeploySubmitProcess</value></property>
         <property name="description"><value>patch.redeploySubmitProcess.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>117</value></property>
         <property name="targetSchema"><value>118</value></property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.updateDmPermissions" />
-            </list>
-        </property>
-        <property name="workflowDefinitions">
-            <list>
-               <props>
-                    <!-- WCM workflow definition -->
-                    <prop key="engineId">jbpm</prop>
-                    <prop key="location">alfresco/workflow/submit_processdefinition.xml</prop>
-                    <prop key="mimetype">text/xml</prop>
-               </props>
-            </list>
+        <property name="lastSupportedVersion" >
+            <value>3.4.x</value>
         </property>
     </bean>
    
+    <!--===========================-->
+    <!--====== LIVE PATCHES =======-->
+    <!--===========================-->
+
    <bean id="patch.db-V2.2-ACL-From-2.1-A" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
         <property name="id"><value>patch.db-V2.2-ACL-From-2.1-A</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>

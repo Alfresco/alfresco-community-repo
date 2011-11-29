@@ -53,7 +53,7 @@ public interface FileFolderService
      */
     @Auditable(parameters = {"contextNodeRef"})
     public List<FileInfo> list(NodeRef contextNodeRef);
-    
+
     /**
      * Lists page of immediate child files and/or folders of the given context node
      * with optional filtering (exclusion of certain child file/folder subtypes) and sorting
@@ -396,4 +396,12 @@ public interface FileFolderService
      */
     @Auditable(parameters = {"typeQName"})
     public FileFolderServiceType getType(QName typeQName);
+    
+    /**
+     * Removes any hidden files from the file list.
+     *
+     * @param files
+     * @return a list of files with hidden files removed
+     */
+    public List<FileInfo> removeHiddenFiles(List<FileInfo> files);
 }

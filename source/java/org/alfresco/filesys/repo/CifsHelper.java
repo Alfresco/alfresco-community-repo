@@ -36,7 +36,6 @@ import org.alfresco.jlan.server.filesys.FileName;
 import org.alfresco.jlan.server.filesys.FileType;
 import org.alfresco.jlan.util.WildCard;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileFolderUtil;
@@ -71,7 +70,7 @@ public class CifsHelper
     private FileFolderService fileFolderService;
     private MimetypeService mimetypeService;
     private PermissionService permissionService;
-       
+
     private Set<QName> excludedTypes = new HashSet<QName>();
     
     private boolean isReadOnlyFlagOnFolders = false;
@@ -87,8 +86,8 @@ public class CifsHelper
     {
         this.dictionaryService = dictionaryService;
     }
-    
-    public void setNodeService(NodeService nodeService)
+
+	public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
@@ -124,7 +123,7 @@ public class CifsHelper
             this.excludedTypes.add(QName.createQName(exType));
         }
     }
-   
+
     /**
      * Controls whether the read only flag is set on folders. This flag, when set, may cause problematic # behaviour in
      * Windows clients and doesn't necessarily mean a folder can't be written to. See ALF-6727. Should we ever set the
@@ -286,6 +285,19 @@ public class CifsHelper
         if (name != null)
         {
             fileInfo.setFileName(name);
+            
+            // Check for file names that should be hidden
+            
+            if(nodeService.hasAspect(fileInfo.getNodeRef(), ContentModel.ASPECT_HIDDEN))
+            {
+            	// Add the hidden file attribute
+            	int attr = fileInfo.getFileAttributes();
+            	if (( attr & FileAttribute.Hidden) == 0)
+            	{
+            		attr += FileAttribute.Hidden;
+            		fileInfo.setFileAttributes( attr);
+            	}
+            }
         }
         
         // Read/write access
@@ -704,4 +716,5 @@ public class CifsHelper
     	}
     	return false;
     }
+
 }

@@ -33,6 +33,7 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.jlan.server.FileFilterMode;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
 import org.alfresco.query.PagingRequest;
@@ -1275,6 +1276,35 @@ public class FileFolderServiceImplTest extends TestCase
                 nodeService.getProperty(destinationFolderNodeRef, ContentModel.PROP_MODIFIER));
         assertTrue("cm:modified for destination folder should have changed",
                 beforeSleep.compareTo((Date)nodeService.getProperty(destinationFolderNodeRef, ContentModel.PROP_MODIFIED)) < 0);
+    }
+    
+    public void testHiddenFiles()
+    {
+    	FileFilterMode.setMode(FileFilterMode.Mode.ENHANCED);
+
+        NodeRef parent = fileFolderService.create(rootNodeRef, "New Folder", ContentModel.TYPE_FOLDER).getNodeRef();
+        NodeRef child = fileFolderService.create(parent, "file.tmp", ContentModel.TYPE_CONTENT).getNodeRef();
+        assertTrue(nodeService.hasAspect(child, ContentModel.ASPECT_TEMPORARY));
+        assertTrue(!nodeService.hasAspect(child, ContentModel.ASPECT_HIDDEN));
+
+        NodeRef parent1 = fileFolderService.create(rootNodeRef, ".TemporaryItems", ContentModel.TYPE_FOLDER).getNodeRef();
+        NodeRef child1 = fileFolderService.create(parent1, "file1", ContentModel.TYPE_CONTENT).getNodeRef();
+        assertTrue(nodeService.hasAspect(child1, ContentModel.ASPECT_TEMPORARY));
+        assertTrue(nodeService.hasAspect(child1, ContentModel.ASPECT_HIDDEN));
+
+        NodeRef parent2 = fileFolderService.create(rootNodeRef, "Folder 2", ContentModel.TYPE_FOLDER).getNodeRef();
+        NodeRef child2 = fileFolderService.create(parent2, "Thumbs.db", ContentModel.TYPE_CONTENT).getNodeRef();
+        assertTrue(!nodeService.hasAspect(child2, ContentModel.ASPECT_TEMPORARY));
+        assertTrue(nodeService.hasAspect(child2, ContentModel.ASPECT_HIDDEN));
+
+        List<FileInfo> children = fileFolderService.list(parent);
+        assertEquals(1, children.size());
+
+        children = fileFolderService.list(parent1);
+        assertEquals(1, children.size());
+        
+        children = fileFolderService.list(parent2);
+        assertEquals(1, children.size());
     }
     
     public void testPatterns()

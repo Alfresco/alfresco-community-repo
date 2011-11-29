@@ -155,6 +155,13 @@
          <!-- Explicitly turn off archiving for all nodes with this aspect -->
          <archive>false</archive>
       </aspect>
+
+      <!-- aspect to tag hidden nodes -->
+      <aspect name="sys:hidden">
+         <title>Hidden</title>
+         <!-- Explicitly turn off archiving for all nodes with this aspect -->
+         <archive>false</archive>
+      </aspect>
       
       <!-- aspect to tag nodes which are, by default, undeletable -->
       <aspect name="sys:undeletable">

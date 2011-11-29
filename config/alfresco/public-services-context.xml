@@ -745,7 +745,6 @@
     </bean>
 
     <!-- File/Folder Service -->
-
     <bean id="FileFolderService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.service.cmr.model.FileFolderService</value>
@@ -756,12 +755,12 @@
         <property name="interceptorNames">
             <list>
                 <idref local="FileFolderService_transaction"/>
+                <idref bean="filenameFilteringInterceptor"/>
                 <idref local="AuditMethodInterceptor"/>
                 <idref local="exceptionTranslator"/>
                 <idref bean="FileFolderService_security"/>
                 <idref bean="mlTranslationInterceptor"/>
                 <idref bean="mlContentInterceptor"/>
-                <idref bean="tempFileMarkerInterceptor"/>
             </list>
         </property>
     </bean>

@@ -746,7 +746,7 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
                 this.folderCacheLock.readLock().unlock();
             }
         }
-        List<FileInfo> fileInfos = fileFolderService.listFiles(contextNodeRef);
+        List<FileInfo> fileInfos = fileFolderService.removeHiddenFiles(fileFolderService.listFiles(contextNodeRef));
         final NavigableMap<Long, FileInfo> currentSearch = new TreeMap<Long, FileInfo>();
 
         switch (viewMode)
@@ -1047,7 +1047,7 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
         // Only list this folder if we have a wildcard name. Otherwise do a direct lookup by name.
         if (name.contains("*") || name.contains("%"))
         {
-            list = fileFolderService.listFolders(root);
+            list = fileFolderService.removeHiddenFiles(fileFolderService.listFolders(root));
         }
         else
         {

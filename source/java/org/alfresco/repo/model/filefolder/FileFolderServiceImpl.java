@@ -256,9 +256,16 @@ public class FileFolderServiceImpl implements FileFolderService
         // Is it a folder
         QName typeQName = nodeService.getType(nodeRef);
         boolean isFolder = isFolder(typeQName);
+        boolean isHidden = false;
+        
+        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_HIDDEN))
+        {
+        	isHidden = true;
+        }
         
         // Construct the file info and add to the results
-        FileInfo fileInfo = new FileInfoImpl(nodeRef, typeQName, isFolder, properties);
+        FileInfo fileInfo = new FileInfoImpl(nodeRef, typeQName, isFolder, isHidden, properties);
+
         // Done
         return fileInfo;
     }
@@ -569,7 +576,7 @@ public class FileFolderServiceImpl implements FileFolderService
         }
         return childNodeRef;
     }
-
+    
     /**
      * @see #search(NodeRef, String, boolean, boolean, boolean)
      */
@@ -1433,5 +1440,20 @@ public class FileFolderServiceImpl implements FileFolderService
             }
         }
         return new Pair<String, String>(base, ext);
+    }
+    
+    public List<FileInfo> removeHiddenFiles(List<FileInfo> files)
+    {
+ 	   List<FileInfo> ret = new ArrayList<FileInfo>(files.size());
+
+	   for(FileInfo file : files)
+	   {
+		   if(!nodeService.hasAspect(file.getNodeRef(), ContentModel.ASPECT_HIDDEN))
+		   {
+			   ret.add(file);
+		   }
+	   }
+
+	   return ret;
     }
 }

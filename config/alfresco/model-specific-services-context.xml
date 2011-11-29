@@ -80,12 +80,8 @@
       </property>
    </bean>
 
-
-   <bean name="tempFileMarkerInterceptor" class="org.alfresco.repo.model.filefolder.TempFileMarkerInterceptor">
-      <property name="nodeService">
-         <ref bean="nodeService" />
-      </property>
-      <property name="filterRegularExpressions">
+   <bean name="temporaryFiles" class="org.alfresco.util.PatternFilter">
+      <property name="patterns">
          <list>
             <value><![CDATA[.*\.tmp]]></value>
             <value><![CDATA[.*\.temp]]></value>
@@ -94,7 +90,36 @@
          </list>
       </property>
    </bean>
+   
+   <!-- Files matching one of these patterns will be marked with the 'hidden' aspect -->
+   <bean name="hiddenFiles" class="org.alfresco.util.PatternFilter">
+      <property name="patterns">
+         <list>
+            <value><![CDATA[\..*]]></value>
+            <value><![CDATA[Thumbs\.db]]></value>
+            <value><![CDATA[Desktop\.ini]]></value>
+         </list>
+      </property>
+   </bean>
 
+   <!-- Paths matching one of these patterns will be treated as temporary paths -->
+   <bean name="systemPaths" class="org.alfresco.util.PatternFilter">
+      <property name="patterns">
+         <list>
+            <value><![CDATA[.*\.TemporaryItems.*]]></value>
+            <value><![CDATA[.*\.DS_Store.*]]></value>
+         </list>
+      </property>
+   </bean>
+   
+   <bean name="filenameFilteringInterceptor" class="org.alfresco.repo.model.filefolder.FilenameFilteringInterceptor">
+      <property name="nodeService" ref="nodeService" />
+      <property name="permissionService" ref="permissionService" />
+      <property name="systemPaths" ref="systemPaths" />
+      <property name="hiddenFiles" ref="hiddenFiles" />
+      <property name="temporaryFiles" ref="temporaryFiles" />
+   </bean>
+ 
   <!-- Multilingual specific service -->
    <bean name="multilingualContentService" class="org.alfresco.repo.model.ml.MultilingualContentServiceImpl" >
       <property name="nodeService">

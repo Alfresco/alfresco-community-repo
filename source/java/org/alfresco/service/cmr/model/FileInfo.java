@@ -53,6 +53,11 @@ public interface FileInfo extends PermissionCheckValue, Serializable
     public boolean isLink();
     
     /**
+     * @return true if this instance represents a hidden file
+     */
+    public boolean isHidden();
+    
+    /**
      * @return Return the reference to the node that this node is linked to
      */
     public NodeRef getLinkNodeRef();

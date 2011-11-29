@@ -432,6 +432,7 @@
                org.alfresco.service.cmr.model.FileFolderService.getWriter=ACL_NODE.0.sys:base.WriteContent
                org.alfresco.service.cmr.model.FileFolderService.exists=ACL_ALLOW
                org.alfresco.service.cmr.model.FileFolderService.getType=ACL_ALLOW
+               org.alfresco.service.cmr.model.FileFolderService.removeHiddenFiles=ACL_ALLOW
                org.alfresco.service.cmr.model.FileFolderService.*=ACL_DENY
             </value>
         </property>

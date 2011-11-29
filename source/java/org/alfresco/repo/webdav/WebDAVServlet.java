@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.jlan.server.FileFilterMode;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.ServiceRegistry;
@@ -95,6 +96,8 @@ public class WebDAVServlet extends HttpServlet
         {
             startTime = System.currentTimeMillis();
         }
+
+        FileFilterMode.Mode mode = FileFilterMode.setMode(FileFilterMode.Mode.ENHANCED);
 
         try
         {
@@ -184,6 +187,8 @@ public class WebDAVServlet extends HttpServlet
             {
                 logger.info(request.getMethod() + " took " + (System.currentTimeMillis()-startTime) + "ms to execute ["+request.getRequestURI()+"]");
             }
+            
+            FileFilterMode.setMode(mode);
         }
     }
 
@@ -275,7 +280,7 @@ public class WebDAVServlet extends HttpServlet
         NodeService nodeService = (NodeService) context.getBean("NodeService");
         SearchService searchService = (SearchService) context.getBean("SearchService");
         NamespaceService namespaceService = (NamespaceService) context.getBean("NamespaceService");
-        
+
         // Create the WebDAV helper
         m_davHelper = new WebDAVHelper(m_serviceRegistry, authService);
         

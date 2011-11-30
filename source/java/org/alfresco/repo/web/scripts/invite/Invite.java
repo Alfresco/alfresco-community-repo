@@ -21,11 +21,13 @@ package org.alfresco.repo.web.scripts.invite;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.service.cmr.invitation.Invitation;
 import org.alfresco.service.cmr.invitation.InvitationExceptionForbidden;
 import org.alfresco.service.cmr.invitation.InvitationExceptionUserError;
 import org.alfresco.service.cmr.invitation.InvitationService;
 import org.alfresco.service.cmr.invitation.NominatedInvitation;
+import org.alfresco.util.UrlUtil;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
@@ -68,10 +70,19 @@ public class Invite extends DeclarativeWebScript
     
     // services
     private InvitationService invitationService;
+    private SysAdminParams sysAdminParams;
     
     public void setInvitationService(InvitationService invitationService)
     {
         this.invitationService = invitationService;
+    }
+    
+    /**
+     * @param sysAdminParams the sysAdminParams to set
+     */
+    public void setSysAdminParams(SysAdminParams sysAdminParams)
+    {
+        this.sysAdminParams = sysAdminParams;
     }
     
     
@@ -214,6 +225,7 @@ public class Invite extends DeclarativeWebScript
                 }
                 else
                 {
+                    serverPath = UrlUtil.getShareUrl(sysAdminParams);
                     newInvite = invitationService.inviteNominated(inviteeFirstName, inviteeLastName, inviteeEmail, Invitation.ResourceType.WEB_SITE, siteShortName, inviteeSiteRole, serverPath, acceptUrl, rejectUrl);
                 }
                 // add model properties for template to render

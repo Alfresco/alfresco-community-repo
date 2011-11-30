@@ -21,12 +21,16 @@ package org.alfresco.repo.web.scripts.calendar;
 import java.util.Iterator;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.calendar.CalendarServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
@@ -56,12 +60,15 @@ public class CalendarRestApiTest extends BaseWebScriptTest
 
     private MutableAuthenticationService authenticationService;
     private AuthenticationComponent authenticationComponent;
+    private PermissionService permissionService;
     private PersonService personService;
     private NodeService nodeService;
     private SiteService siteService;
     
     private static final String USER_ONE = "UserOneSecondToo";
     private static final String USER_TWO = "UserTwoSecondToo";
+    private static final String USER_THREE = "UserThreeSecondToo";
+    private static final String USER_FOUR = "UserFourSecondToo";
     private static final String SITE_SHORT_NAME_CALENDAR = "CalendarSiteShortNameTest";
     
     private static final String EVENT_TITLE_ONE = "TestEventOne";
@@ -86,6 +93,7 @@ public class CalendarRestApiTest extends BaseWebScriptTest
         
         this.authenticationService = (MutableAuthenticationService)getServer().getApplicationContext().getBean("AuthenticationService");
         this.authenticationComponent = (AuthenticationComponent)getServer().getApplicationContext().getBean("authenticationComponent");
+        this.permissionService = (PermissionService)getServer().getApplicationContext().getBean("PermissionService");
         this.personService = (PersonService)getServer().getApplicationContext().getBean("PersonService");
         this.nodeService = (NodeService)getServer().getApplicationContext().getBean("NodeService");
         this.siteService = (SiteService)getServer().getApplicationContext().getBean("SiteService");
@@ -102,14 +110,16 @@ public class CalendarRestApiTest extends BaseWebScriptTest
         }
         
         // Ensure the calendar container is there
-        if (!siteService.hasContainer(SITE_SHORT_NAME_CALENDAR, "calendar"))
+        if (!siteService.hasContainer(SITE_SHORT_NAME_CALENDAR, CalendarServiceImpl.CALENDAR_COMPONENT))
         {
-            siteService.createContainer(SITE_SHORT_NAME_CALENDAR, "calendar", null, null);
+            siteService.createContainer(SITE_SHORT_NAME_CALENDAR, CalendarServiceImpl.CALENDAR_COMPONENT, null, null);
         }
         
         // Create users
         createUser(USER_ONE, SiteModel.SITE_COLLABORATOR);
-        createUser(USER_TWO, SiteModel.SITE_CONSUMER);
+        createUser(USER_TWO, SiteModel.SITE_COLLABORATOR);
+        createUser(USER_THREE, SiteModel.SITE_CONTRIBUTOR);
+        createUser(USER_FOUR, SiteModel.SITE_CONSUMER);
 
         // Do tests as inviter user
         this.authenticationComponent.setCurrentUser(USER_ONE);
@@ -127,17 +137,10 @@ public class CalendarRestApiTest extends BaseWebScriptTest
         siteService.deleteSite(SITE_SHORT_NAME_CALENDAR);
         
         // delete the users
-        personService.deletePerson(USER_ONE);
-        if (this.authenticationService.authenticationExists(USER_ONE))
-        {
-           this.authenticationService.deleteAuthentication(USER_ONE);
-        }
-        
-        personService.deletePerson(USER_TWO);
-        if (this.authenticationService.authenticationExists(USER_TWO))
-        {
-           this.authenticationService.deleteAuthentication(USER_TWO);
-        }
+        deleteUser(USER_ONE);
+        deleteUser(USER_TWO);
+        deleteUser(USER_THREE);
+        deleteUser(USER_FOUR);
     }
     
     private void createUser(String userName, String role)
@@ -163,6 +166,14 @@ public class CalendarRestApiTest extends BaseWebScriptTest
         
         // add the user as a member with the given role
         this.siteService.setMembership(SITE_SHORT_NAME_CALENDAR, userName, role);
+    }
+    private void deleteUser(String userName)
+    {
+       personService.deletePerson(userName);
+       if (this.authenticationService.authenticationExists(userName))
+       {
+          this.authenticationService.deleteAuthentication(userName);
+       }
     }
     
     
@@ -420,8 +431,8 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        assertEquals(true, permissions.getBoolean("delete"));
        
        
-       // Switch users, will be able to see it still, but not edit
-       this.authenticationComponent.setCurrentUser(USER_TWO);
+       // Switch users to consumer, check we can still see it
+       this.authenticationComponent.setCurrentUser(USER_FOUR);
        entry = getEntry(name, Status.STATUS_OK);
        
        assertEquals("Error found " + entry.toString(), false, entry.has("error"));
@@ -517,6 +528,141 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        // Can't edit it when it's deleted
        sendRequest(new PutRequest(URL_EVENT_BASE + name, "{}", "application/json"), Status.STATUS_OK);
        assertEquals(true, entry.has("error"));
+    }
+    
+    /**
+     * When fetching an event, we get permission details.
+     * This test ensures they are correct
+     */
+    public void testPermissions() throws Exception
+    {
+       JSONObject entry;
+       JSONObject permissions;
+       String name;
+       
+       
+       // Run through our different users, checking their permissions
+       NodeRef calendarNodeRef = siteService.getContainer(SITE_SHORT_NAME_CALENDAR, CalendarServiceImpl.CALENDAR_COMPONENT);
+
+       // Users One and Two are Collaborators, allowed to add new Calendar Entries
+       this.authenticationComponent.setCurrentUser(USER_ONE);
+       assertEquals(
+             SiteModel.SITE_COLLABORATOR, 
+             siteService.getMembersRole(SITE_SHORT_NAME_CALENDAR, authenticationComponent.getCurrentUserName())
+       );
+       assertEquals(
+             AccessStatus.ALLOWED,
+             permissionService.hasPermission(calendarNodeRef, PermissionService.ADD_CHILDREN)
+       );
+       
+       this.authenticationComponent.setCurrentUser(USER_TWO);
+       assertEquals(
+             SiteModel.SITE_COLLABORATOR, 
+             siteService.getMembersRole(SITE_SHORT_NAME_CALENDAR, authenticationComponent.getCurrentUserName())
+       );
+       assertEquals(
+             AccessStatus.ALLOWED,
+             permissionService.hasPermission(calendarNodeRef, PermissionService.ADD_CHILDREN)
+       );
+
+       this.authenticationComponent.setCurrentUser(USER_THREE);
+       assertEquals(
+             SiteModel.SITE_CONTRIBUTOR, 
+             siteService.getMembersRole(SITE_SHORT_NAME_CALENDAR, authenticationComponent.getCurrentUserName())
+       );
+       assertEquals(
+             AccessStatus.ALLOWED,
+             permissionService.hasPermission(calendarNodeRef, PermissionService.ADD_CHILDREN)
+       );
+
+       this.authenticationComponent.setCurrentUser(USER_FOUR);
+       assertEquals(
+             SiteModel.SITE_CONSUMER, 
+             siteService.getMembersRole(SITE_SHORT_NAME_CALENDAR, authenticationComponent.getCurrentUserName())
+       );
+       assertEquals(
+             AccessStatus.DENIED,
+             permissionService.hasPermission(calendarNodeRef, PermissionService.ADD_CHILDREN)
+       );
+
+       
+       // To user One, and Create
+       this.authenticationComponent.setCurrentUser(USER_ONE);
+       entry = createEntry(EVENT_TITLE_ONE, "Where", "Thing", Status.STATUS_OK);
+       name = getNameFromEntry(entry);
+       
+       // Fetch as the creator user
+       entry = getEntry(name, Status.STATUS_OK);
+       
+       assertEquals("Error found " + entry.toString(), false, entry.has("error"));
+       assertEquals(EVENT_TITLE_ONE, entry.getString("what"));
+       assertEquals(name, entry.getString("name"));
+       assertEquals("2011-06-29T12:00:00.000+01:00", entry.getJSONObject("startAt").get("iso8601"));
+       assertEquals("2011-06-29T13:00:00.000+01:00", entry.getJSONObject("endAt").get("iso8601"));
+       
+       // Check the permissions on it
+       assertEquals(true, entry.has("permissions"));
+       permissions = entry.getJSONObject("permissions");
+       assertEquals(true, permissions.getBoolean("edit"));
+       assertEquals(true, permissions.getBoolean("delete"));
+       
+       
+       // Different User, also Collaborator, allowed to Edit but not Delete
+       this.authenticationComponent.setCurrentUser(USER_TWO);
+       entry = getEntry(name, Status.STATUS_OK);
+       
+       assertEquals("Error found " + entry.toString(), false, entry.has("error"));
+       assertEquals(EVENT_TITLE_ONE, entry.getString("what"));
+       assertEquals(name, entry.getString("name"));
+       assertEquals("2011-06-29T12:00:00.000+01:00", entry.getJSONObject("startAt").get("iso8601"));
+       assertEquals("2011-06-29T13:00:00.000+01:00", entry.getJSONObject("endAt").get("iso8601"));
+       
+       // Check the other user sees different permissions
+       assertEquals(true, entry.has("permissions"));
+       permissions = entry.getJSONObject("permissions");
+       assertEquals(true, permissions.getBoolean("edit"));
+       assertEquals(false, permissions.getBoolean("delete"));
+       
+       
+       // Switch from Collaborator to Contributor, loose delete
+       this.authenticationComponent.setCurrentUser(USER_THREE);
+       entry = getEntry(name, Status.STATUS_OK);
+       
+       assertEquals("Error found " + entry.toString(), false, entry.has("error"));
+       assertEquals(EVENT_TITLE_ONE, entry.getString("what"));
+       assertEquals(name, entry.getString("name"));
+       assertEquals("2011-06-29T12:00:00.000+01:00", entry.getJSONObject("startAt").get("iso8601"));
+       assertEquals("2011-06-29T13:00:00.000+01:00", entry.getJSONObject("endAt").get("iso8601"));
+       
+       // Check the other user sees different permissions
+       assertEquals(true, entry.has("permissions"));
+       permissions = entry.getJSONObject("permissions");
+       assertEquals(false, permissions.getBoolean("edit"));
+       assertEquals(false, permissions.getBoolean("delete"));
+       
+       
+       // Switch users to consumer, still see but not edit
+       this.authenticationComponent.setCurrentUser(USER_FOUR);
+       entry = getEntry(name, Status.STATUS_OK);
+       
+       assertEquals("Error found " + entry.toString(), false, entry.has("error"));
+       assertEquals(EVENT_TITLE_ONE, entry.getString("what"));
+       assertEquals(name, entry.getString("name"));
+       assertEquals("2011-06-29T12:00:00.000+01:00", entry.getJSONObject("startAt").get("iso8601"));
+       assertEquals("2011-06-29T13:00:00.000+01:00", entry.getJSONObject("endAt").get("iso8601"));
+       
+       // Check the other user sees different permissions
+       assertEquals(true, entry.has("permissions"));
+       permissions = entry.getJSONObject("permissions");
+       assertEquals(false, permissions.getBoolean("edit"));
+       assertEquals(false, permissions.getBoolean("delete"));
+       
+       
+       // Note - create permissions not checked here, done via 
+       //  permissions checking at the start of this method
+       
+       // Back to the main user for more tests
+       this.authenticationComponent.setCurrentUser(USER_ONE);
     }
     
     /**

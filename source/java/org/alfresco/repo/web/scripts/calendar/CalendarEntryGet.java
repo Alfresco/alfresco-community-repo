@@ -87,8 +87,8 @@ public class CalendarEntryGet extends AbstractCalendarWebScript
       // Check the permissions the user has on the entry
       AccessStatus canEdit = permissionService.hasPermission(entry.getNodeRef(), PermissionService.WRITE);
       AccessStatus canDelete = permissionService.hasPermission(entry.getNodeRef(), PermissionService.DELETE);
-      result.put("canEdit", (canEdit == AccessStatus.ALLOWED)); 
-      result.put("canDelete", (canDelete == AccessStatus.ALLOWED)); 
+      result.put("canEdit", (canEdit == AccessStatus.ALLOWED));
+      result.put("canDelete", (canDelete == AccessStatus.ALLOWED));
       
       // All done
       Map<String, Object> model = new HashMap<String, Object>();

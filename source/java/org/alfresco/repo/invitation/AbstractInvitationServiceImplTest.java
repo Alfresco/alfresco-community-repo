@@ -527,7 +527,7 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
         String acceptUrl = "froob";
         String rejectUrl = "marshmallow";
         String expectedUserName = (inviteeFirstName + "_" + inviteeLastName).toLowerCase();
-
+        expectedUserName = expectedUserName.replaceAll("\\s+", "_");
         authenticationComponent.setCurrentUser(USER_MANAGER);
 
         NominatedInvitation nominatedInvitation = invitationService.inviteNominated(inviteeFirstName, inviteeLastName,

@@ -51,6 +51,7 @@ import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.UrlUtil;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.springframework.extensions.surf.util.ParameterCheck;
@@ -734,6 +735,7 @@ public class Site implements Serializable
      */
     public ScriptInvitation<?> inviteNominated(String inviteeFirstName, String inviteeLastName, String inviteeEmail, String inviteeRole, String serverPath, String acceptUrl, String rejectUrl)
     {    	
+        serverPath = UrlUtil.getShareUrl(serviceRegistry.getSysAdminParams());
     	Invitation invitation = invitationService.inviteNominated(inviteeFirstName, inviteeLastName, inviteeEmail, Invitation.ResourceType.WEB_SITE, getShortName(), inviteeRole, serverPath, acceptUrl, rejectUrl);
     	return scriptInvitationFactory.toScriptInvitation(invitation);
     }

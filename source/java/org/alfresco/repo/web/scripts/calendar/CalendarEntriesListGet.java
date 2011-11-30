@@ -41,6 +41,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * This class is the controller for the slingshot calendar eventList.get webscript.
  * 
  * TODO Improve what we give to the FTL
+ * TODO Switch to using {@link AbstractCalendarListingWebScript}
  * 
  * @author Nick Burch
  * @since 4.0

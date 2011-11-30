@@ -19,9 +19,7 @@
 package org.alfresco.repo.web.scripts.calendar;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -34,7 +32,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.calendar.CalendarEntry;
 import org.alfresco.service.cmr.calendar.CalendarEntryDTO;
-import org.alfresco.service.cmr.calendar.CalendarRecurrenceHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.json.simple.JSONObject;
@@ -48,13 +45,8 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * @author Nick Burch
  * @since 4.0
  */
-public class UserCalendarEntriesGet extends AbstractCalendarWebScript
+public class UserCalendarEntriesGet extends AbstractCalendarListingWebScript
 {
-   private static final String RESULT_NAME = "name"; 
-   private static final String RESULT_TITLE = "title"; 
-   private static final String RESULT_START = "start"; 
-   private static final String RESULT_END = "end"; 
-   
    @Override
    protected Map<String, Object> executeImpl(WebScriptRequest req,
          Status status, Cache cache) 
@@ -206,31 +198,7 @@ public class UserCalendarEntriesGet extends AbstractCalendarWebScript
       // If the recurring events meant dates changed, re-sort
       if (resortNeeded)
       {
-         Collections.sort(results, new Comparator<Map<String, Object>>() 
-         {
-            public int compare(Map<String, Object> resultA,
-                  Map<String, Object> resultB) 
-            {
-               Date startA = (Date)resultA.get(RESULT_START);
-               Date startB = (Date)resultB.get(RESULT_START);
-               
-               int cmp = startA.compareTo(startB);
-               if (cmp == 0)
-               {
-                  Date endA = (Date)resultA.get(RESULT_END);
-                  Date endB = (Date)resultB.get(RESULT_END);
-                  cmp = endA.compareTo(endB);
-                  if (cmp == 0)
-                  {
-                     String nameA = (String)resultA.get(RESULT_NAME);
-                     String nameB = (String)resultB.get(RESULT_NAME);
-                     return nameA.compareTo(nameB);
-                  }
-                  return cmp;
-               }
-               return cmp;
-            }
-         });
+         Collections.sort(results, getEventDetailsSorter());
       }
       
       // All done
@@ -297,103 +265,5 @@ public class UserCalendarEntriesGet extends AbstractCalendarWebScript
       }
       
       return duration.toString();
-   }
-   
-   /**
-    * Do what's needed for recurring events.
-    * 
-    * @return If dates have been tweaked, and a sort may be required 
-    */
-   private boolean handleRecurring(CalendarEntry entry, Map<String, Object> entryResult, 
-         List<Map<String, Object>> allResults, Date from, Date until, boolean repeatingFirstOnly)
-   {
-      if (entry.getRecurrenceRule() == null)
-      {
-         // Nothing to do
-         return false;
-      }
-      
-      // If no date is given, start looking for occurrences from the event itself
-      if (from == null)
-      {
-         from = entry.getStart();
-      }
-      
-      // Do we nee dto limit ourselves?
-      // Should we limit ourselves?
-      if (!repeatingFirstOnly)
-      {
-         if (until == null)
-         {
-            // If no end date was given, only allow repeating instances 
-            // for next 60 days, to keep the list sane
-            // (It's normally only used for a month view anyway)
-            Calendar c = Calendar.getInstance();
-            c.setTime(from);
-            c.add(Calendar.DATE, 60);
-            until = c.getTime();
-         }
-      }
-      
-      // How long is it?
-      long duration = entry.getEnd().getTime() - entry.getStart().getTime();
-      
-      // Get it's recurring instances
-      List<Date> dates = CalendarRecurrenceHelper.getRecurrencesOnOrAfter(
-            entry, from, until, repeatingFirstOnly);
-      if (dates == null)
-      {
-         dates = new ArrayList<Date>();
-      }
-      
-      // Add on the original event time itself if needed
-      if (entry.getStart().getTime() >= from.getTime())
-      {
-         if (dates.size() == 0 || dates.get(0).getTime() != entry.getStart().getTime())
-         {
-            // Original event is after the start time, and not on the recurring list
-            dates.add(0, entry.getStart());
-         }
-      }
-      
-      // If we got no dates, then no recurrences in the period so zap
-      if (dates.size() == 0)
-      {
-         allResults.remove(entryResult);
-         return false; // Remains sorted despite delete
-      }
-
-      // Always update the live entry
-      updateRepeatingStartEnd(dates.get(0), duration, entryResult);
-      
-      // If first result only, alter title and finish
-      if (repeatingFirstOnly)
-      {
-         entryResult.put(RESULT_TITLE, entry.getTitle() + " (Repeating)");
-         return true; // Date has been changed
-      }
-      
-      // Otherwise generate one entry per extra date
-      for (int i=1; i<dates.size(); i++)
-      {
-         // Clone the properties
-         Map<String, Object> newResult = new HashMap<String, Object>(entryResult);
-         
-         // Generate start and end based on this date
-         updateRepeatingStartEnd(dates.get(i), duration, newResult);
-         
-         // Save as a new event
-         allResults.add(newResult);
-      }
-      
-      // New dates have been added
-      return true;
-   }
-   
-   private void updateRepeatingStartEnd(Date newStart, long duration, Map<String, Object> result)
-   {
-      Date newEnd = new Date(newStart.getTime() + duration);
-      result.put(RESULT_START, newStart);
-      result.put(RESULT_END, newEnd);
    }
 }

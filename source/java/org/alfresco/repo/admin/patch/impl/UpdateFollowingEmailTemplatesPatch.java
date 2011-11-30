@@ -18,19 +18,30 @@
  */
 package org.alfresco.repo.admin.patch.impl;
 
-import org.alfresco.repo.workflow.WorkflowNotificationUtils;
+import java.util.List;
+
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
- * Update workflow notification templates patch
+ * Update following email templates patch
  * 
  * @author Roy Wetherall
  */
-public class UpdateWorkflowNotificationTemplatesPatch extends GenericEMailTemplateUpdatePatch
+public class UpdateFollowingEmailTemplatesPatch extends GenericEMailTemplateUpdatePatch
 {  
-    private static final String PATH = "alfresco/bootstrap/notification/";
-    private static final String BASE_FILE = "wf-email.html.ftl";
+    private Repository repository;
+    
+    private static final String PATH = "alfresco/templates/following-email-templates/";
+    private static final String BASE_FILE = "following-email.html.ftl";
+    private static final String XPATH = "/app:company_home/app:dictionary/app:email_templates/app:following/cm:following-email.html.ftl";
+    
+    public void setRepository(Repository repository)
+    {
+        this.repository = repository;
+    }
     
     @Override
     protected String getPath()
@@ -47,7 +58,17 @@ public class UpdateWorkflowNotificationTemplatesPatch extends GenericEMailTempla
     @Override
     protected NodeRef getBaseTemplate()
     {
-        return WorkflowNotificationUtils.WF_ASSIGNED_TEMPLATE;
+        List<NodeRef> refs = searchService.selectNodes(
+                repository.getRootHome(), 
+                XPATH, 
+                null, 
+                namespaceService, 
+                false);
+        if (refs.size() != 1)
+        {
+            throw new AlfrescoRuntimeException(I18NUtil.getMessage("patch.updateFollowingEmailTemplatesPatch.error"));
+        }
+        return refs.get(0);
     }
     
     /**
@@ -57,6 +78,6 @@ public class UpdateWorkflowNotificationTemplatesPatch extends GenericEMailTempla
     protected String applyInternal() throws Exception
     {   
         updateTemplates();        
-        return I18NUtil.getMessage("patch.updateWorkflowNotificationTemplates.result");
+        return I18NUtil.getMessage("patch.updateFollowingEmailTemplatesPatch.result");
     }
 }

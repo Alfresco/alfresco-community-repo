@@ -42,8 +42,7 @@ public class DatePropertyValueComparator implements PropertyValueComparator
     /**
      * @see org.alfresco.repo.action.evaluator.compare.PropertyValueComparator#compare(java.io.Serializable, java.io.Serializable, org.alfresco.repo.action.evaluator.compare.ComparePropertyValueOperation)
      */
-    public boolean compare(Serializable propertyValue,
-            Serializable compareValue, ComparePropertyValueOperation operation)
+    public boolean compare(Serializable propertyValue, Serializable compareValue, ComparePropertyValueOperation operation)
     {
         boolean result = false;
         
@@ -94,7 +93,8 @@ public class DatePropertyValueComparator implements PropertyValueComparator
         return result;
     }
 
-    private Date getDate(Serializable value) {
+    private Date getDate(Serializable value) 
+    {
         if(value instanceof Date)
         {
         	return (Date) value;

@@ -2486,7 +2486,7 @@
         <property name="bootstrapView">
             <props>
                 <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}</prop>
-                <prop key="location">alfresco/templates/following-email-templates.acp</prop>
+                <prop key="location">alfresco/templates/following-email-templates.xml</prop>
                 <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
             </props>
         </property>
@@ -2890,7 +2890,7 @@
         <property name="contentService" ref="ContentService"/>
         <property name="fileFolderService" ref="FileFolderService"/>
     </bean>
-
+    
     <bean id="patch.updateMimetypes4" class="org.alfresco.repo.admin.patch.impl.GenericMimetypeRenamePatch" parent="basePatch" >
         <property name="id"><value>patch.updateMimetypes4</value></property>
         <property name="description"><value>patch.updateMimetypes4.description</value></property>
@@ -2959,6 +2959,19 @@
         <property name="reindex">
             <value>true</value>
         </property>
+    </bean>
+    
+    <bean id="patch.updateFollowingEmailTemplatesPatch" class="org.alfresco.repo.admin.patch.impl.UpdateFollowingEmailTemplatesPatch" parent="basePatch">
+        <property name="id"><value>patch.updateFollowingEmailTemplatesPatch</value></property>
+        <property name="description"><value>patch.updateFollowingEmailTemplatesPatch.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>5021</value></property>
+        <property name="targetSchema"><value>5022</value></property>
+        <property name="requiresTransaction"><value>true</value></property>
+        <property name="applyToTenants"><value>true</value></property>
+        <property name="contentService" ref="ContentService"/>
+        <property name="fileFolderService" ref="FileFolderService"/>
+        <property name="repository" ref="repositoryHelper"/>
     </bean>
     
 </beans>

@@ -28,7 +28,7 @@
       "name": "${record.name}",
       "version": "${record.versionLabel}",
       "versionId": "${record.id}",
-      "date": "${record.createdDate?datetime?string("yyyy-mm-dd'T'HH:MM:ss")}",
+      "date": "${record.createdDate?datetime?string("yyyy-MM-dd'T'HH:mm:ss")}",
       "author": "${record.creator}"     
    }<#if record_has_next>,</#if>
       </#list> 

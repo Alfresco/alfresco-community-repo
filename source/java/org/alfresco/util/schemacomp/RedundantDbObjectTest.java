@@ -51,7 +51,7 @@ public class RedundantDbObjectTest
         
         RedundantDbObject redundantDBO = new RedundantDbObject(reference, matches);
         
-        assertEquals("3 redundant items? reference: MyDbObject[name=reference], " +
+        assertEquals("Redundancy: 3 items matching MyDbObject[name=reference], " +
                     "matches: MyDbObject[name=match1], MyDbObject[name=match2], MyDbObject[name=match3]",
                     redundantDBO.describe());
     }

@@ -66,6 +66,7 @@ public class ValidationResult extends Result
     {
         return I18NUtil.getMessage(
                     "system.schema_comp.validation",
+                    getDbProperty().getDbObject().getTypeName(),
                     getDbProperty().getPath(),
                     getValue(),
                     message);

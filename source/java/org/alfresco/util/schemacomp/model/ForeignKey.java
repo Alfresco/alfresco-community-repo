@@ -166,5 +166,11 @@ public class ForeignKey extends AbstractDbObject
     public void accept(DbObjectVisitor visitor)
     {
         visitor.visit(this);
-    }    
+    }
+
+    @Override
+    public String getTypeName()
+    {
+        return "foreign key";
+    }
 }

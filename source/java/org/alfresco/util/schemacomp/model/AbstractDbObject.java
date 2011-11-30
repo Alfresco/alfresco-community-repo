@@ -252,4 +252,11 @@ public abstract class AbstractDbObject implements DbObject
             this.validators = validators;
         }
     }
+
+    
+    @Override
+    public String getTypeName()
+    {
+        return getClass().getSimpleName().toLowerCase();
+    }
 }

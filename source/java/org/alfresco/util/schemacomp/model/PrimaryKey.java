@@ -155,4 +155,10 @@ public class PrimaryKey extends AbstractDbObject
         checkColumnOrders();
         visitor.visit(this);
     }
+    
+    @Override
+    public String getTypeName()
+    {
+        return "primary key";
+    }
 }

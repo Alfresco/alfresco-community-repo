@@ -105,4 +105,11 @@ public interface DbObject
      * @param validators
      */
     void setValidators(List<DbValidator> validators);
+    
+    /**
+     * Type name, e.g. "column", "foreign key"
+     * 
+     * @return String
+     */
+    String getTypeName();
 }

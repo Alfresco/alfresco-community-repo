@@ -88,7 +88,7 @@ public final class Difference extends Result
         {
             return I18NUtil.getMessage(
                         "system.schema_comp.diff.target_only",
-                        getWhere(),
+                        getRight().getDbObject().getTypeName(),
                         getRight().getPath(),
                         getRight().getPropertyValue());
         }
@@ -96,14 +96,14 @@ public final class Difference extends Result
         {
             return I18NUtil.getMessage(
                         "system.schema_comp.diff.ref_only",
-                        getWhere(),
+                        getLeft().getDbObject().getTypeName(),
                         getLeft().getPath(),
                         getLeft().getPropertyValue());
         }
         
         return I18NUtil.getMessage(
                     "system.schema_comp.diff",
-                    getWhere(),
+                    getLeft().getDbObject().getTypeName(),
                     getLeft().getPath(),
                     getLeft().getPropertyValue(),
                     getRight().getPath(),

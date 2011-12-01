@@ -48,6 +48,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.ResultSet;
@@ -65,6 +66,7 @@ import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.registry.NamedObjectRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.dao.ConcurrencyFailureException;
 
 /**
  * @author Neil Mc Erlean (based on existing webscript controllers in the REST API)
@@ -234,8 +236,19 @@ public class BlogServiceImpl implements BlogService
         nodeProps.put(ContentModel.PROP_NAME, nodeName);
         nodeProps.put(ContentModel.PROP_TITLE, blogTitle);
         QName assocName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, nodeName);
-        ChildAssociationRef postNode = nodeService.createNode(blogContainerNode, ContentModel.ASSOC_CONTAINS, assocName,
-                                                  ContentModel.TYPE_CONTENT, nodeProps);
+        ChildAssociationRef postNode = null;
+        try
+        {
+            postNode = nodeService.createNode(
+                    blogContainerNode, ContentModel.ASSOC_CONTAINS, assocName,
+                    ContentModel.TYPE_CONTENT, nodeProps);
+        }
+        catch (DuplicateChildNodeNameException e)
+        {
+            // This will be rare, but it's not impossible.
+            // We have to retry the operation.
+            throw new ConcurrencyFailureException("Blog post name already used: " + nodeName);
+        }
         
         ContentWriter writer = contentService.getWriter(postNode.getChildRef(), ContentModel.PROP_CONTENT, true);
         

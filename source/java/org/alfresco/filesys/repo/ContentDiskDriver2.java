@@ -135,7 +135,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
     private NodeService nodeService;
     private SearchService searchService;
     private ContentService contentService;
-    private MimetypeService mimetypeService;
+    private MimetypeService mimetypeService; 
     private PermissionService permissionService;
     private FileFolderService fileFolderService;
     private LockService lockService;
@@ -144,6 +144,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
     private AuthenticationService authService;
     private BehaviourFilter policyBehaviourFilter;
     private NodeMonitorFactory m_nodeMonitorFactory;
+    private ContentComparator contentComparator;
 
 	private boolean isLockedFilesAsOffline;
 	
@@ -167,6 +168,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         PropertyCheck.mandatory(this, "policyBehaviourFilter", policyBehaviourFilter);
         PropertyCheck.mandatory(this, "m_nodeMonitorFactory", m_nodeMonitorFactory);
         PropertyCheck.mandatory(this, "ioControlHandler", ioControlHandler);
+        PropertyCheck.mandatory(this, "contentComparator", getContentComparator());
     }
     
     /**
@@ -2798,6 +2800,28 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 tempFile.flushFile();
                 tempFile.close();
                 
+                /*
+                 * Need to work out whether content has changed.  Some odd situations do not change content.
+                 */
+                ContentReader existingContent = contentService.getReader(target, ContentModel.PROP_CONTENT);
+                if(existingContent != null)
+                {
+                    existingContent.getSize();
+                    existingContent.getMimetype();
+                    InputStream is = existingContent.getContentInputStream();
+                }
+                
+                //InputStream is = new BufferedInputStream(new FileInputStream(tempFile.getFile()));
+                boolean contentChanged = isContentChanged(existingContent, tempFile);
+                
+                if(contentChanged)
+                {
+                    logger.debug("content has changed");
+                        
+                      
+                
+                // MER END
+                
                 /**
                  * Take over the behaviour of the auditable aspect         
                  */
@@ -2829,6 +2853,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 writer.setMimetype(mimetype);
                 writer.setEncoding(encoding);
                 writer.putContent(tempFile.getFile());
+                }
             }
         }
         
@@ -2945,5 +2970,27 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             return true;
         }
         return false;
-    }        
+    }  
+    
+    /**
+     * Compare the content for significant changes.  For example Project and Excel play with headers, 
+     * which should not result in new versions being created.
+     * @param existingContent
+     * @param newFile
+     * @return true the content has changed, false the content has not changed significantly.
+     */
+    private boolean isContentChanged(ContentReader existingContent, TempNetworkFile newFile)
+    {
+        return !contentComparator.isContentEqual(existingContent, newFile.getFile());
+    }
+
+    public void setContentComparator(ContentComparator contentComparator)
+    {
+        this.contentComparator = contentComparator;
+    }
+
+    public ContentComparator getContentComparator()
+    {
+        return contentComparator;
+    }
 }

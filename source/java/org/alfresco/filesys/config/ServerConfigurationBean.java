@@ -196,7 +196,7 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
         ICifsAuthenticator authenticator = cifsConfigBean.getAuthenticator();
         if (authenticator == null || authenticator instanceof ActivateableBean && !((ActivateableBean)authenticator).isActive())
         {
-            logger.warn("No enabled CIFS authenticator found in authentication chain. CIFS Server disabled");
+            logger.error("No enabled CIFS authenticator found in authentication chain. CIFS Server disabled");
             removeConfigSection(CIFSConfigSection.SectionName);
             return;
         }

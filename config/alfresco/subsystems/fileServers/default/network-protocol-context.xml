@@ -54,6 +54,10 @@
        <property name="checkOutCheckInService"><ref bean="CheckoutCheckinService"/></property>
    </bean>
    
+   <!--  Content Comparator -->
+   <bean name="contentComparator" class="org.alfresco.filesys.repo.CIFSContentComparator" init-method="init">
+   
+   </bean>
 
    <!-- Filesystem Interface -->
    <bean id="oldContentDiskDriver" class="org.alfresco.filesys.repo.ContentDiskDriver">
@@ -174,8 +178,9 @@
             </list>
         </property>
        
-   </bean> 
+   </bean>
    
+ 
 
     <!-- File State Driver - adds JLAN'S file state stuff -->   
    <bean name="fileStateDriver" class="org.alfresco.filesys.repo.LegacyFileStateDriver"
@@ -267,6 +272,7 @@
       <property name="policyFilter"><ref bean="policyBehaviourFilter" /></property>
       <property name="checkOutCheckInService"><ref bean="CheckoutCheckinService"/></property>
       <property name="ioControlHandler"><ref bean="contentIOHandler"/></property>
+      <property name="contentComparator"><ref bean="contentComparator"/></property>
 
    </bean>
 

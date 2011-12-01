@@ -66,7 +66,7 @@ public abstract class AbstractManifestProcessorBase implements TransferManifestP
         {
             endManifest();
         }
-        catch(Exception ex)
+        catch(Throwable ex)
         {
             handleException(null, ex);
         }
@@ -81,7 +81,7 @@ public abstract class AbstractManifestProcessorBase implements TransferManifestP
         {
             processNode(node);
         }
-        catch (Exception ex)
+        catch (Throwable ex)
         {
             handleException(node, ex);
         }
@@ -96,7 +96,7 @@ public abstract class AbstractManifestProcessorBase implements TransferManifestP
         {
             processNode(node);
         }
-        catch (Exception ex)
+        catch (Throwable ex)
         {
             handleException(node, ex);
         }
@@ -116,7 +116,7 @@ public abstract class AbstractManifestProcessorBase implements TransferManifestP
         {
             processHeader(header);
         }
-        catch (Exception ex)
+        catch (Throwable ex)
         {
             handleException(null, ex);
         }
@@ -130,7 +130,7 @@ public abstract class AbstractManifestProcessorBase implements TransferManifestP
         {
             startManifest();
         }
-        catch (Exception ex)
+        catch (Throwable ex)
         {
             handleException(null, ex);
         }
@@ -167,7 +167,17 @@ public abstract class AbstractManifestProcessorBase implements TransferManifestP
         return receiver.getStagingFolder(transferId);
     }
     
-    private void handleException(TransferManifestNode node, Exception ex)
+    protected TransferReceiver getReceiver()
+    {
+        return receiver;
+    }
+    
+    protected String getTransferId()
+    {
+        return transferId;
+    }
+    
+    private void handleException(TransferManifestNode node, Throwable ex)
     {
         try
         {
@@ -178,16 +188,26 @@ public abstract class AbstractManifestProcessorBase implements TransferManifestP
                 log.debug("Successfully marked transaction for rollback.");
             }
         }
-        catch (Exception e)
+        catch (Throwable e)
         {
             //Nothing really to be done here
             log.warn("Failed to mark transaction as rollback-only in response to an error", e);
         }
-        TransferProgressMonitor monitor = receiver.getProgressMonitor();
-        String message = (node != null) ? "Error while processing incoming node " + node.getNodeRef() :
-            "Error processing commit";
         
-        monitor.logException(transferId, message, ex);
+        try
+        {
+            TransferProgressMonitor monitor = receiver.getProgressMonitor();
+            String message = (node != null) ? "Error while processing incoming node " + node.getNodeRef() :
+                "Error processing commit";
+            
+            monitor.logException(transferId, message, ex);
+        }
+        catch(Throwable t)
+        {
+            //Nothing really to be done here
+            log.warn("Failed to record exception in transfer log due to an exception", t);
+        }
+        
         //Any non-fatal transfer exception is logged and then skipped - the transfer continues 
         //(albeit with a guaranteed rollback at the end).
         //A fatal transfer exception is rethrown and causes the transfer to end immediately.
@@ -195,14 +215,41 @@ public abstract class AbstractManifestProcessorBase implements TransferManifestP
         //and thrown.
         if (TransferFatalException.class.isAssignableFrom(ex.getClass()))
         {
+            callLocalExceptionHandler(node, ex);
             throw (TransferFatalException)ex;
         } 
         else if (!TransferException.class.isAssignableFrom(ex.getClass()))
         {
+            callLocalExceptionHandler(node, ex);
             throw new TransferFatalException(MSG_ERROR_WHILE_COMMITTING_TRANSFER, ex);
         }
     }
+
+    private void callLocalExceptionHandler(TransferManifestNode node, Throwable ex)
+    {
+        try
+        {
+            localHandleException(node, ex);
+        }
+        catch(Throwable t)
+        {
+            //Nothing really to be done here
+            log.warn("Caught and discarded exception thrown from custom exception handler", t);
+        }
+    }
     
+    /**
+     * This method is invoked if an exception or error occurs while processing the manifest.
+     * By default it does nothing, but classes that extend this class can override this to provide
+     * custom clean-up. 
+     * @param node
+     * @param ex
+     */
+    protected void localHandleException(TransferManifestNode node, Throwable ex)
+    {
+        //NO-OP - override to add custom clean-up
+    }
+
     protected void logComment(String message)
     {
         receiver.getProgressMonitor().logComment(transferId, message);

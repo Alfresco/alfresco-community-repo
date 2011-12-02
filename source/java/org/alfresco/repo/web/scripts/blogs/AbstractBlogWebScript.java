@@ -21,7 +21,6 @@ package org.alfresco.repo.web.scripts.blogs;
 import java.io.IOException;
 import java.util.Map;
 
-import org.alfresco.repo.activities.post.lookup.PostLookup;
 import org.alfresco.repo.blog.BlogServiceImpl;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.model.Repository;
@@ -37,7 +36,6 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONStringer;
-import org.json.JSONWriter;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -116,7 +114,7 @@ public abstract class AbstractBlogWebScript extends DeclarativeWebScript
      * @param event One of created, updated, deleted
      */
     protected void addActivityEntry(String event, BlogPostInfo blog, 
-          SiteInfo site, WebScriptRequest req, JSONObject json, NodeRef nodeRef)
+          SiteInfo site, WebScriptRequest req, JSONObject json)
     {
        // We can only add activities against a site
        if (site == null)
@@ -149,19 +147,11 @@ public abstract class AbstractBlogWebScript extends DeclarativeWebScript
        
        try
        {
-          JSONWriter jsonWriter = new JSONStringer()
+          String data = new JSONStringer()
               .object()
                   .key(TITLE).value(title)
-                  .key(PAGE).value(page);
-          
-          if (nodeRef != null)
-          {
-              // ALF-10182: the nodeRef needs to be included in the activity
-              // post to ensure read permissions are respected.
-              jsonWriter.key(PostLookup.JSON_NODEREF).value(nodeRef.toString());
-          }
-          
-          String data = jsonWriter.endObject().toString();
+                  .key(PAGE).value(page)
+              .endObject().toString();
           
           activityService.postActivity(
                 "org.alfresco.blog.post-" + event,

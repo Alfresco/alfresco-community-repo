@@ -83,7 +83,7 @@ public class BlogPostsPost extends AbstractBlogWebScript
                 jsonPostParams.getPage() != null &&
                 !isDraft)
         {
-            addActivityEntry("created", post, site, req, json);
+            addActivityEntry("created", post, site, req, json, nodeRef);
         }
         
         return model;

@@ -19,9 +19,6 @@
 package org.alfresco.repo.webdav;
 
 import java.io.InputStream;
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -37,7 +34,6 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 import org.springframework.dao.ConcurrencyFailureException;
 
 /**
@@ -51,6 +47,10 @@ public class PutMethod extends WebDAVMethod
     private String m_strLockToken = null;
     private String m_strContentType = null;
     private boolean m_expectHeaderPresent = false;
+    
+    // Indicates if a zero byte node was created by a LOCK call.
+    // Try to delete the node if the PUT fails
+    private boolean noContent = false;
 
     /**
      * Default constructor
@@ -80,23 +80,74 @@ public class PutMethod extends WebDAVMethod
     }
 
     /**
-     * Parse the request body
+     * Clears the aspect added by a LOCK request for a new file, so
+     * that the Timer started by the LOCK request will not remove the
+     * node now that the PUT request has been received. This is needed
+     * for large content.
      * 
      * @exception WebDAVServerException
      */
     protected void parseRequestBody() throws WebDAVServerException
     {
-        // Nothing to do in this method, the body contains
-        // the content it will be dealt with later
+        // Nothing is done with the body by this method. The body contains
+        // the content it will be dealt with later.
+        
+        // This method is called ONCE just before the FIRST call to executeImpl,
+        // which is in a retrying transaction so may be called many times.
+        
+        // Although this method is called just before the first executeImpl,
+        // it is possible that the Thread could be interrupted before the first call
+        // or between calls. However the chances are low and the consequence
+        // (leaving a zero byte file) is minor.
+  
+        noContent = getTransactionService().getRetryingTransactionHelper().doInTransaction(
+                new RetryingTransactionCallback<Boolean>()
+                {
+                    public Boolean execute() throws Throwable
+                    {
+                        FileInfo contentNodeInfo = null;
+                        try
+                        {
+                            contentNodeInfo = getDAVHelper().getNodeForPath(getRootNodeRef(), getPath(), getServletPath());
+                            checkNode(contentNodeInfo);
+                            final NodeRef nodeRef = contentNodeInfo.getNodeRef();
+                            if (getNodeService().hasAspect(contentNodeInfo.getNodeRef(), ContentModel.ASPECT_WEBDAV_NO_CONTENT))
+                            {
+                                getNodeService().removeAspect(nodeRef, ContentModel.ASPECT_WEBDAV_NO_CONTENT);
+                                if (logger.isDebugEnabled())
+                                {
+                                    String path = getPath();
+                                    logger.debug("Put Timer DISABLE " + path);
+                                }
+                                return Boolean.TRUE;
+                            }
+                        }
+                        catch (FileNotFoundException e)
+                        {
+                            // Does not exist, so there will be no aspect.
+                        }
+                        return Boolean.FALSE;
+                    }
+                }, false, true);
     }
 
     /**
-     * Exceute the WebDAV request
+     * Execute the WebDAV request
      * 
      * @exception WebDAVServerException
      */
     protected void executeImpl() throws WebDAVServerException, Exception
     {
+        if (logger.isDebugEnabled())
+        {
+            String path = getPath();
+            String userName = getDAVHelper().getAuthenticationService().getCurrentUserName();
+            logger.debug("Put node: \n" +
+                    "     user: " + userName + "\n" +
+                    "     path: " + path + "\n" +
+                    "noContent: " + noContent);
+        }
+
         FileFolderService fileFolderService = getFileFolderService();
 
         // Get the status for the request path
@@ -170,7 +221,6 @@ public class PutMethod extends WebDAVMethod
     
             // Write the new data to the content node
             writer.putContent(is);
-            
             // Ask for the document metadata to be extracted
             Action extract = getActionService().createAction(ContentMetadataExtracter.EXECUTOR_NAME);
             if(extract != null)
@@ -180,20 +230,15 @@ public class PutMethod extends WebDAVMethod
             }
 
     
-            // write content was successful -> remove noContent aspect
-            if (getNodeService().hasAspect(contentNodeInfo.getNodeRef(), ContentModel.ASPECT_WEBDAV_NO_CONTENT))
-            {
-                getNodeService().removeAspect(contentNodeInfo.getNodeRef(), ContentModel.ASPECT_WEBDAV_NO_CONTENT);
-            }
 
             // Set the response status, depending if the node existed or not
             m_response.setStatus(created ? HttpServletResponse.SC_CREATED : HttpServletResponse.SC_NO_CONTENT);
         }
         catch (Throwable e) 
         {
-            // check if the node was marked with noContent aspect previously by lock method
-            if (RetryingTransactionHelper.extractRetryCause(e) == null
-                    && getNodeService().hasAspect(contentNodeInfo.getNodeRef(), ContentModel.ASPECT_WEBDAV_NO_CONTENT))
+            // check if the node was marked with noContent aspect previously by lock method AND
+            // we are about to give up
+            if (noContent && RetryingTransactionHelper.extractRetryCause(e) == null)
             {
                 // remove the 0 bytes content if save operation failed or was cancelled
                 final NodeRef nodeRef = contentNodeInfo.getNodeRef();
@@ -202,8 +247,11 @@ public class PutMethod extends WebDAVMethod
                         {
                             public String execute() throws Throwable
                             {
-                                getNodeService().removeAspect(nodeRef, ContentModel.ASPECT_WEBDAV_NO_CONTENT);
                                 getNodeService().deleteNode(nodeRef);
+                                if (logger.isDebugEnabled())
+                                {
+                                    logger.debug("Put failed. DELETE  " + getPath());
+                                }
                                 return null;
                             }
                         }, false, true);

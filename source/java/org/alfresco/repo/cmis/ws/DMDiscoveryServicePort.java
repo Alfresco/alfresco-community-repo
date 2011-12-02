@@ -66,6 +66,8 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
      * Queries the repository for queryable object based on properties or an optional full-text string. Relationship objects are not queryable. Content-streams are not returned as
      * part of query
      * 
+     * ALF-9566 : hasMoreItems was changed to be confirmed with a section (2.2.1.1 Paging) of the specification. 
+     * 
      * @param parameters query parameters
      * @throws CmisException (with following {@link EnumServiceException} : INVALID_ARGUMENT, OBJECT_NOT_FOUND, NOT_SUPPORTED, PERMISSION_DENIED, RUNTIME)
      */
@@ -107,6 +109,8 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
             maxItems = parameters.getMaxItems().getValue().intValue();
         }
 
+        // total number of items
+        int numItems = resultSet.getLength();
         // for each row...
         int idx = 0;
         for (CMISResultSetRow row : resultSet)
@@ -162,8 +166,9 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
             response.getObjects().getObjects().add(object);
             idx++;
         }
-        response.getObjects().setNumItems(BigInteger.valueOf(skipCount + resultSet.getLength()));
-        response.getObjects().setHasMoreItems(resultSet.hasMore());
+        response.getObjects().setNumItems(BigInteger.valueOf(numItems));
+        boolean hasMoreItems = (maxItems != -1 ? (numItems - (skipCount + maxItems)) > 0 : false) || resultSet.hasMore();
+        response.getObjects().setHasMoreItems(hasMoreItems);
         return response;
     }
 

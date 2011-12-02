@@ -56,9 +56,11 @@ public abstract class BaseCMISTest extends TestCase
     protected String repositoryId;
     protected String testFolderId;
 
+    protected ApplicationContext ctx;
+
     public BaseCMISTest()
     {
-        ApplicationContext ctx = ApplicationContextHelper.getApplicationContext(new String[]
+        ctx = ApplicationContextHelper.getApplicationContext(new String[]
         {
             ApplicationContextHelper.CONFIG_LOCATIONS[0], "classpath:alfresco/web-services-application-context.xml"
         });

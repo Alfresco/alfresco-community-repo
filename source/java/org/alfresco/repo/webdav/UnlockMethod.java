@@ -28,6 +28,7 @@ import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 
 /**
@@ -111,7 +112,7 @@ public class UnlockMethod extends WebDAVMethod
     {
         if (logger.isDebugEnabled())
         {
-            logger.debug("Lock node; path=" + getPath() + ", token=" + getLockToken());
+            logger.debug("Unlock node; path=" + getPath() + ", token=" + getLockToken());
         }
 
         FileInfo lockNodeInfo = null;
@@ -138,22 +139,25 @@ public class UnlockMethod extends WebDAVMethod
         // String nodeId = lockInfo[0];
         // String userName = lockInfo[1];
 
-        LockStatus lockSts = lockService.getLockStatus(lockNodeInfo.getNodeRef());
+        NodeRef nodeRef = lockNodeInfo.getNodeRef();
+        LockStatus lockSts = lockService.getLockStatus(nodeRef);
         if (lockSts == LockStatus.LOCK_OWNER)
         {
-            lockService.unlock(lockNodeInfo.getNodeRef());
-            nodeService.removeProperty(lockNodeInfo.getNodeRef(), WebDAVModel.PROP_OPAQUE_LOCK_TOKEN);
-            nodeService.removeProperty(lockNodeInfo.getNodeRef(), WebDAVModel.PROP_LOCK_DEPTH);
-            nodeService.removeProperty(lockNodeInfo.getNodeRef(), WebDAVModel.PROP_LOCK_SCOPE);
+            if (!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
+                lockService.unlock(nodeRef);
+            nodeService.removeProperty(nodeRef, WebDAVModel.PROP_OPAQUE_LOCK_TOKEN);
+            nodeService.removeProperty(nodeRef, WebDAVModel.PROP_LOCK_DEPTH);
+            nodeService.removeProperty(nodeRef, WebDAVModel.PROP_LOCK_SCOPE);
 
             // Return the cm:lockable aspect to working copy (ALF-4479, ALF-7079)
-            if (nodeService.hasAspect(lockNodeInfo.getNodeRef(), ContentModel.ASPECT_WORKING_COPY))
+            if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
             {
-                nodeService.addAspect(lockNodeInfo.getNodeRef(), ContentModel.ASPECT_LOCKABLE, null);
+                nodeService.addAspect(nodeRef, ContentModel.ASPECT_LOCKABLE, null);
             }
 
             // Indicate that the unlock was successful
             m_response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            removeNoContentAspect(nodeRef);
 
             // DEBUG
             if (logger.isDebugEnabled())
@@ -163,7 +167,7 @@ public class UnlockMethod extends WebDAVMethod
         }
         else if (lockSts == LockStatus.NO_LOCK)
         {
-            String sharedLocks = (String) nodeService.getProperty(lockNodeInfo.getNodeRef(), WebDAVModel.PROP_SHARED_LOCK_TOKENS);
+            String sharedLocks = (String) nodeService.getProperty(nodeRef, WebDAVModel.PROP_SHARED_LOCK_TOKENS);
             if (sharedLocks != null)
             {
                 Set<String> locks = LockInfo.parseSharedLockTokens(sharedLocks);
@@ -171,10 +175,11 @@ public class UnlockMethod extends WebDAVMethod
                 if (locks != null && locks.contains(m_strLockToken))
                 {
                     locks.remove(m_strLockToken);
-                    nodeService.setProperty(lockNodeInfo.getNodeRef(), WebDAVModel.PROP_SHARED_LOCK_TOKENS, LockInfo.makeSharedLockTokensString(locks));
+                    nodeService.setProperty(nodeRef, WebDAVModel.PROP_SHARED_LOCK_TOKENS, LockInfo.makeSharedLockTokensString(locks));
 
                     // Indicate that the unlock was successful
                     m_response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                    removeNoContentAspect(nodeRef);
 
                     // DEBUG
                     if (logger.isDebugEnabled())
@@ -185,15 +190,13 @@ public class UnlockMethod extends WebDAVMethod
             }
             else
             {
-            // DEBUG
-            if (logger.isDebugEnabled())
-                logger.debug("Unlock token=" + getLockToken() + " Not locked");
+                // DEBUG
+                if (logger.isDebugEnabled())
+                    logger.debug("Unlock token=" + getLockToken() + " Not locked");
 
-            // Node is not locked
-            throw new WebDAVServerException(HttpServletResponse.SC_PRECONDITION_FAILED);
-        }
-            
-            
+                // Node is not locked
+                throw new WebDAVServerException(HttpServletResponse.SC_PRECONDITION_FAILED);
+            }
         }
         else if (lockSts == LockStatus.LOCKED)
         {
@@ -209,9 +212,30 @@ public class UnlockMethod extends WebDAVMethod
             // DEBUG
             if (logger.isDebugEnabled())
                 logger.debug("Unlock token=" + getLockToken() + " Lock expired");
-
+            
             // Return a success status
             m_response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            removeNoContentAspect(nodeRef);
+        }
+     }
+
+    // This method removes a new zero byte node that has been locked, where the
+    // PUT has not taken place but the client has issued an UNLOCK. The Timer
+    // started in the LOCK will delete the node, but this is faster.
+    // I have seen it with MS Office 2003 Excel. Almost impossible to reproduce.
+    // Think Excel responds to a 'kill' request between the LOCK and PUT requests
+    // and tries to tidy down as it exits.
+    private void removeNoContentAspect(NodeRef nodeRef)
+    {
+        if (getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_WEBDAV_NO_CONTENT))
+        {
+            getNodeService().removeAspect(nodeRef, ContentModel.ASPECT_WEBDAV_NO_CONTENT);
+            getNodeService().deleteNode(nodeRef);
+
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Unlock Timer DISABLE and DELETE " + getPath());
+            }
         }
     }
 }

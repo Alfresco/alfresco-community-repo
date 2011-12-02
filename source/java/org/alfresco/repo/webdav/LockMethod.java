@@ -21,17 +21,23 @@ package org.alfresco.repo.webdav;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WebDAVModel;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileFolderUtil;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.dom4j.io.XMLWriter;
@@ -48,6 +54,8 @@ public class LockMethod extends WebDAVMethod
 {
     public static final String EMPTY_NS = "";
     
+    private static Timer timer = new Timer(true);
+
     protected int m_timeoutDuration = WebDAV.TIMEOUT_INFINITY;
     
     protected LockInfo lockInfo = new LockInfo();
@@ -206,10 +214,10 @@ public class LockMethod extends WebDAVMethod
     protected void executeImpl() throws WebDAVServerException, Exception
     {
         FileFolderService fileFolderService = getFileFolderService();
-        String path = getPath();
+        final String path = getPath();
         NodeRef rootNodeRef = getRootNodeRef();
         // Get the active user
-        String userName = getDAVHelper().getAuthenticationService().getCurrentUserName();
+        final String userName = getDAVHelper().getAuthenticationService().getCurrentUserName();
 
         if (logger.isDebugEnabled())
         {
@@ -258,9 +266,66 @@ public class LockMethod extends WebDAVMethod
             // ALF-10309 fix, mark created node with webdavNoContent aspect, we assume that save operation
             // is performed by client, webdavNoContent aspect normally removed in put method unless there
             // is a cancel before the PUT request takes place
-            if (!getNodeService().hasAspect(lockNodeInfo.getNodeRef(), ContentModel.ASPECT_WEBDAV_NO_CONTENT))
+            int lockTimeout = getLockTimeout();
+            if (lockTimeout > 0 &&
+                !getNodeService().hasAspect(lockNodeInfo.getNodeRef(), ContentModel.ASPECT_WEBDAV_NO_CONTENT))
             {
-                getNodeService().addAspect(lockNodeInfo.getNodeRef(), ContentModel.ASPECT_WEBDAV_NO_CONTENT, null);
+                final NodeRef nodeRef = lockNodeInfo.getNodeRef();
+                getNodeService().addAspect(nodeRef, ContentModel.ASPECT_WEBDAV_NO_CONTENT, null);
+                
+                // Remove node after the timeout (MS Office 2003 requests 3 minutes) if the PUT or UNLOCK has not taken place
+                timer.schedule(new TimerTask()
+                {
+                    @Override
+                    public void run()
+                    {
+                        // run as current user
+                        AuthenticationUtil.runAs(new RunAsWork<Void>()
+                        {
+                            @Override
+                            public Void doWork() throws Exception
+                            {
+                                try
+                                {
+                                    if (getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_WEBDAV_NO_CONTENT))
+                                    {
+                                        getTransactionService().getRetryingTransactionHelper().doInTransaction(
+                                            new RetryingTransactionCallback<String>()
+                                            {
+                                                public String execute() throws Throwable
+                                                {
+                                                    getNodeService().removeAspect(nodeRef, ContentModel.ASPECT_WEBDAV_NO_CONTENT);
+                                                    getNodeService().deleteNode(nodeRef);
+                                                    if (logger.isDebugEnabled())
+                                                    {
+                                                        logger.debug("Timer DELETE " + path);
+                                                    }
+                                                    return null;
+                                                }
+                                            }, false, true);
+                                    }
+                                    else if (logger.isDebugEnabled())
+                                    {
+                                        logger.debug("Timer IGNORE " + path);
+                                    }
+                                }
+                                catch (InvalidNodeRefException e)
+                                {
+                                    // Might get this if the node is deleted. If so just ignore.
+                                    if (logger.isDebugEnabled())
+                                    {
+                                        logger.debug("Timer DOES NOT EXIST " + path);
+                                    }
+                                }
+                                return null;
+                            }
+                        }, userName);
+                    }
+                }, lockTimeout*1000);
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Timer START in " + lockTimeout + " seconds "+ path);
+                }
             }
             
             if (logger.isDebugEnabled())

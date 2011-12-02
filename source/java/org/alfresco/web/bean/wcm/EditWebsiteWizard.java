@@ -103,7 +103,12 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
       NodeRef nodeRef = this.browseBean.getActionSpace().getNodeRef();
       
       WebProjectInfo wpInfo = getWebProjectService().getWebProject(nodeRef);
-      
+
+      if(!wpInfo.getName().equals(this.name))
+      {
+    	  getFileFolderService().rename(nodeRef, this.name); 
+      }
+
       // apply the name, title and description props
       
       wpInfo.setName(this.name);

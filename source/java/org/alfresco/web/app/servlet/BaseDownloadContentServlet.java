@@ -280,9 +280,7 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
          
          if (attachment == true)
          {
-            // set header based on filename - will force a Save As from the browse if it doesn't recognise it
-            // this is better than the default response of the browser trying to display the contents
-            res.setHeader(HEADER_CONTENT_DISPOSITION, "attachment");
+             setHeaderContentDisposition(req, res, filename);
          }
          
          // get the content reader
@@ -311,7 +309,7 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
          if (!attachment && (mimetype.equals(POWER_POINT_2007_DOCUMENT_MIMETYPE) || 
                              mimetype.equals(POWER_POINT_DOCUMENT_MIMETYPE)))
          {
-            res.setHeader(HEADER_CONTENT_DISPOSITION, "attachment");
+            setHeaderContentDisposition(req, res, filename);
          }
          
          // get the content and stream directly to the response output stream
@@ -392,6 +390,22 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
       {
          throw new AlfrescoRuntimeException("Error during download content servlet processing: " + err.getMessage(), err);
       }
+   }
+
+   private void setHeaderContentDisposition(HttpServletRequest req, HttpServletResponse res, String filename)
+   {
+       // set header based on filename - will force a Save As from the browse if it doesn't recognise it
+       // this is better than the default response of the browser trying to display the contents
+
+       // IE requires that "Content-Disposition" header in case of "attachment" type should include
+       // "filename" part.
+       StringBuilder attachmentValue = new StringBuilder(128).append("attachment");
+       String userAgent = req.getHeader(HEADER_USER_AGENT);
+       if (userAgent != null && userAgent.toLowerCase().contains("msie"))
+       {
+           attachmentValue.append("; filename=\"").append(res.encodeURL(filename)).append("\"");
+       }
+       res.setHeader(HEADER_CONTENT_DISPOSITION, attachmentValue.toString());
    }
    
    /**

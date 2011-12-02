@@ -183,7 +183,8 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
                        // NOTE: This encoding allows us to workaround bug:
                        //       http://bugs.sun.com/bugdatabase/view_bug.do;:WuuT?bug_id=4820807
                        // We also try to use the extra encoding information if present
-                       zipFile = new ZipFile(tempFile, "Cp437", true);
+                       // ALF-2016
+                       zipFile = new ZipFile(tempFile, "UTF-8", true);
                        
                        // build a temp dir name based on the ID of the noderef we are importing
                        // also use the long life temp folder as large ZIP files can take a while

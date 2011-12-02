@@ -70,7 +70,7 @@ public class ACPImportPackageHandler
         {
             // NOTE: This encoding allows us to workaround bug...
             //       http://bugs.sun.com/bugdatabase/view_bug.do;:WuuT?bug_id=4820807
-            zipFile = new ZipFile(file, "Cp437");
+            zipFile = new ZipFile(file, "UTF-8");
         }
         catch(IOException e)
         {

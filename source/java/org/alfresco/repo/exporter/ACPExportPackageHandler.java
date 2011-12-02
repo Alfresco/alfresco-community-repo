@@ -38,8 +38,9 @@ import org.alfresco.service.cmr.repository.Path.ChildAssocElement;
 import org.alfresco.service.cmr.view.ExportPackageHandler;
 import org.alfresco.service.cmr.view.ExporterException;
 import org.alfresco.util.TempFileProvider;
-import org.apache.tools.zip.ZipEntry;
-import org.apache.tools.zip.ZipOutputStream;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream.UnicodeExtraFieldPolicy;
 
 
 /**
@@ -60,7 +61,7 @@ public class ACPExportPackageHandler
     protected File contentDir;
     protected File tempDataFile;
     protected OutputStream tempDataFileStream;
-    protected ZipOutputStream zipStream;
+    protected ZipArchiveOutputStream zipStream;
     protected int iFileCnt = 0;
     protected boolean exportAsFolders;
     
@@ -145,10 +146,14 @@ public class ACPExportPackageHandler
      */
     public void startExport()
     {
-        zipStream = new ZipOutputStream(outputStream);
+        // ALF-2016
+        zipStream = new ZipArchiveOutputStream(outputStream);
         // NOTE: This encoding allows us to workaround bug...
         //       http://bugs.sun.com/bugdatabase/view_bug.do;:WuuT?bug_id=4820807
-        zipStream.setEncoding("Cp437");
+        zipStream.setEncoding("UTF-8");
+        zipStream.setCreateUnicodeExtraFields(UnicodeExtraFieldPolicy.ALWAYS);
+        zipStream.setUseLanguageEncodingFlag(true);
+        zipStream.setFallbackToUTF8(true);
     }
 
     /* (non-Javadoc)
@@ -215,8 +220,9 @@ public class ACPExportPackageHandler
         
         try
         {
-            ZipEntry zipEntry = new ZipEntry(file.getPath());
-            zipStream.putNextEntry(zipEntry);
+            // ALF-2016
+            ZipArchiveEntry zipEntry=new ZipArchiveEntry(file.getPath());
+            zipStream.putArchiveEntry(zipEntry);
             
             // copy export stream to zip
             copyStream(zipStream, content);
@@ -242,15 +248,19 @@ public class ACPExportPackageHandler
         }
         
         // add data file to zip stream
-        ZipEntry zipEntry = new ZipEntry(dataFilePath);
+        // ALF-2016
+        ZipArchiveEntry zipEntry=new ZipArchiveEntry(dataFilePath);
         
         try
         {
             // close data file stream and place temp data file into zip output stream
             tempDataFileStream.close();
-            zipStream.putNextEntry(zipEntry);
+            // ALF-2016
+            zipStream.putArchiveEntry(zipEntry);
             InputStream dataFileStream = new FileInputStream(tempDataFile);
             copyStream(zipStream, dataFileStream);
+            // ALF-2016
+            zipStream.closeArchiveEntry();
             dataFileStream.close();
         }
         catch (IOException e)

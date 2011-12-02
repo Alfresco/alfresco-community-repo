@@ -21,16 +21,20 @@ package org.alfresco.filesys.debug;
 
 import org.springframework.extensions.config.ConfigElement;
 import org.alfresco.jlan.debug.Debug;
+import org.alfresco.jlan.debug.DebugInterface;
 import org.alfresco.jlan.debug.DebugInterfaceBase;
+import org.alfresco.jlan.server.config.ServerConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
  * Alfresco File Server Debug Interface Class
  * 
+ * Adapts JLAN's debug information out to Alfresco's logging
+ * 
  * @author gkspencer
  */
-public class FileServerDebugInterface extends DebugInterfaceBase {
+public class FileServerDebugInterface implements DebugInterface {
 
   // Logger to use for all file server debug output
   
@@ -38,6 +42,7 @@ public class FileServerDebugInterface extends DebugInterfaceBase {
   
   // temporary buffer for debugPrint
   
+  // MER TODO - Not thread safe - probably needs to be in a thread slot.   Would be much better to fix DebugInterface.
   private StringBuilder m_printBuf;
 
   /**
@@ -63,18 +68,19 @@ public class FileServerDebugInterface extends DebugInterfaceBase {
    * @param str String
    */
   public void debugPrintln(String str, int level) {
-    if ( level <= getLogLevel()) {
       
       // Check if there is any buffered output
-      
+   if ( level <= getLogLevel())
       if ( m_printBuf.length() > 0) {
         m_printBuf.append( str);
         logOutput( m_printBuf.toString(), level);
         m_printBuf.setLength( 0);
       }
       else
+      {
         logOutput( str, level);
-    }
+      }
+   
   }
 
 	/**
@@ -87,27 +93,23 @@ public class FileServerDebugInterface extends DebugInterfaceBase {
 		
 		// Check if the logging level is enabled
 		  
-		if ( level <= getLogLevel()) {
-
-			// Output the exception
-			
-			switch ( level) {
+		switch ( level) 
+		{
 				case Debug.Debug:
-				  logger.debug( ex, ex);
+				  logger.debug( "Debug from JLAN", ex);
 				  break;
 				case Debug.Info:
-				  logger.info( ex, ex);
+				  logger.info( "Info from JLAN", ex);
 				  break;
 				case Debug.Warn:
-				  logger.warn( ex, ex);
+				  logger.warn( "Warning from JLAN", ex);
 				  break;
 				case Debug.Fatal:
-				  logger.fatal( ex, ex);
+				  logger.fatal("Fatal from JLAN", ex);
 				  break;
 				case Debug.Error:
-				  logger.error( ex, ex);
+				  logger.error("Error from JLAN", ex);
 				  break;
-			  }
 		}
 	}
 	
@@ -144,23 +146,78 @@ public class FileServerDebugInterface extends DebugInterfaceBase {
    * @exception Exception
    */
   public void initialize(ConfigElement params)
-    throws Exception {
+     throws Exception 
+  {
 
-    // Set the log level from the log4j Log object
-	  
-	int logLevel = Debug.Error;
-	
-	if ( logger.isDebugEnabled())
-	  logLevel = Debug.Debug;
-	else if ( logger.isInfoEnabled())
-	  logLevel = Debug.Info;
-	else if ( logger.isWarnEnabled())
-	  logLevel = Debug.Warn;
-	else if ( logger.isErrorEnabled())
-	  logLevel = Debug.Error;
-	else if ( logger.isFatalEnabled())
-	  logLevel = Debug.Fatal;
-	
-	setLogLevel(logLevel);
   }
+  
+    /**
+     * Map logger level to JLAN debug level
+     */
+    public int getLogLevel() 
+    {
+        int logLevel = Debug.Error;
+        
+        if ( logger.isDebugEnabled())
+          logLevel = Debug.Debug;
+        else if ( logger.isInfoEnabled())
+          logLevel = Debug.Info;
+        else if ( logger.isWarnEnabled())
+          logLevel = Debug.Warn;
+        else if ( logger.isErrorEnabled())
+          logLevel = Debug.Error;
+        else if ( logger.isFatalEnabled())
+          logLevel = Debug.Fatal;
+
+        return logLevel;
+    }
+
+    @Override
+    public void close()
+    {
+        // Nothing to do
+    }
+
+    @Override
+    public void debugPrint(String str)
+    {
+        debugPrint(str, Debug.Debug); 
+    }
+
+    @Override
+    public void debugPrintln(String str)
+    {
+        debugPrintln(str, Debug.Debug);
+    }
+
+    @Override
+    public void debugPrintln(Exception ex, int level)
+    {
+        switch ( level) 
+        {
+                case Debug.Debug:
+                  logger.debug( "Debug from JLAN", ex);
+                  break;
+                case Debug.Info:
+                  logger.info( "Info from JLAN", ex);
+                  break;
+                case Debug.Warn:
+                  logger.warn( "Warning from JLAN", ex);
+                  break;
+                case Debug.Fatal:
+                  logger.fatal("Fatal from JLAN", ex);
+                  break;
+                case Debug.Error:
+                  logger.error("Error from JLAN", ex);
+                  break;
+        }
+    }
+
+    @Override
+    public void initialize(ConfigElement params, ServerConfiguration config)
+            throws Exception
+    {
+        // TODO Auto-generated method stub
+    }
+
 }

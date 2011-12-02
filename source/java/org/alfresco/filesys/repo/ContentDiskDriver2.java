@@ -2803,57 +2803,52 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 /*
                  * Need to work out whether content has changed.  Some odd situations do not change content.
                  */
+                boolean contentChanged = true;
+                
                 ContentReader existingContent = contentService.getReader(target, ContentModel.PROP_CONTENT);
                 if(existingContent != null)
                 {
                     existingContent.getSize();
                     existingContent.getMimetype();
-                    InputStream is = existingContent.getContentInputStream();
+                    contentChanged = isContentChanged(existingContent, tempFile);
                 }
-                
-                //InputStream is = new BufferedInputStream(new FileInputStream(tempFile.getFile()));
-                boolean contentChanged = isContentChanged(existingContent, tempFile);
-                
+                      
                 if(contentChanged)
                 {
                     logger.debug("content has changed");
-                        
-                      
                 
-                // MER END
-                
-                /**
-                 * Take over the behaviour of the auditable aspect         
-                 */
-                getPolicyFilter().disableBehaviour(target, ContentModel.ASPECT_AUDITABLE);
-                nodeService.setProperty(target, ContentModel.PROP_MODIFIER, authService.getCurrentUserName());
-                nodeService.setProperty(target, ContentModel.PROP_MODIFIED, new Date(tempFile.getModifyDate()));               
+                    /**
+                     * Take over the behaviour of the auditable aspect         
+                     */
+                    getPolicyFilter().disableBehaviour(target, ContentModel.ASPECT_AUDITABLE);
+                    nodeService.setProperty(target, ContentModel.PROP_MODIFIER, authService.getCurrentUserName());
+                    nodeService.setProperty(target, ContentModel.PROP_MODIFIED, new Date(tempFile.getModifyDate()));               
             
-                // Take an initial guess at the mimetype (if it has not been set by something already)
-                String mimetype = mimetypeService.guessMimetype(tempFile.getFullName(), new FileContentReader(tempFile.getFile()));
-                logger.debug("guesssed mimetype:" + mimetype);
+                    // Take an initial guess at the mimetype (if it has not been set by something already)
+                    String mimetype = mimetypeService.guessMimetype(tempFile.getFullName(), new FileContentReader(tempFile.getFile()));
+                    logger.debug("guesssed mimetype:" + mimetype);
             
-                String encoding;
-                // Take a guess at the locale
-                InputStream is = new BufferedInputStream(new FileInputStream(tempFile.getFile()));
-                try
-                {
-                    ContentCharsetFinder charsetFinder = mimetypeService.getContentCharsetFinder();
-                    Charset charset = charsetFinder.getCharset(is, mimetype);
-                    encoding = charset.name();
-                }
-                finally
-                {
-                    if(is != null)
+                    String encoding;
+                    // Take a guess at the locale
+                    InputStream is = new BufferedInputStream(new FileInputStream(tempFile.getFile()));
+                    try
                     {
-                        is.close();
+                        ContentCharsetFinder charsetFinder = mimetypeService.getContentCharsetFinder();
+                        Charset charset = charsetFinder.getCharset(is, mimetype);
+                        encoding = charset.name();
                     }
-                }
-                ContentWriter writer = contentService.getWriter(target, ContentModel.PROP_CONTENT, true);
-                writer.setMimetype(mimetype);
-                writer.setEncoding(encoding);
-                writer.putContent(tempFile.getFile());
-                }
+                    finally
+                    {
+                        if(is != null)
+                        {
+                            is.close();
+                        }
+                    }
+                    ContentWriter writer = contentService.getWriter(target, ContentModel.PROP_CONTENT, true);
+                    writer.setMimetype(mimetype);
+                    writer.setEncoding(encoding);
+                    writer.putContent(tempFile.getFile());
+                } // if content changed
             }
         }
         

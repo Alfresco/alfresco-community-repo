@@ -316,8 +316,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                         @Override
                         public Void execute() throws Throwable
                         {
-                            // Only try and send the email if the actioned upon node reference still exists
-                            if (nodeService.exists(actionedUponNodeRef) == true)
+                            if (validNodeRefIfPresent(actionedUponNodeRef))
                             {
                                 prepareAndSendEmail(ruleAction, actionedUponNodeRef);
                             }
@@ -329,10 +328,27 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         }
         else
         {
-            if (nodeService.exists(actionedUponNodeRef) == true)
+            if (validNodeRefIfPresent(actionedUponNodeRef))
             {
                 prepareAndSendEmail(ruleAction, actionedUponNodeRef);
             }
+        }
+    }
+    
+    
+    private boolean validNodeRefIfPresent(NodeRef actionedUponNodeRef)
+    {
+        if (actionedUponNodeRef == null)
+        {
+            // We must expect that null might be passed in (ALF-11625)
+            // since the mail action might not relate to a specific nodeRef.
+            return true;
+        }
+        else
+        {
+            // Only try and send the email if the actioned upon node reference still exists
+            // (i.e. if one has been specified it must be valid)
+            return nodeService.exists(actionedUponNodeRef);
         }
     }
     

@@ -30,7 +30,7 @@ public class AlfrescoImapFolderException extends FolderException
 
     private static final long serialVersionUID = -2721708848846740336L;
 
-    public final static String PERMISSION_DENIED = "Can't create folder - Permission denied";
+    public final static String PERMISSION_DENIED = "Cannot perform action - Permission denied";
 
     public AlfrescoImapFolderException(String message)
     {

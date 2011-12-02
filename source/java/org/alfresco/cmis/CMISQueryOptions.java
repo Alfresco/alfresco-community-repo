@@ -67,6 +67,8 @@ public class CMISQueryOptions extends QueryOptions
         options.setMlAnalaysisMode(searchParameters.getMlAnalaysisMode());
         options.setLocales(searchParameters.getLocales());
         options.setStores(searchParameters.getStores());
+        options.setUseInMemorySort(searchParameters.getUseInMemorySort());
+        options.setMaxRawResultSetSizeForInMemorySort(searchParameters.getMaxRawResultSetSizeForInMemorySort());
         //options.setQuery(); Done on conbstruction
         //options.setQueryMode(); Should set afterwards
         options.setQueryParameterDefinitions(searchParameters.getQueryParameterDefinitions());

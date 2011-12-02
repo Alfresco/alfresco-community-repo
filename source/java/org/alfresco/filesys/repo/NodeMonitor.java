@@ -325,7 +325,6 @@ public class NodeMonitor extends TransactionListenerAdapter
     		
     		// Get the full path to the file/folder node
 
-    		Path nodePath = m_nodeService.getPath( oldNodeRef);
     		String fName = (String) m_nodeService.getProperty( oldNodeRef, ContentModel.PROP_NAME);
     		
     		// Build the share relative path to the node

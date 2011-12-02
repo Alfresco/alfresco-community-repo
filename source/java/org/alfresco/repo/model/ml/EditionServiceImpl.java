@@ -112,7 +112,7 @@ public class EditionServiceImpl implements EditionService
         }
 
         // get the properties to add to the edition history
-        addPropertiesToVersion(versionProperties, mlContainerToVersion);
+        addPropertiesToVersion(versionProperties, startingTranslationNodeRef);
 
         // Version the container and its translations
         versionService.createVersion(mlContainerToVersion, versionProperties, true);

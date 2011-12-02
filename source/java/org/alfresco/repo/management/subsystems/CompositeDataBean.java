@@ -216,7 +216,31 @@ public class CompositeDataBean extends AbstractPropertyBackedBean
         // Ensure any edits to child composites cause the parent to be shut down and subsequently re-initialized
         if (broadcast)
         {
-            this.owner.stop();
+            // Avoid holding this object's lock to prevent potential deadlock with parent
+            boolean hadWriteLock = this.lock.isWriteLockedByCurrentThread();
+            if (hadWriteLock)
+            {
+                this.lock.writeLock().unlock();
+            }
+            else
+            {
+                this.lock.readLock().unlock();
+            }
+            try
+            {
+                this.owner.stop();
+            }
+            finally
+            {
+                if (hadWriteLock)
+                {
+                    this.lock.writeLock().lock();
+                }
+                else
+                {
+                    this.lock.readLock().lock();
+                }
+            }
         }
     }
 

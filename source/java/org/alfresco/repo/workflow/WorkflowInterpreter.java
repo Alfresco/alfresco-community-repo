@@ -237,8 +237,7 @@ public class WorkflowInterpreter extends BaseInterpreter
      * @return The textual output of the command.
      */
     @Override
-    protected String executeCommand(String line)
-        throws IOException
+    protected String executeCommand(String line) throws IOException
     {
         String[] command = line.split(" ");
         if (command.length == 0)
@@ -956,7 +955,7 @@ public class WorkflowInterpreter extends BaseInterpreter
             {
                 return "Syntax Error.\n";
             }
-            WorkflowPath path = workflowService.signal(command[1], (command.length == 3) ? command[2] : null);
+            WorkflowPath path = workflowService.signal(command[1], getTransition(command));
             out.println("signal sent - path id: " + path.getId());
             out.print(interpretCommand("show transitions"));
         }
@@ -1259,6 +1258,23 @@ public class WorkflowInterpreter extends BaseInterpreter
         String retVal = new String(bout.toByteArray());
         out.close();
         return retVal;
+    }
+
+    private String getTransition(String[] command)
+    {
+        int length = command.length;
+        if(length <3)
+        {
+            return null;
+        }        
+        // Transition name may contain spaces
+        StringBuilder builder = new StringBuilder(command[2]);
+        int i = 3;
+        while(i<length)
+        {
+            builder.append(" ").append(command[i]);
+        }
+        return builder.toString();
     }
     
 

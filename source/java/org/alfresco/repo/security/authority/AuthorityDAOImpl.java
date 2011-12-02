@@ -962,8 +962,16 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             }
             else
             {
-                List<ChildAssociationRef> cars = nodeService.getChildAssocs(nodeRef, RegexQNamePattern.MATCH_ALL,
-                        RegexQNamePattern.MATCH_ALL, false);
+                List<ChildAssociationRef> cars = childAuthorityCache.get(nodeRef);
+                if (cars == null)
+                {
+                    cars = nodeService.getChildAssocs(nodeRef, RegexQNamePattern.MATCH_ALL,
+                            RegexQNamePattern.MATCH_ALL, false);
+                    if (!cars.isEmpty() && cars.get(0).getTypeQName().equals(ContentModel.ASSOC_MEMBER))
+                    {
+                        childAuthorityCache.put(nodeRef, cars);
+                    }
+                }
                 
                 // Take advantage of the fact that the authority name is on the child association
                 for (ChildAssociationRef car : cars)

@@ -279,6 +279,11 @@ public interface LuceneConfig
     long getMaxTransformationTime();
 
     /**
+     * @return
+     */
+    public boolean getUseInMemorySort();
+
+    /**
      * @param indexerBatchSize
      */
     void setIndexerBatchSize(int indexerBatchSize);
@@ -422,6 +427,11 @@ public interface LuceneConfig
      * @param writerMergeFactor
      */
     void setWriterMergeFactor(int writerMergeFactor);
+
+    /**
+     * @return
+     */
+    public int getMaxRawResultSetSizeForInMemorySort();
 
     /**
      * @param writerMaxBufferedDocs

@@ -284,25 +284,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
         }        
     }
 
-
-    Locale getLocale(SearchParameters searchParameters)
-    {
-        List<Locale> locales = searchParameters.getLocales();
-        if (((locales == null) || (locales.size() == 0)))
-        {
-            locales = Collections.singletonList(I18NUtil.getLocale());
-        }
-
-        if (locales.size() > 1)
-        {
-            throw new SearcherException("Order on text/mltext properties with more than one locale is not curently supported");
-        }
-
-        Locale sortLocale = locales.get(0);
-        return sortLocale;
-    }
-    
-    String findSortField(SearchParameters searchParameters, ClosingIndexSearcher searcher, String field, Locale sortLocale)
+    protected String findSortField(SearchParameters searchParameters, ClosingIndexSearcher searcher, String field, Locale sortLocale)
     {
         // find best field match
 

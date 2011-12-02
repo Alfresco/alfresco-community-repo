@@ -152,4 +152,8 @@ public class LuceneResultSetRow extends AbstractResultSetRow
         throw new UnsupportedOperationException();
     }
 
+    public int doc()
+    {
+        return ((LuceneResultSet)getResultSet()).doc(getIndex());  
+    }
 }

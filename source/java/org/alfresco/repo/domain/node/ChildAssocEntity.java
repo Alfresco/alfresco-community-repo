@@ -390,7 +390,7 @@ public class ChildAssocEntity
         }
         else
         {
-            Pair<Long, String> nsPair = qnameDAO.getOrCreateNamespace(assocQNameNamespace);
+            Pair<Long, String> nsPair = qnameDAO.getNamespace(assocQNameNamespace);
             if (nsPair == null)
             {
                 // We can't set anything

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -20,6 +20,7 @@ package org.alfresco.repo.descriptor;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Collection;
@@ -145,66 +146,107 @@ public class RepositoryDescriptorDAOImpl implements DescriptorDAO
     @Override
     public Descriptor getDescriptor()
     {
-        // retrieve system descriptor
-        final NodeRef descriptorNodeRef = getDescriptorNodeRef(false);
-
-        // create appropriate descriptor
-        if (descriptorNodeRef != null)
+        Descriptor descriptor = null;
+        try
         {
-            final Map<QName, Serializable> properties = this.nodeService.getProperties(descriptorNodeRef);
-            return new RepositoryDescriptor(properties);
+            // retrieve system descriptor
+            final NodeRef descriptorNodeRef = getDescriptorNodeRef(false);
+
+            // create appropriate descriptor
+            if (descriptorNodeRef != null)
+            {
+                final Map<QName, Serializable> properties = this.nodeService.getProperties(descriptorNodeRef);
+                descriptor = new RepositoryDescriptor(properties);
+            }
         }
-        return null;
+        catch (final RuntimeException e)
+        {
+            if (logger.isErrorEnabled())
+            {
+                logger.error("getDescriptor: ", e);
+            }
+            throw e;
+        }
+        catch (final Error e)
+        {
+            if (logger.isErrorEnabled())
+            {
+                logger.error("getDescriptor: ", e);
+            }
+            throw e;
+        }
+        return descriptor;
     }
 
     @Override
     public Descriptor updateDescriptor(final Descriptor serverDescriptor, LicenseMode licenseMode)
     {
-        final NodeRef currentDescriptorNodeRef = getDescriptorNodeRef(true);
-        // if the node is missing but it should have been created
-        if (currentDescriptorNodeRef == null)
+        Descriptor descriptor = null;
+        try
         {
-            return null;
-        }
-        // set the properties
-        if (!this.transactionService.isReadOnly())
-        {
-            Map<QName, Serializable> props = new HashMap<QName, Serializable>(11);
-            props.put(ContentModel.PROP_SYS_NAME, serverDescriptor.getName());
-            props.put(ContentModel.PROP_SYS_VERSION_MAJOR, serverDescriptor.getVersionMajor());
-            props.put(ContentModel.PROP_SYS_VERSION_MINOR, serverDescriptor.getVersionMinor());
-            props.put(ContentModel.PROP_SYS_VERSION_REVISION, serverDescriptor.getVersionRevision());
-            props.put(ContentModel.PROP_SYS_VERSION_LABEL, serverDescriptor.getVersionLabel());
-            props.put(ContentModel.PROP_SYS_VERSION_BUILD, serverDescriptor.getVersionBuild());
-            props.put(ContentModel.PROP_SYS_VERSION_SCHEMA, serverDescriptor.getSchema());
+            final NodeRef currentDescriptorNodeRef = getDescriptorNodeRef(true);
+            // if the node is missing but it should have been created
+            if (currentDescriptorNodeRef == null)
+            {
+                return null;
+            }
+            // set the properties
+            if (!this.transactionService.isReadOnly())
+            {
+                Map<QName, Serializable> props = new HashMap<QName, Serializable>(11);
+                props.put(ContentModel.PROP_SYS_NAME, serverDescriptor.getName());
+                props.put(ContentModel.PROP_SYS_VERSION_MAJOR, serverDescriptor.getVersionMajor());
+                props.put(ContentModel.PROP_SYS_VERSION_MINOR, serverDescriptor.getVersionMinor());
+                props.put(ContentModel.PROP_SYS_VERSION_REVISION, serverDescriptor.getVersionRevision());
+                props.put(ContentModel.PROP_SYS_VERSION_LABEL, serverDescriptor.getVersionLabel());
+                props.put(ContentModel.PROP_SYS_VERSION_BUILD, serverDescriptor.getVersionBuild());
+                props.put(ContentModel.PROP_SYS_VERSION_SCHEMA, serverDescriptor.getSchema());
             props.put(ContentModel.PROP_SYS_LICENSE_MODE, licenseMode);
             
-            this.nodeService.addProperties(currentDescriptorNodeRef, props);
+                this.nodeService.addProperties(currentDescriptorNodeRef, props);
 
-            // ALF-726: v3.1.x Content Cleaner Job needs to be ported to v3.2
-            // In order to migrate properly, this property needs to be d:content.  We will rewrite the property with the
-            // license update code.  There is no point attempting to rewrite the property here.
-            final Serializable value = this.nodeService.getProperty(
-                    currentDescriptorNodeRef,
-                    ContentModel.PROP_SYS_VERSION_EDITION);
-            if (value == null)
-            {
-                this.nodeService.setProperty(
+                // ALF-726: v3.1.x Content Cleaner Job needs to be ported to v3.2
+                // In order to migrate properly, this property needs to be d:content.  We will rewrite the property with the
+                // license update code.  There is no point attempting to rewrite the property here.
+                final Serializable value = this.nodeService.getProperty(
                         currentDescriptorNodeRef,
-                        ContentModel.PROP_SYS_VERSION_EDITION,
-                        new ContentData(null, null, 0L, null));
+                        ContentModel.PROP_SYS_VERSION_EDITION);
+                if (value == null)
+                {
+                    this.nodeService.setProperty(
+                            currentDescriptorNodeRef,
+                            ContentModel.PROP_SYS_VERSION_EDITION,
+                            new ContentData(null, null, 0L, null));
+                }
+
+                // done
+                if (RepositoryDescriptorDAOImpl.logger.isDebugEnabled())
+                {
+                    RepositoryDescriptorDAOImpl.logger.debug("Updated current repository descriptor properties: \n"
+                            + "   node: " + currentDescriptorNodeRef + "\n" + "   descriptor: " + serverDescriptor);
+                }
             }
 
-            // done
-            if (RepositoryDescriptorDAOImpl.logger.isDebugEnabled())
-            {
-                RepositoryDescriptorDAOImpl.logger.debug("Updated current repository descriptor properties: \n"
-                        + "   node: " + currentDescriptorNodeRef + "\n" + "   descriptor: " + serverDescriptor);
-            }
+            final Map<QName, Serializable> properties = this.nodeService.getProperties(currentDescriptorNodeRef);
+            descriptor = new RepositoryDescriptor(properties);
         }
-
-        final Map<QName, Serializable> properties = this.nodeService.getProperties(currentDescriptorNodeRef);
-        return new RepositoryDescriptor(properties);
+        catch (final RuntimeException e)
+        {
+            if (logger.isErrorEnabled())
+            {
+                logger.error("updateDescriptor: ", e);
+            }
+            throw e;
+        }
+        catch (final Error e)
+        {
+            if (logger.isErrorEnabled())
+            {
+                logger.error("updateDescriptor: ", e);
+            }
+            throw e;
+        }
+        return descriptor;
     }
 
     @Override
@@ -217,21 +259,77 @@ public class RepositoryDescriptorDAOImpl implements DescriptorDAO
             final NodeRef descriptorRef = getDescriptorNodeRef(true);
             if (descriptorRef == null)
             {
+                // Should not get this as 'true' was used.
                 throw new LicenseException("Failed to find system descriptor");
             }
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("getLicenseKey: descriptorRef=" + descriptorRef);
+            }
+            
             final ContentReader reader = this.contentService.getReader(
                     descriptorRef,
                     ContentModel.PROP_SYS_VERSION_EDITION);
-            if (reader != null && reader.exists())
+
+            boolean exists = reader != null && reader.exists();
+            if (exists)
             {
-                final ByteArrayOutputStream os = new ByteArrayOutputStream();
-                reader.getContent(os);
-                key = os.toByteArray();
+                ByteArrayOutputStream os = null;
+                try
+                {
+                    os = new ByteArrayOutputStream();
+                    reader.getContent(os);
+                    key = os.toByteArray();
+                }
+                finally
+                {
+                    if (os != null)
+                    {
+                        try
+                        {
+                            os.close();
+                        }
+                        catch (IOException ignore)
+                        {
+                            // We have more to worry about if we ever get here.
+                            logger.debug("getLicenseKey: Error closing ByteArrayOutputStream", ignore);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (logger.isDebugEnabled())
+                {
+                    // reader should never be null. An exception is thrown by getReader if it is.
+                    logger.debug("getLicenseKey: reader=" + reader + (reader == null ? "" : " exists=" + exists));
+                }
             }
         }
-        catch (final Exception e)
+        catch (final LicenseException e)
         {
-            throw new LicenseException("Failed to load license key: " + e.getMessage(), e);
+            throw e;
+        }
+        catch (final RuntimeException e)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("getLicenseKey: ", e);
+            }
+            throw new LicenseException("Failed to load license", e);
+        }
+        catch (final Error e)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("getLicenseKey: ", e);
+            }
+            throw e;
+        }
+        
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("getLicenseKey: key " + (key == null ? "is null" : "length=" + key.length));
         }
         return key;
     }
@@ -244,6 +342,7 @@ public class RepositoryDescriptorDAOImpl implements DescriptorDAO
             final NodeRef descriptorRef = getDescriptorNodeRef(true);
             if (descriptorRef == null)
             {
+                // Should not get this as 'true' was used.
                 throw new LicenseException("Failed to find system descriptor");
             }
             if (key == null)
@@ -260,9 +359,21 @@ public class RepositoryDescriptorDAOImpl implements DescriptorDAO
                 writer.putContent(is);
             }
         }
-        catch (final Exception e)
+        catch (final RuntimeException e)
         {
-            throw new LicenseException("Failed to save license: " + e.getMessage(), e);
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("getLicenseKey: ", e);
+            }
+            throw new LicenseException("Failed to save license", e);
+        }
+        catch (final Error e)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("getLicenseKey: ", e);
+            }
+            throw e;
         }
     }
 

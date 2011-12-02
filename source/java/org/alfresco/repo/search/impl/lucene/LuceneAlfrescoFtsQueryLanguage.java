@@ -80,6 +80,8 @@ public class LuceneAlfrescoFtsQueryLanguage extends AbstractLuceneQueryLanguage
                 searchParameters.getNamespace());
 
         QueryOptions options = QueryOptions.create(searchParameters);
+        options.setUseInMemorySort(searchParameters.getUseInMemorySort());
+        options.setMaxRawResultSetSizeForInMemorySort(searchParameters.getMaxRawResultSetSizeForInMemorySort());
 
         FTSParser.Mode mode;
 

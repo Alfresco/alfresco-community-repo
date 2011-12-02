@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.text.Collator;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -485,7 +486,8 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         
         // note: cm:thumbnail - hence auditable aspect will be applied with mandatory properties (cm:created, cm:modified, cm:creator, cm:modifier)
         n15 = nodeService.createNode(n13, ASSOC_TYPE_QNAME, QName.createQName("{namespace}fifteen"), ContentModel.TYPE_THUMBNAIL, getOrderProperties()).getChildRef();
-
+        nodeService.setProperty(n15, ContentModel.PROP_CONTENT, new ContentData(null, "text/richtext", 0L, "UTF-8", Locale.FRENCH));
+        
         ContentWriter writer = contentService.getWriter(n14, ContentModel.PROP_CONTENT, true);
         writer.setEncoding("UTF-8");
         // InputStream is =
@@ -495,6 +497,13 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
                 + " as at be but by for if in into is it no not of on or such that the their then there these they this to was will with: "
                 + " and random charcters \u00E0\u00EA\u00EE\u00F0\u00F1\u00F6\u00FB\u00FF");
         // System.out.println("Size is " + writer.getSize());
+        
+        writer = contentService.getWriter(n15, ContentModel.PROP_CONTENT, true);
+        writer.setEncoding("UTF-8");
+        // InputStream is =
+        // this.getClass().getClassLoader().getResourceAsStream("test.doc");
+        // writer.putContent(is);
+        writer.putContent("          ");
 
         nodeService.addChild(rootNodeRef, n8, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}eight-0"));
         nodeService.addChild(n1, n8, ASSOC_TYPE_QNAME, QName.createQName("{namespace}eight-1"));
@@ -1762,7 +1771,9 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         ftsQueryWithCount(searcher, "PATH", "\"//.\"", 16);
         ftsQueryWithCount(searcher, "cm:content:brown", 1);
         ftsQueryWithCount(searcher, "ANDY:brown", 1);
+        ftsQueryWithCount(searcher, "andy:brown", 1);
         ftsQueryWithCount(searcher, "ANDY", "brown", 1);
+        ftsQueryWithCount(searcher, "andy", "brown", 1);
         
         // test date ranges - note: expected 2 results = n14 (cm:content) and n15 (cm:thumbnail)
         ftsQueryWithCount(searcher, "modified:*", 2, Arrays.asList(new NodeRef[]{n14,n15}));
@@ -3079,6 +3090,8 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
      */
     public void testSort() throws Exception
     {
+        Collator collator = Collator.getInstance(I18NUtil.getLocale());
+        
         luceneFTS.pause();
         buildBaseIndex();
         runBaseTests();
@@ -3099,7 +3112,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
 
             if (current != null)
             {
-                if (current.compareTo(id) > 0)
+                if (collator.compare(current, id)  > 0)
                 {
                     fail();
                 }
@@ -3121,7 +3134,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
             String id = row.getNodeRef().getId();
             if (current != null)
             {
-                if (current.compareTo(id) < 0)
+                if (collator.compare(current, id) < 0)
                 {
                     fail();
                 }
@@ -3476,7 +3489,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
             // System.out.println( (currentBun == null ? "null" : NumericEncoder.encode(currentBun))+ " "+currentBun);
             if ((text != null) && (currentBun != null))
             {
-                assertTrue(text.compareTo(currentBun) <= 0);
+                assertTrue(collator.compare(text, currentBun) <= 0);
             }
             text = currentBun;
         }
@@ -3496,7 +3509,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
             // System.out.println(currentBun);
             if ((text != null) && (currentBun != null))
             {
-                assertTrue(text.compareTo(currentBun) >= 0);
+                assertTrue(collator.compare(text, currentBun) >= 0);
             }
             text = currentBun;
         }
@@ -3512,7 +3525,8 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         Locale[] testLocales = new Locale[] { I18NUtil.getLocale(), Locale.ENGLISH, Locale.FRENCH };
         for (Locale testLocale : testLocales)
         {
-
+            Collator localisedCollator = Collator.getInstance(testLocale);
+            
             SearchParameters sp19 = new SearchParameters();
             sp19.addStore(rootNodeRef.getStoreRef());
             sp19.setLanguage(SearchService.LANGUAGE_LUCENE);
@@ -3532,7 +3546,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
                     // "+currentBun);
                     if ((text != null) && (currentBun != null))
                     {
-                        assertTrue(text.compareTo(currentBun) <= 0);
+                        assertTrue(localisedCollator.compare(text, currentBun) <= 0);
                     }
                     text = currentBun;
                 }
@@ -3556,7 +3570,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
                     String currentBun = mltext.getValue(testLocale);
                     if ((text != null) && (currentBun != null))
                     {
-                        assertTrue(text.compareTo(currentBun) >= 0);
+                        assertTrue(localisedCollator.compare(text, currentBun) >= 0);
                     }
                     text = currentBun;
                 }

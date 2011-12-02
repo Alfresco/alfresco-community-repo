@@ -658,6 +658,10 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         		// Freeze the details of the aspect
         		dbNodeService.addAspect(versionNodeRef, aspect, nodeDetails.getProperties(aspect));
         	}
+
+        	// ALF-9638: Freeze the aspect specific associations
+        	freezeChildAssociations(versionNodeRef, nodeDetails.getChildAssociations(aspect));
+            freezeAssociations(versionNodeRef, nodeDetails.getAssociations(aspect));        	
         }
     }
     

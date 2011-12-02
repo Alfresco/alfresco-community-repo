@@ -22,7 +22,22 @@ import junit.framework.TestCase;
 
 
 /**
+ * http://docs.oasis-open.org/cmis/CMIS/v1.0/os/cmis-spec-v1.0.htm
+ * 2.1.2.1 Property
+ * All properties MUST supply a String queryName attribute which is used for query and filter operations on object-types.
+ * This is an opaque String with limitations. This string SHOULD NOT contain any characters that negatively interact with the BNF grammar.
+ *
+ * The string MUST NOT contain:
+ *         whitespace “ “,
+ *         comma “,”
+ *         double quotes ‘”’
+ *         single quotes “’”
+ *         backslash “\”
+ *         the period “.” character or,
+ *         the open “(“ or close “)” parenthesis characters.
+ * 
  * @author Dmitry Velichkevich
+ * @author Arseny Kovalchuk
  */
 public class PropertyFilterTest extends TestCase
 {
@@ -33,16 +48,15 @@ public class PropertyFilterTest extends TestCase
 
     private static final String VALID_MATCHE_ALL_FILTER = "*";
     private static final String VALID_FILTER_WITH_NAME = NAME_TOKEN;
-    private static final String VALID_FILTER_WITH_SEVERAL_TOKENS = "name,objectId";
-    private static final String LONG_VALID_FILTER_WITH_SEVERAL_TOKENS = "objectId,name,CreationDate*,Created;By";
+    private static final String LONG_VALID_FILTER_WITH_SEVERAL_TOKENS = "objectId,name,CreationDate,Created;By";
+    private static final String VALID_FILTER_CMIS_WORKBANCH_ALFRESCO_3_4 = "cmis:parentId, cmis:objectId, name, objectId";
+    private static final String VALID_FILTER_WITH_SPACES = " name, objectId,CreationDate, CreatedBy , ModifiedBy , LastModifiedBy ";
 
     private static final String INVALID_MATCHE_ALL_FILTER = "*,";
     private static final String INVALID_FILTER_WITH_NAME = "*name,";
     private static final String INVALID_FILTER_WITH_SEVERAL_TOKENS = "name,,objectId";
     private static final String LONG_INVALID_FILTER_WITH_SEVERAL_TOKENS = "objectId, name CreationDate, CreatedBy*";
     private static final String INVALID_FILTER_WITH_SEVERAL_TOKENS_WITHOUT_BREAKS = ",name,objectId,CreationDate";
-    private static final String INVALID_FILTER_WITH_SEVERAL_TOKENS_AND_WITH_BREAKS_IN_SOME_PLACES = " name, objectId,CreationDate CreatedBy ModifiedBy, LastModifiedBy";
-    private static final String INVALID_FILTER_WITH_FIRST_BREAK_SYMBOL = " name, objectId,CreationDate, CreatedBy, ModifiedBy, LastModifiedBy";
     private static final String INVALID_FILTER_WITH_DENIED_SYMBOL = "objectId\"name";
     private static final String INVALID_FILTER_WITH_LAST_INVALID_SYMBOL = "objectId,name\\";
 
@@ -53,8 +67,9 @@ public class PropertyFilterTest extends TestCase
 
         onlyNameTokensAssertionValid(new PropertyFilter(VALID_FILTER_WITH_NAME));
 
-        nameAndObjectIdTokensAssertionValid(new PropertyFilter(VALID_FILTER_WITH_SEVERAL_TOKENS));
         nameAndObjectIdTokensAssertionValid(new PropertyFilter(LONG_VALID_FILTER_WITH_SEVERAL_TOKENS));
+        nameAndObjectIdTokensAssertionValid(new PropertyFilter(VALID_FILTER_CMIS_WORKBANCH_ALFRESCO_3_4));
+        nameAndObjectIdTokensAssertionValid(new PropertyFilter(VALID_FILTER_WITH_SPACES));
     }
 
     public void testInvalidFilters() throws Exception
@@ -64,8 +79,6 @@ public class PropertyFilterTest extends TestCase
         invalidFilterAssertion(INVALID_FILTER_WITH_SEVERAL_TOKENS);
         invalidFilterAssertion(LONG_INVALID_FILTER_WITH_SEVERAL_TOKENS);
         invalidFilterAssertion(INVALID_FILTER_WITH_SEVERAL_TOKENS_WITHOUT_BREAKS);
-        invalidFilterAssertion(INVALID_FILTER_WITH_SEVERAL_TOKENS_AND_WITH_BREAKS_IN_SOME_PLACES);
-        invalidFilterAssertion(INVALID_FILTER_WITH_FIRST_BREAK_SYMBOL);
         invalidFilterAssertion(INVALID_FILTER_WITH_DENIED_SYMBOL);
         invalidFilterAssertion(INVALID_FILTER_WITH_LAST_INVALID_SYMBOL);
     }

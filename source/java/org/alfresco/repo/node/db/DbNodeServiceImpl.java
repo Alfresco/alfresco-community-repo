@@ -2437,6 +2437,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 propagateTimeStamps(oldParentAssocRef);
                 propagateTimeStamps(newParentAssocRef);
             }
+            else
+            {
+                // Propagate timestamps for rename case, see ALF-10884
+                propagateTimeStamps(newParentAssocRef);
+            }
 
             invokeOnCreateChildAssociation(newParentAssocRef, false);
             invokeOnDeleteChildAssociation(oldParentAssocRef);

@@ -315,5 +315,21 @@ public class LuceneResultSet extends AbstractResultSet
     {
         return bulkFetchSize;
     }
+
+    /**
+     * @param index
+     * @return
+     */
+    public int doc(int index)
+    {
+        try
+        {
+            return hits.id(index);
+        }
+        catch (IOException e)
+        {
+            throw new SearcherException(e);
+        }
+    }
     
 }

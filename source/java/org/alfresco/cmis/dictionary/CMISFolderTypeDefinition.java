@@ -37,6 +37,8 @@ public class CMISFolderTypeDefinition extends CMISAbstractTypeDefinition
 {
     private static final long serialVersionUID = 7526155195125799106L;
 
+    protected final boolean fileable = true;
+
     /**
      * Construct 
      * @param cmisMapping
@@ -82,6 +84,16 @@ public class CMISFolderTypeDefinition extends CMISAbstractTypeDefinition
         includedInSuperTypeQuery = cmisClassDef.getIncludedInSuperTypeQuery();
     }
 
+    /**
+     * Are objects of this type fileable?
+     * 
+     * @return
+     */
+    public boolean isFileable()
+    {
+        return fileable;
+    }
+
     /*
      * (non-Javadoc)
      * @see java.lang.Object#toString()
@@ -104,6 +116,7 @@ public class CMISFolderTypeDefinition extends CMISAbstractTypeDefinition
         builder.append("IncludedInSuperTypeQuery=").append(isIncludedInSuperTypeQuery()).append(", ");
         builder.append("ControllablePolicy=").append(isControllablePolicy()).append(", ");
         builder.append("ControllableACL=").append(isControllableACL()).append(", ");
+        builder.append("Fileable=").append(isFileable()).append(", ");
         builder.append("SubTypes=").append(getSubTypes(false).size()).append(", ");
         builder.append("Properties=").append(getPropertyDefinitions().size());
         builder.append("]");

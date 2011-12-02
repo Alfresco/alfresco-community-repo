@@ -262,8 +262,12 @@
         <property name="contentIndexingEnabled">
             <value>${lucene.indexer.contentIndexingEnabled}</value>
         </property>
-        
-        
+        <property name="useInMemorySort">
+            <value>${lucene.indexer.useInMemorySort}</value>
+        </property>
+        <property name="maxRawResultSetSizeForInMemorySort">
+            <value>${lucene.indexer.maxRawResultSetSizeForInMemorySort}</value>
+        </property>
     </bean>
     
     <!-- Indexer and searchers for lucene -->
@@ -314,6 +318,12 @@
         </property>
         <property name="namespaceService">
             <ref bean="namespaceService" />
+        </property>
+        <property name="useInMemorySort">
+            <value>${lucene.indexer.useInMemorySort}</value>
+        </property>
+        <property name="maxRawResultSetSizeForInMemorySort">
+            <value>${lucene.indexer.maxRawResultSetSizeForInMemorySort}</value>
         </property>
     </bean>
 	
@@ -404,6 +414,12 @@
         </property>
         <property name="namespaceService">
             <ref bean="namespaceService" />
+        </property>
+        <property name="useInMemorySort">
+            <value>${lucene.indexer.useInMemorySort}</value>
+        </property>
+        <property name="maxRawResultSetSizeForInMemorySort">
+            <value>${lucene.indexer.maxRawResultSetSizeForInMemorySort}</value>
         </property>
     </bean>
 

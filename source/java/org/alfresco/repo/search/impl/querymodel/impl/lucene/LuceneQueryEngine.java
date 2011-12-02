@@ -37,6 +37,7 @@ import org.alfresco.repo.search.impl.querymodel.QueryEngine;
 import org.alfresco.repo.search.impl.querymodel.QueryEngineResults;
 import org.alfresco.repo.search.impl.querymodel.QueryModelFactory;
 import org.alfresco.repo.search.impl.querymodel.QueryOptions;
+import org.alfresco.repo.search.results.SortedResultSet;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -49,6 +50,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.SortField;
 
 /**
  * @author andyh
@@ -64,6 +66,10 @@ public class LuceneQueryEngine implements QueryEngine
     private TenantService tenantService;
 
     private NamespaceService namespaceService;
+    
+    private boolean useInMemorySort = true;
+    
+    private int maxRawResultSetSizeForInMemorySort = 1000;
 
     /**
      * @param dictionaryService
@@ -114,6 +120,38 @@ public class LuceneQueryEngine implements QueryEngine
     {
         return new LuceneQueryModelFactory();
     }
+    
+    /**
+     * @return the useInMemorySort
+     */
+    public boolean isUseInMemorySort()
+    {
+        return useInMemorySort;
+    }
+
+    /**
+     * @param useInMemorySort the useInMemorySort to set
+     */
+    public void setUseInMemorySort(boolean useInMemorySort)
+    {
+        this.useInMemorySort = useInMemorySort;
+    }
+
+    /**
+     * @return the maxRawResultSetSizeForInMemorySort
+     */
+    public int getMaxRawResultSetSizeForInMemorySort()
+    {
+        return maxRawResultSetSizeForInMemorySort;
+    }
+
+    /**
+     * @param maxRawResultSetSizeForInMemorySort the maxRawResultSetSizeForInMemorySort to set
+     */
+    public void setMaxRawResultSetSizeForInMemorySort(int maxRawResultSetSizeForInMemorySort)
+    {
+        this.maxRawResultSetSizeForInMemorySort = maxRawResultSetSizeForInMemorySort;
+    }
 
     public QueryEngineResults executeQuery(Query query, QueryOptions options, FunctionEvaluationContext functionContext)
     {
@@ -159,6 +197,8 @@ public class LuceneQueryEngine implements QueryEngine
         {
             searchParameters.setLimitBy(LimitBy.UNLIMITED);
         }
+        searchParameters.setUseInMemorySort(options.getUseInMemorySort());
+        searchParameters.setMaxRawResultSetSizeForInMemorySort(options.getMaxRawResultSetSizeForInMemorySort());
 
         try
         {
@@ -175,23 +215,43 @@ public class LuceneQueryEngine implements QueryEngine
 
                     LuceneQueryBuilder builder = (LuceneQueryBuilder) query;
                     org.apache.lucene.search.Query luceneQuery = builder.buildQuery(selectorGroup, luceneContext, functionContext);
-                    // System.out.println(luceneQuery);
 
                     Sort sort = builder.buildSort(selectorGroup, luceneContext, functionContext);
 
-                    Hits hits;
-
-                    if (sort == null)
+                   
+                    Hits hits = searcher.search(luceneQuery);
+                    
+                    boolean postSort = false;;
+                    if(sort != null)
                     {
-                        hits = searcher.search(luceneQuery);
+                        postSort = searchParameters.usePostSort(hits.length(), useInMemorySort, maxRawResultSetSizeForInMemorySort);
+                        if(postSort == false)
+                        {
+                            hits = searcher.search(luceneQuery, sort);
+                        }
+                    }
+
+                    ResultSet answer;
+                    ResultSet result = new LuceneResultSet(hits, searcher, nodeService, tenantService, searchParameters, indexAndSearcher);
+                    if(postSort)
+                    {
+                        if(sort != null)
+                        {
+                            for(SortField sf : sort.getSort())
+                            {
+                                searchParameters.addSort(sf.getField(), !sf.getReverse());
+                            }
+                        }
+                        
+                        ResultSet sorted = new SortedResultSet(result, nodeService, builder.buildSortDefinitions(selectorGroup, luceneContext, functionContext), namespaceService, dictionaryService, searchParameters.getSortLocale());
+                        answer = sorted;
                     }
                     else
                     {
-                        hits = searcher.search(luceneQuery, sort);
+                        answer = result;
                     }
-
-                    LuceneResultSet result = new LuceneResultSet(hits, searcher, nodeService, tenantService, searchParameters, indexAndSearcher);
-                    ResultSet rs = new PagingLuceneResultSet(result, searchParameters, nodeService);
+                    ResultSet rs = new PagingLuceneResultSet(answer, searchParameters, nodeService);
+                   
                     Map<Set<String>, ResultSet> map = new HashMap<Set<String>, ResultSet>(1);
                     map.put(selectorGroup, rs);
                     return new QueryEngineResults(map);

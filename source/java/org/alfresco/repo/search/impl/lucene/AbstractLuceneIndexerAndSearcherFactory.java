@@ -201,6 +201,10 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory extends AbstractIn
 
     private boolean contentIndexingEnabled = true;
 
+    private boolean useInMemorySort = true;
+
+    private int maxRawResultSetSizeForInMemorySort = 1000;
+
     /**
      * Private constructor for the singleton TODO: FIt in with IOC
      */
@@ -1041,6 +1045,38 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory extends AbstractIn
         this.threadPoolExecutor = threadPoolExecutor;
     }
 
+    /**
+     * @return the useInMemorySort
+     */
+    public boolean getUseInMemorySort()
+    {
+        return useInMemorySort;
+    }
+
+    /**
+     * @param useInMemorySort the useInMemorySort to set
+     */
+    public void setUseInMemorySort(boolean useInMemorySort)
+    {
+        this.useInMemorySort = useInMemorySort;
+    }
+
+    /**
+     * @return the maxRawResultSetSizeForInMemorySort
+     */
+    public int getMaxRawResultSetSizeForInMemorySort()
+    {
+        return maxRawResultSetSizeForInMemorySort;
+    }
+
+    /**
+     * @param maxRawResultSetSizeForInMemorySort the maxRawResultSetSizeForInMemorySort to set
+     */
+    public void setMaxRawResultSetSizeForInMemorySort(int maxRawResultSetSizeForInMemorySort)
+    {
+        this.maxRawResultSetSizeForInMemorySort = maxRawResultSetSizeForInMemorySort;
+    }
+    
     /**
      * This component is able to <i>safely</i> perform backups of the Lucene indexes while the server is running.
      * <p>

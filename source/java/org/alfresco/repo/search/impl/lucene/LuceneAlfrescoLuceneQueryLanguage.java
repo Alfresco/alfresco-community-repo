@@ -19,42 +19,18 @@
 package org.alfresco.repo.search.impl.lucene;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.repo.search.EmptyResultSet;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.impl.lucene.analysis.DateTimeAnalyser;
-import org.alfresco.repo.search.impl.parsers.AlfrescoFunctionEvaluationContext;
-import org.alfresco.repo.search.impl.parsers.FTSParser;
-import org.alfresco.repo.search.impl.parsers.FTSQueryParser;
-import org.alfresco.repo.search.impl.querymodel.Argument;
-import org.alfresco.repo.search.impl.querymodel.Column;
-import org.alfresco.repo.search.impl.querymodel.Constraint;
-import org.alfresco.repo.search.impl.querymodel.Function;
-import org.alfresco.repo.search.impl.querymodel.Order;
-import org.alfresco.repo.search.impl.querymodel.Ordering;
-import org.alfresco.repo.search.impl.querymodel.QueryEngine;
-import org.alfresco.repo.search.impl.querymodel.QueryEngineResults;
-import org.alfresco.repo.search.impl.querymodel.QueryModelFactory;
-import org.alfresco.repo.search.impl.querymodel.QueryOptions;
-import org.alfresco.repo.search.impl.querymodel.QueryOptions.Connective;
-import org.alfresco.repo.search.impl.querymodel.impl.functions.PropertyAccessor;
-import org.alfresco.repo.search.impl.querymodel.impl.functions.Score;
-import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneOrdering;
 import org.alfresco.repo.search.results.SortedResultSet;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.cmr.search.SearchParameters.SortDefinition;
-import org.alfresco.service.cmr.search.SearchParameters.SortDefinition.SortType;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -111,17 +87,18 @@ public class LuceneAlfrescoLuceneQueryLanguage extends AbstractLuceneQueryLangua
 
             Hits hits;
 
-            boolean requiresPostSort = false;
+            boolean requiresDateTimePostSort = false;
+            SortField[] fields = new SortField[searchParameters.getSortDefinitions().size()];
+
             if (searchParameters.getSortDefinitions().size() > 0)
             {
                 int index = 0;
-                SortField[] fields = new SortField[searchParameters.getSortDefinitions().size()];
                 for (SearchParameters.SortDefinition sd : searchParameters.getSortDefinitions())
                 {
                     switch (sd.getSortType())
                     {
                     case FIELD:
-                        Locale sortLocale = admLuceneSearcher.getLocale(searchParameters);
+                        Locale sortLocale = searchParameters.getSortLocale();
                         String field = sd.getField();
                         if (field.startsWith("@"))
                         {
@@ -199,7 +176,7 @@ public class LuceneAlfrescoLuceneQueryLanguage extends AbstractLuceneQueryLangua
                                         switch (propertyDef.getIndexTokenisationMode())
                                         {
                                         case TRUE:
-                                            requiresPostSort = true;
+                                            requiresDateTimePostSort = true;
                                             break;
                                         case BOTH:
                                             field = field + ".sort";
@@ -211,7 +188,7 @@ public class LuceneAlfrescoLuceneQueryLanguage extends AbstractLuceneQueryLangua
                                     }
                                     else
                                     {
-                                        requiresPostSort = true;
+                                        requiresDateTimePostSort = true;
                                     }
                                 }
                             }
@@ -230,30 +207,39 @@ public class LuceneAlfrescoLuceneQueryLanguage extends AbstractLuceneQueryLangua
                         fields[index++] = new SortField(null, SortField.DOC, !sd.isAscending());
                         break;
                     case SCORE:
-                        fields[index++] = new SortField(null, SortField.SCORE, !sd.isAscending());
+                        // Score is naturally high to low -ie desc
+                        fields[index++] = new SortField(null, SortField.SCORE, sd.isAscending());
                         break;
                     }
 
                 }
-                hits = searcher.search(query, new Sort(fields));
+            }
+            
+            hits = searcher.search(query);
+            
+            boolean postSort = false;;
+            if(fields.length > 0)
+            {
+                postSort = searchParameters.usePostSort(hits.length(), admLuceneSearcher.getLuceneConfig().getUseInMemorySort(), admLuceneSearcher.getLuceneConfig().getMaxRawResultSetSizeForInMemorySort());
+                if(postSort == false)
+                {
+                    hits = searcher.search(query, new Sort(fields));
+                }
+            }
 
+            ResultSet answer;
+            ResultSet result = new LuceneResultSet(hits, searcher, admLuceneSearcher.getNodeService(), admLuceneSearcher.getTenantService(), searchParameters, admLuceneSearcher.getLuceneConfig());
+            if(postSort || (admLuceneSearcher.getLuceneConfig().getPostSortDateTime() && requiresDateTimePostSort))
+            {
+                ResultSet sorted = new SortedResultSet(result, admLuceneSearcher.getNodeService(), searchParameters.getSortDefinitions(), admLuceneSearcher.getNamespacePrefixResolver(), admLuceneSearcher.getDictionaryService(), searchParameters.getSortLocale());
+                answer = sorted;
             }
             else
             {
-                hits = searcher.search(query);
+                answer = result;
             }
-
-            ResultSet rs = new LuceneResultSet(hits, searcher, admLuceneSearcher.getNodeService(), admLuceneSearcher.getTenantService(), searchParameters, admLuceneSearcher.getLuceneConfig());
-            rs = new PagingLuceneResultSet(rs, searchParameters, admLuceneSearcher.getNodeService());
-            if (admLuceneSearcher.getLuceneConfig().getPostSortDateTime() && requiresPostSort)
-            {
-                ResultSet sorted = new SortedResultSet(rs, admLuceneSearcher.getNodeService(), searchParameters, admLuceneSearcher.getNamespacePrefixResolver());
-                return sorted;
-            }
-            else
-            {
-                return rs;
-            }
+            ResultSet rs = new PagingLuceneResultSet(answer, searchParameters, admLuceneSearcher.getNodeService());
+            return rs;
         }
         catch (ParseException e)
         {

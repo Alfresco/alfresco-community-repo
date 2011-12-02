@@ -13,10 +13,13 @@
             <value>defaultAsyncAction</value>
         </property>
         <property name="corePoolSize">
-            <value>8</value>
+            <value>${default.async.action.corePoolSize}</value>
         </property>
         <property name="maximumPoolSize">
-            <value>20</value>
+            <value>${default.async.action.maximumPoolSize}</value>
+        </property>
+        <property name="threadPriority">
+            <value>${default.async.action.threadPriority}</value>
         </property>
     </bean>
     
@@ -32,6 +35,9 @@
         <property name="maximumPoolSize">
             <value>${deployment.service.maximumPoolSize}</value>
         </property>        
+        <property name="threadPriority">
+            <value>${deployment.service.threadPriority}</value>
+        </property>
     </bean>
     
     <!-- this bean supports the registration of 'action filter' beans. These beans should extend the

@@ -57,7 +57,7 @@ public class BlogPostDelete extends AbstractBlogWebScript
         // If we're in a site, and it isn't a draft, add an activity
         if (site != null && !isDraftBlogPost)
         {
-            addActivityEntry("deleted", blog, site, req, json);
+            addActivityEntry("deleted", blog, site, req, json, nodeRef);
         }
 
         // Report it as deleted

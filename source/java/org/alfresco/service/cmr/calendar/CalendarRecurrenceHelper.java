@@ -254,7 +254,7 @@ public class CalendarRecurrenceHelper
       // Nice and easy
       while (currentDate.getTime().before(onOrAfter))
       {
-         currentDate.add(Calendar.DATE, 1);
+         currentDate.add(Calendar.DATE, interval);
       }
       
       if (firstOnly)
@@ -278,7 +278,7 @@ public class CalendarRecurrenceHelper
          while (! currentDate.getTime().after(until))
          {
             dates.add(currentDate.getTime());
-            currentDate.add(Calendar.DATE, 1);
+            currentDate.add(Calendar.DATE, interval);
          }
       }
    }
@@ -355,7 +355,7 @@ public class CalendarRecurrenceHelper
    }
    
    protected static void buildMonthlyRecurrences(Calendar currentDate, List<Date> dates, 
-         Map<String,String> params, Date onOrAfter, Date until, boolean firstOnly, int interval)
+         Map<String,String> params, Date onOrAfter, Date until, boolean firstOnly, int monthInterval)
    {
       if (params.get("BYMONTHDAY") != null)
       {
@@ -364,7 +364,7 @@ public class CalendarRecurrenceHelper
          if (currentDate.get(Calendar.DAY_OF_MONTH) > dayOfMonth)
          {
             // Move forward to start of the next month
-            addMonthToDayOfMonth(currentDate, dayOfMonth);
+            addMonthToDayOfMonth(currentDate, dayOfMonth, monthInterval);
          }
          else
          {
@@ -375,7 +375,7 @@ public class CalendarRecurrenceHelper
          // Go until in the ok range
          while (currentDate.getTime().before(onOrAfter))
          {
-            addMonthToDayOfMonth(currentDate, dayOfMonth);
+            addMonthToDayOfMonth(currentDate, dayOfMonth, monthInterval);
          }
          while (true)
          {
@@ -393,7 +393,7 @@ public class CalendarRecurrenceHelper
                break;
             }
             
-            addMonthToDayOfMonth(currentDate, dayOfMonth);
+            addMonthToDayOfMonth(currentDate, dayOfMonth, monthInterval);
          }
       }
       else if (params.get("BYSETPOS") != null)
@@ -403,7 +403,7 @@ public class CalendarRecurrenceHelper
          if (currentDate.get(Calendar.DAY_OF_MONTH) > 8)
          {
             // Move to start, in next month
-            addMonthToFirstDayOfWeek(currentDate, dayOfWeek);
+            addMonthToFirstDayOfWeek(currentDate, dayOfWeek, monthInterval);
          }
          else if (currentDate.get(Calendar.DAY_OF_WEEK) != dayOfWeek)
          {
@@ -418,7 +418,7 @@ public class CalendarRecurrenceHelper
          
          while (currentDate.getTime().before(onOrAfter))
          {
-            addMonthToFirstDayOfWeek(currentDate, dayOfWeek);
+            addMonthToFirstDayOfWeek(currentDate, dayOfWeek, monthInterval);
          }
          while (true)
          {
@@ -436,7 +436,7 @@ public class CalendarRecurrenceHelper
                break;
             }
             
-            addMonthToFirstDayOfWeek(currentDate, dayOfWeek);
+            addMonthToFirstDayOfWeek(currentDate, dayOfWeek, monthInterval);
          }
       }
    }
@@ -457,14 +457,14 @@ public class CalendarRecurrenceHelper
          }
          else
          {
-            currentDate.set(Calendar.YEAR, currentDate.get(Calendar.YEAR) + 1);
+            currentDate.set(Calendar.YEAR, currentDate.get(Calendar.YEAR) + interval);
             currentDate.set(Calendar.MONTH, month);
             currentDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
          }
          
          while (currentDate.getTime().before(onOrAfter))
          {
-            currentDate.set(Calendar.YEAR, currentDate.get(Calendar.YEAR) + 1);
+            currentDate.set(Calendar.YEAR, currentDate.get(Calendar.YEAR) + interval);
             currentDate.set(Calendar.MONTH, month);
             currentDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
          }
@@ -484,7 +484,7 @@ public class CalendarRecurrenceHelper
                break;
             }
             
-            currentDate.set(Calendar.YEAR, currentDate.get(Calendar.YEAR) + 1);
+            currentDate.set(Calendar.YEAR, currentDate.get(Calendar.YEAR) + interval);
             currentDate.set(Calendar.MONTH, month);
             currentDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
          }
@@ -497,20 +497,23 @@ public class CalendarRecurrenceHelper
       }
    }
    
-   private static void addMonthToDayOfMonth(Calendar c, int dayOfMonth)
+   private static void addMonthToDayOfMonth(Calendar c, int dayOfMonth, int monthInterval)
    {
-      // Set it to the 1st
-      c.set(Calendar.DAY_OF_MONTH, 1);
-      // Add 33 days, will be on the 2nd-6th
-      c.add(Calendar.DATE, 33);
-      // Set to the requred day in the month
-      c.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+      for (int i=0; i<monthInterval; i++)
+      {
+         // Set it to the 1st
+         c.set(Calendar.DAY_OF_MONTH, 1);
+         // Add 33 days, will be on the 2nd-6th
+         c.add(Calendar.DATE, 33);
+         // Set to the requred day in the month
+         c.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+      }
    }
    
-   private static void addMonthToFirstDayOfWeek(Calendar c, int dayOfWeek)
+   private static void addMonthToFirstDayOfWeek(Calendar c, int dayOfWeek, int monthInterval)
    {
       // Go forward to the 1st of next month
-      addMonthToDayOfMonth(c, 1);
+      addMonthToDayOfMonth(c, 1, monthInterval);
       
       // Set the day of the week
       Date t = c.getTime();

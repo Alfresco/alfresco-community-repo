@@ -206,11 +206,25 @@ public class CalendarHelpersTest
       currentDate.set(2011,11-1,24,10,30);
       RecurrenceHelper.buildDailyRecurrences(
             currentDate, dates, null,
-            date(2011,11,22,12,30), date(2011,11,25,12,30),
+            date(2011,11,22,12,30), date(2011,11,27,12,30),
             false, 1);
-      assertEquals(2, dates.size());
+      assertEquals(4, dates.size());
       assertEquals("2011-11-24", dateFmt.format(dates.get(0))); // Thu
       assertEquals("2011-11-25", dateFmt.format(dates.get(1))); // Fri
+      assertEquals("2011-11-26", dateFmt.format(dates.get(2))); // Sat
+      assertEquals("2011-11-27", dateFmt.format(dates.get(3))); // Sun
+      
+      // From before today, with an interval
+      // Repeats are 24th, 27th, (30th - too far)
+      dates.clear();
+      currentDate.set(2011,11-1,24,10,30);
+      RecurrenceHelper.buildDailyRecurrences(
+            currentDate, dates, null,
+            date(2011,11,22,12,30), date(2011,11,27,12,30),
+            false, 3);
+      assertEquals(2, dates.size());
+      assertEquals("2011-11-24", dateFmt.format(dates.get(0))); // Thu
+      assertEquals("2011-11-27", dateFmt.format(dates.get(1))); // Sun
       
       
       // With no end date but only first, check it behaves
@@ -471,6 +485,17 @@ public class CalendarHelpersTest
       assertEquals(2, dates.size());
       assertEquals("2011-08-02", dateFmt.format(dates.get(0)));
       assertEquals("2011-09-02", dateFmt.format(dates.get(1)));
+      
+      
+      // Now with a recurrence interval of only every 2 months
+      dates.clear();
+      currentDate.set(2011,7-1,19,10,30);
+      RecurrenceHelper.buildMonthlyRecurrences(
+            currentDate, dates, params,
+            date(2011,7,20), date(2011,9,20),
+            false, 2);
+      assertEquals(1, dates.size());
+      assertEquals("2011-09-02", dateFmt.format(dates.get(0)));
       
       
       // With no end date but only first, check it behaves

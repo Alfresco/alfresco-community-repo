@@ -302,7 +302,7 @@ public class RepositoryDescriptorDAOImpl implements DescriptorDAO
                 if (logger.isDebugEnabled())
                 {
                     // reader should never be null. An exception is thrown by getReader if it is.
-                    logger.debug("getLicenseKey: reader=" + reader + (reader == null ? "" : " exists=" + exists));
+                    logger.debug("getLicenseKey: reader " + (reader == null ? "is null" : " file does "+(exists ? "" : "NOT ") + "exist"));
                 }
             }
         }

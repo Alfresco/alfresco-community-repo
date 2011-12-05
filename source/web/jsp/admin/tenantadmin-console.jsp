@@ -35,24 +35,24 @@
 	<h:form id="TenantAdmin-console-title">
 	
 		<table width="100%">
-			<tr>
-	        	<td>
-	            	<h:graphicImage value="/images/logo/AlfrescoLogo32.png" alt="Alfresco" />
-	         	</td>
-	         	<td>
-	            	<nobr><h:outputText id="titleTenantAdminConsole" styleClass="mainTitle" value="#{msg.title_tenantadmin_console}"/></nobr>
-	         	</td>
+		   <tr>
+        	   <td>
+            	<h:graphicImage value="/images/logo/AlfrescoLogo32.png" alt="Alfresco" />
+         	</td>
+         	<td>
+            	<nobr><h:outputText id="titleTenantAdminConsole" styleClass="mainTitle" value="#{msg.title_tenantadmin_console}"/></nobr>
+         	</td>
 				<td width="100%" align="right">
-					<h:commandButton value="#{msg.close}" action="adminConsole" />
+					<h:commandButton value="#{msg.close}" action="dialog:close:dialog:adminConsole" />
 				</td>
-	      	</tr>
-	   	</table>
+      	</tr>
+   	</table>
 	
 	</h:form>
 
 	<br>
     
-    <h:outputText id="contextTitle" styleClass="mainTitle" value="#{msg.tenantadmin_context}"/>
+   <h:outputText id="contextTitle" styleClass="mainTitle" value="#{msg.tenantadmin_context}"/>
 
     <table>
         <tr>

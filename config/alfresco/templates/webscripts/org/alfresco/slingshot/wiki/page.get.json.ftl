@@ -1,3 +1,4 @@
+<#macro dateFormat date>${xmldate(date)}</#macro>
 <#escape x as jsonUtils.encodeJSONString(x)>
 {
 <#if result.page??>
@@ -28,12 +29,12 @@
       "name": "${record.name}",
       "version": "${record.versionLabel}",
       "versionId": "${record.id}",
-      "date": "${record.createdDate?datetime?string("yyyy-MM-dd'T'HH:mm:ss")}",
-      "author": "${record.creator}"     
+      "date": "<@dateFormat record.createdDate />",
+      "author": "${record.creator}"
    }<#if record_has_next>,</#if>
-      </#list> 
+      </#list>
    ],
-   </#if>  
+   </#if>
    "permissions":
    {
       "create": ${result.container.hasPermission("CreateChildren")?string},

@@ -498,7 +498,7 @@ public class BlogServiceImplTest
                     assertEquals("Wrong blog post count", 2, pagedResults.getPage().size());
                     
                     blogNode = pagedResults.getPage().get(0).getNodeRef();
-                    assertEquals("Incorrect NodeRef.", blogNode, blogPosts.get(1991));
+                    assertEquals("Incorrect NodeRef.", blogNode, blogPosts.get(1981));
                     
                     
                     // Find posts between dates

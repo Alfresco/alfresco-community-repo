@@ -114,4 +114,16 @@ public class ImageResizeOptions
     {
         return allowEnlargement;
     }
+
+    @Override
+    public String toString()
+    {
+        StringBuilder builder = new StringBuilder();
+        builder.append("ImageResizeOptions [width=").append(this.width).append(", height=").append(this.height)
+                    .append(", maintainAspectRatio=").append(this.maintainAspectRatio).append(", percentResize=")
+                    .append(this.percentResize).append(", resizeToThumbnail=").append(this.resizeToThumbnail)
+                    .append(", allowEnlargement=").append(this.allowEnlargement).append("]");
+        return builder.toString();
+    }
+    
 }

@@ -153,6 +153,7 @@ public class ThumbnailRenditionConvertor
         {
             ImageTransformationOptions imTransformationOptions = (ImageTransformationOptions)transformationOptions;
             putParameterIfNotNull(ImageRenderingEngine.PARAM_COMMAND_OPTIONS, imTransformationOptions.getCommandOptions(), parameters);
+            putParameterIfNotNull(ImageRenderingEngine.PARAM_AUTO_ORIENTATION, imTransformationOptions.isAutoOrient(), parameters);
             
             ImageResizeOptions imgResizeOptions = imTransformationOptions.getResizeOptions();
             if (imgResizeOptions != null)

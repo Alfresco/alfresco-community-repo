@@ -166,4 +166,15 @@ public class ImageCropOptions
     {
         return this.gravity;
     }
+    
+    @Override
+    public String toString()
+    {
+        StringBuilder builder = new StringBuilder();
+        builder.append("ImageCropOptions [height=").append(this.height).append(", width=").append(this.width)
+                    .append(", xOffset=").append(this.xOffset).append(", yOffset=").append(this.yOffset)
+                    .append(", isPercentageCrop=").append(this.isPercentageCrop).append(", gravity=")
+                    .append(this.gravity).append("]");
+        return builder.toString();
+    }
 }

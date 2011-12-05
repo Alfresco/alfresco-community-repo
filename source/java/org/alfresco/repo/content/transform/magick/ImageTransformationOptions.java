@@ -33,7 +33,8 @@ public class ImageTransformationOptions extends TransformationOptions
     public static final String OPT_COMMAND_OPTIONS = "commandOptions";
     public static final String OPT_IMAGE_RESIZE_OPTIONS = "imageResizeOptions";
     public static final String OPT_IMAGE_CROP_OPTIONS = "imageCropOptions";
-   
+    public static final String OPT_IMAGE_AUTO_ORIENTATION = "imageAutoOrient";
+    
     /** Command string options, provided for backward compatibility */
     private String commandOptions = "";
     
@@ -43,6 +44,7 @@ public class ImageTransformationOptions extends TransformationOptions
     /** Image crop options */
     private ImageCropOptions cropOptions;
     
+    private boolean autoOrient = true;
     /**
      * Set the command string options
      * 
@@ -86,13 +88,11 @@ public class ImageTransformationOptions extends TransformationOptions
     @Override
     public String toString()
     {
-    	StringBuilder msg = new StringBuilder(100);
-    	msg.append(this.getClass().getSimpleName())
-    	    .append("[ commandOptions=").append(commandOptions)
-    	    .append(", resizeOptions=").append(resizeOptions)
-    	    .append("]");
-    	
-    	return msg.toString();
+        StringBuilder builder = new StringBuilder();
+        builder.append("ImageTransformationOptions [commandOptions=").append(this.commandOptions)
+                    .append(", resizeOptions=").append(this.resizeOptions).append(", cropOptions=")
+                    .append(this.cropOptions).append(", autoOrient=").append(this.autoOrient).append("]");
+        return builder.toString();
     }
     
     /**
@@ -106,6 +106,7 @@ public class ImageTransformationOptions extends TransformationOptions
         props.put(OPT_COMMAND_OPTIONS, commandOptions);
         props.put(OPT_IMAGE_RESIZE_OPTIONS, resizeOptions);
         props.put(OPT_IMAGE_CROP_OPTIONS, cropOptions);
+        props.put(OPT_IMAGE_AUTO_ORIENTATION, autoOrient);
         return props;
     }
 
@@ -124,5 +125,22 @@ public class ImageTransformationOptions extends TransformationOptions
     public ImageCropOptions getCropOptions()
     {
         return this.cropOptions;
+    }
+
+    /**
+     * @return Will the image be automatically oriented(rotated) based on the EXIF "Orientation" data.
+     * Defaults to TRUE
+     */    
+    public boolean isAutoOrient()
+    {
+        return this.autoOrient;
+    }
+
+    /**
+     * @param autoOrient automatically orient (rotate) based on the EXIF "Orientation" data
+     */ 
+    public void setAutoOrient(boolean autoOrient)
+    {
+        this.autoOrient = autoOrient;
     }
 }

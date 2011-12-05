@@ -229,6 +229,17 @@ public class ImageRenderingEngine extends AbstractTransformationRenderingEngine
      */
     public static final String PARAM_COMMAND_OPTIONS = "commandOptions";
 
+    /**
+     * This optional {@link Boolean} flag parameter specifies if the engine should
+     * automatically rotate and image based on the EXIF orientation flag. If
+     * this parameter is set to <code>true</code> then the engine reads 
+     * and resets the EXIF image profile setting 'Orientation' and then performs
+     * the appropriate 90 degree rotation on the image to orient the image,
+     * for correct viewing. 
+     * This parameter defaults to <code>true</code>.
+     */
+    public static final String PARAM_AUTO_ORIENTATION = "autoOrientation";   
+    
     /*
      * @seeorg.alfresco.repo.rendition.executer.ReformatRenderingEngine#
      * getTransformOptions
@@ -242,9 +253,12 @@ public class ImageRenderingEngine extends AbstractTransformationRenderingEngine
         ImageResizeOptions imageResizeOptions = getImageResizeOptions(context);
         ImageCropOptions cropOptions = getImageCropOptions(context);
 
+        boolean autoOrient = context.getParamWithDefault(PARAM_AUTO_ORIENTATION, true);
+        
         ImageTransformationOptions imageTransformationOptions = new ImageTransformationOptions();
         imageTransformationOptions.setResizeOptions(imageResizeOptions);
         imageTransformationOptions.setCropOptions(cropOptions);
+        imageTransformationOptions.setAutoOrient(autoOrient);
         if (commandOptions != null)
         {
             imageTransformationOptions.setCommandOptions(commandOptions);
@@ -359,6 +373,10 @@ public class ImageRenderingEngine extends AbstractTransformationRenderingEngine
     protected Collection<ParameterDefinition> getParameterDefinitions()
     {
         Collection<ParameterDefinition> paramList = super.getParameterDefinitions();
+
+        //Orientation
+        paramList.add(new ParameterDefinitionImpl(PARAM_AUTO_ORIENTATION, DataTypeDefinition.BOOLEAN, false,
+                    getParamDisplayLabel(PARAM_AUTO_ORIENTATION)));
         
         //Resize Params
         paramList.add(new ParameterDefinitionImpl(PARAM_RESIZE_WIDTH, DataTypeDefinition.INT, false,

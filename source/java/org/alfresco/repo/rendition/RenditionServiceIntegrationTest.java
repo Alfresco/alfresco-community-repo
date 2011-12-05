@@ -21,6 +21,7 @@ package org.alfresco.repo.rendition;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URL;
@@ -81,6 +82,8 @@ import org.springframework.context.ConfigurableApplicationContext;
 @SuppressWarnings("deprecation")
 public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
 {
+    private static final String WHITE = "ffffff";
+    private static final String BLACK = "000000";
     private final static QName REFORMAT_RENDER_DEFN_NAME = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
                 ReformatRenderingEngine.NAME + System.currentTimeMillis());
     private final static QName RESCALE_RENDER_DEFN_NAME = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
@@ -146,19 +149,12 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
 
 
         // Create a test image
-        this.nodeWithImageContent = createContentNode(companyHome, "testImageNode");
-        // Stream some well-known image content into the node.
+        this.nodeWithImageContent = createContentNode(companyHome, "testImageNode"); 
+        // Stream some well-known image content into the node.       
         URL url = RenditionServiceIntegrationTest.class.getClassLoader().getResource("images/gray21.512.png");
         assertNotNull("url of test image was null", url);
         File imageFile = new File(url.getFile());
-        assertTrue(imageFile.exists());
-
-        nodeService.setProperty(nodeWithImageContent, ContentModel.PROP_CONTENT, new ContentData(null,
-                    MimetypeMap.MIMETYPE_IMAGE_PNG, 0L, null));
-        writer = contentService.getWriter(nodeWithImageContent, ContentModel.PROP_CONTENT, true);
-        writer.setMimetype(MimetypeMap.MIMETYPE_IMAGE_PNG);
-        writer.setEncoding("UTF-8");
-        writer.putContent(imageFile);
+        setImageContentOnNode(nodeWithImageContent, MimetypeMap.MIMETYPE_IMAGE_PNG, imageFile);
 
         // Create a test template node.
         this.nodeWithFreeMarkerContent = createFreeMarkerNode(companyHome);
@@ -167,6 +163,17 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
     private NodeRef createContentNode(NodeRef companyHome, String name)
     {
         return createNode(companyHome, name, ContentModel.TYPE_CONTENT);
+    }
+    
+    private void setImageContentOnNode(NodeRef nodeWithImage, String mimetypeImage, File imageFile)
+    {
+        assertTrue(imageFile.exists());
+        nodeService.setProperty(nodeWithImage, ContentModel.PROP_CONTENT, new ContentData(null,
+                    mimetypeImage, 0L, null));
+        ContentWriter writer = contentService.getWriter(nodeWithImage, ContentModel.PROP_CONTENT, true);
+        writer.setMimetype(mimetypeImage);
+        writer.setEncoding("UTF-8");
+        writer.putContent(imageFile);
     }
 
     private NodeRef createFreeMarkerNode(NodeRef companyHome)
@@ -649,7 +656,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         parameterValues.put(ImageRenderingEngine.PARAM_CROP_HEIGHT, imageNewYSize);
 
         ImageTransformationOptions imageTransformationOptions = new ImageTransformationOptions();
-        final NodeRef newRenditionNode = performImageRendition(parameterValues);
+        final NodeRef newRenditionNode = performImageRendition(parameterValues,nodeWithImageContent);
 
         // Assert that the rendition is of the correct size and has reasonable
         // content.
@@ -704,7 +711,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         parameterValues.put(ImageRenderingEngine.PARAM_CROP_HEIGHT, 25); // 128 pixels
         parameterValues.put(ImageRenderingEngine.PARAM_IS_PERCENT_CROP, true);
 
-        final NodeRef secondRenditionNode = performImageRendition(parameterValues);
+        final NodeRef secondRenditionNode = performImageRendition(parameterValues,nodeWithImageContent);
 
         // Assert that the rendition is of the correct size and has reasonable
         // content.
@@ -772,7 +779,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         parameterValues.put(ImageRenderingEngine.PARAM_RESIZE_WIDTH, imageNewXSize);
         parameterValues.put(ImageRenderingEngine.PARAM_RESIZE_HEIGHT, imageNewYSize);
 
-        final NodeRef newRenditionNode = performImageRendition(parameterValues);
+        final NodeRef newRenditionNode = performImageRendition(parameterValues, nodeWithImageContent);
 
         // Assert that the rendition is of the correct size and has reasonable
         // content.
@@ -802,11 +809,11 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
 
                 // The upper left pixel of the image should be pure black.
                 int rgbAtTopLeft = img.getRGB(1, 1);
-                assertTrue("Incorrect image content.", Integer.toHexString(rgbAtTopLeft).endsWith("000000"));
+                assertTrue("Incorrect image content.", Integer.toHexString(rgbAtTopLeft).endsWith(BLACK));
 
                 // The lower right pixel of the image should be pure white
                 int rgbAtBottomRight = img.getRGB(img.getWidth() - 1, img.getHeight() - 1);
-                assertTrue("Incorrect image content.", Integer.toHexString(rgbAtBottomRight).endsWith("ffffff"));
+                assertTrue("Incorrect image content.", Integer.toHexString(rgbAtBottomRight).endsWith(WHITE));
 
                 return null;
             }
@@ -818,7 +825,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         parameterValues.put(ImageRenderingEngine.PARAM_RESIZE_HEIGHT, 200);
         parameterValues.put(ImageRenderingEngine.PARAM_IS_PERCENT_RESIZE, true);
 
-        final NodeRef secondRenditionNode = performImageRendition(parameterValues);
+        final NodeRef secondRenditionNode = performImageRendition(parameterValues, nodeWithImageContent);
 
         // Assert that the rendition is of the correct size and has reasonable
         // content.
@@ -848,11 +855,11 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
 
                 // The upper left pixel of the image should be pure black.
                 int rgbAtTopLeft = img.getRGB(1, 1);
-                assertTrue("Incorrect image content.", Integer.toHexString(rgbAtTopLeft).endsWith("000000"));
+                assertTrue("Incorrect image content.", Integer.toHexString(rgbAtTopLeft).endsWith(BLACK));
 
                 // The lower right pixel of the image should be pure white
                 int rgbAtBottomRight = img.getRGB(img.getWidth() - 1, img.getHeight() - 1);
-                assertTrue("Incorrect image content.", Integer.toHexString(rgbAtBottomRight).endsWith("ffffff"));
+                assertTrue("Incorrect image content.", Integer.toHexString(rgbAtBottomRight).endsWith(WHITE));
 
                 return null;
             }
@@ -905,11 +912,11 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
 
                 // The upper left pixel of the image should be pure black.
                 int rgbAtTopLeft = img.getRGB(1, 1);
-                assertTrue("Incorrect image content.", Integer.toHexString(rgbAtTopLeft).endsWith("000000"));
+                assertTrue("Incorrect image content.", Integer.toHexString(rgbAtTopLeft).endsWith(BLACK));
 
                 // The lower right pixel of the image should be pure white
                 int rgbAtBottomRight = img.getRGB(img.getWidth() - 1, img.getHeight() - 1);
-                assertTrue("Incorrect image content.", Integer.toHexString(rgbAtBottomRight).endsWith("ffffff"));
+                assertTrue("Incorrect image content.", Integer.toHexString(rgbAtBottomRight).endsWith(WHITE));
 
                 return null;
             }
@@ -1175,7 +1182,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
                     });
     }
 
-    private NodeRef performImageRendition(final Map<String, Serializable> parameterValues)
+    protected NodeRef performImageRendition(final Map<String, Serializable> parameterValues, final NodeRef imageToRender)
     {
         final NodeRef newRenditionNode = transactionHelper
                     .doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
@@ -1197,7 +1204,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
                                 action.setParameterValue(s, parameterValues.get(s));
                             }
 
-                            ChildAssociationRef renditionAssoc = renditionService.render(nodeWithImageContent, action);
+                            ChildAssociationRef renditionAssoc = renditionService.render(imageToRender, action);
 
                             validateRenditionAssociation(renditionAssoc, RESCALE_RENDER_DEFN_NAME);
 
@@ -2218,6 +2225,90 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         this.scriptService.executeScript(location, model);
     }
 
+    /**
+     * This test method takes an image with Exif Orientation information and checks if it is automatially rotated.
+     */
+    public void testAutoRotateImage() throws Exception
+    {
+        NodeRef companyHome = repositoryHelper.getCompanyHome();
+
+        //Check image is there
+        String imageSource = "images/rotated_gray21.512.jpg";
+        File imageFile = retrieveValidImageFile(imageSource);
+
+        //Create node and save contents
+        final NodeRef newNodeForRotate = createNode(companyHome, "rotateImageNode", ContentModel.TYPE_CONTENT);
+        setImageContentOnNode(newNodeForRotate, MimetypeMap.MIMETYPE_IMAGE_JPEG, imageFile);
+
+        //Test auto rotates
+        final Map<String, Serializable> parameterValues = new HashMap<String, Serializable>();        
+        resizeImageAndCheckOrientation(newNodeForRotate, parameterValues, BLACK, WHITE);     
+        
+        //Test doesn't auto rotate
+        parameterValues.clear();
+        parameterValues.put(ImageRenderingEngine.PARAM_AUTO_ORIENTATION, false);
+        resizeImageAndCheckOrientation(newNodeForRotate, parameterValues, WHITE, BLACK);     
+        
+        //Clean up
+        nodeService.deleteNode(newNodeForRotate);
+    }
+
+    private void resizeImageAndCheckOrientation(final NodeRef nodeToResize, final Map<String, Serializable> parameterValues, final String topLeft, final String bottomRight)
+    {
+        //Resize to 100 by 100
+        final Integer imageNewXSize = new Integer(100);
+        final Integer imageNewYSize = new Integer(100);
+        parameterValues.put(ImageRenderingEngine.PARAM_RESIZE_WIDTH, imageNewXSize);
+        parameterValues.put(ImageRenderingEngine.PARAM_RESIZE_HEIGHT, imageNewYSize);
+
+        final NodeRef newRenditionNode = performImageRendition(parameterValues, nodeToResize);
+
+        // Assert that the rendition is of the correct size and has reasonable content.
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                // The rescaled image rendition is a child of the original test
+                // node.
+                List<ChildAssociationRef> children = nodeService.getChildAssocs(nodeToResize,
+                            new RegexQNamePattern(getLongNameWithEscapedBraces(RenditionModel.ASSOC_RENDITION)),
+                            new RegexQNamePattern(getLongNameWithEscapedBraces(RESCALE_RENDER_DEFN_NAME)));
+
+                // There should only be one child of the image node: the
+                // rendition we've just created.
+                assertEquals("Unexpected number of children", 1, children.size());
+
+                NodeRef newImageRendition = children.get(0).getChildRef();
+                assertEquals(newRenditionNode, newImageRendition);
+
+                ContentReader reader = contentService.getReader(newImageRendition, ContentModel.PROP_CONTENT);
+                assertNotNull("Reader to rendered image was null", reader);
+                BufferedImage srcImg = ImageIO.read(reader.getContentInputStream());
+                checkTopLeftBottomRight(srcImg, topLeft, bottomRight);
+
+                return null;
+            }
+        });
+    } 
+    
+    private static File retrieveValidImageFile(String imageSource) throws IOException
+    {
+        URL url = RenditionServiceIntegrationTest.class.getClassLoader().getResource(imageSource);
+        File imageFile = new File(url.getFile());
+        BufferedImage img = ImageIO.read(url);
+        assertNotNull("image was null", img);
+        checkTopLeftBottomRight(img, WHITE, BLACK);
+        return imageFile;
+    }
+    
+    private static void checkTopLeftBottomRight(BufferedImage img, String topLeft, String bottomRight)
+    {
+        int rgbAtTopLeft = img.getRGB(1, 1);
+        assertTrue("upper left should be "+topLeft, Integer.toHexString(rgbAtTopLeft).endsWith(topLeft));
+        int rgbAtBottomRight = img.getRGB(img.getWidth() - 1, img.getHeight() - 1);
+        assertTrue("lower right should be "+bottomRight, Integer.toHexString(rgbAtBottomRight).endsWith(bottomRight));
+    }
+    
     /**
      * A dummy rendering engine used in testing
      */

@@ -20,6 +20,7 @@ package org.alfresco.repo.web.scripts.calendar;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -40,31 +41,55 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 /**
  * This class is the controller for the slingshot calendar eventList.get webscript.
  * 
- * TODO Improve what we give to the FTL
- * TODO Switch to using {@link AbstractCalendarListingWebScript}
- * 
  * @author Nick Burch
  * @since 4.0
  */
-public class CalendarEntriesListGet extends AbstractCalendarWebScript
+public class CalendarEntriesListGet extends AbstractCalendarListingWebScript
 {
    @Override
    protected Map<String, Object> executeImpl(SiteInfo site, String eventName,
          WebScriptRequest req, JSONObject json, Status status, Cache cache) 
    {
-      SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy"); // Evil...
+      // Evil format needed for compatibility with old API...
+      SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy");
+      
+      // Decide on date ranges and repeating rules
+      Date fromDate = parseDate(req.getParameter("from"));
+      Date toDate = parseDate(req.getParameter("to"));
+      
+      boolean resortNeeded = false;
+      boolean repeatingFirstOnly = true;
+      String repeatingEvents = req.getParameter("repeating");
+      if (repeatingEvents != null)
+      {
+         if ("first".equals(repeatingEvents))
+         {
+            repeatingFirstOnly = true;
+         }
+         else if ("all".equals(repeatingEvents))
+         {
+            repeatingFirstOnly = false;
+            resortNeeded = true;
+         }
+      }
+      
       
       // Get the entries for the list
       PagingRequest paging = buildPagingRequest(req);
-      PagingResults<CalendarEntry> entries = 
-         calendarService.listCalendarEntries(site.getShortName(), paging);
+      PagingResults<CalendarEntry> entries = calendarService.listCalendarEntries(
+            new String[] {site.getShortName()}, fromDate, toDate, paging);
       
       // For each one in our page, grab details of any ignored instances
       List<Map<String,Object>> results = new ArrayList<Map<String,Object>>();
       for (CalendarEntry entry : entries.getPage())
       {
          Map<String, Object> result = new HashMap<String, Object>();
-         result.put("event", entry);
+         result.put(RESULT_EVENT, entry);
+         result.put(RESULT_NAME,  entry.getSystemName());
+         result.put(RESULT_TITLE, entry.getTitle());
+         result.put(RESULT_START, entry.getStart());
+         result.put(RESULT_END,   entry.getEnd());
+         
          result.put("fromDate", entry.getStart());
          result.put("tags", entry.getTags());
          
@@ -86,7 +111,21 @@ public class CalendarEntriesListGet extends AbstractCalendarWebScript
          result.put("ignoreEvents", ignoreEvents);
          result.put("ignoreEventDates", ignoreEventDates);
          
+         // For repeating events, push forward if needed
+         boolean orderChanged = handleRecurring(entry, result, results, fromDate, toDate, repeatingFirstOnly);
+         if (orderChanged)
+         {
+            resortNeeded = true;
+         }
+         
+         // All done with this one
          results.add(result);
+      }
+      
+      // If they asked for repeating events to be expanded, then do so
+      if (resortNeeded)
+      {
+         Collections.sort(results, getEventDetailsSorter());
       }
       
       // All done

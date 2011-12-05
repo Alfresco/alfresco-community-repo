@@ -5,8 +5,9 @@
 <#elseif events?exists && events?size &gt; 0>
    <#assign prev = "">
    <#list events as item>
+      <#-- Note - use item not event start for repeating events expansion -->
+      <#assign date = item.start?string("M/d/yyyy")>
       <#assign event = item.event>
-      <#assign date = event.start?string("M/d/yyyy")>
       <#if date != prev>
          <#assign counter = 0>
          <#if item_index &gt; 0>],</#if>
@@ -14,17 +15,17 @@
       </#if>
       <#if counter &gt; 0>,</#if>
    {
-      "name": "${event.title}",
+      "name": "${item.title}",
       "uri": "calendar/event/${siteId}/${event.systemName}",
       "startAt": {
-          "iso8601": "${xmldate(event.start)}",
-          "legacyDate": "${event.start?string("M/d/yyyy")}",
-          "legacyTime": "${event.start?string("HH:mm")}"
+          "iso8601": "${xmldate(item.start)}",
+          "legacyDate": "${item.start?string("M/d/yyyy")}",
+          "legacyTime": "${item.start?string("HH:mm")}"
       },
       "endAt": {
-          "iso8601": "${xmldate(event.end)}",
-          "legacyDate": "${event.end?string("M/d/yyyy")}",
-          "legacyTime": "${event.end?string("HH:mm")}"
+          "iso8601": "${xmldate(item.end)}",
+          "legacyDate": "${item.end?string("M/d/yyyy")}",
+          "legacyTime": "${item.end?string("HH:mm")}"
       },
 
       "tags": [<#list item.tags as tag>"${tag}"<#if tag_has_next>,</#if></#list>],

@@ -158,6 +158,7 @@ public class UserCalendarEntriesGet extends AbstractCalendarListingWebScript
       {
          // Build the object
          Map<String, Object> result = new HashMap<String, Object>();
+         result.put(RESULT_EVENT,  entry);
          result.put(RESULT_NAME,   entry.getSystemName());
          result.put(RESULT_TITLE,  entry.getTitle());
          result.put("description", entry.getDescription());

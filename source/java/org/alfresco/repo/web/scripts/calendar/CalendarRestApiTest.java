@@ -18,7 +18,10 @@
  */
 package org.alfresco.repo.web.scripts.calendar;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.calendar.CalendarServiceImpl;
@@ -195,7 +198,7 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        }
        if (from != null)
        {
-          if (url.indexOf('/') > 0)
+          if (url.indexOf('?') > 0)
           {
              url += "&";
           }
@@ -265,10 +268,8 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        json.put("page", "calendar");
        
        // Copy in the date properties
-       Iterator<String> datesIT = datesJSON.keys();
-       while(datesIT.hasNext())
+       for (String key : getKeys(datesJSON, false))
        {
-          String key = datesIT.next();
           json.put(key, datesJSON.get(key));
        }
        
@@ -366,6 +367,25 @@ public class CalendarRestApiTest extends BaseWebScriptTest
     {
        Response response = sendRequest(new GetRequest(URL_EVENTS_LIST_ICS), 200);
        return response.getContentAsString();
+    }
+    
+    /**
+     * Returns the Keys of a JSON Object, optionally sorted
+     */
+    private String[] getKeys(JSONObject json, boolean sorted)
+    {
+       @SuppressWarnings("unchecked")
+       Iterator<String> ki = json.keys();
+       
+       List<String> keys = new ArrayList<String>(json.length());
+       while (ki.hasNext())
+       {
+          keys.add(ki.next());
+       }
+       
+       if(sorted) { Collections.sort(keys); }
+       
+       return keys.toArray(new String[keys.size()]);
     }
     
     
@@ -985,9 +1005,10 @@ public class CalendarRestApiTest extends BaseWebScriptTest
     }
 
     /**
-     * Repeating events support
+     * Repeating events support, across both the site
+     *  specific and user wide listings.
      */
-    public void testRepeatingEventsInUserListing() throws Exception 
+    public void testRepeatingEventsInListings() throws Exception 
     {
        JSONObject result;
        JSONArray events;
@@ -1007,10 +1028,13 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        String entryName2 = getNameFromEntry(entry2);
        // Have it repeat on wednesdays and fridays every two weeks
        updateEntry(entryName2, EVENT_TITLE_TWO, "Somewhere", "Thing 2", true, Status.STATUS_OK);
-       
+
        
        // Get all the entries, without repeats expanded
-       result = getEntries("admin", "2011-06-27");
+       // ---------------------------------------------
+       
+       // For the user
+       result = getEntries("admin", "2011-06-27&repeating=first");
        events = result.getJSONArray("events");
        assertEquals(2, events.length());
        assertEquals(entryName2, events.getJSONObject(0).getString("name"));
@@ -1019,7 +1043,25 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        assertEquals(EVENT_TITLE_ONE, events.getJSONObject(1).getString("title"));
        
        
+       // For the site (JSON format is different)
+       result = getEntries(null, "2011-06-27&repeating=first");
+       assertEquals(2, result.length());
+       assertEquals("6/28/2011", getKeys(result, true)[0]);
+       assertEquals("6/29/2011", getKeys(result, true)[1]);
+       
+       events = result.getJSONArray("6/28/2011");
+       assertEquals(1, events.length());
+       assertEquals(EVENT_TITLE_TWO + " (Repeating)", events.getJSONObject(0).getString("name"));
+       
+       events = result.getJSONArray("6/29/2011");
+       assertEquals(1, events.length());
+       assertEquals(EVENT_TITLE_ONE, events.getJSONObject(0).getString("name"));
+       
+       
        // Get all the entries, with repeats expanded
+       // ------------------------------------------
+       
+       // For the user
        result = getEntries("admin", "2011/06/27");
        events = result.getJSONArray("events");
        assertEquals(7, Math.min(events.length(),7)); // At least
@@ -1057,6 +1099,42 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        assertEquals("2011-07-27T", events.getJSONObject(6).getJSONObject("startAt").getString("iso8601").substring(0,11));
        // 3rd repeat Friday
        assertEquals("2011-07-29T", events.getJSONObject(7).getJSONObject("startAt").getString("iso8601").substring(0,11));
+
+       
+       // For the site
+       result = getEntries(null, "2011-06-28&repeating=all");
+       assertEquals(7, Math.min(result.length(),7)); // At least
+       
+       // Repeating original
+       assertEquals("6/28/2011", getKeys(result, true)[0]);
+       assertEquals(1, result.getJSONArray("6/28/2011").length());
+       assertEquals(EVENT_TITLE_TWO, result.getJSONArray("6/28/2011").getJSONObject(0).get("name"));
+       // 1st repeat Wednesday, then Non-repeating original
+       assertEquals("6/29/2011", getKeys(result, true)[1]);
+       assertEquals(2, result.getJSONArray("6/29/2011").length());
+       assertEquals(EVENT_TITLE_TWO, result.getJSONArray("6/29/2011").getJSONObject(0).get("name"));
+       assertEquals(EVENT_TITLE_ONE, result.getJSONArray("6/29/2011").getJSONObject(1).get("name"));
+       // 1st repeat Friday
+       assertEquals("7/1/2011", getKeys(result, true)[2]);
+       assertEquals(1, result.getJSONArray("7/1/2011").length());
+       assertEquals(EVENT_TITLE_TWO, result.getJSONArray("7/1/2011").getJSONObject(0).get("name"));
+       // 2nd repeat Wednesday
+       assertEquals("7/13/2011", getKeys(result, true)[3]);
+       assertEquals(1, result.getJSONArray("7/13/2011").length());
+       assertEquals(EVENT_TITLE_TWO, result.getJSONArray("7/13/2011").getJSONObject(0).get("name"));
+       // 2nd repeat Friday
+       assertEquals("7/15/2011", getKeys(result, true)[4]);
+       assertEquals(1, result.getJSONArray("7/15/2011").length());
+       assertEquals(EVENT_TITLE_TWO, result.getJSONArray("7/15/2011").getJSONObject(0).get("name"));
+       // 3rd repeat Wednesday
+       assertEquals("7/27/2011", getKeys(result, true)[5]);
+       assertEquals(1, result.getJSONArray("7/27/2011").length());
+       assertEquals(EVENT_TITLE_TWO, result.getJSONArray("7/27/2011").getJSONObject(0).get("name"));
+       // 3rd repeat Friday
+       assertEquals("7/29/2011", getKeys(result, true)[6]);
+       assertEquals(1, result.getJSONArray("7/29/2011").length());
+       assertEquals(EVENT_TITLE_TWO, result.getJSONArray("7/29/2011").getJSONObject(0).get("name"));
+
        
        
        // Ask for events from a date in the future
@@ -1080,5 +1158,26 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        assertEquals("2011-09-07T", events.getJSONObject(2).getJSONObject("startAt").getString("iso8601").substring(0,11));
        // Friday, final repeating instance date
        assertEquals("2011-09-09T", events.getJSONObject(3).getJSONObject("startAt").getString("iso8601").substring(0,11));
+       
+       
+       // Check by site, should see the same
+       result = getEntries(null, "2011-08-20&repeating=all");
+       assertEquals(4, result.length());
+       
+       assertEquals("8/24/2011", getKeys(result, true)[0]);
+       assertEquals(1, result.getJSONArray("8/24/2011").length());
+       assertEquals(EVENT_TITLE_TWO, result.getJSONArray("8/24/2011").getJSONObject(0).get("name"));
+       
+       assertEquals("8/26/2011", getKeys(result, true)[1]);
+       assertEquals(1, result.getJSONArray("8/26/2011").length());
+       assertEquals(EVENT_TITLE_TWO, result.getJSONArray("8/26/2011").getJSONObject(0).get("name"));
+       
+       assertEquals("9/7/2011", getKeys(result, true)[2]);
+       assertEquals(1, result.getJSONArray("9/7/2011").length());
+       assertEquals(EVENT_TITLE_TWO, result.getJSONArray("9/7/2011").getJSONObject(0).get("name"));
+       
+       assertEquals("9/9/2011", getKeys(result, true)[3]);
+       assertEquals(1, result.getJSONArray("9/9/2011").length());
+       assertEquals(EVENT_TITLE_TWO, result.getJSONArray("9/9/2011").getJSONObject(0).get("name"));
     }
 }

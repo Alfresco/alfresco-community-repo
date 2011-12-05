@@ -38,7 +38,8 @@ import org.alfresco.service.cmr.calendar.CalendarRecurrenceHelper;
  */
 public abstract class AbstractCalendarListingWebScript extends AbstractCalendarWebScript
 {
-   protected static final String RESULT_NAME = "name"; 
+   protected static final String RESULT_EVENT = "event"; 
+   protected static final String RESULT_NAME  = "name"; 
    protected static final String RESULT_TITLE = "title"; 
    protected static final String RESULT_START = "start"; 
    protected static final String RESULT_END = "end"; 

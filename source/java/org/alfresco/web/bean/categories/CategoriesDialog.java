@@ -483,12 +483,15 @@ public class CategoriesDialog extends BaseDialogBean implements IContextListener
             this.setCurrentCategory(handler.nodeRef); 
          }
       }
-      else 
+      else
       {
-          handler = new CategoryBreadcrumbHandler(
+         if (getCategory() != null)
+         {
+            handler = new CategoryBreadcrumbHandler(
                   getCategory().getNodeRef(), Repository.getNameForNode(getNodeService(), getCategory().getNodeRef()));
-          location.set(location.size() - 1, handler);
-          this.setCurrentCategory(handler.nodeRef); 
+            location.set(location.size() - 1, handler);
+            this.setCurrentCategory(handler.nodeRef);
+         }
       }
    }
    

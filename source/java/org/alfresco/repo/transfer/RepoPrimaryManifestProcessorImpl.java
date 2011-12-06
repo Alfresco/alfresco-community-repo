@@ -274,11 +274,11 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
         // We need to process content properties separately.
         // First, create a shallow copy of the supplied property map...
         Map<QName, Serializable> props = new HashMap<QName, Serializable>(node.getProperties());
+        
+        injectTransferred(props);
 
         // Split out the content properties and sanitise the others
         Map<QName, Serializable> contentProps = processProperties(null, props, null);
-        
-        injectTransferred(props);
             
         // Remove the invadedBy property since that is used by the transfer service 
         // and is local to this repository.

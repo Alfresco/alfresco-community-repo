@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.io.StringWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -112,14 +113,16 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
           return null;
        }
        
-       // todays date - ignore time as we want all of today
+       // Today's Date - special case 
        if (date.equalsIgnoreCase("NOW"))
        {
-           Date ddate = new Date();
-           ddate.setHours(0);;
-           ddate.setMinutes(0);
-           ddate.setSeconds(0);
-           return ddate;
+           // We want all of today, so go back to midnight
+           Calendar c = Calendar.getInstance();
+           c.set(Calendar.HOUR_OF_DAY, 0);
+           c.set(Calendar.MINUTE, 0);
+           c.set(Calendar.SECOND, 0);
+           c.set(Calendar.MILLISECOND, 0);
+           return c.getTime();
        }
        
        // Try as ISO8601

@@ -57,7 +57,7 @@
         </property>
     </bean>
 
-    <bean id="common-placeholder-configurer" class="org.alfresco.config.FixedPropertyPlaceholderConfigurer" abstract="true">
+    <bean id="common-placeholder-configurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer" abstract="true">
         <property name="valueSeparator">
             <null/>
         </property>

@@ -124,6 +124,14 @@ public class TempNetworkFile extends JavaNetworkFile implements NetworkFileState
         return fileState;
     }
     
+    /**
+     * Tell JLAN it needs to call disk.closeFile rather than short cutting.
+     * @return
+     */
+    public boolean allowsOpenCloseViaNetworkFile() {
+        return false;
+    }
+    
     
     private FileState fileState;
 }

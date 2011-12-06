@@ -105,9 +105,8 @@ public class TestChannelType1 extends AbstractChannelType
     }
 
     @Override
-    public String getAuthorisationUrl(Channel channel, String callbackUrl)
+    public AuthUrlPair getAuthorisationUrls(Channel channel, String callbackUrl)
     {
-        // TODO Auto-generated method stub
         return null;
     }
 

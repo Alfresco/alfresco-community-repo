@@ -151,8 +151,8 @@ public class MockChannelType extends AbstractChannelType
     }
 
     @Override
-    public String getAuthorisationUrl(Channel channel, String callbackUrl)
+    public AuthUrlPair getAuthorisationUrls(Channel channel, String callbackUrl)
     {
-        return "";
+        return new AuthUrlPair("", "");
     }
 }

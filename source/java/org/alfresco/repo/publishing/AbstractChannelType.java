@@ -95,11 +95,11 @@ public abstract class AbstractChannelType implements ChannelType, ChannelTypePub
     }
 
     @Override
-    public String getAuthorisationUrl(Channel channel, String callbackUrl)
+    public AuthUrlPair getAuthorisationUrls(Channel channel, String callbackUrl)
     {
-        // Returning a null here to indicate that we should use our own
+        // Returning a null as the authorisation request URL here to indicate that we should use our own
         // credential-gathering mechanism.
-        return null;
+        return new AuthUrlPair(null, callbackUrl);
     }
 
     @Override

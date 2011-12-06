@@ -32,6 +32,27 @@ import org.springframework.core.io.Resource;
  */
 public interface ChannelType
 {
+    public final class AuthUrlPair
+    {
+        /**
+         * The URL to which the user should be sent in order to grant Alfresco access to a channel.
+         */
+        public final String authorisationRequestUrl;
+        
+        /**
+         * The URL to which the service provider is expected to send the user once the user's authorisation 
+         * has been sought. 
+         */
+        public final String authorisationRedirectUrl;
+
+        public AuthUrlPair(String authorisationRequestUrl, String authorisationRedirectUrl)
+        {
+            this.authorisationRequestUrl = authorisationRequestUrl;
+            this.authorisationRedirectUrl = authorisationRedirectUrl;
+        }
+        
+    }
+
     enum  AuthStatus {AUTHORISED, RETRY, UNAUTHORISED}
     
     /**
@@ -113,11 +134,13 @@ public interface ChannelType
      * When creating a new channel of this type, this operation is called to find out where the user should be taken
      * in order to authorise Alfresco to publish content / status updates to that channel.
      * @param channel The channel that needs to be authorised.
-     * @param callbackUrl Where the service provider represented by this channel type should redirect the user to once 
-     * the authorisation procedure is complete.
+     * @param alfrescoCallbackUrl Where the user's browser needs to send the authorisation tokens once 
+     * the authorisation procedure is complete. If possible, the authorisation URL should include this information
+     * so the service provider can send the tokens straight back to us via the browser without any intermediate steps
+     * being needed. 
      * @return The URL that the user should be taken to in order to authorise access to Alfresco for the specified channel.
      */
-    String getAuthorisationUrl(Channel channel, String callbackUrl);
+    AuthUrlPair getAuthorisationUrls(Channel channel, String alfrescoCallbackUrl);
     
     /**
      * This operation is called after the service provider represented by this channel type has redirected the user

@@ -101,7 +101,7 @@ public class FacebookChannelType extends AbstractChannelType
     }
 
     @Override
-    public String getAuthorisationUrl(Channel channel, String callbackUrl)
+    public AuthUrlPair getAuthorisationUrls(Channel channel, String callbackUrl)
     {
         ParameterCheck.mandatory("channel", channel);
         if (!ID.equals(channel.getChannelType().getId()))
@@ -115,7 +115,8 @@ public class FacebookChannelType extends AbstractChannelType
         OAuth2Operations oauthOperations = publishingHelper.getConnectionFactory().getOAuthOperations();
         OAuth2Parameters params = new OAuth2Parameters(redirectUri,
                 "publish_stream,offline_access,user_photos,user_videos", authStateBuilder.toString(), null);
-        return oauthOperations.buildAuthorizeUrl(GrantType.IMPLICIT_GRANT, params);
+        String authRequestUrl = oauthOperations.buildAuthorizeUrl(GrantType.IMPLICIT_GRANT, params); 
+        return new AuthUrlPair(authRequestUrl, redirectUri);
     }
 
     @Override

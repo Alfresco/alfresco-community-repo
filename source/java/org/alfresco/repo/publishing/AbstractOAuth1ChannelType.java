@@ -68,7 +68,7 @@ public abstract class AbstractOAuth1ChannelType<A> extends AbstractChannelType
     }
     
     @Override
-    public String getAuthorisationUrl(Channel channel, String callbackUrl)
+    public AuthUrlPair getAuthorisationUrls(Channel channel, String callbackUrl)
     {
         ParameterCheck.mandatory("channel", channel);
         ParameterCheck.mandatory("callbackUrl", callbackUrl);
@@ -87,7 +87,8 @@ public abstract class AbstractOAuth1ChannelType<A> extends AbstractChannelType
         nodeService.setProperty(channelNodeRef, PublishingModel.PROP_OAUTH1_TOKEN_VALUE, 
                 getEncryptor().encrypt(PublishingModel.PROP_OAUTH1_TOKEN_VALUE, requestToken.getValue()));
 
-        return oauthOperations.buildAuthorizeUrl(requestToken.getValue(), getOAuth1Parameters(callbackUrl));
+        String authUrl = oauthOperations.buildAuthorizeUrl(requestToken.getValue(), getOAuth1Parameters(callbackUrl));
+        return new AuthUrlPair(authUrl, callbackUrl);
     }
     
     @Override

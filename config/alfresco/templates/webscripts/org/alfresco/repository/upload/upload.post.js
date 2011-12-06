@@ -10,6 +10,14 @@ function extractMetadata(file)
    }
 }
 
+function exitUpload(statusCode, statusMsg)
+{
+   status.code = statusCode;
+   status.message = statusMsg;
+   status.redirect = true;
+   formdata.cleanup();
+}
+
 function main()
 {
    try
@@ -124,9 +132,7 @@ function main()
       // Ensure mandatory file attributes have been located. Need either destination, or site + container or updateNodeRef
       if ((filename === null || content === null) || (destination === null && (siteId === null || containerId === null) && updateNodeRef === null))
       {
-         status.code = 400;
-         status.message = "Required parameters are missing";
-         status.redirect = true;
+         exitUpload(400, "Required parameters are missing");
          return;
       }
 
@@ -142,9 +148,7 @@ function main()
          site = siteService.getSite(siteId);
          if (site === null)
          {
-            status.code = 404;
-            status.message = "Site (" + siteId + ") not found.";
-            status.redirect = true;
+            exitUpload(404, "Site (" + siteId + ") not found.");
             return;
          }
 
@@ -171,9 +175,7 @@ function main()
 
          if (container === null)
          {
-            status.code = 404;
-            status.message = "Component container (" + containerId + ") not found.";
-            status.redirect = true;
+            exitUpload(404, "Component container (" + containerId + ") not found.");
             return;
          }
          
@@ -188,9 +190,7 @@ function main()
          destNode = search.findNode(destination);
          if (destNode === null)
          {
-            status.code = 404;
-            status.message = "Destination (" + destination + ") not found.";
-            status.redirect = true;
+            exitUpload(404, "Destination (" + destination + ") not found.");
             return;
          }
       }
@@ -206,18 +206,14 @@ function main()
          var updateNode = search.findNode(updateNodeRef);
          if (updateNode === null)
          {
-            status.code = 404;
-            status.message = "Node specified by updateNodeRef (" + updateNodeRef + ") not found.";
-            status.redirect = true;
+            exitUpload(404, "Node specified by updateNodeRef (" + updateNodeRef + ") not found.");
             return;
          }
          
          if (updateNode.isLocked)
          {
             // We cannot update a locked document
-            status.code = 404;
-            status.message = "Cannot update locked document '" + updateNodeRef + "', supply a reference to its working copy instead.";
-            status.redirect = true;
+            exitUpload(404, "Cannot update locked document '" + updateNodeRef + "', supply a reference to its working copy instead.");
             return;
          }
 
@@ -256,9 +252,7 @@ function main()
             destNode = destNode.childByNamePath(uploadDirectory);
             if (destNode === null)
             {
-               status.code = 404;
-               status.message = "Cannot upload file since upload directory '" + uploadDirectory + "' does not exist.";
-               status.redirect = true;
+               exitUpload(404, "Cannot upload file since upload directory '" + uploadDirectory + "' does not exist.");
                return;
             }
          }
@@ -289,6 +283,7 @@ function main()
                model.document = existingFile;
 
                // We're finished - bail out here
+               formdata.cleanup();
                return;
             }
             else
@@ -368,9 +363,21 @@ function main()
          // Record the file details ready for generating the response
          model.document = newFile;
       }
+      
+      // final cleanup of temporary resources created during request processing
+ 	 	formdata.cleanup();
    }
    catch (e)
    {
+      try
+      {
+         formdata.cleanup();
+      }
+      catch (ce)
+      {
+         // NOTE: ignore
+      }
+
       // capture exception, annotate it accordingly and re-throw
       if (e.message && e.message.indexOf("org.alfresco.service.cmr.usage.ContentQuotaException") == 0)
       {
@@ -379,7 +386,7 @@ function main()
       else
       {
          e.code = 500;
-         e.message = "Unexpected error occured during upload of new content.";      
+         e.message = "Unexpected error occurred during upload of new content.";      
       }
       throw e;
    }

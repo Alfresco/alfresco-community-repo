@@ -90,7 +90,7 @@ public class AuthCallbackWebScript extends DeclarativeWebScript
         
         if (ChannelType.AuthStatus.RETRY.equals(authStatus))
         {
-            String authoriseUrl = channel.getChannelType().getAuthorisationUrl(channel, channelAuthHelper.getAuthoriseCallbackUrl(channelNodeRef));
+            String authoriseUrl = channel.getChannelType().getAuthorisationUrls(channel, channelAuthHelper.getAuthoriseCallbackUrl(channelNodeRef));
             if (authoriseUrl == null)
             {
                 authoriseUrl = channelAuthHelper.getDefaultAuthoriseUrl(channelNodeRef);

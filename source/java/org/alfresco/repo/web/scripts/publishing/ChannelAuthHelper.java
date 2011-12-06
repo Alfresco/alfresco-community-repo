@@ -23,6 +23,7 @@ import java.util.TreeMap;
 
 import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.service.cmr.publishing.channels.Channel;
+import org.alfresco.service.cmr.publishing.channels.ChannelType;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.UrlUtil;
 
@@ -71,8 +72,9 @@ public class ChannelAuthHelper
     
     public Map<String, Object> buildAuthorisationModel(Channel channel)
     {
-        String callbackUrl = getAuthoriseCallbackUrl(channel.getNodeRef());
-        String authoriseUrl = channel.getChannelType().getAuthorisationUrl(channel, callbackUrl);
+        String alfrescoCallbackUrl = getAuthoriseCallbackUrl(channel.getNodeRef());
+        ChannelType.AuthUrlPair authUrlPair = channel.getChannelType().getAuthorisationUrls(channel, alfrescoCallbackUrl); 
+        String authoriseUrl = authUrlPair.authorisationRequestUrl;
         if (authoriseUrl == null)
         {
             // If a channel type returns null as the authorise URL then we
@@ -84,7 +86,8 @@ public class ChannelAuthHelper
         Map<String, Object> model = new TreeMap<String, Object>();
         model.put("authoriseUrl", authoriseUrl);
         model.put("channelId", channel.getId());
-        model.put("authCallbackUrl", callbackUrl);
+        model.put("authCallbackUrl", alfrescoCallbackUrl);
+        model.put("authRedirectUrl", authUrlPair.authorisationRedirectUrl);
         return model;
     }
 }

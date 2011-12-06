@@ -153,6 +153,7 @@
       "channelId" : "${channelId}",
       "authoriseUrl": "${authoriseUrl}",
       "authCallbackUrl": "${authCallbackUrl}"
+      "authRedirectUrl": "${authRedirectUrl}"
    }
 </#escape>
 </#macro>

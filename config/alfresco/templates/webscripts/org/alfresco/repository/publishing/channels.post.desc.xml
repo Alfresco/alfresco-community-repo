@@ -15,6 +15,7 @@
    <dt>pollUrl</dt> <dd>The URL to poll to discover whether the channel has been authorised</dd>
    <dt>authoriseUrl</dt> <dd>The URL to send the user to in order for them to authorise access to the channel</dd>
    <dt>authCallbackUrl</dt> <dd>The URL to return the channel authorisation details to</dd>
+   <dt>authRedirectUrl</dt> <dd>The URL to which the channel service provider will redirect the user upon authorisation</dd>
    </dl>
    
    ]]></description>
@@ -49,6 +50,7 @@
                   "channelId": string,
                   "authoriseUrl": string
                   "authCallbackUrl": string
+                  "authRedirectUrl": string
                }
             }
             ]]>

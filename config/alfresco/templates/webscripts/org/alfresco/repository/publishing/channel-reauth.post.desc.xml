@@ -15,6 +15,7 @@
    <dt>channelId</dt><dd>the identifier of the publishing channel</dd>
    <dt>authoriseUrl</dt> <dd>The URL to send the user to in order for them to authorise access to the channel</dd>
    <dt>authCallbackUrl</dt> <dd>The URL to return the channel authorisation details to</dd>
+   <dt>authRedirectUrl</dt> <dd>The URL that the channel service provider will try to redirect the user to</dd>
    </dl>
    ]]></description>
    <url>/api/publishing/channels/{store_protocol}/{store_id}/{node_id}/reauthorise</url>
@@ -47,6 +48,7 @@
                   "channelId": string,
                   "authoriseUrl": string
                   "authCallbackUrl": string
+                  "authRedirectUrl": string
                }
             }
             ]]>

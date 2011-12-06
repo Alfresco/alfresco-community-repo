@@ -33,6 +33,9 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeUtils;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.publishing.NodeSnapshot;
@@ -55,6 +58,7 @@ import org.alfresco.util.ParameterCheck;
  */
 public class ChannelImpl implements Channel
 {
+    private static final String PERMISSIONS_ERR_ACCESS_DENIED = "permissions.err_access_denied";
     private final NodeRef nodeRef;
     private final AbstractChannelType channelType;
     private final String name;
@@ -132,33 +136,64 @@ public class ChannelImpl implements Channel
          }
      }
 
-    public void unpublishEntry(PublishingPackageEntry entry)
+    public void unpublishEntry(final PublishingPackageEntry entry)
     {
-        NodeRef channelNode = new NodeRef(getId());
-        NodeRef publishedNode = channelHelper.mapSourceToEnvironment(entry.getNodeRef(), channelNode);
-        if (NodeUtils.exists(publishedNode, nodeService))
+        final NodeRef channelNode = getNodeRef();
+        if (channelHelper.hasPublishPermissions(channelNode))
         {
-            unpublish(publishedNode);
-            // Need to set as temporary to delete node instead of archiving.
-            nodeService.addAspect(publishedNode, ContentModel.ASPECT_TEMPORARY, null);
-            nodeService.deleteNode(publishedNode);
+            AuthenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
+            {
+                @Override
+                public NodeRef doWork() throws Exception
+                {
+                    NodeRef unpublishedNode = channelHelper.mapSourceToEnvironment(entry.getNodeRef(), channelNode);
+                    if (NodeUtils.exists(unpublishedNode, nodeService))
+                    {
+                        unpublish(unpublishedNode);
+                        // Need to set as temporary to delete node instead of archiving.
+                        nodeService.addAspect(unpublishedNode, ContentModel.ASPECT_TEMPORARY, null);
+                        nodeService.deleteNode(unpublishedNode);
+                    }
+                    return unpublishedNode;
+                }
+            });
         }
     }
 
-    public NodeRef publishEntry(PublishingPackageEntry entry, NodeRef eventNode)
+    public NodeRef publishEntry(final PublishingPackageEntry entry, final NodeRef eventNode)
     {
-        NodeRef publishedNode = channelHelper.mapSourceToEnvironment(entry.getNodeRef(), getNodeRef());
-        if (publishedNode == null)
+        NodeRef publishedNode;
+        //We decouple the permissions needed to publish from the permissions needed to do what's
+        //necessary to actually do the publish. If that makes sense...
+        //For example, a user may be able to publish to a channel even if they do not have permission
+        //to add an aspect to a published node (which is a necessary part of the publishing process).
+        if (channelHelper.hasPublishPermissions(getNodeRef()))
         {
-            publishedNode = publishNewNode(getNodeRef(),  entry.getSnapshot());
+            publishedNode = AuthenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
+            {
+                @Override
+                public NodeRef doWork() throws Exception
+                {
+                    NodeRef publishedNode = channelHelper.mapSourceToEnvironment(entry.getNodeRef(), getNodeRef());
+                    if (publishedNode == null)
+                    {
+                        publishedNode = publishNewNode(getNodeRef(),  entry.getSnapshot());
+                    }
+                    else
+                    {
+                        updatePublishedNode(publishedNode, entry);
+                    }
+                    eventHelper.linkToLastEvent(publishedNode, eventNode);
+                    publish(publishedNode);
+                    return publishedNode;
+                }
+            });
         }
         else
         {
-            updatePublishedNode(publishedNode, entry);
+            throw new AccessDeniedException(PERMISSIONS_ERR_ACCESS_DENIED);
         }
-        eventHelper.linkToLastEvent(publishedNode, eventNode);
-        publish(publishedNode);
-        return publishedNode; 
+        return publishedNode;
     }
     
     /**

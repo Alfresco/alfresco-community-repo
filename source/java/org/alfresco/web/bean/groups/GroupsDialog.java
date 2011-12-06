@@ -112,8 +112,10 @@ public class GroupsDialog extends BaseDialogBean
    
    private static Log logger = LogFactory.getLog(GroupsDialog.class);
    
-    /** Groups search criteria */
-    private String groupsSearchCriteria = null;
+   /** Groups search criteria */
+   private String groupsSearchCriteria = null;
+   private boolean searchAll = false;
+
 
    // ------------------------------------------------------------------------------
    // Construction 
@@ -354,7 +356,7 @@ public class GroupsDialog extends BaseDialogBean
     */
    public boolean isAllowSearchGroups()
    {
-      return this.group == null;
+      return (this.group == null);
    }
 
    /**
@@ -362,20 +364,7 @@ public class GroupsDialog extends BaseDialogBean
     */
    public List<Map<String,String>> getGroups()
    {
-      if (this.group == null)
-      {
-         if (this.groups == null)
-         {
-            searchGroups();
-         }
-      }
-      else
-      {
-         if (this.groups == null)
-         {
-            showAllGroups();
-         }
-      }
+      displayGroups();
       return this.groups;
    }
 
@@ -384,7 +373,7 @@ public class GroupsDialog extends BaseDialogBean
     */
    public String getGroupsSearchCriteria()
    {
-      return groupsSearchCriteria;
+      return this.groupsSearchCriteria;
    }
 
    /**
@@ -394,7 +383,10 @@ public class GroupsDialog extends BaseDialogBean
     */
    public String searchGroups()
    {
-      searchGroups(false);
+      // clear group context as search is global
+      this.group = null;
+      this.searchAll = false;
+      displayGroups();
       // return null to stay on the same page
       return null;
    }
@@ -406,84 +398,95 @@ public class GroupsDialog extends BaseDialogBean
     */
    public String showAllGroups()
    {
-      searchGroups(true);
+      // clear group context as search is global
+      this.group = null;
+      this.searchAll = true;
+      displayGroups();
       // return null to stay on the same page
       return null;
    }
 
    /**
-    * Searches groups
-    * 
-    * @param all if true searches all groups and doesn't take account of search term
+    * Searches for groups or lists groups of the current group context
     */
-   private void searchGroups(boolean all)
+   private void displayGroups()
    {
-      groupsRichList.setValue(null);
-      String search = null;
+      // empty the list before we begin the search for a new list
+      this.groupsRichList.setValue(null);
       
-      // Use the search criteria if we are not searching for everything
-      if (!all)
+      List<String> authorities;
+      if (this.group == null)
       {
-         if (this.groupsSearchCriteria == null)
+         // Use the search criteria if we are not searching for everything
+         String search = null;
+         if (!this.searchAll)
          {
-            search = null;
-         }
-         else
-         {
-            search = groupsSearchCriteria.trim();
-            if (search.length() == 0)
-            {   
+            if (this.groupsSearchCriteria == null)
+            {
                search = null;
             }
             else
             {
-               // Let's make it search on the short name/display name prefix
-               search = search + "*";
+               search = groupsSearchCriteria.trim();
+               if (search.length() == 0)
+               {   
+                  search = null;
+               }
+               else
+               {
+                  // Let's make it search on the short name/display name prefix
+                  search = search + "*";
+               }
             }
          }
-      }
-      
-      if (!all && search == null)
-      {
-         // Do not allow empty searches
-         this.groups = Collections.<Map<String,String>> emptyList();
-      }
-      else
-      {
-         List<String> authorities;
          
-         if (search != null && search.startsWith("*"))
+         if (!this.searchAll && search == null)
          {
-            // if the search term starts with a wildcard use Lucene based search to find groups (results will be inconsistent)
-            boolean immediate = (this.filterMode.equals(FILTER_CHILDREN));
-            Set<String> results = this.authService.findAuthorities(AuthorityType.GROUP, this.group, immediate, search, AuthorityService.ZONE_APP_DEFAULT);
-            authorities = new ArrayList<String>(results);
+            // Do not allow empty searches
+            this.groups = Collections.<Map<String,String>> emptyList();
+            return;
          }
          else
          {
-            // all other searches use the canned query so search results are consistent
-            PagingResults<String> pagedResults = this.authService.getAuthorities(AuthorityType.GROUP, 
-                        AuthorityService.ZONE_APP_DEFAULT, search, true, true, new PagingRequest(10000));
-            authorities = pagedResults.getPage();
-         }
-         
-         groups = new ArrayList<Map<String,String>>(authorities.size());
-         for (String authority : authorities)
-         {
-            Map<String, String> authMap = new HashMap<String, String>(11);
-
-            String name = this.authService.getAuthorityDisplayName(authority);
-            if (name == null)
+            if (search != null && search.startsWith("*"))
             {
-               name = this.authService.getShortName(name);
+               // if the search term starts with a wildcard use Lucene based search to find groups (results will be inconsistent)
+               boolean immediate = (this.filterMode.equals(FILTER_CHILDREN));
+               Set<String> results = this.authService.findAuthorities(AuthorityType.GROUP, this.group, immediate, search, AuthorityService.ZONE_APP_DEFAULT);
+               authorities = new ArrayList<String>(results);
             }
-            authMap.put("name", name);
-            authMap.put("id", authority);
-            authMap.put("group", authority);
-            authMap.put("groupName", name);
-            
-            groups.add(authMap);
+            else
+            {
+               // all other searches use the canned query so search results are consistent
+               PagingResults<String> pagedResults = this.authService.getAuthorities(AuthorityType.GROUP, 
+                           AuthorityService.ZONE_APP_DEFAULT, search, true, true, new PagingRequest(10000));
+               authorities = pagedResults.getPage();
+            }
          }
+      }
+      else
+      {
+         // child groups of the current group
+         Set<String> results = this.getAuthorityService().getContainedAuthorities(AuthorityType.GROUP, this.group, true);
+         authorities = new ArrayList<String>(results);
+      }
+      
+      this.groups = new ArrayList<Map<String,String>>(authorities.size());
+      for (String authority : authorities)
+      {
+         Map<String, String> authMap = new HashMap<String, String>(8);
+         
+         String name = this.authService.getAuthorityDisplayName(authority);
+         if (name == null)
+         {
+            name = this.authService.getShortName(name);
+         }
+         authMap.put("name", name);
+         authMap.put("id", authority);
+         authMap.put("group", authority);
+         authMap.put("groupName", name);
+         
+         this.groups.add(authMap);
       }
    }
 
@@ -556,6 +559,9 @@ public class GroupsDialog extends BaseDialogBean
       // set the current Group Authority for our UI context operations
       this.group = group;
       this.groupName = groupName;
+      
+      // reset search context
+      this.searchAll = false;
       
       // inform that the UI needs updating after this change 
       contextUpdated();

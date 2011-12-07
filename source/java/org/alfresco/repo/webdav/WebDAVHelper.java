@@ -281,11 +281,16 @@ public class WebDAVHelper
             return fileFolderService.getFileInfo(rootNodeRef);
         }
         
-        // remove the servlet path from the path
-        if (servletPath != null && servletPath.length() > 0 && path.startsWith(servletPath))
+        // Remove the servlet path from the path, assuming it hasn't already been done
+        if (servletPath != null && servletPath.length() > 0)
         {
-            // Strip the servlet path from the relative path
-            path = path.substring(servletPath.length());
+            // Need to ensure we don't strip /alfresco from a site of /alfresco_name/
+            String comparePath = servletPath + "/";
+            if (path.startsWith(comparePath))
+            {
+               // Strip the servlet path from the relative path
+               path = path.substring(servletPath.length());
+            }
         }
         
         // split the paths up

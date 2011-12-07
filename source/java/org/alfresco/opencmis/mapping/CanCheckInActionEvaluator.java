@@ -34,14 +34,13 @@ public class CanCheckInActionEvaluator extends AbstractActionEvaluator
 
     /**
      * Construct
-     * 
-     * @param serviceRegistry
-     * @param permission
      */
     protected CanCheckInActionEvaluator(ServiceRegistry serviceRegistry)
     {
         super(serviceRegistry, Action.CAN_CHECK_IN);
-        permissionEvaluator = new PermissionActionEvaluator(serviceRegistry, Action.CAN_CHECK_IN,
+        permissionEvaluator = new PermissionActionEvaluator(
+                serviceRegistry,
+                Action.CAN_CHECK_IN,
                 PermissionService.CHECK_IN);
     }
 

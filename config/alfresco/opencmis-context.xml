@@ -60,12 +60,12 @@
     <bean id="CMISService_Control" class="org.alfresco.opencmis.AlfrescoCmisServiceInterceptor" />
 
     <bean id="CMISConnector" class="org.alfresco.opencmis.CMISConnector">
-        <property name="store"                  value="${spaces.store}" />
-        <property name="rootPath"               value="/${spaces.company_home.childname}" />
-        <property name="typesDefaultMaxItems"   value="500" />
-        <property name="typesDefaultDepth"      value="-1" />
-        <property name="objectsDefaultMaxItems" value="10000" />
-        <property name="objectsDefaultDepth"    value="100" />
+        <property name="store"                  value="${opencmis.connector.default.store}" />
+        <property name="rootPath"               value="${opencmis.connector.default.rootPath}" />
+        <property name="typesDefaultMaxItems"   value="${opencmis.connector.default.typesDefaultMaxItems}" />
+        <property name="typesDefaultDepth"      value="${opencmis.connector.default.typesDefaultDepth}" />
+        <property name="objectsDefaultMaxItems" value="${opencmis.connector.default.objectsDefaultMaxItems}" />
+        <property name="objectsDefaultDepth"    value="${opencmis.connector.default.objectsDefaultDepth}" />
         <property name="renditionKindMapping">
             <map>
                 <entry key="cmis:thumbnail">
@@ -82,8 +82,7 @@
             </map>
         </property>
         
-        <!-- Uncomment the following line to support sticky sessions. Make sure the CMIS client supports cookies. -->
-        <!-- <property name="openHttpSession"        value="true" />  -->
+        <property name="openHttpSession"        value="${opencmis.connector.default.openHttpSession}" />
     
         <property name="OpenCMISDictionaryService" ref="OpenCMISDictionaryService" />
         <property name="OpenCMISQueryService"   ref="OpenCMISQueryService" />     

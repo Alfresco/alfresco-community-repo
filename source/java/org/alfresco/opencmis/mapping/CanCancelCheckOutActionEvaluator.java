@@ -34,14 +34,13 @@ public class CanCancelCheckOutActionEvaluator extends AbstractActionEvaluator
 
     /**
      * Construct
-     * 
-     * @param serviceRegistry
-     * @param permission
      */
     protected CanCancelCheckOutActionEvaluator(ServiceRegistry serviceRegistry)
     {
         super(serviceRegistry, Action.CAN_CANCEL_CHECK_OUT);
-        permissionEvaluator = new PermissionActionEvaluator(serviceRegistry, Action.CAN_CANCEL_CHECK_OUT,
+        permissionEvaluator = new PermissionActionEvaluator(
+                serviceRegistry,
+                Action.CAN_CANCEL_CHECK_OUT,
                 PermissionService.CANCEL_CHECK_OUT);
     }
 

@@ -842,7 +842,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 nodeService.addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, props);
             }
             getCheckOutCheckInService().checkout(nodeRef);
-        } else if ((versioningState == VersioningState.MAJOR) || (versioningState == VersioningState.MINOR))
+        }
+        else if ((versioningState == VersioningState.MAJOR) || (versioningState == VersioningState.MINOR))
         {
             if (!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
             {
@@ -853,7 +854,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             }
 
             Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(5);
-            versionProperties.put(VersionModel.PROP_VERSION_TYPE,
+            versionProperties.put(
+                    VersionModel.PROP_VERSION_TYPE,
                     versioningState == VersioningState.MAJOR ? VersionType.MAJOR : VersionType.MINOR);
             versionProperties.put(VersionModel.PROP_DESCRIPTION, "Initial Version");
 
@@ -948,7 +950,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 // association have no ACL - return an empty list of ACEs
                 result.setAcl(new AccessControlListImpl((List<Ace>) Collections.EMPTY_LIST));
             }
-        } else
+        }
+        else
         {
             // set properties
             result.setProperties(nodeProps);
@@ -1016,7 +1019,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         {
             // render root path
             displayPath.append("/");
-        } else
+        }
+        else
         {
             // render CMIS scoped path
             i++;
@@ -1080,7 +1084,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             {
                 result.setStream(contentReader.getContentInputStream());
                 result.setLength(BigInteger.valueOf(contentReader.getSize()));
-            } else
+            }
+            else
             {
                 long off = (offset == null ? 0 : offset.longValue());
                 long len = (length == null ? contentReader.getSize() : length.longValue()) - off;
@@ -1092,12 +1097,14 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 result.setStream(new RangeInputStream(contentReader.getContentInputStream(), off, len));
                 result.setLength(BigInteger.valueOf(len));
             }
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             if (e instanceof CmisBaseException)
             {
                 throw (CmisBaseException) e;
-            } else
+            }
+            else
             {
                 throw new CmisRuntimeException("Failed to retrieve content: " + e.getMessage(), e);
             }
@@ -1173,7 +1180,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             if (accessor instanceof DirectProperty)
             {
                 value = nodeProps.get(accessor.getMappedProperty());
-            } else
+            }
+            else
             {
                 value = propDef.getPropertyAccessor().getValue(info);
             }
@@ -1301,7 +1309,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                     propertyValues.add(new CmisExtensionElementImpl(CMIS_NAMESPACE, "value", null,
                             convertAspectPropertyValue(o)));
                 }
-            } else
+            }
+            else
             {
                 propertyValues.add(new CmisExtensionElementImpl(CMIS_NAMESPACE, "value", null,
                         convertAspectPropertyValue(value)));
@@ -1326,7 +1335,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             try
             {
                 df = DatatypeFactory.newInstance();
-            } catch (DatatypeConfigurationException e)
+            }
+            catch (DatatypeConfigurationException e)
             {
                 throw new IllegalArgumentException("Aspect conversation exception: " + e.getMessage(), e);
             }
@@ -1348,7 +1358,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             if (value instanceof List)
             {
                 ((PropertyBooleanImpl) result).setValues((List<Boolean>) value);
-            } else
+            }
+            else
             {
                 ((PropertyBooleanImpl) result).setValue((Boolean) value);
             }
@@ -1359,7 +1370,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             {
                 ((PropertyDateTimeImpl) result).setValues((List<GregorianCalendar>) DefaultTypeConverter.INSTANCE
                         .convert(GregorianCalendar.class, (List<?>) value));
-            } else
+            }
+            else
             {
                 ((PropertyDateTimeImpl) result).setValue(DefaultTypeConverter.INSTANCE.convert(GregorianCalendar.class,
                         value));
@@ -1371,7 +1383,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             {
                 ((PropertyDecimalImpl) result).setValues((List<BigDecimal>) DefaultTypeConverter.INSTANCE.convert(
                         BigDecimal.class, (List<?>) value));
-            } else
+            }
+            else
             {
                 ((PropertyDecimalImpl) result).setValue(DefaultTypeConverter.INSTANCE.convert(BigDecimal.class, value));
             }
@@ -1381,7 +1394,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             if (value instanceof List)
             {
                 ((PropertyHtmlImpl) result).setValues((List<String>) value);
-            } else
+            }
+            else
             {
                 ((PropertyHtmlImpl) result).setValue((String) value);
             }
@@ -1391,12 +1405,14 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             if (value instanceof List)
             {
                 ((PropertyIdImpl) result).setValues((List<String>) value);
-            } else
+            }
+            else
             {
                 if (value instanceof NodeRef)
                 {
                     ((PropertyIdImpl) result).setValue(value.toString());
-                } else
+                }
+                else
                 {
                     ((PropertyIdImpl) result).setValue((String) value);
                 }
@@ -1408,7 +1424,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             {
                 ((PropertyIntegerImpl) result).setValues((List<BigInteger>) DefaultTypeConverter.INSTANCE.convert(
                         BigInteger.class, (List<?>) value));
-            } else
+            }
+            else
             {
                 ((PropertyIntegerImpl) result).setValue(DefaultTypeConverter.INSTANCE.convert(BigInteger.class, value));
             }
@@ -1418,7 +1435,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             if (value instanceof List)
             {
                 ((PropertyStringImpl) result).setValues((List<String>) value);
-            } else
+            }
+            else
             {
                 ((PropertyStringImpl) result).setValue((String) value);
             }
@@ -1428,7 +1446,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             if (value instanceof List)
             {
                 ((PropertyUriImpl) result).setValues((List<String>) value);
-            } else
+            }
+            else
             {
                 ((PropertyUriImpl) result).setValue((String) value);
             }
@@ -1467,7 +1486,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             if (s.equals("*"))
             {
                 return null;
-            } else if (s.length() > 0)
+            }
+            else if (s.length() > 0)
             {
                 result.add(s);
             }
@@ -1599,7 +1619,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                     result.getObjects().add(
                             createCMISObject(createNodeInfo(assocRef), filter, includeAllowableActions,
                                     IncludeRelationships.NONE, RENDITION_NONE, false, false));
-                } else
+                }
+                else
                 {
                     hasMore = true;
                 }
@@ -1655,7 +1676,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 }
 
                 ace.getPermissions().add(entry.getPermission());
-            } else if (entry.getAccessStatus() == AccessStatus.DENIED)
+            }
+            else if (entry.getAccessStatus() == AccessStatus.DENIED)
             {
                 // remove denied entries
                 Map<Boolean, AccessControlEntryImpl> directAce = aceMap.get(entry.getAuthority());
@@ -1734,10 +1756,12 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 if (PermissionService.READ.equals(perm))
                 {
                     result.add(BasicPermissions.READ);
-                } else if (PermissionService.WRITE.equals(perm))
+                }
+                else if (PermissionService.WRITE.equals(perm))
                 {
                     result.add(BasicPermissions.WRITE);
-                } else if (PermissionService.ALL_PERMISSIONS.equals(perm))
+                }
+                else if (PermissionService.ALL_PERMISSIONS.equals(perm))
                 {
                     result.add(BasicPermissions.READ);
                     result.add(BasicPermissions.WRITE);
@@ -1749,10 +1773,12 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             if (PermissionService.READ.equals(permission))
             {
                 result.add(BasicPermissions.READ);
-            } else if (PermissionService.WRITE.equals(permission))
+            }
+            else if (PermissionService.WRITE.equals(permission))
             {
                 result.add(BasicPermissions.WRITE);
-            } else if (PermissionService.ALL_PERMISSIONS.equals(permission))
+            }
+            else if (PermissionService.ALL_PERMISSIONS.equals(permission))
             {
                 result.add(BasicPermissions.READ);
                 result.add(BasicPermissions.WRITE);
@@ -1765,7 +1791,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 if (permission.startsWith("{"))
                 {
                     result.add(permission);
-                } else
+                }
+                else
                 {
                     result.add(permissionReference.toString());
                 }
@@ -1782,18 +1809,21 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             if (left.getPosition() != right.getPosition())
             {
                 return right.getPosition() - left.getPosition();
-            } else
+            }
+            else
             {
                 if (left.getAccessStatus() != right.getAccessStatus())
                 {
                     return (left.getAccessStatus() == AccessStatus.DENIED) ? -1 : 1;
-                } else
+                }
+                else
                 {
                     int compare = left.getAuthority().compareTo(right.getAuthority());
                     if (compare != 0)
                     {
                         return compare;
-                    } else
+                    }
+                    else
                     {
                         return (left.getPermission().compareTo(right.getPermission()));
                     }
@@ -1923,22 +1953,27 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             if (BasicPermissions.READ.equals(permission))
             {
                 result.add(PermissionService.READ);
-            } else if (BasicPermissions.WRITE.equals(permission))
+            }
+            else if (BasicPermissions.WRITE.equals(permission))
             {
                 result.add(PermissionService.WRITE);
-            } else if (BasicPermissions.ALL.equals(permission))
+            }
+            else if (BasicPermissions.ALL.equals(permission))
             {
                 result.add(PermissionService.ALL_PERMISSIONS);
-            } else if (!permission.startsWith("{"))
+            }
+            else if (!permission.startsWith("{"))
             {
                 result.add(permission);
-            } else
+            }
+            else
             {
                 int sepIndex = permission.lastIndexOf('.');
                 if (sepIndex == -1)
                 {
                     result.add(permission);
-                } else
+                }
+                else
                 {
                     result.add(permission.substring(sepIndex + 1));
                 }
@@ -2111,10 +2146,12 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             if (ASPECTS_TO_ADD.equals(extension.getName()) && (extension.getValue() != null))
             {
                 aspectsToAdd.add(extension.getValue());
-            } else if (ASPECTS_TO_REMOVE.equals(extension.getName()) && (extension.getValue() != null))
+            }
+            else if (ASPECTS_TO_REMOVE.equals(extension.getName()) && (extension.getValue() != null))
             {
                 aspectsToRemove.add(extension.getValue());
-            } else if (PROPERTIES.equals(extension.getName()) && (extension.getChildren() != null))
+            }
+            else if (PROPERTIES.equals(extension.getName()) && (extension.getChildren() != null))
             {
                 for (CmisExtensionElement property : extension.getChildren())
                 {
@@ -2135,20 +2172,24 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                     if (property.getName().equals("propertyBoolean"))
                     {
                         propertyType = PropertyType.BOOLEAN;
-                    } else if (property.getName().equals("propertyInteger"))
+                    }
+                    else if (property.getName().equals("propertyInteger"))
                     {
                         propertyType = PropertyType.INTEGER;
-                    } else if (property.getName().equals("propertyDateTime"))
+                    }
+                    else if (property.getName().equals("propertyDateTime"))
                     {
                         propertyType = PropertyType.DATETIME;
                         try
                         {
                             df = DatatypeFactory.newInstance();
-                        } catch (DatatypeConfigurationException e)
+                        }
+                        catch (DatatypeConfigurationException e)
                         {
                             throw new CmisRuntimeException("Aspect conversation exception: " + e.getMessage(), e);
                         }
-                    } else if (property.getName().equals("propertyDecimal"))
+                    }
+                    else if (property.getName().equals("propertyDecimal"))
                     {
                         propertyType = PropertyType.DECIMAL;
                     }
@@ -2182,7 +2223,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                                     }
                                 }
                             }
-                        } catch (Exception e)
+                        }
+                        catch (Exception e)
                         {
                             throw new CmisInvalidArgumentException("Invalid property aspect value: " + propertyId, e);
                         }
@@ -2209,10 +2251,12 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 nodeService.addAspect(nodeRef, getType(aspect).getAlfrescoName(),
                         Collections.<QName, Serializable> emptyMap());
             }
-        } catch (InvalidAspectException e)
+        }
+        catch (InvalidAspectException e)
         {
             throw new CmisInvalidArgumentException("Invalid aspect: " + aspectType);
-        } catch (InvalidNodeRefException e)
+        }
+        catch (InvalidNodeRefException e)
         {
             throw new CmisInvalidArgumentException("Invalid node: " + nodeRef);
         }
@@ -2223,7 +2267,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             if (property.getValue().isEmpty())
             {
                 nodeService.removeProperty(nodeRef, property.getKey());
-            } else
+            }
+            else
             {
                 nodeService.setProperty(nodeRef, property.getKey(), property.getValue().size() == 1 ? property
                         .getValue().get(0) : (Serializable) property.getValue());
@@ -2273,19 +2318,23 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             try
             {
                 fileFolderService.rename(nodeRef, value.toString());
-            } catch (FileExistsException e)
+            }
+            catch (FileExistsException e)
             {
                 throw new CmisContentAlreadyExistsException("An object with this name already exists!", e);
-            } catch (FileNotFoundException e)
+            }
+            catch (FileNotFoundException e)
             {
                 throw new CmisInvalidArgumentException("Object with id " + nodeRef.toString() + " not found!");
             }
-        } else
+        }
+        else
         {
             if (value == null)
             {
                 nodeService.removeProperty(nodeRef, propertyQName);
-            } else
+            }
+            else
             {
                 nodeService.setProperty(nodeRef, propertyQName, value);
             }
@@ -2331,7 +2380,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             try
             {
                 from = Long.parseLong(changeLogToken.getValue());
-            } catch (NumberFormatException e)
+            }
+            catch (NumberFormatException e)
             {
                 throw new CmisInvalidArgumentException("Invalid change log token: " + changeLogToken);
             }
@@ -2354,7 +2404,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             {
                 newChangeLogToken = result.getObjects().remove(result.getObjects().size() - 1).getId();
                 result.setHasMoreItems(true);
-            } else
+            }
+            else
             {
                 result.setHasMoreItems(false);
             }
@@ -2527,7 +2578,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             if (fallback == null)
             {
                 throw new CmisInvalidArgumentException("Property " + PropertyIds.NAME + " must be set!");
-            } else
+            }
+            else
             {
                 name = fallback;
             }

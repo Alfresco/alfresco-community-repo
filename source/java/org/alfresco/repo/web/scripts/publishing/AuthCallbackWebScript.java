@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.publishing.channels.ChannelService;
 import org.alfresco.service.cmr.publishing.channels.ChannelType;
+import org.alfresco.service.cmr.publishing.channels.ChannelType.AuthUrlPair;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -90,13 +91,14 @@ public class AuthCallbackWebScript extends DeclarativeWebScript
         
         if (ChannelType.AuthStatus.RETRY.equals(authStatus))
         {
-            String authoriseUrl = channel.getChannelType().getAuthorisationUrls(channel, channelAuthHelper.getAuthoriseCallbackUrl(channelNodeRef));
-            if (authoriseUrl == null)
+            AuthUrlPair authoriseUrls = channel.getChannelType().getAuthorisationUrls(channel, channelAuthHelper.getAuthoriseCallbackUrl(channelNodeRef));
+            String authRequestUrl = authoriseUrls.authorisationRequestUrl;
+            if (authRequestUrl == null)
             {
-                authoriseUrl = channelAuthHelper.getDefaultAuthoriseUrl(channelNodeRef);
+               authRequestUrl = channelAuthHelper.getDefaultAuthoriseUrl(channelNodeRef);
             }
             status.setCode(HttpServletResponse.SC_MOVED_TEMPORARILY);
-            status.setLocation(authoriseUrl);
+            status.setLocation(authRequestUrl);
         }
         Map<String,Object> model = new TreeMap<String, Object>();
         model.put("authStatus", authStatus.name());

@@ -27,6 +27,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.alfresco.repo.content.caching.ContentCacheImpl;
 import org.alfresco.repo.content.caching.cleanup.CachedContentCleaner;
+import org.alfresco.repo.content.filestore.FileContentReader;
+import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
@@ -53,7 +55,7 @@ import org.springframework.beans.factory.annotation.Required;
  */
 public class StandardQuotaStrategy implements QuotaManagerStrategy, UsageTracker
 {
-    private static final String CACHE_USAGE_FILENAME = "cache-usage.ser";
+    private static final String CACHE_USAGE_FILENAME = "cache-usage.txt";
     private final static Log log = LogFactory.getLog(StandardQuotaStrategy.class);
     private static final long DEFAULT_DISK_USAGE_ESTIMATE = 0L;
     private int panicThresholdPct = 90;
@@ -108,45 +110,37 @@ public class StandardQuotaStrategy implements QuotaManagerStrategy, UsageTracker
     
     private void loadDiskUsage()
     {
-        // Load the last known disk usage value.
-        try
+        File usageFile = new File(cache.getCacheRoot(), CACHE_USAGE_FILENAME);
+        
+        if (!usageFile.exists())
         {
-            FileInputStream fis = new FileInputStream(new File(cache.getCacheRoot(), CACHE_USAGE_FILENAME));
-            ObjectInputStream ois = new ObjectInputStream(fis);
-            currentUsageBytes.set(ois.readLong());
-            ois.close();
-            if (log.isInfoEnabled())
-            {
-                log.info("Using last known disk usage estimate: " + getCurrentUsageBytes());
-            }
-        }
-        catch (Throwable e)
-        {
-            // Assume disk usage
             setCurrentUsageBytes(DEFAULT_DISK_USAGE_ESTIMATE);
             
             if (log.isInfoEnabled())
             {
-                log.info("Unable to load last known disk usage estimate so assuming: " + getCurrentUsageBytes());
+                log.info("No previous usage file found (" + usageFile + ") so assuming: " +
+                            getCurrentUsageBytes() + " bytes.");
             }
-        }        
+        }
+        else
+        {
+            FileContentReader reader = new FileContentReader(usageFile); 
+            String usageStr = reader.getContentString();
+            long usage = Long.parseLong(usageStr);
+            currentUsageBytes.set(usage);
+            if (log.isInfoEnabled())
+            {
+                log.info("Using last known disk usage estimate: " + getCurrentUsageBytes());
+            }
+        }    
     }
 
 
     private void saveDiskUsage()
     {
-        // Persist the last known disk usage value.
-        try
-        {
-            FileOutputStream fos = new FileOutputStream(new File(cache.getCacheRoot(), CACHE_USAGE_FILENAME));
-            ObjectOutputStream out = new ObjectOutputStream(fos);
-            out.writeObject(currentUsageBytes);
-            out.close();
-        }
-        catch (Throwable e)
-        {
-            throw new RuntimeException("Unable to save content cache disk usage statistics.", e);
-        }
+        File usageFile = new File(cache.getCacheRoot(), CACHE_USAGE_FILENAME);
+        FileContentWriter writer = new FileContentWriter(usageFile);
+        writer.putContent(currentUsageBytes.toString());
     }
     
     

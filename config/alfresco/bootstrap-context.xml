@@ -151,6 +151,7 @@
              <ref bean="patch.db-V4.0-NodeAssoc-Ordering" />
              <ref bean="patch.db-V4.0-Node-Locale" />
              <ref bean="patch.db-V4.0-SubscriptionTables" />
+             <ref bean="patch.db-V4.0-SolrTracking" />
           </list>
        </property>
     </bean>

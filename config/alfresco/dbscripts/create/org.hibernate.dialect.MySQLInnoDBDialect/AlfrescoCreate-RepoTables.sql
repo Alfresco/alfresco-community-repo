@@ -215,6 +215,7 @@ CREATE TABLE alf_node
     PRIMARY KEY (id),
     UNIQUE KEY store_id (store_id, uuid),
     KEY idx_alf_node_del (node_deleted),
+    KEY idx_alf_node_txn_del (transaction_id, node_deleted),
     KEY fk_alf_node_acl (acl_id),
     KEY fk_alf_node_txn (transaction_id),
     KEY fk_alf_node_store (store_id),

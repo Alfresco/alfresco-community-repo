@@ -2979,4 +2979,15 @@
         <property name="repository" ref="repositoryHelper"/>
     </bean>
     
+    <bean id="patch.db-V4.0-SolrTracking" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id" value="patch.db-V4.0-SolrTracking" />
+        <property name="description" value="patch.schemaUpgradeScript.description" />
+        <property name="fixesFromSchema" value="0" />
+        <property name="fixesToSchema" value="5022" />
+        <property name="targetSchema" value="5023" />
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/4.0/${db.script.dialect}/Solr-Tracking.sql</value>
+        </property>
+    </bean>
+    
 </beans>

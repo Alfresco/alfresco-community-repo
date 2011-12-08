@@ -1348,6 +1348,12 @@
             <columnname>node_deleted</columnname>
           </columnnames>
         </index>
+        <index name="idx_alf_node_txn_del" unique="false">
+          <columnnames>
+            <columnname>transaction_id</columnname>
+            <columnname>node_deleted</columnname>
+          </columnnames>
+        </index>
         <index name="fk_alf_node_acl" unique="false">
           <columnnames>
             <columnname>acl_id</columnname>

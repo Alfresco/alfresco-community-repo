@@ -1410,6 +1410,12 @@
             <columnname>node_deleted</columnname>
           </columnnames>
         </index>
+        <index name="idx_alf_node_txn_del" unique="false">
+          <columnnames>
+            <columnname>transaction_id</columnname>
+            <columnname>node_deleted</columnname>
+          </columnnames>
+        </index>
       </indexes>
     </table>
     <table name="alf_node_aspects">
@@ -2260,6 +2266,7 @@
         <index name="idx_alf_txn_ctms" unique="false">
           <columnnames>
             <columnname>commit_time_ms</columnname>
+            <columnname>id</columnname>
           </columnnames>
         </index>
       </indexes>

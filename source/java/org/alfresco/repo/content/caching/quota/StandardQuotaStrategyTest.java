@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.alfresco.repo.content.ContentContext;
@@ -48,7 +47,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mozilla.javascript.ObjToIntMap.Iterator;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -191,4 +189,82 @@ public class StandardQuotaStrategyTest
     {
         return FileUtils.listFiles(cacheRoot, new SuffixFileFilter(".bin"), TrueFileFilter.INSTANCE);
     }
+        
+    
+    /**
+     * Not a unit test, but useful to fire up a lot of writers that will push the
+     * CachingContentStore's StandardQuotaStrategy beyond the panic threshold. The
+     * behaviour can then be monitored with, for example, a profiler.
+     * 
+     * @throws Exception
+     */
+    private void concurrencySmokeTest() throws Exception
+    {
+        StandardQuotaStrategyTest.beforeClass();
+        setUp();
+        // Need to set maxDeleteWatch count to > 0
+        // (0 is useful in unit tests, but for real usage must not be used)
+        cleaner.setMaxDeleteWatchCount(1);
+        
+        final int numThreads = 100;
+        Thread[] writers = new Thread[numThreads];
+        for (int i = 0; i < numThreads; i++)
+        {
+            final String threadName = "WriterThread[" + i + "]";
+            Runnable runnable = new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    while (true)
+                    {
+                        writeFile();
+                        pause();
+                    }
+                }
+                
+                private void writeFile()
+                {
+                    try
+                    {
+                        writeSingleFileInMB(1); 
+                    }
+                    catch (IOException error)
+                    {
+                        throw new RuntimeException(threadName + " couldn't write file.", error);
+                    }
+                }
+                
+                private void pause()
+                {
+                    long pauseTimeMillis = Math.round(Math.random() * 2000);
+                    try
+                    {
+                        Thread.sleep(pauseTimeMillis);
+                    }
+                    catch (InterruptedException error)
+                    {
+                        // Swallow the exception and carry on.
+                        System.out.println(threadName + " InterruptedException.");
+                    }
+                }
+            };
+            Thread writerThread = new Thread(runnable);
+            writerThread.setName(threadName);
+            writers[i] = writerThread;
+            
+            writerThread.start();
+        }
+                
+//        StandardQuotaStrategyTest.afterClass();
+    }
+    
+    
+    
+    public static void main(String[] args) throws Exception
+    {
+        StandardQuotaStrategyTest test = new StandardQuotaStrategyTest();
+        test.concurrencySmokeTest();
+    }
+
 }

@@ -20,7 +20,6 @@ package org.alfresco.repo.content.caching.cleanup;
 
 import java.io.File;
 import java.util.Date;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.alfresco.repo.content.caching.CacheFileProps;
 import org.alfresco.repo.content.caching.ContentCacheImpl;
@@ -46,7 +45,6 @@ public class CachedContentCleaner extends Thread implements FileHandler, Applica
     private ContentCacheImpl cache;   // impl specific functionality required
     private long minFileAgeMillis = 0;
     private Integer maxDeleteWatchCount = 1;
-    private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     private boolean running;
     private UsageTracker usageTracker;
     private long newDiskUsage;
@@ -58,7 +56,6 @@ public class CachedContentCleaner extends Thread implements FileHandler, Applica
     private Date timeFinished;
     private ApplicationEventPublisher eventPublisher;
     private long targetReductionBytes;
-    private boolean cleanRequested;
     private String reasonMessage;
    
     
@@ -99,9 +96,9 @@ public class CachedContentCleaner extends Thread implements FileHandler, Applica
         execute(reason);
     }
     
-    private synchronized void doClean()
-    {
-        while (running || (!cleanRequested))
+    private void doClean()
+    {   
+        synchronized(this)
         {
             try
             {
@@ -112,7 +109,6 @@ public class CachedContentCleaner extends Thread implements FileHandler, Applica
                 // Nothing to do.
             }
         }
-        
         running = true;
         if (log.isInfoEnabled())
         {
@@ -138,18 +134,19 @@ public class CachedContentCleaner extends Thread implements FileHandler, Applica
                         ", target: " + targetReductionBytes + " bytes");
         }
         
-        cleanRequested = false;
         this.targetReductionBytes = 0;
         running = false;
         
-        notifyAll();
+        synchronized(this)
+        {
+            notifyAll();
+        }
     }
     
     
     public synchronized void execute(String reasonMessage)
     {
         this.reasonMessage = reasonMessage;
-        cleanRequested = true;
         notifyAll();
     }
     
@@ -386,15 +383,7 @@ public class CachedContentCleaner extends Thread implements FileHandler, Applica
 
     public boolean isRunning()
     {
-        lock.readLock().lock();
-        try
-        {
-            return running;
-        }
-        finally
-        {
-            lock.readLock().unlock();
-        }
+        return running;
     }
     
     public long getNumFilesSeen()

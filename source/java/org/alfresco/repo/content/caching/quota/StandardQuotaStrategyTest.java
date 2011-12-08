@@ -35,6 +35,7 @@ import java.util.List;
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.caching.CachingContentStore;
 import org.alfresco.repo.content.caching.ContentCacheImpl;
+import org.alfresco.repo.content.caching.cleanup.CachedContentCleaner;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
@@ -62,7 +63,7 @@ public class StandardQuotaStrategyTest
     private ContentCacheImpl cache;
     private File cacheRoot;
     private StandardQuotaStrategy quota;
-    
+    private CachedContentCleaner cleaner;
     
     @BeforeClass
     public static void beforeClass()
@@ -93,7 +94,7 @@ public class StandardQuotaStrategyTest
         cacheRoot = cache.getCacheRoot();
         quota = (StandardQuotaStrategy) ctx.getBean("quotaManager");
         quota.setCurrentUsageBytes(0);
-        
+        cleaner = (CachedContentCleaner) ctx.getBean("cachedContentCleaner");
         // Empty the in-memory cache
         cache.removeAll();
         
@@ -102,7 +103,7 @@ public class StandardQuotaStrategyTest
     
     
     @Test
-    public void cleanerWillTriggerAtCorrectThreshold() throws IOException
+    public void cleanerWillTriggerAtCorrectThreshold() throws IOException, InterruptedException
     {
         // Write 15 x 1MB files. This will not trigger any quota related actions.
         // Quota is 20MB. The quota manager will...
@@ -118,6 +119,12 @@ public class StandardQuotaStrategyTest
         // Writing one more file should trigger a clean.
         writeSingleFileInMB(1);
         
+        Thread.sleep(200);
+        while (cleaner.isRunning())
+        {
+            Thread.sleep(50);
+        }
+
         // As the cache is set to contain a max of 12 items in-memory (see cachingContentStoreCache
         // definition in test-std-quota-context.xml) and 2 cache items are required per cached content URL
         // then after the cleaner has processed the tree there will 6 items left on disk (12/2). 

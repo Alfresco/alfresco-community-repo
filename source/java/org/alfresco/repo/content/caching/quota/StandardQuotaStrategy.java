@@ -242,7 +242,8 @@ public class StandardQuotaStrategy implements QuotaManagerStrategy, UsageTracker
             }
         };
         Thread cleanerThread = new Thread(cleanerRunner, getClass().getSimpleName() + " cleaner");
-        cleanerThread.run();
+        cleanerThread.setDaemon(true);
+        cleanerThread.start();
     }
     
     /**

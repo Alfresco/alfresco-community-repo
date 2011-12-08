@@ -41,7 +41,7 @@ public class ConcurrentCachingStoreTest
 {
     private static final Log log = LogFactory.getLog(ConcurrentCachingStoreTest.class);
     // NUM_THREADS must be at least 2 x NUM_URLS to ensure each URLs is accessed by more than one thread.
-    private static final int NUM_THREADS = 2000;
+    private static final int NUM_THREADS = 200;
     private static final int NUM_URLS = 40;
     private ApplicationContext ctx;
     private CachingContentStore store;

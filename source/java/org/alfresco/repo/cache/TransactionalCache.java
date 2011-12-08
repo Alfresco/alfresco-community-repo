@@ -72,7 +72,7 @@ import org.springframework.beans.factory.InitializingBean;
 public class TransactionalCache<K extends Serializable, V extends Object>
         implements SimpleCache<K, V>, TransactionListener, InitializingBean
 {
-    private static final String RESOURCE_KEY_TXN_DATA = "TransactionalCache.TxnData"; 
+    private static final String RESOURCE_KEY_TXN_DATA = "TransactionalCache.TxnData";
     
     private Log logger;
     private boolean isDebugEnabled;
@@ -85,6 +85,8 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     private SimpleCache<Serializable, Object> sharedCache;
     /** can the cached values be modified */
     private boolean isMutable;
+    /** can values be compared using full equality checking */
+    private boolean allowEqualsChecks;
     /** the maximum number of elements to be contained in the cache */
     private int maxCacheSize = 500;
     /** a unique string identifying this instance when binding resources */
@@ -99,6 +101,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         isDebugEnabled = logger.isDebugEnabled();
         disableSharedCache = false;
         isMutable = true;
+        allowEqualsChecks = false;
     }
     
     /**
@@ -164,6 +167,21 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     }
 
     /**
+     * Allow equality checking of values before they are written to the shared cache on
+     * commit.  This allows some caches to bypass unnecessary cache updates when the
+     * values remain unchanged.  Typically, this setting should be applied only to mutable
+     * caches and only where the values being stored have a fast and reliable equality check.
+     * 
+     * @param allowEqualsChecks     <tt>true</tt> if value comparisons can be made between values
+     *                              stored in the transactional cache and those stored in the
+     *                              shared cache
+     */
+    public void setAllowEqualsChecks(boolean allowEqualsChecks)
+    {
+        this.allowEqualsChecks = allowEqualsChecks;
+    }
+
+    /**
      * Set the maximum number of elements to store in the update and remove caches.
      * The maximum number of elements stored in the transaction will be twice the
      * value given.
@@ -171,7 +189,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
      * The removed list will overflow to disk in order to ensure that deletions are
      * not lost.
      * 
-     * @param maxCacheSize
+     * @param maxCacheSize          maximum number of items to be held in-transaction
      */
     public void setMaxCacheSize(int maxCacheSize)
     {
@@ -179,9 +197,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     }
 
     /**
-     * Set the name that identifies this cache from other instances.  This is optional.
-     * 
-     * @param name
+     * Set the name that identifies this cache from other instances.
      */
     public void setName(String name)
     {
@@ -205,7 +221,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         // Assign a 'null' cache if write-through is disabled
         if (disableSharedCache)
         {
-            sharedCache = new NullCache<Serializable, Object>();
+            sharedCache = NullCache.getInstance();
         }
     }
 
@@ -230,6 +246,23 @@ public class TransactionalCache<K extends Serializable, V extends Object>
             AlfrescoTransactionSupport.bindResource(resourceKeyTxnData, data);
         }
         return data;
+    }
+    
+    /**
+     * Transaction-long setting to force all the share cache to be bypassed for the current transaction.
+     * <p/>
+     * This setting is like having a {@link NullCache null} {@link #setSharedCache(SimpleCache) shared cache},
+     * but only lasts for the transaction.
+     * <p/>
+     * Use this when a read transaction <b>must</b> see consistent and current data i.e. go to the database.
+     * While this is active, write operations will also not be committed to the shared cache.
+     * 
+     * @param noSharedCacheRead         <tt>true</tt> to avoid reading from the shared cache for the transaction
+     */
+    public void setDisableSharedCacheReadForTransaction(boolean noSharedCacheRead)
+    {
+        TransactionData txnData = getTransactionData();
+        txnData.noSharedCacheRead = noSharedCacheRead;
     }
     
     /**
@@ -347,6 +380,11 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                     // Can't store values in the current txn any more
                     ignoreSharedCache = true;
                 }
+                else if (txnData.noSharedCacheRead)
+                {
+                    // Explicitly told to ignore shared cache
+                    ignoreSharedCache = true;
+                }
                 else
                 {
                     // There is no in-txn entry for the key
@@ -356,8 +394,6 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                     txnData.updatedItemsCache.put(key, bucket);
                     return value;
                 }
-                // check if the cleared flag has been set - cleared flag means ignore shared as unreliable
-                ignoreSharedCache = txnData.isClearOn;
             }
         }
         // no value found - must we ignore the shared cache?
@@ -440,7 +476,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                         txnData.haveIssuedFullWarning = true;
                     }
                 }
-                Object existingValueObj = sharedCache.get(key);
+                Object existingValueObj = txnData.noSharedCacheRead ? null : sharedCache.get(key);
                 CacheBucket<V> bucket = null;
                 if (existingValueObj == null)
                 {
@@ -650,7 +686,9 @@ public class TransactionalCache<K extends Serializable, V extends Object>
             {
                 K key = entry.getKey();
                 CacheBucket<V> bucket = entry.getValue();
-                bucket.doPreCommit(sharedCache, key, this.isMutable, txnData.isReadOnly);
+                bucket.doPreCommit(
+                        sharedCache,
+                        key, this.isMutable, this.allowEqualsChecks, txnData.isReadOnly);
             }
             if (isDebugEnabled)
             {
@@ -709,7 +747,9 @@ public class TransactionalCache<K extends Serializable, V extends Object>
             {
                 K key = entry.getKey();
                 CacheBucket<V> bucket = entry.getValue();
-                bucket.doPostCommit(sharedCache, key, this.isMutable, txnData.isReadOnly);
+                bucket.doPostCommit(
+                        sharedCache,
+                        key, this.isMutable, this.allowEqualsChecks, txnData.isReadOnly);
             }
             if (isDebugEnabled)
             {
@@ -800,7 +840,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         public void doPreCommit(
                 SimpleCache<Serializable, Object> sharedCache,
                 Serializable key,
-                boolean mutable, boolean readOnly);
+                boolean mutable, boolean allowEqualsCheck, boolean readOnly);
         /**
          * Flush the current bucket to the shared cache as far as possible.
          * 
@@ -810,7 +850,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         public void doPostCommit(
                 SimpleCache<Serializable, Object> sharedCache,
                 Serializable key,
-                boolean mutable, boolean readOnly);
+                boolean mutable, boolean allowEqualsCheck, boolean readOnly);
     }
     
     /**
@@ -834,41 +874,42 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         public void doPreCommit(
                 SimpleCache<Serializable, Object> sharedCache,
                 Serializable key,
-                boolean mutable, boolean readOnly)
+                boolean mutable, boolean allowEqualsCheck, boolean readOnly)
         {
         }
         public void doPostCommit(
                 SimpleCache<Serializable, Object> sharedCache,
                 Serializable key,
-                boolean mutable, boolean readOnly)
+                boolean mutable, boolean allowEqualsCheck, boolean readOnly)
         {
             Object sharedObj = sharedCache.get(key);
-            if (!mutable)
+            if (sharedObj == null)
             {
-                // The value can't change so we can write through on the assumption
-                // that the value is always correct
+                // Nothing has changed, write it through
                 sharedCache.put(key, value);
             }
-            else if (readOnly)
+            else if (!mutable)
             {
-                // Only add if nothing else has been added in the interim
-                if (sharedObj == null)
-                {
-                    sharedCache.put(key, value);
-                }
+                // Someone else put the object there
+                // The assumption is that the value will be correct because the values are immutable
+                // Don't write it unnecessarily.
+            }
+            else if (sharedObj == value)
+            {
+                // Someone else put exactly the same value into the cache
+                // Don't write it unnecessarily.
+            }
+            else if (allowEqualsCheck && EqualsHelper.nullSafeEquals(value, sharedObj))
+            {
+                // Someone else added a value but we have validated that it is the same
+                // as the new one that we where going to add.
+                // Don't write it unnecessarily.
             }
             else
             {
-                // Mutable, read-write
-                if (sharedObj == null)
-                {
-                    sharedCache.put(key, value);                    
-                }
-                else
-                {
-                    // Remove new value in the cache
-                    sharedCache.remove(key);
-                }
+                // The shared value moved on in a way that was not possible to
+                // validate.  We pessimistically remove the entry.
+                sharedCache.remove(key);
             }
         }
     }
@@ -896,42 +937,51 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         public void doPreCommit(
                 SimpleCache<Serializable, Object> sharedCache,
                 Serializable key,
-                boolean mutable, boolean readOnly)
+                boolean mutable, boolean allowEqualsCheck, boolean readOnly)
         {
         }
         public void doPostCommit(
                 SimpleCache<Serializable, Object> sharedCache,
                 Serializable key,
-                boolean mutable, boolean readOnly)
+                boolean mutable, boolean allowEqualsCheck, boolean readOnly)
         {
             Object sharedObj = sharedCache.get(key);
-            if (!mutable)
+            if (sharedObj == null)
             {
-                // Not normally required as mutable objects don't change,
-                // but we can write it straight through as it should represent
-                // unchanging values
-                sharedCache.put(key, value);
-            }
-            else if (readOnly)
-            {
-                // Only add if value has not changed in the interim
-                if (sharedObj == originalValue)
+                // Someone removed the value
+                if (!mutable)
                 {
-                    sharedCache.put(key, value);
-                }
-            }
-            else
-            {
-                // Mutable, read-write
-                if (sharedObj == originalValue)
-                {
+                    // We can assume that our value is correct because it's immutable
                     sharedCache.put(key, value);
                 }
                 else
                 {
-                    // The value changed
-                    sharedCache.remove(key);
+                    // The value is mutable, so we must behave pessimistically
                 }
+            }
+            else if (!mutable)
+            {
+                // Someone else has already updated the value.
+                // This is not normally seen for immutable values.  The assumption is that the values
+                // are equal.
+                // Don't write it unnecessarily.
+            }
+            else if (sharedObj == originalValue)
+            {
+                // Nothing has changed, write it through
+                sharedCache.put(key, value);
+            }
+            else if (allowEqualsCheck && EqualsHelper.nullSafeEquals(value, sharedObj))
+            {
+                // Someone else updated the value but we have validated that it is the same
+                // as the one that we where going to update.
+                // Don't write it unnecessarily.
+            }
+            else
+            {
+                // The shared value moved on in a way that was not possible to
+                // validate.  We pessimistically remove the entry.
+                sharedCache.remove(key);
             }
         }
     }
@@ -956,13 +1006,13 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         public void doPreCommit(
                 SimpleCache<Serializable, Object> sharedCache,
                 Serializable key,
-                boolean mutable, boolean readOnly)
+                boolean mutable, boolean allowEqualsCheck, boolean readOnly)
         {
         }
         public void doPostCommit(
                 SimpleCache<Serializable, Object> sharedCache,
                 Serializable key,
-                boolean mutable, boolean readOnly)
+                boolean mutable, boolean allowEqualsCheck, boolean readOnly)
         {
         }
     }
@@ -976,6 +1026,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         private boolean isClearOn;
         private boolean isClosed;
         private boolean isReadOnly;
+        private boolean noSharedCacheRead;
     }
     
     /**

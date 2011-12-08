@@ -65,11 +65,12 @@ public class NodeDAOTest extends TestCase
     
     public void testTransaction() throws Throwable
     {
+        final boolean[] newTxn = new boolean[] {false};
         RetryingTransactionCallback<Long> getTxnIdCallback = new RetryingTransactionCallback<Long>()
         {
             public Long execute() throws Throwable
             {
-                return nodeDAO.getCurrentTransactionId();
+                return nodeDAO.getCurrentTransactionId(newTxn[0]);
             }
         };
         // No txn
@@ -87,6 +88,10 @@ public class NodeDAOTest extends TestCase
         // First success
         Long txnId1 = txnHelper.doInTransaction(getTxnIdCallback);
         assertNull("No Txn ID should be present in untouched txn", txnId1);
+        // Second success
+        newTxn[0] = true;
+        Long txnId2 = txnHelper.doInTransaction(getTxnIdCallback);
+        assertNotNull("Txn ID should be present by forcing it", txnId2);
     }
     
     public void testGetNodesWithAspects() throws Throwable

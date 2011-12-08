@@ -68,12 +68,13 @@ public interface NodeDAO extends NodeBulkLoader
      */
     
     /**
-     * 
+     * @param forceNew          <tt>true</tt> to ensure that a new transaction entry is created
+     *                          if the current transaction does not have one.
      * @return                  Returns the ID of the current transaction entry or <tt>null</tt> if
      *                          there have not been any modifications to nodes registered in the
-     *                          transaction
+     *                          transaction and <tt>forceNew</tt> is <tt>false</tt>
      */
-    public Long getCurrentTransactionId();
+    public Long getCurrentTransactionId(boolean ensureNew);
     
     /*
      * Store

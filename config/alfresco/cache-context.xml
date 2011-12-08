@@ -45,8 +45,8 @@
          <value>org.alfresco.cache.propertyValueTransactionalCache</value>
       </property>
       <property name="maxCacheSize" value="1000" />
-      <property name="mutable" value="false" />
-      <property name="disableSharedCache" value="${system.cache.disableImmutableSharedCaches}" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
    
    <!-- ===================================== -->
@@ -77,8 +77,9 @@
       <property name="name">
          <value>org.alfresco.cache.contentDataTransactionalCache</value>
       </property>
-      <property name="maxCacheSize" value="1000" />
+      <property name="maxCacheSize" value="5000" />
       <property name="mutable" value="true" />
+      <property name="allowEqualsChecks" value="true" />
       <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
    
@@ -111,8 +112,8 @@
          <value>org.alfresco.cache.immutableEntityTransactionalCache</value>
       </property>
       <property name="maxCacheSize" value="10000" />
-      <property name="mutable" value="false" />
-      <property name="disableSharedCache" value="${system.cache.disableImmutableSharedCaches}" />
+      <property name="mutable" value="true" /><!-- Null value markers are allowed -->
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
    
    <!-- ===================================== -->
@@ -144,8 +145,8 @@
          <value>org.alfresco.cache.node.rootNodesTransactionalCache</value>
       </property>
       <property name="maxCacheSize" value="50" />
-      <property name="mutable" value="false" />
-      <property name="disableSharedCache" value="${system.cache.disableImmutableSharedCaches}" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
    
    <!-- The cross-transaction shared cache for Root Nodes -->
@@ -173,8 +174,8 @@
          <value>org.alfresco.cache.node.allRootNodesTransactionalCache</value>
       </property>
       <property name="maxCacheSize" value="500" />
-      <property name="mutable" value="false" />
-      <property name="disableSharedCache" value="${system.cache.disableImmutableSharedCaches}" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
 
    <!-- ===================================== -->
@@ -207,6 +208,7 @@
       </property>
       <property name="maxCacheSize" value="125000" />
       <property name="mutable" value="true" />
+      <property name="allowEqualsChecks" value="true" />
       <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
    
@@ -455,6 +457,7 @@
          <value>org.alfresco.authorityTransactionalCache</value>
       </property>
       <property name="maxCacheSize" value="10000" />
+      <property name="allowEqualsChecks" value="true" />
       <property name="mutable" value="true" />
       <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
@@ -1272,8 +1275,8 @@
          <value>org.alfresco.cache.tagscopeSummaryTransactionalCache</value>
       </property>
       <property name="maxCacheSize" value="1000" />
-      <property name="mutable" value="false" />
-      <property name="disableSharedCache" value="${system.cache.disableImmutableSharedCaches}" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
 
    <!-- ===================================== -->
@@ -1305,7 +1308,7 @@
          <value>org.alfresco.cache.imapMessageTransactionalCache</value>
       </property>
       <property name="maxCacheSize" value="1000" />
-      <property name="mutable" value="false" />
+      <property name="mutable" value="true" />
       <property name="disableSharedCache" value="${system.cache.disableImmutableSharedCaches}" />
    </bean>
 

@@ -81,6 +81,25 @@ public class NodeEntity implements Node, PermissionCheckValue
     }
         
     @Override
+    public int hashCode()
+    {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((id == null) ? 0 : id.hashCode());
+        result = prime * result + ((version == null) ? 0 : version.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (obj == null) return false;
+        if (!(obj instanceof NodeEntity)) return false;
+        NodeEntity that = (NodeEntity) obj;
+        return this.id.equals(that.id) && this.version.equals(that.version);
+    }
+
+    @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);

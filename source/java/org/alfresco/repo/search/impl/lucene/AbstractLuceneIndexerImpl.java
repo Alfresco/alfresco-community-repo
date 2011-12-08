@@ -30,6 +30,7 @@ import java.util.Set;
 import javax.transaction.Status;
 import javax.transaction.xa.XAResource;
 
+import org.alfresco.repo.node.NodeBulkLoader;
 import org.alfresco.repo.search.Indexer;
 import org.alfresco.repo.search.IndexerException;
 import org.alfresco.repo.search.impl.lucene.index.TransactionStatus;
@@ -102,6 +103,7 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase im
     private boolean isReadThrough;
     
     protected TransactionService transactionService;
+    protected NodeBulkLoader bulkLoader;
 
     public void setReadThrough(boolean isReadThrough)
     {
@@ -111,6 +113,14 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase im
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
+    }
+
+    /**
+     * @param bulkLoader            object to provide node loading options
+     */
+    public void setBulkLoader(NodeBulkLoader bulkLoader)
+    {
+        this.bulkLoader = bulkLoader;
     }
 
     protected static class Command<S>
@@ -695,6 +705,11 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase im
                         @Override
                         public T2 execute() throws Throwable
                         {
+                            // Request clean node data
+                            if (bulkLoader != null)
+                            {
+                                bulkLoader.setCheckNodeConsistency();
+                            }
                             try
                             {
                                 return callback.execute();

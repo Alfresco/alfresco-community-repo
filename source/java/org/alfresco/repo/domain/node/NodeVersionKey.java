@@ -63,7 +63,7 @@ public class NodeVersionKey implements Serializable
     @Override
     public int hashCode()
     {
-        return nodeId.hashCode() + version.hashCode();
+        return nodeId.hashCode() + version.hashCode()*37;
     }
     
     @Override

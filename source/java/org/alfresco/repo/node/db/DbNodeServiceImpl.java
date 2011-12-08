@@ -2767,7 +2767,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                             "Touched cm:modified date for node " + parentNodeId +
                             " (" + modifiedDate + ")" +
                             (useCurrentTxn ? " in txn " : " in new txn ") +
-                            nodeDAO.getCurrentTransactionId());
+                            nodeDAO.getCurrentTransactionId(false));
                 }
             }
             catch (Throwable e)

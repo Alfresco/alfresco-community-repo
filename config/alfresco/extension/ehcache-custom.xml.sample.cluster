@@ -329,7 +329,7 @@
 
     <cache
         name="org.alfresco.cache.contentDataCache"
-        maxElementsInMemory="10000"
+        maxElementsInMemory="20000"
         eternal="true"
         overflowToDisk="false"
         statistics="false"

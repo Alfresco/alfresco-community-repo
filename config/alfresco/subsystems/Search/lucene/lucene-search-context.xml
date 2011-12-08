@@ -272,34 +272,18 @@
     
     <!-- Indexer and searchers for lucene -->
     <bean id="search.admLuceneIndexerAndSearcherFactory"
-        parent="search.abstractLuceneIndexerAndSearcherFactory"
-        class="org.alfresco.repo.search.impl.lucene.ADMLuceneIndexerAndSearcherFactory">
-        <property name="nodeService">
-            <ref bean="mlAwareNodeService" />
-        </property>
-        <property name="tenantService">
-            <ref bean="tenantService"/>
-        </property>
-        <property name="dictionaryService">
-            <ref bean="dictionaryService" />
-        </property>
-        <property name="nameSpaceService">
-            <ref bean="namespaceService" />
-        </property>
-        <property name="contentService">
-            <ref bean="contentService" />
-        </property>
-        <property name="transactionService">
-            <ref bean="transactionService" />
-        </property>
-        <property name="queryRegister">
-            <ref bean="search.queryRegisterComponent" />
-        </property>
-        <property name="threadPoolExecutor">
-            <ref bean="search.indexThreadPoolExecutor"></ref>
-        </property>
+            parent="search.abstractLuceneIndexerAndSearcherFactory"
+            class="org.alfresco.repo.search.impl.lucene.ADMLuceneIndexerAndSearcherFactory">
+        <property name="nodeService" ref="mlAwareNodeService" />
+        <property name="tenantService" ref="tenantService"/>
+        <property name="dictionaryService" ref="dictionaryService" />
+        <property name="nameSpaceService" ref="namespaceService" />
+        <property name="contentService" ref="contentService" />
+        <property name="transactionService" ref="transactionService" />
+        <property name="queryRegister" ref="search.queryRegisterComponent" />
+        <property name="threadPoolExecutor" ref="search.indexThreadPoolExecutor" />
         <property name="bulkLoader">
-            <ref bean="nodeDAO"></ref>
+            <ref bean="nodeDAO" />
         </property>
     </bean>
     

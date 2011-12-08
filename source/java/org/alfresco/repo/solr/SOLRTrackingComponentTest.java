@@ -576,12 +576,20 @@ public class SOLRTrackingComponentTest extends TestCase
         logger.debug("Got " + bt.getActualNodeCount() + " nodes in " + (endTime - startTime) + " ms");
     }
     
-    private void getNodeMetaData(NodeMetaDataParameters params, MetaDataResultsFilter filter, SOLRTest bt)
+    private void getNodeMetaData(final NodeMetaDataParameters params, final MetaDataResultsFilter filter, final SOLRTest bt)
     {
         bt.clearNodesMetaData();
 
         long startTime = System.currentTimeMillis();
-        solrTrackingComponent.getNodesMetadata(params, filter, bt);
+        txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                solrTrackingComponent.getNodesMetadata(params, filter, bt);
+                return null;
+            }
+        }, true, true);
         long endTime = System.currentTimeMillis();
 
         bt.runNodeMetaDataChecks(params.getMaxResults());

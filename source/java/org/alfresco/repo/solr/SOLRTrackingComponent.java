@@ -20,7 +20,6 @@ package org.alfresco.repo.solr;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.service.namespace.QName;

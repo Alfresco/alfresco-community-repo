@@ -34,26 +34,18 @@ import org.alfresco.service.transaction.TransactionService;
 /**
  * Factory for ADM indxers and searchers
  * @author andyh
- *
  */
 public class ADMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAndSearcherFactory implements SupportsBackgroundIndexing
 {
     protected DictionaryService dictionaryService;
-
     private NamespaceService nameSpaceService;
-
     protected NodeService nodeService;
-
     protected FullTextSearchIndexer fullTextSearchIndexer;
-
     protected ContentService contentService;
-    
     protected TransactionService transactionService;
 
     /**
      * Set the dictinary service
-     * 
-     * @param dictionaryService
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -62,7 +54,6 @@ public class ADMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
 
     /**
      * Set the name space service
-     * @param nameSpaceService
      */
     public void setNameSpaceService(NamespaceService nameSpaceService)
     {
@@ -71,7 +62,6 @@ public class ADMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
 
     /**
      * Set the node service
-     * @param nodeService
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -85,13 +75,15 @@ public class ADMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
 
     /**
      * Set the content service
-     * @param contentService
      */
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
     }
     
+    /**
+     * Set the transaction service
+     */
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
@@ -103,6 +95,7 @@ public class ADMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
         
         ADMLuceneIndexerImpl indexer = ADMLuceneIndexerImpl.getUpdateIndexer(storeRef, deltaId, this);
         indexer.setNodeService(nodeService);
+        indexer.setBulkLoader(getBulkLoader());
         indexer.setTenantService(tenantService);
         indexer.setDictionaryService(dictionaryService);
         // indexer.setLuceneIndexLock(luceneIndexLock);

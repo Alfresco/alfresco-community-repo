@@ -33,6 +33,18 @@ import java.util.Collections;
  */
 public class NullCache<K extends Serializable, V extends Object> implements SimpleCache<K, V>
 {
+    /** Singleton for retrieval via {@link #getInstance() } */
+    private static final NullCache<Serializable, Object> INSTANCE = new NullCache<Serializable, Object>();
+    
+    /**
+     * @return          Returns a singleton that can be used in any way - all operations are stateless
+     */
+    @SuppressWarnings("unchecked")
+    public static final <K extends Serializable, V extends Object> NullCache<K, V> getInstance()
+    {
+        return (NullCache<K, V>) INSTANCE;
+    }
+    
     public NullCache()
     {
     }

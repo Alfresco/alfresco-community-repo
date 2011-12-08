@@ -510,6 +510,9 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
             return;
         }
         
+        // Ensure that we get fresh node references
+        nodeDAO.setCheckNodeConsistency();
+        
         NodeMetaDataQueryRowHandler rowHandler = new NodeMetaDataQueryRowHandler(callback);
         boolean includeType = (resultFilter == null ? true : resultFilter.getIncludeType());
         boolean includeProperties = (resultFilter == null ? true : resultFilter.getIncludeProperties());
@@ -868,9 +871,6 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.solr.SOLRTrackingComponent#getLastTransactionTimestamp()
-     */
     @Override
     public Long getMaxTxnCommitTime()
     {

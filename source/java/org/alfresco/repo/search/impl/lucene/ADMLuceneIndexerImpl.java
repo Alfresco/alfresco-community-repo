@@ -642,7 +642,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
             final IndexReader mainReader)
     {
         final NodeRef nodeRef = new NodeRef(stringNodeRef);
-        final NodeRef.Status nodeStatus = nodeService.getNodeStatus(nodeRef);             // DH: Let me know if this field gets dropped (performance)
+        final NodeRef.Status nodeStatus = nodeService.getNodeStatus(nodeRef);
         final List<Document> docs = new LinkedList<Document>();
         if (nodeStatus == null)
         {

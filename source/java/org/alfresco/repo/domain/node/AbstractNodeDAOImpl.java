@@ -44,6 +44,7 @@ import org.alfresco.ibatis.RetryingCallbackHelper.RetryingCallback;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.NullCache;
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.cache.TransactionalCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache.EntityLookupCallbackDAOAdaptor;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
@@ -152,6 +153,10 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      * VALUE KEY: The Node's NodeRef<br/>
      */
     private EntityLookupCache<Long, Node, NodeRef> nodesCache;
+    /**
+     * Backing transactional cache to allow read-through requests to be honoured
+     */
+    private TransactionalCache<Serializable, Serializable> nodesTransactionalCache;
     /**
      * Cache for the QName values:<br/>
      * KEY: NodeVersionKey<br/>
@@ -311,7 +316,10 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 cache,
                 CACHE_REGION_NODES,
                 new NodesCacheCallbackDAO());
-
+        if (cache instanceof TransactionalCache)
+        {
+            this.nodesTransactionalCache = (TransactionalCache<Serializable, Serializable>) cache;
+        }
     }
     
     /**
@@ -629,9 +637,17 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return txn;
     }
     
-    public Long getCurrentTransactionId()
+    public Long getCurrentTransactionId(boolean ensureNew)
     {
-        TransactionEntity txn = AlfrescoTransactionSupport.getResource(KEY_TRANSACTION);
+        TransactionEntity txn;
+        if (ensureNew)
+        {
+            txn = getCurrentTransaction();
+        }
+        else
+        {
+            txn = AlfrescoTransactionSupport.getResource(KEY_TRANSACTION);
+        }
         return txn == null ? null : txn.getId();
     }
     
@@ -815,8 +831,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     
     /**
      * Callback to cache nodes by ID and {@link NodeRef}.  When looking up objects based on the
-     * value key, only the referencing properties need be populated.  <b>ONLY</b> live nodes are
-     * cached.
+     * value key, only the referencing properties need be populated.  <b>ALL</b> nodes are cached,
+     * not just live nodes.
      * 
      * @see NodeEntity
      * 
@@ -838,7 +854,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
          */
         public Pair<Long, Node> findByKey(Long nodeId)
         {
-            NodeEntity node = selectNodeById(nodeId, Boolean.FALSE);
+            NodeEntity node = selectNodeById(nodeId, null);
             if (node != null)
             {
                 // Lock it to prevent 'accidental' modification
@@ -867,7 +883,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         public Pair<Long, Node> findByValue(Node node)
         {
             NodeRef nodeRef = node.getNodeRef();
-            node = selectNodeByNodeRef(nodeRef, Boolean.FALSE);
+            node = selectNodeByNodeRef(nodeRef, null);
             if (node != null)
             {
                 // Lock it to prevent 'accidental' modification
@@ -897,7 +913,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     @Override
     public boolean isInCurrentTxn(Long nodeId)
     {
-        Long currentTxnId = getCurrentTransactionId();
+        Long currentTxnId = getCurrentTransactionId(false);
         if (currentTxnId == null)
         {
             // No transactional changes have been made to any nodes, therefore the node cannot
@@ -909,59 +925,19 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return nodeTxnId.equals(currentTxnId);
     }
 
-    // TODO: Restore to simple version
-    // TODO: Add read-through option for caches
     public Status getNodeRefStatus(NodeRef nodeRef)
     {
-        Node node = null;
-
-        // Stage 1: check the cache without reading through
-        Long nodeId = nodesCache.getKey(nodeRef);
-        if (nodeId != null)
-        {
-            node = nodesCache.getValue(nodeId);
-            // If the node isn't for the current transaction, we are probably reindexing. So invalidate the cache,
-            // forcing a read through and a repeatable read on this noderef
-            if (node == null || AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_READ_WRITE
-                    || !getCurrentTransaction().getId().equals(node.getTransaction().getId())
-                    || !node.getNodeRef().equals(nodeRef))
-            {
-                invalidateNodeCaches(nodeId);
-                node = null;
-            }
-        }
-
-        // Stage 2, read through to the database, caching results if appropriate
-        if (node == null)
-        {
-            Node nodeEntity = new NodeEntity(nodeRef);
-            // Explicitly remove this noderef from the cache, forcing a 'repeatable read' on this noderef from now on.
-            nodesCache.removeByValue(nodeEntity);
-            Pair<Long, Node> pair = nodesCache.getByValue(nodeEntity);
-            if (pair == null)
-            {
-                // It's not there, so select ignoring the 'deleted' flag
-                node = selectNodeByNodeRef(nodeRef, null);
-                if (node != null)
-                {
-                    // Invalidate anything cached for this node ID, just in case it has moved store, etc.
-                    invalidateNodeCaches(node.getId());
-                }
-            }
-            else
-            {
-                // We have successfully populated the cache
-                node = pair.getSecond();
-            }            
-        }
-        
-        if (node == null)
+        Node node = new NodeEntity(nodeRef);
+        Pair<Long, Node> nodePair = nodesCache.getByValue(node);
+        // The nodesCache gets both live and deleted nodes.
+        if (nodePair == null)
         {
             return null;
         }
-
-        Transaction txn = node.getTransaction();
-        return new NodeRef.Status(nodeRef, txn.getChangeTxnId(), txn.getId(), node.getDeleted());
+        else
+        {
+            return nodePair.getSecond().getNodeStatus(); 
+        }
     }
 
     public Pair<Long, NodeRef> getNodePair(NodeRef nodeRef)
@@ -989,6 +965,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         Pair<Long, Node> pair = nodesCache.getByKey(nodeId);
         if (pair == null || pair.getSecond().getDeleted())
         {
+            // Force a removal from the cache
+            nodesCache.removeByKey(nodeId);
             // Go back to the database and get what is there
             NodeEntity dbNode = selectNodeById(nodeId, null);
             if (pair == null)
@@ -3679,6 +3657,16 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      * Bulk caching
      */
 
+    @Override
+    public void setCheckNodeConsistency()
+    {
+        if (nodesTransactionalCache != null)
+        {
+            nodesTransactionalCache.setDisableSharedCacheReadForTransaction(true);
+        }
+    }
+    
+    @Override
     public void cacheNodesById(List<Long> nodeIds)
     {
         /*

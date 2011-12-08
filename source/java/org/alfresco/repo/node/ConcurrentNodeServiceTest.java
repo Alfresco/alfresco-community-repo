@@ -29,6 +29,7 @@ import junit.framework.TestCase;
 
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
+import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -65,6 +66,7 @@ public class ConcurrentNodeServiceTest extends TestCase
     static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
 
     private NodeService nodeService;
+    private NodeDAO nodeDAO;
     private TransactionService transactionService;
     private NodeRef rootNodeRef;
     private AuthenticationComponent authenticationComponent;
@@ -91,6 +93,7 @@ public class ConcurrentNodeServiceTest extends TestCase
 
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         nodeService = serviceRegistry.getNodeService();
+        nodeDAO = (NodeDAO) ctx.getBean("nodeDAO");
         transactionService = serviceRegistry.getTransactionService();
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
 
@@ -182,6 +185,7 @@ public class ConcurrentNodeServiceTest extends TestCase
                             @Override
                             public Integer execute() throws Throwable
                             {
+                                nodeDAO.setCheckNodeConsistency();
                                 // Grab the current value
                                 int current = 0;
                                 Object obj = (Object) nodeService.getProperty(rootNodeRef, property);
@@ -248,7 +252,7 @@ public class ConcurrentNodeServiceTest extends TestCase
             {
                 errors.add("\n   Prop " + properties[i] + " : " + value);
             }
-            if (!value.equals(new Integer(loops)))
+            else if (!value.equals(new Integer(loops)))
             {
                 errors.add("\n   Prop " + properties[i] + " : " + value);
             }

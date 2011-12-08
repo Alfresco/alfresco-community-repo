@@ -33,6 +33,12 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public interface NodeBulkLoader
 {
     /**
+     * Transaction-scope setting to make the Node loader to guarantee the validity of all
+     * caches: some cache data will be reloaded; some cache data will be considered safe. 
+     */
+    public void setCheckNodeConsistency();
+
+    /**
      * Pre-cache data relevant to the given nodes.  There is no need to split the collection
      * up before calling this method; it is up to the implementations to ensure that batching
      * is done where necessary.

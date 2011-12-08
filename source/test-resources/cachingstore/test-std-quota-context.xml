@@ -56,7 +56,9 @@
     </bean>
     
     
-    <bean id="cachedContentCleaner" class="org.alfresco.repo.content.caching.cleanup.CachedContentCleaner">
+    <bean id="cachedContentCleaner"
+        class="org.alfresco.repo.content.caching.cleanup.CachedContentCleaner"
+        init-method="init">
         <property name="maxDeleteWatchCount" value="0"/><!-- zero is NOT recommmend in production -->
         <property name="cache" ref="contentCache"/>
         <property name="usageTracker" ref="quotaManager"/>

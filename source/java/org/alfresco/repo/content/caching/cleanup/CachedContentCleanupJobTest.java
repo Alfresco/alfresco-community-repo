@@ -87,7 +87,7 @@ public class CachedContentCleanupJobTest
 
     
     @Test
-    public void filesNotInCacheAreDeleted()
+    public void filesNotInCacheAreDeleted() throws InterruptedException
     {
         cleaner.setMaxDeleteWatchCount(0);
         int numFiles = 300; // Must be a multiple of number of UrlSource types being tested
@@ -107,6 +107,12 @@ public class CachedContentCleanupJobTest
 
         // Run cleaner
         cleaner.execute();
+        
+        Thread.sleep(400);
+        while (cleaner.isRunning())
+        {
+            Thread.sleep(200);
+        }
         
         // check all files deleted
         for (File file : files)
@@ -149,6 +155,12 @@ public class CachedContentCleanupJobTest
         // old the test will fail and it will be necessary to rethink how to test this.
         cleaner.execute();
         
+        Thread.sleep(400);
+        while (cleaner.isRunning())
+        {
+            Thread.sleep(200);
+        }  
+        
         // check all 'old' files deleted
         for (File file : oldFiles)
         {
@@ -185,6 +197,12 @@ public class CachedContentCleanupJobTest
         // then will examine the new files for potential deletion.
         // Since some of the newer files are not in the cache, it will delete those.
         cleaner.executeAggressive("aggressiveCleanReclaimsTargetSpace()", sevenFilesSize);
+        
+        Thread.sleep(400);
+        while (cleaner.isRunning())
+        {
+            Thread.sleep(200);
+        }
         
         int numDeleted = 0;
         
@@ -239,6 +257,12 @@ public class CachedContentCleanupJobTest
         // Since some of the newer files are not in the cache, it will delete those too.
         cleaner.executeAggressive("standardCleanAfterAggressiveFinished()", sevenFilesSize);
                 
+        Thread.sleep(400);
+        while (cleaner.isRunning())
+        {
+            Thread.sleep(200);
+        }
+        
         for (int i = 0; i < numFiles; i++)
         {
             if (i < 7)
@@ -328,7 +352,7 @@ public class CachedContentCleanupJobTest
     
     
     @Test
-    public void filesInCacheAreNotDeleted()
+    public void filesInCacheAreNotDeleted() throws InterruptedException
     {
         cleaner.setMaxDeleteWatchCount(0);
         
@@ -343,6 +367,12 @@ public class CachedContentCleanupJobTest
         }
         
         cleaner.execute();
+        
+        Thread.sleep(400);
+        while (cleaner.isRunning())
+        {
+            Thread.sleep(200);
+        }
         
         for (int i = 0; i < numFiles; i++)
         {

@@ -40,7 +40,7 @@ import org.springframework.context.ApplicationEventPublisherAware;
  * 
  * @author Matt Ward
  */
-public class CachedContentCleaner implements FileHandler, ApplicationEventPublisherAware
+public class CachedContentCleaner extends Thread implements FileHandler, ApplicationEventPublisherAware
 {
     private static final Log log = LogFactory.getLog(CachedContentCleaner.class);
     private ContentCacheImpl cache;   // impl specific functionality required
@@ -58,85 +58,102 @@ public class CachedContentCleaner implements FileHandler, ApplicationEventPublis
     private Date timeFinished;
     private ApplicationEventPublisher eventPublisher;
     private long targetReductionBytes;
+    private boolean cleanRequested;
+    private String reasonMessage;
    
+    
+    public CachedContentCleaner()
+    {        
+        setName(getClass().getSimpleName());
+        setDaemon(true);
+    }
+    
     /**
-     * This method should be called after the cleaner has been fully constructed
-     * to notify interested parties that the cleaner exists.
+     * This method MUST be called after the cleaner has been fully constructed
+     * to notify interested parties that the cleaner exists and to start the actual cleaner thread.
      */
     public void init()
     {
-        eventPublisher.publishEvent(new CachedContentCleanerCreatedEvent(this));
+        eventPublisher.publishEvent(new CachedContentCleanerCreatedEvent(this));    
+        start();
     }
     
-    public void execute()
+    
+    @Override
+    public void run()
+    {
+        while (true)
+        {
+            doClean();
+        }
+    }
+
+    public synchronized void execute()
     {
         execute("none specified");
     }
     
-    public void executeAggressive(String reason, long targetReductionBytes)
+    public synchronized void executeAggressive(String reason, long targetReductionBytes)
     {
         this.targetReductionBytes = targetReductionBytes;
         execute(reason);
-        this.targetReductionBytes = 0;
     }
     
-    public void execute(String reason)
+    private synchronized void doClean()
     {
-        lock.readLock().lock();
-        try
+        while (running || (!cleanRequested))
         {
-            if (running)
+            try
             {
-                // Do nothing - we only want one cleaner running at a time.
-                return;
+                wait();
+            }
+            catch (InterruptedException error)
+            {
+                // Nothing to do.
             }
         }
-        finally
+        
+        running = true;
+        if (log.isInfoEnabled())
         {
-            lock.readLock().unlock();
+            log.info("Starting cleaner, reason: " + reasonMessage);
         }
-        lock.writeLock().lock();
-        try
+        resetStats();
+        timeStarted = new Date();
+        cache.processFiles(this);
+        timeFinished = new Date(); 
+        
+        if (usageTracker != null)
         {
-            if (!running)
-            {
-                if (log.isInfoEnabled())
-                {
-                    log.info("Starting cleaner, reason: " + reason);
-                }
-                running = true;
-                resetStats();
-                timeStarted = new Date();
-                cache.processFiles(this);
-                timeFinished = new Date(); 
-                
-                if (usageTracker != null)
-                {
-                    usageTracker.setCurrentUsageBytes(newDiskUsage);
-                }
-                
-                running = false;
-                if (log.isInfoEnabled())
-                {
-                    log.info("Finished, duration: " + getDurationSeconds() + "s, seen: " + numFilesSeen +
-                                ", marked: " + numFilesMarked +
-                                ", deleted: " + numFilesDeleted +
-                                " (" + String.format("%.2f", getSizeFilesDeletedMB()) + "MB, " +
-                                sizeFilesDeleted + " bytes)" +
-                                ", target: " + targetReductionBytes + " bytes");
-                }
-            }
+            usageTracker.setCurrentUsageBytes(newDiskUsage);
         }
-        finally
+        
+        if (log.isInfoEnabled())
         {
-            lock.writeLock().unlock();
+            log.info("Finished, duration: " + getDurationSeconds() + "s, seen: " + numFilesSeen +
+                        ", marked: " + numFilesMarked +
+                        ", deleted: " + numFilesDeleted +
+                        " (" + String.format("%.2f", getSizeFilesDeletedMB()) + "MB, " +
+                        sizeFilesDeleted + " bytes)" +
+                        ", target: " + targetReductionBytes + " bytes");
         }
+        
+        cleanRequested = false;
+        this.targetReductionBytes = 0;
+        running = false;
+        
+        notifyAll();
     }
     
     
-    /**
-     * 
-     */
+    public synchronized void execute(String reasonMessage)
+    {
+        this.reasonMessage = reasonMessage;
+        cleanRequested = true;
+        notifyAll();
+    }
+    
+    
     private void resetStats()
     {
         newDiskUsage = 0;
@@ -152,7 +169,7 @@ public class CachedContentCleaner implements FileHandler, ApplicationEventPublis
     {
         if (log.isDebugEnabled())
         {
-            log.debug("handle file: " + cachedContentFile);
+            log.debug("handle file: " + cachedContentFile + " (target reduction: " + targetReductionBytes + " bytes)");
         }
         numFilesSeen++;
         CacheFileProps props = null;
@@ -160,6 +177,11 @@ public class CachedContentCleaner implements FileHandler, ApplicationEventPublis
         
         if (targetReductionBytes > 0 && sizeFilesDeleted < targetReductionBytes)
         {
+            if (log.isDebugEnabled())
+            {
+                log.debug("Target reduction " + targetReductionBytes +
+                           " bytes not yet reached. Deleted so far: " + sizeFilesDeleted);
+            }
             // Aggressive clean mode, delete file straight away.
             deleted = deleteFilesNow(cachedContentFile);
         }
@@ -299,9 +321,20 @@ public class CachedContentCleaner implements FileHandler, ApplicationEventPublis
         boolean deleted = cacheFile.delete();
         if (deleted)
         {
+            if (log.isTraceEnabled())
+            {
+                log.trace("Deleted cache file: " + cacheFile);
+            }
             numFilesDeleted++;
             sizeFilesDeleted += fileSize;
             Deleter.deleteEmptyParents(cacheFile, cache.getCacheRoot());
+        }
+        else
+        {
+            if (log.isWarnEnabled())
+            {
+                log.warn("Failed to delete cache file: " + cacheFile);
+            }
         }
         
         return deleted;

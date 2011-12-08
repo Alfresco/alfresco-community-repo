@@ -54,7 +54,7 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
 {
     private final static Log log = LogFactory.getLog(CachingContentStore.class);
     // NUM_LOCKS absolutely must be a power of 2 for the use of locks to be evenly balanced
-    private final static int numLocks = 32;
+    private final static int numLocks = 256;
     private final static ReentrantReadWriteLock[] locks; 
     private ContentStore backingStore;
     private ContentCache cache;

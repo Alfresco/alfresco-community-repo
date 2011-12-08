@@ -88,7 +88,7 @@ public class StandardQuotaStrategy implements QuotaManagerStrategy, UsageTracker
         
         loadDiskUsage();
         // Run the cleaner thread so that it can update the disk usage more accurately.
-        runCleanerThread("quota (init)");
+        signalCleanerStart("quota (init)");
     }
     
     
@@ -170,7 +170,7 @@ public class StandardQuotaStrategy implements QuotaManagerStrategy, UsageTracker
                 log.debug("Panic threshold reached (" + panicThresholdPct +
                             "%) - vetoing disk write and starting cached content cleaner.");
             }
-            runCleanerThread("quota (panic threshold)");
+            signalCleanerStart("quota (panic threshold)");
             return false;
         }
         
@@ -203,7 +203,7 @@ public class StandardQuotaStrategy implements QuotaManagerStrategy, UsageTracker
                 log.debug("Usage has reached or exceeded quota limit, limit: " + maxUsageBytes +
                             " bytes, current usage: " + getCurrentUsageBytes() + " bytes.");
             }
-            runAggressiveCleanerThread("quota (limit reached)");
+            signalAggressiveCleanerStart("quota (limit reached)");
         }
         else if (usageHasReached(cleanThresholdPct))
         {
@@ -213,7 +213,7 @@ public class StandardQuotaStrategy implements QuotaManagerStrategy, UsageTracker
                 log.debug("Usage has reached " + cleanThresholdPct + "% - starting cached content cleaner.");
             }
             
-            runCleanerThread("quota (clean threshold)");
+            signalCleanerStart("quota (clean threshold)");
         }
         
         return keepNewFile;
@@ -223,27 +223,17 @@ public class StandardQuotaStrategy implements QuotaManagerStrategy, UsageTracker
     /**
      * Run the cleaner in a new thread.
      */
-    private void runCleanerThread(final String reason, final boolean aggressive)
+    private void signalCleanerStart(final String reason, final boolean aggressive)
     {
-        Runnable cleanerRunner = new Runnable()
-        {    
-            @Override
-            public void run()
-            {
-                if (aggressive)
-                {
-                    long targetReductionBytes = (long) (((double) targetUsagePct / 100) * maxUsageBytes);
-                    cleaner.executeAggressive(reason, targetReductionBytes);                    
-                }
-                else
-                {
-                    cleaner.execute(reason);
-                }
-            }
-        };
-        Thread cleanerThread = new Thread(cleanerRunner, getClass().getSimpleName() + " cleaner");
-        cleanerThread.setDaemon(true);
-        cleanerThread.start();
+        if (aggressive)
+        {
+            long targetReductionBytes = (long) (((double) targetUsagePct / 100) * maxUsageBytes);
+            cleaner.executeAggressive(reason, targetReductionBytes);                    
+        }
+        else
+        {
+            cleaner.execute(reason);
+        }
     }
     
     /**
@@ -251,9 +241,9 @@ public class StandardQuotaStrategy implements QuotaManagerStrategy, UsageTracker
      * 
      * @param reason
      */
-    private void runCleanerThread(final String reason)
+    private void signalCleanerStart(final String reason)
     {
-        runCleanerThread(reason, false);
+        signalCleanerStart(reason, false);
     }
     
     /**
@@ -261,9 +251,9 @@ public class StandardQuotaStrategy implements QuotaManagerStrategy, UsageTracker
      * 
      * @param reason
      */
-    private void runAggressiveCleanerThread(final String reason)
+    private void signalAggressiveCleanerStart(final String reason)
     {
-       runCleanerThread(reason, true); 
+       signalCleanerStart(reason, true); 
     }
 
     

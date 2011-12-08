@@ -9,7 +9,9 @@
         <property name="pauseMillis" value="0"/>
     </bean>
     
-    <bean id="cachedContentCleaner" class="org.alfresco.repo.content.caching.cleanup.CachedContentCleaner">
+    <bean id="cachedContentCleaner"
+        class="org.alfresco.repo.content.caching.cleanup.CachedContentCleaner"
+        init-method="init">
         <property name="maxDeleteWatchCount" value="1"/>
         <property name="cache" ref="contentCache"/>
     </bean>

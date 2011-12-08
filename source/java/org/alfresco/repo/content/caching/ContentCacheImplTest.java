@@ -31,6 +31,7 @@ import org.alfresco.repo.content.caching.ContentCacheImpl.NumericFileNameCompara
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
 import org.junit.Before;
@@ -40,7 +41,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 
 /**
  * Tests for the ContentCacheImpl class.
@@ -202,15 +205,38 @@ public class ContentCacheImplTest
     {
         ContentReader contentReader = Mockito.mock(ContentReader.class);
         Mockito.when(contentReader.getSize()).thenReturn(999000L);
+        
+        ArgumentCaptor<File> cacheFileArg = ArgumentCaptor.forClass(File.class);
+        
+        Mockito.doAnswer(new Answer() {
+            public Object answer(InvocationOnMock invocation) {
+                Object[] args = invocation.getArguments();
+                File f = (File) args[0];
+                // The file must be present for the rename to work
+                // in ContentCacheImpl.put()
+                try
+                {
+                    f.createNewFile();
+                }
+                catch (IOException error)
+                {
+                    error.printStackTrace();
+                }
+                return null;
+            }})
+        .when(contentReader).getContent(cacheFileArg.capture());
+        
         final String url = "store://some/url.bin";
         boolean putResult = contentCache.put(url, contentReader);
         
         assertTrue("Non-empty files should be cached", putResult);
-        ArgumentCaptor<File> cacheFileArg = ArgumentCaptor.forClass(File.class);
-        Mockito.verify(contentReader).getContent(cacheFileArg.capture());
+
+        // The rename will have taken effect
+        String cacheFilePath = cacheFileArg.getValue().getAbsolutePath().replace(".tmp", ".bin");
+        
         // Check cached item is recorded properly in ehcache
-        Mockito.verify(lookupTable).put(Key.forUrl(url), cacheFileArg.getValue().getAbsolutePath());
-        Mockito.verify(lookupTable).put(Key.forCacheFile(cacheFileArg.getValue().getAbsolutePath()), url);
+        Mockito.verify(lookupTable).put(Key.forUrl(url), cacheFilePath);
+        Mockito.verify(lookupTable).put(Key.forCacheFile(cacheFilePath), url);
     }
     
     

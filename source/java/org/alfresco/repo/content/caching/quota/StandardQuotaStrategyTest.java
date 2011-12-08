@@ -255,8 +255,6 @@ public class StandardQuotaStrategyTest
             
             writerThread.start();
         }
-                
-//        StandardQuotaStrategyTest.afterClass();
     }
     
     

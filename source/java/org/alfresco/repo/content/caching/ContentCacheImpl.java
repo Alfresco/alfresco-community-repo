@@ -49,6 +49,7 @@ public class ContentCacheImpl implements ContentCache
 {
     private static final Log log = LogFactory.getLog(ContentCacheImpl.class);
     private static final String CACHE_FILE_EXT = ".bin";
+    private static final String CACHE_FILE_TEMP_EXT = ".tmp";
     private File cacheRoot;
     private SimpleCache<Key, String> memoryStore;
     
@@ -130,12 +131,13 @@ public class ContentCacheImpl implements ContentCache
     @Override
     public boolean put(String contentUrl, ContentReader source)
     {
-        File cacheFile = createCacheFile();
+        File tempFile = createCacheFile();
         
         // Copy the content from the source into a cache file
         if (source.getSize() > 0L)
         {
-            source.getContent(cacheFile);
+            source.getContent(tempFile);
+            File cacheFile = renameTempToActive(tempFile);
             // Add a record of the cached file to the in-memory cache.
             recordCacheEntries(contentUrl, cacheFile);
             return true;
@@ -158,7 +160,7 @@ public class ContentCacheImpl implements ContentCache
      */
     private File createCacheFile()
     {
-        File file = new File(cacheRoot, createNewCacheFilePath());
+        File file = new File(cacheRoot, createNewTempCacheFilePath());
         File parentDir = file.getParentFile();
         parentDir.mkdirs();
         return file;
@@ -192,8 +194,8 @@ public class ContentCacheImpl implements ContentCache
     public ContentWriter getWriter(final String url)
     {
         // Get a writer to a cache file.
-        final File cacheFile = createCacheFile();
-        ContentWriter writer = new FileContentWriter(cacheFile, url, null);
+        final File tempFile = createCacheFile();
+        final CacheWriter writer = new CacheWriter(tempFile, url);
         
         // Attach a listener to populate the in-memory store when done writing.
         writer.addListener(new ContentStreamListener()
@@ -201,11 +203,45 @@ public class ContentCacheImpl implements ContentCache
             @Override
             public void contentStreamClosed() throws ContentIOException
             {
+                final File cacheFile = renameTempToActive(tempFile);
+                writer.setCacheFile(cacheFile);
                 recordCacheEntries(url, cacheFile);
             }
         });
         
         return writer;
+    }
+    
+    
+    private File renameTempToActive(File tempFile)
+    {
+        String fullPath = tempFile.getPath();
+        int extIndex = fullPath.lastIndexOf(CACHE_FILE_TEMP_EXT);
+        
+        if (extIndex > 0)
+        {
+            String prefix = fullPath.substring(0, extIndex);
+            File dest = new File(prefix + CACHE_FILE_EXT);
+            
+            boolean renamed = tempFile.renameTo(dest);
+            
+            if (renamed)
+            {
+                return dest; 
+            }
+            else
+            {
+                throw new IllegalStateException(
+                            "Temp file couldn't be renamed to active cache file, temp=" +
+                            tempFile.getPath() +
+                            ", dest=" +
+                            dest.getPath());
+            }
+        }
+        else
+        {
+            throw new IllegalArgumentException("Invalid temp file name: " + tempFile.getPath());
+        }
     }
     
     /**
@@ -216,6 +252,16 @@ public class ContentCacheImpl implements ContentCache
      * @return The relative path for the new cache file.
      */
     public static String createNewCacheFilePath()
+    {
+        return createNewCacheFilePath(false);
+    }
+    
+    private static String createNewTempCacheFilePath()
+    {
+        return createNewCacheFilePath(true);
+    }
+    
+    private static String createNewCacheFilePath(boolean tempFile)
     {
         Calendar calendar = new GregorianCalendar();
         int year = calendar.get(Calendar.YEAR);
@@ -230,7 +276,17 @@ public class ContentCacheImpl implements ContentCache
           .append(day).append('/')
           .append(hour).append('/')
           .append(minute).append('/')
-          .append(GUID.generate()).append(CACHE_FILE_EXT);
+          .append(GUID.generate());
+        
+        if (tempFile)
+        {
+            sb.append(CACHE_FILE_TEMP_EXT);
+        }
+        else
+        {
+            sb.append(CACHE_FILE_EXT);
+        }
+            
         return sb.toString();
     }
 
@@ -384,6 +440,61 @@ public class ContentCacheImpl implements ContentCache
             {
                 return Integer.MAX_VALUE;
             }
+        }
+    }
+    
+    
+    /**
+     * This FileContentWriter subclass allows for the temp cache file
+     * to be renamed to a cache file proper, e.g filename.tmp becomes
+     * filename.bin
+     * 
+     * @author Matt Ward
+     */
+    public static class CacheWriter extends FileContentWriter
+    {
+        private File cacheFile = null;
+
+        
+        public CacheWriter(File file, String url)
+        {
+            super(file, url, null);
+        }
+        
+        public void setCacheFile(File file)
+        {
+            cacheFile = file;
+        }
+        
+        @Override
+        public File getFile()
+        {
+            if (cacheFile != null)
+            {
+                return cacheFile;
+            }
+            return super.getFile();
+        }
+        
+        @Override
+        protected ContentReader createReader() throws ContentIOException
+        {
+            FileContentReader reader = new FileContentReader(getFile(), getContentUrl());
+            // TODO: what about reader.setAllowRandomAccess(this.allowRandomAccess); ? 
+            return reader;
+        }
+
+        @Override
+        public long getSize()
+        {
+            File file = getFile();
+            
+            if (file == null)
+                return 0L;
+            else if (!file.exists())
+                return 0L;
+            else
+                return file.length();
         }
     }
 }

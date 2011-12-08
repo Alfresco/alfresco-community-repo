@@ -1579,19 +1579,29 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
     }
 
     @Override
-    public void beforeDeleteNode(NodeRef nodeRef)
+    public void beforeDeleteNode(final NodeRef nodeRef)
     {
-        for (ChildAssociationRef parentAssoc : nodeService.getParentAssocs(nodeRef))
+        // RUN AS SYSTEM due to Node Service archive permissions problem ALF-11103
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
-            NodeRef folderRef = parentAssoc.getParentRef();
-            if (this.nodeService.hasAspect(folderRef, ImapModel.ASPECT_IMAP_FOLDER))
+            @Override
+            public Void doWork() throws Exception
             {
-                this.messageCache.remove(nodeRef);
+                for (ChildAssociationRef parentAssoc : nodeService.getParentAssocs(nodeRef))
+                {
+                    NodeRef folderRef = parentAssoc.getParentRef();
+                    if (nodeService.hasAspect(folderRef, ImapModel.ASPECT_IMAP_FOLDER))
+                    {
+                        messageCache.remove(nodeRef);
 
-                // Force generation of a new change token
-                getUidValidityTransactionListener(folderRef);                
+                        // Force generation of a new change token
+                        getUidValidityTransactionListener(folderRef);                
+                    }
+                }
+        
+                return null;
             }
-        }
+        }, AuthenticationUtil.getSystemUserName());
     }
 
     private class UidValidityTransactionListener extends TransactionListenerAdapter

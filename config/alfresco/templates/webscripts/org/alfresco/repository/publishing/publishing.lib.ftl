@@ -152,7 +152,7 @@
    {
       "channelId" : "${channelId}",
       "authoriseUrl": "${authoriseUrl}",
-      "authCallbackUrl": "${authCallbackUrl}"
+      "authCallbackUrl": "${authCallbackUrl}",
       "authRedirectUrl": "${authRedirectUrl}"
    }
 </#escape>

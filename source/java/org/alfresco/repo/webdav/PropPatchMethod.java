@@ -156,7 +156,11 @@ public class PropPatchMethod extends PropFindMethod
                                             break;
                                         case Node.ELEMENT_NODE:
                                             int action = currentNode.getNodeName().endsWith(WebDAV.XML_SET) ? PropertyAction.SET : PropertyAction.REMOVE;
-                                            m_propertyActions.add(new PropertyAction(action, createProperty(propNode)));
+                                            WebDAVProperty prop = createProperty(propNode);
+                                            if (prop != null)
+                                            {
+                                               m_propertyActions.add(new PropertyAction(action, prop));
+                                            }
                                             break;
                                     }
                                 }

@@ -117,29 +117,9 @@ public class ScriptServiceImpl implements ScriptService
     public Object executeScript(String scriptClasspath, Map<String, Object> model)
         throws ScriptException
     {
-        if (scriptClasspath == null)
-        {
-            throw new IllegalArgumentException("Script ClassPath is mandatory.");
-        }
-        
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Executing script: " + scriptClasspath);
-        }
-        
-        try
-        {
-            ScriptProcessor scriptProcessor = getScriptProcessor(scriptClasspath);
-            return scriptProcessor.execute(scriptClasspath, model);
-        }
-        catch (ScriptException err)
-        {
-            throw err;
-        }
-        catch (Throwable err)
-        {
-            throw new ScriptException("Failed to execute script '" + scriptClasspath + "': " + err.getMessage(), err);
-        }
+        ParameterCheck.mandatory("scriptClasspath", scriptClasspath);
+        ScriptProcessor scriptProcessor = getScriptProcessor(scriptClasspath);
+        return execute(scriptProcessor, scriptClasspath, model);
     }
     
     /**
@@ -148,29 +128,8 @@ public class ScriptServiceImpl implements ScriptService
     public Object executeScript(String engine, String scriptClasspath, Map<String, Object> model)
         throws ScriptException
     {
-        if (scriptClasspath == null)
-        {
-            throw new IllegalArgumentException("Script ClassPath is mandatory.");
-        }
-        
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Executing script: " + scriptClasspath);
-        }
-        
-        try
-        {
-            ScriptProcessor scriptProcessor = lookupScriptProcessor(engine);
-            return scriptProcessor.execute(scriptClasspath, model);
-        }
-        catch (ScriptException err)
-        {
-            throw err;
-        }
-        catch (Throwable err)
-        {
-            throw new ScriptException("Failed to execute script '" + scriptClasspath + "': " + err.getMessage(), err);
-        }
+        ScriptProcessor scriptProcessor = lookupScriptProcessor(engine);
+        return execute(scriptProcessor, scriptClasspath, model);
     }
 
     /**
@@ -179,29 +138,9 @@ public class ScriptServiceImpl implements ScriptService
     public Object executeScript(NodeRef scriptRef, QName contentProp, Map<String, Object> model)
         throws ScriptException
     {
-        if (scriptRef == null)
-        {
-            throw new IllegalArgumentException("Script NodeRef is mandatory.");
-        }
-        
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Executing script: " + scriptRef.toString());
-        }
-        
-        try
-        {
-            ScriptProcessor scriptProcessor = getScriptProcessor(scriptRef);
-            return scriptProcessor.execute(scriptRef, contentProp, model);
-        }
-        catch (ScriptException err)
-        {
-            throw err;
-        }
-        catch (Throwable err)
-        {
-            throw new ScriptException("Failed to execute script '" + scriptRef.toString() + "': " + err.getMessage(), err);
-        }
+        ParameterCheck.mandatory("scriptRef", scriptRef);
+        ScriptProcessor scriptProcessor = getScriptProcessor(scriptRef);
+        return execute(scriptProcessor, scriptRef, contentProp, model);
     }
     
     /**
@@ -210,29 +149,8 @@ public class ScriptServiceImpl implements ScriptService
     public Object executeScript(String engine, NodeRef scriptRef, QName contentProp, Map<String, Object> model)
         throws ScriptException
     {
-        if (scriptRef == null)
-        {
-            throw new IllegalArgumentException("Script NodeRef is mandatory.");
-        }
-        
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Executing script: " + scriptRef.toString());
-        }
-        
-        try
-        {
-            ScriptProcessor scriptProcessor = lookupScriptProcessor(engine);
-            return scriptProcessor.execute(scriptRef, contentProp, model);
-        }
-        catch (ScriptException err)
-        {
-            throw err;
-        }
-        catch (Throwable err)
-        {
-            throw new ScriptException("Failed to execute script '" + scriptRef.toString() + "': " + err.getMessage(), err);
-        }
+        ScriptProcessor scriptProcessor = lookupScriptProcessor(engine);
+        return execute(scriptProcessor, scriptRef, contentProp, model);
     }
     
     /**
@@ -241,26 +159,9 @@ public class ScriptServiceImpl implements ScriptService
     public Object executeScript(ScriptLocation location, Map<String, Object> model)
     	throws ScriptException
     {
-    	ParameterCheck.mandatory("Location", location);
-        
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Executing script: " + location.toString());
-        }
-        
-        try
-        { 
-            ScriptProcessor scriptProcessor = getScriptProcessor(location.toString());
-            return scriptProcessor.execute(location, model);
-        }
-        catch (ScriptException err)
-        {
-            throw err;
-        }
-        catch (Throwable err)
-        {
-            throw new ScriptException("Failed to execute script '" + location.toString() + "': " + err.getMessage(), err);
-        }
+    	ParameterCheck.mandatory("location", location);
+        ScriptProcessor scriptProcessor = getScriptProcessor(location.toString());
+        return execute(scriptProcessor, location, model);
     }
     
     /**
@@ -269,26 +170,8 @@ public class ScriptServiceImpl implements ScriptService
     public Object executeScript(String engine, ScriptLocation location, Map<String, Object> model)
         throws ScriptException
     {
-        ParameterCheck.mandatory("Location", location);
-        
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Executing script: " + location.toString());
-        }
-        
-        try
-        { 
-            ScriptProcessor scriptProcessor = lookupScriptProcessor(engine);
-            return scriptProcessor.execute(location, model);
-        }
-        catch (ScriptException err)
-        {
-            throw err;
-        }
-        catch (Throwable err)
-        {
-            throw new ScriptException("Failed to execute script '" + location.toString() + "': " + err.getMessage(), err);
-        }
+        ScriptProcessor scriptProcessor = lookupScriptProcessor(engine);
+        return execute(scriptProcessor, location, model);
     }
     
     /**
@@ -306,40 +189,136 @@ public class ScriptServiceImpl implements ScriptService
     public Object executeScriptString(String engine, String script, Map<String, Object> model)
         throws ScriptException
     {
-        if (script == null || script.length() == 0)
+        ScriptProcessor scriptProcessor = lookupScriptProcessor(engine);
+        return executeString(scriptProcessor, script, model);
+    }
+    
+    /**
+     * Execute script
+     * 
+     * @param location  the location of the script 
+     * @param model     context model
+     * @return Object   the result of the script
+     */
+    protected Object execute(ScriptProcessor processor, ScriptLocation location, Map<String, Object> model)
+    {
+        ParameterCheck.mandatory("location", location);
+        if (logger.isDebugEnabled())
         {
-            throw new IllegalArgumentException("Script argument is mandatory.");
+            logger.debug("Executing script:\n" + location);
         }
+        try
+        {
+            return processor.execute(location, model);
+        }
+        catch (Throwable err)
+        {
+            throw translateProcessingException(location.toString(), err);
+        }
+    }
+    
+    /**
+     * Execute script
+     * 
+     * @param scriptRef       the script node reference
+     * @param contentProp   the content property of the script
+     * @param model         the context model
+     * @return Object       the result of the script
+     */
+    protected Object execute(ScriptProcessor processor, NodeRef scriptRef, QName contentProp, Map<String, Object> model)
+    {
+        ParameterCheck.mandatory("scriptRef", scriptRef);
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Executing script:\n" + scriptRef);
+        }
+        try
+        {
+            return processor.execute(scriptRef, contentProp, model);
+        }
+        catch (Throwable err)
+        {
+            throw translateProcessingException(scriptRef.toString(), err);
+        }
+    }
+    
+    /** 
+     * Execute script
+     * 
+     * @param location  the classpath string locating the script
+     * @param model     the context model
+     * @return Object   the result of the script
+     */
+    protected Object execute(ScriptProcessor processor, String location, Map<String, Object> model)
+    {
+        ParameterCheck.mandatoryString("location", location);
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Executing script:\n" + location);
+        }
+        try
+        {
+            return processor.execute(location, model);
+        }
+        catch (Throwable err)
+        {
+            throw translateProcessingException(location, err);
+        }
+    }
+    
+    /**
+     * Execute script string
+     * 
+     * @param script    the script string
+     * @param model     the context model
+     * @return Object   the result of the script 
+     */
+    protected Object executeString(ScriptProcessor processor, String script, Map<String, Object> model)
+    {
+        ParameterCheck.mandatoryString("script", script);
         
         if (logger.isDebugEnabled())
         {
             logger.debug("Executing script:\n" + script);
         }
-        
         try
         {
-            ScriptProcessor scriptProcessor = lookupScriptProcessor(engine);
-            return scriptProcessor.executeString(script, model);
-        }
-        catch (ScriptException err)
-        {
-            throw err;
+            return processor.executeString(script, model);
         }
         catch (Throwable err)
         {
-            throw new ScriptException("Failed to execute supplied script: " + err.getMessage(), err);
+            throw translateProcessingException("provided by caller", err);
         }
     }
-    
+
+    protected ScriptException translateProcessingException(String scriptInfo, Throwable err)
+    {
+        ScriptException result = null;
+        String msg = "Failed to execute script " + (scriptInfo == null ? "" : scriptInfo);
+        if (logger.isWarnEnabled())
+        {
+            logger.warn(msg, err);
+        }
+        if (ScriptException.class.isAssignableFrom(err.getClass()))
+        {
+            result = (ScriptException)err;
+        }
+        else
+        {
+            result = new ScriptException(msg, err);
+        }
+        return result;
+    }
+
     /**
-     * Helper method to lookup the script proecessor based on a name
+     * Helper method to lookup the script processor based on a name
      * 
      * @param   name  the name of the script processor
      * @return  ScriptProcessor the script processor, default processor if no match found
      */
     protected ScriptProcessor lookupScriptProcessor(String name)
     {
-        ScriptProcessor scriptProcessor = this.scriptProcessors.get(name);
+        ScriptProcessor scriptProcessor = (name == null ? null : this.scriptProcessors.get(name));
         if (scriptProcessor == null)
         {
             scriptProcessor = this.scriptProcessors.get(this.defaultScriptProcessor);

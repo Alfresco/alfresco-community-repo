@@ -117,7 +117,7 @@ public class OpenCmisLocalTest extends TestCase
         assertNotNull("No repository available for testing", repository);
     }
     
-    public void testBasicFileOps()
+    public void DISABLED_testBasicFileOps()
     {
         Repository repository = getRepository("admin", "admin");
         Session session = repository.createSession();

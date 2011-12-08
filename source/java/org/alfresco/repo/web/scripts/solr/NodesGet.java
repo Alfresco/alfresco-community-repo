@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.repo.domain.node.Node;
-import org.alfresco.repo.domain.node.StoreEntity;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.solr.NodeParameters;
 import org.alfresco.repo.solr.SOLRTrackingComponent;

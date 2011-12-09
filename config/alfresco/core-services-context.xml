@@ -58,6 +58,7 @@
     </bean>
 
     <bean id="common-placeholder-configurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer" abstract="true">
+    <!-- Note: If you change these settings you may also want to change them in the LegacyConfigPostProcessor as well. -->
         <property name="valueSeparator">
             <null/>
         </property>

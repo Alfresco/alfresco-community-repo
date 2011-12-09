@@ -20,8 +20,10 @@ package org.alfresco.repo.security.authentication.ldap;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Set;
 
 import javax.naming.AuthenticationNotSupportedException;
 import javax.naming.Context;
@@ -48,6 +50,9 @@ import org.springframework.context.ApplicationContext;
 public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFactory, InitializingBean
 {
     private static final Log logger = LogFactory.getLog(LDAPInitialDirContextFactoryImpl.class);
+
+    private static Set<Map<String, String>> checkedEnvs = Collections.synchronizedSet(new HashSet<Map<String, String>>(
+            11));
 
     private Map<String, String> defaultEnvironment = Collections.<String, String> emptyMap();
     private Map<String, String> authenticatedEnvironment = Collections.<String, String> emptyMap();
@@ -381,27 +386,34 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
             env.putAll(authenticatedEnvironment);
             env.put(Context.SECURITY_PRINCIPAL, principal);
             env.put(Context.SECURITY_CREDENTIALS, "sdasdasdasdasd123123123");
-            try
+            if (!checkedEnvs.contains(env))
             {
 
-                new InitialDirContext(env);
-
-                throw new AuthenticationException(
-                        "The ldap server at "
-                                + env.get(Context.PROVIDER_URL)
-                                + " falls back to use anonymous bind for a known principal if  invalid security credentials are presented. This is not supported.");
-            }
-            catch (javax.naming.AuthenticationException ax)
-            {
-                logger.info("LDAP server does not fall back to anonymous bind for known principal and invalid credentials at " + env.get(Context.PROVIDER_URL));
-            }
-            catch (AuthenticationNotSupportedException e)
-            {
-                logger.info("LDAP server does not support the required authentication mechanism");
-            }
-            catch (NamingException nx)
-            {
-                // already done
+                try
+                {
+    
+                    new InitialDirContext(env);
+    
+                    throw new AuthenticationException(
+                            "The ldap server at "
+                                    + env.get(Context.PROVIDER_URL)
+                                    + " falls back to use anonymous bind for a known principal if  invalid security credentials are presented. This is not supported.");
+                }
+                catch (javax.naming.AuthenticationException ax)
+                {
+                    logger.info("LDAP server does not fall back to anonymous bind for known principal and invalid credentials at " + env.get(Context.PROVIDER_URL));
+                }
+                catch (AuthenticationNotSupportedException e)
+                {
+                    logger.info("LDAP server does not support the required authentication mechanism");
+                }
+                catch (NamingException nx)
+                {
+                    // already done
+                }
+                // Record this environment as checked so that we don't check it again on further restarts / other subsystem
+                // instances
+                checkedEnvs.add(env);
             }
         }
     }

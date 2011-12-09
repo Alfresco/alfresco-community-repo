@@ -308,7 +308,12 @@ public class CommandExecutorImpl implements CommandExecutor
                 logger.debug("Remove Temp File:" + r.getNetworkFile());
             }
             File file = r.getNetworkFile().getFile();
-            file.delete();
+            boolean isDeleted = file.delete();
+            
+            if(!isDeleted)
+            {
+                logger.debug("unable to delete temp file:" + r.getNetworkFile() + ", closed="+ r.getNetworkFile().isClosed());
+            }
         }
         else if(command instanceof ReturnValueCommand)
         {

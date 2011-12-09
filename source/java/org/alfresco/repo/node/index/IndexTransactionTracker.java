@@ -404,11 +404,17 @@ public class IndexTransactionTracker extends AbstractReindexComponent
      */
     protected long getStartingTxnCommitTime()
     {
+        Long minTxnCommitTimeMs = nodeDAO.getMinTxnCommitTime();
+        if (minTxnCommitTimeMs == null)
+        {
+            return 0L;
+        }
+        long dontSearchBeforeMs = minTxnCommitTimeMs - 1L;
         long now = System.currentTimeMillis();
         // Get the last indexed transaction for all transactions
-        long lastIndexedAllCommitTimeMs = getLastIndexedCommitTime(now, false);
+        long lastIndexedAllCommitTimeMs = getLastIndexedCommitTime(dontSearchBeforeMs, now, false);
         // Now check back from this time to make sure there are no remote transactions that weren't indexed
-        long lastIndexedRemoteCommitTimeMs = getLastIndexedCommitTime(now, true);
+        long lastIndexedRemoteCommitTimeMs = getLastIndexedCommitTime(dontSearchBeforeMs, now, true);
         // The one to start at is the least of the two times
         long startTime = Math.min(lastIndexedAllCommitTimeMs, lastIndexedRemoteCommitTimeMs);
         // Done
@@ -419,25 +425,33 @@ public class IndexTransactionTracker extends AbstractReindexComponent
      * Gets the commit time for the last indexed transaction.  If there are no transactions, then the
      * current time is returned.
      * 
+     * @param dontSearchBeforeMs   the time to stop looking i.e. there will not be transaction before this
      * @param maxCommitTimeMs   the largest commit time to consider
      * @param remoteOnly        <tt>true</tt> to only look at remotely-committed transactions
      * @return                  Returns the last indexed transaction commit time for all or
      *                          remote-only transactions.
      */
-    private long getLastIndexedCommitTime(long maxCommitTimeMs, boolean remoteOnly)
+    private long getLastIndexedCommitTime(long dontSearchBeforeMs, long maxCommitTimeMs, boolean remoteOnly)
     {
         // Look back in time by the maximum transaction duration
         long maxToTimeExclusive = maxCommitTimeMs - maxTxnDurationMs;
         long toTimeExclusive = maxToTimeExclusive;
-        long fromTimeInclusive = 0L;
+        long fromTimeInclusive = toTimeExclusive;
         double stepFactor = 1.0D;
         boolean firstWasInIndex = true;
 found:
-        while (true)
+        while (fromTimeInclusive > dontSearchBeforeMs)
         {
-            // Get the most recent transaction before the given look-back
+            toTimeExclusive = fromTimeInclusive;
+            // Look further back in time.  Step back by 60 seconds each time, increasing
+            // the step by 10% each iteration.
+            // Don't step back by more than an hour
+            long decrement = Math.min(ONE_HOUR_MS, (long) (60000.0D * stepFactor));
+            fromTimeInclusive -= decrement;
+
+            // Try to find a transaction near to the time
             List<Transaction> nextTransactions = nodeDAO.getTxnsByCommitTimeDescending(
-                    0L,
+                    fromTimeInclusive,
                     toTimeExclusive,
                     1,
                     null,
@@ -445,7 +459,8 @@ found:
             // There are no transactions in that time range
             if (nextTransactions.size() == 0)
             {
-                break found;
+                stepFactor *= 1.1D;
+                continue;
             }
             // We found a transaction
             Transaction txn = nextTransactions.get(0);
@@ -458,17 +473,13 @@ found:
                     fromTimeInclusive = txnCommitTime;
                     break found;
                 case INDETERMINATE:
-                    // If we hit an indeterminate transaction we go back a small amount to try and hit something definitive before a bigger step back
                     firstWasInIndex = false;
-                    toTimeExclusive = txnCommitTime - 1000;
+                    // If we hit an indeterminate transaction we go back to small backward steps
+                    stepFactor = 1.0D;
                     continue;
                 default:
                     firstWasInIndex = false;
-                    // Look further back in time.  Step back by 60 seconds each time, increasing
-                    // the step by 10% each iteration.
-                    // Don't step back by more than an hour
-                    long decrement = Math.min(ONE_HOUR_MS, (long) (60000.0D * stepFactor));
-                    toTimeExclusive = txnCommitTime - decrement;
+                    // Start increasing steps backwards
                     stepFactor *= 1.1D;
                     continue;
             }

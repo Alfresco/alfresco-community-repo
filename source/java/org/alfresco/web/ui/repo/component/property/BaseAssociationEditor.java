@@ -812,9 +812,9 @@ public abstract class BaseAssociationEditor extends UIInput
       out.write("'");
       if (this.searchTerm != null)
       {
-         out.write(" value='");
-         out.write(this.searchTerm);
-         out.write("'");
+         out.write(" value=\"");
+         out.write(Utils.encode(this.searchTerm));
+         out.write("\"");
       }
       out.write("/>&nbsp;&nbsp;<input type='submit' value='");
       out.write(Application.getMessage(context, MSG_SEARCH));

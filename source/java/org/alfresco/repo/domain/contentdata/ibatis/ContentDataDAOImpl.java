@@ -222,7 +222,7 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         }
         IdsEntity idsEntity = new IdsEntity();
         idsEntity.setIds(new ArrayList<Long>(nodeIds));
-        return template.queryForList(SELECT_CONTENT_DATA_BY_NODE_IDS, idsEntity);
+        return (List<ContentDataEntity>)template.selectList(SELECT_CONTENT_DATA_BY_NODE_IDS, idsEntity);
     }
     
     @Override

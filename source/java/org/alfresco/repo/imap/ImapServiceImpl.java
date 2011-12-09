@@ -20,8 +20,6 @@ package org.alfresco.repo.imap;
 
 import static org.alfresco.repo.imap.AlfrescoImapConst.DICTIONARY_TEMPLATE_PREFIX;
 
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -45,10 +43,12 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.mail.Flags;
 import javax.mail.MessagingException;
-import javax.mail.Flags.Flag;
 import javax.mail.Multipart;
 import javax.mail.Part;
+import javax.mail.Flags.Flag;
+import javax.mail.internet.AddressException;
 import javax.mail.internet.ContentType;
+import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeUtility;
 
@@ -1650,11 +1650,7 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
         {
             policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
             policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_VERSIONABLE);
-                }
-        
-                return null;
-            }
-        }, AuthenticationUtil.getSystemUserName());
+        }
     }
 
     private class UidValidityTransactionListener extends TransactionListenerAdapter

@@ -179,6 +179,14 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
         return entityPair;
     }
 
+    public void cacheContentDataForNodes(Set<Long> nodeIds)
+    {
+        for (ContentDataEntity entity : getContentDataEntitiesForNodes(nodeIds))
+        {
+            contentDataCache.setValue(entity.getId(), makeContentData(entity));
+        }        
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -494,6 +502,13 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
      */
     protected abstract ContentDataEntity getContentDataEntity(Long id);
     
+    
+    /**
+     * @param nodeIds       the node ID
+     * @return              Returns the associated entities or <tt>null</tt> if none exist
+     */
+    protected abstract List<ContentDataEntity> getContentDataEntitiesForNodes(Set<Long> nodeIds);    
+
     /**
      * Update an existing <b>alf_content_data</b> entity
      * 

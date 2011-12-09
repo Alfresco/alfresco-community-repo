@@ -19,6 +19,7 @@
 package org.alfresco.repo.domain.contentdata.ibatis;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -54,6 +55,7 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
     private static final String SELECT_CONTENT_URLS_ORPHANED = "alfresco.content.select_ContentUrlsOrphaned";
     private static final String SELECT_CONTENT_DATA_BY_ID = "alfresco.content.select_ContentDataById";
     private static final String SELECT_CONTENT_DATA_BY_NODE_AND_QNAME = "alfresco.content.select_ContentDataByNodeAndQName";
+    private static final String SELECT_CONTENT_DATA_BY_NODE_IDS = "alfresco.content.select_ContentDataByNodeIds";
     private static final String INSERT_CONTENT_URL = "alfresco.content.insert.insert_ContentUrl";
     private static final String INSERT_CONTENT_DATA = "alfresco.content.insert.insert_ContentData";
     private static final String UPDATE_CONTENT_URL_ORPHAN_TIME = "alfresco.content.update_ContentUrlOrphanTime";
@@ -209,6 +211,20 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         return contentDataEntity;
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    protected List<ContentDataEntity> getContentDataEntitiesForNodes(Set<Long> nodeIds)
+    {
+        if (nodeIds.size() == 0)
+        {
+            // There will be no results
+            return Collections.emptyList();
+        }
+        IdsEntity idsEntity = new IdsEntity();
+        idsEntity.setIds(new ArrayList<Long>(nodeIds));
+        return template.queryForList(SELECT_CONTENT_DATA_BY_NODE_IDS, idsEntity);
+    }
+    
     @Override
     protected int updateContentDataEntity(ContentDataEntity entity)
     {

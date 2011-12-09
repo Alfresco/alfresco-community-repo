@@ -411,17 +411,7 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
         }
         
         // Locate or create IMAP home
-        imapHomeNodeRef = imapHomeConfigBean.getOrCreateFolderPath(namespaceService, nodeService, searchService, fileFolderService);
-        
-        // Hit the mount points and warm the caches for early failure
-        for (String mountPointName : imapConfigMountPoints.keySet())
-        {
-            for (AlfrescoImapFolder mailbox : listMailboxes(new AlfrescoImapUser(null, AuthenticationUtil
-                    .getSystemUserName(), null), mountPointName + "*", false))
-            {
-                mailbox.getUidNext();
-            }
-        }
+        imapHomeNodeRef = imapHomeConfigBean.getOrCreateFolderPath(namespaceService, nodeService, searchService, fileFolderService);        
     }
 
     public void shutdown()
@@ -437,16 +427,34 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
                 @Override
                 public Void doWork() throws Exception
                 {
-                    return serviceRegistry.getTransactionService().getRetryingTransactionHelper().doInTransaction(
-                            new RetryingTransactionCallback<Void>()
+                    List<AlfrescoImapFolder> mailboxes = serviceRegistry.getTransactionService().getRetryingTransactionHelper().doInTransaction(
+                            new RetryingTransactionCallback<List<AlfrescoImapFolder>>()
                             {
                                 @Override
-                                public Void execute() throws Throwable
+                                public List<AlfrescoImapFolder> execute() throws Throwable
                                 {
                                     startup();
-                                    return null;
+                                    
+                                    List<AlfrescoImapFolder> result = new LinkedList<AlfrescoImapFolder>();
+                                    
+                                    // Hit the mount points and warm the caches for early failure
+                                    for (String mountPointName : imapConfigMountPoints.keySet())
+                                    {
+                                        result.addAll(listMailboxes(new AlfrescoImapUser(null, AuthenticationUtil
+                                                .getSystemUserName(), null), mountPointName + "*", false));
+                                    }
+                                    
+                                    return result;
                                 }
                             });
+                    
+                    // Let each mailbox search trigger its own distinct transaction
+                    for (AlfrescoImapFolder mailbox : mailboxes)
+                    {
+                        mailbox.getUidNext();
+                    }
+                    
+                    return null;                    
                 }
             }, AuthenticationUtil.getSystemUserName());
         }
@@ -802,7 +810,7 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
             changeToken = GUID.generate();
             cacheKey = new Pair<String, String>(userName, changeToken);
             final String finalToken = changeToken;
-            AuthenticationUtil.runAs(new RunAsWork<Void>()
+            doAsSystem(new RunAsWork<Void>()
             {
                 @Override
                 public Void doWork() throws Exception
@@ -812,7 +820,7 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
                             : currentSearch.lastKey());
                     return null;
                 }
-            }, AuthenticationUtil.getSystemUserName());
+            });
         }
         Long uidValidity = (Long) nodeService.getProperty(contextNodeRef, ImapModel.PROP_UIDVALIDITY);
         FolderStatus result = new FolderStatus(messageCount, recentCount, firstUnseen, unseenCount,
@@ -1524,65 +1532,67 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
     }
 
     @Override
-    public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
+    public void onCreateChildAssociation(final ChildAssociationRef childAssocRef, boolean isNewNode)
     {
-        NodeRef childNodeRef = childAssocRef.getChildRef();
-        
-        if (this.serviceRegistry.getDictionaryService().isSubClass(this.nodeService.getType(childNodeRef), ContentModel.TYPE_CONTENT))
+        doAsSystem(new RunAsWork<Void>()
         {
-            long newId = (Long) nodeService.getProperty(childNodeRef, ContentModel.PROP_NODE_DBID);
-            // Keep a record of minimum and maximum node IDs in this folder in this transaction and add a listener that will
-            // update the UIDVALIDITY and MAXUID properties appropriately. Also force generation of a new change token
-            getUidValidityTransactionListener(childAssocRef.getParentRef()).recordNewUid(newId);
-            // Flag new content as recent
-            setFlag(childNodeRef, Flags.Flag.RECENT, true);
-        }
-        
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("[onCreateChildAssociation] Association " + childAssocRef + " created. CHANGETOKEN will be changed.");
-        }
-    }
-    
-    @Override
-    public void onDeleteChildAssociation(ChildAssociationRef childAssocRef)
-    {
-        NodeRef childNodeRef = childAssocRef.getChildRef();
-        if (this.serviceRegistry.getDictionaryService().isSubClass(this.nodeService.getType(childNodeRef), ContentModel.TYPE_CONTENT))
-        {
-            // Force generation of a new change token
-            getUidValidityTransactionListener(childAssocRef.getParentRef());
-
-            // Remove the message from the cache
-            this.messageCache.remove(childNodeRef);
-        }
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("[onDeleteChildAssociation] Association " + childAssocRef + " created. CHANGETOKEN will be changed.");
-        }
-    }
-    
-    @Override
-    public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
-    {
-        for (ChildAssociationRef parentAssoc : nodeService.getParentAssocs(nodeRef))
-        {
-            NodeRef folderRef = parentAssoc.getParentRef();
-            if (this.nodeService.hasAspect(folderRef, ImapModel.ASPECT_IMAP_FOLDER))
+            @Override
+            public Void doWork() throws Exception
             {
-                this.messageCache.remove(nodeRef);
-
-                // Force generation of a new change token
-                getUidValidityTransactionListener(folderRef);                
+                NodeRef childNodeRef = childAssocRef.getChildRef();
+                
+                if (serviceRegistry.getDictionaryService().isSubClass(nodeService.getType(childNodeRef), ContentModel.TYPE_CONTENT))
+                {
+                    long newId = (Long) nodeService.getProperty(childNodeRef, ContentModel.PROP_NODE_DBID);
+                    // Keep a record of minimum and maximum node IDs in this folder in this transaction and add a listener that will
+                    // update the UIDVALIDITY and MAXUID properties appropriately. Also force generation of a new change token
+                    getUidValidityTransactionListener(childAssocRef.getParentRef()).recordNewUid(newId);
+                    // Flag new content as recent
+                    setFlag(childNodeRef, Flags.Flag.RECENT, true);
+                }
+                
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("[onCreateChildAssociation] Association " + childAssocRef + " created. CHANGETOKEN will be changed.");
+                }
+                return null;
             }
-        }
+        });
     }
-
+    
     @Override
-    public void beforeDeleteNode(final NodeRef nodeRef)
+    public void onDeleteChildAssociation(final ChildAssociationRef childAssocRef)
     {
-        // RUN AS SYSTEM due to Node Service archive permissions problem ALF-11103
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        doAsSystem(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                NodeRef childNodeRef = childAssocRef.getChildRef();
+                if (serviceRegistry.getDictionaryService().isSubClass(nodeService.getType(childNodeRef),
+                        ContentModel.TYPE_CONTENT))
+                {
+                    // Force generation of a new change token
+                    getUidValidityTransactionListener(childAssocRef.getParentRef());
+
+                    // Remove the message from the cache
+                    messageCache.remove(childNodeRef);
+                }
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("[onDeleteChildAssociation] Association " + childAssocRef
+                            + " created. CHANGETOKEN will be changed.");
+                }
+                return null;
+            }
+        });
+    }
+    
+    @Override
+    public void onUpdateProperties(final NodeRef nodeRef, Map<QName, Serializable> before,
+            Map<QName, Serializable> after)
+    {
+        doAsSystem(new RunAsWork<Void>()
         {
             @Override
             public Void doWork() throws Exception
@@ -1595,8 +1605,51 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
                         messageCache.remove(nodeRef);
 
                         // Force generation of a new change token
-                        getUidValidityTransactionListener(folderRef);                
+                        getUidValidityTransactionListener(folderRef);
                     }
+                }
+                return null;
+            }
+        });
+    }
+
+    @Override
+    public void beforeDeleteNode(final NodeRef nodeRef)
+    {
+        // RUN AS SYSTEM due to Node Service archive permissions problem ALF-11103
+        doAsSystem(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                for (ChildAssociationRef parentAssoc : nodeService.getParentAssocs(nodeRef))
+                {
+                    NodeRef folderRef = parentAssoc.getParentRef();
+                    if (nodeService.hasAspect(folderRef, ImapModel.ASPECT_IMAP_FOLDER))
+                    {
+                        messageCache.remove(nodeRef);
+
+                        // Force generation of a new change token
+                getUidValidityTransactionListener(folderRef);                
+                    }
+                }
+                return null;
+                    }
+        });
+    }
+
+    private <R> R doAsSystem(RunAsWork<R> work)
+    {
+        policyBehaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
+        policyBehaviourFilter.disableBehaviour(ContentModel.ASPECT_VERSIONABLE);
+        try
+        {
+            return AuthenticationUtil.runAs(work, AuthenticationUtil.getSystemUserName());
+        }
+        finally
+        {
+            policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
+            policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_VERSIONABLE);
                 }
         
                 return null;
@@ -1643,7 +1696,7 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
                 return;
             }
 
-            AuthenticationUtil.runAs(new RunAsWork<Void>()
+            doAsSystem(new RunAsWork<Void>()
             {
                 @Override
                 public Void doWork() throws Exception
@@ -1670,7 +1723,7 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
                     UidValidityTransactionListener.this.nodeService.setProperty(folderNodeRef, ImapModel.PROP_CHANGE_TOKEN, changeToken);                            
                     return null;
                 }                        
-            }, AuthenticationUtil.getSystemUserName());
+            });
         }
     }
         

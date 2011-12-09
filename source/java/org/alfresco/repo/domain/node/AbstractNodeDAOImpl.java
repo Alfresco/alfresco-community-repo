@@ -3902,6 +3902,10 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             setNodeAspectsCached(nodeId, Collections.<QName>emptySet());
         }
 
+        // First ensure all content data are pre-cached, so we don't have to load them individually when converting properties
+        contentDataDAO.cacheContentDataForNodes(propertiesNodeIds);
+        
+        // Now bulk load the properties
         Map<NodeVersionKey, Map<NodePropertyKey, NodePropertyValue>> propsByNodeId = selectNodeProperties(propertiesNodeIds);
         for (Map.Entry<NodeVersionKey, Map<NodePropertyKey, NodePropertyValue>> entry : propsByNodeId.entrySet())
         {

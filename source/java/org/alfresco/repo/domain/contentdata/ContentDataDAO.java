@@ -70,6 +70,12 @@ public interface ContentDataDAO
     Pair<Long, ContentData> getContentData(Long id);
     
     /**
+     * @param nodeIds       the nodeIds
+     * @throws              AlfrescoRuntimeException if an ID provided is invalid
+     */
+    public void cacheContentDataForNodes(Set<Long> nodeIds);
+
+    /**
      * Delete an instance of content.
      * @param id            the unique ID of the entity
      * @throws              ConcurrencyFailureException if the ID does not exist

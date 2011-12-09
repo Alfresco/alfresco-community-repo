@@ -264,6 +264,26 @@
             cd.id = ?
     </select>
 
+    <!-- Get ContentData entities by node ID -->
+    <select id="select_ContentDataByNodeIds" parameterType="Ids" resultMap="result_ContentData">
+        select
+            cd.id as id,
+            cd.version as version,
+            cd.content_url_id as content_url_id,
+            cu.content_url as content_url,
+            cu.content_size as content_size,
+            cd.content_mimetype_id as content_mimetype_id,
+            cd.content_encoding_id as content_encoding_id,
+            cd.content_locale_id as content_locale_id
+        from
+            alf_content_data cd
+            left join alf_content_url cu on (cd.content_url_id = cu.id)
+            left join alf_node_properties np on (cd.id = np.long_value)
+        where
+            np.node_id in <iterate property="ids" open="(" close=")" conjunction=",">#ids[]#</iterate> and
+            (np.actual_type_n = 3 or np.actual_type_n = 21)
+    </select>
+
     <!-- Get the ContentData entity by Node and property QName -->
     <select id="select_ContentDataByNodeAndQName" parameterType="Ids" resultType="long">
         select

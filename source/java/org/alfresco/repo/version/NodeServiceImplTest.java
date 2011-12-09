@@ -684,4 +684,35 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
         assertEquals(1, nodeService.getChildAssocs(this.rootNodeRef, ContentModel.ASSOC_CONTAINS, jpQName).size());
         assertEquals(jpNode, nodeService.getChildByName(rootNodeRef, ContentModel.ASSOC_CONTAINS, jpProp));
     }
+
+    /*
+    * Test that during applying versionable aspect to the node
+    * that does not already have versionable aspect
+    * version history of this node should be deleted
+    */
+    public void testALF1793AddVersionableAspect()
+    {
+        // Create a new versionable node and create new version
+        NodeRef versionableNode = createNewVersionableNode();
+        createVersion(versionableNode, this.versionProperties);
+
+        //Copy UUID from node properties
+        Map<QName, Serializable> oldProperties = this.dbNodeService.getProperties(versionableNode);
+        Map<QName, Serializable> newProperties = new HashMap<QName, Serializable>();
+        newProperties.put(ContentModel.PROP_NODE_UUID, oldProperties.get(ContentModel.PROP_NODE_UUID));
+
+        // Delete node and create new one with the same UUID
+        this.dbNodeService.deleteNode(versionableNode);
+        NodeRef newNode = this.dbNodeService.createNode(
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName("{test}MyNode"),
+                TEST_TYPE_QNAME,
+                newProperties).getChildRef();
+
+        // add the versionable aspect to the node and create new version
+        this.dbNodeService.addAspect(newNode, ContentModel.ASPECT_VERSIONABLE, null);
+        Version version = createVersion(newNode, this.versionProperties);
+        assertNotNull(version);
+    }
 }

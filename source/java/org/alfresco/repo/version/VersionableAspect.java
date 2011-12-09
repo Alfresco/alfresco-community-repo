@@ -50,6 +50,8 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -58,6 +60,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Roy Wetherall, janv
  */
 public class VersionableAspect implements ContentServicePolicies.OnContentUpdatePolicy, 
+                                          NodeServicePolicies.BeforeAddAspectPolicy,
                                           NodeServicePolicies.OnAddAspectPolicy,
                                           NodeServicePolicies.OnRemoveAspectPolicy,
                                           NodeServicePolicies.OnDeleteNodePolicy,
@@ -66,6 +69,8 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
                                           CopyServicePolicies.OnCopyNodePolicy,
                                           DictionaryListener
 {
+    protected static Log logger = LogFactory.getLog(VersionableAspect.class);
+
     /** The i18n'ized messages */
     private static final String MSG_INITIAL_VERSION = "create_version.initial_version";
     private static final String MSG_AUTO_VERSION = "create_version.auto_version";
@@ -194,10 +199,15 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
         }
         
         this.policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeAddAspect"),
+                ContentModel.ASPECT_VERSIONABLE,
+                new JavaBehaviour(this, "beforeAddAspect", Behaviour.NotificationFrequency.EVERY_EVENT));
+
+        this.policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onAddAspect"),
                 ContentModel.ASPECT_VERSIONABLE,
-                
                 new JavaBehaviour(this, "onAddAspect", Behaviour.NotificationFrequency.TRANSACTION_COMMIT));
+                
         this.policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onRemoveAspect"),
                 ContentModel.ASPECT_VERSIONABLE,
@@ -298,6 +308,22 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
         }
     }
     
+    /**
+     * Before add aspect policy behaviour
+     *
+     * @param nodeRef
+     * @param aspectTypeQName
+     */
+    public void beforeAddAspect(NodeRef nodeRef, QName aspectTypeQName)
+    {
+        if(this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) == false &&
+                this.versionService.getVersionHistory(nodeRef) != null)
+        {
+            this.versionService.deleteVersionHistory(nodeRef);
+            logger.warn("The version history of node " + nodeRef + " that doesn't have versionable aspect was deleted");
+        }
+    }
+
     /**
      * On add aspect policy behaviour
      * 

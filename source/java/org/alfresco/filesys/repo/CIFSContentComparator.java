@@ -69,11 +69,15 @@ public class CIFSContentComparator implements ContentComparator
                 return false;
             }
             
+            InputStream rightIs = null;
+            InputStream leftIs = null;
             try
             {   
-                InputStream rightIs = new BufferedInputStream(new FileInputStream(newFile));
-                InputStream leftIs = existingContent.getContentInputStream();
+                rightIs = new BufferedInputStream(new FileInputStream(newFile));
+                leftIs = existingContent.getContentInputStream();
                 boolean retVal = EqualsHelper.binaryStreamEquals(leftIs, rightIs);
+                rightIs = null;
+                leftIs = null;
                 
                 if(logger.isDebugEnabled())
                 {
@@ -83,9 +87,35 @@ public class CIFSContentComparator implements ContentComparator
             }
             catch (IOException e)
             {
+
                 logger.debug("Unable to compare contents", e);
                 return false;
-            }            
+            }
+            finally
+            {
+                if(leftIs != null)
+                {
+                    try
+                    {
+                        leftIs.close();
+                    } 
+                    catch (IOException e)
+                    {
+                        // Do nothing this is cleanup code
+                    }
+                }
+                if(rightIs != null)
+                {
+                    try
+                    {
+                        rightIs.close();
+                    } 
+                    catch (IOException e)
+                    {
+                        // Do nothing this is cleanup code
+                    }
+                }
+            }
         }
         else
         {
@@ -109,18 +139,17 @@ public class CIFSContentComparator implements ContentComparator
                 logger.debug("comparing two project files size:" + existingContent.getSize() + ", and " + newFile.length());
             }
            
-//            if(existingContent.getSize() != newSize)
-//            {
-//                logger.debug("project files are different size");
-//                // Different size
-//                return false;
-//            }
+            if(existingContent.getSize() != newSize)
+            {
+                logger.debug("project files are different size");
+                // Different size
+                return false;
+            }
             
-            ArrayList<InputStream> openStreams = new ArrayList<InputStream>();
-
             /**
              * Use POI to compare the content of the MPP file, exluding certain properties
              */
+            InputStream leftIs = null;
             try
             {  
                 Collection<String> excludes = new HashSet<String>();
@@ -128,11 +157,8 @@ public class CIFSContentComparator implements ContentComparator
                 excludes.add("Props12");
                 excludes.add("Props9");
                 
-                InputStream leftIs = existingContent.getContentInputStream();
-                openStreams.add(leftIs);
-                NPOIFSFileSystem fs2 = new NPOIFSFileSystem(leftIs);
-                openStreams.remove(0);
-                
+                leftIs = existingContent.getContentInputStream();
+                NPOIFSFileSystem fs2 = new NPOIFSFileSystem(leftIs);              
                 NPOIFSFileSystem fs1 = new NPOIFSFileSystem(newFile);                
                 
                 DirectoryEntry de1 = fs1.getRoot();
@@ -161,15 +187,15 @@ public class CIFSContentComparator implements ContentComparator
             }
             finally
             {
-                for(InputStream stream : openStreams)
+                if(leftIs != null)
                 {
                     try
                     {
-                        stream.close();
+                        leftIs.close();
                     } 
                     catch (IOException e)
                     {
-                        // Do nothing
+                       // Ignore
                     }
                 }
             }

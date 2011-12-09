@@ -280,8 +280,11 @@
             left join alf_content_url cu on (cd.content_url_id = cu.id)
             left join alf_node_properties np on (cd.id = np.long_value)
         where
-            np.node_id in <iterate property="ids" open="(" close=")" conjunction=",">#ids[]#</iterate> and
-            (np.actual_type_n = 3 or np.actual_type_n = 21)
+            np.node_id in 
+            <foreach item="item" index="index" collection="ids" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+            and (np.actual_type_n = 3 or np.actual_type_n = 21)
     </select>
 
     <!-- Get the ContentData entity by Node and property QName -->

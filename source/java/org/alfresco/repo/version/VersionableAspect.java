@@ -39,6 +39,8 @@ import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
 import org.alfresco.repo.policy.Behaviour;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -314,14 +316,23 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
      * @param nodeRef
      * @param aspectTypeQName
      */
-    public void beforeAddAspect(NodeRef nodeRef, QName aspectTypeQName)
+    public void beforeAddAspect(final NodeRef nodeRef, QName aspectTypeQName)
     {
-        if(this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) == false &&
-                this.versionService.getVersionHistory(nodeRef) != null)
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
-            this.versionService.deleteVersionHistory(nodeRef);
-            logger.warn("The version history of node " + nodeRef + " that doesn't have versionable aspect was deleted");
-        }
+            @Override
+            public Void doWork() throws Exception
+            {
+                if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) == false
+                        && versionService.getVersionHistory(nodeRef) != null)
+                {
+                    versionService.deleteVersionHistory(nodeRef);
+                    logger.warn("The version history of node " + nodeRef
+                            + " that doesn't have versionable aspect was deleted");
+                }
+                return null;
+            }
+        });
     }
 
     /**

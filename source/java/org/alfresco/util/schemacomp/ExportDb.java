@@ -233,6 +233,9 @@ public class ExportDb
                 
                 column.setOrder(columns.getInt("ORDINAL_POSITION"));
                 
+                String autoIncString = columns.getString("IS_AUTOINCREMENT");
+                column.setAutoIncrement(parseBoolean(autoIncString));
+                
                 column.setParent(table);
                 table.getColumns().add(column);
             }

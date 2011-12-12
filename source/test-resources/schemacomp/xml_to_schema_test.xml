@@ -9,6 +9,7 @@
         <column name="id" order="1">
           <type>NUMBER(10)</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="nodeRef" order="3">
           <type>VARCHAR2(200)</type>

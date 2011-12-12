@@ -39,6 +39,7 @@ public abstract class XML
     public static final String EL_SEQUENCE = Sequence.class.getSimpleName().toLowerCase();    
     public static final String EL_TYPE = "type";
     public static final String EL_NULLABLE = "nullable";
+    public static final String EL_AUTOINCREMENT = "autoincrement";
     public static final String EL_COLUMN_NAME = "columnname";
     public static final String EL_COLUMN_NAMES = "columnnames";    
     public static final String EL_LOCAL_COLUMN = "localcolumn";

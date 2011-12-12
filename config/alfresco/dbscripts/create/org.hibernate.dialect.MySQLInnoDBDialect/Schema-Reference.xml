@@ -6,30 +6,37 @@
         <column name="id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="version" order="2">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="permission_id" order="3">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="authority_id" order="4">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="allowed" order="5">
           <type>bit</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="applies" order="6">
           <type>int</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="context_id" order="7">
           <type>bigint</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -85,50 +92,62 @@
         <column name="id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="version" order="2">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="acl_id" order="3">
           <type>varchar(36)</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="latest" order="4">
           <type>bit</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="acl_version" order="5">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="inherits" order="6">
           <type>bit</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="inherits_from" order="7">
           <type>bigint</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="type" order="8">
           <type>int</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="inherited_acl" order="9">
           <type>bigint</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="is_versioned" order="10">
           <type>bit</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="requires_version" order="11">
           <type>bit</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="acl_change_set" order="12">
           <type>bigint</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -169,22 +188,27 @@
         <column name="id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="version" order="2">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="class_context" order="3">
           <type>text</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="property_context" order="4">
           <type>text</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="kvp_context" order="5">
           <type>text</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -200,10 +224,12 @@
         <column name="id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="commit_time_ms" order="2">
           <type>bigint</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -225,22 +251,27 @@
         <column name="id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="version" order="2">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="acl_id" order="3">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="ace_id" order="4">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="pos" order="5">
           <type>int</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -285,46 +316,57 @@
         <column name="id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="post_id" order="2">
           <type>bigint</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="post_date" order="3">
           <type>datetime</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="activity_summary" order="4">
           <type>text</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="feed_user_id" order="5">
           <type>varchar(255)</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="activity_type" order="6">
           <type>varchar(255)</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="activity_format" order="7">
           <type>varchar(10)</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="site_network" order="8">
           <type>varchar(255)</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="app_tool" order="9">
           <type>varchar(36)</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="post_user_id" order="10">
           <type>varchar(255)</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="feed_date" order="11">
           <type>datetime</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -366,22 +408,27 @@
         <column name="id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="feed_user_id" order="2">
           <type>varchar(255)</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="site_network" order="3">
           <type>varchar(255)</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="app_tool" order="4">
           <type>varchar(36)</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="last_modified" order="5">
           <type>datetime</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -403,42 +450,52 @@
         <column name="sequence_id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="post_date" order="2">
           <type>datetime</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="status" order="3">
           <type>varchar(10)</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="activity_data" order="4">
           <type>text</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="post_user_id" order="5">
           <type>varchar(255)</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="job_task_node" order="6">
           <type>int</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="site_network" order="7">
           <type>varchar(255)</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="app_tool" order="8">
           <type>varchar(36)</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="activity_type" order="9">
           <type>varchar(255)</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="last_modified" order="10">
           <type>datetime</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -465,46 +522,57 @@
         <column name="id" order="1">
           <type>varchar(64)</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="description" order="2">
           <type>text</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="fixes_from_schema" order="3">
           <type>int</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="fixes_to_schema" order="4">
           <type>int</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="applied_to_schema" order="5">
           <type>int</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="target_schema" order="6">
           <type>int</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="applied_on_date" order="7">
           <type>datetime</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="applied_to_server" order="8">
           <type>varchar(64)</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="was_executed" order="9">
           <type>bit</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="succeeded" order="10">
           <type>bit</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="report" order="11">
           <type>text</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -520,22 +588,27 @@
         <column name="id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="version" order="2">
           <type>smallint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="app_name_id" order="3">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="audit_model_id" order="4">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="disabled_paths_id" order="5">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -583,22 +656,27 @@
         <column name="id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="audit_app_id" order="2">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="audit_time" order="3">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="audit_user_id" order="4">
           <type>bigint</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="audit_values_id" order="5">
           <type>bigint</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -651,14 +729,17 @@
         <column name="id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="content_data_id" order="2">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="content_crc" order="3">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -691,18 +772,22 @@
         <column name="id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="version" order="2">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="authority" order="3">
           <type>varchar(100)</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="crc" order="4">
           <type>bigint</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -730,18 +815,22 @@
         <column name="id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="version" order="2">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="auth_id" order="3">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="alias_id" order="4">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -785,50 +874,62 @@
         <column name="id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="version" order="2">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="parent_node_id" order="3">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="type_qname_id" order="4">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="child_node_name_crc" order="5">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="child_node_name" order="6">
           <type>varchar(50)</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="child_node_id" order="7">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="qname_ns_id" order="8">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="qname_localname" order="9">
           <type>varchar(255)</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="qname_crc" order="10">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="is_primary" order="11">
           <type>bit</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="assoc_index" order="12">
           <type>int</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -908,26 +1009,32 @@
         <column name="id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="version" order="2">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="content_url_id" order="3">
           <type>bigint</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="content_mimetype_id" order="4">
           <type>bigint</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="content_encoding_id" order="5">
           <type>bigint</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="content_locale_id" order="6">
           <type>bigint</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -985,26 +1092,32 @@
         <column name="id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="content_url" order="2">
           <type>varchar(255)</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="content_url_short" order="3">
           <type>varchar(12)</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="content_url_crc" order="4">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="content_size" order="5">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="orphan_time" order="6">
           <type>bigint</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -1032,14 +1145,17 @@
         <column name="id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="version" order="2">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="encoding_str" order="3">
           <type>varchar(100)</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -1061,14 +1177,17 @@
         <column name="id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="version" order="2">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="locale_str" order="3">
           <type>varchar(20)</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -1090,30 +1209,37 @@
         <column name="id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="version" order="2">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="shared_resource_id" order="3">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="excl_resource_id" order="4">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="lock_token" order="5">
           <type>varchar(36)</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="start_time" order="6">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="expiry_time" order="7">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -1152,18 +1278,22 @@
         <column name="id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="version" order="2">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="qname_ns_id" order="3">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="qname_localname" order="4">
           <type>varchar(255)</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -1192,14 +1322,17 @@
         <column name="id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="version" order="2">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="mimetype_str" order="3">
           <type>varchar(100)</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -1221,14 +1354,17 @@
         <column name="id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="version" order="2">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="uri" order="3">
           <type>varchar(100)</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -1250,58 +1386,72 @@
         <column name="id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="version" order="2">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="store_id" order="3">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="uuid" order="4">
           <type>varchar(36)</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="transaction_id" order="5">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="node_deleted" order="6">
           <type>bit</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="type_qname_id" order="7">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="locale_id" order="8">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="acl_id" order="9">
           <type>bigint</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="audit_creator" order="10">
           <type>varchar(255)</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="audit_created" order="11">
           <type>varchar(30)</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="audit_modifier" order="12">
           <type>varchar(255)</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="audit_modified" order="13">
           <type>varchar(30)</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="audit_accessed" order="14">
           <type>varchar(30)</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -1386,10 +1536,12 @@
         <column name="node_id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="qname_id" order="2">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -1428,26 +1580,32 @@
         <column name="id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="version" order="2">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="source_node_id" order="3">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="target_node_id" order="4">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="type_qname_id" order="5">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="assoc_index" order="6">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -1505,50 +1663,62 @@
         <column name="node_id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="actual_type_n" order="2">
           <type>int</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="persisted_type_n" order="3">
           <type>int</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="boolean_value" order="4">
           <type>bit</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="long_value" order="5">
           <type>bigint</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="float_value" order="6">
           <type>float</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="double_value" order="7">
           <type>double</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="string_value" order="8">
           <type>text</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="serializable_value" order="9">
           <type>blob</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="qname_id" order="10">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="list_index" order="11">
           <type>int</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="locale_id" order="12">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -1599,18 +1769,22 @@
         <column name="id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="version" order="2">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="type_qname_id" order="3">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="name" order="4">
           <type>varchar(100)</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -1644,18 +1818,22 @@
         <column name="id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="java_class_name" order="2">
           <type>varchar(255)</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="java_class_name_short" order="3">
           <type>varchar(32)</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="java_class_name_crc" order="4">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -1683,42 +1861,52 @@
         <column name="date_value" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="full_year" order="2">
           <type>smallint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="half_of_year" order="3">
           <type>tinyint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="quarter_of_year" order="4">
           <type>tinyint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="month_of_year" order="5">
           <type>tinyint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="week_of_year" order="6">
           <type>tinyint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="week_of_month" order="7">
           <type>tinyint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="day_of_year" order="8">
           <type>smallint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="day_of_month" order="9">
           <type>tinyint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="day_of_week" order="10">
           <type>tinyint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -1742,10 +1930,12 @@
         <column name="id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="double_value" order="2">
           <type>double</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -1767,22 +1957,27 @@
         <column name="root_prop_id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="prop_index" order="2">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="contained_in" order="3">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="key_prop_id" order="4">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="value_prop_id" order="5">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -1834,10 +2029,12 @@
         <column name="id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="version" order="2">
           <type>smallint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -1853,10 +2050,12 @@
         <column name="id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="serializable_value" order="2">
           <type>blob</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -1872,18 +2071,22 @@
         <column name="id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="string_value" order="2">
           <type>text</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="string_end_lower" order="3">
           <type>varchar(16)</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="string_crc" order="4">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -1911,26 +2114,32 @@
         <column name="id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="version" order="2">
           <type>smallint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="value1_prop_id" order="3">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="value2_prop_id" order="4">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="value3_prop_id" order="5">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="prop1_id" order="6">
           <type>bigint</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -1990,18 +2199,22 @@
         <column name="id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="actual_type_id" order="2">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="persisted_type" order="3">
           <type>tinyint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="long_value" order="4">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -2030,18 +2243,22 @@
         <column name="id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="version" order="2">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="ns_id" order="3">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="local_name" order="4">
           <type>varchar(200)</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -2075,14 +2292,17 @@
         <column name="id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="version" order="2">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="ip_address" order="3">
           <type>varchar(39)</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -2104,22 +2324,27 @@
         <column name="id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="version" order="2">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="protocol" order="3">
           <type>varchar(50)</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="identifier" order="4">
           <type>varchar(100)</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="root_node_id" order="5">
           <type>bigint</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -2153,10 +2378,12 @@
         <column name="user_node_id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="node_id" order="2">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -2190,22 +2417,27 @@
         <column name="id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="version" order="2">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="server_id" order="3">
           <type>bigint</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="change_txn_id" order="4">
           <type>varchar(56)</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="commit_time_ms" order="5">
           <type>bigint</type>
           <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">
@@ -2238,18 +2470,22 @@
         <column name="id" order="1">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
         </column>
         <column name="version" order="2">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="node_id" order="3">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
         <column name="delta_size" order="4">
           <type>bigint</type>
           <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="PRIMARY">

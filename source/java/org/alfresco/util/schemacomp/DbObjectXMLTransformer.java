@@ -216,6 +216,7 @@ public class DbObjectXMLTransformer
     {
         simpleElement(XML.EL_TYPE, column.getType());
         simpleElement(XML.EL_NULLABLE, Boolean.toString(column.isNullable()));
+        simpleElement(XML.EL_AUTOINCREMENT, Boolean.toString(column.isAutoIncrement()));
     }
 
     private void transformForeignKey(ForeignKey fk) throws SAXException

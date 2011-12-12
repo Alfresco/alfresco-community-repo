@@ -68,6 +68,10 @@ public class ColumnTest extends DbObjectTestBase<Column>
         DbProperty thisOrderProp = new DbProperty(thisColumn, "order");
         DbProperty thatOrderProp = new DbProperty(thatColumn, "order");        
         inOrder.verify(comparisonUtils).compareSimple(thisOrderProp, thatOrderProp, ctx);
+        
+        DbProperty thisAutoIncProp = new DbProperty(thisColumn, "autoIncrement");
+        DbProperty thatAutoIncProp = new DbProperty(thatColumn, "autoIncrement");        
+        inOrder.verify(comparisonUtils).compareSimple(thisAutoIncProp, thatAutoIncProp, ctx);
     }
     
     @Test

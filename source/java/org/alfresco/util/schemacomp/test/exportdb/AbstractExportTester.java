@@ -22,6 +22,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import org.alfresco.util.schemacomp.ExportDb;
+import org.alfresco.util.schemacomp.ExportDbTest;
 import org.alfresco.util.schemacomp.model.DbObject;
 import org.alfresco.util.schemacomp.model.Schema;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
@@ -30,6 +31,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 /**
  * Base class for DBMS-specific ExportDb tests.
  * 
+ * @see ExportDbTest
  * @author Matt Ward
  */
 public abstract class AbstractExportTester

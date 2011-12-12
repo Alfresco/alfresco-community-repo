@@ -25,6 +25,7 @@ import static org.junit.Assert.assertSame;
 import java.util.Iterator;
 
 import org.alfresco.util.schemacomp.ExportDb;
+import org.alfresco.util.schemacomp.ExportDbTest;
 import org.alfresco.util.schemacomp.model.Column;
 import org.alfresco.util.schemacomp.model.DbObject;
 import org.alfresco.util.schemacomp.model.ForeignKey;
@@ -42,6 +43,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 /**
  * Test implementation for the PostgreSQL database dialect.
  * 
+ * @see ExportDbTest
  * @author Matt Ward
  */
 public class PostgreSQLDialectExportTester extends AbstractExportTester

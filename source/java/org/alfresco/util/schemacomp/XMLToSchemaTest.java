@@ -81,18 +81,21 @@ public class XMLToSchemaTest
         assertEquals("NUMBER(10)", table.getColumns().get(0).getType());
         assertEquals(false, table.getColumns().get(0).isNullable());
         assertEquals(1, table.getColumns().get(0).getOrder());
+        assertEquals(true, table.getColumns().get(0).isAutoIncrement());
         
         assertSame("Wrong or no parent set", table, table.getColumns().get(1).getParent());
         assertEquals("nodeRef", table.getColumns().get(1).getName());
         assertEquals("VARCHAR2(200)", table.getColumns().get(1).getType());
         assertEquals(false, table.getColumns().get(1).isNullable());        
         assertEquals(3, table.getColumns().get(1).getOrder());
+        assertEquals(false, table.getColumns().get(1).isAutoIncrement());
         
         assertSame("Wrong or no parent set", table, table.getColumns().get(2).getParent());
         assertEquals("name", table.getColumns().get(2).getName());
         assertEquals("VARCHAR2(150)", table.getColumns().get(2).getType());
         assertEquals(true, table.getColumns().get(2).isNullable());
         assertEquals(2, table.getColumns().get(2).getOrder());
+        assertEquals(false, table.getColumns().get(2).isAutoIncrement());
         
         assertSame("Wrong or no parent set", table, table.getPrimaryKey().getParent());
         assertEquals("pk_node", table.getPrimaryKey().getName());

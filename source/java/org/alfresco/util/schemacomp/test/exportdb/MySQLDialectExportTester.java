@@ -25,6 +25,7 @@ import static org.junit.Assert.assertSame;
 import java.util.Iterator;
 
 import org.alfresco.util.schemacomp.ExportDb;
+import org.alfresco.util.schemacomp.ExportDbTest;
 import org.alfresco.util.schemacomp.model.Column;
 import org.alfresco.util.schemacomp.model.DbObject;
 import org.alfresco.util.schemacomp.model.ForeignKey;
@@ -41,6 +42,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 /**
  * MySQL specific test for the ExportDb class.
  * 
+ * @see ExportDbTest
  * @author Matt Ward
  */
 public class MySQLDialectExportTester extends AbstractExportTester
@@ -96,6 +98,7 @@ public class MySQLDialectExportTester extends AbstractExportTester
         assertEquals("bigint", col.getType());
         assertEquals(false, col.isNullable());
         assertEquals(1, col.getOrder());
+        assertEquals(false, col.isAutoIncrement());
         
         col = colIt.next();
         assertSame("Incorrect parent or no parent set", otherTable, col.getParent());
@@ -164,6 +167,7 @@ public class MySQLDialectExportTester extends AbstractExportTester
         assertEquals("bigint", col.getType());
         assertEquals(false, col.isNullable());
         assertEquals(1, col.getOrder());
+        assertEquals(true, col.isAutoIncrement());
         
         col = colIt.next();
         assertSame("Incorrect parent or no parent set", exampleTable, col.getParent());
@@ -271,7 +275,7 @@ public class MySQLDialectExportTester extends AbstractExportTester
                     
                     "CREATE TABLE export_test_other" + 
                     "            (" + 
-                    "                id BIGINT NOT NULL AUTO_INCREMENT," + 
+                    "                id BIGINT NOT NULL," + 
                     "                version BIGINT NOT NULL," + 
                     "                ex_id BIGINT NOT NULL," + 
                     "                local_name VARCHAR(200) NOT NULL," + 

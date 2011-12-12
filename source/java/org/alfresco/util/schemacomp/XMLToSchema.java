@@ -153,6 +153,11 @@ public class XMLToSchema extends DefaultHandler
                 Column column = (Column) stack.peek();
                 column.setNullable(Boolean.parseBoolean(lastText.toString()));
             }
+            else if (qName.equals(XML.EL_AUTOINCREMENT))
+            {
+                Column column = (Column) stack.peek();
+                column.setAutoIncrement(Boolean.parseBoolean(lastText.toString()));
+            }
             else if (qName.equals(XML.EL_COLUMN_NAME))
             {
                 if (stack.peek() instanceof PrimaryKey)

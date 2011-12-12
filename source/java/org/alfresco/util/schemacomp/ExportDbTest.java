@@ -44,6 +44,7 @@ import org.springframework.transaction.PlatformTransactionManager;
  * it will run MySQL specific tests. If there is no test available for the configured DBMS then
  * the test will pass - this allows addition of new DBMS-specific tests when available.
  * 
+ * @see AbstractExportTester
  * @author Matt Ward
  */
 public class ExportDbTest

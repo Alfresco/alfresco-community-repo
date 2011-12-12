@@ -105,6 +105,7 @@ public class DbObjectXMLTransformerTest
     public void transformColumn() throws IOException
     {
         Column column = new Column(null, "last_name", "VARCHAR2(100)", true);
+        column.setAutoIncrement(true);
         column.setOrder(2);
         transformer.output(column);
         
@@ -114,6 +115,7 @@ public class DbObjectXMLTransformerTest
         assertEquals("<column name=\"last_name\" order=\"2\">", reader.readLine());
         assertEquals("  <type>VARCHAR2(100)</type>", reader.readLine());
         assertEquals("  <nullable>true</nullable>", reader.readLine());        
+        assertEquals("  <autoincrement>true</autoincrement>", reader.readLine());        
         assertEquals("</column>", reader.readLine());
     }
     

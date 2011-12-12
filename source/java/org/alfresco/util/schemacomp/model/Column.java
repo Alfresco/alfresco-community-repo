@@ -32,6 +32,7 @@ public class Column extends AbstractDbObject
 {
     private String type;
     private boolean nullable;
+    private boolean autoIncrement;
     private int order;
     
     
@@ -104,11 +105,30 @@ public class Column extends AbstractDbObject
         this.order = order;
     }
 
+    
+    /**
+     * @return whether the column has an auto-increment flag set.
+     */
+    public boolean isAutoIncrement()
+    {
+        return this.autoIncrement;
+    }
+
+    /**
+     * @param autoIncrement whether this column has the auto-increment flag set.
+     */
+    public void setAutoIncrement(boolean autoIncrement)
+    {
+        this.autoIncrement = autoIncrement;
+    }
+
+
     @Override
     public int hashCode()
     {
         final int prime = 31;
         int result = super.hashCode();
+        result = prime * result + (this.autoIncrement ? 1231 : 1237);
         result = prime * result + (this.nullable ? 1231 : 1237);
         result = prime * result + this.order;
         result = prime * result + ((this.type == null) ? 0 : this.type.hashCode());
@@ -122,6 +142,7 @@ public class Column extends AbstractDbObject
         if (!super.equals(obj)) return false;
         if (getClass() != obj.getClass()) return false;
         Column other = (Column) obj;
+        if (this.autoIncrement != other.autoIncrement) return false;
         if (this.nullable != other.nullable) return false;
         if (this.order != other.order) return false;
         if (this.type == null)
@@ -138,15 +159,18 @@ public class Column extends AbstractDbObject
         DbProperty thisTypeProp = new DbProperty(this, "type");
         DbProperty thisNullableProp = new DbProperty(this, "nullable");
         DbProperty thisOrderProp = new DbProperty(this, "order");
+        DbProperty thisAutoIncProp = new DbProperty(this, "autoIncrement");
         
         Column thatColumn = (Column) right;
         DbProperty thatTypeProp = new DbProperty(thatColumn, "type");
         DbProperty thatNullableProp = new DbProperty(thatColumn, "nullable");
         DbProperty thatOrderProp = new DbProperty(thatColumn, "order");
+        DbProperty thatAutoIncProp = new DbProperty(thatColumn, "autoIncrement");
         
         comparisonUtils.compareSimple(thisTypeProp, thatTypeProp, ctx);
         comparisonUtils.compareSimple(thisNullableProp, thatNullableProp, ctx);        
         comparisonUtils.compareSimple(thisOrderProp, thatOrderProp, ctx);        
+        comparisonUtils.compareSimple(thisAutoIncProp, thatAutoIncProp, ctx);        
     }
 
     @Override

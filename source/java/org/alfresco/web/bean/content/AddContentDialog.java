@@ -165,7 +165,11 @@ public class AddContentDialog extends BaseContentWizard
       //       after a file is uploaded, so we can calculate the mime type and
       //       determine whether to enable inline editing in here.
       FacesContext fc = FacesContext.getCurrentInstance();
-      this.mimeType = Repository.getMimeTypeForFileName(fc, this.fileName);
+      
+      // Identify the mimetype as best as we can
+      this.mimeType = Repository.getMimeTypeForFile(fc, this.fileName, this.file);
+      
+      // Identify the encoding as best we can (only really important for text based formats)
       this.encoding = "UTF-8";
       InputStream is = null;
       try
@@ -186,6 +190,7 @@ public class AddContentDialog extends BaseContentWizard
          try { is.close(); } catch (Throwable e) {}         // Includes NPE
       }
       
+      // Offer inline editing for HTML only
       this.inlineEdit = (this.mimeType.equals(MimetypeMap.MIMETYPE_HTML));
       
       // get the file upload message

@@ -17,6 +17,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>. */
 package org.alfresco.web.bean.repository;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.nio.charset.Charset;
@@ -35,6 +36,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.configuration.ConfigurableService;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
+import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.content.metadata.MetadataExtracter;
 import org.alfresco.repo.content.metadata.MetadataExtracterRegistry;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -498,7 +500,7 @@ public final class Repository
    }
 
    /**
-    * Return the mimetype code for the specified file name.
+    * Return the mimetype for the specified file name.
     * <p>
     * The file extension will be extracted from the filename and used to lookup the mimetype.
     * 
@@ -509,18 +511,47 @@ public final class Repository
     */
    public static String getMimeTypeForFileName(FacesContext context, String filename)
    {
-      // base the mimetype from the file extension
-      MimetypeService mimetypeService = (MimetypeService)getServiceRegistry(context).getMimetypeService();
-      
-      // fall back to binary mimetype if no match found
+      return getMimeTypeForFile(context, filename, null);
+   }
+
+   /**
+    * Return the mimetype for the specified file, based on both the
+    *  file name and the file's contents.
+    * <p>
+    * The file extension will be extracted from the filename and used
+    *  along with the file contents to identify the mimetype.
+    * 
+    * @param context       FacesContext
+    * @param filename      Non-null filename to process
+    * @param file          The File object (used to read the contents)
+    * 
+    * @return mimetype for the specified filename - falls back to 'application/octet-stream' if not found.
+    */
+   public static String getMimeTypeForFile(FacesContext context, String filename, File file)
+   {
       String mimetype = MimetypeMap.MIMETYPE_BINARY;
-      int extIndex = filename.lastIndexOf('.');
-      if (extIndex != -1)
+      MimetypeService mimetypeService = (MimetypeService)getServiceRegistry(context).getMimetypeService();
+
+      // Use the file contents if available
+      if (file != null)
       {
-         String ext = filename.substring(extIndex + 1);
-         mimetype = mimetypeService.getMimetype(ext);
+         FileContentReader reader;
+         try
+         {
+            reader = new FileContentReader(file);
+            mimetype = mimetypeService.guessMimetype(filename, reader);
+            return mimetype;
+         }
+         catch (Throwable t)
+         {
+            // Not terminal
+            logger.warn("Error identifying mimetype from file contents ", t);
+         }
       }
       
+      // If the contents aren't available, go with the filename,
+      //  falling back to the Binary Mimetype if needed
+      mimetype = mimetypeService.guessMimetype(filename);
       return mimetype;
    }
 

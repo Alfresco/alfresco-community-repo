@@ -2442,7 +2442,7 @@
         <property name="bootstrapView">
             <props>
                 <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}</prop>
-                <prop key="location">alfresco/templates/activities-email-templates.acp</prop>
+                <prop key="location">alfresco/templates/activities-email-templates.xml</prop>
                 <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
             </props>
         </property>
@@ -2470,7 +2470,7 @@
             <ref bean="versionService" />
         </property>
         <property name="newTemplatesFile">
-            <value>alfresco/templates/activities-email-templates.acp</value>
+            <value>alfresco/templates/activities-email-templates.xml</value>
         </property>
     </bean>
 
@@ -2504,7 +2504,7 @@
         <property name="bootstrapView">
             <props>
                 <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}/${spaces.templates.email.invite.childname}</prop>
-                <prop key="location">alfresco/templates/new-user-templates.acp</prop>
+                <prop key="location">alfresco/templates/new-user-templates.xml</prop>
                 <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
             </props>
         </property>
@@ -2522,7 +2522,7 @@
         <property name="bootstrapView">
             <props>
                 <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}/${spaces.templates.email.invite.childname}</prop>
-                <prop key="location">alfresco/templates/invite-email-templates.acp</prop>
+                <prop key="location">alfresco/templates/invite-email-templates.xml</prop>
                 <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
             </props>
         </property>
@@ -2540,7 +2540,7 @@
         <property name="bootstrapView">
             <props>
                 <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}/${spaces.templates.email.notify.childname}</prop>
-                <prop key="location">alfresco/templates/email_templates2.acp</prop>
+                <prop key="location">alfresco/templates/notify_email_templates.xml</prop>
                 <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
             </props>
         </property>

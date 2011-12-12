@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0">
+  <view:metadata>
+    <view:exportOf>/app:company_home/app:dictionary/app:email_templates/cm:invite</view:exportOf>
+  </view:metadata>
+  <cm:content xmlns="" xmlns:nt="http://www.jcp.org/jcr/nt/1.0" xmlns:rn="http://www.alfresco.org/model/rendition/1.0" xmlns:sys="http://www.alfresco.org/model/system/1.0" xmlns:lnk="http://www.alfresco.org/model/linksmodel/1.0" xmlns:gd="http://www.alfresco.org/model/googledocs/1.0" xmlns:ver="http://www.alfresco.org/model/versionstore/1.0" xmlns:cmiscustom="http://www.alfresco.org/model/cmis/custom" xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:emailserver="http://www.alfresco.org/model/emailserver/1.0" xmlns:fm="http://www.alfresco.org/model/forum/1.0" xmlns:ia="http://www.alfresco.org/model/calendar" xmlns:rule="http://www.alfresco.org/model/rule/1.0" xmlns:wcm="http://www.alfresco.org/model/wcmmodel/1.0" xmlns:sv="http://www.jcp.org/jcr/sv/1.0" xmlns:dl="http://www.alfresco.org/model/datalist/1.0" xmlns:st="http://www.alfresco.org/model/site/1.0" xmlns:usr="http://www.alfresco.org/model/user/1.0" xmlns:custom="custom.model" xmlns:exif="http://www.alfresco.org/model/exif/1.0" xmlns:app="http://www.alfresco.org/model/application/1.0" xmlns:module="http://www.alfresco.org/system/modules/1.0" xmlns:d="http://www.alfresco.org/model/dictionary/1.0" xmlns:blg="http://www.alfresco.org/model/blogintegration/1.0" xmlns:alf="http://www.alfresco.org" xmlns:cmis="http://www.alfresco.org/model/cmis/1.0/cs01" xmlns:mix="http://www.jcp.org/jcr/mix/1.0" xmlns:wca="http://www.alfresco.org/model/wcmappmodel/1.0" xmlns:bpm="http://www.alfresco.org/model/bpm/1.0" xmlns:inwf="http://www.alfresco.org/model/workflow/invite/nominated/1.0" xmlns:imap="http://www.alfresco.org/model/imap/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0" xmlns:reg="http://www.alfresco.org/system/registry/1.0" xmlns:ver2="http://www.alfresco.org/model/versionstore/2.0" xmlns:stcp="http://www.alfresco.org/model/sitecustomproperty/1.0" xmlns:wcmwf="http://www.alfresco.org/model/wcmworkflow/1.0" xmlns:view="http://www.alfresco.org/view/repository/1.0" xmlns:imwf="http://www.alfresco.org/model/workflow/invite/moderated/1.0" xmlns:act="http://www.alfresco.org/model/action/1.0" xmlns:wf="http://www.alfresco.org/model/workflow/1.0" xmlns:trx="http://www.alfresco.org/model/transfer/1.0" view:childName="cm:invite-email.html.ftl">
+    <view:aspects>
+      <cm:auditable></cm:auditable>
+      <sys:referenceable></sys:referenceable>
+      <app:inlineeditable></app:inlineeditable>
+    </view:aspects>
+    <view:acl></view:acl>
+    <view:properties>
+      <app:editInline>true</app:editInline>
+      <cm:name>invite-email.html.ftl</cm:name>
+      <cm:title>invite-email.html.ftl</cm:title>
+      <cm:description>${spaces.templates.email.generate_the_invite_email.description} - ${version.default}</cm:description>
+      <cm:content>contentUrl=classpath:alfresco/templates/invite-email-templates/invite-email.html.ftl|mimetype=text/plain|size=1455|encoding=UTF-8</cm:content>
+    </view:properties>
+  </cm:content>
+  
+  <cm:content xmlns="" xmlns:nt="http://www.jcp.org/jcr/nt/1.0" xmlns:rn="http://www.alfresco.org/model/rendition/1.0" xmlns:sys="http://www.alfresco.org/model/system/1.0" xmlns:lnk="http://www.alfresco.org/model/linksmodel/1.0" xmlns:gd="http://www.alfresco.org/model/googledocs/1.0" xmlns:ver="http://www.alfresco.org/model/versionstore/1.0" xmlns:cmiscustom="http://www.alfresco.org/model/cmis/custom" xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:emailserver="http://www.alfresco.org/model/emailserver/1.0" xmlns:fm="http://www.alfresco.org/model/forum/1.0" xmlns:ia="http://www.alfresco.org/model/calendar" xmlns:rule="http://www.alfresco.org/model/rule/1.0" xmlns:wcm="http://www.alfresco.org/model/wcmmodel/1.0" xmlns:sv="http://www.jcp.org/jcr/sv/1.0" xmlns:dl="http://www.alfresco.org/model/datalist/1.0" xmlns:st="http://www.alfresco.org/model/site/1.0" xmlns:usr="http://www.alfresco.org/model/user/1.0" xmlns:custom="custom.model" xmlns:exif="http://www.alfresco.org/model/exif/1.0" xmlns:app="http://www.alfresco.org/model/application/1.0" xmlns:module="http://www.alfresco.org/system/modules/1.0" xmlns:d="http://www.alfresco.org/model/dictionary/1.0" xmlns:blg="http://www.alfresco.org/model/blogintegration/1.0" xmlns:alf="http://www.alfresco.org" xmlns:cmis="http://www.alfresco.org/model/cmis/1.0/cs01" xmlns:mix="http://www.jcp.org/jcr/mix/1.0" xmlns:wca="http://www.alfresco.org/model/wcmappmodel/1.0" xmlns:bpm="http://www.alfresco.org/model/bpm/1.0" xmlns:inwf="http://www.alfresco.org/model/workflow/invite/nominated/1.0" xmlns:imap="http://www.alfresco.org/model/imap/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0" xmlns:reg="http://www.alfresco.org/system/registry/1.0" xmlns:ver2="http://www.alfresco.org/model/versionstore/2.0" xmlns:stcp="http://www.alfresco.org/model/sitecustomproperty/1.0" xmlns:wcmwf="http://www.alfresco.org/model/wcmworkflow/1.0" xmlns:view="http://www.alfresco.org/view/repository/1.0" xmlns:imwf="http://www.alfresco.org/model/workflow/invite/moderated/1.0" xmlns:act="http://www.alfresco.org/model/action/1.0" xmlns:wf="http://www.alfresco.org/model/workflow/1.0" xmlns:trx="http://www.alfresco.org/model/transfer/1.0" view:childName="cm:invite-email_fr.html.ftl">
+    <view:aspects>
+      <cm:auditable></cm:auditable>
+      <sys:referenceable></sys:referenceable>
+      <app:inlineeditable></app:inlineeditable>
+    </view:aspects>
+    <view:acl></view:acl>
+    <view:properties>
+      <app:editInline>true</app:editInline>
+      <cm:name>invite-email_fr.html.ftl</cm:name>
+      <cm:title>invite-email_fr.html.ftl</cm:title>
+      <cm:description>${spaces.templates.email.generate_the_invite_email.description} - ${version.french}</cm:description>
+      <cm:content>contentUrl=classpath:alfresco/templates/invite-email-templates/invite-email_fr.html.ftl|mimetype=text/plain|size=1601|encoding=UTF-8</cm:content>
+    </view:properties>
+  </cm:content>
+  
+  <cm:content xmlns="" xmlns:nt="http://www.jcp.org/jcr/nt/1.0" xmlns:rn="http://www.alfresco.org/model/rendition/1.0" xmlns:sys="http://www.alfresco.org/model/system/1.0" xmlns:lnk="http://www.alfresco.org/model/linksmodel/1.0" xmlns:gd="http://www.alfresco.org/model/googledocs/1.0" xmlns:ver="http://www.alfresco.org/model/versionstore/1.0" xmlns:cmiscustom="http://www.alfresco.org/model/cmis/custom" xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:emailserver="http://www.alfresco.org/model/emailserver/1.0" xmlns:fm="http://www.alfresco.org/model/forum/1.0" xmlns:ia="http://www.alfresco.org/model/calendar" xmlns:rule="http://www.alfresco.org/model/rule/1.0" xmlns:wcm="http://www.alfresco.org/model/wcmmodel/1.0" xmlns:sv="http://www.jcp.org/jcr/sv/1.0" xmlns:dl="http://www.alfresco.org/model/datalist/1.0" xmlns:st="http://www.alfresco.org/model/site/1.0" xmlns:usr="http://www.alfresco.org/model/user/1.0" xmlns:custom="custom.model" xmlns:exif="http://www.alfresco.org/model/exif/1.0" xmlns:app="http://www.alfresco.org/model/application/1.0" xmlns:module="http://www.alfresco.org/system/modules/1.0" xmlns:d="http://www.alfresco.org/model/dictionary/1.0" xmlns:blg="http://www.alfresco.org/model/blogintegration/1.0" xmlns:alf="http://www.alfresco.org" xmlns:cmis="http://www.alfresco.org/model/cmis/1.0/cs01" xmlns:mix="http://www.jcp.org/jcr/mix/1.0" xmlns:wca="http://www.alfresco.org/model/wcmappmodel/1.0" xmlns:bpm="http://www.alfresco.org/model/bpm/1.0" xmlns:inwf="http://www.alfresco.org/model/workflow/invite/nominated/1.0" xmlns:imap="http://www.alfresco.org/model/imap/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0" xmlns:reg="http://www.alfresco.org/system/registry/1.0" xmlns:ver2="http://www.alfresco.org/model/versionstore/2.0" xmlns:stcp="http://www.alfresco.org/model/sitecustomproperty/1.0" xmlns:wcmwf="http://www.alfresco.org/model/wcmworkflow/1.0" xmlns:view="http://www.alfresco.org/view/repository/1.0" xmlns:imwf="http://www.alfresco.org/model/workflow/invite/moderated/1.0" xmlns:act="http://www.alfresco.org/model/action/1.0" xmlns:wf="http://www.alfresco.org/model/workflow/1.0" xmlns:trx="http://www.alfresco.org/model/transfer/1.0" view:childName="cm:invite-email_es.html.ftl">
+    <view:aspects>
+      <cm:auditable></cm:auditable>
+      <sys:referenceable></sys:referenceable>
+      <app:inlineeditable></app:inlineeditable>
+    </view:aspects>
+    <view:acl></view:acl>
+    <view:properties>
+      <app:editInline>true</app:editInline>
+      <cm:name>invite-email_es.html.ftl</cm:name>
+      <cm:title>invite-email_es.html.ftl</cm:title>
+      <cm:description>${spaces.templates.email.generate_the_invite_email.description} - ${version.spanish}</cm:description>
+      <cm:content>contentUrl=classpath:alfresco/templates/invite-email-templates/invite-email_es.html.ftl|mimetype=text/plain|size=1584|encoding=UTF-8</cm:content>
+    </view:properties>
+  </cm:content>
+  
+  <cm:content xmlns="" xmlns:nt="http://www.jcp.org/jcr/nt/1.0" xmlns:rn="http://www.alfresco.org/model/rendition/1.0" xmlns:sys="http://www.alfresco.org/model/system/1.0" xmlns:lnk="http://www.alfresco.org/model/linksmodel/1.0" xmlns:gd="http://www.alfresco.org/model/googledocs/1.0" xmlns:ver="http://www.alfresco.org/model/versionstore/1.0" xmlns:cmiscustom="http://www.alfresco.org/model/cmis/custom" xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:emailserver="http://www.alfresco.org/model/emailserver/1.0" xmlns:fm="http://www.alfresco.org/model/forum/1.0" xmlns:ia="http://www.alfresco.org/model/calendar" xmlns:rule="http://www.alfresco.org/model/rule/1.0" xmlns:wcm="http://www.alfresco.org/model/wcmmodel/1.0" xmlns:sv="http://www.jcp.org/jcr/sv/1.0" xmlns:dl="http://www.alfresco.org/model/datalist/1.0" xmlns:st="http://www.alfresco.org/model/site/1.0" xmlns:usr="http://www.alfresco.org/model/user/1.0" xmlns:custom="custom.model" xmlns:exif="http://www.alfresco.org/model/exif/1.0" xmlns:app="http://www.alfresco.org/model/application/1.0" xmlns:module="http://www.alfresco.org/system/modules/1.0" xmlns:d="http://www.alfresco.org/model/dictionary/1.0" xmlns:blg="http://www.alfresco.org/model/blogintegration/1.0" xmlns:alf="http://www.alfresco.org" xmlns:cmis="http://www.alfresco.org/model/cmis/1.0/cs01" xmlns:mix="http://www.jcp.org/jcr/mix/1.0" xmlns:wca="http://www.alfresco.org/model/wcmappmodel/1.0" xmlns:bpm="http://www.alfresco.org/model/bpm/1.0" xmlns:inwf="http://www.alfresco.org/model/workflow/invite/nominated/1.0" xmlns:imap="http://www.alfresco.org/model/imap/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0" xmlns:reg="http://www.alfresco.org/system/registry/1.0" xmlns:ver2="http://www.alfresco.org/model/versionstore/2.0" xmlns:stcp="http://www.alfresco.org/model/sitecustomproperty/1.0" xmlns:wcmwf="http://www.alfresco.org/model/wcmworkflow/1.0" xmlns:view="http://www.alfresco.org/view/repository/1.0" xmlns:imwf="http://www.alfresco.org/model/workflow/invite/moderated/1.0" xmlns:act="http://www.alfresco.org/model/action/1.0" xmlns:wf="http://www.alfresco.org/model/workflow/1.0" xmlns:trx="http://www.alfresco.org/model/transfer/1.0" view:childName="cm:invite-email_de.html.ftl">
+    <view:aspects>
+      <cm:auditable></cm:auditable>
+      <sys:referenceable></sys:referenceable>
+      <app:inlineeditable></app:inlineeditable>
+    </view:aspects>
+    <view:acl></view:acl>
+    <view:properties>
+      <app:editInline>true</app:editInline>
+      <cm:name>invite-email_de.html.ftl</cm:name>
+      <cm:title>invite-email_de.html.ftl</cm:title>
+      <cm:description>${spaces.templates.email.generate_the_invite_email.description} - ${version.german}</cm:description>
+      <cm:content>contentUrl=classpath:alfresco/templates/invite-email-templates/invite-email_de.html.ftl|mimetype=text/plain|size=1583|encoding=UTF-8</cm:content>
+    </view:properties>
+  </cm:content>
+  
+  <cm:content xmlns="" xmlns:nt="http://www.jcp.org/jcr/nt/1.0" xmlns:rn="http://www.alfresco.org/model/rendition/1.0" xmlns:sys="http://www.alfresco.org/model/system/1.0" xmlns:lnk="http://www.alfresco.org/model/linksmodel/1.0" xmlns:gd="http://www.alfresco.org/model/googledocs/1.0" xmlns:ver="http://www.alfresco.org/model/versionstore/1.0" xmlns:cmiscustom="http://www.alfresco.org/model/cmis/custom" xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:emailserver="http://www.alfresco.org/model/emailserver/1.0" xmlns:fm="http://www.alfresco.org/model/forum/1.0" xmlns:ia="http://www.alfresco.org/model/calendar" xmlns:rule="http://www.alfresco.org/model/rule/1.0" xmlns:wcm="http://www.alfresco.org/model/wcmmodel/1.0" xmlns:sv="http://www.jcp.org/jcr/sv/1.0" xmlns:dl="http://www.alfresco.org/model/datalist/1.0" xmlns:st="http://www.alfresco.org/model/site/1.0" xmlns:usr="http://www.alfresco.org/model/user/1.0" xmlns:custom="custom.model" xmlns:exif="http://www.alfresco.org/model/exif/1.0" xmlns:app="http://www.alfresco.org/model/application/1.0" xmlns:module="http://www.alfresco.org/system/modules/1.0" xmlns:d="http://www.alfresco.org/model/dictionary/1.0" xmlns:blg="http://www.alfresco.org/model/blogintegration/1.0" xmlns:alf="http://www.alfresco.org" xmlns:cmis="http://www.alfresco.org/model/cmis/1.0/cs01" xmlns:mix="http://www.jcp.org/jcr/mix/1.0" xmlns:wca="http://www.alfresco.org/model/wcmappmodel/1.0" xmlns:bpm="http://www.alfresco.org/model/bpm/1.0" xmlns:inwf="http://www.alfresco.org/model/workflow/invite/nominated/1.0" xmlns:imap="http://www.alfresco.org/model/imap/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0" xmlns:reg="http://www.alfresco.org/system/registry/1.0" xmlns:ver2="http://www.alfresco.org/model/versionstore/2.0" xmlns:stcp="http://www.alfresco.org/model/sitecustomproperty/1.0" xmlns:wcmwf="http://www.alfresco.org/model/wcmworkflow/1.0" xmlns:view="http://www.alfresco.org/view/repository/1.0" xmlns:imwf="http://www.alfresco.org/model/workflow/invite/moderated/1.0" xmlns:act="http://www.alfresco.org/model/action/1.0" xmlns:wf="http://www.alfresco.org/model/workflow/1.0" xmlns:trx="http://www.alfresco.org/model/transfer/1.0" view:childName="cm:invite-email_it.html.ftl">
+    <view:aspects>
+      <cm:auditable></cm:auditable>
+      <sys:referenceable></sys:referenceable>
+      <app:inlineeditable></app:inlineeditable>
+    </view:aspects>
+    <view:acl></view:acl>
+    <view:properties>
+      <app:editInline>true</app:editInline>
+      <cm:name>invite-email_it.html.ftl</cm:name>
+      <cm:title>invite-email_it.html.ftl</cm:title>
+      <cm:description>${spaces.templates.email.generate_the_invite_email.description} - ${version.italian}</cm:description>
+      <cm:content>contentUrl=classpath:alfresco/templates/invite-email-templates/invite-email_it.html.ftl|mimetype=text/plain|size=1565|encoding=UTF-8</cm:content>
+    </view:properties>
+  </cm:content>
+
+  <cm:content xmlns="" xmlns:nt="http://www.jcp.org/jcr/nt/1.0" xmlns:rn="http://www.alfresco.org/model/rendition/1.0" xmlns:sys="http://www.alfresco.org/model/system/1.0" xmlns:lnk="http://www.alfresco.org/model/linksmodel/1.0" xmlns:gd="http://www.alfresco.org/model/googledocs/1.0" xmlns:ver="http://www.alfresco.org/model/versionstore/1.0" xmlns:cmiscustom="http://www.alfresco.org/model/cmis/custom" xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:emailserver="http://www.alfresco.org/model/emailserver/1.0" xmlns:fm="http://www.alfresco.org/model/forum/1.0" xmlns:ia="http://www.alfresco.org/model/calendar" xmlns:rule="http://www.alfresco.org/model/rule/1.0" xmlns:wcm="http://www.alfresco.org/model/wcmmodel/1.0" xmlns:sv="http://www.jcp.org/jcr/sv/1.0" xmlns:dl="http://www.alfresco.org/model/datalist/1.0" xmlns:st="http://www.alfresco.org/model/site/1.0" xmlns:usr="http://www.alfresco.org/model/user/1.0" xmlns:custom="custom.model" xmlns:exif="http://www.alfresco.org/model/exif/1.0" xmlns:app="http://www.alfresco.org/model/application/1.0" xmlns:module="http://www.alfresco.org/system/modules/1.0" xmlns:d="http://www.alfresco.org/model/dictionary/1.0" xmlns:blg="http://www.alfresco.org/model/blogintegration/1.0" xmlns:alf="http://www.alfresco.org" xmlns:cmis="http://www.alfresco.org/model/cmis/1.0/cs01" xmlns:mix="http://www.jcp.org/jcr/mix/1.0" xmlns:wca="http://www.alfresco.org/model/wcmappmodel/1.0" xmlns:bpm="http://www.alfresco.org/model/bpm/1.0" xmlns:inwf="http://www.alfresco.org/model/workflow/invite/nominated/1.0" xmlns:imap="http://www.alfresco.org/model/imap/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0" xmlns:reg="http://www.alfresco.org/system/registry/1.0" xmlns:ver2="http://www.alfresco.org/model/versionstore/2.0" xmlns:stcp="http://www.alfresco.org/model/sitecustomproperty/1.0" xmlns:wcmwf="http://www.alfresco.org/model/wcmworkflow/1.0" xmlns:view="http://www.alfresco.org/view/repository/1.0" xmlns:imwf="http://www.alfresco.org/model/workflow/invite/moderated/1.0" xmlns:act="http://www.alfresco.org/model/action/1.0" xmlns:wf="http://www.alfresco.org/model/workflow/1.0" xmlns:trx="http://www.alfresco.org/model/transfer/1.0" view:childName="cm:invite-email_ja.html.ftl">
+    <view:aspects>
+      <cm:auditable></cm:auditable>
+      <sys:referenceable></sys:referenceable>
+      <app:inlineeditable></app:inlineeditable>
+    </view:aspects>
+    <view:acl></view:acl>
+    <view:properties>
+      <app:editInline>true</app:editInline>
+      <cm:name>invite-email_ja.html.ftl</cm:name>
+      <cm:title>invite-email_ja.html.ftl</cm:title>
+      <cm:description>${spaces.templates.email.generate_the_invite_email.description} - ${version.japanese}</cm:description>
+      <cm:content>contentUrl=classpath:alfresco/templates/invite-email-templates/invite-email_ja.html.ftl|mimetype=text/plain|size=1807|encoding=UTF-8</cm:content>
+    </view:properties>
+  </cm:content>
+</view:view>

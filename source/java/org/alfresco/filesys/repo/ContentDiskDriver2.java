@@ -937,7 +937,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
     }
     
     /**
-     * Open a file or folder
+     * Open a file or folder - obsolete implementation.
      * 
      * @param sess SrvSession
      * @param tree TreeConnection
@@ -947,291 +947,8 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
      */
     public NetworkFile openFile(SrvSession session, TreeConnection tree, FileOpenParams params) throws IOException
     {
-        ContentContext ctx = (ContentContext) tree.getContext();
-
-        if(logger.isDebugEnabled())
-        {
-            logger.debug("openFile :" + params + ", session:" + session.getUniqueId() + ", params:" + params);
-        }
-        try
-        {  
-            String name = params.getPath();
-
-            if(session.isPseudoFilesEnabled() && ctx.isPseudoFilesEnabled())
-            {
-                String[] paths = FileName.splitPath(name);
-                // lookup parent directory
-                NodeRef dirNodeRef = getNodeForPath(tree, paths[0]);
-
-                // Check whether we are opening a pseudo file
-                if(ctx.getPseudoFileOverlay().isPseudoFile(dirNodeRef, paths[1]))
-                {
-                    PseudoFile pfile =  ctx.getPseudoFileOverlay().getPseudoFile(dirNodeRef, paths[1]);
-                    if(logger.isDebugEnabled())
-                    {
-                        logger.debug("Opened pseudo file :" + pfile);
-                    }
-                    return pfile.getFile( params.getPath());
-                }
-            }
-
-            // not a psudo file
-
-            NodeRef nodeRef = getNodeForPath(tree, params.getPath());
-
-            // Check permissions on the file/folder node
-            //
-            // Check for read access
-
-            if ( params.hasAccessMode(AccessMode.NTRead) &&
-                    permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.DENIED)
-            {
-                if(logger.isDebugEnabled())
-                {
-                    logger.debug("about to throw an no read access denied exception path:" +params.getFullPath());
-                }
-                throw new AccessDeniedException("No read access to " + params.getFullPath());
-            }
-
-            // Check for write access
-            if ( params.hasAccessMode(AccessMode.NTWrite) &&
-                    permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.DENIED)
-            {
-                if(logger.isDebugEnabled())
-                {
-                    logger.debug("about to throw an no write access denied exception path:" +params.getFullPath());
-                }
- 
-                throw new AccessDeniedException("No write access to " + params.getFullPath());
-            }
-
-            // Check for delete access
-
-            //            if ( params.hasAccessMode(AccessMode.NTDelete) &&
-            //                    permissionService.hasPermission(nodeRef, PermissionService.DELETE) == AccessStatus.DENIED)
-            //                throw new AccessDeniedException("No delete access to " + params.getFullPath());
-
-            // will throw a NodeLockedException is locked by somebody else
-            if ( params.hasAccessMode(AccessMode.NTWrite))
-            {
-                lockService.checkForLock(nodeRef);
-            }
-            
-            // Check if the node is a link node            
-            NodeRef linkRef = (NodeRef) nodeService.getProperty(nodeRef, ContentModel.PROP_LINK_DESTINATION);
-            NetworkFile netFile = null;
-
-            if ( linkRef == null)
-            {
-                // A normal node, not a link node
-                
-                // TODO MER REWRITE HERE
-                FileInfo fileInfo = cifsHelper.getFileInformation(nodeRef, "", false, false);
-
-                // TODO this is wasteful - the isDirectory is in the params.   We should split off an openDirectory method.
-                if(fileInfo.isDirectory())
-                {
-                    logger.debug("open file - is a directory!");
-                    netFile = new AlfrescoFolder(params.getFullPath(), fileInfo, params.isReadOnlyAccess()); 
-                }
-                else
-                {
-                    // A normal file
-                    if(params.isReadOnlyAccess())
-                    {
-                        logger.debug("open file for read only");
-                        netFile = ContentNetworkFile.createFile(nodeService, contentService, mimetypeService, getCifsHelper(), nodeRef, params, session);
-
-                    }
-                    else if(params.isReadWriteAccess())
-                    {
-                        logger.debug("open file for read write");
-                        File file = TempFileProvider.createTempFile("cifs", ".bin");
-
-                        if(! params.isOverwrite())
-                        {
-                            // Need to open a temp file with a copy of the content.
-                            ContentReader reader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
-                            if(reader != null)
-                            {
-                                reader.getContent(file);
-                            }
-                        }
-
-                        netFile = new TempNetworkFile(file, name);
-
-                        // Generate a file id for the file
-
-                        if ( netFile != null) 
-                        {
-                            long id = DefaultTypeConverter.INSTANCE.convert(Long.class, nodeService.getProperty(nodeRef, ContentModel.PROP_NODE_DBID));
-                            netFile.setFileId((int) (id & 0xFFFFFFFFL));
-                        }
-
-                        if (logger.isDebugEnabled())
-                        {
-                            logger.debug("Created file: path=" + name + " node=" + nodeRef + " network file=" + netFile);
-                        }
-                    }
-                    else
-                    {
-                        // Write only or AttributesOnly
-                        logger.debug("open file write or attributes only");
-                        File file = TempFileProvider.createTempFile("cifs", ".bin");
-
-                        netFile = new TempNetworkFile(file, name);
-
-                        // Generate a file id for the file
-
-                        if ( netFile != null) 
-                        {
-                            long id = DefaultTypeConverter.INSTANCE.convert(Long.class, nodeService.getProperty(nodeRef, ContentModel.PROP_NODE_DBID));
-                            netFile.setFileId((int) (id & 0xFFFFFFFFL));
-                        }
-
-                        if (logger.isDebugEnabled())
-                        {
-                            logger.debug("Created temporary file: path=" + name + " node=" + nodeRef + " network file=" + netFile);
-                        }
-                    }
-                    
-                    if ( params.isReadOnlyAccess())
-                    {
-                        netFile.setGrantedAccess( NetworkFile.READONLY);
-                    }
-                    else if ( params.isWriteOnlyAccess())
-                    {
-                        // Needs to be READWRITE for JavaNetworkFile - there's no such thing as WRITEONLY!
-                        netFile.setGrantedAccess( NetworkFile.READWRITE);
-                    }
-                    else
-                    {
-                        netFile.setGrantedAccess( NetworkFile.READWRITE);
-                    }
-                    
-                } // end of a normal file
-            }
-            else
-            {
-                // This is a link node
-
-                // Get the CIFS server name
-
-                String srvName = null;
-                SMBServer cifsServer = (SMBServer) session.getServer().getConfiguration().findServer( "CIFS");
-
-                if ( cifsServer != null)
-                {
-                    // Use the CIFS server name in the URL
-
-                    srvName = cifsServer.getServerName();
-                }
-                else
-                {
-                    // Use the local server name in the URL
-                    srvName = InetAddress.getLocalHost().getHostName();
-                }
-
-                // Convert the target node to a path, convert to URL format
-
-                String path = getPathForNode( tree, linkRef);
-                path = path.replace( FileName.DOS_SEPERATOR, '/');
-
-                // Build the URL file data
-
-                StringBuilder urlStr = new StringBuilder();
-
-                urlStr.append("[InternetShortcut]\r\n");
-                urlStr.append("URL=file://");
-                urlStr.append( srvName);
-                urlStr.append("/");
-                urlStr.append( tree.getSharedDevice().getName());
-                urlStr.append( path);
-                urlStr.append("\r\n");
-
-                // Create the in memory pseudo file for the URL link
-
-                byte[] urlData = urlStr.toString().getBytes();
-
-                // Get the file information for the link node
-
-                FileInfo fInfo = getCifsHelper().getFileInformation( nodeRef, false, isLockedFilesAsOffline);
-
-                // Set the file size to the actual data length
-
-                fInfo.setFileSize( urlData.length);
-
-                // Create the network file using the in-memory file data
-
-                netFile = new LinkMemoryNetworkFile( fInfo.getFileName(), urlData, fInfo, nodeRef);
-                netFile.setFullName( params.getPath());
-            }
-
-            // Generate a file id for the file
-
-            if ( netFile != null) 
-            {
-                long id = DefaultTypeConverter.INSTANCE.convert(Long.class, nodeService.getProperty(nodeRef, ContentModel.PROP_NODE_DBID));
-                netFile.setFileId(( int) ( id & 0xFFFFFFFFL));
-            }
-
-            // If the file has been opened for overwrite then truncate the file to zero length, this will
-            // also prevent the existing content data from being copied to the new version of the file
-
-            if ( params.isOverwrite() && netFile != null)
-            {
-                // Truncate the file to zero length
-                if(logger.isDebugEnabled())
-                {
-                    logger.debug("truncate file");
-                }
-
-                netFile.truncateFile( 0L);
-            }
-
-            // Debug
-
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Opened network file: path=" + params.getPath() + " file open parameters=" + params + " network file=" + netFile);
-            }
-
-            // Return the network file
-
-            return netFile;
-        }
-        catch (NodeLockedException nle)
-        {
-            if ( logger.isDebugEnabled())
-            {
-                logger.debug("Open file - node is locked, " + params.getFullPath());
-            }
-            throw new AccessDeniedException("File is locked, no write access to " + params.getFullPath());
-        }
-        catch (org.alfresco.repo.security.permissions.AccessDeniedException ex)
-        {
-            // Debug
-
-            if ( logger.isDebugEnabled())
-            {
-                logger.debug("Open file - access denied, " + params.getFullPath());
-            } 
-            // Convert to a filesystem access denied status
-
-            throw new AccessDeniedException("Open file " + params.getFullPath());
-        }
-        catch (AlfrescoRuntimeException ex)
-        {
-            // Debug
-
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Open file error", ex);
-            }
-            // Convert to a general I/O exception
-
-            throw new IOException("Open file " + params.getFullPath(), ex);
-        }
+        // obsolete
+        throw new AlfrescoRuntimeException("obsolete method called");
     }
     
     /**
@@ -1246,7 +963,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
     public NetworkFile createFile(SrvSession sess, final TreeConnection tree, final FileOpenParams params) throws IOException
     {
         // Obsolete
-        return null;
+        throw new AlfrescoRuntimeException("obsolete method called");
     }
 
     /**
@@ -1448,147 +1165,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
      */
     public void closeFile(SrvSession session, TreeConnection tree, final NetworkFile file) throws IOException
     {   
-//        if ( logger.isDebugEnabled())
-//        {
-//            logger.debug("Close file=" + file.getFullName() + ", session:" + session.getUniqueId());
-//        }
-//        // Get the associated file state
-//        
-//       final ContentContext ctx = (ContentContext) tree.getContext();
-//        
-//        if( file instanceof PseudoNetworkFile)
-//        {
-//            file.close();
-//            return;
-//        }
-//        
-//        /**
-//         * Delete on close attribute - node needs to be deleted.
-//         */
-//        if(file.hasDeleteOnClose())
-//        {
-//            if(logger.isDebugEnabled())
-//            {
-//                logger.debug("closeFile has delete on close set");
-//            }
-// 
-//            NodeRef target = getCifsHelper().getNodeRef(ctx.getRootNode(), file.getFullName());
-//            if(target!=null)
-//            {
-//                nodeService.deleteNode(target);
-//            }
-//            
-//            //TODO Needs to be post-commit
-//            if(file instanceof TempNetworkFile)
-//            {
-//                TempNetworkFile tnf = (TempNetworkFile)file;
-//                final QuotaManager quotaMgr = ctx.getQuotaManager();
-//                if (quotaMgr != null)
-//                {
-//                    quotaMgr.releaseSpace(session, tree, file.getFileId(), file.getName(), tnf.getFileSizeInt());
-//                }
-//            }
-//            
-//            // Still need to close the open file handle.
-//            file.close();
-//            
-//            if (logger.isDebugEnabled())
-//            {
-//                logger.debug("Closed file: network file=" + file + " delete on close=" + file.hasDeleteOnClose());
-//            }
-//            
-//  
-//            return;
-//        }
-//        
-//        // Check for a temp file - which will be a new file or a read/write file
-//        if ( file instanceof TempNetworkFile) 
-//        {   
-//            if(logger.isDebugEnabled())
-//            {
-//                logger.debug("Got a temp network file ");
-//            }
-//            
-//            TempNetworkFile tempFile =(TempNetworkFile)file;
-//            
-//            tempFile.flushFile();
-//            tempFile.close();
-//            
-//            // Take an initial guess at the mimetype (if it has not been set by something already)
-//            String mimetype = mimetypeService.guessMimetype(tempFile.getFullName(), new FileContentReader(tempFile.getFile()));
-//            logger.debug("guesssed mimetype:" + mimetype);
-//            
-//            String encoding;
-//            // Take a guess at the locale
-//            InputStream is = new BufferedInputStream(new FileInputStream(tempFile.getFile()));
-//            try
-//            {
-//                ContentCharsetFinder charsetFinder = mimetypeService.getContentCharsetFinder();
-//                Charset charset = charsetFinder.getCharset(is, mimetype);
-//                encoding = charset.name();
-//            }
-//            finally
-//            {
-//                if(is != null)
-//                {
-//                    is.close();
-//                }
-//            }
-//     
-//            NodeRef target = getCifsHelper().getNodeRef(ctx.getRootNode(), tempFile.getFullName());
-//            ContentWriter writer = contentService.getWriter(target, ContentModel.PROP_CONTENT, true);
-//            writer.setMimetype(mimetype);
-//            writer.setEncoding(encoding);
-//            writer.putContent(tempFile.getFile());
-//            
-//            long size = writer.getSize();
-//            if(nodeService.hasAspect(target, ContentModel.ASPECT_NO_CONTENT) && size > 0)
-//            {
-//                if(logger.isDebugEnabled())
-//                {
-//                    logger.debug("removed no content aspect");
-//                }
-//                nodeService.removeAspect(target, ContentModel.ASPECT_NO_CONTENT);
-//            }
-//        }
-//        
-//        try
-//        {                                           
-//            // Defer to the network file to close the stream and remove the content
-//                       
-//            file.close();                    
-//            
-//            // DEBUG
-//            
-//            if (logger.isDebugEnabled())
-//            {
-//                logger.debug("Closed file: network file=" + file + " delete on close=" + file.hasDeleteOnClose());
-//                
-//                if ( file.hasDeleteOnClose() == false && file instanceof ContentNetworkFile) 
-//                {
-//                    ContentNetworkFile cFile = (ContentNetworkFile) file;
-//                    logger.debug("  File " + file.getFullName() + ", version=" + nodeService.getProperty( cFile.getNodeRef(), ContentModel.PROP_VERSION_LABEL));
-//                }
-//            }
-//        }
-//        // Make sure we clean up before propagating exceptions
-//        catch (IOException e)
-//        {
-//            if ( logger.isDebugEnabled())
-//            {   
-//                logger.debug("Exception in closeFile - ", e);
-//            }
-//            throw e;
-//        }
-//        catch (Error e)
-//        {
-//            if ( logger.isDebugEnabled())
-//            {   
-//                logger.debug("Exception in closeFile - ", e);
-//            }
-//            
-//            throw e;
-//        }
+        throw new AlfrescoRuntimeException("obsolete method called");
     }
 
     /**
@@ -1923,13 +1500,14 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 }
             }
             
-            if(info.isHidden())
+            if(info.isHidden() && !nodeService.hasAspect(nodeRef, ContentModel.ASPECT_HIDDEN))
             {
                 if ( logger.isDebugEnabled())
                 {
-                    logger.debug("Set hidden attribute" + name);
+                    logger.debug("Set hidden aspect (not yet implemented)" + name);
                 }
-                // Not yet implemented
+// TODO Not yet implemented - and how to reset hidden bit?               
+//                nodeService.addAspect(nodeRef, ContentModel.ASPECT_HIDDEN, null);
             }
             
             if( info.hasSetFlag(FileInfo.SetAllocationSize))
@@ -2272,9 +1850,9 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 extendSize = endOfWrite - file.getFileSize();
             
                 //  Allocate space for the file extend
-                if(logger.isDebugEnabled())
+                if(writeLogger.isDebugEnabled())
                 {
-                    logger.debug("writeFile: allocate more space fileName:" + file.getName());
+                    writeLogger.debug("writeFile: allocate more space fileName:" + file.getName() + ", extendTo:"+ extendSize);
                 }
                
             
@@ -2364,40 +1942,56 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
      * @return String
      * @exception FileNotFoundException
      */
-    private String getPathForNode( TreeConnection tree, NodeRef nodeRef)
-    	throws FileNotFoundException
+//    private String getPathForNode( TreeConnection tree, NodeRef nodeRef)
+//    	throws FileNotFoundException
+//    {
+//     	// Convert the target node to a path
+//        ContentContext ctx = (ContentContext) tree.getContext();
+//    	
+//    	return getPathForNode(ctx.getRootNode(), nodeRef);
+//    	
+//    }
+//    
+    /**
+     * Convert a node into a share relative path
+     * 
+     * @param tree rootNode
+     * @param nodeRef NodeRef
+     * @return String
+     * @exception FileNotFoundException
+     */
+    private String getPathForNode( NodeRef rootNode, NodeRef nodeRef)
+        throws FileNotFoundException
     {
         if(logger.isDebugEnabled())
         {
             logger.debug("getPathForNode:" + nodeRef);
         }
         
-    	// Convert the target node to a path
-        ContentContext ctx = (ContentContext) tree.getContext();
-    	List<org.alfresco.service.cmr.model.FileInfo> linkPaths = null;
-    	
-    	try 
-    	{
-    		linkPaths = fileFolderService.getNamePath( ctx.getRootNode(), nodeRef);
-    	}
-    	catch ( org.alfresco.service.cmr.model.FileNotFoundException ex)
-    	{
-    		throw new FileNotFoundException();
-    	}
+        List<org.alfresco.service.cmr.model.FileInfo> linkPaths = null;
+        
+        try 
+        {
+            linkPaths = fileFolderService.getNamePath( rootNode, nodeRef);
+        }
+        catch ( org.alfresco.service.cmr.model.FileNotFoundException ex)
+        {
+            throw new FileNotFoundException();
+        }
 
-    	// Build the share relative path to the node
-    	
-    	StringBuilder pathStr = new StringBuilder();
-    	
-    	for ( org.alfresco.service.cmr.model.FileInfo fInfo : linkPaths) 
-    	{
-    		pathStr.append( FileName.DOS_SEPERATOR);
-    		pathStr.append( fInfo.getName());
-    	}
-    	
-    	// Return the share relative path
-    	
-    	return pathStr.toString();
+        // Build the share relative path to the node
+        
+        StringBuilder pathStr = new StringBuilder();
+        
+        for ( org.alfresco.service.cmr.model.FileInfo fInfo : linkPaths) 
+        {
+            pathStr.append( FileName.DOS_SEPERATOR);
+            pathStr.append( fInfo.getName());
+        }
+        
+        // Return the share relative path
+        
+        return pathStr.toString();
     }
     
 	/**
@@ -2709,12 +2303,294 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
     }
     
     /**
-     * Open the file
+     * Open the file - Repo Specific implementation 
      */
-    public NetworkFile openFile(String path, OpenFileMode mode, boolean truncate)
+    public NetworkFile openFile(SrvSession session, TreeConnection tree, NodeRef rootNode, String path, OpenFileMode mode, boolean truncate) throws IOException
     {
-        return null;
-        
+        ContentContext ctx = (ContentContext) tree.getContext();
+
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("openFile :" + path + ", mode:" + mode );
+        }
+        try
+        {  
+            String name = path;
+
+            if(session.isPseudoFilesEnabled() && ctx.isPseudoFilesEnabled())
+            {
+                String[] paths = FileName.splitPath(name);
+                // lookup parent directory
+                NodeRef dirNodeRef = getNodeForPath(rootNode, paths[0]);
+
+                // Check whether we are opening a pseudo file
+                if(ctx.getPseudoFileOverlay().isPseudoFile(dirNodeRef, paths[1]))
+                {
+                    PseudoFile pfile =  ctx.getPseudoFileOverlay().getPseudoFile(dirNodeRef, paths[1]);
+                    if(logger.isDebugEnabled())
+                    {
+                        logger.debug("Opened pseudo file :" + pfile);
+                    }
+                    return pfile.getFile( path);
+                }
+            }
+
+            // not a psudo file
+
+            NodeRef nodeRef = getNodeForPath(rootNode, path);
+            
+            boolean readOnly=false;
+
+            // Check permissions on the file/folder
+            switch(mode)
+            {
+            case READ_ONLY:
+                // follow through
+            case ATTRIBUTES_ONLY:
+                if(permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.DENIED)
+                {
+                    if(logger.isDebugEnabled())
+                    {
+                        logger.debug("about to throw an no read access denied exception path:" +path);
+                    }
+                    throw new AccessDeniedException("No read access to " + path);
+                }
+                readOnly = true;
+                break;
+
+            case READ_WRITE:
+            case WRITE_ONLY:
+                if(permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.DENIED)
+                {
+                    if(logger.isDebugEnabled())
+                    {
+                        logger.debug("about to throw an no write access denied exception path:" + path);
+                    }
+     
+                    throw new AccessDeniedException("No write access to " + path);
+                }
+                lockService.checkForLock(nodeRef);
+                readOnly=false;
+                break;
+            case DELETE:  
+                lockService.checkForLock(nodeRef);
+                
+            }
+               
+            // Check if the node is a link node            
+            NodeRef linkRef = (NodeRef) nodeService.getProperty(nodeRef, ContentModel.PROP_LINK_DESTINATION);
+            NetworkFile netFile = null;
+
+            if ( linkRef == null)
+            {
+                // A normal node, not a link node
+                
+                // TODO MER REWRITE HERE
+                FileInfo fileInfo = cifsHelper.getFileInformation(nodeRef, "", false, false);
+
+                // TODO this is wasteful - the isDirectory is in the params.   We should split off an openDirectory method.
+                if(fileInfo.isDirectory())
+                {
+                    logger.debug("open file - is a directory!");
+                    netFile = new AlfrescoFolder(path, fileInfo, readOnly); 
+                }
+                else
+                {
+                    // A normal file
+                    switch (mode)
+                    {
+                        case READ_ONLY:
+                                               
+                            logger.debug("open file for read only");
+                            netFile = ContentNetworkFile.createFile(nodeService, contentService, mimetypeService, getCifsHelper(), nodeRef, path, true, session);
+                            netFile.setGrantedAccess( NetworkFile.READONLY);
+                            break;
+                    
+                        case READ_WRITE:
+                        {
+                            logger.debug("open file for read write");
+                            File file = TempFileProvider.createTempFile("cifs", ".bin");
+
+                            if(!truncate)
+                            {
+                                // Need to open a temp file with a copy of the content.
+                                ContentReader reader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
+                                if(reader != null)
+                                {
+                                    reader.getContent(file);
+                                }
+                            }
+
+                            netFile = new TempNetworkFile(file, name);
+                            
+                            if(truncate)
+                            {
+                                netFile.truncateFile(0);
+                            }
+
+                            // Generate a file id for the file
+
+                            if ( netFile != null) 
+                            {
+                                long id = DefaultTypeConverter.INSTANCE.convert(Long.class, nodeService.getProperty(nodeRef, ContentModel.PROP_NODE_DBID));
+                                netFile.setFileId((int) (id & 0xFFFFFFFFL));
+                            }
+
+                            if (logger.isDebugEnabled())
+                            {
+                                logger.debug("Created file: path=" + name + " node=" + nodeRef + " network file=" + netFile);
+                            }
+                            netFile.setGrantedAccess( NetworkFile.READWRITE);
+                        }
+                            break;
+                        
+                        case ATTRIBUTES_ONLY:
+                            logger.debug("open file for attributes only");
+                            netFile = ContentNetworkFile.createFile(nodeService, contentService, mimetypeService, getCifsHelper(), nodeRef, path, true, session);
+                            netFile.setGrantedAccess( NetworkFile.READONLY);
+                            break;
+                        
+                        case DELETE:
+                            //TODO Not sure about this one.
+                            logger.debug("open file for delete");
+                            netFile = ContentNetworkFile.createFile(nodeService, contentService, mimetypeService, getCifsHelper(), nodeRef, path,true , session);
+                            netFile.setGrantedAccess( NetworkFile.READONLY);
+                            break;
+                            
+                        case WRITE_ONLY:
+                          {
+                              // consider this as open read/write/truncate)
+                            logger.debug("open file write only");
+                            File file = TempFileProvider.createTempFile("cifs", ".bin");
+
+                            netFile = new TempNetworkFile(file, name);
+
+                            // Generate a file id for the file
+
+                            if ( netFile != null) 
+                            {
+                                long id = DefaultTypeConverter.INSTANCE.convert(Long.class, nodeService.getProperty(nodeRef, ContentModel.PROP_NODE_DBID));
+                                netFile.setFileId((int) (id & 0xFFFFFFFFL));
+                            }
+
+                            if (logger.isDebugEnabled())
+                            {
+                                logger.debug("Created temporary file: path=" + name + " node=" + nodeRef + " network file=" + netFile);
+                            }
+                        
+                            // Needs to be READWRITE for JavaNetworkFile - there's no such thing as WRITEONLY!
+                            netFile.setGrantedAccess( NetworkFile.READWRITE);
+                        }
+                    }
+                } // end of a normal file
+            }
+            else
+            {
+                // This is a link node
+
+                // TODO - This server name stuff should be replaced In particular the 
+                // See PseudoFileOverlayImp
+                // Get the CIFS server name
+
+                String srvName = null;
+                SMBServer cifsServer = (SMBServer) session.getServer().getConfiguration().findServer( "CIFS");
+
+                if ( cifsServer != null)
+                {
+                    // Use the CIFS server name in the URL
+
+                    srvName = cifsServer.getServerName();
+                }
+                else
+                {
+                    // Use the local server name in the URL
+                    srvName = InetAddress.getLocalHost().getHostName();
+                }
+
+                // Convert the target node to a path, convert to URL format
+
+                String pathl = getPathForNode( rootNode, linkRef);
+                path = pathl.replace( FileName.DOS_SEPERATOR, '/');
+
+                // Build the URL file data
+
+                StringBuilder urlStr = new StringBuilder();
+
+                urlStr.append("[InternetShortcut]\r\n");
+                urlStr.append("URL=file://");
+                urlStr.append( srvName);
+                urlStr.append("/");
+                urlStr.append( tree.getSharedDevice().getName());
+                urlStr.append( pathl);
+                urlStr.append("\r\n");
+
+                // Create the in memory pseudo file for the URL link
+
+                byte[] urlData = urlStr.toString().getBytes();
+
+                // Get the file information for the link node
+
+                FileInfo fInfo = getCifsHelper().getFileInformation( nodeRef, false, isLockedFilesAsOffline);
+
+                // Set the file size to the actual data length
+
+                fInfo.setFileSize( urlData.length);
+
+                // Create the network file using the in-memory file data
+
+                netFile = new LinkMemoryNetworkFile( fInfo.getFileName(), urlData, fInfo, nodeRef);
+                netFile.setFullName( path);
+            }
+
+            // Generate a file id for the file
+
+            if ( netFile != null) 
+            {
+                long id = DefaultTypeConverter.INSTANCE.convert(Long.class, nodeService.getProperty(nodeRef, ContentModel.PROP_NODE_DBID));
+                netFile.setFileId(( int) ( id & 0xFFFFFFFFL));
+            }
+
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Opened network file: path=" + path + " network file=" + netFile);
+            }
+
+            // Return the network file
+
+            return netFile;
+        }
+        catch (NodeLockedException nle)
+        {
+            if ( logger.isDebugEnabled())
+            {
+                logger.debug("Open file - node is locked, " + path);
+            }
+            throw new AccessDeniedException("File is locked, no write access to " + path);
+        }
+        catch (org.alfresco.repo.security.permissions.AccessDeniedException ex)
+        {
+            // Debug
+
+            if ( logger.isDebugEnabled())
+            {
+                logger.debug("Open file - access denied, " + path);
+            } 
+            // Convert to a filesystem access denied status
+
+            throw new AccessDeniedException("Open file " + path);
+        }
+        catch (AlfrescoRuntimeException ex)
+        {
+            // Debug
+
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Open file error", ex);
+            }
+            // Convert to a general I/O exception
+
+            throw new IOException("Open file " + path, ex);
+        }        
     }
     
     /**
@@ -2781,6 +2657,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 logger.debug("Got a temp network file ");
             }
             
+            // Some content was written to the temp file.
             TempNetworkFile tempFile =(TempNetworkFile)file;
             
             NodeRef target = getCifsHelper().getNodeRef(rootNode, tempFile.getFullName());
@@ -2796,7 +2673,6 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             
             if(tempFile.getWriteCount() > 0) 
             {
-                // Some content was written to the temp file.
                 tempFile.flushFile();
                 tempFile.close();
                 
@@ -2841,7 +2717,14 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                     {
                         if(is != null)
                         {
-                            is.close();
+                            try
+                            {
+                               is.close();
+                            }
+                            catch (IOException e)
+                            {
+                               // Ignore
+                            }
                         }
                     }
                     ContentWriter writer = contentService.getWriter(target, ContentModel.PROP_CONTENT, true);
@@ -2862,7 +2745,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             
             if (logger.isDebugEnabled())
             {
-                logger.debug("Closed file: network file=" + file + " delete on close=" + file.hasDeleteOnClose());
+                logger.debug("Closed file: network file=" + file + " delete on close=" + file.hasDeleteOnClose() + ", write count" + file.getWriteCount());
                 
                 if ( file.hasDeleteOnClose() == false && file instanceof ContentNetworkFile) 
                 {

@@ -1877,7 +1877,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                     
                     // Create a new network file for the open request
                 
-                    netFile = ContentNetworkFile.createFile(nodeService, contentService, mimetypeService, cifsHelper, nodeRef, params, sess);
+                    netFile = ContentNetworkFile.createFile(nodeService, contentService, mimetypeService, cifsHelper, nodeRef, params.getPath(), params.isReadOnlyAccess(), sess);
                 }
             }
             else
@@ -2090,7 +2090,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
             
             // Create the network file
             
-            ContentNetworkFile netFile = ContentNetworkFile.createFile(nodeService, contentService, mimetypeService, cifsHelper, result.getSecond(), params, sess);
+            ContentNetworkFile netFile = ContentNetworkFile.createFile(nodeService, contentService, mimetypeService, cifsHelper, result.getSecond(), params.getPath(), params.isReadOnlyAccess(), sess);
             
             // Always allow write access to a newly created file
             

@@ -21,6 +21,7 @@ package org.alfresco.filesys.alfresco;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import org.alfresco.filesys.repo.OpenFileMode;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.filesys.NetworkFile;
 import org.alfresco.jlan.server.filesys.TreeConnection;
@@ -52,7 +53,19 @@ public interface RepositoryDiskInterface
      * @throws FileNotFoundException 
      */
     public NetworkFile createFile(NodeRef rootNode, String Path, long allocationSize) throws IOException;
-    
+
+    /**
+     * 
+     * @param session // temp until refactor
+     * @param tree // temp until refactor
+     * @param rootNode
+     * @param path
+     * @param mode
+     * @param truncate
+     * @return NetworkFile
+     */
+    public NetworkFile openFile(SrvSession session, TreeConnection tree, NodeRef rootNode, String path, OpenFileMode mode, boolean truncate) throws IOException;
+
     /**
      * CloseFile.
      * 

@@ -88,9 +88,8 @@ public class ContentNetworkFile extends NodeRefNetworkFile
      * Helper method to create a {@link NetworkFile network file} given a node reference.
      */
     public static ContentNetworkFile createFile( NodeService nodeService, ContentService contentService, MimetypeService mimetypeService,
-            CifsHelper cifsHelper, NodeRef nodeRef, FileOpenParams params, SrvSession sess)
+            CifsHelper cifsHelper, NodeRef nodeRef, String path, boolean readOnly, SrvSession sess)
     {
-        String path = params.getPath();
         
         // Create the file
         
@@ -117,7 +116,7 @@ public class ContentNetworkFile extends NodeRefNetworkFile
         
         // Set relevant parameters
         
-        if (params.isReadOnlyAccess())
+        if (readOnly)
         {
             netFile.setGrantedAccess(NetworkFile.READONLY);
         }
@@ -165,8 +164,8 @@ public class ContentNetworkFile extends NodeRefNetworkFile
         netFile.setAttributes(fileInfo.getFileAttributes());
 
         // Set the owner process id
-        
-        netFile.setProcessId( params.getProcessId());
+        //
+        //netFile.setProcessId( params.getProcessId());
         
         // If the file is read-only then only allow read access
         
@@ -176,7 +175,7 @@ public class ContentNetworkFile extends NodeRefNetworkFile
         // DEBUG
         
         if (logger.isDebugEnabled())
-            logger.debug("Create file node=" + nodeRef + ", param=" + params + ", netfile=" + netFile);
+            logger.debug("Create file node=" + nodeRef + ", path=" + path + ", netfile=" + netFile);
 
         // Return the network file
         

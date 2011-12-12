@@ -267,49 +267,70 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
             }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
         }
     }
+    
+    @Override
+    protected boolean canReadSite(final RepoCtx ctx, String siteIdIn, String connectedUser, final String tenantDomain) throws Exception
+    {
+        if (useRemoteCallbacks)
+        {
+            // note: not implemented
+            throw new UnsupportedOperationException("Not implemented");
+        }
+        
+        final String siteId = tenantService.getBaseName(siteIdIn, true);
+        
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Boolean>()
+        {
+            public Boolean doWork() throws Exception
+            {
+                return (siteService.getSite(siteId) != null);
+            }
+        }, connectedUser);
+    }
 
     protected boolean canRead(RepoCtx ctx, final String connectedUser, Map<String, Object> model) throws Exception
     {
         if (useRemoteCallbacks)
         {
             // note: not implemented
-            return super.canRead(ctx, connectedUser, model);
+            throw new UnsupportedOperationException("Not implemented");
+        }
+        
+        if (permissionService == null)
+        {
+            // if permission service not configured then fallback (ie. no read permission check)
+            return true;
+        }
+        
+        String nodeRefStr = (String) model.get(PostLookup.JSON_NODEREF);
+        if (nodeRefStr == null)
+        {
+            nodeRefStr = (String) model.get(PostLookup.JSON_NODEREF_PARENT);
+        }
+        
+        if (nodeRefStr != null)
+        {
+            final NodeRef nodeRef = new NodeRef(nodeRefStr);
+            
+            // MT share
+            String tenantDomain = (String)model.get(PostLookup.JSON_TENANT_DOMAIN);
+            if (tenantDomain == null) { tenantDomain = TenantService.DEFAULT_DOMAIN; }
+            
+            return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Boolean>()
+            {
+                public Boolean doWork() throws Exception
+                {
+                    return canReadImpl(connectedUser, nodeRef);
+                }
+            }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
         }
         else
         {
-            if (permissionService == null)
-            {
-                // if permission service not configured then fallback (ie. no read permission check)
-                return true;
-            }
-            
-            String nodeRefStr = (String) model.get(PostLookup.JSON_NODEREF);
-            if (nodeRefStr == null)
-            {
-                nodeRefStr = (String) model.get(PostLookup.JSON_NODEREF_PARENT);
-            }
-            
-            if (nodeRefStr != null)
-            {
-                final NodeRef nodeRef = new NodeRef(nodeRefStr);
-                
-                // MT share
-                String tenantDomain = (String)model.get(PostLookup.JSON_TENANT_DOMAIN);
-                if (tenantDomain == null) { tenantDomain = TenantService.DEFAULT_DOMAIN; }
-                
-                return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Boolean>()
-                {
-                    public Boolean doWork() throws Exception
-                    {
-                        return canReadImpl(connectedUser, nodeRef);
-                    }
-                }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
-            }
-            
+            // no nodeRef
             return true;
         }
     }
-
+    
     private boolean canReadImpl(final String connectedUser, final NodeRef nodeRef) throws Exception
     {
         // check for read permission
@@ -498,6 +519,12 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
     
     protected Set<String> getFollowers(final String userId, String tenantDomain) throws Exception
     {
+        if (useRemoteCallbacks)
+        {
+            // note: not implemented
+            throw new UnsupportedOperationException("Not implemented");
+        }
+        
         final Set<String> result = new HashSet<String>();
         
         if (subscriptionService.isActive())

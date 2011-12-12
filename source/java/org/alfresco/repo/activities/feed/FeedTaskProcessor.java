@@ -47,6 +47,7 @@ import org.alfresco.repo.template.ISO8601DateFormatMethod;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.JSONtoFmModel;
+import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
@@ -119,9 +120,11 @@ public abstract class FeedTaskProcessor
             
             Configuration cfg = getFreemarkerConfiguration(ctx);
             
+            // local caches for this run of activity posts
             Map<String, List<String>> activityTemplates = new HashMap<String, List<String>>(10);
-            Map<String, Set<String>> siteConnectedUsers = new TreeMap<String, Set<String>>();
-            Map<String, Set<String>> followers = new TreeMap<String, Set<String>>();
+            Map<String, Set<String>> siteConnectedUsers = new HashMap<String, Set<String>>();                                 // site -> site members
+            Map<Pair<String, String>, Set<String>> followerConnectedUsers = new HashMap<Pair<String, String>, Set<String>>(); // user -> followers
+            Map<Pair<String, String>, Boolean> canUserReadSite = new HashMap<Pair<String, String>, Boolean>();                // <user, site> -> true/false (note: used when following, implied as true for site members)
             Map<String, List<FeedControlEntity>> userFeedControls = new HashMap<String, List<FeedControlEntity>>();
             Map<String, Template> templateCache = new TreeMap<String, Template>();
             
@@ -258,60 +261,18 @@ public abstract class FeedTaskProcessor
                 model.put("xmldate", new ISO8601DateFormatMethod());
                 model.put("repoEndPoint", ctx.getRepoEndPoint());
                 
-                // Recipients of this post
-                Set<String> recipients = new HashSet<String>();
-                
-                // Add site members to recipient list
-                if (thisSite.length() > 0)
-                {        
-                    // Get the members of this site - save hammering the repository by reusing cached site members
-                    Set<String> connectedUsers = siteConnectedUsers.get(thisSite);
-                    if (connectedUsers == null)
-                    {
-                        try
-                        {
-                            // Repository callback to get site members
-                            connectedUsers = getSiteMembers(ctx, thisSite, tenantDomain);
-                            connectedUsers.add(""); // add empty posting userid - to represent site feed !
-                        }
-                        catch(Exception e)
-                        {
-                            logger.error("Skipping activity post " + activityPost.getId() + " since failed to get site members: " + e);
-                            updatePostStatus(activityPost.getId(), ActivityPostEntity.STATUS.ERROR);
-                            continue;
-                        }
-                        
-                        // Cache them for future use in this same invocation
-                        siteConnectedUsers.put(thisSite, connectedUsers);
-                    }
-                    
-                    recipients.addAll(connectedUsers);
-                }
-                
-                // Add followers to recipient list
-                
-                // MT Share - mangle key to be within context of tenant
-                String key = getTenantKey(activityPost.getUserId(), tenantDomain);
-                Set<String> followerUsers = followers.get(key);
-                if (followerUsers == null)
+                // Get recipients of this post
+                Set<String> recipients = null;
+                try
                 {
-                    try
-                    {
-                        followerUsers = getFollowers(activityPost.getUserId(), tenantDomain);
-                    }
-                    catch(Exception e)
-                    {
-                        logger.error("Skipping activity post " + activityPost.getId() + " since failed to get followers: " + e);
-                        updatePostStatus(activityPost.getId(), ActivityPostEntity.STATUS.ERROR);
-                        continue;
-                    }
-                    
-                    followers.put(key, followerUsers);
+                    recipients = getRecipients(ctx, thisSite, activityPost.getUserId(), tenantDomain, siteConnectedUsers, followerConnectedUsers, canUserReadSite);
                 }
-                recipients.addAll(followerUsers);
-                
-                // Add the originator to recipients
-                recipients.add(activityPost.getUserId());
+                catch (Exception e)
+                {
+                    logger.error("Skipping activity post " + activityPost.getId() + " since failed to get recipients: " + e);
+                    updatePostStatus(activityPost.getId(), ActivityPostEntity.STATUS.ERROR);
+                    continue;
+                }
                 
                 try 
                 { 
@@ -345,7 +306,7 @@ public abstract class FeedTaskProcessor
                         }
                         else
                         {
-                            // read permission check
+                            // node read permission check (if nodeRef is present)
                             if (! canRead(ctx, recipient, model))
                             {
                                 excludedConnections++;
@@ -449,7 +410,89 @@ public abstract class FeedTaskProcessor
             logger.info(sb.toString());
         }
     }
-
+    
+    private Set<String> getRecipients(RepoCtx ctx, String siteId, String postUserId, String tenantDomain,
+                                      Map<String, Set<String>> siteConnectedUsers, Map<Pair<String, String>, Set<String>> followerConnectedUsers, Map<Pair<String, String>, Boolean> canUserReadSite) throws Exception
+    {
+        // Recipients of this post
+        Set<String> recipients = new HashSet<String>();
+        
+        // Add site members to recipient list
+        if (siteId.length() > 0)
+        {
+            // Get the members of this site - save hammering the repository by reusing cached site members
+            Set<String> connectedUsers = siteConnectedUsers.get(siteId);
+            if (connectedUsers == null)
+            {
+                try
+                {
+                    // Repository callback to get site members
+                    connectedUsers = getSiteMembers(ctx, siteId, tenantDomain);
+                    connectedUsers.add(""); // add empty posting userid - to represent site feed !
+                }
+                catch(Exception e)
+                {
+                    throw new Exception("Failed to get site members: "+e);
+                }
+                
+                // Cache them for future use (across activity posts handled) by this same invocation
+                siteConnectedUsers.put(siteId, connectedUsers);
+            }
+            
+            recipients.addAll(connectedUsers);
+        }
+        
+        // Add followers to recipient list
+        
+        // MT Share
+        Pair<String, String> userTenantKey = new Pair<String, String>(postUserId, tenantDomain);
+        Set<String> followerUsers = followerConnectedUsers.get(userTenantKey);
+        if (followerUsers == null)
+        {
+            try
+            {
+                followerUsers = getFollowers(postUserId, tenantDomain);
+            }
+            catch(Exception e)
+            {
+                throw new Exception("Failed to get followers: "+e);
+            }
+            
+            // Cache them for future use (across activity posts handled) by this same invocation
+            followerConnectedUsers.put(userTenantKey, followerUsers);
+        }
+        
+        if (siteId.length() > 0)
+        {
+            for (String followerUser : followerUsers)
+            {
+                Pair<String, String> userSiteKey = new Pair<String, String>(followerUser, siteId);
+                Boolean canRead = canUserReadSite.get(userSiteKey);
+                if (canRead == null)
+                {
+                    // site read permission check (note: only check followers since implied for site members)
+                    canRead = canReadSite(ctx, siteId, followerUser, tenantDomain);
+                    canUserReadSite.put(userSiteKey, canRead);
+                }
+                
+                if (canRead)
+                {
+                    recipients.add(followerUser);
+                }
+            }
+        }
+        else
+        {
+            recipients.addAll(followerUsers);
+        }
+        
+        
+        // Add the originator to recipients
+        recipients.add(postUserId);
+        
+        return recipients;
+    }
+    
     public abstract void startTransaction() throws SQLException;
 
     public abstract void commitTransaction() throws SQLException;
@@ -530,11 +573,6 @@ public abstract class FeedTaskProcessor
         return TenantService.DEFAULT_DOMAIN;
     }
     
-    private static String getTenantKey(String name, String tenantDomain)
-    {
-        return tenantDomain + "." + name;
-    }
-    
     protected Set<String> getSiteMembers(RepoCtx ctx, String siteId, String tenantDomain) throws Exception
     {
         // note: tenant domain ignored her - it should already be part of the siteId
@@ -567,14 +605,10 @@ public abstract class FeedTaskProcessor
         return members;
     }
     
-    
     protected abstract Set<String> getFollowers(String userId, String tenantDomain) throws Exception;
+    protected abstract boolean canReadSite(final RepoCtx ctx, String siteIdIn, String connectedUser, final String tenantDomain) throws Exception;
+    protected abstract boolean canRead(RepoCtx ctx, final String connectedUser, Map<String, Object> model) throws Exception;
     
-    protected boolean canRead(RepoCtx ctx, final String connectedUser, Map<String, Object> model) throws Exception
-    {
-        throw new UnsupportedOperationException("FeedTaskProcessor: Remote callback for 'canRead' not implemented");
-    }
-
     protected Map<String, List<String>> getActivityTypeTemplates(String repoEndPoint, String ticket, String subPath) throws Exception
     {
         StringBuffer sbUrl = new StringBuffer();

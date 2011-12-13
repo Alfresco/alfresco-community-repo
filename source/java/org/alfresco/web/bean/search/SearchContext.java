@@ -458,7 +458,7 @@ public class SearchContext implements Serializable
          query = "(" + pathQuery + ") AND (" + query + ')';
       }
       
-      query = query + " AND NOT ASPECT:\"sys:hidden\" ";
+      query = "(" + query + ") AND NOT ASPECT:\"sys:hidden\" ";
       
       // check that we have a query worth executing - if we have no attributes, paths or text/name search
       // then we'll only have a search against files/type TYPE which does nothing by itself!

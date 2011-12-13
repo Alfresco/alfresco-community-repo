@@ -406,7 +406,7 @@ public class CalendarHelpersTest
       
       Map<String,String> params = new HashMap<String, String>();
       params.put("BYMONTHDAY", "2");
-      
+
       
       // Dates in the past, get nothing
       dates.clear();
@@ -627,6 +627,102 @@ public class CalendarHelpersTest
             true, 1);
       assertEquals(1, dates.size());
       assertEquals("2011-08-02", dateFmt.format(dates.get(0)));
+      
+      
+      // Alternate format, used by Outlook 2010 etc
+      //  1st Monday of the Month
+      params.clear();
+      params.put("FREQ", "MONTHLY"); // Implied in call
+      params.put("COUNT", "10");     // Implied in call
+      params.put("INTERVAL", "1");   // Implied in call
+      params.put("BYDAY", "MO");
+      params.put("BYSETPOS", "1");
+
+      dates.clear();
+      currentDate.set(2011,7-1,19,10,30);
+      RecurrenceHelper.buildMonthlyRecurrences(
+            currentDate, dates, params,
+            date(2011,7,19), date(2012,1,5),
+            false, 1);
+      assertEquals(6, dates.size());
+      assertEquals("2011-08-01", dateFmt.format(dates.get(0)));
+      assertEquals("2011-09-05", dateFmt.format(dates.get(1)));
+      assertEquals("2011-10-03", dateFmt.format(dates.get(2)));
+      assertEquals("2011-11-07", dateFmt.format(dates.get(3)));
+      assertEquals("2011-12-05", dateFmt.format(dates.get(4)));
+      assertEquals("2012-01-02", dateFmt.format(dates.get(5)));
+      
+      
+      //  3rd Friday of the Month
+      params.clear();
+      params.put("FREQ", "MONTHLY"); // Implied in call
+      params.put("COUNT", "10");     // Implied in call
+      params.put("INTERVAL", "1");   // Implied in call
+      params.put("BYDAY", "FR");
+      params.put("BYSETPOS", "3");
+
+      dates.clear();
+      currentDate.set(2011,7-1,19,10,30);
+      RecurrenceHelper.buildMonthlyRecurrences(
+            currentDate, dates, params,
+            date(2011,7,19), date(2012,1,25),
+            false, 1);
+      assertEquals(6, dates.size());
+      assertEquals("2011-08-19", dateFmt.format(dates.get(0)));
+      assertEquals("2011-09-16", dateFmt.format(dates.get(1)));
+      assertEquals("2011-10-21", dateFmt.format(dates.get(2)));
+      assertEquals("2011-11-18", dateFmt.format(dates.get(3)));
+      assertEquals("2011-12-16", dateFmt.format(dates.get(4)));
+      assertEquals("2012-01-20", dateFmt.format(dates.get(5)));
+
+      
+      //  3rd Friday of the Month, of every 3 months
+      params.clear();
+      params.put("FREQ", "MONTHLY"); // Implied in call
+      params.put("COUNT", "10");     // Implied in call
+      params.put("INTERVAL", "3");   // Implied in call
+      params.put("BYDAY", "FR");
+      params.put("BYSETPOS", "3");
+
+      dates.clear();
+      currentDate.set(2011,7-1,19,10,30);
+      RecurrenceHelper.buildMonthlyRecurrences(
+            currentDate, dates, params,
+            date(2011,7,19), date(2012,1,25),
+            false, 3);
+      assertEquals(2, dates.size());
+      assertEquals("2011-10-21", dateFmt.format(dates.get(0)));
+      assertEquals("2012-01-20", dateFmt.format(dates.get(1)));
+
+      
+      // The third friday falls within the range for this month
+      dates.clear();
+      currentDate.set(2011,7-1,14,10,30);
+      RecurrenceHelper.buildMonthlyRecurrences(
+            currentDate, dates, params,
+            date(2011,7,14), date(2012,1,25),
+            false, 1);
+      assertEquals(7, dates.size());
+      assertEquals("2011-07-15", dateFmt.format(dates.get(0)));
+      assertEquals("2011-08-19", dateFmt.format(dates.get(1)));
+      assertEquals("2011-09-16", dateFmt.format(dates.get(2)));
+      assertEquals("2011-10-21", dateFmt.format(dates.get(3)));
+      assertEquals("2011-11-18", dateFmt.format(dates.get(4)));
+      assertEquals("2011-12-16", dateFmt.format(dates.get(5)));
+      assertEquals("2012-01-20", dateFmt.format(dates.get(6)));
+
+      
+      // The third friday falls within the range for this month, every 3 months
+      dates.clear();
+      currentDate.set(2011,7-1,14,10,30);
+      RecurrenceHelper.buildMonthlyRecurrences(
+            currentDate, dates, params,
+            date(2011,7,14), date(2012,1,25),
+            false, 3);
+      assertEquals(3, dates.size());
+      assertEquals("2011-07-15", dateFmt.format(dates.get(0)));
+      assertEquals("2011-10-21", dateFmt.format(dates.get(1)));
+      assertEquals("2012-01-20", dateFmt.format(dates.get(2)));
    }
    
    private static class RecurrenceHelper extends CalendarRecurrenceHelper

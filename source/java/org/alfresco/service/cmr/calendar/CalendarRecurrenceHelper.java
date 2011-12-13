@@ -398,28 +398,42 @@ public class CalendarRecurrenceHelper
       }
       else if (params.get("BYSETPOS") != null)
       {
-         // eg the first Thursday of the month
-         int dayOfWeek = DAY_NAMES_TO_CALENDAR_DAYS.get(params.get("BYSETPOS"));
-         if (currentDate.get(Calendar.DAY_OF_MONTH) > 8)
+         // eg the first Thursday of the month, or the third Saturday
+         int dayOfWeek = -1;
+         int instanceInMonth = 1;
+         
+         // There are two forms...
+         if (params.containsKey("BYDAY"))
          {
-            // Move to start, in next month
-            addMonthToFirstDayOfWeek(currentDate, dayOfWeek, monthInterval);
+            dayOfWeek = DAY_NAMES_TO_CALENDAR_DAYS.get(params.get("BYDAY"));
+            instanceInMonth = Integer.parseInt(params.get("BYSETPOS"));
          }
-         else if (currentDate.get(Calendar.DAY_OF_WEEK) != dayOfWeek)
+         else
          {
-            // Move forward to start
-            Date t = currentDate.getTime();
-            currentDate.set(Calendar.DAY_OF_WEEK, dayOfWeek);
-            if (currentDate.getTime().before(t))
-            {
-               currentDate.add(Calendar.DATE, 7);
-            }
+            // Implies the first one in the month
+            dayOfWeek = DAY_NAMES_TO_CALENDAR_DAYS.get(params.get("BYSETPOS"));
+            instanceInMonth = 1;
          }
          
+         // Move to the date in this month
+         Date origDate = currentDate.getTime();
+         toDayOfWeekInMonth(currentDate, dayOfWeek, instanceInMonth);
+         
+         // If the instance in this month is in the past, go
+         //  forward to the point in the next month
+         if (currentDate.getTime().before(origDate))
+         {
+            addMonthToFirstDayOfWeek(currentDate, dayOfWeek, monthInterval);
+            toDayOfWeekInMonth(currentDate, dayOfWeek, instanceInMonth);
+         }
+         
+         // Move forward to the required date
          while (currentDate.getTime().before(onOrAfter))
          {
             addMonthToFirstDayOfWeek(currentDate, dayOfWeek, monthInterval);
+            toDayOfWeekInMonth(currentDate, dayOfWeek, instanceInMonth);
          }
+         // Roll on until we get valid matches
          while (true)
          {
             if (until != null)
@@ -437,6 +451,7 @@ public class CalendarRecurrenceHelper
             }
             
             addMonthToFirstDayOfWeek(currentDate, dayOfWeek, monthInterval);
+            toDayOfWeekInMonth(currentDate, dayOfWeek, instanceInMonth);
          }
       }
    }
@@ -516,12 +531,31 @@ public class CalendarRecurrenceHelper
       addMonthToDayOfMonth(c, 1, monthInterval);
       
       // Set the day of the week
+      toDayOfWeekInMonth(c, dayOfWeek, 1);
+   }
+   
+   /**
+    * Takes you to eg the 2nd Thursday in the month, which may
+    *  involve going back before the current date  
+    */
+   private static void toDayOfWeekInMonth(Calendar c, int dayOfWeek, int weekInMonth)
+   {
+      // First up, move to the start of the month
+      c.set(Calendar.DATE, 1);
+      
+      // Now, move to the 1st instance of the day of the week
       Date t = c.getTime();
       c.set(Calendar.DAY_OF_WEEK, dayOfWeek);
       // If we went back, go forward a week
       if (c.getTime().before(t))
       {
          c.add(Calendar.DATE, 7);
+      }
+      
+      // Now move to the required week
+      if (weekInMonth > 1)
+      {
+         c.add(Calendar.DATE, 7 * (weekInMonth-1));
       }
    }
 }

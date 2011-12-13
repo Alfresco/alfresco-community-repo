@@ -163,12 +163,6 @@ public class Index extends AbstractDbObject
                     new DbProperty(rightIndex, "unique"),
                     ctx);
     }
-
-    
-    public void validate(DiffContext ctx)
-    {
-        System.out.println("INVALID INDEX, name is not allowed:" + getName());
-    }
     
     
     @Override

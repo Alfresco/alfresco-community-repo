@@ -38,7 +38,7 @@
         <if test="mimetypeMatch != null">
         where
             <if test="exact == true">mimetype_str = #{mimetypeMatch}</if>
-            <if test="exact == false">mimetype_str like #{mimetypeMatch}</if>
+            <if test="exact == false">mimetype_str like #{mimetypeMatch} <include refid="alfresco.util.escape"/> </if>
         </if>
         <if test="forceFail == true">JUNKED</if>
     </select>
@@ -51,7 +51,7 @@
         <if test="mimetypeMatch != null">
             where
                 <if test="exact == true">mimetype_str = #{mimetypeMatch}</if>
-                <if test="exact == false">mimetype_str like #{mimetypeMatch}</if>
+                <if test="exact == false">mimetype_str like #{mimetypeMatch} <include refid="alfresco.util.escape"/></if>
         </if>
         <if test="forceFail == true">JUNKED</if>
     </select>

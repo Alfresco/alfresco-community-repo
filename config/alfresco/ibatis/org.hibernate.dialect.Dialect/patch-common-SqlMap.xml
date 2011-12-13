@@ -133,7 +133,7 @@
             and id < #{idTwo}
             and class_type = 'plainfile'
             and content_url is not null
-            and content_url not like 'id:%'
+            and content_url not like 'id:%' <include refid="alfresco.util.escape"/>
         order by
             id ASC
         ]]>

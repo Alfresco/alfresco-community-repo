@@ -34,6 +34,8 @@ public class UpdateFollowingEmailTemplatesPatch extends GenericEMailTemplateUpda
 {  
     private Repository repository;
     
+    protected static final String[] LOCALES = new String[] {"de", "es", "fr", "it", "ja"};
+    
     private static final String PATH = "alfresco/templates/following-email-templates/";
     private static final String BASE_FILE = "following-email.html.ftl";
     private static final String XPATH = "/app:company_home/app:dictionary/app:email_templates/app:following/cm:following-email.html.ftl";
@@ -53,6 +55,12 @@ public class UpdateFollowingEmailTemplatesPatch extends GenericEMailTemplateUpda
     protected String getBaseFileName()
     {
         return BASE_FILE;
+    }
+    
+    @Override
+    protected String[] getLocales() 
+    {
+        return LOCALES;
     }
     
     @Override

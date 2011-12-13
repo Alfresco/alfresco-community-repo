@@ -29,6 +29,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class UpdateWorkflowNotificationTemplatesPatch extends GenericEMailTemplateUpdatePatch
 {  
+    private static final String[] LOCALES = new String[] {"de", "es", "fr", "it", "ja"};
     private static final String PATH = "alfresco/bootstrap/notification/";
     private static final String BASE_FILE = "wf-email.html.ftl";
     
@@ -42,6 +43,12 @@ public class UpdateWorkflowNotificationTemplatesPatch extends GenericEMailTempla
     protected String getBaseFileName()
     {
         return BASE_FILE;
+    }
+    
+    @Override
+    protected String[] getLocales()
+    {
+        return LOCALES;
     }
     
     @Override

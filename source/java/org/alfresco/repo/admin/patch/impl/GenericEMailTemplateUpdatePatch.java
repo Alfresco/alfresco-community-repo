@@ -24,45 +24,76 @@ import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
+ * Helper generic patch useful when updating email templates.
+ * 
  * @author Roy Wetherall
  */
 public abstract class GenericEMailTemplateUpdatePatch extends AbstractPatch
 {
-    protected static final String[] LOCALES = new String[] {"de", "es", "fr", "it", "ja"};
+    /** Content service */
+	protected ContentService contentService;
     
-    protected ContentService contentService;
-    
+	/** File folder service */
     protected FileFolderService fileFolderService;
     
+    /** Indicates whether to update the base file or not */
+    private boolean updateBaseFile = true;
+    
+    /** Indicates whether to create a sibling if it's missing (rather than just update) */
     private boolean createSiblingIfMissing = true;
     
+    /**
+     * @param contentService	content service
+     */
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
     }
     
+    /**
+     * @param fileFolderService     file folder service 
+     */
     public void setFileFolderService(FileFolderService fileFolderService)
     {
         this.fileFolderService = fileFolderService;
     }
     
+    /**
+     * @param createSiblingIfMissing
+     */
     public void setCreateSiblingIfMissing(boolean createSiblingIfMissing)
     {
         this.createSiblingIfMissing = createSiblingIfMissing;
     }
+    
+    /**
+     * @param updateBaseFile
+     */
+    public void setUpdateBaseFile(boolean updateBaseFile)
+    {
+        this.updateBaseFile = updateBaseFile;
+    }
 
+    /**
+     * 
+     * @throws Exception
+     */
     protected void updateTemplates() throws Exception
     {
         NodeRef baseTemplate = getBaseTemplate();
         if (nodeService.exists(baseTemplate) == true)
         {
-            updateContent(baseTemplate, getPath(), getBaseFileName());
+            if (updateBaseFile == true)
+            {
+                updateContent(baseTemplate, getPath(), getBaseFileName(), false);
+            }
             
             for (String siblingFile : getSiblingFiles())
             {
@@ -77,15 +108,12 @@ public abstract class GenericEMailTemplateUpdatePatch extends AbstractPatch
     
     protected abstract String getBaseFileName();
     
-    protected String[] getLocales()
-    {
-        return LOCALES;
-    }
+    protected abstract String[] getLocales();
     
     protected List<String> getSiblingFiles()
     {
-        List<String> siblingFiles = new ArrayList<String>(LOCALES.length);
-        for (String locale : LOCALES)
+        List<String> siblingFiles = new ArrayList<String>(getLocales().length);
+        for (String locale : getLocales())
         {
             siblingFiles.add(makeSiblingFileName(getBaseFileName(), locale));
         }
@@ -111,17 +139,17 @@ public abstract class GenericEMailTemplateUpdatePatch extends AbstractPatch
             NodeRef sibling = fileFolderService.searchSimple(parent, fileName);
             if (sibling != null)
             {
-                updateContent(sibling, path, fileName);
+                updateContent(sibling, path, fileName, false);
             }
             else if (createSiblingIfMissing == true)
             {
                 sibling = fileFolderService.create(parent, fileName, ContentModel.TYPE_CONTENT).getNodeRef();
-                updateContent(sibling, path, fileName);
+                updateContent(sibling, path, fileName, true);
             }
         }
     }
     
-    private void updateContent(NodeRef nodeRef, String path, String fileName)
+    private void updateContent(NodeRef nodeRef, String path, String fileName, boolean newFile)
     {
         // Make versionable
         nodeService.addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, null);
@@ -131,6 +159,11 @@ public abstract class GenericEMailTemplateUpdatePatch extends AbstractPatch
         if (is != null)
         {
             ContentWriter contentWriter = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+            if (newFile == true)
+            {
+                contentWriter.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+                contentWriter.setEncoding("UTF-8");
+            }
             contentWriter.putContent(is);
         }
     }

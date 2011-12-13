@@ -116,6 +116,22 @@
                         <cm:description>${spaces.templates.email.generate_the_activities_email.description} - ${version.japanese}</cm:description>
                     </view:properties>
                     <view:associations></view:associations>
+                </cm:content><cm:content view:childName="cm:activities-email_nl.ftl">
+                    <view:aspects>
+                        <cm:titled></cm:titled>
+                        <cm:author></cm:author>
+                        <app:inlineeditable></app:inlineeditable>
+                        <sys:referenceable></sys:referenceable>
+                    </view:aspects>
+                    <view:properties>
+                        <app:editInline>true</app:editInline>
+                        <cm:content>contentUrl=classpath:alfresco/templates/activities-email-templates/activities-email_nl.ftl|mimetype=text/plain|size=8884|encoding=UTF-8</cm:content>
+                        <cm:author></cm:author>
+                        <cm:name>activities-email_nl.ftl</cm:name>
+                        <cm:title>activities-email_nl.ftl</cm:title>
+                        <cm:description>${spaces.templates.email.generate_the_activities_email.description} - ${version.dutch}</cm:description>
+                    </view:properties>
+                    <view:associations></view:associations>
                 </cm:content>
             </cm:contains>
         </view:associations>

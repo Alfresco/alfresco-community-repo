@@ -99,6 +99,21 @@
             <cm:content>contentUrl=classpath:alfresco/templates/following-email-templates/following-email.html_ja.ftl|mimetype=text/plain|size=3688|encoding=UTF-8</cm:content>
           </view:properties>
         </cm:content>
+        <cm:content view:childName="cm:following-email.html_nl.ftl">
+          <view:aspects>
+            <cm:auditable></cm:auditable>
+            <sys:referenceable></sys:referenceable>
+            <app:inlineeditable></app:inlineeditable>
+          </view:aspects>
+          <view:acl></view:acl>
+          <view:properties>
+            <app:editInline>true</app:editInline>
+            <cm:name>following-email.html_nl.ftl</cm:name>
+            <cm:title>following-email.html_nl.ftl</cm:title>
+            <cm:description>${email.templates.email_template_for_following_notifications} - ${version.default}</cm:description>
+            <cm:content>contentUrl=classpath:alfresco/templates/following-email-templates/following-email.html_nl.ftl|mimetype=text/plain|size=3688|encoding=UTF-8</cm:content>
+          </view:properties>
+        </cm:content>
       </cm:contains>
     </view:associations>
   </cm:folder>

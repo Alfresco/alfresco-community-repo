@@ -2990,4 +2990,17 @@
         </property>
     </bean>
     
+    <bean id="patch.addDutchEmailTemplatesPatch" class="org.alfresco.repo.admin.patch.impl.AddDutchEmailTemplatesPatch" parent="basePatch">
+        <property name="id"><value>patch.addDutchEmailTemplatesPatch</value></property>
+        <property name="description"><value>patch.addDutchEmailTemplatesPatch.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>5023</value></property>
+        <property name="targetSchema"><value>5024</value></property>
+        <property name="requiresTransaction"><value>true</value></property>
+        <property name="applyToTenants"><value>true</value></property>
+        <property name="contentService" ref="ContentService"/>
+        <property name="fileFolderService" ref="FileFolderService"/>
+        <property name="repository" ref="repositoryHelper"/>
+    </bean>
+    
 </beans>

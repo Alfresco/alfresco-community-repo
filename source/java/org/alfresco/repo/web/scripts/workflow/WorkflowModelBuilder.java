@@ -59,6 +59,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.collections.CollectionUtils;
 import org.alfresco.util.collections.Function;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 /**
@@ -147,6 +148,8 @@ public class WorkflowModelBuilder
     public static final String WORKFLOW_DEFINITION_START_TASK_DEFINITION_URL = "startTaskDefinitionUrl";
     public static final String WORKFLOW_DEFINITION_START_TASK_DEFINITION_TYPE = "startTaskDefinitionType";
     public static final String WORKFLOW_DEFINITION_TASK_DEFINITIONS = "taskDefinitions";
+    
+    public static final String TASK_OUTCOME_MESSAGE_PREFIX = "workflowtask.outcome.";
 
     private final NodeService nodeService;
     private final PersonService personService;
@@ -625,8 +628,15 @@ public class WorkflowModelBuilder
                 }
                 if (outcomeLabel == null)
                 {
-                    // TODO: is this okay -> no real transitions exist for activiti
-                    outcomeLabel = outcomeId;
+                    String translatedOutcome = I18NUtil.getMessage(TASK_OUTCOME_MESSAGE_PREFIX+outcomeId);
+                    if (translatedOutcome != null)
+                    {
+                        outcomeLabel = translatedOutcome;
+                    } 
+                    else 
+                    {
+                        outcomeLabel = outcomeId;
+                    }
                 }
             }
         }

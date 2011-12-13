@@ -30,7 +30,7 @@ import org.alfresco.util.Pair;
  * Property map helper class.  
  * <p>
  * This class can be used as a short hand when a class of type
- * Map<QName, Serializable> is required.
+ * Map&lt;QName, Serializable&gt; is required.
  * 
  * @author Roy Wetherall
  */

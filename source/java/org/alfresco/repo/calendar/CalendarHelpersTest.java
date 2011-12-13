@@ -47,6 +47,61 @@ public class CalendarHelpersTest
 {
    private static SimpleDateFormat dateFmt = new SimpleDateFormat("yyyy-MM-dd");
    
+   /**
+    * UTC+10, no daylight savings
+    */
+   private static final String ICAL_TZ_BRISBANE =
+      "BEGIN:VTIMEZONE\n" +
+      "TZID:Brisbane\n" +
+      "BEGIN:STANDARD\n" +
+      "DTSTART:16010101T000000\n" +
+      "TZOFFSETFROM:+1100\n" +
+      "TZOFFSETTO:+1000\n" +
+      "END:STANDARD\n" +
+      "END:VTIMEZONE\n";
+   /**
+    * UTC+10 April-October, Daylight UTC+11 October-April
+    */
+   private static final String ICAL_TZ_SYDNEY =
+      "BEGIN:VTIMEZONE\n" +
+      "TZID:Canberra\\, Melbourne\\, Sydney\n" +
+      "BEGIN:STANDARD\n" +
+      "DTSTART:16010401T030000\n" +
+      "RRULE:FREQ=YEARLY;BYDAY=1SU;BYMONTH=4\n" +
+      "TZOFFSETFROM:+1100\n" +
+      "TZOFFSETTO:+1000\n" +
+      "END:STANDARD\n" +
+      "BEGIN:DAYLIGHT\n" +
+      "DTSTART:16011007T020000\n" +
+      "RRULE:FREQ=YEARLY;BYDAY=1SU;BYMONTH=10\n" +
+      "TZOFFSETFROM:+1000\n" +
+      "TZOFFSETTO:+1100\n" +
+      "END:DAYLIGHT\n" +
+      "END:VTIMEZONE\n";
+   /**
+    * UTC October-March, Daylight UTC+1 March-October
+    */
+   private static final String ICAL_TZ_LONDON = 
+      "BEGIN:VTIMEZONE\n" +
+      "TZID:Europe/London\n" +
+      "X-LIC-LOCATION:Europe/London\n" +
+      "BEGIN:DAYLIGHT\n" +
+      "TZOFFSETFROM:+0000\n" +
+      "TZOFFSETTO:+0100\n" +
+      "TZNAME:BST\n" +
+      "DTSTART:19700329T010000\n" +
+      "RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=3\n" +
+      "END:DAYLIGHT\n" +
+      "BEGIN:STANDARD\n" +
+      "TZOFFSETFROM:+0100\n" +
+      "TZOFFSETTO:+0000\n" +
+      "TZNAME:GMT\n" +
+      "DTSTART:19701025T020000\n" +
+      "RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=10\n" +
+      "END:STANDARD\n" +
+      "END:VTIMEZONE\n";
+
+   
    @Test public void allDayDetection()
    {
       TimeZone UTC = TimeZone.getTimeZone("UTC");

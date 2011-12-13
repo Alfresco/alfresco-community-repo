@@ -821,7 +821,9 @@ function getSearchResults(params)
          ftsQuery = 'PATH:"' + path + '/*" AND (' + ftsQuery + ') ';
       }
       ftsQuery = '(' + ftsQuery + ') AND -TYPE:"cm:thumbnail" AND -TYPE:"cm:failedThumbnail" AND -TYPE:"cm:rating"';
-      
+
+      ftsQuery = '(' + ftsQuery + ') AND NOT ASPECT:"sys:hidden"';
+
       // sort field - expecting field to in one of the following formats:
       //  - short QName form such as: cm:name
       //  - pseudo cm:content field starting with "." such as: .size

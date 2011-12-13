@@ -29,6 +29,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.email.EmailDelivery;
 import org.alfresco.service.cmr.email.EmailMessage;
 import org.alfresco.service.cmr.email.EmailMessageException;
 import org.alfresco.service.cmr.email.EmailService;
@@ -155,27 +156,27 @@ public class EmailServiceImpl implements EmailService
     /**
      * {@inheritDoc}
      */
-    public void importMessage(EmailMessage message)
+    public void importMessage(EmailDelivery delivery, EmailMessage message)
     {
-        processMessage(null, message);
+        processMessage(delivery, null, message);
     }
 
     /**
      * {@inheritDoc}
      */
-    public void importMessage(NodeRef nodeRef, EmailMessage message)
+    public void importMessage(EmailDelivery delivery, NodeRef nodeRef, EmailMessage message)
     {
-        processMessage(nodeRef, message);
+        processMessage(delivery, nodeRef, message);
     }
 
     /**
      * Process the message. Method is called after filtering by sender's address.
-     * 
+     * @param delivery - who gets the message and who is it from (may be different from the contents of the message)
      * @param nodeRef Addressed node (target node).
      * @param message Email message
      * @throws EmailMessageException Any exception occured inside the method will be converted and thrown as <code>EmailMessageException</code>
      */
-    private void processMessage(final NodeRef nodeRef, final EmailMessage message)
+    private void processMessage(final EmailDelivery delivery, final NodeRef nodeRef, final EmailMessage message)
     {
         if (!emailInboundEnabled) 
         {
@@ -186,10 +187,50 @@ public class EmailServiceImpl implements EmailService
             // Get the username for the process using the system account
             final RetryingTransactionCallback<String> getUsernameCallback = new RetryingTransactionCallback<String>()
             {
+            
                 public String execute() throws Throwable
                 {
-                    String from = message.getFrom();
-                    return getUsername(from);
+                    String userName = null;
+                                        
+                    userName = getUsername(delivery.getFrom());   
+                    if(userName == null)
+                    {
+                        if(logger.isDebugEnabled())
+                        {
+                            logger.debug("unable to find user for from: " + delivery.getFrom() + "trying message next");
+                        }
+                        userName = getUsername(message.getFrom());
+                    }
+
+                    if (userName == null)
+                    {
+                        if(unknownUser.isEmpty())
+                        {
+                            if(logger.isDebugEnabled())
+                            {
+                                logger.debug("unable to find user for from: " + message.getFrom());
+                            }
+                            throw new EmailMessageException(ERR_UNKNOWN_SOURCE_ADDRESS, message.getFrom());
+                        }
+                        else
+                        {
+                            if(logger.isDebugEnabled())
+                            {
+                                logger.debug("unable to find user for from - return anonymous: ");
+                            }
+                            userName = unknownUser;
+                        }
+                    }
+
+                    // Ensure that the user is part of the Email Contributors group
+                    if (userName == null || !isEmailContributeUser(userName))
+                    {
+                        throw new EmailMessageException(ERR_USER_NOT_EMAIL_CONTRIBUTOR, userName);
+                    }
+                      
+                    return userName;
+                   
+
                 }
             };
             RunAsWork<String> getUsernameRunAsWork = new RunAsWork<String>()
@@ -206,7 +247,8 @@ public class EmailServiceImpl implements EmailService
             {
                 public Object execute() throws Throwable
                 {
-                    String recipient = message.getTo();
+                    //String recipient = message.getTo();
+                    String recipient = delivery.getRecipient();
                     NodeRef targetNodeRef = null;
                     if (nodeRef == null)
                     {
@@ -331,7 +373,7 @@ public class EmailServiceImpl implements EmailService
      * Authenticate in Alfresco repository by sender's e-mail address.
      * 
      * @param from Sender's email address
-     * @return User name
+     * @return User name or null if the user does not exist.
      * @throws EmailMessageException Exception will be thrown if authentication is failed.
      */
     private String getUsername(String from)
@@ -345,23 +387,7 @@ public class EmailServiceImpl implements EmailService
         {
             if (resultSet.length() == 0)
             {
-                if (unknownUser == null || unknownUser.length() == 0)
-                {
-                    if(logger.isDebugEnabled())
-                    {
-                        logger.debug("unable to find user for from: " + from);
-                    }
-                    throw new EmailMessageException(ERR_UNKNOWN_SOURCE_ADDRESS, from);
-                }
-                else
-                {
-                    if(logger.isDebugEnabled())
-                    {
-                        logger.debug("unable to find user for from - return anonymous: " + from);
-                    }
-                    
-                    userName = unknownUser;
-                }
+                return null;
             }
             else
             {
@@ -381,16 +407,15 @@ public class EmailServiceImpl implements EmailService
         }
         finally
         {
-            resultSet.close();
+            if(resultSet != null)
+            {
+                resultSet.close();
+            }
         }
-        // Ensure that the user is part of the Email Contributors group
-        if (userName == null || !isEmailContributeUser(userName))
-        {
-            throw new EmailMessageException(ERR_USER_NOT_EMAIL_CONTRIBUTOR, userName);
-        }
+
         return userName;
     }
-
+    
     /**
      * Check that the user is the member in <b>EMAIL_CONTRIBUTORS</b> group
      * 

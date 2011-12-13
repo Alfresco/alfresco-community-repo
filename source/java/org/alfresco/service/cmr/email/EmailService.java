@@ -40,20 +40,20 @@ public interface EmailService
     /**
      * Processes an email message. The message's content is intended for a node found by
      * examining the email's target address.
-     * 
+     * @param delivery instructions - who gets the message and who is it from
      * @param message the email message
      * @throws EmailMessageRejectException if the message is rejected for <b>any</b> reason
      */
     @Auditable(parameters = { "message" })
-    void importMessage(EmailMessage message);
+    void importMessage(EmailDelivery delivery, EmailMessage message);
 
     /**
      * Process an email message. The message's content is intended for a specific node.
-     * 
+     * @param delivery instructions - who gets the message and who is it from
      * @param nodeRef the node to import the message to
      * @param message the email message
      * @throws EmailMessageRejectException if the message is rejected for <b>any</b> reason
      */
     @Auditable(parameters = { "nodeRef", "message" })
-    void importMessage(NodeRef nodeRef, EmailMessage message);
+    void importMessage(EmailDelivery delivery, NodeRef nodeRef, EmailMessage message);
 }

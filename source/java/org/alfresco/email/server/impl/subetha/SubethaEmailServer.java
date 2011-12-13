@@ -28,6 +28,7 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 
 import org.alfresco.email.server.EmailServer;
+import org.alfresco.service.cmr.email.EmailDelivery;
 import org.alfresco.service.cmr.email.EmailMessage;
 import org.alfresco.service.cmr.email.EmailMessageException;
 import org.apache.commons.logging.Log;
@@ -95,7 +96,10 @@ public class SubethaEmailServer extends EmailServer
         private List<String> EMPTY_LIST = new LinkedList<String>();
 
         private MessageContext messageContext;
-        List<Delivery> deliveries = new ArrayList<Delivery>();
+        
+        private String from;
+        
+        List<EmailDelivery> deliveries = new ArrayList<EmailDelivery>();
 
         public Handler(MessageContext messageContext)
         {
@@ -107,13 +111,12 @@ public class SubethaEmailServer extends EmailServer
             return messageContext;
         }
 
+
         public void from(String fromString) throws RejectException
         {
-            String from = fromString;
-            
             try
             {
-                InternetAddress a = new InternetAddress(from);
+                InternetAddress a = new InternetAddress(fromString);
                 from = a.getAddress();
             }
             catch (AddressException e)
@@ -136,79 +139,30 @@ public class SubethaEmailServer extends EmailServer
 
         public void recipient(String recipient) throws RejectException
         {
-            deliveries.add(new Delivery(recipient));
+            deliveries.add(new EmailDelivery(recipient, from, null));
         }
 
         public void data(InputStream data) throws TooMuchDataException, IOException, RejectException
-        {
-            try
-            {
-                if (deliveries.size() > 0)
-                {
-                    Delivery delivery = deliveries.get(0);
-                    processDelivery(delivery, data);
-                }
-            }
-            finally
-            {
-//                // DH: As per comments in ETHREEOH-2252, I am very concerned about the need to do the clear() here.
-//                //     If this message is stateful (as it must be, given the API) then the need to clear
-//                //     the list of delivery recipients ('deliveries') implies that Subetha is re-using
-//                //     the instance.
-//                //     Later versions of Subetha appear to define the behaviour better.  Un upgrade of
-//                //     the library would be a good idea.
-                deliveries.clear();
-            }
-//            See ALFCOM-3165: Support multiple recipients for inbound Subetha email messages
-//            
-//            Duplicate messages coming in
-//            http://www.subethamail.org/se/archive_msg.jsp?msgId=20938
-//            if (deliveries.size() == 1)
-//            {
-//                Delivery delivery = deliveries.get(0);
-//                processDelivery(delivery, data);
-//            }
-//            else if (deliveries.size() > 1)
-//            {
-//                DeferredFileOutputStream dfos = null;
-//                try
-//                {
-//                    dfos = new DeferredFileOutputStream(DEFAULT_DATA_DEFERRED_SIZE);
-//
-//                    byte[] bytes = new byte[1024 * 8];
-//                    for (int len = -1; (len = data.read(bytes)) != -1;)
-//                    {
-//                        dfos.write(bytes, 0, len);
-//                    }
-//                    for (Delivery delivery : deliveries)
-//                    {
-//                        processDelivery(delivery, dfos.getInputStream());
-//                    }
-//                }
-//                finally
-//                {
-//                    try
-//                    {
-//                        dfos.close();
-//                    }
-//                    catch (Exception e)
-//                    {
-//                    }
-//                }
-//            }
-        }
-
-        private void processDelivery(Delivery delivery, InputStream data) throws RejectException
         {
             EmailMessage emailMessage;
             try
             {
                 emailMessage = new SubethaEmailMessage(data);
-                getEmailService().importMessage(emailMessage);
+                
+                // Only send to the first receipient -   TODO send to all recipients
+                if (deliveries.size() > 0)
+                {
+                    EmailDelivery delivery = deliveries.get(0);
+                    getEmailService().importMessage(delivery, emailMessage);
+                }           
             }
             catch (EmailMessageException e)
             {
-                throw new RejectException(554, e.getMessage());
+                    if(log.isDebugEnabled())
+                    {
+                        log.debug("about to raise EmailMessageException", e);
+                    }
+                    throw new RejectException(554, e.getMessage());
             }
             catch (Throwable e)
             {
@@ -217,40 +171,26 @@ public class SubethaEmailServer extends EmailServer
             }
         }
 
-        public List<String> getAuthenticationMechanisms()
-        {
-            return EMPTY_LIST;
-        }
-
-        public boolean auth(String clientInput, StringBuffer response) throws RejectException
-        {
-            return true;
-        }
-
-        public void resetState()
-        {
-        }
-
+//        public List<String> getAuthenticationMechanisms()
+//        {
+//            return EMPTY_LIST;
+//        }
+//
+//        public boolean auth(String clientInput, StringBuffer response) throws RejectException
+//        {
+//            return true;
+//        }
+//
+//        public void resetState()
+//        {
+//        }
+//
         @Override
         public void done()
         {
-            
+            deliveries.clear();
         }
     };
 
-    class Delivery
-    {
-        private String recipient;
-
-        public Delivery(String recipient)
-        {
-            this.recipient = recipient;
-        }
-
-        public String getRecipient()
-        {
-            return recipient;
-        }
-    };
 
 }

@@ -20,6 +20,7 @@ package org.alfresco.email.server;
 
 import org.alfresco.email.server.impl.subetha.SubethaEmailMessage;
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.service.cmr.email.EmailDelivery;
 import org.alfresco.service.cmr.email.EmailMessage;
 import org.alfresco.service.cmr.email.EmailService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -50,22 +51,22 @@ public class EmailServiceRemotable extends AbstractLifecycleBean implements Emai
         this.rmiRegistryPort = rmiRegistryPort;
     }
 
-    public void importMessage(EmailMessage message)
+    public void importMessage(EmailDelivery delivery, EmailMessage message)
     {
         if (message instanceof SubethaEmailMessage)
         {
             ((SubethaEmailMessage) message).setRmiRegistry(rmiRegistryHost, rmiRegistryPort);
         }
-        emailServiceProxy.importMessage(message);
+        emailServiceProxy.importMessage(delivery, message);
     }
 
-    public void importMessage(NodeRef nodeRef, EmailMessage message)
+    public void importMessage(EmailDelivery delivery, NodeRef nodeRef, EmailMessage message)
     {
         if (message instanceof SubethaEmailMessage)
         {
             ((SubethaEmailMessage) message).setRmiRegistry(rmiRegistryHost, rmiRegistryPort);
         }
-        emailServiceProxy.importMessage(nodeRef, message);
+        emailServiceProxy.importMessage(delivery, nodeRef, message);
     }
 
     @Override

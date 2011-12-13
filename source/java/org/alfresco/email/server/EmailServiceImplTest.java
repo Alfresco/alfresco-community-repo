@@ -39,6 +39,7 @@ import org.alfresco.email.server.impl.subetha.SubethaEmailMessage;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.email.EmailDelivery;
 import org.alfresco.service.cmr.email.EmailMessageException;
 import org.alfresco.service.cmr.email.EmailService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -196,9 +197,11 @@ public class EmailServiceImplTest extends TestCase
            InputStream is = new StringInputStream(bos.toString());
            assertNotNull("is is null", is);
        
-           SubethaEmailMessage m = new SubethaEmailMessage(is);   
+           SubethaEmailMessage m = new SubethaEmailMessage(is); 
+           
+           EmailDelivery delivery = new EmailDelivery(to, from, null);
 
-           emailService.importMessage(m);
+           emailService.importMessage(delivery, m);
            fail("anonymous user not rejected");
        } 
        catch (EmailMessageException e)
@@ -235,9 +238,11 @@ public class EmailServiceImplTest extends TestCase
        InputStream is = new StringInputStream(bos.toString());
        assertNotNull("is is null", is);
    
-           SubethaEmailMessage m = new SubethaEmailMessage(is);   
+       SubethaEmailMessage m = new SubethaEmailMessage(is);  
+           
+       EmailDelivery delivery = new EmailDelivery(to, from, null);
 
-       emailService.importMessage(m);
+       emailService.importMessage(delivery, m);
    }
        
        /**
@@ -271,9 +276,11 @@ public class EmailServiceImplTest extends TestCase
            InputStream is = new StringInputStream(bos.toString());
            assertNotNull("is is null", is);
    
-           SubethaEmailMessage m = new SubethaEmailMessage(is);   
+           SubethaEmailMessage m = new SubethaEmailMessage(is);
+           
+           EmailDelivery delivery = new EmailDelivery(to, from, null);
 
-           emailService.importMessage(m);
+           emailService.importMessage(delivery,m);
        }
        
 //       /**
@@ -385,8 +392,9 @@ public class EmailServiceImplTest extends TestCase
         assertNotNull("is is null", is);
     
         SubethaEmailMessage m = new SubethaEmailMessage(is);   
+        EmailDelivery delivery = new EmailDelivery(to, from, null);
 
-        emailService.importMessage(m);
+        emailService.importMessage(delivery, m);
            
     }
     
@@ -474,12 +482,14 @@ public class EmailServiceImplTest extends TestCase
         */
        logger.debug("Step 1: turn on Overwite Duplicates");
        folderEmailMessageHandler.setOverwriteDuplicates(true);
+       
+       EmailDelivery delivery = new EmailDelivery(to, from, null);
 
-       emailService.importMessage(m);
+       emailService.importMessage(delivery, m);
        assocs = nodeService.getChildAssocs(testUserHomeFolder, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
        assertEquals("assocs not 1", 1, assocs.size());
        assertEquals("name of link not as expected", assocs.get(0).getQName(), QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, TEST_SUBJECT));
-       emailService.importMessage(m);
+       emailService.importMessage(delivery, m);
        assocs = nodeService.getChildAssocs(testUserHomeFolder, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
        assertEquals("assocs not 1", 1, assocs.size());   
        
@@ -488,10 +498,10 @@ public class EmailServiceImplTest extends TestCase
         */
        logger.debug("Step 2: turn off Overwite Duplicates");
        folderEmailMessageHandler.setOverwriteDuplicates(false);
-       emailService.importMessage(m);
+       emailService.importMessage(delivery, m);
        assocs = nodeService.getChildAssocs(testUserHomeFolder, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
        assertEquals("assocs not 2", 2, assocs.size());
-       emailService.importMessage(m);
+       emailService.importMessage(delivery, m);
        assocs = nodeService.getChildAssocs(testUserHomeFolder, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
        assertEquals("assocs not 3", 3, assocs.size());   
 
@@ -507,10 +517,10 @@ public class EmailServiceImplTest extends TestCase
        m = new SubethaEmailMessage(is);   
        
        folderEmailMessageHandler.setOverwriteDuplicates(false);
-       emailService.importMessage(m);
+       emailService.importMessage(delivery, m);
        assocs = nodeService.getChildAssocs(testUserHomeFolder, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
        assertEquals("assocs not 4", 4, assocs.size());
-       emailService.importMessage(m);
+       emailService.importMessage(delivery, m);
        assocs = nodeService.getChildAssocs(testUserHomeFolder, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
        assertEquals("assocs not 5", 5, assocs.size());
        
@@ -528,9 +538,9 @@ public class EmailServiceImplTest extends TestCase
        assertNotNull("is is null", is);
        m = new SubethaEmailMessage(is);  
        folderEmailMessageHandler.setOverwriteDuplicates(false);
-       emailService.importMessage(m);
-       emailService.importMessage(m);
-       emailService.importMessage(m);
+       emailService.importMessage(delivery, m);
+       emailService.importMessage(delivery, m);
+       emailService.importMessage(delivery, m);
        assocs = nodeService.getChildAssocs(testUserHomeFolder, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
 
        List<QName> assocNames = new Vector<QName>(); 
@@ -624,9 +634,11 @@ public class EmailServiceImplTest extends TestCase
        InputStream is = new StringInputStream(bos.toString());
        assertNotNull("is is null", is);
        
-       SubethaEmailMessage m = new SubethaEmailMessage(is);   
+       SubethaEmailMessage m = new SubethaEmailMessage(is);  
+       
+       EmailDelivery delivery = new EmailDelivery(to, from, null);
 
-       emailService.importMessage(m);
+       emailService.importMessage(delivery, m);
        
        /**
         * Step 2
@@ -638,7 +650,7 @@ public class EmailServiceImplTest extends TestCase
        {
            logger.debug("Step 2");
            emailServiceImpl.setEmailContributorsAuthority("EMAIL_CONTRIBUTORS");
-           emailService.importMessage(m);
+           emailService.importMessage(delivery, m);
            fail("not thrown out");
        }
        catch (EmailMessageException e)

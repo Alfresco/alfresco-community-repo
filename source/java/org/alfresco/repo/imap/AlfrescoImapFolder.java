@@ -84,6 +84,8 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
     
     private final String userName;
 
+    private final int mountPointId;
+
     /**
      * Defines view mode.
      */
@@ -127,7 +129,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
      */
     AlfrescoImapFolder(String userName, ServiceRegistry serviceRegistry)
     {
-        this(null, userName, "", "", null, serviceRegistry, false, false);
+        this(null, userName, "", "", null, serviceRegistry, false, false, 0);
     }
         
 
@@ -148,9 +150,10 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
             String folderPath,
             ImapViewMode viewMode,
             boolean extractAttachmentsEnabled,
-            ServiceRegistry serviceRegistry)
+            ServiceRegistry serviceRegistry,
+            int mountPointId)
     {
-        this(folderInfo, userName, folderName, folderPath, viewMode, serviceRegistry, null, extractAttachmentsEnabled);
+        this(folderInfo, userName, folderName, folderPath, viewMode, serviceRegistry, null, extractAttachmentsEnabled, mountPointId);
     }
 
     /**
@@ -173,7 +176,8 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
             ImapViewMode viewMode,
             ServiceRegistry serviceRegistry,
             Boolean selectable,
-            boolean extractAttachmentsEnabled)
+            boolean extractAttachmentsEnabled,
+            int mountPointId)
     {
         super(serviceRegistry);
         this.folderInfo = folderInfo;
@@ -213,6 +217,8 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
         {
             this.selectable = false;
         }
+        
+        this.mountPointId = mountPointId;
     }
     
     /*
@@ -613,7 +619,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
     @Override
     public long getUidValidity()
     {
-        return getFolderStatus().uidValidity;
+        return getFolderStatus().uidValidity + mountPointId;
     }
 
     /**

@@ -110,7 +110,10 @@
         </property>             
     </bean>
 
-    <bean id="NodeService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+    <bean id="NodeService_transaction" class="org.alfresco.repo.transaction.RetryingTransactionInterceptor">
+        <property name="transactionService">
+            <ref bean="TransactionService"/>
+        </property>
         <property name="transactionManager">
             <ref bean="transactionManager"/>
         </property>

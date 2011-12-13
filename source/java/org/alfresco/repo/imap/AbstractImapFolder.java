@@ -26,6 +26,7 @@ import javax.mail.Flags;
 import javax.mail.internet.MimeMessage;
 import javax.mail.search.SearchTerm;
 
+import org.alfresco.repo.imap.exception.AlfrescoImapFolderException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
@@ -108,7 +109,7 @@ public abstract class AbstractImapFolder implements MailFolder
 
         if (toImapMailFolder.isReadOnly())
         {
-            throw new FolderException("Can't create folder - Permission denied");
+            throw new FolderException(AlfrescoImapFolderException.PERMISSION_DENIED);
         }
 
         CommandCallback<Object> command = new CommandCallback<Object>()

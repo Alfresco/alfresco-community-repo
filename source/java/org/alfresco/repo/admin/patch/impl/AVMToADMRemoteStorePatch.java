@@ -624,6 +624,9 @@ public class AVMToADMRemoteStorePatch extends AbstractPatch
                 ChildAssociationRef ref = this.nodeService.createNode(
                         rootRef, ContentModel.ASSOC_CONTAINS, assocQName, ContentModel.TYPE_FOLDER, properties);
                 surfConfigRef = ref.getChildRef();
+                Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(1, 1.0f);
+                aspectProperties.put(ContentModel.PROP_IS_INDEXED, false);
+                this.nodeService.addAspect(surfConfigRef, ContentModel.ASPECT_INDEX_CONTROL, aspectProperties);
             }
             catch (DuplicateChildNodeNameException dupErr)
             {

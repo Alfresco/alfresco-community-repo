@@ -766,6 +766,8 @@ public class ADMRemoteStore extends BaseRemoteStore
      * Return the "surf-config" noderef under the given root. Optionally create the
      * folder if it does not exist yet. NOTE: must only be set to create if within a
      * WRITE transaction context.
+     * <p>
+     * Adds the "isIndexed = false" property to the surf-config folder node.
      * 
      * @param rootRef   Root node reference where the "surf-config" folder should live
      * @param create    True to create the folder if missing, false otherwise
@@ -786,6 +788,9 @@ public class ADMRemoteStore extends BaseRemoteStore
             ChildAssociationRef ref = this.unprotNodeService.createNode(
                     rootRef, ContentModel.ASSOC_CONTAINS, assocQName, ContentModel.TYPE_FOLDER, properties);
             surfConfigRef = ref.getChildRef();
+            Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(1, 1.0f);
+            aspectProperties.put(ContentModel.PROP_IS_INDEXED, false);
+            this.unprotNodeService.addAspect(surfConfigRef, ContentModel.ASPECT_INDEX_CONTROL, aspectProperties);
         }
         return surfConfigRef;
     }

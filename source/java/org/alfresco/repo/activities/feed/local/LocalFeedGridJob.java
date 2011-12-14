@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -48,16 +48,8 @@ public class LocalFeedGridJob implements FeedGridJob
         
         if (logger.isDebugEnabled()) { logger.debug(">>> Execute: nodehash '" + js.getJobTaskNode() + "' from seq '" + js.getMinSeq() + "' to seq '" + js.getMaxSeq() + "' on this node"); }
         
-        try 
-        {
-            feedTaskProcessor.process(js.getJobTaskNode(), js.getMinSeq(), js.getMaxSeq(), js.getWebScriptsCtx());
-        }
-        catch (Exception e)
-        {
-            logger.error(e);
-            throw new Exception(e.getMessage(), e.getCause());
-        }
-
+        feedTaskProcessor.process(js.getJobTaskNode(), js.getMinSeq(), js.getMaxSeq(), js.getWebScriptsCtx());
+        
         // This job does not return any result.
         return null;
     }

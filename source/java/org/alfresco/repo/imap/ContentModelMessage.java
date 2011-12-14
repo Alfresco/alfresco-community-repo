@@ -264,10 +264,13 @@ public class ContentModelMessage extends AbstractMimeMessage
             try
             {
 
-              StringBuilder contentAuthor = new StringBuilder();
-              contentAuthor.append("\"").append(author).append("\" <").append(defaultFromAddress).append(">");
-              result = InternetAddress.parse(contentAuthor.toString());
-              return result;
+                if(!(author == null || author.isEmpty()))
+                {        
+                    StringBuilder contentAuthor = new StringBuilder();
+                    contentAuthor.append("\"").append(author).append("\" <").append(defaultFromAddress).append(">");
+                    result = InternetAddress.parse(contentAuthor.toString());
+                    return result;
+                }
             
             }
             catch (AddressException e)

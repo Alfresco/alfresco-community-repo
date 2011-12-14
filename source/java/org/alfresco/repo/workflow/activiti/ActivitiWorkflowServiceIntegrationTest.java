@@ -27,6 +27,8 @@ import java.util.Map;
 
 import org.alfresco.repo.workflow.AbstractWorkflowServiceIntegrationTest;
 import org.alfresco.repo.workflow.WorkflowModel;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
@@ -101,6 +103,35 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
         assertEquals("bpm_foo_task", taskName);
     }
     
+    /**
+     * Actually tests if the priority is the default value.  This is based on the assumption that custom
+     * tasks are defaulted to a priority of 50 (which is invalid).  I'm testing that the code I wrote decides this is an
+     * invalid number and sets it to the default value (2).
+     */
+    public void testPriorityIsValid()
+    {
+        WorkflowDefinition definition = deployDefinition("activiti/testCustomActiviti.bpmn20.xml");
+        
+        personManager.setUser(USER1);
+        
+        // Start the Workflow
+        WorkflowPath path = workflowService.startWorkflow(definition.getId(), null);
+        String instanceId = path.getInstance().getId();
+
+        // Check the Start Task is completed.
+        WorkflowTask startTask = workflowService.getStartTask(instanceId);
+        assertEquals(WorkflowTaskState.COMPLETED, startTask.getState());
+        
+        List<WorkflowTask> tasks = workflowService.getTasksForWorkflowPath(path.getId());
+        for (WorkflowTask workflowTask : tasks)
+        {
+            Map<QName, Serializable> props = workflowTask.getProperties();
+            TypeDefinition typeDefinition = workflowTask.getDefinition().getMetadata();
+            Map<QName, PropertyDefinition> propertyDefs = typeDefinition.getProperties();        
+            PropertyDefinition priorDef =  propertyDefs.get(WorkflowModel.PROP_PRIORITY);
+            assertEquals(props.get(WorkflowModel.PROP_PRIORITY),Integer.valueOf(priorDef.getDefaultValue()));        
+        }
+    }   
     @Override
     protected void checkTaskQueryStartTaskCompleted(String workflowInstanceId, WorkflowTask startTask) 
     {

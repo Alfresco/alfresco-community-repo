@@ -58,6 +58,8 @@ import org.alfresco.repo.workflow.activiti.ActivitiTaskTypeManager;
 import org.alfresco.repo.workflow.activiti.ActivitiUtil;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassAttributeDefinition;
+import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
+import org.alfresco.service.cmr.dictionary.ConstraintException;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -70,6 +72,8 @@ import org.alfresco.util.collections.CollectionUtils;
 import org.alfresco.util.collections.EntryTransformer;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * @author Nick Smith
@@ -77,6 +81,7 @@ import org.apache.commons.lang.StringUtils;
  */
 public class ActivitiPropertyConverter
 {
+    private static Log logger = LogFactory.getLog(ActivitiPropertyConverter.class);
     private static final String ERR_CONVERT_VALUE = "activiti.engine.convert.value.error";
     private static final String ERR_SET_TASK_PROPS_INVALID_VALUE = "activiti.engine.set.task.properties.invalid.value";
     private static final String ERR_MANDATORY_TASK_PROPERTIES_MISSING = "activiti.engine.mandatory.properties.missing";
@@ -376,6 +381,26 @@ public class ActivitiPropertyConverter
             }
         }
 
+        // Special case for property priorities
+        PropertyDefinition priorDef = propertyDefs.get(WorkflowModel.PROP_PRIORITY);
+        Serializable existingValue = existingValues.get(WorkflowModel.PROP_PRIORITY);
+        try
+        {
+            for (ConstraintDefinition constraintDef : priorDef.getConstraints())
+            {
+                constraintDef.getConstraint().evaluate(existingValue);
+            }
+        }
+        catch (ConstraintException ce)
+        {
+            Integer defaultVal = Integer.valueOf(priorDef.getDefaultValue());
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Task priority value ("+existingValue+") was invalid so it was set to the default value of "+defaultVal+". Task:"+task.getName());
+            }
+            defaultValues.put(WorkflowModel.PROP_PRIORITY, defaultVal);
+        }    
+        
         // Special case for task description default value
         String description = (String) existingValues.get(WorkflowModel.PROP_DESCRIPTION);
         if (description == null || description.length() == 0)

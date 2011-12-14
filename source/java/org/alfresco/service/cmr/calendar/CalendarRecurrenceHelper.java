@@ -45,18 +45,17 @@ public class CalendarRecurrenceHelper
 {
    private static Log logger = LogFactory.getLog(CalendarRecurrenceHelper.class);
    
-   private static Map<String,Integer> d2cd;
-   static 
-   {
-      d2cd = new HashMap<String, Integer>();
-      d2cd.put("SU", Calendar.SUNDAY);
-      d2cd.put("MO", Calendar.MONDAY);
-      d2cd.put("TU", Calendar.TUESDAY);
-      d2cd.put("WE", Calendar.WEDNESDAY);
-      d2cd.put("TH", Calendar.THURSDAY);
-      d2cd.put("FR", Calendar.FRIDAY);
-      d2cd.put("SA", Calendar.SATURDAY);
-   }
+   @SuppressWarnings("serial")
+   protected final static Map<String,Integer> d2cd = 
+      Collections.unmodifiableMap(new HashMap<String, Integer>() {{
+         put("SU", Calendar.SUNDAY);
+         put("MO", Calendar.MONDAY);
+         put("TU", Calendar.TUESDAY);
+         put("WE", Calendar.WEDNESDAY);
+         put("TH", Calendar.THURSDAY);
+         put("FR", Calendar.FRIDAY);
+         put("SA", Calendar.SATURDAY);
+      }});
    
    /**
     * The lookup from the day strings to Calendar Day entries

@@ -21,6 +21,7 @@ package org.alfresco.repo.calendar;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -29,11 +30,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SimpleTimeZone;
 import java.util.TimeZone;
 
 import org.alfresco.service.cmr.calendar.CalendarEntryDTO;
 import org.alfresco.service.cmr.calendar.CalendarRecurrenceHelper;
 import org.alfresco.service.cmr.calendar.CalendarService;
+import org.alfresco.service.cmr.calendar.CalendarTimezoneHelper;
 import org.junit.Test;
 
 /**
@@ -778,6 +781,26 @@ public class CalendarHelpersTest
       assertEquals("2011-07-15", dateFmt.format(dates.get(0)));
       assertEquals("2011-10-21", dateFmt.format(dates.get(1)));
       assertEquals("2012-01-20", dateFmt.format(dates.get(2)));
+   }
+
+   /**
+    * Checks we correctly build the Timezone for somewhere
+    *  that doesn't have DST (eg Brisbane)
+    */
+   @Test public void simpleTimezoneNoDST() 
+   {
+      SimpleTimeZone tz = CalendarTimezoneHelper.buildTimeZone(ICAL_TZ_BRISBANE);
+      
+      assertNotNull(tz);
+      assertEquals("Brisbane", tz.getID());
+      
+      // Doesn't do DST
+      assertEquals(false, tz.useDaylightTime());
+      
+      // Always 10 hours ahead
+      assertEquals(10*60*60*1000, tz.getOffset(date(2011,3,1).getTime()));
+      assertEquals(10*60*60*1000, tz.getOffset(date(2011,9,1).getTime()));
+      assertEquals(10*60*60*1000, tz.getOffset(date(2011,11,1).getTime()));
    }
    
    private static class RecurrenceHelper extends CalendarRecurrenceHelper

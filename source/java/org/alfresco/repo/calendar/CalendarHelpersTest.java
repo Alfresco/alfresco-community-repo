@@ -787,7 +787,7 @@ public class CalendarHelpersTest
     * Checks we correctly build the Timezone for somewhere
     *  that doesn't have DST (eg Brisbane)
     */
-   @Test public void simpleTimezoneNoDST() 
+   @Test public void simpleTimeZoneNoDST() 
    {
       SimpleTimeZone tz = CalendarTimezoneHelper.buildTimeZone(ICAL_TZ_BRISBANE);
       
@@ -801,6 +801,95 @@ public class CalendarHelpersTest
       assertEquals(10*60*60*1000, tz.getOffset(date(2011,3,1).getTime()));
       assertEquals(10*60*60*1000, tz.getOffset(date(2011,9,1).getTime()));
       assertEquals(10*60*60*1000, tz.getOffset(date(2011,11,1).getTime()));
+   }
+   
+   /**
+    * Checks we correctly build the Timezone for somewhere
+    *  in the northern hemisphere with DST (eg London)
+    */
+   @Test public void simpleTimeZoneNorthern() 
+   {
+      SimpleTimeZone tz = CalendarTimezoneHelper.buildTimeZone(ICAL_TZ_LONDON);
+      
+      assertNotNull(tz);
+      assertEquals("Europe/London", tz.getID());
+      
+      // Does do DST
+      assertEquals(true, tz.useDaylightTime());
+      
+      // In 2003, DST was 30th March - 26th October
+      assertEquals(0*60*60*1000, tz.getOffset(date(2003,3,1).getTime()));
+      assertEquals(1*60*60*1000, tz.getOffset(date(2003,3,31).getTime()));
+      assertEquals(1*60*60*1000, tz.getOffset(date(2003,9,1).getTime()));
+      assertEquals(1*60*60*1000, tz.getOffset(date(2003,10,25).getTime()));
+      assertEquals(0*60*60*1000, tz.getOffset(date(2003,11,1).getTime()));
+      
+      // In 2007, DST was 25th March - 28th October
+      assertEquals(0*60*60*1000, tz.getOffset(date(2007,3,1).getTime()));
+      assertEquals(1*60*60*1000, tz.getOffset(date(2007,3,26).getTime()));
+      assertEquals(1*60*60*1000, tz.getOffset(date(2007,3,31).getTime()));
+      assertEquals(1*60*60*1000, tz.getOffset(date(2007,9,1).getTime()));
+      assertEquals(1*60*60*1000, tz.getOffset(date(2007,10,28).getTime()));
+      assertEquals(0*60*60*1000, tz.getOffset(date(2007,10,29).getTime()));
+      assertEquals(0*60*60*1000, tz.getOffset(date(2007,11,1).getTime()));
+      
+      // In 2011, DST was 27th March - 30th October 
+      assertEquals(0*60*60*1000, tz.getOffset(date(2011,3,1).getTime()));
+      assertEquals(1*60*60*1000, tz.getOffset(date(2011,3,31).getTime()));
+      assertEquals(1*60*60*1000, tz.getOffset(date(2011,9,1).getTime()));
+      assertEquals(1*60*60*1000, tz.getOffset(date(2011,10,25).getTime()));
+      assertEquals(0*60*60*1000, tz.getOffset(date(2011,11,1).getTime()));
+   }
+   
+   /**
+    * Checks we correctly build the Timezone for somewhere
+    *  in the southern hemisphere with DST (eg Sydney)
+    * Note - Sydney is GMT+11 in December, GMT+10 in June
+    */
+   @Test public void simpleTimeZoneSouthern() 
+   {
+      SimpleTimeZone tz = CalendarTimezoneHelper.buildTimeZone(ICAL_TZ_SYDNEY);
+      
+      assertNotNull(tz);
+      assertEquals("Canberra, Melbourne, Sydney", tz.getID());
+      
+      // Does do DST
+      assertEquals(true, tz.useDaylightTime());
+      
+      // Note - things changed in 2008!
+      // In 2002-2003, DST was 27th October 2002 - 30th March 2003 
+      // In 2005-2006, DST was 30th October 2005 -  2nd April 2006 
+      // In 2007-2008, DST was 28th October 2007 - 6th April 2008
+      
+      // In 2008-2009, DST was 5th October 2008 - 5th April 2009
+      assertEquals(10*60*60*1000, tz.getOffset(date(2008,6,1).getTime()));
+      assertEquals(10*60*60*1000, tz.getOffset(date(2008,10,1).getTime()));
+      assertEquals(11*60*60*1000, tz.getOffset(date(2008,10,6).getTime()));
+      assertEquals(11*60*60*1000, tz.getOffset(date(2008,12,1).getTime()));
+      assertEquals(11*60*60*1000, tz.getOffset(date(2009,1,5).getTime()));
+      assertEquals(11*60*60*1000, tz.getOffset(date(2009,4,4).getTime()));
+      assertEquals(10*60*60*1000, tz.getOffset(date(2009,4,6).getTime()));
+      assertEquals(10*60*60*1000, tz.getOffset(date(2009,5,1).getTime()));
+      
+      // In 2009-2010, DST was  4th October 2009 - 4th April 2010
+      assertEquals(10*60*60*1000, tz.getOffset(date(2009,6,1).getTime()));
+      assertEquals(10*60*60*1000, tz.getOffset(date(2009,10,1).getTime()));
+      assertEquals(11*60*60*1000, tz.getOffset(date(2009,10,6).getTime()));
+      assertEquals(11*60*60*1000, tz.getOffset(date(2009,12,1).getTime()));
+      assertEquals(11*60*60*1000, tz.getOffset(date(2010,1,5).getTime()));
+      assertEquals(11*60*60*1000, tz.getOffset(date(2010,4,3).getTime()));
+      assertEquals(10*60*60*1000, tz.getOffset(date(2010,4,5).getTime()));
+      assertEquals(10*60*60*1000, tz.getOffset(date(2010,5,1).getTime()));
+      
+      // In 2010-2011, DST was 3rd Oct 2010 - 3rd April 2011  
+      assertEquals(10*60*60*1000, tz.getOffset(date(2010,6,1).getTime()));
+      assertEquals(10*60*60*1000, tz.getOffset(date(2010,10,1).getTime()));
+      assertEquals(11*60*60*1000, tz.getOffset(date(2010,10,6).getTime()));
+      assertEquals(11*60*60*1000, tz.getOffset(date(2010,12,1).getTime()));
+      assertEquals(11*60*60*1000, tz.getOffset(date(2011,1,5).getTime()));
+      assertEquals(11*60*60*1000, tz.getOffset(date(2011,4,2).getTime()));
+      assertEquals(10*60*60*1000, tz.getOffset(date(2011,4,4).getTime()));
+      assertEquals(10*60*60*1000, tz.getOffset(date(2011,5,1).getTime()));
    }
    
    private static class RecurrenceHelper extends CalendarRecurrenceHelper

@@ -113,7 +113,8 @@ public class CalendarTimezoneHelper
       {
          tzID = "(unknown)";
       }
-      tzID.replaceAll("\\\\", "");
+      // De-escape commans
+      tzID = tzID.replace("\\,", ",");
       
       // Does it have daylight savings?
       if (tzDaylight.isEmpty())
@@ -123,8 +124,22 @@ public class CalendarTimezoneHelper
          return new SimpleTimeZone(offset, tzID);
       }
       
-      // TODO
-      return null;
+      // Get the offsets
+      int stdOffset = getOffset(tzDaylight.get("TZOFFSETFROM"));
+      int dstOffset = getOffset(tzDaylight.get("TZOFFSETTO"));
+      
+      // Turn the rules into SimpleTimeZone ones
+      int[] stdRules = getRuleForSimpleTimeZone(tzStandard.get("RRULE"));
+      int[] dstRules = getRuleForSimpleTimeZone(tzDaylight.get("RRULE"));
+      
+      // Build it up
+      return new SimpleTimeZone(
+            stdOffset, tzID,
+            dstRules[0], dstRules[1], dstRules[2], // When DST starts
+            1*60*60*1000, // TODO Pull out the exact change time from DTSTART
+            stdRules[0], stdRules[1], stdRules[2], // When DST ends
+            2*60*60*1000  // TODO Pull out the exact change time from DTSTART
+      );
    }
    
    /**
@@ -154,6 +169,62 @@ public class CalendarTimezoneHelper
      offset = offset * sign;
      
      return offset;
+   }
+   
+   /**
+    * Turn an iCal repeating rule like
+    *  "FREQ=YEARLY;BYDAY=-1SU;BYMONTH=10" into a SimpleTimeZone rule
+    *  like Month=March, StartDay=0, StartDayOfWeek=-Sunday
+    * See the JavaDocs of {@link SimpleTimeZone} for how to express
+    *  the different requirements in the required int formats
+    */
+   private static int[] getRuleForSimpleTimeZone(String rule)
+   {
+      // Turn the rule into chunks
+      Map<String,String> params = new HashMap<String, String>();
+      for (String p : rule.split(";"))
+      {
+         int splitAt = p.indexOf('=');
+         if (splitAt == -1)
+         {
+            logger.info("Skipping invalid param " + p + " in recurrence rule " + rule);
+         }
+         else
+         {
+            params.put(p.substring(0,splitAt), p.substring(splitAt+1));
+         }
+      }
+      
+      // Java months are 1 less than normal
+      int month = Integer.parseInt(params.get("BYMONTH")) - 1;
+      
+      // Should end with a day of the week
+      String byDay = params.get("BYDAY");
+      String dow = byDay.substring(byDay.length()-2);
+      int dayOfWeek = CalendarRecurrenceHelper.d2cd.get(dow);
+      
+      // Where in the month does it come?
+      int dayOfMonth = 0;
+      if (byDay.startsWith("-1"))
+      {
+         // Last in month
+         dayOfMonth = -1;
+      }
+      else if (byDay.startsWith("1"))
+      {
+         // First in month
+         dayOfMonth = 1;
+         dayOfWeek = 0 - dayOfWeek;
+      }
+      else
+      {
+         // Nth day in month
+         dayOfMonth = 1 + (Integer.parseInt(byDay.substring(0,1)) - 1)*7; 
+         dayOfWeek = 0 - dayOfWeek;
+      }
+      
+      // All done
+      return new int[] {month, dayOfMonth, dayOfWeek};
    }
    
    /**

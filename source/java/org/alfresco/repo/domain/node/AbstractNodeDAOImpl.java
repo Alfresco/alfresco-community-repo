@@ -2793,6 +2793,18 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 catch (Throwable e)
                 {
                     controlDAO.rollbackToSavepoint(savepoint);
+                    // SQL Server retry
+                    
+                    if(e.getMessage().contains("Snapshot isolation transaction aborted"))
+                    {
+                        throw new ConcurrencyFailureException("SQL Server snapshot isolation retry...", e);
+                    }
+                    
+                    if(e.getMessage().contains("The INSERT statement conflicted with the FOREIGN KEY constraint"))
+                    {
+                        throw new ConcurrencyFailureException("SQL Server FK conflict retry...", e);
+                    }
+                    
                     // We assume that this is from the child cm:name constraint violation
                     throw new DuplicateChildNodeNameException(
                             parentNode.getNodeRef(),

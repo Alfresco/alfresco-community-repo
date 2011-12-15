@@ -38,13 +38,13 @@
                                                 </td>
                                                 <td>
                                                    <div style="font-size: 22px; padding-bottom: 4px;">
-                                                      ${followerLink}  はあなたをフォーロー中です.
+                                                      ${followerLink} があなたをフォーローしています。
                                                    </div>
                                                    <div style="font-size: 13px;">
                                                       <#if followerJobTitle??>${followerJobTitle?html}<br/></#if>
                                                    </div>
                                                    <div style="font-size: 13px;">
-                                                      <#if followingCount &gt; 0><span style="font-weight:bold">${followingCount}</span> 人がフォローしてます. </#if><span style="font-weight:bold">${followerCount}</span> 人のフォローワー.
+                                                      <#if followingCount &gt; 0><span style="font-weight:bold">${followingCount}</span> 人がフォローしてます。 </#if><span style="font-weight:bold">${followerCount}</span> 人のフォローワーがいます。
                                                    </div>
                                                 </td>
                                              </tr>

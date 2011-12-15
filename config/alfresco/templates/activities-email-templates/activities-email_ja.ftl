@@ -109,7 +109,7 @@
                            </tr>
                            <tr>
                               <td style="padding: 0px 30px; font-size: 13px;">
-                                 通知をオフにするにはこのリンクをクリックします:<br />
+                                 この通知の受信を停止する場合は、次のリンクをクリックしてください。<br />
                                  <br /><a href="${shareUrl}/page/user/${personProps["cm:userName"]}/user-notifications">${shareUrl}/page/user/${personProps["cm:userName"]}/user-notifications</a>
                               </td>
                            </tr>

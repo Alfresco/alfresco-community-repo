@@ -35,7 +35,7 @@
                                                 </td>
                                                 <td>
                                                    <div style="font-size: 22px; padding-bottom: 4px;">
-                                                      ${person.properties.lastName} <#if person.properties.lastName?exists> ${person.properties.firstName}</#if> さんが、新しいコンテンツアイテム ${document.name} を ${document.siteShortName!""} サイトに追加しました。
+                                                      ${person.properties.lastName} <#if person.properties.lastName?exists> ${person.properties.firstName}</#if> さんが、新しいコンテンツアイテム「${document.name}」を ${document.siteShortName!""} サイトに追加しました。
                                                    </div>
                                                    <div style="font-size: 13px;">
                                                       ${date?datetime?string.full}
@@ -44,13 +44,13 @@
                                              </tr>
                                           </table>
                                           <div style="font-size: 14px; margin: 12px 0px 24px 0px; padding-top: 10px; border-top: 1px solid #aaaaaa;">
-                                             <p>いつもご利用いただきありがとうございます。</p>
+                                             <p>お知らせ</p>
 
                                              <p>${person.properties.lastName}
                                              <#if person.properties.lastName?exists> ${person.properties.firstName}</#if>
-                                             さんが、新しいコンテンツアイテム ${document.name} を ${document.siteShortName!""} サイトに追加しました。
+                                             さんが、新しいコンテンツアイテム「${document.name}」を ${document.siteShortName!""} サイトに追加しました。
                                              
-                                             <p>次のリンクをクリックしてアイテムを表示できます。<br />
+                                             <p>アイテムを表示するには、次のリンクをクリックしてください。<br />
                                              <br />${document.shareUrl}</p>
                                              
                                              <p>ご利用ありがとうございます。<br />

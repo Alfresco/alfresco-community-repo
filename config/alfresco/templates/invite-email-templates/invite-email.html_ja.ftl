@@ -40,7 +40,7 @@
                                                 </td>
                                                 <td>
                                                    <div style="font-size: 22px; padding-bottom: 4px;">
-                                                      あなたは、${args["siteName"]}サイトへの参加に招待されています。
+                                                      ${args["siteName"]} サイト参加へのご招待
                                                    </div>
                                                    <div style="font-size: 13px;">
                                                       ${date?datetime?string.full}
@@ -49,22 +49,22 @@
                                              </tr>
                                           </table>
                                           <div style="font-size: 14px; margin: 12px 0px 24px 0px; padding-top: 10px; border-top: 1px solid #aaaaaa;">
-                                             <p>${inviteePerson.properties["cm:firstName"]!""} 様、</p>
+                                             <p>${inviteePerson.properties["cm:firstName"]!""} 様</p>
                                              
                                              <p>${inviterPerson.properties["cm:lastName"]!""} ${inviterPerson.properties["cm:firstName"]!""} 
-                                             さんが、${args["siteName"]} サイトへの「${args["inviteeSiteRole"]}」の役割での参加をあなたに招待しています。</p>
+                                             さんから、${args["siteName"]} サイトに「${args["inviteeSiteRole"]}」の役割で参加するよう招待を受けました。</p>
                                              
                                              <p>次のリンクをクリックすると、${inviterPerson.properties["cm:firstName"]!""} さんの招待を承諾できます。<br />
                                              <br /><a href="${args["acceptLink"]}">${args["acceptLink"]}</a></p>
                                              
                                              <#if args["inviteeGenPassword"]?exists>
                                              <p>あなたのアカウントが作成されました。ログイン情報は次のとおりです。<br />
-                                             <br />ユーザ名: ${args["inviteeUserName"]}
+                                             <br />ユーザー名: ${args["inviteeUserName"]}
                                              <br />パスワード: ${args["inviteeGenPassword"]}
                                              </p>
                                              
                                              <p>パスワードは、初回ログイン時に変更するようにしてください。
-                                             パスワードの変更は、[<b>あなたのプロフィール</b>]に移動して[<b>パスワードの変更</b>]をクリックすることで行えます。</p>
+                                             パスワードを変更するには、[<b>あなたのプロフィール</b>]に移動して、[<b>パスワードの変更</b>]をクリックします。</p>
                                              </#if>
                                              
                                              <p>${inviterPerson.properties["cm:firstName"]!""} さんの招待を辞退する場合は、次のリンクをクリックしてください。<br />
@@ -85,7 +85,7 @@
                            </tr>
                            <tr>
                               <td style="padding: 0px 30px; font-size: 13px;">
-                                 Alfresco ${productName!""}の詳細については、<a href="http://www.alfresco.com">http://www.alfresco.com</a>にアクセスしてください
+                                 Alfresco ${productName!""}の詳細については、<a href="http://www.alfresco.com">http://www.alfresco.com</a> をご覧ください。
                               </td>
                            </tr>
                            <tr>

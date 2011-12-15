@@ -85,6 +85,7 @@ import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.model.SubFolderFilter;
 import org.alfresco.service.cmr.preference.PreferenceService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.MimetypeService;
@@ -97,6 +98,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.MaxSizeMap;
 import org.alfresco.util.Pair;
@@ -141,7 +143,8 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
     private NamespaceService namespaceService;
     private SearchService searchService;
 
-    // Note that this cache need not be cluster synchronized, as it is keyed by the cluster-safe change token
+    // Note that this cache need not be cluster synchronized, as it is keyed by the cluster-safe 
+    // change token.  Key is username, changeToken
     private Map<Pair<String, String>, FolderStatus> folderCache;
     private int folderCacheSize = 1000;
     private ReentrantReadWriteLock folderCacheLock = new ReentrantReadWriteLock();
@@ -730,7 +733,7 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
     {
         if (logger.isDebugEnabled())
         {
-            logger.debug("Search mails contextNodeRef=" + contextNodeRef + ", viewMode=" + viewMode);
+            logger.debug("getFolderStatus contextNodeRef=" + contextNodeRef + ", viewMode=" + viewMode);
         }
 
         // No need to ACL check the change token read
@@ -838,11 +841,19 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
             FolderStatus oldResult = this.folderCache.get(cacheKey);
             if (oldResult != null)
             {
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("At end of getFolderStatus. Found info in cache, changeToken:" + changeToken);
+                }
+         
                 return oldResult;
             }
             this.folderCache.put(cacheKey, result);
 
-            logger.debug("Found files:" + currentSearch.size());
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("At end of getFolderStatus. Found files:" + currentSearch.size() + ", changeToken:" + changeToken);
+            }
             return result;
         }
         finally
@@ -944,6 +955,10 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
         }
         else
         {
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("set flag nodeRef:" + nodeRef + ",flag:" + flagToQname.get(flag) + ", value:" + value);
+            }
             nodeService.setProperty(nodeRef, flagToQname.get(flag), value);
         }
         messageCache.remove(nodeRef);
@@ -1598,14 +1613,53 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
     }
     
     @Override
-    public void onUpdateProperties(final NodeRef nodeRef, Map<QName, Serializable> before,
-            Map<QName, Serializable> after)
+    public void onUpdateProperties(final NodeRef nodeRef, final Map<QName, Serializable> before,
+            final Map<QName, Serializable> after)
     {
         doAsSystem(new RunAsWork<Void>()
         {
             @Override
             public Void doWork() throws Exception
-            {
+            { 
+                /**
+                 * Imap only cares about a few properties however if those properties 
+                 * change then the uidvalidity needs to be reset otherwise the new content
+                 * won't get re-loaded.   This is nonsense for an email server, but needed for 
+                 * modifiable repository.  Also we need to ignore certain properties.
+                 */
+                boolean hasChanged = false;
+                
+                if(!hasChanged)
+                {
+                    hasChanged = !EqualsHelper.nullSafeEquals(before.get(ContentModel.PROP_NAME), after.get(ContentModel.PROP_NAME));
+                }
+                if(!hasChanged)
+                {
+                    hasChanged = !EqualsHelper.nullSafeEquals(before.get(ContentModel.PROP_AUTHOR), after.get(ContentModel.PROP_AUTHOR));
+                }
+                if(!hasChanged)
+                {
+                    hasChanged = !EqualsHelper.nullSafeEquals(before.get(ContentModel.PROP_TITLE), after.get(ContentModel.PROP_TITLE));
+                }
+                if(!hasChanged)
+                {
+                    hasChanged = !EqualsHelper.nullSafeEquals(before.get(ContentModel.PROP_DESCRIPTION), after.get(ContentModel.PROP_DESCRIPTION));
+                }
+                
+                if(!hasChanged)
+                {
+                    Serializable s1 = before.get(ContentModel.PROP_CONTENT);
+                    Serializable s2 = after.get(ContentModel.PROP_CONTENT);
+                
+                    if(s1 != null && s2 != null)
+                    {
+                        ContentData c1 = (ContentData)s1;
+                        ContentData c2 = (ContentData)s2;
+                        
+                        hasChanged = !EqualsHelper.nullSafeEquals(c1.getContentUrl(), c2.getContentUrl());
+                    }
+                }
+                
                 for (ChildAssociationRef parentAssoc : nodeService.getParentAssocs(nodeRef))
                 {
                     NodeRef folderRef = parentAssoc.getParentRef();
@@ -1613,8 +1667,15 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
                     {
                         messageCache.remove(nodeRef);
 
-                        // Force generation of a new change token
-                        getUidValidityTransactionListener(folderRef);
+                        // Force generation of a new change token for the parent folders
+                        UidValidityTransactionListener listener = getUidValidityTransactionListener(folderRef);
+                
+                        // if we have a significant change then we need to force a new uidvalidity.
+                        if(hasChanged)
+                        {
+                            logger.debug("message has changed - force new uidvalidity for the parent folder");
+                            listener.forceNewUidvalidity();
+                        }
                     }
                 }
                 return null;
@@ -1669,11 +1730,17 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
         private NodeRef folderNodeRef;
         private Long minUid;
         private Long maxUid;
+        private boolean forceNewUidValidity = false;
         
         public UidValidityTransactionListener(NodeRef folderNodeRef, NodeService nodeService)
         {
             this.folderNodeRef = folderNodeRef;
             this.nodeService = nodeService;
+        }
+        
+        public void forceNewUidvalidity()
+        {
+            this.forceNewUidValidity = true;
         }
         
         public void recordNewUid(long newUid)
@@ -1705,23 +1772,26 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
                 @Override
                 public Void doWork() throws Exception
                 {
-                    if (UidValidityTransactionListener.this.minUid != null)
+                    if (UidValidityTransactionListener.this.forceNewUidValidity || UidValidityTransactionListener.this.minUid != null)
                     {
                         long modifDate = System.currentTimeMillis();
                         Long oldMax = (Long)UidValidityTransactionListener.this.nodeService.getProperty(folderNodeRef, ImapModel.PROP_MAXUID);
                         // Only update UIDVALIDITY if a new node has and ID that is smaller than the old maximum (as UIDs are always meant to increase)
-                        if (oldMax == null || UidValidityTransactionListener.this.minUid < oldMax)
+                        if (UidValidityTransactionListener.this.forceNewUidValidity || oldMax == null || UidValidityTransactionListener.this.minUid < oldMax)
                         {
                             UidValidityTransactionListener.this.nodeService.setProperty(folderNodeRef, ImapModel.PROP_UIDVALIDITY, modifDate);                            
                             if (logger.isDebugEnabled())
                             {
-                                logger.debug("UIDVALIDITY was modified for " + folderNodeRef);
+                                logger.debug("UIDVALIDITY was modified for folder, nodeRef:" + folderNodeRef);
                             }
                         }
-                        UidValidityTransactionListener.this.nodeService.setProperty(folderNodeRef, ImapModel.PROP_MAXUID, UidValidityTransactionListener.this.maxUid);
-                        if (logger.isDebugEnabled())
+                        if(UidValidityTransactionListener.this.maxUid != null)
                         {
-                            logger.debug("MAXUID was modified for " + folderNodeRef);
+                            UidValidityTransactionListener.this.nodeService.setProperty(folderNodeRef, ImapModel.PROP_MAXUID, UidValidityTransactionListener.this.maxUid);
+                            if (logger.isDebugEnabled())
+                            {
+                                logger.debug("MAXUID was modified for folder, nodeRef:" + folderNodeRef);
+                            }
                         }
                     }
                     UidValidityTransactionListener.this.nodeService.setProperty(folderNodeRef, ImapModel.PROP_CHANGE_TOKEN, changeToken);                            

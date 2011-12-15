@@ -53,6 +53,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -108,6 +109,7 @@ public class CopyServiceImplTest extends TestCase
     private PersonService personService;
     private AuthenticationComponent authenticationComponent;
     private MutableAuthenticationService authenticationService;
+    private CheckOutCheckInService cociService;
     
     /*
      * Data used by the tests
@@ -183,6 +185,7 @@ public class CopyServiceImplTest extends TestCase
         personService = serviceRegistry.getPersonService();
         authenticationComponent = (AuthenticationComponent)ctx.getBean("authenticationComponent");
         authenticationService = (MutableAuthenticationService) ctx.getBean("authenticationService");
+        cociService = (CheckOutCheckInService) ctx.getBean("checkOutCheckInService");
         dictionaryDAO = (DictionaryDAO) ctx.getBean("dictionaryDAO");
         
         authenticationComponent.setSystemUserAsCurrentUser();
@@ -775,6 +778,82 @@ public class CopyServiceImplTest extends TestCase
         
         //System.out.println(
         //         NodeStoreInspector.dumpNodeStore(nodeService, storeRef));
+    }
+    
+    /**
+     * Tests copying a folder that contains both a node and a copy of that node.
+     */
+    public void testALF11964_part1()
+    {
+        IntegrityChecker integrityChecker = (IntegrityChecker) ctx.getBean("integrityChecker");
+        
+        PropertyMap props = new PropertyMap();
+        // Need to create a potentially recursive node structure
+        props.put(ContentModel.PROP_NODE_UUID, "nodeOne");
+        NodeRef nodeOne = nodeService.createNode(
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.TYPE_CONTAINER,
+                props).getChildRef();
+        props.put(ContentModel.PROP_NODE_UUID, "nodeTwo");
+        NodeRef nodeTwo = nodeService.createNode(
+                nodeOne,
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.TYPE_CONTENT,
+                props).getChildRef();
+        props.put(ContentModel.PROP_NODE_UUID, "nodeThree");
+        NodeRef nodeThree = nodeService.createNode(
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.TYPE_CONTAINER,
+                props).getChildRef();
+        
+        copyService.copy(nodeTwo, nodeOne, ContentModel.ASSOC_CHILDREN, ContentModel.ASSOC_CHILDREN, true);
+
+        copyService.copy(nodeOne, nodeThree, ContentModel.ASSOC_CHILDREN, ContentModel.ASSOC_CHILDREN, true);
+        
+        integrityChecker.checkIntegrity();
+    }
+    
+    /**
+     * Tests copying a folder that contains both a checked-out node and its working copy. 
+     */
+    public void testALF11964_part2()
+    {
+        IntegrityChecker integrityChecker = (IntegrityChecker) ctx.getBean("integrityChecker");
+        
+        PropertyMap props = new PropertyMap();
+        // Need to create a potentially recursive node structure
+        props.put(ContentModel.PROP_NODE_UUID, "nodeOne");
+        NodeRef nodeOne = nodeService.createNode(
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.TYPE_CONTAINER,
+                props).getChildRef();
+        props.put(ContentModel.PROP_NODE_UUID, "nodeTwo");
+        NodeRef nodeTwo = nodeService.createNode(
+                nodeOne,
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.TYPE_CONTENT,
+                props).getChildRef();
+        props.put(ContentModel.PROP_NODE_UUID, "nodeThree");
+        NodeRef nodeThree = nodeService.createNode(
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.TYPE_CONTAINER,
+                props).getChildRef();
+        
+        cociService.checkout(nodeTwo);
+
+        copyService.copy(nodeOne, nodeThree, ContentModel.ASSOC_CHILDREN, ContentModel.ASSOC_CHILDREN, true);
+        
+        integrityChecker.checkIntegrity();
     }
     
     public void testCopyResidualProperties() throws Exception

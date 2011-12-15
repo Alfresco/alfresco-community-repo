@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 
 /**
  * Simple <i>copy behaviour</i> to prevent any copying.
@@ -73,4 +74,14 @@ public class DoNothingCopyBehaviourCallback extends AbstractCopyBehaviourCallbac
     {
         return Collections.emptyMap();
     }
+
+    @Override
+    public Pair<AssocCopySourceAction, AssocCopyTargetAction> getAssociationCopyAction(QName classQName,
+            CopyDetails copyDetails, CopyAssociationDetails assocCopyDetails)
+    {
+        return new Pair<AssocCopySourceAction, AssocCopyTargetAction>(AssocCopySourceAction.IGNORE, 
+                AssocCopyTargetAction.USE_COPIED_OTHERWISE_ORIGINAL_TARGET);
+    }
+    
+    
 }

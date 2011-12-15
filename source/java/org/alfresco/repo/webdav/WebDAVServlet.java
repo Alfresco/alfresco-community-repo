@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Hashtable;
-import java.util.Properties;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -32,7 +31,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.UserTransaction;
 
-import org.alfresco.jlan.server.FileFilterMode;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.ServiceRegistry;
@@ -43,6 +41,8 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.FileFilterMode;
+import org.alfresco.util.FileFilterMode.Client;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -97,7 +97,7 @@ public class WebDAVServlet extends HttpServlet
             startTime = System.currentTimeMillis();
         }
 
-        FileFilterMode.Mode mode = FileFilterMode.setMode(FileFilterMode.Mode.ENHANCED);
+        FileFilterMode.setClient(Client.webdav);
 
         try
         {
@@ -187,8 +187,8 @@ public class WebDAVServlet extends HttpServlet
             {
                 logger.info(request.getMethod() + " took " + (System.currentTimeMillis()-startTime) + "ms to execute ["+request.getRequestURI()+"]");
             }
-            
-            FileFilterMode.setMode(mode);
+
+            FileFilterMode.clearClient();
         }
     }
 

@@ -222,7 +222,7 @@ var Filters =
          default: // "path"
             filterParams.variablePath = false;
             filterQuery = "+PATH:\"" + parsedArgs.pathNode.qnamePath + "/*\"";
-            filterParams.query = filterQuery + " AND NOT ASPECT:\"sys:hidden\" " + filterQueryDefaults;
+            filterParams.query = filterQuery + filterQueryDefaults;
             break;
       }
 

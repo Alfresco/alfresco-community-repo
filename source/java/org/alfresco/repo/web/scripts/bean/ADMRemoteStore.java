@@ -36,6 +36,7 @@ import org.alfresco.query.CannedQueryPageDetails;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.model.filefolder.HiddenAspect;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -96,6 +97,7 @@ public class ADMRemoteStore extends BaseRemoteStore
     private NamespaceService namespaceService;
     private SiteService siteService;
     private ContentService contentService;
+    private HiddenAspect hiddenAspect;
     
     
     /**
@@ -144,6 +146,11 @@ public class ADMRemoteStore extends BaseRemoteStore
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService; 
+    }
+    
+    public void setHiddenAspect(HiddenAspect hiddenAspect)
+    {
+        this.hiddenAspect = hiddenAspect;
     }
 
     /**
@@ -354,9 +361,7 @@ public class ADMRemoteStore extends BaseRemoteStore
                         }
                         FileInfo fileInfo = fileFolderService.create(
                                 parentFolder.getNodeRef(), encpath.substring(off + 1), ContentModel.TYPE_CONTENT);
-                        Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(1, 1.0f);
-                        aspectProperties.put(ContentModel.PROP_IS_INDEXED, false);
-                        nodeService.addAspect(fileInfo.getNodeRef(), ContentModel.ASPECT_INDEX_CONTROL, aspectProperties);
+
                         contentService.getWriter(
                                 fileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true).putContent(content);
                         if (logger.isDebugEnabled())
@@ -787,6 +792,10 @@ public class ADMRemoteStore extends BaseRemoteStore
             properties.put(ContentModel.PROP_NAME, (Serializable) SURF_CONFIG);
             ChildAssociationRef ref = this.unprotNodeService.createNode(
                     rootRef, ContentModel.ASSOC_CONTAINS, assocQName, ContentModel.TYPE_FOLDER, properties);
+
+            // surf-config needs to be hidden
+            hiddenAspect.hideNode(ref.getChildRef());
+
             surfConfigRef = ref.getChildRef();
             Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(1, 1.0f);
             aspectProperties.put(ContentModel.PROP_IS_INDEXED, false);
@@ -794,7 +803,7 @@ public class ADMRemoteStore extends BaseRemoteStore
         }
         return surfConfigRef;
     }
-
+    
     /**
      * @return the Sites folder root node reference
      */

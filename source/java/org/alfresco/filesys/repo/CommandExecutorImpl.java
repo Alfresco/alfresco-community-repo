@@ -6,10 +6,7 @@ import java.util.List;
 
 import org.alfresco.filesys.alfresco.ExtendedDiskInterface;
 import org.alfresco.filesys.alfresco.RepositoryDiskInterface;
-import org.alfresco.filesys.repo.FilesystemTransactionAdvice.PropagatingException;
 import org.alfresco.filesys.repo.rules.Command;
-import org.alfresco.filesys.repo.rules.Operation;
-import org.alfresco.filesys.repo.rules.OperationExecutor;
 import org.alfresco.filesys.repo.rules.commands.CloseFileCommand;
 import org.alfresco.filesys.repo.rules.commands.CompoundCommand;
 import org.alfresco.filesys.repo.rules.commands.CopyContentCommand;
@@ -22,23 +19,17 @@ import org.alfresco.filesys.repo.rules.commands.RemoveNoContentFileOnError;
 import org.alfresco.filesys.repo.rules.commands.RemoveTempFileCommand;
 import org.alfresco.filesys.repo.rules.commands.RenameFileCommand;
 import org.alfresco.filesys.repo.rules.commands.ReturnValueCommand;
-import org.alfresco.filesys.repo.rules.operations.CreateFileOperation;
-import org.alfresco.filesys.repo.rules.operations.DeleteFileOperation;
-import org.alfresco.filesys.repo.rules.operations.RenameFileOperation;
 import org.alfresco.jlan.server.SrvSession;
-import org.alfresco.jlan.server.filesys.AccessMode;
-import org.alfresco.jlan.server.filesys.FileAction;
-import org.alfresco.jlan.server.filesys.FileAttribute;
-import org.alfresco.jlan.server.filesys.FileOpenParams;
 import org.alfresco.jlan.server.filesys.TreeConnection;
-import org.alfresco.jlan.smb.SharingMode;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.FileFilterMode;
+import org.alfresco.util.FileFilterMode.Client;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 
 /**
  * Content Disk Driver Command Executor
@@ -164,6 +155,27 @@ public class CommandExecutorImpl implements CommandExecutor
         return ret;
     }
     
+    private Client getClient(SrvSession srvSession)
+    {
+        String clientStr = srvSession.getServer().getProtocolName().toLowerCase();
+        if(clientStr.equals("cifs"))
+        {
+            return Client.cifs;
+        }
+        else if(clientStr.equals("nfs"))
+        {
+            return Client.nfs;
+        }
+        else if(clientStr.equals("ftp"))
+        {
+            return Client.ftp;
+        }
+        else
+        {
+            throw new IllegalArgumentException();
+        }
+    }
+    
     /**
      * @param sess
      * @param tree
@@ -174,122 +186,129 @@ public class CommandExecutorImpl implements CommandExecutor
      */
     private Object executeInternal(SrvSession sess, TreeConnection tree, Command command, Object result) throws IOException
     {
-        if(command instanceof CompoundCommand)
+        FileFilterMode.setClient(getClient(sess));
+        try
         {
-           Object ret = null;
-           logger.debug("compound command received");
-           CompoundCommand x = (CompoundCommand)command;
-                  
-           for(Command compoundPart : x.getCommands())
-           {
-               logger.debug("running part of compound command");
-               Object val = executeInternal(sess, tree, compoundPart, result);
-               if(val != null)
+            if(command instanceof CompoundCommand)
+            {
+               Object ret = null;
+               logger.debug("compound command received");
+               CompoundCommand x = (CompoundCommand)command;
+                      
+               for(Command compoundPart : x.getCommands())
                {
-                   // Return the value from the last command.
-                   ret = val;
+                   logger.debug("running part of compound command");
+                   Object val = executeInternal(sess, tree, compoundPart, result);
+                   if(val != null)
+                   {
+                       // Return the value from the last command.
+                       ret = val;
+                   }
                }
-           }
-           return ret;
-        }
-        else if(command instanceof CreateFileCommand)
-        {
-            logger.debug("create file command");
-            CreateFileCommand create = (CreateFileCommand)command;
-            return repositoryDiskInterface.createFile(create.getRootNode(), create.getPath(), create.getAllocationSize());
-        }
-        else if(command instanceof DeleteFileCommand)
-        {
-            logger.debug("delete file command");
-            DeleteFileCommand delete = (DeleteFileCommand)command;
-            diskInterface.deleteFile(sess, tree, delete.getPath());
-        }
-        else if(command instanceof OpenFileCommand)
-        {
-            logger.debug("open file command");
-            OpenFileCommand o = (OpenFileCommand)command;
-            
-            OpenFileMode mode = o.getMode();
-            return repositoryDiskInterface.openFile(sess, tree, o.getRootNodeRef(), o.getPath(), mode, o.isTruncate());
-            
-        }
-        else if(command instanceof CloseFileCommand)
-        {
-            logger.debug("close file command");
-            CloseFileCommand c = (CloseFileCommand)command;
-            repositoryDiskInterface.closeFile(c.getRootNodeRef(), c.getPath(), c.getNetworkFile());
-        }
-        else if(command instanceof ReduceQuotaCommand)
-        {
-            logger.debug("reduceQuota file command");
-            ReduceQuotaCommand r = (ReduceQuotaCommand)command;
-            repositoryDiskInterface.reduceQuota(sess, tree, r.getNetworkFile());
-        }
-        else if(command instanceof RenameFileCommand)
-        {
-            logger.debug("rename command");
-            RenameFileCommand rename = (RenameFileCommand)command;
-            diskInterface.renameFile(sess, tree, rename.getFromPath(), rename.getToPath());    
-        }
-        else if(command instanceof CopyContentCommand)
-        {
-            if(logger.isDebugEnabled())
-            {
-                logger.debug("Copy content command - copy content");
+               return ret;
             }
-            CopyContentCommand copy = (CopyContentCommand)command;
-            repositoryDiskInterface.copyContent(copy.getRootNode(), copy.getFromPath(), copy.getToPath());
+            else if(command instanceof CreateFileCommand)
+            {
+                logger.debug("create file command");
+                CreateFileCommand create = (CreateFileCommand)command;
+                return repositoryDiskInterface.createFile(create.getRootNode(), create.getPath(), create.getAllocationSize());
+            }
+            else if(command instanceof DeleteFileCommand)
+            {
+                logger.debug("delete file command");
+                DeleteFileCommand delete = (DeleteFileCommand)command;
+                diskInterface.deleteFile(sess, tree, delete.getPath());
+            }
+            else if(command instanceof OpenFileCommand)
+            {
+                logger.debug("open file command");
+                OpenFileCommand o = (OpenFileCommand)command;
+                
+                OpenFileMode mode = o.getMode();
+                return repositoryDiskInterface.openFile(sess, tree, o.getRootNodeRef(), o.getPath(), mode, o.isTruncate());
+                
+            }
+            else if(command instanceof CloseFileCommand)
+            {
+                logger.debug("close file command");
+                CloseFileCommand c = (CloseFileCommand)command;
+                repositoryDiskInterface.closeFile(c.getRootNodeRef(), c.getPath(), c.getNetworkFile());
+            }
+            else if(command instanceof ReduceQuotaCommand)
+            {
+                logger.debug("reduceQuota file command");
+                ReduceQuotaCommand r = (ReduceQuotaCommand)command;
+                repositoryDiskInterface.reduceQuota(sess, tree, r.getNetworkFile());
+            }
+            else if(command instanceof RenameFileCommand)
+            {
+                logger.debug("rename command");
+                RenameFileCommand rename = (RenameFileCommand)command;
+                diskInterface.renameFile(sess, tree, rename.getFromPath(), rename.getToPath());    
+            }
+            else if(command instanceof CopyContentCommand)
+            {
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("Copy content command - copy content");
+                }
+                CopyContentCommand copy = (CopyContentCommand)command;
+                repositoryDiskInterface.copyContent(copy.getRootNode(), copy.getFromPath(), copy.getToPath());
+            }
+            else if(command instanceof DoNothingCommand)
+            {
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("Do Nothing Command - doing nothing");
+                }
+            }
+            else if(command instanceof ResultCallback)
+            {
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("Result Callback");
+                }
+                ResultCallback callback = (ResultCallback)command;
+                callback.execute(result);
+            }
+            else if(command instanceof RemoveTempFileCommand)
+            {
+                RemoveTempFileCommand r = (RemoveTempFileCommand)command;
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("Remove Temp File:" + r.getNetworkFile());
+                }
+                File file = r.getNetworkFile().getFile();
+                boolean isDeleted = file.delete();
+                
+                if(!isDeleted)
+                {
+                    logger.debug("unable to delete temp file:" + r.getNetworkFile() + ", closed="+ r.getNetworkFile().isClosed());
+                }
+            }
+            else if(command instanceof ReturnValueCommand)
+            {
+                ReturnValueCommand r = (ReturnValueCommand)command;
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("Return value");
+                }
+                return r.getReturnValue();
+            }
+            else if(command instanceof  RemoveNoContentFileOnError)
+            {
+                RemoveNoContentFileOnError r = (RemoveNoContentFileOnError)command;
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("Remove no content file on error");
+                }
+                repositoryDiskInterface.deleteEmptyFile(r.getRootNodeRef(), r.getPath());
+            }
         }
-        else if(command instanceof DoNothingCommand)
+        finally
         {
-            if(logger.isDebugEnabled())
-            {
-                logger.debug("Do Nothing Command - doing nothing");
-            }
+            FileFilterMode.clearClient();
         }
-        else if(command instanceof ResultCallback)
-        {
-            if(logger.isDebugEnabled())
-            {
-                logger.debug("Result Callback");
-            }
-            ResultCallback callback = (ResultCallback)command;
-            callback.execute(result);
-        }
-        else if(command instanceof RemoveTempFileCommand)
-        {
-            RemoveTempFileCommand r = (RemoveTempFileCommand)command;
-            if(logger.isDebugEnabled())
-            {
-                logger.debug("Remove Temp File:" + r.getNetworkFile());
-            }
-            File file = r.getNetworkFile().getFile();
-            boolean isDeleted = file.delete();
-            
-            if(!isDeleted)
-            {
-                logger.debug("unable to delete temp file:" + r.getNetworkFile() + ", closed="+ r.getNetworkFile().isClosed());
-            }
-        }
-        else if(command instanceof ReturnValueCommand)
-        {
-            ReturnValueCommand r = (ReturnValueCommand)command;
-            if(logger.isDebugEnabled())
-            {
-                logger.debug("Return value");
-            }
-            return r.getReturnValue();
-        }
-        else if(command instanceof  RemoveNoContentFileOnError)
-        {
-            RemoveNoContentFileOnError r = (RemoveNoContentFileOnError)command;
-            if(logger.isDebugEnabled())
-            {
-                logger.debug("Remove no content file on error");
-            }
-            repositoryDiskInterface.deleteEmptyFile(r.getRootNodeRef(), r.getPath());
-        }
-        
 
         return null;
     }

@@ -10,6 +10,36 @@
       <property name="storageType" value="org.alfresco.query.CannedQueryFactory"/>
    </bean>
 
+   <bean name="hiddenAspect" class="org.alfresco.repo.model.filefolder.HiddenAspect">
+      <property name="nodeService" ref="NodeService"/>
+      <property name="patterns">
+         <list>
+            <bean class="org.alfresco.repo.model.filefolder.HiddenFileFilter">
+                <property name="filter" value="\._.*" />
+            </bean>
+            <bean class="org.alfresco.repo.model.filefolder.HiddenFileFilter">
+                <property name="filter" value="\..*" />
+                <property name="visibility" value="webdav,nfs" />
+                <property name="hiddenAttribute" value="cifs" />
+            </bean>
+            <bean class="org.alfresco.repo.model.filefolder.HiddenFileFilter">
+                <property name="filter" value="Thumbs\.db" />
+                <property name="visibility" value="webdav,nfs" />
+                <property name="hiddenAttribute" value="cifs" />
+            </bean>
+            <bean class="org.alfresco.repo.model.filefolder.HiddenFileFilter">
+                <property name="filter" value="Desktop\.ini" />
+                <property name="visibility" value="webdav,nfs" />
+                <property name="hiddenAttribute" value="cifs" />
+            </bean>
+            <!-- completely hidden i.e. to all clients  -->
+            <bean class="org.alfresco.repo.model.filefolder.HiddenFileFilter">
+                <property name="filter" value="surf-config" />
+            </bean>
+         </list>
+      </property>
+   </bean>
+   
    <bean name="fileFolderService" class="org.alfresco.repo.model.filefolder.FileFolderServiceImpl" init-method="init">
       <property name="namespaceService"><ref bean="namespaceService" /></property>
       <property name="dictionaryService"><ref bean="dictionaryService" /></property>
@@ -18,7 +48,8 @@
       <property name="searchService"><ref bean="admSearchService" /></property>
       <property name="contentService"><ref bean="contentService" /></property>
       <property name="mimetypeService"><ref bean="mimetypeService" /></property>
-      
+      <property name="hiddenAspect"><ref bean="hiddenAspect" /></property>
+
       <property name="cannedQueryRegistry" ref="fileFolderCannedQueryRegistry"/>
       <property name="defaultListMaxResults" value="${system.filefolderservice.defaultListMaxResults}"/>
       
@@ -90,24 +121,13 @@
          </list>
       </property>
    </bean>
-   
-   <!-- Files matching one of these patterns will be marked with the 'hidden' aspect -->
-   <bean name="hiddenFiles" class="org.alfresco.util.PatternFilter">
-      <property name="patterns">
-         <list>
-            <value><![CDATA[\..*]]></value>
-            <value><![CDATA[Thumbs\.db]]></value>
-            <value><![CDATA[Desktop\.ini]]></value>
-         </list>
-      </property>
-   </bean>
 
-   <!-- Paths matching one of these patterns will be treated as temporary paths -->
+   <!-- Paths matching one of these patterns will be treated as system paths -->
    <bean name="systemPaths" class="org.alfresco.util.PatternFilter">
       <property name="patterns">
          <list>
-            <value><![CDATA[.*\.TemporaryItems.*]]></value>
-            <value><![CDATA[.*\.DS_Store.*]]></value>
+            <value><![CDATA[\.TemporaryItems]]></value>
+            <value><![CDATA[\.DS_Store]]></value>
          </list>
       </property>
    </bean>
@@ -116,7 +136,7 @@
       <property name="nodeService" ref="nodeService" />
       <property name="permissionService" ref="permissionService" />
       <property name="systemPaths" ref="systemPaths" />
-      <property name="hiddenFiles" ref="hiddenFiles" />
+      <property name="hiddenAspect" ref="hiddenAspect" />
       <property name="temporaryFiles" ref="temporaryFiles" />
    </bean>
  

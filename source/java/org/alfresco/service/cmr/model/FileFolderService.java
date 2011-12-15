@@ -396,12 +396,4 @@ public interface FileFolderService
      */
     @Auditable(parameters = {"typeQName"})
     public FileFolderServiceType getType(QName typeQName);
-    
-    /**
-     * Removes any hidden files from the file list.
-     *
-     * @param files
-     * @return a list of files with hidden files removed
-     */
-    public List<FileInfo> removeHiddenFiles(List<FileInfo> files);
 }

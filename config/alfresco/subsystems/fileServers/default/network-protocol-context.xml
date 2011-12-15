@@ -290,6 +290,7 @@
       <property name="fileFolderService"><ref bean="FileFolderService" /></property>
       <property name="mimetypeService"><ref bean="mimetypeService" /></property>
       <property name="permissionService"><ref bean="permissionService"/></property>
+      <property name="hiddenAspect"><ref bean="hiddenAspect"/></property>
       <property name="excludedTypes">
           <list>
               <value>{http://www.alfresco.org/model/forum/1.0}forum</value>

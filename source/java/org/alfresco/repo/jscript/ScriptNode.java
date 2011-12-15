@@ -92,6 +92,8 @@ import org.alfresco.service.namespace.NamespacePrefixResolverProvider;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.FileFilterMode;
+import org.alfresco.util.FileFilterMode.Client;
 import org.alfresco.util.GUID;
 import org.alfresco.util.ISO9075;
 import org.alfresco.util.Pair;
@@ -649,10 +651,18 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         PagingRequest pageRequest = new PagingRequest(skipOffset, maxItems, queryExecutionId);
         pageRequest.setRequestTotalCountMax(requestTotalCountMax);
         
-        PagingResults<FileInfo> pageOfNodeInfos = this.fileFolderService.list(this.nodeRef, files, folders, null, ignoreTypeQNames, sortProps, pageRequest);
-        
+        PagingResults<FileInfo> pageOfNodeInfos = null;
+        FileFilterMode.setClient(Client.script);
+        try
+        {
+            pageOfNodeInfos = this.fileFolderService.list(this.nodeRef, files, folders, null, ignoreTypeQNames, sortProps, pageRequest);
+        }
+        finally
+        {
+            FileFilterMode.clearClient();
+        }
+
         List<FileInfo> nodeInfos = pageOfNodeInfos.getPage();
-        
         int size = nodeInfos.size();
         results = new Object[size];
         for (int i=0; i<size; i++)

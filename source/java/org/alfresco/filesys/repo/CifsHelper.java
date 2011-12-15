@@ -36,6 +36,8 @@ import org.alfresco.jlan.server.filesys.FileName;
 import org.alfresco.jlan.server.filesys.FileType;
 import org.alfresco.jlan.util.WildCard;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.model.filefolder.HiddenAspect;
+import org.alfresco.repo.model.filefolder.HiddenAspect.Visibility;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileFolderUtil;
@@ -49,6 +51,7 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.FileFilterMode.Client;
 import org.alfresco.util.SearchLanguageConversion;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -70,6 +73,7 @@ public class CifsHelper
     private FileFolderService fileFolderService;
     private MimetypeService mimetypeService;
     private PermissionService permissionService;
+    private HiddenAspect hiddenAspect;
 
     private Set<QName> excludedTypes = new HashSet<QName>();
     
@@ -105,6 +109,11 @@ public class CifsHelper
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
+    }
+
+    public void setHiddenAspect(HiddenAspect hiddenAspect)
+    {
+        this.hiddenAspect = hiddenAspect;
     }
 
     /**
@@ -285,10 +294,9 @@ public class CifsHelper
         if (name != null)
         {
             fileInfo.setFileName(name);
-            
+
             // Check for file names that should be hidden
-            
-            if(nodeService.hasAspect(fileInfo.getNodeRef(), ContentModel.ASPECT_HIDDEN))
+            if(hiddenAspect.getVisibility(Client.cifs, fileInfo.getNodeRef()) == Visibility.HiddenAttribute)
             {
             	// Add the hidden file attribute
             	int attr = fileInfo.getFileAttributes();

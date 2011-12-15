@@ -38,6 +38,7 @@ import org.alfresco.query.CannedQueryFactory;
 import org.alfresco.query.CannedQueryResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.model.filefolder.HiddenAspect.Visibility;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory;
 import org.alfresco.repo.search.QueryParameterDefImpl;
@@ -69,6 +70,8 @@ import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.FileFilterMode;
+import org.alfresco.util.FileFilterMode.Client;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
@@ -120,6 +123,7 @@ public class FileFolderServiceImpl implements FileFolderService
        
     private static Log logger = LogFactory.getLog(FileFolderServiceImpl.class);
     
+    private HiddenAspect hiddenAspect;
     private NamespaceService namespaceService;
     private DictionaryService dictionaryService;
     private NodeService nodeService;
@@ -179,7 +183,12 @@ public class FileFolderServiceImpl implements FileFolderService
     {
         this.mimetypeService = mimetypeService;
     }
-    
+
+    public void setHiddenAspect(HiddenAspect hiddenAspect)
+    {
+        this.hiddenAspect = hiddenAspect;
+    }
+
     /**
      * Set the registry of {@link CannedQueryFactory canned queries}
      */
@@ -230,10 +239,15 @@ public class FileFolderServiceImpl implements FileFolderService
     private List<FileInfo> toFileInfo(List<NodeRef> nodeRefs) throws InvalidTypeException
     {
         List<FileInfo> results = new ArrayList<FileInfo>(nodeRefs.size());
+        Client client = FileFilterMode.getClient();
         for (NodeRef nodeRef : nodeRefs)
         {
             try
             {
+                if(hiddenAspect.getVisibility(client, nodeRef) == Visibility.NotVisible)
+                {
+                    continue;
+                }
                 FileInfo fileInfo = toFileInfo(nodeRef, true);
                 results.add(fileInfo);
             }
@@ -257,12 +271,13 @@ public class FileFolderServiceImpl implements FileFolderService
         QName typeQName = nodeService.getType(nodeRef);
         boolean isFolder = isFolder(typeQName);
         boolean isHidden = false;
-        
-        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_HIDDEN))
+
+        Client client = FileFilterMode.getClient();
+        if(hiddenAspect.getVisibility(client, nodeRef) == Visibility.HiddenAttribute)
         {
-        	isHidden = true;
+            isHidden = true;
         }
-        
+
         // Construct the file info and add to the results
         FileInfo fileInfo = new FileInfoImpl(nodeRef, typeQName, isFolder, isHidden, properties);
 
@@ -380,8 +395,14 @@ public class FileFolderServiceImpl implements FileFolderService
         }
         
         final List<FileInfo> nodeInfos = new ArrayList<FileInfo>(nodeRefs.size());
+        final Client client = FileFilterMode.getClient();
         for (NodeRef nodeRef : nodeRefs)
         {
+            if(hiddenAspect.getVisibility(client, nodeRef) == Visibility.NotVisible)
+            {
+                continue;
+            }
+
             nodeInfos.add(toFileInfo(nodeRef, true));
         }
         PermissionCheckedCollectionMixin.create(nodeInfos, nodeRefs);
@@ -1208,6 +1229,7 @@ public class FileFolderServiceImpl implements FileFolderService
         }
         
         NodeRef nodeRef = assocRef.getChildRef();
+
         FileInfo fileInfo = toFileInfo(nodeRef, true);
         // done
         if (logger.isDebugEnabled())
@@ -1440,20 +1462,5 @@ public class FileFolderServiceImpl implements FileFolderService
             }
         }
         return new Pair<String, String>(base, ext);
-    }
-    
-    public List<FileInfo> removeHiddenFiles(List<FileInfo> files)
-    {
- 	   List<FileInfo> ret = new ArrayList<FileInfo>(files.size());
-
-	   for(FileInfo file : files)
-	   {
-		   if(!nodeService.hasAspect(file.getNodeRef(), ContentModel.ASPECT_HIDDEN))
-		   {
-			   ret.add(file);
-		   }
-	   }
-
-	   return ret;
     }
 }

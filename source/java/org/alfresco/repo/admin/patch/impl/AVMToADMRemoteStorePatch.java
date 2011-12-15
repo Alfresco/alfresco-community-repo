@@ -40,6 +40,7 @@ import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.batch.BatchProcessWorkProvider;
 import org.alfresco.repo.batch.BatchProcessor;
 import org.alfresco.repo.batch.BatchProcessor.BatchProcessWorker;
+import org.alfresco.repo.model.filefolder.HiddenAspect;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -112,6 +113,7 @@ public class AVMToADMRemoteStorePatch extends AbstractPatch
     private SiteService siteService;
     private AVMService avmService;
     private RuleService ruleService;
+    private HiddenAspect hiddenAspect;
     private String avmStore;
     private String avmRootPath = "/";
     
@@ -173,6 +175,11 @@ public class AVMToADMRemoteStorePatch extends AbstractPatch
         {
             this.avmRootPath = avmRootPath;
         }
+    }
+
+    public void setHiddenAspect(HiddenAspect hiddenAspect)
+    {
+        this.hiddenAspect = hiddenAspect;
     }
 
     @Override
@@ -624,9 +631,9 @@ public class AVMToADMRemoteStorePatch extends AbstractPatch
                 ChildAssociationRef ref = this.nodeService.createNode(
                         rootRef, ContentModel.ASSOC_CONTAINS, assocQName, ContentModel.TYPE_FOLDER, properties);
                 surfConfigRef = ref.getChildRef();
-                Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(1, 1.0f);
-                aspectProperties.put(ContentModel.PROP_IS_INDEXED, false);
-                this.nodeService.addAspect(surfConfigRef, ContentModel.ASPECT_INDEX_CONTROL, aspectProperties);
+
+                // surf-config needs to be hidden
+                hiddenAspect.hideNode(ref.getChildRef());
             }
             catch (DuplicateChildNodeNameException dupErr)
             {

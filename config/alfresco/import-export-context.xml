@@ -61,6 +61,9 @@
         <property name="dbNodeService">
             <ref bean="mtAwareNodeService" />
         </property>
+        <property name="hiddenAspect">
+            <ref bean="hiddenAspect" />
+        </property>
     </bean>
     
     

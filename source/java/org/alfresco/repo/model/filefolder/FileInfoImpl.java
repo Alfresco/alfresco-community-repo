@@ -42,7 +42,7 @@ public class FileInfoImpl implements FileInfo
     private NodeRef linkNodeRef;
     private boolean isFolder;
     private boolean isLink;
-    private boolean isHindden;
+    private boolean isHidden;
     private Map<QName, Serializable> properties;
     private QName typeQName;
 
@@ -61,7 +61,7 @@ public class FileInfoImpl implements FileInfo
         
         this.isFolder = isFolder;
         this.properties = properties;
-        this.isHindden = isHidden;
+        this.isHidden = isHidden;
         
         // Check if this is a link node
         if ( properties.containsKey( ContentModel.PROP_LINK_DESTINATION))
@@ -92,6 +92,11 @@ public class FileInfoImpl implements FileInfo
         }
         FileInfoImpl that = (FileInfoImpl) obj;
         return (this.getNodeRef().equals(that.getNodeRef()));
+    }
+
+    void setHidden(boolean isHidden)
+    {
+        this.isHidden = isHidden;
     }
 
     /**
@@ -139,7 +144,7 @@ public class FileInfoImpl implements FileInfo
     }
   
     public boolean isHidden() {
-    	return isHindden;
+    	return isHidden;
     }
 
     public NodeRef getLinkNodeRef()

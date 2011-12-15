@@ -67,6 +67,7 @@ import org.alfresco.query.EmptyPagingResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.model.Repository;
+import org.alfresco.repo.model.filefolder.HiddenAspect;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -107,6 +108,8 @@ import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.FileFilterMode;
+import org.alfresco.util.FileFilterMode.Client;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -351,6 +354,11 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
     {
         lifecycle.setApplicationContext(applicationContext);
     }
+    
+    public void setHiddenAspect(HiddenAspect hiddenAspect)
+    {
+        this.hiddenAspect = hiddenAspect;
+    }
 
     /* (non-Javadoc)
      * @see org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
@@ -587,6 +595,8 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
         }
     }
     
+    private HiddenAspect hiddenAspect;
+    
     /* 
      * (non-Javadoc)
      * @see org.alfresco.cmis.CMISServices#getChildren(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.cmis.CMISTypesFilterEnum, java.lang.String)
@@ -595,12 +605,14 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
             throws CMISInvalidArgumentException
     {
         PagingResults<FileInfo> pageOfNodeInfos =  getChildren(folderNodeRef, typesFilter, BigInteger.valueOf(Integer.MAX_VALUE), BigInteger.valueOf(0), orderBy);
-        
-        int pageCnt = pageOfNodeInfos.getPage().size();
+
+//        List<FileInfo> filteredChildren = hiddenAspect.removeHiddenFiles(Client.cmis, pageOfNodeInfos.getPage());
+        List<FileInfo> filteredChildren = pageOfNodeInfos.getPage();
+        int pageCnt = filteredChildren.size();
         NodeRef[] result = new NodeRef[pageCnt];
-        
+
         int idx = 0;
-        for (FileInfo child : pageOfNodeInfos.getPage())
+        for (FileInfo child : filteredChildren)
         {
             result[idx] = child.getNodeRef();
             idx++;
@@ -694,14 +706,22 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
                                                            // numItems may be
                                                            // returned
         
-        PagingResults<FileInfo> result = fileFolderService.list(folderNodeRef, listFiles, listFolders, null, sortProps, pageRequest);
-        
-        if (logger.isDebugEnabled())
+        FileFilterMode.setClient(Client.cmis);
+        try
         {
-            logger.debug("getChildren: " + result.getPage().size() + " in " + (System.currentTimeMillis() - start) + " msecs");
+            PagingResults<FileInfo> result = fileFolderService.list(folderNodeRef, listFiles, listFolders, null, sortProps, pageRequest);
+            
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("getChildren: " + result.getPage().size() + " in " + (System.currentTimeMillis() - start) + " msecs");
+            }
+            
+            return result;
         }
-        
-        return result;
+        finally
+        {
+            FileFilterMode.clearClient();
+        }
     }
     
     /*

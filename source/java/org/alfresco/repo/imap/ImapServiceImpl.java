@@ -42,10 +42,10 @@ import java.util.TreeMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.mail.Flags;
+import javax.mail.Flags.Flag;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.Part;
-import javax.mail.Flags.Flag;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.ContentType;
 import javax.mail.internet.InternetAddress;
@@ -63,18 +63,18 @@ import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnDeleteChildAssociationPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.site.SiteServiceException;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.lock.NodeLockedException;
 import org.alfresco.service.cmr.model.FileExistsException;
@@ -99,6 +99,8 @@ import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
+import org.alfresco.util.FileFilterMode;
+import org.alfresco.util.FileFilterMode.Client;
 import org.alfresco.util.GUID;
 import org.alfresco.util.MaxSizeMap;
 import org.alfresco.util.Pair;
@@ -251,7 +253,7 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
     {
         this.nodeService = nodeService;
     }
-    
+
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
@@ -764,7 +766,18 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
                 this.folderCacheLock.readLock().unlock();
             }
         }
-        List<FileInfo> fileInfos = fileFolderService.removeHiddenFiles(fileFolderService.listFiles(contextNodeRef));
+        
+        List<FileInfo> fileInfos = null;
+        FileFilterMode.setClient(Client.imap);
+        try
+        {
+            fileInfos = fileFolderService.listFiles(contextNodeRef);
+        }
+        finally
+        {
+            FileFilterMode.clearClient();
+        }
+        
         final NavigableMap<Long, FileInfo> currentSearch = new TreeMap<Long, FileInfo>();
 
         switch (viewMode)
@@ -1079,7 +1092,15 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
         // Only list this folder if we have a wildcard name. Otherwise do a direct lookup by name.
         if (name.contains("*") || name.contains("%"))
         {
-            list = fileFolderService.removeHiddenFiles(fileFolderService.listFolders(root));
+            FileFilterMode.setClient(Client.imap);
+            try
+            {
+                list = fileFolderService.listFolders(root);
+            }
+            finally
+            {
+                FileFilterMode.clearClient();
+            }
         }
         else
         {

@@ -33,6 +33,7 @@ import java.util.Set;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.importer.view.NodeContext;
+import org.alfresco.repo.model.filefolder.HiddenAspect;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.version.Version2Model;
@@ -108,6 +109,7 @@ public class ImporterComponent
     private AuthenticationContext authenticationContext;
     private OwnableService ownableService;
     private VersionService versionService;
+    private HiddenAspect hiddenAspect;
 
     /**
      * The db node service, used when updating the version store.
@@ -236,6 +238,11 @@ public class ImporterComponent
         this.dbNodeService = nodeService;
     }
     
+    public void setHiddenAspect(HiddenAspect hiddenAspect)
+    {
+        this.hiddenAspect = hiddenAspect;
+    }
+
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.view.ImporterService#importView(java.io.InputStreamReader, org.alfresco.service.cmr.view.Location, java.util.Properties, org.alfresco.service.cmr.view.ImporterProgress)
      */
@@ -610,6 +617,9 @@ public class ImporterComponent
                     reportAspectAdded(nodeRef, aspect);
                 }
             }
+
+            // check whether the node should be hidden
+            hiddenAspect.checkHidden(nodeRef);
 
             // import content, if applicable
             for (Map.Entry<QName,Serializable> property : context.getProperties().entrySet())

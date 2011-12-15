@@ -61,6 +61,8 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.FileFilterMode;
+import org.alfresco.util.FileFilterMode.Client;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
 import org.alfresco.web.app.context.UIContextService;
@@ -915,7 +917,17 @@ public class BrowseBean implements IContextListener, Serializable
             parentRef = new NodeRef(Repository.getStoreRef(), parentNodeId);
          }
 
-         List<FileInfo> children = this.getFileFolderService().removeHiddenFiles(this.getFileFolderService().list(parentRef));
+         List<FileInfo> children = null;
+         FileFilterMode.setClient(Client.webclient);
+         try
+         {
+             children = this.getFileFolderService().list(parentRef);
+         }
+         finally
+         {
+             FileFilterMode.clearClient();
+         }
+
          this.containerNodes = new ArrayList<Node>(children.size());
          this.contentNodes = new ArrayList<Node>(children.size());
          
@@ -2381,7 +2393,7 @@ public class BrowseBean implements IContextListener, Serializable
 
    /** The file folder service */
    private transient FileFolderService fileFolderService;
-
+   
    /** The Multilingual Content Service */
    private transient MultilingualContentService multilingualContentService;
 

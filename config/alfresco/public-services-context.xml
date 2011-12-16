@@ -68,7 +68,7 @@
         </property>
         <!-- Lazy init to avoid circular dependencies -->
         <property name="targetSource">
-            <bean class="org.springframework.aop.target.LazyInitTargetSource">
+            <bean class="org.alfresco.config.NonBlockingLazyInitTargetSource">
                 <property name="targetBeanName">
                     <idref bean="nodeService" />
                 </property>

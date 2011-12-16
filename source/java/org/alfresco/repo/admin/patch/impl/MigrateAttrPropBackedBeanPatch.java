@@ -19,8 +19,14 @@
 package org.alfresco.repo.admin.patch.impl;
 
 import java.io.Serializable;
+import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.management.Attribute;
+import javax.management.AttributeList;
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
 
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.domain.patch.PatchDAO;
@@ -29,6 +35,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -37,7 +46,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author janv
  * @since 3.4
  */
-public class MigrateAttrPropBackedBeanPatch extends AbstractPatch
+public class MigrateAttrPropBackedBeanPatch extends AbstractPatch implements ApplicationContextAware
 {
     private Log logger = LogFactory.getLog(this.getClass());
     
@@ -47,6 +56,7 @@ public class MigrateAttrPropBackedBeanPatch extends AbstractPatch
     
     private AttributeService attributeService;
     private PatchDAO patchDAO;
+    private MBeanServerConnection mbeanServer;
     
     public void setAttributeService(AttributeService attributeService)
     {
@@ -58,6 +68,16 @@ public class MigrateAttrPropBackedBeanPatch extends AbstractPatch
         this.patchDAO = patchDAO;
     }
     
+    /* (non-Javadoc)
+     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
+     */
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
+    {
+        // Optional dependency - may not exist in community builds
+        this.mbeanServer = (MBeanServerConnection) applicationContext.getBean("alfrescoMBeanServer");
+    }
+
     @Override
     protected String applyInternal() throws Exception
     {
@@ -124,10 +144,55 @@ public class MigrateAttrPropBackedBeanPatch extends AbstractPatch
             {
                 return;
             }
-            attributeService.setAttribute(
-                    (Serializable) attributeMap,
-                    ROOT_KEY_PBB, componentName);
             
+            boolean done = false;
+            try
+            {
+                // Go through the subsystem MBean interface in case the subsystem is already live and the cluster needs
+                // to be resynced
+
+                // Decode the bean ID to a hierarchical object name
+                String[] components = componentName.split("\\$");
+                StringBuilder nameBuff = new StringBuilder(200).append("Alfresco:Type=Configuration,Category=").append(
+                        URLDecoder.decode(components[0], "UTF-8"));
+                for (int i = 1; i < components.length; i++)
+                {
+                    nameBuff.append(",id").append(i).append('=').append(URLDecoder.decode(components[i], "UTF-8"));
+                }
+
+                ObjectName name = new ObjectName(nameBuff.toString());
+                if (mbeanServer != null && mbeanServer.isRegistered(name))
+                {
+                    AttributeList attributeList = new AttributeList();
+                    for (Map.Entry<String, String> entry : attributeMap.entrySet())
+                    {
+                        attributeList.add(new Attribute(entry.getKey(), entry.getValue()));
+                    }
+                    mbeanServer.setAttributes(name, attributeList);
+                    // We've successfully persisted the attributes. Job done
+                    done = true;
+                }
+            }
+            catch (Exception e)
+            {
+                if (logger.isWarnEnabled())
+                {
+                    logger
+                            .warn(
+                                    "Exception migrating attributes of subsystem "
+                                            + componentName
+                                            + ". Falling back to repository-only operation. Subsystem may remain out of sync until reboot.",
+                                    e);
+                }
+            }
+            
+            // Fallback: perhaps the subsystem isn't up yet and hasn't exported its bean. Or perhaps an error occurred
+            // above. Let's persist the new property anyway.
+            if (!done)
+            {
+                attributeService.setAttribute((Serializable) attributeMap, ROOT_KEY_PBB, componentName);
+            }
+
             if (logger.isTraceEnabled())
             {
                 logger.trace("Set PBB component attr [name="+componentName+", attributeMap="+attributeMap+"]");

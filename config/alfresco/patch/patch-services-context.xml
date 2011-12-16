@@ -2966,7 +2966,7 @@
             <value>true</value>
         </property>
     </bean>
-    
+
     <bean id="patch.updateFollowingEmailTemplatesPatch" class="org.alfresco.repo.admin.patch.impl.UpdateFollowingEmailTemplatesPatch" parent="basePatch">
         <property name="id"><value>patch.updateFollowingEmailTemplatesPatch</value></property>
         <property name="description"><value>patch.updateFollowingEmailTemplatesPatch.description</value></property>
@@ -3002,6 +3002,17 @@
         <property name="contentService" ref="ContentService"/>
         <property name="fileFolderService" ref="FileFolderService"/>
         <property name="repository" ref="repositoryHelper"/>
+    </bean>
+    
+    <bean id="patch.fixBpmPackages" class="org.alfresco.repo.admin.patch.impl.FixBpmPackagesPatch" parent="basePatch">
+        <property name="id"><value>patch.fixBpmPackages</value></property>
+        <property name="description"><value>patch.fixBpmPackages.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>5024</value></property>
+        <property name="targetSchema"><value>5025</value></property>
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>     
     </bean>
     
 </beans>

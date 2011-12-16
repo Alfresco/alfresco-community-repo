@@ -172,7 +172,7 @@ public class CommandExecutorImpl implements CommandExecutor
         }
         else
         {
-            throw new IllegalArgumentException();
+            return null;
         }
     }
     

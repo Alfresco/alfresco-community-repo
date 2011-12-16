@@ -50,13 +50,17 @@ public class AclChangeSetsGet extends DeclarativeWebScript
     {
         String fromIdParam = req.getParameter("fromId");
         String fromTimeParam = req.getParameter("fromTime");
+        String toIdParam = req.getParameter("toId");
+        String toTimeParam = req.getParameter("toTime");
         String maxResultsParam = req.getParameter("maxResults");
 
         Long fromId = (fromIdParam == null ? null : Long.valueOf(fromIdParam));
         Long fromTime = (fromTimeParam == null ? null : Long.valueOf(fromTimeParam));
+        Long toId = (toIdParam == null ? null : Long.valueOf(toIdParam));
+        Long toTime = (toTimeParam == null ? null : Long.valueOf(toTimeParam));
         int maxResults = (maxResultsParam == null ? 1024 : Integer.valueOf(maxResultsParam));
         
-        List<AclChangeSet> changesets = solrTrackingComponent.getAclChangeSets(fromId, fromTime, maxResults);
+        List<AclChangeSet> changesets = solrTrackingComponent.getAclChangeSets(fromId, fromTime, toId, toTime, maxResults);
         
         Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);
         model.put("aclChangeSets", changesets);

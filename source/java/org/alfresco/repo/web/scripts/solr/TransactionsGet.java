@@ -50,13 +50,17 @@ public class TransactionsGet extends DeclarativeWebScript
     {
         String minTxnIdParam = req.getParameter("minTxnId");
         String fromCommitTimeParam = req.getParameter("fromCommitTime");
+        String maxTxnIdParam = req.getParameter("maxTxnId");
+        String toCommitTimeParam = req.getParameter("toCommitTime");
         String maxResultsParam = req.getParameter("maxResults");
 
         Long minTxnId = (minTxnIdParam == null ? null : Long.valueOf(minTxnIdParam));
         Long fromCommitTime = (fromCommitTimeParam == null ? null : Long.valueOf(fromCommitTimeParam));
+        Long maxTxnId = (maxTxnIdParam == null ? null : Long.valueOf(maxTxnIdParam));
+        Long toCommitTime = (toCommitTimeParam == null ? null : Long.valueOf(toCommitTimeParam));
         int maxResults = (maxResultsParam == null ? 1024 : Integer.valueOf(maxResultsParam));
         
-        List<Transaction> transactions = solrTrackingComponent.getTransactions(minTxnId, fromCommitTime, maxResults);
+        List<Transaction> transactions = solrTrackingComponent.getTransactions(minTxnId, fromCommitTime, maxTxnId, toCommitTime, maxResults);
         
         Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);
         model.put("transactions", transactions);

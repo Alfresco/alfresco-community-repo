@@ -158,7 +158,7 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
 
     public void testAclsGet() throws Exception
     {
-        List<AclChangeSet> aclChangeSets = solrTrackingComponent.getAclChangeSets(null, null, 100);
+        List<AclChangeSet> aclChangeSets = solrTrackingComponent.getAclChangeSets(null, null, null, null, 100);
         if (aclChangeSets.size() == 0)
         {
             return;         // Can't test, but very unlikely
@@ -202,7 +202,7 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
     
     public void testAclReadersGet() throws Exception
     {
-        List<AclChangeSet> aclChangeSets = solrTrackingComponent.getAclChangeSets(null, null, 1024);
+        List<AclChangeSet> aclChangeSets = solrTrackingComponent.getAclChangeSets(null, null, null, null, 1024);
         List<Long> aclChangeSetIds = new ArrayList<Long>(50);
         for (AclChangeSet aclChangeSet : aclChangeSets)
         {

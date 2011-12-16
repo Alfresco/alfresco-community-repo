@@ -38,10 +38,12 @@ public interface SOLRDAO
      * 
      * @param minAclChangeSetId         minimum ACL changeset ID - (inclusive and optional)
      * @param fromCommitTime            minimum ACL commit time - (inclusive and optional)
+     * @param maxAclChangeSetId         maximum ACL changeset ID - (exclusive and optional)
+     * @param toCommitTime              maximum ACL commit time - (exclusive and optional)
      * @param maxResults                limit the results (must be greater than zero and less than MAX)
      * @return                          list of ACL changesets (no details)
      */
-    public List<AclChangeSet> getAclChangeSets(Long minAclChangeSetId, Long fromCommitTime, int maxResults);
+    public List<AclChangeSet> getAclChangeSets(Long minAclChangeSetId, Long fromCommitTime, Long maxAclChangeSetId, Long toCommitTime, int maxResults);
     
     /**
      * Get the ACLs (no rollup count) for the given ACL ChangeSets
@@ -58,10 +60,12 @@ public interface SOLRDAO
      * 
      * @param minTxnId greater than or equal to minTxnId
      * @param fromCommitTime greater than or equal to transaction commit time
+     * @param maxTxnId less than maxTxnId
+     * @param toCommitTime less than toCommitTime
      * @param maxResults limit the results. 0 or Integer.MAX_VALUE does not limit the results
      * @return list of transactions
      */
-	public List<Transaction> getTransactions(Long minTxnId, Long fromCommitTime, int maxResults);
+	public List<Transaction> getTransactions(Long minTxnId, Long fromCommitTime, Long maxTxnId, Long toCommitTime, int maxResults);
 	
     /**
      * Get the nodes satisfying the constraints in nodeParameters

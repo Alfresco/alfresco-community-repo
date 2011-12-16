@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -66,7 +67,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 public class SOLRTrackingComponentTest extends TestCase
 {
     private static final Log logger = LogFactory.getLog(SOLRTrackingComponentTest.class);
-    
+
     private ConfigurableApplicationContext ctx = (ConfigurableApplicationContext) ApplicationContextHelper.getApplicationContext();
     private static enum NodeStatus
     {
@@ -83,17 +84,17 @@ public class SOLRTrackingComponentTest extends TestCase
     private NodeDAO nodeDAO;
     private DictionaryDAO dictionaryDAO;
     private SOLRTrackingComponent solrTrackingComponent;
-    
+
     private StoreRef storeRef;
     private NodeRef rootNodeRef;
-    
+
     @Override
     public void setUp() throws Exception
     {
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         transactionService = serviceRegistry.getTransactionService();
         txnHelper = transactionService.getRetryingTransactionHelper();
-        
+
         solrTrackingComponent = (SOLRTrackingComponent) ctx.getBean("solrTrackingComponent");
         nodeDAO = (NodeDAO)ctx.getBean("nodeDAO");
         dictionaryDAO =  (DictionaryDAO)ctx.getBean("dictionaryDAO");
@@ -102,16 +103,16 @@ public class SOLRTrackingComponentTest extends TestCase
         dictionaryService = serviceRegistry.getDictionaryService();
         namespaceService = serviceRegistry.getNamespaceService();
         authenticationComponent = (AuthenticationComponent)ctx.getBean("authenticationComponent");
-        
+
         authenticationComponent.setSystemUserAsCurrentUser();
-        
+
         storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, getName() + System.currentTimeMillis());
         rootNodeRef = nodeService.getRootNode(storeRef);
     }
-    
+
     public void testGetAcls_Simple()
     {
-        List<AclChangeSet> cs = solrTrackingComponent.getAclChangeSets(null, null, 50);
+        List<AclChangeSet> cs = solrTrackingComponent.getAclChangeSets(null, null, null, null, 50);
         assertTrue("Expected results to be limited in number", cs.size() <= 50);
         List<Long> aclChangeSetIds = new ArrayList<Long>(50);
         int totalAcls = 0;
@@ -135,71 +136,71 @@ public class SOLRTrackingComponentTest extends TestCase
         // Double check number of ACLs
         assertEquals("ACL count should have matched", totalAcls, totalAclsCheck);
     }
-    
+
     public void testGetNodeMetaData()
     {
         long startTime = System.currentTimeMillis();
 
         SOLRTest st = new SOLRTest3(txnHelper, fileFolderService, nodeDAO, nodeService, dictionaryService, rootNodeRef, "testGetNodeMetaData", true, true);
-        st.buildTransactions();
-        
-        List<Transaction> txns = solrTrackingComponent.getTransactions(null, startTime, 50);
+        List<Long> createdTransactions = st.buildTransactions();
+
+        List<Transaction> txns = solrTrackingComponent.getTransactions(null, startTime, null, null, 50);
 
         int[] updates = new int[] {1, 1};
         int[] deletes = new int[] {0, 1};
-        List<Long> txnIds = checkTransactions(txns, 2, updates, deletes);
+        List<Long> txnIds = checkTransactions(txns, createdTransactions, updates, deletes);
 
         NodeParameters nodeParameters = new NodeParameters();
         nodeParameters.setTransactionIds(txnIds);
         getNodes(nodeParameters, st);
-        
+
         NodeMetaDataParameters nodeMetaDataParams = new NodeMetaDataParameters();
         nodeMetaDataParams.setNodeIds(st.getNodeIds());
         getNodeMetaData(nodeMetaDataParams, null, st);
     }
-    
+
     public void testGetNodeMetaDataExludesResidualProperties()
     {
         long startTime = System.currentTimeMillis();
-        
+
         SOLRTest st = new SOLRTestResidualProperties(txnHelper, fileFolderService, nodeDAO, nodeService, dictionaryService, rootNodeRef, "testNodeMetaDataNullPropertyValue", true, true);
-        st.buildTransactions();
-        
-        List<Transaction> txns = solrTrackingComponent.getTransactions(null, startTime, 50);
+        List<Long> createdTransactions = st.buildTransactions();
+
+        List<Transaction> txns = solrTrackingComponent.getTransactions(null, startTime, null, null, 50);
 
         int[] updates = new int[] {2};
         int[] deletes = new int[] {0};
-        List<Long> txnIds = checkTransactions(txns, 1, updates, deletes);
-        
+        List<Long> txnIds = checkTransactions(txns, createdTransactions, updates, deletes);
+
         NodeParameters nodeParameters = new NodeParameters();
         nodeParameters.setTransactionIds(txnIds);
         getNodes(nodeParameters, st);
-        
-        
+
+
         NodeMetaDataParameters nodeMetaDataParams = new NodeMetaDataParameters();
         nodeMetaDataParams.setNodeIds(st.getNodeIds());
         getNodeMetaData(nodeMetaDataParams, null, st);
-    
+
     }
-    
+
     public void testGetNodeMetaData100Nodes()
     {
         long startTime = System.currentTimeMillis();
 
         SOLRTest st = new SOLRTest100Nodes(txnHelper, fileFolderService, nodeDAO, nodeService, dictionaryService, rootNodeRef, "testGetNodeMetaData", true, true);
-        st.buildTransactions();
-        
-        List<Transaction> txns = solrTrackingComponent.getTransactions(null, startTime, 50);
+        List<Long> createdTransactions = st.buildTransactions();
+
+        List<Transaction> txns = solrTrackingComponent.getTransactions(null, startTime, null, null, 50);
 
         int[] updates = new int[] {100};
         int[] deletes = new int[] {0};
-        List<Long> txnIds = checkTransactions(txns, 1, updates, deletes);
+        List<Long> txnIds = checkTransactions(txns, createdTransactions, updates, deletes);
 
         NodeParameters nodeParameters = new NodeParameters();
         nodeParameters.setTransactionIds(txnIds);
         getNodes(nodeParameters, st);
-        
-//        assertEquals("Unxpected number of nodes", 3, nodeQueryCallback.getSuccessCount());
+
+        //        assertEquals("Unxpected number of nodes", 3, nodeQueryCallback.getSuccessCount());
 
         NodeMetaDataParameters nodeMetaDataParams = new NodeMetaDataParameters();
         nodeMetaDataParams.setNodeIds(st.getNodeIds());
@@ -207,27 +208,27 @@ public class SOLRTrackingComponentTest extends TestCase
 
         nodeMetaDataParams.setMaxResults(20);
         getNodeMetaData(nodeMetaDataParams, null, st);
-        
-//        assertEquals("Unxpected number of nodes", 3, bt.getSuccessCount());
+
+        //        assertEquals("Unxpected number of nodes", 3, bt.getSuccessCount());
     }
-    
+
     public void testNodeMetaDataManyNodes() throws Exception
     {
         long fromCommitTime = System.currentTimeMillis();
 
         SOLRTest st = new SOLRTest4(txnHelper, fileFolderService, nodeDAO, nodeService, dictionaryService, rootNodeRef, "testNodeMetaDataManyNodes", true, false);
-        st.buildTransactions();
+        List<Long> createdTransactions = st.buildTransactions();
 
-        List<Transaction> txns = solrTrackingComponent.getTransactions(null, fromCommitTime, 50);
+        List<Transaction> txns = solrTrackingComponent.getTransactions(null, fromCommitTime, null, null, 50);
 
         int[] updates = new int[] {2001};
         int[] deletes = new int[] {0};
-        List<Long> txnIds = checkTransactions(txns, 1, updates, deletes);
+        List<Long> txnIds = checkTransactions(txns, createdTransactions, updates, deletes);
 
         NodeParameters nodeParameters = new NodeParameters();
         nodeParameters.setTransactionIds(txnIds);
         getNodes(nodeParameters, st);
-        
+
         // make sure caches are warm - time last call
         logger.debug("Cold cache");
         NodeMetaDataParameters nodeMetaDataParams = new NodeMetaDataParameters();
@@ -236,7 +237,7 @@ public class SOLRTrackingComponentTest extends TestCase
         getNodeMetaData(nodeMetaDataParams, null, st);
         logger.debug("Warm cache");
         getNodeMetaData(nodeMetaDataParams, null, st);
-        
+
         // clear out node caches
         nodeDAO.clear();
 
@@ -246,24 +247,24 @@ public class SOLRTrackingComponentTest extends TestCase
         getNodeMetaData(nodeMetaDataParams, null, st);
         logger.debug("Warm cache");        
         getNodeMetaData(nodeMetaDataParams, null, st);
-        
+
         logger.debug("Cold cache - explicit clear");
         nodeMetaDataParams.setMaxResults(500);
         getNodeMetaData(nodeMetaDataParams, null, st);
         getNodeMetaData(nodeMetaDataParams, null, st);
         logger.debug("Warm cache");        
         getNodeMetaData(nodeMetaDataParams, null, st);
-        
+
         logger.debug("Cold cache - explicit clear");
         nodeMetaDataParams.setMaxResults(200);
         getNodeMetaData(nodeMetaDataParams, null, st);
         getNodeMetaData(nodeMetaDataParams, null, st);
         logger.debug("Warm cache");        
         getNodeMetaData(nodeMetaDataParams, null, st);
-        
+
         // clear out node caches
         nodeDAO.clear();
-        
+
         logger.debug("Cold cache - explicit clear");
         getNodeMetaData(nodeMetaDataParams, null, st);
     }
@@ -273,18 +274,18 @@ public class SOLRTrackingComponentTest extends TestCase
         long fromCommitTime = System.currentTimeMillis();
 
         SOLRTest st = new SOLRTest4(txnHelper, fileFolderService, nodeDAO, nodeService, dictionaryService, rootNodeRef, "testNodeMetaDataManyNodes", true, false);
-        st.buildTransactions();
+        List<Long> createdTransactions = st.buildTransactions();
 
-        List<Transaction> txns = solrTrackingComponent.getTransactions(null, fromCommitTime, 50);
+        List<Transaction> txns = solrTrackingComponent.getTransactions(null, fromCommitTime, null, null, 50);
 
         int[] updates = new int[] {2001};
         int[] deletes = new int[] {0};
-        List<Long> txnIds = checkTransactions(txns, 1, updates, deletes);
+        List<Long> txnIds = checkTransactions(txns, createdTransactions, updates, deletes);
 
         NodeParameters nodeParameters = new NodeParameters();
         nodeParameters.setTransactionIds(txnIds);
         getNodes(nodeParameters, st);
-        
+
         // clear out node caches
         nodeDAO.clear();
 
@@ -297,42 +298,42 @@ public class SOLRTrackingComponentTest extends TestCase
         filter.setIncludeChildAssociations(false);
         getNodeMetaData(nodeMetaDataParams, filter, st);
     }
-    
+
     public void testNodeMetaDataNullPropertyValue() throws Exception
     {
         long fromCommitTime = System.currentTimeMillis();
 
         SOLRTest st = new SOLRTest5(txnHelper, fileFolderService, nodeDAO, nodeService, dictionaryService, rootNodeRef, "testNodeMetaDataNullPropertyValue", true, true);
-        st.buildTransactions();
+        List<Long> createdTransactions = st.buildTransactions();
 
-        List<Transaction> txns = solrTrackingComponent.getTransactions(null, fromCommitTime, 50);
+        List<Transaction> txns = solrTrackingComponent.getTransactions(null, fromCommitTime, null, null, 50);
 
         int[] updates = new int[] {11};
         int[] deletes = new int[] {0};
-        List<Long> txnIds = checkTransactions(txns, 1, updates, deletes);
+        List<Long> txnIds = checkTransactions(txns, createdTransactions, updates, deletes);
 
         NodeParameters nodeParameters = new NodeParameters();
         nodeParameters.setTransactionIds(txnIds);
         getNodes(nodeParameters, st);
-        
+
         NodeMetaDataParameters nodeMetaDataParams = new NodeMetaDataParameters();
         nodeMetaDataParams.setNodeIds(st.getNodeIds());
         getNodeMetaData(nodeMetaDataParams, null, st);
     }
-    
+
     public void testFilters()
     {
         long startTime = System.currentTimeMillis();
 
         SOLRTest st = new SOLRTest1(txnHelper, fileFolderService, nodeDAO, nodeService, dictionaryService, rootNodeRef, "testFilters", true, true);
-        st.buildTransactions();
-        
-        List<Transaction> txns = solrTrackingComponent.getTransactions(null, startTime, 50);
+        List<Long> createdTransactions = st.buildTransactions();
+
+        List<Transaction> txns = solrTrackingComponent.getTransactions(null, startTime, null, null, 50);
 
         int[] updates = new int[] {1, 1};
         int[] deletes = new int[] {0, 1};
-        List<Long> txnIds = checkTransactions(txns, 2, updates, deletes);
-        
+        List<Long> txnIds = checkTransactions(txns, createdTransactions, updates, deletes);
+
         NodeParameters nodeParameters = new NodeParameters();
         nodeParameters.setTransactionIds(txnIds);
         getNodes(nodeParameters, st);
@@ -341,11 +342,11 @@ public class SOLRTrackingComponentTest extends TestCase
         nodeMetaDataParams.setNodeIds(st.getNodeIds());
         getNodeMetaData(nodeMetaDataParams, null, st);
     }
-    
+
     public void testModelDiffs()
     {
         Collection<QName> allModels = dictionaryService.getAllModels();
-        
+
         ModelDiffsTracker tracker = new ModelDiffsTracker();
         ModelDiffResults diffResults = tracker.diff();
 
@@ -375,7 +376,7 @@ public class SOLRTrackingComponentTest extends TestCase
         M2Type anotherType = testModel.createType("anothertype");
         M2Property prop1 = anotherType.createProperty("prop1");
         prop1.setType("d:text");
-        
+
         // call model diffs - should detect test model changes
         ModelDiffResults diffResults2 = tracker.diff();
         List<AlfrescoModelDiff> changedModels = diffResults2.getChangedModels();
@@ -389,10 +390,10 @@ public class SOLRTrackingComponentTest extends TestCase
         assertNotNull("", changedModel.getOldChecksum().longValue());
         assertEquals("Old checksum value is incorrect", testModelChecksum.longValue(), changedModel.getOldChecksum().longValue());
         assertNotSame("Expected checksums to be different", changedModel.getOldChecksum(), changedModel.getNewChecksum());
-        
+
         // remove the model        
         dictionaryDAO.removeModel(QName.createQName(testModel.getName(), namespaceService));
-        
+
         // call model diffs - check that the model has been removed
         ModelDiffResults diffResults3 = tracker.diff();
         List<AlfrescoModelDiff> removedModels = diffResults3.getRemovedModels();
@@ -439,7 +440,7 @@ public class SOLRTrackingComponentTest extends TestCase
     private class ModelDiffsTracker
     {
         private Map<QName, Long> trackedModels = new HashMap<QName, Long>();
-        
+
         public ModelDiffResults diff()
         {
             List<AlfrescoModelDiff> modelDiffs = solrTrackingComponent.getModelDiffs(trackedModels);
@@ -466,13 +467,13 @@ public class SOLRTrackingComponentTest extends TestCase
 
             return new ModelDiffResults(newModels, changedModels, removedModels);
         }
-        
+
         public Long getChecksum(QName modelName)
         {
             return trackedModels.get(modelName);
         }
     }
-    
+
     private static class NodeAssertions
     {
         private Set<QName> aspects;
@@ -490,7 +491,7 @@ public class SOLRTrackingComponentTest extends TestCase
         {
             super();
         }
-        
+
         public boolean isExpectType()
         {
             return expectType;
@@ -547,9 +548,23 @@ public class SOLRTrackingComponentTest extends TestCase
         }
     }
 
-    private List<Long> checkTransactions(List<Transaction> txns, int numTransactions, int[] updates, int[] deletes)
+    private List<Long> checkTransactions(List<Transaction> txns, List<Long> createdTransaction, int[] updates, int[] deletes)
     {
-        assertEquals("Number of transactions is incorrect", numTransactions, txns.size());
+        ArrayList<Transaction> matchedTransactions = new ArrayList<Transaction>();
+        HashSet<Long> toMatch = new HashSet<Long>();
+        toMatch.addAll(createdTransaction);
+        for(Transaction found : txns)
+        {
+            if(found != null)
+            {
+                if(toMatch.contains(found.getId()))
+                {
+                    matchedTransactions.add(found);
+                }
+            }
+        }
+        
+        assertEquals("Number of transactions is incorrect", createdTransaction.size(), txns.size());
 
         List<Long> txnIds = new ArrayList<Long>(txns.size());
         int i = 0;
@@ -561,42 +576,42 @@ public class SOLRTrackingComponentTest extends TestCase
 
             txnIds.add(txn.getId());
         }
-        
+
         return txnIds;
     }
-    
+
     private void getNodes(NodeParameters nodeParameters, SOLRTest bt)
     {
         long startTime = System.currentTimeMillis();
         solrTrackingComponent.getNodes(nodeParameters, bt);        
         long endTime = System.currentTimeMillis();
-        
+
         bt.runNodeChecks(nodeParameters.getMaxResults());
-        
+
         logger.debug("Got " + bt.getActualNodeCount() + " nodes in " + (endTime - startTime) + " ms");
     }
-    
+
     private void getNodeMetaData(final NodeMetaDataParameters params, final MetaDataResultsFilter filter, final SOLRTest bt)
     {
         bt.clearNodesMetaData();
 
         long startTime = System.currentTimeMillis();
         txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+                {
             @Override
             public Void execute() throws Throwable
             {
                 solrTrackingComponent.getNodesMetadata(params, filter, bt);
                 return null;
             }
-        }, true, true);
+                }, true, true);
         long endTime = System.currentTimeMillis();
 
         bt.runNodeMetaDataChecks(params.getMaxResults());
-        
+
         logger.debug("Got " + bt.getActualNodeMetaDataCount() + " node metadatas in " + (endTime - startTime) + " ms");
     }
-    
+
     private static abstract class SOLRTest implements NodeQueryCallback, NodeMetaDataQueryCallback
     {
         protected FileFolderService fileFolderService;
@@ -608,7 +623,7 @@ public class SOLRTrackingComponentTest extends TestCase
 
         protected String containerName;
         protected Map<NodeRef, NodeAssertions> nodeAssertions;
-        
+
         protected boolean doChecks;
         protected boolean doNodeChecks;
         protected boolean doMetaDataChecks;
@@ -617,30 +632,30 @@ public class SOLRTrackingComponentTest extends TestCase
         protected int failureCount = 0;
 
         protected List<Long> nodeIds;
-        
+
         protected long expectedNumMetaDataNodes = 0;
-        
+
         protected long actualNodeCount = 0;
         protected long actualNodeMetaDataCount = 0;
 
         SOLRTest(RetryingTransactionHelper txnHelper, FileFolderService fileFolderService, NodeDAO nodeDAO, NodeService nodeService, DictionaryService dictionaryService,
                 NodeRef rootNodeRef, String containerName, boolean doNodeChecks, boolean doMetaDataChecks)
-        {
+                {
             this.txnHelper = txnHelper;
             this.nodeService = nodeService;
             this.rootNodeRef = rootNodeRef;
             this.fileFolderService = fileFolderService;
             this.nodeDAO = nodeDAO;
             this.dictionaryService = dictionaryService;
-            
+
             this.containerName = containerName;
             this.nodeAssertions = new HashMap<NodeRef, NodeAssertions>();
             this.nodeIds = new ArrayList<Long>(getExpectedNumNodes());
-            
+
             this.doNodeChecks = doNodeChecks;
             this.doMetaDataChecks = doMetaDataChecks;
             this.doChecks = doNodeChecks || doMetaDataChecks;
-        }
+                }
 
         void runNodeChecks(int maxResults)
         {
@@ -670,7 +685,7 @@ public class SOLRTrackingComponentTest extends TestCase
                 assertEquals("Number of returned nodes is incorrect", getExpectedNumMetaDataNodes(), getActualNodeMetaDataCount());
             }
         }
-        
+
         void clearNodesMetaData()
         {
             successCount = 0;
@@ -688,14 +703,14 @@ public class SOLRTrackingComponentTest extends TestCase
         {
             return actualNodeMetaDataCount;
         }
-        
+
         protected long getExpectedNumMetaDataNodes()
         {
             return expectedNumMetaDataNodes;
         }
 
         protected abstract int getExpectedNumNodes();
-        protected abstract void buildTransactionsInternal();
+        protected abstract List<Long> buildTransactionsInternal();
 
         public NodeAssertions getNodeAssertions(NodeRef nodeRef)
         {
@@ -707,26 +722,26 @@ public class SOLRTrackingComponentTest extends TestCase
             }
             return assertions;
         }
-        
+
         protected void setExpectedNodeStatus(NodeRef nodeRef, NodeStatus nodeStatus)
         {
             if(nodeStatus == NodeStatus.UPDATED)
             {
                 expectedNumMetaDataNodes++;
             }
-            
+
             if(doChecks)
             {
                 NodeAssertions nodeAssertions = getNodeAssertions(nodeRef);
                 nodeAssertions.setNodeStatus(nodeStatus);
             }
         }
-        
-        void buildTransactions()
+
+        List<Long> buildTransactions()
         {
-            buildTransactionsInternal();
+            return buildTransactionsInternal();
         }
-        
+
         @Override
         public boolean handleNode(Node node) {
             actualNodeCount++;
@@ -736,13 +751,13 @@ public class SOLRTrackingComponentTest extends TestCase
                 NodeRef nodeRef = node.getNodeRef();
                 Boolean isDeleted = node.getDeleted();
                 nodeIds.add(node.getId());
-    
+
                 NodeAssertions expectedStatus = getNodeAssertions(nodeRef);
                 if(expectedStatus == null)
                 {
                     throw new RuntimeException("Unexpected missing assertion for NodeRef " + nodeRef);
                 }
-                
+
                 if((expectedStatus.getNodeStatus() == NodeStatus.DELETED && isDeleted) ||
                         (expectedStatus.getNodeStatus() == NodeStatus.UPDATED && !isDeleted))
                 {
@@ -770,7 +785,7 @@ public class SOLRTrackingComponentTest extends TestCase
             }
             return props;
         }
-        
+
         @Override
         public boolean handleNodeMetaData(NodeMetaData nodeMetaData) {
             actualNodeMetaDataCount++;
@@ -791,7 +806,7 @@ public class SOLRTrackingComponentTest extends TestCase
                 assertEquals("Properties are incorrect", actualProperties, properties);
 
                 NodeAssertions assertions = getNodeAssertions(nodeRef);
-//                NodeAssertions assertions = nodes.get(nodeRef);
+                //                NodeAssertions assertions = nodes.get(nodeRef);
 
                 Set<QName> expectedAspects = assertions.getAspects();
                 if(expectedAspects != null)
@@ -801,7 +816,7 @@ public class SOLRTrackingComponentTest extends TestCase
                         assertTrue("Expected aspect" + aspect, aspects.contains(aspect));
                     }
                 }
-                
+
                 Map<QName, Serializable> expectedProperties = assertions.getProperties();
                 if(expectedProperties != null)
                 {
@@ -815,10 +830,10 @@ public class SOLRTrackingComponentTest extends TestCase
                 }
 
                 // TODO complete path tests
-//                List<Path> actualPaths = nodeMetaData.getPaths();
-//                List<Path> expectedPaths = nodeService.getPaths(nodeRef, false);
-//                assertEquals("Paths are incorrect", expectedPaths, actualPaths);
-                
+                //                List<Path> actualPaths = nodeMetaData.getPaths();
+                //                List<Path> expectedPaths = nodeService.getPaths(nodeRef, false);
+                //                assertEquals("Paths are incorrect", expectedPaths, actualPaths);
+
                 boolean expectAspects = assertions.isExpectAspects();
                 if(expectAspects && nodeMetaData.getAspects() == null)
                 {
@@ -828,7 +843,7 @@ public class SOLRTrackingComponentTest extends TestCase
                 {
                     fail("Not expecting aspects but got aspects");
                 }
-                
+
                 boolean expectProperties = assertions.isExpectProperties();
                 if(expectProperties && nodeMetaData.getProperties() == null)
                 {
@@ -848,7 +863,7 @@ public class SOLRTrackingComponentTest extends TestCase
                 {
                     fail("Not expecting type but got type");
                 }
-                
+
                 boolean expectAclId = assertions.isExpectAclId();
                 if(expectAclId && nodeMetaData.getAclId() == null)
                 {
@@ -858,7 +873,7 @@ public class SOLRTrackingComponentTest extends TestCase
                 {
                     fail("Not expecting acl id but got acl id");
                 }
-                
+
                 boolean expectPaths = assertions.isExpectPaths();
                 if(expectPaths && nodeMetaData.getPaths() == null)
                 {
@@ -878,7 +893,7 @@ public class SOLRTrackingComponentTest extends TestCase
                 {
                     fail("Not expecting associations but got associations");
                 }
-                
+
                 boolean expectOwner = assertions.isExpectOwner();
                 if(expectOwner && nodeMetaData.getOwner() == null)
                 {
@@ -889,12 +904,12 @@ public class SOLRTrackingComponentTest extends TestCase
                     fail("Not expecting owner but got owner");
                 }
             }
-            
+
             successCount++;
 
             return true;
         }
-        
+
         public int getSuccessCount()
         {
             return successCount;
@@ -916,24 +931,26 @@ public class SOLRTrackingComponentTest extends TestCase
         private NodeRef container;
         private NodeRef content1;
         private NodeRef content2;
-        
+
         SOLRTest1(
                 RetryingTransactionHelper txnHelper, FileFolderService fileFolderService, NodeDAO nodeDAO, NodeService nodeService, DictionaryService dictionaryService,
                 NodeRef rootNodeRef, String containerName, boolean doNodeChecks, boolean doMetaDataChecks)
-        {
+                {
             super(txnHelper, fileFolderService, nodeDAO, nodeService, dictionaryService, rootNodeRef, containerName, doNodeChecks, doMetaDataChecks);
-        }
-        
+                }
+
         public int getExpectedNumNodes()
         {
             return 3;
         }
-        
-        protected void buildTransactionsInternal()
+
+        protected List<Long> buildTransactionsInternal()
         {
-            txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-            {
-                public Void execute() throws Throwable
+            ArrayList<Long> txs = new ArrayList<Long>(2);
+
+            txs.add(txnHelper.doInTransaction(new RetryingTransactionCallback<Long>()
+                    {
+                public Long execute() throws Throwable
                 {
                     PropertyMap props = new PropertyMap();
                     props.put(ContentModel.PROP_NAME, "Container1");
@@ -947,29 +964,30 @@ public class SOLRTrackingComponentTest extends TestCase
                     FileInfo contentInfo = fileFolderService.create(container, "Content1", ContentModel.TYPE_CONTENT);
                     content1 = contentInfo.getNodeRef();
 
-                    return null;
+                    return nodeDAO.getNodeRefStatus(content1).getDbTxnId();
                 }
-            });
+                    }));
 
-            txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-            {
-                public Void execute() throws Throwable
+            txs.add(txnHelper.doInTransaction(new RetryingTransactionCallback<Long>()
+                    {
+                public Long execute() throws Throwable
                 {
                     FileInfo contentInfo = fileFolderService.create(container, "Content2", ContentModel.TYPE_CONTENT);
                     content2 = contentInfo.getNodeRef();
 
                     fileFolderService.delete(content1);
 
-                    return null;
+                    return nodeDAO.getNodeRefStatus(content1).getDbTxnId();
                 }
-            });
-            
+                    }));
+
             setExpectedNodeStatus(container, NodeStatus.UPDATED);
             setExpectedNodeStatus(content1, NodeStatus.DELETED);
             setExpectedNodeStatus(content2, NodeStatus.UPDATED);
+            return txs;
         }
     }
-    
+
     private static class SOLRTest3 extends SOLRTest
     {
         private NodeRef container;
@@ -978,20 +996,22 @@ public class SOLRTrackingComponentTest extends TestCase
 
         SOLRTest3(RetryingTransactionHelper txnHelper, FileFolderService fileFolderService, NodeDAO nodeDAO, NodeService nodeService, DictionaryService dictionaryService, 
                 NodeRef rootNodeRef, String containerName, boolean doNodeChecks, boolean doMetaDataChecks)
-        {
+                {
             super(txnHelper, fileFolderService, nodeDAO, nodeService, dictionaryService, rootNodeRef, containerName, doNodeChecks, doMetaDataChecks);
-        }
-        
+                }
+
         public int getExpectedNumNodes()
         {
             return 3;
         }
 
-        protected void buildTransactionsInternal()
+        protected List<Long> buildTransactionsInternal()
         {
-            txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-            {
-                public Void execute() throws Throwable
+            ArrayList<Long> txs = new ArrayList<Long>(2);
+
+            txs.add(txnHelper.doInTransaction(new RetryingTransactionCallback<Long>()
+                    {
+                public Long execute() throws Throwable
                 {
                     PropertyMap props = new PropertyMap();
                     props.put(ContentModel.PROP_NAME, "Container1");
@@ -1001,56 +1021,60 @@ public class SOLRTrackingComponentTest extends TestCase
                             ContentModel.ASSOC_CHILDREN,
                             ContentModel.TYPE_FOLDER,
                             props).getChildRef();
-                    
+
                     FileInfo contentInfo = fileFolderService.create(container, "Content1", ContentModel.TYPE_CONTENT);
                     content1 = contentInfo.getNodeRef();
-                    
+
                     Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>();
                     aspectProperties.put(ContentModel.PROP_AUTHOR, "steve");
                     nodeService.addAspect(content1, ContentModel.ASPECT_AUTHOR, aspectProperties);
-                    
-                    return null;
+
+                    return nodeDAO.getNodeRefStatus(content1).getDbTxnId();
                 }
-            });
-            
-            txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-            {
-                public Void execute() throws Throwable
+                    }));
+
+            txs.add(txnHelper.doInTransaction(new RetryingTransactionCallback<Long>()
+                    {
+                public Long execute() throws Throwable
                 {
                     FileInfo contentInfo = fileFolderService.create(container, "Content2", ContentModel.TYPE_CONTENT);
                     content2 = contentInfo.getNodeRef();
-                    
+
                     nodeService.addAspect(content2, ContentModel.ASPECT_TEMPORARY, null);
                     fileFolderService.delete(content1);
 
-                    return null;
+                    return nodeDAO.getNodeRefStatus(content1).getDbTxnId();
                 }
-            });
+                    }));
 
             setExpectedNodeStatus(container, NodeStatus.UPDATED);
             setExpectedNodeStatus(content1, NodeStatus.DELETED);
             setExpectedNodeStatus(content2, NodeStatus.UPDATED);
+
+            return txs;
         }
     }
-    
+
     private static class SOLRTest100Nodes extends SOLRTest
     {
         SOLRTest100Nodes(RetryingTransactionHelper txnHelper, FileFolderService fileFolderService, NodeDAO nodeDAO, NodeService nodeService, DictionaryService dictionaryService,
                 NodeRef rootNodeRef, String containerName, boolean doNodeChecks, boolean doMetaDataChecks)
-        {
+                {
             super(txnHelper, fileFolderService, nodeDAO, nodeService, dictionaryService, rootNodeRef, containerName, doNodeChecks, doMetaDataChecks);
-        }
-        
+                }
+
         public int getExpectedNumNodes()
         {
             return 100;
         }
-        
-        protected void buildTransactionsInternal()
+
+        protected List<Long> buildTransactionsInternal()
         {
-            txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-            {
-                public Void execute() throws Throwable
+            ArrayList<Long> txs = new ArrayList<Long>(2);
+
+            txs.add(txnHelper.doInTransaction(new RetryingTransactionCallback<Long>()
+                    {
+                public Long execute() throws Throwable
                 {
                     PropertyMap props = new PropertyMap();
                     props.put(ContentModel.PROP_NAME, "Container100Nodes");
@@ -1069,33 +1093,36 @@ public class SOLRTrackingComponentTest extends TestCase
 
                         setExpectedNodeStatus(nodeRef, NodeStatus.UPDATED);
                     }
-                    
-                    return null;
+
+                    return nodeDAO.getNodeRefStatus(container).getDbTxnId();
                 }
-            });
+                    }));
+            return txs;
         }
     }
 
     private static class SOLRTest4 extends SOLRTest
     {
         private int numContentNodes = 2000;
-        
+
         SOLRTest4(RetryingTransactionHelper txnHelper, FileFolderService fileFolderService, NodeDAO nodeDAO, NodeService nodeService, DictionaryService dictionaryService,
                 NodeRef rootNodeRef, String containerName, boolean doNodeChecks, boolean doMetaDataChecks)
-        {
+                {
             super(txnHelper, fileFolderService, nodeDAO, nodeService, dictionaryService, rootNodeRef, containerName, doNodeChecks, doMetaDataChecks);
-        }
-        
+                }
+
         public int getExpectedNumNodes()
         {
             return numContentNodes + 1;
         }
 
-        public void buildTransactionsInternal()
+        public List<Long> buildTransactionsInternal()
         {
-            txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-            {
-                public Void execute() throws Throwable
+            ArrayList<Long> txs = new ArrayList<Long>(2);
+
+            txs.add(txnHelper.doInTransaction(new RetryingTransactionCallback<Long>()
+                    {
+                public Long execute() throws Throwable
                 {
                     PropertyMap props = new PropertyMap();
                     props.put(ContentModel.PROP_NAME, containerName);
@@ -1120,38 +1147,42 @@ public class SOLRTrackingComponentTest extends TestCase
 
                         setExpectedNodeStatus(nodeRef, NodeStatus.UPDATED);
                     }
-                    
-                    return null;
+
+                    return nodeDAO.getNodeRefStatus(container).getDbTxnId();
                 }
-            });
+                    }));
+            return txs;
         }
+
     }
 
     private static class SOLRTest5 extends SOLRTest
     {
         private int numContentNodes = 10;
-        
+
         SOLRTest5(RetryingTransactionHelper txnHelper, FileFolderService fileFolderService, NodeDAO nodeDAO, NodeService nodeService, DictionaryService dictionaryService,
                 NodeRef rootNodeRef, String containerName, boolean doNodeChecks, boolean doMetaDataChecks)
-        {
+                {
             super(txnHelper, fileFolderService, nodeDAO, nodeService, dictionaryService, rootNodeRef, containerName, doNodeChecks, doMetaDataChecks);
-        }
-        
+                }
+
         public int getExpectedNumNodes()
         {
             return numContentNodes + 1;
         }
 
-        public void buildTransactionsInternal()
+        public  List<Long> buildTransactionsInternal()
         {
+            ArrayList<Long> txs = new ArrayList<Long>(2);
+
             final String titles[] = 
             {
                     "caf\u00E9", "\u00E7edilla", "\u00E0\u00E1\u00E2\u00E3", "\u00EC\u00ED\u00EE\u00EF", "\u00F0\u00F1\u00F2\u00F3\u00F4\u00F5\u00F6",
                     "caf\u00E9", "\u00E7edilla", "\u00E0\u00E1\u00E2\u00E3", "\u00EC\u00ED\u00EE\u00EF", "\u00F0\u00F1\u00F2\u00F3\u00F4\u00F5\u00F6"
             };
-            txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-            {
-                public Void execute() throws Throwable
+            txs.add(txnHelper.doInTransaction(new RetryingTransactionCallback<Long>()
+                    {
+                public Long execute() throws Throwable
                 {
                     PropertyMap props = new PropertyMap();
                     props.put(ContentModel.PROP_NAME, containerName);
@@ -1182,35 +1213,39 @@ public class SOLRTrackingComponentTest extends TestCase
 
                         setExpectedNodeStatus(nodeRef, NodeStatus.UPDATED);
                     }
-                    
-                    return null;
+
+                    return nodeDAO.getNodeRefStatus(container).getDbTxnId();
                 }
-            });
+                    }));
+
+            return txs;
         }
     }
-    
+
     private static class SOLRTestResidualProperties extends SOLRTest
     {
         private NodeRef container;
         private NodeRef content;
-        
+
         SOLRTestResidualProperties(
                 RetryingTransactionHelper txnHelper, FileFolderService fileFolderService, NodeDAO nodeDAO, NodeService nodeService, DictionaryService dictionaryService,
                 NodeRef rootNodeRef, String containerName, boolean doNodeChecks, boolean doMetaDataChecks)
-        {
+                {
             super(txnHelper, fileFolderService, nodeDAO, nodeService, dictionaryService,rootNodeRef, containerName, doNodeChecks, doMetaDataChecks);
-        }
-        
+                }
+
         public int getExpectedNumNodes()
         {
             return 2;
         }
-        
-        protected void buildTransactionsInternal()
+
+        protected List<Long> buildTransactionsInternal()
         {
-            txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-            {
-                public Void execute() throws Throwable
+            ArrayList<Long> txs = new ArrayList<Long>(2);
+
+            txs.add(txnHelper.doInTransaction(new RetryingTransactionCallback<Long>()
+                    {
+                public Long execute() throws Throwable
                 {
                     PropertyMap props = new PropertyMap();
                     props.put(ContentModel.PROP_NAME, "ContainerResidual");
@@ -1225,12 +1260,15 @@ public class SOLRTrackingComponentTest extends TestCase
                     content = contentInfo.getNodeRef();
 
                     nodeService.setProperty(content, QName.createQName("{rubbish}rubbish"), "Rubbish");
-                    return null;
+
+                    return nodeDAO.getNodeRefStatus(container).getDbTxnId();
                 }
-            });
+                    }));
 
             setExpectedNodeStatus(container, NodeStatus.UPDATED);
             setExpectedNodeStatus(content, NodeStatus.UPDATED);
+
+            return txs;
         }
     }
 }

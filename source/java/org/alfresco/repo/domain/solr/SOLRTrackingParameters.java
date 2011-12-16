@@ -31,8 +31,9 @@ public class SOLRTrackingParameters
     private Long fromIdInclusive;
     private Long fromCommitTimeInclusive;
     private List<Long> ids;
-    private Long fromRelatedIdInclusive;
-    private Long toRelatedIdExclusive;
+    private Long toIdExclusive;
+    private Long toCommitTimeExclusive;
+    
     private boolean trueOrFalse;
 
     public Long getFromIdInclusive()
@@ -63,26 +64,6 @@ public class SOLRTrackingParameters
     public void setIds(List<Long> ids)
     {
         this.ids = ids;
-    }
-
-    public Long getFromRelatedIdInclusive()
-    {
-        return fromRelatedIdInclusive;
-    }
-
-    public void setFromRelatedIdInclusive(Long fromRelatedIdInclusive)
-    {
-        this.fromRelatedIdInclusive = fromRelatedIdInclusive;
-    }
-
-    public Long getToRelatedIdExclusive()
-    {
-        return toRelatedIdExclusive;
-    }
-
-    public void setToRelatedIdExclusive(Long toRelatedIdExclusive)
-    {
-        this.toRelatedIdExclusive = toRelatedIdExclusive;
     }
 
     /**
@@ -121,17 +102,97 @@ public class SOLRTrackingParameters
         this.trueOrFalse = trueOrFalse;
     }
 
+    public Long getToIdExclusive()
+    {
+        return toIdExclusive;
+    }
+
+    public void setToIdExclusive(Long toIdExclusive)
+    {
+        this.toIdExclusive = toIdExclusive;
+    }
+
+    public Long getToCommitTimeExclusive()
+    {
+        return toCommitTimeExclusive;
+    }
+
+    public void setToCommitTimeExclusive(Long toCommitTimeExclusive)
+    {
+        this.toCommitTimeExclusive = toCommitTimeExclusive;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((fromCommitTimeInclusive == null) ? 0 : fromCommitTimeInclusive.hashCode());
+        result = prime * result + ((fromIdInclusive == null) ? 0 : fromIdInclusive.hashCode());
+        result = prime * result + ((ids == null) ? 0 : ids.hashCode());
+        result = prime * result + ((toCommitTimeExclusive == null) ? 0 : toCommitTimeExclusive.hashCode());
+        result = prime * result + ((toIdExclusive == null) ? 0 : toIdExclusive.hashCode());
+        result = prime * result + (trueOrFalse ? 1231 : 1237);
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        SOLRTrackingParameters other = (SOLRTrackingParameters) obj;
+        if (fromCommitTimeInclusive == null)
+        {
+            if (other.fromCommitTimeInclusive != null)
+                return false;
+        }
+        else if (!fromCommitTimeInclusive.equals(other.fromCommitTimeInclusive))
+            return false;
+        if (fromIdInclusive == null)
+        {
+            if (other.fromIdInclusive != null)
+                return false;
+        }
+        else if (!fromIdInclusive.equals(other.fromIdInclusive))
+            return false;
+        if (ids == null)
+        {
+            if (other.ids != null)
+                return false;
+        }
+        else if (!ids.equals(other.ids))
+            return false;
+        if (toCommitTimeExclusive == null)
+        {
+            if (other.toCommitTimeExclusive != null)
+                return false;
+        }
+        else if (!toCommitTimeExclusive.equals(other.toCommitTimeExclusive))
+            return false;
+        if (toIdExclusive == null)
+        {
+            if (other.toIdExclusive != null)
+                return false;
+        }
+        else if (!toIdExclusive.equals(other.toIdExclusive))
+            return false;
+        if (trueOrFalse != other.trueOrFalse)
+            return false;
+        return true;
+    }
+
     @Override
     public String toString()
     {
-        StringBuilder sb = new StringBuilder(512);
-        sb.append("SOLRTrackingParameters")
-          .append(", fromIdInclusive").append(fromIdInclusive)
-          .append(", ids").append(ids == null ? null : ids.size())
-          .append(", fromCommitTimeInclusive").append(fromCommitTimeInclusive == null ? null : new Date(fromCommitTimeInclusive))
-          .append(", fromRelatedIdInclusive=").append(fromRelatedIdInclusive)
-          .append(", toRelatedIdExclusive").append(toRelatedIdExclusive)
-          .append("]");
-        return sb.toString();
+        return "SOLRTrackingParameters [fromIdInclusive="
+                + fromIdInclusive + ", fromCommitTimeInclusive=" + fromCommitTimeInclusive + ", ids=" + ids + ", toIdExclusive=" + toIdExclusive + ", toCommitTimeExclusive="
+                + toCommitTimeExclusive + ", trueOrFalse=" + trueOrFalse + "]";
     }
+
+    
 }

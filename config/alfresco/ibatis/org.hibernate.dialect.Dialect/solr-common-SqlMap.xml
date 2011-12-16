@@ -52,6 +52,12 @@
            <if test="fromIdInclusive != null">
                <![CDATA[and acs.id >= #{fromIdInclusive}]]>
            </if>
+           <if test="toCommitTimeExclusive != null">
+               <![CDATA[acs.commit_time_ms < #{toCommitTimeExclusive}]]>
+           </if>
+           <if test="toIdExclusive != null">
+               <![CDATA[and acs.id < #{toIdExclusive}]]>
+           </if>
         </where>
         order by acs.commit_time_ms ASC, acs.id ASC
     </select>
@@ -105,6 +111,12 @@
            </if>
            <if test="fromIdInclusive != null">
                <![CDATA[and txn.id >= #{fromIdInclusive}]]>
+           </if>
+           <if test="toCommitTimeExclusive != null">
+               <![CDATA[txn.commit_time_ms < #{toCommitTimeExclusive}]]>
+           </if>
+           <if test="toIdExclusive != null">
+               <![CDATA[and txn.id < #{toIdExclusive}]]>
            </if>
         </where>
         order by txn.commit_time_ms ASC, txn.id ASC

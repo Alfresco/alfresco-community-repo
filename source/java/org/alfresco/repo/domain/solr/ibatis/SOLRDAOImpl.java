@@ -72,7 +72,7 @@ public class SOLRDAOImpl implements SOLRDAO
      */
 	@Override
     @SuppressWarnings("unchecked")
-    public List<AclChangeSet> getAclChangeSets(Long minAclChangeSetId, Long fromCommitTime, int maxResults)
+    public List<AclChangeSet> getAclChangeSets(Long minAclChangeSetId, Long fromCommitTime, Long maxAclChangeSetId, Long toCommitTime, int maxResults)
     {
         if (maxResults <= 0 || maxResults == Integer.MAX_VALUE)
         {
@@ -82,6 +82,8 @@ public class SOLRDAOImpl implements SOLRDAO
         SOLRTrackingParameters params = new SOLRTrackingParameters();
         params.setFromIdInclusive(minAclChangeSetId);
         params.setFromCommitTimeInclusive(fromCommitTime);
+        params.setToIdExclusive(maxAclChangeSetId);
+        params.setToCommitTimeExclusive(toCommitTime);
 
         return (List<AclChangeSet>) template.selectList(SELECT_CHANGESETS_SUMMARY, params, new RowBounds(0, maxResults));
     }
@@ -118,7 +120,7 @@ public class SOLRDAOImpl implements SOLRDAO
      */
     @Override
     @SuppressWarnings("unchecked")
-	public List<Transaction> getTransactions(Long minTxnId, Long fromCommitTime, int maxResults)
+	public List<Transaction> getTransactions(Long minTxnId, Long fromCommitTime, Long maxTxnId, Long toCommitTime, int maxResults)
 	{
         if (maxResults <= 0 || maxResults == Integer.MAX_VALUE)
         {
@@ -128,6 +130,8 @@ public class SOLRDAOImpl implements SOLRDAO
 	    SOLRTrackingParameters params = new SOLRTrackingParameters();
 	    params.setFromIdInclusive(minTxnId);
 	    params.setFromCommitTimeInclusive(fromCommitTime);
+	    params.setToIdExclusive(maxTxnId);
+        params.setToCommitTimeExclusive(toCommitTime);
 
         return (List<Transaction>) template.selectList(SELECT_TRANSACTIONS, params, new RowBounds(0, maxResults));
 	}

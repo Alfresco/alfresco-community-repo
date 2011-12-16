@@ -36,10 +36,12 @@ public interface SOLRTrackingComponent
      * 
      * @param minAclChangeSetId         minimum ACL changeset ID - (inclusive and optional)
      * @param fromCommitTime            minimum ACL commit time - (inclusive and optional)
+     * @param maxAclChangeSetId         max ACL changeset ID - (exclusive and optional)
+     * @param toCommitTime              max ACL commit time - (exclusive and optional)
      * @param maxResults                limit the results. 0 or Integer.MAX_VALUE does not limit the results
      * @return                          list of ACL changesets
      */
-    public List<AclChangeSet> getAclChangeSets(Long minAclChangeSetId, Long fromCommitTime, int maxResults);
+    public List<AclChangeSet> getAclChangeSets(Long minAclChangeSetId, Long fromCommitTime, Long maxAclChangeSetId, Long toCommitTime, int maxResults);
     
     /**
      * Get the ACLs with paging options for a specific ACL ChangeSet
@@ -64,10 +66,12 @@ public interface SOLRTrackingComponent
      * 
      * @param minTxnId greater than or equal to minTxnId
      * @param fromCommitTime greater than or equal to transaction commit time
+     * @param maxTxnId less than maxTxnId
+     * @param toCommitTimeint less then toCommitTimeint
      * @param maxResults limit the results. 0 or Integer.MAX_VALUE does not limit the results
      * @return list of transactions
      */
-    public List<Transaction> getTransactions(Long minTxnId, Long fromCommitTime, int maxResults);
+    public List<Transaction> getTransactions(Long minTxnId, Long fromCommitTime, Long maxTxnId, Long toCommitTimeint, int maxResults);
     
     /**
      * Get the nodes satisfying the constraints in nodeParameters

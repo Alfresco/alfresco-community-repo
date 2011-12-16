@@ -150,11 +150,11 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
     }
     
     @Override
-    public List<AclChangeSet> getAclChangeSets(Long minAclChangeSetId, Long fromCommitTime, int maxResults)
+    public List<AclChangeSet> getAclChangeSets(Long minAclChangeSetId, Long fromCommitTime, Long maxAclChangeSetId, Long toCommitTime, int maxResults)
     {
         if(enabled)
         {
-            List<AclChangeSet> changesets = solrDAO.getAclChangeSets(minAclChangeSetId, fromCommitTime, maxResults);
+            List<AclChangeSet> changesets = solrDAO.getAclChangeSets(minAclChangeSetId, fromCommitTime, maxAclChangeSetId, toCommitTime, maxResults);
             return changesets;
         }
         else
@@ -272,11 +272,11 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
     }
     
     @Override
-    public List<Transaction> getTransactions(Long minTxnId, Long fromCommitTime, int maxResults)
+    public List<Transaction> getTransactions(Long minTxnId, Long fromCommitTime, Long maxTxnId, Long toCommitTime, int maxResults)
     {
         if(enabled)
         {
-            List<Transaction> txns = solrDAO.getTransactions(minTxnId, fromCommitTime, maxResults);
+            List<Transaction> txns = solrDAO.getTransactions(minTxnId, fromCommitTime, maxTxnId, toCommitTime, maxResults);
             return txns;
         }
         else

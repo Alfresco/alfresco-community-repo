@@ -88,6 +88,7 @@ import org.jbpm.JbpmException;
 import org.jbpm.context.exe.ContextInstance;
 import org.jbpm.context.exe.TokenVariableMap;
 import org.jbpm.context.exe.VariableInstance;
+import org.jbpm.context.exe.converter.BooleanToStringConverter;
 import org.jbpm.db.GraphSession;
 import org.jbpm.db.TaskMgmtSession;
 import org.jbpm.file.def.FileDefinition;
@@ -2477,7 +2478,7 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
             boolean isAssoc = taskAssocs.containsKey(qname);
             if (taskProperties.containsKey(qname) || isAssoc || instance.hasVariableLocally(key))
             {
-                Serializable value = convertValue(entry.getValue());
+                Serializable value = convertValue(taskProperties.get(qname), entry.getValue());
                 properties.put(qname, value);
             }
         }
@@ -2908,7 +2909,25 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
 
         return (missingProps == null) ? null : missingProps.toArray(new QName[missingProps.size()]);
     }
-        
+    
+    /**
+     * Attempts to convert a JBPM Object to the correct Alfresco data type
+     * @param propDef PropertyDefinition
+     * @param value any Value
+     * @return 
+     */
+    private Serializable convertValue(PropertyDefinition propDef, Object value)
+    {
+        if (propDef != null && value instanceof String && Boolean.class.getName().equals(propDef.getDataType().getJavaClassName()))
+        {
+            return (Serializable) new BooleanToStringConverter().revert(value);
+        }
+        else
+        {
+            return convertValue(value);
+        }
+    }
+    
     /**
      * Convert a jBPM Value to an Alfresco value
      * 

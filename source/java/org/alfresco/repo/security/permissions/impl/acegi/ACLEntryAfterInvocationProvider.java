@@ -870,7 +870,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
             // if the maximum result size or time has been exceeded, then we have to remove only
             long currentTimeMillis = System.currentTimeMillis();
             
-            if (count >= targetResultCount)
+            if (keepValues.size() >= targetResultCount)
             {
                 // We have enough results.  We stop without cutoff.
                 break;

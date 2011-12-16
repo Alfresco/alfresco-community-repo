@@ -21,6 +21,7 @@ package org.alfresco.repo.security.permissions.impl.acegi;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -584,6 +585,61 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         assertEquals(0, answerArray.length);
     }
 
+    public void testWhenNodesCheckedExceedsTargetResultCount() throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, SecurityException, NoSuchMethodException
+    {
+        // ALF-11709: If 'count' nodes have been checked and that number exceeds targetResultCount
+        // this should not stop further checks from happening, when the number of successful
+        // security checks ('keepValues') is less then targetResultCount. If this does not hold true,
+        // then in the case where the first targetResultCount checks are unsuccessful then the
+        // method will not return any values that should be present. For example, if user_9999 looks
+        // at User Homes, and there are folders user_0001 through to user_9998 being checked before user_9999's
+        // folder - then if targetResultCount is only 1000, user_9999 will not see any folders in User Homes
+        // however, they should see one folder - their own.
+        runAs(AuthenticationUtil.getAdminUserName());
+        
+        NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
+                QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+        
+        NodeRef n2 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
+                    QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+        
+        NodeRef n3 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
+                    QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+
+        NodeRef n4 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
+                    QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+
+        
+        // Set nodes n1..n3 to be unviewable by "andy" (using inherited permissions)
+        permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.ALL_PERMISSIONS), "andy", AccessStatus.DENIED));
+        // The last node n4 can be seen (override the inherited permissions)
+        permissionService.setPermission(new SimplePermissionEntry(n4, getPermission(PermissionService.ALL_PERMISSIONS), "andy", AccessStatus.ALLOWED));
+        
+        runAs("andy");
+    
+        
+        Object o = new ClassWithMethods();
+        Method methodCollection = o.getClass().getMethod("echoCollection", new Class[] { Collection.class });
+
+        AdvisorAdapterRegistry advisorAdapterRegistry = GlobalAdvisorAdapterRegistry.getInstance();
+        
+        ProxyFactory proxyFactory = new ProxyFactory();
+        proxyFactory.addAdvisor(advisorAdapterRegistry.wrap(new Interceptor("AFTER_ACL_NODE.sys:base.Read")));
+        proxyFactory.setTargetSource(new SingletonTargetSource(o));
+        Object proxy = proxyFactory.getProxy();
+
+        List<NodeRef> nodeRefList = new ArrayList<NodeRef>(Arrays.asList(n1, n2, n3, n4));
+        
+        // targetResultCount = 3. The first three nodes are not visible by the user, so the logic
+        // must not count those towards the targetResultCount cutoff.
+        Collection<?> answerCollection = (Collection<?>) methodCollection.invoke(
+                    proxy, new Object[] { PermissionCheckCollectionMixin.create(nodeRefList, 3, 0, 0) });
+        
+        assertEquals(1, answerCollection.size());
+        assertEquals(n4, answerCollection.iterator().next());
+    }
+    
+    
     public void testResultSetFilterForNullParentOnly() throws Exception
     {
         runAs(AuthenticationUtil.getAdminUserName());

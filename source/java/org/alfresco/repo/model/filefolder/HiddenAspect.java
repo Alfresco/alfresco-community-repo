@@ -11,13 +11,11 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.Path.Element;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.FileFilterMode;
 import org.alfresco.util.FileFilterMode.Client;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -159,7 +157,7 @@ public class HiddenAspect
         return Visibility.getVisibility(mask);
     }
 
-    /**
+    /*
      * Determines whether the path matches any one of the hidden file patterns and, if so,
      * returns the matching pattern.
      * 
@@ -245,6 +243,12 @@ public class HiddenAspect
         addIndexControlAspect(nodeRef);
     }
     
+    /**
+     * Checks whether the file should be hidden and applies the hidden and not indexed aspects if so.
+     * 
+     * @param fileInfo
+     * @return
+     */
     public void checkHidden(FileInfoImpl fileInfo)
     {
         NodeRef nodeRef = fileInfo.getNodeRef();
@@ -254,7 +258,15 @@ public class HiddenAspect
             fileInfo.setHidden(true);
         }
     }
-    
+
+    /**
+     * Hides the node by applying the hidden and not indexed aspects. The node will be hidden from clients
+     * according to the visibility mask.
+     * 
+     * @param client
+     * @param fileInfo
+     * @return
+     */
     public void hideNode(FileInfoImpl fileInfo, int visibilityMask)
     {
         hideNode(fileInfo.getNodeRef(), visibilityMask);
@@ -264,7 +276,6 @@ public class HiddenAspect
     /**
      * Checks whether the file should be hidden and applies the hidden and not indexed aspects if so.
      * 
-     * @param client
      * @param fileInfo
      * @return
      */
@@ -340,33 +351,6 @@ public class HiddenAspect
         return ret;
     }
 
-    /**
-     * Return the list of files with hidden files filtered out if required for the given client.
-     * 
-     * @param client
-     * @param files
-     * @return
-     */
-//    public List<FileInfo> removeHiddenFiles(Client client, List<FileInfo> files)
-//    {
-//        // TODO bulk load aspects and properties of nodes first?
-//        List<FileInfo> ret = new ArrayList<FileInfo>(files.size());
-//        int numHiddenFiles = 0;
-//        
-//        for(FileInfo file : files)
-//        {
-//            if(getVisibility(client, file.getNodeRef()) == Visibility.NotVisible)
-//            {
-//                numHiddenFiles++;
-//                continue;
-//            }
-//
-//            ret.add(file);
-//        }
-//
-//        return ret;
-//    }
-    
     private class HiddenFileInfoImpl implements HiddenFileInfo
     {
         private Pattern filter;

@@ -216,7 +216,6 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
 	            	ret = invocation.proceed();
 	            	
 	            	FileInfoImpl fileInfo = (FileInfoImpl)ret;
-//	                NodeRef retNodeRef = fileInfo.getNodeRef();
 
 	            	if(isSystemPath(nodeRef, filename))
 	            	{
@@ -237,7 +236,6 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
                 ret = invocation.proceed();
 
                 FileInfoImpl fileInfo = (FileInfoImpl)ret;
-                //NodeRef retNodeRef = fileInfo.getNodeRef();
 
 	            checkTemporaryAspect(temporaryFiles.isFiltered(filename), fileInfo);
 	            hiddenAspect.checkHidden(fileInfo);
@@ -251,7 +249,6 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
 
             FileInfoImpl fileInfo = (FileInfoImpl) ret;
             String filename = fileInfo.getName();
-//            NodeRef retNodeRef = fileInfo.getNodeRef();
 
             if (logger.isDebugEnabled())
             {
@@ -261,7 +258,6 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
             // check against all the regular expressions
             checkTemporaryAspect(temporaryFiles.isFiltered(filename), fileInfo);
             hiddenAspect.checkHidden(fileInfo);
-//            hiddenAspect.checkHidden(retNodeRef);
         }
         else
         {

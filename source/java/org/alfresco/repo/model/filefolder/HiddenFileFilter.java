@@ -3,6 +3,12 @@ package org.alfresco.repo.model.filefolder;
 import org.alfresco.util.PropertyCheck;
 import org.springframework.beans.factory.InitializingBean;
 
+/**
+ * Spring bean defining a hidden node filter.
+ * 
+ * @since 4.0
+ *
+ */
 public class HiddenFileFilter implements InitializingBean
 {
     private String filter;

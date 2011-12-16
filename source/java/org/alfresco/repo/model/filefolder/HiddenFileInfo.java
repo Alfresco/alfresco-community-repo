@@ -1,12 +1,13 @@
 package org.alfresco.repo.model.filefolder;
 
-import java.util.Set;
-
-import org.alfresco.util.FileFilterMode.Client;
-
+/**
+ * Represents hidden file information, including the filter (regular expression) and the visibility mask.
+ * 
+ * @since 4.0
+ *
+ */
 public interface HiddenFileInfo
 {
-    public Set<Client> getVisibility();
     public int getVisibilityMask();
     public String getFilter();
 }

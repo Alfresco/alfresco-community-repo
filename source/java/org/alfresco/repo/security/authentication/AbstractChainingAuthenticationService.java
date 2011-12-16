@@ -211,7 +211,7 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
                 // Ignore and chain
             }
         }
-        throw new AuthenticationException("Guest authentication not supported");
+        throw new AuthenticationException(GUEST_AUTHENTICATION_NOT_SUPPORTED);
     }
 
     /**

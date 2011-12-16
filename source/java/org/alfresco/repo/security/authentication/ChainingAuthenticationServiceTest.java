@@ -620,7 +620,7 @@ public class ChainingAuthenticationServiceTest extends TestCase
         catch (AuthenticationException ae)
         {
             // expected
-            assertTrue(ae.getMessage().contains("Guest authentication not supported"));
+            assertTrue(ae.getMessage().contains(AbstractAuthenticationService.GUEST_AUTHENTICATION_NOT_SUPPORTED));
         }
         assertNull(as.getCurrentUserName());
     }

@@ -31,6 +31,8 @@ import org.alfresco.service.cmr.security.AuthenticationService;
  */
 public abstract class AbstractAuthenticationService implements AuthenticationService
 {
+    public static final String GUEST_AUTHENTICATION_NOT_SUPPORTED = "Guest authentication not supported";
+    
     private SysAdminParams sysAdminParams;
 
     public void setSysAdminParams(SysAdminParams sysAdminParams)

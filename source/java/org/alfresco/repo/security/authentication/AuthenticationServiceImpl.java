@@ -168,7 +168,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
         String defaultGuestName = AuthenticationUtil.getGuestUserName();
         if (defaultGuestName == null || defaultGuestName.length() == 0)
         {
-            throw new AuthenticationException("Guest authentication not supported");
+            throw new AuthenticationException(GUEST_AUTHENTICATION_NOT_SUPPORTED);
         }
         preAuthenticationCheck(defaultGuestName);
         authenticationComponent.setGuestUserAsCurrentUser();

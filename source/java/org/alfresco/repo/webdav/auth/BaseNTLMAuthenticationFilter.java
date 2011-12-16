@@ -446,6 +446,14 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
         String workstation = type3Msg.getWorkstation();
         String domain = type3Msg.getDomain();
         
+        // ALF-10997 fix, normalize the userName
+        String normalized = personService.getUserIdentifier(userName);
+        
+        if (normalized != null)
+        {
+            userName = normalized;
+        }
+        
         boolean authenticated = false;
         
         // Check if we are using cached details for the authentication

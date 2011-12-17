@@ -250,11 +250,18 @@ public class ImapMessageTest extends TestCase
     {
         // Get test message UID
         final Long uid = getMessageUid(folder, 1);
-        // Get Message size
-        final int count = getMessageSize(folder, uid);
 
-        // Get first part
-        BODY body = getMessageBodyPart(folder, uid, 0, count - 100);
+        // Get unmodified message
+        BODY body = getMessageBody(folder, uid);
+
+        // Parse the multipart MIME message
+        MimeMessage message = new MimeMessage(Session.getDefaultInstance(new Properties()), new BufferedInputStream(body.getByteArrayInputStream()));
+
+        // Reading first part - should be successful
+        MimeMultipart content = (MimeMultipart) message.getContent();
+        assertNotNull(content.getBodyPart(0).getContent());
+        // Reading second part - should be successful
+        assertNotNull(content.getBodyPart(1).getContent());
 
         // Modify message. The size of letter describing the node may change
         // These changes should be committed because it should be visible from client
@@ -270,26 +277,20 @@ public class ImapMessageTest extends TestCase
         writer.putContent(sb.toString());
         txn.commit();
 
-        // Read second message part
-        BODY bodyRest = getMessageBodyPart(folder, uid, count - 10, 10);
+        // Read updated message part
+        BODY bodyNew = getMessageBody(folder, uid);
+        
+        // The body should be updated
+        assertFalse(Arrays.equals(bodyNew.data.getBytes(), body.data.getBytes()));
 
-        // Creating and parsing message from 2 parts
-        MimeMessage message = new MimeMessage(Session.getDefaultInstance(new Properties()), new SequenceInputStream(new BufferedInputStream(body.getByteArrayInputStream()),
-                new BufferedInputStream(bodyRest.getByteArrayInputStream())));
+        // Parse the multipart MIME message
+        message = new MimeMessage(Session.getDefaultInstance(new Properties()), new BufferedInputStream(bodyNew.getByteArrayInputStream()));
 
         // Reading first part - should be successful
-        MimeMultipart content = (MimeMultipart) message.getContent();
+        content = (MimeMultipart) message.getContent();
         assertNotNull(content.getBodyPart(0).getContent());
-
-        try
-        {
-            // Reading second part cause error
-            content.getBodyPart(1).getContent();
-            fail("Should raise an IOException");
-        }
-        catch (IOException e)
-        {
-        }
+        // Reading second part - should be successful
+        assertNotNull(content.getBodyPart(1).getContent());
     }
 
     public void testMessageRenamedBetweenReads() throws Exception
@@ -690,7 +691,20 @@ public class ImapMessageTest extends TestCase
      */
     private static Integer getMessageSize(IMAPFolder folder, final Long uid) throws MessagingException
     {
-        return (Integer) folder.doCommand(new IMAPFolder.ProtocolCommand()
+        return getMessageBody(folder, uid).data.getCount();
+    }
+
+    /**
+     * Returns a full message body
+     * 
+     * @param folder Folder containing the message
+     * @param uid Message UID
+     * @return Returns size of the message
+     * @throws MessagingException
+     */
+    private static BODY getMessageBody(IMAPFolder folder, final Long uid) throws MessagingException
+    {
+        return (BODY) folder.doCommand(new IMAPFolder.ProtocolCommand()
         {
             public Object doCommand(IMAPProtocol p) throws ProtocolException
             {
@@ -705,7 +719,7 @@ public class ImapMessageTest extends TestCase
                 }
                 FetchResponse fetchResponse = (FetchResponse) r[0];
                 BODY body = (BODY) fetchResponse.getItem(BODY.class);
-                return body.data.getCount();
+                return body;
             }
         });
     }

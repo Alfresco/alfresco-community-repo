@@ -40,6 +40,8 @@ public class ReadPermissionTest extends AbstractReadPermissionTest
     
     public void testAdminCanRead()
     {
+        runAs("Web1");
+        
         buildNodes("1001", "Read", 10, true);
         
         SearchParameters sp;

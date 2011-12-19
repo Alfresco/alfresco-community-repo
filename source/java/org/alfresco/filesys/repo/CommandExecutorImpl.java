@@ -1,7 +1,9 @@
 package org.alfresco.filesys.repo;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.util.List;
 
 import org.alfresco.filesys.alfresco.ExtendedDiskInterface;
@@ -104,7 +106,7 @@ public class CommandExecutorImpl implements CommandExecutor
                 {
                     if(logger.isDebugEnabled())
                     {
-                        logger.debug("post error", pe);
+                        logger.debug("error executing command :command" + command, pe);
                     }
                     
                     CompoundCommand c = (CompoundCommand)command;
@@ -280,11 +282,40 @@ public class CommandExecutorImpl implements CommandExecutor
                 }
                 File file = r.getNetworkFile().getFile();
                 boolean isDeleted = file.delete();
-                
+           
                 if(!isDeleted)
-                {
+                {          
                     logger.debug("unable to delete temp file:" + r.getNetworkFile() + ", closed="+ r.getNetworkFile().isClosed());
+ 
+                    /*
+                     * Unable to delete temporary file
+                     * Could be a bug with the file handle not being closed, but yourkit does not
+                     * find anything awry.
+                     * There are reported Windows JVM bugs such as 4715154 ... 
+                     */
+                    FileChannel outChan = null;
+                    try
+                    {
+                        outChan = new FileOutputStream(file).getChannel();
+                        outChan.truncate(0);
+                    }
+                    catch (IOException e)
+                    {
+                        logger.debug("unable to clean up file", e);
+                    }
+                    finally
+                    {
+                        if(outChan != null)
+                        {
+                            try
+                            {
+                                outChan.close();
+                            }
+                            catch(IOException e){}
+                        }
+                    }
                 }
+                              
             }
             else if(command instanceof ReturnValueCommand)
             {

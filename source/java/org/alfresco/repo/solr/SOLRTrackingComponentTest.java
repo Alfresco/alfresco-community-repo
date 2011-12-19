@@ -564,11 +564,11 @@ public class SOLRTrackingComponentTest extends TestCase
             }
         }
         
-        assertEquals("Number of transactions is incorrect", createdTransaction.size(), txns.size());
+        assertEquals("Number of transactions is incorrect", createdTransaction.size(), matchedTransactions.size());
 
-        List<Long> txnIds = new ArrayList<Long>(txns.size());
+        List<Long> txnIds = new ArrayList<Long>(matchedTransactions.size());
         int i = 0;
-        for(Transaction txn : txns)
+        for(Transaction txn : matchedTransactions)
         {
             assertEquals("Number of deletes is incorrect", deletes[i], txn.getDeletes());
             assertEquals("Number of updates is incorrect", updates[i], txn.getUpdates());

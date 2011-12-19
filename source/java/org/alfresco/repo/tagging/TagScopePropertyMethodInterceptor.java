@@ -124,6 +124,29 @@ public class TagScopePropertyMethodInterceptor implements MethodInterceptor
                 }
             }
         }
+        else if ("setProperty".equals(methodName))
+        {
+            Object[] args = invocation.getArguments();
+            QName propertyQName = (QName) args[1];
+            if (!ContentModel.PROP_TAGSCOPE_SUMMARY.equals(propertyQName))
+            {
+                ret = invocation.proceed();
+            }
+            else
+            {
+                ret = null;
+            }
+        }
+        else if ("setProperties".equals(methodName))
+        {
+            Object[] args = invocation.getArguments();
+            Map<QName, Serializable> properties =  (Map<QName, Serializable>) args[1];
+            if (properties != null)
+            {
+                properties.remove(ContentModel.PROP_TAGSCOPE_SUMMARY);
+            }
+            ret = invocation.proceed();
+        }
         else
         {
             ret = invocation.proceed();

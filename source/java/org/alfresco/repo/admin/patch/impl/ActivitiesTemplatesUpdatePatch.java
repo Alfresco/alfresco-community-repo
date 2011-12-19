@@ -18,32 +18,12 @@
  */
 package org.alfresco.repo.admin.patch.impl;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Serializable;
-import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.admin.patch.AbstractPatch;
-import org.alfresco.repo.version.VersionModel;
-import org.alfresco.service.cmr.admin.PatchException;
-import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.version.VersionService;
-import org.alfresco.service.cmr.version.VersionType;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.util.TempFileProvider;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.springframework.extensions.surf.util.I18NUtil;
-import org.springframework.util.FileCopyUtils;
 
 /**
  * Patch to update the activities email templates. Current templates become
@@ -51,160 +31,61 @@ import org.springframework.util.FileCopyUtils;
  * 
  * @author Florian Mueller
  */
-public class ActivitiesTemplatesUpdatePatch extends AbstractPatch
+public class ActivitiesTemplatesUpdatePatch extends GenericEMailTemplateUpdatePatch
 {
-    private static final String MSG_SUCCESS = "patch.activitiesTemplatesUpdate.result";
+    private Repository repository;
 
-    protected FileFolderService fileFolderService;
-    protected VersionService versionService;
-
-    protected String newTemplatesFile;
-    protected String newTemplatesName;
-
-    protected ZipFile zipFile;
-
-    public void setFileFolderService(FileFolderService fileFolderService)
+    private static final String[] LOCALES = new String[] {"de", "es", "fr", "it", "ja"};
+    private static final String PATH = "alfresco/templates/activities-email-templates/";
+    private static final String BASE_FILE = "activities-email.ftl";
+    private static final String XPATH ="/app:company_home/app:dictionary/app:email_templates/cm:activities/cm:activities-email.ftl";
+    
+    public void setRepository(Repository repository)
     {
-        this.fileFolderService = fileFolderService;
+        this.repository = repository;
     }
-
-    public void setVersionService(VersionService versionService)
+    
+    @Override
+    protected String getPath()
     {
-        this.versionService = versionService;
+        return PATH;
     }
-
-    public void setNewTemplatesFile(String newTemplatesFile)
+    
+    @Override
+    protected String getBaseFileName()
     {
-        this.newTemplatesFile = newTemplatesFile;
-
-        int x = newTemplatesFile.lastIndexOf("/");
-        if (x < 0)
+        return BASE_FILE;
+    }
+    
+    @Override
+    protected String[] getLocales()
+    {
+        return LOCALES;
+    }
+    
+    @Override
+    protected NodeRef getBaseTemplate()
+    {
+        List<NodeRef> refs = searchService.selectNodes(
+                repository.getRootHome(), 
+                XPATH, 
+                null, 
+                namespaceService, 
+                false);
+        if (refs.size() != 1)
         {
-            newTemplatesName = newTemplatesFile;
-        } else
-        {
-            newTemplatesName = newTemplatesFile.substring(x + 1);
+            throw new AlfrescoRuntimeException(I18NUtil.getMessage("patch.activitiesTemplatesUpdate.error"));
         }
-
-        x = newTemplatesName.lastIndexOf(".");
-        if (x > 0)
-        {
-            newTemplatesName = newTemplatesName.substring(0, x);
-        }
+        return refs.get(0);
     }
-
+    
+    /**
+     * @see org.alfresco.repo.admin.patch.AbstractPatch#applyInternal()
+     */
     @Override
     protected String applyInternal() throws Exception
-    {
-        // get templates folder
-        NodeRef templateFolder = getTemplateFolder();
-
-        // get ACP file
-        ZipFile zipFile = getZipFile();
-
-        // iterate over all templates in the ACP file and apply version
-        @SuppressWarnings("unchecked")
-        Enumeration<ZipArchiveEntry> zae = (Enumeration<ZipArchiveEntry>) zipFile.getEntries();
-        int count = 0;
-        while (zae.hasMoreElements())
-        {
-            ZipArchiveEntry entry = zae.nextElement();
-            if (!(entry.getName().startsWith(newTemplatesName + "/") && entry.getName().endsWith(".ftl")))
-            {
-                // ignore non-template files
-                continue;
-            }
-
-            // find matching node and add version
-            NodeRef nodeRef = findMatchingNode(templateFolder, entry);
-            if (nodeRef != null)
-            {
-                addNewVersion(nodeRef, zipFile, entry);
-                count++;
-            }
-        }
-
-        return I18NUtil.getMessage(MSG_SUCCESS, count);
-    }
-
-    protected NodeRef getTemplateFolder()
-    {
-        String xpath = "app:company_home/app:dictionary/app:email_templates/cm:activities";
-        try
-        {
-            NodeRef rootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-            List<NodeRef> nodeRefs = searchService.selectNodes(rootNodeRef, xpath, null, namespaceService, false);
-
-            if (nodeRefs.size() < 1)
-            {
-                throw new PatchException("patch.activitiesTemplatesUpdate.err.template_folder_not_found");
-            }
-
-            return nodeRefs.get(0);
-        } catch (Exception e)
-        {
-            throw new PatchException("patch.activitiesTemplatesUpdate.err.template_folder_not_found", e);
-        }
-    }
-
-    protected ZipFile getZipFile()
-    {
-        InputStream templateFileStream = ActivitiesTemplatesUpdatePatch.class.getClassLoader().getResourceAsStream(
-                newTemplatesFile);
-        if (templateFileStream == null)
-        {
-            throw new PatchException("patch.activitiesTemplatesUpdate.err.source_not_found");
-        }
-
-        try
-        {
-            File tempFile = TempFileProvider.createTempFile("templateFile", ".tmp");
-            FileOutputStream os = new FileOutputStream(tempFile);
-            FileCopyUtils.copy(templateFileStream, os);
-
-            return new ZipFile(tempFile, "Cp437");
-        } catch (IOException e)
-        {
-            throw new PatchException("patch.activitiesTemplatesUpdate.err.source_not_found", e);
-        }
-    }
-
-    protected NodeRef findMatchingNode(NodeRef parentNodeRef, ZipArchiveEntry entry)
-    {
-        String name = entry.getName();
-        int x = name.lastIndexOf("/");
-        if (x > 0)
-        {
-            name = name.substring(x + 1);
-        }
-
-        return nodeService.getChildByName(parentNodeRef, ContentModel.ASSOC_CONTAINS, name);
-    }
-
-    protected void addNewVersion(NodeRef nodeRef, ZipFile zipFile, ZipArchiveEntry entry)
-    {
-        try
-        {
-            if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) == false)
-            {
-                Map<QName, Serializable> props = new HashMap<QName, Serializable>();
-                props.put(ContentModel.PROP_INITIAL_VERSION, true);
-                props.put(ContentModel.PROP_AUTO_VERSION, false);
-                nodeService.addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, props);
-            }
-
-            Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
-            versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
-
-            versionService.createVersion(nodeRef, versionProperties);
-
-            ContentWriter writer = fileFolderService.getWriter(nodeRef);
-            writer.setMimetype("text/plain");
-            writer.setEncoding("UTF-8");
-            writer.putContent(zipFile.getInputStream(entry));
-        } catch (Exception e)
-        {
-            throw new PatchException("patch.activitiesTemplatesUpdate.err.update_failed", e);
-        }
+    {   
+        updateTemplates();        
+        return I18NUtil.getMessage("patch.activitiesTemplatesUpdate.result");
     }
 }

@@ -2463,15 +2463,9 @@
                 <ref bean="patch.activitiesEmailTemplate" />
             </list>
         </property>
-        <property name="fileFolderService">
-            <ref bean="fileFolderService" />
-        </property>
-        <property name="versionService">
-            <ref bean="versionService" />
-        </property>
-        <property name="newTemplatesFile">
-            <value>alfresco/templates/activities-email-templates.xml</value>
-        </property>
+        <property name="contentService" ref="ContentService"/>
+        <property name="fileFolderService" ref="FileFolderService"/>
+        <property name="repository" ref="repositoryHelper"/>
     </bean>
 
     <bean id="patch.followingMailTemplates" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >

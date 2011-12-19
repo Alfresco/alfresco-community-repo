@@ -36,32 +36,12 @@ import org.apache.commons.collections.Predicate;
  * @author Matt Ward
  */
 public class DefaultComparisonUtils implements ComparisonUtils
-{
-    /**
-     * @param objToFind
-     * @return
-     */
+{    
     @Override
-    public DbObject findSameObjectAs(Collection<? extends DbObject> objects, final DbObject objToFind)
-    {
-        return (DbObject) CollectionUtils.find(objects, new Predicate()
-        {
-            @Override
-            public boolean evaluate(Object o)
-            {
-                DbObject object = (DbObject) o;
-                return object.sameAs(objToFind);
-            }
-        });
-    }
-
-    
-    
-    @Override
-    public List<DbObject> findEquivalentObjects(Schema schema, DbObject objToMatch)
+    public List<DbObject> findEquivalentObjects(DbObject rootObject, DbObject objToMatch)
     {
         EquivalentObjectSeeker objectSeeker = new EquivalentObjectSeeker(objToMatch);
-        schema.accept(objectSeeker);
+        rootObject.accept(objectSeeker);
         
         return objectSeeker.getMatches();
     }
@@ -147,17 +127,27 @@ public class DefaultComparisonUtils implements ComparisonUtils
         Results differences = ctx.getComparisonResults();
         for (DbObject leftObj : leftCollection)
         {
-            DbObject rightObj = findSameObjectAs(rightCollection, leftObj);
-
-            if (rightObj != null)
-            {
-                // There is an equivalent object in the right hand collection as
-                // in the left.
-                leftObj.diff(rightObj, ctx, strength);
+            boolean foundMatch = false;
+            
+            for (DbObject rootObject : rightCollection)
+            {                
+                List<DbObject> matches = findEquivalentObjects(rootObject, leftObj);
+                
+                for (DbObject match : matches)
+                {                        
+                    // There is an equivalent object in the right hand collection as in the left.
+                    leftObj.diff(match, ctx, strength);
+                }
+                
+                if (matches.size() > 0)
+                {
+                    foundMatch = true;
+                }
             }
-            else
+            
+            if (!foundMatch)
             {
-                // No equivalent object in the right hand collection.
+                // No equivalent object in the target collection.
                 differences.add(Where.ONLY_IN_REFERENCE, new DbProperty(leftObj, null), null, strength);
             }
         }
@@ -165,9 +155,19 @@ public class DefaultComparisonUtils implements ComparisonUtils
         // Identify objects in the right collection but not the left
         for (DbObject rightObj : rightCollection)
         {
-            DbObject leftObj = findSameObjectAs(leftCollection, rightObj);
+            boolean foundMatch = false;
             
-            if (leftObj == null)
+            for (DbObject rootObject : leftCollection)
+            {
+                List<DbObject> matches = findEquivalentObjects(rootObject, rightObj);
+                if (matches.size() > 0)
+                {
+                    foundMatch = true;
+                    break;
+                }
+            }
+            
+            if (!foundMatch)
             {
                 // No equivalent object in the left hand collection.
                 differences.add(Where.ONLY_IN_TARGET, null, new DbProperty(rightObj, null), strength);
@@ -251,7 +251,7 @@ public class DefaultComparisonUtils implements ComparisonUtils
     }
     
     
-    private static class EquivalentObjectSeeker implements DbObjectVisitor
+    public static class EquivalentObjectSeeker implements DbObjectVisitor
     {
         private final List<DbObject> matches = new ArrayList<DbObject>();
         private final DbObject objToMatch;

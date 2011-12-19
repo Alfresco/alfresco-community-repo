@@ -33,14 +33,7 @@ import org.alfresco.util.schemacomp.model.Schema;
  */
 public interface ComparisonUtils
 {
-    /**
-     * @deprecated This method ignores the fact that multiple objects may match.
-     * @param objToFind
-     * @return
-     */
-    DbObject findSameObjectAs(Collection<? extends DbObject> objects, final DbObject objToFind);
-
-    List<DbObject> findEquivalentObjects(Schema schema, DbObject objToMatch);
+    List<DbObject> findEquivalentObjects(DbObject rootObject, DbObject objToMatch);
     
     void compareSimpleCollections(DbProperty leftProperty, DbProperty rightProperty,
                 DiffContext ctx, Strength strength);

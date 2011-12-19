@@ -35,9 +35,11 @@ import org.alfresco.util.schemacomp.Result.Strength;
 import org.alfresco.util.schemacomp.model.AbstractDbObject;
 import org.alfresco.util.schemacomp.model.DbObject;
 import org.hibernate.dialect.Dialect;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -89,14 +91,11 @@ public class DefaultComparisonUtilsTest
     @Test
     public void compareCollections()
     {
-        DbObject db1 = mock(DbObject.class);
-        when(db1.sameAs(db1)).thenReturn(true);
-        DbObject db2 = mock(DbObject.class); // only in left
-        when(db2.sameAs(db2)).thenReturn(true);
-        DbObject db3 = mock(DbObject.class); // only in right
-        when(db3.sameAs(db3)).thenReturn(true);
-        DbObject db4 = mock(DbObject.class);
-        when(db4.sameAs(db4)).thenReturn(true);
+        DbObject db1 = new DatabaseObject("db1");
+        DbObject db2 = new DatabaseObject("db2"); // only in left
+        DbObject db3 = new DatabaseObject("db3"); // only in right
+        DbObject db4 = new DatabaseObject("db4");
+        
 
         Collection<DbObject> left = new ArrayList<DbObject>();
         Collections.addAll(left, db1, db2, db4);
@@ -106,13 +105,34 @@ public class DefaultComparisonUtilsTest
         
         comparisonUtils.compareCollections(left, right, ctx, Strength.ERROR);
         
-        // Objects in both are asked for their differences
-        verify(db1).diff(db1, ctx, Strength.ERROR);
-        verify(db4).diff(db4, ctx, Strength.ERROR);
-        
-        // Objects in only one collections are marked as such
+        // Differences and ommissions are noticed...
+        verify(differences).add(Where.IN_BOTH_BUT_DIFFERENCE, new DbProperty(db1), new DbProperty(db1));
         verify(differences).add(Where.ONLY_IN_REFERENCE, new DbProperty(db2), null, Strength.ERROR);
         verify(differences).add(Where.ONLY_IN_TARGET, null, new DbProperty(db3), Strength.ERROR);
+        verify(differences).add(Where.IN_BOTH_BUT_DIFFERENCE, new DbProperty(db4), new DbProperty(db4));
+    }
+    
+    @Test
+    public void compareCollectionsWithMultipleMatches()
+    {
+        DbObject db2 = new DatabaseObject("db2");
+        DbObject db3 = new DatabaseObject("db3");
+        DbObject db4 = new DatabaseObject("db4");
+        DbObject db1 = new DatabaseObject("db1", db2, db3);
+        
+        Collection<DbObject> left = new ArrayList<DbObject>();
+        Collections.addAll(left, db1, db4);
+        
+        Collection<DbObject> right = new ArrayList<DbObject>();
+        Collections.addAll(right, db1, db2, db3);
+        
+        comparisonUtils.compareCollections(left, right, ctx, Strength.ERROR);
+        
+        // Differences and ommissions are noticed...
+        verify(differences).add(Where.ONLY_IN_REFERENCE, new DbProperty(db4), null, Strength.ERROR);
+        verify(differences).add(Where.IN_BOTH_BUT_DIFFERENCE, new DbProperty(db1), new DbProperty(db1));
+        verify(differences).add(Where.IN_BOTH_BUT_DIFFERENCE, new DbProperty(db1), new DbProperty(db2));
+        verify(differences).add(Where.IN_BOTH_BUT_DIFFERENCE, new DbProperty(db1), new DbProperty(db3));
     }
     
     
@@ -195,40 +215,6 @@ public class DefaultComparisonUtilsTest
         return new DbProperty(obj, propName, -1, true, propValue);
     }
     
-    @Test
-    public void findSameObjectAsSuccessfulFind()
-    {
-        // Make a list of mock DbOjbect objects to test against
-        int numObjects = 20;
-        List<DbObject> dbObjects = createMockDbObjects(numObjects);
-        
-        // The reference that will be used to look for one 'the same' in the collection.
-        DbObject toFind = mock(DbObject.class);
-        
-        // For all other objects sameAs() will return false
-        DbObject objShouldBeFound = dbObjects.get(12);
-        when(objShouldBeFound.sameAs(toFind)).thenReturn(true);
-        
-        DbObject found = comparisonUtils.findSameObjectAs(dbObjects, toFind);
-        
-        assertSame("Found the wrong DbObject", objShouldBeFound, found);
-    }
-    
-    
-    @Test
-    public void findSameObjectAsNotFound()
-    {
-        // Make a list of mock DbOjbect objects to test against
-        int numObjects = 20;
-        List<DbObject> dbObjects = createMockDbObjects(numObjects);
-        
-        // The reference that will be used to look for one 'the same' in the collection.
-        DbObject toFind = mock(DbObject.class);
-        
-        DbObject found = comparisonUtils.findSameObjectAs(dbObjects, toFind);
-        
-        assertNull("Should not have found a matching DbObject", found);
-    }
     
     private List<DbObject> createMockDbObjects(int size)
     {
@@ -261,6 +247,54 @@ public class DefaultComparisonUtilsTest
         public Collection<Object> getCollection()
         {
             return this.collection;
+        }
+    }
+    
+    
+    public static class DatabaseObject extends AbstractDbObject
+    {
+        private DbObject[] equivalentObjects = new DbObject[] {};
+        
+        public DatabaseObject(String name)
+        {
+            super(null, name);
+        }
+
+        public DatabaseObject(String name, DbObject... equivalentObjects)
+        {
+            this(name);
+            this.equivalentObjects = equivalentObjects;
+        }
+        
+        @Override
+        public void accept(DbObjectVisitor visitor)
+        {
+            visitor.visit(this);
+        }
+
+        @Override
+        protected void doDiff(DbObject right, DiffContext ctx, Strength strength)
+        {
+            DbProperty leftProp = new DbProperty(this);
+            DbProperty rightProp = new DbProperty(right);
+            ctx.getComparisonResults().add(Where.IN_BOTH_BUT_DIFFERENCE, leftProp, rightProp);
+        }
+
+        @Override
+        public boolean sameAs(DbObject other)
+        {
+            // We can tell this stub to treat certain other objects as 'the same' as this object
+            // by supplying them in the constructor. If this object is invoked with t.sameAs(o)
+            // and o is in the list of equivalent objects supplied in the constructor, then
+            // sameAs() will return true. Otherwise the default sameAs() implementation is used.
+            for (DbObject o : equivalentObjects)
+            {
+                if (other.equals(o))
+                {
+                    return true;
+                }
+            }
+            return super.sameAs(other);
         }
     }
 }

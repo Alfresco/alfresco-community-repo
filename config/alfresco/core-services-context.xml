@@ -658,7 +658,9 @@
                 <value>webdav:lockDepth</value>
                 <value>webdav:lockScope</value>
                 <value>cm:likesRatingSchemeTotal</value>
-                <value>cm:likesRatingSchemeCount</value>                
+                <value>cm:likesRatingSchemeCount</value>
+                <value>cm:fiveStarRatingSchemeCount</value>
+                <value>cm:fiveStarRatingSchemeTotal</value>                                                
             </list>
         </property>
         <property name="enableAutoVersioning" value="${version.store.enableAutoVersioning}" />

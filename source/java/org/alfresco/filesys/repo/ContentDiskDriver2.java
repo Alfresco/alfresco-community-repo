@@ -403,6 +403,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
      */
     public DeviceContext createContext(String deviceName, ConfigElement cfg) throws DeviceContextException
     {
+        logger.error("Obsolete method called");
         throw new DeviceContextException("Obsolete Method called");
     }
     
@@ -948,6 +949,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
     public NetworkFile openFile(SrvSession session, TreeConnection tree, FileOpenParams params) throws IOException
     {
         // obsolete
+        logger.error("Obsolete method called");
         throw new AlfrescoRuntimeException("obsolete method called");
     }
     
@@ -963,6 +965,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
     public NetworkFile createFile(SrvSession sess, final TreeConnection tree, final FileOpenParams params) throws IOException
     {
         // Obsolete
+        logger.error("Obsolete method called");
         throw new AlfrescoRuntimeException("obsolete method called");
     }
 
@@ -1500,15 +1503,40 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 }
             }
             
-            if(info.isHidden() && !nodeService.hasAspect(nodeRef, ContentModel.ASPECT_HIDDEN))
+            if(info.hasSetFlag(FileInfo.SetAttributes))
             {
                 if ( logger.isDebugEnabled())
                 {
-                    logger.debug("Set hidden aspect (not yet implemented)" + name);
+                    logger.debug("Set attributes" + name + ", file attrs = " + info.getFileAttributes());
                 }
-// TODO Not yet implemented - and how to reset hidden bit?               
-//                nodeService.addAspect(nodeRef, ContentModel.ASPECT_HIDDEN, null);
-            }
+                
+                //TODO MER Think we may need to implement, Temporary, Hidden, System, Archive
+                if(info.isHidden())
+                {
+                    // yes is hidden
+                    if(!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_HIDDEN))
+                    {
+                        if ( logger.isDebugEnabled())
+                        {
+                            logger.debug("Set hidden aspect (not yet implemented)" + name);
+                        }
+                        // TODO Not yet implemented - and how to reset hidden bit?               
+                        // nodeService.addAspect(nodeRef, ContentModel.ASPECT_HIDDEN, null);
+                    }
+                }
+                else
+                {
+                    // not hidden is hidden
+                    if(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_HIDDEN))
+                    {
+                        if ( logger.isDebugEnabled())
+                        {
+                            logger.debug("Reset hidden aspect (not yet implemented)" + name);
+                        }
+                    }
+                    // not hidden
+                }
+            } // End of setting attributes
             
             if( info.hasSetFlag(FileInfo.SetAllocationSize))
             {
@@ -2423,6 +2451,8 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
 
                             netFile = new TempNetworkFile(file, name);
                             
+                            netFile.setGrantedAccess( NetworkFile.READWRITE);
+                             
                             if(truncate)
                             {
                                 netFile.truncateFile(0);
@@ -2440,7 +2470,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                             {
                                 logger.debug("Created file: path=" + name + " node=" + nodeRef + " network file=" + netFile);
                             }
-                            netFile.setGrantedAccess( NetworkFile.READWRITE);
+
                         }
                             break;
                         
@@ -2464,6 +2494,9 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                             File file = TempFileProvider.createTempFile("cifs", ".bin");
 
                             netFile = new TempNetworkFile(file, name);
+                            
+                            // Needs to be READWRITE for JavaNetworkFile - there's no such thing as WRITEONLY!
+                            netFile.setGrantedAccess( NetworkFile.READWRITE);
 
                             // Generate a file id for the file
 
@@ -2477,9 +2510,6 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                             {
                                 logger.debug("Created temporary file: path=" + name + " node=" + nodeRef + " network file=" + netFile);
                             }
-                        
-                            // Needs to be READWRITE for JavaNetworkFile - there's no such thing as WRITEONLY!
-                            netFile.setGrantedAccess( NetworkFile.READWRITE);
                         }
                     }
                 } // end of a normal file

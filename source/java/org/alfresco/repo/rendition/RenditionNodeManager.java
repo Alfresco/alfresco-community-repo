@@ -499,7 +499,7 @@ public class RenditionNodeManager
         }
         
         // Copy over all regular properties from the temporary rendition
-        Map<QName, Serializable> newProps = new HashMap<QName, Serializable>();
+        Map<QName, Serializable> newProps = nodeService.getProperties(targetNode);
         for(Entry<QName,Serializable> entry : nodeService.getProperties(tempRenditionNode).entrySet())
         {
             QName propKey = entry.getKey();

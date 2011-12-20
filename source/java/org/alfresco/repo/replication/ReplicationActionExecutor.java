@@ -55,12 +55,23 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * @author Nick Burch
  * @since 3.4
  */
 public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
+   /**
+    * I18N labels
+    */
+   private static final String MSG_ERR_TARGET_NOT_GIVEN = "replication.targetNotGiven";
+   private static final String MSG_ERR_NO_PAYLOADS_SPECIFIED = "replication.exception.noPayloadsSpecified";
+   private static final String MSG_ERR_REPLICATION_DEF_DISABLED = "replication.exception.replicationDefIsDisabled";
+   private static final String MSG_ERR_UNABLE_TO_REPLICATE = "replication.exception.unableToReplicate";
+   private static final String MSG_ERR_PROCESSING_PAYLOAD = "replication.exception.errorProcessingPayload";
+   private static final String MSG_ERR_EXECUTING_TRANSFER = "replication.exception.errorExecutingTransfer";
+
    /**
     * The logger
     */
@@ -251,19 +262,19 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
       if(replicationDef.getTargetName() == null ||
             replicationDef.getTargetName().equals(""))
       {
-         throw new ReplicationServiceException("The target is required but wasn't given");
+         throw new ReplicationServiceException(I18NUtil.getMessage(MSG_ERR_TARGET_NOT_GIVEN));
       }
       if(replicationDef.getPayload().size() == 0)
       {
-         throw new ReplicationServiceException("No payloads were specified");
+         throw new ReplicationServiceException(I18NUtil.getMessage(MSG_ERR_NO_PAYLOADS_SPECIFIED));
       }
       if(!replicationDef.isEnabled())
       {
-         throw new ReplicationServiceException("Unable to execute a disabled replication definition");
+         throw new ReplicationServiceException(I18NUtil.getMessage(MSG_ERR_REPLICATION_DEF_DISABLED));
       }
       if(!replicationParams.isEnabled())
       {
-          throw new ReplicationServiceException("Unable to replicate. The replication service is not enabled");
+          throw new ReplicationServiceException(I18NUtil.getMessage(MSG_ERR_UNABLE_TO_REPLICATE));
       }
       
       // Lock the service - only one instance of the replication
@@ -280,7 +291,7 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
       } 
       catch(Exception e) {
          lock.close();
-         throw new ReplicationServiceException("Error processing payload list - " + e.getMessage(), e);
+         throw new ReplicationServiceException(I18NUtil.getMessage(MSG_ERR_PROCESSING_PAYLOAD, e.getMessage()), e);
       }
 
       // Ask the transfer service to do the replication
@@ -325,10 +336,10 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
               TransferEventError failureEndEvent = ((TransferFailureException)e).getErrorEvent();
               writeDefinitionReports(replicationDef, failureEndEvent.getSourceReport(), failureEndEvent.getDestinationReport());
               Throwable cause = (e.getCause() == null) ? e : e.getCause();
-              throw new ReplicationServiceException("Error executing transfer - " + cause.getMessage(), cause);
+              throw new ReplicationServiceException(I18NUtil.getMessage(MSG_ERR_EXECUTING_TRANSFER, cause.getMessage()), cause);
           }
           writeDefinitionReports(replicationDef, null, null);
-          throw new ReplicationServiceException("Error executing transfer - " + e.getMessage(), e);
+          throw new ReplicationServiceException(I18NUtil.getMessage(MSG_ERR_EXECUTING_TRANSFER, e.getMessage()), e);
       }
       finally
       {

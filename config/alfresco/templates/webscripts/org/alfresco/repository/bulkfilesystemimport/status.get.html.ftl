@@ -36,6 +36,7 @@
       <td><nobr>Bulk Filesystem Import Tool Status</nobr></td>
     </tr>
     <tr><td><td>Alfresco ${server.edition} v${server.version}
+    <tr><td><td><b>Note: this is unsupported and may be removed from the product in future.</b>
   </table>
   <blockquote>
     <p>

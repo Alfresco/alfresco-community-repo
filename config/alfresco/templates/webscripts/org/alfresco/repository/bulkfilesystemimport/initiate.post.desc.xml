@@ -1,7 +1,7 @@
 <webscript>
   <shortname>Bulk Filesystem Import</shortname>
   <description>Web Script that initiates a bulk filesystem import.</description>
-  <url>/bulk/import/filesystem/initiate</url>
+  <url>/bulkfsimport/initiate</url>
   <authentication>admin</authentication>
   <transaction>none</transaction>
   <family>Bulk Filesystem Import</family>

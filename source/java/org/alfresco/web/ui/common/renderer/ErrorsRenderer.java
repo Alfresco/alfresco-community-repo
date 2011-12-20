@@ -42,6 +42,9 @@ public class ErrorsRenderer extends BaseRenderer
    private static final String DEFAULT_MESSAGE = "wizard_errors";
    private static final String ERROR_HINT = "error";
    
+   private static final String DEFAULT_CSS_INFO = "statusInfoText";
+   private static final String DEFAULT_CSS_ERROR = "statusErrorText";
+   
    /**
     * @see javax.faces.render.Renderer#encodeBegin(javax.faces.context.FacesContext, javax.faces.component.UIComponent)
     */
@@ -59,7 +62,18 @@ public class ErrorsRenderer extends BaseRenderer
          String contextPath = context.getExternalContext().getRequestContextPath();
          String styleClass = (String)component.getAttributes().get("styleClass");
          String errorClass = (String)component.getAttributes().get("errorClass");
+         
+         if (errorClass == null)
+         {
+             errorClass = DEFAULT_CSS_ERROR;
+         }
+         
          String infoClass = (String)component.getAttributes().get("infoClass");
+         
+         if (infoClass == null)         
+         {
+             infoClass = DEFAULT_CSS_INFO;
+         }
          String message = (String)component.getAttributes().get("message");
          String errorHint = Application.getMessage(context, ERROR_HINT);
          
@@ -89,7 +103,7 @@ public class ErrorsRenderer extends BaseRenderer
          out.write(">");
          
          // if we have a message to display show it next to the info icon
-         if (message.length() > 0)
+         if (message.length() > 0 && context.getMaximumSeverity().compareTo(FacesMessage.SEVERITY_WARN) > 0)
          {
             out.write("<img src='");
             out.write(contextPath);
@@ -105,7 +119,7 @@ public class ErrorsRenderer extends BaseRenderer
                out.write("<li");
                renderMessageAttrs(fm, out, errorClass, infoClass);
                out.write(">");
-               out.write(Utils.encode(fm.getSummary()));
+               out.write(Utils.encode(fm.getDetail()));
                out.write("</li>\n");
             }
             
@@ -128,7 +142,7 @@ public class ErrorsRenderer extends BaseRenderer
                out.write("<div style='margin-bottom: 3px;'");
                renderMessageAttrs(fm, out, errorClass, infoClass);
                out.write(">");
-               out.write(Utils.encode(fm.getSummary()));
+               out.write(Utils.encode(fm.getDetail()));
                out.write("</div>\n");
             }
             

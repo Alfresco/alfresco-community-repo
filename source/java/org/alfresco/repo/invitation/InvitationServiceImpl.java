@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -70,6 +71,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyCheck;
+import org.alfresco.util.UrlUtil;
 import org.alfresco.util.collections.CollectionUtils;
 import org.alfresco.util.collections.Function;
 import org.apache.commons.logging.Log;
@@ -103,6 +105,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     private UserNameGenerator usernameGenerator;
     private PasswordGenerator passwordGenerator;
     private PolicyComponent policyComponent;
+    private SysAdminParams sysAdminParams;
 
     // maximum number of tries to generate a invitee user name which
     // does not already belong to an existing person
@@ -195,6 +198,67 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 
         return inviteNominated(firstName, lastName, email, inviteeUserName, resourceType, resourceName, inviteeRole,
                     serverPath, acceptUrl, rejectUrl);
+    }
+    /**
+     * Start the invitation process for a NominatedInvitation
+     * 
+     * @param inviteeUserName Alfresco user name of the invitee
+     * @param Invitation
+     * @param ResourceType resourceType
+     * @param resourceName
+     * @param inviteeRole
+     * @param acceptUrl
+     * @param rejectUrl
+     * @return the nominated invitation which will contain the invitationId and
+     *         ticket which will uniqely identify this invitation for the rest
+     *         of the workflow.
+     * @throws InvitationException
+     * @throws InvitationExceptionUserError
+     * @throws InvitationExceptionForbidden
+     */
+    public NominatedInvitation inviteNominated(String inviteeUserName, Invitation.ResourceType resourceType,
+                String resourceName, String inviteeRole, String acceptUrl, String rejectUrl)
+    {
+        // inviteeUserName was specified
+        NodeRef person = this.personService.getPerson(inviteeUserName);
+
+        Serializable firstNameVal = this.getNodeService().getProperty(person, ContentModel.PROP_FIRSTNAME);
+        Serializable lastNameVal = this.getNodeService().getProperty(person, ContentModel.PROP_LASTNAME);
+        Serializable emailVal = this.getNodeService().getProperty(person, ContentModel.PROP_EMAIL);
+        String firstName = DefaultTypeConverter.INSTANCE.convert(String.class, firstNameVal);
+        String lastName = DefaultTypeConverter.INSTANCE.convert(String.class, lastNameVal);
+        String email = DefaultTypeConverter.INSTANCE.convert(String.class, emailVal);
+        String serverPath = UrlUtil.getShareUrl(sysAdminParams);
+
+        return inviteNominated(firstName, lastName, email, inviteeUserName, resourceType, resourceName, inviteeRole,
+                    serverPath, acceptUrl, rejectUrl);
+    }
+    /**
+     * Start the invitation process for a NominatedInvitation
+     * 
+     * @param inviteeFirstName
+     * @param inviteeLastName
+     * @param inviteeEmail
+     * @param inviteeUserName optional Alfresco user name of the invitee, null
+     *            if not on system.
+     * @param Invitation .ResourceType resourceType
+     * @param resourceName
+     * @param inviteeRole
+     * @param acceptUrl
+     * @param rejectUrl
+     * @return the nominated invitation which will contain the invitationId and
+     *         ticket which will uniqely identify this invitation for the rest
+     *         of the workflow.
+     * @throws InvitationException
+     * @throws InvitationExceptionUserError
+     * @throws InvitationExceptionForbidden
+     */
+    public NominatedInvitation inviteNominated(String inviteeFirstName, String inviteeLastName, String inviteeEmail,
+                Invitation.ResourceType resourceType, String resourceName, String inviteeRole, String acceptUrl, String rejectUrl)
+    {
+        String serverPath = UrlUtil.getShareUrl(sysAdminParams);
+        return inviteNominated(inviteeFirstName, inviteeLastName, inviteeEmail, null, resourceType, resourceName,
+                    inviteeRole, serverPath, acceptUrl, rejectUrl);
     }
 
     /**
@@ -1312,5 +1376,10 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     public boolean isSendEmails()
     {
         return sendEmails;
+    }
+
+    public void setSysAdminParams(SysAdminParams sysAdminParams)
+    {
+        this.sysAdminParams = sysAdminParams;
     }
 }

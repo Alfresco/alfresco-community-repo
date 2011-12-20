@@ -22,7 +22,6 @@ import java.util.List;
 
 import org.alfresco.service.Auditable;
 import org.alfresco.service.NotAuditable;
-import org.alfresco.service.PublicService;
 
 /**
  * The invitation service provides the ability to invite
@@ -43,7 +42,79 @@ public interface InvitationService
 	 */
    @NotAuditable
 	public List<String> getInvitationServiceWorkflowNames();
-	
+   
+   /**
+    * Start the invitation process for a NominatedInvitation for a user who does not yet have an Alfresco User Name
+    * The server path is calculated based on the sysAdmin parameters
+    * @param inviteeUserName Alfresco user name of who should be invited
+    * @param ResourceType resourceType
+    * @param resourceName
+    * @param inviteeRole
+    * @param acceptUrl
+    * @param rejectUrl
+    * 
+    * @return the nominated invitation which will contain the invitationId and
+    *         ticket which will uniqely identify this invitation for the rest
+    *         of the workflow.
+    * 
+    * @throws InvitationException
+    * @throws InvitationExceptionUserError
+    * @throws InvitationExceptionForbidden
+    */
+   @Auditable(parameters = {"inviteeUserName", 
+           "resourceType",
+           "resourceName", 
+           "inviteeRole", 
+           "acceptUrl", 
+           "rejectUrl"})
+           
+   public NominatedInvitation inviteNominated(
+           String inviteeUserName, 
+           Invitation.ResourceType resourceType,
+           String resourceName, 
+           String inviteeRole, 
+           String acceptUrl, 
+           String rejectUrl) ;
+
+   /**
+    * Start the invitation process for a NominatedInvitation for a user who does not yet have an 
+    * Alfresco User NameA new user name will be generated as part of the invitation process.
+    * The server path is calculated based on the sysAdmin parameters
+    * 
+    * @param inviteeFirstName
+    * @param inviteeLastName
+    * @param inviteeEmail
+    * @param Invitation.ResourceType resourceType
+    * @param resourceName
+    * @param inviteeRole 
+    * @param acceptUrl 
+    * @param rejectUrl
+    * 
+    * @return the nominated invitation which will contain the invitationId and ticket which 
+    * will uniquely identify this invitation.
+    * 
+    * @throws InvitationException
+    * @throws InvitationExceptionUserError
+    * @throws InvitationExceptionForbidden
+    */
+   @Auditable(parameters = {
+           "inviteeFirstName", 
+           "inviteeLastName",
+           "inviteeEmail", 
+           "resourceType",
+           "resourceName", 
+           "inviteeRole", 
+           "acceptUrl", 
+           "rejectUrl"})
+   public NominatedInvitation inviteNominated(
+           String inviteeFirstName, 
+           String inviteeLastName,
+           String inviteeEmail, 
+           Invitation.ResourceType resourceType,
+           String resourceName, 
+           String inviteeRole, 
+           String acceptUrl, 
+           String rejectUrl);	
 	/**
 	 * Start the invitation process for a NominatedInvitation for a user who does not yet have an Alfresco User Name
 	 * 

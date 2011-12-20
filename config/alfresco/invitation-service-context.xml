@@ -19,6 +19,7 @@
         <property name="policyComponent">
             <ref bean="policyComponent" />
         </property>
+        <property name="sysAdminParams" ref="sysAdminParams"/>
      </bean>
      
     <!-- Site service security bean -->

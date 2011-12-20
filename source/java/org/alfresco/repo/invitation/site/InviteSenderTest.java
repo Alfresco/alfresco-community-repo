@@ -229,6 +229,21 @@ public class InviteSenderTest extends TestCase
                     rejectLink);
     }
     
+    public void testValidServerPath() throws Exception
+    {      
+        String validPath = "test://test/path/";
+        String serverPath = InviteSender.ensureEndsWithSlash("test://test/path");
+        assertEquals(validPath,serverPath);
+        
+        serverPath = InviteSender.ensureEndsWithSlash("test://test/path/");
+        assertEquals(validPath,serverPath);  
+    }
+    
+    protected static String ensureEndsWithSlash(String thePath)
+    {
+        return thePath.endsWith("/")?thePath:thePath+"/";
+    }
+
     private Map<String, String> buildDefaultProperties()
     {
         Map<String, String> properties = new HashMap<String, String>();

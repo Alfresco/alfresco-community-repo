@@ -51,7 +51,6 @@ import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.UrlUtil;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.springframework.extensions.surf.util.ParameterCheck;
@@ -733,10 +732,9 @@ public class Site implements Serializable
      * Create new nominated invitation to this web site
      * @return the new invitation
      */
-    public ScriptInvitation<?> inviteNominated(String inviteeFirstName, String inviteeLastName, String inviteeEmail, String inviteeRole, String serverPath, String acceptUrl, String rejectUrl)
+    public ScriptInvitation<?> inviteNominated(String inviteeFirstName, String inviteeLastName, String inviteeEmail, String inviteeRole, String acceptUrl, String rejectUrl)
     {    	
-        serverPath = UrlUtil.getShareUrl(serviceRegistry.getSysAdminParams());
-    	Invitation invitation = invitationService.inviteNominated(inviteeFirstName, inviteeLastName, inviteeEmail, Invitation.ResourceType.WEB_SITE, getShortName(), inviteeRole, serverPath, acceptUrl, rejectUrl);
+    	Invitation invitation = invitationService.inviteNominated(inviteeFirstName, inviteeLastName, inviteeEmail, Invitation.ResourceType.WEB_SITE, getShortName(), inviteeRole, acceptUrl, rejectUrl);
     	return scriptInvitationFactory.toScriptInvitation(invitation);
     }
     
@@ -744,9 +742,9 @@ public class Site implements Serializable
      * Create new nominated invitation to this web site
      * @return the new invitation
      */
-    public ScriptInvitation<?> inviteNominated(String inviteeUserName, String inviteeRole, String serverPath, String acceptUrl, String rejectUrl)
+    public ScriptInvitation<?> inviteNominated(String inviteeUserName, String inviteeRole, String acceptUrl, String rejectUrl)
     {    	
-    	Invitation invitation = invitationService.inviteNominated(inviteeUserName, Invitation.ResourceType.WEB_SITE, getShortName(), inviteeRole, serverPath, acceptUrl, rejectUrl);
+    	Invitation invitation = invitationService.inviteNominated(inviteeUserName, Invitation.ResourceType.WEB_SITE, getShortName(), inviteeRole, acceptUrl, rejectUrl);
     	return scriptInvitationFactory.toScriptInvitation(invitation);
     }
     

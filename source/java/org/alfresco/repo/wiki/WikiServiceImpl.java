@@ -33,6 +33,7 @@ import org.alfresco.query.CannedQuerySortDetails;
 import org.alfresco.query.EmptyPagingResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.node.getchildren.GetChildrenAuditableCannedQuery;
 import org.alfresco.repo.node.getchildren.GetChildrenAuditableCannedQueryFactory;
@@ -224,6 +225,7 @@ public class WikiServiceImpl implements WikiService
        
        // Store the content
        ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+       writer.setMimetype(MimetypeMap.MIMETYPE_HTML);
        writer.setEncoding("UTF-8");
        writer.putContent(content);
              
@@ -263,6 +265,7 @@ public class WikiServiceImpl implements WikiService
        
        // Change the content
        ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+       writer.setMimetype(MimetypeMap.MIMETYPE_HTML);
        writer.setEncoding("UTF-8");
        writer.putContent(page.getContents());
        

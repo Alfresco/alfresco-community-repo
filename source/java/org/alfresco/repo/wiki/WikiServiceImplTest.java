@@ -30,12 +30,15 @@ import java.util.List;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
@@ -74,6 +77,7 @@ public class WikiServiceImplTest
     private static MutableAuthenticationService AUTHENTICATION_SERVICE;
     private static BehaviourFilter              BEHAVIOUR_FILTER;
     private static WikiService                  WIKI_SERVICE;
+    private static ContentService               CONTENT_SERVICE;
     private static DictionaryService            DICTIONARY_SERVICE;
     private static NodeService                  NODE_SERVICE;
     private static NodeService                  PUBLIC_NODE_SERVICE;
@@ -104,6 +108,7 @@ public class WikiServiceImplTest
         AUTHENTICATION_SERVICE = (MutableAuthenticationService)testContext.getBean("authenticationService");
         BEHAVIOUR_FILTER       = (BehaviourFilter)testContext.getBean("policyBehaviourFilter");
         WIKI_SERVICE           = (WikiService)testContext.getBean("WikiService");
+        CONTENT_SERVICE        = (ContentService)testContext.getBean("ContentService");
         DICTIONARY_SERVICE     = (DictionaryService)testContext.getBean("dictionaryService");
         NODE_SERVICE           = (NodeService)testContext.getBean("nodeService");
         PUBLIC_NODE_SERVICE    = (NodeService)testContext.getBean("NodeService");
@@ -152,6 +157,13 @@ public class WikiServiceImplTest
        NodeRef container = NODE_SERVICE.getPrimaryParent(page.getNodeRef()).getParentRef();
        NodeRef site = NODE_SERVICE.getPrimaryParent(container).getParentRef();
        assertEquals(WIKI_SITE.getNodeRef(), site);
+       
+       // Ensure the content was correctly set up
+       ContentReader reader = CONTENT_SERVICE.getReader(page.getNodeRef(), ContentModel.PROP_CONTENT);
+       assertEquals("This Is Some Content", reader.getContentString());
+       assertEquals(MimetypeMap.MIMETYPE_HTML, reader.getMimetype());
+       assertEquals("UTF-8", reader.getEncoding());
+       
        
        
        // Check the details on the object

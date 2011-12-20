@@ -89,14 +89,13 @@ function main()
          status.setCode(status.STATUS_BAD_REQUEST, "The inviteeRoleName is null or empty.");
          return;
       }
-      var serverPath = json.get("serverPath");
       var acceptUrl = json.get("acceptURL");
       var rejectUrl = json.get("rejectURL"); 
       
       // Get the optional properties
       if (json.has("inviteeUserName") && json.get("inviteeUserName") != "")
       {
-         invitation = site.inviteNominated(json.get("inviteeUserName"), inviteeRoleName, serverPath, acceptUrl, rejectUrl); 
+         invitation = site.inviteNominated(json.get("inviteeUserName"), inviteeRoleName, acceptUrl, rejectUrl); 
       } 
       else
       {
@@ -120,7 +119,7 @@ function main()
          var inviteeFirstName = json.get("inviteeFirstName")  ;
          var inviteeLastName = json.get("inviteeLastName") ;
          var inviteeEmail = json.get("inviteeEmail") ;
-         invitation = site.inviteNominated(inviteeFirstName, inviteeLastName, inviteeEmail, inviteeRoleName, serverPath, acceptUrl, rejectUrl); 
+         invitation = site.inviteNominated(inviteeFirstName, inviteeLastName, inviteeEmail, inviteeRoleName, acceptUrl, rejectUrl); 
       }
    }
    

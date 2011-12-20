@@ -70,19 +70,10 @@ public class Invite extends DeclarativeWebScript
     
     // services
     private InvitationService invitationService;
-    private SysAdminParams sysAdminParams;
     
     public void setInvitationService(InvitationService invitationService)
     {
         this.invitationService = invitationService;
-    }
-    
-    /**
-     * @param sysAdminParams the sysAdminParams to set
-     */
-    public void setSysAdminParams(SysAdminParams sysAdminParams)
-    {
-        this.sysAdminParams = sysAdminParams;
     }
     
     
@@ -221,12 +212,11 @@ public class Invite extends DeclarativeWebScript
             {
                 if (inviteeUserName != null)
                 {
-                    newInvite = invitationService.inviteNominated(inviteeUserName, Invitation.ResourceType.WEB_SITE, siteShortName, inviteeSiteRole, serverPath, acceptUrl, rejectUrl);
+                    newInvite = invitationService.inviteNominated(inviteeUserName, Invitation.ResourceType.WEB_SITE, siteShortName, inviteeSiteRole, acceptUrl, rejectUrl);
                 }
                 else
                 {
-                    serverPath = UrlUtil.getShareUrl(sysAdminParams);
-                    newInvite = invitationService.inviteNominated(inviteeFirstName, inviteeLastName, inviteeEmail, Invitation.ResourceType.WEB_SITE, siteShortName, inviteeSiteRole, serverPath, acceptUrl, rejectUrl);
+                    newInvite = invitationService.inviteNominated(inviteeFirstName, inviteeLastName, inviteeEmail, Invitation.ResourceType.WEB_SITE, siteShortName, inviteeSiteRole, acceptUrl, rejectUrl);
                 }
                 // add model properties for template to render
                 model.put(MODEL_PROP_KEY_ACTION, ACTION_START);

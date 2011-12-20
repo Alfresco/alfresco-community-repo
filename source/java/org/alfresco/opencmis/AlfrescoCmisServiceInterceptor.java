@@ -50,7 +50,7 @@ public class AlfrescoCmisServiceInterceptor implements MethodInterceptor
         boolean debug = logger.isDebugEnabled();
         boolean trace = logger.isTraceEnabled();
         StringBuilder sb = null;
-        if (debug)
+        if (debug || trace)
         {
             sb = new StringBuilder("\n" +
                         "CMIS invocation:         \n" +
@@ -69,24 +69,37 @@ public class AlfrescoCmisServiceInterceptor implements MethodInterceptor
             // Wrap with pre- and post-method calls
             try
             {
-                sb.append(
-                        "   Pre-call authentication: \n" +
-                        "      Full auth:           " + AuthenticationUtil.getFullyAuthenticatedUser() + "\n" +
-                        "      Effective auth:      " + AuthenticationUtil.getRunAsUser() + "\n");
+                if(debug || trace)
+                {
+                    sb.append(
+                            "   Pre-call authentication: \n" +
+                            "      Full auth:           " + AuthenticationUtil.getFullyAuthenticatedUser() + "\n" +
+                            "      Effective auth:      " + AuthenticationUtil.getRunAsUser() + "\n");
+                }
+
                 service.beforeCall();
-                sb.append(
-                        "   In-call authentication: \n" +
-                        "      Full auth:           " + AuthenticationUtil.getFullyAuthenticatedUser() + "\n" +
-                        "      Effective auth:      " + AuthenticationUtil.getRunAsUser() + "\n");
+
+                if(debug || trace)
+                {
+                    sb.append(
+                            "   In-call authentication: \n" +
+                            "      Full auth:           " + AuthenticationUtil.getFullyAuthenticatedUser() + "\n" +
+                            "      Effective auth:      " + AuthenticationUtil.getRunAsUser() + "\n");
+                }
+
                 ret = invocation.proceed();
             }
             finally
             {
                 service.afterCall();
-                sb.append(
-                        "   Post-call authentication: \n" +
-                        "      Full auth:           " + AuthenticationUtil.getFullyAuthenticatedUser() + "\n" +
-                        "      Effective auth:      " + AuthenticationUtil.getRunAsUser() + "\n");
+                
+                if(debug || trace)
+                {
+                    sb.append(
+                            "   Post-call authentication: \n" +
+                            "      Full auth:           " + AuthenticationUtil.getFullyAuthenticatedUser() + "\n" +
+                            "      Effective auth:      " + AuthenticationUtil.getRunAsUser() + "\n");
+                }
             }
             if (trace)
             {

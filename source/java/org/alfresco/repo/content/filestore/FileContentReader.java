@@ -223,7 +223,7 @@ public class FileContentReader extends AbstractContentReader
             // done
             if (logger.isDebugEnabled())
             {
-                logger.debug("Opened write channel to file: \n" +
+                logger.debug("Opened read channel to file: \n" +
                         "   file: " + file + "\n" +
                         "   random-access: " + allowRandomAccess);
             }

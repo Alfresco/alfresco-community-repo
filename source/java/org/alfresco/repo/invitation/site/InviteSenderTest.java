@@ -231,12 +231,17 @@ public class InviteSenderTest extends TestCase
     
     public void testValidServerPath() throws Exception
     {      
-        String validPath = "test://test/path/";
-        String serverPath = InviteSender.ensureEndsWithSlash("test://test/path");
-        assertEquals(validPath,serverPath);
-        
-        serverPath = InviteSender.ensureEndsWithSlash("test://test/path/");
-        assertEquals(validPath,serverPath);  
+        String validPath = "test://test/path/accept?hello";
+        String link = sender.makeLink("test://test/path", "accept", "hello");
+        assertEquals(validPath, link);
+        link = sender.makeLink("test://test/path/", "accept", "hello");
+        assertEquals(validPath, link);
+        link = sender.makeLink("test://test/path", "/accept", "hello");
+        assertEquals(validPath, link);
+        link = sender.makeLink("test://test/path/", "/accept", "hello");
+        assertEquals(validPath, link);
+        link = sender.makeLink("test://test/path", "/accept", "?hello");
+        assertEquals(validPath, link);
     }
     
     protected static String ensureEndsWithSlash(String thePath)

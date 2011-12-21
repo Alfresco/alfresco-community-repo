@@ -174,9 +174,8 @@ public class InviteSender
     private Map<String, String> buildArgs(Map<String, String> properties, NodeRef inviter, NodeRef invitee)
     {
         String params = buildUrlParamString(properties);
-        String serverPath = ensureEndsWithSlash(properties.get(wfVarServerPath));
-        String acceptLink = serverPath + properties.get(wfVarAcceptUrl) + params;
-        String rejectLink = serverPath + properties.get(wfVarRejectUrl) + params;
+        String acceptLink = makeLink(properties.get(wfVarServerPath), properties.get(wfVarAcceptUrl), params);
+        String rejectLink = makeLink(properties.get(wfVarServerPath), properties.get(wfVarRejectUrl), params);
 
         Map<String, String> args = new HashMap<String, String>();
         args.put("inviteePersonRef", invitee.toString());
@@ -190,11 +189,14 @@ public class InviteSender
         return args;
     }
 
-    protected static String ensureEndsWithSlash(String thePath)
+    protected String makeLink(String location, String endpoint, String queryParams)
     {
-        return thePath.endsWith("/")?thePath:thePath+"/";
+        location = location.endsWith("/") ? location : location + "/";
+        endpoint = endpoint.startsWith("/") ? endpoint.substring(1) : endpoint;
+        queryParams = queryParams.startsWith("?") ? queryParams : "?" + queryParams;
+        return location + endpoint + queryParams;
     }
-    
+
     private String getRoleName(Map<String, String> properties) 
     {
         String roleName = properties.get(wfVarRole);

@@ -33,6 +33,8 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.TransactionListener;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -202,10 +204,15 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
         if (token == null)
         {
             try
-            {
+            {                
                 if (username == null ||username.length() == 0 || password == null)
                 {
                     throw new GoogleDocsServiceInitException("No Google Docs credentials found. Please set the Google Docs authentication configuration.");
+                }
+             
+                if (logger.isDebugEnabled() == true)
+                {
+                    logger.debug("Setting user credentials for GDoc service. (serviceName=" + serviceName + ", userName=" + username + ", password=" + password + ")");
                 }
                 
                 service.setUserCredentials(username, password);
@@ -223,7 +230,6 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
         
         return service;        
     }
-
 
     /**
      * @param nodeService   node service
@@ -335,9 +341,8 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
     public void setUsername(String username)
     {
         this.username = username;
-        // Reset the token map
-        serviceTokens = new HashMap<String, String>(2);
-    }
+        updatedAuthenticationCredentials(); 
+    }    
 
     /**
      * @param password  google service password
@@ -345,8 +350,7 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
     public void setPassword(String password)
     {
         this.password = password;
-        // Reset the token map
-        serviceTokens = new HashMap<String, String>(2);
+        updatedAuthenticationCredentials(); 
     }
     
     /**
@@ -364,8 +368,7 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
     public void setEnabled(boolean enabled)
     {
         this.enabled = enabled;
-        // Reset the token map
-        serviceTokens = new HashMap<String, String>(2);
+        updatedAuthenticationCredentials(); 
     }
     
     /**
@@ -1291,4 +1294,50 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
             }
         }
     }    
+    
+    private TransactionListener validateCredentials = new TransactionListener()
+    {
+
+        @Override
+        public void afterCommit()
+        {  
+        }
+
+        @Override
+        public void afterRollback()
+        { 
+        }
+
+        @Override
+        public void beforeCommit(boolean readOnly)
+        {
+            if (enabled == true)
+            {            
+                if (username == null || username.length() == 0 || password == null)
+                {
+                    throw new GoogleDocsServiceInitException("No Google Docs credentials found. Please set the Google Docs authentication configuration.");
+                }
+            }
+        }
+
+        @Override
+        public void beforeCompletion()
+        { 
+        }
+
+        @Override
+        public void flush()
+        { 
+        }
+    };
+        
+    private void updatedAuthenticationCredentials()
+    {
+        // Reset the token map
+        serviceTokens = new HashMap<String, String>(2);
+        if (RetryingTransactionHelper.getActiveUserTransaction() != null)
+        {
+            AlfrescoTransactionSupport.bindListener(validateCredentials);
+        } 
+    }
 }

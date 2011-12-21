@@ -481,6 +481,7 @@
                 <value>alfresco.messages.activiti-engine-messages</value>
                 <value>alfresco.messages.wdr-messages</value>
                 <value>alfresco.messages.subscription-service</value>
+                <value>alfresco.messages.replication</value>
             </list>
         </property>
     </bean>

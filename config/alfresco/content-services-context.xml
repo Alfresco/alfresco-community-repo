@@ -66,14 +66,18 @@
       <property name="eagerOrphanCleanup" >
          <value>${system.content.eagerOrphanCleanup}</value>
       </property>
-      <property name="stores" >
-         <list>
-            <ref bean="fileContentStore" />
-         </list>
-      </property>
+      <property name="stores" ref="contentStoresToClean" />
       <property name="listeners" >
          <ref bean="deletedContentBackupListeners" />
       </property>
+   </bean>
+   
+   <bean id="contentStoresToClean" class="java.util.ArrayList" >
+      <constructor-arg>
+         <list>
+            <ref bean="fileContentStore" />
+         </list>
+      </constructor-arg>
    </bean>
    
    <!-- Abstract bean definition defining base definition for content service -->

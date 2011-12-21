@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
+import org.alfresco.repo.dictionary.constraint.RegisteredConstraint;
 import org.alfresco.repo.forms.Field;
 import org.alfresco.repo.forms.FieldGroup;
 import org.alfresco.repo.forms.PropertyFieldDefinition;
@@ -217,8 +218,16 @@ public class PropertyFieldProcessor extends QNameFieldProcessor<PropertyDefiniti
                 String type = constraint.getType();
                 Map<String, Object> params = constraint.getParameters();
                 
-                // ListOfValuesConstraints have special handling for localising their allowedValues.
-                if (ListOfValuesConstraint.CONSTRAINT_TYPE.equals(constraint.getType()))
+                
+                //ListOfValuesConstraints have special handling for localising their allowedValues.
+                //If the constraint that we are currently handling is a registered constraint then
+                //we need to examine the underlying constraint to see if it is a LIST constraint
+                if (RegisteredConstraint.class.isAssignableFrom(constraint.getClass()))
+                {
+                    constraint = ((RegisteredConstraint)constraint).getRegisteredConstraint();
+                }
+                
+                if (ListOfValuesConstraint.class.isAssignableFrom(constraint.getClass()))
                 {
                     ListOfValuesConstraint lovConstraint = (ListOfValuesConstraint) constraint;
                     List<String> allowedValues = lovConstraint.getAllowedValues();

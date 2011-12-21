@@ -122,6 +122,16 @@ public class HiddenAspect
         }
     }
 
+    private void removeIndexControlAspect(NodeRef nodeRef)
+    {
+        nodeService.removeAspect(nodeRef, ContentModel.ASPECT_INDEX_CONTROL);
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Removed index control marker: " + nodeRef);
+        }
+    }
+    
     private void addHiddenAspect(NodeRef nodeRef, int visibilityMask)
     {
         Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
@@ -180,7 +190,7 @@ public class HiddenAspect
 
         return matched;
     }
-    
+
     public int getClientVisibilityMask(Client client, Visibility visibility)
     {
         return visibility.getMask() << getClientIndex(client)*2;
@@ -290,11 +300,16 @@ public class HiddenAspect
         }
         else
         {
-            // the file does not match the pattern, ensure that the hidden aspect is not present
+            // the file does not match the pattern, ensure that the hidden and index control aspects are not present
             if(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_HIDDEN))
             {
                 removeHiddenAspect(nodeRef);
-            }            
+            }
+
+            if(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_INDEX_CONTROL))
+            {
+                removeIndexControlAspect(nodeRef);
+            }
         }
 
         return filter;
@@ -310,7 +325,7 @@ public class HiddenAspect
      */
     public Visibility getVisibility(Client client, NodeRef nodeRef)
     {
-        Visibility ret = null;
+        Visibility ret = Visibility.Visible;
 
         if(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_HIDDEN))
         {

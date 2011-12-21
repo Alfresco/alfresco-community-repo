@@ -19,17 +19,17 @@
             </bean>
             <bean class="org.alfresco.repo.model.filefolder.HiddenFileFilter">
                 <property name="filter" value="\..*" />
-                <property name="visibility" value="webdav,nfs" />
+                <property name="visibility" value="webdav,nfs,ftp" />
                 <property name="hiddenAttribute" value="cifs" />
             </bean>
             <bean class="org.alfresco.repo.model.filefolder.HiddenFileFilter">
                 <property name="filter" value="Thumbs\.db" />
-                <property name="visibility" value="webdav,nfs" />
+                <property name="visibility" value="webdav,nfs,ftp" />
                 <property name="hiddenAttribute" value="cifs" />
             </bean>
             <bean class="org.alfresco.repo.model.filefolder.HiddenFileFilter">
                 <property name="filter" value="Desktop\.ini" />
-                <property name="visibility" value="webdav,nfs" />
+                <property name="visibility" value="webdav,nfs,ftp" />
                 <property name="hiddenAttribute" value="cifs" />
             </bean>
             <!-- completely hidden i.e. to all clients  -->

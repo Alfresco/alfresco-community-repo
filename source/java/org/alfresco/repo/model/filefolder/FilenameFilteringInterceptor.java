@@ -182,6 +182,7 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
         mask |= hiddenAspect.getClientVisibilityMask(Client.cifs, Visibility.HiddenAttribute);
         mask |= hiddenAspect.getClientVisibilityMask(Client.webdav, Visibility.Visible);
         mask |= hiddenAspect.getClientVisibilityMask(Client.nfs, Visibility.Visible);
+        mask |= hiddenAspect.getClientVisibilityMask(Client.ftp, Visibility.Visible);
         return mask;
     }
 
@@ -238,7 +239,6 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
                 FileInfoImpl fileInfo = (FileInfoImpl)ret;
 
 	            checkTemporaryAspect(temporaryFiles.isFiltered(filename), fileInfo);
-	            hiddenAspect.checkHidden(fileInfo);
             }
         }
         else if (methodName.startsWith("rename") ||
@@ -257,7 +257,10 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
 
             // check against all the regular expressions
             checkTemporaryAspect(temporaryFiles.isFiltered(filename), fileInfo);
-            hiddenAspect.checkHidden(fileInfo);
+            if(getMode() == Mode.ENHANCED)
+            {
+                hiddenAspect.checkHidden(fileInfo);
+            }
         }
         else
         {

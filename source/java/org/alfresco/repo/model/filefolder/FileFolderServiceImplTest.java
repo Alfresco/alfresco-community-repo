@@ -42,7 +42,6 @@ import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.M2Type;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl.InvalidTypeException;
-import org.alfresco.repo.model.filefolder.HiddenAspect.Visibility;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -69,8 +68,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.FileFilterMode;
-import org.alfresco.util.FileFilterMode.Client;
 import org.alfresco.util.GUID;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -99,7 +96,6 @@ public class FileFolderServiceImplTest extends TestCase
 
     private static final ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
 
-    private HiddenAspect hiddenAspect;
     private TransactionService transactionService;
     private NodeService nodeService;
     private FileFolderService fileFolderService;
@@ -120,8 +116,7 @@ public class FileFolderServiceImplTest extends TestCase
         permissionService = serviceRegistry.getPermissionService();
         authenticationService = (MutableAuthenticationService) ctx.getBean("AuthenticationService");
         dictionaryDAO = (DictionaryDAO) ctx.getBean("dictionaryDAO");
-        hiddenAspect = (HiddenAspect)ctx.getBean("hiddenAspect");
-
+        
         // start the transaction
         txn = transactionService.getUserTransaction();
         txn.begin();
@@ -1280,78 +1275,6 @@ public class FileFolderServiceImplTest extends TestCase
                 nodeService.getProperty(destinationFolderNodeRef, ContentModel.PROP_MODIFIER));
         assertTrue("cm:modified for destination folder should have changed",
                 beforeSleep.compareTo((Date)nodeService.getProperty(destinationFolderNodeRef, ContentModel.PROP_MODIFIED)) < 0);
-    }
-    
-    public void testHiddenFiles()
-    {
-        FileFilterMode.setClient(Client.webdav);
-
-    	try
-    	{
-            NodeRef parent = fileFolderService.create(rootNodeRef, "New Folder", ContentModel.TYPE_FOLDER).getNodeRef();
-            NodeRef child = fileFolderService.create(parent, "file.tmp", ContentModel.TYPE_CONTENT).getNodeRef();
-            assertTrue(nodeService.hasAspect(child, ContentModel.ASPECT_TEMPORARY));
-            assertTrue(!nodeService.hasAspect(child, ContentModel.ASPECT_HIDDEN));
-    
-            NodeRef parent1 = fileFolderService.create(rootNodeRef, ".TemporaryItems", ContentModel.TYPE_FOLDER).getNodeRef();
-            NodeRef child1 = fileFolderService.create(parent1, "file1", ContentModel.TYPE_CONTENT).getNodeRef();
-            assertTrue(nodeService.hasAspect(child1, ContentModel.ASPECT_TEMPORARY));
-            assertTrue(nodeService.hasAspect(child1, ContentModel.ASPECT_HIDDEN));
-    
-            NodeRef parent2 = fileFolderService.create(rootNodeRef, "Folder 2", ContentModel.TYPE_FOLDER).getNodeRef();
-            NodeRef child2 = fileFolderService.create(parent2, "Thumbs.db", ContentModel.TYPE_CONTENT).getNodeRef();
-            assertTrue(!nodeService.hasAspect(child2, ContentModel.ASPECT_TEMPORARY));
-            assertTrue(nodeService.hasAspect(child2, ContentModel.ASPECT_HIDDEN));
-            // set hidden attribute for cifs, webdav should be able to see, other clients not
-            assertEquals(Visibility.Visible, hiddenAspect.getVisibility(Client.webdav, child2));
-            assertEquals(Visibility.HiddenAttribute, hiddenAspect.getVisibility(Client.cifs, child2));
-            assertEquals(Visibility.NotVisible, hiddenAspect.getVisibility(Client.script, child2));
-            assertEquals(Visibility.NotVisible, hiddenAspect.getVisibility(Client.webclient, child2));
-
-            NodeRef node1 = fileFolderService.create(rootNodeRef, "surf-config", ContentModel.TYPE_FOLDER).getNodeRef();
-            assertTrue(nodeService.hasAspect(node1, ContentModel.ASPECT_HIDDEN));
-            // surf-config should not be visible to any client
-            for(Client client : hiddenAspect.getClients())
-            {
-                assertEquals(Visibility.NotVisible, hiddenAspect.getVisibility(client, node1));
-            }
-            
-            NodeRef node2 = fileFolderService.create(rootNodeRef, ".DS_Store", ContentModel.TYPE_CONTENT).getNodeRef();
-            assertTrue(nodeService.hasAspect(node2, ContentModel.ASPECT_HIDDEN));
-            // .DS_Store is a system path and so is visible in nfs and webdav, as a hidden file in cifs and hidden to all other clients
-            for(Client client : hiddenAspect.getClients())
-            {
-                if(client == Client.cifs)
-                {
-                    assertEquals(Visibility.HiddenAttribute, hiddenAspect.getVisibility(client, node2));                    
-                }
-                else if(client == Client.webdav)
-                {
-                    assertEquals(Visibility.Visible, hiddenAspect.getVisibility(client, node2));                    
-                }
-                else if(client == Client.nfs)
-                {
-                    assertEquals(Visibility.Visible, hiddenAspect.getVisibility(client, node2));                    
-                }
-                else
-                {
-                    assertEquals(Visibility.NotVisible, hiddenAspect.getVisibility(client, node2));
-                }
-            }
-
-            List<FileInfo> children = fileFolderService.list(parent);
-            assertEquals(1, children.size());
-    
-            children = fileFolderService.list(parent1);
-            assertEquals(1, children.size());
-            
-            children = fileFolderService.list(parent2);
-            assertEquals(1, children.size());
-    	}
-    	finally
-    	{
-    	    FileFilterMode.clearClient();
-    	}
     }
     
     public void testPatterns()

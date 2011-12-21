@@ -39,8 +39,15 @@ function main()
       logger.log("Category successfully removed. (nodeRef=" + nodeRef + ")");
    }
    
+   // The message depends on the search service in use
+   var message = "Category successfully removed.";
+   if (search.searchSubsystem == "solr")
+   {
+      message = "Category deletion successfully queued with SOLR for removal. Please not that it may take a few moments until it is deleted; you will need to refresh to see the change once it has been actioned";
+   }
+
    // Set model properties
-   model.message = "Category successfully removed. (nodeRef=" + nodeRef + ")";
+   model.message = message;
 }
 
 main();

@@ -79,8 +79,16 @@ function main()
    {
       model.persistedObject = classification.createRootCategory(aspect, name);
    }
+
+   // The message depends on the search service in use
+   var message = "Successfully added category";
+   if (search.searchSubsystem == "solr")
+   {
+      message = "New category successfully queued with SOLR for addition. Please not that it may take a few moments until it is added; you will need to refresh to see the change once it has been actioned";
+   }
    
-   model.message = "Successfully added category";
+   // Build the rest of the model 
+   model.message = message;
    model.name = name;
 }
 

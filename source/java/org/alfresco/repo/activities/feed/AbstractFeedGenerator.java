@@ -21,8 +21,8 @@ package org.alfresco.repo.activities.feed;
 import org.alfresco.repo.activities.ActivityPostServiceImpl;
 import org.alfresco.repo.domain.activities.ActivityPostDAO;
 import org.alfresco.repo.lock.JobLockService;
-import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.repo.lock.JobLockService.JobLockRefreshCallback;
+import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -39,7 +39,7 @@ import org.quartz.JobExecutionException;
 public abstract class AbstractFeedGenerator implements FeedGenerator
 {
     private static Log logger = LogFactory.getLog(AbstractFeedGenerator.class);
-    
+
     /** The name of the lock used to ensure that feed generator does not run on more than one node at the same time */
     private static final QName LOCK_QNAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ActivityFeedGenerator");
     
@@ -62,7 +62,7 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
     
     private RepoCtx ctx = null;
     
-    private volatile boolean busy;
+    private LockTracker lockTracker = new LockTracker();
     
     public void setActivityPostServiceImpl(ActivityPostServiceImpl activityPostServiceImpl)
     {
@@ -128,8 +128,6 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
     {
         ctx = new RepoCtx(repoEndPoint);
         ctx.setUserNamesAreCaseSensitive(userNamesAreCaseSensitive);
-        
-        busy = false;
     }
     
     /**
@@ -143,11 +141,6 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
     }
      
     abstract public int getEstimatedGridSize();
-    
-    protected boolean isActive()
-    {
-        return busy;
-    }
     
     public void execute() throws JobExecutionException
     {
@@ -163,12 +156,9 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
             return;
         }
         
-        String lockToken = null;
-        
         try
         {
-            JobLockRefreshCallback lockCallback = new LockCallback();
-            lockToken = acquireLock(lockCallback);
+            acquireLock();
             
             if (logger.isTraceEnabled())
             {
@@ -205,66 +195,73 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
         }
         finally
         {
-            releaseLock(lockToken);
+            releaseLock();
         }
     }
     
     protected abstract boolean generate() throws Exception;
-    
-    private class LockCallback implements JobLockRefreshCallback
-    {
-        @Override
-        public boolean isActive()
-        {
-            return busy;
-        }
-        
-        @Override
-        public void lockReleased()
-        {
-            // note: currently the cycle will try to complete (even if refresh failed)
-            synchronized(this)
-            {
-                if (logger.isErrorEnabled())
-                {
-                    logger.error("Lock released (refresh failed): " + LOCK_QNAME);
-                }
-                
-                busy = false;
-            }
-        }
-    }
-    
-    private String acquireLock(JobLockRefreshCallback lockCallback) throws LockAcquisitionException
+
+    private void acquireLock() throws LockAcquisitionException
     {
         // Try to get lock
         String lockToken = jobLockService.getLock(LOCK_QNAME, LOCK_TTL);
-        
-        // Got the lock - now register the refresh callback which will keep the lock alive
-        jobLockService.refreshLock(lockToken, LOCK_QNAME, LOCK_TTL, lockCallback);
-        
-        busy = true;
-        
+
+        // Got the lock - now register the refresh callback which will keep the lock alive.
+        this.lockTracker.refreshLock(lockToken);
+
         if (logger.isDebugEnabled())
         {
             logger.debug("lock aquired:  " + lockToken);
         }
-        
-        return lockToken;
     }
     
-    private void releaseLock(String lockToken)
+    private void releaseLock()
     {
-        if (lockToken != null)
+        lockTracker.releaseLock();
+    }
+
+    private class LockTracker implements JobLockRefreshCallback
+    {
+        private String lockToken = null;
+
+        void refreshLock(String lockToken)
         {
-            busy = false;
-            
-            jobLockService.releaseLock(lockToken, LOCK_QNAME);
-            
-            if (logger.isDebugEnabled())
+            if(this.lockToken != null)
             {
-                logger.debug("lock released: " + lockToken);
+                throw new IllegalStateException("lockToken is not null");
             }
+            this.lockToken = lockToken;
+            jobLockService.refreshLock(lockToken, LOCK_QNAME, LOCK_TTL, this);
+        }
+
+        void releaseLock()
+        {
+            if(isActive())
+            {
+                jobLockService.releaseLock(lockToken, LOCK_QNAME);
+                lockToken = null;
+                if (logger.isInfoEnabled())
+                {
+                    logger.info("Lock released: " + LOCK_QNAME + ", lock token " + lockToken);
+                }
+            }
+        }
+
+        @Override
+        public boolean isActive()
+        {
+            return (lockToken != null);
+        }
+
+        @Override
+        public void lockReleased()
+        {
+            // note: currently the cycle will try to complete (even if refresh failed)
+            if (logger.isInfoEnabled())
+            {
+                logger.info("Lock released (refresh failed): " + LOCK_QNAME + ", lock token " + lockToken);
+            }
+            lockToken = null;
         }
     }
 }

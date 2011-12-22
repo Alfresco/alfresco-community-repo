@@ -268,7 +268,7 @@ public class WorkflowObjectFactory
     public String getTaskDescription(TypeDefinition typeDefinition, String defName, String defaultDescription, String title)
     {
         String displayId = getProcessKey(defName) + ".task." + title;
-        return getLabel(displayId, DESC_LABEL, defaultDescription, typeDefinition.getTitle(), title);
+        return getLabel(displayId, DESC_LABEL, defaultDescription);
     }
     
 

@@ -238,7 +238,6 @@ public class ActivitiPropertyConverter
         
         // Map activiti task instance fields to properties
         properties.put(WorkflowModel.PROP_TASK_ID, task.getId());
-        properties.put(WorkflowModel.PROP_DESCRIPTION, task.getDescription());
         // Since the task is never started explicitally, we use the create time
         properties.put(WorkflowModel.PROP_START_DATE, task.getCreateTime());
         
@@ -405,21 +404,21 @@ public class ActivitiPropertyConverter
         String description = (String) existingValues.get(WorkflowModel.PROP_DESCRIPTION);
         if (description == null || description.length() == 0)
         {
-            // Use the shared description set in the workflowinstance
-            String descriptionKey = factory.mapQNameToName(WorkflowModel.PROP_WORKFLOW_DESCRIPTION);
-            description = (String) task.getExecution().getVariable(descriptionKey);
-            if (description != null && description.length() > 0)
-            {
-                defaultValues.put(WorkflowModel.PROP_DESCRIPTION, description);
+            //Try the localised task description first
+            String processDefinitionKey = ((ProcessDefinition) ((TaskEntity)task).getExecution().getProcessDefinition()).getKey();
+            description = factory.getTaskDescription(typeDefinition, factory.buildGlobalId(processDefinitionKey), null, task.getTaskDefinitionKey());
+            if (description != null && description.length() > 0) {
+                defaultValues.put(WorkflowModel.PROP_DESCRIPTION,  description);
+            } else {
+                String descriptionKey = factory.mapQNameToName(WorkflowModel.PROP_WORKFLOW_DESCRIPTION);
+                description = (String) task.getExecution().getVariable(descriptionKey); 
+                if (description != null && description.length() > 0) {
+                    defaultValues.put(WorkflowModel.PROP_DESCRIPTION,  description); 
+                } else {
+                    defaultValues.put(WorkflowModel.PROP_DESCRIPTION,  task.getName());
+                }
             }
-            else
-            {
-                String processDefinitionKey = ((TaskEntity)task).getExecution().getProcessDefinition().getId();
-                
-                // Revert to title in metaData
-                String title = factory.getTaskTitle(typeDefinition, factory.buildGlobalId(processDefinitionKey), task.getName(), task.getName());
-                defaultValues.put(WorkflowModel.PROP_DESCRIPTION, title);
-            }
+             
         }
 
         // Assign the default values to the task
@@ -884,7 +883,7 @@ public class ActivitiPropertyConverter
             ReadOnlyProcessDefinition deployedDef = activitiUtil.getDeployedProcessDefinition(processDefId);
             String startEventName = deployedDef.getInitial().getId();
             String wfDefKey = factory.buildGlobalId(procDefKey);
-            factory.getTaskDescription(startTaskType, wfDefKey, wfDescription, startEventName);
+            description = factory.getTaskDescription(startTaskType, wfDefKey, wfDescription, startEventName);
             defaultProperties.put(WorkflowModel.PROP_DESCRIPTION, description);
         }
         return handlerRegistry.handleVariablesToSet(defaultProperties, startTaskType, null, Void.class);

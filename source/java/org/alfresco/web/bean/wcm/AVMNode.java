@@ -26,11 +26,13 @@ import java.util.Set;
 import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.LayeringDescriptor;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.Path;
+import org.alfresco.service.cmr.repository.Path.Element;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.wcm.asset.AssetInfo;
@@ -92,6 +94,12 @@ public class AVMNode extends Node implements Map<String, Object>
                   result.append(new Path.Element() 
                   {
                      public String getElementString() { return s2; }
+
+                    @Override
+                    public Element getBaseNameElement(TenantService tenantService)
+                    {
+                        return this;
+                    }
                   });
                }
             }

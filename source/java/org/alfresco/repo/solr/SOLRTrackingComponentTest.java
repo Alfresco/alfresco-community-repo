@@ -110,6 +110,22 @@ public class SOLRTrackingComponentTest extends TestCase
         rootNodeRef = nodeService.getRootNode(storeRef);
     }
 
+    public void testAclChnageSetLimits()
+    {
+        List<AclChangeSet> aclChangeSets = solrTrackingComponent.getAclChangeSets(null, null, null, null, 50);
+        
+        // First
+        Long first = aclChangeSets.get(0).getId();
+        Long firstTime = aclChangeSets.get(1).getId();
+        List<AclChangeSet> testSets = solrTrackingComponent.getAclChangeSets(first, null, first, null, 50);
+        assertEquals(0, testSets.size());
+        testSets = solrTrackingComponent.getAclChangeSets(first, firstTime, first+1, firstTime, 50);
+        assertEquals(0, testSets.size());
+        testSets = solrTrackingComponent.getAclChangeSets(first, firstTime, first+1, firstTime+1, 50);
+        assertEquals(0, testSets.size());
+        
+    }
+    
     public void testGetAcls_Simple()
     {
         List<AclChangeSet> cs = solrTrackingComponent.getAclChangeSets(null, null, null, null, 50);
@@ -148,15 +164,87 @@ public class SOLRTrackingComponentTest extends TestCase
 
         int[] updates = new int[] {1, 1};
         int[] deletes = new int[] {0, 1};
-        List<Long> txnIds = checkTransactions(txns, createdTransactions, updates, deletes);
+        List<Transaction> checkedTransactions = checkTransactions(txns, createdTransactions, updates, deletes);
 
         NodeParameters nodeParameters = new NodeParameters();
-        nodeParameters.setTransactionIds(txnIds);
+        nodeParameters.setTransactionIds(getTransactionIds(checkedTransactions));
         getNodes(nodeParameters, st);
 
         NodeMetaDataParameters nodeMetaDataParams = new NodeMetaDataParameters();
         nodeMetaDataParams.setNodeIds(st.getNodeIds());
         getNodeMetaData(nodeMetaDataParams, null, st);
+    }
+    
+    /**
+     * @param checkedTransactions
+     * @return
+     */
+    private List<Long> getTransactionIds(List<Transaction> checkedTransactions)
+    {
+        ArrayList<Long> txIds = new ArrayList<Long>(checkedTransactions.size());
+        for(Transaction txn : checkedTransactions)
+        {
+            txIds.add(txn.getId());
+        }
+        return txIds;
+    }
+
+    public void testGetTransactionLimits()
+    {
+        long startTime = System.currentTimeMillis();
+
+        SOLRTest st = new SOLRTest3(txnHelper, fileFolderService, nodeDAO, nodeService, dictionaryService, rootNodeRef, "testGetNodeMetaData", true, true);
+        List<Long> createdTransactions = st.buildTransactions();
+
+        // All
+        
+        List<Transaction> txns = solrTrackingComponent.getTransactions(null, startTime, null, null, 50);
+
+        int[] updates = new int[] {1, 1};
+        int[] deletes = new int[] {0, 1};
+        List<Transaction> checkedTransactions  = checkTransactions(txns, createdTransactions, updates, deletes);
+
+        Long first = checkedTransactions.get(0).getId();
+        Long firstTime = checkedTransactions.get(0).getCommitTimeMs();
+        Long last = checkedTransactions.get(1).getId();
+        Long lastTime = checkedTransactions.get(1).getCommitTimeMs();
+        
+        // First
+        
+        txns = solrTrackingComponent.getTransactions(first, null, first, null, 50);
+        assertEquals(0, txns.size());
+        
+        txns = solrTrackingComponent.getTransactions(first, null, first+1, null, 50);
+        updates = new int[] {1};
+        deletes = new int[] {0};
+        List<Long> createdTransactionFirst = new ArrayList<Long>(1);
+        createdTransactionFirst.add(createdTransactions.get(0));
+        checkTransactions(txns, createdTransactionFirst, updates, deletes);
+        
+        txns = solrTrackingComponent.getTransactions(first, firstTime, first+1, firstTime+1, 50);
+        checkTransactions(txns, createdTransactionFirst, updates, deletes);
+        
+        txns = solrTrackingComponent.getTransactions(first, firstTime-1, first+1, firstTime, 50);
+        assertEquals(0, txns.size());
+        
+        // Last
+        
+        txns = solrTrackingComponent.getTransactions(last, null, last, null, 50);
+        assertEquals(0, txns.size());
+        
+        txns = solrTrackingComponent.getTransactions(last, null, last+1, null, 50);
+        updates = new int[] {1};
+        deletes = new int[] {1};
+        List<Long> createdTransactionLast = new ArrayList<Long>(1);
+        createdTransactionLast.add(createdTransactions.get(1));
+        checkTransactions(txns, createdTransactionLast, updates, deletes);
+        
+        
+        txns = solrTrackingComponent.getTransactions(last, lastTime, last+1, lastTime+1, 50);
+        checkTransactions(txns, createdTransactionLast, updates, deletes);
+        
+        txns = solrTrackingComponent.getTransactions(last, lastTime-1, last+1, lastTime, 50);
+        assertEquals(0, txns.size());
     }
 
     public void testGetNodeMetaDataExludesResidualProperties()
@@ -170,10 +258,10 @@ public class SOLRTrackingComponentTest extends TestCase
 
         int[] updates = new int[] {2};
         int[] deletes = new int[] {0};
-        List<Long> txnIds = checkTransactions(txns, createdTransactions, updates, deletes);
+        List<Transaction> checkedTransactions = checkTransactions(txns, createdTransactions, updates, deletes);
 
         NodeParameters nodeParameters = new NodeParameters();
-        nodeParameters.setTransactionIds(txnIds);
+        nodeParameters.setTransactionIds(getTransactionIds(checkedTransactions));
         getNodes(nodeParameters, st);
 
 
@@ -194,10 +282,10 @@ public class SOLRTrackingComponentTest extends TestCase
 
         int[] updates = new int[] {100};
         int[] deletes = new int[] {0};
-        List<Long> txnIds = checkTransactions(txns, createdTransactions, updates, deletes);
+        List<Transaction> checkedTransactions = checkTransactions(txns, createdTransactions, updates, deletes);
 
         NodeParameters nodeParameters = new NodeParameters();
-        nodeParameters.setTransactionIds(txnIds);
+        nodeParameters.setTransactionIds(getTransactionIds(checkedTransactions));
         getNodes(nodeParameters, st);
 
         //        assertEquals("Unxpected number of nodes", 3, nodeQueryCallback.getSuccessCount());
@@ -223,10 +311,10 @@ public class SOLRTrackingComponentTest extends TestCase
 
         int[] updates = new int[] {2001};
         int[] deletes = new int[] {0};
-        List<Long> txnIds = checkTransactions(txns, createdTransactions, updates, deletes);
+        List<Transaction> checkedTransactions = checkTransactions(txns, createdTransactions, updates, deletes);
 
         NodeParameters nodeParameters = new NodeParameters();
-        nodeParameters.setTransactionIds(txnIds);
+        nodeParameters.setTransactionIds(getTransactionIds(checkedTransactions));
         getNodes(nodeParameters, st);
 
         // make sure caches are warm - time last call
@@ -280,10 +368,10 @@ public class SOLRTrackingComponentTest extends TestCase
 
         int[] updates = new int[] {2001};
         int[] deletes = new int[] {0};
-        List<Long> txnIds = checkTransactions(txns, createdTransactions, updates, deletes);
+        List<Transaction> checkedTransactions = checkTransactions(txns, createdTransactions, updates, deletes);
 
         NodeParameters nodeParameters = new NodeParameters();
-        nodeParameters.setTransactionIds(txnIds);
+        nodeParameters.setTransactionIds(getTransactionIds(checkedTransactions));
         getNodes(nodeParameters, st);
 
         // clear out node caches
@@ -310,10 +398,10 @@ public class SOLRTrackingComponentTest extends TestCase
 
         int[] updates = new int[] {11};
         int[] deletes = new int[] {0};
-        List<Long> txnIds = checkTransactions(txns, createdTransactions, updates, deletes);
+        List<Transaction> checkedTransactions = checkTransactions(txns, createdTransactions, updates, deletes);
 
         NodeParameters nodeParameters = new NodeParameters();
-        nodeParameters.setTransactionIds(txnIds);
+        nodeParameters.setTransactionIds(getTransactionIds(checkedTransactions));
         getNodes(nodeParameters, st);
 
         NodeMetaDataParameters nodeMetaDataParams = new NodeMetaDataParameters();
@@ -332,10 +420,10 @@ public class SOLRTrackingComponentTest extends TestCase
 
         int[] updates = new int[] {1, 1};
         int[] deletes = new int[] {0, 1};
-        List<Long> txnIds = checkTransactions(txns, createdTransactions, updates, deletes);
+        List<Transaction> checkedTransactions = checkTransactions(txns, createdTransactions, updates, deletes);
 
         NodeParameters nodeParameters = new NodeParameters();
-        nodeParameters.setTransactionIds(txnIds);
+        nodeParameters.setTransactionIds(getTransactionIds(checkedTransactions));
         getNodes(nodeParameters, st);
 
         NodeMetaDataParameters nodeMetaDataParams = new NodeMetaDataParameters();
@@ -548,7 +636,7 @@ public class SOLRTrackingComponentTest extends TestCase
         }
     }
 
-    private List<Long> checkTransactions(List<Transaction> txns, List<Long> createdTransaction, int[] updates, int[] deletes)
+    private List<Transaction> checkTransactions(List<Transaction> txns, List<Long> createdTransaction, int[] updates, int[] deletes)
     {
         ArrayList<Transaction> matchedTransactions = new ArrayList<Transaction>();
         HashSet<Long> toMatch = new HashSet<Long>();
@@ -566,18 +654,15 @@ public class SOLRTrackingComponentTest extends TestCase
         
         assertEquals("Number of transactions is incorrect", createdTransaction.size(), matchedTransactions.size());
 
-        List<Long> txnIds = new ArrayList<Long>(matchedTransactions.size());
         int i = 0;
         for(Transaction txn : matchedTransactions)
         {
             assertEquals("Number of deletes is incorrect", deletes[i], txn.getDeletes());
             assertEquals("Number of updates is incorrect", updates[i], txn.getUpdates());
             i++;
-
-            txnIds.add(txn.getId());
         }
 
-        return txnIds;
+        return matchedTransactions;
     }
 
     private void getNodes(NodeParameters nodeParameters, SOLRTest bt)

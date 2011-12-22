@@ -50,13 +50,13 @@
                <![CDATA[acs.commit_time_ms >= #{fromCommitTimeInclusive}]]>
            </if>
            <if test="fromIdInclusive != null">
-               <![CDATA[and acs.id >= #{fromIdInclusive}]]>
+               and <![CDATA[acs.id >= #{fromIdInclusive}]]>
            </if>
            <if test="toCommitTimeExclusive != null">
-               <![CDATA[acs.commit_time_ms < #{toCommitTimeExclusive}]]>
+               and <![CDATA[acs.commit_time_ms < #{toCommitTimeExclusive}]]>
            </if>
            <if test="toIdExclusive != null">
-               <![CDATA[and acs.id < #{toIdExclusive}]]>
+               and <![CDATA[acs.id < #{toIdExclusive}]]>
            </if>
         </where>
         order by acs.commit_time_ms ASC, acs.id ASC
@@ -110,13 +110,13 @@
                <![CDATA[txn.commit_time_ms >= #{fromCommitTimeInclusive}]]>
            </if>
            <if test="fromIdInclusive != null">
-               <![CDATA[and txn.id >= #{fromIdInclusive}]]>
+               and <![CDATA[txn.id >= #{fromIdInclusive}]]>
            </if>
            <if test="toCommitTimeExclusive != null">
-               <![CDATA[txn.commit_time_ms < #{toCommitTimeExclusive}]]>
+               and <![CDATA[txn.commit_time_ms < #{toCommitTimeExclusive}]]>
            </if>
            <if test="toIdExclusive != null">
-               <![CDATA[and txn.id < #{toIdExclusive}]]>
+               and <![CDATA[txn.id < #{toIdExclusive}]]>
            </if>
         </where>
         order by txn.commit_time_ms ASC, txn.id ASC
@@ -153,10 +153,10 @@
                </when>
 	       </choose>
            <if test="fromNodeId != null">
-                <![CDATA[and node.id >= #{fromNodeId}]]>
+                and <![CDATA[node.id >= #{fromNodeId}]]>
            </if>
            <if test="toNodeId != null">
-                <![CDATA[and node.id <= #{toNodeId}]]>
+                and <![CDATA[node.id <= #{toNodeId}]]>
            </if>
            <if test="storeProtocol != null">
                 and store.protocol = #{storeProtocol}

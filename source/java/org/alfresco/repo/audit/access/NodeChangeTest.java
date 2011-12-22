@@ -33,10 +33,12 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
+import org.alfresco.service.cmr.repository.Path.Element;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.namespace.NamespaceService;
@@ -127,6 +129,12 @@ public class NodeChangeTest
             public String getElementString()
             {
                 return name;
+            }
+
+            @Override
+            public Element getBaseNameElement(TenantService tenantService)
+            {
+               return this;
             }
         });
         return path;

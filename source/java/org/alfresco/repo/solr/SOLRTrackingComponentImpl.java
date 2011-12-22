@@ -579,14 +579,19 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                 }
                 Collection<Pair<Path, QName>> categoryPaths = getCategoryPaths(pair.getSecond(), aspects, props);
                 List<Path> directPaths = nodeDAO.getPaths(pair, false);
-
+                
                 Collection<Pair<Path, QName>> paths = new ArrayList<Pair<Path, QName>>(directPaths.size() + categoryPaths.size());
                 for (Path path : directPaths)
                 {
-                    paths.add(new Pair<Path, QName>(path, null));
+                    paths.add(new Pair<Path, QName>(path.getBaseNamePath(tenantService), null));
                 }
-                paths.addAll(categoryPaths);
-
+                for(Pair<Path, QName> catPair : categoryPaths)
+                {
+                    paths.add(new Pair<Path, QName>(catPair.getFirst().getBaseNamePath(tenantService),  catPair.getSecond()));
+                }
+                
+                
+                
                 nodeMetaData.setPaths(paths);
             }
             

@@ -20,7 +20,9 @@ package org.alfresco.jcr.item;
 
 import java.util.StringTokenizer;
 
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.Path;
+import org.alfresco.service.cmr.repository.Path.Element;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 
@@ -155,6 +157,15 @@ public class JCRPath
         public int hashCode()
         {
             return path.hashCode();
+        }
+
+        /* (non-Javadoc)
+         * @see org.alfresco.service.cmr.repository.Path.Element#getBaseNameElement(org.alfresco.repo.tenant.TenantService)
+         */
+        @Override
+        public Element getBaseNameElement(TenantService tenantService)
+        {
+            return new SimpleElement(path);
         }
 
     }

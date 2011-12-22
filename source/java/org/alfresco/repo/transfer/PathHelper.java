@@ -21,7 +21,9 @@ package org.alfresco.repo.transfer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.Path;
+import org.alfresco.service.cmr.repository.Path.Element;
 import org.alfresco.util.ISO9075;
 
 public class PathHelper
@@ -72,6 +74,15 @@ public class PathHelper
         public String getElementString()
         {
             return elementString;
+        }
+
+        /* (non-Javadoc)
+         * @see org.alfresco.service.cmr.repository.Path.Element#getBaseNameElement(org.alfresco.repo.tenant.TenantService)
+         */
+        @Override
+        public Element getBaseNameElement(TenantService tenantService)
+        {
+           return new SimplePathElement(elementString);
         }
         
     }

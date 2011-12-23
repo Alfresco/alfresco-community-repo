@@ -290,8 +290,8 @@
 [#if importStatus.inProgress()]
     This page will automatically refresh in <span id="countdownTimer">${refreshIntervalInSeconds}</span> seconds.
 [#else]
-    <a href="${url.serviceContext}/bulk/import/filesystem">Initiate another import</a><br><br>
-    <a href="${url.serviceContext}/bulk/import/filesystem/inplace">Initiate another in-place import</a>
+    <a href="${url.serviceContext}/bulkfsimport">Initiate another import</a><br><br>
+    <a href="${url.serviceContext}/bulkfsimport/inplace">Initiate another in-place import</a>
 [/#if]
     </p>
   </blockquote>

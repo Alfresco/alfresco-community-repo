@@ -48,7 +48,7 @@ public class AbstractBulkFileSystemImportWebScript extends DeclarativeWebScript
 {
     protected static final Log logger = LogFactory.getLog(BulkFilesystemImporter.class);
     
-    protected static final String WEB_SCRIPT_URI_BULK_FILESYSTEM_IMPORT_STATUS = "/bulk/import/filesystem/status";
+    protected static final String WEB_SCRIPT_URI_BULK_FILESYSTEM_IMPORT_STATUS = "/bulkfsimport/status";
     
 	protected static final String PARAMETER_TARGET_NODEREF = "targetNodeRef";
 	protected static final String PARAMETER_TARGET_PATH    = "targetPath";

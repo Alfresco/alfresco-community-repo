@@ -24,6 +24,8 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.service.cmr.email.EmailMessageException;
 import org.alfresco.service.cmr.email.EmailService;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
@@ -50,9 +52,10 @@ public abstract class EmailServer extends AbstractLifecycleBean
     private boolean hideTLS = false;
     private boolean enableTLS = true;
     private boolean requireTLS = false;
+    private boolean authenticate = false;
 
     private EmailService emailService;
-
+    private AuthenticationComponent authenticationComponent;
 
     /**
      * @param serverConfiguration Server configuration
@@ -328,6 +331,19 @@ public abstract class EmailServer extends AbstractLifecycleBean
         System.err.println("Use: EmailServer configLocation1, configLocation2, ...");
         System.err.println("\t configLocation - spring xml configs with EmailServer related beans (emailServer, emailServerConfiguration, emailService)");
     }
+    
+    protected boolean authenticateUserNamePassword(String userName, char[] password)
+    {
+        try
+        {
+            getAuthenticationComponent().authenticate(userName, password);
+            return true;
+        }
+        catch (AuthenticationException e)
+        {
+            return false;
+        }
+    }
 
     /** Hide the TLS (Trusted Login Session) option
      * 
@@ -361,6 +377,26 @@ public abstract class EmailServer extends AbstractLifecycleBean
     public boolean isRequireTLS()
     {
         return requireTLS;
+    }
+
+    public void setAuthenticate(boolean enableAuthentication)
+    {
+        this.authenticate = enableAuthentication;
+    }
+
+    public boolean isAuthenticate()
+    {
+        return authenticate;
+    }
+
+    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
+    {
+        this.authenticationComponent = authenticationComponent;
+    }
+
+    public AuthenticationComponent getAuthenticationComponent()
+    {
+        return authenticationComponent;
     }
 
 }

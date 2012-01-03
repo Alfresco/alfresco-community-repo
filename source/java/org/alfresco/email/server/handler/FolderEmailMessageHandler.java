@@ -107,12 +107,18 @@ public class FolderEmailMessageHandler extends AbstractEmailMessageHandler
             Date now = new Date();
             messageSubject = I18NUtil.getMessage(MSG_DEFAULT_SUBJECT, new SimpleDateFormat("dd-MM-yyyy-hh-mm-ss").format(now));
         }
+        
+        String messageFrom = message.getFrom();
+        if(messageFrom == null)
+        {
+            messageFrom = "";
+        }
 
         // Create main content node
         NodeRef contentNodeRef;
         contentNodeRef = addContentNode(getNodeService(), spaceNodeRef, messageSubject, overwriteDuplicates);
         // Add titled aspect
-        addTitledAspect(contentNodeRef, messageSubject, message.getFrom());
+        addTitledAspect(contentNodeRef, messageSubject, messageFrom);
         // Add emailed aspect
         addEmailedAspect(contentNodeRef, message);
         // Write the message content

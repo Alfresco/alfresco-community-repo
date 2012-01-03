@@ -33,11 +33,17 @@ import org.alfresco.service.cmr.email.EmailMessage;
 import org.alfresco.service.cmr.email.EmailMessageException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.subethamail.smtp.AuthenticationHandler;
+import org.subethamail.smtp.AuthenticationHandlerFactory;
 import org.subethamail.smtp.MessageContext;
 import org.subethamail.smtp.MessageHandler;
 import org.subethamail.smtp.MessageHandlerFactory;
 import org.subethamail.smtp.RejectException;
 import org.subethamail.smtp.TooMuchDataException;
+import org.subethamail.smtp.auth.EasyAuthenticationHandlerFactory;
+import org.subethamail.smtp.auth.LoginFailedException;
+import org.subethamail.smtp.auth.MultipleAuthenticationHandlerFactory;
+import org.subethamail.smtp.auth.UsernamePasswordValidator;
 import org.subethamail.smtp.server.SMTPServer;
 
 /**
@@ -66,6 +72,12 @@ public class SubethaEmailServer extends EmailServer
         serverImpl.setEnableTLS(isEnableTLS());
         serverImpl.setRequireTLS(isRequireTLS());
         
+        if(isAuthenticate())
+        {
+            AuthenticationHandlerFactory authenticationHandler = new EasyAuthenticationHandlerFactory(new AlfrescoLoginUsernamePasswordValidator());
+            serverImpl.setAuthenticationHandlerFactory(authenticationHandler);
+        }
+        
         serverImpl.start();
         log.info("Inbound SMTP Email Server has started successfully, on hostName:" + getDomain() + "port:" + getPort());
     }
@@ -76,7 +88,20 @@ public class SubethaEmailServer extends EmailServer
         serverImpl.stop();
         log.info("Inbound SMTP Email Server has stopped successfully");
     }
-
+    
+    class AlfrescoLoginUsernamePasswordValidator implements UsernamePasswordValidator
+    {
+        @Override
+        public void login(String username, String password)
+                throws LoginFailedException
+        { 
+            if(authenticateUserNamePassword(username, password.toCharArray()))
+            {
+                throw new LoginFailedException("unable to log on");
+            }       
+        }
+    }
+    
     class HandlerFactory implements MessageHandlerFactory
     {
         public MessageHandler create(MessageContext messageContext)
@@ -139,7 +164,9 @@ public class SubethaEmailServer extends EmailServer
 
         public void recipient(String recipient) throws RejectException
         {
-            deliveries.add(new EmailDelivery(recipient, from, null));
+            AuthenticationHandler auth = messageContext.getAuthenticationHandler();
+            
+            deliveries.add(new EmailDelivery(recipient, from, auth != null ? (String)auth.getIdentity(): null));
         }
 
         public void data(InputStream data) throws TooMuchDataException, IOException, RejectException
@@ -171,20 +198,6 @@ public class SubethaEmailServer extends EmailServer
             }
         }
 
-//        public List<String> getAuthenticationMechanisms()
-//        {
-//            return EMPTY_LIST;
-//        }
-//
-//        public boolean auth(String clientInput, StringBuffer response) throws RejectException
-//        {
-//            return true;
-//        }
-//
-//        public void resetState()
-//        {
-//        }
-//
         @Override
         public void done()
         {

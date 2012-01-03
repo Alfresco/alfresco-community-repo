@@ -187,7 +187,7 @@ public class EmailServiceImpl implements EmailService
             // Get the username for the process using the system account
             final RetryingTransactionCallback<String> getUsernameCallback = new RetryingTransactionCallback<String>()
             {
-            
+        
                 public String execute() throws Throwable
                 {
                     String userName = null;
@@ -229,8 +229,6 @@ public class EmailServiceImpl implements EmailService
                     }
                       
                     return userName;
-                   
-
                 }
             };
             RunAsWork<String> getUsernameRunAsWork = new RunAsWork<String>()
@@ -240,7 +238,20 @@ public class EmailServiceImpl implements EmailService
                     return retryingTransactionHelper.doInTransaction(getUsernameCallback, false);
                 }
             };
-            String username = AuthenticationUtil.runAs(getUsernameRunAsWork, AuthenticationUtil.SYSTEM_USER_NAME);
+            
+             
+            String username;
+            if(delivery.getAuth() != null)
+            {
+                // The user has authenticated.
+                username = delivery.getAuth();
+                logger.debug("user has already authenticated as:" + username);
+            }
+            else
+            {
+                // Need to faff with old message stuff.
+                username = AuthenticationUtil.runAs(getUsernameRunAsWork, AuthenticationUtil.SYSTEM_USER_NAME);
+            }
             
             // Process the message using the username's account
             final RetryingTransactionCallback<Object> processMessageCallback = new RetryingTransactionCallback<Object>()
@@ -279,7 +290,7 @@ public class EmailServiceImpl implements EmailService
         }
         catch (AccessDeniedException e)
         {
-            throw new EmailMessageException(ERR_ACCESS_DENIED, message.getFrom(), message.getTo());
+            throw new EmailMessageException(ERR_ACCESS_DENIED, delivery.getFrom(), delivery.getRecipient());
         }
         catch (IntegrityException e)
         {
@@ -379,6 +390,12 @@ public class EmailServiceImpl implements EmailService
     private String getUsername(String from)
     {
         String userName = null;
+        
+        if(from == null)
+        {
+            return null;
+        }
+        
         StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
         String query = "TYPE:cm\\:person +@cm\\:email:\"" + from + "\"";
 

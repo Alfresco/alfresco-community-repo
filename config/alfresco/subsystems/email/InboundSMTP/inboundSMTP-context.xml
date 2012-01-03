@@ -42,8 +42,14 @@
         <property name="requireTLS">
             <value>${email.server.requireTLS}</value>
         </property>
+        <property name="authenticate">
+            <value>${email.server.auth.enabled}</value>
+        </property>
         <property name="emailService">
             <ref bean="EmailService" />
+        </property>
+        <property name="authenticationComponent">
+            <ref bean="authenticationComponent" />
         </property>
     </bean>
 

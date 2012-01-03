@@ -131,17 +131,19 @@ public class SubethaEmailMessage implements EmailMessage
             }
             if (addresses == null || addresses.length == 0)
             {
-                throw new EmailMessageException(ERR_NO_FROM_ADDRESS);
-            }
-            if(addresses[0] instanceof InternetAddress)
-            {
-                from = ((InternetAddress)addresses[0]).getAddress();
+                //throw new EmailMessageException(ERR_NO_FROM_ADDRESS);
             }
             else
             {
-            from = addresses[0].toString();
-        }
-         
+                if(addresses[0] instanceof InternetAddress)
+                {
+                    from = ((InternetAddress)addresses[0]).getAddress();
+                }
+                else
+                {
+                    from = addresses[0].toString();
+                }
+            }
         }
 
         if (to == null)
@@ -157,18 +159,19 @@ public class SubethaEmailMessage implements EmailMessage
             }
             if (addresses == null || addresses.length == 0)
             {
-                throw new EmailMessageException(ERR_NO_TO_ADDRESS);
-            }
-            if(addresses[0] instanceof InternetAddress)
-            {
-                to = ((InternetAddress)addresses[0]).getAddress();
+                //throw new EmailMessageException(ERR_NO_TO_ADDRESS);
             }
             else
             {
-            to = addresses[0].toString();
-        }
-
-            to = addresses[0].toString();
+                if(addresses[0] instanceof InternetAddress)
+                {
+                    to = ((InternetAddress)addresses[0]).getAddress();
+                }
+                else
+                {
+                    to = addresses[0].toString();
+                }
+            }
         }
         
         if (cc == null)

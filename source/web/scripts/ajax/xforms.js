@@ -1645,8 +1645,8 @@ alfresco.xforms.ComboboxSelect1 = alfresco.xforms.AbstractSelectWidget.extend({
     var values = this._getItemValues();
     var initial_value = this.getInitialValue();
     this.domNode = new Element("select");
+    attach_point.appendChild(this.domNode);
     this.widget = this.domNode;
-    var option = new Element("option");
     for (var i = 0; i < values.length; i++)
     {
 	  if (!values[i].valid)
@@ -1654,23 +1654,22 @@ alfresco.xforms.ComboboxSelect1 = alfresco.xforms.AbstractSelectWidget.extend({
         // always skip the invalid values for combos
         continue;
       }
-      var opt = option.cloneNode(true);
-      opt.appendChild(document.createTextNode(values[i].label));
-      opt.setAttribute("value", values[i].value);
+      var option = new Element("option");
+      this.widget.appendChild(option);
+      option.appendChild(document.createTextNode(values[i].label));
+      option.setAttribute("value", values[i].value);
       if (values[i].value == initial_value)
       {
         this._selectedValue = initial_value;
-        opt.selected = true;
+        option.selected = true;
       }
 
       if (this.isReadonly())
       {
         this.widget.setAttribute("disabled", true);
       }
-      this.widget.appendChild(opt);
     }
     this.widget.onchange = this._combobox_changeHandler.bindAsEventListener(this);
-    attach_point.appendChild(this.domNode);
   },
 
   /** */
@@ -2844,16 +2843,9 @@ alfresco.xforms.VGroup = alfresco.xforms.AbstractGroup.extend({
     var contentDivWidth = "100%";
     // the following does avoid devision by zero ... in contentDiv.offsetLeft / child.domContainer.offsetWidth
     var ow = child.domContainer.offsetWidth;
-    if (!(child instanceof alfresco.xforms.AbstractGroup))
+    if (!(child instanceof alfresco.xforms.AbstractGroup) && ow != 0)
     {
-        if (ow != 0)
-        {
-            contentDivWidth = ((1 - (contentDiv.offsetLeft / ow)) * 100) + "%";
-        }
-        else
-        {
-            contentDivWidth = "70%";
-        }
+    	contentDivWidth = ((1 - (contentDiv.offsetLeft / ow)) * 100) + "%";
     }
     contentDiv.style.width = contentDivWidth;
     
@@ -2879,26 +2871,7 @@ alfresco.xforms.VGroup = alfresco.xforms.AbstractGroup.extend({
 //                                                                (.5 * contentDiv.labelNode.offsetHeight))) + "px";
       contentDiv.labelNode.style.position = "relative";
       contentDiv.labelNode.style.top = "0px";
-      if (oh)
-      {
-          contentDiv.labelNode.style.height = oh + "px";
-      }
-      else
-      {
-          var defaultHeight = 20;
-          if (child instanceof alfresco.xforms.RichTextEditor)
-          {
-              defaultHeight = 200;
-          }
-          contentDiv.labelNode.style.height = defaultHeight + "px";
-          contentDiv.style.top = "-" + defaultHeight + "px";
-          child.domContainer.style.height = defaultHeight + "px";
-      }
-
-      if (!contentDiv.labelNode.scrollWidth)
-      {
-          contentDiv.labelNode.style.width = "30%";
-      }
+      contentDiv.labelNode.style.height = oh + "px";
       contentDiv.labelNode.style.lineHeight = contentDiv.labelNode.style.height;
 
     }
@@ -2946,6 +2919,7 @@ alfresco.xforms.VGroup = alfresco.xforms.AbstractGroup.extend({
                                             "id": this.id + "-groupHeaderNode",
                                             "class": "xformsGroupHeader"
                                           });
+      this.domNode.appendChild(this._groupHeaderNode);
 
       this.toggleExpandedImage = new Element("img",
                                              {
@@ -2953,19 +2927,17 @@ alfresco.xforms.VGroup = alfresco.xforms.AbstractGroup.extend({
                                                "styles": { "margin": "0px 5px" },
                                                "src": alfresco.xforms.constants.EXPANDED_IMAGE.src
                                              });
-      this.toggleExpandedImage.onclick = this._toggleExpanded_clickHandler.bindAsEventListener(this);      
       this._groupHeaderNode.appendChild(this.toggleExpandedImage);
+      this.toggleExpandedImage.onclick = this._toggleExpanded_clickHandler.bindAsEventListener(this);
       
       this._groupHeaderNode.appendChild(document.createTextNode(this.getLabel()));
-      this.domNode.appendChild(this._groupHeaderNode);
     }
-
+    attach_point.appendChild(this.domNode);
     this.domNode.childContainerNode = new Element("div",
                                                   {
                                                     "id": this.id + "-childContainerNode",
                                                     "styles": { "position": "relative", "width": "100%" }
                                                   });
-    attach_point.appendChild(this.domNode);
     return this.domNode;
   },
 
@@ -3385,8 +3357,6 @@ alfresco.xforms.ViewRoot = alfresco.xforms.VGroup.extend({
   render: function(attach_point)
   {
     this.domNode.widget = this;
-    //if the domNode is not displayed, the browser doesn't waste time for repainting the page
-    this.domNode.style.display = 'none';
     this.domNode.style.position = "relative";
     this.domNode.style.width = "100%";
     this.domNode.addClass("xformsViewRoot");
@@ -3396,21 +3366,21 @@ alfresco.xforms.ViewRoot = alfresco.xforms.VGroup.extend({
                                           "id": this.id + "-groupHeaderNode", 
                                           "class": "xformsViewRootHeader"
                                         });
+    this.domNode.appendChild(this._groupHeaderNode);
 
     var icon = document.createElement("img");
+    this._groupHeaderNode.appendChild(icon);
     icon.setAttribute("src", alfresco.constants.WEBAPP_CONTEXT + "/images/icons/file_large.gif");
     icon.align = "absmiddle";
     icon.style.margin = "0px 5px";
-    this._groupHeaderNode.appendChild(icon);
     this._groupHeaderNode.appendChild(document.createTextNode(this.getLabel()));
+    attach_point.appendChild(this.domNode);
 
     this.domNode.childContainerNode = new Element("div",
                                                   {
                                                     "id": this.id + "-childContainerNode",
                                                     "styles": {"position": "relative", "width": "100%"}
                                                   });
-    this.domNode.appendChild(this._groupHeaderNode);
-    attach_point.appendChild(this.domNode);
     return this.domNode;
   },
     
@@ -4252,13 +4222,7 @@ alfresco.xforms.XForm = new Class({
     this.rootWidget = new alfresco.xforms.ViewRoot(this, rootGroup);
     this.rootWidget.render(alfUI);
 
-    //par variable is introduced for offline domNode editing, which improves performance
-    var par = this.rootWidget.domNode.parentNode;
-    par.removeChild(this.rootWidget.domNode);
     this.loadWidgets(rootGroup, this.rootWidget);
-    par.appendChild(this.rootWidget.domNode);
-    //the domNode is made invisible in this.rootWidget.render(alfUI);
-    this.rootWidget.domNode.style.display = 'block';
   },
 
   /** Creates the widget for the provided xforms node. */
@@ -4295,11 +4259,7 @@ alfresco.xforms.XForm = new Class({
     {
       return null;
     }
-    // the 'var cstr = eval(x.className);' construction was changed,
-    // because eval loads a new compiler, which reduces performance
-    var y = x.className;
-    var xcn = y.substr(y.lastIndexOf('.')+1);//find the last dot and take a substring
-    var cstr = window.alfresco.xforms[xcn];
+    var cstr = eval(x.className);
     if (!cstr)
     {
       throw new Error("unable to load constructor " + x.className +

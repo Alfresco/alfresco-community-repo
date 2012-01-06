@@ -240,6 +240,7 @@ public class AbstractWCMServiceImplTest extends TestCase
                             "   Attempts: " + attempts);
                     // This failure is too common 
                     // throw new AlfrescoRuntimeException("Too many poll attempts: "+attempts);
+                    break;
                 }
             }
         }

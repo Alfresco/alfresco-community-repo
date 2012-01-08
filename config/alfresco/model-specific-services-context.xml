@@ -12,6 +12,9 @@
 
    <bean name="hiddenAspect" class="org.alfresco.repo.model.filefolder.HiddenAspect">
       <property name="nodeService" ref="NodeService"/>
+      <property name="fileFolderService" ref="fileFolderService"/>
+      <property name="searchService" ref="searchService"/>
+
       <property name="patterns">
          <list>
             <bean class="org.alfresco.repo.model.filefolder.HiddenFileFilter">
@@ -138,6 +141,7 @@
       <property name="systemPaths" ref="systemPaths" />
       <property name="hiddenAspect" ref="hiddenAspect" />
       <property name="temporaryFiles" ref="temporaryFiles" />
+      <property name="enabled" value="${fileFolderService.checkHidden.enabled}" />
    </bean>
  
   <!-- Multilingual specific service -->

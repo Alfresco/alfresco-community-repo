@@ -619,7 +619,7 @@ public class ImporterComponent
             }
 
             // check whether the node should be hidden
-            hiddenAspect.checkHidden(nodeRef);
+            hiddenAspect.checkHidden(nodeRef, false);
 
             // import content, if applicable
             for (Map.Entry<QName,Serializable> property : context.getProperties().entrySet())

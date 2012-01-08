@@ -10,4 +10,5 @@ public interface HiddenFileInfo
 {
     public int getVisibilityMask();
     public String getFilter();
+    public boolean isHidden(String path);
 }

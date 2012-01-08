@@ -53,6 +53,7 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
     private PatternFilter temporaryFiles;
     private PatternFilter systemPaths;
     private HiddenAspect hiddenAspect;
+    private boolean enabled = true;
 
     public FilenameFilteringInterceptor()
     {
@@ -70,6 +71,11 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
 	public void setHiddenAspect(HiddenAspect hiddenAspect)
     {
         this.hiddenAspect = hiddenAspect;
+    }
+
+    public void setEnabled(boolean enabled)
+    {
+        this.enabled = enabled;
     }
 
     /**
@@ -192,74 +198,81 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
         String methodName = invocation.getMethod().getName();
         Object ret = null;
 
-        // do the invocation
-        if (methodName.startsWith("create"))
+        if(enabled)
         {
-            NodeRef nodeRef  = (NodeRef)invocation.getArguments()[0];
-            String filename = (String)invocation.getArguments()[1];
-
-        	if(getMode() == Mode.ENHANCED)
-        	{
-	            if(systemPaths.isFiltered(filename))
-	            {
-	            	// it's a system file/folder, create as system and allow full control to all authorities
-	            	ret = runAsSystem(invocation);
-	            	FileInfoImpl fileInfo = (FileInfoImpl)ret;
-		            permissionService.setPermission(fileInfo.getNodeRef(), PermissionService.ALL_AUTHORITIES, PermissionService.FULL_CONTROL, true);	            
-		            
-		            // it's always marked temporary and hidden
-		            checkTemporaryAspect(true, fileInfo);
-		            hiddenAspect.hideNode(fileInfo, getSystemFileVisibilityMask());
-	            }
-	            else
-	            {
-	            	// it's not a temporary file/folder, create as normal
-	            	ret = invocation.proceed();
-	            	
-	            	FileInfoImpl fileInfo = (FileInfoImpl)ret;
-
-	            	if(isSystemPath(nodeRef, filename))
-	            	{
-	                    // it's on a system path, check whether temporary, hidden and noindex aspects need to be applied
-	            		checkTemporaryAspect(true, fileInfo);
-	            		hiddenAspect.hideNode(fileInfo, getSystemFileVisibilityMask());
-	            	}
-	            	else
-	            	{
-	            	    // check whether it's a temporary or hidden file
-			            checkTemporaryAspect(temporaryFiles.isFiltered(filename), (FileInfo)ret);
-			            hiddenAspect.checkHidden(fileInfo);
-	            	}
-	            }
+            // do the invocation
+            if (methodName.startsWith("create"))
+            {
+                NodeRef nodeRef  = (NodeRef)invocation.getArguments()[0];
+                String filename = (String)invocation.getArguments()[1];
+    
+            	if(getMode() == Mode.ENHANCED)
+            	{
+    	            if(systemPaths.isFiltered(filename))
+    	            {
+    	            	// it's a system file/folder, create as system and allow full control to all authorities
+    	            	ret = runAsSystem(invocation);
+    	            	FileInfoImpl fileInfo = (FileInfoImpl)ret;
+    		            permissionService.setPermission(fileInfo.getNodeRef(), PermissionService.ALL_AUTHORITIES, PermissionService.FULL_CONTROL, true);	            
+    		            
+    		            // it's always marked temporary and hidden
+    		            checkTemporaryAspect(true, fileInfo);
+    		            hiddenAspect.hideNode(fileInfo, getSystemFileVisibilityMask());
+    	            }
+    	            else
+    	            {
+    	            	// it's not a temporary file/folder, create as normal
+    	            	ret = invocation.proceed();
+    	            	
+    	            	FileInfoImpl fileInfo = (FileInfoImpl)ret;
+    
+    	            	if(isSystemPath(nodeRef, filename))
+    	            	{
+    	                    // it's on a system path, check whether temporary, hidden and noindex aspects need to be applied
+    	            		checkTemporaryAspect(true, fileInfo);
+    	            		hiddenAspect.hideNode(fileInfo, getSystemFileVisibilityMask());
+    	            	}
+    	            	else
+    	            	{
+    	            	    // check whether it's a temporary or hidden file
+    			            checkTemporaryAspect(temporaryFiles.isFiltered(filename), (FileInfo)ret);
+    			            hiddenAspect.checkHidden(fileInfo, false);
+    	            	}
+    	            }
+                }
+                else
+                {
+                    ret = invocation.proceed();
+    
+                    FileInfoImpl fileInfo = (FileInfoImpl)ret;
+    
+    	            checkTemporaryAspect(temporaryFiles.isFiltered(filename), fileInfo);
+                }
+            }
+            else if (methodName.startsWith("rename") ||
+            		methodName.startsWith("move") ||
+            		methodName.startsWith("copy"))
+            {
+                ret = invocation.proceed();
+    
+                FileInfoImpl fileInfo = (FileInfoImpl) ret;
+                String filename = fileInfo.getName();
+    
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Checking filename returned by " + methodName + ": " + filename);
+                }
+    
+                // check against all the regular expressions
+                checkTemporaryAspect(temporaryFiles.isFiltered(filename), fileInfo);
+                if(getMode() == Mode.ENHANCED)
+                {
+                    hiddenAspect.checkHidden(fileInfo, true);
+                }
             }
             else
             {
                 ret = invocation.proceed();
-
-                FileInfoImpl fileInfo = (FileInfoImpl)ret;
-
-	            checkTemporaryAspect(temporaryFiles.isFiltered(filename), fileInfo);
-            }
-        }
-        else if (methodName.startsWith("rename") ||
-        		methodName.startsWith("move") ||
-        		methodName.startsWith("copy"))
-        {
-            ret = invocation.proceed();
-
-            FileInfoImpl fileInfo = (FileInfoImpl) ret;
-            String filename = fileInfo.getName();
-
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Checking filename returned by " + methodName + ": " + filename);
-            }
-
-            // check against all the regular expressions
-            checkTemporaryAspect(temporaryFiles.isFiltered(filename), fileInfo);
-            if(getMode() == Mode.ENHANCED)
-            {
-                hiddenAspect.checkHidden(fileInfo);
             }
         }
         else

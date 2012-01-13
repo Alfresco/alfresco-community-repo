@@ -148,8 +148,8 @@ public class MimetypesGet extends DeclarativeWebScript implements ApplicationCon
           {
              Map<String,List<String>> mtd = new HashMap<String, List<String>>();
              mtd.put("extractors", getExtractors(mimetype));
-             mtd.put("transformFrom", getTransformersFrom(mimetype, mimetypes));
-             mtd.put("transformTo", getTransformersTo(mimetype, mimetypes));
+             mtd.put("transformFrom", getTransformersFrom(mimetype, -1, mimetypes));
+             mtd.put("transformTo", getTransformersTo(mimetype, -1, mimetypes));
              details.put(mimetype, mtd);
           }
        }
@@ -171,7 +171,7 @@ public class MimetypesGet extends DeclarativeWebScript implements ApplicationCon
        }
        return exts;
     }
-    protected List<String> getTransformersFrom(String mimetype, List<String> allMimetypes)
+    protected List<String> getTransformersFrom(String mimetype, long sourceSize, List<String> allMimetypes)
     {
        List<String> transforms = new ArrayList<String>();
        for(String toMT : allMimetypes)
@@ -179,13 +179,13 @@ public class MimetypesGet extends DeclarativeWebScript implements ApplicationCon
           if(toMT.equals(mimetype))
              continue;
           
-          String details = getTransformer(mimetype, toMT);
+          String details = getTransformer(mimetype, sourceSize, toMT);
           if(details != null)
              transforms.add(toMT + " = " + details);
        }
        return transforms;
     }
-    protected List<String> getTransformersTo(String mimetype, List<String> allMimetypes)
+    protected List<String> getTransformersTo(String mimetype, long sourceSize, List<String> allMimetypes)
     {
        List<String> transforms = new ArrayList<String>();
        for(String fromMT : allMimetypes)
@@ -193,17 +193,17 @@ public class MimetypesGet extends DeclarativeWebScript implements ApplicationCon
           if(fromMT.equals(mimetype))
              continue;
           
-          String details = getTransformer(fromMT, mimetype);
+          String details = getTransformer(fromMT, sourceSize, mimetype);
           if(details != null)
              transforms.add(fromMT + " = " + details);
        }
        return transforms;
     }
     /** Note - for now, only does the best one, not all */
-    protected String getTransformer(String from, String to)
+    protected String getTransformer(String from, long sourceSize, String to)
     {
        ContentTransformer ct = contentTransformerRegistry.getTransformer(
-             from, to, new TransformationOptions()
+             from, sourceSize, to, new TransformationOptions()
        );
        if(ct == null)
           return null;

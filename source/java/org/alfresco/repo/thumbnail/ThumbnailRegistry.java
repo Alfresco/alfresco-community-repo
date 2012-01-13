@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.content.transform.ContentTransformer;
+import org.alfresco.repo.content.transform.TransformerDebug;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -190,7 +191,15 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
         return new ArrayList<ThumbnailDefinition>(this.thumbnailDefinitions.values());
     }
     
+    /**
+     * @deprecated use overloaded version with sourceSize parameter.
+     */
     public List<ThumbnailDefinition> getThumbnailDefinitions(String mimetype)
+    {
+        return getThumbnailDefinitions(null, mimetype, -1);
+    }
+    
+    public List<ThumbnailDefinition> getThumbnailDefinitions(String sourceUrl, String mimetype, long sourceSize)
     {
         List<ThumbnailDefinition> result = this.mimetypeMap.get(mimetype);
         
@@ -201,7 +210,7 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
             
             for (ThumbnailDefinition thumbnailDefinition : this.thumbnailDefinitions.values())
             {
-                if (isThumbnailDefinitionAvailable(mimetype, thumbnailDefinition))
+                if (isThumbnailDefinitionAvailable(sourceUrl, mimetype, sourceSize, thumbnailDefinition))
                 {
                     result.add(thumbnailDefinition);
                     foundAtLeastOneTransformer = true;
@@ -243,17 +252,28 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
      * Checks to see if at this moment in time, the specified {@link ThumbnailDefinition}
      *  is able to thumbnail the source mimetype. Typically used with Thumbnail Definitions
      *  retrieved by name, and/or when dealing with transient {@link ContentTransformer}s.
-     * @param thumbnailDefinition The {@link ThumbnailDefinition} to check for
+     * @param sourceUrl The URL of the source (optional)
      * @param sourceMimeType The source mimetype
+     * @param sourceSize the size (in bytes) of the source. Use -1 if unknown.
+     * @param thumbnailDefinition The {@link ThumbnailDefinition} to check for
      */
-    public boolean isThumbnailDefinitionAvailable(String sourceMimeType, ThumbnailDefinition thumbnailDefinition)
+    public boolean isThumbnailDefinitionAvailable(String sourceUrl, String sourceMimeType, long sourceSize, ThumbnailDefinition thumbnailDefinition)
     {
-        return this.contentService.getTransformer(
-                   sourceMimeType, 
-                   thumbnailDefinition.getMimetype(), 
-                   thumbnailDefinition.getTransformationOptions()
-             ) != null
-        ;
+        // Log the following getTransform() as trace so we can see the wood for the trees
+        boolean orig = TransformerDebug.setDebugOutput(false);
+        try
+        {
+            return this.contentService.getTransformer(
+                    sourceUrl, 
+                    sourceMimeType,
+                    sourceSize, 
+                    thumbnailDefinition.getMimetype(), thumbnailDefinition.getTransformationOptions()
+              ) != null;
+        }
+        finally
+        {
+            TransformerDebug.setDebugOutput(orig);
+        }
     }
     
     /**

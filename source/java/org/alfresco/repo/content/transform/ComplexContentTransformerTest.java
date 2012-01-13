@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -45,12 +45,12 @@ public class ComplexContentTransformerTest extends AbstractContentTransformerTes
         ContentTransformer unoTransformer = (ContentTransformer) ctx.getBean("transformer.OpenOffice");
         ContentTransformer pdfBoxTransformer = (ContentTransformer) ctx.getBean("transformer.PdfBox");
         // make sure that they are working for this test
-        if (unoTransformer.isTransformable(MimetypeMap.MIMETYPE_PPT, MimetypeMap.MIMETYPE_PDF, new TransformationOptions()) == false)
+        if (unoTransformer.isTransformable(MimetypeMap.MIMETYPE_PPT, -1, MimetypeMap.MIMETYPE_PDF, new TransformationOptions()) == false)
         {
             isAvailable = false;
             return;
         }
-        else if (pdfBoxTransformer.isTransformable(MimetypeMap.MIMETYPE_PDF, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions()) == false)
+        else if (pdfBoxTransformer.isTransformable(MimetypeMap.MIMETYPE_PDF, -1, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions()) == false)
         {
             isAvailable = false;
             return;
@@ -62,6 +62,7 @@ public class ComplexContentTransformerTest extends AbstractContentTransformerTes
         
         transformer = new ComplexContentTransformer();
         transformer.setMimetypeService(mimetypeService);
+        transformer.setTransformerDebug(transformerDebug);
         // set the transformer list
         List<ContentTransformer> transformers = new ArrayList<ContentTransformer>(2);
         transformers.add(unoTransformer);
@@ -86,9 +87,9 @@ public class ComplexContentTransformerTest extends AbstractContentTransformerTes
         {
             return;
         }
-        boolean reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_PPT, MimetypeMap.MIMETYPE_PDF, new TransformationOptions());
+        boolean reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_PPT, -1, MimetypeMap.MIMETYPE_PDF, new TransformationOptions());
         assertEquals("Mimetype should not be supported", false, reliability);
-        reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_PPT, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions());
+        reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_PPT, -1, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions());
         assertEquals("Mimetype should be supported", true, reliability);
     }
 }

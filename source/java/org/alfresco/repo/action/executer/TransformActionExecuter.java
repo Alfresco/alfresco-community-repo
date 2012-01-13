@@ -172,7 +172,7 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
             throw new RuleServiceException(CONTENT_READER_NOT_FOUND_MESSAGE);
         }
 
-        if (null == contentService.getTransformer(contentReader.getMimetype(), mimeType))
+        if (null == contentService.getTransformer(contentReader.getContentUrl(), contentReader.getMimetype(), contentReader.getSize(), mimeType, new TransformationOptions()))
         {
             throw new RuleServiceException(String.format(TRANSFORMER_NOT_EXISTS_MESSAGE_PATTERN, contentReader.getMimetype(), mimeType));
         }

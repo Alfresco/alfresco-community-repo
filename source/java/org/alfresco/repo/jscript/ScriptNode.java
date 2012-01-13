@@ -76,6 +76,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -2730,7 +2731,9 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         // If there's nothing currently registered to generate thumbnails for the
         //  specified mimetype, then log a message and bail out
         String nodeMimeType = getMimetype();
-        if (!registry.isThumbnailDefinitionAvailable(nodeMimeType, details))
+        Serializable value = this.nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+        ContentData contentData = DefaultTypeConverter.INSTANCE.convert(ContentData.class, value);
+        if (!registry.isThumbnailDefinitionAvailable(contentData.getContentUrl(), nodeMimeType, getSize(), details))
         {
             logger.info("Unable to create thumbnail '" + details.getName() + "' for " +
                     nodeMimeType + " as no transformer is currently available");
@@ -2825,7 +2828,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         if (contentReader != null)
         {
             String mimetype = contentReader.getMimetype();
-            List<ThumbnailDefinition> thumbnailDefinitions = thumbnailService.getThumbnailRegistry().getThumnailDefintions(mimetype);
+            List<ThumbnailDefinition> thumbnailDefinitions = thumbnailService.getThumbnailRegistry().getThumbnailDefinitions(contentReader.getContentUrl(), mimetype, contentReader.getSize());
             for (ThumbnailDefinition thumbnailDefinition : thumbnailDefinitions)
             {
                 result.add(thumbnailDefinition.getName());

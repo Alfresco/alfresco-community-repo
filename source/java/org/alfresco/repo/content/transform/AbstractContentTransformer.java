@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -198,9 +198,21 @@ public abstract class AbstractContentTransformer implements ContentTransformer
         }
         // it all checks out OK
     }
+
+    /**
+     * {@inheritDoc}<p>
+     * 
+     * Implementation calls the deprecated overloaded method without the sourceSize parameter.
+     * Note: source size checked has not been added to this deprecated class.
+     */
+    @Override
+    public boolean isTransformable(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
+    {
+        return isTransformable(sourceMimetype, targetMimetype, options);
+    }
     
     /**
-     * @see org.alfresco.repo.content.transform.ContentTransformer#isTransformable(java.lang.String, java.lang.String, org.alfresco.service.cmr.repository.TransformationOptions)
+     * @deprecated use version with extra sourceSize parameter.
      */
     public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {

@@ -282,9 +282,8 @@
         <property name="transactionService" ref="transactionService" />
         <property name="queryRegister" ref="search.queryRegisterComponent" />
         <property name="threadPoolExecutor" ref="search.indexThreadPoolExecutor" />
-        <property name="bulkLoader">
-            <ref bean="nodeDAO" />
-        </property>
+        <property name="bulkLoader" ref="nodeDAO" />
+        <property name="transformerDebug" ref="transformerDebug" />
     </bean>
     
     <bean id="search.adm.luceneQueryEngineImpl" class="org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryEngine" >
@@ -380,6 +379,9 @@
         </property>
         <property name="avmSnapShotTriggeredIndexingMethodInterceptor">
             <ref bean="search.avmSnapShotTriggeredIndexingMethodInterceptor" />
+        </property>
+        <property name="transformerDebug">
+            <ref bean="transformerDebug"></ref>
         </property>
     </bean>
 

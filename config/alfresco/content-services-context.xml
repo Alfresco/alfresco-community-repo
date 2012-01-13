@@ -112,6 +112,9 @@
       <property name="ignoreEmptyContent" >
          <value>${policy.content.update.ignoreEmpty}</value>
       </property>
+      <property name="transformerDebug">
+         <ref bean="transformerDebug"></ref>
+      </property>
    </bean>
    
    <bean id="contentService" parent="baseContentService">
@@ -253,6 +256,13 @@
    <!-- Content Transformation Regisitry -->
    <bean id="contentTransformerRegistry" class="org.alfresco.repo.content.transform.ContentTransformerRegistry" />
 
+   <!-- Transformation Debug -->
+   <bean id="transformerDebug" class="org.alfresco.repo.content.transform.TransformerDebug">
+      <constructor-arg>
+         <ref bean="mimetypeService"/>
+      </constructor-arg>
+   </bean>
+
    <!-- Abstract bean definition defining base definition for all transformers -->
    <bean id="baseContentTransformer"
          class="org.alfresco.repo.content.transform.AbstractContentTransformer2"
@@ -264,22 +274,26 @@
       <property name="registry">
          <ref bean="contentTransformerRegistry" />
       </property>
+      <property name="transformerDebug">
+         <ref bean="transformerDebug"></ref>
+      </property>
+      <property name="timeoutMs"><value>${content.transformer.default.timeoutMs}</value></property>
+      <property name="readLimitTimeMs"><value>${content.transformer.default.readLimitTimeMs}</value></property>
+      <property name="maxSourceSizeKBytes"><value>${content.transformer.default.maxSourceSizeKBytes}</value></property>
+      <property name="readLimitKBytes"><value>${content.transformer.default.readLimitKBytes}</value></property>
+      <property name="pageLimit"><value>${content.transformer.default.pageLimit}</value></property>
+      <property name="maxPages"><value>${content.transformer.default.maxPages}</value></property>
    </bean>
    
    <!-- These transformers are not used alone but only as part of a failover sequence -->
    <!-- For this reason they do not extend the baseContentTransformer bean and so will not be registered. -->
    <bean id="failover.transformer.PdfRenderer.PdfToImage"
-         class="org.alfresco.repo.content.transform.PdfToImageContentTransformer" >
-         <property name="mimetypeService">
-            <ref bean="mimetypeService"/>
-         </property>
-   </bean>
+         class="org.alfresco.repo.content.transform.PdfToImageContentTransformer"
+         parent="baseContentTransformer" />
+         
    <bean id="failover.transformer.PdfBox.PdfToImage"
-         class="org.alfresco.repo.content.transform.PdfBoxPdfToImageContentTransformer" >
-         <property name="mimetypeService">
-            <ref bean="mimetypeService"/>
-         </property>
-   </bean>
+         class="org.alfresco.repo.content.transform.PdfBoxPdfToImageContentTransformer"
+         parent="baseContentTransformer" />
 
    <!-- Content Transformations -->
    <bean id="transformer.StringExtracter"
@@ -459,6 +473,8 @@
             <value>application/pdf</value>
          </list>
       </property>
+      <!-- Note: there are maxSourceSizeKBytes limit on transformer.OpenOffice for xlsx->pdf
+           which may cause this transformer not to be selected because it is too slow. -->
    </bean>   
 
    <bean id="transformer.PdfBox.TextToPdf"
@@ -480,6 +496,7 @@
             </bean>
          </list>
       </property>
+      <property name="maxSourceSizeKBytes"><value>${content.transformer.PdfBox.TextToPdf.maxSourceSizeKBytes}</value></property>
    </bean>
 
    <bean id="transformer.complex.Text.Image"
@@ -542,7 +559,7 @@
                 <property name="targetMimetype"><value>text/plain</value></property>
             </bean>
          </list>
-      </property> 		 
+      </property>        
    </bean>
    
    <bean id="transformer.MediaWikiParser"
@@ -575,6 +592,36 @@
       <property name="worker">
          <ref bean="transformer.worker.OpenOffice" />
       </property>
+      <property name="mimetypeLimits">
+        <map>
+            <entry key="text/plain">
+                <map>
+                    <!-- Don't use for text to text as there are better options -->
+                    <entry key="text/plain">
+                        <bean class="org.alfresco.service.cmr.repository.TransformationOptionLimits">
+                            <property name="maxSourceSizeKBytes"><value>0</value></property>
+                        </bean>
+                    </entry>
+                    <!-- Don't use for text to pdf (and onwards to swf) if too large -->
+                    <entry key="application/pdf">
+                        <bean class="org.alfresco.service.cmr.repository.TransformationOptionLimits">
+                            <property name="maxSourceSizeKBytes"><value>${content.transformer.OpenOffice.mimeTypeLimits.txt.pdf.maxSourceSizeKBytes}</value></property>
+                        </bean>
+                    </entry>
+                </map>
+            </entry>
+            <!-- Limit use of xlsx to pdf (and onwards to swf) if too large -->
+            <entry key="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+                <map>
+                    <entry key="application/pdf">
+                        <bean class="org.alfresco.service.cmr.repository.TransformationOptionLimits">
+                            <property name="maxSourceSizeKBytes"><value>${content.transformer.OpenOffice.mimeTypeLimits.xlsx.pdf.maxSourceSizeKBytes}</value></property>
+                        </bean>
+                    </entry>
+                </map>
+            </entry>
+        </map>
+      </property>
    </bean>
 
    <bean id="transformer.complex.OpenOffice.PdfBox"
@@ -590,6 +637,30 @@
          <list>
             <value>application/pdf</value>
          </list>    
+      </property>
+      <property name="mimetypeLimits">
+        <map>
+            <!-- Don't use for text to text as there are better options -->
+            <entry key="text/plain">
+                <map>
+                    <entry key="text/plain">
+                        <bean class="org.alfresco.service.cmr.repository.TransformationOptionLimits">
+                            <property name="maxSourceSizeKBytes"><value>0</value></property>
+                        </bean>
+                    </entry>
+                </map>
+            </entry>
+            <!-- Don't use for xlsx to text as there are better options -->
+            <entry key="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+                <map>
+                    <entry key="text/plain">
+                        <bean class="org.alfresco.service.cmr.repository.TransformationOptionLimits">
+                            <property name="maxSourceSizeKBytes"><value>0</value></property>
+                        </bean>
+                    </entry>
+                </map>
+            </entry>
+        </map>
       </property>
    </bean>
    

@@ -49,6 +49,7 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.transform.TransformerDebug;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.DictionaryListener;
 import org.alfresco.repo.dictionary.DictionaryNamespaceComponent;
@@ -154,6 +155,8 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
     DictionaryService dictionaryService;
 
     TenantService tenantService;
+
+    TransformerDebug transformerDebug;
 
     private NodeRef rootNodeRef;
 
@@ -271,6 +274,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         contentService = (ContentService) ctx.getBean("contentService");
         queryRegisterComponent = (QueryRegisterComponent) ctx.getBean("queryRegisterComponent");
         namespacePrefixResolver = (DictionaryNamespaceComponent) ctx.getBean("namespaceService");
+        transformerDebug = (TransformerDebug) ctx.getBean("transformerDebug");
         indexerAndSearcher = (IndexerAndSearcher) ctx.getBean("admLuceneIndexerAndSearcherFactory");
         luceneConfig = (LuceneConfig)ctx.getBean("admLuceneIndexerAndSearcherFactory");
         ((LuceneConfig) indexerAndSearcher).setMaxAtomicTransformationTime(1000000);
@@ -1316,7 +1320,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         buildBaseIndex();
 
         ADMLuceneSearcherImpl searcher = buildSearcher();
-
+        
         List<NodeRef> expected = new ArrayList<NodeRef>(15);
 
         SearchParameters sp = new SearchParameters();
@@ -3956,6 +3960,8 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         indexer.setFullTextSearchIndexer(luceneFTS);
         indexer.setContentService(contentService);
         indexer.setTransactionService(transactionService);
+        indexer.setTransformerDebug(transformerDebug);
+        
         // indexer.clearIndex();
         indexer.createNode(new ChildAssociationRef(null, null, null, rootNodeRef));
         indexer.createNode(new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, rootNodeRef, QName.createQName("{namespace}one"), n1));

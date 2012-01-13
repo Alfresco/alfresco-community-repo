@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,12 +19,14 @@
 package org.alfresco.repo.thumbnail;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
+import org.alfresco.repo.content.transform.TransformerDebug;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -42,6 +44,7 @@ import org.apache.commons.logging.LogFactory;
  * NOTE:  This action is used to facilitate the async creation of thumbnails.  It is not intended for genereral useage.
  * 
  * @author Roy Wetherall
+ * @author Ph Dubois (optional thumbnail creation by mimetype and in general)
  */
 public class CreateThumbnailActionExecuter extends ActionExecuterAbstractBase
 {
@@ -53,6 +56,12 @@ public class CreateThumbnailActionExecuter extends ActionExecuterAbstractBase
     /** Node Service */
     private NodeService nodeService;
     
+    /** Property turns on and off all thumbnail creation */
+    private boolean generateThumbnails = true;
+
+    // Size limitations (in KBytes) indexed by mimetype for thumbnail creation
+    private HashMap<String,Long> mimetypeMaxSourceSizeKBytes;
+
     /** Action name and parameters */
     public static final String NAME = "create-thumbnail";
     public static final String PARAM_CONTENT_PROPERTY = "content-property";
@@ -79,11 +88,39 @@ public class CreateThumbnailActionExecuter extends ActionExecuterAbstractBase
     }
     
     /**
+     * Set the maximum size for each mimetype above which thumbnails are not created.
+     * @param mimetypeMaxSourceSizeKBytes map of mimetypes to max source sizes.
+     */
+    public void setMimetypeMaxSourceSizeKBytes(HashMap<String, Long> mimetypeMaxSourceSizeKBytes)
+    {
+        this.mimetypeMaxSourceSizeKBytes = mimetypeMaxSourceSizeKBytes;
+    }
+    
+    /**
+     * Enable thumbnail creation at all regardless of mimetype.
+     * @param generateThumbnails a {@code false} value turns off all thumbnail creation.
+     */
+    public void setGenerateThumbnails(boolean generateThumbnails)
+    {
+        this.generateThumbnails = generateThumbnails;
+    }
+    
+    /**
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
+        // Check if thumbnailing is generally disabled
+        if (!generateThumbnails)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Thumbnail transformations are not enabled");
+            }
+            return;
+        }
+        
         if (this.nodeService.exists(actionedUponNodeRef) == true)
         {
             // Get the thumbnail Name
@@ -107,14 +144,30 @@ public class CreateThumbnailActionExecuter extends ActionExecuterAbstractBase
             
             // If there isn't a currently active transformer for this, log and skip
             Serializable contentProp = nodeService.getProperty(actionedUponNodeRef, contentProperty);
-            if(contentProp != null && contentProp instanceof ContentData)
+            if (contentProp == null)
             {
-                String mimetype = ((ContentData)contentProp).getMimetype();
-                if (!registry.isThumbnailDefinitionAvailable(mimetype, details))
+                logger.info("Creation of thumbnail, null content for " + details.getName());
+                return;
+            }
+
+            if(contentProp instanceof ContentData)
+            {
+                ContentData content = (ContentData)contentProp;
+                String mimetype = content.getMimetype();
+                if (!registry.isThumbnailDefinitionAvailable(content.getContentUrl(), mimetype, content.getSize(), details))
                 {
                     logger.info("Unable to create thumbnail '" + details.getName() + "' for " +
                             mimetype + " as no transformer is currently available");
                     return;
+                }
+                if (mimetypeMaxSourceSizeKBytes != null)
+                {
+                    Long maxSourceSizeKBytes = mimetypeMaxSourceSizeKBytes.get(mimetype);
+                    if (maxSourceSizeKBytes != null && maxSourceSizeKBytes > 0 && maxSourceSizeKBytes <= (content.getSize()/1024L))
+                    {
+                        logger.info("Creation of " + details.getName()+ " thumbnail from '" + mimetype + "' , content is too big ("+(content.getSize()/1024L)+"K >= "+maxSourceSizeKBytes+"K)");
+                        return; //avoid transform
+                    }
                 }
             }
             
@@ -144,5 +197,4 @@ public class CreateThumbnailActionExecuter extends ActionExecuterAbstractBase
         paramList.add(new ParameterDefinitionImpl(PARAM_THUMBANIL_NAME, DataTypeDefinition.TEXT, true, getParamDisplayLabel(PARAM_THUMBANIL_NAME)));      
         paramList.add(new ParameterDefinitionImpl(PARAM_CONTENT_PROPERTY, DataTypeDefinition.QNAME, false, getParamDisplayLabel(PARAM_CONTENT_PROPERTY)));        
     }
-
 }

@@ -1067,7 +1067,7 @@ public class RuleServiceCoverageTest extends TestCase
     public void testTransformAction() throws Throwable
     {
         ContentTransformer transformer = transformerRegistry.getTransformer(
-                MimetypeMap.MIMETYPE_EXCEL,
+                MimetypeMap.MIMETYPE_EXCEL, -1,
                 MimetypeMap.MIMETYPE_TEXT_PLAIN,
                 new TransformationOptions());
         if (transformer == null)
@@ -1148,7 +1148,7 @@ public class RuleServiceCoverageTest extends TestCase
     public void testImageTransformAction() throws Throwable
     {
         ContentTransformer transformer = transformerRegistry.getTransformer(
-                MimetypeMap.MIMETYPE_IMAGE_GIF,
+                MimetypeMap.MIMETYPE_IMAGE_GIF, -1,
                 MimetypeMap.MIMETYPE_IMAGE_JPEG,
                 new TransformationOptions());
         if (transformer == null)
@@ -1939,7 +1939,7 @@ public class RuleServiceCoverageTest extends TestCase
     
     public void testAsyncExecutionWithPotentialLoop()
     {
-        if (this.transformerRegistry.getTransformer(MimetypeMap.MIMETYPE_EXCEL, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions()) != null)
+        if (this.transformerRegistry.getTransformer(MimetypeMap.MIMETYPE_EXCEL, -1, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions()) != null)
         {
     		try
     		{

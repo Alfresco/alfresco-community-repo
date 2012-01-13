@@ -71,13 +71,21 @@ public class ContentTransformerRegistry
     }
     
     /**
-     * Gets the best transformer possible.  This is a combination of the most reliable
-     * and the most performant transformer.
+     * @deprecated use overloaded version with sourceSize parameter.
      */
     public ContentTransformer getTransformer(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
+        return getTransformer(sourceMimetype, -1, targetMimetype, options);
+    }
+    
+    /**
+     * Gets the best transformer possible.  This is a combination of the most reliable
+     * and the most performant transformer.
+     */
+    public ContentTransformer getTransformer(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
+    {
         // Get the sorted list of transformers
-        List<ContentTransformer> transformers = getActiveTransformers(sourceMimetype, targetMimetype, options);
+        List<ContentTransformer> transformers = getActiveTransformers(sourceMimetype, sourceSize, targetMimetype, options);
 
         // select the most performant transformer
         ContentTransformer bestTransformer = null;
@@ -92,10 +100,10 @@ public class ContentTransformerRegistry
     /**
      * @since 3.5
      */
-    public List<ContentTransformer> getActiveTransformers(String sourceMimetype, String targetMimetype, TransformationOptions options)
+    public List<ContentTransformer> getActiveTransformers(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
     {
         // Get the list of transformers
-        List<ContentTransformer> transformers = findTransformers(sourceMimetype, targetMimetype, options);
+        List<ContentTransformer> transformers = findTransformers(sourceMimetype, sourceSize, targetMimetype, options);
 
         final Map<ContentTransformer,Long> activeTransformers = new HashMap<ContentTransformer, Long>();
         
@@ -103,7 +111,7 @@ public class ContentTransformerRegistry
          for (ContentTransformer transformer : transformers)
         {
             // Transformability can be dynamic, i.e. it may have become unusable
-            if (transformer.isTransformable(sourceMimetype, targetMimetype, options) == false)
+            if (transformer.isTransformable(sourceMimetype, sourceSize, targetMimetype, options) == false)
             {
                 // It is unreliable now.
                 continue;
@@ -135,10 +143,10 @@ public class ContentTransformerRegistry
      * @return Returns best transformer for the translation - null if all
      *      score 0.0 on reliability
      */
-    private List<ContentTransformer> findTransformers(String sourceMimetype, String targetMimetype, TransformationOptions options)
+    private List<ContentTransformer> findTransformers(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
     {
         // search for a simple transformer that can do the job
-        List<ContentTransformer> transformers = findDirectTransformers(sourceMimetype, targetMimetype, options);
+        List<ContentTransformer> transformers = findDirectTransformers(sourceMimetype, sourceSize, targetMimetype, options);
         // get the complex transformers that can do the job
         List<ContentTransformer> complexTransformers = findComplexTransformer(sourceMimetype, targetMimetype, options);
         transformers.addAll(complexTransformers);
@@ -161,7 +169,7 @@ public class ContentTransformerRegistry
      * @return Returns the most reliable transformers for the translation - empty list if there
      *      are none.
      */
-    private List<ContentTransformer> findDirectTransformers(String sourceMimetype, String targetMimetype, TransformationOptions options)
+    private List<ContentTransformer> findDirectTransformers(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
     {
         //double maxReliability = 0.0;
         
@@ -171,7 +179,7 @@ public class ContentTransformerRegistry
         // loop through transformers
         for (ContentTransformer transformer : this.transformers)
         {
-            if (transformer.isTransformable(sourceMimetype, targetMimetype, options) == true)
+            if (transformer.isTransformable(sourceMimetype, sourceSize, targetMimetype, options) == true)
             {
                 if (transformer.isExplicitTransformation(sourceMimetype, targetMimetype, options) == true)
                 {

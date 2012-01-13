@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -34,15 +34,21 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
 public interface ContentTransformer extends ContentWorker
 {
     /**
+     * @deprecated use version with extra sourceSize parameter.
+     */
+    public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options);
+    
+    /**
      * Indicates whether the provided source mimetype can be transformed into the target mimetype with 
      * the options specified by this content transformer.
      * 
      * @param  sourceMimetype           the source mimetype
-     * @param  destinationMimetype      the destination mimetype
+     * @param  sourceSize               the size (bytes) of the source. If negative it is unknown.
+     * @param targetMimetype            the target mimetype
      * @param  options                  the transformation options
      * @return boolean                  true if this content transformer can satify the mimetypes and options specified, false otherwise
      */
-    public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options);
+    public boolean isTransformable(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options);
     
     /**
      * Indicates whether given the provided transformation parmaters this transformer can prvide an explict

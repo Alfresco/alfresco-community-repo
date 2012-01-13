@@ -36,7 +36,7 @@ import org.alfresco.util.TempFileProvider;
  */
 public class PdfBoxPdfToImageContentTransformerTest extends AbstractContentTransformerTest
 {
-    private ContentTransformer transformer;
+    private PdfBoxPdfToImageContentTransformer transformer;
     
     @Override
     public void setUp() throws Exception
@@ -44,7 +44,8 @@ public class PdfBoxPdfToImageContentTransformerTest extends AbstractContentTrans
         super.setUp();
         
         transformer = new PdfBoxPdfToImageContentTransformer();
-        ((ContentTransformerHelper)transformer).setMimetypeService(mimetypeService);
+        transformer.setMimetypeService(mimetypeService);
+        transformer.setTransformerDebug(transformerDebug);
     }
     
     /**
@@ -57,7 +58,7 @@ public class PdfBoxPdfToImageContentTransformerTest extends AbstractContentTrans
     
     public void testIsTransformable() throws Exception
     {
-        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_PDF, MimetypeMap.MIMETYPE_IMAGE_PNG, new TransformationOptions()));
+        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_PDF, -1, MimetypeMap.MIMETYPE_IMAGE_PNG, new TransformationOptions()));
     }
     
     /**

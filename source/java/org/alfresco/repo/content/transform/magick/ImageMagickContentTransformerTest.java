@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -35,7 +35,7 @@ import org.alfresco.util.exec.RuntimeExec;
 public class ImageMagickContentTransformerTest extends AbstractContentTransformerTest
 {
     private ImageMagickContentTransformerWorker worker;
-    private ContentTransformer transformer;
+    private ProxyContentTransformer transformer;
     
     @Override
     public void setUp() throws Exception
@@ -51,11 +51,10 @@ public class ImageMagickContentTransformerTest extends AbstractContentTransforme
         worker.setExecuter(executer);
         worker.afterPropertiesSet();
         
-        ProxyContentTransformer transformer = new ProxyContentTransformer();
+        transformer = new ProxyContentTransformer();
         transformer.setMimetypeService(mimetypeService);
+        transformer.setTransformerDebug(transformerDebug);
         transformer.setWorker(worker);
-        this.transformer = transformer;
-        
     }
     
     /**
@@ -73,10 +72,10 @@ public class ImageMagickContentTransformerTest extends AbstractContentTransforme
             return;
         }
         boolean reliability = transformer.isTransformable(
-                MimetypeMap.MIMETYPE_IMAGE_GIF, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions());
+                MimetypeMap.MIMETYPE_IMAGE_GIF, -1, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions());
         assertEquals("Mimetype should not be supported", false, reliability);
         reliability = transformer.isTransformable(
-                MimetypeMap.MIMETYPE_IMAGE_GIF, MimetypeMap.MIMETYPE_IMAGE_JPEG, new TransformationOptions());
+                MimetypeMap.MIMETYPE_IMAGE_GIF, -1, MimetypeMap.MIMETYPE_IMAGE_JPEG, new TransformationOptions());
         assertEquals("Mimetype should be supported", true, reliability);
     }
 }

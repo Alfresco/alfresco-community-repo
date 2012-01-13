@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -36,7 +36,7 @@ import org.alfresco.util.TempFileProvider;
  */
 public class TextMiningContentTransformerTest extends AbstractContentTransformerTest
 {
-    private ContentTransformer transformer;
+    private TextMiningContentTransformer transformer;
     
     @Override
     public void setUp() throws Exception
@@ -44,6 +44,8 @@ public class TextMiningContentTransformerTest extends AbstractContentTransformer
         super.setUp();
         
         transformer = new TextMiningContentTransformer();
+        transformer.setMimetypeService(mimetypeService);
+        transformer.setTransformerDebug(transformerDebug);
     }
     
     /**
@@ -63,8 +65,8 @@ public class TextMiningContentTransformerTest extends AbstractContentTransformer
     
     public void testIsTransformable() throws Exception
     {
-        assertFalse(transformer.isTransformable(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_WORD, new TransformationOptions()));
-        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_WORD, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions()));
+        assertFalse(transformer.isTransformable(MimetypeMap.MIMETYPE_TEXT_PLAIN, -1, MimetypeMap.MIMETYPE_WORD, new TransformationOptions()));
+        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_WORD, -1, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions()));
     }
     
     /**

@@ -35,6 +35,7 @@ import org.alfresco.repo.content.cleanup.EagerContentStoreCleaner;
 import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.content.transform.ContentTransformerRegistry;
+import org.alfresco.repo.content.transform.TransformerDebug;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -89,7 +90,8 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     private MimetypeService mimetypeService;
     private RetryingTransactionHelper transactionHelper;
     private ApplicationContext applicationContext;
-    
+    protected TransformerDebug transformerDebug;
+
     /** a registry of all available content transformers */
     private ContentTransformerRegistry transformerRegistry;
     /** The cleaner that will ensure that rollbacks clean up after themselves */
@@ -175,6 +177,15 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {
         this.applicationContext = applicationContext;
+    }
+
+    /**
+     * Helper setter of the transformer debug. 
+     * @param transformerDebug
+     */
+    public void setTransformerDebug(TransformerDebug transformerDebug)
+    {
+        this.transformerDebug = transformerDebug;
     }
 
     /**
@@ -559,40 +570,74 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         {
             throw new AlfrescoRuntimeException("The content writer mimetype must be set: " + writer);
         }
-        // look for a transformer
-        ContentTransformer transformer = transformerRegistry.getTransformer(sourceMimetype, targetMimetype, options);
-        if (transformer == null)
+
+        try
         {
-            throw new NoTransformerException(sourceMimetype, targetMimetype);
+            // look for a transformer
+            transformerDebug.pushAvailable(reader.getContentUrl(), sourceMimetype, targetMimetype);
+            long sourceSize = reader.getSize();
+            List<ContentTransformer> transformers = getActiveTransformers(sourceMimetype, sourceSize, targetMimetype, options);
+            transformerDebug.availableTransformers(transformers, sourceSize, "ContentService.transform(...)");
+            
+            if (transformers.isEmpty())
+            {
+                throw new NoTransformerException(sourceMimetype, targetMimetype);
+            }
+
+            // we have a transformer, so do it
+            ContentTransformer transformer = transformers.size() == 0 ? null : transformers.get(0);
+            transformer.transform(reader, writer, options);
+            // done
         }
-        // we have a transformer, so do it
-        transformer.transform(reader, writer, options);
-        // done
+        finally
+        {
+            transformerDebug.popAvailable();
+        }
     }
-    
+
     /**
      * @see org.alfresco.repo.content.transform.ContentTransformerRegistry
      * @see org.alfresco.repo.content.transform.ContentTransformer
      */
     public ContentTransformer getTransformer(String sourceMimetype, String targetMimetype)
     {
-        return getTransformer(sourceMimetype, targetMimetype, new TransformationOptions());
+        return getTransformer(null, sourceMimetype, -1, targetMimetype, new TransformationOptions());
+    }
+    
+    public ContentTransformer getTransformer(String sourceMimetype, String targetMimetype, TransformationOptions options)
+    {
+        return getTransformer(null, sourceMimetype, -1, targetMimetype, options);
     }
     
     /**
-     * @see org.alfresco.service.cmr.repository.ContentService#getTransformer(java.lang.String, java.lang.String, org.alfresco.service.cmr.repository.TransformationOptions)
+     * @see org.alfresco.service.cmr.repository.ContentService#getTransformer(String, java.lang.String, long, java.lang.String, org.alfresco.service.cmr.repository.TransformationOptions)
      */
-    public ContentTransformer getTransformer(String sourceMimetype, String targetMimetype, TransformationOptions options)
+    public ContentTransformer getTransformer(String sourceUrl, String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
     {
-        return transformerRegistry.getTransformer(sourceMimetype, targetMimetype, options);
+        try
+        {
+            // look for a transformer
+            transformerDebug.pushAvailable(sourceUrl, sourceMimetype, targetMimetype);
+            List<ContentTransformer> transformers = getActiveTransformers(sourceMimetype, sourceSize, targetMimetype, options);
+            transformerDebug.availableTransformers(transformers, sourceSize, "ContentService.getTransformer(...)");
+            return (transformers.isEmpty()) ? null : transformers.get(0);
+        }
+        finally
+        {
+            transformerDebug.popAvailable();
+        }
     }
     
     public List<ContentTransformer> getActiveTransformers(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
-        return transformerRegistry.getActiveTransformers(sourceMimetype, targetMimetype, options);
+        return getActiveTransformers(sourceMimetype, -1, targetMimetype, options);
     }
 
-    
+    public List<ContentTransformer> getActiveTransformers(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
+    {
+        return transformerRegistry.getActiveTransformers(sourceMimetype, sourceSize, targetMimetype, options);
+    }
+
     /**
      * @see org.alfresco.service.cmr.repository.ContentService#getImageTransformer()
      */
@@ -628,7 +673,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         }
         
         // look for a transformer
-        ContentTransformer transformer = transformerRegistry.getTransformer(sourceMimetype, targetMimetype, options);
+        ContentTransformer transformer = transformerRegistry.getTransformer(sourceMimetype, reader.getSize(), targetMimetype, options);
         return (transformer != null);
     }
 

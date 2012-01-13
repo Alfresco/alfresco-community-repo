@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -56,6 +56,7 @@ public class FailoverContentTransformerTest extends AbstractContentTransformerTe
         
         transformer = (FailoverContentTransformer) failoverAppContext.getBean("transformer.failover.Test-FailThenSucceed");
         transformer.setMimetypeService(mimetypeService);
+        transformer.setTransformerDebug(transformerDebug);
     }
     
     /**
@@ -70,7 +71,7 @@ public class FailoverContentTransformerTest extends AbstractContentTransformerTe
     {
         // The MIME types here are rather arbitrary
 
-        boolean reliability = transformer.isTransformable(sourceMimeType, targetMimeType, new TransformationOptions());
+        boolean reliability = transformer.isTransformable(sourceMimeType, -1, targetMimeType, new TransformationOptions());
         assertEquals("Mimetype should be supported", true, reliability);
     }
 }

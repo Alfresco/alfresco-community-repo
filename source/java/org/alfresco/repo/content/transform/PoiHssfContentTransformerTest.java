@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -36,7 +36,7 @@ import org.alfresco.util.TempFileProvider;
  */
 public class PoiHssfContentTransformerTest extends TikaPoweredContentTransformerTest
 {
-    private ContentTransformer transformer;
+    private PoiHssfContentTransformer transformer;
     
     @Override
     public void setUp() throws Exception
@@ -44,6 +44,8 @@ public class PoiHssfContentTransformerTest extends TikaPoweredContentTransformer
         super.setUp();
         
         transformer = new PoiHssfContentTransformer();
+        transformer.setMimetypeService(mimetypeService);
+        transformer.setTransformerDebug(transformerDebug);
     }
     
     @Override
@@ -63,11 +65,11 @@ public class PoiHssfContentTransformerTest extends TikaPoweredContentTransformer
     
     public void testIsTransformable() throws Exception
     {
-        assertFalse(transformer.isTransformable(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_EXCEL, new TransformationOptions()));
-        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_EXCEL, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions()));
-        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_EXCEL, MimetypeMap.MIMETYPE_TEXT_CSV, new TransformationOptions()));
-        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_EXCEL, MimetypeMap.MIMETYPE_HTML, new TransformationOptions()));
-        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_EXCEL, MimetypeMap.MIMETYPE_XML, new TransformationOptions()));
+        assertFalse(transformer.isTransformable(MimetypeMap.MIMETYPE_TEXT_PLAIN, -1, MimetypeMap.MIMETYPE_EXCEL, new TransformationOptions()));
+        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_EXCEL, -1, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions()));
+        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_EXCEL, -1, MimetypeMap.MIMETYPE_TEXT_CSV, new TransformationOptions()));
+        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_EXCEL, -1, MimetypeMap.MIMETYPE_HTML, new TransformationOptions()));
+        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_EXCEL, -1, MimetypeMap.MIMETYPE_XML, new TransformationOptions()));
     }
     
     public void testCsvOutput() throws Exception

@@ -45,6 +45,8 @@ public class ArchiveContentTransformerTest extends AbstractContentTransformerTes
         super.setUp();
         
         transformer = new ArchiveContentTransformer();
+        transformer.setMimetypeService(mimetypeService);
+        transformer.setTransformerDebug(transformerDebug);
     }
 
     protected ContentTransformer getTransformer(String sourceMimetype, String targetMimetype)
@@ -54,9 +56,9 @@ public class ArchiveContentTransformerTest extends AbstractContentTransformerTes
     
     public void testIsTransformable() throws Exception
     {
-        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_ZIP, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions()));
-        assertTrue(transformer.isTransformable("application/x-tar", MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions()));
-        assertTrue(transformer.isTransformable("application/x-gtar", MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions()));
+        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_ZIP, -1, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions()));
+        assertTrue(transformer.isTransformable("application/x-tar", -1, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions()));
+        assertTrue(transformer.isTransformable("application/x-gtar", -1, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions()));
     }
 
     @Override

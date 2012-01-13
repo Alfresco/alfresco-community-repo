@@ -130,7 +130,7 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
      * 
      * @see org.alfresco.repo.content.transform.ContentTransformer#isTransformable(java.lang.String, java.lang.String, org.alfresco.service.cmr.repository.TransformationOptions)
      */
-    public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
+    public boolean isTransformable(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
     {
         boolean result = true;
         String currentSourceMimetype = sourceMimetype;
@@ -178,6 +178,7 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
            }
         }
         
+        boolean first = true;
         Iterator<ContentTransformer> transformerIterator = transformers.iterator();
         Iterator<String> intermediateMimetypeIterator = intermediateMimetypes.iterator();
         while (transformerIterator.hasNext())
@@ -195,8 +196,9 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
                 currentTargetMimetype = intermediateMimetypeIterator.next();
             }
             
-            // check we can tranform the current stage
-            if (transformer.isTransformable(currentSourceMimetype, currentTargetMimetype, options) == false)
+            // check we can tranform the current stage (using -1 if not the first stage as we can't know the size)
+            long size = first ? sourceSize : -1;
+            if (transformer.isTransformable(currentSourceMimetype, size, currentTargetMimetype, options) == false)
             {
                 result = false;
                 break;
@@ -204,6 +206,12 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
             
             // move on
             currentSourceMimetype = currentTargetMimetype;
+            first = false;
+        }
+        
+        if (result && !isTransformableSize(sourceMimetype, sourceSize, targetMimetype, options))
+        {
+            result = false;
         }
         
         return result;
@@ -254,5 +262,16 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
     public List<String> getIntermediateMimetypes()
     {
        return Collections.unmodifiableList(intermediateMimetypes);
+    }
+
+    /**
+     * @deprecated This method should no longer be called as the overloaded method
+     * that calls it has the overridden.
+     */
+    @Override
+    public boolean isTransformable(String sourceMimetype, String targetMimetype,
+            TransformationOptions options)
+    {
+        return false;
     }
 }

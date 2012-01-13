@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -35,7 +35,7 @@ import org.alfresco.util.TempFileProvider;
  */
 public class MailContentTransformerTest extends AbstractContentTransformerTest
 {
-    private ContentTransformer transformer;
+    private MailContentTransformer transformer;
     
     @Override
     public void setUp() throws Exception
@@ -43,6 +43,8 @@ public class MailContentTransformerTest extends AbstractContentTransformerTest
         super.setUp();
         
         transformer = new MailContentTransformer();
+        transformer.setMimetypeService(mimetypeService);
+        transformer.setTransformerDebug(transformerDebug);
     }
     
     /**
@@ -55,8 +57,8 @@ public class MailContentTransformerTest extends AbstractContentTransformerTest
     
     public void testIsTransformable() throws Exception
     {
-        assertFalse(transformer.isTransformable(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_OUTLOOK_MSG, new TransformationOptions()));
-        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_OUTLOOK_MSG, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions())); 
+        assertFalse(transformer.isTransformable(MimetypeMap.MIMETYPE_TEXT_PLAIN, -1, MimetypeMap.MIMETYPE_OUTLOOK_MSG, new TransformationOptions()));
+        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_OUTLOOK_MSG, -1, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions())); 
     }
     
     /**

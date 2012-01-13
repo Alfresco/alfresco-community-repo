@@ -109,7 +109,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
 
         // Check that it is working
         ImageTransformationOptions imageTransformationOptions = new ImageTransformationOptions();
-        if (!transformer.isTransformable(MimetypeMap.MIMETYPE_IMAGE_JPEG, MimetypeMap.MIMETYPE_IMAGE_JPEG,
+        if (!transformer.isTransformable(MimetypeMap.MIMETYPE_IMAGE_JPEG, -1, MimetypeMap.MIMETYPE_IMAGE_JPEG,
                     imageTransformationOptions))
         {
             fail("Image transformer is not working.  Please check your image conversion command setup.");
@@ -542,8 +542,8 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
         NodeRef nodeRef = createOriginalContent(this.folder, MimetypeMap.MIMETYPE_HTML);
         ThumbnailDefinition def = this.thumbnailService.getThumbnailRegistry().getThumbnailDefinition("medium");
 
-        ContentTransformer transformer = this.contentService.getTransformer(MimetypeMap.MIMETYPE_HTML, def
-                    .getMimetype(), def.getTransformationOptions());
+        ContentTransformer transformer = this.contentService.getTransformer(null, MimetypeMap.MIMETYPE_HTML, -1, def
+                                .getMimetype(), def.getTransformationOptions());
         if (transformer != null)
         {
             NodeRef thumb = this.thumbnailService.createThumbnail(nodeRef, ContentModel.PROP_CONTENT,
@@ -650,7 +650,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
     public void testRegistry()
     {
         ThumbnailRegistry thumbnailRegistry = this.thumbnailService.getThumbnailRegistry();
-        List<ThumbnailDefinition> defs = thumbnailRegistry.getThumbnailDefinitions(MimetypeMap.MIMETYPE_HTML);
+        List<ThumbnailDefinition> defs = thumbnailRegistry.getThumbnailDefinitions(null, MimetypeMap.MIMETYPE_HTML, -1);
         System.out.println("Definitions ...");
         for (ThumbnailDefinition def : defs)
         {

@@ -80,7 +80,7 @@ public class ImageTransformActionExecuter extends TransformActionExecuter
         imageOptions.setCommandOptions(convertCommand);
 
         // check if the transformer is going to work, i.e. is available
-        if (!this.imageMagickContentTransformer.isTransformable(contentReader.getMimetype(), contentWriter
+        if (!this.imageMagickContentTransformer.isTransformable(contentReader.getMimetype(), contentReader.getSize(), contentWriter
                 .getMimetype(), imageOptions))
         {
             throw new NoTransformerException(contentReader.getMimetype(), contentWriter.getMimetype());

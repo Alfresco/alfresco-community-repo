@@ -87,7 +87,7 @@ public abstract class TikaPoweredContentTransformer extends AbstractContentTrans
      * Can we do the requested transformation via Tika?
      * We support transforming to HTML, XML or Text
      */
-    public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
+    public boolean isTransformable(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
     {
        if(! sourceMimeTypes.contains(sourceMimetype)) 
        {
@@ -101,13 +101,25 @@ public abstract class TikaPoweredContentTransformer extends AbstractContentTrans
              MimetypeMap.MIMETYPE_XML.equals(targetMimetype))
        {
           // We can output to this
-          return true;
+          // But there may be size limits on this transformer.
+          return isTransformableSize(sourceMimetype, sourceSize, targetMimetype, options);
        } 
        else 
        {
           // We support the source, but not the target
           return false;
        }
+    }
+
+    /**
+     * @deprecated This method should no longer be called as the overloaded method
+     * that calls it has been overridden.
+     */
+    @Override
+    public boolean isTransformable(String sourceMimetype, String targetMimetype,
+            TransformationOptions options)
+    {
+        return isTransformable(sourceMimetype, -1, targetMimetype, options);
     }
     
     /**

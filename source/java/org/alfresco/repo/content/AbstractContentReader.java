@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -32,19 +32,29 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.filestore.FileContentWriter;
+import org.alfresco.repo.content.transform.TransformerDebug;
 import org.alfresco.service.cmr.repository.ContentAccessor;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentStreamListener;
+import org.alfresco.service.cmr.repository.TransformationOptionLimits;
+import org.alfresco.service.cmr.repository.TransformationOptionPair;
+import org.alfresco.service.cmr.repository.TransformationOptionPair.Action;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.util.FileCopyUtils;
+
+import sun.nio.ch.ChannelInputStream;
+
 
 /**
  * Implements all the convenience methods of the interface.  The only methods
@@ -59,9 +69,19 @@ import org.springframework.util.FileCopyUtils;
 public abstract class AbstractContentReader extends AbstractContentAccessor implements ContentReader
 {
     private static final Log logger = LogFactory.getLog(AbstractContentReader.class);
+    private static final Timer timer = new Timer(); 
     
     private List<ContentStreamListener> listeners;
     private ReadableByteChannel channel;
+    
+    // Optional limits on reading
+    private TransformationOptionLimits limits;
+    
+    // Only needed if limits are set
+    private TransformerDebug transformerDebug;
+    
+    // For testing: Allows buffering to be turned off
+    private boolean useBufferedInputStream = true;
     
     /**
      * @param contentUrl the content URL - this should be relative to the root of the store
@@ -73,7 +93,37 @@ public abstract class AbstractContentReader extends AbstractContentAccessor impl
         
         listeners = new ArrayList<ContentStreamListener>(2);
     }
+    
+    public void setLimits(TransformationOptionLimits limits)
+    {
+        this.limits = limits;
+    }
+    
+    public TransformationOptionLimits getLimits()
+    {
+        return limits;
+    }
 
+    public void setTransformerDebug(TransformerDebug transformerDebug)
+    {
+        this.transformerDebug = transformerDebug;
+    }
+
+    public TransformerDebug getTransformerDebug()
+    {
+        return transformerDebug;
+    }
+
+    public void setUseBufferedInputStream(boolean useBufferedInputStream)
+    {
+        this.useBufferedInputStream = useBufferedInputStream;
+    }
+
+    public boolean getUseBufferedInputStream()
+    {
+        return useBufferedInputStream;
+    }
+    
     /**
      * Adds the listener after checking that the output stream isn't already in
      * use.
@@ -323,7 +373,26 @@ public abstract class AbstractContentReader extends AbstractContentAccessor impl
         try
         {
             ReadableByteChannel channel = getReadableChannel();
-            InputStream is = new BufferedInputStream(Channels.newInputStream(channel));
+            InputStream is = Channels.newInputStream(channel);
+            
+            // If we have a timeout or read limit, intercept the calls.
+            if (limits != null)
+            {
+                TransformationOptionPair time = limits.getTimePair();
+                TransformationOptionPair kBytes = limits.getKBytesPair();
+                long timeoutMs = time.getValue();
+                long readLimitBytes = kBytes.getValue() * 1024;
+
+                if (timeoutMs > 0 || readLimitBytes > 0)
+                {
+                    Action timeoutAction = time.getAction();
+                    Action readLimitAction = kBytes.getAction();
+
+                    is = new TimeSizeRestrictedInputStream(is, timeoutMs, timeoutAction,
+                            readLimitBytes, readLimitAction, transformerDebug);
+                }
+            }
+            is = new BufferedInputStream(is);
             // done
             return is;
         }
@@ -486,4 +555,105 @@ public abstract class AbstractContentReader extends AbstractContentAccessor impl
                     "   right: " + right);
         }
     }
+    
+    /**
+     * InputStream that wraps another InputStream to terminate early after a timeout
+     * or after reading a number of bytes. It terminates by either returning end of file
+     * (-1) or throwing an IOException.
+
+     * @author Alan Davis
+     */
+    private class TimeSizeRestrictedInputStream extends InputStream
+    {
+        private final AtomicBoolean timeoutFlag = new AtomicBoolean(false);
+        
+        private final InputStream is;
+        private final long timeoutMs;
+        private final long readLimitBytes;
+        private final Action timeoutAction;
+        private final Action readLimitAction;
+        private final TransformerDebug transformerDebug;
+        
+        private long readCount = 0;
+
+        public TimeSizeRestrictedInputStream(InputStream is,
+                long timeoutMs, Action timeoutAction,
+                long readLimitBytes, Action readLimitAction,
+                TransformerDebug transformerDebug)
+        {
+            this.is = useBufferedInputStream ? new BufferedInputStream(is) : is;
+            this.timeoutMs = timeoutMs;
+            this.timeoutAction = timeoutAction;
+            this.readLimitBytes = readLimitBytes;
+            this.readLimitAction = readLimitAction;
+            this.transformerDebug = transformerDebug;
+            
+            if (timeoutMs > 0)
+            {
+                timer.schedule(new TimerTask()
+                {
+                    @Override
+                    public void run()
+                    {
+                        timeoutFlag.set(true);
+                    }
+                
+                }, timeoutMs);
+            }
+        }
+
+        @Override
+        public int read() throws IOException
+        {
+            // Throws exception or return true to indicate EOF
+            if (hitTimeout() || hitReadLimit())
+            {
+                return -1;
+            }
+            
+            int n = is.read();
+            if (n > 0)
+            {
+                readCount++;
+            }
+            return n;
+        }
+
+        private boolean hitTimeout() throws IOException
+        {
+            if (timeoutMs > 0 && timeoutFlag.get())
+            {
+                timeoutAction.throwIOExceptionIfRequired(
+                    "Transformation has taken too long ("+
+                    (timeoutMs/1000)+" seconds)", transformerDebug);
+                return true;
+            }
+            return false;
+        }
+
+        private boolean hitReadLimit() throws IOException
+        {
+            if (readLimitBytes > 0 && readCount >= readLimitBytes)
+            {
+                readLimitAction.throwIOExceptionIfRequired(
+                    "Transformation has read too many bytes ("+
+                    (readLimitBytes/1024)+"K)", transformerDebug);
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public void close() throws IOException
+        {
+            try
+            {
+                is.close();
+            }
+            finally
+            {
+                super.close();
+            }
+        }
+    };
 }

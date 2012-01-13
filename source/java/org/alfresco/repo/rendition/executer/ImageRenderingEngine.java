@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -25,6 +25,7 @@ import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.content.transform.magick.ImageCropOptions;
 import org.alfresco.repo.content.transform.magick.ImageResizeOptions;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
+import org.alfresco.repo.rendition.executer.AbstractRenderingEngine.RenderingContext;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -228,7 +229,7 @@ public class ImageRenderingEngine extends AbstractTransformationRenderingEngine
      * appended after the various crop and resize options.
      */
     public static final String PARAM_COMMAND_OPTIONS = "commandOptions";
-
+    
     /**
      * This optional {@link Boolean} flag parameter specifies if the engine should
      * automatically rotate and image based on the EXIF orientation flag. If
@@ -249,13 +250,20 @@ public class ImageRenderingEngine extends AbstractTransformationRenderingEngine
     @Override
     protected TransformationOptions getTransformOptions(RenderingContext context)
     {
+        return getTransformOptionsImpl(new ImageTransformationOptions(), context);
+    }
+
+    @Override
+    protected TransformationOptions getTransformOptionsImpl(TransformationOptions options, RenderingContext context)
+    {
+        ImageTransformationOptions imageTransformationOptions = (ImageTransformationOptions)options;
+        
         String commandOptions = context.getCheckedParam(PARAM_COMMAND_OPTIONS, String.class);
         ImageResizeOptions imageResizeOptions = getImageResizeOptions(context);
         ImageCropOptions cropOptions = getImageCropOptions(context);
 
         boolean autoOrient = context.getParamWithDefault(PARAM_AUTO_ORIENTATION, true);
         
-        ImageTransformationOptions imageTransformationOptions = new ImageTransformationOptions();
         imageTransformationOptions.setResizeOptions(imageResizeOptions);
         imageTransformationOptions.setCropOptions(cropOptions);
         imageTransformationOptions.setAutoOrient(autoOrient);
@@ -263,7 +271,8 @@ public class ImageRenderingEngine extends AbstractTransformationRenderingEngine
         {
             imageTransformationOptions.setCommandOptions(commandOptions);
         }
-        return imageTransformationOptions;
+        
+        return super.getTransformOptionsImpl(options, context);
     }
 
     /*
@@ -408,7 +417,21 @@ public class ImageRenderingEngine extends AbstractTransformationRenderingEngine
                     getParamDisplayLabel(PARAM_IS_PERCENT_CROP)));
         
         paramList.add(new ParameterDefinitionImpl(PARAM_COMMAND_OPTIONS, DataTypeDefinition.TEXT, false,
-                    getParamDisplayLabel(PARAM_COMMAND_OPTIONS)));
+                getParamDisplayLabel(PARAM_COMMAND_OPTIONS)));
+        
+        paramList.add(new ParameterDefinitionImpl(PARAM_TIMEOUT_MS, DataTypeDefinition.LONG, false,
+                getParamDisplayLabel(PARAM_TIMEOUT_MS)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_READ_LIMIT_TIME_MS, DataTypeDefinition.LONG, false,
+                getParamDisplayLabel(PARAM_READ_LIMIT_TIME_MS)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_MAX_SOURCE_SIZE_K_BYTES, DataTypeDefinition.LONG, false,
+                getParamDisplayLabel(PARAM_MAX_SOURCE_SIZE_K_BYTES)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_READ_LIMIT_K_BYTES, DataTypeDefinition.LONG, false,
+                getParamDisplayLabel(PARAM_READ_LIMIT_K_BYTES)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_MAX_PAGES, DataTypeDefinition.INT, false,
+                getParamDisplayLabel(PARAM_MAX_PAGES)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_PAGE_LIMIT, DataTypeDefinition.INT, false,
+                getParamDisplayLabel(PARAM_PAGE_LIMIT)));
+        
         return paramList;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -58,6 +58,9 @@ public class TransformationOptions
     
     /** The include embedded resources yes/no */
     private Boolean includeEmbedded;
+    
+    /** Time, KBytes and page limits */
+    private TransformationOptionLimits limits = new TransformationOptionLimits();
 
     /**
      * Default construtor
@@ -92,11 +95,21 @@ public class TransformationOptions
      */
     public TransformationOptions(Map<String, Object> optionsMap)
     {
+        set(optionsMap);
+    }
+    
+    /**
+     * Sets options from the supplied map.
+     * @param optionsMap
+     */
+    public void set(Map<String, Object> optionsMap)
+    {
         this.sourceNodeRef = (NodeRef)optionsMap.get(OPT_SOURCE_NODEREF);
         this.sourceContentProperty = (QName)optionsMap.get(OPT_SOURCE_CONTENT_PROPERTY);
         this.targetNodeRef = (NodeRef)optionsMap.get(OPT_TARGET_NODEREF);
         this.targetContentProperty = (QName)optionsMap.get(OPT_TARGET_CONTENT_PROPERTY);
         this.includeEmbedded = (Boolean)optionsMap.get(OPT_INCLUDE_EMBEDDED);
+        limits.set(optionsMap);
     }
     
     /**
@@ -207,7 +220,161 @@ public class TransformationOptions
         return includeEmbedded;
     }
 
-   /**
+    // --------------- Time ---------------
+
+    /**
+     * Gets the timeout (ms) on the InputStream after which an IOExecption is thrown
+     * to terminate very slow transformations or a subprocess is terminated (killed).
+     * @return timeoutMs in milliseconds. If less than or equal to zero (the default)
+     *         there is no timeout.
+     */
+    public long getTimeoutMs()
+    {
+        return limits.getTimeoutMs();
+    }
+
+    /**
+     * Sets a timeout (ms) on the InputStream after which an IOExecption is thrown
+     * to terminate very slow transformations or to terminate (kill) a subprocess.
+     * @param timeoutMs in milliseconds. If less than or equal to zero (the default)
+     *                  there is no timeout.
+     *                  If greater than zero the {@code readLimitTimeMs} must not be set.
+     */
+    public void setTimeoutMs(long timeoutMs)
+    {
+        limits.setTimeoutMs(timeoutMs);
+    }
+    
+    /**
+     * Gets the limit in terms of the amount of data read (by time) to limit transformations where
+     * only the start of the content is needed. After this limit is reached the InputStream reports
+     * end of file.
+     * @return readLimitBytes if less than or equal to zero (the default) there is no limit.
+     */
+    public long getReadLimitTimeMs()
+    {
+        return limits.getReadLimitTimeMs();
+    }
+    
+    // --------------- KBytes ---------------
+
+    /**
+     * Sets a limit in terms of the amount of data read (by time) to limit transformations where
+     * only the start of the content is needed. After this limit is reached the InputStream reports
+     * end of file.
+     * @param readLimitBytes if less than or equal to zero (the default) there is no limit.
+     *                       If greater than zero the {@code timeoutMs} must not be set.
+     */
+    public void setReadLimitTimeMs(long readLimitTimeMs)
+    {
+        limits.setReadLimitTimeMs(readLimitTimeMs);
+    }
+
+    /**
+     * Gets the maximum source content size, to skip transformations where
+     * the source is just too large to expect it to perform. If the source is larger
+     * the transformer indicates it is not available.
+     * @return maxSourceSizeKBytes if less than or equal to zero (the default) there is no limit.
+     */
+    public long getMaxSourceSizeKBytes()
+    {
+        return limits.getMaxSourceSizeKBytes();
+    }
+
+    /**
+     * Sets a maximum source content size, to skip transformations where
+     * the source is just too large to expect it to perform. If the source is larger
+     * the transformer indicates it is not available.
+     * @param maxSourceSizeKBytes if less than or equal to zero (the default) there is no limit.
+     *                       If greater than zero the {@code readLimitKBytes} must not be set.
+     */
+    public void setMaxSourceSizeKBytes(long maxSourceSizeKBytes)
+    {
+        limits.setMaxSourceSizeKBytes(maxSourceSizeKBytes);
+    }
+    
+    /**
+     * Gets the limit in terms of the about of data read to limit transformations where
+     * only the start of the content is needed. After this limit is reached the InputStream reports
+     * end of file.
+     * @return readLimitKBytes if less than or equal to zero (the default) no limit should be applied.
+     */
+    public long getReadLimitKBytes()
+    {
+        return limits.getReadLimitKBytes();
+    }
+
+    /**
+     * Sets a limit in terms of the about of data read to limit transformations where
+     * only the start of the content is needed. After this limit is reached the InputStream reports
+     * end of file.
+     * @param readLimitKBytes if less than or equal to zero (the default) there is no limit.
+     *                       If greater than zero the {@code maxSourceSizeKBytes} must not be set.
+     */
+    public void setReadLimitKBytes(long readLimitKBytes)
+    {
+        limits.setReadLimitKBytes(readLimitKBytes);
+    }
+
+    // --------------- Pages ---------------
+
+    /**
+     * Get the maximum number of pages read before an exception is thrown.
+     * @return If less than or equal to zero (the default) no limit should be applied.
+     */
+    public int getMaxPages()
+    {
+        return limits.getMaxPages();
+    }
+    
+    /**
+     * Set the number of pages read from the source before an exception is thrown.
+     * 
+     * @param maxPages the number of pages to be read from the source. If less than or equal to zero
+     *        (the default) no limit is applied.
+     */
+    public void setMaxPages(int maxPages)
+    {
+        limits.setMaxPages(maxPages);
+    }
+
+    /**
+     * Get the page limit before returning EOF.
+     * @return If less than or equal to zero (the default) no limit should be applied.
+     */
+    public int getPageLimit()
+    {
+        return limits.getPageLimit();
+    }
+    
+    /**
+     * Set the number of pages read from the source before returning EOF.
+     * 
+     * @param pageLimit the number of pages to be read from the source. If less 
+     *        than or equal to zero (the default) no limit is applied.
+     */
+    public void setPageLimit(int pageLimit)
+    {
+        limits.setPageLimit(pageLimit);
+    }
+    
+    /**
+     * Returns max and limit values for time, size and pages in a single operation. 
+     */
+    public TransformationOptionLimits getLimits()
+    {
+        return limits; 
+    }
+
+    /**
+     * Sets max and limit values for time, size and pages in a single operation. 
+     */
+    public void setLimits(TransformationOptionLimits limits)
+    {
+        this.limits = limits; 
+    }
+
+    /**
      * Convert the transformation options into a map.
      * <p>
      * Basic options (optional) are:
@@ -217,6 +384,12 @@ public class TransformationOptions
      *   <li>{@link #OPT_TARGET_NODEREF}</li>
      *   <li>{@link #OPT_TARGET_CONTENT_PROPERTY}</li>
      *   <li>{@link #OPT_INCLUDE_EMBEDDED}</li>
+     *   <li>{@link TransformationOptionLimits#OPT_TIMEOUT_MS}</li>
+     *   <li>{@link TransformationOptionLimits#OPT_READ_LIMIT_TIME_MS}</li>
+     *   <li>{@link TransformationOptionLimits#OPT_MAX_SOURCE_SIZE_K_BYTES = "maxSourceSizeKBytes";
+     *   <li>{@link TransformationOptionLimits#OPT_READ_LIMIT_K_BYTES}</li>
+     *   <li>{@link TransformationOptionLimits#OPT_MAX_PAGES}</li>
+     *   <li>{@link TransformationOptionLimits#OPT_PAGE_LIMIT}</li>
      * </ul>
      * <p>
      * Override this method to append option values to the map.  Derived classes should call
@@ -230,7 +403,23 @@ public class TransformationOptions
         optionsMap.put(OPT_TARGET_NODEREF, targetNodeRef);
         optionsMap.put(OPT_TARGET_CONTENT_PROPERTY, targetContentProperty);
         optionsMap.put(OPT_INCLUDE_EMBEDDED, includeEmbedded);
+        limits.toMap(optionsMap);
         return optionsMap;
+    }
+    
+    public String toString(boolean includeLimits)
+    {
+        Map<String, Object> map = toMap();
+        if (!includeLimits)
+        {
+            TransformationOptionLimits.removeFromMap(map);
+        }
+        return map.toString();
+    }
+    
+    public String toString()
+    {
+        return toMap().toString();
     }
     
     public static TypeConverter.Converter<String, Boolean> relaxedBooleanTypeConverter = new TypeConverter.Converter<String, Boolean>()

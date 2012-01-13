@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.ContentStore;
+import org.alfresco.repo.content.transform.TransformerDebug;
 import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor;
 import org.alfresco.repo.search.IndexMode;
 import org.alfresco.repo.search.SearcherException;
@@ -56,6 +57,8 @@ public class AVMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
     private AVMSyncService avmSyncService;
     private NodeService nodeService;
     private ContentStore contentStore;
+
+    private TransformerDebug transformerDebug;
     private FullTextSearchIndexer fullTextSearchIndexer;
     private AVMSnapShotTriggeredIndexingMethodInterceptor avmSnapShotTriggeredIndexingMethodInterceptor;
 
@@ -124,6 +127,15 @@ public class AVMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
     {
         this.contentStore = contentStore;
     }
+
+    /**
+     * Sets the transformer debug. 
+     * @param transformerDebug
+     */
+    public void setTransformerDebug(TransformerDebug transformerDebug)
+    {
+        this.transformerDebug = transformerDebug;
+    }
     
     /**
      * @param avmSnapShotTriggeredIndexingMethodInterceptor the avmSnapShotTriggeredIndexingMethodInterceptor to set
@@ -144,6 +156,7 @@ public class AVMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
         indexer.setAvmService(avmService);
         indexer.setAvmSyncService(avmSyncService);
         indexer.setContentStore(contentStore);
+        indexer.setTransformerDebug(transformerDebug);
         indexer.setFullTextSearchIndexer(fullTextSearchIndexer);
         return indexer;
     }

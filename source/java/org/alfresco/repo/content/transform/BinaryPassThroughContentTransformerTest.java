@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -28,7 +28,7 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
  */
 public class BinaryPassThroughContentTransformerTest extends AbstractContentTransformerTest
 {
-    private ContentTransformer transformer;
+    private BinaryPassThroughContentTransformer transformer;
 
     @Override
     public void setUp() throws Exception
@@ -36,6 +36,8 @@ public class BinaryPassThroughContentTransformerTest extends AbstractContentTran
         super.setUp();
         
         transformer = new BinaryPassThroughContentTransformer();
+        transformer.setMimetypeService(mimetypeService);
+        transformer.setTransformerDebug(transformerDebug);
     }
     
     /**
@@ -51,13 +53,13 @@ public class BinaryPassThroughContentTransformerTest extends AbstractContentTran
         TransformationOptions options = new TransformationOptions();
         boolean reliability = false;
         
-        reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_TEXT_PLAIN, options);
+        reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_TEXT_PLAIN, -1, MimetypeMap.MIMETYPE_TEXT_PLAIN, options);
         assertFalse("Mimetype should not be supported", reliability);
-        reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_XML, MimetypeMap.MIMETYPE_XML, options);
+        reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_XML, -1, MimetypeMap.MIMETYPE_XML, options);
         assertFalse("Mimetype should not be supported", reliability);
-        reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_WORD, MimetypeMap.MIMETYPE_WORD, options);
+        reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_WORD, -1, MimetypeMap.MIMETYPE_WORD, options);
         assertTrue("Mimetype should be supported", reliability);
-        reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_EXCEL, MimetypeMap.MIMETYPE_EXCEL, options);
+        reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_EXCEL, -1, MimetypeMap.MIMETYPE_EXCEL, options);
         assertTrue("Mimetype should be supported", reliability);
     }
 }

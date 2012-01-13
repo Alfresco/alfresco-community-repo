@@ -172,7 +172,8 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
         properties.put(VAR_TARGET, targetFile.getAbsolutePath());
         
         // execute the statement
-        RuntimeExec.ExecutionResult result = executer.execute(properties);
+        long timeoutMs = options.getTimeoutMs();
+        RuntimeExec.ExecutionResult result = executer.execute(properties, timeoutMs);
         if (result.getExitValue() != 0 && result.getStdErr() != null && result.getStdErr().length() > 0)
         {
             throw new ContentIOException("Failed to perform ImageMagick transformation: \n" + result);

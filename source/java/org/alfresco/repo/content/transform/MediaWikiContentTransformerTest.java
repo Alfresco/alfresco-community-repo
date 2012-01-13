@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -39,7 +39,7 @@ import de.schlichtherle.io.FileOutputStream;
  */
 public class MediaWikiContentTransformerTest extends AbstractContentTransformerTest
 {
-    private ContentTransformer transformer;
+    private MediaWikiContentTransformer transformer;
     
     private static final String WIKI_TEXT = 
         "== This is a title ==\n" +
@@ -69,6 +69,8 @@ public class MediaWikiContentTransformerTest extends AbstractContentTransformerT
     {
         super.setUp();
         transformer = new MediaWikiContentTransformer();
+        transformer.setMimetypeService(mimetypeService);
+        transformer.setTransformerDebug(transformerDebug);
     }
     
     protected ContentTransformer getTransformer(String sourceMimetype, String targetMimetype)
@@ -84,8 +86,8 @@ public class MediaWikiContentTransformerTest extends AbstractContentTransformerT
     public void testIsTransformable() throws Exception
     {
         // check reliability
-        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_TEXT_MEDIAWIKI, MimetypeMap.MIMETYPE_HTML, new TransformationOptions()));
-        assertFalse(transformer.isTransformable(MimetypeMap.MIMETYPE_HTML, MimetypeMap.MIMETYPE_TEXT_MEDIAWIKI, new TransformationOptions()));
+        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_TEXT_MEDIAWIKI, -1, MimetypeMap.MIMETYPE_HTML, new TransformationOptions()));
+        assertFalse(transformer.isTransformable(MimetypeMap.MIMETYPE_HTML, -1, MimetypeMap.MIMETYPE_TEXT_MEDIAWIKI, new TransformationOptions()));
     }
     
     public void testMediaWikiToHTML() throws Exception

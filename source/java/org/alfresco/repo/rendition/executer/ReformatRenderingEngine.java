@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -22,6 +22,8 @@ package org.alfresco.repo.rendition.executer;
 import java.util.Collection;
 
 import org.alfresco.repo.action.ParameterDefinitionImpl;
+import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
+import org.alfresco.repo.rendition.executer.AbstractRenderingEngine.RenderingContext;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.rendition.RenditionService;
@@ -78,9 +80,16 @@ public class ReformatRenderingEngine extends AbstractTransformationRenderingEngi
     @Override
     protected TransformationOptions getTransformOptions(RenderingContext context)
     {
-        NodeRef sourceNode = context.getSourceNode();
-        NodeRef destinationNode = context.getDestinationNode();
-        return new TransformationOptions(sourceNode, null, destinationNode, null);
+        return getTransformOptionsImpl(new TransformationOptions(), context);
+    }
+
+    @Override
+    protected TransformationOptions getTransformOptionsImpl(TransformationOptions options, RenderingContext context)
+    {
+        options.setSourceNodeRef(context.getSourceNode());
+        options.setTargetNodeRef(context.getDestinationNode());
+        
+        return super.getTransformOptionsImpl(options, context);
     }
 
     /*

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.thumbnail;
 
+import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -29,6 +31,7 @@ import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
@@ -43,6 +46,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Roy Wetherall
  * @author Neil McErlean
+ * @author Ph Dubois (optional thumbnail creation by mimetype and in general)
  */
 public class UpdateThumbnailActionExecuter extends ActionExecuterAbstractBase
 {
@@ -58,6 +62,12 @@ public class UpdateThumbnailActionExecuter extends ActionExecuterAbstractBase
     /** Node Service */
     private NodeService nodeService;
     
+    /** Property turns on and off all thumbnail creation */
+    private boolean generateThumbnails = true;
+
+    // Size limitations indexed by mime type for thumbnail creation
+    private HashMap<String,Long> mimetypeMaxSourceSizeKBytes;
+
     /** Action name and parameters */
     public static final String NAME = "update-thumbnail";
     public static final String PARAM_CONTENT_PROPERTY = "content-property";
@@ -94,11 +104,39 @@ public class UpdateThumbnailActionExecuter extends ActionExecuterAbstractBase
     }
     
     /**
+     * Set the maximum size for each mimetype above which thumbnails are not created.
+     * @param mimetypeMaxSourceSizeKBytes map of mimetypes to max source sizes.
+     */
+    public void setMimetypeMaxSourceSizeKBytes(HashMap<String, Long> mimetypeMaxSourceSizeKBytes)
+    {
+        this.mimetypeMaxSourceSizeKBytes = mimetypeMaxSourceSizeKBytes;
+    }
+    
+    /**
+     * Enable thumbnail creation at all regardless of mimetype.
+     * @param generateThumbnails a {@code false} value turns off all thumbnail creation.
+     */
+    public void setGenerateThumbnails(boolean generateThumbnails)
+    {
+        this.generateThumbnails = generateThumbnails;
+    }
+    
+    /**
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
+        // Check if thumbnailing is generally disabled
+        if (!generateThumbnails)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Thumbnail transformations are not enabled");
+            }
+            return;
+        }
+        
         // Get the thumbnail
         NodeRef thumbnailNodeRef = (NodeRef)action.getParameterValue(PARAM_THUMBNAIL_NODE);
         if (thumbnailNodeRef == null)
@@ -128,6 +166,26 @@ public class UpdateThumbnailActionExecuter extends ActionExecuterAbstractBase
                 contentProperty = ContentModel.PROP_CONTENT;
             }
             
+            Serializable contentProp = nodeService.getProperty(actionedUponNodeRef, contentProperty);
+            if (contentProp == null)
+            {
+                logger.info("Creation of thumbnail, null content for " + details.getName());
+                return;
+            }
+
+            if(contentProp instanceof ContentData)
+            {
+                ContentData content = (ContentData)contentProp;
+                if (mimetypeMaxSourceSizeKBytes != null)
+                {
+                    Long maxSourceSizeKBytes = mimetypeMaxSourceSizeKBytes.get(content.getMimetype());
+                    if (maxSourceSizeKBytes != null && maxSourceSizeKBytes < (content.getSize()/1024L))
+                    {
+                        logger.info("Creation of thumbnail,  '" + details.getName() + " , content too big ("+maxSourceSizeKBytes+"K)");
+                        return; //avoid transform
+                    }
+                }
+            }
             // Create the thumbnail
             this.thumbnailService.updateThumbnail(thumbnailNodeRef, details.getTransformationOptions());
         }

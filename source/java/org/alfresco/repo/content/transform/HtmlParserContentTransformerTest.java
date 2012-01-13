@@ -28,13 +28,15 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
  */
 public class HtmlParserContentTransformerTest extends AbstractContentTransformerTest
 {
-    private ContentTransformer transformer;
+    private HtmlParserContentTransformer transformer;
     
     @Override
     public void setUp() throws Exception
     {
         super.setUp();
         transformer = new HtmlParserContentTransformer();
+        transformer.setMimetypeService(mimetypeService);
+        transformer.setTransformerDebug(transformerDebug);
     }
     
     protected ContentTransformer getTransformer(String sourceMimetype, String targetMimetype)
@@ -50,11 +52,11 @@ public class HtmlParserContentTransformerTest extends AbstractContentTransformer
     public void checkIsTransformable() throws Exception
     {
         // check reliability
-        boolean reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_HTML, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions());
+        boolean reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_HTML, -1, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions());
         assertTrue(reliability);   // plain text to plain text is supported
         
         // check other way around
-        reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_HTML, new TransformationOptions());
+        reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_TEXT_PLAIN, -1, MimetypeMap.MIMETYPE_HTML, new TransformationOptions());
         assertFalse(reliability);   // plain text to plain text is not supported
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -27,6 +27,7 @@ import org.alfresco.repo.content.transform.magick.ImageResizeOptions;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.content.transform.swf.SWFTransformationOptions;
 import org.alfresco.repo.rendition.executer.AbstractRenderingEngine;
+import org.alfresco.repo.rendition.executer.AbstractTransformationRenderingEngine;
 import org.alfresco.repo.rendition.executer.ImageRenderingEngine;
 import org.alfresco.repo.rendition.executer.ReformatRenderingEngine;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
@@ -143,6 +144,13 @@ public class ThumbnailRenditionConvertor
 
 //        putParameterIfNotNull(ImageRenderingEngine.PARAM_ASSOC_NAME, assocDetails.getAssociationName(), parameters);
 //        putParameterIfNotNull(ImageRenderingEngine.PARAM_ASSOC_TYPE, assocDetails.getAssociationType(), parameters);
+
+        putParameterIfNotNull(AbstractTransformationRenderingEngine.PARAM_TIMEOUT_MS, transformationOptions.getTimeoutMs(), parameters);
+        putParameterIfNotNull(AbstractTransformationRenderingEngine.PARAM_READ_LIMIT_TIME_MS, transformationOptions.getReadLimitTimeMs(), parameters);
+        putParameterIfNotNull(AbstractTransformationRenderingEngine.PARAM_MAX_SOURCE_SIZE_K_BYTES, transformationOptions.getMaxSourceSizeKBytes(), parameters);
+        putParameterIfNotNull(AbstractTransformationRenderingEngine.PARAM_READ_LIMIT_K_BYTES, transformationOptions.getReadLimitKBytes(), parameters);
+        putParameterIfNotNull(AbstractTransformationRenderingEngine.PARAM_MAX_PAGES, transformationOptions.getMaxPages(), parameters);
+        putParameterIfNotNull(AbstractTransformationRenderingEngine.PARAM_PAGE_LIMIT, transformationOptions.getPageLimit(), parameters);
 
         if (transformationOptions instanceof SWFTransformationOptions)
         {

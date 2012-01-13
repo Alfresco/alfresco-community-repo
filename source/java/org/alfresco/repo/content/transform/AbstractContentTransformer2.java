@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -38,7 +38,7 @@ import org.apache.commons.logging.LogFactory;
  * @author Derek Hulley
  * @author Roy Wetherall
  */
-public abstract class AbstractContentTransformer2 extends ContentTransformerHelper implements ContentTransformer
+public abstract class AbstractContentTransformer2 extends AbstractContentTransformerLimits
 {
     private static final Log logger = LogFactory.getLog(AbstractContentTransformer2.class);
     
@@ -103,12 +103,14 @@ public abstract class AbstractContentTransformer2 extends ContentTransformerHelp
     {
         String sourceMimetype = getMimetype(reader);
         String targetMimetype = getMimetype(writer);
-        boolean transformable = isTransformable(sourceMimetype, targetMimetype, options);
+        long sourceSize = reader.getSize();
+        boolean transformable = isTransformable(sourceMimetype, sourceSize, targetMimetype, options);
         if (transformable == false)
         {
-            throw new AlfrescoRuntimeException("Unsuported transformation attempted: \n" +
+            AlfrescoRuntimeException e = new AlfrescoRuntimeException("Unsuported transformation attempted: \n" +
                     "   reader: " + reader + "\n" +
                     "   writer: " + writer);
+            throw transformerDebug.setCause(e);
         }
         // it all checks out OK
     }
@@ -154,8 +156,16 @@ public abstract class AbstractContentTransformer2 extends ContentTransformerHelp
         
         try
         {
+            if (transformerDebug.isEnabled())
+            {
+                transformerDebug.pushTransform(this, reader.getContentUrl(), reader.getMimetype(), writer.getMimetype(), reader.getSize());
+            }
+            
             // Check the transformability
             checkTransformable(reader, writer, options);
+            
+            // Pass on any limits to the reader
+            setReaderLimits(reader, writer, options);
 
             // Transform
             transformInternal(reader, writer, options);
@@ -174,18 +184,22 @@ public abstract class AbstractContentTransformer2 extends ContentTransformerHelp
             // Report the error
             if(differentType == null)
             {
-               throw new ContentIOException("Content conversion failed: \n" +
+                transformerDebug.debug("Failed", e);
+                throw new ContentIOException("Content conversion failed: \n" +
                        "   reader: " + reader + "\n" +
                        "   writer: " + writer + "\n" +
-                       "   options: " + options,
+                       "   options: " + options.toString(false) + "\n" +
+                       "   limits: " + getLimits(reader, writer, options),
                        e);
             }
             else
             {
+               transformerDebug.debug("Failed: Mime type was '"+differentType+"'", e);
                throw new ContentIOException("Content conversion failed: \n" +
                      "   reader: " + reader + "\n" +
                      "   writer: " + writer + "\n" +
-                     "   options: " + options + "\n" +
+                     "   options: " + options.toString(false) + "\n" +
+                     "   limits: " + getLimits(reader, writer, options) + "\n" +
                      "   claimed mime type: " + reader.getMimetype() + "\n" +
                      "   detected mime type: " + differentType,
                      e);
@@ -193,6 +207,8 @@ public abstract class AbstractContentTransformer2 extends ContentTransformerHelp
         }
         finally
         {
+            transformerDebug.popTransform();
+            
             // check that the reader and writer are both closed
             if (reader.isChannelOpen())
             {

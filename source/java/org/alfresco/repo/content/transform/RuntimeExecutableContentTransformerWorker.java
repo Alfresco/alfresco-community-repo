@@ -256,10 +256,11 @@ public class RuntimeExecutableContentTransformerWorker extends ContentTransforme
         reader.getContent(sourceFile);
 
         // execute the transformation command
+        long timeoutMs = options.getTimeoutMs();
         ExecutionResult result = null;
         try
         {
-            result = transformCommand.execute(properties);
+            result = transformCommand.execute(properties, timeoutMs);
         }
         catch (Throwable e)
         {

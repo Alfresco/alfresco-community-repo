@@ -20,6 +20,7 @@ package org.alfresco.repo.search.impl.lucene;
 
 import java.util.List;
 
+import org.alfresco.repo.content.transform.TransformerDebug;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.SupportsBackgroundIndexing;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
@@ -42,6 +43,8 @@ public class ADMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
     protected NodeService nodeService;
     protected FullTextSearchIndexer fullTextSearchIndexer;
     protected ContentService contentService;
+    private TransformerDebug transformerDebug;
+
     protected TransactionService transactionService;
 
     /**
@@ -80,6 +83,15 @@ public class ADMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
     {
         this.contentService = contentService;
     }
+
+    /**
+     * Sets the transformer debug. 
+     * @param transformerDebug
+     */
+    public void setTransformerDebug(TransformerDebug transformerDebug)
+    {
+        this.transformerDebug = transformerDebug;
+    }
     
     /**
      * Set the transaction service
@@ -101,6 +113,7 @@ public class ADMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
         // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setFullTextSearchIndexer(fullTextSearchIndexer);
         indexer.setContentService(contentService);
+        indexer.setTransformerDebug(transformerDebug);
         indexer.setTransactionService(transactionService);
         indexer.setMaxAtomicTransformationTime(getMaxTransformationTime());
         return indexer;

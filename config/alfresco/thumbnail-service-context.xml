@@ -1,7 +1,10 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
-<beans>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation="
+               http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+            http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd">
 
     <!-- Thumbnail service bean -->
     <bean id="ThumbnailService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -93,6 +96,12 @@
                                     <property name="allowEnlargement" value="false" />
                                 </bean> 
                             </property>
+                            <property name="timeoutMs" value="${system.thumbnail.definition.doclib.timeoutMs}" />
+                            <property name="readLimitTimeMs" value="${system.thumbnail.definition.doclib.readLimitTimeMs}" />
+                            <property name="maxSourceSizeKBytes" value="${system.thumbnail.definition.doclib.maxSourceSizeKBytes}" />
+                            <property name="readLimitKBytes" value="${system.thumbnail.definition.doclib.readLimitKBytes}" />
+                            <property name="pageLimit" value="${system.thumbnail.definition.doclib.pageLimit}" />
+                            <property name="maxPages" value="${system.thumbnail.definition.doclib.maxPages}" />
                         </bean>
                     </property>
                     <property name="placeHolderResourcePath" value="alfresco/thumbnail/thumbnail_placeholder_doclib.png" />
@@ -114,27 +123,27 @@
                     <property name="failureHandlingOptions" ref="standardFailureOptions"/>
                 </bean>
             
-             <!-- Image preview thumbnail options -->
-             <bean class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
-                <property name="name" value="imgpreview" />
-                <property name="mimetype" value="image/png"/>
-                <property name="transformationOptions">
-                   <bean class="org.alfresco.repo.content.transform.magick.ImageTransformationOptions">
-                      <property name="resizeOptions">
-                         <bean class="org.alfresco.repo.content.transform.magick.ImageResizeOptions">
-                            <property name="width" value="480"/>
-                            <property name="height" value="480"/>
-                            <property name="maintainAspectRatio" value="true"/>
-                            <property name="resizeToThumbnail" value="true" />
-                            <property name="allowEnlargement" value="false" />
-                         </bean>
-                      </property>
-                   </bean>
-                </property>
-                <property name="placeHolderResourcePath" value="alfresco/thumbnail/thumbnail_placeholder_imgpreview.png" />
-                <property name="runAs" value="System"/>
-                <property name="failureHandlingOptions" ref="standardFailureOptions"/>
-             </bean>
+                 <!-- Image preview thumbnail options -->
+                 <bean class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
+                    <property name="name" value="imgpreview" />
+                    <property name="mimetype" value="image/png"/>
+                    <property name="transformationOptions">
+                       <bean class="org.alfresco.repo.content.transform.magick.ImageTransformationOptions">
+                          <property name="resizeOptions">
+                             <bean class="org.alfresco.repo.content.transform.magick.ImageResizeOptions">
+                                <property name="width" value="480"/>
+                                <property name="height" value="480"/>
+                                <property name="maintainAspectRatio" value="true"/>
+                                <property name="resizeToThumbnail" value="true" />
+                                <property name="allowEnlargement" value="false" />
+                             </bean>
+                          </property>
+                       </bean>
+                    </property>
+                    <property name="placeHolderResourcePath" value="alfresco/thumbnail/thumbnail_placeholder_imgpreview.png" />
+                    <property name="runAs" value="System"/>
+                    <property name="failureHandlingOptions" ref="standardFailureOptions"/>
+                </bean>
 
                 <!-- User avatar 64x64 image thumbnail options -->
                 <bean class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
@@ -200,6 +209,13 @@
         <property name="thumbnailService">
             <ref bean="ThumbnailService" />
         </property>
+      <!-- Generate thumbnails at all? A false value turns generation off regardless of mimetype -->
+      <property name="generateThumbnails">
+            <value>${system.thumbnail.generate}</value>
+      </property>
+      <property name="mimetypeMaxSourceSizeKBytes">
+          <ref bean="mimetypeMaxSourceSizeKBytes" />
+      </property>
     </bean> 
     
     <!-- Update Thumbnail Action -->
@@ -216,8 +232,48 @@
         <property name="thumbnailService">
             <ref bean="ThumbnailService" />
         </property>
+      <!-- Generate thumbnails at all? A false value turns generation off regardless of mimetype -->
+      <property name="generateThumbnails">
+            <value>${system.thumbnail.generate}</value>
+      </property>
+      <property name="mimetypeMaxSourceSizeKBytes">
+          <ref bean="mimetypeMaxSourceSizeKBytes" />
+      </property>
     </bean> 
     
+    <!-- Size limits (KBytes) by mimetype of original source content after which thumbnails
+         are not created. If the mimetype is not specified or the value is less than or
+         equal to zero, a thumbnail will be generated regardless of size. -->
+    <util:map id="mimetypeMaxSourceSizeKBytes" 
+        map-class="java.util.HashMap" 
+        key-type="java.lang.String" 
+        value-type="java.lang.String">
+        <entry key="application/pdf" >
+            <value>${system.thumbnail.mimetype.maxSourceSizeKBytes.pdf}</value>
+        </entry>
+        <entry key="text/plain" >
+            <value>${system.thumbnail.mimetype.maxSourceSizeKBytes.txt}</value>
+        </entry>
+        <entry key="application/vnd.openxmlformats-officedocument.wordprocessingml.document" >
+            <value>${system.thumbnail.mimetype.maxSourceSizeKBytes.docx}</value>
+        </entry>
+        <entry key="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" >
+            <value>${system.thumbnail.mimetype.maxSourceSizeKBytes.xlsx}</value>
+        </entry>
+        <entry key="application/vnd.openxmlformats-officedocument.presentationml.presentation" >
+            <value>${system.thumbnail.mimetype.maxSourceSizeKBytes.pptx}</value>
+        </entry>
+        <entry key="application/vnd.oasis.opendocument.text" >
+            <value>${system.thumbnail.mimetype.maxSourceSizeKBytes.odt}</value>
+        </entry>
+        <entry key="application/vnd.oasis.opendocument.spreadsheet" >
+            <value>${system.thumbnail.mimetype.maxSourceSizeKBytes.ods}</value>
+        </entry>
+        <entry key="application/vnd.oasis.opendocument.presentation" >
+             <value>${system.thumbnail.mimetype.maxSourceSizeKBytes.odp}</value>
+        </entry>
+    </util:map>
+
     <!-- Thumbnail service script API -->    
     <bean id="thumbnailServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.thumbnail.script.ScriptThumbnailService">
         <property name="extensionName">

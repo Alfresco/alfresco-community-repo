@@ -80,9 +80,9 @@ public class FailoverContentTransformer extends AbstractContentTransformer2 impl
     
     /**
      * 
-     * @see org.alfresco.repo.content.transform.ContentTransformer#isTransformable(java.lang.String, java.lang.String, org.alfresco.service.cmr.repository.TransformationOptions)
+     * @see org.alfresco.repo.content.transform.ContentTransformer#isTransformable(java.lang.String, long sourceSize, java.lang.String, org.alfresco.service.cmr.repository.TransformationOptions)
      */
-    public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
+    public boolean isTransformable(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
     {
         // For this transformer to be considered operational, there must be at least one transformer
         // in the chain that can perform for us.
@@ -90,14 +90,26 @@ public class FailoverContentTransformer extends AbstractContentTransformer2 impl
         
         for (ContentTransformer ct : this.transformers)
         {
-            if (ct.isTransformable(sourceMimetype, targetMimetype, options))
+            if (ct.isTransformable(sourceMimetype, sourceSize, targetMimetype, options))
             {
-                result = true;
+                // There may be size limits on this transformer as well as those it contains.
+                result = isTransformableSize(sourceMimetype, sourceSize, targetMimetype, options);
                 break;
             }
         }
         
         return result;
+    }
+
+    /**
+     * @deprecated This method should no longer be called as the overloaded method
+     * that calls it has the overridden.
+     */
+    @Override
+    public boolean isTransformable(String sourceMimetype, String targetMimetype,
+            TransformationOptions options)
+    {
+        return false;
     }
     
     public boolean isExplicitTransformation(String sourceMimetype, String targetMimetype, TransformationOptions options)
@@ -130,7 +142,7 @@ public class FailoverContentTransformer extends AbstractContentTransformer2 impl
         // then move on to the next transformer. In the event that they all fail, we will throw
         // the final exception.
         Exception transformationException = null;
-
+        
         for (int i = 0; i < transformers.size(); i++)
         {
         	int oneBasedCount = i + 1;
@@ -198,6 +210,7 @@ public class FailoverContentTransformer extends AbstractContentTransformer2 impl
         // At this point we have tried all transformers in the sequence without apparent success.
         if (transformationException != null)
         {
+            transformerDebug.debug("No more transformations to failover to");
             if (logger.isDebugEnabled())
             {
                 logger.debug("All transformations were unsuccessful. Throwing latest exception.", transformationException);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,6 +19,7 @@
 package org.alfresco.repo.content.transform;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
 
@@ -47,8 +48,11 @@ public class TextToPdfContentTransformerTest extends AbstractContentTransformerT
         super.setUp();
         
         transformer = new TextToPdfContentTransformer();
+        transformer.setMimetypeService(mimetypeService);
+        transformer.setTransformerDebug(transformerDebug);
         transformer.setStandardFont("Times-Roman");
         transformer.setFontSize(20);
+        transformer.setPageLimit(-1);
     }
     
     /**
@@ -62,11 +66,11 @@ public class TextToPdfContentTransformerTest extends AbstractContentTransformerT
     
     public void testReliability() throws Exception
     {
-        boolean reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_PDF, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions());
+        boolean reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_PDF, -1, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions());
         assertEquals("Mimetype should not be supported", false, reliability);
-        reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_PDF, new TransformationOptions());
+        reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_TEXT_PLAIN, -1, MimetypeMap.MIMETYPE_PDF, new TransformationOptions());
         assertEquals("Mimetype should be supported", true, reliability);
-        reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_XML, MimetypeMap.MIMETYPE_PDF, new TransformationOptions());
+        reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_XML, -1, MimetypeMap.MIMETYPE_PDF, new TransformationOptions());
         assertEquals("Mimetype should be supported", true, reliability);
     }
     
@@ -82,44 +86,90 @@ public class TextToPdfContentTransformerTest extends AbstractContentTransformerT
         String european = "En français où les choses sont accentués\n" +
             "En español, así";
         
-        ContentReader reader;
         for(String text : new String[] {allAscii, european})
         {
             for(String encoding : new String[] {"ISO-8859-1", "UTF-8", "UTF-16"})
             {
-                // Get a reader for the text
-                reader = buildContentReader(text, Charset.forName(encoding));
-                
-                // And a temp writer
-                File out = TempFileProvider.createTempFile("AlfrescoTest_", ".pdf");
-                ContentWriter writer = new FileContentWriter(out);
-                writer.setMimetype("application/pdf");
-                
-                // Transform to PDF
-                transformer.transform(reader, writer);
-                
-                // Read back in the PDF and check it
-                PDDocument doc = PDDocument.load(out);
-                PDFTextStripper textStripper = new PDFTextStripper();
-                StringWriter textWriter = new StringWriter();
-                textStripper.writeText(doc, textWriter);
-                doc.close();
-                
                 // Newlines etc may be different, so zap them
                 String checkText = clean(text);
-                String roundTrip = clean(textWriter.toString());
-                
-                // Now check it
-//                System.err.println("== " + encoding + " ==");
-//                System.err.println(roundTrip);
-//                System.err.println("====");
-                assertEquals(
-                        "Incorrect text in PDF when starting from text in " + encoding,
-                        checkText, roundTrip
-                );
+
+                transformTextAndCheck(text, encoding, checkText);
             }
         }
     }
+
+    public void testUnlimitedPages() throws Exception
+    {
+        transformTextAndCheckPageLength(-1);
+    }
+
+    public void testLimitedTo1Page() throws Exception
+    {
+        transformTextAndCheckPageLength(1);
+    }
+    
+    public void testLimitedTo2Pages() throws Exception
+    {
+        transformTextAndCheckPageLength(2);
+    }
+
+    public void testLimitedTo50Pages() throws Exception
+    {
+        transformTextAndCheckPageLength(50);
+    }
+
+    private void transformTextAndCheckPageLength(int pageLimit) throws IOException
+    {
+        transformer.setPageLimit(pageLimit);
+        
+        int pageLength = 32;
+        int lines = (pageLength+10) * ((pageLimit > 0) ? pageLimit : 1);
+        StringBuilder sb = new StringBuilder();
+        String checkText = null;
+        int cutoff = pageLimit * pageLength;
+        for (int i=1; i<=lines; i++)
+        {
+            sb.append(i);
+            sb.append(" I must not talk in class or feed my homework to my cat.\n");
+            if (i == cutoff)
+                checkText = sb.toString();
+        }
+        sb.append("\nBart\n");
+        String text = sb.toString();
+        checkText = (checkText == null) ? clean(text) : clean(checkText);
+
+        transformTextAndCheck(text, "UTF-8", checkText);
+    }
+
+    private void transformTextAndCheck(String text, String encoding, String checkText)
+            throws IOException
+    {
+        // Get a reader for the text
+        ContentReader reader = buildContentReader(text, Charset.forName(encoding));
+        
+        // And a temp writer
+        File out = TempFileProvider.createTempFile("AlfrescoTest_", ".pdf");
+        ContentWriter writer = new FileContentWriter(out);
+        writer.setMimetype("application/pdf");
+        
+        // Transform to PDF
+        transformer.transform(reader, writer);
+        
+        // Read back in the PDF and check it
+        PDDocument doc = PDDocument.load(out);
+        PDFTextStripper textStripper = new PDFTextStripper();
+        StringWriter textWriter = new StringWriter();
+        textStripper.writeText(doc, textWriter);
+        doc.close();
+        
+        String roundTrip = clean(textWriter.toString());
+        
+        assertEquals(
+                "Incorrect text in PDF when starting from text in " + encoding,
+                checkText, roundTrip
+        );
+    }
+
     private String clean(String text)
     {
         text = text.replaceAll("\\s+\\r", "");

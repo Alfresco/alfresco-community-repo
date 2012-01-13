@@ -68,6 +68,7 @@ public abstract class AbstractContentTransformerTest extends TestCase
 
     protected ServiceRegistry serviceRegistry;
     protected MimetypeService mimetypeService;
+    protected TransformerDebug transformerDebug;
 
     /**
      * Fetches a transformer to test for a given transformation.  The transformer
@@ -94,6 +95,7 @@ public abstract class AbstractContentTransformerTest extends TestCase
         // Grab other useful beans
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         mimetypeService = serviceRegistry.getMimetypeService();
+        transformerDebug = (TransformerDebug) ctx.getBean("transformerDebug");
         // perform a little cleaning up
         long now = System.currentTimeMillis();
         TempFileProvider.TempFileCleanerJob.removeFiles(now);
@@ -212,7 +214,14 @@ public abstract class AbstractContentTransformerTest extends TestCase
         {
             // attempt to get a source file for each mimetype
             String[] quickFiles = getQuickFilenames(sourceMimetype);
-            sb.append("   Source Files: ").append(quickFiles).append("\n");
+            sb.append("   Source Files: ");
+            for (String quickFile: quickFiles)
+            {    
+                sb.append(quickFile);
+                sb.append(' ');
+            }
+            sb.append("\n");
+            
 
             for (String quickFile : quickFiles)
             {
@@ -232,7 +241,7 @@ public abstract class AbstractContentTransformerTest extends TestCase
                    
                    // must we test the transformation?
                    ContentTransformer transformer = getTransformer(sourceMimetype, targetMimetype);
-                   if (transformer == null || transformer.isTransformable(sourceMimetype, targetMimetype, null) == false)
+                   if (transformer == null || transformer.isTransformable(sourceMimetype, -1, targetMimetype, null) == false)
                    {
                        // no transformer
                        continue;

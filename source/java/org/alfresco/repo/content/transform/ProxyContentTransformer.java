@@ -22,6 +22,7 @@ import net.sf.jooreports.converter.DocumentFormatRegistry;
 
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.TransformationOptionLimits;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 
 /**
@@ -65,6 +66,18 @@ public class ProxyContentTransformer extends AbstractContentTransformer2
     protected void transformInternal(ContentReader reader, ContentWriter writer, TransformationOptions options)
             throws Exception
     {
-        this.worker.transform(reader, writer, options);
-    }
+        TransformationOptionLimits original = options.getLimits();
+        try
+        {
+            // Combine the transformer's limit values into the options so they are available to the worker
+            options.setLimits(getLimits(reader, writer, options));
+
+            // Perform the transformation
+            this.worker.transform(reader, writer, options);
+        }
+        finally
+        {
+            options.setLimits(original);
+        }
+   }
 }

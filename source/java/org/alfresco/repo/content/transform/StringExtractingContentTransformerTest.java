@@ -56,7 +56,7 @@ public class StringExtractingContentTransformerTest extends AbstractContentTrans
         }
     }
     
-    private ContentTransformer transformer;
+    private StringExtractingContentTransformer transformer;
     /** the final destination of transformations */
     private ContentWriter targetWriter;
     
@@ -66,6 +66,8 @@ public class StringExtractingContentTransformerTest extends AbstractContentTrans
         super.setUp();
         
         transformer = new StringExtractingContentTransformer();
+        transformer.setMimetypeService(mimetypeService);
+        transformer.setTransformerDebug(transformerDebug);
         targetWriter = new FileContentWriter(getTempFile());
         targetWriter.setMimetype("text/plain");
         targetWriter.setEncoding("UTF-8");
@@ -112,7 +114,7 @@ public class StringExtractingContentTransformerTest extends AbstractContentTrans
         ContentReader reader = writeContent("text/plain", "MacDingbat");
         
         // check transformability
-        assertTrue(transformer.isTransformable(reader.getMimetype(), targetWriter.getMimetype(), new TransformationOptions()));
+        assertTrue(transformer.isTransformable(reader.getMimetype(), -1, targetWriter.getMimetype(), new TransformationOptions()));
         
         // transform
         transformer.transform(reader, targetWriter);
@@ -128,7 +130,7 @@ public class StringExtractingContentTransformerTest extends AbstractContentTrans
         ContentReader reader = writeContent("text/xml", "MacDingbat");
         
         // check transformability
-        assertTrue(transformer.isTransformable(reader.getMimetype(), targetWriter.getMimetype(), new TransformationOptions()));
+        assertTrue(transformer.isTransformable(reader.getMimetype(), -1, targetWriter.getMimetype(), new TransformationOptions()));
         
         // transform
         transformer.transform(reader, targetWriter);

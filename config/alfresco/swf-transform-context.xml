@@ -23,6 +23,7 @@
       <property name="worker">
          <ref bean="transformer.worker.Pdf2swf"/>
       </property>
+      <property name="maxSourceSizeKBytes"><value>${content.transformer.Pdf2swf.maxSourceSizeKBytes}</value></property>
    </bean>
    
    <bean id="transformer.complex.OpenOffice.Pdf2swf"
@@ -39,6 +40,8 @@
             <value>application/pdf</value>
          </list>
       </property>
+      <!-- Note: there are maxSourceSizeKBytes limits on transformer.OpenOffice for txt->pdf and xlsx->pdf
+           which may cause this transformer not to be selected because it is too slow. -->
    </bean>
    
    <bean id="transformer.complex.iWorks.Pdf2swf"
@@ -71,6 +74,12 @@
             <value>application/pdf</value>
          </list>
       </property>
+      <!-- Note: there are maxSourceSizeKBytes limit on transformer.PdfBox.TextToPdf for txt->pdf
+           which may cause this transformer not to be selected because it is too slow and another
+           maxSourceSizeKBytes limit on transformer.Pdf2swf, but what is the point of doing the
+           first one only to give up on the second when we can guess the pdf size is just a bit 
+           more than the text. -->
+      <property name="maxSourceSizeKBytes"><value>${content.transformer.complex.Text.Pdf2swf.maxSourceSizeKBytes}</value></property>
    </bean>
 
    <!-- This transformer allows for the webpreviewing of zip archive files. -->

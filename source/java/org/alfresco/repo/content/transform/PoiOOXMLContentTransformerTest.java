@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -28,7 +28,7 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
  */
 public class PoiOOXMLContentTransformerTest extends AbstractContentTransformerTest
 {
-    private ContentTransformer transformer;
+    private PoiOOXMLContentTransformer transformer;
     
     @Override
     public void setUp() throws Exception
@@ -36,6 +36,8 @@ public class PoiOOXMLContentTransformerTest extends AbstractContentTransformerTe
         super.setUp();
         
         transformer = new PoiOOXMLContentTransformer();
+        transformer.setMimetypeService(mimetypeService);
+        transformer.setTransformerDebug(transformerDebug);
     }
     
     /**
@@ -48,19 +50,19 @@ public class PoiOOXMLContentTransformerTest extends AbstractContentTransformerTe
 
     public void testIsTransformable() throws Exception
     {
-        assertFalse(transformer.isTransformable(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_OPENXML_WORDPROCESSING, new TransformationOptions()));
-        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_OPENXML_WORDPROCESSING, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions()));
-        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_OPENXML_WORDPROCESSING, MimetypeMap.MIMETYPE_HTML, new TransformationOptions()));
-        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_OPENXML_WORDPROCESSING, MimetypeMap.MIMETYPE_XML, new TransformationOptions()));
+        assertFalse(transformer.isTransformable(MimetypeMap.MIMETYPE_TEXT_PLAIN, -1, MimetypeMap.MIMETYPE_OPENXML_WORDPROCESSING, new TransformationOptions()));
+        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_OPENXML_WORDPROCESSING, -1, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions()));
+        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_OPENXML_WORDPROCESSING, -1, MimetypeMap.MIMETYPE_HTML, new TransformationOptions()));
+        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_OPENXML_WORDPROCESSING, -1, MimetypeMap.MIMETYPE_XML, new TransformationOptions()));
         
-        assertFalse(transformer.isTransformable(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_OPENXML_PRESENTATION, new TransformationOptions()));
-        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_OPENXML_PRESENTATION, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions()));
-        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_OPENXML_PRESENTATION, MimetypeMap.MIMETYPE_HTML, new TransformationOptions()));
-        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_OPENXML_PRESENTATION, MimetypeMap.MIMETYPE_XML, new TransformationOptions()));
+        assertFalse(transformer.isTransformable(MimetypeMap.MIMETYPE_TEXT_PLAIN, -1, MimetypeMap.MIMETYPE_OPENXML_PRESENTATION, new TransformationOptions()));
+        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_OPENXML_PRESENTATION, -1, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions()));
+        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_OPENXML_PRESENTATION, -1, MimetypeMap.MIMETYPE_HTML, new TransformationOptions()));
+        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_OPENXML_PRESENTATION, -1, MimetypeMap.MIMETYPE_XML, new TransformationOptions()));
         
-        assertFalse(transformer.isTransformable(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_OPENXML_SPREADSHEET, new TransformationOptions()));
-        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_OPENXML_SPREADSHEET, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions()));
-        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_OPENXML_SPREADSHEET, MimetypeMap.MIMETYPE_HTML, new TransformationOptions()));
-        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_OPENXML_SPREADSHEET, MimetypeMap.MIMETYPE_XML, new TransformationOptions()));
+        assertFalse(transformer.isTransformable(MimetypeMap.MIMETYPE_TEXT_PLAIN, -1, MimetypeMap.MIMETYPE_OPENXML_SPREADSHEET, new TransformationOptions()));
+        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_OPENXML_SPREADSHEET, -1, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions()));
+        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_OPENXML_SPREADSHEET, -1, MimetypeMap.MIMETYPE_HTML, new TransformationOptions()));
+        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_OPENXML_SPREADSHEET, -1, MimetypeMap.MIMETYPE_XML, new TransformationOptions()));
     }
 }

@@ -29,6 +29,7 @@ import org.alfresco.repo.content.metadata.PdfBoxMetadataExtracterTest;
 import org.alfresco.repo.content.metadata.PoiMetadataExtracterTest;
 import org.alfresco.repo.content.metadata.RFC822MetadataExtracterTest;
 import org.alfresco.repo.content.metadata.TikaAutoMetadataExtracterTest;
+import org.alfresco.repo.content.transform.AbstractContentTransformerLimitsTest;
 import org.alfresco.repo.content.transform.AppleIWorksContentTransformerTest;
 import org.alfresco.repo.content.transform.BinaryPassThroughContentTransformerTest;
 import org.alfresco.repo.content.transform.ComplexContentTransformerTest;
@@ -47,9 +48,14 @@ import org.alfresco.repo.content.transform.TextMiningContentTransformerTest;
 import org.alfresco.repo.content.transform.TextToPdfContentTransformerTest;
 import org.alfresco.repo.content.transform.TikaAutoContentTransformerTest;
 import org.alfresco.repo.content.transform.magick.ImageMagickContentTransformerTest;
+import org.alfresco.service.cmr.repository.TransformationOptionLimitsTest;
+import org.alfresco.service.cmr.repository.TransformationOptionPairTest;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
 
+import com.google.gdata.data.acl.AclRole;
+
+import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
@@ -84,6 +90,12 @@ public class ContentMinimalContextTestSuite extends TestSuite
       
        // Off we go
        TestSuite suite = new TestSuite();
+       
+       // Limits
+       suite.addTest(new JUnit4TestAdapter(AbstractContentReaderLimitTest.class));
+       suite.addTest(new JUnit4TestAdapter(AbstractContentTransformerLimitsTest.class));
+       suite.addTest(new JUnit4TestAdapter(TransformationOptionLimitsTest.class));
+       suite.addTest(new JUnit4TestAdapter(TransformationOptionPairTest.class));
        
        // Metadata tests
        suite.addTestSuite( DWGMetadataExtracterTest.class );

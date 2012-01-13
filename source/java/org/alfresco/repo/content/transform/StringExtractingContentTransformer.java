@@ -118,7 +118,7 @@ public class StringExtractingContentTransformer extends AbstractContentTransform
                 charWriter = new OutputStreamWriter(writer.getContentOutputStream(), writer.getEncoding());
             }
             // copy from the one to the other
-            char[] buffer = new char[1024];
+            char[] buffer = new char[8192];
             int readCount = 0;
             while (readCount > -1)
             {

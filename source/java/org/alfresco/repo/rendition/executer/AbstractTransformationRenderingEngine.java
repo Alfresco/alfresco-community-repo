@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -20,10 +20,12 @@
 package org.alfresco.repo.rendition.executer;
 
 import org.alfresco.repo.content.transform.ContentTransformer;
+import org.alfresco.repo.content.transform.TransformerDebug;
 import org.alfresco.service.cmr.rendition.RenditionServiceException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NoTransformerException;
+import org.alfresco.service.cmr.repository.TransformationOptionLimits;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -34,6 +36,42 @@ import org.apache.commons.logging.LogFactory;
 public abstract class AbstractTransformationRenderingEngine extends AbstractRenderingEngine
 {
     private static Log logger = LogFactory.getLog(AbstractTransformationRenderingEngine.class);
+
+    /**
+     * This optional {@link Long} parameter specifies the timeout for reading
+     * the source before an exception is thrown.
+     */
+    public static final String PARAM_TIMEOUT_MS = TransformationOptionLimits.OPT_TIMEOUT_MS;
+
+    /**
+     * This optional {@link Long} parameter specifies how timeout for reading
+     * the source before EOF is returned.
+     */
+    public static final String PARAM_READ_LIMIT_TIME_MS = TransformationOptionLimits.OPT_READ_LIMIT_TIME_MS;
+
+    /**
+     * This optional {@link Long} parameter specifies the maximum number of kbytes of
+     * the source may be read. An exception is thrown before any are read if larger.
+     */
+    public static final String PARAM_MAX_SOURCE_SIZE_K_BYTES = TransformationOptionLimits.OPT_MAX_SOURCE_SIZE_K_BYTES;
+
+    /**
+     * This optional {@link Long} parameter specifies how many kbytes of
+     * the source to read in order to create an image.
+     */
+    public static final String PARAM_READ_LIMIT_K_BYTES = TransformationOptionLimits.OPT_READ_LIMIT_K_BYTES;
+
+    /**
+     * This optional {@link Integer} parameter specifies the maximum number of pages of
+     * the source that may be read. An exception is thrown before any are read if larger.
+     */
+    public static final String PARAM_MAX_PAGES = TransformationOptionLimits.OPT_MAX_PAGES;
+
+    /**
+     * This optional {@link Integer} parameter specifies how many source
+     * pages should be read in order to create an image.
+     */
+    public static final String PARAM_PAGE_LIMIT = TransformationOptionLimits.OPT_PAGE_LIMIT;
 
     /* Error messages */
     private static final String TRANSFORMER_NOT_EXISTS_MESSAGE_PATTERN = "Transformer for '%s' source mime type and '%s' target mime type was not found. Operation can't be performed";
@@ -48,13 +86,24 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
     protected void render(RenderingContext context)
     {
         ContentReader contentReader = context.makeContentReader();
+        String sourceUrl = contentReader.getContentUrl();
         String sourceMimeType = contentReader.getMimetype();
         String targetMimeType = getTargetMimeType(context);
 
         TransformationOptions options = getTransformOptions(context);
 
-        ContentTransformer transformer = this.contentService.getTransformer(sourceMimeType, targetMimeType, options);
-
+        // Log the following getTransform() as trace so we can see the wood for the trees
+        ContentTransformer transformer;
+        boolean orig = TransformerDebug.setDebugOutput(false);
+        try
+        {
+            transformer = this.contentService.getTransformer(sourceUrl, sourceMimeType, contentReader.getSize(), targetMimeType, options);
+        }
+        finally
+        {
+            TransformerDebug.setDebugOutput(orig);
+        }
+        
         // Actually perform the rendition.
         if (null == transformer)
         {
@@ -63,7 +112,7 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
                         targetMimeType));
         }
 
-        if (transformer.isTransformable(sourceMimeType, targetMimeType, options))
+        if (transformer.isTransformable(sourceMimeType, contentReader.getSize(), targetMimeType, options))
         {
             ContentWriter contentWriter = context.makeContentWriter();
             try
@@ -86,4 +135,45 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
     }
 
     protected abstract TransformationOptions getTransformOptions(RenderingContext context);
+
+    protected TransformationOptions getTransformOptionsImpl(TransformationOptions options, RenderingContext context)
+    {
+        Long timeoutMs = context.getCheckedParam(PARAM_TIMEOUT_MS, Long.class);
+        if (timeoutMs != null)
+        {
+            options.setTimeoutMs(timeoutMs);
+        }
+        
+        Long readLimitTimeMs = context.getCheckedParam(PARAM_READ_LIMIT_TIME_MS, Long.class);
+        if (readLimitTimeMs != null)
+        {
+            options.setReadLimitTimeMs(readLimitTimeMs);
+        }
+        
+        Long maxSourceSizeKBytes = context.getCheckedParam(PARAM_MAX_SOURCE_SIZE_K_BYTES, Long.class);
+        if (maxSourceSizeKBytes != null)
+        {
+            options.setMaxSourceSizeKBytes(maxSourceSizeKBytes);
+        }
+        
+        Long readLimitKBytes = context.getCheckedParam(PARAM_READ_LIMIT_K_BYTES, Long.class);
+        if (readLimitKBytes != null)
+        {
+            options.setReadLimitKBytes(readLimitKBytes);
+        }
+        
+        Integer maxPages = context.getCheckedParam(PARAM_MAX_PAGES, Integer.class);
+        if (maxPages != null)
+        {
+            options.setMaxPages(maxPages);
+        }
+        
+        Integer pageLimit = context.getCheckedParam(PARAM_PAGE_LIMIT, Integer.class);
+        if (pageLimit != null)
+        {
+            options.setPageLimit(pageLimit);
+        }
+
+        return options;
+    }
 }

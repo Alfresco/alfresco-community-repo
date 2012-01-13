@@ -47,6 +47,7 @@ import org.alfresco.repo.avm.util.SimplePath;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.ContentTransformer;
+import org.alfresco.repo.content.transform.TransformerDebug;
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.search.IndexMode;
@@ -78,6 +79,7 @@ import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.alfresco.service.namespace.QName;
@@ -127,6 +129,8 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
     private ContentStore contentStore;
 
     private ContentService contentService;
+    
+    private TransformerDebug transformerDebug;
 
     private FTSIndexerAware callBack;
 
@@ -181,6 +185,15 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
+    }
+
+    /**
+     * Helper setter of the transformer debug. 
+     * @param transformerDebug
+     */
+    public void setTransformerDebug(TransformerDebug transformerDebug)
+    {
+        this.transformerDebug = transformerDebug;
     }
 
     /**
@@ -1124,65 +1137,76 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                         // transform if necessary (it is not a UTF-8 text document)
                         if (!EqualsHelper.nullSafeEquals(reader.getMimetype(), MimetypeMap.MIMETYPE_TEXT_PLAIN) || !EqualsHelper.nullSafeEquals(reader.getEncoding(), "UTF-8"))
                         {
-                            // get the transformer
-                            ContentTransformer transformer = contentService.getTransformer(reader.getMimetype(), MimetypeMap.MIMETYPE_TEXT_PLAIN);
-                            // is this transformer good enough?
-                            if (transformer == null)
+                            try
                             {
-                                // log it
-                                if (s_logger.isDebugEnabled())
-                                {
-                                    s_logger.debug("Not indexed: No transformation: \n" + "   source: " + reader + "\n" + "   target: " + MimetypeMap.MIMETYPE_TEXT_PLAIN);
-                                }
-                                // don't index from the reader
-                                readerReady = false;
-                                // not indexed: no transformation
-                                // doc.add(new Field("TEXT", NOT_INDEXED_NO_TRANSFORMATION, Field.Store.NO,
-                                // Field.Index.TOKENIZED, Field.TermVector.NO));
-                                doc.add(new Field(attributeName, NOT_INDEXED_NO_TRANSFORMATION, Field.Store.NO, Field.Index.TOKENIZED, Field.TermVector.NO));
-                            }
-                            // else if (indexAtomicPropertiesOnly
-                            // && transformer.getTransformationTime() > maxAtomicTransformationTime)
-                            // {
-                            // only indexing atomic properties
-                            // indexing will take too long, so push it to the background
-                            // wereAllAtomic = false;
-                            // }
-                            else
-                            {
-                                // We have a transformer that is fast enough
-                                ContentWriter writer = contentService.getTempWriter();
-                                writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-                                // this is what the analyzers expect on the stream
-                                writer.setEncoding("UTF-8");
-                                try
-                                {
+                                // get the transformer
+                                transformerDebug.pushAvailable(reader.getContentUrl(), reader.getMimetype(), MimetypeMap.MIMETYPE_TEXT_PLAIN);
+                                long sourceSize = reader.getSize();
+                                List<ContentTransformer> transformers = contentService.getActiveTransformers(reader.getMimetype(), sourceSize, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions());
+                                transformerDebug.availableTransformers(transformers, sourceSize, "AVMLuceneIndexer");
 
-                                    transformer.transform(reader, writer);
-                                    // point the reader to the new-written content
-                                    reader = writer.getReader();
-                                    // Check that the reader is a view onto something concrete
-                                    if (!reader.exists())
-                                    {
-                                        throw new ContentIOException("The transformation did not write any content, yet: \n"
-                                                + "   transformer:     " + transformer + "\n" + "   temp writer:     " + writer);
-                                    }
-                                }
-                                catch (ContentIOException e)
+                                if (transformers.isEmpty())
                                 {
                                     // log it
                                     if (s_logger.isDebugEnabled())
                                     {
-                                        s_logger.debug("Not indexed: Transformation failed", e);
+                                        s_logger.debug("Not indexed: No transformation: \n" + "   source: " + reader + "\n" + "   target: " + MimetypeMap.MIMETYPE_TEXT_PLAIN);
                                     }
                                     // don't index from the reader
                                     readerReady = false;
-                                    // not indexed: transformation
-                                    // failed
-                                    // doc.add(new Field("TEXT", NOT_INDEXED_TRANSFORMATION_FAILED, Field.Store.NO,
+                                    // not indexed: no transformation
+                                    // doc.add(new Field("TEXT", NOT_INDEXED_NO_TRANSFORMATION, Field.Store.NO,
                                     // Field.Index.TOKENIZED, Field.TermVector.NO));
-                                    doc.add(new Field(attributeName, NOT_INDEXED_TRANSFORMATION_FAILED, Field.Store.NO, Field.Index.TOKENIZED, Field.TermVector.NO));
+                                    doc.add(new Field(attributeName, NOT_INDEXED_NO_TRANSFORMATION, Field.Store.NO, Field.Index.TOKENIZED, Field.TermVector.NO));
                                 }
+                                // is this transformer good enough?
+                                // else if (indexAtomicPropertiesOnly
+                                // && transformers.get(0).getTransformationTime() > maxAtomicTransformationTime)
+                                // {
+                                // only indexing atomic properties
+                                // indexing will take too long, so push it to the background
+                                // wereAllAtomic = false;
+                                // }
+                                else
+                                {
+                                    // We have a transformer that is fast enough
+                                    ContentTransformer transformer = transformers.get(0);
+                                    ContentWriter writer = contentService.getTempWriter();
+                                    writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+                                    // this is what the analyzers expect on the stream
+                                    writer.setEncoding("UTF-8");
+                                    try
+                                    {
+                                        transformer.transform(reader, writer);
+                                        // point the reader to the new-written content
+                                        reader = writer.getReader();
+                                        // Check that the reader is a view onto something concrete
+                                        if (!reader.exists())
+                                        {
+                                            throw new ContentIOException("The transformation did not write any content, yet: \n"
+                                                    + "   transformer:     " + transformer + "\n" + "   temp writer:     " + writer);
+                                        }
+                                    }
+                                    catch (ContentIOException e)
+                                    {
+                                       // log it
+                                        if (s_logger.isDebugEnabled())
+                                        {
+                                            s_logger.debug("Not indexed: Transformation failed", e);
+                                        }
+                                        // don't index from the reader
+                                        readerReady = false;
+                                        // not indexed: transformation
+                                        // failed
+                                        // doc.add(new Field("TEXT", NOT_INDEXED_TRANSFORMATION_FAILED, Field.Store.NO,
+                                        // Field.Index.TOKENIZED, Field.TermVector.NO));
+                                        doc.add(new Field(attributeName, NOT_INDEXED_TRANSFORMATION_FAILED, Field.Store.NO, Field.Index.TOKENIZED, Field.TermVector.NO));
+                                    }
+                                }
+                            }
+                            finally
+                            {
+                                transformerDebug.popAvailable();
                             }
                         }
                         // add the text field using the stream from the

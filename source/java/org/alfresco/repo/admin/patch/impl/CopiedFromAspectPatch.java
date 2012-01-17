@@ -44,6 +44,7 @@ import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -376,6 +377,7 @@ public class CopiedFromAspectPatch extends AbstractPatch
     }
     
     private static final QName PROP_SOURCE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "source");
+    private static final StoreRef VERSION_STORE = new StoreRef("workspace://version2Store"); // see http://wiki.alfresco.com/wiki/Version_Store
     /**
      * Does the per-node manipulation as stated in the class's docs
      * 
@@ -393,6 +395,7 @@ public class CopiedFromAspectPatch extends AbstractPatch
         NodeRef sourceNodeRef = DefaultTypeConverter.INSTANCE.convert(
                 NodeRef.class,
                 nodeService.getProperty(nodeRef, PROP_SOURCE));
+        
         // Does the source exist?
         if (sourceNodeRef == null || !nodeService.exists(sourceNodeRef))
         {
@@ -474,7 +477,7 @@ public class CopiedFromAspectPatch extends AbstractPatch
                     writeLine(file, "Removing cm:workingcopy from node: " + nodePair);
                     nodeService.removeAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY);
                 }
-                else
+                else if (!VERSION_STORE.equals(nodeRef.getStoreRef()))
                 {
                     if (logger.isDebugEnabled())
                     {
@@ -487,6 +490,24 @@ public class CopiedFromAspectPatch extends AbstractPatch
                     nodeService.addAspect(sourceNodeRef, ContentModel.ASPECT_CHECKED_OUT, null);
                     // Create the association
                     nodeService.createAssociation(sourceNodeRef, nodeRef, ContentModel.ASSOC_WORKING_COPY_LINK);
+                }
+                else
+                {
+                    // ALF-11479:
+                    //   - No cm:workingcopylink to the target node.
+                    //   - Source node hasn't got the cm:checkedout aspect.
+                    //   - But don't fix up the association, since the target node is in the version store
+                    //     and *versions* of a working copy shouldn't have the cm:workingcopy aspect: there should
+                    //     be one, and only one working copy.
+                    //   - Therefore, remove this phantom cm:workingcopy aspect.
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("\tP: Found version of working copy marked as actual working copy: " + nodeRef);
+                        logger.debug("\tP: Removing cm:workingcopy: " + nodePair);
+                    }
+                    writeLine(file, "Found version of working copy marked as actual working copy: " + nodePair);
+                    writeLine(file, "Removing cm:workingcopy: " + nodePair);
+                    nodeService.removeAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY);
                 }
             }
         }

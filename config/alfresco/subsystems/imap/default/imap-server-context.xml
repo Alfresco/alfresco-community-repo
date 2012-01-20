@@ -16,6 +16,12 @@
         <property name="port">
             <value>${imap.server.port}</value>
         </property>
+        <property name="imapsEnabled">
+            <value>${imap.server.imaps.enabled}</value>
+        </property>
+        <property name="securePort">
+            <value>${imap.server.imaps.port}</value>
+        </property>
         <property name="imapServerEnabled">
             <value>${imap.server.enabled}</value>
         </property>

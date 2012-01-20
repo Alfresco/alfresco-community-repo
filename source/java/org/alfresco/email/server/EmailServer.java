@@ -332,6 +332,12 @@ public abstract class EmailServer extends AbstractLifecycleBean
         System.err.println("\t configLocation - spring xml configs with EmailServer related beans (emailServer, emailServerConfiguration, emailService)");
     }
     
+    /**
+     * authenticate with a user/password
+     * @param userName
+     * @param password
+     * @return true - authenticated
+     */
     protected boolean authenticateUserNamePassword(String userName, char[] password)
     {
         try

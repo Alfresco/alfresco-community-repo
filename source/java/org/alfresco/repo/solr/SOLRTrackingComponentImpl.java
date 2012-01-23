@@ -262,6 +262,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
             return null;
         }
         
+        nodeDAO.setCheckNodeConsistency();
         Pair<Long, NodeRef> nodePair = nodeDAO.getNodePair(nodeIds.get(0));
         if (nodePair == null)
         {
@@ -381,6 +382,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
     {
         ArrayList<Pair<Path, QName>> categoryPaths = new ArrayList<Pair<Path, QName>>();
 
+        nodeDAO.setCheckNodeConsistency();
         for (QName classRef : aspects)
         {
             AspectDefinition aspDef = dictionaryService.getAspect(classRef);
@@ -443,6 +445,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
     
     private List<Long> preCacheNodes(NodeMetaDataParameters nodeMetaDataParameters)
     {
+        nodeDAO.setCheckNodeConsistency();
         int maxResults = nodeMetaDataParameters.getMaxResults();
         boolean isLimitSet = (maxResults != 0 && maxResults != Integer.MAX_VALUE);
 
@@ -483,6 +486,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
 
         // ALF-10641
         // Residual properties are un-indexed -> break serlialisation
+        nodeDAO.setCheckNodeConsistency();
         Map<QName, Serializable> sourceProps = nodeDAO.getNodeProperties(nodeId);
         props = new HashMap<QName, Serializable>((int)(sourceProps.size() * 1.3));
         for(QName propertyQName : sourceProps.keySet())
@@ -879,6 +883,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
     @Override
     public Long getMaxTxnCommitTime()
     {
+        nodeDAO.setCheckNodeConsistency();
         return nodeDAO.getMaxTxnCommitTime();
     }
 }

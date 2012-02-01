@@ -1,4 +1,4 @@
-<#macro dateFormat date>${date?string("dd MMM yyyy HH:mm:ss 'GMT'Z '('zzz')'")}</#macro>
+<#macro dateFormat date>${date?string("yyyy-MM-dd'T'HH:mm:ss.SSSZ")}</#macro>
 <#macro formatDataItems data>
 <#escape x as jsonUtils.encodeJSONString(x)>
 {

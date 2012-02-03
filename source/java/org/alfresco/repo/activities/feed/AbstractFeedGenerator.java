@@ -62,7 +62,7 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
     
     private RepoCtx ctx = null;
     
-    private LockTracker lockTracker = new LockTracker();
+    private volatile boolean busy;
     
     public void setActivityPostServiceImpl(ActivityPostServiceImpl activityPostServiceImpl)
     {
@@ -128,6 +128,8 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
     {
         ctx = new RepoCtx(repoEndPoint);
         ctx.setUserNamesAreCaseSensitive(userNamesAreCaseSensitive);
+        
+        busy = false;
     }
     
     /**
@@ -142,6 +144,11 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
      
     abstract public int getEstimatedGridSize();
     
+    protected boolean isActive()
+    {
+        return busy;
+    }
+    
     public void execute() throws JobExecutionException
     {
         checkProperties();
@@ -155,10 +162,14 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
             }
             return;
         }
-        
+
+        String lockToken = null;
+
         try
         {
-            acquireLock();
+            JobLockRefreshCallback lockCallback = new LockCallback();
+            lockToken = acquireLock(lockCallback);
+
             
             if (logger.isTraceEnabled())
             {
@@ -195,73 +206,66 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
         }
         finally
         {
-            releaseLock();
+            releaseLock(lockToken);
         }
     }
     
     protected abstract boolean generate() throws Exception;
 
-    private void acquireLock() throws LockAcquisitionException
+    private class LockCallback implements JobLockRefreshCallback
     {
-        // Try to get lock
-        String lockToken = jobLockService.getLock(LOCK_QNAME, LOCK_TTL);
-
-        // Got the lock - now register the refresh callback which will keep the lock alive.
-        this.lockTracker.refreshLock(lockToken);
-
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("lock aquired:  " + lockToken);
-        }
-    }
-    
-    private void releaseLock()
-    {
-        lockTracker.releaseLock();
-    }
-
-    private class LockTracker implements JobLockRefreshCallback
-    {
-        private String lockToken = null;
-
-        void refreshLock(String lockToken)
-        {
-            if(this.lockToken != null)
-            {
-                throw new IllegalStateException("lockToken is not null");
-            }
-            this.lockToken = lockToken;
-            jobLockService.refreshLock(lockToken, LOCK_QNAME, LOCK_TTL, this);
-        }
-
-        void releaseLock()
-        {
-            if(isActive())
-            {
-                jobLockService.releaseLock(lockToken, LOCK_QNAME);
-                lockToken = null;
-                if (logger.isInfoEnabled())
-                {
-                    logger.info("Lock released: " + LOCK_QNAME + ", lock token " + lockToken);
-                }
-            }
-        }
-
         @Override
         public boolean isActive()
         {
-            return (lockToken != null);
+            return busy;
         }
-
+        
         @Override
         public void lockReleased()
         {
             // note: currently the cycle will try to complete (even if refresh failed)
+            synchronized(this)
+            {
+                if (logger.isInfoEnabled())
+                {
+                    logger.debug("Lock released (refresh failed): " + LOCK_QNAME);
+                }
+                
+                busy = false;
+            }
+        }
+    }
+    
+    private String acquireLock(JobLockRefreshCallback lockCallback) throws LockAcquisitionException
+    {
+        // Try to get lock
+        String lockToken = jobLockService.getLock(LOCK_QNAME, LOCK_TTL);
+        
+        // Got the lock - now register the refresh callback which will keep the lock alive
+        jobLockService.refreshLock(lockToken, LOCK_QNAME, LOCK_TTL, lockCallback);
+        
+        busy = true;
+        
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("lock aquired:  " + lockToken);
+        }
+        
+        return lockToken;
+    }
+    
+    private void releaseLock(String lockToken)
+    {
+        if (lockToken != null)
+        {
+            busy = false;
+            
+            jobLockService.releaseLock(lockToken, LOCK_QNAME);
+            
             if (logger.isInfoEnabled())
             {
-                logger.info("Lock released (refresh failed): " + LOCK_QNAME + ", lock token " + lockToken);
+                logger.debug("Lock released (refresh failed): " + LOCK_QNAME + ", lock token " + lockToken);
             }
-            lockToken = null;
         }
     }
 }

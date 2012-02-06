@@ -32,6 +32,7 @@ import org.alfresco.service.cmr.module.ModuleInstallState;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.alfresco.util.Pair;
 import org.alfresco.util.VersionNumber;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Module details implementation.
@@ -279,6 +280,10 @@ public class ModuleDetailsImpl implements ModuleDetails
         if (repoVersionMax != null)
         {
             properties.setProperty(PROP_REPO_VERSION_MAX, repoVersionMax.toString());
+        }
+        if (editions != null)
+        {
+            properties.setProperty(PROP_EDITIONS, StringUtils.join(editions,","));
         }
         if (dependencies.size() > 0)
         {

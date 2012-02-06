@@ -52,6 +52,7 @@ public class ModuleDetailsImpl implements ModuleDetails
     private VersionNumber version;
     private String title;
     private String description;
+    private List<String> editions;
     private VersionNumber repoVersionMin;
     private VersionNumber repoVersionMax;
     private List<ModuleDependency> dependencies;
@@ -153,6 +154,9 @@ public class ModuleDetailsImpl implements ModuleDetails
         }
         // DEPENDENCIES
         this.dependencies = extractDependencies(trimmedProperties);
+        
+        this.editions = extractEditions(trimmedProperties);
+        
         // INSTALL DATE
         if (trimmedProperties.getProperty(PROP_INSTALL_DATE) != null)
         {
@@ -215,6 +219,22 @@ public class ModuleDetailsImpl implements ModuleDetails
         this.description = description;
     }
     
+    private static List<String> extractEditions(Properties trimmedProperties)
+    {
+        List<String> specifiedEditions = null;
+        String editions = trimmedProperties.getProperty(PROP_EDITIONS);
+        if (editions != null)
+        {
+            specifiedEditions = new ArrayList<String>();
+            StringTokenizer st = new StringTokenizer(editions, ",");
+            while (st.hasMoreTokens())
+            {
+                specifiedEditions.add(st.nextToken());
+            }
+        }
+        return specifiedEditions;
+    }
+
     private static List<ModuleDependency> extractDependencies(Properties properties)
     {
         int prefixLength = PROP_DEPENDS_PREFIX.length();
@@ -374,6 +394,16 @@ public class ModuleDetailsImpl implements ModuleDetails
         this.installState = installState;
     }
     
+    public List<String> getEditions()
+    {
+        return editions;
+    }
+
+    public void setEditions(List<String> editions)
+    {
+        this.editions = editions;
+    }
+
     /**
      * @author Derek Hulley
      */

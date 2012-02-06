@@ -38,6 +38,7 @@ public interface ModuleDetails extends Serializable
     static final String PROP_VERSION = "module.version";
     static final String PROP_TITLE = "module.title";
     static final String PROP_DESCRIPTION = "module.description";
+    static final String PROP_EDITIONS = "module.editions";    
     static final String PROP_REPO_VERSION_MIN = "module.repo.version.min";
     static final String PROP_REPO_VERSION_MAX = "module.repo.version.max";
     static final String PROP_DEPENDS_PREFIX = "module.depends.";
@@ -138,4 +139,13 @@ public interface ModuleDetails extends Serializable
      * @param installState  the module install state
      */
     void setInstallState(ModuleInstallState installState);
+    
+    List<String> getEditions();
+    
+    /**
+     * Sets the editions of Alfresco the module is valid for
+     * 
+     * @param edition  comma seperated list of editions.  e.g. community,Enterprise
+     */
+     void setEditions(List<String> editions);
 }

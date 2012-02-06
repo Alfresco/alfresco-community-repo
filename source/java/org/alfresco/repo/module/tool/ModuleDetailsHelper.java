@@ -127,7 +127,7 @@ public class ModuleDetailsHelper
      */
     public static String getModulePropertiesFilePathInWar(String moduleId)
     {
-        return ModuleManagementTool.MODULE_DIR + "/" + moduleId + "/" + "module.properties";
+        return WarHelper.MODULE_NAMESPACE_DIR + "/" + moduleId + WarHelper.MODULE_CONFIG_IN_WAR;
     }
     
     /**

@@ -47,6 +47,7 @@ public class ModuleDetailsImplTest extends TestCase
         defaultProperties.setProperty(ModuleDetails.PROP_TITLE, "Test");
         defaultProperties.setProperty(ModuleDetails.PROP_DESCRIPTION, "Test description");
         defaultProperties.setProperty(ModuleDetails.PROP_VERSION, "1.0.0");
+        defaultProperties.setProperty(ModuleDetails.PROP_EDITIONS, "Community");
         defaultProperties.setProperty(ModuleDetails.PROP_REPO_VERSION_MIN, new VersionNumber("1.2").toString());
         defaultProperties.setProperty(ModuleDetails.PROP_REPO_VERSION_MAX, new VersionNumber("1.4.3").toString());
         defaultProperties.setProperty(ModuleDetails.PROP_DEPENDS_PREFIX + "a", "1.2.3");

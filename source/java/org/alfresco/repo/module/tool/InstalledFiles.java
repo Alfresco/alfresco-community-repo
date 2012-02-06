@@ -176,7 +176,7 @@ public class InstalledFiles
      */
     public String getFilePathInWar()
     {
-        return ModuleManagementTool.MODULE_DIR + "/" + this.moduleId + "/modifications.install";
+        return WarHelper.MODULE_NAMESPACE_DIR + "/" + this.moduleId + "/modifications.install";
     }
     
     /**

@@ -24,14 +24,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.service.cmr.module.ModuleDependency;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleInstallState;
 import org.alfresco.util.VersionNumber;
@@ -68,8 +65,7 @@ public class ModuleManagementTool
     private static final String PROP_INHERIT_DEFAULT = "include.default";
     
     /** Standard directories found in the alfresco war */
-    public static final String MODULE_DIR = "/WEB-INF/classes/alfresco/module";
-    public static final String BACKUP_DIR = MODULE_DIR + "/backup";
+    public static final String BACKUP_DIR = WarHelper.MODULE_NAMESPACE_DIR+ "/backup";
     
     /** Operations and options supperted via the command line interface to this class */
     private static final String OP_INSTALL = "install";
@@ -91,6 +87,8 @@ public class ModuleManagementTool
     
     /** Indicates the current verbose setting */
     private boolean verbose = false;
+    
+    WarHelper warHelper = new WarHelperImpl();
     
     /**
      * Constructor
@@ -201,11 +199,11 @@ public class ModuleManagementTool
         try
         {   
             outputMessage("Installing AMP '" + ampFileLocation + "' into WAR '" + warFileLocation + "'");
-            
+            java.io.File theWar = new File(warFileLocation, DETECTOR_AMP_AND_WAR);
             if (preview == false)
             {
                 // Make sure the module and backup directory exisits in the WAR file
-                File moduleDir = new File(warFileLocation + MODULE_DIR, DETECTOR_AMP_AND_WAR);
+                File moduleDir = new File(warFileLocation + WarHelper.MODULE_NAMESPACE_DIR, DETECTOR_AMP_AND_WAR);
                 if (moduleDir.exists() == false)
                 {
                     moduleDir.mkdir();
@@ -242,45 +240,13 @@ public class ModuleManagementTool
             String installingId = installingModuleDetails.getId();
             VersionNumber installingVersion = installingModuleDetails.getVersion();
             
-            // Check that the target war has the necessary dependencies for this install
-            List<ModuleDependency> installingModuleDependencies = installingModuleDetails.getDependencies();
-            List<ModuleDependency> missingDependencies = new ArrayList<ModuleDependency>(0);
-            for (ModuleDependency dependency : installingModuleDependencies)
-            {
-                String dependencyId = dependency.getDependencyId();
-                ModuleDetails dependencyModuleDetails = ModuleDetailsHelper.createModuleDetailsFromWarAndId(warFileLocation, dependencyId);
-                // Check the dependency.  The API specifies that a null returns false, so no null check is required
-                if (!dependency.isValidDependency(dependencyModuleDetails))
-                {
-                    missingDependencies.add(dependency);
-                    continue;
-                }
-            }
-            if (missingDependencies.size() > 0)
-            {
-                throw new ModuleManagementToolException("The following modules must first be installed: " + missingDependencies);
-            }
+            //A series of checks
+            warHelper.checkCompatibleVersion(theWar, installingModuleDetails);
+            warHelper.checkCompatibleEdition(theWar, installingModuleDetails);
+            warHelper.checkModuleDependencies(theWar, installingModuleDetails);
             
             // Try to find an installed module by the ID
-            ModuleDetails installedModuleDetails = ModuleDetailsHelper.createModuleDetailsFromWarAndId(warFileLocation, installingId);
-            if (installedModuleDetails == null)
-            {
-                // It might be there as one of the aliases
-                List<String> installingAliases = installingModuleDetails.getAliases();
-                for (String installingAlias : installingAliases)
-                {
-                    ModuleDetails installedAliasModuleDetails = ModuleDetailsHelper.createModuleDetailsFromWarAndId(warFileLocation, installingAlias);
-                    if (installedAliasModuleDetails == null)
-                    {
-                        // There is nothing by that alias
-                        continue;
-                    }
-                    // We found an alias and will treat it as the same module
-                    installedModuleDetails = installedAliasModuleDetails;
-                    outputMessage("Module '" + installingAlias + "' is installed and is an alias of '" + installingId + "'");
-                    break;
-                }
-            }
+            ModuleDetails installedModuleDetails = warHelper.getModuleDetailsOrAlias(theWar, installingModuleDetails);
             
             // Now clean up the old instance
             if (installedModuleDetails != null)
@@ -639,7 +605,7 @@ public class ModuleManagementTool
         this.verbose = true;
         try
         {
-            File moduleDir = new File(warLocation + MODULE_DIR, DETECTOR_AMP_AND_WAR);
+            File moduleDir = new File(warLocation + WarHelper.MODULE_NAMESPACE_DIR, DETECTOR_AMP_AND_WAR);
             if (moduleDir.exists() == false)
             {
                 outputMessage("No modules are installed in this WAR file");

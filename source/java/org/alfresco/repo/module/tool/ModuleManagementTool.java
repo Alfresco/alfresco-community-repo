@@ -69,12 +69,14 @@ public class ModuleManagementTool
     
     /** Operations and options supperted via the command line interface to this class */
     private static final String OP_INSTALL = "install";
+    private static final String OP_UNINSTALL = "uninstall";    
     private static final String OP_LIST = "list";
     private static final String OPTION_VERBOSE = "-verbose";
     private static final String OPTION_FORCE = "-force";
     private static final String OPTION_PREVIEW = "-preview";
     private static final String OPTION_NOBACKUP = "-nobackup";
     private static final String OPTION_DIRECTORY = "-directory";
+    private static final String OPTION_PURGE = "-purge";
     
     private static final int ERROR_EXIT_CODE = 1;
     private static final int SUCCESS_EXIT_CODE = 0;
@@ -255,30 +257,33 @@ public class ModuleManagementTool
                 VersionNumber installedVersion = installedModuleDetails.getVersion();
                 
                 int compareValue = installedVersion.compareTo(installingVersion);
-                if (forceInstall == true || compareValue == -1)
-                {
-                    if (forceInstall == true)
-                    {
-                        // Warn of forced install
-                        outputMessage("WARNING: The installation of this module is being forced.  All files will be removed and replaced regardless of exiting versions present.");
-                    }
-                    
-                    // Trying to update the extension, old files need to cleaned before we proceed
-                    outputMessage("Clearing out files relating to version '" + installedVersion + "' of module '" + installedId + "'");
-                    cleanWAR(warFileLocation, installedId, preview);
-                }
-                else if (compareValue == 0)
-                {
-                    // Trying to install the same extension version again
-                    outputMessage("WARNING: This version of this module is already installed in the WAR. Installation skipped.");
-                    return;
-                }
-                else if (compareValue == 1)
+                if (compareValue > 0)
                 {
                     // Trying to install an earlier version of the extension
-                    outputMessage("WARNING: A later version of this module is already installed in the WAR. Installation skipped.");
+                    outputMessage("WARNING: A later version of this module is already installed in the WAR. Installation skipped.  "+
+                    "You could force the installation by passing the -force option.",false);
                     return;
                 }
+
+                if (forceInstall == true)
+                {
+                    // Warn of forced install
+                    outputMessage("WARNING: The installation of this module is being forced.  All files will be removed and replaced regardless of exiting versions present.",false);
+                }
+                
+                if (compareValue == 0)
+                {
+                    // Trying to install the same extension version again
+                    outputMessage("WARNING: This version of this module is already installed in the WAR..upgrading.",false);
+                }
+                
+                if (forceInstall == true || compareValue <= 0)
+                {
+                    
+                    // Trying to update the extension, old files need to cleaned before we proceed
+                    outputMessage("Clearing out files relating to version '" + installedVersion + "' of module '" + installedId + "'",false);
+                    uninstallModule(installedId, warFileLocation, preview, true);
+                } 
             }
             
             // Check if a custom mapping file has been defined
@@ -410,13 +415,14 @@ public class ModuleManagementTool
     }
     
     /**
-     * Cleans the WAR file of all files relating to the currently installed version of the the AMP.
+     * Cleans the WAR file of all files relating to the currently installed version of the the Module.
      * 
-     * @param warFileLocatio    the war file location
+     * @param warFileLocation    the war file location
      * @param moduleId          the module id
      * @param preview           indicates whether this is a preview installation
+     * @param purge             Fully delete all files (including those marked "PRESERVED")
      */
-    private void cleanWAR(String warFileLocation, String moduleId, boolean preview)
+    public void uninstallModule(String moduleId,String warFileLocation, boolean preview, boolean purge)
     {
         InstalledFiles installedFiles = new InstalledFiles(warFileLocation, moduleId);
         installedFiles.load();
@@ -586,14 +592,6 @@ public class ModuleManagementTool
     }
     
     /**
-     * @throws  UnsupportedOperationException
-     */
-    public void uninstallModule(String moduleId, String warLocation)
-    {
-        throw new UnsupportedOperationException("Uninstall module is not currently supported");
-    }
-    
-    /**
      * Lists all the currently installed modules in the WAR
      * 
      * @param warLocation   the war location
@@ -603,6 +601,8 @@ public class ModuleManagementTool
         ModuleDetails moduleDetails = null;
         boolean previous = this.verbose;
         this.verbose = true;
+        boolean moduleFound = false;
+        
         try
         {
             File moduleDir = new File(warLocation + WarHelper.MODULE_NAMESPACE_DIR, DETECTOR_AMP_AND_WAR);
@@ -618,11 +618,12 @@ public class ModuleManagementTool
                 {
                     if (dir.isDirectory() == true)
                     {
-                        File moduleProperties = new File(dir.getPath() + "/module.properties", DETECTOR_AMP_AND_WAR);
+                        File moduleProperties = new File(dir.getPath() + WarHelper.MODULE_CONFIG_IN_WAR, DETECTOR_AMP_AND_WAR);
                         if (moduleProperties.exists() == true)
                         {
                             try
                             {
+                                moduleFound = true;
                                 InputStream is = new FileInputStream(moduleProperties);
                                 moduleDetails = ModuleDetailsHelper.createModuleDetailsFromPropertiesStream(is);
                             }
@@ -644,6 +645,11 @@ public class ModuleManagementTool
             {
                 outputMessage("No modules are installed in this WAR file");
             }
+            if (!moduleFound)
+            {
+                outputMessage("No modules were found in this WAR file");                
+            }
+            
         }
         finally
         {
@@ -694,77 +700,106 @@ public class ModuleManagementTool
         ModuleManagementTool manager = new ModuleManagementTool();
         
         String operation = args[0];
-        if (operation.equals(OP_INSTALL) == true && args.length >= 3)
-        {            
-            String aepFileLocation = args[1];
-            String warFileLocation = args[2];
-            boolean forceInstall = false;
-            boolean previewInstall = false;
-            boolean backup = true;
-            boolean directory = false;
-            
-            if (args.length > 3)
-            {
-                for (int i = 3; i < args.length; i++)
+        try
+        {
+            if (operation.equals(OP_INSTALL) == true && args.length >= 3)
+            {            
+                String aepFileLocation = args[1];
+                String warFileLocation = args[2];
+                boolean forceInstall = false;
+                boolean previewInstall = false;
+                boolean backup = true;
+                boolean directory = false;
+                
+                if (args.length > 3)
                 {
-                    String option = args[i];
-                    if (OPTION_VERBOSE.equals(option) == true)
+                    for (int i = 3; i < args.length; i++)
                     {
-                        manager.setVerbose(true);
-                    }
-                    else if (OPTION_FORCE.equals(option) == true)
-                    {
-                        forceInstall = true;
-                    }
-                    else if (OPTION_PREVIEW.equals(option) == true)
-                    {
-                        previewInstall = true;
-                        manager.setVerbose(true);
-                    }
-                    else if (OPTION_NOBACKUP.equals(option) == true)
-                    {
-                        backup = false;
-                    }
-                    else if (OPTION_DIRECTORY.equals(option) == true)
-                    {
-                        directory = true;
+                        String option = args[i];
+                        if (OPTION_VERBOSE.equals(option) == true)
+                        {
+                            manager.setVerbose(true);
+                        }
+                        else if (OPTION_FORCE.equals(option) == true)
+                        {
+                            forceInstall = true;
+                        }
+                        else if (OPTION_PREVIEW.equals(option) == true)
+                        {
+                            previewInstall = true;
+                            manager.setVerbose(true);
+                        }
+                        else if (OPTION_NOBACKUP.equals(option) == true)
+                        {
+                            backup = false;
+                        }
+                        else if (OPTION_DIRECTORY.equals(option) == true)
+                        {
+                            directory = true;
+                        }
                     }
                 }
+               
+                    if (directory == false)
+                    {
+                        // Install the module
+                        manager.installModule(aepFileLocation, warFileLocation, previewInstall, forceInstall, backup);
+                    }
+                    else
+                    {
+                        // Install the modules from the directory
+                        manager.installModules(aepFileLocation, warFileLocation, previewInstall, forceInstall, backup);
+                    }
+                    System.exit(SUCCESS_EXIT_CODE);
+
             }
-            
-            try
+            else if (OP_LIST.equals(operation) == true && args.length == 2)
             {
-                if (directory == false)
-                {
-                    // Install the module
-                    manager.installModule(aepFileLocation, warFileLocation, previewInstall, forceInstall, backup);
-                }
-                else
-                {
-                    // Install the modules from the directory
-                    manager.installModules(aepFileLocation, warFileLocation, previewInstall, forceInstall, backup);
-                }
+                // List the installed modules
+                String warFileLocation = args[1];
+                manager.listModules(warFileLocation);                
                 System.exit(SUCCESS_EXIT_CODE);
             }
-            catch (ModuleManagementToolException e)
+            else if (OP_UNINSTALL.equals(operation) == true && args.length >= 3)
             {
-                // These are user-friendly
-                manager.outputMessage(e.getMessage());
-                outputUsage();
-                System.exit(ERROR_EXIT_CODE);
+                String moduleId = args[1];
+                String warLocation = args[2];
+                boolean purge = false;
+                boolean preview = false;
+                
+                if (args.length >= 4) 
+                {
+                    for (int i = 3; i < args.length; i++)
+                    {
+                        String option = args[i];
+                        if (OPTION_PURGE.equals(option) == true) 
+                        {
+                            purge = true;
+                        }
+                        if (OPTION_PREVIEW.equals(option) == true)
+                        {
+                            preview = true;
+                            manager.setVerbose(true);
+                        }
+                    }
+                }
+                manager.setVerbose(true);
+                manager.uninstallModule(moduleId, warLocation,preview, purge);
+                System.exit(SUCCESS_EXIT_CODE);
             }
+            else
+            {
+                outputUsage();
+                System.exit(SUCCESS_EXIT_CODE);
+            }
+        
         }
-        else if (OP_LIST.equals(operation) == true && args.length == 2)
+        catch (ModuleManagementToolException e)
         {
-            // List the installed modules
-            String warFileLocation = args[1];
-            manager.listModules(warFileLocation);                
-            System.exit(SUCCESS_EXIT_CODE);
-        }
-        else
-        {
+            // These are user-friendly
+            manager.outputMessage(e.getMessage());
             outputUsage();
-            System.exit(SUCCESS_EXIT_CODE);
+            System.exit(ERROR_EXIT_CODE);
         }
     }
 
@@ -827,5 +862,8 @@ public class ModuleManagementTool
         System.out.println("list:  Lists all the modules currently installed in an Alfresco WAR file.");
         System.out.println("usage: list <WARFileLocation>\n");
         System.out.println("-----------------------------------------------------------\n");
+        System.out.println("uninstall:  Uninstalls a module from the Alfresco WAR file.");
+        System.out.println("usage: uninstall <ModuleId> <WARFileLocation>\n");
+        System.out.println("-----------------------------------------------------------\n");    
     }    
 }

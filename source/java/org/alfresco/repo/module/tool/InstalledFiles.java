@@ -117,6 +117,10 @@ public class InstalledFiles
                 throw new ModuleManagementToolException("Error whilst reading file '" + getFileLocation(), exception);
             }
         }
+        else 
+        {
+            throw new ModuleManagementToolException("Invalid module.  The installation file does not exist for module: "+moduleId);
+        }
     }
     
     /**
@@ -239,5 +243,15 @@ public class InstalledFiles
     public void addMkdir(String location)
     {
         this.mkdirs.add(location);
+    }
+
+    @Override
+    public String toString()
+    {
+        StringBuilder builder = new StringBuilder();
+        builder.append("InstalledFiles [warLocation=").append(this.warLocation).append(", moduleId=")
+                    .append(this.moduleId).append(", adds=").append(this.adds).append(", updates=")
+                    .append(this.updates).append(", mkdirs=").append(this.mkdirs).append("]");
+        return builder.toString();
     }
 }

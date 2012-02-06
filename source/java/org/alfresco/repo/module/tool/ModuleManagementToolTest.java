@@ -210,6 +210,28 @@ public class ModuleManagementToolTest extends TestCase
         // TODO need to prove that the war file has not been updated in any way
     }
     
+
+    public void testUninstall()
+        throws Exception
+    {
+        manager.setVerbose(true);
+        
+        String warLocation = getFileLocation(".war", "module/test.war");
+        String ampLocation = getFileLocation(".amp", "module/test_v1.amp");
+        
+        // Initial install of module
+        this.manager.installModule(ampLocation, warLocation, false, false, false);
+        this.manager.listModules(warLocation);
+        this.manager.uninstallModule("test", warLocation, false, false);
+        
+        List<String> files = new ArrayList<String>(10);
+        files.add("/WEB-INF/classes/alfresco/module/test/module.properties");
+        files.add("/WEB-INF/classes/alfresco/module/test/modifications.install");
+        files.add("/WEB-INF/lib/test.jar");
+        files.add("/WEB-INF/classes/alfresco/module/test/module-context.xml");
+        checkForFileNonExistance(warLocation, files);  
+    }
+    
     public void testForcedInstall()
         throws Exception
     {
@@ -247,6 +269,7 @@ public class ModuleManagementToolTest extends TestCase
         }
     }
     
+    
     public void testList()
         throws Exception
     {
@@ -270,6 +293,21 @@ public class ModuleManagementToolTest extends TestCase
         FileCopyUtils.copy(is, os);        
         return file.getPath();
     }
+    
+//    public void testNoWar() throws Exception 
+//    {
+//        File noWar = new File("noWar");
+//        File amp = getFile(".amp", "module/test_v1.amp");
+//        try
+//        {
+//            this.manager.installModule(amp, noWar,false,false);  
+//        }
+//        catch (ModuleManagementToolException exception)
+//        {
+//            assertTrue(exception.getMessage().endsWith("does not exist."));
+//        }  
+//     
+//    }
     
     private void checkForFileExistance(String warLocation, List<String> files)
     {

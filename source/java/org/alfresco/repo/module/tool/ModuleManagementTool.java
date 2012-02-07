@@ -145,6 +145,10 @@ public class ModuleManagementTool
         java.io.File dir = new java.io.File(directoryLocation);
         if (dir.exists() == true)
         {
+            if (backupWAR) {
+                backupWar(warFileLocation,true);
+                backupWAR = false; //Set it to false so a backup doesn't occur again.
+            }
             installModules(dir, warFileLocation, preview, forceInstall,backupWAR);
         }
         else
@@ -215,22 +219,7 @@ public class ModuleManagementTool
                 {
                     moduleDir.mkdir();
                 }
-                File backUpDir = new File(warFileLocation + BACKUP_DIR, DETECTOR_AMP_AND_WAR);
-                if (backUpDir.exists() == false)
-                {
-                    backUpDir.mkdir();
-                }
-                
-                // Make a backup of the war we are going to modify
-                if (backupWAR == true)
-                {
-                    java.io.File warFile = new java.io.File(warFileLocation);
-                    String backupLocation = warFileLocation + "-" + System.currentTimeMillis() + ".bak";
-                    java.io.File backup = new java.io.File(backupLocation);
-                    copyFile(warFile, backup);
-                          
-                    outputMessage("WAR has been backed up to '" + backupLocation + "'");
-                }
+                backupWar(warFileLocation, backupWAR);
             }
             
             // Get the details of the installing module
@@ -381,6 +370,33 @@ public class ModuleManagementTool
         {
             throw new ModuleManagementToolException("An IO error was encountered during deployment of the AEP into the WAR", exception);
         }       
+    }
+
+    private void backupWar(String warFileLocation, boolean backupWAR)
+    {
+
+        // Make a backup of the war we are going to modify
+        if (backupWAR == true)
+        {
+            File backUpDir = new File(warFileLocation + BACKUP_DIR, DETECTOR_AMP_AND_WAR);
+            if (backUpDir.exists() == false)
+            {
+                backUpDir.mkdir();
+            }
+            java.io.File warFile = new java.io.File(warFileLocation);
+            String backupLocation = warFileLocation + "-" + System.currentTimeMillis() + ".bak";
+            java.io.File backup = new java.io.File(backupLocation);
+            try
+            {
+                copyFile(warFile, backup);
+            }
+            catch (IOException exception)
+            {
+                throw new ModuleManagementToolException("An IO error was encountered when backing up the WAR", exception);
+            }  
+                  
+            outputMessage("WAR has been backed up to '" + backupLocation + "'");
+        }
     }
     
     /**

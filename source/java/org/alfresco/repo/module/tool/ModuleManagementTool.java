@@ -201,7 +201,12 @@ public class ModuleManagementTool
         try
         {   
             outputMessage("Installing AMP '" + ampFileLocation + "' into WAR '" + warFileLocation + "'");
+            
             java.io.File theWar = new File(warFileLocation, DETECTOR_AMP_AND_WAR);
+            if (!theWar.exists())
+            {
+                throw new ModuleManagementToolException("The war file '" + warFileLocation + "' does not exist.");     
+            }
             if (preview == false)
             {
                 // Make sure the module and backup directory exisits in the WAR file
@@ -220,10 +225,6 @@ public class ModuleManagementTool
                 if (backupWAR == true)
                 {
                     java.io.File warFile = new java.io.File(warFileLocation);
-                    if (warFile.exists() == false)
-                    {
-                        throw new ModuleManagementToolException("The war file '" + warFileLocation + "' does not exist.");
-                    }
                     String backupLocation = warFileLocation + "-" + System.currentTimeMillis() + ".bak";
                     java.io.File backup = new java.io.File(backupLocation);
                     copyFile(warFile, backup);

@@ -294,20 +294,27 @@ public class ModuleManagementToolTest extends TestCase
         return file.getPath();
     }
     
-//    public void testNoWar() throws Exception 
-//    {
-//        File noWar = new File("noWar");
-//        File amp = getFile(".amp", "module/test_v1.amp");
-//        try
-//        {
-//            this.manager.installModule(amp, noWar,false,false);  
-//        }
-//        catch (ModuleManagementToolException exception)
-//        {
-//            assertTrue(exception.getMessage().endsWith("does not exist."));
-//        }  
-//     
-//    }
+    public void testNoWar() throws Exception 
+    {
+        String noWar = "noWar";
+        String ampLocation = getFileLocation(".amp", "module/test_v1.amp");
+        try
+        {
+            this.manager.installModule(ampLocation, noWar,false,false, false);
+        }
+        catch (ModuleManagementToolException exception)
+        {
+            assertTrue(exception.getMessage().endsWith("does not exist."));
+        }  
+        try
+        {
+            this.manager.installModule(ampLocation, noWar,false,false, true);  //backup war
+        }
+        catch (ModuleManagementToolException exception)
+        {
+            assertTrue(exception.getMessage().endsWith("does not exist."));
+        }       
+    }
     
     private void checkForFileExistance(String warLocation, List<String> files)
     {

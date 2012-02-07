@@ -618,7 +618,8 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     {
         boolean result = false;
         
-        EmailValidator emailValidator = EmailValidator.getInstance();
+        // Validate the email, allowing for local email addresses
+        EmailValidator emailValidator = EmailValidator.getInstance(true);
         if (emailValidator.isValid(address))
         {
             result = true;

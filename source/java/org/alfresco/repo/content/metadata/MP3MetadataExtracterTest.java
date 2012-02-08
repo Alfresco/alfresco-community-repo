@@ -66,6 +66,8 @@ public class MP3MetadataExtracterTest extends TikaAudioMetadataExtracterTest
     public void testOggExtraction() throws Exception {}
     @Override
     public void testFlacExtraction() throws Exception {}
+    @Override
+    public void testMP4AudioExtraction() throws Exception {}
 
     /**
      * We don't have quite the usual metadata. Tests the descriptions one.

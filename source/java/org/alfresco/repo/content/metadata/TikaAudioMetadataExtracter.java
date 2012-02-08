@@ -30,6 +30,7 @@ import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.XMPDM;
 import org.apache.tika.parser.CompositeParser;
 import org.apache.tika.parser.Parser;
+import org.apache.tika.parser.mp4.MP4Parser;
 import org.gagravarr.tika.FlacParser;
 import org.gagravarr.tika.VorbisParser;
 
@@ -60,13 +61,18 @@ public class TikaAudioMetadataExtracter extends TikaPoweredMetadataExtracter
 {
     protected static final String KEY_LYRICS = "lyrics";
     
+    // The Audio related parsers we use
     private static Parser[] parsers = new Parser[] {
        new VorbisParser(),
-       new FlacParser()
+       new FlacParser(),
+       new MP4Parser()
     };
+    // The explicit mimetypes we support (plus any others from the parsers)
     public static ArrayList<String> SUPPORTED_MIMETYPES = buildSupportedMimetypes(
-          new String[] { MimetypeMap.MIMETYPE_VORBIS, MimetypeMap.MIMETYPE_FLAC }, 
-          parsers
+          new String[] { 
+                  MimetypeMap.MIMETYPE_VORBIS, MimetypeMap.MIMETYPE_FLAC,
+                  MimetypeMap.MIMETYPE_AUDIO_MP4,
+          }, parsers
     );
     
     protected TikaConfig tikaConfig;

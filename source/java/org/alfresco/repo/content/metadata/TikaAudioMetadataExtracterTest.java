@@ -70,6 +70,10 @@ public class TikaAudioMetadataExtracterTest extends AbstractMetadataExtracterTes
     {
         testExtractFromMimetype(MimetypeMap.MIMETYPE_FLAC);
     }
+    public void testMP4AudioExtraction() throws Exception
+    {
+        testExtractFromMimetype(MimetypeMap.MIMETYPE_AUDIO_MP4);
+    }
 
     /**
      * We don't have quite the usual metadata. Tests the descriptions one.

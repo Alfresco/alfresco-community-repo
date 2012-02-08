@@ -70,8 +70,11 @@
 		<property name="fromAddress">
 			<value>${mail.from.default}</value>
 		</property>
-		<property name="repoRemoteUrl">
-			<value>${repo.remote.url}</value>
+		<property name="fromEnabled">
+            <value>${mail.from.enabled}</value>
+        </property>
+		<property name="sysAdminParams">
+			<ref bean="sysAdminParams"></ref>
 		</property>
         <property name="sendTestMessage">
             <value>${mail.testmessage.send}</value>

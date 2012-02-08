@@ -170,10 +170,6 @@ public class PseudoFileImpl implements PseudoFileInterface
         
         if ( isCIFS && ctx.numberOfDesktopActions() > 0 && path.equals(FileName.DOS_SEPERATOR_STR) == false)
         {
-            // If the file state is null create a file state for the path
-
-            if ( fstate == null)
-                ctx.getStateCache().findFileState( path, true);
             
             // Add the desktop action pseudo files
             

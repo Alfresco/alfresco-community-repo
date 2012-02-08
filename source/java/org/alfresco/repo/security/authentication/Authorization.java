@@ -47,12 +47,18 @@ public class Authorization
     public Authorization(String authorization)
     {
         ParameterCheck.mandatoryString("authorization", authorization);
+        if (authorization.length() == 0)
+        {
+            throw new IllegalArgumentException("authorization does not consist of username and password");
+        }
+
         int idx = authorization.indexOf(':');
 
         if (idx == -1)
         {
             setUser(null, authorization);
-        } else
+        }
+        else
         {
             setUser(authorization.substring(0, idx), authorization.substring(idx + 1));
         }

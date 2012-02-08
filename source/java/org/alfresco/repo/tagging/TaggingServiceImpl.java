@@ -1152,7 +1152,7 @@ public class TaggingServiceImpl implements TaggingService,
                 // If the boolean value is different then the tag had been added and removed or
                 // removed and then added in the same transaction.  In both cases the net change is none.
                 // So remove the entry in the update map
-                updates.remove(tag);
+                nodeDetails.remove(tag);
             }
             // Otherwise do nothing because we have already noted the update
         }

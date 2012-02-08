@@ -1864,7 +1864,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                     principalId = AuthenticationUtil.getFullyAuthenticatedUser();
                 }
 
-                for (String permission : translatePermmissionsFromCMIS(ace.getPermissions()))
+                for (String permission : translatePermissionsFromCMIS(ace.getPermissions()))
                 {
 
                     AccessPermission toCheck = new AccessPermissionImpl(permission, AccessStatus.ALLOWED, principalId,
@@ -1890,7 +1890,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                     principalId = AuthenticationUtil.getFullyAuthenticatedUser();
                 }
 
-                for (String permission : translatePermmissionsFromCMIS(ace.getPermissions()))
+                for (String permission : translatePermissionsFromCMIS(ace.getPermissions()))
                 {
                     permissionService.setPermission(nodeRef, principalId, permission, true);
                 }
@@ -1915,6 +1915,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             throw new CmisConstraintException("Object is not ACL controllable!");
         }
 
+        Set<AccessPermission> currentAces = permissionService.getAllSetPermissions(nodeRef);
+
         // remove all permissions
         permissionService.deletePermissions(nodeRef);
 
@@ -1927,14 +1929,60 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 principalId = AuthenticationUtil.getFullyAuthenticatedUser();
             }
 
-            for (String permission : translatePermmissionsFromCMIS(ace.getPermissions()))
+            List<String> permissions = translatePermissionsFromCMIS(ace.getPermissions());
+            normalisePermissions(currentAces, permissions);
+            for (String permission : permissions)
             {
                 permissionService.setPermission(nodeRef, principalId, permission, true);
             }
         }
     }
 
-    private List<String> translatePermmissionsFromCMIS(List<String> permissions)
+    /*
+     * ALF-11868: the cmis client library may incorrectly send READ or WRITE permissions to applyAcl.
+     * This method works around this by "normalising" permissions:
+     * 
+     * <ul>
+     *    <li> the WRITE permission is removed from permissions if the cmis:write permission is being removed i.e. is in currentAccessPermissions but not in newPermissions
+     *    <li> the cmis:write permission is removed from permissions if the WRITE permission is being removed i.e. is in currentAccessPermissions but not in newPermissions
+     *    <li> the READ permission is removed from permissions if the cmis:read permission is being removed i.e. is in currentAccessPermissions but not in newPermissions
+     *    <li> the cmis:read permission is removed from permissions if the READ permission is being removed i.e. is in currentAccessPermissions but not in newPermissions
+     * </ul>
+     */
+    private void normalisePermissions(Set<AccessPermission> currentAccessPermissions, List<String> newPermissions)
+    {
+    	Set<String> currentPermissions = new HashSet<String>(currentAccessPermissions.size());
+    	for(AccessPermission accessPermission : currentAccessPermissions)
+    	{
+    		currentPermissions.add(accessPermission.getPermission());
+    	}
+
+    	if(currentPermissions.contains(PermissionService.WRITE) && !newPermissions.contains(BasicPermissions.WRITE) && newPermissions.contains(PermissionService.WRITE))
+    	{
+    		// cmis:write is being removed, so remove WRITE from permissions
+    		newPermissions.remove(PermissionService.WRITE);
+    	}
+    	
+    	if(currentPermissions.contains(PermissionService.WRITE) && !newPermissions.contains(PermissionService.WRITE) && newPermissions.contains(BasicPermissions.WRITE))
+    	{
+    		// WRITE is being removed, so remove cmis:write from permissions
+    		newPermissions.remove(BasicPermissions.WRITE);
+    	}
+    	
+    	if(currentPermissions.contains(PermissionService.READ) && !newPermissions.contains(BasicPermissions.READ) && newPermissions.contains(PermissionService.READ))
+    	{
+    		// cmis:read is being removed, so remove READ from permissions
+    		newPermissions.remove(PermissionService.READ);
+    	}
+    	
+    	if(currentPermissions.contains(PermissionService.READ) && !newPermissions.contains(PermissionService.READ) && newPermissions.contains(BasicPermissions.READ))
+    	{
+    		// READ is being removed, so remove cmis:read from permissions
+    		newPermissions.remove(BasicPermissions.READ);
+    	}
+    }
+
+    private List<String> translatePermissionsFromCMIS(List<String> permissions)
     {
         List<String> result = new ArrayList<String>();
 
@@ -2081,7 +2129,11 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 result.getObjects().add(hit);
             }
 
-            result.setNumItems(null);
+            int length = rs.getLength();
+            if(length != -1)
+            {
+            	result.setNumItems(BigInteger.valueOf(length));
+            }
             result.setHasMoreItems(rs.hasMore());
 
         } finally

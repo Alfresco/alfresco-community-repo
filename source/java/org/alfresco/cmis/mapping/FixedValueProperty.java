@@ -45,19 +45,19 @@ import org.apache.lucene.search.TermQuery;
  */
 public class FixedValueProperty extends AbstractProperty
 {
-    private Serializable value;
+    private Serializable fixedValue;
     
     /**
      * Construct
      * 
      * @param serviceRegistry
      * @param propertyName
-     * @param value
+     * @param fixedValue
      */
-    public FixedValueProperty(ServiceRegistry serviceRegistry, String propertyName, Serializable value)
+    public FixedValueProperty(ServiceRegistry serviceRegistry, String propertyName, Serializable fixedValue)
     {
         super(serviceRegistry, propertyName);
-        this.value = value;
+        this.fixedValue = fixedValue;
     }
 
     /*
@@ -66,7 +66,7 @@ public class FixedValueProperty extends AbstractProperty
      */
     public Serializable getValue(NodeRef nodeRef)
     {
-        return value;
+        return fixedValue;
     }
     
     /*
@@ -75,7 +75,7 @@ public class FixedValueProperty extends AbstractProperty
      */
     public Serializable getValue(AssociationRef assocRef)
     {
-        return value;
+        return fixedValue;
     }
 
     /*
@@ -84,7 +84,7 @@ public class FixedValueProperty extends AbstractProperty
      */
     public Query buildLuceneEquality(AbstractLuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
     {
-        if (EqualsHelper.nullSafeEquals(value, value))
+        if (EqualsHelper.nullSafeEquals(value, fixedValue))
         {
             return new MatchAllDocsQuery();
         }
@@ -102,7 +102,7 @@ public class FixedValueProperty extends AbstractProperty
     {
         if (not)
         {
-            if (value == null)
+            if (fixedValue == null)
             {
                 return new MatchAllDocsQuery();
             }
@@ -113,7 +113,7 @@ public class FixedValueProperty extends AbstractProperty
         }
         else
         {
-            if (value == null)
+            if (fixedValue == null)
             {
                 return new TermQuery(new Term("NO_TOKENS", "__"));
             }
@@ -135,7 +135,7 @@ public class FixedValueProperty extends AbstractProperty
         if (value instanceof Comparable)
         {
             Comparable comparable = (Comparable) value;
-            if (comparable.compareTo(value) > 0)
+            if (comparable.compareTo(fixedValue) > 0)
             {
                 return new MatchAllDocsQuery();
             }
@@ -160,7 +160,7 @@ public class FixedValueProperty extends AbstractProperty
         if (value instanceof Comparable)
         {
             Comparable comparable = (Comparable) value;
-            if (comparable.compareTo(value) >= 0)
+            if (comparable.compareTo(fixedValue) >= 0)
             {
                 return new MatchAllDocsQuery();
             }
@@ -184,7 +184,7 @@ public class FixedValueProperty extends AbstractProperty
         boolean in = false;
         for (Serializable value : values)
         {
-            if (EqualsHelper.nullSafeEquals(value, value))
+            if (EqualsHelper.nullSafeEquals(value, fixedValue))
             {
                 in = true;
                 break;
@@ -207,7 +207,7 @@ public class FixedValueProperty extends AbstractProperty
      */
     public Query buildLuceneInequality(AbstractLuceneQueryParser lqp, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws ParseException
     {
-        if (!EqualsHelper.nullSafeEquals(value, value))
+        if (!EqualsHelper.nullSafeEquals(value, fixedValue))
         {
             return new MatchAllDocsQuery();
         }
@@ -227,7 +227,7 @@ public class FixedValueProperty extends AbstractProperty
         if (value instanceof Comparable)
         {
             Comparable comparable = (Comparable) value;
-            if (comparable.compareTo(value) < 0)
+            if (comparable.compareTo(fixedValue) < 0)
             {
                 return new MatchAllDocsQuery();
             }
@@ -252,7 +252,7 @@ public class FixedValueProperty extends AbstractProperty
         if (value instanceof Comparable)
         {
             Comparable comparable = (Comparable) value;
-            if (comparable.compareTo(value) <= 0)
+            if (comparable.compareTo(fixedValue) <= 0)
             {
                 return new MatchAllDocsQuery();
             }
@@ -281,7 +281,7 @@ public class FixedValueProperty extends AbstractProperty
             String asString = DefaultTypeConverter.INSTANCE.convert(String.class, converted);
             String regExpression = SearchLanguageConversion.convertSQLLikeToRegex(asString);
             Pattern pattern = Pattern.compile(regExpression);
-            String target = DefaultTypeConverter.INSTANCE.convert(String.class, value);
+            String target = DefaultTypeConverter.INSTANCE.convert(String.class, fixedValue);
             Matcher matcher = pattern.matcher(target);
             if (matcher.matches())
             {

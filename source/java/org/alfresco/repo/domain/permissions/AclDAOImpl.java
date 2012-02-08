@@ -780,6 +780,7 @@ public class AclDAOImpl implements AclDAO
                             if (nodePair == null)
                             {
                                 logger.warn("Node does not exist: " + nodeId);
+                                continue;
                             }
                             NodeRef nodeRef = nodePair.getSecond();
 
@@ -928,7 +929,7 @@ public class AclDAOImpl implements AclDAO
                 Acl unusedInherited = null;
                 for (AclChange change : acls)
                 {
-                    if (change.getBefore() == inherited.getId())
+                    if (change.getBefore()!= null && change.getBefore().equals(inherited.getId()))
                     {
                         unusedInherited = aclCrudDAO.getAcl(change.getAfter());
                     }
@@ -1229,7 +1230,7 @@ public class AclDAOImpl implements AclDAO
         Acl test = inheritedAcl;
         while (test != null)
         {
-            if (test.getId() == target)
+            if (test.getId()!= null && test.getId().equals(target))
             {
                 throw new IllegalStateException("Cyclical ACL detected");
             }
@@ -1433,7 +1434,7 @@ public class AclDAOImpl implements AclDAO
             }
             return toCopy;
         case REDIRECT:
-            if ((toInheritFrom != null) && (toInheritFrom == toCopy))
+            if ((toInheritFrom != null) && (toInheritFrom.equals(toCopy)))
             {
                 return getInheritedAccessControlList(toInheritFrom);
             }

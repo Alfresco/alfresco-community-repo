@@ -22,7 +22,6 @@ import java.util.List;
 
 import org.alfresco.util.schemacomp.DbObjectVisitor;
 import org.alfresco.util.schemacomp.DiffContext;
-import org.alfresco.util.schemacomp.Result.Strength;
 import org.alfresco.util.schemacomp.Results;
 import org.alfresco.util.schemacomp.validator.DbValidator;
 
@@ -63,7 +62,7 @@ public interface DbObject
      * @param right The object to compare against.
      * @param ctx The DiffContext
      */
-    void diff(DbObject right, DiffContext ctx, Strength strength);
+    void diff(DbObject right, DiffContext ctx);
     
     
     /**
@@ -105,6 +104,21 @@ public interface DbObject
      * @param validators
      */
     void setValidators(List<DbValidator> validators);
+    
+    /**
+     * Does the database object have any validators associated with it?
+     * 
+     * @return true if there are one or more validators.
+     */
+    boolean hasValidators();
+    
+    /**
+     * Is there at least one validator that assumes object-level validation
+     * that removes the requirement for reporting of differences for this object?
+     * 
+     * @return
+     */
+    boolean hasObjectLevelValidator();
     
     /**
      * Type name, e.g. "column", "foreign key"

@@ -646,7 +646,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
         else if (changes.containsKey(id))
         {
             Long updateId = changes.get(id);
-            if (updateId != id)
+            if (!id.equals(updateId))
             {
                 Acl newAcl = aclDaoComponent.getAcl(updateId);
                 // No need to force COW - ACL should have COWed if required

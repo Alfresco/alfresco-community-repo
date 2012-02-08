@@ -769,6 +769,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         
         // Invoke policies
         invokeBeforeUpdateNode(nodeRef);
+        QName oldType = nodeDAO.getNodeType(nodePair.getFirst());
+        invokeBeforeSetType(nodeRef, oldType, typeQName);
         
         // Set the type
         boolean updatedNode = nodeDAO.updateNode(nodePair.getFirst(), typeQName, null);
@@ -781,6 +783,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         {
             // Invoke policies
             invokeOnUpdateNode(nodeRef);
+            invokeOnSetType(nodeRef, oldType, typeQName);
+            
             // Index
             nodeIndexer.indexUpdateNode(nodeRef);
         }
@@ -834,6 +838,16 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
     }
 
+    /**
+     * @see Node#countChildAssocs()
+     */
+    public int countChildAssocs(NodeRef nodeRef, boolean isPrimary) throws InvalidNodeRefException
+    {    
+    	final Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
+    	final Long nodeId = nodePair.getFirst();
+    	return nodeDAO.countChildAssocsByParent(nodeId, isPrimary);
+    }
+    
     public void removeAspect(NodeRef nodeRef, QName aspectTypeQName)
             throws InvalidNodeRefException, InvalidAspectException
     {

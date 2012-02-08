@@ -232,7 +232,7 @@ public class CachedContentCleanupJobTest
         
         for (int i = 0; i < numFiles; i++)
         {
-            Calendar calendar = new GregorianCalendar(2010, 12, 2, 17, i);
+            Calendar calendar = new GregorianCalendar(2010, 11, 2, 17, i);
                         
             if (i >= 21 && i <= 24)
             {

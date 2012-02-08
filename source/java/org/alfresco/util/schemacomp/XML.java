@@ -55,4 +55,6 @@ public abstract class XML
     public static final String ATTR_ORDER = "order";
     public static final String ATTR_UNIQUE = "unique";
     public static final String ATTR_CLASS = "class";
+    public static final String ATTR_DB_PREFIX = "dbprefix";
+    public static final String ATTR_VERSION = "version";
 }

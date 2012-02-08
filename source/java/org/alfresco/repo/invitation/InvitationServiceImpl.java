@@ -22,6 +22,7 @@ package org.alfresco.repo.invitation;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -34,13 +35,16 @@ import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.authentication.PasswordGenerator;
 import org.alfresco.repo.security.authentication.UserNameGenerator;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.site.SiteModel;
+import org.alfresco.repo.workflow.CancelWorkflowActionExecuter;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.repo.workflow.activiti.ActivitiConstants;
 import org.alfresco.repo.workflow.jbpm.JBPMEngine;
+import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.invitation.Invitation;
 import org.alfresco.service.cmr.invitation.InvitationException;
@@ -94,6 +98,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
      */
     private WorkflowService workflowService;
     private WorkflowAdminService workflowAdminService;
+    private ActionService actionService;
     private PersonService personService;
     private SiteService siteService;
     private MutableAuthenticationService authenticationService;
@@ -132,6 +137,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     {
         PropertyCheck.mandatory(this, "nodeService", nodeService);
         PropertyCheck.mandatory(this, "WorkflowService", workflowService);
+        PropertyCheck.mandatory(this, "ActionService", actionService);
         PropertyCheck.mandatory(this, "PersonService", personService);
         PropertyCheck.mandatory(this, "SiteService", siteService);
         PropertyCheck.mandatory(this, "AuthenticationService", authenticationService);
@@ -515,6 +521,34 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         }
         return invitation;
     }
+    
+    private Map<String, WorkflowTask> getInvitationTasks(List<String> invitationIds)
+    {
+        for (String invitationId: invitationIds)
+        {
+            validateInvitationId(invitationId);
+        }
+
+        // query for invite workflow task associate
+        long start = (logger.isDebugEnabled()) ? System.currentTimeMillis() : 0;
+        List<WorkflowTask> inviteStartTasks = workflowService.getStartTasks(invitationIds, true);
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("  getInvitationTask("+invitationIds.size()+") in "+ (System.currentTimeMillis()-start) + " ms");
+        }
+        
+        Map<String, WorkflowTask> result = new HashMap<String, WorkflowTask>(inviteStartTasks.size() * 2);
+        for(WorkflowTask inviteStartTask: inviteStartTasks)
+        {
+            String invitationId = inviteStartTask.getPath().getInstance().getId();
+            // The following does not work for moderated tasks
+            // String invitationId = (String)
+            // inviteStartTask.getProperties().get(WorkflowModel.PROP_WORKFLOW_INSTANCE_ID);
+            result.put(invitationId, inviteStartTask);
+        }
+        
+        return result;
+    }
 
     private ModeratedInvitation getModeratedInvitation(WorkflowTask startTask)
     {
@@ -586,44 +620,97 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
      */
     public List<Invitation> listPendingInvitationsForResource(Invitation.ResourceType resourceType, String resourceName)
     {
-        InvitationSearchCriteriaImpl crit = new InvitationSearchCriteriaImpl();
-        crit.setInvitationType(InvitationSearchCriteria.InvitationType.ALL);
-        crit.setResourceType(resourceType);
-        crit.setResourceName(resourceName);
-        return searchInvitation(crit);
+        InvitationSearchCriteriaImpl criteria = getPendingInvitationCriteriaForResource(resourceType, resourceName);
+        return searchInvitation(criteria);
     }
 
     /**
-     * This is the general search invitation method
+     * Returns search criteria to find pending invitations
+     * @param resourceType
+     * @param resourceName
+     * @return search criteria
+     */
+    private InvitationSearchCriteriaImpl getPendingInvitationCriteriaForResource(
+            Invitation.ResourceType resourceType, String resourceName)
+    {
+        InvitationSearchCriteriaImpl criteria = new InvitationSearchCriteriaImpl();
+        criteria.setInvitationType(InvitationSearchCriteria.InvitationType.ALL);
+        criteria.setResourceType(resourceType);
+        criteria.setResourceName(resourceName);
+        return criteria;
+    }
+
+    /**
+     * This is the general search invitation method returning {@link Invitation}s
      * 
      * @param criteria
-     * @return the list of invitations
+     * @return the list of start tasks for invitations
      */
     public List<Invitation> searchInvitation(final InvitationSearchCriteria criteria)
     {
-        List<WorkflowTask> searchResults = new ArrayList<WorkflowTask>();
+        int limit = 200;
+        List<String> invitationIds = searchInvitationsForIds(criteria, limit);
+        return invitationIds.isEmpty() ? Collections.<Invitation>emptyList() : searchInvitation(criteria, invitationIds);
+    }
+
+    private List<Invitation> searchInvitation(final InvitationSearchCriteria criteria, List<String> invitationIds)
+    {
+        final Map<String, WorkflowTask> taskCache = getInvitationTasks(invitationIds);
+        return CollectionUtils.transform(invitationIds, new Function<String, Invitation>()
+        {
+            public Invitation apply(String invitationId)
+            {
+                WorkflowTask startTask = taskCache.get(invitationId);
+                if (startTask == null)
+                {
+                    return null;
+                }
+                Invitation invitation = getInvitation(startTask);
+                return invitationMatches(invitation, criteria) ? invitation : null;
+            }
+        });
+    }
+
+    /**
+     * This is a general search invitation method returning IDs
+     * 
+     * @param criteria
+     * @param limit maximum number of IDs to return. If less than 1, there is no limit. 
+     * @return the list of invitation IDs (the IDs of the invitations not the IDs of the invitation start tasks)
+     */
+    private List<String> searchInvitationsForIds(final InvitationSearchCriteria criteria, int limit)
+    {
+        List<String> invitationIds = new ArrayList<String>();
         InvitationSearchCriteria.InvitationType toSearch = criteria.getInvitationType();
         if (toSearch == InvitationSearchCriteria.InvitationType.ALL
                     || toSearch == InvitationSearchCriteria.InvitationType.NOMINATED)
         {
-             searchResults.addAll(searchNominatedInvitations(criteria));
-        }
-        if (toSearch == InvitationSearchCriteria.InvitationType.ALL
-                    || toSearch == InvitationSearchCriteria.InvitationType.MODERATED)
-        {
-            searchResults.addAll(searchModeratedInvitations(criteria));
-        }
-        
-        return CollectionUtils.transform(searchResults, new Function<WorkflowTask, Invitation>()
-        {
-            public Invitation apply(WorkflowTask task)
+            for (WorkflowTask task : searchNominatedInvitations(criteria))
             {
                 String invitationId = task.getPath().getInstance().getId();
-                Invitation invitation = getInvitation(invitationId);
-                return invitationMatches(invitation, criteria) ? invitation : null;
+                invitationIds.add(invitationId);
+                if (limit > 0 && invitationIds.size() >= limit)
+                {
+                    break;
+                }
             }
+        }
+        if ((limit <= 0 || invitationIds.size() < limit) &&
+            (toSearch == InvitationSearchCriteria.InvitationType.ALL
+                     || toSearch == InvitationSearchCriteria.InvitationType.MODERATED))
+        {
+            for (WorkflowTask task: searchModeratedInvitations(criteria))
+            {
+                String invitationId = task.getPath().getInstance().getId();
+                invitationIds.add(invitationId);
+                if (limit > 0 && invitationIds.size() >= limit)
+                {
+                    break;
+                }
+            } 
+        }
+        return invitationIds;
 
-        });
     }
 
     /**
@@ -665,6 +752,8 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     
     private List<WorkflowTask> searchModeratedInvitations(InvitationSearchCriteria criteria)
     {
+        long start = (logger.isDebugEnabled()) ? System.currentTimeMillis() : 0;
+
         WorkflowTaskQuery query = new WorkflowTaskQuery();
         query.setTaskState(WorkflowTaskState.IN_PROGRESS);
         
@@ -694,7 +783,8 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         if(workflowAdminService.isEngineEnabled(JBPMEngine.ENGINE_ID))
         {
             query.setTaskName(WorkflowModelModeratedInvitation.WF_REVIEW_TASK);
-            List<WorkflowTask> jbpmTasks = this.workflowService.queryTasks(query);
+            List<WorkflowTask> jbpmTasks = this.workflowService.queryTasks(query, true);
+
             if(jbpmTasks !=null)
             {
                 results.addAll(jbpmTasks);
@@ -703,17 +793,23 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         if(workflowAdminService.isEngineEnabled(ActivitiConstants.ENGINE_ID))
         {
             query.setTaskName(WorkflowModelModeratedInvitation.WF_ACTIVITI_REVIEW_TASK);
-            List<WorkflowTask> jbpmTasks = this.workflowService.queryTasks(query);
+            List<WorkflowTask> jbpmTasks = this.workflowService.queryTasks(query, true);
             if(jbpmTasks !=null)
             {
                 results.addAll(jbpmTasks);
             }
+        }
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("  searchModeratedInvitations in "+ (System.currentTimeMillis()-start) + " ms");
         }
         return results;
     }
 
     private List<WorkflowTask> searchNominatedInvitations(InvitationSearchCriteria criteria)
     {
+        long start = (logger.isDebugEnabled()) ? System.currentTimeMillis() : 0;
+
         WorkflowTaskQuery query = new WorkflowTaskQuery();
         query.setTaskState(WorkflowTaskState.IN_PROGRESS);
         
@@ -749,7 +845,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         if(workflowAdminService.isEngineEnabled(JBPMEngine.ENGINE_ID))
         {
             query.setTaskName(WorkflowModelNominatedInvitation.WF_TASK_INVITE_PENDING);
-            List<WorkflowTask> jbpmTasks = this.workflowService.queryTasks(query);
+            List<WorkflowTask> jbpmTasks = this.workflowService.queryTasks(query, true);
             if(jbpmTasks !=null)
             {
                 results.addAll(jbpmTasks);
@@ -758,11 +854,15 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         if(workflowAdminService.isEngineEnabled(ActivitiConstants.ENGINE_ID))
         {
             query.setTaskName(WorkflowModelNominatedInvitation.WF_TASK_ACTIVIT_INVITE_PENDING);
-            List<WorkflowTask> jbpmTasks = this.workflowService.queryTasks(query);
+            List<WorkflowTask> jbpmTasks = this.workflowService.queryTasks(query, true);
             if(jbpmTasks !=null)
             {
                 results.addAll(jbpmTasks);
             }
+        }
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("  searchNominatedInvitations in "+ (System.currentTimeMillis()-start) + " ms");
         }
         return results;
     }
@@ -793,6 +893,14 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     public WorkflowService getWorkflowService()
     {
         return workflowService;
+    }
+    
+    /**
+     * @param actionService the actionService to set
+     */
+    public void setActionService(ActionService actionService)
+    {
+        this.actionService = actionService;
     }
 
     public void setPersonService(PersonService personService)
@@ -1329,13 +1437,34 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
                     String siteName = (String) nodeService.getProperty(siteRef, ContentModel.PROP_NAME);
                     if (siteName != null)
                     {
-                        logger.debug("Invitation service delete node fired " + type + ", " + siteName);
-                        List<Invitation> invitations = listPendingInvitationsForResource(
-                                    Invitation.ResourceType.WEB_SITE, siteName);
-                        for (Invitation invitation : invitations)
+                        long start =0;
+                        if (logger.isDebugEnabled())
                         {
-                            logger.debug("cancel workflow " + invitation.getInviteId());
-                            workflowService.cancelWorkflow(invitation.getInviteId());
+                            logger.debug("Invitation service delete node fired " + type + ", " + siteName);
+                            start = System.currentTimeMillis();
+                        }
+                        InvitationSearchCriteriaImpl criteria =
+                            getPendingInvitationCriteriaForResource(Invitation.ResourceType.WEB_SITE, siteName);
+                        List<String> invitationIds = searchInvitationsForIds(criteria, -1);
+                        
+                        if (logger.isDebugEnabled())
+                        {
+                            long end = System.currentTimeMillis();
+                            logger.debug("Invitations found: " + invitationIds.size() + " in "+ ((end-start)/1000) + " seconds");
+                            start = System.currentTimeMillis();
+                        }
+                        
+                        // Create the action
+                        Action action = actionService.createAction(CancelWorkflowActionExecuter.NAME);
+                        action.setParameterValue(CancelWorkflowActionExecuter.PARAM_WORKFLOW_ID_LIST, (Serializable)invitationIds);
+                                                
+                        // Cancel the workflows asynchronously
+                        actionService.executeAction(action, siteRef, false, true);        
+                        
+                        if (logger.isDebugEnabled())
+                        {
+                            long end = System.currentTimeMillis();
+                            logger.debug("Invitations cancelled: " + invitationIds.size() + " in "+ (end-start) + " ms");
                         }
                     }
                 }

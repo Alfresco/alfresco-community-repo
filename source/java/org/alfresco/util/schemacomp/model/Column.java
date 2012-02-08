@@ -21,7 +21,6 @@ package org.alfresco.util.schemacomp.model;
 import org.alfresco.util.schemacomp.DbObjectVisitor;
 import org.alfresco.util.schemacomp.DbProperty;
 import org.alfresco.util.schemacomp.DiffContext;
-import org.alfresco.util.schemacomp.Result.Strength;
 
 /**
  * Represents a column in a database table.
@@ -154,7 +153,7 @@ public class Column extends AbstractDbObject
     }
 
     @Override
-    protected void doDiff(DbObject right, DiffContext ctx, Strength strength)
+    protected void doDiff(DbObject right, DiffContext ctx)
     {
         DbProperty thisTypeProp = new DbProperty(this, "type");
         DbProperty thisNullableProp = new DbProperty(this, "nullable");
@@ -177,29 +176,5 @@ public class Column extends AbstractDbObject
     public void accept(DbObjectVisitor visitor)
     {
         visitor.visit(this);
-    }
-
-    @Override
-    public boolean sameAs(DbObject other)
-    {
-        if (other == null)
-        {
-            return false;
-        }
-        if (this == other)
-        {
-            return true;
-        }
-        if (getClass().equals(other.getClass()))
-        {
-            if (getName() != null && other.getName() != null)
-            {
-                if (getParent() != null && other.getParent() != null && getParent().sameAs(other.getParent()))
-                {
-                    return getName().equals(other.getName());
-                }
-            }
-        }
-        return false;
     }
 }

@@ -46,6 +46,7 @@ public class CIFSContentComparator implements ContentComparator
     public void init()
     {   
         customComparators.put("application/vnd.ms-project", new MPPContentComparator());
+        customComparators.put("application/vnd.ms-excel", new XLSContentComparator());
     }  
 
     @Override
@@ -201,4 +202,83 @@ public class CIFSContentComparator implements ContentComparator
             }
         }
     }
+    
+    // Comparator for MS Excel
+    private class XLSContentComparator implements ContentComparator
+    {
+     
+        @Override
+        public boolean isContentEqual(ContentReader existingContent,
+                File newFile)
+        {
+            long newSize = newFile.length();
+            
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("comparing two excel files size:" + existingContent.getSize() + ", and " + newFile.length());
+            }
+           
+            if(existingContent.getSize() != newSize)
+            {
+                logger.debug("excel files are different size");
+                // Different size
+                return false;
+            }
+            
+            /**
+             * Use POI to compare the content of the XLS file, exluding certain properties
+             */
+            InputStream leftIs = null;
+            try
+            {  
+                Collection<String> excludes = new HashSet<String>();
+                
+                leftIs = existingContent.getContentInputStream();
+                NPOIFSFileSystem fs2 = new NPOIFSFileSystem(leftIs);              
+                NPOIFSFileSystem fs1 = new NPOIFSFileSystem(newFile);                
+                
+                DirectoryEntry de1 = fs1.getRoot();
+                DirectoryEntry de2 = fs2.getRoot();
+                
+                FilteringDirectoryNode fs1Filtered = new FilteringDirectoryNode(de1, excludes);
+                FilteringDirectoryNode fs2Filtered = new FilteringDirectoryNode(de2, excludes);
+                
+                boolean retVal = EntryUtils.areDirectoriesIdentical(fs1Filtered, fs2Filtered);
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("returning equal="+ retVal);
+                }
+                
+                return retVal;
+            }
+            catch (ContentIOException ce)
+            {
+                logger.debug("Unable to compare contents", ce);
+                return false;
+            }
+            catch (IOException e)
+            {
+                logger.debug("Unable to compare contents", e);
+                return false;
+            }
+            finally
+            {
+                if(leftIs != null)
+                {
+                    try
+                    {
+                        leftIs.close();
+                    } 
+                    catch (IOException e)
+                    {
+                       // Ignore
+                    }
+                }
+            }
+        }
+    }
+
+    
+    
+    
 }

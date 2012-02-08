@@ -20,11 +20,9 @@ package org.alfresco.repo.admin.patch.impl;
 
 import java.util.List;
 
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.importer.ImporterBootstrap;
-import org.alfresco.repo.search.IndexerAndSearcher;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.ResultSet;
@@ -33,6 +31,7 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Patch to break the inheritance of permissions on AVM Web Project Folders.
@@ -46,14 +45,8 @@ public class AVMWebProjectInheritPermissionsPatch extends AbstractPatch
     private static final String MSG_SUCCESS = "patch.avmWebProjectInheritPermissions.result";
     
     private ImporterBootstrap spacesImporterBootstrap;
-    private IndexerAndSearcher indexerAndSearcher;
     private PermissionService permissionService;
 
-    public void setIndexerAndSearcher(IndexerAndSearcher indexerAndSearcher)
-    {
-        this.indexerAndSearcher = indexerAndSearcher;
-    }
-    
     public void setSpacesImporterBootstrap(ImporterBootstrap spacesImporterBootstrap)
     {
         this.spacesImporterBootstrap = spacesImporterBootstrap;

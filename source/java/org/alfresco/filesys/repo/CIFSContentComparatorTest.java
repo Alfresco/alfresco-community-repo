@@ -199,7 +199,53 @@ public class CIFSContentComparatorTest extends TestCase
             assertTrue("compare trivially different project file, should be equal", result);
         }
     }
+    
+    /**
+     * Open and close of an excel 2003 file changes certain header properties.
+     * Test File 1 has been opened and closed in excel2003.
+     * @throws Exception
+     */
+    public void testDiffExcel2003Files() throws Exception
+    {
+        CIFSContentComparator contentComparator = new CIFSContentComparator();
+        contentComparator.init();
+        
+        ClassPathResource file0Resource = new ClassPathResource("filesys/ContentComparatorTestExcel2003-1.xls");
+        assertNotNull("unable to find test resource filesys/filesys/ContentComparatorTestExcel2003-1.xls", file0Resource);
+        
+        ClassPathResource file1Resource = new ClassPathResource("filesys/ContentComparatorTestExcel2003-2.xls");
+        assertNotNull("unable to find test resource filesys/filesys/ContentComparatorTestExcel2003-2.xls", file1Resource);
+        
+        ClassPathResource file3Resource = new ClassPathResource("filesys/ContentComparatorTestExcel2003-3.xls");
+        assertNotNull("unable to find test resource filesys/filesys/ContentComparatorTestExcel2003-3.xls", file1Resource);
 
+                
+        /**
+         * Compare trivially different excel files, should ignore trivial differences and be equal 
+         */
+        {
+            File file0 = file0Resource.getFile();
+            File file1 = file1Resource.getFile();
 
+            ContentReader reader = new FileContentReader(file0);
+            reader.setMimetype("application/vnd.ms-excel");
+            reader.setEncoding("UTF-8");
+            boolean result = contentComparator.isContentEqual(reader, file1);
+            assertTrue("compare trivially different project file, should be equal", result);
+        }
+        
+        /**
+         * Compare different project files, should not be ignored 
+         */
+        {
+            File file0 = file0Resource.getFile();
+            File file3 = file3Resource.getFile();
 
+            ContentReader reader = new FileContentReader(file0);
+            reader.setMimetype("application/vnd.ms-excel");
+            reader.setEncoding("UTF-8");
+            boolean result = contentComparator.isContentEqual(reader, file3);
+            assertTrue("different excel2003 file, failed to note difference", !result);
+        }
+    }
 }

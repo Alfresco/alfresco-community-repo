@@ -19,6 +19,7 @@
 package org.alfresco.repo.activities.feed;
 
 import org.alfresco.repo.activities.ActivityPostServiceImpl;
+import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.domain.activities.ActivityPostDAO;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.JobLockService.JobLockRefreshCallback;
@@ -53,6 +54,7 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
     private ActivityPostDAO postDAO;
     private ActivityPostServiceImpl activityPostServiceImpl;
     private AuthenticationService authenticationService;
+    private SysAdminParams sysAdminParams;
     private TransactionService transactionService;
     private JobLockService jobLockService;
     
@@ -114,6 +116,11 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
         this.jobLockService = jobLockService;
     }
    
+    public void setSysAdminParams(SysAdminParams sysAdminParams)
+    {
+        this.sysAdminParams = sysAdminParams;
+    }
+
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
@@ -126,7 +133,7 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
      
     public void init() throws Exception
     {
-        ctx = new RepoCtx(repoEndPoint);
+        ctx = new RepoCtx(sysAdminParams, repoEndPoint);
         ctx.setUserNamesAreCaseSensitive(userNamesAreCaseSensitive);
         
         busy = false;

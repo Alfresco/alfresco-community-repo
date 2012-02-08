@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.email.server.EmailServiceImpl;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
@@ -34,6 +35,8 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Handler implementation address to document node.
@@ -43,19 +46,25 @@ import org.alfresco.service.namespace.QName;
  */
 public class DocumentEmailMessageHandler extends AbstractForumEmailMessageHandler
 {
+    private static Log logger = LogFactory.getLog(DocumentEmailMessageHandler.class);
+
     private static final String forumNodeName = "EmailForum";
 
     public void processMessage(NodeRef contentNodeRef, EmailMessage message)
     {
-        String messageSubject;
+        String messageSubject = message.getSubject();
 
-        if (message.getSubject() != null)
+        if (messageSubject != null && messageSubject.length() > 0)
         {
             messageSubject = message.getSubject();
         }
         else
         {
             messageSubject = "EMPTY_SUBJECT_" + System.currentTimeMillis();
+        }
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("process message:" + messageSubject);
         }
         
         QName nodeTypeQName = getNodeService().getType(contentNodeRef);
@@ -70,6 +79,7 @@ public class DocumentEmailMessageHandler extends AbstractForumEmailMessageHandle
 
             if (forumNode == null)
             {
+                logger.debug("adding new forum node");
                 forumNode = addForumNode(contentNodeRef);
             }
 
@@ -78,10 +88,12 @@ public class DocumentEmailMessageHandler extends AbstractForumEmailMessageHandle
 
             if (topicNodeRef == null)
             {
+                logger.debug("adding new topic node");
                 topicNodeRef = addTopicNode(forumNode, messageSubject);
             }
 
             // Create the post
+            logger.debug("add a post to the topic");
             NodeRef postNodeRef = addPostNode(topicNodeRef, message);
             
             // Add attachments
@@ -104,11 +116,12 @@ public class DocumentEmailMessageHandler extends AbstractForumEmailMessageHandle
     private NodeRef addForumNode(NodeRef nodeRef)
     {
         NodeService nodeService = getNodeService();
-        //Add discussable aspect to content node
-        if (!nodeService.hasAspect(nodeRef, ForumModel.ASPECT_DISCUSSABLE))
-        {
-            nodeService.addAspect(nodeRef, ForumModel.ASPECT_DISCUSSABLE, null);
-        }
+        
+//        //Add discussable aspect to content node
+//        if (!nodeService.hasAspect(nodeRef, ForumModel.ASPECT_DISCUSSABLE))
+//        {
+//            nodeService.addAspect(nodeRef, ForumModel.ASPECT_DISCUSSABLE, null);
+//        }
 
         //Create forum node and associate it with content node
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);

@@ -93,7 +93,6 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     private WorkflowService workflowService;
     private RepositoryExporterService repositoryExporterService;
     private ModuleService moduleService;
-    private SiteAVMBootstrap siteAVMBootstrap;
     private List<WorkflowDeployer> workflowDeployers = new ArrayList<WorkflowDeployer>();
     
     private String baseAdminUsername = null; 
@@ -198,11 +197,6 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         this.moduleService = moduleService;
     }
     
-    public void setSiteAVMBootstrap(SiteAVMBootstrap siteAVMBootstrap)
-    {
-        this.siteAVMBootstrap = siteAVMBootstrap;
-    }
-    
     public void setBaseAdminUsername(String baseAdminUsername)
     {
         this.baseAdminUsername = baseAdminUsername;
@@ -234,14 +228,6 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
             logger.warn(I18NUtil.getMessage(WARN_MSG));
         }
         
-        // for upgrade/backwards compatibility with 3.0.x (mt-admin-context.xml)
-        if (siteAVMBootstrap == null)
-        {
-            logger.warn(I18NUtil.getMessage(WARN_MSG));
-            
-            siteAVMBootstrap = (SiteAVMBootstrap) ctx.getBean("siteAVMBootstrap");
-        }
-        
         PropertyCheck.mandatory(this, "NodeService", nodeService);
         PropertyCheck.mandatory(this, "DictionaryComponent", dictionaryComponent);
         PropertyCheck.mandatory(this, "RepoAdminService", repoAdminService);
@@ -253,7 +239,6 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         PropertyCheck.mandatory(this, "WorkflowService", workflowService);
         PropertyCheck.mandatory(this, "RepositoryExporterService", repositoryExporterService);
         PropertyCheck.mandatory(this, "moduleService", moduleService);
-        PropertyCheck.mandatory(this, "siteAVMBootstrap", siteAVMBootstrap);
     }
     
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
@@ -379,8 +364,6 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
             
             ImporterBootstrap spacesImporterBootstrap = (ImporterBootstrap)ctx.getBean("spacesBootstrap-mt");
             bootstrapSpacesTenantStore(spacesImporterBootstrap, tenantDomain);
-            
-            siteAVMBootstrap.bootstrap();
             
             // notify listeners that tenant has been created & hence enabled
             for (TenantDeployer tenantDeployer : tenantDeployers)

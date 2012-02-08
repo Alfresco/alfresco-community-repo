@@ -242,6 +242,14 @@ public interface WorkflowComponent
     public WorkflowInstance cancelWorkflow(String workflowId);
 
     /**
+     * Cancel a batch of "in-flight" Workflow instances
+     * 
+     * @param workflowIds  List of the workflow instances to cancel
+     * @return List of updated representations of the workflow instances
+     */
+    public List<WorkflowInstance> cancelWorkflows(List<String> workflowIds);
+
+    /**
      * Delete an "in-flight" Workflow instance
      * 
      * @param workflowId  the workflow instance to cancel

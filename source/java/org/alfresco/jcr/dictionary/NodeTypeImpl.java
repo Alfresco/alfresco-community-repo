@@ -205,7 +205,7 @@ public class NodeTypeImpl implements NodeType
             }
         }
         
-        if (classDefinition.equals(NT_BASE))
+        if (classDefinition.getName().equals(NT_BASE))
         {
             // add nt:base properties
             defs.add(typeManager.getPropertyDefinitionImpl(JCRPrimaryTypeProperty.PROPERTY_NAME));

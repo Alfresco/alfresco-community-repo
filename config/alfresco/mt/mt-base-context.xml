@@ -34,8 +34,6 @@
       <property name="moduleService" ref="moduleService"/>
       <property name="baseAdminUsername"><value>${alfresco_user_store.adminusername}</value></property>
       
-      <property name="siteAVMBootstrap" ref="siteAVMBootstrap"/>
-      
    </bean>
    
 </beans>

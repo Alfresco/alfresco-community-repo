@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -20,6 +20,8 @@ package org.alfresco.repo.action;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -47,6 +49,7 @@ import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionConditionDefinition;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.action.ActionServiceTransientException;
 import org.alfresco.service.cmr.action.ActionStatus;
 import org.alfresco.service.cmr.action.ActionTrackingService;
 import org.alfresco.service.cmr.action.CancellableAction;
@@ -63,6 +66,7 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
@@ -81,18 +85,18 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
     private NodeRef folder;
     private RetryingTransactionHelper transactionHelper;
     
-//    @Override
-//    protected String[] getConfigLocations()
-//    {
-//        String[] existingConfigLocations = ApplicationContextHelper.CONFIG_LOCATIONS;
-//
-//        List<String> locations = Arrays.asList(existingConfigLocations);
-//		List<String> mutableLocationsList = new ArrayList<String>(locations);
-//    	mutableLocationsList.add("classpath:org/alfresco/repo/action/test-action-services-context.xml");
-//    	
-//    	String[] result = mutableLocationsList.toArray(new String[mutableLocationsList.size()]);
-//		return (String[]) result;
-//    }
+    @Override
+    protected String[] getConfigLocations()
+    {
+        String[] existingConfigLocations = ApplicationContextHelper.CONFIG_LOCATIONS;
+
+        List<String> locations = Arrays.asList(existingConfigLocations);
+        List<String> mutableLocationsList = new ArrayList<String>(locations);
+        mutableLocationsList.add("classpath:org/alfresco/repo/action/test-action-services-context.xml");
+        
+        String[] result = mutableLocationsList.toArray(new String[mutableLocationsList.size()]);
+        return result;
+    }
     
     @Override
     protected void onSetUpInTransaction() throws Exception
@@ -1043,7 +1047,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
     public void testSyncFailureBehaviour()
     {
         // Create an action that is going to fail
-        Action action = createFailingMoveAction();
+        Action action = createFailingMoveAction(true);
         
         try
         {
@@ -1087,20 +1091,30 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
      */
     public void testCompensatingAction()
     {
-        // Create an action that is going to fail
-        final Action action = createFailingMoveAction();
-        action.setTitle("title");
+        // Create actions that are going to fail
+        final Action fatalAction = createFailingMoveAction(true);
+        final Action nonfatalAction = createFailingMoveAction(false);
+        fatalAction.setTitle("fatal title");
+        nonfatalAction.setTitle("non-fatal title");
         
-        // Create the compensating action
+        // Create the compensating actions
         Action compensatingAction = actionService.createAction(AddFeaturesActionExecuter.NAME);
         compensatingAction.setParameterValue(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_CLASSIFIABLE);
         compensatingAction.setTitle("title");
-        action.setCompensatingAction(compensatingAction);
+        fatalAction.setCompensatingAction(compensatingAction);
         
-        // Set the action to execute asynchronously
-        action.setExecuteAsynchronously(true);
+        Action compensatingAction2 = actionService.createAction(AddFeaturesActionExecuter.NAME);
+        compensatingAction2.setParameterValue(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_TEMPORARY);
+        compensatingAction2.setTitle("title");
+        nonfatalAction.setCompensatingAction(compensatingAction2);
         
-        this.actionService.executeAction(action, this.nodeRef);
+        
+        // Set the actions to execute asynchronously
+        fatalAction.setExecuteAsynchronously(true);
+        nonfatalAction.setExecuteAsynchronously(true);
+        
+        this.actionService.executeAction(fatalAction, this.nodeRef);
+        this.actionService.executeAction(nonfatalAction, this.nodeRef);
         
         setComplete();
         endTransaction();
@@ -1113,8 +1127,21 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
                 {
                     public String executeTest() 
                     {
-                    	boolean result = ActionServiceImplTest.this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_CLASSIFIABLE);
-                    	return result == true ? null : "Expected aspect Classifiable";
+                        boolean fatalCompensatingActionRun = ActionServiceImplTest.this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_CLASSIFIABLE);
+                        
+                        boolean nonFatalCompensatingActionRun = ActionServiceImplTest.this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY);
+                        
+                        StringBuilder result = new StringBuilder();
+                        if (!fatalCompensatingActionRun)
+                        {
+                            result.append("Expected aspect Classifiable.");
+                        }
+                        if (nonFatalCompensatingActionRun)
+                        {
+                            result.append(" Did not expect aspect Temporary");
+                        }
+                        
+                        return ( !fatalCompensatingActionRun || nonFatalCompensatingActionRun ? result.toString() : null);
                     };
                 });
         
@@ -1128,7 +1155,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
                     {                        
                         try
                         {
-                            ActionServiceImplTest.this.actionService.executeAction(action, ActionServiceImplTest.this.nodeRef);
+                            ActionServiceImplTest.this.actionService.executeAction(fatalAction, ActionServiceImplTest.this.nodeRef);
                         }
                         catch (RuntimeException exception)
                         {
@@ -1265,22 +1292,37 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
        assertEquals(null, action.getExecutionFailureMessage());
     }
     
-    protected Action createFailingMoveAction() {
-       Action failingAction = this.actionService.createAction(MoveActionExecuter.NAME);
-
-       // Create a bad node ref
-       NodeRef badNodeRef = new NodeRef(this.storeRef, "123123");
-       failingAction.setParameterValue(MoveActionExecuter.PARAM_DESTINATION_FOLDER, badNodeRef);
-       
-       return failingAction;
+    /**
+     * This method returns an {@link Action} which will fail when executed.
+     * 
+     * @param isFatal if <code>false</code> this will give an action which throws
+     *                a {@link ActionServiceTransientException non-fatal action exception}.
+     */
+    protected Action createFailingMoveAction(boolean isFatal) {
+        Action failingAction;
+        if (isFatal)
+        {
+            failingAction = this.actionService.createAction(MoveActionExecuter.NAME);
+            
+            // Create a bad node ref
+            NodeRef badNodeRef = new NodeRef(this.storeRef, "123123");
+            failingAction.setParameterValue(MoveActionExecuter.PARAM_DESTINATION_FOLDER, badNodeRef);
+        }
+        else
+        {
+            failingAction = this.actionService.createAction(TransientFailActionExecuter.NAME);
+        }
+        
+        return failingAction;
     }
     
-    protected Action createFailingSleepAction(String id) throws Exception {
-       return createFailingSleepAction(id, this.actionService);
+    protected Action createFailingSleepAction(String id, boolean isFatal) throws Exception {
+       return createFailingSleepAction(id, isFatal, this.actionService);
     }
-    protected static Action createFailingSleepAction(String id, ActionService actionService) throws Exception {
+    protected static Action createFailingSleepAction(String id, boolean isFatal, ActionService actionService) throws Exception {
        Action failingAction = createWorkingSleepAction(id, actionService);
        failingAction.setParameterValue(SleepActionExecuter.GO_BANG, Boolean.TRUE);
+       failingAction.setParameterValue(SleepActionExecuter.FAIL_FATALLY, Boolean.valueOf(isFatal));
        return failingAction;
     }
     
@@ -1328,6 +1370,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
     {
        public static final String NAME = "sleep-action";
        public static final String GO_BANG = "GoBang";
+       public static final String FAIL_FATALLY = "failFatally";
        private int sleepMs;
        
        private Thread executingThread;
@@ -1397,10 +1440,21 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
              incrementTimesExecutedCount();
           }
          
-          Boolean fail = (Boolean)action.getParameterValue(GO_BANG);
-          if(fail != null && fail) 
+          Boolean fail =        (Boolean)action.getParameterValue(GO_BANG);
+          Boolean failFatally = (Boolean)action.getParameterValue(FAIL_FATALLY);
+          if (fail != null && fail) 
           {
-             throw new RuntimeException("Bang!");
+              // this should fail
+              if (failFatally != null && failFatally)
+              {
+                  // this should fail fatally
+                  throw new RuntimeException("Bang!");
+              }
+              else
+              {
+                  // this should fail non-fatally
+                  throw new ActionServiceTransientException("Pop!");
+              }
           }
           
           if(action instanceof CancellableSleepAction)
@@ -1412,6 +1466,48 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
           }
        }
     }
+    
+    /**
+     * This class is only intended for use in JUnit tests.
+     * 
+     * @author Neil McErlean.
+     * @since 4.0.1
+     */
+    public static class TransientFailActionExecuter extends ActionExecuterAbstractBase
+    {
+       public static final String NAME = "transient-fail-action";
+       
+       private ActionTrackingService actionTrackingService;
+       
+       /**
+        * Loads this executor into the ApplicationContext, if it isn't already there
+        */
+        public static void registerIfNeeded(ConfigurableApplicationContext ctx)
+        {
+            if (!ctx.containsBean(TransientFailActionExecuter.NAME))
+            {
+                // Create, and do dependencies
+                TransientFailActionExecuter executor = new TransientFailActionExecuter();
+                executor.setTrackStatus(true);
+                executor.actionTrackingService = (ActionTrackingService) ctx.getBean("actionTrackingService");
+                // Register
+                ctx.getBeanFactory().registerSingleton(TransientFailActionExecuter.NAME, executor);
+            }
+        }
+       
+       @Override protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+       {
+          // Intentionally empty
+       }
+       
+       @Override protected void executeImpl(Action action, NodeRef actionedUponNodeRef) {
+           // this action always fails with a non-fatal exception.
+           throw new ActionServiceTransientException("action failed intentionally in " + TransientFailActionExecuter.class.getSimpleName());
+       }
+    }
+    
+
+    
     protected static class CancellableSleepAction extends ActionImpl implements CancellableAction
     {
         public CancellableSleepAction(Action action)

@@ -27,7 +27,6 @@ import org.alfresco.util.schemacomp.ComparisonUtils;
 import org.alfresco.util.schemacomp.DbObjectVisitor;
 import org.alfresco.util.schemacomp.DbProperty;
 import org.alfresco.util.schemacomp.DiffContext;
-import org.alfresco.util.schemacomp.Result.Strength;
 import org.alfresco.util.schemacomp.Results;
 import org.hibernate.dialect.Dialect;
 import org.junit.Before;
@@ -87,14 +86,13 @@ public abstract class DbObjectTestBase<T extends AbstractDbObject>
         thatObject.setComparisonUtils(comparisonUtils);
         
         // Invoke the method under test
-        thisObject.diff(thatObject, ctx, Strength.ERROR);
+        thisObject.diff(thatObject, ctx);
         
         // The name of the object should be diffed
         inOrder.verify(comparisonUtils).compareSimple(
                     new DbProperty(thisObject, "name"),
                     new DbProperty(thatObject, "name"),
-                    ctx,
-                    thisObject.getNameStrength());
+                    ctx);
         
         // Then the doDiff() method should be processed...
         doDiffTests();

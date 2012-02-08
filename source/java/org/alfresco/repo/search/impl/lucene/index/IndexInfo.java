@@ -1896,18 +1896,9 @@ public class IndexInfo implements IndexMonitor
             IndexEntry entry = indexEntries.get(id);
             if (entry == null)
             {
-                // We could be retrying - see if the index reader is known or the directory is left
-                if (referenceCountingReadOnlyIndexReaders.get(id) == null)
-                {
-                    File location = new File(indexDirectory, id).getCanonicalFile();
-                    if (!location.exists())
-                    {
-                        throw new IndexerException("Unknown transaction " + id);
-                    }
-                }
-
                 clearOldReaders();
                 cleaner.schedule();
+                throw new IndexerException("Unknown transaction " + id);
             }
 
             if (TransactionStatus.COMMITTED.follows(entry.getStatus()))
@@ -2007,18 +1998,9 @@ public class IndexInfo implements IndexMonitor
             IndexEntry entry = indexEntries.get(id);
             if (entry == null)
             {
-                // We could be retrying - see if the index reader is known or the directory is left
-                if (referenceCountingReadOnlyIndexReaders.get(id) == null)
-                {
-                    File location = new File(indexDirectory, id).getCanonicalFile();
-                    if (!location.exists())
-                    {
-                        throw new IndexerException("Unknown transaction " + id);
-                    }
-                }
-
                 clearOldReaders();
                 cleaner.schedule();
+                throw new IndexerException("Unknown transaction " + id);                
             }
 
             if (TransactionStatus.ROLLEDBACK.follows(entry.getStatus()))
@@ -2059,18 +2041,9 @@ public class IndexInfo implements IndexMonitor
             IndexEntry entry = indexEntries.get(id);
             if (entry == null)
             {
-                // We could be retrying - see if the index reader is known or the directory is left
-                if (referenceCountingReadOnlyIndexReaders.get(id) == null)
-                {
-                    File location = new File(indexDirectory, id).getCanonicalFile();
-                    if (!location.exists())
-                    {
-                        throw new IndexerException("Unknown transaction " + id);
-                    }
-                }
-
                 clearOldReaders();
                 cleaner.schedule();
+                throw new IndexerException("Unknown transaction " + id);   
             }
 
             if (TransactionStatus.DELETABLE.follows(entry.getStatus()))

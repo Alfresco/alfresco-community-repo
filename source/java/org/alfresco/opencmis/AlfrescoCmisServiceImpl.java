@@ -1072,6 +1072,19 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         return nodeRef.toString();
     }
 
+    private String stripEncoding(String mimeType)
+    {
+        String ret = mimeType;
+
+        int idx = mimeType.indexOf(";");
+        if(idx != -1)
+        {
+            ret = mimeType.substring(0, idx);
+        }
+
+        return ret;
+    }
+
     @Override
     public String createDocument(
             String repositoryId, final Properties properties, String folderId,
@@ -1127,7 +1140,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         {
             // write content
             ContentWriter writer = connector.getFileFolderService().getWriter(nodeRef);
-            writer.setMimetype(contentStream.getMimeType());
+            writer.setMimetype(stripEncoding(contentStream.getMimeType()));
             writer.setEncoding(encoding.name());
             writer.putContent(tempFile);
         }

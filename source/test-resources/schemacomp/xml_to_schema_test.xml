@@ -2,7 +2,7 @@
 <!--
       Test data used by the XMLToSchemaTest junit test class. 
   -->
-<schema name="alfresco">
+<schema name="alfresco" dbprefix="myprefix_" version="325">
   <objects>
     <table name="node">
       <columns>

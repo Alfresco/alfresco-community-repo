@@ -785,12 +785,6 @@ public abstract class AbstractReindexComponent implements IndexRecovery
                         List<Pair<NodeRef.Status, ChildAssociationRef>> nodePairs = new ArrayList<Pair<Status,ChildAssociationRef>>(nodeStatuses.size());
                         for (NodeRef.Status nodeStatus : nodeStatuses)
                         {
-                            if (nodeStatus == null)
-                            {
-                                // it's not there any more
-                                continue;
-                            }
-                            
                             ChildAssociationRef parent = nodeStatus.isDeleted() ? null : nodeService.getPrimaryParent(nodeStatus.getNodeRef());
                             nodePairs.add(new Pair<NodeRef.Status, ChildAssociationRef>(nodeStatus, parent));
                         }

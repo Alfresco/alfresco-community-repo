@@ -30,7 +30,10 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 
+import org.alfresco.repo.module.ModuleDetailsImpl;
+import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.util.TempFileProvider;
+import org.alfresco.util.VersionNumber;
 import org.springframework.util.FileCopyUtils;
 
 import de.schlichtherle.io.DefaultRaesZipDetector;
@@ -264,9 +267,47 @@ public class ModuleManagementToolTest extends TestCase
         }
         catch (ModuleManagementToolException exception)
         {
-            exception.printStackTrace();
             System.out.println("Expected failure: " + exception.getMessage());
         }
+    }
+ 
+    public void testCheckTargetWarVersion() throws Exception
+    {
+        manager.setVerbose(true);
+        String warLocation = getFileLocation(".war", "module/test.war");   //Version 4.0.1
+
+        ModuleDetails installingModuleDetails = new ModuleDetailsImpl("test_it",  new VersionNumber("9999"), "Test Mod", "Testing module");
+        installingModuleDetails.setRepoVersionMin(new VersionNumber("10.1"));
+        try
+        {
+            this.manager.checkTargetWarVersion(warLocation, installingModuleDetails);
+            fail(); //should never get here
+        }
+        catch (ModuleManagementToolException exception)
+        {
+            assertTrue(exception.getMessage().endsWith("must be installed on a repo version greater than 10.1"));
+        }
+
+        installingModuleDetails.setRepoVersionMin(new VersionNumber("1.1"));
+        this.manager.checkTargetWarVersion(warLocation, installingModuleDetails); //does not throw exception     
+     
+        installingModuleDetails.setRepoVersionMax(new VersionNumber("3.0"));
+        try
+        {
+            this.manager.checkTargetWarVersion(warLocation, installingModuleDetails);
+            fail(); //should never get here
+        }
+        catch (ModuleManagementToolException exception)
+        {
+            assertTrue(exception.getMessage().endsWith("cannot be installed on a repo version greater than 3.0"));
+        }        
+
+        installingModuleDetails.setRepoVersionMax(new VersionNumber("99"));
+        this.manager.checkTargetWarVersion(warLocation, installingModuleDetails); //does not throw exception
+        
+        installingModuleDetails.setRepoVersionMin(new VersionNumber("4.0.1"));  //current war version
+        installingModuleDetails.setRepoVersionMax(new VersionNumber("4.0.1"));  //current war version
+        this.manager.checkTargetWarVersion(warLocation, installingModuleDetails); //does not throw exception       
     }
     
     

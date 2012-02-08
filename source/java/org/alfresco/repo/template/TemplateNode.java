@@ -53,6 +53,7 @@ import org.alfresco.service.namespace.NamespacePrefixResolverProvider;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNameMap;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.ISO9075;
 import org.alfresco.util.UrlUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -568,7 +569,7 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
         };
 
         // resolve the path of the node 
-        final String nodePath = services.getNodeService().getPath(this.nodeRef).toPrefixString(services.getNamespaceService());
+        final String nodePath = ISO9075.decode(services.getNodeService().getPath(this.nodeRef).toPrefixString(services.getNamespaceService())); 
 
         // run as admin user to allow everyone to see audit information
         // (new 3.4 API doesn't allow this by default)

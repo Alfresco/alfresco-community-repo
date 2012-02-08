@@ -1662,6 +1662,12 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         usageStatus.logMessages(logger);
     }
     
+    public int countPeople()
+    {
+    	NodeRef peopleContainer = getPeopleContainer();
+    	return nodeService.countChildAssocs(peopleContainer, true);
+    }
+    
     /**
      * Helper for when creating new users and people:
      * Updates the supplied username with any required tenant

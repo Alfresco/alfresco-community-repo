@@ -2255,6 +2255,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             File file = TempFileProvider.createTempFile("cifs", ".bin");
             
             TempNetworkFile netFile = new TempNetworkFile(file, path);
+            netFile.setChanged(true);
             
             // Always allow write access to a newly created file
             netFile.setGrantedAccess(NetworkFile.READWRITE);
@@ -2684,7 +2685,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         {   
             if(logger.isDebugEnabled())
             {
-                logger.debug("Got a temp network file ");
+                logger.debug("Got a temp network file to close");
             }
             
             // Some content was written to the temp file.
@@ -2701,7 +2702,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 nodeService.removeAspect(target, ContentModel.ASPECT_NO_CONTENT);
             }
             
-            if(tempFile.getWriteCount() > 0) 
+            if(tempFile.isChanged()) 
             {
                 tempFile.flushFile();
                 tempFile.close();
@@ -2721,7 +2722,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                       
                 if(contentChanged)
                 {
-                    logger.debug("content has changed");
+                    logger.debug("content has changed, need to create a new content item");
                 
                     /**
                      * Take over the behaviour of the auditable aspect         

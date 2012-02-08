@@ -299,10 +299,10 @@
    <permissionSet type="cm:cmobject" expose="selected">
        
        <!-- Kept for backward compatibility - the administrator permission has   -->
-      <!-- been removed to aviod confusion --> 
+      <!-- been removed to avoid confusion --> 
       <permissionGroup name="Administrator" allowFullControl="true" expose="false" />
       
-      <!-- A coordinator can do anything to the object or its childeren unless the     -->
+      <!-- A coordinator can do anything to the object or its children unless the     -->
       <!-- permissions are set not to inherit or permission is denied.                 -->
       <permissionGroup name="Coordinator" allowFullControl="true" expose="true" />
       
@@ -339,7 +339,7 @@
       
       <!-- records permission -->
       <!-- Should be tied to the aspect -->
-      <!-- onwership should be removed when using this permission --> 
+      <!-- ownership should be removed when using this permission --> 
       <permissionGroup name="RecordAdministrator" allowFullControl="false" expose="false">
           <includePermissionGroup type="sys:base" permissionGroup="ReadProperties"/>
           <includePermissionGroup type="sys:base" permissionGroup="ReadChildren"/>

@@ -57,9 +57,9 @@ import org.alfresco.repo.domain.usage.UsageDAO;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.permissions.AccessControlListProperties;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.TransactionAwareSingleton;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
@@ -73,20 +73,20 @@ import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.InvalidStoreRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.ReadOnlyServerException;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.EqualsHelper;
-import org.alfresco.util.EqualsHelper.MapValueComparison;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.ReadWriteLockExecuter;
 import org.alfresco.util.SerializationUtils;
+import org.alfresco.util.EqualsHelper.MapValueComparison;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.dao.ConcurrencyFailureException;
@@ -944,7 +944,38 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     {
         NodeEntity node = new NodeEntity(nodeRef);
         Pair<Long, Node> pair = nodesCache.getByValue(node);
-        return (pair == null || pair.getSecond().getDeleted()) ? null : pair.getSecond().getNodePair();
+        // The noderef is currently invalid WRT to the cache. Let's just check the database
+        if (pair == null || pair.getSecond().getDeleted())
+        {
+            Node dbNode = selectNodeByNodeRef(nodeRef, null);
+            if (dbNode == null)
+            {
+                // The DB agrees. This is an invalid noderef. Why are you trying to use it?
+                return null;
+            }
+            Long nodeId = dbNode.getId();
+            if (dbNode.getDeleted())
+            {
+                // The node is actually deleted as the cache said. Could still be a race condition, so let's allow the
+                // transaction to be retried by attaching a cause to our InvalidNodeRefException
+                InvalidNodeRefException e = new InvalidNodeRefException(nodeRef);
+                e.initCause(new ConcurrencyFailureException("Attempt to follow reference " + nodeRef
+                        + " to deleted node " + nodeId));
+                throw e;
+            }
+            else
+            {
+                // The cache was wrong, possibly due to it caching negative results earlier. Let's repair it and carry on!
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Stale cache detected for Node " + nodeRef + ": previously though to be deleted. Repairing cache.");
+                }
+                invalidateNodeCaches(nodeId);
+                nodesCache.setValue(dbNode.getId(), dbNode);
+                return dbNode.getNodePair();
+            }
+        }
+        return pair.getSecond().getNodePair();
     }
 
     public Pair<Long, NodeRef> getNodePair(Long nodeId)
@@ -2793,16 +2824,21 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 catch (Throwable e)
                 {
                     controlDAO.rollbackToSavepoint(savepoint);
-                    // SQL Server retry
                     
-                    if(e.getMessage().contains("Snapshot isolation transaction aborted"))
+                    // SQL Server retry
+                    if (e.getMessage().contains("Snapshot isolation transaction aborted"))
                     {
+                        logger.warn("insertChildAssoc: SQL Server snapshot isolation retry: "+assoc);
                         throw new ConcurrencyFailureException("SQL Server snapshot isolation retry...", e);
                     }
                     
-                    if(e.getMessage().contains("The INSERT statement conflicted with the FOREIGN KEY constraint"))
+                    // FK conflict retry, eg.
+                    //     SQL Server - The INSERT statement conflicted with the FOREIGN KEY constraint
+                    //     MySQL      - Cannot add or update a child row: a foreign key constraint fails
+                    if (e.getMessage().toUpperCase().contains("FOREIGN KEY"))
                     {
-                        throw new ConcurrencyFailureException("SQL Server FK conflict retry...", e);
+                        logger.warn("insertChildAssoc: FK conflict retry: "+assoc);
+                        throw new ConcurrencyFailureException("FK conflict retry...", e); 
                     }
                     
                     // We assume that this is from the child cm:name constraint violation
@@ -3643,7 +3679,18 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             // Now check if we are seeing the correct version of the node
             if (assocs.isEmpty())
             {
-                // No results.  We can draw no conclusions.
+                // No results.  Currently Alfresco has very few parentless nodes (root nodes)
+                // and the lack of parent associations will be cached, anyway.
+                // But to match earlier fixes of ALF-12393, we do a double-check of the node's details
+                NodeEntity nodeCheckFromDb = selectNodeById(nodeId, null);
+                if (nodeCheckFromDb == null || !nodeCheckFromDb.getNodeVersionKey().equals(nodeVersionKey))
+                {
+                    // The node is gone or has moved on in version
+                    invalidateNodeCaches(nodeId);
+                    throw new DataIntegrityViolationException(
+                            "Detected stale node entry: " + nodeVersionKey +
+                            " (now " + nodeCheckFromDb + ")");
+                }
             }
             else
             {

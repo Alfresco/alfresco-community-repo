@@ -906,9 +906,12 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
             ctx = this.ldapInitialContextFactory.getDefaultIntialDirContext();
 
             // Execute the user query with an additional condition that ensures only the user with the required ID is
-            // returned
+            // returned. Force RFC 2254 escaping of the user ID in the filter to avoid any manipulation
             NamingEnumeration<SearchResult> searchResults = ctx.search(this.userSearchBase, "(&" + this.personQuery
-                    + "(" + this.userIdAttributeName + "=" + userId + "))", userSearchCtls);
+                    + "(" + this.userIdAttributeName + "={0}))", new Object[]
+            {
+                userId
+            }, userSearchCtls);
 
             if (searchResults.hasMore())
             {

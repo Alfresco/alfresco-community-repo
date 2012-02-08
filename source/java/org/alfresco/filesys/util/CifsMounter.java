@@ -20,6 +20,7 @@
  */
 package org.alfresco.filesys.util;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -207,7 +208,7 @@ public class CifsMounter {
         // Get the command to be used on this platform
 
         if ( logger.isDebugEnabled())
-        	logger.debug( "Mount CIFS share, cmdLine=" + exec.getCommand());
+        	logger.debug( "Mount CIFS share, cmdLine=" + Arrays.toString(exec.getCommand()));
         
         // Run the command
         
@@ -280,7 +281,7 @@ public class CifsMounter {
         // Get the command to be used on this platform
 
         if ( logger.isDebugEnabled())
-        	logger.debug( "UnMount CIFS share, cmdLine=" + exec.getCommand());
+        	logger.debug( "UnMount CIFS share, cmdLine=" + Arrays.toString(exec.getCommand()));
         
         // Run the command
         

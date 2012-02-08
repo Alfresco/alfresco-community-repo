@@ -41,7 +41,7 @@ public class AuthorizationTest extends TestCase
         }
         try
         {
-            new Authorization("username:password:invalid");
+            new Authorization("");
             fail();
         }
         catch(IllegalArgumentException e)

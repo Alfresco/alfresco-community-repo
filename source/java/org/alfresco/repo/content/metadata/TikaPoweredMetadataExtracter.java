@@ -18,7 +18,6 @@
  */
 package org.alfresco.repo.content.metadata;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -33,11 +32,12 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.tika.io.TemporaryResources;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
@@ -216,21 +216,29 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
      *  already there
      */
     private InputStream getInputStream(ContentReader reader) throws IOException {
-       if("image/jpeg".equals(reader.getMimetype()) ||
-             "image/tiff".equals(reader.getMimetype())) 
+       // Prefer the File if available, it's generally quicker
+       if(reader instanceof FileContentReader) 
        {
-          if(reader instanceof FileContentReader) 
-          {
-             return TikaInputStream.get( ((FileContentReader)reader).getFile() );
-          } 
-          else 
-          {
-             File tmpFile = TempFileProvider.createTempFile("tika", "tmp");
-             reader.getContent(tmpFile);
-             return TikaInputStream.get(tmpFile);
-          }
+          return TikaInputStream.get( ((FileContentReader)reader).getFile() );
        }
-       return reader.getContentInputStream(); 
+       
+       // Grab the InputStream for the Content
+       InputStream input = reader.getContentInputStream();
+       
+       // Images currently always require a file
+       if(MimetypeMap.MIMETYPE_IMAGE_JPEG.equals(reader.getMimetype()) ||
+          MimetypeMap.MIMETYPE_IMAGE_TIFF.equals(reader.getMimetype())) 
+       {
+          TemporaryResources tmp = new TemporaryResources();
+          TikaInputStream stream = TikaInputStream.get(input, tmp);
+          stream.getFile(); // Have it turned into File backed
+          return stream;
+       }
+       else
+       {
+          // The regular Content InputStream should be fine
+          return input; 
+       }
     }
     
     @Override

@@ -61,11 +61,13 @@ public class AlfrescoLocalCmisServiceFactory extends AbstractServiceFactory
         CmisServiceWrapper<AlfrescoCmisService> wrapperService = THREAD_LOCAL_SERVICE.get();
         if (wrapperService == null)
         {
-            wrapperService = new CmisServiceWrapper<AlfrescoCmisService>(new AlfrescoCmisServiceImpl(CMIS_CONNECTOR),
+            AlfrescoCmisService cmisService = new AlfrescoCmisServiceImpl(CMIS_CONNECTOR);
+            wrapperService = new CmisServiceWrapper<AlfrescoCmisService>(cmisService,
                     CMIS_CONNECTOR.getTypesDefaultMaxItems(), CMIS_CONNECTOR.getTypesDefaultDepth(),
                     CMIS_CONNECTOR.getObjectsDefaultMaxItems(), CMIS_CONNECTOR.getObjectsDefaultDepth());
             THREAD_LOCAL_SERVICE.set(wrapperService);
         }
+        wrapperService.getWrappedService().open(context);
         return wrapperService;
     }
 }

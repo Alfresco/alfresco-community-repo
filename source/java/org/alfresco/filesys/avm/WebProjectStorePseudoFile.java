@@ -165,7 +165,7 @@ public class WebProjectStorePseudoFile extends StorePseudoFile {
 		if ( m_users == null)
 			m_users = new Hashtable<String, Integer>();
 		
-		m_users.put(userName, new Integer(role));
+		m_users.put(userName, Integer.valueOf(role));
 	}
 	
 	/**

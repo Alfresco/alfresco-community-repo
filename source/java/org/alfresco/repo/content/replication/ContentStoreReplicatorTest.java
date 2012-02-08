@@ -179,8 +179,8 @@ public class ContentStoreReplicatorTest extends TestCase
         sourceStore.getUrls(sourceUrls);
         targetStore.getUrls(targetUrls);
         
-        sourceUrls.urls.containsAll(targetUrls.urls);
-        targetUrls.urls.contains(sourceUrls.urls);
+        assertTrue("Source must be equal to target", sourceUrls.urls.containsAll(targetUrls.urls));
+        //targetUrls.urls.contains(sourceUrls.urls);
     }
     
     /**

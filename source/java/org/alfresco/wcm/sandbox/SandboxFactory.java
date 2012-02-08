@@ -567,13 +567,11 @@ public final class SandboxFactory extends WCMUtil
     * Website Name: .website.name = website name
     * 
     * @param storeId    The store id to create the sandbox for
-    * @param managers   The list of authorities who have ContentManager role in the website
     * @param username   Username of the user to create the sandbox for
     * @param role       Role permission for the user
     * @return           Summary information regarding the sandbox
     */
    public SandboxInfo createUserSandbox(String storeId, 
-                                        List<String> managers,
                                         String username, 
                                         String role)
    {
@@ -637,11 +635,6 @@ public final class SandboxFactory extends WCMUtil
       
       permissionService.setPermission(dirRef.getStoreRef(), username, PermissionService.ALL_PERMISSIONS, true);
       permissionService.setPermission(dirRef.getStoreRef(), PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
-      // apply the manager role permission for each manager in the web project
-      // for (String manager : managers)
-      // {
-      // permissionService.setPermission(dirRef.getStoreRef(), manager, AVMUtil.ROLE_CONTENT_MANAGER, true);
-      // }
       
       // snapshot the store
       avmService.createSnapshot(userStoreName, null, null);
@@ -680,14 +673,9 @@ public final class SandboxFactory extends WCMUtil
       // Apply access mask to the store (ACls are applied to the staging area)
       
       // apply the user role permissions to the sandbox
-      permissionService.setPermission(dirRef.getStoreRef(), currentUser, WCMUtil.ROLE_CONTENT_MANAGER, true);
+      permissionService.setPermission(dirRef.getStoreRef(), cms, PermissionService.WCM_CONTENT_MANAGER, true);
       permissionService.setPermission(dirRef.getStoreRef(), username, PermissionService.ALL_PERMISSIONS, true);
       permissionService.setPermission(dirRef.getStoreRef(), PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
-      // apply the manager role permission for each manager in the web project
-      for (String manager : managers)
-      {
-         permissionService.setPermission(dirRef.getStoreRef(), manager, WCMUtil.ROLE_CONTENT_MANAGER, true);
-      }
       
       // snapshot the store
       avmService.createSnapshot(previewStoreName, null, null);

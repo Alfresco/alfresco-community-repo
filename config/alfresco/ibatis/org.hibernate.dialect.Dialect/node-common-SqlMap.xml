@@ -924,6 +924,7 @@
             join alf_node childNode on (childNode.id = assoc.child_node_id)
             join alf_store childStore on (childStore.id = childNode.store_id)
     </sql>
+
     <sql id="select_ChildAssoc_OrderBy">
         order by
             assoc.assoc_index ASC,
@@ -974,6 +975,16 @@
             assoc.id = #{id}
     </select>
     
+    <select id="count_ChildAssocByParentId" parameterType="ChildAssoc" resultType="int">
+       select
+            count(assoc.id)
+        from
+            alf_child_assoc assoc
+        where
+            assoc.parent_node_id = #{parentNode.id}
+            and assoc.is_primary = #{isPrimary}
+    </select>
+
     <!-- GetChildren - with explicit prop filtering and/or sorting -->
     <select id="select_GetChildrenCannedQueryWithProps" parameterType="FilterSortNode" resultMap="result_FilterSortNode">
        select

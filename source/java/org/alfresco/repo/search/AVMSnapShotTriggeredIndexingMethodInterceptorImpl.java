@@ -27,6 +27,7 @@ import java.util.regex.Pattern;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.management.subsystems.SwitchableApplicationContextFactory;
 import org.alfresco.repo.search.impl.lucene.AVMLuceneIndexer;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
@@ -60,6 +61,8 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptorImpl implements AVMSna
     private Map<String, IndexMode> modeCache = new HashMap<String, IndexMode>();
 
     private List<IndexingDefinition> indexingDefinitions = new ArrayList<IndexingDefinition>();
+    
+    private SwitchableApplicationContextFactory searchApplicationContextFactory;
 
     /* (non-Javadoc)
      * @see org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
@@ -162,6 +165,28 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptorImpl implements AVMSna
         }
     }
 
+    
+    
+    /**
+     * @param searchApplicationContextFactory the searchApplicationContextFactory to set
+     */
+    public void setSearchApplicationContextFactory(SwitchableApplicationContextFactory searchApplicationContextFactory)
+    {
+        this.searchApplicationContextFactory = searchApplicationContextFactory;
+    }
+
+
+
+    /**
+     * @return the searchApplicationContextFactory
+     */
+    public SwitchableApplicationContextFactory getSearchApplicationContextFactory()
+    {
+        return searchApplicationContextFactory;
+    }
+
+
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor#setAvmService(org.alfresco.service.cmr.avm.AVMService)
      */
@@ -203,6 +228,8 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptorImpl implements AVMSna
         }
     }
 
+    
+    
     /* (non-Javadoc)
      * @see org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor#setDefaultMode(org.alfresco.repo.search.IndexMode)
      */
@@ -534,7 +561,18 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptorImpl implements AVMSna
             AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer) indexer;
             return avmIndexer;
         }
-        return null;
+        else
+        {
+            if(searchApplicationContextFactory.getCurrentSourceBeanName().equals("solr"))
+            {
+                throw new AlfrescoRuntimeException("No AVM Indexer available (AVM is not supported with SOLR");
+                //return null;
+            }
+            else
+            {
+                return null;
+            }
+        }
     }
 
     /* (non-Javadoc)
@@ -549,6 +587,14 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptorImpl implements AVMSna
         {
             AVMLuceneIndexer avmIndexer = (AVMLuceneIndexer) indexer;
             avmIndexer.deleteIndex(storeRef);
+        }
+        else
+        {
+            if(searchApplicationContextFactory.getCurrentSourceBeanName().equals("solr"))
+            {
+                throw new AlfrescoRuntimeException("No AVM Indexer available (AVM is not supported with SOLR");
+            }
+            //else nothing to do
         }
     }
 }

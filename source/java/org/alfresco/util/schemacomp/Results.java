@@ -23,7 +23,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.alfresco.util.schemacomp.Difference.Where;
-import org.alfresco.util.schemacomp.Result.Strength;
 
 /**
  * Collects differences so that tools can report on or respond to differences between database schemas.
@@ -44,23 +43,15 @@ public class Results implements Iterable<Result>
      * @param where The type of difference, see {@link Where}
      * @param left Left value, or null if the item appears in the right, but not left schema.
      * @param right Right value, or null if the item appears in the left, but not right schema.
-     * @param strength The Result.Strength of the difference, e.g. WARN or ERROR.
      */
-    public void add(Where where, DbProperty left, DbProperty right, Strength strength)
+    public void add(Where where, DbProperty left, DbProperty right)
     {
         if (where != Where.IN_BOTH_NO_DIFFERENCE || reportNonDifferences)
         {
-            Difference result = new Difference(where, left, right, strength);
+            Difference result = new Difference(where, left, right);
             items.add(result);
         }
     }
-   
-
-    public void add(Where where, DbProperty left, DbProperty right)
-    {
-        add(where, left, right, null);
-    }
-    
     
     public void add(Result result)
     {

@@ -60,4 +60,8 @@ public interface ImapModel
     static final QName PROP_MAXUID = QName.createQName(IMAP_MODEL_1_0_URI, "maxUid");
     static final QName PROP_CHANGE_TOKEN = QName.createQName(IMAP_MODEL_1_0_URI, "changeToken");
 
+    
+    static final QName ASPECT_IMAP_PREFERENCES = QName.createQName(IMAP_MODEL_1_0_URI, "imapPreferences");
+    static final QName ASSOC_IMAP_UNSUBSCRIBED = QName.createQName(IMAP_MODEL_1_0_URI, "imapUnsubscribed");
+
 }

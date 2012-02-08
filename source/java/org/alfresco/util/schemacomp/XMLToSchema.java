@@ -209,7 +209,11 @@ public class XMLToSchema extends DefaultHandler
         
         if (qName.equals(XML.EL_SCHEMA))
         {
-            schema = new Schema(atts.getValue(XML.ATTR_NAME));
+            String name = atts.getValue(XML.ATTR_NAME);
+            String dbPrefix = atts.getValue(XML.ATTR_DB_PREFIX);
+            int version = Integer.parseInt(atts.getValue(XML.ATTR_VERSION));
+            schema = new Schema(name, dbPrefix, version);
+            stack.push(schema);
         }
         else if (qName.equals(XML.EL_TABLE))
         {

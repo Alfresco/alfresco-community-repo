@@ -21,7 +21,6 @@ package org.alfresco.util.schemacomp.model;
 import org.alfresco.util.schemacomp.DbObjectVisitor;
 import org.alfresco.util.schemacomp.DbProperty;
 import org.alfresco.util.schemacomp.DiffContext;
-import org.alfresco.util.schemacomp.Result.Strength;
 
 
 /**
@@ -145,7 +144,7 @@ public class ForeignKey extends AbstractDbObject
     
     
     @Override
-    protected void doDiff(DbObject right, DiffContext ctx, Strength strength)
+    protected void doDiff(DbObject right, DiffContext ctx)
     {
         ForeignKey thatFK = (ForeignKey) right;
         comparisonUtils.compareSimple(
@@ -172,5 +171,38 @@ public class ForeignKey extends AbstractDbObject
     public String getTypeName()
     {
         return "foreign key";
+    }
+
+    @Override
+    public boolean sameAs(DbObject other)
+    {
+        if (other == null)
+        {
+            return false;
+        }
+        if (!getClass().equals(other.getClass()))
+        {
+            return false;
+        }
+        
+        if ((getParent() != null && getParent().sameAs(other.getParent())))
+        {
+            ForeignKey otherFK = (ForeignKey) other;
+            if (!getLocalColumn().equals(otherFK.getLocalColumn()))
+            {
+                return false;
+            }
+            if (!getTargetTable().equals(otherFK.getTargetTable()))
+            {
+                return false;
+            }
+            if (!getTargetColumn().equals(otherFK.getTargetColumn()))
+            {
+                return false;
+            }
+            return true;
+        }
+        
+        return false;
     }
 }

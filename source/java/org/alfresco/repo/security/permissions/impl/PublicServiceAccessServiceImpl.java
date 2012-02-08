@@ -19,6 +19,7 @@
 package org.alfresco.repo.security.permissions.impl;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -187,7 +188,7 @@ public class PublicServiceAccessServiceImpl implements PublicServiceAccessServic
 
             if (methodInvocation == null)
             {
-                throw new UnsupportedOperationException("Unknown public service security implementation " + publicService + "." + methodName + " with argumsnets "+args);
+                throw new UnsupportedOperationException("Unknown public service security implementation " + publicService + "." + methodName + " with arguments "+Arrays.toString(args));
             }
 
             return msi.pre(methodInvocation);

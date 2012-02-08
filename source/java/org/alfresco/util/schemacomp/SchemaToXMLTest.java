@@ -57,7 +57,7 @@ public class SchemaToXMLTest
         Writer writer = new StringWriter();
         StreamResult out = new StreamResult(writer);
         
-        Schema schema = new Schema("alfresco");
+        Schema schema = new Schema("alfresco", "my-prefix", 501);
         
         schema.add(
                     table("node",
@@ -80,7 +80,11 @@ public class SchemaToXMLTest
         // are performed by DbObjectXMLTransformerTest
         BufferedReader reader = new BufferedReader(new StringReader(writer.toString()));
         assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>", reader.readLine());
-        assertEquals("<schema name=\"alfresco\">", reader.readLine());        
-        assertEquals("  <objects>", reader.readLine());
+        String xsd =
+            "xmlns=\"http://www.alfresco.org/repo/db-schema\" " + 
+            "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
+            "xsi:schemaLocation=\"http://www.alfresco.org/repo/db-schema db-schema.xsd\"";
+        assertEquals("<schema " + xsd + " name=\"alfresco\" dbprefix=\"my-prefix\" version=\"501\">", reader.readLine());        
+        assertEquals("  <validators>", reader.readLine());
     }
 }

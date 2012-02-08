@@ -24,6 +24,7 @@
                     <value>Running</value>
                     <value>Completed</value>
                     <value>Cancelled</value>
+                    <value>Declined</value>
                     <value>Failed</value>
                 </list>
             </parameter>

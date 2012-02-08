@@ -24,7 +24,6 @@ import static org.mockito.Mockito.verify;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.util.schemacomp.Result.Strength;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -84,7 +83,7 @@ public class TableTest extends DbObjectTestBase<Table>
         inOrder.verify(comparisonUtils).compareCollections(table.getColumns(), otherTable.getColumns(), ctx);
         
         // Check primary key
-        inOrder.verify(primaryKey).diff(otherTable.getPrimaryKey(), ctx, Strength.ERROR);
+        inOrder.verify(primaryKey).diff(otherTable.getPrimaryKey(), ctx);
         
         // Check foreign keys
         inOrder.verify(comparisonUtils).compareCollections(

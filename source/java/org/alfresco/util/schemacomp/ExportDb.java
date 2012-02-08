@@ -25,9 +25,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
+import org.alfresco.service.descriptor.Descriptor;
+import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.schemacomp.model.Column;
 import org.alfresco.util.schemacomp.model.ForeignKey;
@@ -36,9 +39,13 @@ import org.alfresco.util.schemacomp.model.PrimaryKey;
 import org.alfresco.util.schemacomp.model.Schema;
 import org.alfresco.util.schemacomp.model.Sequence;
 import org.alfresco.util.schemacomp.model.Table;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.TypeNames;
 import org.springframework.context.ApplicationContext;
+
+import com.sun.crypto.provider.DESCipher;
 
 
 /**
@@ -57,17 +64,23 @@ public class ExportDb
     /** The object graph we're building */
     private Schema schema;
 
+    /** What type of DBMS are we running? */
     private Dialect dialect;
 
+    /** Used to gain the repository's schema version */
+    private DescriptorService descriptorService;
+    
     /** Only top-level tables starting with namePrefix will be exported, set to empty string for all objects */
     private String namePrefix = "alf_";
-    
+
+    private final static Log log = LogFactory.getLog(ExportDb.class);
     
     
     public ExportDb(ApplicationContext context)
     {
         this((DataSource) context.getBean("dataSource"),
-             (Dialect) context.getBean("dialect"));
+             (Dialect) context.getBean("dialect"),
+             (DescriptorService) context.getBean("descriptorComponent"));
     }
     
     
@@ -77,10 +90,11 @@ public class ExportDb
      * @param connection            the database connection to use for metadata queries
      * @param dialect               the Hibernate dialect
      */
-    public ExportDb(final DataSource dataSource, final Dialect dialect)
+    public ExportDb(final DataSource dataSource, final Dialect dialect, DescriptorService descriptorService)
     {
         this.dataSource = dataSource;
         this.dialect = dialect;
+        this.descriptorService = descriptorService;
         init();
     }
     
@@ -150,13 +164,17 @@ public class ExportDb
     public void execute()
     {
         PropertyCheck.mandatory(this, "dataSource", dataSource);
+        PropertyCheck.mandatory(this, "dialect", dialect);
+        PropertyCheck.mandatory(this, "descriptorService", descriptorService);
         
         Connection connection = null;
         try
         {
             connection = dataSource.getConnection();
             connection.setAutoCommit(false);
-            execute(connection);
+            Descriptor descriptor = descriptorService.getServerDescriptor();
+            int schemaVersion = descriptor.getSchema();                
+            execute(connection, schemaVersion);
         }
         catch (Exception e)
         {
@@ -180,15 +198,15 @@ public class ExportDb
 
     
     
-    private void execute(Connection con) throws Exception
+    private void execute(Connection con, int schemaVersion) throws Exception
     {
         final DatabaseMetaData dbmd = con.getMetaData();
 
         String schemaName = getSchemaName(dbmd);
 
-        schema = new Schema(schemaName);
+        schema = new Schema(schemaName, namePrefix, schemaVersion);
         
-        final ResultSet tables = dbmd.getTables(null, schemaName, namePrefixFilter(), new String[]
+        final ResultSet tables = dbmd.getTables(null, schemaName, namePrefixFilter(dbmd), new String[]
         {
             "TABLE", "VIEW", "SEQUENCE"
         });
@@ -358,7 +376,7 @@ public class ExportDb
         while (schemas.next())
         {
             final String thisSchema = schemas.getString("TABLE_SCHEM");
-            if (thisSchema.equals(dbmd.getUserName()) || thisSchema.equalsIgnoreCase("dbo"))
+            if (thisSchema.equalsIgnoreCase(dbmd.getUserName()) || thisSchema.equalsIgnoreCase("dbo"))
             {
                 schemaName = thisSchema;
                 break;
@@ -452,9 +470,19 @@ public class ExportDb
         return this.namePrefix;
     }
 
-    private String namePrefixFilter()
+    private String namePrefixFilter(DatabaseMetaData dbmd) throws SQLException
     {
-        return namePrefix + "%";
+        String filter = namePrefix + "%";
+        // Make sure the filter works for the particular DBMS.
+        if (dbmd.storesLowerCaseIdentifiers() || dbmd.storesLowerCaseQuotedIdentifiers())
+        {
+            filter = filter.toLowerCase();
+        }
+        else
+        {
+            filter = filter.toUpperCase();
+        }
+        return filter;
     }
 
     

@@ -37,6 +37,7 @@ import junit.framework.TestCase;
 import org.alfresco.email.server.handler.FolderEmailMessageHandler;
 import org.alfresco.email.server.impl.subetha.SubethaEmailMessage;
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.ForumModel;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.email.EmailDelivery;
@@ -248,7 +249,8 @@ public class EmailServiceImplTest extends TestCase
        /**
         * Step 3
         * 
-        * From with < name@ domain > format
+        * message.from From with "name" < name@ domain > format
+        * SMTP.FROM="dummy"
         * 
         * Send From the test user <TEST_EMAIL> to the test user's home
         */
@@ -278,13 +280,54 @@ public class EmailServiceImplTest extends TestCase
    
            SubethaEmailMessage m = new SubethaEmailMessage(is);
            
-           EmailDelivery delivery = new EmailDelivery(to, from, null);
+           EmailDelivery delivery = new EmailDelivery(to, "dummy", null);
+
+           emailService.importMessage(delivery,m);
+       }
+       
+       /**
+        * Step 4
+        * 
+        * From with "name" < name@ domain > format
+        * 
+        * Send From the test user <TEST_EMAIL> to the test user's home
+        */
+       {
+           logger.debug("Step 4");
+       
+           String from = " \"Joe Bloggs\" <" + TEST_EMAIL + ">";
+           String to = testUserHomeDBID;
+           String content = "hello world";
+   
+           Session sess = Session.getDefaultInstance(new Properties());
+           assertNotNull("sess is null", sess);
+           SMTPMessage msg = new SMTPMessage(sess);
+           InternetAddress[] toa =  { new InternetAddress(to) };
+   
+           msg.setFrom(new InternetAddress(from));
+           msg.setRecipients(Message.RecipientType.TO, toa);
+           msg.setSubject("JavaMail APIs transport.java Test");
+           msg.setContent(content, "text/plain");
+           
+           StringBuffer sb = new StringBuffer();
+           ByteArrayOutputStream bos = new ByteArrayOutputStream();
+           msg.writeTo(System.out);
+           msg.writeTo(bos);
+           InputStream is = new StringInputStream(bos.toString());
+           assertNotNull("is is null", is);
+   
+           SubethaEmailMessage m = new SubethaEmailMessage(is);
+           
+           InternetAddress a = new InternetAddress(from);
+           String x = a.getAddress();
+           
+           EmailDelivery delivery = new EmailDelivery(to, x, null);
 
            emailService.importMessage(delivery,m);
        }
        
 //       /**
-//        * Step 4
+//        * Step 5
 //        * 
 //        * From with <e=name@domain> format
 //        * 
@@ -375,6 +418,7 @@ public class EmailServiceImplTest extends TestCase
         String to = testUserHomeDBID;
         String content = "hello world";
     
+        {
         Session sess = Session.getDefaultInstance(new Properties());
         assertNotNull("sess is null", sess);
         SMTPMessage msg = new SMTPMessage(sess);
@@ -395,6 +439,56 @@ public class EmailServiceImplTest extends TestCase
         EmailDelivery delivery = new EmailDelivery(to, from, null);
 
         emailService.importMessage(delivery, m);
+        }
+        
+        // Check import with subject containing some "illegal chars"
+        {
+            Session sess = Session.getDefaultInstance(new Properties());
+            assertNotNull("sess is null", sess);
+            SMTPMessage msg = new SMTPMessage(sess);
+            InternetAddress[] toa =  { new InternetAddress(to) };
+        
+            msg.setFrom(new InternetAddress(TEST_EMAIL));
+            msg.setRecipients(Message.RecipientType.TO, toa);
+            msg.setSubject("Illegal<>!*/\\.txt");
+            msg.setContent(content, "text/plain");
+                
+            StringBuffer sb = new StringBuffer();
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            msg.writeTo(bos);
+            InputStream is = new StringInputStream(bos.toString());
+            assertNotNull("is is null", is);
+        
+            SubethaEmailMessage m = new SubethaEmailMessage(is);   
+            EmailDelivery delivery = new EmailDelivery(to, from, null);
+
+            emailService.importMessage(delivery, m);
+         }
+        
+        // Check with null subject
+        {
+            Session sess = Session.getDefaultInstance(new Properties());
+            assertNotNull("sess is null", sess);
+            SMTPMessage msg = new SMTPMessage(sess);
+            InternetAddress[] toa =  { new InternetAddress(to) };
+        
+            msg.setFrom(new InternetAddress(TEST_EMAIL));
+            msg.setRecipients(Message.RecipientType.TO, toa);
+            //msg.setSubject();
+            msg.setContent(content, "text/plain");
+                
+            StringBuffer sb = new StringBuffer();
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            msg.writeTo(bos);
+            InputStream is = new StringInputStream(bos.toString());
+            assertNotNull("is is null", is);
+        
+            SubethaEmailMessage m = new SubethaEmailMessage(is);   
+            EmailDelivery delivery = new EmailDelivery(to, from, null);
+
+            emailService.importMessage(delivery, m);
+         }
+        
            
     }
     
@@ -557,6 +651,113 @@ public class EmailServiceImplTest extends TestCase
        assertTrue(TEST_SUBJECT+"(1) not found", assocNames.contains(QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Practical Bee Keeping(1)")));      
     
    }
+   
+   
+   /**
+    * ALF-12297
+    * 
+    * Test messages being sent to a cm:content node
+    */
+  public void testMessagesToDocument() throws Exception
+  {
+      logger.debug("Start testMessagesToDocument");
+      
+      String TEST_EMAIL="buffy@sunnydale.high";
+      
+      String TEST_SUBJECT="Practical Bee Keeping";
+      
+      String TEST_LONG_SUBJECT = "This is a very very long name in particular it is greater than eitghty six characters which was a problem explored in ALF-9544";
+      
+      
+      // TODO Investigate why setting PROP_EMAIL on createPerson does not work.
+      NodeRef person = personService.getPerson(TEST_USER);
+      if(person == null)
+      {
+          logger.debug("new person created");
+          Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+          props.put(ContentModel.PROP_USERNAME, TEST_USER);
+          props.put(ContentModel.PROP_EMAIL, TEST_EMAIL);
+          person = personService.createPerson(props);
+      }
+      nodeService.setProperty(person, ContentModel.PROP_EMAIL, TEST_EMAIL);
+
+      Set<String> auths = authorityService.getContainedAuthorities(null, "GROUP_EMAIL_CONTRIBUTORS", true);
+      if(!auths.contains(TEST_USER))
+      {
+          authorityService.addAuthority("GROUP_EMAIL_CONTRIBUTORS", TEST_USER);
+      }
+      
+      String companyHomePathInStore = "/app:company_home"; 
+      String storePath = "workspace://SpacesStore";
+      StoreRef storeRef = new StoreRef(storePath);
+
+      NodeRef storeRootNodeRef = nodeService.getRootNode(storeRef);
+      List<NodeRef> nodeRefs = searchService.selectNodes(storeRootNodeRef, companyHomePathInStore, null, namespaceService, false);
+      NodeRef companyHomeNodeRef = nodeRefs.get(0);
+      assertNotNull("company home is null", companyHomeNodeRef);
+      String companyHomeDBID = ((Long)nodeService.getProperty(companyHomeNodeRef, ContentModel.PROP_NODE_DBID)).toString() + "@Alfresco.com";
+ //     String testUserDBID = ((Long)nodeService.getProperty(person, ContentModel.PROP_NODE_DBID)).toString() + "@Alfresco.com";
+      NodeRef testUserHomeFolder = (NodeRef)nodeService.getProperty(person, ContentModel.PROP_HOMEFOLDER);
+      assertNotNull("testUserHomeFolder is null", testUserHomeFolder);
+//      String testUserHomeDBID = ((Long)nodeService.getProperty(testUserHomeFolder, ContentModel.PROP_NODE_DBID)).toString() + "@Alfresco.com";
+      
+      // Clean up old messages in test folder
+      List<ChildAssociationRef> assocs = nodeService.getChildAssocs(testUserHomeFolder, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+      for(ChildAssociationRef assoc : assocs)
+      {
+          nodeService.deleteNode(assoc.getChildRef());
+      }
+      
+      
+      Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+      properties.put(ContentModel.PROP_NAME, "bees");
+      properties.put(ContentModel.PROP_DESCRIPTION, "bees - test doc for email tests");
+      ChildAssociationRef testDoc = nodeService.createNode(testUserHomeFolder, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "bees"), ContentModel.TYPE_CONTENT, properties);
+      NodeRef testDocNodeRef = testDoc.getChildRef();
+      
+      String testDocDBID = ((Long)nodeService.getProperty(testDocNodeRef, ContentModel.PROP_NODE_DBID)).toString();
+      
+      /**
+       * Send From the test user TEST_EMAIL to the test user's home
+       */
+      String from = TEST_EMAIL;
+      String to = testDocDBID + "@alfresco.com";
+      String content = "hello world";
+  
+      Session sess = Session.getDefaultInstance(new Properties());
+      assertNotNull("sess is null", sess);
+      SMTPMessage msg = new SMTPMessage(sess);
+      InternetAddress[] toa =  { new InternetAddress(to) };
+  
+      msg.setFrom(new InternetAddress(TEST_EMAIL));
+      msg.setRecipients(Message.RecipientType.TO, toa);
+      msg.setSubject(TEST_SUBJECT);
+      msg.setContent(content, "text/plain");
+          
+      ByteArrayOutputStream bos = new ByteArrayOutputStream();
+      msg.writeTo(bos);
+      InputStream is = new StringInputStream(bos.toString());
+      assertNotNull("is is null", is);
+  
+      SubethaEmailMessage m = new SubethaEmailMessage(is);   
+      
+      /**
+       * Turn on overwriteDuplicates
+       */
+      logger.debug("Step 1: send an email to a doc");
+            
+      EmailDelivery delivery = new EmailDelivery(to, from, null);
+
+      emailService.importMessage(delivery, m);
+      
+      assertTrue(nodeService.hasAspect(testDocNodeRef, ForumModel.ASPECT_DISCUSSABLE));
+      
+ 
+   
+  } // end of test sending to cm:content node
+
+   
+   
    
    /**
     * The Email contributors authority controls who can add email.

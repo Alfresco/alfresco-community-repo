@@ -59,7 +59,8 @@
    <bean id="baseFeedGenerator" class="org.alfresco.repo.activities.feed.AbstractFeedGenerator" abstract="true" init-method="init">
       <property name="postDAO" ref="postDAO"/>
       <property name="authenticationService" ref="AuthenticationService"/>
-      <property name="repoEndPoint" value="${repo.remote.url}${repo.remote.endpoint}"/>
+      <property name="sysAdminParams" ref="sysAdminParams"/>
+      <property name="repoEndPoint" value="${repo.remote.endpoint}"/>
       <property name="userNamesAreCaseSensitive" value="${user.name.caseSensitive}"/>
       <property name="maxItemsPerCycle" value="100"/>
       <property name="activityPostServiceImpl" ref="activityPostService"/>
@@ -99,22 +100,32 @@
       
    </bean>
    
-   <!--  Feed Email Notifier -->
    <bean id="feedNotifier" class="org.alfresco.repo.activities.feed.FeedNotifierImpl">
-      <property name="activityService" ref="activityService"/>
       <property name="personService" ref="PersonService"/>
       <property name="nodeService" ref="NodeService"/>
-      <property name="fileFolderService" ref="FileFolderService"/>
-      <property name="actionService" ref="ActionService"/>
-      <property name="searchService" ref="SearchService"/>
-      <property name="namespaceService" ref="NamespaceService"/>
-      <property name="siteService" ref="SiteService"/>
       <property name="jobLockService" ref="JobLockService"/>
+      <property name="namespaceService" ref="NamespaceService"/>
       <property name="transactionService" ref="TransactionService"/>
-      <property name="authenticationContext" ref="authenticationContext"/>
       <property name="sysAdminParams" ref="sysAdminParams"/>
       <property name="repoAdminService" ref="repoAdminService"/>
       <property name="feedEmailTemplateLocation" ref="feedEmailTemplateLocation"/>
+      <property name="fileFolderService" ref="FileFolderService"/>
+      <property name="searchService" ref="SearchService"/>
+      <property name="userNotifier" ref="emailUserNotifier"/>
+      <property name="numThreads" value="${activities.feedNotifier.numThreads}"/>
+      <property name="batchSize" value="${activities.feedNotifier.batchSize}"/>
+   </bean>
+   
+   <!--  Feed Email Notifier -->
+    
+   <bean id="emailUserNotifier" class="org.alfresco.repo.activities.feed.EmailUserNotifier">
+      <property name="activityService" ref="activityService"/>
+      <property name="namespaceService" ref="NamespaceService"/>
+      <property name="repoAdminService" ref="repoAdminService"/>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="siteService" ref="SiteService"/>
+      <property name="actionService" ref="ActionService"/>
+      <property name="authenticationContext" ref="authenticationContext"/>
       <property name="excludedEmailSuffixes">
           <list>
               <value>admin@alfresco.com</value>

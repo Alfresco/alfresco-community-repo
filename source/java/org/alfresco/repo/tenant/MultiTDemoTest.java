@@ -131,7 +131,7 @@ public class MultiTDemoTest extends TestCase
     public static final String TEST_USER3 = "eve";
     public static final String TEST_USER4 = "fred";
     
-    private static final int DEFAULT_STORE_COUNT = 7; // including siteStore
+    private static final int DEFAULT_STORE_COUNT = 6; // Now 6 site store has been removed
     
     public static StoreRef SPACES_STORE = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
     

@@ -1272,7 +1272,7 @@ public class WorkflowInterpreter extends BaseInterpreter
         int i = 3;
         while(i<length)
         {
-            builder.append(" ").append(command[i]);
+            builder.append(" ").append(command[i++]);
         }
         return builder.toString();
     }

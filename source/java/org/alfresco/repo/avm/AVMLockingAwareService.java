@@ -48,6 +48,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.wcm.util.WCMUtil;
+import org.alfresco.wcm.webproject.WebProjectService;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -71,6 +72,8 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
 
     private ApplicationContext fContext;
 
+    private WebProjectService wpService;
+
     public AVMLockingAwareService()
     {
     }
@@ -85,6 +88,7 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
         fService = (AVMService)fContext.getBean("avmService");
         fLockingService = (AVMLockingService)fContext.getBean("avmLockingService");
         permissionService = (PermissionService) fContext.getBean("PermissionService");
+        wpService = (WebProjectService) fContext.getBean("WebProjectService");
     }
 
     public void addAspect(String path, QName aspectName)
@@ -664,6 +668,10 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
         {
             String userName = AuthenticationUtil.getFullyAuthenticatedUser();
             LockState lockState = fLockingService.getLockState(webProject, storePath[1], userName);
+            // Managers can edit any file in any sandbox, look into ALF-11440
+            String wpStoreId = WCMUtil.getWebProjectStoreId(webProject);
+            if (lockState == AVMLockingService.LockState.LOCK_NOT_OWNER && wpService.isContentManager(wpStoreId, userName))
+                lockState = AVMLockingService.LockState.LOCK_OWNER;
             switch (lockState)
             {
             case LOCK_NOT_OWNER:

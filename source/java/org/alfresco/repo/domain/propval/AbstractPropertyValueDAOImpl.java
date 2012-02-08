@@ -21,6 +21,7 @@ package org.alfresco.repo.domain.propval;
 import java.io.Serializable;
 import java.sql.Savepoint;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -1173,7 +1174,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         {
             logger.debug(
                     "Searched for unique property context: \n" +
-                    "   Values: " + values);
+                    "   Values: " + Arrays.toString(values));
         }
     }
 
@@ -1276,8 +1277,8 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         {
             logger.debug(
                     "Deleted " + deleted + " unique property contexts: \n" +
-                    "   Values: " + values + "\n" +
-                    "   IDs:    " + valueIds);
+                    "   Values: " + Arrays.toString(values) + "\n" +
+                    "   IDs:    " + Arrays.toString(valueIds));
         }
         return deleted;
     }

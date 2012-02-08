@@ -24,7 +24,6 @@ import java.util.List;
 import org.alfresco.util.schemacomp.DbObjectVisitor;
 import org.alfresco.util.schemacomp.DbProperty;
 import org.alfresco.util.schemacomp.DiffContext;
-import org.alfresco.util.schemacomp.Result.Strength;
 
 /**
  * Primary key on a table.
@@ -102,6 +101,8 @@ public class PrimaryKey extends AbstractDbObject
         this.columnOrders.addAll(columnOrders);
     }
 
+    
+
     @Override
     public int hashCode()
     {
@@ -133,20 +134,18 @@ public class PrimaryKey extends AbstractDbObject
     }
 
     @Override
-    protected void doDiff(DbObject right, DiffContext ctx, Strength strength)
+    protected void doDiff(DbObject right, DiffContext ctx)
     {
         checkColumnOrders();
         PrimaryKey rightPK = (PrimaryKey) right;        
-        comparisonUtils.compareSimpleCollections(
+        comparisonUtils.compareSimpleOrderedLists(
                     new DbProperty(this, "columnNames"),
                     new DbProperty(rightPK, "columnNames"),
-                    ctx,
-                    strength);
-        comparisonUtils.compareSimpleCollections(
+                    ctx);
+        comparisonUtils.compareSimpleOrderedLists(
                     new DbProperty(this, "columnOrders"),
                     new DbProperty(rightPK, "columnOrders"),
-                    ctx,
-                    strength);
+                    ctx);
     }
 
     @Override
@@ -160,5 +159,24 @@ public class PrimaryKey extends AbstractDbObject
     public String getTypeName()
     {
         return "primary key";
+    }
+
+    @Override
+    public boolean sameAs(DbObject other)
+    {
+        if (other == null)
+        {
+            return false;
+        }
+        if (!getClass().equals(other.getClass()))
+        {
+            return false;
+        }
+        if ((getParent() != null && getParent().sameAs(other.getParent())))
+        {
+            return true;
+        }
+        
+        return false;
     }
 }

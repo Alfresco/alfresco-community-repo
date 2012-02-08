@@ -46,6 +46,9 @@
         <property name="defaultMode">
             <value>SYNCHRONOUS</value>
         </property>
+        <property name="searchApplicationContextFactory">
+             <ref bean="Search" />
+        </property>
         <property name="indexingDefinitions">
             <list>
                 <value>SYNCHRONOUS:TYPE:STAGING</value>

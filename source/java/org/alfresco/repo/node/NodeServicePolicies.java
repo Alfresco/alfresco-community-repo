@@ -311,4 +311,30 @@ public interface NodeServicePolicies
          */
         public void onDeleteAssociation(AssociationRef nodeAssocRef);
     }
+    
+    public interface BeforeSetNodeTypePolicy extends ClassPolicy
+    {
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeSetNodeType");
+        /**
+         * Called before the type of a node is set explicitly.
+         * 
+         * @param nodeRef the node having its type set.
+         * @param oldType the current type of the node.
+         * @param newType the type the node will be given.
+         */
+        public void beforeSetNodeType(NodeRef nodeRef, QName oldType, QName newType);
+    }
+    
+    public interface OnSetNodeTypePolicy extends ClassPolicy
+    {
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onSetNodeType");
+        /**
+         * Called after the type of a node is set explicitly.
+         * 
+         * @param nodeRef the node that has had its type set.
+         * @param oldType the previous type of the node.
+         * @param newType the type the node has been given.
+         */
+        public void onSetNodeType(NodeRef nodeRef, QName oldType, QName newType);
+    }
 }

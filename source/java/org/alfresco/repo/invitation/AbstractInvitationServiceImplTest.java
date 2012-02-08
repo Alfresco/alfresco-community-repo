@@ -58,7 +58,6 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
     private static final Log logger = LogFactory.getLog(AbstractInvitationServiceImplTest.class);
     
     private SiteService siteService;
-    protected AuthenticationComponent authenticationComponent;
     private PersonService personService;
     protected InvitationService invitationService;
     private MailActionExecuter mailService;

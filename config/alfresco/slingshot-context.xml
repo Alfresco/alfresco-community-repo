@@ -15,6 +15,7 @@
             <props>
                 <prop key="vti.server.external.port">0</prop>
                 <prop key="vti.server.external.host">null</prop>
+                <prop key="vti.server.external.protocol">null</prop>
             </props>
         </property>
     </bean>
@@ -31,6 +32,9 @@
         </property>
         <property name="host">
             <value>${vti.server.external.host}</value>
+        </property>
+        <property name="protocol">
+            <value>${vti.server.external.protocol}</value>
         </property>
     </bean>
 

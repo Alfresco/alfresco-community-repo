@@ -193,30 +193,9 @@ public class SandboxServiceImpl implements SandboxService
         WebProjectInfo wpInfo = wpService.getWebProject(wpStoreId);
         
         final NodeRef wpNodeRef = wpInfo.getNodeRef();
-        final List<String> managers = new ArrayList<String>(4);
-        
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-        {
-            public Object doWork() throws Exception
-            {
-                // retrieve the list of managers from the existing users
-                Map<String, String> existingUserRoles = wpService.listWebUsers(wpNodeRef);
-                for (Map.Entry<String, String> userRole : existingUserRoles.entrySet())
-                {
-                    String username = userRole.getKey();
-                    String userrole = userRole.getValue();
-                      
-                    if (WCMUtil.ROLE_CONTENT_MANAGER.equals(userrole) && managers.contains(username) == false)
-                    {
-                        managers.add(username);
-                    }
-                }
-                return null;
-            }
-        }, AuthenticationUtil.getSystemUserName());
         
         String role = wpService.getWebUserRole(wpNodeRef, userName);
-        SandboxInfo sbInfo = sandboxFactory.createUserSandbox(wpStoreId, managers, userName, role);
+        SandboxInfo sbInfo = sandboxFactory.createUserSandbox(wpStoreId, userName, role);
         
         List<SandboxInfo> sandboxInfoList = new LinkedList<SandboxInfo>();
         sandboxInfoList.add(sbInfo);

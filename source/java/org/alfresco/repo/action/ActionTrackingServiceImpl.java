@@ -33,6 +33,7 @@ import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.ActionServiceTransientException;
 import org.alfresco.service.cmr.action.ActionStatus;
 import org.alfresco.service.cmr.action.ActionTrackingService;
 import org.alfresco.service.cmr.action.CancellableAction;
@@ -317,6 +318,10 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
             {
                 logger.debug("Will shortly record completed cancellation of action " + action);
             }
+            else if (exception instanceof ActionServiceTransientException)
+            {
+                logger.debug("Will shortly record transient failure of action " + action);
+            }
             else
             {
                 logger.debug("Will shortly record failure of action " + action + " due to "
@@ -332,6 +337,11 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
         {
             ((ActionImpl) action).setExecutionStatus(ActionStatus.Cancelled);
             ((ActionImpl) action).setExecutionFailureMessage(null);
+        }
+        else if (exception instanceof ActionServiceTransientException)
+        {
+            ((ActionImpl) action).setExecutionStatus(ActionStatus.Declined);
+            ((ActionImpl) action).setExecutionFailureMessage(exception.getMessage());
         }
         else
         {

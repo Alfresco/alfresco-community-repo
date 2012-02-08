@@ -727,4 +727,12 @@ public interface NodeDAO extends NodeBulkLoader
      * Used by the re-encryptor to re-encrypt encryptable properties with a new encryption key.
      */
     public List<NodePropertyEntity> selectProperties(Collection<PropertyDefinition> propertyDefs);
+    
+    /**
+     * Counts the number of child associations directly under parentNodeId.
+     * 
+     * @param parentNodeId  the parent node id
+     * @param isPrimary     count just primary associations?
+     */
+    public int countChildAssocsByParent(Long parentNodeId, boolean isPrimary);
 }

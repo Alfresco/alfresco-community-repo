@@ -220,7 +220,22 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
          this.historyService = activitiUtil.getHistoryService();
          this.managementService = activitiUtil.getManagementService();
      }
+
      
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.workflow.WorkflowComponent#cancelWorkflows(java.util.List)
+     */
+    @Override
+    public List<WorkflowInstance> cancelWorkflows(List<String> workflowIds)
+    {
+        List<WorkflowInstance> result = new ArrayList<WorkflowInstance>(workflowIds.size());
+        for (String workflowId : workflowIds)
+        {
+            result.add(cancelWorkflow(workflowId));
+        }
+        return result;
+    }
+
     /**
     * {@inheritDoc}
     */
@@ -1544,6 +1559,16 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         }
     }
 
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.workflow.TaskComponent#queryTasks(org.alfresco.service.cmr.workflow.WorkflowTaskQuery, boolean)
+     */
+    @Override
+    public List<WorkflowTask> queryTasks(WorkflowTaskQuery query, boolean sameSession)
+    {
+        return queryTasks(query);
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -2047,7 +2072,26 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     }
     
     
-	/**
+    
+	/* (non-Javadoc)
+     * @see org.alfresco.repo.workflow.TaskComponent#getStartTasks(java.util.List, boolean)
+     */
+    @Override
+    public List<WorkflowTask> getStartTasks(List<String> workflowInstanceIds, boolean sameSession)
+    {
+        List<WorkflowTask> result = new ArrayList<WorkflowTask>(workflowInstanceIds.size());
+        for (String workflowInstanceId : workflowInstanceIds)
+        {
+            WorkflowTask startTask = getStartTask(workflowInstanceId);
+            if (startTask != null)
+            {
+                result.add(startTask);
+            }
+        }
+        return result;
+    }
+
+    /**
     * {@inheritDoc}
     */
     public WorkflowTask getStartTask(String workflowInstanceId)

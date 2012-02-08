@@ -18,7 +18,6 @@
  */
 package org.alfresco.util.schemacomp.model;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.verify;
@@ -26,7 +25,6 @@ import static org.mockito.Mockito.verify;
 import java.util.Arrays;
 
 import org.alfresco.util.schemacomp.DbProperty;
-import org.alfresco.util.schemacomp.Result.Strength;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -66,22 +64,14 @@ public class IndexTest extends DbObjectTestBase<Index>
     @Override
     protected void doDiffTests()
     {
-        inOrder.verify(comparisonUtils).compareSimpleCollections(
+        inOrder.verify(comparisonUtils).compareSimpleOrderedLists(
                     new DbProperty(thisIndex, "columnNames"), 
                     new DbProperty(thatIndex, "columnNames"),
-                    ctx, 
-                    Strength.ERROR);
+                    ctx);
         inOrder.verify(comparisonUtils).compareSimple(
                     new DbProperty(thisIndex, "unique"),
                     new DbProperty(thatIndex, "unique"),
                     ctx);
-    }
-
-    
-    @Test
-    public void differentNamesResultInWarningsNotErrors()
-    {
-        assertEquals("Name differences should be reported as warnings.", Strength.WARN, thisIndex.getNameStrength());
     }
     
     

@@ -27,6 +27,7 @@ package org.alfresco.repo.domain.activities;
 public class ActivityFeedQueryEntity
 {
     private Long minId;
+    private Long maxId;
     private String activitySummaryFormat;
     private String feedUserId;
     private String siteNetwork;
@@ -40,8 +41,18 @@ public class ActivityFeedQueryEntity
     {
         this.minId = minId;
     }
-    
-    public String getActivitySummaryFormat()
+
+    public Long getMaxId()
+    {
+		return maxId;
+	}
+
+	public void setMaxId(Long maxId)
+	{
+		this.maxId = maxId;
+	}
+
+	public String getActivitySummaryFormat()
     {
         return activitySummaryFormat;
     }

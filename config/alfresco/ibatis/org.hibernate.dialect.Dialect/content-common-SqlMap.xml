@@ -277,8 +277,8 @@
             cd.content_locale_id as content_locale_id
         from
             alf_content_data cd
+            join alf_node_properties np on (cd.id = np.long_value)
             left join alf_content_url cu on (cd.content_url_id = cu.id)
-            left join alf_node_properties np on (cd.id = np.long_value)
         where
             np.node_id in 
             <foreach item="item" index="index" collection="ids" open="(" separator="," close=")">

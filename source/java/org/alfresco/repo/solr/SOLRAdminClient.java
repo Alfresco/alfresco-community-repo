@@ -317,12 +317,25 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware
 		
 		        scheduler.start();
 		
-		        JobDetail job = new JobDetail("SolrWatcher", "Solr", SOLRWatcherJob.class);
+                final String jobName = "SolrWatcher";
+                final String jobGroup = "Solr";
+                
+                // If a Quartz job already exists with this name and group then we want to replace it.
+                // It is not expected that this will occur during production, but it is possible during automated testing
+                // where application contexts could be rebuilt between test cases, leading to multiple creations of
+                // equivalent Quartz jobs. Quartz disallows the scheduling of multiple jobs with the same name and group.
+                JobDetail existingJob = scheduler.getJobDetail(jobName, jobGroup);
+                if (existingJob != null)
+                {
+                    scheduler.deleteJob(jobName, jobGroup);
+                }
+		        
+		        JobDetail job = new JobDetail(jobName, jobGroup, SOLRWatcherJob.class);
 		        JobDataMap jobDataMap = new JobDataMap();
 		        jobDataMap.put("SOLR_TRACKER", this);
 		        job.setJobDataMap(jobDataMap);
 
-	            trigger = new CronTrigger("SolrWatcherTrigger", "Solr", solrPingCronExpression);
+	            trigger = new CronTrigger("SolrWatcherTrigger", jobGroup, solrPingCronExpression);
 	            scheduler.scheduleJob(job, trigger);
 	    	}
 	    	catch(Exception e)

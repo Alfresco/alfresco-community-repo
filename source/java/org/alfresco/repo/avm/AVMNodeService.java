@@ -2032,5 +2032,11 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
     {
         throw new UnsupportedOperationException("AVM does not support this operation.");
     }
+    
+	@Override
+	public int countChildAssocs(NodeRef nodeRef, boolean isPrimary) throws InvalidNodeRefException
+	{
+        throw new UnsupportedOperationException("AVM does not support this operation.");
+	}
 
 }

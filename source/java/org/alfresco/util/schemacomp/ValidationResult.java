@@ -33,12 +33,6 @@ public class ValidationResult extends Result
     
     public ValidationResult(DbProperty dbProperty, String message)
     {
-        this(dbProperty, null, message);
-    }
-
-    public ValidationResult(DbProperty dbProperty, Strength strength, String message)
-    {
-        super(strength);
         this.dbProperty = dbProperty;
         this.message = message;
     }

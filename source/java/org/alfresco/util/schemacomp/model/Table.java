@@ -24,7 +24,6 @@ import java.util.List;
 
 import org.alfresco.util.schemacomp.DbObjectVisitor;
 import org.alfresco.util.schemacomp.DiffContext;
-import org.alfresco.util.schemacomp.Result.Strength;
 
 /**
  * Instances of this class represent a database table.
@@ -207,11 +206,11 @@ public class Table extends AbstractDbObject
 
 
     @Override
-    protected void doDiff(DbObject other, DiffContext ctx, Strength strength)
+    protected void doDiff(DbObject other, DiffContext ctx)
     {
         Table rightTable = (Table) other; 
         comparisonUtils.compareCollections(columns, rightTable.columns, ctx);
-        primaryKey.diff(rightTable.primaryKey, ctx, strength);
+        primaryKey.diff(rightTable.primaryKey, ctx);
         comparisonUtils.compareCollections(foreignKeys, rightTable.foreignKeys, ctx);
         comparisonUtils.compareCollections(indexes, rightTable.indexes, ctx);
     }

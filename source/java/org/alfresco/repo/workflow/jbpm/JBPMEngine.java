@@ -21,6 +21,7 @@ package org.alfresco.repo.workflow.jbpm;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,8 +30,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.Map.Entry;
 import java.util.zip.ZipInputStream;
 
 import org.alfresco.model.ContentModel;
@@ -109,6 +111,7 @@ import org.jbpm.taskmgmt.exe.PooledActor;
 import org.jbpm.taskmgmt.exe.TaskInstance;
 import org.springframework.dao.DataAccessException;
 import org.springframework.util.StringUtils;
+import org.springmodules.workflow.jbpm31.JbpmAccessor;
 import org.springmodules.workflow.jbpm31.JbpmCallback;
 import org.springmodules.workflow.jbpm31.JbpmTemplate;
 
@@ -1018,7 +1021,7 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
                                 String key = entry.getKey();
                                 QName qname = factory.mapNameToQName(key);
                                 
-                                if (!properties.containsKey(key))
+                                if (!properties.containsKey(qname))
                                 {
                                     Serializable value = convertValue(entry.getValue());
                                     properties.put(qname, value);
@@ -1048,34 +1051,82 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
      */
     public WorkflowInstance cancelWorkflow(final String workflowId)
     {
-        try
+        return cancelWorkflows(Collections.singletonList(workflowId)).get(0);        
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.workflow.WorkflowComponent#cancelWorkflows
+     */
+    @SuppressWarnings("unchecked")
+    public List<WorkflowInstance> cancelWorkflows(final List<String>workflowIds)
+    {
+        return (List<WorkflowInstance>) jbpmTemplate.execute(new JbpmCallback()
         {
-            return (WorkflowInstance) jbpmTemplate.execute(new JbpmCallback()
+            public Object doInJbpm(JbpmContext context)
             {
-                public Object doInJbpm(JbpmContext context)
+                // Bypass the cache making sure not to flush it
+                Session session = context.getSession();                                        
+                CacheMode cacheMode = session.getCacheMode();
+                FlushMode flushMode = session.getFlushMode();
+                session.setCacheMode(CacheMode.GET);
+                session.setFlushMode(FlushMode.MANUAL);
+                try
                 {
-                    // retrieve and cancel process instance
+                    List<WorkflowInstance> workflowInstances = new ArrayList<WorkflowInstance>(workflowIds.size());
+                    Map<String, ProcessInstance> processInstances = new HashMap<String, ProcessInstance>(workflowIds.size() * 2);
                     GraphSession graphSession = context.getGraphSession();
-                    ProcessInstance processInstance = getProcessInstance(graphSession, workflowId);
-                    processInstance.getContextInstance().setVariable("cancelled", true);
-                    processInstance.end();
-                    // TODO: Determine if this is the most appropriate way to
-                    // cancel workflow...
-                    // It might be useful to record point at which it was
-                    // cancelled etc
-                    WorkflowInstance workflowInstance = createWorkflowInstance(processInstance);
-                    
-                    // delete the process instance
-                    graphSession.deleteProcessInstance(processInstance, true, true);
-                    return workflowInstance; 
+
+                    // retrieve and cancel process instances
+                    for (String workflowId : workflowIds)
+                    {
+                        try
+                        {
+                            ProcessInstance processInstance = getProcessInstance(graphSession, workflowId);
+                            processInstance.getContextInstance().setVariable("cancelled", true);
+                            processInstance.end();                            
+                            processInstances.put(workflowId, processInstance);                                                        
+                        }
+                        catch(JbpmException e)
+                        {
+                            String msg = messageService.getMessage(ERR_CANCEL_WORKFLOW, workflowId);
+                            throw new WorkflowException(msg, JbpmAccessor.convertJbpmException(e));
+                        }
+                    }
+
+                    // Flush at the end of the batch
+                    session.flush();
+
+                    for (String workflowId : workflowIds)
+                    {
+                        try
+                        {
+                            // retrieve process instance
+                            ProcessInstance processInstance = processInstances.get(workflowId);
+                            // TODO: Determine if this is the most appropriate way to cancel workflow...
+                            //       It might be useful to record point at which it was cancelled etc
+                            workflowInstances.add(createWorkflowInstance(processInstance));
+                            
+                            // delete the process instance
+                            graphSession.deleteProcessInstance(processInstance, true, true);
+                        }
+                        catch(JbpmException e)
+                        {
+                            String msg = messageService.getMessage(ERR_CANCEL_WORKFLOW, workflowId);
+                            throw new WorkflowException(msg, JbpmAccessor.convertJbpmException(e));
+                        }
+                    }
+
+                    // Flush at the end of the batch
+                    session.flush();
+                    return workflowInstances; 
                 }
-            });
-        }
-        catch(JbpmException e)
-        {
-            String msg = messageService.getMessage(ERR_CANCEL_WORKFLOW, workflowId);
-            throw new WorkflowException(msg, e);
-        }
+                finally
+                {
+                    session.setCacheMode(cacheMode);
+                    session.setFlushMode(flushMode);
+                }
+            }
+        });
     }
 
     /*
@@ -1237,6 +1288,14 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public List<WorkflowTask> getTasksForWorkflowPath(String pathId)
+    {
+        return getTasksForWorkflowPath(pathId, false);
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -1245,7 +1304,7 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
      * java.lang.String)
      */
     @SuppressWarnings("unchecked")
-    public List<WorkflowTask> getTasksForWorkflowPath(final String pathId)
+    public List<WorkflowTask> getTasksForWorkflowPath(final String pathId, final boolean sameSession)
     {
         try
         {
@@ -1258,7 +1317,7 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
                     Token token = getWorkflowToken(graphSession, pathId);
                     TaskMgmtSession taskSession = context.getTaskMgmtSession();
                     List<TaskInstance> tasks = taskSession.findTaskInstancesByToken(token.getId());
-                    return getWorkflowTasks(tasks);
+                    return getWorkflowTasks(tasks, sameSession);
                 }
             });
         }
@@ -1338,6 +1397,14 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
     // Task Management ...
     //
     
+    /**
+     * {@inheritDoc}
+     */
+    public List<WorkflowTask> getAssignedTasks(String authority, WorkflowTaskState state)
+    {
+        return getAssignedTasks(authority, state, false);
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -1346,7 +1413,7 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
      * , org.alfresco.service.cmr.workflow.WorkflowTaskState)
      */
     @SuppressWarnings("unchecked")
-    public List<WorkflowTask> getAssignedTasks(final String authority, final WorkflowTaskState state)
+    public List<WorkflowTask> getAssignedTasks(final String authority, final WorkflowTaskState state, final boolean sameSession)
     {
         try
         {
@@ -1364,7 +1431,7 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
                     {
                         // Note: This method is not implemented by jBPM
                         tasks = findCompletedTaskInstances(context, authority);
-                        return getWorkflowTasks(tasks);
+                        return getWorkflowTasks(tasks, sameSession);
                     }
                     
                 }
@@ -1402,7 +1469,7 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
         }
         return result;
     }
-
+    
     @SuppressWarnings("unchecked")
     private List<WorkflowTask> findActiveTaskInstances(final String authority, JbpmContext context)
     {
@@ -1602,15 +1669,25 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
         }
     }
 
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.workflow.TaskComponent#queryTasks(org.alfresco.service.cmr.workflow.WorkflowTaskQuery)
+     */
+    @Override
+    public List<WorkflowTask> queryTasks(WorkflowTaskQuery query)
+    {
+        return queryTasks(query, false);
+    }
+
     /*
      * (non-Javadoc)
      * 
      * @see
      * org.alfresco.repo.workflow.TaskComponent#queryTasks(org.alfresco.service
-     * .cmr.workflow.WorkflowTaskFilter)
+     * .cmr.workflow.WorkflowTaskFilter, boolean)
      */
     @SuppressWarnings("unchecked")
-    public List<WorkflowTask> queryTasks(final WorkflowTaskQuery query)
+    public List<WorkflowTask> queryTasks(final WorkflowTaskQuery query, final boolean sameSession)
     {
         try
         {
@@ -1618,10 +1695,20 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
             {
                 public List<WorkflowTask> doInJbpm(JbpmContext context)
                 {
+                    // Bypass the cache making sure not to flush it
                     Session session = context.getSession();
-                    Criteria criteria = createTaskQueryCriteria(session, query);
-                    List<TaskInstance> tasks = criteria.list();
-                    return getWorkflowTasks(tasks);
+                    CacheMode cacheMode = session.getCacheMode();
+                    try
+                    {
+                        session.setCacheMode(CacheMode.GET);
+                        Criteria criteria = createTaskQueryCriteria(session, query);
+                        List<TaskInstance> tasks = criteria.list();
+                        return getWorkflowTasks(tasks, sameSession);
+                    }
+                    finally
+                    {
+                        session.setCacheMode(cacheMode);
+                    }
                 }
             });
         }
@@ -1634,27 +1721,64 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
     
     protected List<WorkflowTask> getWorkflowTasks(List<TaskInstance> tasks)
     {
-        // convert tasks to appropriate service response format 
-        List<WorkflowTask> workflowTasks = new ArrayList<WorkflowTask>(tasks.size());
-        for (TaskInstance task : tasks)
+        return getWorkflowTasks(tasks, false);
+    }
+    
+    protected List<WorkflowTask> getWorkflowTasks(List<TaskInstance> tasks, boolean sameSession)
+    {
+        final List<TaskInstance> filteredTasks;
+        if (tenantService.isEnabled())
         {
-            if (tenantService.isEnabled())
-            {                           
-                try 
+            filteredTasks = new ArrayList<TaskInstance>(tasks.size());
+            for (TaskInstance task : tasks)
+            {
+                try
                 {
                     tenantService.checkDomain(task.getTask().getProcessDefinition().getName());
+                    filteredTasks.add(task);
                 }
                 catch (RuntimeException re)
                 {
                     // deliberately skip this one - due to domain mismatch - eg.
                     // when querying by group authority
                     continue;
-                } 
+                }
             }
-            
-            WorkflowTask workflowTask = createWorkflowTask(task);
-            workflowTasks.add(workflowTask);
         }
+        else
+        {
+            filteredTasks = tasks;
+        }
+        
+        List<WorkflowTask> workflowTasks;
+        if (sameSession)
+        {
+            workflowTasks = new AbstractList<WorkflowTask>()
+            {
+                @Override
+                public WorkflowTask get(int index)
+                {
+                    TaskInstance task = filteredTasks.get(index);
+                    return createWorkflowTask(task);
+                }
+
+                @Override
+                public int size()
+                {
+                    return filteredTasks.size();
+                }
+            };
+        }
+        else
+        {
+            workflowTasks = new ArrayList<WorkflowTask>(filteredTasks.size());
+            for (TaskInstance task : filteredTasks)
+            {
+                WorkflowTask workflowTask = createWorkflowTask(task);
+                workflowTasks.add(workflowTask);
+            }
+         }
+        
         return workflowTasks;
     }
 
@@ -2246,6 +2370,64 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
         catch (JbpmException e)
         {
             String msg = messageService.getMessage(ERR_GET_START_TASK, workflowInstanceId);
+            throw new WorkflowException(msg, e);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<WorkflowTask> getStartTasks(final List<String> workflowInstanceIds, final boolean sameSession)
+    {
+        try
+        {
+            return (List<WorkflowTask>) jbpmTemplate.execute(new JbpmCallback()
+            {
+                public Object doInJbpm(JbpmContext context)
+                {
+                    List<Long> jbpmIds = new ArrayList<Long>(workflowInstanceIds.size());
+                    Set<String> startTaskNames = new TreeSet<String>(); 
+                    for (String workflowInstanceId : workflowInstanceIds)
+                    {                    
+                        // retrieve process instance
+                        GraphSession graphSession = context.getGraphSession();
+                        ProcessInstance processInstance = getProcessInstanceIfExists(graphSession, workflowInstanceId);
+                        if(processInstance != null)
+                        {
+                            jbpmIds.add(processInstance.getId());
+                            Task startTask = processInstance.getProcessDefinition().getTaskMgmtDefinition().getStartTask();
+                            startTaskNames.add(startTask.getName());                            
+                        }
+                    }
+                    
+                    if (jbpmIds.isEmpty())
+                    {
+                        return Collections.emptyList();
+                    }
+
+                    // retrieve tasks
+                    Session session = context.getSession();
+                    Criteria taskCriteria = session.createCriteria(TaskInstance.class);
+                    taskCriteria.add(Restrictions.in("name", startTaskNames));
+                    Criteria process = taskCriteria.createCriteria("processInstance");
+                    process.add(Restrictions.in("id", jbpmIds));
+
+                    // Bypass the cache making sure not to flush it
+                    CacheMode cacheMode = session.getCacheMode();
+                    try
+                    {
+                        session.setCacheMode(CacheMode.GET);
+                        List<TaskInstance> tasks = process.list();
+                        return getWorkflowTasks(tasks, sameSession);
+                    }
+                    finally
+                    {
+                        session.setCacheMode(cacheMode);
+                    }
+                }
+            });
+        }
+        catch (JbpmException e)
+        {
+            String msg = messageService.getMessage(ERR_QUERY_TASKS, workflowInstanceIds);
             throw new WorkflowException(msg, e);
         }
     }

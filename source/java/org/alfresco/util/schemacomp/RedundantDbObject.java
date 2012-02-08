@@ -37,7 +37,6 @@ public class RedundantDbObject extends Result
     
     public RedundantDbObject(DbObject dbObject, List<DbObject> matches)
     {
-        super(null);
         this.dbObject = dbObject;
         this.matches = matches;
     }

@@ -136,6 +136,7 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
         
         deleteSiteTransactionListener = new FeedCleanerDeleteSiteTransactionListener();
     }
+
     public int execute() throws JobExecutionException
     {
         checkProperties();
@@ -185,37 +186,46 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
                     String siteId = feed.getSiteNetwork();
                     final String feedUserId = feed.getFeedUserId();
                     String format = feed.getActivitySummaryFormat();
-                    
+
                     List<ActivityFeedEntity> feedToClean;
                     
                     int feedUserSiteCount = 0;
-                    
+                    long numFeeds;
+
                     if ((feedUserId == null) || (feedUserId.length() == 0))
                     {
-                        feedToClean = feedDAO.selectSiteFeedEntries(siteId, format, -1);
+                    	numFeeds = feedDAO.countSiteFeedEntries(siteId, format, -1);
                     }
                     else
                     {
-                        feedToClean = feedDAO.selectUserFeedEntries(feedUserId, format, null, false, false, -1L, -1);
-                        
-                        if (siteService != null)
-                        {
-                            // note: allow for fact that Share Activities dashlet currently uses userfeed within site context
-                            feedUserSiteCount = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Integer>()
-                            {
-                                public Integer doWork() throws Exception
-                                {
-                                    return siteService.listSites(feedUserId).size();
-                                }
-                            }, AuthenticationUtil.SYSTEM_USER_NAME);
-                        }
+                    	numFeeds = feedDAO.countUserFeedEntries(feedUserId, format, null, false, false, -1L, -1);
+
+                    	if(siteService != null)
+                    	{
+	                        // note: allow for fact that Share Activities dashlet currently uses userfeed within site context
+	                        feedUserSiteCount = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Integer>()
+	                        {
+	                            public Integer doWork() throws Exception
+	                            {
+	                                return siteService.listSites(feedUserId).size();
+	                            }
+	                        }, AuthenticationUtil.SYSTEM_USER_NAME);
+                    	}
                     }
-                    
-                    if (((feedUserSiteCount == 0) && (feedToClean.size() > maxFeedSize)) ||
-                        ((feedToClean.size() > (maxFeedSize * feedUserSiteCount))))
+
+                    if (((feedUserSiteCount == 0) && (numFeeds > maxFeedSize)) ||
+                        ((numFeeds > (maxFeedSize * feedUserSiteCount))))
                     {
+                        if ((feedUserId == null) || (feedUserId.length() == 0))
+                        {
+                            feedToClean = feedDAO.selectSiteFeedEntries(siteId, format, -1);
+                        }
+                        else
+                        {
+                            feedToClean = feedDAO.selectUserFeedEntries(feedUserId, format, null, false, false, -1L, maxFeedSize);
+                        }
+
                         Date oldestFeedEntry = feedToClean.get(maxFeedSize-1).getPostDate();
-                        
                         int deletedCount = 0;
                         
                         if ((feedUserId == null) || (feedUserId.length() == 0))
@@ -226,7 +236,6 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
                         {
                             deletedCount = feedDAO.deleteUserFeedEntries(feedUserId, format, oldestFeedEntry);
                         }
-                        
                         
                         if (deletedCount > 0)
                         {

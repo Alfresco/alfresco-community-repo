@@ -191,7 +191,7 @@ public class ScriptPagingDetails extends PagingRequest
               this.totalItems = min;
               this.confidence = ItemsSizeConfidence.AT_LEAST;
            }
-           else if(min == max)
+           else if(min.equals(max))
            {
               this.totalItems = min;
               this.confidence = ItemsSizeConfidence.EXACT;

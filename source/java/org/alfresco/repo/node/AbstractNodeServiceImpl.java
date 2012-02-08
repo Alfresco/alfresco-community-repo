@@ -33,6 +33,7 @@ import org.alfresco.repo.node.NodeServicePolicies.BeforeCreateStorePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteChildAssociationPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeRemoveAspectPolicy;
+import org.alfresco.repo.node.NodeServicePolicies.BeforeSetNodeTypePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeUpdateNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateAssociationPolicy;
@@ -46,6 +47,7 @@ import org.alfresco.repo.node.NodeServicePolicies.OnDeleteNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnRemoveAspectPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnRestoreNodePolicy;
+import org.alfresco.repo.node.NodeServicePolicies.OnSetNodeTypePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnUpdateNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
 import org.alfresco.repo.policy.AssociationPolicyDelegate;
@@ -109,6 +111,8 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     private ClassPolicyDelegate<OnMoveNodePolicy> onMoveNodeDelegate;
     private ClassPolicyDelegate<BeforeUpdateNodePolicy> beforeUpdateNodeDelegate;
     private ClassPolicyDelegate<OnUpdateNodePolicy> onUpdateNodeDelegate;
+    private ClassPolicyDelegate<OnSetNodeTypePolicy> onSetNodeTypeDelegate;
+    private ClassPolicyDelegate<BeforeSetNodeTypePolicy> beforeSetNodeTypeDelegate;
     private ClassPolicyDelegate<OnUpdatePropertiesPolicy> onUpdatePropertiesDelegate;
     private ClassPolicyDelegate<BeforeDeleteNodePolicy> beforeDeleteNodeDelegate;
     private ClassPolicyDelegate<OnDeleteNodePolicy> onDeleteNodeDelegate;
@@ -197,6 +201,8 @@ public abstract class AbstractNodeServiceImpl implements NodeService
         onMoveNodeDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.OnMoveNodePolicy.class);
         beforeUpdateNodeDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.BeforeUpdateNodePolicy.class);
         onUpdateNodeDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.OnUpdateNodePolicy.class);
+        onSetNodeTypeDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.OnSetNodeTypePolicy.class);
+        beforeSetNodeTypeDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.BeforeSetNodeTypePolicy.class);
         onUpdatePropertiesDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.OnUpdatePropertiesPolicy.class);
         beforeDeleteNodeDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.BeforeDeleteNodePolicy.class);
         onDeleteNodeDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.OnDeleteNodePolicy.class);
@@ -345,6 +351,40 @@ public abstract class AbstractNodeServiceImpl implements NodeService
         // execute policy for node type and aspects
         NodeServicePolicies.OnUpdateNodePolicy policy = onUpdateNodeDelegate.get(nodeRef, qnames);
         policy.onUpdateNode(nodeRef);
+    }
+    
+    /**
+     * @see NodeServicePolicies.OnSetNodeTypePolicy#onSetNodeType(NodeRef, QName, QName)
+     */
+    protected void invokeOnSetType(NodeRef nodeRef, QName oldType, QName newType)
+    {
+        if (ignorePolicy(nodeRef))
+        {
+            return;
+        }
+        
+        // get qnames to invoke against
+        Set<QName> qnames = getTypeAndAspectQNames(nodeRef);
+        // execute policy for node type and aspects
+        NodeServicePolicies.OnSetNodeTypePolicy policy = onSetNodeTypeDelegate.get(nodeRef, qnames);
+        policy.onSetNodeType(nodeRef, oldType, newType);
+    }
+    
+    /**
+     * @see NodeServicePolicies.BeforeSetNodeTypePolicy#beforeSetNodeType(NodeRef, QName, QName)
+     */
+    protected void invokeBeforeSetType(NodeRef nodeRef, QName oldType, QName newType)
+    {
+        if (ignorePolicy(nodeRef))
+        {
+            return;
+        }
+        
+        // get qnames to invoke against
+        Set<QName> qnames = getTypeAndAspectQNames(nodeRef);
+        // execute policy for node type and aspects
+        NodeServicePolicies.BeforeSetNodeTypePolicy policy = beforeSetNodeTypeDelegate.get(nodeRef, qnames);
+        policy.beforeSetNodeType(nodeRef, oldType, newType);
     }
     
     /**

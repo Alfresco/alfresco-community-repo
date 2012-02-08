@@ -68,6 +68,8 @@ public class XMLToSchemaTest
         assertNotNull("A null Schema object was returned", schema);
         assertNull("Schema isn't meant to have a parent", schema.getParent());
         assertEquals("alfresco", schema.getName());
+        assertEquals("myprefix_", schema.getDbPrefix());
+        assertEquals(325, schema.getVersion());
         
         Iterator<DbObject> objects = schema.iterator();
         

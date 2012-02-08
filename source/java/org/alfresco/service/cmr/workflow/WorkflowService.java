@@ -298,6 +298,15 @@ public interface WorkflowService
     public WorkflowInstance cancelWorkflow(String workflowId);
 
     /**
+     * Cancel a batch of "in-flight" Workflow instances
+     * 
+     * @param workflowIds  List of the workflow instances to cancel
+     * @return List of updated representations of the workflow instances
+     */
+    @Auditable(parameters = {"workflowIds"})
+    public List<WorkflowInstance> cancelWorkflows(List<String> workflowIds);
+
+    /**
      * Delete an "in-flight" Workflow instance
      * 
      * NOTE: This will force a delete, meaning that the workflow instance may not
@@ -346,6 +355,18 @@ public interface WorkflowService
      */
     @Auditable(parameters = {"pathId"})
     public WorkflowTask getStartTask(String workflowInstanceId);
+
+    /**
+     * Gets the start task instances for the given workflow instances.
+     * 
+     * @param workflowInstanceIds
+     * @param sameSession indicates that the returned {@link WorkflowTask} elements will be used in
+     *        the same session. If {@code true}, the returned List will be a lazy loaded list
+     *        providing greater performance.
+     * @return
+     */
+    @Auditable(parameters = {"pathIds"})
+    public List<WorkflowTask> getStartTasks(List<String> workflowInstanceIds, boolean sameSession);
 
     /**
      * Determines if a graphical view of the workflow instance exists
@@ -413,13 +434,22 @@ public interface WorkflowService
     public List<WorkflowTask> getPooledTasks(String authority);
     
     /**
+     * @deprecated Use overloaded method with the {@code sameSession} parameter
+     * (this method defaults the parameter to {@code false}).
+     */ 
+    public List<WorkflowTask> queryTasks(WorkflowTaskQuery query);
+
+    /**
      * Query for tasks
      * 
      * @param query  the filter by which tasks are queried
+     * @param sameSession indicates that the returned {@link WorkflowTask} elements will be used in
+     *        the same session. If {@code true}, the returned List will be a lazy loaded list
+     *        providing greater performance.
      * @return  the list of tasks matching the specified query
      */
     @Auditable(parameters = {"query"})
-    public List<WorkflowTask> queryTasks(WorkflowTaskQuery query);
+    public List<WorkflowTask> queryTasks(WorkflowTaskQuery query, boolean sameSession);
     
     /**
      * Update the Properties and Associations of a Task

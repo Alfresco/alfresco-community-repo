@@ -482,6 +482,7 @@
                 <value>alfresco.messages.wdr-messages</value>
                 <value>alfresco.messages.subscription-service</value>
                 <value>alfresco.messages.replication</value>
+                <value>alfresco.messages.categories</value>
             </list>
         </property>
     </bean>

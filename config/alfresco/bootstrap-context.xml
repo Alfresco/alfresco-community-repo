@@ -57,6 +57,9 @@
        <property name="localSessionFactory">
           <ref bean="&amp;sessionFactory"></ref>  <!-- inject the actual factory, not a session -->
        </property>
+       <property name="descriptorService">
+          <ref bean="descriptorComponent"/>
+       </property>
        <property name="dialect">
           <ref bean="dialect" />
        </property>
@@ -100,8 +103,13 @@
              <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoPostCreate-JBPM-FK-indexes.sql</value>
           </list>
        </property>
-       <property name="schemaReferenceUrl">
-          <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/Schema-Reference.xml</value>
+       <property name="schemaReferenceUrls">
+          <list>
+             <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/Schema-Reference-ALF.xml</value>
+             <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/Schema-Reference-AVM.xml</value>
+             <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/Schema-Reference-JBPM.xml</value>
+             <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/Schema-Reference-ACT.xml</value>
+          </list>
        </property>
        <property name="validateUpdateScriptPatches">
           <list>
@@ -133,7 +141,6 @@
              <ref bean="patch.db-V3.1-Allow-IPv6" />
              <ref bean="patch.db-V3.2-Remove-AVM-Issuer" />
              <ref bean="patch.db-V3.2-Modify-AVM-MimeType" />
-             <ref bean="patch.db-V3.2-Upgrade-JBPM" />
              <ref bean="patch.db-V3.3-Remove-VersionCount" />
              <ref bean="patch.db-V3.3-Fix-Repo-Seqs" />
              <ref bean="patch.db-V3.3-Fix-AVM-Seqs" />
@@ -147,6 +154,8 @@
              <ref bean="patch.db-V3.4-AVM-rename-dupes" />
              <ref bean="patch.db-V3.4-VarcharFieldSizesQuadrupleIncreasing" />
              <ref bean="patch.db-V3.4-JBPM-FK-indexes" />
+             <ref bean="patch.db-V3.4-Upgrade-JBPM" />
+             <ref bean="patch.db-V3.4-alter-jBPM331-CLOB-columns-to-nvarchar" />
              <ref bean="patch.db-V4.0-AclChangeSet" />
              <ref bean="patch.db-V4.0-NodeAssoc-Ordering" />
              <ref bean="patch.db-V4.0-Node-Locale" />
@@ -173,11 +182,6 @@
     <bean id="encryptionChecker" class="org.alfresco.encryption.EncryptionChecker">
        <property name="transactionService" ref="transactionService"/>
        <property name="keyStoreChecker" ref="keyStoreChecker"/>
-    </bean>
-
-    <bean id="bootstrapReEncryptor" class="org.alfresco.encryption.BootstrapReEncryptor">
-        <property name="enabled" value="${encryption.bootstrap.reencrypt}"/>
-        <property name="reEncryptor" ref="reEncryptor"/>
     </bean>
 
     <!-- node indexing for ADM -->
@@ -228,6 +232,11 @@
       
    </bean>
 
+    <bean id="bootstrapReEncryptor" class="org.alfresco.encryption.BootstrapReEncryptor">
+        <property name="enabled" value="${encryption.bootstrap.reencrypt}"/>
+        <property name="reEncryptor" ref="reEncryptor"/>
+    </bean>
+
     <!-- Bootstrap Data: Concrete instances for the basic Alfresco bootstrap -->
     <bean id="systemInfoBootstrap" parent="systemInfoBootstrap-base" singleton="true" />
     <bean id="userBootstrap" parent="userBootstrap-base" singleton="true" />
@@ -247,18 +256,6 @@
     <bean id="siteLoadBootstrap-Spaces" parent="spacesStoreImporter" singleton="true" />
     <bean id="siteLoadBootstrap-Users" parent="userStoreImporter" singleton="true" />
     <bean id="siteLoadBootstrap-AVM" parent="sitesAVMZipBootstrap-base" singleton="true" />
-    
-    <bean id="siteAVMBootstrap" class="org.alfresco.repo.site.SiteAVMBootstrap">
-        <property name="avmService" ref="AVMService" />
-        <property name="permissionService" ref="PermissionService" />
-        <property name="transactionService" ref="TransactionService" />
-        <property name="storename">
-            <value>sitestore</value>
-        </property>
-        <property name="rootdir">
-            <value>alfresco</value>
-        </property>
-    </bean>
    
     <bean id="workflowBootstrap" parent="workflowDeployer">
         <property name="workflowDefinitions">

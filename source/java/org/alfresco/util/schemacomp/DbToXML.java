@@ -65,31 +65,17 @@ public class DbToXML
     
     public void execute()
     {
-        ExportDb exporter = null;   
-        try
-        {
-            exporter = new ExportDb(context);
-            exporter.setNamePrefix(namePrefix);
-            exporter.execute();
-        }
-        catch (Exception e)
-        {
-            System.err.println("Unable to read database schema.");
-            e.printStackTrace();
-            System.exit(1);
-        }
-        
-        if (exporter != null)
-        {
-            Schema schema = exporter.getSchema();
-            // Write to a string buffer and then write the results to a file
-            // since we need to write windows line endings - and even passing in a suitable
-            // PrintWriter to StreamResult does not seem to result in the correct line endings.
-            StringWriter stringWriter = new StringWriter(); 
-            SchemaToXML schemaToXML = new SchemaToXML(schema, new StreamResult(stringWriter));
-            schemaToXML.execute();
-            writeToFile(stringWriter.getBuffer().toString());
-        }
+        ExportDb exporter = new ExportDb(context);
+        exporter.setNamePrefix(namePrefix);
+        exporter.execute();
+        Schema schema = exporter.getSchema();
+        // Write to a string buffer and then write the results to a file
+        // since we need to write windows line endings - and even passing in a suitable
+        // PrintWriter to StreamResult does not seem to result in the correct line endings.
+        StringWriter stringWriter = new StringWriter(); 
+        SchemaToXML schemaToXML = new SchemaToXML(schema, new StreamResult(stringWriter));
+        schemaToXML.execute();
+        writeToFile(stringWriter.getBuffer().toString());
     }
     
     private void writeToFile(String content)

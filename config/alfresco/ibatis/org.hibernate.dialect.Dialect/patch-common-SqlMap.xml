@@ -123,20 +123,18 @@
     </select>
     
     <select id="select_avmNodesWithOldContentProperties" parameterType="Ids" resultType="java.lang.Long">
-        <![CDATA[
         select
             id
         from
             avm_nodes
         where
-            id >= #{idOne}
-            and id < #{idTwo}
+            id &gt;= #{idOne}
+            and id &lt; #{idTwo}
             and class_type = 'plainfile'
             and content_url is not null
             and content_url not like 'id:%' <include refid="alfresco.util.escape"/>
         order by
             id ASC
-        ]]>
     </select>
 
     <select id="select_admOldContentProperties" parameterType="Ids" resultMap="result_admOldContentProp">

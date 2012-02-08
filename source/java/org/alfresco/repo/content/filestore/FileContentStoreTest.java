@@ -94,18 +94,6 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
         File dir = new File(root);
         assertTrue("Root location for FileContentStore must exist", dir.exists());
     }
-
-    /**
-     * Ensures that the size is positive
-     */
-    @Override
-    public void testSpaceUsed() throws Exception
-    {
-        ContentStore store = getStore();
-        store.getWriter(new ContentContext(null, null)).putContent("Test content");
-        long size = store.getSpaceUsed();
-        assertTrue("Size must be positive", size > 0L);
-    }
     
     /**
      * Ensures that the size is something other than <tt>-1</tt> or <tt>Long.MAX_VALUE</tt>

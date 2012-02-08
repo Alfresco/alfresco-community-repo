@@ -77,7 +77,7 @@
       <property name="name">
          <value>org.alfresco.cache.contentDataTransactionalCache</value>
       </property>
-      <property name="maxCacheSize" value="5000" />
+      <property name="maxCacheSize" value="65000" />
       <property name="mutable" value="true" />
       <property name="allowEqualsChecks" value="true" />
       <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />

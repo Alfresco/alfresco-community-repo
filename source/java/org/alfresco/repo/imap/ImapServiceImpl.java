@@ -84,6 +84,7 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.model.SubFolderFilter;
 import org.alfresco.service.cmr.preference.PreferenceService;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -95,6 +96,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -882,7 +884,10 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
             logger.debug("Subscribing: " + user + ", " + mailbox);
         }
         AlfrescoImapFolder mailFolder = getOrCreateMailbox(user, mailbox, true, false);
-        nodeService.removeAspect(mailFolder.getFolderInfo().getNodeRef(), ImapModel.ASPECT_IMAP_FOLDER_NONSUBSCRIBED);
+        PersonService personService = serviceRegistry.getPersonService();
+        NodeRef userRef = personService.getPerson(user.getLogin());
+
+        nodeService.removeAssociation(userRef, mailFolder.getFolderInfo().getNodeRef(), ImapModel.ASSOC_IMAP_UNSUBSCRIBED);
     }
 
     public void unsubscribe(AlfrescoImapUser user, String mailbox)
@@ -894,8 +899,9 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
         AlfrescoImapFolder mailFolder = getOrCreateMailbox(user, mailbox, true, false);
         if(mailFolder.getFolderInfo() != null)
         {
-            logger.debug("Unsubscribing by ASPECT_IMAP_FOLDER_NONSUBSCRIBED");
-            nodeService.addAspect(mailFolder.getFolderInfo().getNodeRef(), ImapModel.ASPECT_IMAP_FOLDER_NONSUBSCRIBED, null);
+            PersonService personService = serviceRegistry.getPersonService();
+            NodeRef userRef = personService.getPerson(user.getLogin());
+            nodeService.createAssociation(userRef, mailFolder.getFolderInfo().getNodeRef(), ImapModel.ASSOC_IMAP_UNSUBSCRIBED);
         }
         else
         {
@@ -993,6 +999,9 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
         String rootPath = index == -1 ? mailboxPattern : mailboxPattern.substring(0, index);
         boolean found = false;
         
+        String userName = user.getLogin();
+        Set<NodeRef> unsubscribedFodlers = getUnsubscribedFolders(userName);
+
         for (String mountPointName : imapConfigMountPoints.keySet())
         {
             if (mountPointName.matches(rootPath.replaceAll("[%\\*]", ".*")))
@@ -1005,8 +1014,8 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
                     ImapViewMode viewMode = imapConfigMountPoints.get(mountPointName).getMode();
                     if (index < 0)
                     {
-                        String userName = user.getLogin();
-                        if (!listSubscribed || isSubscribed(mountPointFileInfo, userName)) 
+
+                        if (!listSubscribed || !unsubscribedFodlers.contains(mountPointFileInfo.getNodeRef()))
                         {
                             result.add(new AlfrescoImapFolder(mountPointFileInfo, userName, mountPointName, mountPointName, viewMode,
                                     isExtractionEnabled(mountPointFileInfo.getNodeRef()), serviceRegistry, mountPointId));
@@ -1111,6 +1120,9 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
         
         if (index < 0)
         {
+            String userName = user.getLogin();
+            Set<NodeRef> unsubscribedFodlers = getUnsubscribedFolders(userName);
+
             // This is the last level            
             for (FileInfo fileInfo : list)
             {
@@ -1119,8 +1131,7 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
                     continue;
                 }
                 String folderPath = rootPathPrefix + fileInfo.getName();
-                String userName = user.getLogin();
-                if (!listSubscribed || isSubscribed(fileInfo, userName)) 
+                if (!listSubscribed || !unsubscribedFodlers.contains(fileInfo.getNodeRef()))
                 {
                     fullList.add(new AlfrescoImapFolder(fileInfo, userName, fileInfo.getName(), folderPath, viewMode,
                             isExtractionEnabled(fileInfo.getNodeRef()), serviceRegistry, mountPointId));
@@ -1233,10 +1244,20 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
         return userHome;
     }
 
-    private boolean isSubscribed(FileInfo fileInfo, String userName)
+    private Set<NodeRef> getUnsubscribedFolders(String userName)
     {
-        return !nodeService.hasAspect(fileInfo.getNodeRef(), ImapModel.ASPECT_IMAP_FOLDER_NONSUBSCRIBED);
+        Set<NodeRef> result = new HashSet<NodeRef>();
+        PersonService personService = serviceRegistry.getPersonService();
+        NodeRef userRef = personService.getPerson(userName);
+        List<AssociationRef> unsubscribedFodlers = nodeService.getTargetAssocs(userRef, ImapModel.ASSOC_IMAP_UNSUBSCRIBED);
+        for (AssociationRef asocRef : unsubscribedFodlers)
+        {
+            result.add(asocRef.getTargetRef());
+        }
+    
+        return result;
     }
+    
     
     private String getCurrentUser()
     {

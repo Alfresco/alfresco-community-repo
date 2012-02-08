@@ -68,7 +68,7 @@ public class CMISStrictDictionaryService extends CMISAbstractDictionaryService
             CMISTypeId typeId = cmisMapping.getCmisTypeId(classQName);
             if (typeId == null)
                 continue;
-            if (typeId.getScope() == CMISScope.RELATIONSHIP)
+            if (typeId.getScope() == CMISScope.RELATIONSHIP || typeId.getScope() == CMISScope.UNKNOWN )
                 continue;
             
             // create appropriate kind of type definition

@@ -117,6 +117,7 @@ public interface ContentStore
      *      if no size data is available.
      * 
      * @since 3.3.3
+     * @deprecated This method takes too long to complete in many situations (see ALF-12410).
      */
     public long getSpaceUsed();
     

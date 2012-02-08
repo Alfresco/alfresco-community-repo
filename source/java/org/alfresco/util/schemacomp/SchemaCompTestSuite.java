@@ -35,11 +35,12 @@ import org.junit.runners.Suite;
             DefaultComparisonUtilsTest.class,
             DifferenceTest.class,
             ExportDbTest.class,
+            MultiFileDumperTest.class,
             RedundantDbObjectTest.class,
             SchemaComparatorTest.class,
+            SchemaToXMLTest.class,
             ValidationResultTest.class,
             ValidatingVisitorTest.class,
-            SchemaToXMLTest.class,
             XMLToSchemaTest.class
 })
 public class SchemaCompTestSuite

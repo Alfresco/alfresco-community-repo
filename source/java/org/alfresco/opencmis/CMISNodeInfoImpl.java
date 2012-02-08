@@ -34,7 +34,9 @@ import org.alfresco.opencmis.dictionary.FolderTypeDefintionWrapper;
 import org.alfresco.opencmis.dictionary.RelationshipTypeDefintionWrapper;
 import org.alfresco.opencmis.dictionary.TypeDefinitionWrapper;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.version.Version2Model;
 import org.alfresco.repo.version.VersionBaseModel;
+import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -439,7 +441,10 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
                     {
                         if (currentVersion.getVersionType() == VersionType.MAJOR)
                         {
-                            isLatestMajorVersion = currentVersion.getFrozenStateNodeRef().equals(nodeRef);
+                        	// ALF-11116: the current node (in the main store) and the frozen node (in the version store) are both represented as CMISNodeInfos
+                        	// but are indistinguishable apart from their storeRef (their objectVariant can be the same).
+                            isLatestMajorVersion = (nodeRef.getStoreRef().getIdentifier().equals(Version2Model.STORE_ID) || nodeRef.getStoreRef().getIdentifier().equals(VersionModel.STORE_ID)) ?
+                            		currentVersion.getFrozenStateNodeRef().equals(nodeRef) : currentVersion.getVersionedNodeRef().equals(nodeRef);
                             break;
                         }
                         currentVersion = versionHistory.getPredecessor(currentVersion);

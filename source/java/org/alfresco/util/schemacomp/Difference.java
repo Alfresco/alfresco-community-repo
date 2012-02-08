@@ -38,13 +38,6 @@ public final class Difference extends Result
     
     public Difference(Where where, DbProperty left, DbProperty right)
     {
-        this(where, left, right, null);
-    }
-    
-    public Difference(Where where, DbProperty left, DbProperty right, Strength strength)
-    {
-        super(null);
-
         // Sanity check parameters
         if (left == null && right == null)
         {
@@ -113,7 +106,6 @@ public final class Difference extends Result
     @Override
     public String toString()
     {
-        return "Difference [where=" + this.where + ", left=" + this.left + ", right=" + this.right
-                    + ", strength=" + this.strength + "]";
+        return "Difference [where=" + this.where + ", left=" + this.left + ", right=" + this.right + "]";
     }
 }

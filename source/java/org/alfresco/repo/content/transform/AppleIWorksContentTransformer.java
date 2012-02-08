@@ -18,26 +18,20 @@
  */
 package org.alfresco.repo.content.transform;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.TransformationOptions;
-import org.alfresco.util.TempFileProvider;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.lf5.util.StreamUtils;
 
 /**
  * Converts Apple iWorks files to PDFs or JPEGs for thumbnailing & previewing.
@@ -89,31 +83,35 @@ public class AppleIWorksContentTransformer extends AbstractContentTransformer2
         }
         
         
-        ZipFile iworksZipfile = null;
+        ZipArchiveInputStream iWorksZip = null;
         try 
         {
-            File iWorksTempFile = TempFileProvider.createTempFile(this.getClass().getSimpleName() + "_iWorks", sourceExtension);
-            reader.getContent(iWorksTempFile);
-            
             // iWorks files are zip files (at least in recent versions, iWork 09).
             // If it's not a zip file, the resultant ZipException will be caught as an IOException below.
-            iworksZipfile = new ZipFile(iWorksTempFile);
+            iWorksZip = new ZipArchiveInputStream(reader.getContentInputStream());
             
-            File tempOutFile = null;
-            if (MimetypeMap.MIMETYPE_IMAGE_JPEG.equals(targetMimetype))
+            ZipArchiveEntry entry = null;
+            boolean found = false;
+            while ( !found && (entry = iWorksZip.getNextZipEntry()) != null )
             {
-                tempOutFile = copyZipEntryToTempFile(QUICK_LOOK_THUMBNAIL_JPG, iworksZipfile);
+                if (MimetypeMap.MIMETYPE_IMAGE_JPEG.equals(targetMimetype) && 
+                    entry.getName().equals(QUICK_LOOK_THUMBNAIL_JPG))
+                {
+                    writer.putContent( iWorksZip );
+                    found = true;
+                }
+                else if (MimetypeMap.MIMETYPE_PDF.equals(targetMimetype) &&
+                         entry.getName().equals(QUICK_LOOK_PREVIEW_PDF))
+                {
+                    writer.putContent( iWorksZip );
+                    found = true;
+                }
             }
-            else if (MimetypeMap.MIMETYPE_PDF.equals(targetMimetype))
-            {
-                tempOutFile = copyZipEntryToTempFile(QUICK_LOOK_PREVIEW_PDF, iworksZipfile);
-            }
-            else
+            
+            if (! found)
             {
                 throw new AlfrescoRuntimeException("Unable to transform " + sourceExtension + " file to " + targetMimetype);
             }
-            
-            writer.putContent(tempOutFile);
         } 
         catch (FileNotFoundException e1) 
         {
@@ -125,48 +123,10 @@ public class AppleIWorksContentTransformer extends AbstractContentTransformer2
         }
         finally
         {
-            if (iworksZipfile != null)
+            if (iWorksZip != null)
             {
-                iworksZipfile.close();
+                iWorksZip.close();
             }
         }
-    }
-    
-    /**
-     * This method copies the contents of the specified zip-entry in the specified zip file
-     * to a temporary file.
-     * 
-     * @return the File object for the just-created temporary file.
-     */
-    private File copyZipEntryToTempFile(String zipEntryName, ZipFile iworksZipfile) throws IOException
-    {
-        final String extension = zipEntryName.endsWith(".jpg") ? ".jpg" : ".pdf";
-        ZipEntry embeddedQuicklookResource = iworksZipfile.getEntry(zipEntryName);
-        
-        if (embeddedQuicklookResource == null)
-        {
-            throw new AlfrescoRuntimeException("Unable to transform iWorks file as there was no embedded preview.");
-        }
-        
-        File outputFile = TempFileProvider.createTempFile(this.getClass().getSimpleName() + "_ZipEntry", extension);
-        
-        BufferedOutputStream bufOut = null;
-        
-        try
-        {
-            InputStream zin = iworksZipfile.getInputStream(embeddedQuicklookResource);
-            bufOut = new BufferedOutputStream(new FileOutputStream(outputFile));
-            StreamUtils.copy(zin, bufOut);
-        }
-        finally
-        {
-            // zin closed in calling method
-            if (bufOut != null)
-            {
-                bufOut.close();
-            }
-        }
-        
-        return outputFile;
     }
 }

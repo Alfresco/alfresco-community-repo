@@ -1,0 +1,393 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.activities">
+
+    <!-- NOTE: MyBatis #224 - eg. Oracle -->
+   
+    <!--                -->
+    <!-- Result Maps    -->
+    <!--                -->
+    
+    <!-- Note the MySQL specific fetch size limitation (Integer.MIN_VALUE). fetchSize activates resultset streaming. -->
+    
+   <resultMap id="ActivityFeedResult" type="ActivityFeed">
+      <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+      <result property="feedUserId" column="feed_user_id"/>
+      <result property="postUserId" column="post_user_id"/>
+      <result property="postDate" column="post_date"/>
+      <result property="postId" column="post_id"/> <!-- not an explicit FK constraint, can dangle if and when activity post is deleted -->
+      <result property="siteNetwork" column="site_network"/>
+      <result property="activityType" column="activity_type"/>
+      <result property="activitySummary" column="activity_summary"/>
+      <result property="activitySummaryFormat" column="activity_format"/>
+      <result property="feedDate" column="feed_date"/>
+   </resultMap>
+   
+   <resultMap id="FeedControlResult" type="FeedControl">
+      <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+      <result property="feedUserId" column="feed_user_id"/>
+      <result property="siteNetwork" column="site_network"/>
+      <result property="appTool" column="app_tool"/>
+      <result property="lastModified" column="last_modified"/>
+   </resultMap>
+   
+   <resultMap id="ActivityPostResult" type="ActivityPost">
+      <result property="id" column="sequence_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+      <result property="activityData" column="activity_data"/>
+      <result property="activityType" column="activity_type"/>
+      <result property="userId" column="post_user_id"/>
+      <result property="postDate" column="post_date"/>
+      <result property="jobTaskNode" column="job_task_node"/>
+      <result property="siteNetwork" column="site_network"/>
+      <result property="appTool" column="app_tool"/>
+      <result property="status" column="status"/>
+      <result property="lastModified" column="last_modified"/>
+   </resultMap>
+   
+    <!--                         -->
+    <!-- SQL Snippets / Inserts  -->
+    <!--                         -->
+    
+    <sql id="insert_ActivityFeedControl_AutoIncrement">
+        insert into alf_activity_feed_control (feed_user_id, site_network, app_tool, last_modified)
+        values (#{feedUserId}, #{siteNetwork}, #{appTool}, #{lastModified})
+    </sql>
+    
+    <sql id="insert_ActivityFeedControl_Sequence">
+        insert into alf_activity_feed_control (id, feed_user_id, site_network, app_tool, last_modified)
+        values (#{id}, #{feedUserId}, #{siteNetwork,jdbcType=VARCHAR}, #{appTool,jdbcType=VARCHAR}, #{lastModified})
+    </sql>
+    
+    <sql id="insert_ActivityFeed_AutoIncrement">
+         insert into alf_activity_feed (activity_type, activity_summary, activity_format, feed_user_id, post_user_id, post_date, post_id, site_network, app_tool, feed_date)
+         values (#{activityType}, #{activitySummary}, #{activitySummaryFormat}, #{feedUserId}, #{postUserId}, #{postDate}, #{postId}, #{siteNetwork}, #{appTool}, #{feedDate})
+    </sql>
+    
+    <sql id="insert_ActivityFeed_Sequence">
+        insert into alf_activity_feed (id, activity_type, activity_summary, activity_format, feed_user_id, post_user_id, post_date, post_id, site_network, app_tool, feed_date)
+        values (#{id}, #{activityType}, #{activitySummary,jdbcType=VARCHAR}, #{activitySummaryFormat,jdbcType=VARCHAR}, #{feedUserId,jdbcType=VARCHAR}, #{postUserId}, #{postDate}, #{postId,jdbcType=BIGINT}, #{siteNetwork,jdbcType=VARCHAR}, #{appTool,jdbcType=VARCHAR}, #{feedDate})
+    </sql>
+    
+    <sql id="insert_ActivityPost_AutoIncrement">
+        insert into alf_activity_post (status, activity_data, post_user_id, post_date, activity_type, site_network, app_tool, job_task_node, last_modified)
+        values (#{status}, #{activityData}, #{userId}, #{postDate}, #{activityType}, #{siteNetwork}, #{appTool}, #{jobTaskNode}, #{lastModified})
+    </sql>
+    
+    <sql id="insert_ActivityPost_Sequence">
+        insert into alf_activity_post (sequence_id, status, activity_data, post_user_id, post_date, activity_type, site_network, app_tool, job_task_node, last_modified)
+        values (#{id}, #{status}, #{activityData}, #{userId}, #{postDate}, #{activityType}, #{siteNetwork,jdbcType=VARCHAR}, #{appTool,jdbcType=VARCHAR}, #{jobTaskNode}, #{lastModified})
+    </sql>
+    
+    <!--                -->
+    <!-- Updates        -->
+    <!--                -->
+    
+    <!--                -->
+    <!-- Selects        -->
+    <!--                -->
+    
+   <!-- select feeds for cleaning -->
+   <select id="select_activity_feed_greater_than_max" parameterType="int" resultType="ActivityFeed">
+      <![CDATA[
+      select site_network as siteNetwork, feed_user_id as feedUserId, activity_format as activitySummaryFormat
+      from alf_activity_feed
+      group by site_network, feed_user_id, activity_format
+      having count(*) > #{maxFeedSize}
+      ]]>
+   </select>
+   
+   <!-- user feed - all sites - everyone -->
+   <select id="select_activity_feed_for_feeduser" parameterType="ActivityFeedQuery" resultType="ActivityFeed" fetchSize="-2147483648">
+      select id as id, activity_type as activityType, activity_format as activitySummaryFormat, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
+      from alf_activity_feed
+      where feed_user_id = #{feedUserId}
+      and activity_format = #{activitySummaryFormat}
+      <if test="minId != null"><![CDATA[ and id >= #{minId} ]]></if>
+      order by post_date desc
+   </select>
+   
+   <select id="count_activity_feed_for_feeduser" parameterType="ActivityFeedQuery" resultType="long">
+      select count(1)
+      from alf_activity_feed
+      where feed_user_id = #{feedUserId}
+      and activity_format = #{activitySummaryFormat}
+      <if test="minId != null"><![CDATA[ and id >= #{minId} ]]></if>
+   </select>
+   
+   <!-- user feed - all sites - others (not me) -->
+   <select id="select_activity_feed_for_feeduser_others" parameterType="ActivityFeedQuery" resultType="ActivityFeed" fetchSize="-2147483648">
+      select id as id, activity_type as activityType, activity_format as activitySummaryFormat, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
+      from alf_activity_feed
+      where feed_user_id = #{feedUserId}
+       <![CDATA[ and post_user_id <> #{feedUserId} ]]>
+      and activity_format = #{activitySummaryFormat}
+      <if test="minId != null"><![CDATA[ and id >= #{minId} ]]></if>
+      order by post_date desc
+   </select>
+
+   <select id="count_activity_feed_for_feeduser_others" parameterType="ActivityFeedQuery" resultType="long">
+      select count(1)
+      from alf_activity_feed
+      where feed_user_id = #{feedUserId}
+       <![CDATA[ and post_user_id <> #{feedUserId} ]]>
+      and activity_format = #{activitySummaryFormat}
+      <if test="minId != null"><![CDATA[ and id >= #{minId} ]]></if>
+   </select>
+   
+   <!-- user feed - all sites - me only (not others) -->
+   <select id="select_activity_feed_for_feeduser_me" parameterType="ActivityFeedQuery" resultType="ActivityFeed" fetchSize="-2147483648">
+      select id as id, activity_type as activityType, activity_format as activitySummaryFormat, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
+      from alf_activity_feed
+      where feed_user_id = #{feedUserId}
+      and post_user_id = #{feedUserId}
+      and activity_format = #{activitySummaryFormat}
+      <if test="minId != null"><![CDATA[ and id >= #{minId} ]]></if>
+      order by post_date desc
+   </select>
+   
+   <select id="count_activity_feed_for_feeduser_me" parameterType="ActivityFeedQuery" resultType="long">
+      select count(1)
+      from alf_activity_feed
+      where feed_user_id = #{feedUserId}
+      and post_user_id = #{feedUserId}
+      and activity_format = #{activitySummaryFormat}
+      <if test="minId != null"><![CDATA[ and id >= #{minId} ]]></if>
+   </select>
+   
+   <!-- user feed - given site - everyone -->
+   <select id="select_activity_feed_for_feeduser_and_site" parameterType="ActivityFeedQuery" resultType="ActivityFeed" fetchSize="-2147483648">
+      select id as id, activity_type as activityType, activity_format as activitySummaryFormat, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
+      from alf_activity_feed
+      where feed_user_id = #{feedUserId}
+      and site_network = #{siteNetwork}
+      and activity_format = #{activitySummaryFormat}
+      <if test="minId != null"><![CDATA[ and id >= #{minId} ]]></if>
+      order by post_date desc
+   </select>
+
+   <select id="count_activity_feed_for_feeduser_and_site" parameterType="ActivityFeedQuery" resultType="long">
+      select count(1)
+      from alf_activity_feed
+      where feed_user_id = #{feedUserId}
+      and site_network = #{siteNetwork}
+      and activity_format = #{activitySummaryFormat}
+      <if test="minId != null"><![CDATA[ and id >= #{minId} ]]></if>
+   </select>
+   
+   <!-- user feed - given site - others (not me) -->
+   <select id="select_activity_feed_for_feeduser_others_and_site" parameterType="ActivityFeedQuery" resultType="ActivityFeed" fetchSize="-2147483648">
+      select id as id, activity_type as activityType, activity_format as activitySummaryFormat, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
+      from alf_activity_feed
+      where feed_user_id = #{feedUserId}
+      <![CDATA[ and post_user_id <> #{feedUserId} ]]>
+      and site_network = #{siteNetwork}
+      and activity_format = #{activitySummaryFormat}
+      <if test="minId != null"><![CDATA[ and id >= #{minId} ]]></if>
+      order by post_date desc
+   </select>
+   
+   <select id="count_activity_feed_for_feeduser_others_and_site" parameterType="ActivityFeedQuery" resultType="long">
+      select count(1)
+      from alf_activity_feed
+      where feed_user_id = #{feedUserId}
+      <![CDATA[ and post_user_id <> #{feedUserId} ]]>
+      and site_network = #{siteNetwork}
+      and activity_format = #{activitySummaryFormat}
+      <if test="minId != null"><![CDATA[ and id >= #{minId} ]]></if>
+   </select>
+   
+   <!-- user feed - given site - me only (not others) -->
+   <select id="select_activity_feed_for_feeduser_me_and_site" parameterType="ActivityFeedQuery" resultType="ActivityFeed" fetchSize="-2147483648">
+      select id as id, activity_type as activityType, activity_format as activitySummaryFormat, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
+      from alf_activity_feed
+      where feed_user_id = #{feedUserId}
+      and post_user_id = #{feedUserId}
+      and site_network = #{siteNetwork}
+      and activity_format = #{activitySummaryFormat}
+      <if test="minId != null"><![CDATA[ and id >= #{minId} ]]></if>
+      order by post_date desc
+   </select>
+
+   <select id="count_activity_feed_for_feeduser_me_and_site" parameterType="ActivityFeedQuery" resultType="long">
+      select count(1)
+      from alf_activity_feed
+      where feed_user_id = #{feedUserId}
+      and post_user_id = #{feedUserId}
+      and site_network = #{siteNetwork}
+      and activity_format = #{activitySummaryFormat}
+      <if test="minId != null"><![CDATA[ and id >= #{minId} ]]></if>
+   </select>
+
+   <!-- site feed - given site -->
+   <select id="select_activity_feed_for_site" parameterType="ActivityFeedQuery" resultType="ActivityFeed" fetchSize="-2147483648">
+      <![CDATA[
+      select id as id, activity_type as activityType, activity_format as activitySummaryFormat, activity_summary as activitySummary, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
+      from alf_activity_feed
+      where (feed_user_id = '' or feed_user_id is null)
+      and site_network = #{siteNetwork}
+      and activity_format = #{activitySummaryFormat}
+      order by post_date desc
+      ]]>
+   </select>
+   
+   <select id="count_activity_feed_for_site" parameterType="ActivityFeedQuery" resultType="long">
+      <![CDATA[
+      select count(1)
+      from alf_activity_feed
+      where (feed_user_id = '' or feed_user_id is null)
+      and site_network = #{siteNetwork}
+      and activity_format = #{activitySummaryFormat}
+      ]]>
+   </select>
+   
+    <!--                -->
+    <!-- Deletes        -->
+    <!--                -->
+    
+   <delete id="delete_activity_feed_entries_older_than_date" parameterType="Date">
+      <![CDATA[
+      delete from alf_activity_feed where post_date < #{keepdate}
+      ]]>
+   </delete>
+   
+   <delete id="delete_activity_feed_for_site_entries_older_than_date" parameterType="ActivityFeed">
+      <![CDATA[
+      delete from alf_activity_feed 
+      where post_date < #{postDate}
+      and site_network = #{siteNetwork}
+      and activity_format = #{activitySummaryFormat}
+      ]]>
+   </delete>
+   
+   <delete id="delete_activity_feed_for_site_entries" parameterType="ActivityFeed">
+      delete from alf_activity_feed
+      where site_network = #{siteNetwork}
+   </delete>
+   
+   <delete id="delete_activity_feed_for_feeduser_entries_older_than_date" parameterType="ActivityFeed">
+      <![CDATA[
+      delete from alf_activity_feed 
+      where post_date < #{postDate}
+      and feed_user_id = #{feedUserId}
+      and activity_format = #{activitySummaryFormat}
+      ]]>
+   </delete>
+   
+   <delete id="delete_activity_feed_for_feeduser_entries" parameterType="ActivityFeed">
+      delete from alf_activity_feed
+      where feed_user_id = #{feedUserId}
+   </delete>
+   
+   <select id="select_activity_feedcontrols_for_user" parameterType="FeedControl" resultType="FeedControl">
+      <![CDATA[
+      select id as id, feed_user_id as feedUserId, site_network as siteNetwork, app_tool as appTool
+      from alf_activity_feed_control
+      where feed_user_id = #{feedUserId}
+      ]]>
+   </select>
+   
+   <select id="select_activity_feedcontrol" parameterType="FeedControl" resultType="long">
+      <![CDATA[
+      select id as id
+      from alf_activity_feed_control
+      where feed_user_id = #{feedUserId}
+      and ((site_network = #{siteNetwork}) or ((#{siteNetwork} is null) and (site_network is null)))
+      and ((app_tool = #{appTool}) or ((#{appTool} is null) and (app_tool is null)))
+      ]]>
+   </select>
+   
+   <delete id="delete_activity_feedcontrol" parameterType="FeedControl">
+      <![CDATA[
+      delete from alf_activity_feed_control
+      where feed_user_id = #{feedUserId}
+      and ((site_network = #{siteNetwork}) or ((#{siteNetwork} is null) and (site_network is null)))
+      and ((app_tool = #{appTool}) or ((#{appTool} is null) and (app_tool is null)))
+      ]]>
+   </delete>
+   
+   <select id="select_activity_posts_by_params" parameterType="ActivityPost" resultType="ActivityPost">
+      <![CDATA[
+      select 
+         sequence_id as id,
+         activity_data as activityData,
+         activity_type as activityType,
+         post_user_id as userId,
+         post_date as postDate,
+         job_task_node as jobTaskNode,
+         site_network as siteNetwork,
+         app_tool as appTool,
+         status as status
+      from 
+         alf_activity_post
+      where 
+         job_task_node = #{jobTaskNode} and
+         sequence_id >= #{minId} and
+         sequence_id <= #{maxId} and
+         status = #{status}
+      ]]>
+   </select>
+   
+   <select id="select_activity_posts_by_status" parameterType="ActivityPost" resultType="ActivityPost">
+      <![CDATA[
+      select 
+         sequence_id as id,
+         activity_data as activityData,
+         activity_type as activityType,
+         post_user_id as userId,
+         post_date as postDate,
+         job_task_node as jobTaskNode,
+         site_network as siteNetwork,
+         app_tool as appTool,
+         status as status
+      from 
+         alf_activity_post
+      where 
+         status = #{status}
+      ]]>
+   </select>
+   
+   <select id="select_activity_post_max_seq" resultType="long">
+      select max(sequence_id) as maxId
+      from alf_activity_post
+      where status = 'POSTED'
+   </select>
+   
+   <select id="select_activity_post_min_seq" resultType="long">
+      select min(sequence_id) as minId
+      from alf_activity_post
+      where status = 'POSTED'
+   </select>
+   
+   <select id="select_activity_post_max_jobtasknode" resultType="int">
+      select max(job_task_node) as maxJobTaskNode
+      from alf_activity_post
+      where status = 'POSTED'
+   </select>
+   
+   <delete id="delete_activity_posts_older_than_date" parameterType="ActivityPost">
+      <![CDATA[
+      delete from alf_activity_post 
+      where post_date < #{postDate}
+      and status = #{status}
+      ]]>
+   </delete>
+   
+   <update id="update_activity_post_data" parameterType="ActivityPost">
+      <![CDATA[ 
+      update alf_activity_post set status = #{status}, activity_data=#{activityData}, site_network=#{siteNetwork,jdbcType=VARCHAR}, last_modified=#{lastModified}
+      where sequence_id = #{id}
+      and status <> #{status}
+      ]]>
+   </update>
+   
+   <update id="update_activity_post_status" parameterType="ActivityPost">
+      <![CDATA[
+      update alf_activity_post set status = #{status}, last_modified=#{lastModified}
+      where sequence_id = #{id}
+      and status <> #{status}
+      ]]>
+   </update>
+   
+</mapper>

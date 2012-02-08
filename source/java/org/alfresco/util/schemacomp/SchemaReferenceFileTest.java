@@ -64,7 +64,7 @@ public class SchemaReferenceFileTest
     @Test
     public void checkReferenceFile()
     {
-        String filePrefix = getClass().getSimpleName() + "-";
+        String filePrefix = getClass().getSimpleName() + "-{0}-{1}-";
         int numProblems = schemaBootstrap.validateSchema(filePrefix);
         
         if (numProblems > 0)

@@ -35,15 +35,9 @@ public class MultiTShareExistingTenantsPatch extends AbstractPatch
     private static final String MSG_RESULT = "patch.mtShareExistingTenants.result";
     private static final String MSG_RESULT_NA = "patch.mtShareExistingTenants.result.not_applicable";
     
-    private SiteAVMBootstrap siteBootstrap;
     private WorkflowDeployer workflowPatchDeployer;
     private List<Properties> workflowDefinitions;
     private TenantService tenantService;
-
-    public void setSiteAVMBootstrap(SiteAVMBootstrap siteBootstrap)
-    {
-        this.siteBootstrap = siteBootstrap;
-    }
     
     public void setWorkflowDeployer(WorkflowDeployer workflowPatchDeployer)
     {
@@ -67,7 +61,6 @@ public class MultiTShareExistingTenantsPatch extends AbstractPatch
     protected void checkProperties()
     {
         super.checkProperties();
-        checkPropertyNotNull(this.siteBootstrap, "siteAVMBootstrap");
     }
 
     /**
@@ -82,9 +75,7 @@ public class MultiTShareExistingTenantsPatch extends AbstractPatch
         }
         
         if (! tenantService.getCurrentUserDomain().equals(TenantService.DEFAULT_DOMAIN))
-        {
-            this.siteBootstrap.bootstrap();
-            
+        { 
             workflowPatchDeployer.setWorkflowDefinitions(workflowDefinitions);
             workflowPatchDeployer.init();
         }

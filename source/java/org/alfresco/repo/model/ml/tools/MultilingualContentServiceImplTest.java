@@ -114,7 +114,7 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
                 "Real size : " + missing.size() + ". Normal Size " + (langListSize - 3), missing.size() != (langListSize - 3));
 
         // make sure that the missing language list is correct
-        assertFalse("Missing Translation List false. Locale " + loc2 + " or " + loc3 + " found", missing.contains(loc2.toString()) || missing.contains(loc3.toString()));
+        assertFalse("Missing Translation List false. Locale " + loc2.toString() + " or " + loc3.toString() + " found", missing.contains(loc2) || missing.contains(loc3));
     }
 
     public void testGetTranslationForLocale() throws Exception

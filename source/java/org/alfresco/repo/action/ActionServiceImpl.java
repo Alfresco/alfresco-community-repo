@@ -46,6 +46,7 @@ import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ActionList;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ActionServiceException;
+import org.alfresco.service.cmr.action.ActionServiceTransientException;
 import org.alfresco.service.cmr.action.ActionStatus;
 import org.alfresco.service.cmr.action.ActionTrackingService;
 import org.alfresco.service.cmr.action.CompositeAction;
@@ -721,6 +722,15 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
                     {
                         logger.debug("Resetting the action chain.");
                     }
+                }
+            }
+            catch (ActionServiceTransientException transientException)
+            {
+                // This is a non-fatal exception which will be recorded as a failed action,
+                // but which will not lead to the execution of any compensating action
+                if (getTrackStatus(action))
+                {
+                    actionTrackingService.recordActionFailure(action, transientException);
                 }
             }
             catch (Throwable exception)

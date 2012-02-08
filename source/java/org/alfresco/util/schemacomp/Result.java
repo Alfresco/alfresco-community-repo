@@ -24,26 +24,7 @@ package org.alfresco.util.schemacomp;
  * @author Matt Ward
  */
 public abstract class Result
-{
-    public enum Strength { WARN, ERROR };
-    protected final Strength strength;
-    
-    /**
-     * @param strength
-     */
-    public Result(Strength strength)
-    {
-        this.strength = (strength != null ? strength : Strength.ERROR);
-    }
-
-    /**
-     * @return the strength
-     */
-    public Strength getStrength()
-    {
-        return this.strength;
-    }
-    
+{    
     /**
      * A loggable message to describe the comparison result. Default implementation
      * delegates to toString() but this should generally be overridden as toString()

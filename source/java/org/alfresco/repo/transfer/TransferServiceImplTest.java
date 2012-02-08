@@ -417,6 +417,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
          */
         transferService.createAndSaveTransferTarget(getMe, title, description, endpointProtocol, endpointHost, endpointPort, endpointPath, username, password);
 
+        //TODO MER Test assumes an English Locale.   (Fails with French)
         Set<TransferTarget> targets = transferService.getTransferTargets("Default Group");
         assertTrue("targets is empty", targets.size() > 0);     
         /**
@@ -3279,6 +3280,180 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         tran.doInTransaction(transferCB); 
 
     } // testPeerAssocs
+    
+    
+    /**
+     * Test Existing nodes.  ALF-12262
+     * 
+     * Guest Home
+     *     |
+     *    GUID
+     *     |
+     *   A1  B1
+     *   |   |
+     *   A2  B2
+     * 
+     * @throws Exception
+     */
+    public void testExistingNodes() throws Exception
+    {
+        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
+        final String CONTENT_TITLE = "ContentTitle";
+        final Locale CONTENT_LOCALE = Locale.GERMAN; 
+        final String CONTENT_ENCODING = "UTF-8";
+
+        /**
+         *  For unit test 
+         *  - replace the HTTP transport with the in-process transport
+         *  - replace the node factory with one that will map node refs, paths etc.
+         *  
+         *  Fake Repository Id
+         */
+        final TransferTransmitter transmitter = new UnitTestInProcessTransmitterImpl(receiver, contentService, transactionService);
+        transferServiceImpl.setTransmitter(transmitter);
+        final UnitTestTransferManifestNodeFactory testNodeFactory = new UnitTestTransferManifestNodeFactory(this.transferManifestNodeFactory); 
+        transferServiceImpl.setTransferManifestNodeFactory(testNodeFactory); 
+        final List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
+        
+        // Map company_home/guest_home to company_home so tranferred nodes and moved "up" one level.
+        pathMap.add(new Pair<Path, Path>(PathHelper.stringToPath(GUEST_HOME_XPATH_QUERY), PathHelper.stringToPath(COMPANY_HOME_XPATH_QUERY)));
+
+        final String targetName = "testExistingNodes";
+
+        class TestContext
+        {
+            TransferTarget transferMe;
+            NodeRef folderNodeRef;
+            NodeRef contentNodeRef;
+            NodeRef rootNodeRef;
+            NodeRef destFolderNodeRef;
+            NodeRef destFileNodeRef;
+        };
+
+        RetryingTransactionCallback<TestContext> setupCB = new RetryingTransactionCallback<TestContext>()
+        {
+            @Override
+            public TestContext execute() throws Throwable
+            {
+                TestContext testContext = new TestContext();
+
+                /**
+                 * Get guest home
+                 */
+                String guestHomeQuery = "/app:company_home/app:guest_home";
+                ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
+                assertEquals("", 1, guestHomeResult.length());
+                NodeRef guestHome = guestHomeResult.getNodeRef(0); 
+                guestHomeResult.close();
+                
+                String companyHomeQuery = "/app:company_home";
+                ResultSet companyHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, companyHomeQuery);
+                assertEquals("", 1, companyHomeResult.length());
+                NodeRef companyHome = companyHomeResult.getNodeRef(0); 
+                companyHomeResult.close();
+
+
+                /**
+                 * Create a test node that we will read and write
+                 */  
+                String name = GUID.generate();
+
+                TransferDefinition def = new TransferDefinition();
+
+                ChildAssociationRef child = nodeService.createNode(guestHome, ContentModel.ASSOC_CONTAINS, QName.createQName(name), ContentModel.TYPE_FOLDER);
+                testContext.rootNodeRef = child.getChildRef();
+                nodeService.setProperty(testContext.rootNodeRef, ContentModel.PROP_TITLE, name);   
+                nodeService.setProperty(testContext.rootNodeRef, ContentModel.PROP_NAME, name);
+
+                // Side effect - initialisee nodeid mapping
+                testNodeFactory.createTransferManifestNode(testContext.rootNodeRef, def);
+
+                child = nodeService.createNode(testContext.rootNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A1"), ContentModel.TYPE_FOLDER);
+                testContext.folderNodeRef = child.getChildRef();
+                nodeService.setProperty(testContext.folderNodeRef, ContentModel.PROP_TITLE, "A1");   
+                nodeService.setProperty(testContext.folderNodeRef, ContentModel.PROP_NAME, "A1");
+
+                // Side effect - initialise nodeid mapping
+                testNodeFactory.createTransferManifestNode(testContext.folderNodeRef, def);
+
+                child = nodeService.createNode(testContext.folderNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A2"), ContentModel.TYPE_CONTENT);
+                testContext.contentNodeRef = child.getChildRef();
+                nodeService.setProperty(testContext.contentNodeRef, ContentModel.PROP_TITLE, "A2");   
+                nodeService.setProperty(testContext.contentNodeRef, ContentModel.PROP_NAME, "A2");
+           
+                // Side effect - initialise nodeid mapping
+                testNodeFactory.createTransferManifestNode(testContext.contentNodeRef, def);
+                
+      
+                // Put nodes into destination
+                child = nodeService.createNode(companyHome, ContentModel.ASSOC_CONTAINS, QName.createQName(name), ContentModel.TYPE_FOLDER);
+                //testContext.rootNodeRef = child.getChildRef();
+                nodeService.setProperty(testContext.rootNodeRef, ContentModel.PROP_TITLE, name);   
+                nodeService.setProperty(testContext.rootNodeRef, ContentModel.PROP_NAME, name);                
+                
+                child = nodeService.createNode(child.getChildRef(), ContentModel.ASSOC_CONTAINS, QName.createQName("A1"), ContentModel.TYPE_FOLDER);
+                testContext.destFolderNodeRef = child.getChildRef();
+                nodeService.setProperty(testContext.destFolderNodeRef, ContentModel.PROP_TITLE, "A1");   
+                nodeService.setProperty(testContext.destFolderNodeRef, ContentModel.PROP_NAME, "A1");
+
+                child = nodeService.createNode(testContext.destFolderNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A2"), ContentModel.TYPE_CONTENT);
+                testContext.destFileNodeRef = child.getChildRef();
+                nodeService.setProperty(testContext.destFileNodeRef, ContentModel.PROP_TITLE, "A2");   
+                nodeService.setProperty(testContext.destFileNodeRef, ContentModel.PROP_NAME, "A2");
+                
+                /**
+                 * Make sure the transfer target exists and is enabled.
+                 */
+                if(!transferService.targetExists(targetName))
+                {
+                    testContext.transferMe = createTransferTarget(targetName);
+                }
+                else
+                {
+                    testContext.transferMe = transferService.getTransferTarget(targetName);
+                }
+                transferService.enableTransferTarget(targetName, true);
+                return testContext;
+            } 
+        };
+
+        final TestContext testContext = tran.doInTransaction(setupCB); 
+
+        RetryingTransactionCallback<Void> transferCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                TransferDefinition definition = new TransferDefinition();
+                Set<NodeRef>nodes = new HashSet<NodeRef>();
+                nodes.add(testContext.rootNodeRef);
+                nodes.add(testContext.folderNodeRef);
+                nodes.add(testContext.contentNodeRef);
+                definition.setNodes(nodes);
+                transferService.transfer(targetName, definition);
+                return null;
+            }
+        };
+        
+        RetryingTransactionCallback<Void> validateCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                assertTrue("folder has transferred aspect", !nodeService.hasAspect(testContext.destFolderNodeRef, TransferModel.ASPECT_TRANSFERRED));
+                assertTrue("file has transferred aspctet", !nodeService.hasAspect(testContext.destFileNodeRef, TransferModel.ASPECT_TRANSFERRED));
+                return null;
+            }
+        };
+
+        /**
+         * This is the test
+         */
+
+        tran.doInTransaction(transferCB);
+        tran.doInTransaction(validateCB);
+
+    } // testExistingNodes    
     
     // Utility methods below.
     private TransferTarget createTransferTarget(String name)

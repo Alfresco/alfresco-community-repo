@@ -118,6 +118,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String UPDATE_CHILD_ASSOCS_UNIQUE_NAME = "alfresco.node.update_ChildAssocsUniqueName";
     private static final String DELETE_CHILD_ASSOCS_TO_AND_FROM = "alfresco.node.delete_ChildAssocsToAndFrom";
     private static final String SELECT_CHILD_ASSOC_BY_ID = "alfresco.node.select_ChildAssocById";
+    private static final String COUNT_CHILD_ASSOC_BY_PARENT_ID = "alfresco.node.count_ChildAssocByParentId";
     private static final String SELECT_CHILD_ASSOCS_BY_PROPERTY_VALUE = "alfresco.node.select_ChildAssocsByPropertyValue";
     private static final String SELECT_CHILD_ASSOCS_OF_PARENT = "alfresco.node.select_ChildAssocsOfParent";
     private static final String SELECT_CHILD_ASSOCS_OF_PARENT_LIMITED = "alfresco.node.select.children.select_ChildAssocsOfParent_Limited";
@@ -1034,7 +1035,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
             }
         }
     }
-
+    
     @Override
     protected void selectChildAssocs(
             Long parentNodeId,
@@ -1645,6 +1646,16 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
 		}
 
 		return properties;
+    }
+    
+    public int countChildAssocsByParent(Long parentNodeId, boolean isPrimary)
+    {
+        NodeEntity parentNode = new NodeEntity();
+        parentNode.setId(parentNodeId);
+        ChildAssocEntity childAssoc = new ChildAssocEntity();
+        childAssoc.setParentNode(parentNode);
+        childAssoc.setPrimary(Boolean.valueOf(isPrimary));
+        return (Integer)template.selectOne(COUNT_CHILD_ASSOC_BY_PARENT_ID, childAssoc);
     }
     
     /*

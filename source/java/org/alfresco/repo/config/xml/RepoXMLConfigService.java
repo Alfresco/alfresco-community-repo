@@ -433,7 +433,7 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
         return tenantAdminService.getCurrentUserDomain();
     }
     
-    private class ConfigData
+    private static class ConfigData
     {
         private ConfigImpl globalConfig;   
         private Map<String, Evaluator> evaluators;

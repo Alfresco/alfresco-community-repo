@@ -32,6 +32,7 @@ import javax.mail.internet.MimeMessage;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
+import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.template.DateCompareMethod;
 import org.alfresco.repo.template.HasAspectMethod;
 import org.alfresco.repo.template.I18NMessageMethod;
@@ -92,8 +93,6 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
      */
     private static final String FROM_ADDRESS = "alfresco@alfresco.org";
     
-    private static final String REPO_REMOTE_URL = "http://localhost:8080/alfresco";
-    
     /**
      * The java mail sender
      */
@@ -130,6 +129,11 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     private ServiceRegistry serviceRegistry;
     
     /**
+     * System Administration parameters, including URL information
+     */
+    private SysAdminParams sysAdminParams;
+    
+    /**
      * Mail header encoding scheme
      */
     private String headerEncoding = null;
@@ -137,12 +141,13 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     /**
      * Default from address
      */
-    private String fromAddress = null;
+    private String fromDefaultAddress = null;
     
     /**
-     * Default alfresco installation url
+     * Is the from field enabled? Or must we always use the default address.
      */
-    private String repoRemoteUrl = null;
+    private boolean fromEnabled = true;
+    
     
     private boolean sendTestMessage = false;
     private String testMessageTo = null;
@@ -228,16 +233,13 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
      */
     public void setFromAddress(String fromAddress)
     {
-        this.fromAddress = fromAddress;
+        this.fromDefaultAddress = fromAddress;
     }
 
-    /**
-     * 
-     * @param repoRemoteUrl The default alfresco installation url
-     */
-    public void setRepoRemoteUrl(String repoRemoteUrl)
+    
+    public void setSysAdminParams(SysAdminParams sysAdminParams)
     {
-        this.repoRemoteUrl = repoRemoteUrl;
+        this.sysAdminParams = sysAdminParams;
     }
     
     public void setTestMessageTo(String testMessageTo)
@@ -282,15 +284,11 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
      */
     public void afterPropertiesSet() throws Exception
     {
-        if (fromAddress == null || fromAddress.length() == 0)
+        if (fromDefaultAddress == null || fromDefaultAddress.length() == 0)
         {
-            fromAddress = FROM_ADDRESS;
+            fromDefaultAddress = FROM_ADDRESS;
         }
         
-        if (repoRemoteUrl == null || repoRemoteUrl.length() == 0)
-        {
-            repoRemoteUrl = REPO_REMOTE_URL;
-        }
     }
     
     /**
@@ -472,10 +470,62 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                 
                 // from person
                 NodeRef fromPerson = null;
+            
+                // from is enabled
                 if (! authService.isCurrentUserTheSystemUser())
                 {
                     fromPerson = personService.getPerson(authService.getCurrentUserName());
                 }
+                
+                if(isFromEnabled())
+                {   
+                    // Use the FROM parameter in preference to calculating values.
+                    String from = (String)ruleAction.getParameterValue(PARAM_FROM);
+                    if (from != null && from.length() > 0)
+                    {
+                        if(logger.isDebugEnabled())
+                        {
+                            logger.debug("from specified as a parameter, from:" + from);
+                        }
+                        message.setFrom(from);
+                    }
+                    else
+                    {
+                        // set the from address from the current user
+                        String fromActualUser = null;
+                        if (fromPerson != null)
+                        {
+                            fromActualUser = (String) nodeService.getProperty(fromPerson, ContentModel.PROP_EMAIL);
+                        }
+                    
+                        if (fromActualUser != null && fromActualUser.length() != 0)
+                        {
+                            if(logger.isDebugEnabled())
+                            {
+                                logger.debug("looked up email address for :" + fromPerson + " email from " + fromActualUser);
+                            }
+                            message.setFrom(fromActualUser);
+                        }
+                        else
+                        {
+                            // from system or user does not have email address
+                            message.setFrom(fromDefaultAddress);
+                        }
+                    }
+
+                }
+                else
+                {
+                    if(logger.isDebugEnabled())
+                    {
+                        logger.debug("from not enabled - sending from default address:" + fromDefaultAddress);
+                    }
+                    // from is not enabled.
+                    message.setFrom(fromDefaultAddress);
+                }
+                
+
+
                 
                 // set subject line
                 message.setSubject((String)ruleAction.getParameterValue(PARAM_SUBJECT));
@@ -540,29 +590,6 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                     message.setText(text, isHTML);
                 }
                 
-                // set the from address
-                String fromActualUser = null;
-                if (fromPerson != null)
-                {
-                    fromActualUser = (String) nodeService.getProperty(fromPerson, ContentModel.PROP_EMAIL);
-                }
-                
-                if (fromActualUser != null && fromActualUser.length() != 0)
-                {
-                    message.setFrom(fromActualUser);
-                }
-                else
-                {
-                    String from = (String)ruleAction.getParameterValue(PARAM_FROM);
-                    if (from == null || from.length() == 0)
-                    {
-                        message.setFrom(fromAddress);
-                    }
-                    else
-                    {
-                        message.setFrom(from);
-                    }
-                }
             }
         };
         
@@ -662,7 +689,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
       model.put("dateCompare", new DateCompareMethod());
       
       // add URLs
-      model.put("url", new URLHelper(repoRemoteUrl));
+      model.put("url", new URLHelper(sysAdminParams));
       model.put(TemplateService.KEY_SHARE_URL, UrlUtil.getShareUrl(this.serviceRegistry.getSysAdminParams()));
       
       // if the caller specified a model, use it without overriding
@@ -732,26 +759,34 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         lastTestMessage = null;
     }
 
+    public void setFromEnabled(boolean fromEnabled)
+    {
+        this.fromEnabled = fromEnabled;
+    }
+
+    public boolean isFromEnabled()
+    {
+        return fromEnabled;
+    }
+
     public static class URLHelper
     {
-        String contextPath;
-        String serverPath;
+        private final SysAdminParams sysAdminParams;
         
-        public URLHelper(String repoRemoteUrl)
+        public URLHelper(SysAdminParams sysAdminParams)
         {
-            String[] parts = repoRemoteUrl.split("/");
-            this.contextPath = "/" + parts[parts.length - 1];
-            this.serverPath = parts[0] + "//" + parts[2];
+            this.sysAdminParams = sysAdminParams;
         }
         
         public String getContext()
         {
-           return this.contextPath;
+           return "/" + sysAdminParams.getAlfrescoContext();
         }
 
         public String getServerPath()
         {
-           return this.serverPath;
+            return sysAdminParams.getAlfrescoProtocol() + "://" + sysAdminParams.getAlfrescoHost() + ":"
+                    + sysAdminParams.getAlfrescoPort();
         }
     }
 }

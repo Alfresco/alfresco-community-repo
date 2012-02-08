@@ -333,7 +333,7 @@ public class ContentStoreCleaner
     
     private void executeInternal()
     {
-        final long maxOrphanTime = System.currentTimeMillis() - (protectDays * 24 * 3600 * 1000);
+        final long maxOrphanTime = System.currentTimeMillis() - (protectDays * 24 * 3600 * 1000L);
         // execute in READ-WRITE txn
         RetryingTransactionCallback<Long> getAndDeleteWork = new RetryingTransactionCallback<Long>()
         {

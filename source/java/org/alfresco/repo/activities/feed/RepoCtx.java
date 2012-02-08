@@ -20,25 +20,30 @@ package org.alfresco.repo.activities.feed;
 
 import java.io.Serializable;
 
+import org.alfresco.repo.admin.SysAdminParams;
+
 /**
  * Repository context passed from grid task to grid job
  */
 public class RepoCtx implements Serializable
 {
-    private String repoEndPoint;  // http://hostname:port/webapp (eg. http://localhost:8080/alfresco)
+    private SysAdminParams sysAdminParams;
+    private String repoEndPoint;  
     private boolean userNamesAreCaseSensitive = false;
     
 	private String ticket;
 	
 	public static final long serialVersionUID = -3896042917378679686L;
 	
-	public RepoCtx(String repoEndPoint)
+    public RepoCtx(SysAdminParams sysAdminParams, String repoEndPoint)
     {
+        this.sysAdminParams = sysAdminParams;
 	    this.repoEndPoint = repoEndPoint.endsWith("/") ? repoEndPoint.substring(0, repoEndPoint.length()-1) : repoEndPoint;
     }
 
 	public String getRepoEndPoint() {
-		return repoEndPoint;
+        String base = sysAdminParams.getAlfrescoProtocol() + "://" + sysAdminParams.getAlfrescoHost() + ":" + sysAdminParams.getAlfrescoPort() + "/" + sysAdminParams.getAlfrescoContext();
+        return base + repoEndPoint;
 	}
 
     public String getTicket()

@@ -51,7 +51,8 @@ public interface EmailMessage extends Serializable
     public Date getSentDate();
 
     /**
-     * @return subject of the message.
+     * Get the subject of the message
+     * @return subject of the message or null if there is no subject.
      */
     public String getSubject();
 

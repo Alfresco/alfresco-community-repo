@@ -277,15 +277,15 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
     {
         NodeRef childNodeRef = null;
         
-        String workingName = name;
+        String workingName =  encodeSubject(name);
         
         // Need to work out a new safe name.
-        String baseName = FilenameUtils.getBaseName(name);
-        String extension = FilenameUtils.getExtension(name);
+        String baseName = FilenameUtils.getBaseName(workingName);
+        String extension = FilenameUtils.getExtension(workingName);
         
         if(logger.isDebugEnabled())
         {
-            logger.debug("addContentNode name:" + name);
+            logger.debug("addContentNode name:" + workingName);
         }
           
         for(int counter = 1; counter < 10000; counter++)
@@ -300,7 +300,7 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
                 {
                     if(logger.isDebugEnabled())
                     {
-                        logger.debug("overwriting existing node :" + name);
+                        logger.debug("overwriting existing node :" + workingName);
                     }
                     childNodeRef=childNodeRefs.get(0).getChildRef();
                 
@@ -457,4 +457,26 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
             writeContent(attachmentNode, contentIs, mimetype, encoding);
         }
     }
+    
+    /**
+     * Replaces characters \/*|:"<>?. on their hex values. Subject field is used as name of the content, so we need to replace characters that are forbidden in content names.
+     * 
+     * @param subject String representing subject
+     * @return Encoded string
+     */
+    // MER Removed . * ,  { ".", "%2e" }
+    public static String encodeSubject(String subject)
+    {
+        String result = subject.trim();
+        String[][] s = new String[][] { { "\\", "%5c" }, { "/", "%2f" }, { "*", "%2a" }, { "|", "%7c" }, { ":", "%3a" }, { "\"", "%22" }, { "<", "%3c" }, { ">", "%3e" },
+                { "?", "%3f" }};
+
+        for (int i = 0; i < s.length; i++)
+        {
+            result = result.replace(s[i][0], s[i][1]);
+        }
+
+        return result;
+    }
+
 }

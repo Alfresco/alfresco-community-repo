@@ -152,7 +152,7 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
         
         Long newDefiningAcl = null;
         
-        if((existingNodeAclId != null) && (existingNodeAclId == inheritedAclId))
+        if((existingNodeAclId != null) && (existingNodeAclId.equals(inheritedAclId)))
         {
             // nothing to do except move into the children
         }

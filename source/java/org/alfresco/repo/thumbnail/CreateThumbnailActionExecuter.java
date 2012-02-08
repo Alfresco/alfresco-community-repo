@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -26,11 +26,12 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
-import org.alfresco.repo.content.transform.TransformerDebug;
 import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.ActionServiceTransientException;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentServiceTransientException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
@@ -176,14 +177,26 @@ public class CreateThumbnailActionExecuter extends ActionExecuterAbstractBase
             {
                 this.thumbnailService.createThumbnail(actionedUponNodeRef, contentProperty, details.getMimetype(), details.getTransformationOptions(), thumbnailName, null);
             }
+            catch (ContentServiceTransientException cste)
+            {
+                // any transient failures in the thumbnail creation must be handled as transient failures of the action to execute.
+                StringBuilder msg = new StringBuilder();
+                msg.append("Creation of thumbnail '") .append(details.getName()) .append("' declined");
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug(msg.toString());
+                }
+                
+                throw new ActionServiceTransientException(msg.toString(), cste);
+            }
             catch (Exception exception)
             {
                 final String msg = "Creation of thumbnail '" + details.getName() + "' failed";
                 logger.info(msg);
                 
-                  // We need to rethrow in order to trigger the compensating action.
-                  // See AddFailedThumbnailActionExecuter
-                  throw new AlfrescoRuntimeException(msg, exception);
+                // We need to rethrow in order to trigger the compensating action.
+                // See AddFailedThumbnailActionExecuter
+                throw new AlfrescoRuntimeException(msg, exception);
             }
         }
     }

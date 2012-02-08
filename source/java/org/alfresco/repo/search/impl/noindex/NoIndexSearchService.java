@@ -19,6 +19,7 @@
 package org.alfresco.repo.search.impl.noindex;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.List;
 
 import org.alfresco.error.StackTraceUtil;
@@ -112,7 +113,7 @@ public class NoIndexSearchService implements SearchService
     {
         if (s_logger.isDebugEnabled())
         {
-            s_logger.debug("query   store = " + store + "   language = " + language + "   query = " + query + "   queryParameterDefinitions = " + queryParameterDefinitions);
+            s_logger.debug("query   store = " + store + "   language = " + language + "   query = " + query + "   queryParameterDefinitions = " + Arrays.toString(queryParameterDefinitions));
         }
         trace();
         return new EmptyResultSet();
@@ -128,7 +129,7 @@ public class NoIndexSearchService implements SearchService
     {
         if (s_logger.isDebugEnabled())
         {
-            s_logger.debug("query   store = " + store + "   queryId = " + queryId + "   queryParameters = " + queryParameters);
+            s_logger.debug("query   store = " + store + "   queryId = " + queryId + "   queryParameters = " + Arrays.toString(queryParameters));
         }
         trace();
         return new EmptyResultSet();

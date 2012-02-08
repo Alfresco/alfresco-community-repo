@@ -72,17 +72,17 @@ public class LuceneAlfrescoLuceneQueryLanguage extends AbstractLuceneQueryLangua
             }
 
             ClosingIndexSearcher searcher = admLuceneSearcher.getClosingIndexSearcher();
+            if (searcher == null)
+            {
+                // no index return an empty result set
+                return new EmptyResultSet();
+            }
             Query query = LuceneQueryParser.parse(searchParameters.getQuery(), searchParameters.getDefaultFieldName(), new LuceneAnalyser(admLuceneSearcher.getDictionaryService(),
                     searchParameters.getMlAnalaysisMode() == null ? admLuceneSearcher.getLuceneConfig().getDefaultMLSearchAnalysisMode() : searchParameters.getMlAnalaysisMode()),
                     admLuceneSearcher.getNamespacePrefixResolver(), admLuceneSearcher.getDictionaryService(), admLuceneSearcher.getTenantService(), defaultOperator, searchParameters, admLuceneSearcher.getLuceneConfig().getDefaultMLSearchAnalysisMode(), searcher.getIndexReader());
             if (s_logger.isDebugEnabled())
             {
                 s_logger.debug("Query is " + query.toString());
-            }
-            if (searcher == null)
-            {
-                // no index return an empty result set
-                return new EmptyResultSet();
             }
 
             Hits hits;

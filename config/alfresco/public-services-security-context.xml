@@ -397,6 +397,7 @@
                org.alfresco.service.cmr.repository.NodeService.getStoreArchiveNode=ACL_NODE.0.sys:base.Read
                org.alfresco.service.cmr.repository.NodeService.restoreNode=ACL_NODE.0.sys:base.DeleteNode,ACL_NODE.1.sys:base.CreateChildren
                org.alfresco.service.cmr.repository.NodeService.getChildAssocsWithoutParentAssocsOfType=ACL_NODE.0.sys:base.ReadProperties,AFTER_ACL_NODE.sys:base.ReadProperties
+               org.alfresco.service.cmr.repository.NodeService.countChildAssocs=ACL_NODE.0.sys:base.ReadChildren
                org.alfresco.service.cmr.repository.NodeService.*=ACL_DENY
             </value>
         </property>
@@ -868,6 +869,7 @@
                 org.alfresco.service.cmr.security.PersonService.getPeopleContainer=ACL_ALLOW
                 org.alfresco.service.cmr.security.PersonService.getUserNamesAreCaseSensitive=ACL_ALLOW
                 org.alfresco.service.cmr.security.PersonService.getUserIdentifier=ACL_ALLOW
+                org.alfresco.service.cmr.security.PersonService.countPeople=ACL_ALLOW
                 org.alfresco.service.cmr.security.PersonService.*=ACL_DENY
          </value>
         </property>

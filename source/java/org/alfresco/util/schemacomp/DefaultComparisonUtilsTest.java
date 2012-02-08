@@ -19,9 +19,8 @@
 package org.alfresco.util.schemacomp;
 
 
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -31,15 +30,13 @@ import java.util.Collections;
 import java.util.List;
 
 import org.alfresco.util.schemacomp.Difference.Where;
-import org.alfresco.util.schemacomp.Result.Strength;
 import org.alfresco.util.schemacomp.model.AbstractDbObject;
 import org.alfresco.util.schemacomp.model.DbObject;
+import org.alfresco.util.schemacomp.validator.DbValidator;
 import org.hibernate.dialect.Dialect;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -66,20 +63,20 @@ public class DefaultComparisonUtilsTest
     @Test
     public void compareSimple()
     {
-        comparisonUtils.compareSimple(prop(null), prop(null), ctx, Strength.ERROR);
-        verify(differences).add(Where.IN_BOTH_NO_DIFFERENCE, prop(null), prop(null), Strength.ERROR);
+        comparisonUtils.compareSimple(prop(null), prop(null), ctx);
+        verify(differences).add(Where.IN_BOTH_NO_DIFFERENCE, prop(null), prop(null));
         
-        comparisonUtils.compareSimple(prop("not_null_string"), prop("not_null_string"), ctx, Strength.ERROR);
-        verify(differences).add(Where.IN_BOTH_NO_DIFFERENCE, prop("not_null_string"), prop("not_null_string"), Strength.ERROR);
+        comparisonUtils.compareSimple(prop("not_null_string"), prop("not_null_string"), ctx);
+        verify(differences).add(Where.IN_BOTH_NO_DIFFERENCE, prop("not_null_string"), prop("not_null_string"));
         
-        comparisonUtils.compareSimple(prop("left"), prop("right"), ctx, Strength.ERROR);
-        verify(differences).add(Where.IN_BOTH_BUT_DIFFERENCE, prop("left"), prop("right"), Strength.ERROR);
+        comparisonUtils.compareSimple(prop("left"), prop("right"), ctx);
+        verify(differences).add(Where.IN_BOTH_BUT_DIFFERENCE, prop("left"), prop("right"));
         
-        comparisonUtils.compareSimple(prop("left"), prop(null), ctx, Strength.ERROR);
-        verify(differences).add(Where.ONLY_IN_REFERENCE, prop("left"), prop(null), Strength.ERROR);
+        comparisonUtils.compareSimple(prop("left"), prop(null), ctx);
+        verify(differences).add(Where.ONLY_IN_REFERENCE, prop("left"), prop(null));
         
-        comparisonUtils.compareSimple(prop(null), prop("right"), ctx, Strength.ERROR);
-        verify(differences).add(Where.ONLY_IN_TARGET, prop(null), prop("right"), Strength.ERROR);
+        comparisonUtils.compareSimple(prop(null), prop("right"), ctx);
+        verify(differences).add(Where.ONLY_IN_TARGET, prop(null), prop("right"));
     }
     
     public DbProperty prop(String propValue)
@@ -103,12 +100,12 @@ public class DefaultComparisonUtilsTest
         Collection<DbObject> right = new ArrayList<DbObject>();
         Collections.addAll(right, db1, db3, db4);
         
-        comparisonUtils.compareCollections(left, right, ctx, Strength.ERROR);
+        comparisonUtils.compareCollections(left, right, ctx);
         
         // Differences and ommissions are noticed...
         verify(differences).add(Where.IN_BOTH_BUT_DIFFERENCE, new DbProperty(db1), new DbProperty(db1));
-        verify(differences).add(Where.ONLY_IN_REFERENCE, new DbProperty(db2), null, Strength.ERROR);
-        verify(differences).add(Where.ONLY_IN_TARGET, null, new DbProperty(db3), Strength.ERROR);
+        verify(differences).add(Where.ONLY_IN_REFERENCE, new DbProperty(db2), null);
+        verify(differences).add(Where.ONLY_IN_TARGET, null, new DbProperty(db3));
         verify(differences).add(Where.IN_BOTH_BUT_DIFFERENCE, new DbProperty(db4), new DbProperty(db4));
     }
     
@@ -126,15 +123,231 @@ public class DefaultComparisonUtilsTest
         Collection<DbObject> right = new ArrayList<DbObject>();
         Collections.addAll(right, db1, db2, db3);
         
-        comparisonUtils.compareCollections(left, right, ctx, Strength.ERROR);
+        comparisonUtils.compareCollections(left, right, ctx);
         
         // Differences and ommissions are noticed...
-        verify(differences).add(Where.ONLY_IN_REFERENCE, new DbProperty(db4), null, Strength.ERROR);
+        verify(differences).add(Where.ONLY_IN_REFERENCE, new DbProperty(db4), null);
         verify(differences).add(Where.IN_BOTH_BUT_DIFFERENCE, new DbProperty(db1), new DbProperty(db1));
         verify(differences).add(Where.IN_BOTH_BUT_DIFFERENCE, new DbProperty(db1), new DbProperty(db2));
         verify(differences).add(Where.IN_BOTH_BUT_DIFFERENCE, new DbProperty(db1), new DbProperty(db3));
     }
     
+    @Test
+    public void propertyIsNotComparedWhenValidatorTakesResponsibility()
+    {
+        DbObject db1 = new DatabaseObject("db1");
+        DbProperty db1NameProp = new DbProperty(db1, "name");
+        DbObject db2 = new DatabaseObject("db2");
+        DbProperty db2NameProp = new DbProperty(db2, "name");
+        
+        // Using mock to decouple unit test from actual NameValidator.
+        DbValidator nameValidator = mock(DbValidator.class);
+        when(nameValidator.validates("name")).thenReturn(true);
+        db1.getValidators().add(nameValidator);
+        
+        comparisonUtils.compareSimple(db1NameProp, db2NameProp, ctx);
+        
+        verify(differences, never()).add(Where.IN_BOTH_BUT_DIFFERENCE, db1NameProp, db2NameProp);
+    }
+    
+    @Test
+    public void collectionPropertyIsNotComparedWhenValidatorTakesResponsibility()
+    {
+        Collection<Object> refCollection = new ArrayList<Object>();
+        refCollection.add(123);
+        refCollection.add("both");
+        
+        DbObject refDbObj = new DbObjectWithCollection("left", refCollection);
+        DbProperty refCollProp = new DbProperty(refDbObj, "collection");
+        
+        Collection<Object> targetCollection = new ArrayList<Object>();
+        targetCollection.add(234);
+        targetCollection.add("both");
+        
+        DbObject targetDbObj = new DbObjectWithCollection("right", targetCollection);
+        DbProperty targetCollProp = new DbProperty(targetDbObj, "collection");
+        
+     
+        DbValidator validator = mock(DbValidator.class);
+        when(validator.validates("collection")).thenReturn(true);
+        refDbObj.getValidators().add(validator);
+        
+        comparisonUtils.compareSimpleCollections(refCollProp, targetCollProp, ctx);
+        
+        
+        // No information should be reported...
+        verify(differences, never()).add(
+                    Where.IN_BOTH_NO_DIFFERENCE,
+                    dbPropForValue(refDbObj, "collection[1]", "both"),
+                    dbPropForValue(targetDbObj, "collection[1]", "both"));
+        
+        verify(differences, never()).add(
+                    Where.ONLY_IN_REFERENCE,
+                    dbPropForValue(refDbObj, "collection[0]", 123),
+                    dbPropForValue(targetDbObj, "collection", targetCollection));
+
+        verify(differences, never()).add(
+                    Where.ONLY_IN_TARGET,
+                    dbPropForValue(refDbObj, "collection", refCollection),
+                    dbPropForValue(targetDbObj, "collection[0]", 234));
+    }
+    
+    @Test
+    public void objectIsNotComparedWhenValidatorTakesResponsibility()
+    {
+        DbObject db1 = new DatabaseObject("db1");
+        DbObject db2 = new DatabaseObject("db2");
+        DbObject db3 = new DatabaseObject("db3");
+        DbObject db4 = new DatabaseObject("db4");
+        
+        Collection<DbObject> reference = new ArrayList<DbObject>();
+        Collections.addAll(reference, db1, db3);
+        
+        Collection<DbObject> target = new ArrayList<DbObject>();
+        Collections.addAll(target, db2, db4);
+        
+        DbValidator validator = mock(DbValidator.class);
+        when(validator.validatesFullObject()).thenReturn(true);
+        db1.getValidators().add(validator);
+        db2.getValidators().add(validator);
+        
+        comparisonUtils.compareCollections(reference, target, ctx);
+        
+        verify(differences, never()).add(Where.ONLY_IN_REFERENCE, new DbProperty(db1), null);
+        verify(differences, never()).add(Where.ONLY_IN_TARGET, null, new DbProperty(db2));
+        verify(differences).add(Where.ONLY_IN_REFERENCE, new DbProperty(db3), null);
+        verify(differences).add(Where.ONLY_IN_TARGET, null, new DbProperty(db4));
+    }
+    
+    // Check that two 'simple' collections (i.e. composed of non DbObject objects)
+    // must have the same items at the same indexes for those items to qualify as being in both
+    // collections with no difference. This is important for, e.g. column orderings in
+    // indexes or primary keys.
+    @Test
+    public void orderingFaultsWhenCollectionsSameSize()
+    {
+        Collection<Object> left =  new ArrayList<Object>();
+        Collections.<Object>addAll(left, 0, "one", 2, "3", "4_this", 5, "6_this", "seven");
+        DbObject leftDbObj = new DbObjectWithCollection("left", left);
+        DbProperty leftCollProp = new DbProperty(leftDbObj, "collection");
+        
+        Collection<Object> right =  new ArrayList<Object>();
+        Collections.<Object>addAll(right, 0, "one", 2, "3", "4_that", 5, "6_that", "seven");        
+        DbObject rightDbObj = new DbObjectWithCollection("right", right);
+        DbProperty rightCollProp = new DbProperty(rightDbObj, "collection");
+        
+        comparisonUtils.compareSimpleOrderedLists(leftCollProp, rightCollProp, ctx);
+        
+        
+        verify(differences).add(
+                    Where.IN_BOTH_NO_DIFFERENCE, 
+                    dbPropForValue(leftDbObj, "collection[0]", 0), 
+                    dbPropForValue(rightDbObj, "collection[0]", 0));
+        verify(differences).add(
+                    Where.IN_BOTH_NO_DIFFERENCE,
+                    dbPropForValue(leftDbObj, "collection[1]", "one"),
+                    dbPropForValue(rightDbObj, "collection[1]", "one"));
+        verify(differences).add(
+                    Where.IN_BOTH_NO_DIFFERENCE,
+                    dbPropForValue(leftDbObj, "collection[2]", 2),
+                    dbPropForValue(rightDbObj, "collection[2]", 2));
+        verify(differences).add(
+                    Where.IN_BOTH_NO_DIFFERENCE,
+                    dbPropForValue(leftDbObj, "collection[3]", "3"),
+                    dbPropForValue(rightDbObj, "collection[3]", "3"));
+        verify(differences).add(
+                    Where.IN_BOTH_BUT_DIFFERENCE,
+                    dbPropForValue(leftDbObj, "collection[4]", "4_this"),
+                    dbPropForValue(rightDbObj, "collection[4]", "4_that"));
+        verify(differences).add(
+                    Where.IN_BOTH_NO_DIFFERENCE,
+                    dbPropForValue(leftDbObj, "collection[5]", 5),
+                    dbPropForValue(rightDbObj, "collection[5]", 5));
+        verify(differences).add(
+                    Where.IN_BOTH_BUT_DIFFERENCE,
+                    dbPropForValue(leftDbObj, "collection[6]", "6_this"),
+                    dbPropForValue(rightDbObj, "collection[6]", "6_that"));
+        verify(differences).add(
+                    Where.IN_BOTH_NO_DIFFERENCE,
+                    dbPropForValue(leftDbObj, "collection[7]", "seven"),
+                    dbPropForValue(rightDbObj, "collection[7]", "seven"));
+    }
+    
+    @Test
+    public void orderingFaultsWhenReferenceCollectionLonger()
+    {    
+        Collection<Object> reference =  new ArrayList<Object>();
+        Collections.<Object>addAll(reference, "a", "z", "x", "1", "2");
+        DbObject refDbObj = new DbObjectWithCollection("reference", reference);
+        DbProperty refCollProp = new DbProperty(refDbObj, "collection");
+        
+        Collection<Object> target =  new ArrayList<Object>();
+        Collections.<Object>addAll(target, "a", "Q", "x");        
+        DbObject targetDbObj = new DbObjectWithCollection("target", target);
+        DbProperty targetCollProp = new DbProperty(targetDbObj, "collection");
+        
+        comparisonUtils.compareSimpleOrderedLists(refCollProp, targetCollProp, ctx);
+        
+        
+        verify(differences).add(
+                    Where.IN_BOTH_NO_DIFFERENCE, 
+                    dbPropForValue(refDbObj, "collection[0]", "a"), 
+                    dbPropForValue(targetDbObj, "collection[0]", "a"));
+        verify(differences).add(
+                    Where.IN_BOTH_BUT_DIFFERENCE,
+                    dbPropForValue(refDbObj, "collection[1]", "z"),
+                    dbPropForValue(targetDbObj, "collection[1]", "Q"));
+        verify(differences).add(
+                    Where.IN_BOTH_NO_DIFFERENCE,
+                    dbPropForValue(refDbObj, "collection[2]", "x"),
+                    dbPropForValue(targetDbObj, "collection[2]", "x"));
+        verify(differences).add(
+                    Where.ONLY_IN_REFERENCE,
+                    dbPropForValue(refDbObj, "collection[3]", "1"),
+                    null);
+        verify(differences).add(
+                    Where.ONLY_IN_REFERENCE,
+                    dbPropForValue(refDbObj, "collection[4]", "2"),
+                    null);
+    }
+    
+    @Test
+    public void orderingFaultsWhenTargetCollectionLonger()
+    {    
+        Collection<Object> reference =  new ArrayList<Object>();
+        Collections.<Object>addAll(reference, "a", "z", "x");
+        DbObject refDbObj = new DbObjectWithCollection("reference", reference);
+        DbProperty refCollProp = new DbProperty(refDbObj, "collection");
+        
+        Collection<Object> target =  new ArrayList<Object>();
+        Collections.<Object>addAll(target, "a", "Q", "x", "1", "2");        
+        DbObject targetDbObj = new DbObjectWithCollection("target", target);
+        DbProperty targetCollProp = new DbProperty(targetDbObj, "collection");
+        
+        comparisonUtils.compareSimpleOrderedLists(refCollProp, targetCollProp, ctx);
+        
+        
+        verify(differences).add(
+                    Where.IN_BOTH_NO_DIFFERENCE, 
+                    dbPropForValue(refDbObj, "collection[0]", "a"), 
+                    dbPropForValue(targetDbObj, "collection[0]", "a"));
+        verify(differences).add(
+                    Where.IN_BOTH_BUT_DIFFERENCE,
+                    dbPropForValue(refDbObj, "collection[1]", "z"),
+                    dbPropForValue(targetDbObj, "collection[1]", "Q"));
+        verify(differences).add(
+                    Where.IN_BOTH_NO_DIFFERENCE,
+                    dbPropForValue(refDbObj, "collection[2]", "x"),
+                    dbPropForValue(targetDbObj, "collection[2]", "x"));
+        verify(differences).add(
+                    Where.ONLY_IN_TARGET,
+                    null,
+                    dbPropForValue(targetDbObj, "collection[3]", "1"));
+        verify(differences).add(
+                    Where.ONLY_IN_TARGET,
+                    null,
+                    dbPropForValue(targetDbObj, "collection[4]", "2"));
+    }
     
     @Test
     public void compareSimpleCollections()
@@ -164,50 +377,42 @@ public class DefaultComparisonUtilsTest
         DbObject rightDbObj = new DbObjectWithCollection("right", rightCollection);
         DbProperty rightCollProp = new DbProperty(rightDbObj, "collection");
         
-        comparisonUtils.compareSimpleCollections(leftCollProp, rightCollProp, ctx, Strength.WARN);
+        comparisonUtils.compareSimpleCollections(leftCollProp, rightCollProp, ctx);
         
         
         verify(differences).add(
                     Where.IN_BOTH_NO_DIFFERENCE, 
                     dbPropForValue(leftDbObj, "collection[0]", 123), 
-                    dbPropForValue(rightDbObj, "collection[0]", 123), 
-                    Strength.WARN);
+                    dbPropForValue(rightDbObj, "collection[0]", 123));
         verify(differences).add(
                     Where.IN_BOTH_NO_DIFFERENCE,
                     dbPropForValue(leftDbObj, "collection[1]", "both"),
-                    dbPropForValue(rightDbObj, "collection[4]", "both"),
-                    Strength.WARN);
+                    dbPropForValue(rightDbObj, "collection[4]", "both"));
         verify(differences).add(
                     Where.IN_BOTH_NO_DIFFERENCE,
                     dbPropForValue(leftDbObj, "collection[2]", subCollectionLeft),
-                    dbPropForValue(rightDbObj, "collection[2]", subCollectionRight),
-                    Strength.WARN);
+                    dbPropForValue(rightDbObj, "collection[2]", subCollectionRight));
         verify(differences).add(
                     Where.ONLY_IN_REFERENCE,
                     dbPropForValue(leftDbObj, "collection[3]", 456),
-                    dbPropForValue(rightDbObj, "collection", rightCollection),
-                    Strength.WARN);
+                    dbPropForValue(rightDbObj, "collection", rightCollection));
         verify(differences).add(
                     Where.ONLY_IN_REFERENCE,
                     dbPropForValue(leftDbObj, "collection[4]", "left only"),
-                    dbPropForValue(rightDbObj, "collection", rightCollection),
-                    Strength.WARN);
+                    dbPropForValue(rightDbObj, "collection", rightCollection));
 
         verify(differences).add(
                     Where.ONLY_IN_TARGET,
                     dbPropForValue(leftDbObj, "collection", leftCollection),
-                    dbPropForValue(rightDbObj, "collection[1]", 789),
-                    Strength.WARN);
+                    dbPropForValue(rightDbObj, "collection[1]", 789));
         verify(differences).add(
                     Where.ONLY_IN_TARGET,
                     dbPropForValue(leftDbObj, "collection", leftCollection),
-                    dbPropForValue(rightDbObj, "collection[3]", "right only"),
-                    Strength.WARN);
+                    dbPropForValue(rightDbObj, "collection[3]", "right only"));
         verify(differences).add(
                     Where.ONLY_IN_TARGET,
                     dbPropForValue(leftDbObj, "collection", leftCollection),
-                    dbPropForValue(rightDbObj, "collection[5]", "one more right only"),
-                    Strength.WARN);
+                    dbPropForValue(rightDbObj, "collection[5]", "one more right only"));
     }
     
     private DbProperty dbPropForValue(DbObject obj, String propName, Object propValue)
@@ -273,7 +478,7 @@ public class DefaultComparisonUtilsTest
         }
 
         @Override
-        protected void doDiff(DbObject right, DiffContext ctx, Strength strength)
+        protected void doDiff(DbObject right, DiffContext ctx)
         {
             DbProperty leftProp = new DbProperty(this);
             DbProperty rightProp = new DbProperty(right);

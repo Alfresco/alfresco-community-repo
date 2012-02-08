@@ -23,6 +23,7 @@ import java.util.Map;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentServiceTransientException;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.apache.commons.logging.Log;
@@ -169,6 +170,23 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
 
             // Transform
             transformInternal(reader, writer, options);
+        }
+        catch (ContentServiceTransientException cste)
+        {
+            // A transient failure has occurred within the content transformer.
+            // This should not be interpreted as a failure and therefore we should not
+            // update the transformer's average time.
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Transformation has been transiently declined: \n" +
+                        "   reader: " + reader + "\n" +
+                        "   writer: " + writer + "\n" +
+                        "   options: " + options + "\n" +
+                        "   transformer: " + this);
+            }
+            // the finally block below will still perform tidyup. Otherwise we're done.
+            // We rethrow the exception
+            throw cste;
         }
         catch (Throwable e)
         {

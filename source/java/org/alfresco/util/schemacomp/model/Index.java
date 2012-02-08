@@ -24,7 +24,6 @@ import java.util.List;
 import org.alfresco.util.schemacomp.DbObjectVisitor;
 import org.alfresco.util.schemacomp.DbProperty;
 import org.alfresco.util.schemacomp.DiffContext;
-import org.alfresco.util.schemacomp.Result.Strength;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -52,7 +51,6 @@ public class Index extends AbstractDbObject
     {
         super(table, name);
         this.columnNames.addAll(columnNames);
-        setNameStrength(Strength.WARN);
     }
 
     /**
@@ -150,14 +148,15 @@ public class Index extends AbstractDbObject
 
     
     @Override
-    protected void doDiff(DbObject right, DiffContext ctx, Strength strength)
+    protected void doDiff(DbObject right, DiffContext ctx)
     {
         Index rightIndex = (Index) right;
-        comparisonUtils.compareSimpleCollections(
+        // DatabaseMetaData provides the columns in the correct order for the index.
+        // So compare as ordered collections...
+        comparisonUtils.compareSimpleOrderedLists(
                     new DbProperty(this, "columnNames"),
                     new DbProperty(rightIndex, "columnNames"),
-                    ctx,
-                    strength);
+                    ctx);
         comparisonUtils.compareSimple(
                     new DbProperty(this, "unique"),
                     new DbProperty(rightIndex, "unique"),

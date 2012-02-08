@@ -211,7 +211,14 @@ public class TransactionAwareSingletonTest extends TestCase
             public Object execute() throws Exception
             {
                 Integer actual = singleton.get();
-                assertTrue("Values don't match: " + expected + " != " + actual, actual == expected);
+                if (expected == null)
+                {
+                    assertNull("Expected null but got " + actual, actual);
+                }
+                else
+                {
+                    assertTrue("Values don't match: " + expected + " != " + actual, actual.equals(expected));
+                }
                 return null;
             }
         };

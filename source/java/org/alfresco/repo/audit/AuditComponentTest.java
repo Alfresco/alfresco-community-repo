@@ -36,6 +36,7 @@ import org.alfresco.repo.audit.model.AuditModelRegistryImpl;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.audit.AuditQueryParameters;
@@ -45,6 +46,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.EqualsHelper;
@@ -52,6 +54,7 @@ import org.apache.commons.lang.mutable.MutableInt;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.webscripts.GUID;
 import org.springframework.util.ResourceUtils;
 
 /**
@@ -68,6 +71,7 @@ public class AuditComponentTest extends TestCase
     private static final String APPLICATION_TEST = "Alfresco Test";
     private static final String APPLICATION_ACTIONS_TEST = "Actions Test";
     private static final String APPLICATION_API_TEST = "Test AuthenticationService";
+    private static final String APPLICATION_ALF12638_TEST = "Test ALF-12638";
     
     private static final Log logger = LogFactory.getLog(AuditComponentTest.class);
     
@@ -695,6 +699,89 @@ public class AuditComponentTest extends TestCase
         params.setForward(false);
         params.setToId(Long.MAX_VALUE);
         queryAuditLog(auditQueryCallback, params, 1);
+    }
+    
+    /**
+     * See <a href="https://issues.alfresco.com/jira/browse/ALF-12638">ALF-12638</a>
+     */
+    public void testAuditFailedNodeAccess() throws Exception
+    {
+        AuditQueryParameters params = new AuditQueryParameters();
+        params.setForward(true);
+        params.setApplicationName(APPLICATION_ALF12638_TEST);
+        
+        // Load in the config for this specific test: alfresco-audit-test-authenticationservice.xml
+        URL testModelUrl = ResourceUtils.getURL("classpath:alfresco/testaudit/alfresco-audit-test-alf-12638.xml");
+        auditModelRegistry.registerModel(testModelUrl);
+        auditModelRegistry.loadAuditModels();
+        
+        // There should be a log entry for the application
+        final List<Long> results = new ArrayList<Long>(5);
+        final StringBuilder sb = new StringBuilder();
+        AuditQueryCallback auditQueryCallback = new AuditQueryCallback()
+        {
+            public boolean valuesRequired()
+            {
+                return true;
+            }
+
+            public boolean handleAuditEntry(
+                    Long entryId,
+                    String applicationName,
+                    String user,
+                    long time,
+                    Map<String, Serializable> values)
+            {
+                results.add(entryId);
+                sb.append("Row: ")
+                  .append(entryId).append(" | ")
+                  .append(applicationName).append(" | ")
+                  .append(user).append(" | ")
+                  .append(new Date(time)).append(" | ")
+                  .append(values).append(" | ")
+                  .append("\n");
+                  ;
+                return true;
+            }
+
+            public boolean handleAuditEntryError(Long entryId, String errorMsg, Throwable error)
+            {
+                throw new AlfrescoRuntimeException(errorMsg, error);
+            }
+        };
+        
+        clearAuditLog(APPLICATION_ALF12638_TEST);
+        results.clear();
+        sb.delete(0, sb.length());
+        queryAuditLog(auditQueryCallback, params, -1);
+        assertTrue("There should be no audit entries for the API test after a clear", results.isEmpty());
+        
+        try
+        {
+            nodeService.getRootNode(new StoreRef("system://system"));
+            fail("Should not be allowed to get 'system://system'");
+        }
+        catch (AccessDeniedException e)
+        {
+            // Expected
+        }
+        // Try this for a while until we get a result
+        boolean success = false;
+        for (int i = 0; i < 30; i++)
+        {
+            queryAuditLog(auditQueryCallback, params, -1);
+            if (results.size() > 1)
+            {
+                logger.debug(sb.toString());
+                success = true;
+                break;
+            }
+            synchronized(this)
+            {
+                try { this.wait(1000L); } catch (InterruptedException e) {}
+            }
+        }
+        assertTrue("There should be exactly one audit entry for the API test", success);
     }
 
     /**

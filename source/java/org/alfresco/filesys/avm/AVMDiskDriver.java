@@ -675,8 +675,8 @@ public class AVMDiskDriver extends AlfrescoTxDiskDriver implements DiskInterface
                 }
 
                 // Commit the transaction
-
-                tx.commit();
+                if (tx != null)
+                	tx.commit();
                 tx = null;
             }
             catch (Exception ex)
@@ -745,7 +745,8 @@ public class AVMDiskDriver extends AlfrescoTxDiskDriver implements DiskInterface
 
                 // Commit the transaction
 
-                tx.commit();
+                if (tx != null)
+                	tx.commit();
                 tx = null;
             }
             catch (Exception ex)

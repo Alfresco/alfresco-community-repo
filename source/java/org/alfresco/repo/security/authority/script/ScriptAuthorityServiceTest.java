@@ -19,6 +19,7 @@
 package org.alfresco.repo.security.authority.script;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -206,9 +207,9 @@ public class ScriptAuthorityServiceTest extends TestCase
           if (group.getShortName().equals(GROUP_B)) groupB = group;
           if (group.getShortName().equals(GROUP_C)) groupC = group;
        }
-       assertNotNull(GROUP_A + " not found in " + groups, groupA);
-       assertNotNull(GROUP_B + " not found in " + groups, groupB);
-       assertNotNull(GROUP_C + " not found in " + groups, groupC);
+       assertNotNull(GROUP_A + " not found in " + Arrays.toString(groups), groupA);
+       assertNotNull(GROUP_B + " not found in " + Arrays.toString(groups), groupB);
+       assertNotNull(GROUP_C + " not found in " + Arrays.toString(groups), groupC);
        
        // Check group A in more detail
        assertEquals(GROUP_A, groupA.getShortName());
@@ -440,7 +441,7 @@ public class ScriptAuthorityServiceTest extends TestCase
              new ScriptPagingDetails(10, 0),
              "userName");
        
-       assertEquals("Users count wrong " + users, 3, users.length);
+       assertEquals("Users count wrong " + Arrays.toString(users), 3, users.length);
        assertEquals(USER_A, users[0].getPerson().getProperties().get("userName"));
        assertEquals(USER_B, users[1].getPerson().getProperties().get("userName"));
        assertEquals(USER_C, users[2].getPerson().getProperties().get("userName"));
@@ -451,7 +452,7 @@ public class ScriptAuthorityServiceTest extends TestCase
              new ScriptPagingDetails(10, 0),
              "firstName");
        
-       assertEquals("Users count wrong " + users, 3, users.length);
+       assertEquals("Users count wrong " + Arrays.toString(users), 3, users.length);
        assertEquals(USER_B, users[0].getPerson().getProperties().get("userName"));
        assertEquals(USER_A, users[1].getPerson().getProperties().get("userName"));
        assertEquals(USER_C, users[2].getPerson().getProperties().get("userName"));
@@ -462,7 +463,7 @@ public class ScriptAuthorityServiceTest extends TestCase
              new ScriptPagingDetails(10, 0),
              "lastName");
        
-       assertEquals("Users count wrong " + users, 3, users.length);
+       assertEquals("Users count wrong " + Arrays.toString(users), 3, users.length);
        assertEquals(USER_C, users[0].getPerson().getProperties().get("userName"));
        assertEquals(USER_A, users[1].getPerson().getProperties().get("userName"));
        assertEquals(USER_B, users[2].getPerson().getProperties().get("userName"));

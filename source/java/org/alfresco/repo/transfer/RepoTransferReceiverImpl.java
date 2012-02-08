@@ -619,7 +619,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
             {
                 log.debug("releasing lock:" + lock.lockToken);
                 lock.releaseLock();
-                locks.remove(lock);
+                locks.remove(transferId);
             }
 
             removeTempFolders(transferId);

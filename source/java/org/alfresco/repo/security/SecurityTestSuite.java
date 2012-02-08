@@ -25,6 +25,7 @@ import junit.framework.TestSuite;
 import org.alfresco.repo.ownable.impl.OwnableServiceTest;
 import org.alfresco.repo.security.authentication.AuthenticationBootstrapTest;
 import org.alfresco.repo.security.authentication.AuthenticationTest;
+import org.alfresco.repo.security.authentication.AuthorizationTest;
 import org.alfresco.repo.security.authentication.ChainingAuthenticationServiceTest;
 import org.alfresco.repo.security.authentication.NameBasedUserNameGeneratorTest;
 import org.alfresco.repo.security.authority.AuthorityServiceTest;
@@ -75,6 +76,7 @@ public class SecurityTestSuite extends TestSuite
         // suite.addTestSuite(ChainingUserRegistrySynchronizerTest.class);
         suite.addTestSuite(OwnableServiceTest.class);    
         suite.addTestSuite(ReadPermissionTest.class);    
+        suite.addTestSuite(AuthorizationTest.class);    
 
         suite.addTest(new JUnit4TestAdapter(HomeFolderProviderSynchronizerTest.class));
 

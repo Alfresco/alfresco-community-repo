@@ -37,14 +37,15 @@ import org.alfresco.repo.action.executer.MoveActionExecuter;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.action.ActionServiceTransientException;
 import org.alfresco.service.cmr.action.ActionStatus;
 import org.alfresco.service.cmr.action.ActionTrackingService;
 import org.alfresco.service.cmr.action.ExecutionDetails;
@@ -389,66 +390,83 @@ public class ActionTrackingServiceImplTest extends TestCase
     }
     
     /** Failing actions go into the cache, then out */
-    public void testFailingActions() throws Exception
+    public void testFatallyFailingActions() throws Exception
     {
-       final SleepActionExecuter sleepActionExec = 
-          (SleepActionExecuter)ctx.getBean(SleepActionExecuter.NAME);
-       sleepActionExec.setSleepMs(10000);
+       Action failedAction = performFailingActionImpl(true, "54321");
+       
+       assertEquals(ActionStatus.Failed, failedAction.getExecutionStatus());
+       assertEquals("Bang!", failedAction.getExecutionFailureMessage());
+    }
+    
+    /** Failing actions go into the cache, then out */
+    public void testTransientlyFailingActions() throws Exception
+    {
+       Action failedAction = performFailingActionImpl(false, "654321");
+       
+       assertEquals(ActionStatus.Declined, failedAction.getExecutionStatus());
+       assertTrue(failedAction.getExecutionFailureMessage().endsWith("Pop!"));
+    }
+    
+    private Action performFailingActionImpl(boolean fatalFailure, String actionId) throws Exception
+    {
+        final SleepActionExecuter sleepActionExec = 
+              (SleepActionExecuter)ctx.getBean(SleepActionExecuter.NAME);
+           sleepActionExec.setSleepMs(10000);
 
-       // Have it run asynchronously
-       UserTransaction txn = transactionService.getUserTransaction();
-       txn.begin();
-       Action action = createFailingSleepAction("54321");
-       assertNull(action.getExecutionStartDate());
-       assertNull(action.getExecutionEndDate());
-       assertNull(action.getExecutionFailureMessage());
-       assertEquals(ActionStatus.New, action.getExecutionStatus());
-       
-       String key = ActionTrackingServiceImpl.generateCacheKey(action);
-       assertEquals(null, executingActionsCache.get(key));
-       
-       this.actionService.executeAction(action, this.nodeRef, false, true);
-       
-       
-       // End the transaction. Should allow the async action
-       //  to be started, and move into its sleeping phase
-       txn.commit();
-       Thread.sleep(150);
-       
-       
-       // Will get an execution instance id, so a new key
-       key = ActionTrackingServiceImpl.generateCacheKey(action);
-       
-       
-       // Check it's in the cache
-       System.out.println("Checking the cache for " + key);
-       assertNotNull(executingActionsCache.get(key));
-       
-       ExecutionSummary s = ActionTrackingServiceImpl.buildExecutionSummary(action);
-       ExecutionDetails d = actionTrackingService.getExecutionDetails(s);
-       assertNotNull(d.getExecutionSummary());
-       assertEquals("sleep-action", d.getActionType());
-       assertEquals("54321", d.getActionId());
-       assertEquals(1, d.getExecutionInstance());
-       assertEquals(null, d.getPersistedActionRef());
-       assertNotNull(null, d.getStartedAt());
+           // Have it run asynchronously
+           UserTransaction txn = transactionService.getUserTransaction();
+           txn.begin();
+           Action action = createFailingSleepAction(actionId, fatalFailure);
+           assertNull(action.getExecutionStartDate());
+           assertNull(action.getExecutionEndDate());
+           assertNull(action.getExecutionFailureMessage());
+           assertEquals(ActionStatus.New, action.getExecutionStatus());
+           
+           String key = ActionTrackingServiceImpl.generateCacheKey(action);
+           assertEquals(null, executingActionsCache.get(key));
+           
+           this.actionService.executeAction(action, this.nodeRef, false, true);
+           
+           
+           // End the transaction. Should allow the async action
+           //  to be started, and move into its sleeping phase
+           txn.commit();
+           Thread.sleep(150);
+           
+           
+           // Will get an execution instance id, so a new key
+           key = ActionTrackingServiceImpl.generateCacheKey(action);
+           
+           
+           // Check it's in the cache
+           System.out.println("Checking the cache for " + key);
+           assertNotNull(executingActionsCache.get(key));
+           
+           ExecutionSummary s = ActionTrackingServiceImpl.buildExecutionSummary(action);
+           ExecutionDetails d = actionTrackingService.getExecutionDetails(s);
+           assertNotNull(d.getExecutionSummary());
+           assertEquals("sleep-action", d.getActionType());
+           assertEquals(actionId, d.getActionId());
+           assertEquals(1, d.getExecutionInstance());
+           assertEquals(null, d.getPersistedActionRef());
+           assertNotNull(null, d.getStartedAt());
 
-       
-       // Tell it to stop sleeping
-       // Then wait for it to finish and go bang
-       // (Need to do it by hand, as it won't fire the complete policy
-       //  as the action has failed)
-       sleepActionExec.getExecutingThread().interrupt();
-       Thread.sleep(150);
-       
-       
-       // Ensure it went away again
-       assertEquals(ActionStatus.Failed, action.getExecutionStatus());
-       assertEquals("Bang!", action.getExecutionFailureMessage());
-       assertEquals(null, executingActionsCache.get(key));
-       
-       d = actionTrackingService.getExecutionDetails(s);
-       assertEquals(null, d);
+           
+           // Tell it to stop sleeping
+           // Then wait for it to finish and go bang
+           // (Need to do it by hand, as it won't fire the complete policy
+           //  as the action has failed)
+           sleepActionExec.getExecutingThread().interrupt();
+           Thread.sleep(150);
+           
+           
+           // Ensure it went away again
+           assertEquals(null, executingActionsCache.get(key));
+           
+           d = actionTrackingService.getExecutionDetails(s);
+           assertEquals(null, d);
+           
+           return action;
     }
     
     /** Ensure that pending actions behave properly */
@@ -1238,10 +1256,16 @@ public class ActionTrackingServiceImplTest extends TestCase
 
         return failingAction;
     }
-
-    private Action createFailingSleepAction(String id) throws Exception
+    
+    /**
+     * 
+     * @param id
+     * @param isFatal <tt>true</tt> means the sleep action will fail with a RuntimeException,
+     *                <tt>false</tt> means it will fail with a {@link ActionServiceTransientException}.
+     */
+    private Action createFailingSleepAction(String id, boolean isFatal) throws Exception
     {
-        return ActionServiceImplTest.createFailingSleepAction(id, actionService);
+        return ActionServiceImplTest.createFailingSleepAction(id, isFatal, actionService);
     }
 
     private Action createWorkingSleepAction(String id) throws Exception

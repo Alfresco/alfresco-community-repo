@@ -87,6 +87,70 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
     }
     
     @SuppressWarnings("unchecked")
+    public Long countUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, long minFeedId, int maxFeedSize) throws SQLException
+    {
+        ActivityFeedQueryEntity params = new ActivityFeedQueryEntity();
+        params.setFeedUserId(feedUserId);
+        params.setActivitySummaryFormat(format);
+        
+        if (minFeedId > -1)
+        {
+            params.setMinId(minFeedId);
+        }
+        
+        if (siteId != null)
+        {
+            if (excludeThisUser && excludeOtherUsers)
+            {
+            	return Long.valueOf(0);
+            }
+            if ((!excludeThisUser) && (!excludeOtherUsers))
+            {
+                // no excludes => everyone => where feed user is me
+                return (Long)template.selectOne("alfresco.activities.count_activity_feed_for_feeduser_and_site", params);
+            }
+            else if ((excludeThisUser) && (!excludeOtherUsers))
+            {
+                // exclude feed user => others => where feed user is me and post user is not me
+                return (Long)template.selectOne("alfresco.activities.count_activity_feed_for_feeduser_others_and_site", params);
+            }
+            else if ((excludeOtherUsers) && (!excludeThisUser))
+            {
+                // exclude others => me => where feed user is me and post user is me
+                return (Long)template.selectOne("alfresco.activities.count_activity_feed_for_feeduser_me_and_site", params);
+            }
+        }
+        else
+        {
+            // all sites
+            
+            if (excludeThisUser && excludeOtherUsers)
+            {
+                // effectively NOOP - return empty feed
+            	return Long.valueOf(0);
+            }
+            if (!excludeThisUser && !excludeOtherUsers)
+            {
+                // no excludes => everyone => where feed user is me
+                return (Long)template.selectOne("alfresco.activities.count_activity_feed_for_feeduser", params);
+            }
+            else if (excludeThisUser)
+            {
+                // exclude feed user => others => where feed user is me and post user is not me
+                return (Long)template.selectOne("alfresco.activities.count_activity_feed_for_feeduser_others", params);
+            }
+            else if (excludeOtherUsers)
+            {
+                // exclude others => me => where feed user is me and post user is me
+                return (Long)template.selectOne("alfresco.activities.count_activity_feed_for_feeduser_me", params);
+            }
+        }
+
+        // belts-and-braces
+        throw new AlfrescoRuntimeException("Unexpected: invalid arguments");
+    }
+
+    @SuppressWarnings("unchecked")
     public List<ActivityFeedEntity> selectUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, long minFeedId, int maxFeedSize) throws SQLException
     {
         ActivityFeedQueryEntity params = new ActivityFeedQueryEntity();
@@ -156,7 +220,18 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
         // belts-and-braces
         throw new AlfrescoRuntimeException("Unexpected: invalid arguments");
     }
-       
+
+    @SuppressWarnings("unchecked")
+    public Long countSiteFeedEntries(String siteId, String format, int maxFeedSize) throws SQLException
+    {
+        ActivityFeedQueryEntity params = new ActivityFeedQueryEntity();
+        params.setSiteNetwork(siteId);
+        params.setActivitySummaryFormat(format);
+
+        // for given site
+        return (Long)template.selectOne("alfresco.activities.count_activity_feed_for_site", params);
+    }
+
     @SuppressWarnings("unchecked")
     public List<ActivityFeedEntity> selectSiteFeedEntries(String siteId, String format, int maxFeedSize) throws SQLException
     {

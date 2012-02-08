@@ -108,21 +108,12 @@ public abstract class AbstractForumEmailMessageHandler extends AbstractEmailMess
      * @param subject String for search
      * @return Reference to found node or null if node isn't found
      */
-    protected NodeRef getTopicNode(NodeRef nodeRef, String subject)
+    protected NodeRef getTopicNode(NodeRef nodeRef, String name)
     {
-        List<ChildAssociationRef> assocRefList = getNodeService().getChildAssocs(nodeRef);
-        Iterator<ChildAssociationRef> assocRefIter = assocRefList.iterator();
-
-        while (assocRefIter.hasNext())
-        {
-
-            ChildAssociationRef assocRef = assocRefIter.next();
-            if (assocRef.getQName().getLocalName().equals(subject))
-            {
-                return assocRef.getChildRef();
-            }
-        }
-        return null;
+        String workingName = encodeSubject(name);
+        
+        NodeRef ret = getNodeService().getChildByName(nodeRef, ContentModel.ASSOC_CONTAINS, workingName);
+        return ret;
     }
 
     /**
@@ -134,17 +125,19 @@ public abstract class AbstractForumEmailMessageHandler extends AbstractEmailMess
      */
     protected NodeRef addTopicNode(NodeRef parentNode, String name)
     {
+        String workingName = encodeSubject(name);
+        
         NodeService nodeService = getNodeService();
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);
-        properties.put(ContentModel.PROP_NAME, name);
+        properties.put(ContentModel.PROP_NAME, workingName);
 
-        NodeRef topicNode = nodeService.getChildByName(parentNode, ContentModel.ASSOC_CONTAINS, name);
+        NodeRef topicNode = nodeService.getChildByName(parentNode, ContentModel.ASSOC_CONTAINS, workingName);
         if (topicNode == null)
         {
             ChildAssociationRef association = nodeService.createNode(
                     parentNode,
                     ContentModel.ASSOC_CONTAINS,
-                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name),
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, workingName),
                     ForumModel.TYPE_TOPIC,
                     properties);
             topicNode = association.getChildRef();
@@ -157,5 +150,4 @@ public abstract class AbstractForumEmailMessageHandler extends AbstractEmailMess
 
         return topicNode;
     }
-
 }

@@ -15,6 +15,8 @@ import org.alfresco.jlan.smb.server.disk.JavaNetworkFile;
  */
 public class TempNetworkFile extends JavaNetworkFile implements NetworkFileStateInterface
 {
+    private boolean changed = false;
+    
     /**
      * Create a new temporary file with no existing content.
      * 
@@ -67,6 +69,7 @@ public class TempNetworkFile extends JavaNetworkFile implements NetworkFileState
     @Override
     public void writeFile(byte[] buf, int len, int pos) throws IOException
     {
+        changed = true;
 
         super.writeFile(buf, len, pos);
         
@@ -85,6 +88,7 @@ public class TempNetworkFile extends JavaNetworkFile implements NetworkFileState
     public void writeFile(byte[] buffer, int length, int position, long fileOffset)
     throws IOException
     {
+        changed = true;
         
         super.writeFile(buffer, length, position, fileOffset);
         
@@ -102,6 +106,11 @@ public class TempNetworkFile extends JavaNetworkFile implements NetworkFileState
     public void truncateFile(long size) throws IOException
     {
         super.truncateFile(size);
+        
+        if(size == 0)
+        {
+            changed = true;
+        }
         
         setFileSize(size);
         if(fileState != null)
@@ -133,5 +142,16 @@ public class TempNetworkFile extends JavaNetworkFile implements NetworkFileState
     }
     
     
+    public void setChanged(boolean changed)
+    {
+        this.changed = changed;
+    }
+
+    public boolean isChanged()
+    {
+        return changed;
+    }
+
+
     private FileState fileState;
 }

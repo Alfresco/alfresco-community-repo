@@ -1161,7 +1161,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
                     if (autoCreateAuthorSandbox)
                     {
                         // create a sandbox for the user with permissions based on role
-                        SandboxInfo sbInfo = sandboxFactory.createUserSandbox(wpStoreId, managers, userAuth, role);
+                        SandboxInfo sbInfo = sandboxFactory.createUserSandbox(wpStoreId, userAuth, role);
                         sandboxInfoList.add(sbInfo);
                     }
                     
@@ -1357,7 +1357,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
             if (autoCreateAuthorSandbox)
             {
                 // create a sandbox for the user with permissions based on role
-                SandboxInfo sbInfo = sandboxFactory.createUserSandbox(wpStoreId, managers, userAuth, role);
+                SandboxInfo sbInfo = sandboxFactory.createUserSandbox(wpStoreId, userAuth, role);
                 
                 List<SandboxInfo> sandboxInfoList = new LinkedList<SandboxInfo>();
                 sandboxInfoList.add(sbInfo);
@@ -1522,7 +1522,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
           {
              if (personService.personExists(userAuth) == false)
              {
-                users.remove(authType);
+                users.remove(userAuth);
              }
           }
        }

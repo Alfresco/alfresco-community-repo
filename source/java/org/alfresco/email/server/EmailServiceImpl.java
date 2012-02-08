@@ -20,6 +20,8 @@ package org.alfresco.email.server;
 
 import java.util.Map;
 
+import javax.mail.internet.InternetAddress;
+
 import org.alfresco.email.server.handler.EmailMessageHandler;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -197,9 +199,13 @@ public class EmailServiceImpl implements EmailService
                     {
                         if(logger.isDebugEnabled())
                         {
-                            logger.debug("unable to find user for from: " + delivery.getFrom() + "trying message next");
+                            logger.debug("unable to find user for from: " + delivery.getFrom() + ",trying message.from next");
                         }
                         userName = getUsername(message.getFrom());
+                    }
+                    if(logger.isDebugEnabled())
+                    {
+                        logger.debug("userName = : " + userName);
                     }
 
                     if (userName == null)
@@ -330,6 +336,10 @@ public class EmailServiceImpl implements EmailService
      */
     private NodeRef getTargetNode(String recipient)
     {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("getTarget node for" + recipient);
+        }
         if (recipient == null || recipient.length() == 0)
         {
             throw new EmailMessageException(ERR_INVALID_NODE_ADDRESS, recipient);
@@ -391,10 +401,16 @@ public class EmailServiceImpl implements EmailService
     {
         String userName = null;
         
-        if(from == null)
+        if(from == null || from.length()==0)
         {
             return null;
         }
+        
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("getUsername from: " + from);
+        }
+        
         
         StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
         String query = "TYPE:cm\\:person +@cm\\:email:\"" + from + "\"";
@@ -414,6 +430,11 @@ public class EmailServiceImpl implements EmailService
                     userName = DefaultTypeConverter.INSTANCE.convert(
                             String.class,
                             nodeService.getProperty(userNode, ContentModel.PROP_USERNAME));
+                    
+                    if(logger.isDebugEnabled())
+                    {
+                        logger.debug("found username: " + userName);
+                    }
                 }
                 else
                 {

@@ -326,4 +326,11 @@ public interface PersonService
     @NotAuditable
     public String getUserIdentifier(String caseSensitiveUserName);
 
+    /**
+     * Counts the number of persons registered with the system.
+     * 
+     * @return
+     */
+    @NotAuditable
+    public int countPeople();
 }

@@ -154,7 +154,7 @@ public class NodeRefPropertyMethodInterceptor implements MethodInterceptor
                     return invocation.proceed();
                 }
             }
-            else if (methodName.equals("createNode") & (args.length == 5))
+            else if (methodName.equals("createNode") && (args.length == 5))
             {
                 if (filterOnSet)
                 {

@@ -24,11 +24,8 @@ import java.util.Collection;
 import java.util.List;
 
 import org.alfresco.util.schemacomp.Difference.Where;
-import org.alfresco.util.schemacomp.Result.Strength;
 import org.alfresco.util.schemacomp.model.DbObject;
-import org.alfresco.util.schemacomp.model.Schema;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Predicate;
+import org.alfresco.util.schemacomp.validator.DbValidator;
 
 /**
  * A collection of utility methods for determining differences between two database schemas.
@@ -49,15 +46,100 @@ public class DefaultComparisonUtils implements ComparisonUtils
 
 
     @Override
-    public void compareSimpleCollections(DbProperty leftProp,
-                DbProperty rightProp, DiffContext ctx, Strength strength)
+    public void compareSimpleOrderedLists(DbProperty refProp, DbProperty targetProp, DiffContext ctx)
     {
+        checkPropertyContainsList(refProp);
+        checkPropertyContainsList(targetProp);
+        
+        // Check whether the leftProperty should be compared to the rightProperty 
+        DbObject leftDbObject = refProp.getDbObject();
+        if (leftDbObject.hasValidators())
+        {
+            for (DbValidator validator : leftDbObject.getValidators())
+            {
+                if (validator.validates(refProp.getPropertyName()))
+                {
+                    // Don't perform differencing on this property - a validator will handle it.
+                    return;
+                }
+            }
+        }
+        
+        @SuppressWarnings("unchecked")
+        ArrayList<Object> refList = new ArrayList<Object>((List<Object>) refProp.getPropertyValue());
+        @SuppressWarnings("unchecked")
+        ArrayList<Object> targetList = new ArrayList<Object>((List<Object>) targetProp.getPropertyValue());
+        
+        Results differences = ctx.getComparisonResults();
+
+        int maxSize = Math.max(refList.size(), targetList.size());
+        
+        for (int i = 0; i < maxSize; i++)
+        {
+            if (i < refList.size() && i < targetList.size())
+            {
+                DbProperty refIndexedProp = new DbProperty(refProp.getDbObject(), refProp.getPropertyName(), i);   
+                DbProperty targetIndexedProp = new DbProperty(targetProp.getDbObject(), targetProp.getPropertyName(), i);
+                
+                if (refList.get(i).equals(targetList.get(i)))
+                {
+                    differences.add(Where.IN_BOTH_NO_DIFFERENCE, refIndexedProp, targetIndexedProp);
+                }
+                else
+                {
+                    differences.add(Where.IN_BOTH_BUT_DIFFERENCE, refIndexedProp, targetIndexedProp);                    
+                }
+            }
+            else if (i < refList.size())
+            {
+                DbProperty indexedProp = new DbProperty(refProp.getDbObject(), refProp.getPropertyName(), i);
+                differences.add(Where.ONLY_IN_REFERENCE, indexedProp, null);
+            }
+            else
+            {
+                DbProperty indexedProp = new DbProperty(targetProp.getDbObject(), targetProp.getPropertyName(), i);
+                // No equivalent object in the reference collection.
+                differences.add(Where.ONLY_IN_TARGET, null, indexedProp);
+            }
+        }
+    }
+
+    /**
+     * Ensure the property is carrying a list as its payload. A List is required
+     * rather than a Collection as the latter may not be ordered.
+     * 
+     * @param prop
+     */
+    private void checkPropertyContainsList(DbProperty prop)
+    {
+        if (!List.class.isAssignableFrom(prop.getPropertyValue().getClass()))
+        {
+            throw new IllegalArgumentException("List required, but was " + prop.getPropertyValue().getClass());
+        }
+    }
+    
+    @Override
+    public void compareSimpleCollections(DbProperty leftProp,
+                DbProperty rightProp, DiffContext ctx)
+    {
+        // Check whether the leftProperty should be compared to the rightProperty 
+        DbObject leftDbObject = leftProp.getDbObject();
+        if (leftDbObject.hasValidators())
+        {
+            for (DbValidator validator : leftDbObject.getValidators())
+            {
+                if (validator.validates(leftProp.getPropertyName()))
+                {
+                    // Don't perform differencing on this property - a validator will handle it.
+                    return;
+                }
+            }
+        }
         @SuppressWarnings("unchecked")
         Collection<? extends Object> leftCollection = (Collection<? extends Object>) leftProp.getPropertyValue();
         @SuppressWarnings("unchecked")
         Collection<? extends Object> rightCollection = (Collection<? extends Object>) rightProp.getPropertyValue();
         
-        // TODO: Temporary code during refactoring
         ArrayList<? extends Object> leftList = new ArrayList<Object>(leftCollection);
         ArrayList<? extends Object> rightList = new ArrayList<Object>(rightCollection);
         
@@ -76,13 +158,13 @@ public class DefaultComparisonUtils implements ComparisonUtils
                 // with a 'simple' value — as there is no way of knowing if the term represents the same value
                 // (e.g. two strings {red_value, green_value}, are these meant to be the same or different?)
                 DbProperty rightIndexedProp = new DbProperty(rightProp.getDbObject(), rightProp.getPropertyName(), rightIndex);
-                differences.add(Where.IN_BOTH_NO_DIFFERENCE, leftIndexedProp, rightIndexedProp, strength);
+                differences.add(Where.IN_BOTH_NO_DIFFERENCE, leftIndexedProp, rightIndexedProp);
             }
             else
             {
                 // No equivalent object in the right hand collection.
                 // Using rightIndexedProperty would result in index out of bounds error.
-                differences.add(Where.ONLY_IN_REFERENCE, leftIndexedProp, rightProp, strength);
+                differences.add(Where.ONLY_IN_REFERENCE, leftIndexedProp, rightProp);
             }
         }
 
@@ -94,39 +176,26 @@ public class DefaultComparisonUtils implements ComparisonUtils
             {
                 DbProperty rightIndexedProp = new DbProperty(rightProp.getDbObject(), rightProp.getPropertyName(), rightIndex);
                 // No equivalent object in the left hand collection.
-                differences.add(Where.ONLY_IN_TARGET, leftProp, rightIndexedProp, strength);
+                differences.add(Where.ONLY_IN_TARGET, leftProp, rightIndexedProp);
             }
         }
     }
 
-    /**
-     * Compare collections, reporting differences using the default {@link Difference.Strength}
-     * 
-     * @see #compareCollections(Collection, Collection, Results, Strength)
-     */
+    
     @Override
     public void compareCollections(Collection<? extends DbObject> leftCollection,
                 Collection<? extends DbObject> rightCollection, DiffContext ctx)
     {
-        compareCollections(leftCollection, rightCollection, ctx, null);
-    }
-    
-    /**
-     * Compare collections of {@link DbObject}s using their {@link DbObject#diff(DbObject, Results)} method.
-     * Differences are reported using the specified {@link Difference.Strength}.
-     * 
-     * @param leftCollection
-     * @param rightCollection
-     * @param differences
-     * @param strength
-     */
-    @Override
-    public void compareCollections(Collection<? extends DbObject> leftCollection,
-                Collection<? extends DbObject> rightCollection, DiffContext ctx, Strength strength)
-    {
         Results differences = ctx.getComparisonResults();
         for (DbObject leftObj : leftCollection)
-        {
+        {    
+            if (leftObj.hasObjectLevelValidator())
+            {
+                // Don't report differences regarding this object - there is a validator
+                // that takes sole responsibility for doing so.
+                continue;
+            }
+        
             boolean foundMatch = false;
             
             for (DbObject rootObject : rightCollection)
@@ -136,7 +205,7 @@ public class DefaultComparisonUtils implements ComparisonUtils
                 for (DbObject match : matches)
                 {                        
                     // There is an equivalent object in the right hand collection as in the left.
-                    leftObj.diff(match, ctx, strength);
+                    leftObj.diff(match, ctx);
                 }
                 
                 if (matches.size() > 0)
@@ -148,13 +217,20 @@ public class DefaultComparisonUtils implements ComparisonUtils
             if (!foundMatch)
             {
                 // No equivalent object in the target collection.
-                differences.add(Where.ONLY_IN_REFERENCE, new DbProperty(leftObj, null), null, strength);
+                differences.add(Where.ONLY_IN_REFERENCE, new DbProperty(leftObj, null), null);
             }
         }
 
         // Identify objects in the right collection but not the left
         for (DbObject rightObj : rightCollection)
         {
+            if (rightObj.hasObjectLevelValidator())
+            {
+                // Don't report differences regarding this object - there is a validator
+                // that takes sole responsibility for doing so.
+                continue;
+            }
+            
             boolean foundMatch = false;
             
             for (DbObject rootObject : leftCollection)
@@ -170,34 +246,29 @@ public class DefaultComparisonUtils implements ComparisonUtils
             if (!foundMatch)
             {
                 // No equivalent object in the left hand collection.
-                differences.add(Where.ONLY_IN_TARGET, null, new DbProperty(rightObj, null), strength);
+                differences.add(Where.ONLY_IN_TARGET, null, new DbProperty(rightObj, null));
             }
         }
     }
 
-    /**
-     * Compare two simple objects. Differences are reported using the default Result.Strength.
-     * 
-     * @see #compareSimple(Object, Object, Results, Strength)
-     */
-    @Override
-    public void compareSimple(DbProperty left, DbProperty right, DiffContext ctx)
-    {
-        compareSimple(left, right, ctx, null);
-    }
     
-    /**
-     * Compare two 'simple' (i.e. non-{@link DbObject} objects) using their {@link Object#equals(Object)} method
-     * to decide if there is a difference. Differences are reported using the Result.Strength specified.
-     * 
-     * @param left
-     * @param right
-     * @param differences
-     * @param strength
-     */
     @Override
-    public void compareSimple(DbProperty leftProperty, DbProperty rightProperty, DiffContext ctx, Strength strength)
+    public void compareSimple(DbProperty leftProperty, DbProperty rightProperty, DiffContext ctx)
     {
+        // Check whether the leftProperty should be compared to the rightProperty 
+        DbObject leftDbObject = leftProperty.getDbObject();
+        if (leftDbObject.hasValidators())
+        {
+            for (DbValidator validator : leftDbObject.getValidators())
+            {
+                if (validator.validates(leftProperty.getPropertyName()))
+                {
+                    // Don't perform differencing on this property - a validator will handle it.
+                    return;
+                }
+            }
+        }
+        
         
         Where where = null;
         
@@ -234,7 +305,7 @@ public class DefaultComparisonUtils implements ComparisonUtils
             }
         }
         
-        ctx.getComparisonResults().add(where, leftProperty, rightProperty, strength);
+        ctx.getComparisonResults().add(where, leftProperty, rightProperty);
     }
 
 

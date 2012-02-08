@@ -22,7 +22,7 @@ package org.alfresco.repo.thumbnail;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +30,7 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.transform.AbstractContentTransformer2;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.content.transform.magick.ImageResizeOptions;
@@ -45,17 +46,19 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentServiceTransientException;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptService;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.thumbnail.FailedThumbnailInfo;
-import org.alfresco.service.cmr.thumbnail.ThumbnailException;
 import org.alfresco.service.cmr.thumbnail.ThumbnailParentAssociationDetails;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.TempFileProvider;
 
@@ -75,6 +78,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
     private RetryingTransactionHelper transactionHelper;
     private ServiceRegistry services;
     private NodeRef folder;
+    private static final String TEST_FAILING_MIME_TYPE = "application/vnd.alfresco.test.transientfailure";
 
     /**
      * Called during the transaction setup
@@ -101,7 +105,19 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
                     QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "testFolder"), ContentModel.TYPE_FOLDER)
                     .getChildRef();
     }
-
+    
+    @Override protected String[] getConfigLocations()
+    {
+        List<String> configLocations = new ArrayList<String>();
+        for (String config : ApplicationContextHelper.CONFIG_LOCATIONS)
+        {
+            configLocations.add(config);
+        }
+        configLocations.add("classpath*:org.alfresco.repo.thumbnail.test-thumbnail-context.xml");
+        
+        return configLocations.toArray(new String[0]);
+    }
+    
     private void checkTransformer()
     {
         ContentTransformer transformer = this.contentService.getImageTransformer();
@@ -348,8 +364,66 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
                     }
                 });
     }
+    
+    /**
+     * From 4.0.1 we support 'transient' thumbnail failure. This occurs when the {@link ContentTransformer}
+     * cannot attempt to perform the transformation for some reason (e.g. process/service unavailable) and wishes
+     * to decline the request. Such 'failures' should not lead to the addition of the {@link ContentModel#ASPECT_FAILED_THUMBNAIL_SOURCE}
+     * aspect.
+     * 
+     * @since 4.0.1
+     */
+    public void testCreateTransientlyFailingThumbnail() throws Exception
+    {
+        Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+        props.put(ContentModel.PROP_NAME, "transientThumbnail.transientThumbnail");
+        final NodeRef testNode = this.nodeService.createNode(folder, ContentModel.ASSOC_CONTAINS,
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "transientThumbnail.transientThumbnail"),
+                ContentModel.TYPE_CONTENT, props).getChildRef();
+        
+        nodeService.setProperty(testNode, ContentModel.PROP_CONTENT,
+                new ContentData(null, TEST_FAILING_MIME_TYPE, 0L, null));
+        // We don't need to write any content into this node, as our test transformer will fail immediately.
 
+        logger.debug("Running failing thumbnail on " + testNode);
+        
+        // Make sure the source node is correctly set up before we start
+        // It should not be renditioned and should not be marked as having any failed thumbnails.
+        assertFalse(nodeService.hasAspect(testNode, RenditionModel.ASPECT_RENDITIONED));
+        assertFalse(nodeService.hasAspect(testNode, ContentModel.ASPECT_FAILED_THUMBNAIL_SOURCE));
+        
+        setComplete();
+        endTransaction();
 
+        // Attempt to perform a thumbnail that we know will fail.
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                ThumbnailDefinition thumbnailDef = thumbnailService.getThumbnailRegistry().getThumbnailDefinition("doclib");
+                
+                Action createThumbnailAction = ThumbnailHelper.createCreateThumbnailAction(thumbnailDef, services);
+                actionService.executeAction(createThumbnailAction, testNode, true, true);
+                return null;
+            }
+        });
+        // The thumbnail attempt has now failed. But in this case the compensating action should NOT have been scheduled.
+        // We'll wait briefly in case it has erroneously been scheduled.
+        
+        Thread.sleep(3000); // This should be long enough for the compensating action to run - if it has been scheduled, which it shouldn't.
+
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                assertFalse("Node should not have renditioned aspect", nodeService.hasAspect(testNode, RenditionModel.ASPECT_RENDITIONED));
+                assertFalse("Node should not have failed thumbnails aspect", nodeService.hasAspect(testNode, ContentModel.ASPECT_FAILED_THUMBNAIL_SOURCE));
+              
+                return null;
+            }
+        });
+    }
+    
     public void testThumbnailUpdate() throws Exception
     {
         checkTransformer();
@@ -707,5 +781,24 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
         String mediumIcon = scriptThumbnailService.getPlaceHolderResourcePath("medium");
         final String standardMediumIcon = "alfresco/thumbnail/thumbnail_placeholder_medium.jpg"; // This one jpg, not png
         assertEquals(standardMediumIcon, mediumIcon);
+    }
+    
+    /**
+     * Test transformer.
+     * 
+     * @since 4.0.1
+     */
+    private static class TransientFailTransformer extends AbstractContentTransformer2
+    {
+        public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
+        {
+            return sourceMimetype.equals(MimetypeMap.MIMETYPE_PDF) && targetMimetype.equals(TEST_FAILING_MIME_TYPE);
+        }
+        
+        protected void transformInternal(ContentReader reader, ContentWriter writer, TransformationOptions options) throws Exception
+        {
+            // fail every time.
+            throw new ContentServiceTransientException("Transformation intentionally failed for test purposes.");
+        }
     }
 }

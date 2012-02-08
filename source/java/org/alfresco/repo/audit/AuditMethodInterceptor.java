@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -21,12 +21,16 @@ package org.alfresco.repo.audit;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ThreadPoolExecutor;
+
+import net.sf.acegisecurity.Authentication;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.error.StackTraceUtil;
 import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.domain.schema.SchemaBootstrap;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -84,6 +88,7 @@ public class AuditMethodInterceptor implements MethodInterceptor
     public static final String AUDIT_PATH_API_PRE = AUDIT_PATH_API_ROOT + "/pre";
     public static final String AUDIT_PATH_API_POST = AUDIT_PATH_API_ROOT + "/post";
     public static final String AUDIT_SNIPPET_ARGS = "/args";
+    public static final String AUDIT_SNIPPET_PRE_CALL_DATA = "/preCallData";
     public static final String AUDIT_SNIPPET_RESULT = "/result";
     public static final String AUDIT_SNIPPET_ERROR = "/error";
     public static final String AUDIT_SNIPPET_NO_ERROR = "/no-error";
@@ -211,9 +216,10 @@ public class AuditMethodInterceptor implements MethodInterceptor
             String methodName,
             Map<String, Serializable> namedArguments) throws Throwable
     {
+        Map<String, Serializable> preAuditedData = null;
         try
         {
-            auditInvocationBefore(serviceName, methodName, namedArguments);
+            preAuditedData = auditInvocationBefore(serviceName, methodName, namedArguments);
         }
         catch (Throwable e)
         {
@@ -240,7 +246,7 @@ public class AuditMethodInterceptor implements MethodInterceptor
         Object auditRet = auditableDef.recordReturnedObject() ? ret : null;
         try
         {
-            auditInvocationAfter(serviceName, methodName, namedArguments, auditRet, thrown);
+            auditInvocationAfter(serviceName, methodName, namedArguments, auditRet, thrown, preAuditedData);
         }
         catch (Throwable e)
         {
@@ -334,7 +340,7 @@ public class AuditMethodInterceptor implements MethodInterceptor
      * 
      * @since 3.2
      */
-    private void auditInvocationBefore(
+    private Map<String, Serializable> auditInvocationBefore(
             final String serviceName,
             final String methodName,
             final Map<String, Serializable> namedArguments)
@@ -362,6 +368,7 @@ public class AuditMethodInterceptor implements MethodInterceptor
                     "Audited before invocation: \n" +
                     "   Values: " + auditedData);
         }
+        return auditedData;
     }
     
     /**
@@ -372,12 +379,13 @@ public class AuditMethodInterceptor implements MethodInterceptor
      * @param namedArguments    the named arguments passed to the invocation
      * @param ret               the result of the execution (may be <tt>null</tt>)
      * @param thrown            the error thrown by the invocation (may be <tt>null</tt>)
+     * @param preAuditedData    the audited data from before the method call.
      * 
      * @since 3.2
      */
     private void auditInvocationAfter(
             String serviceName, String methodName, Map<String, Serializable> namedArguments,
-            Object ret, final Throwable thrown)
+            Object ret, final Throwable thrown, Map<String, Serializable> preAuditedData)
     {
         final String rootPath = AuditApplication.buildPath(AUDIT_PATH_API_POST, serviceName, methodName);
         
@@ -397,6 +405,14 @@ public class AuditMethodInterceptor implements MethodInterceptor
                         argValue);
             }
         }
+        
+        // Add audited data prior to the method call, so it may be repeated
+        for (Entry<String, Serializable> entry: preAuditedData.entrySet())
+        {
+            String path = AuditApplication.buildPath(AUDIT_SNIPPET_PRE_CALL_DATA, entry.getKey());
+            auditData.put(path, entry.getValue());
+        }
+        
         if (ret != null)
         {
             if (ret instanceof String)
@@ -426,7 +442,9 @@ public class AuditMethodInterceptor implements MethodInterceptor
         if (thrown != null)
         {
         	// ALF-3055: an exception has occurred - make sure the audit occurs in a new thread
-        	// rather than a nested transaction to avoid contention for the same audit table
+        	//     rather than a nested transaction to avoid contention for the same audit table
+            // ALF-12638: ensure that the new thread context matches the current thread context
+            final Authentication authContext = AuthenticationUtil.getFullAuthentication();
             threadPoolExecutor.execute(new Runnable()
             {
 				public void run()
@@ -438,7 +456,7 @@ public class AuditMethodInterceptor implements MethodInterceptor
 		                    thrown.getMessage(), thrown.getStackTrace(), sb, Integer.MAX_VALUE);
 		            auditData.put(AUDIT_SNIPPET_ERROR, SchemaBootstrap.trimStringForTextFields(sb.toString()));
 
-		            // An exception will generally roll the current transaction back
+		            // Ensure we have a transaction
 		            RetryingTransactionCallback<Map<String, Serializable>> auditCallback =
 		                    new RetryingTransactionCallback<Map<String, Serializable>>()
 		            {
@@ -447,7 +465,15 @@ public class AuditMethodInterceptor implements MethodInterceptor
 		                    return auditComponent.recordAuditValues(rootPath, auditData);
 		                }
 		            };
-		            auditedData = transactionService.getRetryingTransactionHelper().doInTransaction(auditCallback, false, true);
+		            try
+		            {
+                        AuthenticationUtil.setFullAuthentication(authContext);
+		                auditedData = transactionService.getRetryingTransactionHelper().doInTransaction(auditCallback, false, true);
+		            }
+		            finally
+		            {
+		                AuthenticationUtil.clearCurrentSecurityContext();
+		            }
 		            
 			        // Done
 			        if (logger.isDebugEnabled() && auditedData.size() > 0)

@@ -58,7 +58,14 @@ public enum ActionStatus
     *  {@link Action#getExecutionFailureCause()} to find
     *  out why.
     */
-   Failed 
+   Failed,
+   /**
+    * The Action failed with a transient exception. Call 
+    *  {@link Action#getExecutionFailureCause()} to find
+    *  out why.
+    *  @since 4.0.1
+    */
+   Declined 
    ;
    
    public static ActionStatus valueOf(Serializable s)

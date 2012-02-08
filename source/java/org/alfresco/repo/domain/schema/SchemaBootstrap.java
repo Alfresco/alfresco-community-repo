@@ -71,9 +71,12 @@ import org.alfresco.repo.domain.hibernate.dialect.AlfrescoOracle9Dialect;
 import org.alfresco.repo.domain.hibernate.dialect.AlfrescoSQLServerDialect;
 import org.alfresco.repo.domain.hibernate.dialect.AlfrescoSybaseAnywhereDialect;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.util.LogUtil;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.schemacomp.ExportDb;
+import org.alfresco.util.schemacomp.MultiFileDumper;
+import org.alfresco.util.schemacomp.MultiFileDumper.DbToXMLFactory;
 import org.alfresco.util.schemacomp.Result;
 import org.alfresco.util.schemacomp.Results;
 import org.alfresco.util.schemacomp.SchemaComparator;
@@ -214,6 +217,18 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         }
     }
     
+    
+    /**
+     * Provide a reference to the DescriptorService, used to provide information
+     * about the repository such as the database schema version number.
+     * 
+     * @param descriptorService the descriptorService to set
+     */
+    public void setDescriptorService(DescriptorService descriptorService)
+    {
+        this.descriptorService = descriptorService;
+    }
+
     /**
      * Sets the previously auto-detected Hibernate dialect.
      * 
@@ -227,6 +242,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
 
     private static Log logger = LogFactory.getLog(SchemaBootstrap.class);
     
+    private DescriptorService descriptorService;
     private DataSource dataSource;
     private LocalSessionFactoryBean localSessionFactory;
     private String schemaOuputFilename;
@@ -234,7 +250,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private boolean stopAfterSchemaBootstrap;
     private List<String> preCreateScriptUrls;
     private List<String> postCreateScriptUrls;
-    private String schemaReferenceUrl;
+    private List<String> schemaReferenceUrls;
     private List<SchemaUpgradeScriptPatch> validateUpdateScriptPatches;
     private List<SchemaUpgradeScriptPatch> preUpdateScriptPatches;
     private List<SchemaUpgradeScriptPatch> postUpdateScriptPatches;
@@ -244,7 +260,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private Properties globalProperties;
     
     private ThreadLocal<StringBuilder> executedStatementsThreadLocal = new ThreadLocal<StringBuilder>();
-    private File xmlPreSchemaOutputFile;                // This must be set if there are any executed statements
+    private File xmlPreSchemaOutputFile34;                // This must be set if there are any executed statements
 
     public SchemaBootstrap()
     {
@@ -334,17 +350,17 @@ public class SchemaBootstrap extends AbstractLifecycleBean
 
     
     /**
-     * Specifies the schema reference file that will be used to validate the repository
+     * Specifies the schema reference files that will be used to validate the repository
      * schema whenever changes have been made. The database dialect placeholder will be
-     * resolved so that the correct reference file is loaded for the current database
+     * resolved so that the correct reference files are loaded for the current database
      * type (e.g. PostgreSQL)
      * 
-     * @param schemaReferenceUrl the schemaReferenceUrl to set
+     * @param schemaReferenceUrls the schemaReferenceUrls to set
      * @see #PLACEHOLDER_DIALECT
      */
-    public void setSchemaReferenceUrl(String schemaReferenceUrl)
+    public void setSchemaReferenceUrls(List<String> schemaReferenceUrls)
     {
-        this.schemaReferenceUrl = schemaReferenceUrl;
+        this.schemaReferenceUrls = schemaReferenceUrls;
     }
 
     /**
@@ -629,7 +645,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     /**
      * @return Returns the number of applied patches
      */
-    private boolean didPatchSucceed(Connection connection, String patchId) throws Exception
+    private boolean didPatchSucceed(Connection connection, String patchId, boolean alternative) throws Exception
     {
         String patchTableName = getAppliedPatchTableName(connection);
         if (patchTableName == null)
@@ -640,13 +656,22 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         Statement stmt = connection.createStatement();
         try
         {
-            ResultSet rs = stmt.executeQuery("select succeeded from " + patchTableName + " where id = '" + patchId + "'");
+            ResultSet rs = stmt.executeQuery("select succeeded, was_executed from " + patchTableName + " where id = '" + patchId + "'");
             if (!rs.next())
             {
                 return false;
             }
             boolean succeeded = rs.getBoolean(1);
-            return succeeded;
+            boolean wasExecuted = rs.getBoolean(2);
+            
+            if (alternative)
+            {
+                return succeeded && wasExecuted;
+            }
+            else
+            {
+                return succeeded;
+            }
         }
         finally
         {
@@ -911,7 +936,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             for (Patch alternativePatch : alternatives)
             {
                 String alternativePatchId = alternativePatch.getId();
-                boolean alternativeSucceeded = didPatchSucceed(connection, alternativePatchId);
+                boolean alternativeSucceeded = didPatchSucceed(connection, alternativePatchId, true);
                 if (alternativeSucceeded)
                 {
                     continue nextPatch;
@@ -919,7 +944,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             }
 
             // check if the script was successfully executed
-            boolean wasSuccessfullyApplied = didPatchSucceed(connection, patchId);
+            boolean wasSuccessfullyApplied = didPatchSucceed(connection, patchId, false);
             if (wasSuccessfullyApplied)
             {
                 // Either the patch was executed before or the system was bootstrapped
@@ -979,7 +1004,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private Resource getDialectResource(Class dialectClass, String resourceUrl)
     {
         // replace the dialect placeholder
-        String dialectResourceUrl = resourceUrl.replaceAll(PLACEHOLDER_DIALECT, dialectClass.getName());
+        String dialectResourceUrl = resolveDialectUrl(dialectClass, resourceUrl);
         // get a handle on the resource
         Resource resource = rpr.getResource(dialectResourceUrl);
         if (!resource.exists())
@@ -1002,6 +1027,28 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             // we have a handle to it
             return resource;
         }
+    }
+
+    /**
+     * Takes resource URL containing the {@link SchemaBootstrap#PLACEHOLDER_DIALECT dialect placeholder text}
+     * and substitutes the placeholder with the name of the given dialect's class.
+     * <p/>
+     * For example:
+     * <pre>
+     *   resolveDialectUrl(MySQLInnoDBDialect.class, "classpath:alfresco/db/${db.script.dialect}/myfile.xml")
+     * </pre>
+     * would give the following String:
+     * <pre>
+     *   classpath:alfresco/db/org.hibernate.dialect.MySQLInnoDBDialect/myfile.xml
+     * </pre>
+     * 
+     * @param dialectClass
+     * @param resourceUrl
+     * @return
+     */
+    private String resolveDialectUrl(Class dialectClass, String resourceUrl)
+    {
+        return resourceUrl.replaceAll(PLACEHOLDER_DIALECT, dialectClass.getName());
     }
     
     /**
@@ -1035,15 +1082,17 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         if (executedStatements == null)
         {
             // Validate the schema, pre-upgrade
-            validateSchema("Alfresco-{0}-Validation-Pre-Upgrade-");
+            validateSchema("Alfresco-{0}-Validation-Pre-Upgrade-{1}-");
             
             // Dump the normalized, pre-upgrade Alfresco schema.  We keep the file for later reporting.
-            xmlPreSchemaOutputFile = dumpSchema(
+            xmlPreSchemaOutputFile34 = dumpSchema34(
                     this.dialect,
                     TempFileProvider.createTempFile(
                             "AlfrescoSchema-" + this.dialect.getClass().getSimpleName() + "-",
                             "-Startup.xml").getPath(),
                     "Failed to dump normalized, pre-upgrade schema to file.");
+            
+            dumpSchema("pre-upgrade");
 
             // There is no lock at this stage.  This process can fall out if the lock can't be applied.
             setBootstrapStarted(connection);
@@ -1538,34 +1587,37 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 if (executedStatements != null)
                 {
                     // Validate the schema, post-upgrade
-                    validateSchema("Alfresco-{0}-Validation-Post-Upgrade-");
+                    validateSchema("Alfresco-{0}-Validation-Post-Upgrade-{1}-");
                     
                     // Dump the normalized, post-upgrade Alfresco schema.
-                    File xmlPostSchemaOutputFile = dumpSchema(
+                    File xmlPostSchemaOutputFile34 = dumpSchema34(
                             this.dialect,
                             TempFileProvider.createTempFile(
                                     "AlfrescoSchema-" + this.dialect.getClass().getSimpleName() + "-",
                                     ".xml").getPath(),
                             "Failed to dump normalized, post-upgrade schema to file.");
                     
+                    // 4.0+ schema dump
+                    dumpSchema("post-upgrade");
+                    
                     if (createdSchema)
                     {
                         // This is a new schema
-                        if (xmlPostSchemaOutputFile != null)
+                        if (xmlPostSchemaOutputFile34 != null)
                         {
-                            LogUtil.info(logger, MSG_NORMALIZED_SCHEMA, xmlPostSchemaOutputFile.getPath());
+                            LogUtil.info(logger, MSG_NORMALIZED_SCHEMA, xmlPostSchemaOutputFile34.getPath());
                         }
                     }
                     else
                     {
                         // We upgraded, so have to report pre- and post- schema dumps
-                        if (xmlPreSchemaOutputFile != null)
+                        if (xmlPreSchemaOutputFile34 != null)
                         {
-                            LogUtil.info(logger, MSG_NORMALIZED_SCHEMA_PRE, xmlPreSchemaOutputFile.getPath());
+                            LogUtil.info(logger, MSG_NORMALIZED_SCHEMA_PRE, xmlPreSchemaOutputFile34.getPath());
                         }
-                        if (xmlPostSchemaOutputFile != null)
+                        if (xmlPostSchemaOutputFile34 != null)
                         {
-                            LogUtil.info(logger, MSG_NORMALIZED_SCHEMA_POST, xmlPostSchemaOutputFile.getPath());
+                            LogUtil.info(logger, MSG_NORMALIZED_SCHEMA_POST, xmlPostSchemaOutputFile34.getPath());
                         }
                     }
                 }
@@ -1579,12 +1631,16 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             {
                 // We have been forced to stop, so we do one last dump of the schema and throw an exception to
                 // escape further startup procedures
-                File xmlStopSchemaOutputFile = dumpSchema(
+                File xmlStopSchemaOutputFile = dumpSchema34(
                         this.dialect,
                         TempFileProvider.createTempFile(
                                 "AlfrescoSchema-" + this.dialect.getClass().getSimpleName() + "-",
                                 "-ForcedExit.xml").getPath(),
                         "Failed to dump normalized, post-upgrade, forced-exit schema to file.");
+                
+                // 4.0+ schema dump
+                dumpSchema("forced-exit");
+                
                 if (xmlStopSchemaOutputFile != null)
                 {
                     LogUtil.info(logger, MSG_NORMALIZED_SCHEMA, xmlStopSchemaOutputFile);
@@ -1639,19 +1695,55 @@ public class SchemaBootstrap extends AbstractLifecycleBean
      * Collate differences and validation problems with the schema with respect to an appropriate
      * reference schema.
      * 
+     * @param outputFileNameTemplate
      * @return the number of potential problems found.
      */
-    public int validateSchema(String outputFileNameTemplate)
+    public synchronized int validateSchema(String outputFileNameTemplate)
     {
-        Date startTime = new Date(); 
+        int totalProblems = 0;
         
-        Resource referenceResource = getDialectResource(dialect.getClass(), schemaReferenceUrl);
-        if (referenceResource == null || !referenceResource.exists())
+        // Discover available reference files (e.g. for prefixes alf_, avm_ etc.)
+        // and process each in turn.
+        for (String schemaReferenceUrl : schemaReferenceUrls)
         {
-            String resourceUrl = schemaReferenceUrl.replaceAll(PLACEHOLDER_DIALECT, dialect.getClass().getName());
-            LogUtil.debug(logger, DEBUG_SCHEMA_COMP_NO_REF_FILE, resourceUrl);
+            Resource referenceResource = getDialectResource(dialect.getClass(), schemaReferenceUrl);
+            
+            if (referenceResource == null || !referenceResource.exists())
+            {
+                String resourceUrl = resolveDialectUrl(dialect.getClass(), schemaReferenceUrl);
+                LogUtil.debug(logger, DEBUG_SCHEMA_COMP_NO_REF_FILE, resourceUrl);
+            }
+            else
+            {
+                // Validate schema against each reference file
+                int problems = validateSchema(referenceResource, outputFileNameTemplate);
+                totalProblems += problems;
+            }
+        }
+        
+        // Return number of problems found across all reference files.
+        return totalProblems;
+    }
+    
+    private int validateSchema(Resource referenceResource, String outputFileNameTemplate)
+    {
+        try
+        {
+            return attemptValidateSchema(referenceResource, outputFileNameTemplate);
+        }
+        catch (Throwable e)
+        {
+            if (logger.isErrorEnabled())
+            {
+                logger.error("Unable to validate database schema.", e);
+            }
             return 0;
         }
+    }
+    
+    private int attemptValidateSchema(Resource referenceResource, String outputFileNameTemplate)
+    {
+        Date startTime = new Date(); 
         
         InputStream is = null;
         try
@@ -1667,7 +1759,10 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         xmlToSchema.parse();
         Schema reference = xmlToSchema.getSchema();
         
-        ExportDb exporter = new ExportDb(dataSource, dialect);
+        ExportDb exporter = new ExportDb(dataSource, dialect, descriptorService);
+        // Ensure that the database objects we're validating are filtered
+        // by the same prefix as the reference file.  
+        exporter.setNamePrefix(reference.getDbPrefix());
         exporter.execute();
         Schema target = exporter.getSchema();
         
@@ -1677,9 +1772,12 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         
         Results results = schemaComparator.getComparisonResults();
         
-        String outputFileName = MessageFormat.format(
-                    outputFileNameTemplate,
-                    new Object[] { dialect.getClass().getSimpleName() });
+        Object[] outputFileNameParams = new Object[]
+        {
+                    dialect.getClass().getSimpleName(),
+                    reference.getDbPrefix()
+        };
+        String outputFileName = MessageFormat.format(outputFileNameTemplate, outputFileNameParams);
         
         File outputFile = TempFileProvider.createTempFile(outputFileName, ".txt");
         
@@ -1723,9 +1821,13 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     }
 
     /**
+     * Older schema dump tool. Left here for the moment but is essentially duplicated
+     * by the newer XML dumper which is used in automatic diff/validation of the schema
+     * against a known good reference.
+     * 
      * @return                  Returns the file that was written to or <tt>null</tt> if it failed
      */
-    private File dumpSchema(Dialect dialect, String fileName, String err)
+    private File dumpSchema34(Dialect dialect, String fileName, String err)
     {
         File xmlSchemaOutputFile = new File(fileName);
         try
@@ -1749,6 +1851,121 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         return xmlSchemaOutputFile;
     }
 
+    /**
+     * Produces schema dump in XML format: this is performed pre- and post-upgrade (i.e. if
+     * changes are made to the schema) and can made upon demand via JMX.
+     * 
+     * @return List of output files.
+     */
+    public List<File> dumpSchema()
+    {
+        return dumpSchema("", null);
+    }
+    
+    /**
+     * Produces schema dump in XML format: this is performed pre- and post-upgrade (i.e. if
+     * changes are made to the schema) and can made upon demand via JMX.
+     * 
+     * @param dbPrefixes Array of database object prefixes to produce the dump for, e.g. "alf_".
+     * @return List of output files.
+     */
+    public List<File> dumpSchema(String[] dbPrefixes)
+    {
+        return dumpSchema("", dbPrefixes);
+    }
+    
+    /**
+     * Dumps the DB schema to temporary file(s), named similarly to:
+     * <pre>
+     *   Alfresco-schema-DialectName-whenDumped-dbPrefix-23498732.xml
+     * </pre>
+     * Where the digits serve to create a unique temp file name. If whenDumped is empty or null,
+     * then the output is similar to:
+     * <pre>
+     *   Alfresco-schema-DialectName-dbPrefix-23498732.xml
+     * </pre>
+     * If dbPrefixes is null, then the default list is used (see {@link MultiFileDumper#DEFAULT_PREFIXES})
+     * The dump files' paths are logged at info level.
+     * 
+     * @param whenDumped
+     * @param dbPrefixes Array of database object prefixes to filter by, e.g. "alf_"
+     * @return List of output files.
+     */
+    private List<File> dumpSchema(String whenDumped, String[] dbPrefixes)
+    {
+        // Build a string to use as the file name template,
+        // e.g. "Alfresco-schema-MySQLDialect-pre-upgrade-{0}-"
+        StringBuilder sb = new StringBuilder(64);
+        sb.append("Alfresco-schema-").
+            append(dialect.getClass().getSimpleName());
+        if (whenDumped != null && whenDumped.length() > 0)
+        {
+            sb.append("-");
+            sb.append(whenDumped);
+        }
+        sb.append("-{0}-");
+        
+        File outputDir = TempFileProvider.getTempDir();
+        String fileNameTemplate = sb.toString();
+        return dumpSchema(outputDir, fileNameTemplate, dbPrefixes);
+    }
+    
+    /**
+     * Same as for {@link #dumpSchema(String, String[])} - except that the default list
+     * of database object prefixes is used for filtering.
+     * 
+     * @see #dumpSchema(String, String[])
+     * @param whenDumped
+     * @return
+     */
+    private List<File> dumpSchema(String whenDumped)
+    {
+        return dumpSchema(whenDumped, null);
+    }
+    
+    private List<File> dumpSchema(File outputDir, String fileNameTemplate, String[] dbPrefixes)
+    {
+        try
+        {
+            return attemptDumpSchema(outputDir, fileNameTemplate, dbPrefixes);
+        }
+        catch (Throwable e)
+        {
+            if (logger.isErrorEnabled())
+            {
+                logger.error("Unable to dump schema to directory " + outputDir, e);
+            }
+            return null;
+        }
+    }
+    
+    private List<File> attemptDumpSchema(File outputDir, String fileNameTemplate, String[] dbPrefixes)
+    {
+        DbToXMLFactory dbToXMLFactory = new MultiFileDumper.DbToXMLFactoryImpl(getApplicationContext());
+        
+        MultiFileDumper dumper;
+        
+        if (dbPrefixes == null)
+        {
+            dumper = new MultiFileDumper(outputDir, fileNameTemplate, dbToXMLFactory);
+        }
+        else
+        {
+            dumper = new MultiFileDumper(dbPrefixes, outputDir, fileNameTemplate, dbToXMLFactory);            
+        }
+        List<File> files = dumper.dumpFiles();
+        
+        for (File file : files)
+        {            
+            if (logger.isInfoEnabled())
+            {
+                LogUtil.info(logger, MSG_NORMALIZED_SCHEMA, file.getAbsolutePath());
+            }
+        }
+        
+        return files;
+    }
+    
     @Override
     protected void onShutdown(ApplicationEvent event)
     {

@@ -38,6 +38,8 @@ public class ReduceQuotaCommand implements Command
     {
         this.name = name;
         this.networkFile = networkFile;
+        this.rootNode = rootNode;
+        this.path = path;
     }
 
     public String getName()

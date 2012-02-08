@@ -85,7 +85,8 @@ public class ContentContext extends AlfrescoContext
     
     private ThreadRequestPool m_threadPool;
     
-    private Pattern renameShufflePattern = Pattern.compile("(.*\\.tmp)|(.*\\.wbk)|(.*\\.bak)|(.*\\~)");
+    // pattern is tested against full path after it has been lower cased.
+    private Pattern renameShufflePattern = Pattern.compile("(.*[a-f0-9]{8}+$)|(.*\\.tmp$)|(.*\\.wbk$)|(.*\\.bak$)|(.*\\~$)");
     
     /**
      * Default constructor allowing initialization by container.

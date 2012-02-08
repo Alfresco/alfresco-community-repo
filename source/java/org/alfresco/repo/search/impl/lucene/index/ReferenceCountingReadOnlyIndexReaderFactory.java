@@ -21,6 +21,7 @@ package org.alfresco.repo.search.impl.lucene.index;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,10 +36,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.Field.Index;
-import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.document.FieldSelectorResult;
+import org.apache.lucene.document.Field.Index;
+import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.index.FilterIndexReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
@@ -126,7 +127,7 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
         private LuceneConfig config;
 
         private final long creationTime;
-        private final List<Throwable> references;
+        private final Deque<Throwable> references;
 
         static
         {
@@ -168,7 +169,7 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
         }
 
         @Override
-        public synchronized List<Throwable> getReferences()
+        public synchronized Deque<Throwable> getReferences()
         {
             return this.references;
         }
@@ -218,7 +219,6 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
             {
                 s_logger.error("Invalid reference count for Reader " + id + " is " + refCount + "        ... " + super.toString());
             }
-            references.add(new Exception(this.refCount + ": " + in.toString()));
         }
 
         private void closeIfRequired() throws IOException
@@ -237,6 +237,11 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
                 super.decRef();
 
                 wrapper_closed = true;
+
+                if (!references.isEmpty())
+                {
+                    references.removeLast();
+                }
             }
             else
             {
@@ -293,6 +298,10 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
             if (refCount > 0)
             {
                 super.decRef();
+                if (!references.isEmpty())
+                {
+                    references.removeLast();
+                }
             }
         }
         

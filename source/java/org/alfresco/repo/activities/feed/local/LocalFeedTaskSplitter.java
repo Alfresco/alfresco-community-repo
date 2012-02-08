@@ -26,16 +26,12 @@ import org.alfresco.repo.activities.feed.FeedGridJob;
 import org.alfresco.repo.activities.feed.FeedTaskProcessor;
 import org.alfresco.repo.activities.feed.FeedTaskSplit;
 import org.alfresco.repo.activities.feed.JobSettings;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * The local feed task splitter is responsible for splitting the feed task into feed jobs
  */
 public class LocalFeedTaskSplitter
-{
-    private static final Log logger = LogFactory.getLog(LocalFeedTaskSplitter.class);
-    
+{   
     private FeedTaskProcessor feedTaskProcessor;
     
     public void setFeedTaskProcessor(FeedTaskProcessor feedTaskProcessor)
@@ -45,26 +41,18 @@ public class LocalFeedTaskSplitter
     
     public Collection<FeedGridJob> split(int gridSize, Object o) throws Exception
     {
-        try
+        FeedTaskSplit feedSplitter = new FeedTaskSplit();
+        Collection<JobSettings> jobs = feedSplitter.split(gridSize, (JobSettings)o);
+        
+        List<FeedGridJob> gridJobs = new ArrayList<FeedGridJob>(jobs.size());
+        for (JobSettings job : jobs)
         {
-            FeedTaskSplit feedSplitter = new FeedTaskSplit();
-            Collection<JobSettings> jobs = feedSplitter.split(gridSize, (JobSettings)o);
-            
-            List<FeedGridJob> gridJobs = new ArrayList<FeedGridJob>(jobs.size());
-            for (JobSettings job : jobs)
-            {
-                LocalFeedGridJob gridJob = new LocalFeedGridJob();
-                gridJob.setFeedTaskProcessor(feedTaskProcessor);
-                gridJob.setArgument(job);
-                gridJobs.add(gridJob);
-            }
-            return gridJobs;
-            //return (Collection<FeedGridJob>)feedSplitter.split(gridSize, (JobSettings)o, new LocalFeedGridJob());
+            LocalFeedGridJob gridJob = new LocalFeedGridJob();
+            gridJob.setFeedTaskProcessor(feedTaskProcessor);
+            gridJob.setArgument(job);
+            gridJobs.add(gridJob);
         }
-        catch (Exception e)
-        {
-            logger.equals(e);
-            throw new Exception(e.getMessage());
-        }
+        return gridJobs;
+        //return (Collection<FeedGridJob>)feedSplitter.split(gridSize, (JobSettings)o, new LocalFeedGridJob());
     }
 }

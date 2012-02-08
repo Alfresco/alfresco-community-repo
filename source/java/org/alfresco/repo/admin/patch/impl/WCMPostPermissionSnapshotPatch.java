@@ -37,6 +37,8 @@ import org.springframework.extensions.surf.util.I18NUtil;
 public class WCMPostPermissionSnapshotPatch extends AbstractPatch
 {
     private static final String MSG_SUCCESS = "patch.wcmPostPermissionSnapshotPatch.result";
+
+    private static final String AVM_SITE_STORE_NAME = "sitestore";
     
     private AVMSnapShotTriggeredIndexingMethodInterceptor avmSnapShotTriggeredIndexingMethodInterceptor;
     
@@ -71,6 +73,12 @@ public class WCMPostPermissionSnapshotPatch extends AbstractPatch
         List<AVMLuceneIndexer> indexers = new ArrayList<AVMLuceneIndexer>(stores.size());
         for (AVMStoreDescriptor storeDesc : stores)
         {
+            // post 4.0 we can safely skip "sitestore" no longer used by share
+            if(storeDesc.getName().equals(AVM_SITE_STORE_NAME))
+            {
+                continue;
+            }
+            
             AVMLuceneIndexer indexer = avmSnapShotTriggeredIndexingMethodInterceptor.getIndexer(storeDesc.getName());
             indexers.add(indexer);
         }
@@ -80,6 +88,12 @@ public class WCMPostPermissionSnapshotPatch extends AbstractPatch
 
         for (AVMStoreDescriptor storeDesc : stores)
         {
+            // post 4.0 we can safely skip "sitestore" no longer used by share
+            if(storeDesc.getName().equals(AVM_SITE_STORE_NAME))
+            {
+                continue;
+            }
+            
             if (avmService.getStoreRoot(-1, storeDesc.getName()).getLayerID() == -1)
             {
                 avmService.createSnapshot(storeDesc.getName(), "PermissionPatch", "Snapshot after 2.2 permission patch");

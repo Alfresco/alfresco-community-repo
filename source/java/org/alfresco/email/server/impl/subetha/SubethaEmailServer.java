@@ -64,6 +64,8 @@ public class SubethaEmailServer extends EmailServer
     public void startup()
     {
         serverImpl = new SMTPServer(new HandlerFactory());
+        
+        // MER - May need to override SMTPServer.createSSLSocket to specify non default keystore.
         serverImpl.setPort(getPort());
         serverImpl.setHostName(getDomain());
         serverImpl.setMaxConnections(getMaxConnections());
@@ -95,10 +97,15 @@ public class SubethaEmailServer extends EmailServer
         public void login(String username, String password)
                 throws LoginFailedException
         { 
-            if(authenticateUserNamePassword(username, password.toCharArray()))
+            if(!authenticateUserNamePassword(username, password.toCharArray()))
             {
                 throw new LoginFailedException("unable to log on");
-            }       
+            }
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("User authenticated successfully" + username);
+            }
+            // here if authentication successful.
         }
     }
     

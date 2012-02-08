@@ -191,19 +191,24 @@ public class DbObjectXMLTransformerTest
         Table tableOne = new Table(null, "table_one", columns, pk, fks, indexes);
         Table tableTwo = new Table(null, "table_two", columns, pk, fks, indexes);
         
-        Schema schema = new Schema("my_schema");
+        Schema schema = new Schema("my_schema", "alf_", 132);
         schema.add(tableOne);
         schema.add(tableTwo);
         schema.add(new Sequence(null, "sequence_one"));
         schema.add(new Sequence(null, "sequence_two"));
         schema.add(new Sequence(null, "sequence_three"));
+        schema.setValidators(new ArrayList<DbValidator>());
         
         transformer.output(schema);
         
         BufferedReader reader = new BufferedReader(new StringReader(writer.toString()));
         dumpOutput();
         assertHasPreamble(reader);
-        assertEquals("<schema name=\"my_schema\">", reader.readLine());
+        assertEquals("<schema " +
+                     "xmlns=\"http://www.alfresco.org/repo/db-schema\" " + 
+                     "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " + 
+                     "xsi:schemaLocation=\"http://www.alfresco.org/repo/db-schema db-schema.xsd\" " + 
+                     "name=\"my_schema\" dbprefix=\"alf_\" version=\"132\">", reader.readLine());
         assertEquals("  <objects>", reader.readLine());
         skipUntilEnd("       {table}", reader);
         skipUntilEnd("       {table}", reader);
@@ -282,6 +287,13 @@ public class DbObjectXMLTransformerTest
         dumpOutput();
         assertHasPreamble(reader);
         assertEquals("<table name=\"my_table\">", reader.readLine());
+        assertEquals("  <validators>", reader.readLine());
+        assertEquals("    <validator class=\"org.alfresco.util.schemacomp.validator.NameValidator\">", reader.readLine());        
+        assertEquals("      <properties>", reader.readLine());        
+        assertEquals("        <property name=\"pattern\">match_me_if_you_can</property>", reader.readLine());        
+        assertEquals("      </properties>", reader.readLine());        
+        assertEquals("    </validator>", reader.readLine());        
+        assertEquals("  </validators>", reader.readLine());
         assertEquals("  <columns>", reader.readLine());
         skipUntilEnd("       {column}", reader);
         skipUntilEnd("       {column}", reader);
@@ -295,13 +307,6 @@ public class DbObjectXMLTransformerTest
         skipUntilEnd("       {index}", reader);
         skipUntilEnd("       {index}", reader);
         assertEquals("  </indexes>", reader.readLine());
-        assertEquals("  <validators>", reader.readLine());
-        assertEquals("    <validator class=\"org.alfresco.util.schemacomp.validator.NameValidator\">", reader.readLine());        
-        assertEquals("      <properties>", reader.readLine());        
-        assertEquals("        <property name=\"pattern\">match_me_if_you_can</property>", reader.readLine());        
-        assertEquals("      </properties>", reader.readLine());        
-        assertEquals("    </validator>", reader.readLine());        
-        assertEquals("  </validators>", reader.readLine());
         assertEquals("</table>", reader.readLine());
     }
     

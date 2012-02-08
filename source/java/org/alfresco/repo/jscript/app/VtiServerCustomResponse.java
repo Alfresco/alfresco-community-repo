@@ -22,9 +22,7 @@ import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.jscript.ScriptUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.ibatis.migration.commands.StatusCommand;
 import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
 
 import java.io.Serializable;
 import java.util.LinkedHashMap;
@@ -43,6 +41,7 @@ public class VtiServerCustomResponse implements CustomResponse
 
     private int vtiServerPort = 0;
     private String vtiServerHost;
+    private String vtiServerProtocol;
     private SysAdminParams sysAdminParams;
     private ScriptUtils scriptUtils;
 
@@ -87,6 +86,16 @@ public class VtiServerCustomResponse implements CustomResponse
     }
 
     /**
+     * Setter for vtiServer Protocol
+     *
+     * @param vtiServerProtocol
+     */
+    public void setProtocol(String vtiServerProtocol)
+    {
+        this.vtiServerProtocol = vtiServerProtocol;
+    }
+
+    /**
      * Populates the DocLib webscript response with custom metadata
      *
      * @return JSONObject or null
@@ -109,6 +118,10 @@ public class VtiServerCustomResponse implements CustomResponse
             if (this.vtiServerHost != null)
             {
                 jsonObj.put("host", this.sysAdminParams.subsituteHost(this.vtiServerHost));
+            }
+            if (this.vtiServerProtocol != null)
+            {
+                jsonObj.put("protocol", this.vtiServerProtocol);
             }
             return (Serializable)jsonObj;
         }

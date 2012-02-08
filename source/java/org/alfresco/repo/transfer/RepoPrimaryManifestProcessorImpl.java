@@ -452,6 +452,12 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
                 }
             }
         }
+        else
+        {
+            logComment("Not updating local node - node is local to this repository): " + node.getNodeRef());
+            // Not a transferred node.
+            return;
+        }
         
         QName parentAssocType = primaryParentAssoc.getTypeQName();
         QName parentAssocName = primaryParentAssoc.getQName();

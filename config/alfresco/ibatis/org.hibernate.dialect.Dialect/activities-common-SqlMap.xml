@@ -95,7 +95,7 @@
       having count(*) > #{maxFeedSize}
       ]]>
    </select>
-   
+      
    <!-- user feed - all sites - everyone -->
    <select id="select_activity_feed_for_feeduser" parameterType="ActivityFeedQuery" resultType="ActivityFeed">
       select id as id, activity_type as activityType, activity_format as activitySummaryFormat, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
@@ -104,6 +104,14 @@
       and activity_format = #{activitySummaryFormat}
       <if test="minId != null"><![CDATA[ and id >= #{minId} ]]></if>
       order by post_date desc
+   </select>
+   
+   <select id="count_activity_feed_for_feeduser" parameterType="ActivityFeedQuery" resultType="long">
+      select count(1)
+      from alf_activity_feed
+      where feed_user_id = #{feedUserId}
+      and activity_format = #{activitySummaryFormat}
+      <if test="minId != null"><![CDATA[ and id >= #{minId} ]]></if>
    </select>
    
    <!-- user feed - all sites - others (not me) -->
@@ -115,6 +123,15 @@
       and activity_format = #{activitySummaryFormat}
       <if test="minId != null"><![CDATA[ and id >= #{minId} ]]></if>
       order by post_date desc
+   </select>
+
+   <select id="count_activity_feed_for_feeduser_others" parameterType="ActivityFeedQuery" resultType="long">
+      select count(1)
+      from alf_activity_feed
+      where feed_user_id = #{feedUserId}
+       <![CDATA[ and post_user_id <> #{feedUserId} ]]>
+      and activity_format = #{activitySummaryFormat}
+      <if test="minId != null"><![CDATA[ and id >= #{minId} ]]></if>
    </select>
    
    <!-- user feed - all sites - me only (not others) -->
@@ -128,6 +145,15 @@
       order by post_date desc
    </select>
    
+   <select id="count_activity_feed_for_feeduser_me" parameterType="ActivityFeedQuery" resultType="long">
+      select count(1)
+      from alf_activity_feed
+      where feed_user_id = #{feedUserId}
+      and post_user_id = #{feedUserId}
+      and activity_format = #{activitySummaryFormat}
+      <if test="minId != null"><![CDATA[ and id >= #{minId} ]]></if>
+   </select>
+   
    <!-- user feed - given site - everyone -->
    <select id="select_activity_feed_for_feeduser_and_site" parameterType="ActivityFeedQuery" resultType="ActivityFeed">
       select id as id, activity_type as activityType, activity_format as activitySummaryFormat, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
@@ -137,6 +163,15 @@
       and activity_format = #{activitySummaryFormat}
       <if test="minId != null"><![CDATA[ and id >= #{minId} ]]></if>
       order by post_date desc
+   </select>
+
+   <select id="count_activity_feed_for_feeduser_and_site" parameterType="ActivityFeedQuery" resultType="long">
+      select count(1)
+      from alf_activity_feed
+      where feed_user_id = #{feedUserId}
+      and site_network = #{siteNetwork}
+      and activity_format = #{activitySummaryFormat}
+      <if test="minId != null"><![CDATA[ and id >= #{minId} ]]></if>
    </select>
    
    <!-- user feed - given site - others (not me) -->
@@ -151,6 +186,16 @@
       order by post_date desc
    </select>
    
+   <select id="count_activity_feed_for_feeduser_others_and_site" parameterType="ActivityFeedQuery" resultType="long">
+      select count(1)
+      from alf_activity_feed
+      where feed_user_id = #{feedUserId}
+      <![CDATA[ and post_user_id <> #{feedUserId} ]]>
+      and site_network = #{siteNetwork}
+      and activity_format = #{activitySummaryFormat}
+      <if test="minId != null"><![CDATA[ and id >= #{minId} ]]></if>
+   </select>
+   
    <!-- user feed - given site - me only (not others) -->
    <select id="select_activity_feed_for_feeduser_me_and_site" parameterType="ActivityFeedQuery" resultType="ActivityFeed">
       select id as id, activity_type as activityType, activity_format as activitySummaryFormat, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
@@ -162,7 +207,17 @@
       <if test="minId != null"><![CDATA[ and id >= #{minId} ]]></if>
       order by post_date desc
    </select>
-   
+
+   <select id="count_activity_feed_for_feeduser_me_and_site" parameterType="ActivityFeedQuery" resultType="long">
+      select count(1)
+      from alf_activity_feed
+      where feed_user_id = #{feedUserId}
+      and post_user_id = #{feedUserId}
+      and site_network = #{siteNetwork}
+      and activity_format = #{activitySummaryFormat}
+      <if test="minId != null"><![CDATA[ and id >= #{minId} ]]></if>
+   </select>
+      
    <!-- site feed - given site -->
    <select id="select_activity_feed_for_site" parameterType="ActivityFeedQuery" resultType="ActivityFeed">
       <![CDATA[
@@ -172,6 +227,16 @@
       and site_network = #{siteNetwork}
       and activity_format = #{activitySummaryFormat}
       order by post_date desc
+      ]]>
+   </select>
+   
+   <select id="count_activity_feed_for_site" parameterType="ActivityFeedQuery" resultType="long">
+      <![CDATA[
+      select count(1)
+      from alf_activity_feed
+      where (feed_user_id = '' or feed_user_id is null)
+      and site_network = #{siteNetwork}
+      and activity_format = #{activitySummaryFormat}
       ]]>
    </select>
    

@@ -20,4 +20,8 @@
            <value>sleep-action</value>
        </property>
    </bean>
+   
+   <bean id="transient-fail-action"
+         class="org.alfresco.repo.action.ActionServiceImplTest$TransientFailActionExecuter"
+         parent="action-executer" />
 </beans>

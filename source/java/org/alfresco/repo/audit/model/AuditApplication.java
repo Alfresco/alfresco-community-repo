@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -45,6 +45,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class AuditApplication
 {
+    public static final String AUDIT_APPLICATION_PREFIX_FOR_PRE_DATA = "PreCallData";
     public static final String AUDIT_PATH_SEPARATOR = "/";
     public static final String AUDIT_KEY_REGEX = "[a-zA-Z0-9\\-\\_\\.]+";
     public static final String AUDIT_PATH_REGEX = "(/[a-zA-Z0-9:\\-\\_\\.]+)+";
@@ -500,5 +501,19 @@ public class AuditApplication
                 msg + "\n" +
                 "   Application: " + applicationName + "\n" +
                 "   Path:        " + path);
+    }
+    
+    /**
+     * Returns {@code true} if the application name has a prefix of {@code "PreCallData"}
+     * that indicates that the only purpose of the Application is to generate data to be
+     * passed to a post call audit application. In this situation the application's
+     * audit data is not audited. This allows the post audit application to have access to
+     * 'before' values including those created by extractors and generators. Some of which
+     * will not be available (for example the node has been deleted) or will have changed
+     * as a result of the call. 
+     */
+    public boolean isApplicationJustGeneratingPreCallData()
+    {
+        return applicationName != null && applicationName.startsWith(AUDIT_APPLICATION_PREFIX_FOR_PRE_DATA);
     }
 }

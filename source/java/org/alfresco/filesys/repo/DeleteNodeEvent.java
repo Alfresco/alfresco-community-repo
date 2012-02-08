@@ -33,8 +33,6 @@ public class DeleteNodeEvent extends NodeEvent {
 	
 	private String m_path;
 	
-	private boolean m_deleteConfirm;
-	
 	/**
 	 * Class constructor
 	 * 
@@ -58,24 +56,6 @@ public class DeleteNodeEvent extends NodeEvent {
 	}
 	
 	/**
-	 * Check if the delete confirm flag is set
-	 * 
-	 * @return boolean
-	 */
-	public final boolean hasDeleteConfirm() {
-		return m_deleteConfirm;
-	}
-
-	/**
-	 * Set/clear the delete confirm flag
-	 * 
-	 * @param delConfirm boolean
-	 */
-	public final void setDeleteConfirm( boolean delConfirm) {
-		m_deleteConfirm = delConfirm;
-	}
-	
-	/**
 	 * Return the node event as a string
 	 * 
 	 * @return String
@@ -89,8 +69,6 @@ public class DeleteNodeEvent extends NodeEvent {
 		str.append(getNodeRef());
 		str.append(",path=");
 		str.append(getPath());
-		str.append(",confirm=");
-		str.append(hasDeleteConfirm());
 		str.append("]");
 		
 		return str.toString();

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -688,16 +688,20 @@ public class AuditComponentImpl implements AuditComponent
         Long entryId = null;
         if (!auditData.isEmpty())
         {
-            // Persist the values
-            entryId = auditDAO.createAuditEntry(applicationId, time, username, auditData);
+            // Persist the values (if not just gathering data in a pre call for use in a post call)
+            boolean justGatherPreCallData = application.isApplicationJustGeneratingPreCallData();
+            if (!justGatherPreCallData)
+            {
+                entryId = auditDAO.createAuditEntry(applicationId, time, username, auditData);
+            }
             // Done
             if (logger.isDebugEnabled())
             {
                 StringBuilder sb = new StringBuilder();
                 sb.append(
-                        "\nNew audit entry: \n" +
+                        ((justGatherPreCallData) ? "\nPreCallData: \n" : "\nNew audit entry: \n") +
                         "\tApplication ID: " + applicationId + "\n" +
-                        "\tEntry ID:       " + entryId + "\n" +
+                        ((justGatherPreCallData) ? "" : "\tEntry ID:       " + entryId + "\n") +
                         "\tValues:         " + "\n");
                 for (Map.Entry<String, Serializable> entry : values.entrySet())
                 {

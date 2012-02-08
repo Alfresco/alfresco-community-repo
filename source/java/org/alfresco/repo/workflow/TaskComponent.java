@@ -63,13 +63,22 @@ public interface TaskComponent
     public List<WorkflowTask> getPooledTasks(List<String> authorities);
     
     /**
+     * @deprecated Use overloaded method with the {@code sameSession} parameter
+     * (this method defaults the parameter to {@code false}).
+     */ 
+    public List<WorkflowTask> queryTasks(WorkflowTaskQuery query);
+    
+    /**
      * Query for tasks
      * 
      * @param query  the filter by which tasks are queried
+     * @param sameSession indicates that the returned {@link WorkflowTask} elements will be used in
+     *        the same session. If {@code true}, the returned List will be a lazy loaded list
+     *        providing greater performance.
      * @return  the list of tasks matching the specified query
      */
-    public List<WorkflowTask> queryTasks(WorkflowTaskQuery query);
-    
+    public List<WorkflowTask> queryTasks(final WorkflowTaskQuery query, boolean sameSession);
+
     /**
      * Update the Properties and Associations of a Task
      * 
@@ -115,5 +124,13 @@ public interface TaskComponent
      * @return  the list of active timers
      */
     public WorkflowTask getStartTask(String workflowInstanceId);
+    
+    
+    /**
+     * Gets all start tasks for the specified workflow
+     * 
+     * @return  the list of start tasks
+     */
+    public List<WorkflowTask> getStartTasks(final List<String> workflowInstanceIds, final boolean sameSession);    
 }
 

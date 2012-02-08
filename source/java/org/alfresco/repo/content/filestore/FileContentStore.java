@@ -362,36 +362,6 @@ public class FileContentStore
     }
 
     /**
-     * Recursive directory size calculation
-     */
-    private long calculateDirectorySize(File dir)
-    {
-        int size = 0;
-        File[] files = dir.listFiles();
-        for (File file : files)
-        {
-            if (file.isDirectory())
-            {
-                size += calculateDirectorySize(file);
-            }
-            else
-            {
-                size += file.length();
-            }
-        }
-        return size;
-    }
-
-    /**
-     * Performs a full, deep size calculation
-     */
-    @Override
-    public long getSpaceUsed()
-    {
-        return calculateDirectorySize(rootDirectory);
-    }
-
-    /**
      * Get the filesystem's free space.
      * 
      * @return          Returns the root directory partition's {@link File#getFreeSpace() free space}

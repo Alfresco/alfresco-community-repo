@@ -40,6 +40,9 @@
         <property name="tenantService">
             <ref bean="tenantService" />
         </property>
+        <property name="repositoryState">
+            <ref bean="repositoryState" />
+        </property>
         <property name="languageMappings">
             <map>
                 <entry key="lucene" value="alfresco" />

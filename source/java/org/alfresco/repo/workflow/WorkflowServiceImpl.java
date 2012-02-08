@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -552,14 +554,54 @@ public class WorkflowServiceImpl implements WorkflowService
      */
     public WorkflowInstance cancelWorkflow(String workflowId)
     {
-        String engineId = BPMEngineRegistry.getEngineId(workflowId);
-        WorkflowComponent component = getWorkflowComponent(engineId);
-        WorkflowInstance instance = component.cancelWorkflow(workflowId);
-        // NOTE: Delete workflow package after cancelling workflow, so it's
-        // still available
-        // in process-end events of workflow definition
-        workflowPackageComponent.deletePackage(instance.getWorkflowPackage());
-        return instance;
+        return cancelWorkflows(Collections.singletonList(workflowId)).get(0);
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see
+     * org.alfresco.service.cmr.workflow.WorkflowService#cancelWorkflows
+     */
+    public List<WorkflowInstance> cancelWorkflows(List<String> workflowIds)
+    {
+        List<WorkflowInstance> result = new ArrayList<WorkflowInstance>(workflowIds.size());
+        
+        // Batch the workflow IDs by engine ID
+        Map<String, List<String>> workflows = batchByEngineId(workflowIds);
+        
+        // Process each engine's batch
+        for (Map.Entry<String, List<String>> entry : workflows.entrySet())
+        {
+            String engineId = entry.getKey();
+            WorkflowComponent component = getWorkflowComponent(engineId);
+            List<WorkflowInstance> instances = component.cancelWorkflows(entry.getValue());
+            for (WorkflowInstance instance : instances)
+            {
+                // NOTE: Delete workflow package after cancelling workflow, so it's
+                // still available
+                // in process-end events of workflow definition
+                workflowPackageComponent.deletePackage(instance.getWorkflowPackage());
+                result.add(instance);
+            }
+        }        
+        return result;
+    }
+
+    private Map<String, List<String>> batchByEngineId(List<String> workflowIds)
+    {
+        Map<String, List<String>> workflows = new LinkedHashMap<String, List<String>>(workflowIds.size() * 2);
+        for (String workflowId: workflowIds)
+        {
+            String engineId = BPMEngineRegistry.getEngineId(workflowId);
+            List <String> engineWorkflows = workflows.get(engineId);
+            if (engineWorkflows == null)
+            {
+                engineWorkflows = new LinkedList<String>();
+                workflows.put(engineId, engineWorkflows);
+            }
+            engineWorkflows.add(workflowId);
+        }
+        return workflows;
     }
 
     /*
@@ -644,6 +686,33 @@ public class WorkflowServiceImpl implements WorkflowService
         return component.getStartTask(workflowInstanceId);
     }
     
+    @Override
+    public List<WorkflowTask> getStartTasks(List<String> workflowInstanceIds, boolean sameSession)
+    {
+        List<WorkflowTask> result = new ArrayList<WorkflowTask>(workflowInstanceIds.size());
+        
+        // Batch the workflow IDs by engine ID
+        Map<String, List<String>> workflows = batchByEngineId(workflowInstanceIds);
+                
+        // Process each engine's batch
+        for (Map.Entry<String, List<String>> entry : workflows.entrySet())
+        {
+            String engineId = entry.getKey();
+            TaskComponent component = getTaskComponent(engineId);
+            List<WorkflowTask> startTasks = component.getStartTasks(entry.getValue(), sameSession);
+
+            // Optimization to allow 'lazy list' to pass through
+            if (workflows.size() == 1)
+            {
+                return startTasks;
+            }
+
+            result.addAll(startTasks);
+        }
+        
+        return result;
+    }
+
     /*
      * (non-Javadoc)
      * @see
@@ -723,6 +792,11 @@ public class WorkflowServiceImpl implements WorkflowService
      */
     public List<WorkflowTask> queryTasks(WorkflowTaskQuery query)
     {
+        return queryTasks(query, false);
+    }
+    
+    public List<WorkflowTask> queryTasks(WorkflowTaskQuery query, boolean sameSession)
+    {
         // extract task component to perform query
         String engineId = null;
         String processId = query.getProcessId();
@@ -740,8 +814,9 @@ public class WorkflowServiceImpl implements WorkflowService
         }
 
         // perform query
-        List<WorkflowTask> tasks = new ArrayList<WorkflowTask>(10);
+        List<WorkflowTask> tasks;
         String[] ids = registry.getTaskComponents();
+        List<TaskComponent> taskComponents = new ArrayList<TaskComponent>(ids.length);
         for (String id : ids)
         {
             TaskComponent component = registry.getTaskComponent(id);
@@ -752,7 +827,19 @@ public class WorkflowServiceImpl implements WorkflowService
             {
                 continue;
             }
-            tasks.addAll(component.queryTasks(query));
+            taskComponents.add(component);
+        }
+        if (taskComponents.size() == 1)
+        {
+            tasks = taskComponents.get(0).queryTasks(query, sameSession);
+        }
+        else
+        {
+            tasks = new ArrayList<WorkflowTask>(10);
+            for (TaskComponent component: taskComponents)
+            {
+                tasks.addAll(component.queryTasks(query, sameSession));
+            }
         }
         return Collections.unmodifiableList(tasks);
     }

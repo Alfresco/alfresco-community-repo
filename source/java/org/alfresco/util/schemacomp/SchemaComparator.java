@@ -18,7 +18,6 @@
  */
 package org.alfresco.util.schemacomp;
 
-import org.alfresco.util.schemacomp.Result.Strength;
 import org.alfresco.util.schemacomp.model.Schema;
 import org.apache.xml.serialize.LineSeparator;
 import org.hibernate.dialect.Dialect;
@@ -64,7 +63,7 @@ public class SchemaComparator
      */
     private void compare()
     {
-        referenceSchema.diff(targetSchema, ctx, Strength.ERROR);
+        referenceSchema.diff(targetSchema, ctx);
     }
 
 

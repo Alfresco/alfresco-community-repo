@@ -682,15 +682,15 @@ public class NodeMonitor extends TransactionListenerAdapter
 
 		// Check if the delete was confirmed
 		
-		if ( deleteEvent.hasDeleteConfirm() == false) {
-			
-			// DEBUG
-			
-			if ( logger.isDebugEnabled())
-				logger.debug("DeleteNode not confirmed, nodeRef=" + deleteEvent.getNodeRef() + ", path=" + deleteEvent.getPath());
-		
-			return;
-		}
+//		if ( deleteEvent.hasDeleteConfirm() == false) {
+//			
+//			// DEBUG
+//			
+//			if ( logger.isDebugEnabled())
+//				logger.debug("DeleteNode not confirmed, nodeRef=" + deleteEvent.getNodeRef() + ", path=" + deleteEvent.getPath());
+//		
+//			return;
+//		}
 		
 		// Strip the root path
 		

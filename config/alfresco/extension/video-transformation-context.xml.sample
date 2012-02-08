@@ -241,6 +241,7 @@
             <value>video/mp4</value>
           </property>
         </bean>
+        <!-- //Did not work in ffmpeg 0.8.6 - Please check the latest ffmpeg documentation for the correct setttings
         <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
           <property name="sourceMimetype">
             <value>video/x-msvideo</value>
@@ -249,6 +250,7 @@
             <value>video/mp4</value>
           </property>
         </bean>
+        -->
         <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
           <property name="sourceMimetype">
             <value>video/quicktime</value>
@@ -281,6 +283,7 @@
             <value>video/mp4</value>
           </property>
         </bean>
+        <!-- //Did not work in ffmpeg 0.8.6 - Please check the latest ffmpeg documentation for the correct setttings
         <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
           <property name="sourceMimetype">
             <value>video/ogg</value>
@@ -289,6 +292,7 @@
             <value>video/mp4</value>
           </property>
         </bean>
+      -->
       </list>
     </property>
     <property name="mimetypeService">

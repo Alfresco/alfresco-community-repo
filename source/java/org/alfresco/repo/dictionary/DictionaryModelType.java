@@ -887,7 +887,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
             for (WorkflowTaskDefinition workflowTaskDef : workflowService.getTaskDefinitions(workflowDef.getId()))
             {
                 TypeDefinition workflowTypeDef = workflowTaskDef.metadata;
-                if (workflowTypeDef.getName().toString().equals(className))
+                if (workflowTypeDef.getName().equals(className))
                 {
                     throw new AlfrescoRuntimeException("Failed to validate model delete" + tenantDomain + " - found task definition in workflow " + workflowDef.getName() + " with " + classType + " '" + className + "'");
                 }

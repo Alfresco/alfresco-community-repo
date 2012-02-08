@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.httpclient.HttpClientFactory;
+import org.alfresco.repo.admin.RepositoryState;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParserException;
 import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
 import org.alfresco.repo.tenant.TenantService;
@@ -43,6 +44,7 @@ import org.alfresco.service.cmr.search.SearchParameters.FieldFacetMethod;
 import org.alfresco.service.cmr.search.SearchParameters.FieldFacetSort;
 import org.alfresco.service.cmr.search.SearchParameters.SortDefinition;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.codec.net.URLCodec;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
@@ -82,7 +84,10 @@ public class SolrQueryHTTPClient
     private String baseUrl;
 
     private HttpClient httpClient;
+    
 	private HttpClientFactory httpClientFactory;
+	
+	private RepositoryState repositoryState;
 	
     public SolrQueryHTTPClient()
     {
@@ -90,6 +95,14 @@ public class SolrQueryHTTPClient
 
     public void init()
     {
+        PropertyCheck.mandatory(this, "NodeService", nodeService);
+        PropertyCheck.mandatory(this, "PermissionService", nodeService);
+        PropertyCheck.mandatory(this, "TenantService", nodeService);
+        PropertyCheck.mandatory(this, "LanguageMappings", nodeService);
+        PropertyCheck.mandatory(this, "StoreMappings", nodeService);
+        PropertyCheck.mandatory(this, "HttpClientFactory", nodeService);
+        PropertyCheck.mandatory(this, "RepositoryState", nodeService);
+        
     	StringBuilder sb = new StringBuilder();
     	sb.append("/solr");
     	this.baseUrl = sb.toString();
@@ -98,6 +111,14 @@ public class SolrQueryHTTPClient
     	HttpClientParams params = httpClient.getParams();
     	params.setBooleanParameter(HttpClientParams.PREEMPTIVE_AUTHENTICATION, true);
     	httpClient.getState().setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), new UsernamePasswordCredentials("admin", "admin"));
+    }
+
+    /**
+     * @param repositoryState the repositoryState to set
+     */
+    public void setRepositoryState(RepositoryState repositoryState)
+    {
+        this.repositoryState = repositoryState;
     }
 
     public void setHttpClientFactory(HttpClientFactory httpClientFactory)
@@ -132,6 +153,11 @@ public class SolrQueryHTTPClient
 
 	public ResultSet executeQuery(SearchParameters searchParameters, String language)
     {   
+	    if(repositoryState.isBootstrapping())
+	    {
+	        throw new AlfrescoRuntimeException("SOLR queries can not be executed while the repository is bootstrapping");
+	    }
+	    
         try
         {
             URLCodec encoder = new URLCodec();

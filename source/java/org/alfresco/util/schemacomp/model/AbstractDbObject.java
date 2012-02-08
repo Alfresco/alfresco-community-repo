@@ -19,14 +19,12 @@
 package org.alfresco.util.schemacomp.model;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.alfresco.util.schemacomp.ComparisonUtils;
 import org.alfresco.util.schemacomp.DbProperty;
 import org.alfresco.util.schemacomp.DefaultComparisonUtils;
 import org.alfresco.util.schemacomp.DiffContext;
-import org.alfresco.util.schemacomp.Result.Strength;
 import org.alfresco.util.schemacomp.Results;
 import org.alfresco.util.schemacomp.validator.DbValidator;
 
@@ -39,10 +37,8 @@ public abstract class AbstractDbObject implements DbObject
 {
     private DbObject parent;
     private String name;
-    /** How differences in the name field should be reported */
-    private Strength nameStrength = Strength.ERROR;
     protected ComparisonUtils comparisonUtils = new DefaultComparisonUtils();
-    private List<DbValidator> validators = new ArrayList<DbValidator>();
+    private final List<DbValidator> validators = new ArrayList<DbValidator>();
     
 
     /**
@@ -76,22 +72,6 @@ public abstract class AbstractDbObject implements DbObject
     {
         this.name = name;
     }
-    
-    /**
-     * @return the nameStrength
-     */
-    public Strength getNameStrength()
-    {
-        return this.nameStrength;
-    }
-
-    /**
-     * @param nameStrength the nameStrength to set
-     */
-    public void setNameStrength(Strength nameStrength)
-    {
-        this.nameStrength = nameStrength;
-    }
 
     @Override
     public boolean sameAs(DbObject other)
@@ -106,7 +86,8 @@ public abstract class AbstractDbObject implements DbObject
         }
         if (!this.getClass().equals(other.getClass()))
         {
-            // Objects are not the same type, even if they have the same name and parent
+            // Objects are not the same type, so are not the same - even if they
+            // do have the same name and parent.
             return false;
         }
         if (getName() != null && other != null && other.getName() != null)
@@ -121,6 +102,7 @@ public abstract class AbstractDbObject implements DbObject
             {
                 sameParent = true;
             }
+            // Same parent & same name - it must be considered the same object.
             return sameParent && getName().equals(other.getName());
         }
         
@@ -133,6 +115,7 @@ public abstract class AbstractDbObject implements DbObject
         final int prime = 31;
         int result = 1;
         result = prime * result + ((this.name == null) ? 0 : this.name.hashCode());
+        result = prime * result + ((this.parent == null) ? 0 : this.parent.hashCode());
         return result;
     }
 
@@ -148,9 +131,14 @@ public abstract class AbstractDbObject implements DbObject
             if (other.name != null) return false;
         }
         else if (!this.name.equals(other.name)) return false;
+        if (this.parent == null)
+        {
+            if (other.parent != null) return false;
+        }
+        else if (!this.parent.equals(other.parent)) return false;
         return true;
     }
-    
+
     @Override
     public String toString()
     {
@@ -181,14 +169,13 @@ public abstract class AbstractDbObject implements DbObject
      * its diff correctly.
      */
     @Override
-    public void diff(DbObject right, DiffContext ctx, Strength strength)
-    {   
+    public void diff(DbObject right, DiffContext ctx)
+    {       
         DbProperty leftNameProp = new DbProperty(this, "name");
         DbProperty rightNameProp = new DbProperty(right, "name");
+        comparisonUtils.compareSimple(leftNameProp, rightNameProp, ctx);
         
-        comparisonUtils.compareSimple(leftNameProp, rightNameProp, ctx, getNameStrength());
-        
-        doDiff(right, ctx, strength);
+        doDiff(right, ctx);
     }
     
     
@@ -211,9 +198,8 @@ public abstract class AbstractDbObject implements DbObject
      * 
      * @param right
      * @param differences
-     * @param strength
      */
-    protected void doDiff(DbObject right, DiffContext ctx, Strength strength)
+    protected void doDiff(DbObject right, DiffContext ctx)
     {
     }
     
@@ -243,17 +229,32 @@ public abstract class AbstractDbObject implements DbObject
     @Override
     public void setValidators(List<DbValidator> validators)
     {
-        if (validators == null)
+        this.validators.clear();
+        if (validators != null)
         {
-            this.validators = Collections.emptyList();
-        }
-        else
-        {
-            this.validators = validators;
+            this.validators.addAll(validators);
         }
     }
 
-    
+    @Override
+    public boolean hasValidators()
+    {
+        return getValidators().size() > 0;
+    }
+
+    @Override
+    public boolean hasObjectLevelValidator()
+    {
+        for (DbValidator validator : getValidators())
+        {
+            if (validator.validatesFullObject())
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public String getTypeName()
     {

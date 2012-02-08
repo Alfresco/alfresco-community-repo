@@ -23,7 +23,7 @@ import java.io.Serializable;
 /**
  * Job settings passed from grid task to grid job
  */
-public class JobSettings implements Serializable
+public class JobSettings implements Serializable, Cloneable
 {
     public static final long serialVersionUID = -3896042917378679686L;
     
@@ -81,6 +81,7 @@ public class JobSettings implements Serializable
         this.maxItemsPerCycle = maxItemsPerCycle;
     }
     
+    @Override
     public JobSettings clone()
     {
         JobSettings js = new JobSettings();

@@ -6,6 +6,7 @@
      <bean id="invitationService" class="org.alfresco.repo.invitation.InvitationServiceImpl" init-method="init">
         <property name="workflowService" ref="WorkflowService"/>
         <property name="workflowAdminService" ref="workflowAdminService"/>
+        <property name="actionService" ref="ActionService"/>
         <property name="personService" ref="PersonService"/>
         <property name="permissionService" ref="PermissionService"/>
         <property name="authenticationService" ref="AuthenticationService"/>

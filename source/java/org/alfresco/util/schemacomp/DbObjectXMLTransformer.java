@@ -67,18 +67,25 @@ public class DbObjectXMLTransformer
         // and a name attribute corresponding to the value of getName(),
         // e.g. For an instance of a Column: <column name="the_column_name"/>
         final AttributesImpl attribs = new AttributesImpl();
+        if (dbObject instanceof Schema)
+        {
+            // XML Schema (XSD) declarations.
+            attribs.addAttribute("", "", "xmlns", "CDATA", "http://www.alfresco.org/repo/db-schema");
+            attribs.addAttribute("", "", "xmlns:xsi", "CDATA", "http://www.w3.org/2001/XMLSchema-instance");
+            attribs.addAttribute("", "", "xsi:schemaLocation", "CDATA", "http://www.alfresco.org/repo/db-schema db-schema.xsd");
+        }
         attribs.addAttribute("", "", XML.ATTR_NAME, "CDATA", dbObject.getName());
-        // Add class-specific attributes.
+        // Add class-specific attributes (after common DbObject attributes).
         addAttributes(dbObject, attribs);
         String tagName = dbObject.getClass().getSimpleName().toLowerCase();   
         xmlOut.startElement("", "", tagName, attribs);
         
+        // All DbObjects potentially have validator configuration present in the XML.
+        transformValidators(dbObject.getValidators());
         
         // The element's contents can optionally be populated with class-specific content.
         transformDbObject(dbObject);
         
-        // All DbObjects potentially have validator configuration present in the XML.
-        transformValidators(dbObject.getValidators());
         
         // Provide the end tag, or close an empty element.
         xmlOut.endElement("", "", tagName);
@@ -130,7 +137,13 @@ public class DbObjectXMLTransformer
      */
     private void addAttributes(DbObject dbObject, AttributesImpl attribs)
     {
-        if (dbObject instanceof Index)
+        if (dbObject instanceof Schema)
+        {
+            Schema schema = (Schema) dbObject;
+            attribs.addAttribute("", "", XML.ATTR_DB_PREFIX, "CDATA", schema.getDbPrefix());
+            attribs.addAttribute("", "", XML.ATTR_VERSION, "CDATA", Integer.toString(schema.getVersion()));
+        }
+        else if (dbObject instanceof Index)
         {
             Index index = (Index) dbObject;
             attribs.addAttribute("", "", XML.ATTR_UNIQUE, "CDATA", Boolean.toString(index.isUnique()));

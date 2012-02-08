@@ -18,6 +18,9 @@
  */
 package org.alfresco.repo.node;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
@@ -34,7 +37,18 @@ import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.node.NodeVersionKey;
 import org.alfresco.repo.domain.node.ParentAssocsInfo;
+import org.alfresco.repo.node.NodeServicePolicies.BeforeCreateNodePolicy;
+import org.alfresco.repo.node.NodeServicePolicies.BeforeSetNodeTypePolicy;
+import org.alfresco.repo.node.NodeServicePolicies.BeforeUpdateNodePolicy;
+import org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy;
+import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
+import org.alfresco.repo.node.NodeServicePolicies.OnSetNodeTypePolicy;
+import org.alfresco.repo.node.NodeServicePolicies.OnUpdateNodePolicy;
+import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
 import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.policy.Policy;
+import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
@@ -52,6 +66,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
+import org.alfresco.util.PropertyMap;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -74,6 +89,7 @@ public class NodeServiceTest extends TestCase
     protected ServiceRegistry serviceRegistry;
     protected NodeService nodeService;
     private TransactionService txnService;
+    private PolicyComponent policyComponent;
     private SimpleCache<Serializable, Serializable> nodesCache;
     private SimpleCache<Serializable, Serializable> propsCache;
     private SimpleCache<Serializable, Serializable> aspectsCache;
@@ -91,6 +107,7 @@ public class NodeServiceTest extends TestCase
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         nodeService = serviceRegistry.getNodeService();
         txnService = serviceRegistry.getTransactionService();
+        policyComponent = (PolicyComponent) ctx.getBean("policyComponent");
         
         // Get the caches for later testing
         nodesCache = (SimpleCache<Serializable, Serializable>) ctx.getBean("node.nodesSharedCache");
@@ -914,5 +931,112 @@ public class NodeServiceTest extends TestCase
         assertTrue("Properties must be carried", nodePropsEight == nodePropsSeven);
         assertTrue("Aspects be carried", nodeAspectsEight == nodeAspectsSeven);
         assertTrue("Parent assocs must be carried", nodeParentAssocsEight == nodeParentAssocsSeven);
+    }
+    
+    public void testCreateNodePolicies()
+    {
+        // Create and bind the mock behaviours...
+        OnCreateNodePolicy onCreateNodePolicy = createClassPolicy(
+                    OnCreateNodePolicy.class,
+                    OnCreateNodePolicy.QNAME,
+                    ContentModel.TYPE_CONTENT);
+        
+        BeforeCreateNodePolicy beforeCreateNodePolicy = createClassPolicy(
+                    BeforeCreateNodePolicy.class,
+                    BeforeCreateNodePolicy.QNAME,
+                    ContentModel.TYPE_CONTENT); 
+        
+        OnCreateChildAssociationPolicy onCreateChildAssociationPolicy = createAssocPolicy(
+                        OnCreateChildAssociationPolicy.class,
+                        OnCreateChildAssociationPolicy.QNAME,
+                        ContentModel.TYPE_STOREROOT);
+        
+        OnUpdatePropertiesPolicy onUpdatePropertiesPolicy = createClassPolicy(
+                        OnUpdatePropertiesPolicy.class,
+                        OnUpdatePropertiesPolicy.QNAME,
+                        ContentModel.TYPE_CONTENT);
+        
+        // Create a node - this should result in the behaviours firing.
+        NodeRef newNodeRef = nodeService.createNode(
+                    this.rootNodeRef, 
+                    ContentModel.ASSOC_CHILDREN, 
+                    ContentModel.ASSOC_CHILDREN, 
+                    ContentModel.TYPE_CONTENT, 
+                    PropertyMap.EMPTY_MAP).getChildRef();
+        
+        Map<QName, Serializable> propsAfter = nodeService.getProperties(newNodeRef);
+        ChildAssociationRef childAssocRef = nodeService.getPrimaryParent(newNodeRef);
+        
+        // Check the behaviours fired as expected...
+        verify(beforeCreateNodePolicy).beforeCreateNode(
+                    rootNodeRef,
+                    ContentModel.ASSOC_CHILDREN,
+                    ContentModel.ASSOC_CHILDREN,
+                    ContentModel.TYPE_CONTENT);
+        verify(onCreateNodePolicy).onCreateNode(childAssocRef);
+        verify(onCreateChildAssociationPolicy).onCreateChildAssociation(childAssocRef, true);
+        verify(onUpdatePropertiesPolicy).onUpdateProperties(newNodeRef, PropertyMap.EMPTY_MAP, propsAfter);
+    }
+    
+    public void testSetNodeTypePolicies()
+    {   
+        // Create a node (before behaviours are attached)
+        NodeRef nodeRef = nodeService.createNode(
+                    this.rootNodeRef, 
+                    ContentModel.ASSOC_CHILDREN, 
+                    ContentModel.ASSOC_CHILDREN, 
+                    ContentModel.TYPE_CONTENT, 
+                    new HashMap<QName, Serializable>(0)).getChildRef();
+        
+        // Create and bind the mock behaviours...
+        BeforeUpdateNodePolicy beforeUpdatePolicy = createClassPolicy(
+                    BeforeUpdateNodePolicy.class,
+                    BeforeUpdateNodePolicy.QNAME,
+                    ContentModel.TYPE_CONTENT);
+        
+        OnUpdateNodePolicy onUpdatePolicy = createClassPolicy(
+                    OnUpdateNodePolicy.class,
+                    OnUpdateNodePolicy.QNAME,
+                    ContentModel.TYPE_FOLDER);
+        
+        BeforeSetNodeTypePolicy beforeSetNodeTypePolicy = createClassPolicy(
+                    BeforeSetNodeTypePolicy.class,
+                    BeforeSetNodeTypePolicy.QNAME,
+                    ContentModel.TYPE_CONTENT);
+        
+        OnSetNodeTypePolicy onSetNodeTypePolicy = createClassPolicy(
+                    OnSetNodeTypePolicy.class,
+                    OnSetNodeTypePolicy.QNAME,
+                    ContentModel.TYPE_FOLDER);
+             
+        // Set the type of the new node - this should trigger the correct behaviours.
+        nodeService.setType(nodeRef, ContentModel.TYPE_FOLDER);
+        
+        // Check the behaviours fired as expected...
+        verify(beforeUpdatePolicy).beforeUpdateNode(nodeRef);
+        verify(onUpdatePolicy).onUpdateNode(nodeRef);
+        verify(beforeSetNodeTypePolicy).beforeSetNodeType(nodeRef, ContentModel.TYPE_CONTENT, ContentModel.TYPE_FOLDER);
+        verify(onSetNodeTypePolicy).onSetNodeType(nodeRef, ContentModel.TYPE_CONTENT, ContentModel.TYPE_FOLDER);
+    }
+    
+    private <T extends Policy> T createClassPolicy(Class<T> policyInterface, QName policyQName, QName triggerOnClass)
+    {
+        T policy = mock(policyInterface);
+        policyComponent.bindClassBehaviour(
+                    policyQName, 
+                    triggerOnClass, 
+                    new JavaBehaviour(policy, policyQName.getLocalName()));
+        return policy;
+    }
+    
+
+    private <T extends Policy> T createAssocPolicy(Class<T> policyInterface, QName policyQName, QName triggerOnClass)
+    {
+        T policy = mock(policyInterface);
+        policyComponent.bindAssociationBehaviour(
+                    policyQName, 
+                    triggerOnClass, 
+                    new JavaBehaviour(policy, policyQName.getLocalName()));
+        return policy;
     }
 }

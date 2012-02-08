@@ -30,7 +30,6 @@ import org.alfresco.util.schemacomp.DbObjectVisitor;
 import org.alfresco.util.schemacomp.DbProperty;
 import org.alfresco.util.schemacomp.DiffContext;
 import org.alfresco.util.schemacomp.Difference.Where;
-import org.alfresco.util.schemacomp.Result.Strength;
 import org.alfresco.util.schemacomp.Results;
 import org.alfresco.util.schemacomp.validator.AbstractDbValidator;
 import org.alfresco.util.schemacomp.validator.DbValidator;
@@ -64,12 +63,6 @@ public class AbstractDbObjectTest
         dbObject = new ConcreteDbObject("the_object");
         ctx = new DiffContext(dialect, differences, null, null);
     }
-
-    @Test
-    public void defaultNameStrength()
-    {
-        assertEquals(Strength.ERROR, dbObject.getNameStrength());
-    }
     
     @Test
     public void sameAs()
@@ -91,9 +84,8 @@ public class AbstractDbObjectTest
     public void diff()
     {
         ConcreteDbObject otherObject = new ConcreteDbObject("the_other_object");
-        dbObject.setNameStrength(Strength.WARN);
         
-        dbObject.diff(otherObject, ctx, Strength.ERROR);
+        dbObject.diff(otherObject, ctx);
         
         InOrder inOrder = inOrder(differences);
 
@@ -101,8 +93,7 @@ public class AbstractDbObjectTest
         inOrder.verify(differences).add(
                     Where.IN_BOTH_BUT_DIFFERENCE,
                     new DbProperty(dbObject, "name"),
-                    new DbProperty(otherObject, "name"),
-                    Strength.WARN);
+                    new DbProperty(otherObject, "name"));
         
         // Then the doDiff() method should be processed
         inOrder.verify(differences).add(
@@ -143,7 +134,7 @@ public class AbstractDbObjectTest
         }
 
         @Override
-        protected void doDiff(DbObject right, DiffContext ctx, Strength strength)
+        protected void doDiff(DbObject right, DiffContext ctx)
         {
             Results differences = ctx.getComparisonResults();
             differences.add(

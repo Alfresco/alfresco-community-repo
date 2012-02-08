@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 import org.alfresco.util.schemacomp.Difference.Where;
+import org.alfresco.util.schemacomp.model.PrimaryKey;
 import org.alfresco.util.schemacomp.model.Schema;
 import org.alfresco.util.schemacomp.model.Table;
 import org.hibernate.dialect.Dialect;
@@ -56,8 +57,8 @@ public class SchemaComparatorTest
     @Before
     public void setup()
     {
-        reference = new Schema("schema");
-        target = new Schema("schema");
+        reference = new Schema("schema", "alf_", 590);
+        target = new Schema("schema", "alf_", 590);
         dialect = new MySQL5InnoDBDialect();
     }
     
@@ -94,6 +95,7 @@ public class SchemaComparatorTest
         
         Iterator<Result> it = results.iterator();
         
+        
         // Table table_in_reference only appears in the reference schema
         Difference diff = (Difference) it.next();
         assertEquals(Where.ONLY_IN_REFERENCE, diff.getWhere());
@@ -104,21 +106,11 @@ public class SchemaComparatorTest
         
         // Table tbl_has_diff_pk has PK of "id" in reference and "nodeRef" in target
         diff = (Difference) it.next();
-        assertEquals(Where.ONLY_IN_REFERENCE, diff.getWhere());
+        assertEquals(Where.IN_BOTH_BUT_DIFFERENCE, diff.getWhere());
         assertEquals("schema.tbl_has_diff_pk.pk_is_diff.columnNames[0]", diff.getLeft().getPath());
-        assertEquals("schema.tbl_has_diff_pk.pk_is_diff.columnNames", diff.getRight().getPath());
+        assertEquals("schema.tbl_has_diff_pk.pk_is_diff.columnNames[0]", diff.getRight().getPath());
         assertEquals("columnNames[0]", diff.getLeft().getPropertyName());
         assertEquals("id", diff.getLeft().getPropertyValue());
-        assertEquals("columnNames", diff.getRight().getPropertyName());
-        assertEquals(Arrays.asList("nodeRef"), diff.getRight().getPropertyValue());
-        
-        // Table tbl_has_diff_pk has PK of "id" in reference and "nodeRef" in target
-        diff = (Difference) it.next();
-        assertEquals(Where.ONLY_IN_TARGET, diff.getWhere());
-        assertEquals("schema.tbl_has_diff_pk.pk_is_diff.columnNames", diff.getLeft().getPath());
-        assertEquals("schema.tbl_has_diff_pk.pk_is_diff.columnNames[0]", diff.getRight().getPath());
-        assertEquals("columnNames", diff.getLeft().getPropertyName());
-        assertEquals(Arrays.asList("id"), diff.getLeft().getPropertyValue());
         assertEquals("columnNames[0]", diff.getRight().getPropertyName());
         assertEquals("nodeRef", diff.getRight().getPropertyValue());
         
@@ -138,6 +130,122 @@ public class SchemaComparatorTest
         assertEquals(null, diff.getLeft());
         assertEquals(null, diff.getRight().getPropertyName());
         assertEquals(null, diff.getRight().getPropertyValue());
+        
+        assertFalse("There should be no more differences", it.hasNext());
+    }
+    
+    
+    @Test
+    public void pkOrderingComparedCorrectly()
+    {
+        reference = new Schema("schema", "alf_", 590);
+        target = new Schema("schema", "alf_", 590);
+        
+        // Reference schema's database objects.
+        reference.add(new Table(
+                    reference,
+                    "table_name",
+                    columns("id NUMBER(10)", "nodeRef VARCHAR2(200)", "name VARCHAR2(150)"), 
+                    new PrimaryKey(null, "my_pk_name", Arrays.asList("id", "nodeRef"), Arrays.asList(1, 2)),
+                    fkeys(),
+                    indexes()));
+        
+        // Target schema's database objects - note different order of PK columns.
+        target.add(new Table(
+                    target,
+                    "table_name",
+                    columns("id NUMBER(10)", "nodeRef VARCHAR2(200)", "name VARCHAR2(150)"), 
+                    new PrimaryKey(null, "my_pk_name", Arrays.asList("id", "nodeRef"), Arrays.asList(2, 1)),
+                    fkeys(),
+                    indexes()));
+        
+        
+        comparator = new SchemaComparator(reference, target, dialect);
+        comparator.validateAndCompare();
+        
+        // See stdout for diagnostics dump...
+        dumpDiffs(comparator.getComparisonResults(), false);
+        dumpValidation(comparator.getComparisonResults());
+        
+        Results results = comparator.getComparisonResults();
+        Iterator<Result> it = results.iterator();
+        
+        
+        Difference diff = (Difference) it.next();
+        assertEquals(Where.IN_BOTH_BUT_DIFFERENCE, diff.getWhere());
+        assertEquals("schema.table_name.my_pk_name.columnOrders[0]", diff.getLeft().getPath());
+        assertEquals("schema.table_name.my_pk_name.columnOrders[0]", diff.getRight().getPath());
+        assertEquals("columnOrders[0]", diff.getLeft().getPropertyName());
+        assertEquals(1, diff.getLeft().getPropertyValue());
+        assertEquals("columnOrders[0]", diff.getRight().getPropertyName());
+        assertEquals(2, diff.getRight().getPropertyValue());
+        
+        diff = (Difference) it.next();
+        assertEquals(Where.IN_BOTH_BUT_DIFFERENCE, diff.getWhere());
+        assertEquals("schema.table_name.my_pk_name.columnOrders[1]", diff.getLeft().getPath());
+        assertEquals("schema.table_name.my_pk_name.columnOrders[1]", diff.getRight().getPath());
+        assertEquals("columnOrders[1]", diff.getLeft().getPropertyName());
+        assertEquals(2, diff.getLeft().getPropertyValue());
+        assertEquals("columnOrders[1]", diff.getRight().getPropertyName());
+        assertEquals(1, diff.getRight().getPropertyValue());
+        
+        assertFalse("There should be no more differences", it.hasNext());
+    }
+    
+    
+    @Test
+    public void indexColumnOrderingComparedCorrectly()
+    {
+        reference = new Schema("schema", "alf_", 590);
+        target = new Schema("schema", "alf_", 590);
+        
+        // Reference schema's database objects.
+        reference.add(new Table(
+                    reference,
+                    "table_name",
+                    columns("id NUMBER(10)", "nodeRef VARCHAR2(200)", "name VARCHAR2(150)"), 
+                    pk("pk", "id"),
+                    fkeys(),
+                    indexes("index_name id nodeRef")));
+        
+        // Target schema's database objects - note different order of index columns.
+        target.add(new Table(
+                    target,
+                    "table_name",
+                    columns("id NUMBER(10)", "nodeRef VARCHAR2(200)", "name VARCHAR2(150)"), 
+                    pk("pk", "id"),
+                    fkeys(),
+                    indexes("index_name nodeRef id")));
+        
+        
+        comparator = new SchemaComparator(reference, target, dialect);
+        comparator.validateAndCompare();
+        
+        // See stdout for diagnostics dump...
+        dumpDiffs(comparator.getComparisonResults(), false);
+        dumpValidation(comparator.getComparisonResults());
+        
+        Results results = comparator.getComparisonResults();
+        Iterator<Result> it = results.iterator();
+        
+        
+        Difference diff = (Difference) it.next();
+        assertEquals(Where.IN_BOTH_BUT_DIFFERENCE, diff.getWhere());
+        assertEquals("schema.table_name.index_name.columnNames[0]", diff.getLeft().getPath());
+        assertEquals("schema.table_name.index_name.columnNames[0]", diff.getRight().getPath());
+        assertEquals("columnNames[0]", diff.getLeft().getPropertyName());
+        assertEquals("id", diff.getLeft().getPropertyValue());
+        assertEquals("columnNames[0]", diff.getRight().getPropertyName());
+        assertEquals("nodeRef", diff.getRight().getPropertyValue());
+
+        diff = (Difference) it.next();
+        assertEquals(Where.IN_BOTH_BUT_DIFFERENCE, diff.getWhere());
+        assertEquals("schema.table_name.index_name.columnNames[1]", diff.getLeft().getPath());
+        assertEquals("schema.table_name.index_name.columnNames[1]", diff.getRight().getPath());
+        assertEquals("columnNames[1]", diff.getLeft().getPropertyName());
+        assertEquals("nodeRef", diff.getLeft().getPropertyValue());
+        assertEquals("columnNames[1]", diff.getRight().getPropertyName());
+        assertEquals("id", diff.getRight().getPropertyValue());
         
         assertFalse("There should be no more differences", it.hasNext());
     }

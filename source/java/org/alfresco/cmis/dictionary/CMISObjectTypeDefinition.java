@@ -65,6 +65,7 @@ public class CMISObjectTypeDefinition extends CMISAbstractTypeDefinition
             {
                 parentTypeId = cmisMapping.getCmisTypeId(CMISScope.OBJECT, parentQName);
             }
+            includedInSuperTypeQuery = cmisClassDef.getIncludedInSuperTypeQuery();            
         }
         
         actionEvaluators = cmisMapping.getActionEvaluators(objectTypeId.getScope());
@@ -72,7 +73,6 @@ public class CMISObjectTypeDefinition extends CMISAbstractTypeDefinition
         creatable = false;
         queryable = false;
         fullTextIndexed = false;
-        includedInSuperTypeQuery = cmisClassDef.getIncludedInSuperTypeQuery();
         controllablePolicy = false;
         controllableACL = false;
     }

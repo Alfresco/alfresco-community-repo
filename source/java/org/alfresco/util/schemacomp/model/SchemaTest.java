@@ -18,8 +18,10 @@
  */
 package org.alfresco.util.schemacomp.model;
 
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.verify;
 
+import org.alfresco.util.schemacomp.DbProperty;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -59,6 +61,13 @@ public class SchemaTest extends DbObjectTestBase<Schema>
     @Override
     protected void doDiffTests()
     {
+        // We need to be warned if comparing, for example a version 500 schema with a
+        // version 501 schema.
+        inOrder.verify(comparisonUtils).compareSimple(
+                    new DbProperty(left, "version"),
+                    new DbProperty(right, "version"),
+                    ctx);
+        
         // In addition to the base class functionality, Schema.diff() compares
         // the DbObjects held in the other schema with its own DbObjects.
         inOrder.verify(comparisonUtils).compareCollections(left.objects, right.objects, ctx);
@@ -80,5 +89,21 @@ public class SchemaTest extends DbObjectTestBase<Schema>
        verify(dbo2).accept(visitor);
        verify(dbo3).accept(visitor);
        verify(visitor).visit(left);
+    }
+    
+    @Test
+    public void sameAs()
+    {
+        // We have to assume that two schemas are always the same, regardless of name,
+        // otherwise unless the reference schema has the same name as the target database
+        // all the comparisons will fail - and users can choose to install databases with any schema
+        // name they choose.
+        assertTrue("Schemas should be considered the same", left.sameAs(right));
+
+        // Things are always the same as themselves.
+        assertTrue("Schemas are the same physical object", left.sameAs(left));
+        
+        assertFalse("A table is not the same as a schema", left.sameAs(new Table("left_schema")));
+        assertFalse("null is not the same as a schema", left.sameAs(null));
     }
 }

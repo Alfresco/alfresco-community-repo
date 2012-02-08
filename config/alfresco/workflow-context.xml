@@ -104,6 +104,11 @@
       <property name="workflowService" ref="WorkflowService"/>
    </bean>
 
+   <bean id="cancel-workflow" class="org.alfresco.repo.workflow.CancelWorkflowActionExecuter" parent="action-executer">
+      <property name="publicAction"><value>false</value></property>
+      <property name="workflowService" ref="WorkflowService"/>
+   </bean>
+
    <!--                       -->
    <!-- Alfresco BPM Registry -->
    <!--                       -->

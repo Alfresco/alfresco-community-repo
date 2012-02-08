@@ -19,6 +19,7 @@
 package org.alfresco.util.schemacomp.model;
 
 
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.verify;
 
 import org.alfresco.util.schemacomp.DbProperty;
@@ -33,11 +34,12 @@ import org.junit.Test;
 public class ForeignKeyTest extends DbObjectTestBase<ForeignKey>
 {
     private ForeignKey thisFK, thatFK;
-    
+    private Table parent;
 
     @Before
     public void setUp() throws Exception
     {
+        parent = new Table("parent");
         thisFK = new ForeignKey(null, "this_fk", "local_col", "target_table", "target_col");
         thatFK = new ForeignKey(null, "that_fk", "local_col", "target_table", "target_col");
     }
@@ -80,5 +82,41 @@ public class ForeignKeyTest extends DbObjectTestBase<ForeignKey>
        thisFK.accept(visitor);
        
        verify(visitor).visit(thisFK);
+    }
+    
+    @Test
+    public void sameAs()
+    {
+        // FKs are the same if they have all the same properties
+        thisFK = new ForeignKey(parent, "the_fk", "local_col", "target_table", "target_col");
+        thatFK = new ForeignKey(parent, "the_fk", "local_col", "target_table", "target_col");
+        assertTrue("FKs should be considered the same", thisFK.sameAs(thatFK));
+        
+        // FKs are the same even if they have different names (but all other properties are the same)
+        thisFK = new ForeignKey(parent, "the_fk", "local_col", "target_table", "target_col");
+        thatFK = new ForeignKey(parent, "different_name", "local_col", "target_table", "target_col");
+        assertTrue("FKs should be considered the same", thisFK.sameAs(thatFK));
+        
+        // Two references to the same FK are the same of course
+        assertTrue("FKs should be considered the same", thisFK.sameAs(thisFK));
+        
+        // A null is never the same
+        assertFalse("FKs should be considered the different", thisFK.sameAs(null));
+       
+        thisFK = new ForeignKey(parent, "the_fk", "local_col", "target_table", "target_col");
+        thatFK = new ForeignKey(new Table("different_parent"), "the_fk", "local_col", "target_table", "target_col");
+        assertFalse("FKs should be different: parents are different.", thisFK.sameAs(thatFK));
+        
+        thisFK = new ForeignKey(parent, "the_fk", "local_col", "target_table", "target_col");
+        thatFK = new ForeignKey(parent, "the_fk", "local_col2", "target_table", "target_col");
+        assertFalse("FKs have different local columns.", thisFK.sameAs(thatFK));
+        
+        thisFK = new ForeignKey(parent, "the_fk", "local_col", "target_table", "target_col");
+        thatFK = new ForeignKey(parent, "the_fk", "local_col", "target_table2", "target_col");
+        assertFalse("FKs have different target table.", thisFK.sameAs(thatFK));
+        
+        thisFK = new ForeignKey(parent, "the_fk", "local_col", "target_table", "target_col");
+        thatFK = new ForeignKey(parent, "the_fk", "local_col", "target_table", "target_col2");
+        assertFalse("FKs have different target column.", thisFK.sameAs(thatFK));
     }
 }

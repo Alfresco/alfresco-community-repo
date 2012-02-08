@@ -134,7 +134,7 @@ public class TextPropertyValueComparator implements PropertyValueComparator
             {
                 builder.append(".");
             }
-            else if (getEscapeCharList().contains(charValue) == true)
+            else if (ESCAPE_CHAR_LIST.contains(charValue) == true)
             {
                 builder.append("\\");
             }
@@ -149,31 +149,22 @@ public class TextPropertyValueComparator implements PropertyValueComparator
      */
     private static List<Character> ESCAPE_CHAR_LIST = null;
     
-    /**
-     * Get the list of escape chars
-     * 
-     * @return  list of excape chars
-     */
-    private List<Character> getEscapeCharList() 
-    {
-        if (ESCAPE_CHAR_LIST == null)
-        {
-            //([{\^$|)?*+.
-            ESCAPE_CHAR_LIST = new ArrayList<Character>(4);
-            ESCAPE_CHAR_LIST.add('.');
-            ESCAPE_CHAR_LIST.add('^');
-            ESCAPE_CHAR_LIST.add('$');
-            ESCAPE_CHAR_LIST.add('(');
-            ESCAPE_CHAR_LIST.add('[');
-            ESCAPE_CHAR_LIST.add('{');
-            ESCAPE_CHAR_LIST.add('\\');
-            ESCAPE_CHAR_LIST.add('|');
-            ESCAPE_CHAR_LIST.add(')');
-            ESCAPE_CHAR_LIST.add('?');
-            ESCAPE_CHAR_LIST.add('+');
-        }
-        return ESCAPE_CHAR_LIST;
-    }
+	static 
+	{
+		// ([{\^$|)?*+.
+		ESCAPE_CHAR_LIST = new ArrayList<Character>(4);
+		ESCAPE_CHAR_LIST.add('.');
+		ESCAPE_CHAR_LIST.add('^');
+		ESCAPE_CHAR_LIST.add('$');
+		ESCAPE_CHAR_LIST.add('(');
+		ESCAPE_CHAR_LIST.add('[');
+		ESCAPE_CHAR_LIST.add('{');
+		ESCAPE_CHAR_LIST.add('\\');
+		ESCAPE_CHAR_LIST.add('|');
+		ESCAPE_CHAR_LIST.add(')');
+		ESCAPE_CHAR_LIST.add('?');
+		ESCAPE_CHAR_LIST.add('+');
+	}
 
     /**
      * @see org.alfresco.repo.action.evaluator.compare.PropertyValueComparator#registerComparator(org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator)

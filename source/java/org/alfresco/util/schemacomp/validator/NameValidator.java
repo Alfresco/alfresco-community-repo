@@ -22,10 +22,13 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
+import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.schemacomp.DbProperty;
 import org.alfresco.util.schemacomp.DiffContext;
 import org.alfresco.util.schemacomp.ValidationResult;
 import org.alfresco.util.schemacomp.model.DbObject;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.hibernate.dialect.Dialect;
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -40,17 +43,33 @@ import org.springframework.extensions.surf.util.I18NUtil;
 public class NameValidator implements DbValidator
 {
     private Pattern pattern;
+    private final static Log log = LogFactory.getLog(NameValidator.class);
     
     @Override
     public void validate(DbObject reference, DbObject target, DiffContext ctx)
     {
         String name = target.getName();
-                
+        
+        if (log.isDebugEnabled())
+        {
+            log.debug("Validating: pattern: [" + pattern + "], reference: " + reference + ", target: " + target);
+        }
         if (pattern != null && !pattern.matcher(name).matches())
         {
+            if (log.isDebugEnabled())
+            {
+                log.debug("Pattern [" + pattern + "] not matched.");
+            }
             String message = I18NUtil.getMessage("system.schema_comp.name_validator", pattern);
             ValidationResult result = new ValidationResult(new DbProperty(target, "name"), message);
             ctx.getComparisonResults().add(result);
+        }
+        else
+        {
+            if (log.isDebugEnabled())
+            {
+                log.debug("Pattern [" + pattern + "] matched OK.");
+            }
         }
     }
 
@@ -96,4 +115,19 @@ public class NameValidator implements DbValidator
         props.add("pattern");
         return props;
     }
+
+
+    @Override
+    public boolean validates(String fieldName)
+    {
+        ParameterCheck.mandatoryString("fieldName", fieldName);
+        return (fieldName.equals("name"));
+    }
+
+
+    @Override
+    public boolean validatesFullObject()
+    {
+        return false;
+    }    
 }

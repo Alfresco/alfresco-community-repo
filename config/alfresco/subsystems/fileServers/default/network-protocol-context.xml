@@ -144,6 +144,12 @@
        
        <property name="scenarios">
             <list>
+                <!--  Excel 2003 -->
+                <bean id="createShuffleExcel2003" class="org.alfresco.filesys.repo.rules.ScenarioCreateShuffle">
+                    <property name="pattern"><value>[0-9A-F]{8}+$</value></property>
+                    <property name="timeout"><value>30000</value></property>
+                    <property name="ranking"><value>HIGH</value></property>
+                </bean>
                 <!--  Word 2003 -->
                 <bean id="createShuffle2003" class="org.alfresco.filesys.repo.rules.ScenarioCreateShuffle">
                     <property name="pattern"><value>~WRD.*.TMP</value></property>

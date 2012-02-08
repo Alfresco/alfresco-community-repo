@@ -767,4 +767,11 @@ public class NodeServiceImpl implements NodeService, VersionModel
         // This operation is not supported for a version store
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
     }
+
+	@Override
+	public int countChildAssocs(NodeRef nodeRef, boolean isPrimary) throws InvalidNodeRefException
+	{
+        // This operation is not supported for a version store
+        throw new UnsupportedOperationException(MSG_UNSUPPORTED);
+	}
 }

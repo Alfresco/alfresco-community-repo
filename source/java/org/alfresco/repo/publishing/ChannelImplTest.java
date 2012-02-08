@@ -25,6 +25,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import junit.framework.TestCase;
 
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -33,7 +34,15 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class ChannelImplTest extends TestCase
 {
-    public void testUpdateStatus() throws Exception
+    ServiceRegistry serviceRegMock;	
+	
+    @Override
+	protected void setUp() throws Exception {
+		super.setUp();
+        serviceRegMock = mock(ServiceRegistry.class);
+	}
+
+	public void testUpdateStatus() throws Exception
     {
         int maxLength = 30;
         AbstractChannelType channelType = mockChannelType(maxLength);
@@ -42,7 +51,7 @@ public class ChannelImplTest extends TestCase
         when(helper.getChannelProperties(any(NodeRef.class))).thenReturn(null);
         NodeRef node = new NodeRef("test://channel/node");
         
-        ChannelImpl channel = new ChannelImpl(null, channelType, node, "Name", helper, null);
+        ChannelImpl channel = new ChannelImpl(serviceRegMock, channelType, node, "Name", helper, null);
         
         String msg = "Here is a message";
         channel.sendStatusUpdate(msg, null);
@@ -58,7 +67,7 @@ public class ChannelImplTest extends TestCase
         when(helper.getChannelProperties(any(NodeRef.class))).thenReturn(null);
         NodeRef node = new NodeRef("test://channel/node");
         
-        ChannelImpl channel = new ChannelImpl(null, channelType, node, "Name", helper, null);
+        ChannelImpl channel = new ChannelImpl(serviceRegMock, channelType, node, "Name", helper, null);
         
         String msg = "Here is a much longer message to truncate.";
         String expMsg = msg.substring(0, maxLength);
@@ -75,7 +84,7 @@ public class ChannelImplTest extends TestCase
         when(helper.getChannelProperties(any(NodeRef.class))).thenReturn(null);
         NodeRef node = new NodeRef("test://channel/node");
         
-        ChannelImpl channel = new ChannelImpl(null, channelType, node, "Name", helper, null);
+        ChannelImpl channel = new ChannelImpl(serviceRegMock, channelType, node, "Name", helper, null);
         String nodeUrl ="http://foo/bar";
         int endpoint = maxLength - nodeUrl.length();
         
@@ -93,7 +102,7 @@ public class ChannelImplTest extends TestCase
         when(helper.getChannelProperties(any(NodeRef.class))).thenReturn(null);
         NodeRef node = new NodeRef("test://channel/node");
         
-        ChannelImpl channel = new ChannelImpl(null, channelType, node, "Name", helper, null);
+        ChannelImpl channel = new ChannelImpl(serviceRegMock, channelType, node, "Name", helper, null);
         String nodeUrl ="http://foo/bar";
         
         String msg = "Here is a much longer message to truncate.";

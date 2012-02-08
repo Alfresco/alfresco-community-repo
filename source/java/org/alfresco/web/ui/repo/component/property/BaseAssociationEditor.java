@@ -741,7 +741,7 @@ public abstract class BaseAssociationEditor extends UIInput
             groupDisplayName = group.substring(PermissionService.GROUP_PREFIX.length());
          }
          
-         out.write(groupDisplayName);
+         out.write(Utils.encode(groupDisplayName));
       }
       else
       {
@@ -894,8 +894,7 @@ public abstract class BaseAssociationEditor extends UIInput
                else if (ContentModel.TYPE_AUTHORITY_CONTAINER.equals(nodeService.getType(item)))
                {
                   // if the node represents a group, show the authority display name instead of the name
-                  String groupDisplayName = (String)nodeService.getProperty(item, 
-                           ContentModel.PROP_AUTHORITY_DISPLAY_NAME);
+                  String groupDisplayName = (String)nodeService.getProperty(item, ContentModel.PROP_AUTHORITY_DISPLAY_NAME);
                   if (groupDisplayName == null || groupDisplayName.length() == 0)
                   {
                      String group = (String)nodeService.getProperty(item, 
@@ -906,11 +905,8 @@ public abstract class BaseAssociationEditor extends UIInput
                   out.write("<option value='");
                   out.write(item.toString());
                   out.write("'>");
-                  out.write(groupDisplayName);
+                  out.write(Utils.encode(groupDisplayName));
                   out.write("</option>");
-                  
-                  
-                  
                }
                else
                {

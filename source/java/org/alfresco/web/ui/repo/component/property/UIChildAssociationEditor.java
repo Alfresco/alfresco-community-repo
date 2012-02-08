@@ -176,7 +176,7 @@ public class UIChildAssociationEditor extends BaseAssociationEditor
                   groupDisplayName = group.substring(PermissionService.GROUP_PREFIX.length());
                }
                
-               out.write(groupDisplayName);
+               out.write(Utils.encode(groupDisplayName));
             }
             else
             {

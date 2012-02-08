@@ -269,6 +269,27 @@ public class ModuleManagementToolTest extends TestCase
         }
     }
     
+    public void testWhiteSpaceInCustomMapping()
+                throws Exception
+    {
+        manager.setVerbose(true);
+        
+        String warLocation = getFileLocation(".war", "module/test.war");
+        String ampLocation = getFileLocation(".amp", "module/test_v3.amp");
+        
+        // Initial install of module
+        this.manager.installModule(ampLocation, warLocation, false, false, true);
+        
+        List<String> files = new ArrayList<String>(10);
+        files.add("/WEB-INF/classes/alfresco/module/test/module.properties");
+        files.add("/WEB-INF/classes/alfresco/module/test/modifications.install");
+        files.add("/WEB-INF/lib/test.jar");
+        files.add("/WEB-INF/classes/alfresco/module/test/module-context.xml");
+        files.add("/images/test.jpg");
+        files.add("/css/test.css");
+        files.add("/extra.txt");
+        checkForFileExistance(warLocation, files);   
+    }
     
     public void testList()
         throws Exception

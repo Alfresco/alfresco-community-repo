@@ -313,6 +313,9 @@ public class ModuleManagementTool
                     throw new AlfrescoRuntimeException("File mapping targets must start with '/' but was '" + mappingTarget + "'");
                 }
                 
+                mappingSource = mappingSource.trim(); //trim whitespace
+                mappingTarget = mappingTarget.trim(); //trim whitespace
+                
                 // Run throught the files one by one figuring out what we are going to do during the copy
                 copyToWar(ampFileLocation, warFileLocation, mappingSource, mappingTarget, installedFiles, preview);
                 

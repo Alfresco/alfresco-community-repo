@@ -23,6 +23,7 @@ import java.io.Serializable;
 import org.alfresco.opencmis.CMISConnector;
 import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 
 /**
@@ -44,6 +45,7 @@ public class TargetIdProperty extends AbstractProperty
 
     public Serializable getValueInternal(CMISNodeInfo nodeInfo)
     {
-        return createNodeInfo(nodeInfo.getAssociationRef().getTargetRef()).getObjectId();
+        NodeRef targetNodeRef = nodeInfo.getAssociationRef().getTargetRef();
+        return createNodeInfo(targetNodeRef).getObjectId();
     }
 }

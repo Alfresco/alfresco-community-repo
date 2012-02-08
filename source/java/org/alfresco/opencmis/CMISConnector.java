@@ -1198,16 +1198,20 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
         Set<String> filterSet = splitFilter(filter);
 
-        for (PropertyDefinitionWrapper propDef : info.getType().getProperties())
+        for (PropertyDefinitionWrapper propDefWrap : info.getType().getProperties())
         {
-            if ((filterSet != null) && (!filterSet.contains(propDef.getPropertyDefinition().getQueryName())))
+            PropertyDefinition<?> propDef = propDefWrap.getPropertyDefinition();
+            if ((filterSet != null) && (!filterSet.contains(propDef.getQueryName())))
             {
                 // skip properties that are not in the filter
                 continue;
             }
 
-            Serializable value = propDef.getPropertyAccessor().getValue(info);
-            result.addProperty(getProperty(propDef.getPropertyDefinition().getPropertyType(), propDef, value));
+            CMISPropertyAccessor cmisPropertyAccessor = propDefWrap.getPropertyAccessor();
+            Serializable value = cmisPropertyAccessor.getValue(info);
+            PropertyType propType = propDef.getPropertyType();
+            PropertyData<?> propertyData = getProperty(propType, propDefWrap, value);
+            result.addProperty(propertyData);
         }
 
         return result;

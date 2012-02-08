@@ -1036,6 +1036,8 @@
         <property name="host" value="${solr.host}"/>
         <property name="port" value="${solr.port}"/>
         <property name="sslPort" value="${solr.port.ssl}"/>
+        <property name="maxTotalConnections" value="${solr.max.total.connections}"/>
+        <property name="maxHostConnections" value="${solr.max.host.connections}"/>
     </bean>
 
     <bean id="solrAdminClient" class="org.alfresco.repo.solr.SOLRAdminClient" init-method="init" destroy-method="shutdown">

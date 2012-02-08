@@ -48,15 +48,15 @@ function main()
    }
    
    // The message depends on the search service in use
-   var message = "Successfully changed name of category";
+   var messageKey = "message.changeCategoryName.success";
    if (search.searchSubsystem == "solr")
    {
-      message = "Category update successfully queued with SOLR for changes. Please not that it may take a few moments until it is updated; you will need to refresh to see the change once it has been actioned";
+      messageKey = "message.changeCategoryName.solr.success";
    }
    
    // Build the rest of the model 
    model.persistedObject = category.toString();
-   model.message = message;
+   model.messageKey = messageKey;
    model.name = name;
 }
 

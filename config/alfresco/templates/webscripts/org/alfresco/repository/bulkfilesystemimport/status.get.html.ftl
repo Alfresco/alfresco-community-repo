@@ -291,7 +291,9 @@
     This page will automatically refresh in <span id="countdownTimer">${refreshIntervalInSeconds}</span> seconds.
 [#else]
     <a href="${url.serviceContext}/bulkfsimport">Initiate another import</a><br><br>
-    <a href="${url.serviceContext}/bulkfsimport/inplace">Initiate another in-place import</a>
+    [#if isEnterprise]
+        <a href="${url.serviceContext}/bulkfsimport/inplace">Initiate another in-place import</a>
+    [/#if]
 [/#if]
     </p>
   </blockquote>

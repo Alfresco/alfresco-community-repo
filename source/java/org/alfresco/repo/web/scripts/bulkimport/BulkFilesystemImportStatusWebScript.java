@@ -29,6 +29,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.repo.bulkimport.BulkFilesystemImporter;
+import org.alfresco.service.cmr.admin.RepoUsage.LicenseMode;
+import org.alfresco.service.descriptor.DescriptorService;
+import org.alfresco.service.license.LicenseDescriptor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Cache;
@@ -47,16 +50,23 @@ public class BulkFilesystemImportStatusWebScript extends DeclarativeWebScript
     
     // Output parameters (for Freemarker)
     private final static String RESULT_IMPORT_STATUS = "importStatus";
+    private final static String IS_ENTERPRISE = "isEnterprise";
     
     // Attributes
     private BulkFilesystemImporter bulkImporter;
+    private DescriptorService descriptorService;
 
 	public void setBulkImporter(BulkFilesystemImporter bulkImporter)
 	{
 		this.bulkImporter = bulkImporter;
 	}
+	
+    public void setDescriptorService(DescriptorService descriptorService)
+    {
+		this.descriptorService = descriptorService;
+	}
 
-    /**
+	/**
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
      */
     @Override
@@ -66,6 +76,10 @@ public class BulkFilesystemImportStatusWebScript extends DeclarativeWebScript
         
         cache.setNeverCache(true);
         
+        LicenseDescriptor licenseDescriptor = descriptorService.getLicenseDescriptor();
+        boolean isEnterprise = (licenseDescriptor == null ? false : (licenseDescriptor.getLicenseMode() == LicenseMode.ENTERPRISE));
+
+        result.put(IS_ENTERPRISE, Boolean.valueOf(isEnterprise));
         result.put(RESULT_IMPORT_STATUS, bulkImporter.getStatus());
         
         return(result);

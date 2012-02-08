@@ -545,7 +545,7 @@ public class GetMethod extends WebDAVMethod
             String strRight = strSize.substring(length - 3, length - 2);
 
             StringBuilder buffer = new StringBuilder(strLeft);
-            if (!strRight.equals('0'))
+            if (!strRight.equals("0"))
             {
                 buffer.append('.');
                 buffer.append(strRight);
@@ -560,7 +560,7 @@ public class GetMethod extends WebDAVMethod
             String strRight = strSize.substring(length - 6, length - 5);
 
             StringBuilder buffer = new StringBuilder(strLeft);
-            if (!strRight.equals('0'))
+            if (!strRight.equals("0"))
             {
                 buffer.append('.');
                 buffer.append(strRight);

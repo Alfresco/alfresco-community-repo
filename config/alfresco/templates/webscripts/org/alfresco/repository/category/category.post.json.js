@@ -81,14 +81,14 @@ function main()
    }
 
    // The message depends on the search service in use
-   var message = "Successfully added category";
+   var messageKey = "message.addCategory.success";
    if (search.searchSubsystem == "solr")
    {
-      message = "New category successfully queued with SOLR for addition. Please not that it may take a few moments until it is added; you will need to refresh to see the change once it has been actioned";
+      messageKey = "message.addCategory.solr.success";
    }
    
    // Build the rest of the model 
-   model.message = message;
+   model.messageKey = messageKey;
    model.name = name;
 }
 

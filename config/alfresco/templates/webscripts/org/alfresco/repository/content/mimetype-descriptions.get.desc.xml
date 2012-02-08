@@ -1,0 +1,14 @@
+<webscript>
+  <shortname>For all known Mime Types, return their descriptions</shortname>
+  <description>
+  Returns a list of all mime types, along with their descriptions, such as
+  "MS Project" for "application/vnd.ms-project", and their normal file
+  extensions.
+  This information is retrieved from the Mimetype Service, based on the
+  mimetype map(s) defined for the repository.
+  </description>
+  <url>/api/mimetypes/descriptions</url>
+  <format default="json"/>
+  <authentication>none</authentication>
+  <transaction allow="readonly">required</transaction>
+</webscript>

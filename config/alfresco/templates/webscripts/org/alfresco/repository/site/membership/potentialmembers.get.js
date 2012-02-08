@@ -20,12 +20,18 @@ function main()
    var peopleFound = [],
       groupsFound = [],
       notAllowed = [],
-      i, ii, name, paging;
+      i, ii, name, paging,
+      siteInvitations = [];
 
    if (authorityType == null || authorityType == "USER")
    {
       // Get the collection of people
       peopleFound = people.getPeople(filter, maxResults);
+
+      var criteria = {
+              resourceName: siteShortName
+           };
+      siteInvitations = invitations.listInvitations(criteria);
 
       // Filter this collection for site membership
       for (i = 0, ii = peopleFound.length; i < ii; i++)
@@ -38,11 +44,7 @@ function main()
          }
          else
          {
-            var criteria = {
-               resourceName: siteShortName,
-               inviteeUserName: name
-            };
-            if (invitations.listInvitations(criteria).length != 0)
+            if (contains(siteInvitations, name))
             {
                // User has already got an invitation
                notAllowed.push(name);
@@ -74,6 +76,14 @@ function main()
    }
    
    model.notAllowed = notAllowed;
+}
+
+function contains(arr, value) {
+    var i = arr.length;
+    while (i--) {
+    	if (arr[i].inviteeUserName == value) return true;
+    }
+    return false;
 }
 
 main();

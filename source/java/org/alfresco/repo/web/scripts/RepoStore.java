@@ -350,19 +350,20 @@ public class RepoStore extends AbstractStore implements TenantDeployer
                                     namespaceService,
                                     false,
                                     SearchService.LANGUAGE_XPATH);
-                          for (NodeRef nodeRef : nodeRefs)
-                          {
-                              if (isContentPresent(nodeRef))
-                              {
-                                    String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-                                    if (name.startsWith(id))
-                                    {
-                                        String nodeDir = getPath(nodeRef);
-                                        String documentPath = nodeDir.substring(baseDirLength);
-                                        documentPaths.add(documentPath);
-                                    }
-                              }
-                          }
+                            documentPaths = new ArrayList<String>(nodeRefs.size());
+                            for (NodeRef nodeRef : nodeRefs)
+                            {
+                            	if (isContentPresent(nodeRef))
+                            	{
+                            		String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+                            		if (name.startsWith(id))
+                            		{
+                            			String nodeDir = getPath(nodeRef);
+                            			String documentPath = nodeDir.substring(baseDirLength);
+                            			documentPaths.add(documentPath);
+                            		}
+                            	}
+                            }
                             
                             
 //                            String query = "+PATH:\"" + repoScriptPath.toPrefixString(namespaceService) +

@@ -35,5 +35,5 @@
   <authentication>admin</authentication>
   <transaction allow="readonly"/>
   <family>CMIS</family>
-  <lifecycle>public_api</lifecycle>
+  <lifecycle>deprecated</lifecycle>
 </webscript>

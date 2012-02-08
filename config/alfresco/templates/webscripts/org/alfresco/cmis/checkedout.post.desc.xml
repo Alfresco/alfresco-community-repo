@@ -18,5 +18,5 @@
   
   <authentication>user</authentication>
   <family>CMIS</family>
-  <lifecycle>public_api</lifecycle>
+  <lifecycle>deprecated</lifecycle>
 </webscript>

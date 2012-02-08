@@ -529,6 +529,11 @@
       <property name="authenticationService" ref="authenticationService"/>
    </bean>
 
+   <!-- Mimetype descriptions -->
+   <bean id="webscript.org.alfresco.repository.content.mimetype-descriptions.get" class="org.alfresco.repo.web.scripts.content.MimetypeDescriptionsGet" parent="webscript">
+      <property name="mimetypeService" ref="mimetypeService" />
+   </bean>
+
    <!-- Mimetype information details -->
    <bean id="webscript.org.alfresco.repository.content.mimetypes.get" class="org.alfresco.repo.web.scripts.content.MimetypesGet" parent="webscript">
       <property name="mimetypeService" ref="mimetypeService" />
@@ -1794,6 +1799,7 @@
         class="org.alfresco.repo.web.scripts.bulkimport.BulkFilesystemImportStatusWebScript"
         parent="webscript">
        <property name="bulkImporter" ref="bulkFilesystemImporter" />
+       <property name="descriptorService" ref="descriptorComponent" />
   </bean>
 
   <!-- i18n bundles for the templates -->

@@ -59,7 +59,7 @@ public class LoginTicket extends DeclarativeWebScript
     {
         // retrieve ticket from request and current ticket
         String ticket = req.getExtensionPath();
-        if (ticket == null && ticket.length() == 0)
+        if (ticket == null || ticket.length() == 0)
         {
             throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, "Ticket not specified");
         }

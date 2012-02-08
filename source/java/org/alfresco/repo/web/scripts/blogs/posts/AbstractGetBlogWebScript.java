@@ -82,7 +82,7 @@ public abstract class AbstractGetBlogWebScript extends AbstractBlogWebScript
         if (this.getClass().equals(BlogPostsNewGet.class))
         {
             // Default is for 'now' minus seven days.
-            final int oneDayInMilliseconds = 24 * 60 * 60 * 1000;
+            final long oneDayInMilliseconds = 24 * 60 * 60 * 1000;
             final long sevenDaysInMilliseconds = 7 * oneDayInMilliseconds;
             fromDate = new Date(System.currentTimeMillis() - sevenDaysInMilliseconds);
             
@@ -171,7 +171,7 @@ public abstract class AbstractGetBlogWebScript extends AbstractBlogWebScript
         Date result = null;
         if (dateStr != null)
         {
-            result = new Date(Integer.parseInt(dateStr));
+            result = new Date(Long.parseLong(dateStr));
         }
         return result;
     }

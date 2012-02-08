@@ -40,14 +40,14 @@ function main()
    }
    
    // The message depends on the search service in use
-   var message = "Category successfully removed.";
+   var messageKey = "message.removeCategory.success";
    if (search.searchSubsystem == "solr")
    {
-      message = "Category deletion successfully queued with SOLR for removal. Please not that it may take a few moments until it is deleted; you will need to refresh to see the change once it has been actioned";
+      messageKey = "message.removeCategory.solr.success";
    }
 
    // Set model properties
-   model.message = message;
+   model.messageKey = messageKey;
 }
 
 main();

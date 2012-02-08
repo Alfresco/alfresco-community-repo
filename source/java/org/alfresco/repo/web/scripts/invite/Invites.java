@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -25,6 +25,8 @@ import java.util.Map;
 
 import org.alfresco.repo.invitation.InvitationSearchCriteriaImpl;
 import org.alfresco.repo.invitation.site.InviteInfo;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.invitation.Invitation;
@@ -32,6 +34,8 @@ import org.alfresco.service.cmr.invitation.InvitationSearchCriteria;
 import org.alfresco.service.cmr.invitation.InvitationService;
 import org.alfresco.service.cmr.invitation.NominatedInvitation;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
@@ -179,7 +183,8 @@ public class Invites extends DeclarativeWebScript
         if (inviteIdProvided)
         {
             NominatedInvitation invitation = (NominatedInvitation)invitationService.getInvitation(inviteId);
-            inviteInfoList.add(toInviteInfo(invitation));
+                Map<String, SiteInfo> siteInfoCache = new HashMap<String, SiteInfo>(2);
+        	inviteInfoList.add(toInviteInfo(siteInfoCache, invitation));
         }
         else
         // 'inviteId' has not been provided, so create the query properties from
@@ -215,9 +220,11 @@ public class Invites extends DeclarativeWebScript
             // wf:inviterUserName, wf:inviteeUserName, wf:siteShortName,
             // and invite id property (from workflow instance id))
             // onto model for each invite workflow task returned by the query
+            Map<String, SiteInfo> siteInfoCache = new HashMap<String, SiteInfo>(
+                    invitations.size() * 2);
             for (Invitation invitation : invitations)
             {
-                inviteInfoList.add(toInviteInfo((NominatedInvitation)invitation));
+                inviteInfoList.add(toInviteInfo(siteInfoCache, (NominatedInvitation) invitation));
             }
         }
 
@@ -230,28 +237,22 @@ public class Invites extends DeclarativeWebScript
     
 
     
-    private InviteInfo toInviteInfo(NominatedInvitation invitation)
+    private InviteInfo toInviteInfo(Map<String, SiteInfo> siteInfoCache, final NominatedInvitation invitation)
     {
-        final PersonService personService = serviceRegistry.getPersonService();
-        
         // get the site info
-        SiteInfo siteInfo = siteService.getSite(invitation.getResourceName());
+        String resourceName = invitation.getResourceName();
+        SiteInfo siteInfo = siteInfoCache.get(resourceName);
+        if (siteInfo == null)
+        {
+            siteInfo = siteService.getSite(resourceName);
+            siteInfoCache.put(resourceName, siteInfo);
+        }
         String invitationStatus = InviteInfo.INVITATION_STATUS_PENDING;
         
-        NodeRef inviterRef = personService.getPerson(invitation.getInviterUserName());
-        TemplateNode inviterPerson = null;
-        if (inviterRef != null)
-        {
-            inviterPerson = new TemplateNode(inviterRef, serviceRegistry, null); 
-        }
+        TemplateNode inviterPerson = getPersonIfAllowed(invitation.getInviterUserName());
         
         // fetch the person node for the invitee
-        NodeRef inviteeRef = personService.getPerson(invitation.getInviteeUserName());
-        TemplateNode inviteePerson = null;
-        if (inviteeRef != null)
-        {
-            inviteePerson = new TemplateNode(inviteeRef, serviceRegistry, null);
-        }
+        TemplateNode inviteePerson = getPersonIfAllowed(invitation.getInviteeUserName());
         
         InviteInfo ret = new InviteInfo(invitationStatus, 
                     invitation.getInviterUserName(), 
@@ -265,5 +266,28 @@ public class Invites extends DeclarativeWebScript
                     invitation.getInviteId());
          
          return ret;
+    }
+    
+    private TemplateNode getPersonIfAllowed(final String userName)
+    {
+        final PersonService personService = serviceRegistry.getPersonService();
+        NodeRef inviterRef = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
+        {
+            public NodeRef doWork() throws Exception
+            {
+                if (!personService.personExists(userName))
+                {
+                    return null;
+                }
+                return personService.getPerson(userName, false);
+            }
+        }, AuthenticationUtil.getSystemUserName());
+        if (inviterRef != null
+                && serviceRegistry.getPermissionService().hasPermission(inviterRef, PermissionService.READ_PROPERTIES)
+                        .equals(AccessStatus.ALLOWED))
+        {
+            return new TemplateNode(inviterRef, serviceRegistry, null);
+        }
+        return null;
     }
 }

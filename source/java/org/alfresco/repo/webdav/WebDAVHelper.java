@@ -19,7 +19,6 @@
 package org.alfresco.repo.webdav;
 
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -45,6 +44,8 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.util.EqualsHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.URLDecoder;
+import org.springframework.extensions.surf.util.URLEncoder;
 import org.xml.sax.helpers.AttributesImpl;
 
 /**
@@ -438,13 +439,18 @@ public class WebDAVHelper
             }
             else
             {
-                return replace(URLEncoder.encode(s, "UTF-8"), "+", "%20");
+                return URLEncoder.encode(s);
             }
         }
         catch (UnsupportedEncodingException err)
         {
             throw new RuntimeException(err);
         }
+    }
+    
+    public final static String decodeURL(String s)
+    {
+        return URLDecoder.decode(s);
     }
     
     /**
@@ -570,21 +576,21 @@ public class WebDAVHelper
             switch (c)
             {
                 // reserved
-                case ';': enc = URLEncoder.encode("" + c, "UTF-8"); break;
-                case '/': enc = URLEncoder.encode("" + c, "UTF-8"); break;
-                case '?': enc = URLEncoder.encode("" + c, "UTF-8"); break;
-                case ':': enc = URLEncoder.encode("" + c, "UTF-8"); break;
-                case '@': enc = URLEncoder.encode("" + c, "UTF-8"); break;
-                case '&': enc = URLEncoder.encode("" + c, "UTF-8"); break;
-                case '=': enc = URLEncoder.encode("" + c, "UTF-8"); break;
-                case '+': enc = URLEncoder.encode("" + c, "UTF-8"); break;
+                case ';': enc = URLEncoder.encode(String.valueOf(c)); break;
+                case '/': enc = URLEncoder.encode(String.valueOf(c)); break;
+                case '?': enc = URLEncoder.encode(String.valueOf(c)); break;
+                case ':': enc = URLEncoder.encode(String.valueOf(c)); break;
+                case '@': enc = URLEncoder.encode(String.valueOf(c)); break;
+                case '&': enc = URLEncoder.encode(String.valueOf(c)); break;
+                case '=': enc = URLEncoder.encode(String.valueOf(c)); break;
+                case '+': enc = URLEncoder.encode(String.valueOf(c)); break;
                 
                 // unsafe
-                case '\"': enc = URLEncoder.encode("" + c, "UTF-8"); break;
-                case '#': enc = URLEncoder.encode("" + c, "UTF-8"); break;
-                case '%': enc = URLEncoder.encode("" + c, "UTF-8"); break;
-                case '>': enc = URLEncoder.encode("" + c, "UTF-8"); break;
-                case '<': enc = URLEncoder.encode("" + c, "UTF-8"); break;
+                case '\"': enc = URLEncoder.encode(String.valueOf(c)); break;
+                case '#': enc = URLEncoder.encode(String.valueOf(c)); break;
+                case '%': enc = URLEncoder.encode(String.valueOf(c)); break;
+                case '>': enc = URLEncoder.encode(String.valueOf(c)); break;
+                case '<': enc = URLEncoder.encode(String.valueOf(c)); break;
                 default: break;
             }
             

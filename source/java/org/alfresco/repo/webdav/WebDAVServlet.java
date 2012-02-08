@@ -342,7 +342,8 @@ public class WebDAVServlet extends HttpServlet
 
             // Commit the transaction
 
-            tx.commit();
+            if (tx != null)
+            	tx.commit();
         }
         catch (Exception ex)
         {

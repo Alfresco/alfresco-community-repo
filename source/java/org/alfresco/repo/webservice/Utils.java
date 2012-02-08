@@ -20,6 +20,7 @@ package org.alfresco.repo.webservice;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -146,7 +147,7 @@ public class Utils
 	                    
 	                    if (logger.isDebugEnabled() == true)
 	                    {
-	                        logger.debug("Converting multi-valued property '" + propertyName.toString() + "' with values " + values.toString());
+	                        logger.debug("Converting multi-valued property '" + propertyName.toString() + "' with values " + Arrays.toString(values));
 	                    }
 	                    
 	                    if (values != null)

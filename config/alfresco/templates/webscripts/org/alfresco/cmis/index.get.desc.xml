@@ -10,5 +10,5 @@
   <authentication>none</authentication>
   <transaction>required</transaction>
   <family>CMIS</family>
-  <lifecycle>public_api</lifecycle>
+  <lifecycle>deprecated</lifecycle>
 </webscript>

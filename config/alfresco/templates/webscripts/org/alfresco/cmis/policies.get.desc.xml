@@ -50,5 +50,5 @@
   <authentication>guest</authentication>
   <format default="atomfeed">argument</format>
   <family>CMIS</family>
-  <lifecycle>public_api</lifecycle>
+  <lifecycle>deprecated</lifecycle>
 </webscript>

@@ -66,7 +66,6 @@ public class ModuleManagementTool
     
     /** Standard directories found in the alfresco war */
     public static final String BACKUP_DIR = WarHelper.MODULE_NAMESPACE_DIR+ "/backup";
-    public static final String VERSION_PROPERTIES = "/WEB-INF/classes/alfresco/version.properties";
     
     /** Operations and options supperted via the command line interface to this class */
     private static final String OP_INSTALL = "install";
@@ -232,9 +231,6 @@ public class ModuleManagementTool
             }
             String installingId = installingModuleDetails.getId();
             VersionNumber installingVersion = installingModuleDetails.getVersion();
-
-            //Check that the target war repo is the correct version
-            checkTargetWarVersion(warFileLocation, installingModuleDetails);
             
             //A series of checks
             warHelper.checkCompatibleVersion(theWar, installingModuleDetails);
@@ -374,20 +370,6 @@ public class ModuleManagementTool
         {
             throw new ModuleManagementToolException("An IO error was encountered during deployment of the AEP into the WAR", exception);
         }       
-    }
-
-    protected void checkTargetWarVersion(String warFileLocation, ModuleDetails installingModuleDetails)
-    {
-        Properties warVers = ModuleDetailsHelper.getPropertiesFromWar(warFileLocation, VERSION_PROPERTIES);
-        outputMessage("WAR properties '" + warVers + "'");
-        VersionNumber warVersion = new VersionNumber(warVers.getProperty("version.major")+"."+warVers.getProperty("version.revision")+"."+warVers.getProperty("version.minor"));
-        if(warVersion.compareTo(installingModuleDetails.getRepoVersionMin())==-1) {
-            throw new ModuleManagementToolException("The module ("+installingModuleDetails.getTitle()+") must be installed on a repo version greater than "+installingModuleDetails.getRepoVersionMin());
-        }
-        if(warVersion.compareTo(installingModuleDetails.getRepoVersionMax())==1) {
-            throw new ModuleManagementToolException("The module ("+installingModuleDetails.getTitle()+") cannot be installed on a repo version greater than "+installingModuleDetails.getRepoVersionMax());
-        }
-       
     }
 
     private void backupWar(String warFileLocation, boolean backupWAR)

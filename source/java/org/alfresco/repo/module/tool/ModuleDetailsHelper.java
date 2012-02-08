@@ -170,32 +170,4 @@ public class ModuleDetailsHelper
                     exception);
         }
     }
-    
-
-    /**
-     * Reads a .properites file from the war and returns it as a Properties object
-     * @param warLocation The location of the war
-     * @param propertiesPath Path to the properties file (including .properties)
-     * @return Properties object or null
-     */
-    public static Properties getPropertiesFromWar(String warLocation, String propertiesPath)
-    {
-        Properties result = null;
-        try
-        {
-            File file = new File(warLocation+propertiesPath, ModuleManagementTool.DETECTOR_AMP_AND_WAR);
-            if (file.exists())
-            {
-                InputStream is = new FileInputStream(file);
-                result = new Properties();
-                result.load(is);
-            }
-        }
-        catch (IOException exception)
-        {
-            throw new ModuleManagementToolException("Unable to load properties from the war file; "+propertiesPath, exception);
-        }
-        return result;
-       
-    }
 }

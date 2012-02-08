@@ -361,6 +361,15 @@ public class LoginBean implements Serializable
             // if a redirect URL has been provided then use that
             // this allows servlets etc. to provide a URL to return too after a successful login
             String redirectURL = loginOutcomeBean.getRedirectURL();
+            
+            // ALF-10312: Validate we are redirecting within this web app
+            if (redirectURL != null && !redirectURL.startsWith(fc.getExternalContext().getRequestContextPath()))
+            {
+                if (logger.isWarnEnabled())
+                    logger.warn("Security violation. Unable to redirect to external location: " + redirectURL);
+                redirectURL = null;
+            }
+
             if (redirectURL != null && redirectURL.length() > 0)
             {
                if (logger.isDebugEnabled())
@@ -374,7 +383,7 @@ public class LoginBean implements Serializable
                }
                catch (IOException ioErr)
                {
-                  logger.warn("Unable to redirect to url: " + redirectURL);
+                  logger.warn("Unable to redirect to url: " + redirectURL, ioErr);
                }
             }
             else

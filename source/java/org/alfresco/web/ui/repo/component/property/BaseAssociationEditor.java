@@ -1157,7 +1157,7 @@ public abstract class BaseAssociationEditor extends UIInput
     * 
     * @return hidden field name
     */
-   private String getHiddenFieldName()
+   protected String getHiddenFieldName()
    {
       return getClientId(getFacesContext());
    }
@@ -1170,7 +1170,7 @@ public abstract class BaseAssociationEditor extends UIInput
     * 
     * @return FORM submit JavaScript
     */
-   private String generateFormSubmit(FacesContext context, String action)
+   protected String generateFormSubmit(FacesContext context, String action)
    {
       return Utils.generateFormSubmit(context, this, getHiddenFieldName(), action);
    }

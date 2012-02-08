@@ -244,7 +244,7 @@ public class EditWebContentWizard extends CreateWebContentWizard
                 if (logger.isDebugEnabled())
                         logger.debug("transferring lock for " + path + " back to " + renditionStoreName);
     
-                this.getAvmLockingService().modifyLock(renditionStoreId, renditionStorePath, lockOwner, renditionStoreId, renditionStorePath, renditionlockData);
+                this.getAvmLockingService().modifyLock(renditionStoreId, renditionStorePath, rr.getLockOwner(), renditionStoreId, renditionStorePath, renditionlockData);
             }
          }
       }

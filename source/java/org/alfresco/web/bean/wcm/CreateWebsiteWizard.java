@@ -1251,9 +1251,10 @@ public class CreateWebsiteWizard extends BaseWizardBean
          item.setDescription(form.getDescription());
          item.setImage(WebResources.IMAGE_WEBFORM_32);
          boolean skip = false;
+         String formName = form.getName();
          for (FormWrapper formWrapper : this.forms)
          {
-            if (formWrapper.getName().equals(form.getName()))
+            if (formWrapper.getName().equals(formName))
             {
                skip = true;
                break;
@@ -1529,6 +1530,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       private static final long serialVersionUID = -1452145043222643362L;
       
       private Form form;
+      private String name;
       private String title;
       private String description;
       private String formDescriptionAttribute;
@@ -1539,6 +1541,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       FormWrapper(Form form)
       {
          this.form = form;
+         this.name = form.getName();
          this.title = form.getName();
          this.description = form.getDescription();
       }
@@ -1550,7 +1553,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       
       public String getName()
       {
-         return this.form.getName();
+         return this.name;
       }
       
       public String getTitle()

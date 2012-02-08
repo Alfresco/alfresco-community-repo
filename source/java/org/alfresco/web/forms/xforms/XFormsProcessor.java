@@ -239,7 +239,9 @@ public class XFormsProcessor implements FormProcessor
       js.append("';\n");
       js.append("alfresco.constants.LANGUAGE = '");
       String lang = Application.getLanguage(FacesContext.getCurrentInstance()).toString();
-      lang = lang.substring(0,lang.indexOf("_"));
+      // the language can be passed as "en_US" or just "en"
+      if (lang.length() > 4)
+          lang = lang.substring(0,lang.indexOf("_"));
       js.append(lang);
       js.append("';\n");
       js.append("alfresco.xforms.constants.XFORMS_UI_DIV_ID = '").

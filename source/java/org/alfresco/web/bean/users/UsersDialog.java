@@ -334,6 +334,7 @@ public class UsersDialog extends BaseDialogBean implements IContextListener, Cha
                
                node.addPropertyResolver("sizeLatest", this.resolverUserSizeLatest);
                node.addPropertyResolver("quota", this.resolverUserQuota);
+               node.addPropertyResolver("isMutable", this.resolverUserMutable);
                
                this.users.add(node);
             }

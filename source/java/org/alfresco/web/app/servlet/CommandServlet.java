@@ -178,15 +178,15 @@ public class CommandServlet extends BaseServlet
             if (logger.isDebugEnabled())
                logger.debug("No return page specified, displaying status output.");
             
-            if (res.getContentType() == null)
+            if (res.getContentType() == null && !res.isCommitted())
             {
                res.setContentType("text/html");
-            }
-            
-            // request that the processor output a useful status message
-            PrintWriter out = res.getWriter();
-            processor.outputStatus(out);
-            out.close();
+
+               // request that the processor output a useful status message
+               PrintWriter out = res.getWriter();
+               processor.outputStatus(out);
+               out.close();
+            } 
          }
       }
       catch (Throwable err)

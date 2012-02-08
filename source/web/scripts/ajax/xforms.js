@@ -719,6 +719,19 @@ alfresco.xforms.TextField = alfresco.xforms.Widget.extend({
             ? null 
             : this.widget.value);
   },
+  
+  isValidForSubmit: function()
+  {
+    if (this._maxLength > -1 && this.getValue() != null)
+    {
+      if (this.getValue().length > this._maxLength)
+      {
+        alfresco.log(this.id + " is invalid");
+        return false;
+      }
+    }
+    return this.parent();
+  }, 
 
   /////////////////////////////////////////////////////////////////
   // DOM event handlers
@@ -2840,6 +2853,8 @@ alfresco.xforms.VGroup = alfresco.xforms.AbstractGroup.extend({
       child.domContainer.appendChild(contentDiv.labelNode);
     }
 
+    child.domContainer.appendChild(contentDiv);
+
     var contentDivWidth = "100%";
     // the following does avoid devision by zero ... in contentDiv.offsetLeft / child.domContainer.offsetWidth
     var ow = child.domContainer.offsetWidth;
@@ -2848,6 +2863,7 @@ alfresco.xforms.VGroup = alfresco.xforms.AbstractGroup.extend({
     	contentDivWidth = ((1 - (contentDiv.offsetLeft / ow)) * 100) + "%";
     }
     contentDiv.style.width = contentDivWidth;
+    child.render(contentDiv);
     
     var oh = contentDiv.offsetHeight;
     var mt = contentDiv.getStyle("margin-top").toInt();
@@ -2875,10 +2891,8 @@ alfresco.xforms.VGroup = alfresco.xforms.AbstractGroup.extend({
       contentDiv.labelNode.style.lineHeight = contentDiv.labelNode.style.height;
 
     }
-    child.render(contentDiv);
     contentDiv.widget = child;
 
-    child.domContainer.appendChild(contentDiv);
     // Glen.Johnson@alfresco.com - for each child added to a VGroup,
     // the method call below (commented out) recalculates the layout and 
     // updates the display for each of its siblings (already displayed 
@@ -4288,8 +4302,23 @@ alfresco.xforms.XForm = new Class({
     for (var i = 0; i < xformsNode.childNodes.length; i++)
     {
       if (xformsNode.childNodes[i].nodeType != document.ELEMENT_NODE)
-      {	      
-         continue;
+      {
+         if (alfresco.ieVersion == -1)
+         {
+      	// fix for ETWOTWO-490, hide elements after rendering  (Mozila/Firefox)    
+	    if ((i == (xformsNode.childNodes.length - 1)) &&
+	        (parentWidget instanceof alfresco.xforms.SwitchGroup))
+	      {  
+	         for (var x = 0; x < parentWidget._children.length; x++)
+	         {
+	            if (parentWidget.triggers[x].getActions()["toggle"].properties["case"] != parentWidget._selectedCaseId)	            
+	            {
+	               parentWidget._children[x].domContainer.style.display = "none";
+	            }
+	         }
+	      }
+         }	      
+        continue;
       }
       alfresco.log("loading " + xformsNode.childNodes[i].nodeName + 
                  " into " + parentWidget.id);
@@ -4311,6 +4340,19 @@ alfresco.xforms.XForm = new Class({
           this.loadWidgets(xformsNode.childNodes[i], w);
         }
       }
+      
+      // fix for ETWOTWO-490, hide elements after rendering   (Internet Explorer)   
+      if ((i == (xformsNode.childNodes.length - 1)) &&
+          (parentWidget instanceof alfresco.xforms.SwitchGroup))
+      {
+         for (var x = 0; x < parentWidget._children.length; x++)
+         {         	
+            if (parentWidget.triggers[x].getActions()["toggle"].properties["case"] != parentWidget._selectedCaseId)	            
+            {
+               parentWidget._children[x].domContainer.style.display = "none";
+            }
+         }
+      } 
     }
   },
 

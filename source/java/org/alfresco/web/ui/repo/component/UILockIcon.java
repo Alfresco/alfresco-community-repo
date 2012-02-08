@@ -26,6 +26,7 @@ import javax.faces.context.ResponseWriter;
 import javax.faces.el.ValueBinding;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.web.app.Application;
@@ -106,9 +107,11 @@ public class UILockIcon extends SelfRenderingComponent
       if (val instanceof NodeRef)
       {
          ref = (NodeRef)val;
-         if (nodeService.exists(ref) && nodeService.hasAspect(ref, ContentModel.ASPECT_LOCKABLE) == true)
+         if (nodeService.exists(ref))
          {
-            lockUser = (String)nodeService.getProperty(ref, ContentModel.PROP_LOCK_OWNER);
+             LockStatus lockStatus = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getLockService().getLockStatus(ref);
+             if (lockStatus == LockStatus.LOCK_OWNER || lockStatus == LockStatus.LOCKED)
+                 lockUser = (String)nodeService.getProperty(ref, ContentModel.PROP_LOCK_OWNER);
          }
       }
       final boolean locked = lockUser != null;

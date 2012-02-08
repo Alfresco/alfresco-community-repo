@@ -369,15 +369,10 @@ function main()
    }
    catch (e)
    {
-      try
-      {
-         formdata.cleanup();
-      }
-      catch (ce)
-      {
-         // NOTE: ignore
-      }
-
+      // NOTE: Do not clean formdata temp files to allow for retries. It's possible for a temp file
+      //       to remain if max retry attempts are made, but this is rare, so leave to usual temp
+      //       file cleanup.
+      
       // capture exception, annotate it accordingly and re-throw
       if (e.message && e.message.indexOf("org.alfresco.service.cmr.usage.ContentQuotaException") == 0)
       {

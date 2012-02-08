@@ -38,6 +38,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import org.springframework.extensions.webscripts.AbstractWebScript;
+import org.springframework.extensions.webscripts.Format;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
@@ -79,6 +80,7 @@ public abstract class AbstractSubscriptionServiceWebScript extends AbstractWebSc
             if (obj instanceof JSONObject || obj instanceof JSONArray)
             {
                 res.setContentEncoding(Charset.defaultCharset().displayName());
+                res.setContentType(Format.JSON.mimetype() + ";charset=UTF-8");
 
                 Writer writer = res.getWriter();
                 if (obj instanceof JSONObject)

@@ -439,7 +439,7 @@ public class WorkflowModelBuilder
                         if (constraint instanceof ListOfValuesConstraint)
                         {
                             ListOfValuesConstraint listConstraint = (ListOfValuesConstraint) constraint;
-                            String label = listConstraint.getDisplayLabel(entry.getValue().toString());
+                            String label = listConstraint.getDisplayLabel(String.valueOf(entry.getValue()));
                             return new Pair<String, String>(propName, label);
                         }
                     }

@@ -672,6 +672,16 @@
                     </entry>
                 </map>
             </entry>
+            <!-- Limit use of xls to pdf (and onwards to swf) if too large -->
+            <entry key="application/vnd.ms-excel">
+                <map>
+                    <entry key="application/pdf">
+                        <bean class="org.alfresco.service.cmr.repository.TransformationOptionLimits">
+                            <property name="maxSourceSizeKBytes"><value>${content.transformer.OpenOffice.mimeTypeLimits.xls.pdf.maxSourceSizeKBytes}</value></property>
+                        </bean>
+                    </entry>
+                </map>
+            </entry>
         </map>
       </property>
    </bean>
@@ -704,6 +714,16 @@
             </entry>
             <!-- Don't use for xlsx to text as there are better options -->
             <entry key="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+                <map>
+                    <entry key="text/plain">
+                        <bean class="org.alfresco.service.cmr.repository.TransformationOptionLimits">
+                            <property name="maxSourceSizeKBytes"><value>0</value></property>
+                        </bean>
+                    </entry>
+                </map>
+            </entry>
+            <!-- Don't use for xls to text as there are better options -->
+            <entry key="application/vnd.ms-excel">
                 <map>
                     <entry key="text/plain">
                         <bean class="org.alfresco.service.cmr.repository.TransformationOptionLimits">

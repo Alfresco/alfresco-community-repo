@@ -2552,6 +2552,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             Pair<Long, NodeRef> newChildNodePair = moveResult.getSecond();
             ChildAssociationRef newParentAssocRef = newParentAssocPair.getSecond();
             // Index
+            nodeIndexer.indexDeleteNode(oldParentAssocPair.getSecond());
             nodeIndexer.indexCreateNode(newParentAssocPair.getSecond());
             // Propagate timestamps
             propagateTimeStamps(oldParentAssocRef);

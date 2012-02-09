@@ -41,6 +41,8 @@ import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.view.ImporterBinding.UUID_BINDING;
+import org.alfresco.service.descriptor.Descriptor;
+import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -70,6 +72,7 @@ public class SiteLoadPatch extends AbstractPatch
     private static final String MSG_SITE_ALREADY_EXISTS = "patch.siteLoadPatch.exists";
     private static final String MSG_NO_BOOTSTRAP_VIEWS_GIVEN = "patch.siteLoadPatch.noBootstrapViews";
     private static final String MSG_SITE_CREATED = "patch.siteLoadPatch.result";
+    private static final String MSG_SITE_NOT_CREATED = "patch.siteLoadPatch.siteNotCreated";
     
     // Logger
     private static final Log logger = LogFactory.getLog(SiteLoadPatch.class);
@@ -77,6 +80,7 @@ public class SiteLoadPatch extends AbstractPatch
     private AuthorityService authorityService;
     private BehaviourFilter behaviourFilter;
     private SiteService siteService;
+    private DescriptorService descriptorService;
     
     private String siteName;
     
@@ -117,7 +121,7 @@ public class SiteLoadPatch extends AbstractPatch
     {
         this.bootstrapViews = bootstrapViews;
     }
-
+    
     /**
      * Sets the Site Service to be used for importing into
      * 
@@ -136,6 +140,16 @@ public class SiteLoadPatch extends AbstractPatch
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
+    }
+
+    
+    
+    /**
+     * @param descriptorService the descriptorService to set
+     */
+    public void setDescriptorService(DescriptorService descriptorService)
+    {
+        this.descriptorService = descriptorService;
     }
 
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
@@ -177,6 +191,17 @@ public class SiteLoadPatch extends AbstractPatch
      */
     private String applyInternalImpl() throws Exception
     {
+        if(descriptorService != null)
+        {
+            // if the descriptor service is wired up only load the site at install time (and not on upgrade)
+            Descriptor installed = descriptorService.getInstalledRepositoryDescriptor();
+            Descriptor live = descriptorService.getServerDescriptor();
+
+            if(!installed.getVersion().equals(live.getVersion()))
+            {
+                return I18NUtil.getMessage(MSG_SITE_NOT_CREATED, siteName);
+            }
+        }
         if (bootstrapViews == null || bootstrapViews.size() == 0)
         {
             if (logger.isDebugEnabled())

@@ -2421,7 +2421,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 if(fileInfo.isDirectory())
                 {
                     logger.debug("open file - is a directory!");
-                    netFile = new AlfrescoFolder(path, fileInfo, readOnly); 
+                    netFile = new AlfrescoFolder(path, fileInfo, readOnly);              
                 }
                 else
                 {
@@ -2459,14 +2459,6 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                                 netFile.truncateFile(0);
                             }
 
-                            // Generate a file id for the file
-
-                            if ( netFile != null) 
-                            {
-                                long id = DefaultTypeConverter.INSTANCE.convert(Long.class, nodeService.getProperty(nodeRef, ContentModel.PROP_NODE_DBID));
-                                netFile.setFileId((int) (id & 0xFFFFFFFFL));
-                            }
-
                             if (logger.isDebugEnabled())
                             {
                                 logger.debug("Created file: path=" + name + " node=" + nodeRef + " network file=" + netFile);
@@ -2498,14 +2490,6 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                             
                             // Needs to be READWRITE for JavaNetworkFile - there's no such thing as WRITEONLY!
                             netFile.setGrantedAccess( NetworkFile.READWRITE);
-
-                            // Generate a file id for the file
-
-                            if ( netFile != null) 
-                            {
-                                long id = DefaultTypeConverter.INSTANCE.convert(Long.class, nodeService.getProperty(nodeRef, ContentModel.PROP_NODE_DBID));
-                                netFile.setFileId((int) (id & 0xFFFFFFFFL));
-                            }
 
                             if (logger.isDebugEnabled())
                             {

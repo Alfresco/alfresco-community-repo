@@ -63,9 +63,7 @@ public class SolrChildApplicationContextFactory extends ChildApplicationContextF
     @Override
     public String getProperty(String name)
     {
-        if (name.equals(SolrChildApplicationContextFactory.ALFRESCO_ACTIVE)
-                || name.equals(SolrChildApplicationContextFactory.ALFRESCO_LAG) || name.equals(SolrChildApplicationContextFactory.ALFRESCO_LAG_DURATION) || name.equals(SolrChildApplicationContextFactory.ARCHIVE_ACTIVE)
-                || name.equals(SolrChildApplicationContextFactory.ARCHIVE_LAG) || name.equals(SolrChildApplicationContextFactory.ARCHIVE_LAG_DURATION))
+        if (false == isUpdateable(name))
         {
             try
             {
@@ -150,50 +148,10 @@ public class SolrChildApplicationContextFactory extends ChildApplicationContextF
 
     public void setProperty(String name, String value)
     {
-        if (name.equals(SolrChildApplicationContextFactory.ALFRESCO_ACTIVE)
-                || name.equals(SolrChildApplicationContextFactory.ALFRESCO_LAG) || name.equals(SolrChildApplicationContextFactory.ALFRESCO_LAG_DURATION) || name.equals(SolrChildApplicationContextFactory.ARCHIVE_ACTIVE)
-                || name.equals(SolrChildApplicationContextFactory.ARCHIVE_LAG) || name.equals(SolrChildApplicationContextFactory.ARCHIVE_LAG_DURATION))
+        if(false == isUpdateable(name))
         {
             throw new IllegalStateException("Illegal write to property \"" + name + "\"");
         }
         super.setProperty(name, value);
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#setProperties(java.util.Map)
-     */
-    @Override
-    public void setProperties(Map<String, String> properties)
-    {
-        // Remove any read only properties
-        HashMap<String, String> propertiesToSet = new HashMap<String, String>(properties);
-        if(propertiesToSet.containsKey(SolrChildApplicationContextFactory.ALFRESCO_ACTIVE))
-        {
-            propertiesToSet.remove(SolrChildApplicationContextFactory.ALFRESCO_ACTIVE);
-        }
-        if(propertiesToSet.containsKey(SolrChildApplicationContextFactory.ALFRESCO_LAG))
-        {
-            propertiesToSet.remove(SolrChildApplicationContextFactory.ALFRESCO_LAG);
-        }
-        if(propertiesToSet.containsKey(SolrChildApplicationContextFactory.ALFRESCO_LAG_DURATION))
-        {
-            propertiesToSet.remove(SolrChildApplicationContextFactory.ALFRESCO_LAG_DURATION);
-        }
-        if(propertiesToSet.containsKey(SolrChildApplicationContextFactory.ARCHIVE_ACTIVE))
-        {
-            propertiesToSet.remove(SolrChildApplicationContextFactory.ARCHIVE_ACTIVE);
-        }
-        if(propertiesToSet.containsKey(SolrChildApplicationContextFactory.ARCHIVE_LAG))
-        {
-            propertiesToSet.remove(SolrChildApplicationContextFactory.ARCHIVE_LAG);
-        }
-        if(propertiesToSet.containsKey(SolrChildApplicationContextFactory.ARCHIVE_LAG_DURATION))
-        {
-            propertiesToSet.remove(SolrChildApplicationContextFactory.ARCHIVE_LAG_DURATION);
-        }
-       
-        super.setProperties(propertiesToSet);
-    }
-
-    
+    }    
 }

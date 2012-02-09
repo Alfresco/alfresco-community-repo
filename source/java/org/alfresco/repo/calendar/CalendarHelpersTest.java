@@ -782,6 +782,314 @@ public class CalendarHelpersTest
       assertEquals("2011-10-21", dateFmt.format(dates.get(1)));
       assertEquals("2012-01-20", dateFmt.format(dates.get(2)));
    }
+   
+   /**
+    * eg every 21st of February
+    */
+   @Test public void yearlyRecurrenceByDateInMonth()
+   {
+       List<Date> dates = new ArrayList<Date>();
+       Calendar currentDate = Calendar.getInstance();
+       
+       // How Outlook ought to do it
+       Map<String,String> params = new HashMap<String, String>();
+       params.put("COUNT", "10");
+       params.put("BYMONTH", "2");
+       params.put("BYMONTHDAY", "21");
+       
+       // How many Outlook versions do do it...
+       // FREQ=MONTHLY;COUNT=10;BYMONTH=2;INTERVAL=1;BYSETPOS=17;BYDAY=SU,MO,TU,WE,TH,FR,SA; 
+       Map<String,String> paramsOUTLOOK = new HashMap<String, String>();
+       paramsOUTLOOK.put("FREQ", "MONTHLY");
+       paramsOUTLOOK.put("COUNT", "10");
+       paramsOUTLOOK.put("BYMONTH", "2");
+       paramsOUTLOOK.put("INTERVAL", "1");
+       paramsOUTLOOK.put("BYSETPOS", "21");
+       paramsOUTLOOK.put("BYDAY", "SU,MO,TU,WE,TH,FR,SA");
+       
+       // Check that the outlook crazy version gets fixed
+       Map<String,String> paramsFIXED = RecurrenceHelper.fixOutlookRecurrenceQuirks(paramsOUTLOOK);
+       assertEquals("YEARLY", paramsFIXED.get("FREQ"));
+       assertEquals("2",  paramsFIXED.get("BYMONTH"));
+       assertEquals("21", paramsFIXED.get("BYMONTHDAY"));
+       assertEquals("10", paramsFIXED.get("COUNT"));
+       assertEquals("1", paramsFIXED.get("INTERVAL"));
+       assertEquals(null, paramsFIXED.get("BYDAY"));
+       assertEquals(null, paramsFIXED.get("BYSETPOS"));
+
+       
+       // Dates in the past, get nothing
+       dates.clear();
+       currentDate.set(2012,1-1,19,10,30);
+       RecurrenceHelper.buildYearlyRecurrences(
+             currentDate, dates, params,
+             date(2012,2,10), date(2012,2,15),
+             true, 1);
+       assertEquals(0, dates.size());
+       
+       dates.clear();
+       RecurrenceHelper.buildYearlyRecurrences(
+               currentDate, dates, params,
+               date(2012,2,10), date(2012,2,15),
+               false, 1);
+       assertEquals(0, dates.size());
+       
+       
+       // With the month that contains it
+       dates.clear();
+       currentDate.set(2012,2-1,1,10,30);
+       RecurrenceHelper.buildYearlyRecurrences(
+             currentDate, dates, params,
+             date(2012,2,1), date(2012,2,26),
+             true, 1);
+       assertEquals(1, dates.size());
+       assertEquals("2012-02-21", dateFmt.format(dates.get(0)));
+       
+       dates.clear();
+       currentDate.set(2012,2-1,1,10,30);
+       RecurrenceHelper.buildYearlyRecurrences(
+             currentDate, dates, params,
+             date(2012,2,1), date(2012,2,26),
+             false, 1);
+       assertEquals(1, dates.size());
+       assertEquals("2012-02-21", dateFmt.format(dates.get(0)));
+       
+       
+       // In the next month
+       dates.clear();
+       currentDate.set(2012,3-1,1,10,30);
+       RecurrenceHelper.buildYearlyRecurrences(
+             currentDate, dates, params,
+             date(2012,3,1), date(2012,3,26),
+             true, 1);
+       assertEquals(0, dates.size());
+       
+       dates.clear();
+       currentDate.set(2012,3-1,1,10,30);
+       RecurrenceHelper.buildYearlyRecurrences(
+             currentDate, dates, params,
+             date(2012,3,1), date(2012,3,26),
+             false, 1);
+       assertEquals(0, dates.size());
+       
+       
+       // From before, into the next year
+       dates.clear();
+       currentDate.set(2012,2-1,1,10,30);
+       RecurrenceHelper.buildYearlyRecurrences(
+             currentDate, dates, params,
+             date(2012,2,1), date(2013,3,26),
+             true, 1);
+       assertEquals(1, dates.size());
+       assertEquals("2012-02-21", dateFmt.format(dates.get(0)));
+       
+       dates.clear();
+       currentDate.set(2012,2-1,1,10,30);
+       RecurrenceHelper.buildYearlyRecurrences(
+             currentDate, dates, params,
+             date(2012,2,1), date(2013,3,26),
+             false, 1);
+       assertEquals(2, dates.size());
+       assertEquals("2012-02-21", dateFmt.format(dates.get(0)));
+       assertEquals("2013-02-21", dateFmt.format(dates.get(1)));
+       
+       
+       // From next month, into the next year
+       dates.clear();
+       currentDate.set(2012,3-1,1,10,30);
+       RecurrenceHelper.buildYearlyRecurrences(
+             currentDate, dates, params,
+             date(2012,3,1), date(2013,2,26),
+             true, 1);
+       assertEquals(1, dates.size());
+       assertEquals("2013-02-21", dateFmt.format(dates.get(0)));
+       
+       dates.clear();
+       currentDate.set(2012,3-1,1,10,30);
+       RecurrenceHelper.buildYearlyRecurrences(
+             currentDate, dates, params,
+             date(2012,3,1), date(2013,3,26),
+             false, 1);
+       assertEquals(1, dates.size());
+       assertEquals("2013-02-21", dateFmt.format(dates.get(0)));
+       
+       
+       // With no end date but only first, check it behaves
+       dates.clear();
+       currentDate.set(2011,7-1,2,10,30);
+       RecurrenceHelper.buildYearlyRecurrences(
+             currentDate, dates, params,
+             date(2011,7,1), null,
+             true, 1);
+       assertEquals(1, dates.size());
+       assertEquals("2012-02-21", dateFmt.format(dates.get(0)));
+       
+       dates.clear();
+       currentDate.set(2012,7-1,19,10,30);
+       RecurrenceHelper.buildYearlyRecurrences(
+             currentDate, dates, params,
+             date(2011,7,19), null,
+             true, 1);
+       assertEquals(1, dates.size());
+       assertEquals("2013-02-21", dateFmt.format(dates.get(0)));
+   }
+   
+   /**
+    * eg the 2nd Thursday in every March
+    */
+   @Test public void yearlyRecurrenceByDayOfWeekInMonth()
+   {
+       List<Date> dates = new ArrayList<Date>();
+       Calendar currentDate = Calendar.getInstance();
+       
+       // How Outlook ought to do it
+       Map<String,String> params = new HashMap<String, String>();
+       params.put("COUNT", "7");
+       params.put("BYMONTH", "2");
+       params.put("BYDAY", "SA");
+       params.put("BYSETPOS", "2");
+       
+       // 2nd Saturday in February is 11th Feb 2012, 9th Feb 2013
+       
+       // Note - outlook seems to like to set these as monthly...
+       // FREQ=MONTHLY;COUNT=7;BYDAY=SA;BYMONTH=2;BYSETPOS=2;INTERVAL=1
+       // This is right except for the FREQ!
+       Map<String,String> paramsOUTLOOK = new HashMap<String, String>();
+       paramsOUTLOOK.put("FREQ", "MONTHLY");
+       paramsOUTLOOK.put("COUNT", "7");
+       paramsOUTLOOK.put("BYMONTH", "2");
+       paramsOUTLOOK.put("BYDAY", "SA");
+       paramsOUTLOOK.put("BYSETPOS", "2");
+       paramsOUTLOOK.put("INTERVAL", "1");
+       
+       // Check that the outlook crazy version gets fixed
+       Map<String,String> paramsFIXED = RecurrenceHelper.fixOutlookRecurrenceQuirks(paramsOUTLOOK);
+       assertEquals("YEARLY", paramsFIXED.get("FREQ"));
+       assertEquals("2",  paramsFIXED.get("BYMONTH"));
+       assertEquals("SA", paramsFIXED.get("BYDAY"));
+       assertEquals("2", paramsFIXED.get("BYSETPOS"));
+       assertEquals("7", paramsFIXED.get("COUNT"));
+       assertEquals("1", paramsFIXED.get("INTERVAL"));
+       assertEquals(null, paramsFIXED.get("BYMONTHDAY"));
+
+       
+
+       
+       // Dates in the past, get nothing
+       dates.clear();
+       currentDate.set(2012,1-1,19,10,30);
+       RecurrenceHelper.buildYearlyRecurrences(
+             currentDate, dates, params,
+             date(2012,2,4), date(2012,2,5),
+             true, 1);
+       assertEquals(0, dates.size());
+       
+       dates.clear();
+       RecurrenceHelper.buildYearlyRecurrences(
+               currentDate, dates, params,
+               date(2012,2,4), date(2012,2,5),
+               false, 1);
+       assertEquals(0, dates.size());
+       
+       
+       // With the month that contains it
+       dates.clear();
+       currentDate.set(2012,2-1,1,10,30);
+       RecurrenceHelper.buildYearlyRecurrences(
+             currentDate, dates, params,
+             date(2012,2,1), date(2012,2,26),
+             true, 1);
+       assertEquals(1, dates.size());
+       assertEquals("2012-02-11", dateFmt.format(dates.get(0)));
+       
+       dates.clear();
+       currentDate.set(2012,2-1,1,10,30);
+       RecurrenceHelper.buildYearlyRecurrences(
+             currentDate, dates, params,
+             date(2012,2,1), date(2012,2,26),
+             false, 1);
+       assertEquals(1, dates.size());
+       assertEquals("2012-02-11", dateFmt.format(dates.get(0)));
+       
+       
+       // In the next month
+       dates.clear();
+       currentDate.set(2012,3-1,1,10,30);
+       RecurrenceHelper.buildYearlyRecurrences(
+             currentDate, dates, params,
+             date(2012,3,1), date(2012,3,26),
+             true, 1);
+       assertEquals(0, dates.size());
+       
+       dates.clear();
+       currentDate.set(2012,3-1,1,10,30);
+       RecurrenceHelper.buildYearlyRecurrences(
+             currentDate, dates, params,
+             date(2012,3,1), date(2012,3,26),
+             false, 1);
+       assertEquals(0, dates.size());
+       
+       
+       // From before, into the next year
+       dates.clear();
+       currentDate.set(2012,2-1,1,10,30);
+       RecurrenceHelper.buildYearlyRecurrences(
+             currentDate, dates, params,
+             date(2012,2,1), date(2013,3,26),
+             true, 1);
+       assertEquals(1, dates.size());
+       assertEquals("2012-02-11", dateFmt.format(dates.get(0)));
+       
+       dates.clear();
+       currentDate.set(2012,2-1,1,10,30);
+       RecurrenceHelper.buildYearlyRecurrences(
+             currentDate, dates, params,
+             date(2012,2,1), date(2013,3,26),
+             false, 1);
+       assertEquals(2, dates.size());
+       assertEquals("2012-02-11", dateFmt.format(dates.get(0)));
+       assertEquals("2013-02-09", dateFmt.format(dates.get(1)));
+       
+       
+       // From next month, into the next year
+       dates.clear();
+       currentDate.set(2012,3-1,1,10,30);
+       RecurrenceHelper.buildYearlyRecurrences(
+             currentDate, dates, params,
+             date(2012,3,1), date(2013,2,26),
+             true, 1);
+       assertEquals(1, dates.size());
+       assertEquals("2013-02-09", dateFmt.format(dates.get(0)));
+       
+       dates.clear();
+       currentDate.set(2012,3-1,1,10,30);
+       RecurrenceHelper.buildYearlyRecurrences(
+             currentDate, dates, params,
+             date(2012,3,1), date(2013,3,26),
+             false, 1);
+       assertEquals(1, dates.size());
+       assertEquals("2013-02-09", dateFmt.format(dates.get(0)));
+       
+       
+       // With no end date but only first, check it behaves
+       dates.clear();
+       currentDate.set(2011,7-1,2,10,30);
+       RecurrenceHelper.buildYearlyRecurrences(
+             currentDate, dates, params,
+             date(2011,7,1), null,
+             true, 1);
+       assertEquals(1, dates.size());
+       assertEquals("2012-02-11", dateFmt.format(dates.get(0)));
+       
+       dates.clear();
+       currentDate.set(2012,7-1,19,10,30);
+       RecurrenceHelper.buildYearlyRecurrences(
+             currentDate, dates, params,
+             date(2011,7,19), null,
+             true, 1);
+       assertEquals(1, dates.size());
+       assertEquals("2013-02-09", dateFmt.format(dates.get(0)));
+   }
 
    /**
     * Checks we correctly build the Timezone for somewhere
@@ -920,6 +1228,11 @@ public class CalendarHelpersTest
       {
          CalendarRecurrenceHelper.buildYearlyRecurrences(
                currentDate, dates, params, onOrAfter, until, firstOnly, interval);
+      }
+      
+      protected static Map<String,String> fixOutlookRecurrenceQuirks(Map<String,String> params)
+      {
+          return CalendarRecurrenceHelper.fixOutlookRecurrenceQuirks(params);
       }
    }
    

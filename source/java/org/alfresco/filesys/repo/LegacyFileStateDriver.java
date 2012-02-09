@@ -37,6 +37,7 @@ import org.alfresco.jlan.server.filesys.TreeConnection;
 import org.alfresco.jlan.server.filesys.cache.FileState;
 import org.alfresco.jlan.server.filesys.cache.FileStateCache;
 import org.alfresco.jlan.server.filesys.cache.NetworkFileStateInterface;
+import org.alfresco.jlan.server.filesys.pseudo.PseudoFile;
 import org.alfresco.jlan.smb.SharingMode;
 import org.alfresco.model.ContentModel;
 import org.alfresco.util.PropertyCheck;
@@ -99,6 +100,8 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
         try
         {
             NetworkFile newFile = diskInterface.createFile(sess, tree, params);
+            
+            newFile.setAccessToken(token);
           
             if(tctx.hasStateCache())
             {
@@ -194,67 +197,63 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
         try
         {
             NetworkFile openFile = diskInterface.openFile(sess, tree, params);
-
+            
+            openFile.setAccessToken(token);
+            
+            FileState fstate = null;
+            
+            if(tctx.hasStateCache())
+            {
+                fstate = tctx.getStateCache().findFileState( path, true);
+                fstate.setProcessId(params.getProcessId());
+                fstate.setSharedAccess( params.getSharedAccess());
+                
+                // Access date time is read/write time not open time
+                // fstate.updateAccessDateTime();
+                
+                fstate.setFileSize(openFile.getFileSize());
+                fstate.updateChangeDateTime(openFile.getModifyDate());
+                fstate.updateModifyDateTime(openFile.getModifyDate());
+            }
+            
             if (openFile instanceof ContentNetworkFile)
             {
                 ContentNetworkFile x = (ContentNetworkFile)openFile;
                 x.setProcessId( params.getProcessId());
-                x.setAccessToken(token);
-                if(tctx.hasStateCache())
-                {
-                    FileState fstate = tctx.getStateCache().findFileState( path, true);
-                    x.setFileState(fstate);
-                    fstate.setProcessId(params.getProcessId());
-                    fstate.setSharedAccess( params.getSharedAccess());
-                    fstate.setFileStatus(FileStatus.FileExists);
-                    // Access date time is read/write time not open time
-                    // fstate.updateAccessDateTime();
-                    
-                    fstate.setFileSize(x.getFileSize());
-                    fstate.updateChangeDateTime(x.getModifyDate());
-                    fstate.updateModifyDateTime(x.getModifyDate());
-                }
-            }
 
-            if (openFile instanceof TempNetworkFile)
+                if(fstate != null)
+                {
+                    x.setFileState(fstate);
+                    fstate.setFileStatus(FileStatus.FileExists);
+                }
+            } 
+            else if (openFile instanceof TempNetworkFile)
             {
                 TempNetworkFile x = (TempNetworkFile)openFile;
-                x.setAccessToken(token);
-                // x.setProcessId( params.getProcessId());
-                if(tctx.hasStateCache())
+                if(fstate != null)
                 {
-                    FileState fstate = tctx.getStateCache().findFileState( path, true);
                     x.setFileState(fstate);
                     fstate.setFileStatus(FileStatus.FileExists);
-                    fstate.setProcessId(params.getProcessId());
-                    fstate.setSharedAccess( params.getSharedAccess());
-                    // access date time is read/write time not open time
-                    //fstate.updateAccessDateTime();
-                    
-                    fstate.setFileSize(x.getFileSize());
-                    fstate.updateChangeDateTime(x.getModifyDate());
-                    fstate.updateModifyDateTime(x.getModifyDate());
                 }
             }
-
-            if (openFile instanceof AlfrescoFolder)
+            else if (openFile instanceof AlfrescoFolder)
             {
                 AlfrescoFolder x = (AlfrescoFolder)openFile;
-                //x.setProcessId( param.getProcessId());
-                if(tctx.hasStateCache())
+                if(fstate != null)
                 {
-                    FileState fstate = tctx.getStateCache().findFileState( path, true);
                     x.setFileState(fstate);
                     fstate.setFileStatus(FileStatus.DirectoryExists);
-                    fstate.setProcessId(params.getProcessId());
-                    fstate.setSharedAccess( params.getSharedAccess());
-                    // Access date time is read/write time not open time
-                    //fstate.updateAccessDateTime();
-                    
-                    fstate.setFileSize(x.getFileSize());
-                    fstate.updateChangeDateTime(x.getModifyDate());
-                    fstate.updateModifyDateTime(x.getModifyDate());
                 }
+            }
+            else if (openFile instanceof NetworkFile)
+            {
+                NetworkFile x = (NetworkFile)openFile;
+                if(fstate != null)
+                {
+                    // NetworkFile does not have setFileState
+                    //x.setFileState(fstate);
+                    fstate.setFileStatus(FileStatus.FileExists);
+                }           
             }
 
             return openFile;

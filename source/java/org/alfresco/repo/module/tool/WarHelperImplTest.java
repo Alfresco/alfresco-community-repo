@@ -14,6 +14,7 @@ import org.alfresco.repo.module.ModuleDetailsImpl;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.VersionNumber;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.util.FileCopyUtils;
 
@@ -27,13 +28,18 @@ import de.schlichtherle.io.FileOutputStream;
 public class WarHelperImplTest extends WarHelperImpl
 {
 
-    private WarHelper warhelper = new WarHelperImpl();
+    public WarHelperImplTest()
+    {
+        super(new LogOutput()
+        {            
+            @Override
+            public void info(Object message)
+            {
+                System.out.println(message);
+            }
+        });
+    }
     
-//    @Before
-//    public void setUp() throws Exception
-//    {
-//    }
-
     @Test
     public void testCheckCompatibleVersion()
     {
@@ -43,7 +49,7 @@ public class WarHelperImplTest extends WarHelperImpl
         installingModuleDetails.setRepoVersionMin(new VersionNumber("10.1"));
         try
         {
-            this.warhelper.checkCompatibleVersion(theWar, installingModuleDetails);
+            this.checkCompatibleVersion(theWar, installingModuleDetails);
             fail(); //should never get here
         }
         catch (ModuleManagementToolException exception)
@@ -52,12 +58,12 @@ public class WarHelperImplTest extends WarHelperImpl
         }
 
         installingModuleDetails.setRepoVersionMin(new VersionNumber("1.1"));
-        this.warhelper.checkCompatibleVersion(theWar, installingModuleDetails); //does not throw exception     
+        this.checkCompatibleVersion(theWar, installingModuleDetails); //does not throw exception     
      
         installingModuleDetails.setRepoVersionMax(new VersionNumber("3.0"));
         try
         {
-            this.warhelper.checkCompatibleVersion(theWar, installingModuleDetails);
+            this.checkCompatibleVersion(theWar, installingModuleDetails);
             fail(); //should never get here
         }
         catch (ModuleManagementToolException exception)
@@ -66,11 +72,11 @@ public class WarHelperImplTest extends WarHelperImpl
         }        
 
         installingModuleDetails.setRepoVersionMax(new VersionNumber("99"));
-        this.warhelper.checkCompatibleVersion(theWar, installingModuleDetails); //does not throw exception
+        this.checkCompatibleVersion(theWar, installingModuleDetails); //does not throw exception
         
         installingModuleDetails.setRepoVersionMin(new VersionNumber("4.0.1"));  //current war version
         installingModuleDetails.setRepoVersionMax(new VersionNumber("4.0.1"));  //current war version
-        this.warhelper.checkCompatibleVersion(theWar, installingModuleDetails); //does not throw exception  
+        this.checkCompatibleVersion(theWar, installingModuleDetails); //does not throw exception  
     }
 
     @Test
@@ -85,7 +91,7 @@ public class WarHelperImplTest extends WarHelperImpl
         File theWar = getFile(".war", "module/test.war");   //Community Edition
         
         //Test for no edition specified
-        this.warhelper.checkCompatibleEdition(theWar, installingModuleDetails); //does not throw exception 
+        this.checkCompatibleEdition(theWar, installingModuleDetails); //does not throw exception 
         
         //Test for invalid edition
         props.setProperty(ModuleDetails.PROP_EDITIONS, "CommuniT");
@@ -93,7 +99,7 @@ public class WarHelperImplTest extends WarHelperImpl
         
         try
         {
-            this.warhelper.checkCompatibleEdition(theWar, installingModuleDetails);
+            this.checkCompatibleEdition(theWar, installingModuleDetails);
             fail(); //should never get here
         }
         catch (ModuleManagementToolException exception)
@@ -103,17 +109,28 @@ public class WarHelperImplTest extends WarHelperImpl
         
         props.setProperty(ModuleDetails.PROP_EDITIONS, ("CoMMunity"));  //should ignore case
         installingModuleDetails = new ModuleDetailsImpl(props);
-        this.warhelper.checkCompatibleEdition(theWar, installingModuleDetails); //does not throw exception 
+        this.checkCompatibleEdition(theWar, installingModuleDetails); //does not throw exception 
         
         props.setProperty(ModuleDetails.PROP_EDITIONS, ("enterprise,community,bob"));  //should ignore case
         installingModuleDetails = new ModuleDetailsImpl(props);
-        this.warhelper.checkCompatibleEdition(theWar, installingModuleDetails); //does not throw exception
+        this.checkCompatibleEdition(theWar, installingModuleDetails); //does not throw exception
         
         props.setProperty(ModuleDetails.PROP_EDITIONS, ("enterprise,Community"));  //should ignore case
         installingModuleDetails = new ModuleDetailsImpl(props);      
-        this.warhelper.checkCompatibleVersion(theWar, installingModuleDetails); //does not throw exception 
+        this.checkCompatibleVersion(theWar, installingModuleDetails); //does not throw exception 
     }
     
+    @Test
+    public void testNoVersionProperties()
+    {
+        File theWar = getFile(".war", "module/empty.war");  
+
+        ModuleDetails installingModuleDetails = new ModuleDetailsImpl("test_it",  new VersionNumber("9999"), "Test Mod", "Testing module");
+        installingModuleDetails.setRepoVersionMin(new VersionNumber("10.1"));
+        this.checkCompatibleVersion(theWar, installingModuleDetails); //does not throw exception
+        this.checkCompatibleEdition(theWar, installingModuleDetails); //does not throw exception 
+        
+    }
     private File getFile(String extension, String location) 
     {
         File file = TempFileProvider.createTempFile("moduleManagementToolTest-", extension);        

@@ -23,20 +23,34 @@ public class WarHelperImpl implements WarHelper
 {
 
     public static final String VERSION_PROPERTIES = "/WEB-INF/classes/alfresco/version.properties";
+    private LogOutput log = null;
     
   
+    public WarHelperImpl(LogOutput log)
+    {
+        super();
+        this.log = log;
+    }
+
     @Override
     public void checkCompatibleVersion(File war, ModuleDetails installingModuleDetails)
     {
         //Version check
         File propsFile = getFile(war, VERSION_PROPERTIES);
-        Properties warVers = loadProperties(propsFile);
-        VersionNumber warVersion = new VersionNumber(warVers.getProperty("version.major")+"."+warVers.getProperty("version.revision")+"."+warVers.getProperty("version.minor"));
-        if(warVersion.compareTo(installingModuleDetails.getRepoVersionMin())==-1) {
-            throw new ModuleManagementToolException("The module ("+installingModuleDetails.getTitle()+") must be installed on a repo version greater than "+installingModuleDetails.getRepoVersionMin());
+        if (propsFile != null && propsFile.exists())
+        {
+            Properties warVers = loadProperties(propsFile);
+            VersionNumber warVersion = new VersionNumber(warVers.getProperty("version.major")+"."+warVers.getProperty("version.revision")+"."+warVers.getProperty("version.minor"));
+            if(warVersion.compareTo(installingModuleDetails.getRepoVersionMin())==-1) {
+                throw new ModuleManagementToolException("The module ("+installingModuleDetails.getTitle()+") must be installed on a repo version greater than "+installingModuleDetails.getRepoVersionMin());
+            }
+            if(warVersion.compareTo(installingModuleDetails.getRepoVersionMax())==1) {
+                throw new ModuleManagementToolException("The module ("+installingModuleDetails.getTitle()+") cannot be installed on a repo version greater than "+installingModuleDetails.getRepoVersionMax());
+            }
         }
-        if(warVersion.compareTo(installingModuleDetails.getRepoVersionMax())==1) {
-            throw new ModuleManagementToolException("The module ("+installingModuleDetails.getTitle()+") cannot be installed on a repo version greater than "+installingModuleDetails.getRepoVersionMax());
+        else 
+        {
+            log.info("No valid version found, is this a share war?");
         }
     }
 
@@ -49,18 +63,23 @@ public class WarHelperImpl implements WarHelper
         if (installableEditions != null && installableEditions.size() > 0) {
             
             File propsFile = getFile(war, VERSION_PROPERTIES);
-            Properties warVers = loadProperties(propsFile);
-            String warEdition = warVers.getProperty("version.edition");
-            
-            for (String edition : installableEditions)
+            if (propsFile != null && propsFile.exists())
             {
-                if (warEdition.equalsIgnoreCase(edition))
+                Properties warVers = loadProperties(propsFile);
+                String warEdition = warVers.getProperty("version.edition");
+                
+                for (String edition : installableEditions)
                 {
-                    return;  //successful match.
+                    if (warEdition.equalsIgnoreCase(edition))
+                    {
+                        return;  //successful match.
+                    }
                 }
+                throw new ModuleManagementToolException("The module ("+installingModuleDetails.getTitle()
+                            +") can only be installed in one of the following editions"+installableEditions);
+            } else {
+                log.info("No valid editions found, is this a share war?");
             }
-            throw new ModuleManagementToolException("The module ("+installingModuleDetails.getTitle()
-                        +") can only be installed in one of the following editions"+installableEditions);
         }
     }
 

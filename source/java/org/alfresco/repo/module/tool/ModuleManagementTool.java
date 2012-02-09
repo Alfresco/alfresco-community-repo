@@ -52,7 +52,7 @@ import de.schlichtherle.io.ZipWarningException;
  * @author Roy Wetherall
  * @author Derek Hulley
  */
-public class ModuleManagementTool
+public class ModuleManagementTool implements LogOutput
 {
     /** Location of the default mapping properties file */
     private static final String DEFAULT_FILE_MAPPING_PROPERTIES = "org/alfresco/repo/module/tool/default-file-mapping.properties";
@@ -90,7 +90,7 @@ public class ModuleManagementTool
     /** Indicates the current verbose setting */
     private boolean verbose = false;
     
-    WarHelper warHelper = new WarHelperImpl();
+    WarHelper warHelper = new WarHelperImpl(this);
     
     /**
      * Constructor
@@ -885,5 +885,11 @@ public class ModuleManagementTool
         System.out.println("uninstall:  Uninstalls a module from the Alfresco WAR file.");
         System.out.println("usage: uninstall <ModuleId> <WARFileLocation>\n");
         System.out.println("-----------------------------------------------------------\n");    
+    }
+
+    @Override
+    public void info(Object message)
+    {
+        outputMessage(String.valueOf(message));
     }    
 }

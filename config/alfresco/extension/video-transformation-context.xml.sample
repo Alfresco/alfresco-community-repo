@@ -88,6 +88,22 @@
         </bean>
         <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
           <property name="sourceMimetype">
+            <value>video/3gpp</value>
+          </property>
+          <property name="targetMimetype">
+            <value>video/x-flv</value>
+          </property>
+        </bean>
+        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
+          <property name="sourceMimetype">
+            <value>video/3gpp2</value>
+          </property>
+          <property name="targetMimetype">
+            <value>video/x-flv</value>
+          </property>
+        </bean>
+        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
+          <property name="sourceMimetype">
             <value>video/mpeg2</value>
           </property>
           <property name="targetMimetype">
@@ -261,6 +277,22 @@
         </bean>
         <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
           <property name="sourceMimetype">
+            <value>video/3gpp</value>
+          </property>
+          <property name="targetMimetype">
+            <value>video/mp4</value>
+          </property>
+        </bean>
+        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
+          <property name="sourceMimetype">
+            <value>video/3gpp2</value>
+          </property>
+          <property name="targetMimetype">
+            <value>video/mp4</value>
+          </property>
+        </bean>
+        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
+          <property name="sourceMimetype">
             <value>video/x-ms-asf</value>
           </property>
           <property name="targetMimetype">
@@ -389,6 +421,14 @@
             <value>audio/mpeg</value>
           </property>
         </bean>
+        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
+          <property name="sourceMimetype">
+            <value>audio/mp4</value>
+          </property>
+          <property name="targetMimetype">
+            <value>audio/mpeg</value>
+          </property>
+        </bean>
       </list>
     </property>
     <property name="mimetypeService">
@@ -405,6 +445,12 @@
   <bean id="transformer.ffmpeg.mp4" class="org.alfresco.repo.content.transform.ProxyContentTransformer" parent="baseContentTransformer">
     <property name="worker">
       <ref bean="transformer.worker.ffmpeg.mp4"/>
+    </property>
+  </bean>
+
+  <bean id="transformer.ffmpeg.mp3" class="org.alfresco.repo.content.transform.ProxyContentTransformer" parent="baseContentTransformer">
+    <property name="worker">
+      <ref bean="transformer.worker.ffmpeg.mp3"/>
     </property>
   </bean>
 </beans>

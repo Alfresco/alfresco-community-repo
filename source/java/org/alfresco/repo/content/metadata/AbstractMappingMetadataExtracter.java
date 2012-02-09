@@ -823,6 +823,10 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                     {
                         convertedPropertyValue = makeDate((String) propertyValue);
                     }
+                    else if (propertyValue == null)
+                    {
+                        convertedPropertyValue = null;
+                    }
                     else
                     {
                         if (logger.isWarnEnabled())

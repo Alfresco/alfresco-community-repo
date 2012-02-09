@@ -93,6 +93,22 @@
         </bean>
         <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
           <property name="sourceMimetype">
+            <value>video/3gpp</value>
+          </property>
+          <property name="targetMimetype">
+            <value>image/jpeg</value>
+          </property>
+        </bean>
+        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
+          <property name="sourceMimetype">
+            <value>video/3gpp2</value>
+          </property>
+          <property name="targetMimetype">
+            <value>image/jpeg</value>
+          </property>
+        </bean>
+        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
+          <property name="sourceMimetype">
             <value>video/mpeg2</value>
           </property>
           <property name="targetMimetype">

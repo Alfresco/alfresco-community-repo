@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+    <bean id="messengerFactory" class="org.alfresco.repo.cluster.HazelcastMessengerFactory">
+        <property name="topic" ref="messengerTopic"/>
+    </bean>
+    
+    <bean id="hazelcastInstance" class="com.hazelcast.core.Hazelcast" factory-method="newHazelcastInstance">
+        <constructor-arg>
+            <bean class="com.hazelcast.config.Config">
+                <property name="groupConfig">
+                    <bean class="com.hazelcast.config.GroupConfig">
+                        <property name="name" value="testcluster"/>
+                        <property name="password" value="secret"/>
+                    </bean>
+                </property>
+            </bean>
+        </constructor-arg>
+    </bean>
+
+    <bean id="messengerTopic" factory-bean="hazelcastInstance" factory-method="getTopic">
+        <constructor-arg value="testregion"/>
+    </bean>
+</beans>

@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    <bean name="jgroupsChannelFactory"
+        class="org.alfresco.repo.jgroups.AlfrescoJGroupsChannelFactory">
+        <property name="clusterName">
+            <value>testcluster</value>
+        </property>
+        <property name="configUrlsByAppRegion">
+            <map>
+                <entry key="DEFAULT">
+                    <value>classpath:udp.xml</value>
+                </entry>
+            </map>
+        </property>
+    </bean>
+
+
+    <!--
+      This could also be done as a spring FactoryBean, so that anything this is wired up to will
+      gain a Messenger instance that it can use to send messages.
+     -->
+    <bean id="messengerFactory" class="org.alfresco.repo.cluster.JGroupsMessengerFactory">
+        <property name="appRegion" value="testregion"/>
+    </bean>
+</beans>

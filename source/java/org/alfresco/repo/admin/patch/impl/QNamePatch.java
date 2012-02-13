@@ -19,18 +19,15 @@
 
 package org.alfresco.repo.admin.patch.impl;
 
+import java.util.List;
+
 import org.alfresco.repo.admin.patch.AbstractPatch;
+import org.alfresco.repo.domain.node.NodeDAO;
+import org.alfresco.repo.domain.patch.PatchDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
-import org.alfresco.repo.importer.ImporterBootstrap;
-import org.alfresco.repo.search.Indexer;
-import org.alfresco.repo.search.IndexerAndSearcher;
-import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.ResultSetRow;
-import org.alfresco.service.cmr.search.SearchParameters;
-import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -56,36 +53,48 @@ public class QNamePatch extends AbstractPatch
     private String qnameStringAfter;
     private String reindexClass;
     
-    /* Injected services */
-    private ImporterBootstrap importerBootstrap;
-    private IndexerAndSearcher indexerAndSearcher;
     private QNameDAO qnameDAO;
 
-    /**
-     * Sets the importerBootstrap.
-     * @param importerBootstrap.
-     */
-    public void setImporterBootstrap(ImporterBootstrap importerBootstrap)
-    {
-        this.importerBootstrap = importerBootstrap;
-    }
+    private PatchDAO patchDAO;
+
+    private NodeDAO nodeDAO;
+
+    private RetryingTransactionHelper retryingTransactionHelper;
+
+    private static long BATCH_SIZE = 100000L;
+    
+    
 
     /**
-     * Sets the IndexerAndSearcher.
-     * @param indexerAndSearcher
-     */
-    public void setIndexerAndSearcher(IndexerAndSearcher indexerAndSearcher)
-    {
-        this.indexerAndSearcher = indexerAndSearcher;
-    }
-    
-    /**
-     * Sets the QNameDAO.
-     * @param qnameDAO
+     * @param qnameDAO the qnameDAO to set
      */
     public void setQnameDAO(QNameDAO qnameDAO)
     {
         this.qnameDAO = qnameDAO;
+    }
+
+    /**
+     * @param patchDAO the patchDAO to set
+     */
+    public void setPatchDAO(PatchDAO patchDAO)
+    {
+        this.patchDAO = patchDAO;
+    }
+
+    /**
+     * @param nodeDAO the nodeDAO to set
+     */
+    public void setNodeDAO(NodeDAO nodeDAO)
+    {
+        this.nodeDAO = nodeDAO;
+    }
+
+    /**
+     * @param retryingTransactionHelper the retryingTransactionHelper to set
+     */
+    public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
+    {
+        this.retryingTransactionHelper = retryingTransactionHelper;
     }
 
     /**
@@ -116,6 +125,17 @@ public class QNamePatch extends AbstractPatch
         this.reindexClass = reindexClass;
     }
     
+    protected void checkProperties()
+    {
+        super.checkProperties();
+        checkPropertyNotNull(patchDAO, "patchDAO");
+        checkPropertyNotNull(qnameDAO, "qnameDAO");
+        checkPropertyNotNull(nodeDAO, "nodeDAO");
+        checkPropertyNotNull(retryingTransactionHelper, "retryingTransactionHelper");
+        checkPropertyNotNull(qnameStringAfter, "qnameStringAfter");
+        checkPropertyNotNull(qnameStringBefore, "qnameStringBefore");
+    }
+    
     @Override
     protected String applyInternal() throws Exception
     {
@@ -124,46 +144,61 @@ public class QNamePatch extends AbstractPatch
         QName qnameBefore = QName.createQName(this.qnameStringBefore);
         QName qnameAfter = QName.createQName(this.qnameStringAfter);
 
-        if (qnameDAO.getQName(qnameBefore) != null)
+        Long maxNodeId = patchDAO.getMaxAdmNodeID();
+        
+        Pair<Long, QName> before = qnameDAO.getQName(qnameBefore);
+        
+        for (Long i = 0L; i < maxNodeId; i+=BATCH_SIZE)
+        {
+            Work work = new Work(before.getFirst(), i);
+            retryingTransactionHelper.doInTransaction(work, false, true);
+        }
+        
+        if (before != null)
         {
             qnameDAO.updateQName(qnameBefore, qnameAfter);
         }
-        
-        // Optionally perform a focussed reindexing of the removed QName.
-        if ("TYPE".equals(reindexClass) ||
-                "ASPECT".equals(reindexClass))
-        {
-            reindex(reindexClass + ":" + AbstractLuceneQueryParser.escape(qnameStringBefore), importerBootstrap.getStoreRef());
-        }
-
+    
         return I18NUtil.getMessage(MSG_SUCCESS, qnameBefore, qnameAfter);
     }
     
-    private int reindex(String query, StoreRef store)
+    private class Work implements RetryingTransactionHelper.RetryingTransactionCallback<Integer>
     {
-        SearchParameters sp = new SearchParameters();
-        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-        sp.setQuery(query);
-        sp.addStore(store);
-        Indexer indexer = indexerAndSearcher.getIndexer(store);
-        ResultSet rs = null;
-        int count = 0;
-        try
+        long qnameId;
+        
+        long lower;
+
+        Work(long qnameId, long lower)
         {
-            rs = searchService.query(sp);
-            count = rs.length();
-            for (ResultSetRow row : rs)
-            {
-                indexer.updateNode(row.getNodeRef());
-            }
+            this.qnameId = qnameId;
+            this.lower = lower;
         }
-        finally
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback#execute()
+         */
+        @Override
+        public Integer execute() throws Throwable
         {
-            if (rs != null)
+            if ("TYPE".equals(reindexClass))
             {
-                rs.close();
+                List<Long> nodeIds = patchDAO.getNodesByTypeQNameId(qnameId, lower, lower + BATCH_SIZE);
+                nodeDAO.touchNodes(nodeDAO.getCurrentTransactionId(true), nodeIds);
+                return nodeIds.size();
             }
+            else if ("ASPECT".equals(reindexClass))
+            {
+                List<Long> nodeIds = patchDAO.getNodesByAspectQNameId(qnameId, lower, lower + BATCH_SIZE);
+                nodeDAO.touchNodes(nodeDAO.getCurrentTransactionId(true), nodeIds);
+                return nodeIds.size();
+            }
+            else
+            {
+                // nothing to do
+                return 0;
+            }
+           
         }
-        return count;
     }
 }

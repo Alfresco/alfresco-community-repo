@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -72,28 +72,17 @@ public class PoiHssfContentTransformer extends TikaPoweredContentTransformer
      * We support transforming to HTML, XML, Text or CSV
      */
     @Override
-    public boolean isTransformable(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
+    public boolean isTransformableMimetype(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
        if(sourceMimeTypes.contains(sourceMimetype) && 
              MimetypeMap.MIMETYPE_TEXT_CSV.equals(targetMimetype))
        {
-           // Special case for CSV
-           return isTransformableSize(sourceMimetype, sourceSize, targetMimetype, options);
+          // Special case for CSV
+          return true;
        }
        
        // Otherwise fall back on the default Tika rules
-       return super.isTransformable(sourceMimetype, sourceSize, targetMimetype, options);
-    }
-    
-    /**
-     * @deprecated This method should no longer be called as the overloaded method
-     * that calls it has been overridden.
-     */
-    @Override
-    public boolean isTransformable(String sourceMimetype, String targetMimetype,
-            TransformationOptions options)
-    {
-        return isTransformable(sourceMimetype, -1, targetMimetype, options);
+       return super.isTransformableMimetype(sourceMimetype, targetMimetype, options);
     }
 
     /**
@@ -112,7 +101,7 @@ public class PoiHssfContentTransformer extends TikaPoweredContentTransformer
        }
        
        // Otherwise fall back on the default Tika rules
-       return super.isTransformable(sourceMimetype, targetMimetype, options);
+       return super.isTransformableMimetype(sourceMimetype, targetMimetype, options);
     }
     
     @Override

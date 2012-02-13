@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,10 +19,12 @@
 package org.alfresco.repo.version;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.version.Version;
 
 /**
@@ -108,5 +110,40 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
         {
             // An exception should be raised
         }
+    }
+    
+    public void testGetTransformer0()
+    {
+        ContentTransformer transformer = contentService.getTransformer("test", "application/vnd.ms-excel", 0,
+                "application/x-shockwave-flash", new TransformationOptions());
+        assertTrue("Found have found a transformer for 0 bytes", transformer != null);
+    }
+    
+    public void testGetTransformer10K()
+    {
+        ContentTransformer transformer = contentService.getTransformer("test", "application/vnd.ms-excel", 1024*10,
+                "application/x-shockwave-flash", new TransformationOptions());
+        assertTrue("Found have found a transformer for 10 K", transformer != null);
+    }
+    
+    public void testGetTransformer1M()
+    {
+        ContentTransformer transformer = contentService.getTransformer("test", "application/vnd.ms-excel", 1024*1024,
+                "application/x-shockwave-flash", new TransformationOptions());
+        assertTrue("Found have found a transformer for 1M", transformer != null);
+    }
+    
+    public void testGetTransformer10M()
+    {
+        ContentTransformer transformer = contentService.getTransformer("test", "application/vnd.ms-excel", 1024*1024*10,
+                "application/x-shockwave-flash", new TransformationOptions());
+        assertTrue("Found NOT have found a transformer for 10M as the is a 1M limit on xsl mimetype", transformer == null);
+    }
+    
+    public void testGetMaxSourceSizeByes()
+    {
+        long maxSourceSizeBytes = contentService.getMaxSourceSizeBytes("application/vnd.ms-excel",
+                "application/x-shockwave-flash", new TransformationOptions());
+        assertEquals("Found have found a transformer that can handle 1M", 1024*1024, maxSourceSizeBytes);
     }
 }

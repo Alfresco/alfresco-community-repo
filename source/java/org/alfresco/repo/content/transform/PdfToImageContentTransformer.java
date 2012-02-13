@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -53,7 +53,8 @@ public class PdfToImageContentTransformer extends AbstractContentTransformer2
     /**
      * Currently the only transformation performed is that of text extraction from PDF documents.
      */
-    public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
+    @Override
+    public boolean isTransformableMimetype(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
         // only support PDF -> PNG  OR Adobe Illustrator -> PNG.
         // .ai is really just a .pdf file anyway

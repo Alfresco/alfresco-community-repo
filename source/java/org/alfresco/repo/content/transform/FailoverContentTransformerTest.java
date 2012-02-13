@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -118,7 +118,8 @@ class DummyTestContentTransformer extends AbstractContentTransformer2 implements
         }
     }
 
-    public boolean isTransformable(String sourceMimetype,
+    @Override
+    public boolean isTransformableMimetype(String sourceMimetype,
             String targetMimetype, TransformationOptions options)
     {
         // We'll arbitrarily claim to be able to transform PDF to PNG

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -76,7 +76,9 @@ public class MediaWikiContentTransformer extends AbstractContentTransformer2
      * Only transform from mediawiki to html
      * 
      * @see org.alfresco.repo.content.transform.ContentTransformer#isTransformable(java.lang.String, java.lang.String, org.alfresco.service.cmr.repository.TransformationOptions)
-     */public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
+     */
+    @Override
+    public boolean isTransformableMimetype(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
         if (!MimetypeMap.MIMETYPE_TEXT_MEDIAWIKI.equals(sourceMimetype) ||
             !MimetypeMap.MIMETYPE_HTML.equals(targetMimetype))

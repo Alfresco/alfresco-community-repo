@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -50,7 +50,8 @@ public class BinaryPassThroughContentTransformer extends AbstractContentTransfor
         
     }
 
-    public boolean isTransformable(String sourceMimetype,
+    @Override
+    public boolean isTransformableMimetype(String sourceMimetype,
             String targetMimetype, TransformationOptions options)
     {
         if (sourceMimetype.startsWith(StringExtractingContentTransformer.PREFIX_TEXT))

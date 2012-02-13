@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -33,6 +33,7 @@ import org.alfresco.repo.content.ContentServicePolicies.OnContentReadPolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy;
 import org.alfresco.repo.content.cleanup.EagerContentStoreCleaner;
 import org.alfresco.repo.content.filestore.FileContentStore;
+import org.alfresco.repo.content.transform.AbstractContentTransformerLimits;
 import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.content.transform.ContentTransformerRegistry;
 import org.alfresco.repo.content.transform.TransformerDebug;
@@ -40,6 +41,7 @@ import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.thumbnail.ThumbnailDefinition;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -621,6 +623,45 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             List<ContentTransformer> transformers = getActiveTransformers(sourceMimetype, sourceSize, targetMimetype, options);
             transformerDebug.availableTransformers(transformers, sourceSize, "ContentService.getTransformer(...)");
             return (transformers.isEmpty()) ? null : transformers.get(0);
+        }
+        finally
+        {
+            transformerDebug.popAvailable();
+        }
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public long getMaxSourceSizeBytes(String sourceMimetype, String targetMimetype, TransformationOptions options)
+    {
+        try
+        {
+            long maxSourceSize = 0;
+            transformerDebug.pushAvailable(null, sourceMimetype, targetMimetype);
+            List<ContentTransformer> transformers = getActiveTransformers(sourceMimetype, 0, targetMimetype, options);
+            for (ContentTransformer transformer: transformers)
+            {
+                long maxSourceSizeKBytes = transformer.getMaxSourceSizeKBytes(sourceMimetype, targetMimetype, options);
+                if (maxSourceSize >= 0)
+                {
+                    if (maxSourceSizeKBytes < 0)
+                    {
+                        maxSourceSize = -1;
+                    }
+                    else if (maxSourceSizeKBytes > 0 && maxSourceSize < maxSourceSizeKBytes)
+                    {
+                        maxSourceSize = maxSourceSizeKBytes;
+                    }
+                }
+                // if maxSourceSizeKBytes == 0 this implies the transformation is disabled
+            }
+            if (transformerDebug.isEnabled())
+            {
+                transformerDebug.availableTransformers(transformers, -1,
+                    "ContentService.getMaxSourceSizeBytes() = "+transformerDebug.fileSize(maxSourceSize*1024));
+            }
+            return (maxSourceSize > 0) ? maxSourceSize * 1024 : maxSourceSize;
         }
         finally
         {

@@ -110,6 +110,24 @@
         <parameter property="namePattern" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </parameterMap>
     
+    <parameterMap id="parameter_qnameIdAndMinMaxNodeId" type="map">
+        <parameter property="qnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="minNodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="maxNodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </parameterMap>
+    
+    <parameterMap id="parameter_nsIdAndMinMaxNodeId" type="map">
+        <parameter property="nsId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="minNodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="maxNodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </parameterMap>
+    
+    <parameterMap id="parameter_mimetypeIdAndMinMaxNodeId" type="map">
+        <parameter property="mimetypeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="minNodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="maxNodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </parameterMap>
+    
     <!--                -->
     <!-- Selects        -->
     <!--                -->
@@ -467,6 +485,60 @@
         where
             na.qname_id in
                 <foreach item="item" index="i" collection="ids" open="(" separator="," close=")">#{item}</foreach>
+    </select>
+    
+    <!-- Find nodes by type qname -->
+    
+    <select id="select_NodesByTypeQName" parameterMap="parameter_qnameIdAndMinMaxNodeId" resultType="java.lang.Long" >
+        select
+            n.id
+        from
+            alf_node n
+        where
+            n.type_qname_id = #{qnameId}
+            and n.id &gt;= #{minNodeId}
+            and n.id &lt; #{maxNodeId}
+    </select>
+    
+     <select id="select_NodesByTypeUriId" parameterMap="parameter_nsIdAndMinMaxNodeId" resultType="java.lang.Long" >
+        select
+            n.id
+        from
+            alf_node n
+            join alf_qname q on q.id = n.type_qname_id
+        where
+            q.ns_id = #{nsId}
+            and n.id &gt;= #{minNodeId}
+            and n.id &lt; #{maxNodeId}
+    </select>
+    
+    <!-- Find nodes by aspect qname -->
+    
+    <select id="select_NodesByAspectQName" parameterMap="parameter_qnameIdAndMinMaxNodeId" resultType="java.lang.Long" >
+        select
+            n.id
+        from
+            alf_node n
+            join alf_node_aspects a on n.id = a.node_id
+        where
+            a.qname_id = #{qnameId}
+            and n.id &gt;= #{minNodeId}
+            and n.id &lt; #{maxNodeId}
+    </select>
+    
+    <!-- Find nodes by content mimetype -->
+    
+    <select id="select_NodesByContentMimetype" parameterMap="parameter_mimetypeIdAndMinMaxNodeId" resultType="long">
+        select
+            np.node_id
+        from
+            alf_node_properties np
+            join alf_content_data cd on np.long_value = cd.id
+        where
+            cd.content_mimetype_id = #{mimetypeId}
+            and (np.actual_type_n = 3 or np.actual_type_n = 21)
+            and np.node_id &gt;= #{minNodeId}
+            and np.node_id &lt; #{maxNodeId}
     </select>
     
     <!--                -->

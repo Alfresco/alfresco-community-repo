@@ -19,40 +19,43 @@
 package org.alfresco.repo.jscript.app;
 
 import java.io.Serializable;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
+import org.json.simple.JSONAware;
+import org.json.simple.JSONObject;
 
 /**
  * Username property decorator class.
  *
  * @author Mike Hatfield
  */
-public class UsernamePropertyDecorator implements PropertyDecorator
+public class UsernamePropertyDecorator extends BasePropertyDecorator
 {
-    private ServiceRegistry services;
-    private NodeService nodeService = null;
+    /** Person service */
     private PersonService personService = null;
-
-    public void setServiceRegistry(ServiceRegistry serviceRegistry)
+    
+    /**
+     * @param personService person service
+     */
+    public void setPersonService(PersonService personService)
     {
-        this.services = serviceRegistry;
-        this.nodeService = serviceRegistry.getNodeService();
-        this.personService = serviceRegistry.getPersonService();
+        this.personService = personService;
     }
 
-    public Serializable decorate(NodeRef nodeRef, String propertyName, Serializable value)
+    /**
+     * @see org.alfresco.repo.jscript.app.PropertyDecorator#decorate(org.alfresco.service.cmr.repository.NodeRef, java.io.Serializable)
+     */
+    @SuppressWarnings("unchecked")
+    public JSONAware decorate(QName propertyName, NodeRef nodeRef, Serializable value)
     {
         String username = value.toString();
         String firstName = null;
         String lastName = null;
-        Map<String, Serializable> map = new LinkedHashMap<String, Serializable>(4);
+        JSONObject map = new JSONObject();
         map.put("userName", username);
 
         if (this.personService.personExists(username))
@@ -70,12 +73,12 @@ public class UsernamePropertyDecorator implements PropertyDecorator
         else
         {
             map.put("isDeleted", true);
-            return (Serializable)map;
+            return map;
         }
 
         map.put("firstName", firstName);
         map.put("lastName", lastName);
         map.put("displayName", (firstName != null ? firstName + " " : "" + lastName != null ? lastName : "").replaceAll("^\\s+|\\s+$", ""));
-        return (Serializable)map;
+        return map;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -65,6 +65,7 @@ import org.springframework.util.FileCopyUtils;
 public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcessor, ScriptResourceLoader, InitializingBean
 {
     private static final Log logger = LogFactory.getLog(RhinoScriptProcessor.class);
+    private static final Log callLogger = LogFactory.getLog(RhinoScriptProcessor.class.getName()+".calls");
     
     private static final String PATH_CLASSPATH = "classpath:";
     
@@ -188,7 +189,13 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
                 }
             }
             
-            return executeScriptImpl(script, model, location.isSecure());
+            String debugScriptName = null;
+            if (callLogger.isDebugEnabled())
+            {
+                int i = path.lastIndexOf('/');
+                debugScriptName = (i != -1) ? path.substring(i+1) : path;
+            }
+            return executeScriptImpl(script, model, location.isSecure(), debugScriptName);
         }
         catch (Throwable err)
         {
@@ -238,7 +245,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
                 Context.exit();
             }
             
-            return executeScriptImpl(script, model, false);
+            return executeScriptImpl(script, model, false, nodeRef.toString());
         }
         catch (Throwable err)
         {
@@ -264,7 +271,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
             {
                 Context.exit();
             }
-            return executeScriptImpl(script, model, true);
+            return executeScriptImpl(script, model, true, "string script");
         }
         catch (Throwable err)
         {
@@ -413,17 +420,19 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
      * @param script        The script to execute.
      * @param model         Data model containing objects to be added to the root scope.
      * @param secure        True if the script is considered secure and may access java.* libs directly
+     * @param debugScriptName To identify the script in debug messages.
      * 
      * @return result of the script execution, can be null.
      * 
      * @throws AlfrescoRuntimeException
      */
-    private Object executeScriptImpl(Script script, Map<String, Object> model, boolean secure)
+    private Object executeScriptImpl(Script script, Map<String, Object> model, boolean secure, String debugScriptName)
         throws AlfrescoRuntimeException
     {
         long startTime = 0;
-        if (logger.isDebugEnabled())
+        if (callLogger.isDebugEnabled())
         {
+            callLogger.debug(debugScriptName+" Start");
             startTime = System.nanoTime();
         }
         
@@ -487,6 +496,10 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
         }
         catch (WrappedException w)
         {
+            if (callLogger.isDebugEnabled())
+            {
+                callLogger.debug(debugScriptName+" Exception", w);
+            }
             Throwable err = w.getWrappedException();
             if (err instanceof RuntimeException)
             {
@@ -496,16 +509,20 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
         }
         catch (Throwable err)
         {
+            if (callLogger.isDebugEnabled())
+            {
+                callLogger.debug(debugScriptName+" Exception", err);
+            }
             throw new AlfrescoRuntimeException(err.getMessage(), err);
         }
         finally
         {
             Context.exit();
             
-            if (logger.isDebugEnabled())
+            if (callLogger.isDebugEnabled())
             {
                 long endTime = System.nanoTime();
-                logger.debug("Time to execute script: " + (endTime - startTime)/1000000f + "ms");
+                callLogger.debug(debugScriptName+" End " + (endTime - startTime)/1000000 + " ms");
             }
         }
     }

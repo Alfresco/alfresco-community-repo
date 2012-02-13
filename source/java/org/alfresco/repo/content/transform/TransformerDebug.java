@@ -18,10 +18,9 @@
  */
 package org.alfresco.repo.content.transform;
 
-import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.Formatter;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -74,6 +73,7 @@ public class TransformerDebug
         };
 
         private final Deque<Frame> stack = new ArrayDeque<Frame>();
+        private final Deque<String> isTransformableStack = new ArrayDeque<String>();
         private boolean debugOutput = true;
         
         public static Deque<Frame> getStack()
@@ -84,6 +84,11 @@ public class TransformerDebug
         public static boolean getDebug()
         {
             return threadInfo.get().debugOutput;
+        }
+
+        public static Deque<String> getIsTransformableStack()
+        {
+            return threadInfo.get().isTransformableStack;
         }
         
         public static boolean setDebugOutput(boolean debugOutput)
@@ -103,6 +108,7 @@ public class TransformerDebug
         private final String fromUrl;
         private final String sourceMimetype;
         private final String targetMimetype;
+        private final boolean origDebugOutput;
         private final long start;
 
         private Call callType;
@@ -111,13 +117,14 @@ public class TransformerDebug
 // See debug(String, Throwable) as to why this is commented out
 //      private Throwable lastThrowable;
 
-        private Frame(Frame parent, String fromUrl, String sourceMimetype, String targetMimetype, Call pushCall)
+        private Frame(Frame parent, String fromUrl, String sourceMimetype, String targetMimetype, Call pushCall, boolean origDebugOutput)
         {
             this.id = parent == null ? uniqueId.getAndIncrement() : ++parent.childId;
             this.fromUrl = fromUrl;
             this.sourceMimetype = sourceMimetype;
             this.targetMimetype = targetMimetype;
             this.callType = pushCall;
+            this.origDebugOutput = origDebugOutput;
             start = System.currentTimeMillis();
         }
     }
@@ -196,6 +203,17 @@ public class TransformerDebug
         }
     }
     
+    /**
+     * Called prior to calling a nested isTransformable.
+     */
+    public void pushIsTransformableSize(ContentTransformer transformer)
+    {
+        if (isEnabled())
+        {
+            ThreadInfo.getIsTransformableStack().push(getName(transformer));
+        }
+    }
+    
     private void push(String name, String fromUrl, String sourceMimetype, String targetMimetype, long sourceSize, Call callType)
     {
         Deque<Frame> ourStack = ThreadInfo.getStack();
@@ -207,7 +225,9 @@ public class TransformerDebug
         }
         else
         {
-            frame = new Frame(frame, fromUrl, sourceMimetype, targetMimetype, callType);
+            // Create a new frame. Logging level is set to trace if the file size is 0
+            boolean origDebugOutput = ThreadInfo.setDebugOutput(ThreadInfo.getDebug() && sourceSize != 0);
+            frame = new Frame(frame, fromUrl, sourceMimetype, targetMimetype, callType, origDebugOutput);
             ourStack.push(frame);
             
             if (callType == Call.TRANSFORM)
@@ -231,8 +251,11 @@ public class TransformerDebug
 
             if (frame != null)
             {
-                String name = getName(transformer);
-                String reason = String.format("> %,dK", maxSourceSizeKBytes);
+                Deque<String> isTransformableStack = ThreadInfo.getIsTransformableStack();
+                String name = (!isTransformableStack.isEmpty())
+                    ? isTransformableStack.getFirst()
+                    : getName(transformer);
+                String reason = "> "+fileSize(maxSourceSizeKBytes*1024);
                 boolean debug = (maxSourceSizeKBytes != 0);
                 if (ourStack.size() == 1)
                 {
@@ -273,7 +296,7 @@ public class TransformerDebug
                 String name = getName(trans);
                 int pad = longestNameLength - name.length();
                 log((c == 'a' ? "**" : "  ") + (c++) + ") " +
-                    name + spaces(pad+1) + trans.getTransformationTime() + " ms");
+                    name + spaces(pad+1) + ms(trans.getTransformationTime()));
             }
             if (frame.unavailableTransformers != null)
             {
@@ -317,7 +340,8 @@ public class TransformerDebug
             log(frame.fromUrl, firstLevel);
         }
         
-        log(getMimetypeExt(frame.sourceMimetype)+getMimetypeExt(frame.targetMimetype) + String.format("%,dK ", (sourceSize/1024)) + message);
+        log(getMimetypeExt(frame.sourceMimetype)+getMimetypeExt(frame.targetMimetype) +
+                ((sourceSize >= 0) ? fileSize(sourceSize)+' ' : "") + message);
 
         log(frame.sourceMimetype+' '+frame.targetMimetype, false);
     }
@@ -345,6 +369,17 @@ public class TransformerDebug
         }
     }
 
+    /**
+     * Called after returning from a nested isTransformable.
+     */
+    public void popIsTransformableSize()
+    {
+        if (isEnabled())
+        {
+            ThreadInfo.getIsTransformableStack().pop();
+        }
+    }
+
     private void pop(Call callType)
     {
         Deque<Frame> ourStack = ThreadInfo.getStack();
@@ -358,12 +393,13 @@ public class TransformerDebug
                 {
                     boolean topFrame = ourStack.size() == 1;
                     log("Finished in " +
-                        (System.currentTimeMillis() - frame.start) + " ms" +
+                        ms(System.currentTimeMillis() - frame.start) +
                         (frame.callType == Call.AVAILABLE ? " Transformer NOT called" : "") +
                         (topFrame ? "\n" : ""), 
                         topFrame);
                 }
                 
+                setDebugOutput(frame.origDebugOutput);
                 ourStack.pop();
                 
 // See debug(String, Throwable) as to why this is commented out
@@ -523,7 +559,7 @@ public class TransformerDebug
         return sb.toString();
     }
 
-    private String getName(ContentTransformer transformer)
+    public String getName(ContentTransformer transformer)
     {
         return
             (transformer instanceof AbstractContentTransformer2
@@ -565,6 +601,53 @@ public class TransformerDebug
         {
             sb.append(' ');
         }
+        return sb.toString();
+    }
+    
+    public String ms(long time)
+    {
+        return String.format("%,d ms", time);
+    }
+    
+    public String fileSize(long size)
+    {
+        if (size < 0)
+        {
+            return "unlimited";
+        }
+        if (size == 1)
+        {
+            return "1 byte";
+        }
+        final String[] units = new String[] { "bytes", "KB", "MB", "GB", "TB" };
+        long divider = 1;
+        for(int i = 0; i < units.length-1; i++)
+        {
+            long nextDivider = divider * 1024;
+            if(size < nextDivider)
+            {
+                return fileSizeFormat(size, divider, units[i]);
+            }
+            divider = nextDivider;
+        }
+        return fileSizeFormat(size, divider, units[units.length-1]);
+    }
+    
+    private String fileSizeFormat(long size, long divider, String unit)
+    {
+        size = size * 10 / divider;
+        int decimalPoint = (int) size % 10;
+        
+        StringBuilder sb = new StringBuilder();
+        sb.append(size/10);
+        if (decimalPoint != 0)
+        {
+            sb.append(".");
+            sb.append(decimalPoint);
+        }
+        sb.append(' ');
+        sb.append(unit);
+
         return sb.toString();
     }
 }

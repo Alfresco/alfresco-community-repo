@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -208,7 +208,9 @@ public abstract class AbstractContentTransformer implements ContentTransformer
     @Override
     public boolean isTransformable(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
     {
-        return isTransformable(sourceMimetype, targetMimetype, options);
+        return
+            isTransformableMimetype(sourceMimetype, targetMimetype, options) &&
+            isTransformableSize(sourceMimetype, sourceSize, targetMimetype, options);
     }
     
     /**
@@ -228,6 +230,36 @@ public abstract class AbstractContentTransformer implements ContentTransformer
         return result;
     }
 
+    /**
+     * Checks the supplied mimetypes are supported by calling the deprecated
+     * {@link #isTransformable(String, String, TransformationOptions)} method.
+     */
+    @Override
+    public boolean isTransformableMimetype(String sourceMimetype, String targetMimetype,
+            TransformationOptions options)
+    {
+        return isTransformable(sourceMimetype, targetMimetype, options);
+    }
+
+    /**
+     * Always returns {@code true} to indicate size is not an issue.
+     */
+    @Override
+    public boolean isTransformableSize(String sourceMimetype, long sourceSize,
+            String targetMimetype, TransformationOptions options)
+    {
+        return true;
+    }
+
+    /**
+     * Always returns {@code -1} to indicate an unlimited size.
+     */
+    @Override
+    public long getMaxSourceSizeKBytes(String sourceMimetype, String targetMimetype, TransformationOptions options)
+    {
+        return -1;
+    }
+    
     /**
      * @see org.alfresco.repo.content.transform.ContentTransformer#isTransformable(java.lang.String, java.lang.String, org.alfresco.service.cmr.repository.TransformationOptions)
      */

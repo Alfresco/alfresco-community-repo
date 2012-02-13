@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -724,7 +724,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
     public void testRegistry()
     {
         ThumbnailRegistry thumbnailRegistry = this.thumbnailService.getThumbnailRegistry();
-        List<ThumbnailDefinition> defs = thumbnailRegistry.getThumbnailDefinitions(null, MimetypeMap.MIMETYPE_HTML, -1);
+        List<ThumbnailDefinition> defs = thumbnailRegistry.getThumbnailDefinitions(MimetypeMap.MIMETYPE_HTML, -1);
         System.out.println("Definitions ...");
         for (ThumbnailDefinition def : defs)
         {

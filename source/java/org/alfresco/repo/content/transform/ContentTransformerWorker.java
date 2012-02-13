@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -28,6 +28,7 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
  * 
  * @author dward
  */
+// TODO Modify ContentTransformerWorker to understand transformer limits. At the moment no workers use them
 public interface ContentTransformerWorker
 {
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -2828,7 +2828,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         if (contentReader != null)
         {
             String mimetype = contentReader.getMimetype();
-            List<ThumbnailDefinition> thumbnailDefinitions = thumbnailService.getThumbnailRegistry().getThumbnailDefinitions(contentReader.getContentUrl(), mimetype, contentReader.getSize());
+            List<ThumbnailDefinition> thumbnailDefinitions = thumbnailService.getThumbnailRegistry().getThumbnailDefinitions(mimetype, contentReader.getSize());
             for (ThumbnailDefinition thumbnailDefinition : thumbnailDefinitions)
             {
                 result.add(thumbnailDefinition.getName());

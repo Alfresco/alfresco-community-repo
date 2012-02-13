@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -33,6 +33,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.TransformationOptionLimits;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.util.TempFileProvider;
@@ -126,15 +127,32 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
     }
     
     /**
-     * Check we can transform all the way along the chain of mimetypes
-     * 
-     * @see org.alfresco.repo.content.transform.ContentTransformer#isTransformable(java.lang.String, java.lang.String, org.alfresco.service.cmr.repository.TransformationOptions)
+     * Overrides this method to avoid calling
+     * {@link #isTransformableMimetype(String, String, TransformationOptions)}
+     * twice on each transformer in the list, as
+     * {@link #isTransformableSize(String, long, String, TransformationOptions)}
+     * in this class must check the mimetype too.
      */
-    public boolean isTransformable(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
+    @Override
+    public boolean isTransformable(String sourceMimetype, long sourceSize, String targetMimetype,
+            TransformationOptions options)
     {
-        boolean result = true;
-        String currentSourceMimetype = sourceMimetype;
+        overrideTransformationOptions(options);
         
+        // To make TransformerDebug output clearer, check the mimetypes and then the sizes.
+        // If not done, 'unavailable' transformers due to size might be reported even
+        // though they cannot transform the source to the target mimetype.
+
+        return
+            isTransformableMimetype(sourceMimetype, targetMimetype, options) &&
+            isTransformableSize(sourceMimetype, sourceSize, targetMimetype, options);
+    }
+
+    /**
+     * Sets any transformation option overrides it can.
+     */
+    private void overrideTransformationOptions(TransformationOptions options)
+    {
         // Set any transformation options overrides if we can
         if(options != null && transformationOptionOverrides != null)
         {
@@ -177,8 +195,28 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
               }
            }
         }
+    }
+    
+    @Override
+    public boolean isTransformableMimetype(String sourceMimetype, String targetMimetype, TransformationOptions options)
+    {
+        return isTransformableMimetypeAndSize(sourceMimetype, -1, targetMimetype, options);
+    }
+
+    @Override
+    public boolean isTransformableSize(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
+    {
+        return (sourceSize < 0) ||
+            super.isTransformableSize(sourceMimetype, sourceSize, targetMimetype, options) &&
+            isTransformableMimetypeAndSize(sourceMimetype, sourceSize, targetMimetype, options);
+    }
+
+    private boolean isTransformableMimetypeAndSize(String sourceMimetype, long sourceSize,
+            String targetMimetype, TransformationOptions options)
+    {
+        boolean result = true;
+        String currentSourceMimetype = sourceMimetype;
         
-        boolean first = true;
         Iterator<ContentTransformer> transformerIterator = transformers.iterator();
         Iterator<String> intermediateMimetypeIterator = intermediateMimetypes.iterator();
         while (transformerIterator.hasNext())
@@ -195,28 +233,78 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
                 // use an intermediate transformation mimetype
                 currentTargetMimetype = intermediateMimetypeIterator.next();
             }
-            
-            // check we can tranform the current stage (using -1 if not the first stage as we can't know the size)
-            long size = first ? sourceSize : -1;
-            if (transformer.isTransformable(currentSourceMimetype, size, currentTargetMimetype, options) == false)
+
+            if (sourceSize < 0)
             {
-                result = false;
-                break;
+                // check we can transform the current stage's mimetypes
+                if (transformer.isTransformableMimetype(currentSourceMimetype, currentTargetMimetype, options) == false)
+                {
+                    result = false;
+                    break;
+                }
+            }
+            else
+            {
+                // check we can transform the current stage's sizes
+                try
+                {
+                    transformerDebug.pushIsTransformableSize(this);
+                    //  (using -1 if not the first stage as we can't know the size)
+                    if (transformer.isTransformableSize(currentSourceMimetype, sourceSize, currentTargetMimetype, options) == false)
+                    {
+                        result = false;
+                        break;
+                    }
+                    
+                    // As the size is unknown for the next stages stop.
+                    // In future we might guess sizes such as excl to pdf
+                    // is about 110% of the original size, in which case
+                    // we would continue.
+                    break;
+                    // sourceSize += sourceSize * 10 / 100;
+                }
+                finally
+                {
+                    transformerDebug.popIsTransformableSize();
+                }
             }
             
             // move on
             currentSourceMimetype = currentTargetMimetype;
-            first = false;
-        }
-        
-        if (result && !isTransformableSize(sourceMimetype, sourceSize, targetMimetype, options))
-        {
-            result = false;
         }
         
         return result;
     }
 
+    /**
+     * Indicates if 'page' limits are supported by the first transformer in the chain.
+     * @return true if the first transformer supports them.
+     */
+    protected boolean isPageLimitSupported()
+    {
+        ContentTransformer firstTransformer = transformers.iterator().next();
+        return (firstTransformer instanceof AbstractContentTransformerLimits)
+            ? ((AbstractContentTransformerLimits)firstTransformer).isPageLimitSupported()
+            : false;
+    }
+    
+    /**
+     * Returns the limits from this transformer combined with those of the first transformer in the chain.
+     */
+    protected TransformationOptionLimits getLimits(String sourceMimetype, String targetMimetype,
+            TransformationOptions options)
+    {
+        TransformationOptionLimits limits = super.getLimits(sourceMimetype, targetMimetype, options);
+        ContentTransformer firstTransformer = transformers.get(0);
+        if (firstTransformer instanceof AbstractContentTransformerLimits)
+        {
+            String firstTargetMimetype = intermediateMimetypes.get(0);
+            limits = limits.combine(((AbstractContentTransformerLimits) firstTransformer).
+                    getLimits(sourceMimetype, firstTargetMimetype, options));
+        }
+        return limits;
+    }
+    
     /**
      * @see org.alfresco.repo.content.transform.AbstractContentTransformer2#transformInternal(org.alfresco.service.cmr.repository.ContentReader, org.alfresco.service.cmr.repository.ContentWriter, org.alfresco.service.cmr.repository.TransformationOptions)
      */
@@ -262,16 +350,5 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
     public List<String> getIntermediateMimetypes()
     {
        return Collections.unmodifiableList(intermediateMimetypes);
-    }
-
-    /**
-     * @deprecated This method should no longer be called as the overloaded method
-     * that calls it has the overridden.
-     */
-    @Override
-    public boolean isTransformable(String sourceMimetype, String targetMimetype,
-            TransformationOptions options)
-    {
-        return false;
     }
 }

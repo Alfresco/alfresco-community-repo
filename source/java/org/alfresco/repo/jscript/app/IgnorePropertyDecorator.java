@@ -19,20 +19,24 @@
 package org.alfresco.repo.jscript.app;
 
 import java.io.Serializable;
-import java.util.Set;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.json.simple.JSONAware;
 
 /**
- * Interface for property decorators used by ApplicationScriptUtils.toJSON()
+ * Ignores a given property and doesn't output anything in the decoration.  This means the property will not appear in the
+ * resulting JSON.
  *
- * @author Mike Hatfield
+ * @author Roy Wetherall
  */
-public interface PropertyDecorator
+public class IgnorePropertyDecorator extends BasePropertyDecorator
 {
-    Set<QName> getPropertyNames();
-    
-    JSONAware decorate(QName propertyName, NodeRef nodeRef, Serializable value);
+    /**
+     * @see org.alfresco.repo.jscript.app.PropertyDecorator#decorate(org.alfresco.service.cmr.repository.NodeRef, java.io.Serializable)
+     */
+    public JSONAware decorate(QName propertyName, NodeRef nodeRef, Serializable value)
+    {
+        return null;
+    }
 }

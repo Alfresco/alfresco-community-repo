@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -111,6 +111,7 @@ public class ContentTransformerRegistry
          for (ContentTransformer transformer : transformers)
         {
             // Transformability can be dynamic, i.e. it may have become unusable
+            // Don't know why we do this test as it has already been done by findTransformers(...)
             if (transformer.isTransformable(sourceMimetype, sourceSize, targetMimetype, options) == false)
             {
                 // It is unreliable now.

@@ -18,23 +18,15 @@
  */
 package org.alfresco.repo.admin.patch.impl;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.domain.mimetype.MimetypeDAO;
+import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.patch.PatchDAO;
-import org.alfresco.repo.search.Indexer;
-import org.alfresco.repo.search.IndexerAndSearcher;
-import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.ResultSetRow;
-import org.alfresco.service.cmr.search.SearchParameters;
-import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.repo.domain.qname.QNameDAO;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.util.Pair;
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -57,18 +49,21 @@ public class GenericMimetypeRenamePatch extends AbstractPatch
     private static final String MSG_DONE_REINDEX = "patch.genericMimetypeUpdate.doneReindex";
 
     /* Helper DAOs */
-    private IndexerAndSearcher indexerAndSearcher;
+
     private MimetypeDAO mimetypeDAO;
+
     private PatchDAO patchDAO;
-    
+
+    private NodeDAO nodeDAO;
+
+    private RetryingTransactionHelper retryingTransactionHelper;
+
+    private static long BATCH_SIZE = 100000L;
+
+
     /** Mimetype mappings */
     private Map<String, String> mimetypeMappings;
     private boolean reindex;
-    
-    public void setIndexerAndSearcher(IndexerAndSearcher indexerAndSearcher)
-    {
-        this.indexerAndSearcher = indexerAndSearcher;
-    }
 
     public void setMimetypeDAO(MimetypeDAO mimetypeDAO)
     {
@@ -90,36 +85,46 @@ public class GenericMimetypeRenamePatch extends AbstractPatch
         this.reindex = reindex;
     }
 
+    
+    
+    /**
+     * @param nodeDAO the nodeDAO to set
+     */
+    public void setNodeDAO(NodeDAO nodeDAO)
+    {
+        this.nodeDAO = nodeDAO;
+    }
+
+    /**
+     * @param retryingTransactionHelper the retryingTransactionHelper to set
+     */
+    public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
+    {
+        this.retryingTransactionHelper = retryingTransactionHelper;
+    }
+
     protected void checkProperties()
     {
         super.checkProperties();
-        checkPropertyNotNull(indexerAndSearcher, "indexerAndSearcher");
         checkPropertyNotNull(mimetypeDAO, "mimetypeDAO");
         checkPropertyNotNull(patchDAO, "patchDAO");
         checkPropertyNotNull(mimetypeMappings, "mimetypeMappings");
+        checkPropertyNotNull(nodeDAO, "nodeDAO");
+        checkPropertyNotNull(retryingTransactionHelper, "retryingTransactionHelper");
     }
 
     @Override
     protected String applyInternal() throws Exception
     {
-        // First get all the available stores that we might want to reindex
-        List<StoreRef> storeRefsList = nodeService.getStores();
-        Set<StoreRef> storeRefs = new HashSet<StoreRef>();
-        for (StoreRef storeRef : storeRefsList)
-        {
-            // We want workspace://SpacesStore or related MT stores
-            if (storeRef.getIdentifier().endsWith("SpacesStore"))
-            {
-                storeRefs.add(storeRef);
-            }
-        }
-        
         StringBuilder result = new StringBuilder(I18NUtil.getMessage(MSG_START));
+
+        Long maxNodeId = patchDAO.getMaxAdmNodeID();
+
         for (Map.Entry<String, String> element : mimetypeMappings.entrySet())
         {
             String oldMimetype = element.getKey();
             String newMimetype = element.getValue();
-            
+
             // First check if the mimetype is used at all
             Pair<Long, String> oldMimetypePair = mimetypeDAO.getMimetype(oldMimetype);
             if (oldMimetypePair == null)
@@ -127,7 +132,20 @@ public class GenericMimetypeRenamePatch extends AbstractPatch
                 // Not used
                 continue;
             }
-            
+
+            // pull all affectsed nodes into a new transaction id indexed
+
+            if(reindex)
+            {
+                long count = 0L;
+                for (Long i = 0L; i < maxNodeId; i+=BATCH_SIZE)
+                {
+                    Work work = new Work(oldMimetypePair.getFirst(), i);
+                    count += retryingTransactionHelper.doInTransaction(work, false, true);
+                }
+                result.append(I18NUtil.getMessage(MSG_INDEXED, count, "(All stores)"));
+            }
+
             // Check if the new mimetype exists
             Pair<Long, String> newMimetypePair = mimetypeDAO.getMimetype(newMimetype);
             int updateCount = 0;
@@ -144,16 +162,6 @@ public class GenericMimetypeRenamePatch extends AbstractPatch
                 updateCount = patchDAO.updateContentMimetypeIds(oldMimetypeId, newMimetypeId);
             }
             result.append(I18NUtil.getMessage(MSG_UPDATED, updateCount, oldMimetype, newMimetype));
-            if (reindex)
-            {
-                // Update Lucene
-                int reindexCount = 0;
-                for (StoreRef storeRef : storeRefs)
-                {
-                    reindexCount += reindex(oldMimetype, storeRef);
-                    result.append(I18NUtil.getMessage(MSG_INDEXED, reindexCount, storeRef));
-                }
-            }
         }
         // Done
         if (reindex)
@@ -167,33 +175,30 @@ public class GenericMimetypeRenamePatch extends AbstractPatch
 
         return result.toString();
     }
-    
-    private int reindex(String oldMimetype, StoreRef store)
+
+
+    private class Work implements RetryingTransactionHelper.RetryingTransactionCallback<Integer>
     {
-        SearchParameters sp = new SearchParameters();
-        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-        sp.setQuery("@" + AbstractLuceneQueryParser.escape(ContentModel.PROP_CONTENT.toString()) +
-                ".mimetype:\"" + oldMimetype + "\"");
-        sp.addStore(store);
-        Indexer indexer = indexerAndSearcher.getIndexer(store);
-        ResultSet rs = null;
-        int count = 0;
-        try
+        long mimetypeId;
+        
+        long lower;
+
+        Work(long mimetypeId, long lower)
         {
-            rs = searchService.query(sp);
-            count = rs.length();
-            for (ResultSetRow row : rs)
-            {
-                indexer.updateNode(row.getNodeRef());
-            }
+            this.mimetypeId = mimetypeId;
+            this.lower = lower;
         }
-        finally
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback#execute()
+         */
+        @Override
+        public Integer execute() throws Throwable
         {
-            if (rs != null)
-            {
-                rs.close();
-            }
+            List<Long> nodeIds = patchDAO.getNodesByContentPropertyMimetypeId(mimetypeId, lower, lower + BATCH_SIZE);
+            nodeDAO.touchNodes(nodeDAO.getCurrentTransactionId(true), nodeIds);
+            return nodeIds.size();
         }
-        return count;
     }
 }

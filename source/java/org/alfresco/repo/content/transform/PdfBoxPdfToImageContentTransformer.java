@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -53,7 +53,8 @@ public class PdfBoxPdfToImageContentTransformer extends AbstractContentTransform
     private static final String PDF_DEFAULT_PASSWORD = "";
     private static Log logger = LogFactory.getLog(PdfBoxPdfToImageContentTransformer.class);
 
-    public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
+    @Override
+    public boolean isTransformableMimetype(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
         // only support PDF -> PNG  OR Adobe Illustrator -> PNG.
         // Recent .ai file format is  a .pdf file.

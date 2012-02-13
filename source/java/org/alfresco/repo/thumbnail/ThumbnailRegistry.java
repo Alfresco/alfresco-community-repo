@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -66,8 +66,8 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
     /** Map of thumbnail definition */
     private Map<String, ThumbnailDefinition> thumbnailDefinitions = new HashMap<String, ThumbnailDefinition>();
     
-    /** Cache to store mimetype to thumbnailDefinition mapping */
-    private Map<String, List<ThumbnailDefinition>> mimetypeMap = new HashMap<String, List<ThumbnailDefinition>>(17);
+    /** Cache to store mimetype to thumbnailDefinition mapping with max size limit */
+    private Map<String, List<ThumbnailDefinitionLimits>> mimetypeMap = new HashMap<String, List<ThumbnailDefinitionLimits>>(17);
 
     private ThumbnailRenditionConvertor thumbnailRenditionConvertor;
     
@@ -196,23 +196,24 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
      */
     public List<ThumbnailDefinition> getThumbnailDefinitions(String mimetype)
     {
-        return getThumbnailDefinitions(null, mimetype, -1);
+        return getThumbnailDefinitions(mimetype, -1);
     }
     
-    public List<ThumbnailDefinition> getThumbnailDefinitions(String sourceUrl, String mimetype, long sourceSize)
+    public List<ThumbnailDefinition> getThumbnailDefinitions(String mimetype, long sourceSize)
     {
-        List<ThumbnailDefinition> result = this.mimetypeMap.get(mimetype);
+        List<ThumbnailDefinitionLimits> thumbnailDefinitionsLimitsForMimetype = this.mimetypeMap.get(mimetype);
         
-        if (result == null)
+        if (thumbnailDefinitionsLimitsForMimetype == null)
         {
             boolean foundAtLeastOneTransformer = false;
-            result = new ArrayList<ThumbnailDefinition>(7);
+            thumbnailDefinitionsLimitsForMimetype = new ArrayList<ThumbnailDefinitionLimits>(7);
             
             for (ThumbnailDefinition thumbnailDefinition : this.thumbnailDefinitions.values())
             {
-                if (isThumbnailDefinitionAvailable(sourceUrl, mimetype, sourceSize, thumbnailDefinition))
+                long maxSourceSizeBytes = getMaxSourceSizeBytes(mimetype, thumbnailDefinition);
+                if (maxSourceSizeBytes != 0)
                 {
-                    result.add(thumbnailDefinition);
+                    thumbnailDefinitionsLimitsForMimetype.add(new ThumbnailDefinitionLimits(thumbnailDefinition, maxSourceSizeBytes));
                     foundAtLeastOneTransformer = true;
                 }
             }
@@ -229,7 +230,18 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
             // been launched and that new transformers are available.
             if (foundAtLeastOneTransformer)
             {
-                this.mimetypeMap.put(mimetype, result);
+                this.mimetypeMap.put(mimetype, thumbnailDefinitionsLimitsForMimetype);
+            }
+        }
+        
+        // Only return ThumbnailDefinition for this specific source - may be limited on size.
+        List<ThumbnailDefinition> result = new ArrayList<ThumbnailDefinition>(thumbnailDefinitionsLimitsForMimetype.size());
+        for (ThumbnailDefinitionLimits thumbnailDefinitionLimits: thumbnailDefinitionsLimitsForMimetype)
+        {
+            long maxSourceSizeBytes = thumbnailDefinitionLimits.getMaxSourceSizeBytes();
+            if (sourceSize <= 0 || maxSourceSizeBytes < 0 || maxSourceSizeBytes >= sourceSize)
+            {
+                result.add(thumbnailDefinitionLimits.getThumbnailDefinition());
             }
         }
         
@@ -253,11 +265,11 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
      *  is able to thumbnail the source mimetype. Typically used with Thumbnail Definitions
      *  retrieved by name, and/or when dealing with transient {@link ContentTransformer}s.
      * @param sourceUrl The URL of the source (optional)
-     * @param sourceMimeType The source mimetype
+     * @param sourceMimetype The source mimetype
      * @param sourceSize the size (in bytes) of the source. Use -1 if unknown.
      * @param thumbnailDefinition The {@link ThumbnailDefinition} to check for
      */
-    public boolean isThumbnailDefinitionAvailable(String sourceUrl, String sourceMimeType, long sourceSize, ThumbnailDefinition thumbnailDefinition)
+    public boolean isThumbnailDefinitionAvailable(String sourceUrl, String sourceMimetype, long sourceSize, ThumbnailDefinition thumbnailDefinition)
     {
         // Log the following getTransform() as trace so we can see the wood for the trees
         boolean orig = TransformerDebug.setDebugOutput(false);
@@ -265,10 +277,32 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
         {
             return this.contentService.getTransformer(
                     sourceUrl, 
-                    sourceMimeType,
+                    sourceMimetype,
                     sourceSize, 
                     thumbnailDefinition.getMimetype(), thumbnailDefinition.getTransformationOptions()
               ) != null;
+        }
+        finally
+        {
+            TransformerDebug.setDebugOutput(orig);
+        }
+    }
+    
+    /**
+     * Returns the maximum source size of any content that may transformed between the supplied
+     * sourceMimetype and thumbnailDefinition's targetMimetype using its transformation options.
+     * @param sourceMimetype
+     * @param thumbnailDefinition
+     * @return 0 if there are no transformers, -1 if there is no limit or if positive the size in bytes.
+     */
+    public long getMaxSourceSizeBytes(String sourceMimetype, ThumbnailDefinition thumbnailDefinition)
+    {
+        // Log the following getTransform() as trace so we can see the wood for the trees
+        boolean orig = TransformerDebug.setDebugOutput(false);
+        try
+        {
+            return contentService.getMaxSourceSizeBytes(sourceMimetype,
+                    thumbnailDefinition.getMimetype(), thumbnailDefinition.getTransformationOptions());
         }
         finally
         {
@@ -342,6 +376,32 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
         protected void onShutdown(ApplicationEvent event)
         {
             // Intentionally empty
+        }
+    }
+    
+    /**
+     * Links transformer limits (such as maximum size) to a ThumbnailDefinition.
+     *
+     */
+    private class ThumbnailDefinitionLimits
+    {
+        private ThumbnailDefinition thumbnailDefinition;
+        private long maxSourceSizeBytes;
+
+        public ThumbnailDefinitionLimits(ThumbnailDefinition thumbnailDefinition, long maxSourceSizeBytes)
+        {
+            this.thumbnailDefinition = thumbnailDefinition;
+            this.maxSourceSizeBytes = maxSourceSizeBytes;
+        }
+
+        public ThumbnailDefinition getThumbnailDefinition()
+        {
+            return thumbnailDefinition;
+        }
+
+        public long getMaxSourceSizeBytes()
+        {
+            return maxSourceSizeBytes;
         }
     }
 }

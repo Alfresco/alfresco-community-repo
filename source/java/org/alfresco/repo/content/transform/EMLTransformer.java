@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -46,7 +46,8 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
  */
 public class EMLTransformer extends AbstractContentTransformer2
 {
-    public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
+    @Override
+    public boolean isTransformableMimetype(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
         if (!MimetypeMap.MIMETYPE_RFC822.equals(sourceMimetype) || !MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(targetMimetype))
         {

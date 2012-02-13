@@ -157,7 +157,7 @@ public class SimpleThumbnailer extends TransactionListenerAdapter implements
             Serializable value = this.nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
             ContentData contentData = DefaultTypeConverter.INSTANCE.convert(ContentData.class, value);
             List<ThumbnailDefinition> thumbnailDefinitions = this.thumbnailService.getThumbnailRegistry()
-                    .getThumbnailDefinitions(contentData.getContentUrl(), contentData.getMimetype(), contentData.getSize());
+                    .getThumbnailDefinitions(contentData.getMimetype(), contentData.getSize());
             for (final ThumbnailDefinition thumbnailDefinition : thumbnailDefinitions)
             {
                 final NodeRef existingThumbnail = this.thumbnailService.getThumbnailByName(nodeRef,

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -58,7 +58,8 @@ public class ProxyContentTransformer extends AbstractContentTransformer2
     /**
      * @see DocumentFormatRegistry
      */
-    public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
+    @Override
+    public boolean isTransformableMimetype(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
         return this.worker.isTransformable(sourceMimetype, targetMimetype, options);
     }

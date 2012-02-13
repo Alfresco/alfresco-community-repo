@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -79,37 +79,65 @@ public class FailoverContentTransformer extends AbstractContentTransformer2 impl
     }
     
     /**
-     * 
-     * @see org.alfresco.repo.content.transform.ContentTransformer#isTransformable(java.lang.String, long sourceSize, java.lang.String, org.alfresco.service.cmr.repository.TransformationOptions)
-     */
-    public boolean isTransformable(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
-    {
-        // For this transformer to be considered operational, there must be at least one transformer
-        // in the chain that can perform for us.
-        boolean result = false;
-        
-        for (ContentTransformer ct : this.transformers)
-        {
-            if (ct.isTransformable(sourceMimetype, sourceSize, targetMimetype, options))
-            {
-                // There may be size limits on this transformer as well as those it contains.
-                result = isTransformableSize(sourceMimetype, sourceSize, targetMimetype, options);
-                break;
-            }
-        }
-        
-        return result;
-    }
-
-    /**
-     * @deprecated This method should no longer be called as the overloaded method
-     * that calls it has the overridden.
+     * Overrides super class method to avoid calling
+     * {@link #isTransformableMimetype(String, String, TransformationOptions)}
+     * twice on each transformer in the list, as
+     * {@link #isTransformableSize(String, long, String, TransformationOptions)}
+     * in this class must check the mimetype too.
      */
     @Override
-    public boolean isTransformable(String sourceMimetype, String targetMimetype,
-            TransformationOptions options)
+    public boolean isTransformable(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
     {
-        return false;
+        return isTransformableSize(sourceMimetype, sourceSize, targetMimetype, options);
+    }
+
+    @Override
+    public boolean isTransformableMimetype(String sourceMimetype, String targetMimetype, TransformationOptions options)
+    {
+        return isTransformableMimetypeAndSize(sourceMimetype, -1, targetMimetype, options);
+    }
+
+    @Override
+    public boolean isTransformableSize(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
+    {
+        return (sourceSize < 0) || isTransformableMimetypeAndSize(sourceMimetype, sourceSize, targetMimetype, options);
+    }
+
+    private boolean isTransformableMimetypeAndSize(String sourceMimetype, long sourceSize,
+            String targetMimetype, TransformationOptions options)
+    {
+        boolean result = false;
+        if (super.isTransformableSize(sourceMimetype, sourceSize, targetMimetype, options))
+        {
+            for (ContentTransformer ct : this.transformers)
+            {
+                transformerDebug.pushIsTransformableSize(this);
+                if (ct.isTransformableMimetype(sourceMimetype, targetMimetype, options))
+                {
+                    if (sourceSize == -1)
+                    {
+                        result = true;
+                        break;
+                    }
+                    else
+                    {
+                        try
+                        {
+                            if (ct.isTransformableSize(sourceMimetype, sourceSize, targetMimetype, options))
+                            {
+                                result = true;
+                                break;
+                            }
+                        }
+                        finally
+                        {
+                            transformerDebug.popIsTransformableSize();
+                        }
+                    }
+                }
+            }
+        }
+        return result;
     }
     
     public boolean isExplicitTransformation(String sourceMimetype, String targetMimetype, TransformationOptions options)

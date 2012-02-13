@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -63,7 +63,7 @@ public class AbstractContentTransformerLimitsTest
         transformer = new AbstractContentTransformer2()
         {
             @Override
-            public boolean isTransformable(String sourceMimetype, String targetMimetype,
+            public boolean isTransformableMimetype(String sourceMimetype, String targetMimetype,
                     TransformationOptions options)
             {
                 return false;
@@ -215,6 +215,70 @@ public class AbstractContentTransformerLimitsTest
     }
 
     @Test
+    public void testGetMaxSourceSizeKBytes() throws Exception
+    {
+        long kValue = 12;
+        long byteValue = kValue*1024;
+
+        // Not set mimetype limits yet
+        assertTrue("No limits so should have been ok",
+                transformer.isTransformableSize(A, byteValue+1, B, options));
+
+        // Set limit for A to B mimetypes and test
+        limits.setMaxSourceSizeKBytes(kValue);
+        addMimetypeLimits(A, B, limits);
+        transformer.setMimetypeLimits(mimetypeLimits);
+
+        assertEquals("Expected to have set value returned", kValue,
+                transformer.getMaxSourceSizeKBytes(A, B, options));
+
+        // With a mimetype that does not have any specific limits
+        assertEquals("Expected to have -1 (unlimited) returned", -1,
+                transformer.getMaxSourceSizeKBytes(C, B, options));
+
+        
+        // Clear the mimetype limits and double check
+        limits.setMaxSourceSizeKBytes(-1);
+      
+        assertEquals("Expected to have -1 (unlimited) returned", -1,
+                transformer.getMaxSourceSizeKBytes(A, B, options));
+
+        // Check for combinations with transformer limits
+        
+        // a) Using just transformer limit to start with
+        transformer.setMaxSourceSizeKBytes(kValue);
+        assertEquals("Expected to have transformer set value returned", kValue,
+                transformer.getMaxSourceSizeKBytes(A, B, options));
+    
+        // b) combination where transformer limit is used
+        transformer.setMaxSourceSizeKBytes(kValue);
+        limits.setMaxSourceSizeKBytes(kValue+1);
+        assertEquals("Expected to have transformer set value returned", kValue,
+                transformer.getMaxSourceSizeKBytes(A, B, options));
+        
+        // c) combination where mimetype limit is used
+        transformer.setMaxSourceSizeKBytes(kValue+1);
+        limits.setMaxSourceSizeKBytes(kValue);
+        assertEquals("Expected to have transformer set value returned", kValue,
+                transformer.getMaxSourceSizeKBytes(A, B, options));
+
+        // Check no limit when page limit set on a transformer that does not support page limit
+        transformer.setMaxSourceSizeKBytes(kValue);
+        limits.setMaxSourceSizeKBytes(kValue+1);
+        limits.setPageLimit(1);
+        assertEquals("Expected to ignore the page limit as the transformer does not support it", kValue,
+                transformer.getMaxSourceSizeKBytes(A, B, options));
+
+        // Check no limit when page limit set on a transformer that does support page limit
+        transformer.setMaxSourceSizeKBytes(kValue);
+        limits.setMaxSourceSizeKBytes(kValue+1);
+        transformer.setPageLimitsSuported(true);
+        limits.setPageLimit(1);
+        assertEquals("Expected to have -1 (unlimited) returned when there are page limits", -1,
+                transformer.getMaxSourceSizeKBytes(A, B, options));
+    }
+
+    @Test
     public void testIsTransformableSize() throws Exception
     {
         long kValue = 12;
@@ -260,16 +324,16 @@ public class AbstractContentTransformerLimitsTest
                 transformer.isTransformableSize(A, byteValue+1, B, options));
     
         // b) combination where transformer limit is used
-        transformer.setMaxSourceSizeKBytes(kValue+1);
-        limits.setMaxSourceSizeKBytes(kValue);
+        transformer.setMaxSourceSizeKBytes(kValue);
+        limits.setMaxSourceSizeKBytes(kValue+1);
         assertTrue("Size is equal to limit so should have been ok",
                 transformer.isTransformableSize(A, byteValue, B, options));
         assertFalse("Size is greater than limit so should not have failed",
                 transformer.isTransformableSize(A, byteValue+1, B, options));
         
         // c) combination where mimetype limit is used
-        transformer.setMaxSourceSizeKBytes(kValue);
-        limits.setMaxSourceSizeKBytes(kValue+1);
+        transformer.setMaxSourceSizeKBytes(kValue+1);
+        limits.setMaxSourceSizeKBytes(kValue);
         assertTrue("Size is equal to limit so should have been ok",
                 transformer.isTransformableSize(A, byteValue, B, options));
         assertFalse("Size is greater than limit so should not have failed",

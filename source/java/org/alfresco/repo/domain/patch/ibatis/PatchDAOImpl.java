@@ -103,6 +103,11 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     private static final String SELECT_SHARED_ACLS_THAT_DO_NOT_INHERIT_CORRECTLY_FROM_THEIR_DEFINING_ACL = "alfresco.patch.select_sharedAclsThatDoNotInheritCorrectlyFromTheirDefiningAcl";
    
     private static final String SELECT_COUNT_NODES_WITH_ASPECTS = "alfresco.patch.select_CountNodesWithAspectIds";
+    
+    private static final String SELECT_NODES_BY_TYPE_QNAME = "alfresco.patch.select_NodesByTypeQName";
+    private static final String SELECT_NODES_BY_TYPE_URI = "alfresco.patch.select_NodesByTypeUriId";
+    private static final String SELECT_NODES_BY_ASPECT_QNAME = "alfresco.patch.select_NodesByAspectQName";
+    private static final String SELECT_NODES_BY_CONTENT_MIMETYPE = "alfresco.patch.select_NodesByContentMimetype";
 
     private LocaleDAO localeDAO;
     
@@ -652,5 +657,50 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
         {
             return count;
         }
+    }
+
+  
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<Long> getNodesByTypeQNameId(Long typeQNameId, Long minNodeId, Long maxNodeId)
+    {
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("qnameId", typeQNameId);
+        params.put("minNodeId", minNodeId);
+        params.put("maxNodeId", maxNodeId);
+        return (List<Long>) template.selectList(SELECT_NODES_BY_TYPE_QNAME, params);
+    }
+  
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<Long> getNodesByTypeUriId(Long nsId, Long minNodeId, Long maxNodeId)
+    {
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("nsId", nsId);
+        params.put("minNodeId", minNodeId);
+        params.put("maxNodeId", maxNodeId);
+        return (List<Long>) template.selectList(SELECT_NODES_BY_TYPE_URI, params);
+    }
+  
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<Long> getNodesByAspectQNameId(Long aspectQNameId, Long minNodeId, Long maxNodeId)
+    {
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("qnameId", aspectQNameId);
+        params.put("minNodeId", minNodeId);
+        params.put("maxNodeId", maxNodeId);
+        return (List<Long>) template.selectList(SELECT_NODES_BY_ASPECT_QNAME, params);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<Long> getNodesByContentPropertyMimetypeId(Long mimetypeId, Long minNodeId, Long maxNodeId)
+    {
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("mimetypeId", mimetypeId);
+        params.put("minNodeId", minNodeId);
+        params.put("maxNodeId", maxNodeId);
+        return (List<Long>) template.selectList(SELECT_NODES_BY_CONTENT_MIMETYPE, params);
     }
 }

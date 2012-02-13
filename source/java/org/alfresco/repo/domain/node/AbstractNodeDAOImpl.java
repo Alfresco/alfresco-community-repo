@@ -1437,6 +1437,32 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return updateNodeImpl(oldNode, nodeUpdate, null);
     }
     
+    
+    @Override
+    public int touchNodes(Long txnId, List<Long> nodeIds)
+    {
+        // limit in clause to 1000 node ids
+        int batchSize = 1000;
+      
+        int touched = 0;
+        ArrayList<Long> batch = new ArrayList<Long>(batchSize);
+        for(Long nodeId : nodeIds)
+        {
+            invalidateNodeCaches(nodeId);
+            batch.add(nodeId);
+            if(batch.size() % batchSize == 0)
+            {
+                touched += updateNodes(txnId, batch);
+                batch.clear();
+            }
+        }
+        if(batch.size() > 0)
+        {
+            touched += updateNodes(txnId, batch);
+        }
+        return touched;
+    }
+    
     /**
      * Updates the node's transaction and <b>cm:auditable</b> properties while
      * providing a convenient method to control cache entry invalidation.

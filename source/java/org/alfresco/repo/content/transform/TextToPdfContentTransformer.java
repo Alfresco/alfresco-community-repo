@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -100,7 +100,8 @@ public class TextToPdfContentTransformer extends AbstractContentTransformer2
     /**
      * Only supports Text to PDF
      */
-    public boolean isTransformable(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
+    @Override
+    public boolean isTransformableMimetype(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
         if ( (!MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(sourceMimetype) &&
               !MimetypeMap.MIMETYPE_TEXT_CSV.equals(sourceMimetype) &&
@@ -112,19 +113,8 @@ public class TextToPdfContentTransformer extends AbstractContentTransformer2
         }
         else
         {
-            return isTransformableSize(sourceMimetype, sourceSize, targetMimetype, options);
+            return true;
         }
-    }
-
-    /**
-     * @deprecated This method should no longer be called as the overloaded method
-     * that calls it has the overridden.
-     */
-    @Override
-    public boolean isTransformable(String sourceMimetype, String targetMimetype,
-            TransformationOptions options)
-    {
-        return false;
     }
 
     @Override

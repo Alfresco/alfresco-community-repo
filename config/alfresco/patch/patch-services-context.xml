@@ -1070,11 +1070,14 @@
                 <ref bean="patch.updateDmPermissions" />
             </list>
         </property>
-        <property name="importerBootstrap">
-            <ref bean="spacesBootstrap" />
+        <property name="patchDAO">
+            <ref bean="patchDAO" />
         </property>
-        <property name="indexerAndSearcher">
-            <ref bean="indexerAndSearcherFactory" />
+        <property name="nodeDAO">
+            <ref bean="nodeDAO" />
+        </property>
+        <property name="retryingTransactionHelper">
+            <ref bean="retryingTransactionHelper" />
         </property>
         <property name="qnameDAO">
             <ref bean="qnameDAO" />
@@ -1777,11 +1780,14 @@
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>4004</value></property>
         <property name="targetSchema"><value>4005</value></property>
-        <property name="importerBootstrap">
-            <ref bean="spacesBootstrap" />
+        <property name="patchDAO">
+            <ref bean="patchDAO" />
         </property>
-        <property name="indexerAndSearcher">
-            <ref bean="indexerAndSearcherFactory" />
+        <property name="nodeDAO">
+            <ref bean="nodeDAO" />
+        </property>
+         <property name="retryingTransactionHelper">
+            <ref bean="retryingTransactionHelper" />
         </property>
         <property name="qnameDAO">
             <ref bean="qnameDAO" />
@@ -1920,8 +1926,11 @@
         <property name="nodeService">
             <ref bean="nodeService" />
         </property>
-        <property name="indexerAndSearcher">
-            <ref bean="indexerAndSearcherFactory"/>
+        <property name="nodeDAO">
+            <ref bean="nodeDAO"/>
+        </property>
+        <property name="retryingTransactionHelper">
+            <ref bean="retryingTransactionHelper"/>
         </property>
         <property name="mimetypeMappings">
             <map>
@@ -2301,8 +2310,11 @@
         <property name="nodeService">
             <ref bean="nodeService" />
         </property>
-        <property name="indexerAndSearcher">
-            <ref bean="indexerAndSearcherFactory"/>
+        <property name="nodeDAO">
+            <ref bean="nodeDAO"/>
+        </property>
+        <property name="retryingTransactionHelper">
+            <ref bean="retryingTransactionHelper"/>
         </property>
         <property name="mimetypeMappings">
             <map>
@@ -2847,8 +2859,11 @@
         <property name="nodeService">
             <ref bean="nodeService" />
         </property>
-        <property name="indexerAndSearcher">
-            <ref bean="indexerAndSearcherFactory"/>
+         <property name="nodeDAO">
+            <ref bean="nodeDAO"/>
+        </property>
+        <property name="retryingTransactionHelper">
+            <ref bean="retryingTransactionHelper"/>
         </property>
         <property name="mimetypeMappings">
             <map>
@@ -2906,8 +2921,11 @@
         <property name="nodeService">
             <ref bean="nodeService" />
         </property>
-        <property name="indexerAndSearcher">
-            <ref bean="indexerAndSearcherFactory"/>
+        <property name="nodeDAO">
+            <ref bean="nodeDAO"/>
+        </property>
+        <property name="retryingTransactionHelper">
+            <ref bean="retryingTransactionHelper"/>
         </property>
         <property name="mimetypeMappings">
             <map>
@@ -2942,8 +2960,11 @@
         <property name="nodeService">
             <ref bean="nodeService" />
         </property>
-        <property name="indexerAndSearcher">
-            <ref bean="indexerAndSearcherFactory"/>
+        <property name="nodeDAO">
+            <ref bean="nodeDAO"/>
+        </property>
+        <property name="retryingTransactionHelper">
+            <ref bean="retryingTransactionHelper"/>
         </property>
         <property name="mimetypeMappings">
             <map>

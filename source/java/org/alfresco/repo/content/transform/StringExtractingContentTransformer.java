@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -50,7 +50,8 @@ public class StringExtractingContentTransformer extends AbstractContentTransform
      * <p>
      * Extraction of text from binary data is wholly unreliable.
      */
-    public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
+    @Override
+    public boolean isTransformableMimetype(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
         if (!targetMimetype.equals(MimetypeMap.MIMETYPE_TEXT_PLAIN))
         {

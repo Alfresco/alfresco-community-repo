@@ -203,6 +203,14 @@ public interface NodeDAO extends NodeBulkLoader
             QName assocQName);
     
     /**
+     * Update the transaction associated with a lust of nodes
+     * @param txnId - the tx id to set
+     * @param nodeIds - the nodes to update
+     * @return the number of nodes touched
+     */
+    public int touchNodes(Long txnId, List<Long> nodeIds);
+    
+    /**
      * @param nodeTypeQName     the new type QName for the node or <tt>null</tt> to keep the existing one
      * @param nodeLocale        the new locale for the node or <tt>null</tt> to keep the existing one
      * @return                  <tt>true</tt> if any changes were made

@@ -3945,7 +3945,7 @@ public class IndexInfo implements IndexMonitor
                         Searcher searcher = new IndexSearcher(reader);
                         try
                         {
-                            for (String stringRef : deletions)
+                            for (String stringRef : containerDeletions)
                             {
                                 TermQuery query = new TermQuery(new Term("ANCESTOR", stringRef));
                                 Hits hits = searcher.search(query);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -84,6 +84,11 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
         this.transformerDebug = transformerDebug;
     }
 
+    public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
+    {
+        throw new IllegalStateException("Method should no longer be called. Override isTransformableMimetype in subclass.");
+    }
+    
     /**
      * {@inheritDoc}<p>
      * 
@@ -91,12 +96,22 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
      * and then {@link #isTransformableSize(String, long, String, TransformationOptions)}.
      */
     @Override
-    @SuppressWarnings("deprecation")
     public boolean isTransformable(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
     {
         return
-            isTransformable(sourceMimetype, targetMimetype, options) &&
+            isTransformableMimetype(sourceMimetype, targetMimetype, options) &&
             isTransformableSize(sourceMimetype, sourceSize, targetMimetype, options);
+    }
+
+    /**
+     * Indicates if this transformer is able to transform the given source mimetype 
+     * to the target mimetype.
+     */
+    @Override
+    @SuppressWarnings("deprecation")
+    public boolean isTransformableMimetype(String sourceMimetype, String targetMimetype, TransformationOptions options)
+    {
+        return isTransformable(sourceMimetype, targetMimetype, options);
     }
 
     /**
@@ -106,29 +121,43 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
      * @param sourceSize size in bytes of the source. If negative, the source size is unknown.
      * @return {@code true} if the source is transformable.
      */
-    protected boolean isTransformableSize(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
+    @Override
+    public boolean isTransformableSize(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
     {
         boolean sizeOkay = true;
         if (sourceSize >= 0)
         {
-            TransformationOptionLimits limits = getLimits(sourceMimetype, targetMimetype, options);
-            
-            // The maxSourceSizeKbytes value is ignored if this transformer is able to use
-            // page limits and the limits include a pageLimit. Normally used in the creation
-            // of icons. Note the readLimitKBytes value is not checked as the combined limits
-            // only have the max or limit kbytes value set (the smaller value is returned).
-            if (!isPageLimitSupported() || limits.getPageLimit() <= 0)
+            // if maxSourceSizeKBytes == 0 this implies the transformation is disabled
+            long maxSourceSizeKBytes = getMaxSourceSizeKBytes(sourceMimetype, targetMimetype, options);
+            sizeOkay = maxSourceSizeKBytes < 0 || (maxSourceSizeKBytes > 0 && sourceSize <= maxSourceSizeKBytes*1024);
+            if (!sizeOkay && transformerDebug.isEnabled())
             {
-                // if maxSourceSizeKBytes == 0 this implies the transformation is disabled
-                long maxSourceSizeKBytes = limits.getMaxSourceSizeKBytes();
-                sizeOkay = maxSourceSizeKBytes < 0 || (maxSourceSizeKBytes > 0 && sourceSize <= maxSourceSizeKBytes*1024);
-                if (!sizeOkay && transformerDebug.isEnabled())
-                {
-                    transformerDebug.unavailableTransformer(this, maxSourceSizeKBytes);
-                }
+                transformerDebug.unavailableTransformer(this, maxSourceSizeKBytes);
             }
         }
         return sizeOkay;
+    }
+
+    /**
+     * Returns the maximum source size (in KBytes) allowed given the supplied values.
+     * @return 0 if the the transformation is disabled, -1 if there is no limit, otherwise the size in KBytes.
+     */
+    @Override
+    public long getMaxSourceSizeKBytes(String sourceMimetype, String targetMimetype, TransformationOptions options)
+    {
+        long maxSourceSizeKBytes = -1;
+        
+        // The maxSourceSizeKbytes value is ignored if this transformer is able to use
+        // page limits and the limits include a pageLimit. Normally used in the creation
+        // of icons. Note the readLimitKBytes value is not checked as the combined limits
+        // only have the max or limit KBytes value set (the smaller value is returned).
+        TransformationOptionLimits limits = getLimits(sourceMimetype, targetMimetype, options);
+        if (!isPageLimitSupported() || limits.getPageLimit() <= 0)
+        {
+            maxSourceSizeKBytes = limits.getMaxSourceSizeKBytes();
+        }
+        
+        return maxSourceSizeKBytes;
     }
 
     /**

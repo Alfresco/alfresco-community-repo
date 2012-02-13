@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -248,6 +248,17 @@ public interface ContentService
      * @deprecated use overloaded method with sourceSize parameter.
      */
     public ContentTransformer getTransformer(String sourceMimetype, String targetMimetype, TransformationOptions options);
+
+    /**
+     * Returns the maximum source size of any content that may transformed between the supplied
+     * mimetypes using the supplied options.
+     * @param sourceMimetype
+     * @param targetMimetype
+     * @param options
+     * @return 0 if there are no transformers, -1 if there is no limit or if positive number the size in bytes.
+     */
+    @Auditable(parameters = {"sourceMimetype", "targetMimetype", "options"})
+    public long getMaxSourceSizeBytes(String sourceMimetype, String targetMimetype, TransformationOptions options);
 
     /**
      * Fetch all the transformers that are capable of transforming the content in the

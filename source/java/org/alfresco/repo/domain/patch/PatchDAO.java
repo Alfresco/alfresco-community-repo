@@ -244,4 +244,41 @@ public interface PatchDAO
      * @return                      Returns a count of the number of nodes that have either of the aspects
      */
     public long getCountNodesWithAspects(Set<QName> qnames);
+    
+    /**
+     * Find all the nodes ids with the given type
+     * @param typeQNameId - the id of the type qname
+     * @param minNodeId - min node id in the result set - inclusive
+     * @param maxNodeId - max node id in the result set - exclusive
+     * @return
+     */
+    public List<Long> getNodesByTypeQNameId(Long typeQNameId, Long minNodeId, Long maxNodeId);
+    
+    /**
+     * Find all the nodes ids with the given type uri
+     * @param uriId - the id of the type qname uri
+     * @param minNodeId - min node id in the result set - inclusive
+     * @param maxNodeId - max node id in the result set - exclusive
+     * @return
+     */
+    public List<Long> getNodesByTypeUriId(Long uriId, Long minNodeId, Long maxNodeId);
+    
+    /**
+     * Find all the nodes ids with the given aspect
+     * @param aspectQNameId - the id of the aspect qname
+     * @param minNodeId - min node id in the result set - inclusive
+     * @param maxNodeId - max node id in the result set - exclusive
+     * @return
+     */
+    public List<Long> getNodesByAspectQNameId(Long aspectQNameId, Long minNodeId, Long maxNodeId);
+    
+    /**
+     * Find all the nodes ids with the given content property set with the given mimetype
+     * @param mimetypeId - the id of the content data mimetype
+     * @param minNodeId - min node id in the result set - inclusive
+     * @param maxNodeId - max node id in the result set - exclusive
+     * @return
+     */
+    public List<Long> getNodesByContentPropertyMimetypeId(Long mimetypeId, Long minNodeId, Long maxNodeId);
+
 }

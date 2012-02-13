@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -44,12 +44,39 @@ public interface ContentTransformer extends ContentWorker
      * 
      * @param  sourceMimetype           the source mimetype
      * @param  sourceSize               the size (bytes) of the source. If negative it is unknown.
-     * @param targetMimetype            the target mimetype
+     * @param  targetMimetype           the target mimetype
      * @param  options                  the transformation options
      * @return boolean                  true if this content transformer can satify the mimetypes and options specified, false otherwise
      */
     public boolean isTransformable(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options);
     
+    /**
+     * Sub component of {@link #isTransformable(String, long, String, TransformationOptions)
+     * that checks just the mimetypes.
+     * @param  sourceMimetype           the source mimetype
+     * @param  targetMimetype           the target mimetype
+     * @param  options                  the transformation options
+     * @return boolean                  true if this content transformer can satify the mimetypes, false otherwise
+     */
+    public boolean isTransformableMimetype(String sourceMimetype, String targetMimetype, TransformationOptions options);
+
+    /**
+     * Sub component of {@link #isTransformable(String, long, String, TransformationOptions)
+     * that checks just the size limits.
+     * @param  sourceMimetype           the source mimetype
+     * @param  sourceSize               the size (bytes) of the source. If negative it is unknown.
+     * @param  targetMimetype           the target mimetype
+     * @param  options                  the transformation options
+     * @return boolean                  true if this content transformer can satify the mimetypes, false otherwise
+     */
+    public boolean isTransformableSize(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options);
+
+    /**
+     * Returns the maximum source size (in KBytes) allowed given the supplied values.
+     * @return 0 if the the transformation is disabled, -1 if there is no limit, otherwise the size in KBytes.
+     */
+    public long getMaxSourceSizeKBytes(String sourceMimetype, String targetMimetype, TransformationOptions options);
+
     /**
      * Indicates whether given the provided transformation parmaters this transformer can prvide an explict
      * transformation.

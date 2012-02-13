@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
 public class MessengerTestHelper
 {
     private String receivedMsg;
-    private final static int SLEEP_MILLIS = 5;
+    private final static int SLEEP_MILLIS = 50;
     
     
     public MessengerTestHelper()
@@ -41,7 +41,7 @@ public class MessengerTestHelper
     /**
      * Try to avoid intermitten test failures by trying multiple times. Hopefully the messge
      * will have been received after the very first sleep, but in a slow environment it may take longer.
-     * This also allows the sleep time to be lower - rather than waiting for say 500 ms, we can try 10 times
+     * This also allows the sleep time to be lower - rather than waiting for say 50 ms, we can try 10 times
      * at 5 ms - with a chance that we can return after the initial 5 ms.
      * 
      * @param expectedMsg
@@ -51,7 +51,7 @@ public class MessengerTestHelper
     {
         int tries = 0;
         
-        while (tries < 10)
+        while (tries < 30)
         {
             try
             {

@@ -145,13 +145,17 @@
 
     <bean id="mimetypeConfigService" class="org.springframework.extensions.config.xml.XMLConfigService" init-method="init">
         <constructor-arg>
-            <bean class="org.springframework.extensions.config.source.UrlConfigSource">
-                <constructor-arg>
+            <bean class="org.alfresco.util.ResourceFinderConfigSource">
+                <property name="resourceFinder">
+                    <ref bean="resourceFinder" />
+                </property>
+                <property name="locations">
                     <list>
                         <value>classpath:alfresco/mimetype/mimetype-map.xml</value>
                         <value>classpath:alfresco/mimetype/mimetype-map-openoffice.xml</value>
+                        <value>classpath*:alfresco/extension/mimetype/*-map.xml</value>
                     </list>
-                </constructor-arg>
+                </property>
             </bean>
         </constructor-arg>
     </bean>

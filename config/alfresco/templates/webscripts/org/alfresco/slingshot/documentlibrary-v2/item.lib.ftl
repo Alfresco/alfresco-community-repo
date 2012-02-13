@@ -28,7 +28,8 @@
       "container":
       {
          "name": "${(item.location.container)!""}",
-         "type": "${(item.location.containerType)!""}"
+         "type": "${(item.location.containerType)!""}",
+         "nodeRef": "${(item.location.containerNode.nodeRef)!""}"
       },
    </#if>
       "path": "${(item.location.path)!""}",

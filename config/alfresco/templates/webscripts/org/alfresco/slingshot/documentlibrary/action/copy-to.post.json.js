@@ -21,7 +21,7 @@ function runAction(p_params)
       fromSite, copiedNode;
 
    // Must have array of files
-   if (!files || files.length === 0)
+   if (!files || files.length == 0)
    {
       status.setCode(status.STATUS_BAD_REQUEST, "No files.");
       return;
@@ -40,7 +40,7 @@ function runAction(p_params)
       try
       {
          fileNode = search.findNode(nodeRef);
-         if (fileNode === null)
+         if (fileNode == null)
          {
             result.id = file;
             result.nodeRef = nodeRef;
@@ -52,29 +52,28 @@ function runAction(p_params)
             result.type = fileNode.isContainer ? "folder" : "document"
             
             // Retain the name of the site the node is currently in. Null if it's not in a site.
-            fromSite = fileNode.siteShortName;
+            fromSite = String(fileNode.siteShortName);
             
             // copy the node (deep copy for containers)
             if (fileNode.isContainer)
             {
-               copiedNode = fileNode.copy(destNode, true).nodeRef;
-               result.nodeRef = copiedNode.toString();
+               copiedNode = fileNode.copy(destNode, true);
             }
             else
             {
-               copiedNode = fileNode.copy(destNode).nodeRef;
-               result.nodeRef = copiedNode.toString();
+               copiedNode = fileNode.copy(destNode);
             }
-            
-            result.success = (result.nodeRef !== null);
+
+            result.nodeRef = copiedNode.nodeRef.toString();
+            result.success = (result.nodeRef != null);
             
             if (result.success)
             {
-                // If this was an inter-site copy, we'll need to clean up the permissions on the node
-                if (fromSite !== copiedNode.siteShortName)
-                {
-                    siteService.cleanSitePermissions(copiedNode);
-                }
+               // If this was an inter-site copy, we'll need to clean up the permissions on the node
+               if (fromSite != String(copiedNode.siteShortName))
+               {
+                  siteService.cleanSitePermissions(copiedNode);
+               }
             }
          }
       }

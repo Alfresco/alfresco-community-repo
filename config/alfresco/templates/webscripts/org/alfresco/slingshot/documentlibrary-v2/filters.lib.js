@@ -62,7 +62,8 @@ var Filters =
          }],
          language: "lucene",
          templates: null,
-         variablePath: true
+         variablePath: true,
+         ignoreTypes: Filters.IGNORED_TYPES
       };
 
       optional = optional || {};

@@ -1,15 +1,11 @@
-<import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/documentlibrary/evaluator.lib.js">
-<import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/documentlibrary/filters.lib.js">
-<import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/documentlibrary/parse-args.lib.js">
-
 const REQUEST_MAX = 1000;
 
 /**
  * Main entry point: Create collection of documents and folders in the given space
  *
- * @method getDoclist
+ * @method doclist_main
  */
-function getDoclist()
+function doclist_main()
 {
    // Use helper function to get the arguments
    var parsedArgs = ParseArgs.getParsedArgs();
@@ -36,18 +32,16 @@ function getDoclist()
    if ((filter || "path") == "path")
    {
       // TODO also add DB filter by "node" (in addition to "path")
-       
       var parentNode = parsedArgs.pathNode;
       if (parentNode !== null)
       {
-         var ignoreTypes = Filters.IGNORED_TYPES;
-            skip = -1,
+         var skip = -1,
             max = -1;
           
          if (args.size != null)
          {
             max = args.size;
-             
+            
             if (args.pos > 0)
             {
                skip = (args.pos - 1) * max;
@@ -59,7 +53,7 @@ function getDoclist()
 
          // Get paged set
          requestTotalCountMax = skip + REQUEST_MAX;
-         var pagedResult = parentNode.childFileFolders(true, true, ignoreTypes, skip, max, requestTotalCountMax, sortField, sortAsc, "TODO");
+         var pagedResult = parentNode.childFileFolders(true, true, filterParams.ignoreTypes, skip, max, requestTotalCountMax, sortField, sortAsc, "TODO");
 
          allNodes = pagedResult.page;
          totalRecords = pagedResult.totalResultCountUpper;
@@ -68,24 +62,24 @@ function getDoclist()
    }
    else
    {
-      // Query the nodes - passing in sort and result limit parameters
-      if (query !== "")
-      {
-         allNodes = search.query(
-         {
-            query: query,
-            language: filterParams.language,
-            page:
-            {
-               maxItems: (filterParams.limitResults ? parseInt(filterParams.limitResults, 10) : 0)
-            },
-            sort: filterParams.sort,
-            templates: filterParams.templates,
-            namespace: (filterParams.namespace ? filterParams.namespace : null)
-         });
+       // Query the nodes - passing in sort and result limit parameters
+       if (query !== "")
+       {
+          allNodes = search.query(
+          {
+             query: query,
+             language: filterParams.language,
+             page:
+             {
+                maxItems: (filterParams.limitResults ? parseInt(filterParams.limitResults, 10) : 0)
+             },
+             sort: filterParams.sort,
+             templates: filterParams.templates,
+             namespace: (filterParams.namespace ? filterParams.namespace : null)
+          });
 
-         totalRecords = allNodes.length;
-      }
+          totalRecords = allNodes.length;
+       }
    }
    
    // Ensure folders and folderlinks appear at the top of the list
@@ -144,11 +138,7 @@ function getDoclist()
    if (!filterParams.variablePath)
    {
       // Parent node permissions (and Site role if applicable)
-      parent =
-      {
-         node: parsedArgs.pathNode,
-         userAccess: Evaluator.run(parsedArgs.pathNode, true).actionPermissions
-      };
+      parent = Evaluator.run(parsedArgs.pathNode, true);
    }
 
    var isThumbnailNameRegistered = thumbnailService.isThumbnailNameRegistered(THUMBNAIL_NAME),
@@ -171,6 +161,11 @@ function getDoclist()
          {
             locationNode = item.isLink ? item.linkedNode : item.node;
             location = Common.getLocation(locationNode, parsedArgs.libraryRoot);
+            // Parent node
+            if (node.parent != null && node.parent.hasPermission("Read"))
+            {
+               item.parent = Evaluator.run(node.parent, true);
+            }
          }
          else
          {
@@ -178,21 +173,18 @@ function getDoclist()
             {
                site: parsedArgs.location.site,
                siteTitle: parsedArgs.location.siteTitle,
+               sitePreset: parsedArgs.location.sitePreset,
                container: parsedArgs.location.container,
+               containerType: parsedArgs.location.containerType,
                path: parsedArgs.location.path,
                file: node.name
             };
-         }
-         location.parent = {};
-         if (node.parent != null && node.parent.hasPermission("Read"))
-         {
-            location.parent.nodeRef = String(node.parent.nodeRef.toString());  
          }
          
          // Resolved location
          item.location = location;
          
-         // Is our thumbnail type registered?
+         // Check: thumbnail type is registered && node is a cm:content subtype && valid inputStream for content property
          if (isThumbnailNameRegistered && item.node.isSubType("cm:content") && item.node.properties.content.inputStream != null)
          {
             // Make sure we have a thumbnail.
@@ -227,12 +219,12 @@ function getDoclist()
    */
    for each (item in items)
    {
-      if (item.customObj.isWorkingCopy)
+      if (item.workingCopy.isWorkingCopy)
       {
-         var workingCopyOriginal = String(item.customObj.workingCopyOriginal);
+         var workingCopySource = String(item.workingCopy.sourceNodeRef);
          for (var i = 0, ii = items.length; i < ii; i++)
          {
-            if (String(items[i].node.nodeRef) == workingCopyOriginal)
+            if (String(items[i].node.nodeRef) == workingCopySource)
             {
                fnArrayRemove(items, i);
                --totalRecords;
@@ -265,11 +257,7 @@ function getDoclist()
          folders: folderNodesCount,
          documents: documentNodesCount
       },
-      items: items
+      items: items,
+      customJSON: slingshotDocLib.getJSON()
    });
 }
-
-/**
- * Document List Component: doclist
- */
-model.doclist = getDoclist();

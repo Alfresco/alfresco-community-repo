@@ -41,7 +41,7 @@ function runAction(p_params)
       try
       {
          fileNode = search.findNode(nodeRef);
-         if (fileNode === null)
+         if (fileNode == null)
          {
             result.id = file;
             result.nodeRef = nodeRef;
@@ -49,9 +49,9 @@ function runAction(p_params)
          }
          else
          {
-	    if (p_params.parent && p_params.parent !== null)
-	    {
-                parent = search.findNode(p_params.parent);
+            if (p_params.parent && p_params.parent != null)
+            {
+               parent = search.findNode(p_params.parent);
             }
             result.id = fileNode.name;
             result.type = fileNode.isContainer ? "folder" : "document";
@@ -64,11 +64,11 @@ function runAction(p_params)
             
             if (result.success)
             {
-                // If this was an inter-site move, we'll need to clean up the permissions on the node
-                if (fromSite !== fileNode.siteShortName)
-                {
-                    siteService.cleanSitePermissions(fileNode);
-                }
+               // If this was an inter-site move, we'll need to clean up the permissions on the node
+               if (fromSite != fileNode.siteShortName)
+               {
+                  siteService.cleanSitePermissions(fileNode);
+               }
             }
          }
       }

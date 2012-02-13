@@ -60,7 +60,7 @@ function getDoclist()
    }
       
    // Is our thumbnail type registered?
-   if (isThumbnailNameRegistered && item.node.isSubType("cm:content"))
+   if (isThumbnailNameRegistered && item.node.isSubType("cm:content") && item.node.properties.content.inputStream != null)
    {
       // Make sure we have a thumbnail.
       thumbnail = item.node.getThumbnail(THUMBNAIL_NAME);

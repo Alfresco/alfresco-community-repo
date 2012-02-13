@@ -69,15 +69,14 @@ public class HazelcastMessenger<T extends Serializable> implements Messenger<T>,
         receiverDelegate.onReceive(message);
     }
 
-    protected String getTopicName()
-    {
-        return topic.getName();
-    }
-
-
     @Override
     public boolean isConnected()
     {
         return true;
+    }
+    
+    protected ITopic<T> getTopic()
+    {
+        return topic;
     }
 }

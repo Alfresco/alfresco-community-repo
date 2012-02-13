@@ -28,5 +28,5 @@ import java.io.Serializable;
  */
 public interface MessengerFactory
 {   
-    <T extends Serializable> Messenger<T> createMessenger();
+    <T extends Serializable> Messenger<T> createMessenger(String appRegion);
 }

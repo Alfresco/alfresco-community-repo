@@ -80,7 +80,7 @@ public class HazelcastTest implements MessageListener<String>
         topic.addMessageListener(this);
         
         MessengerFactory messengerFactory = (MessengerFactory) ctx.getBean("messengerFactory");
-        Messenger<String> messenger = messengerFactory.createMessenger();
+        Messenger<String> messenger = messengerFactory.createMessenger("testregion");
         messenger.send("Full test including spring.");
         
         helper.checkMessageReceivedWas("Full test including spring.");

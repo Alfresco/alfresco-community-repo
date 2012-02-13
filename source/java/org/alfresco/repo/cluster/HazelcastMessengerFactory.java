@@ -21,38 +21,32 @@ package org.alfresco.repo.cluster;
 
 import java.io.Serializable;
 
-import org.alfresco.util.PropertyCheck;
-
+import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ITopic;
 
 /**
  * Hazelcast-based implementation of the {@link MessengerFactory} interface.
- * The factory must be configured with an {@link ITopic} - which
- * should be configured with a topic name that corresponds to an application
- * region.
+ * The factory must be configured with a {@link HazelcastInstance} - which
+ * is the underlying factory for {@link ITopic} creation.
  * 
  * @author Matt Ward
  */
 public class HazelcastMessengerFactory implements MessengerFactory
 {
-    private ITopic<Object> topic;
+    private HazelcastInstance hazelcast;
     
+    @Override
+    public <T extends Serializable> Messenger<T> createMessenger(String appRegion)
+    {
+        ITopic<T> topic = hazelcast.getTopic(appRegion);
+        return new HazelcastMessenger<T>(topic);
+    }
     
     /**
-     * @param topic the topic to set
+     * @param hazelcast the hazelcast to set
      */
-    public void setTopic(ITopic<Object> topic)
+    public void setHazelcast(HazelcastInstance hazelcast)
     {
-        this.topic = topic;
-    }
-
-    /*
-     * @see org.alfresco.repo.cluster.MessengerFactory#createMessenger()
-     */
-    @Override
-    public <T extends Serializable> Messenger<T> createMessenger()
-    {
-        PropertyCheck.mandatory(this, "topic", topic);
-        return new HazelcastMessenger(topic);
+        this.hazelcast = hazelcast;
     }
 }

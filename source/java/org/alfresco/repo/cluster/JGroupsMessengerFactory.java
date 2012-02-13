@@ -22,9 +22,8 @@ package org.alfresco.repo.cluster;
 import java.io.Serializable;
 
 import org.alfresco.repo.jgroups.AlfrescoJGroupsChannelFactory;
-import org.alfresco.util.PropertyCheck;
+import org.alfresco.util.ParameterCheck;
 import org.jgroups.Channel;
-import org.springframework.beans.factory.annotation.Required;
 
 /**
  * JGroups implementation of the {@link MessengerFactory} interface.
@@ -33,20 +32,11 @@ import org.springframework.beans.factory.annotation.Required;
  */
 public class JGroupsMessengerFactory implements MessengerFactory
 {
-    private String appRegion;
-    
-    
     @Override
-    public <T extends Serializable> Messenger<T> createMessenger()
+    public <T extends Serializable> Messenger<T> createMessenger(String appRegion)
     {
-        PropertyCheck.mandatory(this, "appRegion", appRegion);
+        ParameterCheck.mandatory("appRegion", appRegion);
         Channel channel = AlfrescoJGroupsChannelFactory.getChannel(appRegion);
         return new JGroupsMessenger<T>(channel);
-    }
-
-    @Required
-    public void setAppRegion(String appRegion)
-    {
-        this.appRegion = appRegion;
     }    
 }

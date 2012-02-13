@@ -178,6 +178,10 @@
             </map>
         </property>
     </bean>
+    
+    <bean id="messengerFactory"
+        class="org.alfresco.repo.cluster.JGroupsMessengerFactory"
+        depends-on="jgroupsChannelFactory"/>
 
     <bean id="encryptionChecker" class="org.alfresco.encryption.EncryptionChecker">
        <property name="transactionService" ref="transactionService"/>

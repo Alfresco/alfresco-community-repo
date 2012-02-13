@@ -78,7 +78,7 @@ public class JGroupsTest extends ReceiverAdapter
         ch.setReceiver(this);
         
         MessengerFactory messengerFactory = (MessengerFactory) ctx.getBean("messengerFactory");
-        Messenger<String> messenger = messengerFactory.createMessenger();
+        Messenger<String> messenger = messengerFactory.createMessenger("testregion");
         messenger.send("Full test including spring.");
         
         helper.checkMessageReceivedWas("Full test including spring.");
@@ -97,8 +97,8 @@ public class JGroupsTest extends ReceiverAdapter
         AlfrescoJGroupsChannelFactory.rebuildChannels();
         
         JGroupsMessengerFactory messengerFactory = new JGroupsMessengerFactory();
-        messengerFactory.setAppRegion("testregion");
-        Messenger<String> messenger = messengerFactory.createMessenger();
+        
+        Messenger<String> messenger = messengerFactory.createMessenger("testregion");
         messenger.send("This is a test payload.");
         
         helper.checkMessageReceivedWas("This is a test payload.");

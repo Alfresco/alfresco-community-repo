@@ -19,14 +19,16 @@
 
 package org.alfresco.repo.cluster;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertSame;
+import static org.mockito.Mockito.when;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ITopic;
 
 
@@ -39,20 +41,23 @@ import com.hazelcast.core.ITopic;
 public class HazelcastMessengerFactoryTest
 {
     private HazelcastMessengerFactory factory;
-    private @Mock ITopic<Object> topic;
+    private @Mock HazelcastInstance hazelcast;
+    private @Mock ITopic<String> topic;
     
     @Before
     public void setUp()
     {
         factory = new HazelcastMessengerFactory();
-        factory.setTopic(topic);
+        factory.setHazelcast(hazelcast);
     }
     
     @Test
     public void topicWrappedInMessenger()
     {
-        when(topic.getName()).thenReturn("app-region");
-        HazelcastMessenger messenger = (HazelcastMessenger) factory.createMessenger();
-        assertEquals("app-region", messenger.getTopicName());
+        when(hazelcast.<String>getTopic("app-region")).thenReturn(topic);
+        
+        Messenger<String> messenger = factory.createMessenger("app-region");
+        
+        assertSame(topic, ((HazelcastMessenger<String>) messenger).getTopic());
     }
 }

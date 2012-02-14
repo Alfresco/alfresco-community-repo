@@ -81,7 +81,7 @@ public class TransformerDebug
             return threadInfo.get().stack;
         }
         
-        public static boolean getDebug()
+        public static boolean getDebugOutput()
         {
             return threadInfo.get().debugOutput;
         }
@@ -226,7 +226,7 @@ public class TransformerDebug
         else
         {
             // Create a new frame. Logging level is set to trace if the file size is 0
-            boolean origDebugOutput = ThreadInfo.setDebugOutput(ThreadInfo.getDebug() && sourceSize != 0);
+            boolean origDebugOutput = ThreadInfo.setDebugOutput(ThreadInfo.getDebugOutput() && sourceSize != 0);
             frame = new Frame(frame, fromUrl, sourceMimetype, targetMimetype, callType, origDebugOutput);
             ourStack.push(frame);
             
@@ -417,7 +417,7 @@ public class TransformerDebug
     public boolean isEnabled()
     {
         return
-            (logger.isDebugEnabled() && ThreadInfo.getDebug()) ||
+            (logger.isDebugEnabled() && ThreadInfo.getDebugOutput()) ||
              logger.isTraceEnabled();
     }
     
@@ -503,7 +503,7 @@ public class TransformerDebug
     
     private void log(String message, Throwable t, boolean debug)
     {
-        if (debug && ThreadInfo.getDebug())
+        if (debug && ThreadInfo.getDebugOutput())
         {
             logger.debug(getReference()+message, t);
         }

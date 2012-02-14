@@ -88,7 +88,9 @@ public class FailoverContentTransformer extends AbstractContentTransformer2 impl
     @Override
     public boolean isTransformable(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
     {
-        return isTransformableSize(sourceMimetype, sourceSize, targetMimetype, options);
+        return // isTransformableSize must check the mimetype anyway
+            ((sourceSize >= 0) && isTransformableSize(sourceMimetype, sourceSize, targetMimetype, options)) ||
+            ((sourceSize < 0) && isTransformableMimetype(sourceMimetype,targetMimetype, options));
     }
 
     @Override
@@ -100,39 +102,38 @@ public class FailoverContentTransformer extends AbstractContentTransformer2 impl
     @Override
     public boolean isTransformableSize(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
     {
-        return (sourceSize < 0) || isTransformableMimetypeAndSize(sourceMimetype, sourceSize, targetMimetype, options);
+        return (sourceSize < 0) ||
+            super.isTransformableSize(sourceMimetype, sourceSize, targetMimetype, options) &&
+            isTransformableMimetypeAndSize(sourceMimetype, sourceSize, targetMimetype, options);
     }
 
     private boolean isTransformableMimetypeAndSize(String sourceMimetype, long sourceSize,
             String targetMimetype, TransformationOptions options)
     {
         boolean result = false;
-        if (super.isTransformableSize(sourceMimetype, sourceSize, targetMimetype, options))
+        for (ContentTransformer ct : this.transformers)
         {
-            for (ContentTransformer ct : this.transformers)
+            if (ct.isTransformableMimetype(sourceMimetype, targetMimetype, options))
             {
-                transformerDebug.pushIsTransformableSize(this);
-                if (ct.isTransformableMimetype(sourceMimetype, targetMimetype, options))
+                if (sourceSize < 0)
                 {
-                    if (sourceSize == -1)
+                    result = true;
+                    break;
+                }
+                else
+                {
+                    try
                     {
-                        result = true;
-                        break;
+                        transformerDebug.pushIsTransformableSize(this);
+                        if (ct.isTransformableSize(sourceMimetype, sourceSize, targetMimetype, options))
+                        {
+                            result = true;
+                            break;
+                        }
                     }
-                    else
+                    finally
                     {
-                        try
-                        {
-                            if (ct.isTransformableSize(sourceMimetype, sourceSize, targetMimetype, options))
-                            {
-                                result = true;
-                                break;
-                            }
-                        }
-                        finally
-                        {
-                            transformerDebug.popIsTransformableSize();
-                        }
+                        transformerDebug.popIsTransformableSize();
                     }
                 }
             }

@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -196,7 +197,7 @@ public class ModuleManagementTool implements LogOutput
      * @param warFileLocation   the location of the WAR file into which the AMP file is to be installed.
      * @param preview           indicates whether this should be a preview install.  This means that the process of 
      *                          installation will be followed and reported, but the WAR file will not be modified.
-     * @param forceInstall      indicates whether the installed files will be replaces reguarless of the currently installed 
+     * @param forceInstall      indicates whether the installed files will be replaces regardless of the currently installed 
      *                          version of the AMP.  Generally used during development of the AMP.
      * @param backupWAR         indicates whether we should backup the war we are modifying or not
      */
@@ -240,105 +241,29 @@ public class ModuleManagementTool implements LogOutput
             // Try to find an installed module by the ID
             ModuleDetails installedModuleDetails = warHelper.getModuleDetailsOrAlias(theWar, installingModuleDetails);
             
-            // Now clean up the old instance
-            if (installedModuleDetails != null)
-            {
-                String installedId = installedModuleDetails.getId();
-                VersionNumber installedVersion = installedModuleDetails.getVersion();
-                
-                int compareValue = installedVersion.compareTo(installingVersion);
-                if (compareValue > 0)
-                {
-                    // Trying to install an earlier version of the extension
-                    outputMessage("WARNING: A later version of this module is already installed in the WAR. Installation skipped.  "+
-                    "You could force the installation by passing the -force option.",false);
-                    return;
-                }
-
-                if (forceInstall == true)
-                {
-                    // Warn of forced install
-                    outputMessage("WARNING: The installation of this module is being forced.  All files will be removed and replaced regardless of exiting versions present.",false);
-                }
-                
-                if (compareValue == 0)
-                {
-                    // Trying to install the same extension version again
-                    outputMessage("WARNING: This version of this module is already installed in the WAR..upgrading.",false);
-                }
-                
-                if (forceInstall == true || compareValue <= 0)
-                {
-                    
-                    // Trying to update the extension, old files need to cleaned before we proceed
-                    outputMessage("Clearing out files relating to version '" + installedVersion + "' of module '" + installedId + "'",false);
-                    uninstallModule(installedId, warFileLocation, preview, true);
-                } 
-            }
+            uninstallIfNecessary(warFileLocation, installedModuleDetails, preview, forceInstall, installingVersion);
             
-            // Check if a custom mapping file has been defined
-            Properties fileMappingProperties = null;
-            Properties customFileMappingProperties = getCustomFileMappings(ampFileLocation);
-            if (customFileMappingProperties == null)
-            {
-                fileMappingProperties = defaultFileMappingProperties;
-            }
-            else
-            {
-                fileMappingProperties = new Properties();
-                // A custom mapping file was present.  Check if it must inherit the default mappings.
-                String inheritDefaultStr = customFileMappingProperties.getProperty(PROP_INHERIT_DEFAULT, "true");
-                if (inheritDefaultStr.equalsIgnoreCase("true"))
-                {
-                    fileMappingProperties.putAll(defaultFileMappingProperties);
-                }
-                fileMappingProperties.putAll(customFileMappingProperties);
-                fileMappingProperties.remove(PROP_INHERIT_DEFAULT);
-            }
-            
-            // Copy the files from the AMP file into the WAR file
             outputMessage("Adding files relating to version '" + installingVersion + "' of module '" + installingId + "'");
             InstalledFiles installedFiles = new InstalledFiles(warFileLocation, installingId);
-            for (Map.Entry<Object, Object> entry : fileMappingProperties.entrySet())
-            {
-                // The file mappings are expected to start with "/"
-                String mappingSource = (String) entry.getKey();
-                if (mappingSource.length() == 0 || !mappingSource.startsWith("/"))
-                {
-                    throw new AlfrescoRuntimeException("File mapping sources must start with '/', but was: " + mappingSource);
-                }
-                String mappingTarget = (String) entry.getValue();
-                if (mappingTarget.length() == 0 || !mappingTarget.startsWith("/"))
-                {
-                    throw new AlfrescoRuntimeException("File mapping targets must start with '/' but was '" + mappingTarget + "'");
-                }
-                
-                mappingSource = mappingSource.trim(); //trim whitespace
-                mappingTarget = mappingTarget.trim(); //trim whitespace
-                
-                // Run throught the files one by one figuring out what we are going to do during the copy
-                copyToWar(ampFileLocation, warFileLocation, mappingSource, mappingTarget, installedFiles, preview);
-                
-                if (preview == false)
-                {
-                    // Get a reference to the source folder (if it isn't present don't do anything)
-                    File source = new File(ampFileLocation + "/" + mappingSource, DETECTOR_AMP_AND_WAR);
-                    if (source != null && source.list() != null)
-                    {
-                        // Get a reference to the destination folder
-                        File destination = new File(warFileLocation + "/" + mappingTarget, DETECTOR_AMP_AND_WAR);
-                        if (destination == null)
-                        {
-                            throw new ModuleManagementToolException("The destination folder '" + mappingTarget + "' as specified in mapping properties does not exist in the war");
-                        }
-                        // Do the bulk copy since this is quicker than copying files one by one
-                        destination.copyAllFrom(source);
-                    }
-                }
-            }   
+            
+            Properties directoryChanges = calculateChanges(ampFileLocation, warFileLocation, preview, forceInstall, installedFiles);   
             
             if (preview == false)
             {
+                //Now actually do the changes
+                if (directoryChanges != null && directoryChanges.size() > 0) 
+                {
+                    for (Entry<Object, Object> entry : directoryChanges.entrySet())
+                    {
+                        
+                        File destination = new File((String) entry.getValue(), DETECTOR_AMP_AND_WAR);
+                        File source = new File((String) entry.getKey(), DETECTOR_AMP_AND_WAR);
+                        //Do the bulk copy since this is quicker than copying files one by one
+                        //The changes aren't actuall "committed" until the File.update() is called (below)
+                        destination.copyAllFrom(source);
+                    }
+                }
+                
                 // Save the installed file list
                 installedFiles.save();
            
@@ -373,6 +298,109 @@ public class ModuleManagementTool implements LogOutput
         {
             throw new ModuleManagementToolException("An IO error was encountered during deployment of the AEP into the WAR", exception);
         }       
+    }
+
+    private void uninstallIfNecessary(String warFileLocation, ModuleDetails installedModuleDetails, boolean preview,
+                boolean forceInstall, VersionNumber installingVersion)
+    {
+        // Now clean up the old instance
+        if (installedModuleDetails != null)
+        {
+            String installedId = installedModuleDetails.getId();
+            VersionNumber installedVersion = installedModuleDetails.getVersion();
+            
+            int compareValue = installedVersion.compareTo(installingVersion);
+            if (compareValue > 0)
+            {
+                // Trying to install an earlier version of the extension
+                outputMessage("WARNING: A later version of this module is already installed in the WAR. Installation skipped.  "+
+                "You could force the installation by passing the -force option.",false);
+                return;
+            }
+
+            if (forceInstall == true)
+            {
+                // Warn of forced install
+                outputMessage("WARNING: The installation of this module is being forced.  All files will be removed and replaced regardless of exiting versions present.",false);
+            }
+            
+            if (compareValue == 0)
+            {
+                // Trying to install the same extension version again
+                outputMessage("WARNING: This version of this module is already installed in the WAR..upgrading.",false);
+            }
+            
+            if (forceInstall == true || compareValue <= 0)
+            {
+                
+                // Trying to update the extension, old files need to cleaned before we proceed
+                outputMessage("Clearing out files relating to version '" + installedVersion + "' of module '" + installedId + "'",false);
+                uninstallModule(installedId, warFileLocation, preview, true);
+            } 
+        }
+    }
+
+    /**
+     */
+    private Properties calculateChanges(String ampFileLocation, String warFileLocation, boolean preview,
+                boolean forceInstall, InstalledFiles installedFiles) throws IOException
+    {
+        Properties dirChanges = new Properties();
+        
+        // Check if a custom mapping file has been defined
+        Properties fileMappingProperties = null;
+        Properties customFileMappingProperties = getCustomFileMappings(ampFileLocation);
+        if (customFileMappingProperties == null)
+        {
+            fileMappingProperties = defaultFileMappingProperties;
+        }
+        else
+        {
+            fileMappingProperties = new Properties();
+            // A custom mapping file was present.  Check if it must inherit the default mappings.
+            String inheritDefaultStr = customFileMappingProperties.getProperty(PROP_INHERIT_DEFAULT, "true");
+            if (inheritDefaultStr.equalsIgnoreCase("true"))
+            {
+                fileMappingProperties.putAll(defaultFileMappingProperties);
+            }
+            fileMappingProperties.putAll(customFileMappingProperties);
+            fileMappingProperties.remove(PROP_INHERIT_DEFAULT);
+        }
+        
+        // Copy the files from the AMP file into the WAR file
+        for (Map.Entry<Object, Object> entry : fileMappingProperties.entrySet())
+        {
+            // The file mappings are expected to start with "/"
+            String mappingSource = (String) entry.getKey();
+            if (mappingSource.length() == 0 || !mappingSource.startsWith("/"))
+            {
+                throw new AlfrescoRuntimeException("File mapping sources must start with '/', but was: " + mappingSource);
+            }
+            String mappingTarget = (String) entry.getValue();
+            if (mappingTarget.length() == 0 || !mappingTarget.startsWith("/"))
+            {
+                throw new AlfrescoRuntimeException("File mapping targets must start with '/' but was '" + mappingTarget + "'");
+            }
+            
+            mappingSource = mappingSource.trim(); //trim whitespace
+            mappingTarget = mappingTarget.trim(); //trim whitespace
+            
+            // Run throught the files one by one figuring out what we are going to do during the copy
+            calculateCopyToWar(ampFileLocation, warFileLocation, mappingSource, mappingTarget, installedFiles, preview, forceInstall);
+            
+            // Get a reference to the source folder (if it isn't present don't do anything)
+            File source = new File(ampFileLocation + "/" + mappingSource, DETECTOR_AMP_AND_WAR);
+            if (source != null && source.list() != null)
+            {
+                // Add to the list of directory changes so we can implement the changes later.
+                String sourceDir = ampFileLocation + mappingSource;
+                String destinationDir = warFileLocation + mappingTarget;
+                dirChanges.put(sourceDir, destinationDir);
+            }
+            
+        }
+        
+        return dirChanges;
     }
 
     private void backupWar(String warFileLocation, boolean backupWAR)
@@ -511,9 +539,11 @@ public class ModuleManagementTool implements LogOutput
      * @param destinationDir    the directory in the WAR to copy to.  It must start with "/".
      * @param installedFiles    a list of the currently installed files
      * @param preview           indicates whether this is a preview install or not
+     * @param forceInstall      indicates whether the installed files will be replaces regardless of the currently installed 
+     *                          version of the AMP.
      * @throws IOException      throws any IOExpceptions thar are raised
      */
-    private void copyToWar(String ampFileLocation, String warFileLocation, String sourceDir, String destinationDir, InstalledFiles installedFiles, boolean preview)
+    private void calculateCopyToWar(String ampFileLocation, String warFileLocation, String sourceDir, String destinationDir, InstalledFiles installedFiles, boolean preview, boolean forceInstall)
         throws IOException
     {
         if (sourceDir.length() == 0 || !sourceDir.startsWith("/"))
@@ -555,12 +585,22 @@ public class ModuleManagementTool implements LogOutput
                     }
                     else
                     {
-                        // Backup file about to be updated
-                        backupLocation = BACKUP_DIR + "/" + generateGuid() + ".bin";
-                        if (preview == false)
+                        if (forceInstall)
                         {
-                            File backupFile = new File(warFileLocation + backupLocation, DETECTOR_AMP_AND_WAR);
-                            backupFile.copyFrom(destinationChild);
+                            // Backup file about to be updated
+                            backupLocation = BACKUP_DIR + "/" + generateGuid() + ".bin";
+                            if (preview == false)
+                            {
+                                File backupFile = new File(warFileLocation + backupLocation, DETECTOR_AMP_AND_WAR);
+                                backupFile.copyFrom(destinationChild);
+                            }
+                        } else {
+                            //Not a forced install, there is an existing file in the war, lets rollback the transaction, 
+                            //throw an error and explain the problem.
+//                            File.
+//                            ZipController zipController = ZipController.getInstance(warFile);
+//                            zipController.reset();
+                            throw new ModuleManagementToolException("ERROR: The amp will overwrite an existing file in the war '" + destinationDir + "/" + sourceChild.getName() + "'. Execution halted.  By specifying -force , you can force installation of AMP regardless of the current war state.");
                         }
                     }
                     
@@ -583,8 +623,8 @@ public class ModuleManagementTool implements LogOutput
                         mkdir = true;
                     }
                     
-                    copyToWar(ampFileLocation, warFileLocation, sourceDir + "/" + sourceChild.getName(), 
-                                                                destinationDir + "/" + sourceChild.getName(), installedFiles, preview);
+                    calculateCopyToWar(ampFileLocation, warFileLocation, sourceDir + "/" + sourceChild.getName(), 
+                                                                destinationDir + "/" + sourceChild.getName(), installedFiles, preview, forceInstall);
                     if (mkdir == true)
                     {
                         installedFiles.addMkdir(destinationDir + "/" + sourceChild.getName());

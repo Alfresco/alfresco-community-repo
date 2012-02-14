@@ -81,19 +81,9 @@ public class ModuleManagementToolTest extends TestCase
         InstalledFiles installed0 = new InstalledFiles(warLocation, "test");
         installed0.load();
         assertNotNull(installed0);
-        assertEquals(8, installed0.getAdds().size());
+        assertEquals(9, installed0.getAdds().size());
         assertEquals(1, installed0.getMkdirs().size());
-        assertEquals(1, installed0.getUpdates().size());
-        String backup = null;
-        String orig = null;
-        for (Map.Entry<String, String> update : installed0.getUpdates().entrySet())
-        {
-            checkContentsOfFile(warLocation + update.getKey(), "VERSIONONE");
-            checkContentsOfFile(warLocation + update.getValue(), "ORIGIONAL");
-            backup = update.getValue();
-            orig = update.getKey();
-        }
-        
+
         // Try and install same version
         try
         {
@@ -129,7 +119,6 @@ public class ModuleManagementToolTest extends TestCase
         files3.add("/scripts/test.js");
         files3.add("/jsp/test.jsp");
         files3.add("/extra.txt");
-        files3.add(backup);
         checkForFileNonExistance(warLocation, files3);
         
         // Check the intstalled files
@@ -139,9 +128,6 @@ public class ModuleManagementToolTest extends TestCase
         assertEquals(8, installed1.getAdds().size());
         assertEquals(1, installed1.getMkdirs().size());
         assertEquals(0, installed1.getUpdates().size());
-
-        // Ensure the file has been reverted as it isnt updated in the v2.0
-        checkContentsOfFile(warLocation + orig, "ORIGIONAL");
         
         /**
          *  Try and install an earlier version over a later version
@@ -267,6 +253,28 @@ public class ModuleManagementToolTest extends TestCase
             exception.printStackTrace();
             System.out.println("Expected failure: " + exception.getMessage());
         }
+    }
+    
+    public void testExistingFilesInWar() throws Exception
+    {
+        manager.setVerbose(true);
+        
+        String warLocation = getFileLocation(".war", "module/test.war");
+        String ampLocation = getFileLocation(".amp", "module/test_v4.amp");
+        
+        try
+        {
+          this.manager.installModule(ampLocation, warLocation, false, false, true); 
+        }
+        catch(ModuleManagementToolException exception)
+        {
+            assertTrue(exception.getMessage().contains("will overwrite an existing file in the war"));
+        }
+        
+        this.manager.installModule(ampLocation, warLocation, false, true, true);  //Now force it
+        checkContentsOfFile(warLocation + "/jsp/relogin.jsp", "VERSIONONE");
+        checkContentsOfFile(warLocation + "/css/main.css", "p{margin-bottom:1em;}");
+
     }
     
     public void testWhiteSpaceInCustomMapping()

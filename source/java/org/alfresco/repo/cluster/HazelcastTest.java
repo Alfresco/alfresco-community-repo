@@ -20,11 +20,12 @@
 package org.alfresco.repo.cluster;
 
 
+import org.alfresco.repo.cluster.MessengerTestHelper.TestMessageReceiver;
 import org.alfresco.util.ApplicationContextHelper;
-import org.jgroups.ChannelException;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 
@@ -68,13 +69,9 @@ public class HazelcastTest implements MessageListener<String>
  
     
     @Test
-    public void canSendWithHazelcastMessengerFactory() throws InterruptedException, ChannelException
+    public void canSendWithHazelcastMessengerFactory() throws InterruptedException
     {
-        Config config = new Config();
-        GroupConfig groupConfig = new GroupConfig();
-        groupConfig.setName("testcluster");
-        groupConfig.setPassword("secret");
-        config.setGroupConfig(groupConfig);
+        Config config = createConfig();
         HazelcastInstance hi = Hazelcast.newHazelcastInstance(config);
         ITopic<String> topic = hi.getTopic("testregion");
         
@@ -87,10 +84,42 @@ public class HazelcastTest implements MessageListener<String>
         helper.checkMessageReceivedWas("Full test including spring.");
     }
 
+    @Ignore("Behaviour not yet implemented.")
+    @Test
+    public void messengerWillNotReceiveMessagesFromSelf() throws InterruptedException
+    {
+        MessengerFactory messengerFactory = (MessengerFactory) ctx.getBean("messengerFactory");
+        Messenger<String> m1 = messengerFactory.createMessenger("testregion");
+        TestMessageReceiver r1 = new TestMessageReceiver();
+        m1.setReceiver(r1);
+     
+        Config config = createConfig();
+        HazelcastInstance hi = Hazelcast.newHazelcastInstance(config);
+        ITopic<String> topic2 = hi.getTopic("testregion");
+        String address2 = hi.getCluster().getLocalMember().getInetSocketAddress().toString();
+        Messenger<String> m2 = new HazelcastMessenger<String>(topic2, address2);
+        TestMessageReceiver r2 = new TestMessageReceiver();
+        m2.setReceiver(r2);
+        
+        m1.send("This should be received by r2 but not r1");
+        
+        r2.helper.checkMessageReceivedWas("This should be received by r2 but not r1");
+        r1.helper.checkNoMessageReceived();
+    }
 
     @Override
     public void onMessage(String message)
     {
         helper.setReceivedMsg(message);
+    }
+    
+    private Config createConfig()
+    {
+        Config config = new Config();
+        GroupConfig groupConfig = new GroupConfig();
+        groupConfig.setName("testcluster");
+        groupConfig.setPassword("secret");
+        config.setGroupConfig(groupConfig);
+        return config;
     }
 }

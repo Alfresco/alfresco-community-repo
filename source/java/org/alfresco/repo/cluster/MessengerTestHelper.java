@@ -31,6 +31,7 @@ public class MessengerTestHelper
 {
     private String receivedMsg;
     private final static int SLEEP_MILLIS = 50;
+    private static final int MAX_TRIES = 30;
     
     
     public MessengerTestHelper()
@@ -51,7 +52,7 @@ public class MessengerTestHelper
     {
         int tries = 0;
         
-        while (tries < 30)
+        while (tries < MAX_TRIES)
         {
             try
             {
@@ -72,6 +73,32 @@ public class MessengerTestHelper
         fail("No message received, tried " + tries +
              " times, sleeping " + SLEEP_MILLIS + "ms each time.");
     }
+    
+    /**
+     * Assert that no message was received in the given period.
+     */
+    public void checkNoMessageReceived()
+    {
+        int tries = 0;
+        
+        while (tries < MAX_TRIES)
+        {
+            try
+            {
+                Thread.sleep(SLEEP_MILLIS);
+            }
+            catch (InterruptedException e)
+            {
+                // Carry on
+                e.printStackTrace();
+            }
+            if (getReceivedMsg() != null)
+            {
+                fail("Message received but should NOT have been. Message was: " + getReceivedMsg());
+            }
+            tries++;
+        }
+    }
 
     /**
      * @return the receivedMsg
@@ -87,5 +114,17 @@ public class MessengerTestHelper
     public void setReceivedMsg(String receivedMsg)
     {
         this.receivedMsg = receivedMsg;
+    }
+    
+    
+    public static class TestMessageReceiver implements MessageReceiver<String>
+    {
+        MessengerTestHelper helper = new MessengerTestHelper();
+        
+        @Override
+        public void onReceive(String message)
+        {
+            helper.setReceivedMsg(message);
+        }   
     }
 }

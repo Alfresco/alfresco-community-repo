@@ -3,6 +3,11 @@
 
 <beans>
 
+    <!--
+        Unlike the JGroupsMessengerFactory, this messengerFactory bean doesn't require an explicit
+        dependency (through the depends-on attribute) as it specifies the dependency through the
+        reference to the hazelcastInstance bean.
+      -->
     <bean id="messengerFactory" class="org.alfresco.repo.cluster.HazelcastMessengerFactory">
         <property name="hazelcast" ref="hazelcastInstance"/>
     </bean>

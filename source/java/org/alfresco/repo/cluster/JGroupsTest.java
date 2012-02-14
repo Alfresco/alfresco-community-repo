@@ -19,7 +19,7 @@
 
 package org.alfresco.repo.cluster;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -27,6 +27,7 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.util.Collections;
 
+import org.alfresco.repo.cluster.MessengerTestHelper.TestMessageReceiver;
 import org.alfresco.repo.jgroups.AlfrescoJGroupsChannelFactory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.jgroups.Channel;
@@ -37,7 +38,6 @@ import org.jgroups.ReceiverAdapter;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 
@@ -132,27 +132,24 @@ public class JGroupsTest extends ReceiverAdapter
         assertEquals(true, messengerFactory.isClusterActive());        
     }
     
-    @Ignore("Not currently allowing multiple receivers per underlying Channel")
     @Test
-    public void canReceiveFromMultipleMessageReceivers() throws InterruptedException, ChannelException
+    public void messengerWillNotReceiveMessagesFromSelf() throws InterruptedException, ChannelException
     {
-        Channel ch = new JChannel("udp.xml");
-        ch.connect("mycluster");
-        Messenger<String> sendMsgr = new JGroupsMessenger<String>(ch);
-
-        Messenger<String> recvMsgr1 = new JGroupsMessenger<String>(ch);
+        MessengerFactory messengerFactory = (MessengerFactory) ctx.getBean("messengerFactory");
+        Messenger<String> m1 = messengerFactory.createMessenger("testregion");
         TestMessageReceiver r1 = new TestMessageReceiver();
-        recvMsgr1.setReceiver(r1);
+        m1.setReceiver(r1);
         
-        Messenger<String> recvMsgr2 = new JGroupsMessenger<String>(ch);
+        Channel ch2 = new JChannel("udp.xml");
+        ch2.connect("testcluster:testregion");
+        Messenger<String> m2 = new JGroupsMessenger<String>(ch2);
         TestMessageReceiver r2 = new TestMessageReceiver();
-        recvMsgr2.setReceiver(r2);
+        m2.setReceiver(r2);
         
-        sendMsgr.send("This message was sent with jgroups");
+        m1.send("This should be received by r2 but not r1");
         
-        Thread.sleep(50);
-        assertEquals("This message was sent with jgroups", new String(r1.receivedMsg));
-        assertEquals("This message was sent with jgroups", new String(r2.receivedMsg));
+        r2.helper.checkMessageReceivedWas("This should be received by r2 but not r1");
+        r1.helper.checkNoMessageReceived();
     }
     
     @Override
@@ -176,17 +173,5 @@ public class JGroupsTest extends ReceiverAdapter
         {
             throw new RuntimeException("Couldn't receive object.", e);
         }
-    }
-    
-    
-    public static class TestMessageReceiver implements MessageReceiver<String>
-    {
-        String receivedMsg;
-        
-        @Override
-        public void onReceive(String message)
-        {
-            receivedMsg = message;
-        }   
     }
 }

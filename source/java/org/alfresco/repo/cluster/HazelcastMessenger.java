@@ -21,6 +21,8 @@ package org.alfresco.repo.cluster;
 
 import java.io.Serializable;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.ParameterCheck;
 
 import com.hazelcast.core.ITopic;
@@ -37,7 +39,7 @@ public class HazelcastMessenger<T extends Serializable> implements Messenger<T>,
     private ITopic<T> topic;
     private MessageReceiver<T> receiverDelegate;
     private String address;
-    
+    private final static Log logger = LogFactory.getLog(HazelcastMessenger.class);
     /**
      * @param topic
      */
@@ -51,6 +53,10 @@ public class HazelcastMessenger<T extends Serializable> implements Messenger<T>,
     @Override
     public void send(T message)
     {
+        if (logger.isTraceEnabled())
+        {
+            logger.trace("Sending " + message);
+        }
         topic.publish(message);
     }
 
@@ -66,7 +72,10 @@ public class HazelcastMessenger<T extends Serializable> implements Messenger<T>,
     @Override
     public void onMessage(T message)
     {
-        ParameterCheck.mandatory("message", message);
+        if (logger.isTraceEnabled())
+        {
+            logger.trace("Received (will be delegated to receiver): " + message);
+        }
         receiverDelegate.onReceive(message);
     }
 
@@ -86,5 +95,5 @@ public class HazelcastMessenger<T extends Serializable> implements Messenger<T>,
     public String getAddress()
     {
         return address;
-    }
+    } 
 }

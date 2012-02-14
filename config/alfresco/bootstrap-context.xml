@@ -182,6 +182,11 @@
     <bean id="messengerFactory"
         class="org.alfresco.repo.cluster.JGroupsMessengerFactory"
         depends-on="jgroupsChannelFactory"/>
+    
+    <!-- Set up this class for static access, don't use this for DI - use messengerFactory instead -->
+    <bean id="staticMessengerFactoryProvider" class="org.alfresco.repo.cluster.MessengerFactoryProvider">    
+        <property name="instance" ref="messengerFactory"/>
+    </bean>
 
     <bean id="encryptionChecker" class="org.alfresco.encryption.EncryptionChecker">
        <property name="transactionService" ref="transactionService"/>

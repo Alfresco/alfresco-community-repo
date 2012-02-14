@@ -16,25 +16,25 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package org.alfresco.repo.cluster;
 
-import java.io.Serializable;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
 
 /**
- * Factory class responsible for creating instances of {@link Messenger} class.
+ * Test suite for the org.alfresco.repo.cluster package.
  * 
  * @author Matt Ward
  */
-public interface MessengerFactory
+@RunWith(Suite.class)
+@SuiteClasses({
+    org.alfresco.repo.cluster.HazelcastMessengerFactoryTest.class,
+    org.alfresco.repo.cluster.HazelcastMessengerTest.class,
+    org.alfresco.repo.cluster.HazelcastTest.class,
+    org.alfresco.repo.cluster.JGroupsMessengerTest.class,
+    org.alfresco.repo.cluster.JGroupsTest.class
+})
+public class ClusterTestSuite
 {
-    /** A catch-all for unknown application regions. */
-    public static final String APP_REGION_DEFAULT = "DEFAULT";
-    
-    /** The application region used by the EHCache heartbeat implementation over JGroups. */
-    public static final String APP_REGION_EHCACHE_HEARTBEAT = "EHCACHE_HEARTBEAT";
-    
-    <T extends Serializable> Messenger<T> createMessenger(String appRegion);
-    
-    boolean isClusterActive();
 }

@@ -45,7 +45,7 @@ public class HazelcastMessengerTest
     @Before
     public void setUp()
     {
-        messenger = new HazelcastMessenger<String>(topic);
+        messenger = new HazelcastMessenger<String>(topic, "address");
         receivedMsg = null;
     }
     

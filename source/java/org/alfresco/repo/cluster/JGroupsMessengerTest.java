@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 
+import org.jgroups.Address;
 import org.jgroups.Channel;
 import org.jgroups.ChannelClosedException;
 import org.jgroups.ChannelNotConnectedException;
@@ -102,6 +103,15 @@ public class JGroupsMessengerTest
         assertEquals(false, messenger.isConnected());
     }
 
+    @Test
+    public void canDelegateGetAddress()
+    {
+        Address address = Mockito.mock(Address.class);
+        Mockito.when(address.toString()).thenReturn("an-address");
+        Mockito.when(channel.getAddress()).thenReturn(address);
+        assertEquals("an-address", messenger.getAddress());
+    }
+    
     private byte[] serialize(String text) throws IOException
     {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();

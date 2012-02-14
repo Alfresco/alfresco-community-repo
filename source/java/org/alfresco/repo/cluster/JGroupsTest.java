@@ -120,6 +120,18 @@ public class JGroupsTest extends ReceiverAdapter
         helper.checkMessageReceivedWas("This message was sent with jgroups");
     }
     
+    @Test
+    public void canCheckIsClusterActive()
+    {
+        JGroupsMessengerFactory messengerFactory = new JGroupsMessengerFactory();
+        
+        AlfrescoJGroupsChannelFactory.changeClusterNamePrefix(null);
+        assertEquals(false, messengerFactory.isClusterActive());
+        
+        AlfrescoJGroupsChannelFactory.changeClusterNamePrefix("my-cluster-name");
+        assertEquals(true, messengerFactory.isClusterActive());        
+    }
+    
     @Ignore("Not currently allowing multiple receivers per underlying Channel")
     @Test
     public void canReceiveFromMultipleMessageReceivers() throws InterruptedException, ChannelException

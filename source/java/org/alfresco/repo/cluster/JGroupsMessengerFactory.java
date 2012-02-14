@@ -38,5 +38,11 @@ public class JGroupsMessengerFactory implements MessengerFactory
         ParameterCheck.mandatory("appRegion", appRegion);
         Channel channel = AlfrescoJGroupsChannelFactory.getChannel(appRegion);
         return new JGroupsMessenger<T>(channel);
+    }
+
+    @Override
+    public boolean isClusterActive()
+    {
+        return AlfrescoJGroupsChannelFactory.isClusterActive();
     }    
 }

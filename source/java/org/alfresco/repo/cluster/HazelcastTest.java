@@ -57,6 +57,7 @@ public class HazelcastTest implements MessageListener<String>
     public static void tearDownClass()
     {
         ApplicationContextHelper.closeApplicationContext();
+        Hazelcast.shutdownAll();
     }
     
     @Before

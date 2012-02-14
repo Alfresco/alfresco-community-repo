@@ -36,14 +36,15 @@ public class HazelcastMessenger<T extends Serializable> implements Messenger<T>,
 {
     private ITopic<T> topic;
     private MessageReceiver<T> receiverDelegate;
-    
+    private String address;
     
     /**
      * @param topic
      */
-    public HazelcastMessenger(ITopic<T> topic)
+    public HazelcastMessenger(ITopic<T> topic, String address)
     {
         this.topic = topic;
+        this.address = address;
     }
 
 
@@ -78,5 +79,12 @@ public class HazelcastMessenger<T extends Serializable> implements Messenger<T>,
     protected ITopic<T> getTopic()
     {
         return topic;
+    }
+
+
+    @Override
+    public String getAddress()
+    {
+        return address;
     }
 }

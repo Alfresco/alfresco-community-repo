@@ -21,6 +21,10 @@ package org.alfresco.repo.cluster;
 
 import java.io.Serializable;
 
+import org.springframework.util.StringUtils;
+
+import com.hazelcast.config.Config;
+import com.hazelcast.config.GroupConfig;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ITopic;
 
@@ -39,7 +43,8 @@ public class HazelcastMessengerFactory implements MessengerFactory
     public <T extends Serializable> Messenger<T> createMessenger(String appRegion)
     {
         ITopic<T> topic = hazelcast.getTopic(appRegion);
-        return new HazelcastMessenger<T>(topic);
+        String address = hazelcast.getCluster().getLocalMember().getInetSocketAddress().toString();
+        return new HazelcastMessenger<T>(topic, address);
     }
     
     /**
@@ -48,5 +53,17 @@ public class HazelcastMessengerFactory implements MessengerFactory
     public void setHazelcast(HazelcastInstance hazelcast)
     {
         this.hazelcast = hazelcast;
+    }
+
+    @Override
+    public boolean isClusterActive()
+    {
+        Config config = hazelcast.getConfig();
+        if (config == null || config.getGroupConfig() == null)
+        {
+            return false;
+        }
+        GroupConfig groupConfig = config.getGroupConfig();
+        return StringUtils.hasText(groupConfig.getName());
     }
 }

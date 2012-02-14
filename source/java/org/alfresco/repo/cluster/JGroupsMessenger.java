@@ -28,6 +28,8 @@ import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jgroups.Channel;
 import org.jgroups.Message;
 import org.jgroups.ReceiverAdapter;
@@ -41,7 +43,7 @@ public class JGroupsMessenger<T extends Serializable> extends ReceiverAdapter im
 {
     private final Channel channel;
     private MessageReceiver<T> receiverDelegate;
-    
+    private final static Log logger = LogFactory.getLog(JGroupsMessenger.class);
     
     /**
      * Construct a messenger that wraps a JGroups Channel.
@@ -66,6 +68,10 @@ public class JGroupsMessenger<T extends Serializable> extends ReceiverAdapter im
             out.writeObject(message);
             out.close();
             bytes.close();
+            if (logger.isTraceEnabled())
+            {
+                logger.trace("Sending " + message);
+            }
             channel.send(null, null, bytes.toByteArray());
         }
         catch (Throwable e)
@@ -105,6 +111,10 @@ public class JGroupsMessenger<T extends Serializable> extends ReceiverAdapter im
             T payload = (T) in.readObject();
             in.close();
             bytes.close();
+            if (logger.isTraceEnabled())
+            {
+                logger.trace("Received (will be delegated to receiver): " + payload);
+            }
             // Pass the deserialized payload on to the receiver delegate
             receiverDelegate.onReceive(payload);
         }
@@ -123,5 +133,12 @@ public class JGroupsMessenger<T extends Serializable> extends ReceiverAdapter im
     public boolean isConnected()
     {
         return channel.isConnected();
+    }
+
+
+    @Override
+    public String getAddress()
+    {
+        return channel.getAddress().toString();
     }
 }

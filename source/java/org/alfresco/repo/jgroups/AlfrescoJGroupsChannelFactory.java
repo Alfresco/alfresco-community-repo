@@ -31,6 +31,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.cluster.MessengerFactory;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -68,10 +69,6 @@ import org.springframework.util.ResourceUtils;
  */
 public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
 {
-    /** A catch-all for unknown application regions. */
-    public static final String APP_REGION_DEFAULT = "DEFAULT";
-    /** The application region used by the EHCache heartbeat implementation over JGroups. */
-    public static final String APP_REGION_EHCACHE_HEARTBEAT = "EHCACHE_HEARTBEAT";
     /** The UDP protocol config (default) */
     public static final String DEFAULT_CONFIG_UDP = "classpath:alfresco/jgroups/alfresco-jgroups-UDP.xml";
     /** The TCP protocol config */
@@ -102,7 +99,7 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
         clusterNamePrefix = null;
         configUrlsByAppRegion = new HashMap<String, String>(5);
         configUrlsByAppRegion.put(
-                AlfrescoJGroupsChannelFactory.APP_REGION_DEFAULT,
+                MessengerFactory.APP_REGION_DEFAULT,
                 AlfrescoJGroupsChannelFactory.DEFAULT_CONFIG_UDP);
     }
     
@@ -167,7 +164,7 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
            String configUrlStr = configUrlsByAppRegion.get(appRegion);
            if (!PropertyCheck.isValidPropertyString(configUrlStr))
            {
-               configUrlStr = configUrlsByAppRegion.get(AlfrescoJGroupsChannelFactory.APP_REGION_DEFAULT);
+               configUrlStr = configUrlsByAppRegion.get(MessengerFactory.APP_REGION_DEFAULT);
            }
            if (configUrlStr == null)
            {
@@ -432,7 +429,7 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
         try
         {
             // Check that there is a mapping for default
-            if (!configUrlsByAppRegion.containsKey(AlfrescoJGroupsChannelFactory.APP_REGION_DEFAULT))
+            if (!configUrlsByAppRegion.containsKey(MessengerFactory.APP_REGION_DEFAULT))
             {
                 throw new AlfrescoRuntimeException("A configuration URL must be defined for 'DEFAULT'");
             }

@@ -16,25 +16,29 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package org.alfresco.repo.cluster;
 
-import java.io.Serializable;
-
 /**
- * Factory class responsible for creating instances of {@link Messenger} class.
+ * Static container for MessengerFactory. This allows code to obtain the correct
+ * {@link MessengerFactory} implementation where dependency injection is not available.
  * 
  * @author Matt Ward
  */
-public interface MessengerFactory
+public class MessengerFactoryProvider
 {
-    /** A catch-all for unknown application regions. */
-    public static final String APP_REGION_DEFAULT = "DEFAULT";
+    private static MessengerFactory instance;
     
-    /** The application region used by the EHCache heartbeat implementation over JGroups. */
-    public static final String APP_REGION_EHCACHE_HEARTBEAT = "EHCACHE_HEARTBEAT";
+    public void setInstance(MessengerFactory messengerFactory)
+    {
+        instance = messengerFactory;
+    }
     
-    <T extends Serializable> Messenger<T> createMessenger(String appRegion);
-    
-    boolean isClusterActive();
+    public static MessengerFactory getInstance()
+    {
+        if (instance == null)
+        {
+            throw new IllegalStateException("MessengerFactory instance not configured yet.");
+        }
+        return instance;
+    }
 }

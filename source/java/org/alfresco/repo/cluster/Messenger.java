@@ -38,4 +38,6 @@ public interface Messenger<T extends Serializable>
     void setReceiver(MessageReceiver<T> receiver);
     
     boolean isConnected();
+    
+    String getAddress();
 }

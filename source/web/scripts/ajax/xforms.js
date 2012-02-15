@@ -569,12 +569,18 @@ alfresco.xforms.FilePicker = alfresco.xforms.Widget.extend({
     this.domNode.addClass("xformsFilePicker");
     attach_point.appendChild(this.domNode);
     //XXXarielb support readonly and disabled
-    
+    var initialValue = this.getInitialValue(),
+        webFolder = alfresco.constants.AVM_WEBAPP_CONTEXT;
+    // ALF-12577 fix, remove the webfolder prefix added prevously (if needed)
+    if (initialValue && webFolder != "ROOT" && initialValue.match("^/" + webFolder + "/"))
+    {
+      initialValue = initialValue.replace(new RegExp("/" + webFolder), "");
+    }
     if (this._layout == "table")
     {
     	this.widget = new alfresco.FilePickerWidgetTableLayout(this.id,
                                                     this.domNode, 
-                                                    this.getInitialValue(), 
+                                                    initialValue, 
                                                     false,
                                                     this._filePicker_changeHandler.bindAsEventListener(this),
                                                     null /* cancel is ignored */,
@@ -588,7 +594,7 @@ alfresco.xforms.FilePicker = alfresco.xforms.Widget.extend({
     {
     this.widget = new alfresco.FilePickerWidget(this.id,
                                                 this.domNode, 
-                                                this.getInitialValue(), 
+                                                initialValue, 
                                                 false,
                                                 this._filePicker_changeHandler.bindAsEventListener(this),
                                                 null /* cancel is ignored */,
@@ -625,7 +631,13 @@ alfresco.xforms.FilePicker = alfresco.xforms.Widget.extend({
 
   _filePicker_changeHandler: function(fpw)
   {
-    this._commitValueChange();
+    var value = this.getValue();
+    // ALF-12557 fix, take into account current web folder
+    if (value != null && alfresco.constants.AVM_WEBAPP_CONTEXT != "ROOT")
+    {
+      value = "/" + alfresco.constants.AVM_WEBAPP_CONTEXT + value;
+    }
+    this._commitValueChange(value);
   },
 
   _filePicker_resizeHandler: function(fpw) 

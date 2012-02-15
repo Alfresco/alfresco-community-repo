@@ -37,16 +37,13 @@ import org.mybatis.spring.SqlSessionTemplate;
 public class AVMNodeLinksDAOImpl extends AbstractAVMNodeLinksDAOImpl
 {
     private static final String SELECT_AVM_NODE_CHILD_ENTRY ="alfresco.avm.select_AVMChildEntry"; // parent + name + child
-    private static final String SELECT_AVM_NODE_CHILD_ENTRY_L ="alfresco.avm.select_AVMChildEntryL"; // parent + lower(name) + child
     
     private static final String SELECT_AVM_NODE_CHILD_ENTRY_BY_PARENT_AND_NAME ="alfresco.avm.select_AVMChildEntryByParentAndName"; // parent + name
-    private static final String SELECT_AVM_NODE_CHILD_ENTRY_BY_PARENT_AND_NAME_L ="alfresco.avm.select_AVMChildEntryByParentAndNameL"; // parent + lower(name)
     
     private static final String SELECT_AVM_NODE_CHILD_ENTRY_BY_PARENT_AND_CHILD ="alfresco.avm.select_AVMChildEntryByParentAndChild"; // parent + child
     private static final String SELECT_AVM_NODE_CHILD_ENTRIES_BY_PARENT ="alfresco.avm.select_AVMNodeChildEntriesByParent"; // parent
     
     private static final String SELECT_AVM_NODE_CHILD_ENTRIES_BY_PARENT_AND_NAME_PATTERN ="alfresco.avm.select_AVMNodeChildEntriesByParentAndNamePattern"; // parent + name pattern
-    private static final String SELECT_AVM_NODE_CHILD_ENTRIES_BY_PARENT_AND_NAME_PATTERN_L ="alfresco.avm.select_AVMNodeChildEntriesByParentAndNamePatternL"; // parent + lower(name pattern)
     
     private static final String SELECT_AVM_NODE_CHILD_ENTRIES_BY_CHILD ="alfresco.avm.select_AVMNodeChildEntriesByChild"; // child
     
@@ -55,7 +52,6 @@ public class AVMNodeLinksDAOImpl extends AbstractAVMNodeLinksDAOImpl
     private static final String UPDATE_AVM_NODE_CHILD_ENTRY ="alfresco.avm.update_AVMChildEntry"; // parent + child (update name)
     
     private static final String DELETE_AVM_NODE_CHILD_ENTRY_BY_PARENT_AND_NAME ="alfresco.avm.delete_AVMChildEntryByParentAndName"; // parent + name
-    private static final String DELETE_AVM_NODE_CHILD_ENTRY_BY_PARENT_AND_NAME_L ="alfresco.avm.delete_AVMChildEntryByParentAndNameL"; // parent + lower(name)
     
     private static final String DELETE_AVM_NODE_CHILD_ENTRY_BY_PARENT_AND_CHILD ="alfresco.avm.delete_AVMChildEntryByParentAndChild"; // parent + child
     private static final String DELETE_AVM_NODE_CHILD_ENTRIES_BY_PARENT ="alfresco.avm.delete_AVMNodeChildEntriesByParent"; // parent
@@ -75,29 +71,15 @@ public class AVMNodeLinksDAOImpl extends AbstractAVMNodeLinksDAOImpl
     
     
     private SqlSessionTemplate template;
-    
     public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
     {
         this.template = sqlSessionTemplate;
     }
     
-    
-    // Initial generic fix for ALF-1940 (pending SAIL-349)
-    // Note: in order to override to false DB must be setup to be case-insensitive (at least on column avm_child_entries.name)
-    private boolean toLower = true;
-    
-    public void setToLower(boolean toLower)
-    {
-        this.toLower = toLower;
-    }
-    
+        
     @Override
     protected AVMChildEntryEntity getChildEntryEntity(AVMChildEntryEntity childEntryEntity)
     {
-        if (toLower)
-        {
-            return (AVMChildEntryEntity) template.selectOne(SELECT_AVM_NODE_CHILD_ENTRY_L, childEntryEntity);
-        }
         return (AVMChildEntryEntity) template.selectOne(SELECT_AVM_NODE_CHILD_ENTRY, childEntryEntity);
     }
     
@@ -106,10 +88,6 @@ public class AVMNodeLinksDAOImpl extends AbstractAVMNodeLinksDAOImpl
     {
         AVMChildEntryEntity childEntryEntity = new AVMChildEntryEntity(parentNodeId, name);
         
-        if (toLower)
-        {
-            return (AVMChildEntryEntity) template.selectOne(SELECT_AVM_NODE_CHILD_ENTRY_BY_PARENT_AND_NAME_L, childEntryEntity);
-        }
         return (AVMChildEntryEntity) template.selectOne(SELECT_AVM_NODE_CHILD_ENTRY_BY_PARENT_AND_NAME, childEntryEntity);
     }
     
@@ -135,12 +113,8 @@ public class AVMNodeLinksDAOImpl extends AbstractAVMNodeLinksDAOImpl
     {
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", parentNodeId);
-        params.put("pattern", childNamePattern);
+        params.put("pattern", childNamePattern.toLowerCase());        
         
-        if (toLower)
-        {
-            return (List<AVMChildEntryEntity>) template.selectList(SELECT_AVM_NODE_CHILD_ENTRIES_BY_PARENT_AND_NAME_PATTERN_L, params);
-        }
         return (List<AVMChildEntryEntity>) template.selectList(SELECT_AVM_NODE_CHILD_ENTRIES_BY_PARENT_AND_NAME_PATTERN, params);
     }
     
@@ -172,11 +146,6 @@ public class AVMNodeLinksDAOImpl extends AbstractAVMNodeLinksDAOImpl
     protected int deleteChildEntryEntity(long parentNodeId, String name)
     {
         AVMChildEntryEntity childEntryEntity = new AVMChildEntryEntity(parentNodeId, name);
-        
-        if (toLower)
-        {
-            return template.delete(DELETE_AVM_NODE_CHILD_ENTRY_BY_PARENT_AND_NAME_L, childEntryEntity);
-        }
         return template.delete(DELETE_AVM_NODE_CHILD_ENTRY_BY_PARENT_AND_NAME, childEntryEntity);
     }
     

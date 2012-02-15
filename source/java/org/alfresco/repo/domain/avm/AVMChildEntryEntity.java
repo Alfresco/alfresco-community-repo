@@ -30,6 +30,7 @@ public class AVMChildEntryEntity
 {
     private Long parentNodeId;
     private String name;
+    private String lowerName; // Derived from name for case insensitive lookups
     private Long childNodeId;
     
     public AVMChildEntryEntity()
@@ -41,6 +42,7 @@ public class AVMChildEntryEntity
     {
         this.parentNodeId = parentNodeId;
         this.name = name;
+        this.lowerName = name == null ? null : name.toLowerCase();
         this.childNodeId = childNodeId;
     }
     
@@ -48,6 +50,7 @@ public class AVMChildEntryEntity
     {
         this.parentNodeId = parentNodeId;
         this.name = name;
+        this.lowerName = name == null ? null : name.toLowerCase();
     }
     
     public AVMChildEntryEntity(long parentNodeId, long childNodeId)
@@ -74,8 +77,19 @@ public class AVMChildEntryEntity
     public void setName(String name)
     {
         this.name = name;
+        this.lowerName = name == null ? null : name.toLowerCase();
     }
     
+    public String getLowerName()
+    {
+        return lowerName;
+    }
+
+    public void setLowerName(String lowerName)
+    {
+        this.lowerName = lowerName;
+    }
+
     public Long getChildId()
     {
         return childNodeId;

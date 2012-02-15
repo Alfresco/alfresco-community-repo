@@ -3070,6 +3070,15 @@
         </property>
     </bean>
     
+    <bean id="patch.db-V3.4-AVM-index-child-entries-lower" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V3.4-AVM-index-child-entries-lower</value></property>
+        <property name="description"><value>patch.avmIndexChildEntriesLower.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6002</value></property>
+        <property name="targetSchema"><value>6003</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/3.4/${db.script.dialect}/AVM-index-child-entries-lower.sql</value>
+        </property>
+    </bean>
 
-  
 </beans>

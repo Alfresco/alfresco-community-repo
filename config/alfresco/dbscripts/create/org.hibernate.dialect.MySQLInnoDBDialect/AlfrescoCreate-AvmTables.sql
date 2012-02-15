@@ -15,9 +15,10 @@
 
     create table avm_child_entries (
         parent_id bigint not null,
+        lc_name varchar(160) not null,
         name varchar(160) not null,
         child_id bigint not null,
-        primary key (parent_id, name)
+        primary key (parent_id, lc_name)
     ) ENGINE=InnoDB;
 
     create table avm_history_links (
@@ -234,6 +235,7 @@ CREATE INDEX idx_avm_hl_revpk ON avm_history_links (descendent, ancestor);
 
 CREATE INDEX idx_avm_vr_revuq ON avm_version_roots (avm_store_id, version_id);
 
+CREATE INDEX idx_avm_ce_lc_name ON avm_child_entries (lc_name, parent_id);
 
 --
 -- Record script finish

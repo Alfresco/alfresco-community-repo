@@ -1076,6 +1076,73 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
        
     }
     
+    public void testAddVersionableAspectWithNoVersionType()
+    {
+        // No version-type specified when adding the aspect
+        NodeRef nodeRef = createNodeWithVersionType(null);
+        setComplete();
+        endTransaction();
+        assertCorrectVersionLabel(nodeRef, "0.1");
+    }
+
+    public void testAddVersionableAspectWithMinorVersionType()
+    {
+        // MINOR version-type specified when adding the aspect
+        NodeRef nodeRef = createNodeWithVersionType(VersionType.MINOR);
+        setComplete();
+        endTransaction();
+        assertCorrectVersionLabel(nodeRef, "0.1");
+    }
+    
+    public void testAddVersionableAspectWithMajorVersionType()
+    {
+        // MAJOR version-type specified when adding the aspect
+        NodeRef nodeRef = createNodeWithVersionType(VersionType.MAJOR);
+        setComplete();
+        endTransaction();
+        assertCorrectVersionLabel(nodeRef, "1.0");
+    }
+    
+    private void assertCorrectVersionLabel(final NodeRef nodeRef, final String versionLabel)
+    {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Exception
+            {
+                // Check that the version history has been created
+                VersionHistory versionHistory = versionService.getVersionHistory(nodeRef);
+                assertNotNull(versionHistory);
+                assertEquals(1, versionHistory.getAllVersions().size());
+                Version version = versionService.getCurrentVersion(nodeRef);
+                assertEquals("Wrong version label", versionLabel, version.getVersionLabel());
+                
+                return null;
+            }
+        });
+    }
+    
+    private NodeRef createNodeWithVersionType(VersionType versionType)
+    {
+        HashMap<QName, Serializable> props = new HashMap<QName, Serializable>();
+        props.put(ContentModel.PROP_NAME, "test.txt");
+        
+        final NodeRef nodeRef = dbNodeService.createNode(
+                rootNodeRef, 
+                ContentModel.ASSOC_CHILDREN, 
+                QName.createQName("{test}MyVersionableNode"),
+                TEST_TYPE_QNAME,
+                props).getChildRef();
+        
+        HashMap<QName, Serializable> aspectProps = new HashMap<QName, Serializable>();
+        if (versionType != null)
+        {
+            aspectProps.put(ContentModel.PROP_VERSION_TYPE, versionType);
+        }
+        dbNodeService.addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, aspectProps);
+        
+        return nodeRef;
+    }
+
     public void testAddRemoveVersionableAspect()
     {
     	HashMap<QName, Serializable> props2 = new HashMap<QName, Serializable>();

@@ -156,6 +156,7 @@
              <ref bean="patch.db-V3.4-JBPM-FK-indexes" />
              <ref bean="patch.db-V3.4-Upgrade-JBPM" />
              <ref bean="patch.db-V3.4-alter-jBPM331-CLOB-columns-to-nvarchar" />
+             <ref bean="patch.db-V3.4-AVM-index-child-entries-lower" />
              <ref bean="patch.db-V4.0-AclChangeSet" />
              <ref bean="patch.db-V4.0-NodeAssoc-Ordering" />
              <ref bean="patch.db-V4.0-Node-Locale" />

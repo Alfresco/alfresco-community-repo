@@ -361,6 +361,14 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
                 {
                     // Create the initial-version
                     Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(1);
+                    
+                    // If a major version is requested, indicate it in the versionProperties map
+                    String versionType = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_VERSION_TYPE);
+                    if (versionType != null && versionType.equals(VersionType.MAJOR.toString()))
+                    {
+                    	versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
+                    }
+                    
                     versionProperties.put(Version.PROP_DESCRIPTION, I18NUtil.getMessage(MSG_INITIAL_VERSION));
                     
                     createVersionImpl(nodeRef, versionProperties);

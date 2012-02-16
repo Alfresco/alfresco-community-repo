@@ -23,22 +23,22 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 /**
- * Test suite for the org.alfresco.repo.cluster package.
+ * Test suite for org.alfresco.repo.cluster tests, but <strong>excluding</strong>
+ * tests which are known to fail in the CI environment (Bamboo).
  * <p>
- * This includes tests which will <strong>fail</strong> on the build servers -
- * do not include this suite in the CI build targets.
+ * These tests are still useful in the desktop development environment however,
+ * so are kept for this reason. {@link ClusterTestSuite} runs all the tests in this
+ * suite, plus the offending tests.
  * 
  * @author Matt Ward
  */
 @RunWith(Suite.class)
 @SuiteClasses({
-    // Run the standard tests
-    org.alfresco.repo.cluster.BuildSafeTestSuite.class,
-    
-    // Additionally run these tests that cannot be run on the build servers.
-    org.alfresco.repo.cluster.HazelcastTest.class,
-    org.alfresco.repo.cluster.JGroupsTest.class
+    org.alfresco.repo.cluster.HazelcastMessengerFactoryTest.class,
+    org.alfresco.repo.cluster.HazelcastMessengerTest.class,
+    org.alfresco.repo.cluster.JGroupsMessengerTest.class
 })
-public class ClusterTestSuite
+public class BuildSafeTestSuite
 {
+    // Annotations specify the suite.
 }

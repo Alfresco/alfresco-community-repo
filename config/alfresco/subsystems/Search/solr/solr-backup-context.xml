@@ -37,6 +37,9 @@
         <property name="remoteBackupLocation">
             <value>${solr.backup.alfresco.remoteBackupLocation}</value>
         </property>
+        <property name="numberToKeep">
+            <value>${solr.backup.alfresco.numberToKeep}</value>
+        </property>
         <property name="core">
             <value>alfresco</value>
         </property>
@@ -79,6 +82,9 @@
         </property>
         <property name="remoteBackupLocation">
             <value>${solr.backup.archive.remoteBackupLocation}</value>
+        </property>
+         <property name="numberToKeep">
+            <value>${solr.backup.archive.numberToKeep}</value>
         </property>
         <property name="core">
             <value>archive</value>

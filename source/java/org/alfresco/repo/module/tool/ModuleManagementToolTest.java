@@ -259,7 +259,7 @@ public class ModuleManagementToolTest extends TestCase
     {
         manager.setVerbose(true);
         
-        String warLocation = getFileLocation(".war", "module/test.war");
+        String warLocation = getFileLocation(".war", "module/test.war");   //Version 4.0.1
         String ampLocation = getFileLocation(".amp", "module/test_v4.amp");
         
         try

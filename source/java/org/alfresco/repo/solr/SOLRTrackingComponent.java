@@ -151,4 +151,10 @@ public interface SOLRTrackingComponent
      * @return
      */
     public Long getMaxTxnCommitTime();
+    
+    /**
+     * Get the last transaction id from the repo
+     * @return
+     */
+    public Long getMaxTxnId();
 }

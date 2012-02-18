@@ -40,7 +40,7 @@ public class WarHelperImpl implements WarHelper
         if (propsFile != null && propsFile.exists())
         {
             Properties warVers = loadProperties(propsFile);
-            VersionNumber warVersion = new VersionNumber(warVers.getProperty("version.major")+"."+warVers.getProperty("version.revision")+"."+warVers.getProperty("version.minor"));
+            VersionNumber warVersion = new VersionNumber(warVers.getProperty("version.major")+"."+warVers.getProperty("version.minor")+"."+warVers.getProperty("version.revision"));
             if(warVersion.compareTo(installingModuleDetails.getRepoVersionMin())==-1) {
                 throw new ModuleManagementToolException("The module ("+installingModuleDetails.getTitle()+") must be installed on a repo version greater than "+installingModuleDetails.getRepoVersionMin());
             }

@@ -143,6 +143,8 @@ public class EagerContentStoreCleaner extends TransactionListenerAdapter
      * <p/>
      * <b>NB: </b>Any content registered <u>will</u> be deleted if the current transaction
      *            commits and if 'eager' cleanup is turned on.
+     * <p/>
+     * Note that listeners are not called for this process.
      * 
      * @return  Returns <tt>true</tt> if the content was scheduled for post-transaction deletion.
      *          If the return value is <tt>true</tt> then the calling code <b>must</b> delete
@@ -157,7 +159,9 @@ public class EagerContentStoreCleaner extends TransactionListenerAdapter
      * Queues orphaned content for post-transaction removal
      * <p/>
      * <b>NB: </b>Any content registered <u>will</u> be deleted if the current transaction
-     *            commits and if 'eager' cleanup is turned on.
+     *            commits and if 'eager' cleanup is turned on OR if 'force' is <tt>true</tt>.
+     * <p/>
+     * Note that listeners are not called for this process.
      * 
      * @param force         <tt>true</tt> for force the post-commit URL deletion
      *                      regardless of the setting {@link #setEagerOrphanCleanup(boolean)}.
@@ -246,6 +250,8 @@ public class EagerContentStoreCleaner extends TransactionListenerAdapter
     
     /**
      * Delete the content URL from all stores
+     * <p/>
+     * Note that listeners <b>are</b> called for this process.
      * 
      * @param contentUrl                the URL to delete
      * @return                          Returns <tt>true</tt> if all deletes were successful
@@ -298,7 +304,7 @@ public class EagerContentStoreCleaner extends TransactionListenerAdapter
     /**
      * Attempts to delete the URL from the store, catching and reporing errors.
      */
-    private boolean deleteFromStore(String contentUrl, ContentStore store)
+    protected boolean deleteFromStore(String contentUrl, ContentStore store)
     {
         try
         {

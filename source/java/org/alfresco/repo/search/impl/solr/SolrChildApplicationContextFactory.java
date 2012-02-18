@@ -43,21 +43,47 @@ public class SolrChildApplicationContextFactory extends ChildApplicationContextF
     private static String ALFRESCO_LAG = "tracker.alfresco.lag";
 
     private static String ALFRESCO_LAG_DURATION = "tracker.alfresco.lag.duration";
+    
+    private static String ALFRESCO_LAST_INDEXED_TXN = "tracker.alfresco.last.indexed.txn";
+    
+    private static String ALFRESCO_APPROX_TXNS_REMAINING = "tracker.alfresco.approx.txns.remaining";
+    
+    private static String ALFRESCO_APPROX_INDEXING_TIME_REMAINING = "tracker.alfresco.approx.indexing.time.remaining";
 
     private static String ARCHIVE_ACTIVE = "tracker.archive.active";
 
     private static String ARCHIVE_LAG = "tracker.archive.lag";
 
     private static String ARCHIVE_LAG_DURATION = "tracker.archive.lag.duration";
+    
+    private static String ARCHIVE_LAST_INDEXED_TXN = "tracker.archive.last.indexed.txn";
+    
+    private static String ARCHIVE_APPROX_TXNS_REMAINING = "tracker.archive.approx.txns.remaining";
+    
+    private static String ARCHIVE_APPROX_INDEXING_TIME_REMAINING = "tracker.archive.approx.indexing.time.remaining";
+    
+ 
+    
 
     @Override
     public boolean isUpdateable(String name)
     {
         // TODO Auto-generated method stub
         return super.isUpdateable(name)
-                && !name.equals(SolrChildApplicationContextFactory.ALFRESCO_ACTIVE) && !name.equals(SolrChildApplicationContextFactory.ALFRESCO_LAG)
-                && !name.equals(SolrChildApplicationContextFactory.ALFRESCO_LAG_DURATION) && !name.equals(SolrChildApplicationContextFactory.ARCHIVE_ACTIVE)
-                && !name.equals(SolrChildApplicationContextFactory.ARCHIVE_LAG) && !name.equals(SolrChildApplicationContextFactory.ARCHIVE_LAG_DURATION);
+                && !name.equals(SolrChildApplicationContextFactory.ALFRESCO_ACTIVE) 
+                && !name.equals(SolrChildApplicationContextFactory.ALFRESCO_LAG)
+                && !name.equals(SolrChildApplicationContextFactory.ALFRESCO_LAG_DURATION) 
+                && !name.equals(SolrChildApplicationContextFactory.ALFRESCO_LAST_INDEXED_TXN) 
+                && !name.equals(SolrChildApplicationContextFactory.ALFRESCO_APPROX_TXNS_REMAINING) 
+                && !name.equals(SolrChildApplicationContextFactory.ALFRESCO_APPROX_INDEXING_TIME_REMAINING) 
+                
+                && !name.equals(SolrChildApplicationContextFactory.ARCHIVE_ACTIVE)
+                && !name.equals(SolrChildApplicationContextFactory.ARCHIVE_LAG) 
+                && !name.equals(SolrChildApplicationContextFactory.ARCHIVE_LAG_DURATION)
+                && !name.equals(SolrChildApplicationContextFactory.ARCHIVE_APPROX_TXNS_REMAINING)
+                && !name.equals(SolrChildApplicationContextFactory.ARCHIVE_APPROX_INDEXING_TIME_REMAINING)
+                && !name.equals(SolrChildApplicationContextFactory.ARCHIVE_LAST_INDEXED_TXN)
+                ;
     }
 
     @Override
@@ -81,12 +107,18 @@ public class SolrChildApplicationContextFactory extends ChildApplicationContextF
                 String alfrescoLag = alfresco.getString("Lag");
                 String alfrescoActive = alfresco.getString("Active");
                 String alfrescoDuration = alfresco.getString("Duration");
+                String alfrescoLastIndexedTxn = alfresco.getString("Id for last TX in index");
+                String alfrescoApproxTxnsReminaing = alfresco.getString("Approx transactions remaining");
+                String alfrescoApproxIndexingTimeReminaing = alfresco.getString("Approx indexing time remaining");
                
 
                 JSONObject archive = summary.getJSONObject("archive");
                 String archiveLag = archive.getString("Lag");
                 String archiveActive = archive.getString("Active");
                 String archiveDuration = archive.getString("Duration");
+                String archiveLastIndexedTxn = archive.getString("Id for last TX in index");
+                String archiveApproxTxnsReminaing = archive.getString("Approx transactions remaining");
+                String archiveApproxIndexingTimeReminaing = archive.getString("Approx indexing time remaining");
 
                 if (name.equals(SolrChildApplicationContextFactory.ALFRESCO_ACTIVE))
                 {
@@ -100,6 +132,18 @@ public class SolrChildApplicationContextFactory extends ChildApplicationContextF
                 {
                     return alfrescoDuration;
                 }
+                else if (name.equals(SolrChildApplicationContextFactory.ALFRESCO_LAST_INDEXED_TXN))
+                {
+                    return alfrescoLastIndexedTxn;
+                }
+                else if (name.equals(SolrChildApplicationContextFactory.ALFRESCO_APPROX_TXNS_REMAINING))
+                {
+                    return alfrescoApproxTxnsReminaing;
+                }
+                else if (name.equals(SolrChildApplicationContextFactory.ALFRESCO_APPROX_INDEXING_TIME_REMAINING))
+                {
+                    return alfrescoApproxIndexingTimeReminaing;
+                }
                 else if (name.equals(SolrChildApplicationContextFactory.ARCHIVE_ACTIVE))
                 {
                     return archiveActive;
@@ -111,6 +155,18 @@ public class SolrChildApplicationContextFactory extends ChildApplicationContextF
                 else if (name.equals(SolrChildApplicationContextFactory.ARCHIVE_LAG_DURATION))
                 {
                     return archiveDuration;
+                }
+                else if (name.equals(SolrChildApplicationContextFactory.ARCHIVE_LAST_INDEXED_TXN))
+                {
+                    return archiveLastIndexedTxn;
+                }
+                else if (name.equals(SolrChildApplicationContextFactory.ARCHIVE_APPROX_TXNS_REMAINING))
+                {
+                    return archiveApproxTxnsReminaing;
+                }
+                else if (name.equals(SolrChildApplicationContextFactory.ARCHIVE_APPROX_INDEXING_TIME_REMAINING))
+                {
+                    return archiveApproxIndexingTimeReminaing;
                 }
                 else
                 {
@@ -139,9 +195,16 @@ public class SolrChildApplicationContextFactory extends ChildApplicationContextF
         result.add(SolrChildApplicationContextFactory.ALFRESCO_ACTIVE);
         result.add(SolrChildApplicationContextFactory.ALFRESCO_LAG);
         result.add(SolrChildApplicationContextFactory.ALFRESCO_LAG_DURATION);
+        result.add(SolrChildApplicationContextFactory.ALFRESCO_LAST_INDEXED_TXN);
+        result.add(SolrChildApplicationContextFactory.ALFRESCO_APPROX_TXNS_REMAINING);
+        result.add(SolrChildApplicationContextFactory.ALFRESCO_APPROX_INDEXING_TIME_REMAINING);
+       
         result.add(SolrChildApplicationContextFactory.ARCHIVE_ACTIVE);
         result.add(SolrChildApplicationContextFactory.ARCHIVE_LAG);
         result.add(SolrChildApplicationContextFactory.ARCHIVE_LAG_DURATION);
+        result.add(SolrChildApplicationContextFactory.ARCHIVE_LAST_INDEXED_TXN);
+        result.add(SolrChildApplicationContextFactory.ARCHIVE_APPROX_TXNS_REMAINING);
+        result.add(SolrChildApplicationContextFactory.ARCHIVE_APPROX_INDEXING_TIME_REMAINING);
         result.addAll(super.getPropertyNames());
         return result;
     }

@@ -47,6 +47,8 @@ public class SolrBackupClient implements InitializingBean
     private JobLockService jobLockService;
 
     private String remoteBackupLocation;
+    
+    private int numberToKeep;
 
     private String core;
 
@@ -71,6 +73,14 @@ public class SolrBackupClient implements InitializingBean
     public void setRemoteBackupLocation(String remoteBackupLocation)
     {
         this.remoteBackupLocation = remoteBackupLocation;
+    }
+    
+    /**
+     * @param numberToKeep the numberToKeep to set
+     */
+    public void setNumberToKeep(int numberToKeep)
+    {
+        this.numberToKeep = numberToKeep;
     }
 
     public void execute()
@@ -132,6 +142,7 @@ public class SolrBackupClient implements InitializingBean
             params.set("qt", "/"+core+"/replication");
             params.set("command", "backup"); 
             params.set("location", remoteBackupLocation);
+            params.set("numberToKeep", numberToKeep);
             
             QueryResponse response = solrAdminClient.query(params);
             

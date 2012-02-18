@@ -348,4 +348,46 @@ public class LockBehaviourImplTest extends BaseSpringTest
 		// TODO check that delete is also working
 	}
     
+    /**
+     * ALF-5680: It is possible to cut/paste a locked file
+     */
+    public void testCannotMoveNodeWhenLocked()
+    {
+        TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService); 
+        
+        // Create the node that we'll try to move
+        NodeRef parentNode = this.nodeRef;
+        ChildAssociationRef childAssocRef = nodeService.createNode(
+                parentNode, 
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName("{test}nodeServiceLockTest"),
+                ContentModel.TYPE_CONTENT);
+        
+        NodeRef nodeRef = childAssocRef.getChildRef();
+        // Lock it - so that it can't be moved.
+        this.lockService.lock(nodeRef, LockType.WRITE_LOCK);
+        
+        // Create the new container that we'll move the node to.
+        NodeRef newParentRef = nodeService.createNode(
+                    parentNode, 
+                    ContentModel.ASSOC_CONTAINS,
+                    QName.createQName("{test}nodeServiceLockTest"),
+                    ContentModel.TYPE_CONTAINER).getChildRef();
+        
+        // Now the bad user will try to move the node.
+        TestWithUserUtils.authenticateUser(BAD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
+        try
+        {
+            nodeService.moveNode(
+                        nodeRef,
+                        newParentRef,
+                        ContentModel.ASSOC_CONTAINS,
+                        QName.createQName("{test}nodeServiceLockTest"));
+            fail("Shouldn't have been able to move locked node.");
+        }
+        catch (NodeLockedException e)
+        {
+            // Good, we can't move it - as expected.
+        }
+    }
 }

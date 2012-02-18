@@ -67,6 +67,7 @@ public class LockServiceImpl implements LockService,
                                         NodeServicePolicies.OnCreateChildAssociationPolicy,
                                         NodeServicePolicies.BeforeUpdateNodePolicy,
                                         NodeServicePolicies.BeforeDeleteNodePolicy,
+                                        NodeServicePolicies.OnMoveNodePolicy,
                                         CopyServicePolicies.OnCopyNodePolicy,
                                         VersionServicePolicies.BeforeCreateVersionPolicy,
                                         VersionServicePolicies.OnCreateVersionPolicy
@@ -124,6 +125,10 @@ public class LockServiceImpl implements LockService,
                 NodeServicePolicies.BeforeDeleteNodePolicy.QNAME,
                 ContentModel.ASPECT_LOCKABLE,
                 new JavaBehaviour(this, "beforeDeleteNode"));
+        this.policyComponent.bindClassBehaviour(
+                NodeServicePolicies.OnMoveNodePolicy.QNAME,
+                ContentModel.ASPECT_LOCKABLE,
+                new JavaBehaviour(this, "onMoveNode"));
 
         // Register copy class behaviour
         this.policyComponent.bindClassBehaviour(
@@ -636,5 +641,12 @@ public class LockServiceImpl implements LockService,
                 "ASPECT:\"" + ContentModel.ASPECT_LOCKABLE.toString() + 
                 "\" +@\\{http\\://www.alfresco.org/model/content/1.0\\}" + ContentModel.PROP_LOCK_OWNER.getLocalName() + ":\"" + getUserName() + "\"" +
                 " +@\\{http\\://www.alfresco.org/model/content/1.0\\}" + ContentModel.PROP_LOCK_TYPE.getLocalName() + ":\"" + lockType.toString() + "\"");
+    }
+
+    @Override
+    public void onMoveNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
+    {
+        NodeRef nodeRef = oldChildAssocRef.getChildRef();
+        checkForLock(nodeRef);
     }
 }

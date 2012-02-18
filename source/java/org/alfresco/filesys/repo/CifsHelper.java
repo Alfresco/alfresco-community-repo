@@ -633,6 +633,7 @@ public class CifsHelper
     
     /**
      * Move a node
+     * @deprecated - not used by live code - exception handling is too severe
      * 
      * @param nodeToMoveRef Node to be moved
      * @param newParentNodeRef New parent folder node
@@ -661,6 +662,7 @@ public class CifsHelper
     
     /**
      * Rename a node
+     * @deprecated - not used by live code - exception handling is too severe
      * 
      * @param nodeToRenameRef Node to be renamed
      * @param newName New name for the node

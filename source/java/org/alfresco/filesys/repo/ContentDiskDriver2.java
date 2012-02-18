@@ -49,6 +49,7 @@ import org.alfresco.jlan.server.filesys.DiskFullException;
 import org.alfresco.jlan.server.filesys.DiskInterface;
 import org.alfresco.jlan.server.filesys.DiskSizeInterface;
 import org.alfresco.jlan.server.filesys.FileAttribute;
+import org.alfresco.jlan.server.filesys.FileExistsException;
 import org.alfresco.jlan.server.filesys.FileInfo;
 import org.alfresco.jlan.server.filesys.FileName;
 import org.alfresco.jlan.server.filesys.FileOpenParams;
@@ -56,6 +57,7 @@ import org.alfresco.jlan.server.filesys.FileStatus;
 import org.alfresco.jlan.server.filesys.IOControlNotImplementedException;
 import org.alfresco.jlan.server.filesys.IOCtlInterface;
 import org.alfresco.jlan.server.filesys.NetworkFile;
+import org.alfresco.jlan.server.filesys.PermissionDeniedException;
 import org.alfresco.jlan.server.filesys.SearchContext;
 import org.alfresco.jlan.server.filesys.SrvDiskInfo;
 import org.alfresco.jlan.server.filesys.TreeConnection;
@@ -1338,11 +1340,12 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 // Rename or move the file/folder to another folder
                 if (sameFolder == true)
                 {
-                    getCifsHelper().rename(nodeToMoveRef, name);
+                    fileFolderService.rename(nodeToMoveRef, name);
+                    
                 }
                 else
                 {
-                    getCifsHelper().move(nodeToMoveRef, sourceFolderRef, targetFolderRef, name);
+                    fileFolderService.moveFrom(nodeToMoveRef,  sourceFolderRef, targetFolderRef, name);
                 }
                 
                 if (logger.isDebugEnabled())
@@ -1354,10 +1357,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             else 
             {
                 // Rename a file within the same folder
-                //
-                // Check if the target file already exists
-
-                final int newExists = fileExists(session, tree, newName);
+                
                 if (logger.isDebugEnabled())
                 {
                             logger.debug(
@@ -1369,40 +1369,55 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                                     "   Node:          " + nodeToMoveRef + "\n" +
                                     "   Aspects:       " + nodeService.getAspects(nodeToMoveRef));                             
                 }
-                
-                getCifsHelper().rename(nodeToMoveRef, name);
+                fileFolderService.rename(nodeToMoveRef, name);
                        
             }
+        } 
+        catch (org.alfresco.service.cmr.model.FileNotFoundException e)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Rename file - about to throw file not exists exception file:" + oldName, e);
+            }
+            throw new java.io.FileNotFoundException("renameFile: file not found file: + oldName");
+        }
+        catch (org.alfresco.service.cmr.model.FileExistsException e)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Rename file - about to throw file exists exception", e);
+            }
+            throw new org.alfresco.jlan.server.filesys.FileExistsException(newName);
         }
         catch (org.alfresco.repo.security.permissions.AccessDeniedException ex)
         {
             if (logger.isDebugEnabled())
             {
-                logger.debug("Rename file - access denied, " + oldName);
+                logger.debug("Rename file - about to throw permissions denied exception", ex);
             }
-            // Convert to a filesystem access denied status
-            throw new AccessDeniedException("Rename file " + oldName);
+            throw new org.alfresco.jlan.server.filesys.PermissionDeniedException("renameFile: No permissions to rename file:" + oldName);
         }
         catch (NodeLockedException ex)
         {
             if (logger.isDebugEnabled())
             {
-                logger.debug("Rename file", ex);
+                logger.debug("Rename file - about to throw access denied exception", ex);
             }
-
             // Convert to an filesystem access denied exception
-            throw new AccessDeniedException("Node locked " + oldName);
-        }
+            throw new AccessDeniedException("renameFile:  Access Denied - Node locked file:" + oldName);
+        }      
         catch (AlfrescoRuntimeException ex)
         {
             if (logger.isDebugEnabled())
             {
-                logger.debug("Rename file", ex);
+                logger.debug("Rename file about to throw access denied exception", ex);
             }
+            throw new AlfrescoRuntimeException("renameFile failed: \n" +
+                    "   Old name:      " + oldName + "\n" +
+                    "   New name:      " + newName + "\n" +
+                    ex);
 
-            // Convert to a general I/O exception
-            throw new AccessDeniedException("Rename file " + oldName);
-        }
+        } 
     }
 
     /**

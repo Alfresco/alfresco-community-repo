@@ -718,28 +718,54 @@ public class ModuleManagementTool implements LogOutput
     }
     
     /**
-     * Outputs a message the console (in verbose mode) and the logger.
+     * Outputs a message the console (in verbose mode).
      * 
      * @param message   the message to output
      */
     private void outputMessage(String message)
     {
-        outputMessage(message, false);
+        outputMessage(message, false, false);
     }
     
     /**
-     * Outputs a message the console (in verbose mode) and the logger.
+     * Outputs a message the console (in verbose mode).
      * 
      * @param message   the message to output
-     * @prarm indent    indicates that the message should be formated with an indent
+     */
+    private void outputErrorMessage(String message)
+    {
+        outputMessage(message, false, true);
+    }
+    
+    /**
+     * Outputs a message the console (in verbose mode).
+     * 
+     * @param message   the message to output
+     * @param indent    indicates that the message should be formated with an indent
      */
     private void outputMessage(String message, boolean indent)
+    {
+        outputMessage(message, indent, false);
+    }
+    
+    /**
+     * Outputs a message the console. Errors are always output, but others are only output in verbose mode.
+     * 
+     * @param message   the message to output
+     * @param indent    indicates that the message should be formated with an indent
+     * @param error     indicates that the message is an error.
+     */
+    private void outputMessage(String message, boolean indent, boolean error)
     {
         if (indent == true)
         {
             message = "   - " + message;
         }
-        if (this.verbose == true)
+        if (error)
+        {
+            System.err.println(message);
+        }
+        else if (this.verbose == true)
         {
             System.out.println(message);
         }
@@ -857,7 +883,7 @@ public class ModuleManagementTool implements LogOutput
         catch (ModuleManagementToolException e)
         {
             // These are user-friendly
-            manager.outputMessage(e.getMessage());
+            manager.outputErrorMessage(e.getMessage());
             outputUsage();
             System.exit(ERROR_EXIT_CODE);
         }

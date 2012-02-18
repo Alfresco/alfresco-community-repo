@@ -886,4 +886,12 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
         nodeDAO.setCheckNodeConsistency();
         return nodeDAO.getMaxTxnCommitTime();
     }
+    
+    @Override
+    public Long getMaxTxnId()
+    {
+        long maxCommitTime = System.currentTimeMillis()+1L;
+        nodeDAO.setCheckNodeConsistency();
+        return nodeDAO.getMaxTxnIdByCommitTime(maxCommitTime);
+    }
 }

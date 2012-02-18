@@ -223,16 +223,16 @@ public abstract class AbstractItemSelector extends UIInput
          String selection = (String)requestMap.get(getClientId(context) + OPTION);
          if (selection != null && selection.length() != 0)
          {
-            if (selection.startsWith("-1;"))
+            NodeRef nodeRef = new NodeRef(Repository.getStoreRef(), selection);
+            if (!getNodeService(context).exists(nodeRef))
             {
-               String translatedPath = selection.substring(3);
-               String path = translatedPath.replace(';', '/');
-               String avmPath = this.avmStore + ":/" + path;
-               ((EditableValueHolder)this).setSubmittedValue(AVMNodeConverter.ToNodeRef(-1, avmPath));
+               nodeRef = new NodeRef(new StoreRef(StoreRef.PROTOCOL_AVM, avmStore), selection);
+               Pair<Integer, String> versionPathPair = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+               ((EditableValueHolder)this).setSubmittedValue(AVMNodeConverter.ToNodeRef(versionPathPair.getFirst(), versionPathPair.getSecond()));
             }
             else
             {
-               ((EditableValueHolder)this).setSubmittedValue(new NodeRef(Repository.getStoreRef(), selection));
+               ((EditableValueHolder)this).setSubmittedValue(nodeRef);
             }
          }
       }

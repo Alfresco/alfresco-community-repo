@@ -10,5 +10,8 @@
    <#if maxTxnCommitTime??>
     ,"maxTxnCommitTime": ${maxTxnCommitTime?c}
    </#if>
+   <#if maxTxnId??>
+    ,"maxTxnId": ${maxTxnId?c}
+   </#if>
    
 }

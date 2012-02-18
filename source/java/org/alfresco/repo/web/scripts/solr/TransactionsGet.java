@@ -70,6 +70,12 @@ public class TransactionsGet extends DeclarativeWebScript
         {
             model.put("maxTxnCommitTime", maxTxnCommitTime);
         }
+        
+        Long maxTxnIdOnServer = solrTrackingComponent.getMaxTxnId();
+        if(maxTxnIdOnServer != null)
+        {
+            model.put("maxTxnId", maxTxnIdOnServer);
+        }
 
         if (logger.isDebugEnabled())
         {

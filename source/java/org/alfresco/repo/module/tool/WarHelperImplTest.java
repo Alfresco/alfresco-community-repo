@@ -43,7 +43,7 @@ public class WarHelperImplTest extends WarHelperImpl
     @Test
     public void testCheckCompatibleVersion()
     {
-        File theWar = getFile(".war", "module/test.war");   //Version 4.0.1
+        File theWar = getFile(".war", "module/test.war");   //Version 4.1.0
 
         ModuleDetails installingModuleDetails = new ModuleDetailsImpl("test_it",  new VersionNumber("9999"), "Test Mod", "Testing module");
         installingModuleDetails.setRepoVersionMin(new VersionNumber("10.1"));
@@ -74,9 +74,25 @@ public class WarHelperImplTest extends WarHelperImpl
         installingModuleDetails.setRepoVersionMax(new VersionNumber("99"));
         this.checkCompatibleVersion(theWar, installingModuleDetails); //does not throw exception
         
-        installingModuleDetails.setRepoVersionMin(new VersionNumber("4.0.1"));  //current war version
-        installingModuleDetails.setRepoVersionMax(new VersionNumber("4.0.1"));  //current war version
+        installingModuleDetails.setRepoVersionMin(new VersionNumber("4.1.0"));  //current war version
+        installingModuleDetails.setRepoVersionMax(new VersionNumber("4.1.0"));  //current war version
         this.checkCompatibleVersion(theWar, installingModuleDetails); //does not throw exception  
+        
+        installingModuleDetails.setRepoVersionMin(new VersionNumber("3.4.0"));  //current war version
+        installingModuleDetails.setRepoVersionMax(new VersionNumber("4.1.0"));  //current war version
+        this.checkCompatibleVersion(theWar, installingModuleDetails); //does not throw exception  
+        
+        try
+        {
+            installingModuleDetails.setRepoVersionMin(new VersionNumber("3.4.0"));  //current war version
+            installingModuleDetails.setRepoVersionMax(new VersionNumber("4.0.999"));  //current war version
+            this.checkCompatibleVersion(theWar, installingModuleDetails); //does not throw exception
+            fail("Should not pass as current version is 4.1.0 and the max value is 4.0.999"); //should never get here
+        }
+        catch (ModuleManagementToolException exception)
+        {
+            assertTrue(exception.getMessage().endsWith("cannot be installed on a repo version greater than 4.0.999"));
+        }
     }
 
     @Test

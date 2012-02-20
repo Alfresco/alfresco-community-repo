@@ -25,6 +25,8 @@ import org.alfresco.util.schemacomp.ExportDb;
 import org.alfresco.util.schemacomp.ExportDbTest;
 import org.alfresco.util.schemacomp.model.DbObject;
 import org.alfresco.util.schemacomp.model.Schema;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -39,7 +41,7 @@ public abstract class AbstractExportTester
     protected ExportDb exporter;
     protected PlatformTransactionManager tx;
     protected SimpleJdbcTemplate jdbcTemplate;
-    
+    private final static Log log = LogFactory.getLog(AbstractExportTester.class);
     
     public AbstractExportTester(ExportDb exporter, PlatformTransactionManager tx, SimpleJdbcTemplate jdbcTemplate)
     {
@@ -56,8 +58,8 @@ public abstract class AbstractExportTester
     {
         doDatabaseSetup();
         exporter.execute();
-        // Dump the schema for diagnostics
-        System.out.println(getSchema());
+        // Log the schema for diagnostics
+        dumpSchema();
         commonPostExportChecks();
         doExportTest();
     }
@@ -94,6 +96,29 @@ public abstract class AbstractExportTester
             {
                 fail("Database object's name does not start with '" + prefix + "': " + dbo);
             }
+        }
+    }
+    
+    
+    private void dumpSchema()
+    {
+        if (log.isDebugEnabled())
+        {
+            log.debug("Iterating through Schema objects:");
+        }
+        int i = 0;
+        for (DbObject dbo : getSchema())
+        {
+            i++;
+            if (log.isDebugEnabled())
+            {
+                // Log the object's toString() - indented for clarity.
+                log.debug("    " + dbo);
+            }   
+        }
+        if (log.isDebugEnabled())
+        {
+            log.debug("Schema object contains " + i + " objects.");
         }
     }
 }

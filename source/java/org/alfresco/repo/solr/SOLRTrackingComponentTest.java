@@ -160,7 +160,7 @@ public class SOLRTrackingComponentTest extends TestCase
         SOLRTest st = new SOLRTest3(txnHelper, fileFolderService, nodeDAO, nodeService, dictionaryService, rootNodeRef, "testGetNodeMetaData", true, true);
         List<Long> createdTransactions = st.buildTransactions();
 
-        List<Transaction> txns = solrTrackingComponent.getTransactions(null, startTime, null, null, 50);
+        List<Transaction> txns = solrTrackingComponent.getTransactions(null, startTime-1000, null, null, 100);
 
         int[] updates = new int[] {1, 1};
         int[] deletes = new int[] {0, 1};
@@ -198,7 +198,7 @@ public class SOLRTrackingComponentTest extends TestCase
 
         // All
         
-        List<Transaction> txns = solrTrackingComponent.getTransactions(null, startTime, null, null, 50);
+        List<Transaction> txns = solrTrackingComponent.getTransactions(null, startTime-1000, null, null, 100);
 
         int[] updates = new int[] {1, 1};
         int[] deletes = new int[] {0, 1};
@@ -254,7 +254,7 @@ public class SOLRTrackingComponentTest extends TestCase
         SOLRTest st = new SOLRTestResidualProperties(txnHelper, fileFolderService, nodeDAO, nodeService, dictionaryService, rootNodeRef, "testNodeMetaDataNullPropertyValue", true, true);
         List<Long> createdTransactions = st.buildTransactions();
 
-        List<Transaction> txns = solrTrackingComponent.getTransactions(null, startTime, null, null, 50);
+        List<Transaction> txns = solrTrackingComponent.getTransactions(null, startTime-1000, null, null, 100);
 
         int[] updates = new int[] {2};
         int[] deletes = new int[] {0};
@@ -278,7 +278,7 @@ public class SOLRTrackingComponentTest extends TestCase
         SOLRTest st = new SOLRTest100Nodes(txnHelper, fileFolderService, nodeDAO, nodeService, dictionaryService, rootNodeRef, "testGetNodeMetaData", true, true);
         List<Long> createdTransactions = st.buildTransactions();
 
-        List<Transaction> txns = solrTrackingComponent.getTransactions(null, startTime, null, null, 50);
+        List<Transaction> txns = solrTrackingComponent.getTransactions(null, startTime-1000, null, null, 100);
 
         int[] updates = new int[] {100};
         int[] deletes = new int[] {0};
@@ -307,7 +307,7 @@ public class SOLRTrackingComponentTest extends TestCase
         SOLRTest st = new SOLRTest4(txnHelper, fileFolderService, nodeDAO, nodeService, dictionaryService, rootNodeRef, "testNodeMetaDataManyNodes", true, false);
         List<Long> createdTransactions = st.buildTransactions();
 
-        List<Transaction> txns = solrTrackingComponent.getTransactions(null, fromCommitTime, null, null, 50);
+        List<Transaction> txns = solrTrackingComponent.getTransactions(null, fromCommitTime-1000, null, null, 100);
 
         int[] updates = new int[] {2001};
         int[] deletes = new int[] {0};
@@ -364,7 +364,7 @@ public class SOLRTrackingComponentTest extends TestCase
         SOLRTest st = new SOLRTest4(txnHelper, fileFolderService, nodeDAO, nodeService, dictionaryService, rootNodeRef, "testNodeMetaDataManyNodes", true, false);
         List<Long> createdTransactions = st.buildTransactions();
 
-        List<Transaction> txns = solrTrackingComponent.getTransactions(null, fromCommitTime, null, null, 50);
+        List<Transaction> txns = solrTrackingComponent.getTransactions(null, fromCommitTime-1000, null, null, 100);
 
         int[] updates = new int[] {2001};
         int[] deletes = new int[] {0};
@@ -394,7 +394,7 @@ public class SOLRTrackingComponentTest extends TestCase
         SOLRTest st = new SOLRTest5(txnHelper, fileFolderService, nodeDAO, nodeService, dictionaryService, rootNodeRef, "testNodeMetaDataNullPropertyValue", true, true);
         List<Long> createdTransactions = st.buildTransactions();
 
-        List<Transaction> txns = solrTrackingComponent.getTransactions(null, fromCommitTime, null, null, 50);
+        List<Transaction> txns = solrTrackingComponent.getTransactions(null, fromCommitTime-1000, null, null, 100);
 
         int[] updates = new int[] {11};
         int[] deletes = new int[] {0};
@@ -416,7 +416,7 @@ public class SOLRTrackingComponentTest extends TestCase
         SOLRTest st = new SOLRTest1(txnHelper, fileFolderService, nodeDAO, nodeService, dictionaryService, rootNodeRef, "testFilters", true, true);
         List<Long> createdTransactions = st.buildTransactions();
 
-        List<Transaction> txns = solrTrackingComponent.getTransactions(null, startTime, null, null, 50);
+        List<Transaction> txns = solrTrackingComponent.getTransactions(null, startTime-1000, null, null, 100);
 
         int[] updates = new int[] {1, 1};
         int[] deletes = new int[] {0, 1};

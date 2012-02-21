@@ -205,8 +205,14 @@ public class ExportDb
         String schemaName = getSchemaName(dbmd);
 
         schema = new Schema(schemaName, namePrefix, schemaVersion);
+        String prefixFilter = namePrefixFilter(dbmd);
         
-        final ResultSet tables = dbmd.getTables(null, schemaName, namePrefixFilter(dbmd), new String[]
+        if (log.isDebugEnabled())
+        {
+            log.debug("Retrieving tables: schemaName=[" + schemaName + "], prefixFilter=[" + prefixFilter + "]");
+        }
+        
+        final ResultSet tables = dbmd.getTables(null, schemaName, prefixFilter, new String[]
         {
             "TABLE", "VIEW", "SEQUENCE"
         });
@@ -216,6 +222,11 @@ public class ExportDb
         {
             final String tableName = tables.getString("TABLE_NAME");
 
+            if (log.isDebugEnabled())
+            {
+                log.debug("Examining table tableName=[" + tableName + "]");
+            }
+            
             // Oracle hack: ignore tables in the recycle bin
             if (tableName.startsWith("BIN$"))
             {

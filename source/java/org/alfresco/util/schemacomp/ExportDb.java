@@ -484,13 +484,29 @@ public class ExportDb
     private String namePrefixFilter(DatabaseMetaData dbmd) throws SQLException
     {
         String filter = namePrefix + "%";
+        
+        // Note, MySQL on Linux reports true for:
+        //  dbmd.storesMixedCaseIdentifiers()
+        //  dbmd.storesMixedCaseQuotedIdentifiers()
+        //  dbmd.storesUpperCaseQuotedIdentifiers()
+        // and false for the other storesXYZ() methods. In reality it stores
+        // the table names in whatever case was provided, quoted or not.
+        
         // Make sure the filter works for the particular DBMS.
-        if (dbmd.storesLowerCaseIdentifiers() || dbmd.storesLowerCaseQuotedIdentifiers())
+        if (dbmd.storesLowerCaseIdentifiers())
         {
+            if (log.isDebugEnabled())
+            {
+                log.debug("DB uses lowercase identifiers");
+            }
             filter = filter.toLowerCase();
         }
-        else
+        else if (dbmd.storesUpperCaseIdentifiers())
         {
+            if (log.isDebugEnabled())
+            {
+                log.debug("DB uses uppercase identifiers");
+            }
             filter = filter.toUpperCase();
         }
         return filter;

@@ -23,13 +23,9 @@ import java.util.Set;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.model.WebDAVModel;
-import org.alfresco.service.cmr.lock.LockService;
-import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 
 /**
  * Implements the WebDAV UNLOCK method
@@ -126,37 +122,42 @@ public class UnlockMethod extends WebDAVMethod
         }
 
         // Parse the lock token
-        String[] lockInfo = WebDAV.parseLockToken(getLockToken());
-        if (lockInfo == null)
+        String[] lockInfoFromRequest = WebDAV.parseLockToken(getLockToken());
+        if (lockInfoFromRequest == null)
         {
             // Bad lock token
             throw new WebDAVServerException(HttpServletResponse.SC_PRECONDITION_FAILED);
         }
 
-        // Get the lock status for the node
-        LockService lockService = getDAVHelper().getLockService();
-        NodeService nodeService = getNodeService();
-        // String nodeId = lockInfo[0];
-        // String userName = lockInfo[1];
-
-        NodeRef nodeRef = lockNodeInfo.getNodeRef();
-        LockStatus lockSts = lockService.getLockStatus(nodeRef);
-        if (lockSts == LockStatus.LOCK_OWNER)
+        NodeRef nodeRef = lockNodeInfo.getNodeRef();        
+        LockInfo lockInfo = getLockStore().get(nodeRef);
+        
+        if (lockInfo == null || !lockInfo.isLocked())
         {
-            if (!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
-                lockService.unlock(nodeRef);
-            nodeService.removeProperty(nodeRef, WebDAVModel.PROP_OPAQUE_LOCK_TOKEN);
-            nodeService.removeProperty(nodeRef, WebDAVModel.PROP_LOCK_DEPTH);
-            nodeService.removeProperty(nodeRef, WebDAVModel.PROP_LOCK_SCOPE);
-
-            // Return the cm:lockable aspect to working copy (ALF-4479, ALF-7079)
-            if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
+            if (logger.isDebugEnabled())
             {
-                nodeService.addAspect(nodeRef, ContentModel.ASPECT_LOCKABLE, null);
+                logger.debug("Unlock token=" + getLockToken() + " Not locked");
             }
+            // Node is not locked
+            throw new WebDAVServerException(HttpServletResponse.SC_PRECONDITION_FAILED);
+        }
+        else if (lockInfo.isExpired())
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Unlock token=" + getLockToken() + " Lock expired");
+            }
+            // Return a success status
+            m_response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            removeNoContentAspect(nodeRef);
+        }
+        else if (lockInfo.isExclusive() /* && user is lock-owner */)
+        {
+            getLockStore().remove(nodeRef);
 
             // Indicate that the unlock was successful
             m_response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            
             removeNoContentAspect(nodeRef);
 
             // DEBUG
@@ -165,57 +166,27 @@ public class UnlockMethod extends WebDAVMethod
                 logger.debug("Unlock token=" + getLockToken() + " Successful");
             }
         }
-        else if (lockSts == LockStatus.NO_LOCK)
+        else if (lockInfo.isShared())
         {
-            String sharedLocks = (String) nodeService.getProperty(nodeRef, WebDAVModel.PROP_SHARED_LOCK_TOKENS);
-            if (sharedLocks != null)
+            Set<String> sharedLocks = lockInfo.getSharedLockTokens();
+            if (sharedLocks.contains(m_strLockToken))
             {
-                Set<String> locks = LockInfo.parseSharedLockTokens(sharedLocks);
-                
-                if (locks != null && locks.contains(m_strLockToken))
-                {
-                    locks.remove(m_strLockToken);
-                    nodeService.setProperty(nodeRef, WebDAVModel.PROP_SHARED_LOCK_TOKENS, LockInfo.makeSharedLockTokensString(locks));
+                sharedLocks.remove(m_strLockToken);
 
-                    // Indicate that the unlock was successful
-                    m_response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-                    removeNoContentAspect(nodeRef);
+                // Indicate that the unlock was successful
+                m_response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                removeNoContentAspect(nodeRef);
 
-                    // DEBUG
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug("Unlock token=" + getLockToken() + " Successful");
-                    }
-                }
-            }
-            else
-            {
                 // DEBUG
                 if (logger.isDebugEnabled())
-                    logger.debug("Unlock token=" + getLockToken() + " Not locked");
-
-                // Node is not locked
-                throw new WebDAVServerException(HttpServletResponse.SC_PRECONDITION_FAILED);
+                {
+                    logger.debug("Unlock token=" + getLockToken() + " Successful");
+                }
             }
         }
-        else if (lockSts == LockStatus.LOCKED)
+        else
         {
-            // DEBUG
-            if (logger.isDebugEnabled())
-                logger.debug("Unlock token=" + getLockToken() + " Not lock owner");
-
-            // Node is locked but not by this user
-            throw new WebDAVServerException(HttpServletResponse.SC_PRECONDITION_FAILED);
-        }
-        else if (lockSts == LockStatus.LOCK_EXPIRED)
-        {
-            // DEBUG
-            if (logger.isDebugEnabled())
-                logger.debug("Unlock token=" + getLockToken() + " Lock expired");
-            
-            // Return a success status
-            m_response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-            removeNoContentAspect(nodeRef);
+            throw new IllegalStateException("Invalid LockInfo state: " + lockInfo);
         }
      }
 

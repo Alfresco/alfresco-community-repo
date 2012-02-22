@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.webdav;
 
+import java.io.Serializable;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -27,10 +29,12 @@ import java.util.Set;
  * @author Ivan Rybnikov
  *
  */
-public class LockInfo
+public final class LockInfo implements Serializable
 {
+    private static final long serialVersionUID = 1L;
+
     // Exclusive lock token
-    private String token = null;
+    private String exclusiveLockToken = null;
 
     // Lock scope
     private String scope = null;
@@ -38,15 +42,15 @@ public class LockInfo
     // Lock depth
     private String depth = null;
 
-    // If lock is shared
-    private boolean shared = false;
-
     // Shared lock tokens
-    private Set<String> sharedLockTokens = null;
+    private final Set<String> sharedLockTokens = new HashSet<String>(3);
 
-    // Shared lock token separator
-    private static final String SHARED_LOCK_TOKEN_SEPARATOR = ",";
-
+    // User name of the lock's owner
+    private String owner;
+    
+    // When does the lock expire?
+    private Date expires;
+    
     /**
      * Default constructor
      * 
@@ -64,7 +68,7 @@ public class LockInfo
      */
     public LockInfo(String token, String scope, String depth)
     {
-        this.token = token;
+        this.exclusiveLockToken = token;
         this.scope = scope;
         this.depth = depth;
     }
@@ -76,11 +80,7 @@ public class LockInfo
      */
     public boolean isLocked()
     {
-        if (token != null || (sharedLockTokens != null && !sharedLockTokens.isEmpty()))
-        {
-            return true;
-        }
-        return false;
+        return (isExclusive() || isShared());
     }
     
     /**
@@ -88,18 +88,20 @@ public class LockInfo
      * 
      * @param token Lock token
      */
-    public void setToken(String token)
+    public void setExclusiveLockToken(String token)
     {
-        this.token = token;
+        this.exclusiveLockToken = token;
     }
 
     /**
-     * Getter for exclusive lock token
-     * @return
+     * Getter for exclusive lock token.
+     * 
+     * @return String
      */
-    public String getToken()
+    public String getExclusiveLockToken()
     {
-        return token;
+        checkLockState();
+        return exclusiveLockToken;
     }
 
     /**
@@ -143,109 +145,47 @@ public class LockInfo
     }
 
     /**
-     * Transforms shared lock tokens string to list. 
-     * 
-     * @param sharedLockTokens String contains all node's shared lock tokens
-     *                         divided with SHARED_LOCK_TOKEN_SEPARATOR value.
-     * @return List of shared lock tokens
-     */
-    public static Set<String> parseSharedLockTokens(String sharedLockTokens)
-    {
-        if (sharedLockTokens == null)
-        {
-            return null;
-        }
-        
-        String[] sl = sharedLockTokens.split(SHARED_LOCK_TOKEN_SEPARATOR);
-        Set<String> result = new HashSet<String>(sl.length * 2);
-        for (int i = 0; i < sl.length; i++)
-        {
-            result.add(sl[i]);
-        }
-
-        return result;
-    }
-
-    /**
-     * Getter for sharedLockTokens list
+     * Getter for sharedLockTokens list.
      * 
      * @return LinkedList<String>
      */
     public Set<String> getSharedLockTokens()
     {
+        checkLockState();
         return sharedLockTokens;
     }
 
     /**
-     * Setter for sharedLockTokens list
+     * Setter for sharedLockTokens list.
      * 
      * @param sharedLockTokens
      */
     public void setSharedLockTokens(Set<String> sharedLockTokens)
     {
-        this.sharedLockTokens = sharedLockTokens;
+        this.sharedLockTokens.clear();
+        this.sharedLockTokens.addAll(sharedLockTokens);
     }
 
     /**
-     * Adds new shared lock token to sharedLockTokens list
+     * Adds new shared lock token to sharedLockTokens list.
      * 
-     * @param token new token
+     * @param token The token to add.
      */
     public void addSharedLockToken(String token)
     {
-        if (sharedLockTokens == null)
-        {
-            sharedLockTokens = new HashSet<String>(3);
-        }
         sharedLockTokens.add(token);
     }
 
     /**
-     * Transforms list of shared locks to string.
-     * Lock tokens separated with SHARED_LOCK_TOKEN_SEPARATOR value.
+     * Is it a shared lock?
      * 
-     * @param lockTokens list of shared locks
-     * @return String
-     */
-    public static String makeSharedLockTokensString(Set<String> lockTokens)
-    {
-        StringBuilder str = new StringBuilder();
-
-        boolean first = true;
-        for (String token : lockTokens)
-        {
-            if (!first)
-            {
-                str.append(SHARED_LOCK_TOKEN_SEPARATOR);
-            }
-            else
-            {
-                first = false;
-            }
-            str.append(token);
-        }
-        return str.toString();
-    }
-    
-    /**
-     * Setter for shared property
-     * 
-     * @param shared
-     */
-    public void setShared(boolean shared)
-    {
-        this.shared = shared;
-    }
-
-    /**
-     * Returns true is lock is shared
-     * 
-     * @return boolean
+     * @return true if shared.
      */
     public boolean isShared()
     {
-        return shared;
+        return (!sharedLockTokens.isEmpty());
     }
+    
     
     /**
      * Return the lock info as a string
@@ -256,20 +196,113 @@ public class LockInfo
     {
         StringBuilder str = new StringBuilder();
         
-        str.append("[");
+        str.append("LockInfo[");
         
-        str.append("token=");
-        str.append(getToken());
-        str.append(",scope=");
+        str.append("exclusiveLockToken=");
+        str.append(getExclusiveLockToken());
+        str.append(", scope=");
         str.append(getScope());
-        str.append(",depth=");
+        str.append(", depth=");
         str.append(getDepth());
-        str.append(",shared locks=");
+        str.append(", sharedLockTokens=");
         str.append(getSharedLockTokens());
-
+        str.append(", owner=");
+        str.append(owner);
+        str.append(", expires=");
+        str.append(expires);
+        
         str.append("]");
         
         return str.toString();
     }
 
+    /**
+     * Whether this lock has expired. If no expiry is set (i.e. expires is null)
+     * then false is always returned.
+     * 
+     * @return true if expired.
+     */
+    public boolean isExpired()
+    {
+        if (expires == null)
+        {
+            return false;
+        }
+        Date now = new Date();
+        return now.after(expires);
+    }
+
+    /**
+     * Is it an exclusive lock?
+     * 
+     * @return true if exclusive.
+     */
+    public boolean isExclusive()
+    {
+        return (exclusiveLockToken != null && exclusiveLockToken.length() > 0);
+    }
+
+    /**
+     * Who owns the lock?
+     * 
+     * @return the owner
+     */
+    public String getOwner()
+    {
+        return owner;
+    }
+
+    /**
+     * Set the username of who owns the lock.
+     * 
+     * @param owner Owner's username
+     */
+    public void setOwner(String owner)
+    {
+        this.owner = owner;
+    }
+
+    /**
+     * Set the expiry date/time for this lock. Set to null for never expires.
+     * 
+     * @param expires the expires to set
+     */
+    public void setExpires(Date expires)
+    {
+        this.expires = expires;
+    }
+
+    /**
+     * Retrieve the expiry date/time for this lock, or null if it never expires.
+     * 
+     * @return the expires
+     */
+    public Date getExpires()
+    {
+        return expires;
+    }
+    
+    /**
+     * Sanity check the state of this LockInfo.
+     */
+    private void checkLockState()
+    {
+        if (isShared() && isExclusive())
+        {
+            throw new IllegalStateException("Lock cannot be both shared and exclusive: " + toString());
+        }
+    }
+
+    /**
+     * Sets the expiry date/time to lockTimeout seconds into the future.
+     * 
+     * @param lockTimeout
+     */
+    public void setTimeoutSeconds(int lockTimeout)
+    {
+        int timeoutMillis = (lockTimeout * 60 * 1000);
+        Date now = new Date();
+        Date nextExpiry = new Date(now.getTime() + timeoutMillis);
+        setExpires(nextExpiry);
+    }
 }

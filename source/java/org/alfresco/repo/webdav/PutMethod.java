@@ -24,10 +24,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.ContentMetadataExtracter;
-import org.alfresco.service.cmr.action.Action;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.service.cmr.lock.LockStatus;
+import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -44,7 +43,6 @@ import org.springframework.dao.ConcurrencyFailureException;
 public class PutMethod extends WebDAVMethod
 {
     // Request parameters
-    private String m_strLockToken = null;
     private String m_strContentType = null;
     private boolean m_expectHeaderPresent = false;
     
@@ -189,12 +187,17 @@ public class PutMethod extends WebDAVMethod
             }
         }
         
-        LockStatus lockSts = getLockService().getLockStatus(contentNodeInfo.getNodeRef());
         String userName = getDAVHelper().getAuthenticationService().getCurrentUserName();
-        String owner = (String) getNodeService().getProperty(contentNodeInfo.getNodeRef(), ContentModel.PROP_LOCK_OWNER);
-
-        if (lockSts == LockStatus.LOCKED || (lockSts == LockStatus.LOCK_OWNER && !userName.equals(owner)))
+        LockInfo lockInfo = getLockStore().get(contentNodeInfo.getNodeRef());
+        
+        if (lockInfo != null && lockInfo.isLocked() && !lockInfo.getOwner().equals(userName))
         {
+            if (logger.isDebugEnabled())
+            {
+                String path = getPath();
+                String owner = lockInfo.getOwner();
+                logger.debug("Node locked: path=["+path+"], owner=["+owner+"], current user=["+userName+"]");
+            }
             // Indicate that the resource is locked
             throw new WebDAVServerException(WebDAV.WEBDAV_SC_LOCKED);
         }

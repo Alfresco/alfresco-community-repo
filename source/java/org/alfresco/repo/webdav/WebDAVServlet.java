@@ -280,9 +280,11 @@ public class WebDAVServlet extends HttpServlet
         NodeService nodeService = (NodeService) context.getBean("NodeService");
         SearchService searchService = (SearchService) context.getBean("SearchService");
         NamespaceService namespaceService = (NamespaceService) context.getBean("NamespaceService");
-
+        LockStoreFactory lockStoreFactory = (LockStoreFactory) context.getBean("webdavLockStoreFactory");
+        LockStore lockStore = lockStoreFactory.getLockStore();
+        
         // Create the WebDAV helper
-        m_davHelper = new WebDAVHelper(m_serviceRegistry, authService);
+        m_davHelper = new WebDAVHelper(m_serviceRegistry, lockStore, authService);
         
         // Initialize the root node
 

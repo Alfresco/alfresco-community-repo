@@ -23,6 +23,22 @@
         <property name="rootNode" ref="webdavRootNode" />
         <property name="enabled" ><value>${system.webdav.servlet.enabled}</value></property>
     </bean>
- 
+
+    <bean id="webdavLockStoreFactory" class="org.alfresco.repo.webdav.LockStoreFactoryImpl">
+        <property name="hazelcast" ref="hazelcastInstance"/>
+    </bean>
+    
+    <bean id="hazelcastInstance" class="com.hazelcast.core.Hazelcast" factory-method="newHazelcastInstance">
+        <constructor-arg>
+            <bean class="com.hazelcast.config.Config">
+                <property name="groupConfig">
+                    <bean class="com.hazelcast.config.GroupConfig">
+                        <property name="name" value="webdav"/>
+                        <property name="password" value="secret"/>
+                    </bean>
+                </property>
+            </bean>
+        </constructor-arg>
+    </bean> 
 
 </beans>

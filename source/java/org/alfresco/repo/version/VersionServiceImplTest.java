@@ -30,7 +30,6 @@ import java.util.Set;
 
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
-import org.alfresco.model.WebDAVModel;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -1724,13 +1723,7 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
             {
                 VersionHistory versionHistory = versionService.getVersionHistory(versionableNode);
                 assertNotNull(versionHistory);
-                assertEquals(1, versionHistory.getAllVersions().size());
-                
-                nodeService.setProperty(versionableNode, WebDAVModel.PROP_OPAQUE_LOCK_TOKEN, lockToken);
-                nodeService.setProperty(versionableNode, WebDAVModel.PROP_SHARED_LOCK_TOKENS, lockToken);
-                nodeService.setProperty(versionableNode, WebDAVModel.PROP_LOCK_DEPTH, "0");
-                nodeService.setProperty(versionableNode, WebDAVModel.PROP_LOCK_SCOPE, "exclusive");
-                
+                assertEquals(1, versionHistory.getAllVersions().size());                
                 return null;
             }
         });
@@ -1743,7 +1736,6 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
                 VersionHistory versionHistory = versionService.getVersionHistory(versionableNode);
                 assertNotNull(versionHistory);
                 assertEquals(1, versionHistory.getAllVersions().size());
-                
                 return null;
             }
         
@@ -1755,12 +1747,6 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
                 VersionHistory versionHistory = versionService.getVersionHistory(versionableNode);
                 assertNotNull(versionHistory);
                 assertEquals(1, versionHistory.getAllVersions().size());
-
-                nodeService.removeProperty(versionableNode, WebDAVModel.PROP_OPAQUE_LOCK_TOKEN);
-                nodeService.removeProperty(versionableNode, WebDAVModel.PROP_SHARED_LOCK_TOKENS);
-                nodeService.removeProperty(versionableNode, WebDAVModel.PROP_LOCK_DEPTH);
-                nodeService.removeProperty(versionableNode, WebDAVModel.PROP_LOCK_SCOPE);
-
                 return null;
             }
         });

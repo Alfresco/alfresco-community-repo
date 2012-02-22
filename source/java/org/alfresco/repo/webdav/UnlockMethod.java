@@ -151,19 +151,30 @@ public class UnlockMethod extends WebDAVMethod
             m_response.setStatus(HttpServletResponse.SC_NO_CONTENT);
             removeNoContentAspect(nodeRef);
         }
-        else if (lockInfo.isExclusive() /* && user is lock-owner */)
+        else if (lockInfo.isExclusive())
         {
-            getLockStore().remove(nodeRef);
-
-            // Indicate that the unlock was successful
-            m_response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-            
-            removeNoContentAspect(nodeRef);
-
-            // DEBUG
-            if (logger.isDebugEnabled())
+            String currentUser = getAuthenticationService().getCurrentUserName();
+            if (currentUser.equals(lockInfo.getOwner()))
             {
-                logger.debug("Unlock token=" + getLockToken() + " Successful");
+                getLockStore().remove(nodeRef);
+    
+                // Indicate that the unlock was successful
+                m_response.setStatus(HttpServletResponse.SC_NO_CONTENT);            
+                removeNoContentAspect(nodeRef);
+    
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Unlock token=" + getLockToken() + " Successful");
+                }
+            }
+            else
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Unlock token=" + getLockToken() + " Not lock owner");
+                }
+                // Node is not locked
+                throw new WebDAVServerException(HttpServletResponse.SC_PRECONDITION_FAILED);
             }
         }
         else if (lockInfo.isShared())

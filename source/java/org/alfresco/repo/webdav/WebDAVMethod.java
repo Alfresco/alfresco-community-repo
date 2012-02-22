@@ -1145,7 +1145,7 @@ public abstract class WebDAVMethod
             {
                 try
                 {
-                    lockInfo = getNodeLockInfoIndirect(nodeInfo, parent);
+                    lockInfo = getNodeLockInfoIndirect(parent);
                     if (lockInfo != null)
                     {
                         return lockInfo;
@@ -1166,6 +1166,13 @@ public abstract class WebDAVMethod
         }
     }
     
+    /**
+     * Checks if a node is directly locked. A direct lock is one associated with the node itself
+     * rather than associated with some ancestor.
+     * 
+     * @param nodeInfo
+     * @return The LockInfo if the node is <strong>locked</strong>, or null otherwise.
+     */
     private LockInfo getNodeLockInfoDirect(FileInfo nodeInfo)
     {
         LockInfo lock = getLockStore().get(nodeInfo.getNodeRef());
@@ -1178,7 +1185,13 @@ public abstract class WebDAVMethod
         return null;
     }
     
-    private LockInfo getNodeLockInfoIndirect(FileInfo nodeInfo, NodeRef parent)
+    /**
+     * Checks whether a parent node has a lock that is valid for all its descendants.
+     * 
+     * @param parent
+     * @return The LockInfo if the node is <strong>locked</strong>, or null otherwise.
+     */
+    private LockInfo getNodeLockInfoIndirect(NodeRef parent)
     {
         LockInfo parentLock = getLockStore().get(parent);
         

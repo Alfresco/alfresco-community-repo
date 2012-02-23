@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -176,12 +176,14 @@ public class UpdateThumbnailActionExecuter extends ActionExecuterAbstractBase
             if(contentProp instanceof ContentData)
             {
                 ContentData content = (ContentData)contentProp;
+                String mimetype = content.getMimetype();
                 if (mimetypeMaxSourceSizeKBytes != null)
                 {
-                    Long maxSourceSizeKBytes = mimetypeMaxSourceSizeKBytes.get(content.getMimetype());
-                    if (maxSourceSizeKBytes != null && maxSourceSizeKBytes < (content.getSize()/1024L))
+                    Long maxSourceSizeKBytes = mimetypeMaxSourceSizeKBytes.get(mimetype);
+                    if (maxSourceSizeKBytes != null && maxSourceSizeKBytes >= 0 && maxSourceSizeKBytes < (content.getSize()/1024L))
                     {
-                        logger.info("Creation of thumbnail,  '" + details.getName() + " , content too big ("+maxSourceSizeKBytes+"K)");
+                        logger.debug("Unable to create thumbnail '" + details.getName() + "' for " +
+                                mimetype + " as content is too large ("+(content.getSize()/1024L)+"K > "+maxSourceSizeKBytes+"K)");
                         return; //avoid transform
                     }
                 }

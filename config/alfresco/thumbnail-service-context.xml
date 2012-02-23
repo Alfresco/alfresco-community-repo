@@ -242,8 +242,8 @@
     </bean> 
     
     <!-- Size limits (KBytes) by mimetype of original source content after which thumbnails
-         are not created. If the mimetype is not specified or the value is less than or
-         equal to zero, a thumbnail will be generated regardless of size. -->
+         are not created. If the mimetype is not specified or the value is less than zero,
+         a thumbnail will be generated regardless of size. -->
     <util:map id="mimetypeMaxSourceSizeKBytes" 
         map-class="java.util.HashMap" 
         key-type="java.lang.String" 

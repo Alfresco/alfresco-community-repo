@@ -157,16 +157,17 @@ public class CreateThumbnailActionExecuter extends ActionExecuterAbstractBase
                 String mimetype = content.getMimetype();
                 if (!registry.isThumbnailDefinitionAvailable(content.getContentUrl(), mimetype, content.getSize(), details))
                 {
-                    logger.info("Unable to create thumbnail '" + details.getName() + "' for " +
+                    logger.debug("Unable to create thumbnail '" + details.getName() + "' for " +
                             mimetype + " as no transformer is currently available");
                     return;
                 }
                 if (mimetypeMaxSourceSizeKBytes != null)
                 {
                     Long maxSourceSizeKBytes = mimetypeMaxSourceSizeKBytes.get(mimetype);
-                    if (maxSourceSizeKBytes != null && maxSourceSizeKBytes > 0 && maxSourceSizeKBytes <= (content.getSize()/1024L))
+                    if (maxSourceSizeKBytes != null && maxSourceSizeKBytes >= 0 && maxSourceSizeKBytes < (content.getSize()/1024L))
                     {
-                        logger.info("Creation of " + details.getName()+ " thumbnail from '" + mimetype + "' , content is too big ("+(content.getSize()/1024L)+"K >= "+maxSourceSizeKBytes+"K)");
+                        logger.debug("Unable to create thumbnail '" + details.getName() + "' for " +
+                                mimetype + " as content is too large ("+(content.getSize()/1024L)+"K > "+maxSourceSizeKBytes+"K)");
                         return; //avoid transform
                     }
                 }

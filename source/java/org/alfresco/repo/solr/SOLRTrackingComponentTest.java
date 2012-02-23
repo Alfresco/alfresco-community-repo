@@ -37,6 +37,7 @@ import org.alfresco.repo.dictionary.M2Property;
 import org.alfresco.repo.dictionary.M2Type;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.node.NodeDAO;
+import org.alfresco.repo.node.db.DbNodeServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.solr.SOLRTrackingComponent.NodeMetaDataQueryCallback;
 import org.alfresco.repo.solr.SOLRTrackingComponent.NodeQueryCallback;
@@ -84,6 +85,7 @@ public class SOLRTrackingComponentTest extends TestCase
     private NodeDAO nodeDAO;
     private DictionaryDAO dictionaryDAO;
     private SOLRTrackingComponent solrTrackingComponent;
+    private DbNodeServiceImpl dbNodeService;
 
     private StoreRef storeRef;
     private NodeRef rootNodeRef;
@@ -103,6 +105,9 @@ public class SOLRTrackingComponentTest extends TestCase
         dictionaryService = serviceRegistry.getDictionaryService();
         namespaceService = serviceRegistry.getNamespaceService();
         authenticationComponent = (AuthenticationComponent)ctx.getBean("authenticationComponent");
+        
+        dbNodeService = (DbNodeServiceImpl)ctx.getBean("dbNodeService");
+        dbNodeService.setEnableTimestampPropagation(false);
 
         authenticationComponent.setSystemUserAsCurrentUser();
 

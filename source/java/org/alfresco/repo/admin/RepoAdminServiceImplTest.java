@@ -33,6 +33,7 @@ import junit.framework.TestCase;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.node.db.DbNodeServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.admin.RepoAdminService;
@@ -120,6 +121,9 @@ public class RepoAdminServiceImplTest extends TestCase
         contentService = (ContentService) ctx.getBean("ContentService");
         searchService = (SearchService) ctx.getBean("SearchService");
         namespaceService = (NamespaceService) ctx.getBean("NamespaceService");
+        
+        DbNodeServiceImpl dbNodeService = (DbNodeServiceImpl)ctx.getBean("dbNodeService");
+        dbNodeService.setEnableTimestampPropagation(false);
         
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
     }

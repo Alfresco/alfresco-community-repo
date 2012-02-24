@@ -190,18 +190,29 @@ public class PutMethod extends WebDAVMethod
         String userName = getDAVHelper().getAuthenticationService().getCurrentUserName();
         LockInfo lockInfo = getLockStore().get(contentNodeInfo.getNodeRef());
         
-        if (lockInfo != null && lockInfo.isLocked() && !lockInfo.getOwner().equals(userName))
+        if (lockInfo != null)
         {
-            if (logger.isDebugEnabled())
+            lockInfo.getRWLock().readLock().lock();
+            try
             {
-                String path = getPath();
-                String owner = lockInfo.getOwner();
-                logger.debug("Node locked: path=["+path+"], owner=["+owner+"], current user=["+userName+"]");
+                if (lockInfo.isLocked() && !lockInfo.getOwner().equals(userName))
+                {
+                    if (logger.isDebugEnabled())
+                    {
+                        String path = getPath();
+                        String owner = lockInfo.getOwner();
+                        logger.debug("Node locked: path=["+path+"], owner=["+owner+"], current user=["+userName+"]");
+                    }
+                    // Indicate that the resource is locked
+                    throw new WebDAVServerException(WebDAV.WEBDAV_SC_LOCKED);
+                }
             }
-            // Indicate that the resource is locked
-            throw new WebDAVServerException(WebDAV.WEBDAV_SC_LOCKED);
+            finally
+            {
+                lockInfo.getRWLock().readLock().unlock();            
+            }
         }
-
+        
         try
         {
             // Access the content

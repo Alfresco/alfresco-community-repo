@@ -22,9 +22,13 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
- * Class to represent a WebDAV lock info
+ * Class to represent a WebDAV lock info. Instances of this class are accessible
+ * my multiple threads as they are kept in the {@link LockStore}. Clients of this
+ * class are expected to synchronise externally using the provided
+ * ReentrantReadWriteLock (use {@link #getRWLock()}).
  * 
  * @author Ivan Rybnikov
  *
@@ -33,6 +37,8 @@ public final class LockInfo implements Serializable
 {
     private static final long serialVersionUID = 1L;
 
+    private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
+    
     // Exclusive lock token
     private String exclusiveLockToken = null;
 
@@ -73,6 +79,20 @@ public final class LockInfo implements Serializable
         this.depth = depth;
     }
 
+    /**
+     * Retrieves the {@link ReentrantReadWriteLock} associated with this LockInfo. This is
+     * to allow client code to protect against invalid concurrent access to the state of
+     * this class.
+     * <p>
+     * Not to be confused with WebDAV locks.
+     * 
+     * @return
+     */
+    public ReentrantReadWriteLock getRWLock()
+    {
+        return rwLock;
+    }
+    
     /**
      * Returns true if node has shared or exclusive locks
      * 
@@ -294,15 +314,23 @@ public final class LockInfo implements Serializable
     }
 
     /**
-     * Sets the expiry date/time to lockTimeout seconds into the future.
+     * Sets the expiry date/time to lockTimeout seconds into the future. Provide
+     * a lockTimeout of WebDAV.TIMEOUT_INFINITY for never expires.
      * 
      * @param lockTimeout
      */
     public void setTimeoutSeconds(int lockTimeout)
     {
-        int timeoutMillis = (lockTimeout * 60 * 1000);
-        Date now = new Date();
-        Date nextExpiry = new Date(now.getTime() + timeoutMillis);
-        setExpires(nextExpiry);
+        if (lockTimeout == WebDAV.TIMEOUT_INFINITY)
+        {
+            setExpires(null);
+        }
+        else
+        {
+            int timeoutMillis = (lockTimeout * 60 * 1000);
+            Date now = new Date();
+            Date nextExpiry = new Date(now.getTime() + timeoutMillis);
+            setExpires(nextExpiry);
+        }
     }
 }

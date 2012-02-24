@@ -132,74 +132,92 @@ public class UnlockMethod extends WebDAVMethod
         NodeRef nodeRef = lockNodeInfo.getNodeRef();        
         LockInfo lockInfo = getLockStore().get(nodeRef);
         
-        if (lockInfo == null || !lockInfo.isLocked())
+        if (lockInfo == null)
         {
             if (logger.isDebugEnabled())
             {
-                logger.debug("Unlock token=" + getLockToken() + " Not locked");
+                logger.debug("Unlock token=" + getLockToken() + " Not locked - no info in lock store.");
             }
             // Node is not locked
             throw new WebDAVServerException(HttpServletResponse.SC_PRECONDITION_FAILED);
         }
-        else if (lockInfo.isExpired())
+        
+        lockInfo.getRWLock().writeLock().lock();
+        try
         {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Unlock token=" + getLockToken() + " Lock expired");
-            }
-            // Return a success status
-            m_response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-            removeNoContentAspect(nodeRef);
-        }
-        else if (lockInfo.isExclusive())
-        {
-            String currentUser = getAuthenticationService().getCurrentUserName();
-            if (currentUser.equals(lockInfo.getOwner()))
-            {
-                getLockStore().remove(nodeRef);
-    
-                // Indicate that the unlock was successful
-                m_response.setStatus(HttpServletResponse.SC_NO_CONTENT);            
-                removeNoContentAspect(nodeRef);
-    
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("Unlock token=" + getLockToken() + " Successful");
-                }
-            }
-            else
+            if (!lockInfo.isLocked())
             {
                 if (logger.isDebugEnabled())
                 {
-                    logger.debug("Unlock token=" + getLockToken() + " Not lock owner");
+                    logger.debug("Unlock token=" + getLockToken() + " Not locked");
                 }
                 // Node is not locked
                 throw new WebDAVServerException(HttpServletResponse.SC_PRECONDITION_FAILED);
             }
-        }
-        else if (lockInfo.isShared())
-        {
-            Set<String> sharedLocks = lockInfo.getSharedLockTokens();
-            if (sharedLocks.contains(m_strLockToken))
+            else if (lockInfo.isExpired())
             {
-                sharedLocks.remove(m_strLockToken);
-
-                // Indicate that the unlock was successful
-                m_response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-                removeNoContentAspect(nodeRef);
-
-                // DEBUG
                 if (logger.isDebugEnabled())
                 {
-                    logger.debug("Unlock token=" + getLockToken() + " Successful");
+                    logger.debug("Unlock token=" + getLockToken() + " Lock expired");
+                }
+                // Return a success status
+                m_response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                removeNoContentAspect(nodeRef);
+            }
+            else if (lockInfo.isExclusive())
+            {
+                String currentUser = getAuthenticationService().getCurrentUserName();
+                if (currentUser.equals(lockInfo.getOwner()))
+                {
+                    getLockStore().remove(nodeRef);
+        
+                    // Indicate that the unlock was successful
+                    m_response.setStatus(HttpServletResponse.SC_NO_CONTENT);            
+                    removeNoContentAspect(nodeRef);
+        
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Unlock token=" + getLockToken() + " Successful");
+                    }
+                }
+                else
+                {
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Unlock token=" + getLockToken() + " Not lock owner");
+                    }
+                    // Node is not locked
+                    throw new WebDAVServerException(HttpServletResponse.SC_PRECONDITION_FAILED);
                 }
             }
+            else if (lockInfo.isShared())
+            {
+                Set<String> sharedLocks = lockInfo.getSharedLockTokens();
+                if (sharedLocks.contains(m_strLockToken))
+                {
+                    sharedLocks.remove(m_strLockToken);
+
+                    // Indicate that the unlock was successful
+                    m_response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                    removeNoContentAspect(nodeRef);
+
+                    // DEBUG
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Unlock token=" + getLockToken() + " Successful");
+                    }
+                }
+            }
+            else
+            {
+                throw new IllegalStateException("Invalid LockInfo state: " + lockInfo);
+            }
         }
-        else
+        finally
         {
-            throw new IllegalStateException("Invalid LockInfo state: " + lockInfo);
+            lockInfo.getRWLock().writeLock().unlock();            
         }
-     }
+    }
 
     // This method removes a new zero byte node that has been locked, where the
     // PUT has not taken place but the client has issued an UNLOCK. The Timer

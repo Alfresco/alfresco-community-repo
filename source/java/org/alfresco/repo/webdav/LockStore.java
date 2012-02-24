@@ -54,5 +54,11 @@ public interface LockStore
     LockInfo get(NodeRef nodeRef);
     
     
+    /**
+     * Remove LockInfo for the specified NodeRef. The LockInfo cannot be considered locked
+     * once removed from the LockStore.
+     * 
+     * @param nodeRef
+     */
     void remove(NodeRef nodeRef);
 }

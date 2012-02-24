@@ -1161,7 +1161,7 @@ public abstract class WebDAVMethod
             if (parent == null)
             {
                 // Node has no lock and Lock token
-                return new LockInfo();
+                return new LockInfoImpl();
             }
             
             lockInfo = m_parentLockInfo.get(parent);
@@ -1196,7 +1196,7 @@ public abstract class WebDAVMethod
                 {
                     if (lockInfo == null)
                     {
-                        lockInfo = new LockInfo();
+                        lockInfo = new LockInfoImpl();
                     }
                     // temporarily cache - for this request
                     m_parentLockInfo.put(parent, lockInfo);

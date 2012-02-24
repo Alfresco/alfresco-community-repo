@@ -56,7 +56,7 @@ public class LockMethod extends WebDAVMethod
 
     protected int m_timeoutDuration = WebDAV.TIMEOUT_INFINITY;
     
-    protected LockInfo lockInfo = new LockInfo();
+    protected LockInfo lockInfo = new LockInfoImpl();
 
     protected boolean createExclusive;
 

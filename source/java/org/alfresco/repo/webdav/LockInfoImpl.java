@@ -33,7 +33,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * @author Ivan Rybnikov
  *
  */
-public final class LockInfo implements Serializable
+public final class LockInfoImpl implements Serializable, LockInfo
 {
     private static final long serialVersionUID = 1L;
 
@@ -61,7 +61,7 @@ public final class LockInfo implements Serializable
      * Default constructor
      * 
      */
-    public LockInfo()
+    public LockInfoImpl()
     {
     }
 
@@ -72,7 +72,7 @@ public final class LockInfo implements Serializable
      * @param scope Lock scope (shared/exclusive)
      * @param depth Lock depth (0/infinity)
      */
-    public LockInfo(String token, String scope, String depth)
+    public LockInfoImpl(String token, String scope, String depth)
     {
         this.exclusiveLockToken = token;
         this.scope = scope;
@@ -88,6 +88,7 @@ public final class LockInfo implements Serializable
      * 
      * @return
      */
+    @Override
     public ReentrantReadWriteLock getRWLock()
     {
         return rwLock;
@@ -98,6 +99,7 @@ public final class LockInfo implements Serializable
      * 
      * @return boolean
      */
+    @Override
     public boolean isLocked()
     {
         return (isExclusive() || isShared());
@@ -108,6 +110,7 @@ public final class LockInfo implements Serializable
      * 
      * @param token Lock token
      */
+    @Override
     public void setExclusiveLockToken(String token)
     {
         this.exclusiveLockToken = token;
@@ -118,6 +121,7 @@ public final class LockInfo implements Serializable
      * 
      * @return String
      */
+    @Override
     public String getExclusiveLockToken()
     {
         checkLockState();
@@ -129,6 +133,7 @@ public final class LockInfo implements Serializable
      * 
      * @param scope
      */
+    @Override
     public void setScope(String scope)
     {
         this.scope = scope;
@@ -139,6 +144,7 @@ public final class LockInfo implements Serializable
      * 
      * @return lock scope
      */
+    @Override
     public String getScope()
     {
         return scope == null ? WebDAV.XML_EXCLUSIVE : scope;
@@ -149,6 +155,7 @@ public final class LockInfo implements Serializable
      * 
      * @param depth lock depth
      */
+    @Override
     public void setDepth(String depth)
     {
         this.depth = depth;
@@ -159,6 +166,7 @@ public final class LockInfo implements Serializable
      * 
      * @return lock depth
      */
+    @Override
     public String getDepth()
     {
         return depth;
@@ -169,6 +177,7 @@ public final class LockInfo implements Serializable
      * 
      * @return LinkedList<String>
      */
+    @Override
     public Set<String> getSharedLockTokens()
     {
         checkLockState();
@@ -180,6 +189,7 @@ public final class LockInfo implements Serializable
      * 
      * @param sharedLockTokens
      */
+    @Override
     public void setSharedLockTokens(Set<String> sharedLockTokens)
     {
         this.sharedLockTokens.clear();
@@ -191,6 +201,7 @@ public final class LockInfo implements Serializable
      * 
      * @param token The token to add.
      */
+    @Override
     public void addSharedLockToken(String token)
     {
         sharedLockTokens.add(token);
@@ -201,6 +212,7 @@ public final class LockInfo implements Serializable
      * 
      * @return true if shared.
      */
+    @Override
     public boolean isShared()
     {
         return (!sharedLockTokens.isEmpty());
@@ -212,6 +224,7 @@ public final class LockInfo implements Serializable
      * 
      * @return String
      */
+    @Override
     public String toString()
     {
         StringBuilder str = new StringBuilder();
@@ -242,6 +255,7 @@ public final class LockInfo implements Serializable
      * 
      * @return true if expired.
      */
+    @Override
     public boolean isExpired()
     {
         if (expires == null)
@@ -257,6 +271,7 @@ public final class LockInfo implements Serializable
      * 
      * @return true if exclusive.
      */
+    @Override
     public boolean isExclusive()
     {
         return (exclusiveLockToken != null && exclusiveLockToken.length() > 0);
@@ -267,6 +282,7 @@ public final class LockInfo implements Serializable
      * 
      * @return the owner
      */
+    @Override
     public String getOwner()
     {
         return owner;
@@ -277,6 +293,7 @@ public final class LockInfo implements Serializable
      * 
      * @param owner Owner's username
      */
+    @Override
     public void setOwner(String owner)
     {
         this.owner = owner;
@@ -287,6 +304,7 @@ public final class LockInfo implements Serializable
      * 
      * @param expires the expires to set
      */
+    @Override
     public void setExpires(Date expires)
     {
         this.expires = expires;
@@ -297,6 +315,7 @@ public final class LockInfo implements Serializable
      * 
      * @return the expires
      */
+    @Override
     public Date getExpires()
     {
         return expires;
@@ -319,6 +338,7 @@ public final class LockInfo implements Serializable
      * 
      * @param lockTimeout
      */
+    @Override
     public void setTimeoutSeconds(int lockTimeout)
     {
         if (lockTimeout == WebDAV.TIMEOUT_INFINITY)

@@ -20,14 +20,17 @@ package org.alfresco.repo.webdav;
 
 import java.util.concurrent.ConcurrentMap;
 
+import org.alfresco.repo.cluster.HazelcastInstanceFactory;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.PropertyCheck;
 
 import com.hazelcast.core.HazelcastInstance;
 
 
 /**
  * Default implementation of the {@link LockStoreFactory} interface. Creates {@link LockStore}s
- * backed by a Hazelcast distributed {@link java.util.Map Map}.
+ * backed by a Hazelcast distributed Map if the clusterName property is set,
+ * otherwise it creates a non-clustered {@link SimpleLockStore}.
  * 
  * @see LockStoreFactory
  * @see LockStoreImpl
@@ -35,20 +38,42 @@ import com.hazelcast.core.HazelcastInstance;
  */
 public class LockStoreFactoryImpl implements LockStoreFactory
 {
-    private HazelcastInstance hazelcast;
+    private static final String HAZELCAST_MAP_NAME = "webdav-locks";
+    private HazelcastInstanceFactory hazelcastInstanceFactory;
+    private String clusterName;
     
+    /**
+     * This method should be used sparingly and the created {@link LockStore}s should be
+     * retained (this factory does not cache instances of them).
+     */
     @Override
-    public LockStore getLockStore()
+    public synchronized LockStore getLockStore()
     {
-        ConcurrentMap<NodeRef, LockInfo> map = hazelcast.getMap("webdav-locks");
-        return new LockStoreImpl(map);
+        if (!PropertyCheck.isValidPropertyString(clusterName))
+        {
+            return new SimpleLockStore();
+        }
+        else
+        {
+            HazelcastInstance instance = hazelcastInstanceFactory.newInstance();
+            ConcurrentMap<NodeRef, LockInfo> map = instance.getMap(HAZELCAST_MAP_NAME);
+            return new LockStoreImpl(map);
+        }
     }
 
     /**
-     * @param hazelcast the hazelcast to set
+     * @param hazelcastInstanceFactory the factory that will create a HazelcastInstance if required.
      */
-    public void setHazelcast(HazelcastInstance hazelcast)
+    public synchronized void setHazelcastInstanceFactory(HazelcastInstanceFactory hazelcastInstanceFactory)
     {
-        this.hazelcast = hazelcast;
+        this.hazelcastInstanceFactory = hazelcastInstanceFactory;
+    }
+
+    /**
+     * @param clusterName the clusterName to set
+     */
+    public synchronized void setClusterName(String clusterName)
+    {
+        this.clusterName = clusterName;
     }
 }

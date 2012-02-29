@@ -23,22 +23,24 @@
         <property name="rootNode" ref="webdavRootNode" />
         <property name="enabled" ><value>${system.webdav.servlet.enabled}</value></property>
     </bean>
-
+    
     <bean id="webdavLockStoreFactory" class="org.alfresco.repo.webdav.LockStoreFactoryImpl">
-        <property name="hazelcast" ref="hazelcastInstance"/>
+        <property name="clusterName" value="${alfresco.cluster.name}"/>
+        <property name="hazelcastInstanceFactory" ref="hazelcastInstanceFactory"/>
     </bean>
     
-    <bean id="hazelcastInstance" class="com.hazelcast.core.Hazelcast" factory-method="newHazelcastInstance">
-        <constructor-arg>
-            <bean class="com.hazelcast.config.Config">
-                <property name="groupConfig">
-                    <bean class="com.hazelcast.config.GroupConfig">
-                        <property name="name" value="webdav"/>
-                        <property name="password" value="secret"/>
-                    </bean>
-                </property>
-            </bean>
-        </constructor-arg>
-    </bean> 
+    <bean id="hazelcastConfig" class="org.alfresco.repo.cluster.HazelcastConfigFactoryBean">
+        <property name="configFile" value="${alfresco.hazelcast.configLocation}"/>
+        <property name="properties">
+            <props>
+                <prop key="alfresco.cluster.name">${alfresco.cluster.name}</prop>
+                <prop key="alfresco.hazelcast.password">${alfresco.hazelcast.password}</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <bean id="hazelcastInstanceFactory" class="org.alfresco.repo.cluster.HazelcastInstanceFactory">
+        <property name="config" ref="hazelcastConfig"/>
+    </bean>
 
 </beans>

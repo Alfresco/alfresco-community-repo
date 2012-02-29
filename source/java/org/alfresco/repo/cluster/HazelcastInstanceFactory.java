@@ -18,28 +18,34 @@
  */
 package org.alfresco.repo.cluster;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import com.hazelcast.config.Config;
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.HazelcastInstance;
 
 /**
- * Test suite for org.alfresco.repo.cluster tests, but <strong>excluding</strong>
- * tests which are known to fail in the CI environment (Bamboo).
+ * Provides a way of lazily creating HazelcastInstances for a given configuration.
+ * The HazelcastInstance will not be created until {@link #newInstance()} is called.
  * <p>
- * These tests are still useful in the desktop development environment however,
- * so are kept for this reason. {@link ClusterTestSuite} runs all the tests in this
- * suite, plus the offending tests.
+ * An intermediary class such as this is required in order to avoid starting
+ * Hazelcast instances when clustering is not configured/required. Otherwise
+ * simply by defining a HazelcastInstance bean clustering would spring into life.
  * 
  * @author Matt Ward
  */
-@RunWith(Suite.class)
-@SuiteClasses({
-    org.alfresco.repo.cluster.HazelcastConfigFactoryBeanTest.class,
-    org.alfresco.repo.cluster.HazelcastMessengerFactoryTest.class,
-    org.alfresco.repo.cluster.HazelcastMessengerTest.class,
-    org.alfresco.repo.cluster.JGroupsMessengerTest.class
-})
-public class BuildSafeTestSuite
+public class HazelcastInstanceFactory
 {
-    // Annotations specify the suite.
+    public Config config;
+
+    public HazelcastInstance newInstance()
+    {
+        return Hazelcast.newHazelcastInstance(config);
+    }
+
+    /**
+     * @param config the config to set
+     */
+    public void setConfig(Config config)
+    {
+        this.config = config;
+    }
 }

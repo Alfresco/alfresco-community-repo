@@ -28,7 +28,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * the actual values should be examined as necessary.
  * <p>
  * Implementations of this interface should be fast, ideally an in-memory map. Implementations should also be thread-
- * and cluster-safe.
+ * and cluster-safe (if used in a cluster).
  * 
  * @author Matt Ward
  */

@@ -14,7 +14,8 @@ function main()
       return null;
    }
 
-   var containerNode = siteNode.getContainer("documentLibrary");
+   var containerId = "documentLibrary",
+      containerNode = siteNode.getContainer(containerId);
    if (containerNode === null)
    {
       status.setCode(status.STATUS_NOT_FOUND, "Document Library container '" + containerId + "' not found in '" + siteId + "'. (No permission?)");

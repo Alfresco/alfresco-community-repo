@@ -175,15 +175,13 @@
       <f:verbatim>
 </table>
 
-
-
 <script type="text/javascript">
       var finishButtonPressed = false;
       addEventToElement(window, 'load', pageLoaded, false);
 
       function pageLoaded()
       {
-         document.getElementById("dialog:finish-button").onclick = function() {finishButtonPressed = true; clear_add_2Dcontent_2Dupload_2Dend();}
+         document.getElementById("dialog:finish-button").onclick = function() {finishButtonPressed = true; clear_dialog();}
          checkButtonState();
       }
 
@@ -200,6 +198,5 @@
             document.getElementById("dialog:finish-button").disabled = false;
          }
       }
-
 </script>
 </f:verbatim>

@@ -229,14 +229,14 @@ Alfresco.OpenSearchClient.prototype =
       var term = document.getElementById(this.id + _SEARCH_TERM_FIELD_ID).value;
       var count = document.getElementById(this.id + _PAGE_SIZE_FIELD_ID).value;
       
-   	  // ADB-134 fix (Error message about not enough search criteria)
-   	  if (term.length < this.minTermLength)
-	  {
+      // ADB-134 fix (Error message about not enough search criteria)
+      if (term.length < this.minTermLength)
+      {
          var errorMsg = this.msgInvalidTermLength.replace("{0}", this.minTermLength);
          handleCaughtError(errorMsg);
          return;
-	  } 
-   	
+      } 
+      
       // default the count if its invalid
       if (count.length == 0 || isNaN(count) || count < 1)
       {
@@ -328,6 +328,8 @@ Alfresco.OpenSearchClient.prototype =
    calculateSearchUrl: function(templateUrl, term, count)
    {
       var searchUrl = null;
+      
+      term = encodeURIComponent(term);
       
       // define regex pattern to look for params
       var pattern = /\{+\w*\}+|\{+\w*\?\}+|\{+\w*:\w*\}+|\{+\w*:\w*\?\}+/g;
@@ -503,7 +505,7 @@ Alfresco.OpenSearchClient.prototype =
                   sb[sb.length] = link;
                   sb[sb.length] = "'>";
                }
-               sb[sb.length] = title;
+               sb[sb.length] = Alfresco.Dom.encodeHTML(title);
                if (link != null)
                {
                   sb[sb.length] = "</a>";
@@ -520,7 +522,7 @@ Alfresco.OpenSearchClient.prototype =
             if (summary != null)
             {
                sb[sb.length] = "<div class='osResultSummary'>";
-               sb[sb.length] = summary;
+               sb[sb.length] = Alfresco.Dom.encodeHTML(summary);
                sb[sb.length] = "</div>";
             }
             sb[sb.length] = "</td></tr>";

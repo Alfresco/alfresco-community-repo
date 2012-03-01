@@ -83,7 +83,12 @@ public class GlobalLocalizationFilter implements Filter
                       String name = param.substring(0, sepIndex).trim();
                       if (name.equalsIgnoreCase("charset"))
                       {
-                          setCharacterEncoding(param.substring(sepIndex+1).trim());
+                          String charset = param.substring(sepIndex + 1).trim();
+                          if ((null != charset) && ((charset.startsWith("\"") && charset.endsWith("\"")) || (charset.startsWith("'") && charset.endsWith("'"))))
+                          {
+                              charset = charset.substring(1, (charset.length() - 1));
+                          }
+                          setCharacterEncoding(charset);
                           break;
                       }
                   }

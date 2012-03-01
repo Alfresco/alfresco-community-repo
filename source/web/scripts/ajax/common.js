@@ -551,6 +551,17 @@ function onlyDigits(e)
                el.style.top = ypos + "px";
             }
          }
+      },
+      
+      encodeHTML: function(text)
+      {
+         if (text === null || typeof text == "undefined")
+         {
+            return "";
+         }
+         
+         text = "" + text;
+         return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
       }
    };
 })();
@@ -736,5 +747,3 @@ function openWindowOnCallback(fromTimeout)
       openWindowCallbackFn = null;
    }
 }
-
-

@@ -2733,6 +2733,11 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         String nodeMimeType = getMimetype();
         Serializable value = this.nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
         ContentData contentData = DefaultTypeConverter.INSTANCE.convert(ContentData.class, value);
+        if (contentData == null)
+        {
+            logger.info("Unable to create thumbnail '" + details.getName() + "' as there is no content");
+            return null;
+        }
         if (!registry.isThumbnailDefinitionAvailable(contentData.getContentUrl(), nodeMimeType, getSize(), details))
         {
             logger.info("Unable to create thumbnail '" + details.getName() + "' for " +

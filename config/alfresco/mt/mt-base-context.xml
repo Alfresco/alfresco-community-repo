@@ -33,6 +33,7 @@
       <property name="repositoryExporterService" ref="repositoryExporterComponent"/>
       <property name="moduleService" ref="moduleService"/>
       <property name="baseAdminUsername"><value>${alfresco_user_store.adminusername}</value></property>
+      <property name="thumbnailRegistry" ref="thumbnailRegistry"/>
       
    </bean>
    

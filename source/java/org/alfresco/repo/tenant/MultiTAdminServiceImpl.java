@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -44,7 +44,7 @@ import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.site.SiteAVMBootstrap;
+import org.alfresco.repo.thumbnail.ThumbnailRegistry;
 import org.alfresco.repo.usage.UserUsageTrackingComponent;
 import org.alfresco.repo.workflow.WorkflowDeployer;
 import org.alfresco.service.cmr.admin.RepoAdminService;
@@ -90,6 +90,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     private AttributeService attributeService;      
     private PasswordEncoder passwordEncoder;
     private TenantRoutingFileContentStore tenantFileContentStore;
+    private ThumbnailRegistry thumbnailRegistry;
     private WorkflowService workflowService;
     private RepositoryExporterService repositoryExporterService;
     private ModuleService moduleService;
@@ -195,6 +196,11 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     public void setModuleService(ModuleService moduleService)
     {
         this.moduleService = moduleService;
+    }
+    
+    public void setThumbnailRegistry(ThumbnailRegistry thumbnailRegistry)
+    {
+        this.thumbnailRegistry = thumbnailRegistry;
     }
     
     public void setBaseAdminUsername(String baseAdminUsername)
@@ -365,6 +371,8 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
             ImporterBootstrap spacesImporterBootstrap = (ImporterBootstrap)ctx.getBean("spacesBootstrap-mt");
             bootstrapSpacesTenantStore(spacesImporterBootstrap, tenantDomain);
             
+            thumbnailRegistry.initThumbnailDefinitions();
+            
             // notify listeners that tenant has been created & hence enabled
             for (TenantDeployer tenantDeployer : tenantDeployers)
             {
@@ -432,6 +440,8 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
             importBootstrapSpacesArchiveTenantStore(tenantDomain, directorySource);
             importBootstrapSpacesModelsTenantStore(tenantDomain, directorySource);
             importBootstrapSpacesTenantStore(tenantDomain, directorySource);
+            
+            thumbnailRegistry.initThumbnailDefinitions();
             
             // notify listeners that tenant has been created & hence enabled
             for (TenantDeployer tenantDeployer : tenantDeployers)

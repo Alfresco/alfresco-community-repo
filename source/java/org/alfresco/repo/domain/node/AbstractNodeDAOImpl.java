@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -60,6 +60,7 @@ import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionAwareSingleton;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
@@ -85,7 +86,7 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.ReadWriteLockExecuter;
-import org.alfresco.util.SerializationUtils;
+import org.alfresco.util.ValueProtectingMap;
 import org.alfresco.util.EqualsHelper.MapValueComparison;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -993,8 +994,14 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      */
     private Node getNodeNotNull(Long nodeId)
     {
+        return getNodeNotNullImpl(nodeId, false);
+    }
+    
+    private Node getNodeNotNullImpl(Long nodeId, boolean deleted)
+    {
         Pair<Long, Node> pair = nodesCache.getByKey(nodeId);
-        if (pair == null || pair.getSecond().getDeleted())
+        
+        if (pair == null || (pair.getSecond().getDeleted() && (!deleted)))
         {
             // Force a removal from the cache
             nodesCache.removeByKey(nodeId);
@@ -1009,11 +1016,11 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             }
             else
             {
-                throw new ConcurrencyFailureException(
-                        "No live node exists: \n" +
+                logger.warn("No live node exists: \n" +
                         "   ID:        " + nodeId + "\n" +
                         "   Cache row: " + pair.getSecond() + "\n" +
                         "   DB row:    " + dbNode);
+                throw new NotLiveNodeException(pair);
             }
         }
         else
@@ -1110,7 +1117,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             childNodeName = node.getUuid();
         }
         ChildAssocEntity assoc = newChildAssocImpl(
-                parentNodeId, nodeId, true, assocTypeQName, assocQName, childNodeName);
+                parentNodeId, nodeId, true, assocTypeQName, assocQName, childNodeName, false);
         
         // There will be no other parent assocs
         boolean isRoot = false;
@@ -1821,6 +1828,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     public Map<QName, Serializable> getNodeProperties(Long nodeId)
     {
         Map<QName, Serializable> props = getNodePropertiesCached(nodeId);
+        // Create a shallow copy to allow additions
+        props = new HashMap<QName, Serializable>(props);
         
         Node node = getNodeNotNull(nodeId);
         // Handle sys:referenceable
@@ -1837,6 +1846,10 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             }
             props.putAll(auditableProperties.getAuditableProperties());
         }
+        
+        // Wrap to ensure that we only clone values if the client attempts to modify
+        // the map or retrieve values that might, themselves, be mutable
+        props = new ValueProtectingMap<QName, Serializable>(props, NodePropertyValue.IMMUTABLE_CLASSES);
         
         // Done
         if (isDebugEnabled)
@@ -1874,6 +1887,10 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         else
         {
             Map<QName, Serializable> props = getNodePropertiesCached(nodeId);
+            // Wrap to ensure that we only clone values if the client attempts to modify
+            // the map or retrieve values that might, themselves, be mutable
+            props = new ValueProtectingMap<QName, Serializable>(props, NodePropertyValue.IMMUTABLE_CLASSES);
+            // The 'get' here will clone the value if it is mutable
             value = props.get(propertyQName);
         }
         // Done
@@ -2118,8 +2135,9 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             Map<QName, Serializable> propsToCache = null;
             if (isAddOnly)
             {
+                // Copy cache properties for additions
+                propsToCache = new HashMap<QName, Serializable>(oldPropsCached);
                 // Combine the old and new properties
-                propsToCache = oldPropsCached;
                 propsToCache.putAll(propsToAdd);
             }
             else
@@ -2194,10 +2212,13 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         {
             // Touch the node; all caches are fine
             touchNode(nodeId, null, null, false, false, false);
-            // Update cache
+            // Get cache props
             Map<QName, Serializable> cachedProps = getNodePropertiesCached(nodeId);
-            cachedProps.keySet().removeAll(propertyQNames);
-            setNodePropertiesCached(nodeId, cachedProps);
+            // Remove deleted properties
+            Map<QName, Serializable> props = new HashMap<QName, Serializable>(cachedProps);
+            props.keySet().removeAll(propertyQNames);
+            // Update cache
+            setNodePropertiesCached(nodeId, props);
         }
         // Done
         return deleteCount > 0;
@@ -2250,7 +2271,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     }
 
     /**
-     * @return              Returns a writable copy of the cached property map
+     * @return              Returns the read-only cached property map
      */
     private Map<QName, Serializable> getNodePropertiesCached(Long nodeId)
     {
@@ -2261,11 +2282,9 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             invalidateNodeCaches(nodeId);
             throw new DataIntegrityViolationException("Invalid node ID: " + nodeId);
         }
+        // We have the properties from the cache
         Map<QName, Serializable> cachedProperties = cacheEntry.getSecond();
-        // Need to return a harmlessly mutable map
-        Map<QName, Serializable> properties = copyPropertiesAgainstModification(cachedProperties);
-        // Done
-        return properties;
+        return cachedProperties;
     }
     
     /**
@@ -2277,7 +2296,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     private void setNodePropertiesCached(Long nodeId, Map<QName, Serializable> properties)
     {
         NodeVersionKey nodeVersionKey = getNodeNotNull(nodeId).getNodeVersionKey();
-        properties = copyPropertiesAgainstModification(properties);
         propertiesCache.setValue(nodeVersionKey, Collections.unmodifiableMap(properties));
     }
     
@@ -2291,26 +2309,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         {
             propertiesCache.setValue(to, cacheEntry);
         }
-    }
-    
-    /**
-     * Shallow-copies to a new map except for maps and collections that are binary serialized
-     */
-    private Map<QName, Serializable> copyPropertiesAgainstModification(Map<QName, Serializable> original)
-    {
-        // Copy the values, ensuring that any collections are copied as well
-        Map<QName, Serializable> copy = new HashMap<QName, Serializable>((int)(original.size() * 1.3));
-        for (Map.Entry<QName, Serializable> element : original.entrySet())
-        {
-            QName key = element.getKey();
-            Serializable value = element.getValue();
-            if (value instanceof Collection<?> || value instanceof Map<?, ?>)
-            {
-                value = (Serializable) SerializationUtils.deserialize(SerializationUtils.serialize(value));
-            }
-            copy.put(key, value);
-        }
-        return copy;
     }
     
     /**
@@ -2808,7 +2806,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             boolean isPrimary,
             final QName assocTypeQName,
             QName assocQName,
-            final String childNodeName)
+            final String childNodeName,
+            boolean allowDeletedChild)
     {
         Assert.notNull(parentNodeId, "parentNodeId");
         Assert.notNull(childNodeId, "childNodeId");
@@ -2818,7 +2817,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         
         // Get parent and child nodes.  We need them later, so just get them now.
         final Node parentNode = getNodeNotNull(parentNodeId);
-        final Node childNode = getNodeNotNull(childNodeId);
+        final Node childNode = getNodeNotNullImpl(childNodeId, allowDeletedChild);
         
         final ChildAssocEntity assoc = new ChildAssocEntity();
         // Parent node
@@ -2905,7 +2904,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         ParentAssocsInfo parentAssocInfo = getParentAssocsCached(childNodeId);
         // Create it
         ChildAssocEntity assoc = newChildAssocImpl(
-                parentNodeId, childNodeId, false, assocTypeQName, assocQName, childNodeName);
+                parentNodeId, childNodeId, false, assocTypeQName, assocQName, childNodeName, false);
         Long assocId = assoc.getId();
         // Touch the node; all caches are fine
         touchNode(childNodeId, null, null, false, false, false);
@@ -3478,6 +3477,142 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return paths;
     }
     
+    private void bindFixAssocAndCollectLostAndFound(final Pair<Long, NodeRef> lostNodePair, final String lostName, final ChildAssocEntity assoc)
+    {
+        AlfrescoTransactionSupport.bindListener(new TransactionListenerAdapter()
+        {
+            @Override
+            public void afterRollback()
+            {
+                if (transactionService.getAllowWrite())
+                {
+                    // New transaction
+                    RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
+                    {
+                        public Void execute() throws Throwable
+                        {
+                            if (assoc == null)
+                            {
+                                // 'child' with missing parent assoc => collect lost+found orphan child
+                                collectLostAndFoundNode(lostNodePair, lostName);
+                                logger.error("ALF-13066: Orphan child node has been re-homed under lost_found: "+lostNodePair);
+                            }
+                            else
+                            {
+                                // 'child' with deleted parent assoc => delete invalid parent assoc and if primary then collect lost+found orphan child
+                                deleteChildAssoc(assoc.getId());
+                                logger.error("ALF-12358: Deleted parent - removed child assoc: "+assoc.getId());
+                                
+                                if (assoc.isPrimary())
+                                {
+                                    collectLostAndFoundNode(lostNodePair, lostName);
+                                    logger.error("ALF-12358: Orphan child node has been re-homed under lost_found: "+lostNodePair);
+                                }
+                            }
+                            
+                            return null;
+                        }
+                    };
+                    transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
+                }
+            }
+        });
+    }
+    
+    private void collectLostAndFoundNode(Pair<Long, NodeRef> lostNodePair, String lostName)
+    {
+        Long childNodeId = lostNodePair.getFirst();
+        NodeRef lostNodeRef = lostNodePair.getSecond();
+        
+        Long newParentNodeId = getOrCreateLostAndFoundContainer(lostNodeRef.getStoreRef()).getId();
+        
+        String assocName = lostName+"-"+System.currentTimeMillis();
+        // Create new primary assoc (re-home the orphan node under lost_found)
+        ChildAssocEntity assoc = newChildAssocImpl(newParentNodeId, 
+                                                   childNodeId, 
+                                                   true, 
+                                                   ContentModel.ASSOC_CHILDREN, 
+                                                   QName.createQName(assocName), 
+                                                   assocName,
+                                                   true);
+        
+        // Touch the node; all caches are fine
+        touchNode(childNodeId, null, null, false, false, false);
+        
+        // update cache
+        boolean isRoot = false;
+        boolean isStoreRoot = false;
+        ParentAssocsInfo parentAssocInfo = new ParentAssocsInfo(isRoot, isStoreRoot, assoc);
+        setParentAssocsCached(childNodeId, parentAssocInfo);
+        
+        /*
+        // Update ACLs for moved tree - note: actually a NOOP if oldParentAclId is null
+        Long newParentAclId = newParentNode.getAclId();
+        Long oldParentAclId = null; // unknown
+        accessControlListDAO.updateInheritance(childNodeId, oldParentAclId, newParentAclId);
+        */
+    }
+    
+    private Node getOrCreateLostAndFoundContainer(StoreRef storeRef)
+    {
+        Pair<Long, NodeRef> rootNodePair = getRootNode(storeRef);
+        Long rootParentNodeId = rootNodePair.getFirst();
+        
+        final List<Pair<Long, NodeRef>> nodes = new ArrayList<Pair<Long, NodeRef>>(1);
+        NodeDAO.ChildAssocRefQueryCallback callback = new NodeDAO.ChildAssocRefQueryCallback()
+        {
+            public boolean handle(
+                    Pair<Long, ChildAssociationRef> childAssocPair,
+                    Pair<Long, NodeRef> parentNodePair,
+                    Pair<Long, NodeRef> childNodePair
+                    )
+            {
+                nodes.add(childNodePair);
+                // More results
+                return true;
+            }
+            
+            @Override
+            public boolean preLoadNodes() 
+            {
+                return false;
+            }
+            
+            @Override
+            public boolean orderResults()
+            {
+                return false;
+            }
+            
+            @Override
+            public void done()
+            {
+            }
+        };
+        Set<QName> assocTypeQNames = new HashSet<QName>(1);
+        assocTypeQNames.add(ContentModel.ASSOC_LOST_AND_FOUND);
+        getChildAssocs(rootParentNodeId, assocTypeQNames, callback);
+        
+        Node lostFoundNode = null;
+        if (nodes.size() > 0)
+        {
+            lostFoundNode = getNodeNotNull(nodes.get(0).getFirst());
+            
+            if (nodes.size() > 1)
+            {
+                logger.warn("More than one lost_found, using first: "+lostFoundNode.getNodeRef());
+            }
+        }
+        else
+        {
+            lostFoundNode = newNode(rootParentNodeId, ContentModel.ASSOC_LOST_AND_FOUND, ContentModel.ASSOC_LOST_AND_FOUND, storeRef, null, ContentModel.TYPE_LOST_AND_FOUND, Locale.US, ContentModel.ASSOC_LOST_AND_FOUND.getLocalName(), null).getChildNode();
+            
+            logger.info("Created lost_found: "+lostFoundNode.getNodeRef());
+        }
+        
+        return lostFoundNode;
+    }
+    
     /**
      * Build the paths for a node
      * 
@@ -3516,9 +3651,9 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             Pair<Long, NodeRef> rootNodePair = getRootNode(currentStoreRef);
             currentRootNodePair = new Pair<StoreRef, NodeRef>(currentStoreRef, rootNodePair.getSecond());
         }
-
+        
         // get the parent associations of the given node
-        ParentAssocsInfo parentAssocInfo = getParentAssocsCached(currentNodeId);
+        ParentAssocsInfo parentAssocInfo = getParentAssocsCached(currentNodeId); // note: currently may throw NotLiveNodeException
 
         // does the node have parents
         boolean hasParents = parentAssocInfo.getParentAssocs().size() > 0;
@@ -3583,8 +3718,12 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 // Force a retry. The cached node was stale
                 throw new DataIntegrityViolationException("Stale cache detected for Node #" + currentNodeId);
             }
-            // We have a corrupt repository
-            throw new RuntimeException("Node without parents does not have root aspect: " + currentNodeRef);
+            
+            // We have a corrupt repository - non-root node has a missing parent ?!
+            bindFixAssocAndCollectLostAndFound(currentNodePair, "nonRootNodeWithoutParents", null);
+            
+            // throw - error will be logged and then bound txn listener (afterRollback) will be called
+            throw new NonRootNodeWithoutParentsException(currentNodePair);
         }
         // walk up each parent association
         for (Map.Entry<Long, ChildAssocEntity> entry : parentAssocInfo.getParentAssocs().entrySet())
@@ -3631,10 +3770,25 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                         "   Prepending path parent: \n" +
                         "      Parent node: " + parentNodePair);
             }
-
+            
             // push the assoc stack, recurse and pop
             assocIdStack.push(assocId);
-            prependPaths(parentNodePair, currentRootNodePair, path, completedPaths, assocIdStack, primaryOnly);
+            
+            try
+            {
+                prependPaths(parentNodePair, currentRootNodePair, path, completedPaths, assocIdStack, primaryOnly);
+            }
+            catch (final NotLiveNodeException re)
+            {
+                if (re.getNodePair().equals(parentNodePair))
+                {
+                    // We have a corrupt repository  - deleted parent pointing to live child ?!
+                    bindFixAssocAndCollectLostAndFound(currentNodePair, "childNodeWithDeletedParent", assoc);
+                }
+                // rethrow - this will cause error/rollback
+                throw re;
+            }
+            
             assocIdStack.pop();
         }
         // done

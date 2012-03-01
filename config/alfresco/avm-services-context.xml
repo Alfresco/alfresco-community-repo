@@ -73,6 +73,12 @@
 		<property name="jobLockService">
 			<ref bean="jobLockService" /> 
 		</property>
+        <property name="lockRefreshTime">
+            <value>${orphanReaper.lockRefreshTime}</value>
+        </property>
+        <property name="lockTimeOut">
+            <value>${orphanReaper.lockTimeOut}</value>
+        </property>
 	</bean>
 
 	<bean id="createStoreTxnListener" class="org.alfresco.repo.avm.CreateStoreTxnListener"/>

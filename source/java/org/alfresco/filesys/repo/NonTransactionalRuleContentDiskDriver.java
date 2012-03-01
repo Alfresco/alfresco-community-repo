@@ -34,6 +34,7 @@ import org.alfresco.filesys.repo.rules.RuleEvaluator;
 import org.alfresco.filesys.repo.rules.operations.CloseFileOperation;
 import org.alfresco.filesys.repo.rules.operations.CreateFileOperation;
 import org.alfresco.filesys.repo.rules.operations.DeleteFileOperation;
+import org.alfresco.filesys.repo.rules.operations.MoveFileOperation;
 import org.alfresco.filesys.repo.rules.operations.OpenFileOperation;
 import org.alfresco.filesys.repo.rules.operations.RenameFileOperation;
 import org.alfresco.jlan.server.SrvSession;
@@ -430,17 +431,24 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
         }
         else    
         {
-            logger.debug("move - call renameFile directly");
-//            // TODO Use old interface for rename/move until think 
-//            // through move operation and how it applies to the evaluator contexts
-//            // plural since there will be two contexts.
-//            logger.debug("move");
-//            Operation o = new MoveFileOperation(oldFile, newFile);
-//            Command c = ruleEvaluator.evaluate(ctx, o);
-//            
-//            commandExecutor.execute(sess, tree, c);
+            logger.debug("moveFileCommand - move between folders");
+
+            Operation o = new MoveFileOperation(oldFile, newFile, oldPath, newPath, rootNode);
             
-              diskInterface.renameFile(sess, tree, oldPath, newPath);
+            /*
+             * Note: At the moment we only have move scenarios for the destination folder - so 
+             * we only need to evaluate against a single (destination) context/folder.   
+             * This will require re-design as and when we need to have scenarios for the source/folder  
+             */
+            
+            //EvaluatorContext ctx1 = getEvaluatorContext(driverState, oldFolder);
+            EvaluatorContext ctx2 = getEvaluatorContext(driverState, newFolder);
+            
+            Command c = ruleEvaluator.evaluate(ctx2, o);
+            
+            commandExecutor.execute(sess, tree, c);
+            
+            //  diskInterface.renameFile(sess, tree, oldPath, newPath);
 
         }
 

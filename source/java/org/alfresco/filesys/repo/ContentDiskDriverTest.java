@@ -4342,6 +4342,196 @@ public class ContentDiskDriverTest extends TestCase
     } // test set modified scenario
     
     /**
+     * This test tries to simulate the cifs shuffling that is done 
+     * from Save from Mac Lion by TextEdit
+     * 
+     * a) Lock file created. (._test.txt)
+     * b) Temp file created in temporary folder (test.txt)
+     * c) Target file deleted
+     * d) Temp file renamed to target file.
+     * e) Lock file deleted
+     *  
+     */
+    public void testScenarioMacLionTextEdit() throws Exception
+    {
+        logger.debug("testScenarioLionTextEdit");
+        final String FILE_NAME = "test.txt";
+        final String LOCK_FILE_NAME = "._test.txt";
+        final String TEMP_FILE_NAME = "test.txt";
+        
+        final String UPDATED_TEXT = "Mac Lion Text Updated Content";
+        
+        class TestContext
+        {
+            NetworkFile lockFileHandle;
+            NetworkFile firstFileHandle;
+            NetworkFile tempFileHandle;            
+            NodeRef testNodeRef;   // node ref of test.doc
+        };
+        
+        final TestContext testContext = new TestContext();
+        
+        final String TEST_ROOT_DIR = "\\ContentDiskDriverTest";
+        final String TEST_DIR = "\\ContentDiskDriverTest\\testScenarioLionTextEdit";
+        final String TEST_TEMP_DIR = "\\ContentDiskDriverTest\\testScenarioLionTextEdit\\.Temporary Items";
+        
+        ServerConfiguration scfg = new ServerConfiguration("testServer");
+        TestServer testServer = new TestServer("testServer", scfg);
+        final SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
+        DiskSharedDevice share = getDiskSharedDevice();
+        final TreeConnection testConnection = testServer.getTreeConnection(share);
+        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
+        
+        /**
+         * Create a file in the test directory
+         */           
+        RetryingTransactionCallback<Void> createFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                /**
+                 * Create the test directory we are going to use 
+                 */
+                FileOpenParams createRootDirParams = new FileOpenParams(TEST_ROOT_DIR, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                FileOpenParams createDirParams = new FileOpenParams(TEST_DIR, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                FileOpenParams createTempDirParams = new FileOpenParams(TEST_TEMP_DIR, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                driver.createDirectory(testSession, testConnection, createRootDirParams);
+                driver.createDirectory(testSession, testConnection, createDirParams);
+                driver.createDirectory(testSession, testConnection, createTempDirParams);
+                
+                /**
+                 * Create the file we are going to use
+                 */
+                FileOpenParams createFileParams = new FileOpenParams(TEST_DIR + "\\" + FILE_NAME, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                testContext.firstFileHandle = driver.createFile(testSession, testConnection, createFileParams);
+                assertNotNull(testContext.firstFileHandle);
+                
+                String testContent = "Mac Lion Text";
+                byte[] testContentBytes = testContent.getBytes();
+                 
+                driver.writeFile(testSession, testConnection, testContext.firstFileHandle, testContentBytes, 0, testContentBytes.length, 0);
+                driver.closeFile(testSession, testConnection, testContext.firstFileHandle); 
+                
+                /**
+                 * Create the temp file we are going to use
+                 */
+                FileOpenParams createTempFileParams = new FileOpenParams(TEST_TEMP_DIR + "\\" + FILE_NAME, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                testContext.tempFileHandle = driver.createFile(testSession, testConnection, createTempFileParams);
+                assertNotNull(testContext.tempFileHandle);
+                               
+                testContent = UPDATED_TEXT;
+                testContentBytes = testContent.getBytes();
+                driver.writeFile(testSession, testConnection, testContext.tempFileHandle, testContentBytes, 0, testContentBytes.length, 0);
+                driver.closeFile(testSession, testConnection, testContext.tempFileHandle); 
+                
+                return null;
+            }
+        };
+        tran.doInTransaction(createFileCB, false, true);
+        
+        /**
+         * a) create the lock file
+         */
+        RetryingTransactionCallback<Void> createLockFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                /**
+                 * Create the lock file we are going to use
+                 */
+                FileOpenParams createFileParams = new FileOpenParams(TEST_DIR + "\\" + LOCK_FILE_NAME, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                testContext.lockFileHandle = driver.createFile(testSession, testConnection, createFileParams);
+                assertNotNull(testContext.lockFileHandle);
+                testContext.lockFileHandle.closeFile();
+                
+                /**
+                 * Also add versionable to target file
+                 */
+                testContext.testNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+                nodeService.addAspect(testContext.testNodeRef, ContentModel.ASPECT_VERSIONABLE, null);
+                
+
+                return null;
+            }
+        };
+        tran.doInTransaction(createLockFileCB, false, true);
+        
+        /**
+         * b) Delete the target file
+         */
+        RetryingTransactionCallback<Void> deleteTargetFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                driver.deleteFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NAME);
+                return null;
+            }
+        };
+        tran.doInTransaction(deleteTargetFileCB, false, true);
+        
+        /**
+         * c) Move the temp file into place
+         */
+        RetryingTransactionCallback<Void> moveTempFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                driver.renameFile(testSession, testConnection, TEST_TEMP_DIR + "\\" + TEMP_FILE_NAME, TEST_DIR + "\\" + FILE_NAME); 
+                return null;
+            }
+        };
+        tran.doInTransaction(moveTempFileCB, false, true);
+        
+        
+        /**
+         * d) Delete Lock File
+         */
+        RetryingTransactionCallback<Void> deleteLockFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                driver.deleteFile(testSession, testConnection, TEST_DIR + "\\" + LOCK_FILE_NAME);
+                
+                return null;
+            }
+        };
+        
+        tran.doInTransaction(deleteLockFileCB, false, true);
+        
+        RetryingTransactionCallback<Void> validateCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+
+                NodeRef shuffledNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+
+                assertEquals("shuffledNode ref is different", shuffledNodeRef, testContext.testNodeRef);
+                assertTrue("", nodeService.hasAspect(shuffledNodeRef, ContentModel.ASPECT_VERSIONABLE));
+                
+                ContentReader reader = contentService.getReader(shuffledNodeRef, ContentModel.PROP_CONTENT);
+                assertNotNull("Reader is null", reader);
+                String s = reader.getContentString();
+                assertEquals("content not written", UPDATED_TEXT, s);
+                
+                
+                return null;
+            }
+        };
+        
+        tran.doInTransaction(validateCB, false, true);
+
+    } // testScenarioLionTextEdit
+
+    
+    
+    
+    /**
      * Test server
      */
     public class TestServer extends NetworkFileServer

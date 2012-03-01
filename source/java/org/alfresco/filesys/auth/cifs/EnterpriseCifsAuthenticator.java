@@ -137,9 +137,17 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
     private byte[] m_negTokenInit;
     private String m_mecListMIC;
 
+    // Enable Kerberos debug output
+    
     private boolean kerberosDebug;
 
+    // Disable NTLM logons, only Kerberos logons allowed
+    
     private boolean disableNTLM;
+    
+	// Enable ticket cracking code, required for Java5 JVMs
+	
+	private boolean m_enableTicketCracking;
 
     /**
      * Class constructor
@@ -202,6 +210,20 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
         this.m_acceptNTLMv1 = !disallowNTLMv1;
     }
 
+    /**
+     * Enable Kerbeors ticket cracking code that is required for Java5
+     * 
+     * @param enaTktCracking boolean
+     */
+    public void setEnableTicketCracking( boolean enaTktCracking) {
+    	m_enableTicketCracking = enaTktCracking;
+    	
+    	// Debug
+    	
+    	if ( logger.isInfoEnabled() && enaTktCracking)
+    		logger.info("CIFS Kerberos authentication, ticket cracking enabled (for mutual authentication)");
+    }
+    
     /**
      * Initialize the authenticator (via the config service)
      * 
@@ -1372,7 +1394,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
 
         	KrbAuthContext krbAuthCtx = null;
         	
-        	if ( krbApReq.hasMutualAuthentication())
+        	if ( krbApReq.hasMutualAuthentication() && m_enableTicketCracking == true)
         	{
         		// Allocate the Kerberos authentication and parse the AP-REQ
         		

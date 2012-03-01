@@ -22,12 +22,15 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import junit.framework.TestCase;
@@ -35,8 +38,11 @@ import junit.framework.TestCase;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.domain.node.Node;
+import org.alfresco.repo.domain.node.NodeDAO;
+import org.alfresco.repo.domain.node.NodeEntity;
 import org.alfresco.repo.domain.node.NodeVersionKey;
 import org.alfresco.repo.domain.node.ParentAssocsInfo;
+import org.alfresco.repo.domain.query.CannedQueryDAO;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeCreateNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeSetNodeTypePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeUpdateNodePolicy;
@@ -66,7 +72,10 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
+import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -86,10 +95,13 @@ public class NodeServiceTest extends TestCase
     
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
+    private static Log logger = LogFactory.getLog(NodeServiceTest.class);
+    
     protected ServiceRegistry serviceRegistry;
     protected NodeService nodeService;
     private TransactionService txnService;
     private PolicyComponent policyComponent;
+    private CannedQueryDAO cannedQueryDAO;
     private SimpleCache<Serializable, Serializable> nodesCache;
     private SimpleCache<Serializable, Serializable> propsCache;
     private SimpleCache<Serializable, Serializable> aspectsCache;
@@ -108,6 +120,7 @@ public class NodeServiceTest extends TestCase
         nodeService = serviceRegistry.getNodeService();
         txnService = serviceRegistry.getTransactionService();
         policyComponent = (PolicyComponent) ctx.getBean("policyComponent");
+        cannedQueryDAO = (CannedQueryDAO) ctx.getBean("cannedQueryDAO");
         
         // Get the caches for later testing
         nodesCache = (SimpleCache<Serializable, Serializable>) ctx.getBean("node.nodesSharedCache");
@@ -306,11 +319,13 @@ public class NodeServiceTest extends TestCase
 
     /**
      * Tests that two separate node trees can be deleted concurrently at the database level.
-     * This is not a concurren thread issue; instead we delete a hierarchy and hold the txn
+     * This is not a concurrent thread issue; instead we delete a hierarchy and hold the txn
      * open while we delete another in a new txn, thereby testing that DB locks don't prevent
      * concurrent deletes.
      * <p/>
      * See: <a href="https://issues.alfresco.com/jira/browse/ALF-5714">ALF-5714</a>
+     * 
+     * Note: if this test hangs for MySQL then check if 'innodb_locks_unsafe_for_binlog = true' (and restart MySQL + test)
      */
     public void testConcurrentArchive() throws Exception
     {
@@ -1038,5 +1053,297 @@ public class NodeServiceTest extends TestCase
                     triggerOnClass, 
                     new JavaBehaviour(policy, policyQName.getLocalName()));
         return policy;
+    }
+    
+    /**
+     * Ensure that nodes cannot be linked to deleted nodes.
+     * <p/>
+     * Conditions that <i>might</i> cause this are:<br/>
+     * <ul>
+     *   <li>Node created within a parent node that is being deleted</li>
+     *   <li>The node cache is temporarily incorrect when the association is made</li>
+     * </ul>
+     * <p/>
+     * <a href="https://issues.alfresco.com/jira/browse/ALF-12358">Concurrency: Possible to create association references to deleted nodes</a>
+     */
+    public void testConcurrentLinkToDeletedNode() throws Throwable
+    {
+        // First find any broken links to start with
+        final NodeEntity params = new NodeEntity();
+        params.setId(0L);
+        params.setDeleted(true);
+        
+        List<Long> ids = getChildNodesWithDeletedParentNode(params, 0);
+        logger.debug("Found child nodes with deleted parent node (before): " + ids);
+        
+        final int idsToSkip = ids.size();
+        
+        final NodeRef[] nodeRefs = new NodeRef[10];
+        final NodeRef workspaceRootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        buildNodeHierarchy(workspaceRootNodeRef, nodeRefs);
+        
+        // Fire off a bunch of threads that create random nodes within the hierarchy created above
+        final RetryingTransactionCallback<NodeRef> createChildCallback = new RetryingTransactionCallback<NodeRef>()
+        {
+            @Override
+            public NodeRef execute() throws Throwable
+            {
+                String randomName = getName() + "-" + System.nanoTime();
+                QName randomQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, randomName);
+                Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+                props.put(ContentModel.PROP_NAME, randomName);
+                // Choose a random parent node from the hierarchy
+                int random = new Random().nextInt(10);
+                return nodeService.createNode(
+                        nodeRefs[random],
+                        ContentModel.ASSOC_CONTAINS,
+                        randomQName,
+                        ContentModel.TYPE_CONTAINER,
+                        props).getChildRef();
+            }
+        };
+        final Runnable[] runnables = new Runnable[20];
+        final List<NodeRef> nodesAtRisk = Collections.synchronizedList(new ArrayList<NodeRef>(100));
+        
+        final List<Thread> threads = new ArrayList<Thread>();
+        for (int i = 0; i < runnables.length; i++)
+        {
+            runnables[i] = new Runnable()
+            {
+                @Override
+                public synchronized void run()
+                {
+                    AuthenticationUtil.setRunAsUserSystem();
+                    try
+                    {
+                        wait(1000L);     // A short wait before we kick off (should be notified)
+                        for (int i = 0; i < 200; i++)
+                        {
+                            NodeRef nodeRef = txnService.getRetryingTransactionHelper().doInTransaction(createChildCallback);
+                            // Store the node for later checks
+                            nodesAtRisk.add(nodeRef);
+                            // Wait to give other threads a chance
+                            wait(1L);
+                        }
+                    }
+                    catch (Throwable e)
+                    {
+                        // This is expected i.e. we'll just keep doing it until failure
+                        logger.debug("Got exception adding child node: ", e);
+                    }
+                }
+            };
+            Thread thread = new Thread(runnables[i]);
+            threads.add(thread);
+            thread.start();
+        }
+        
+        final RetryingTransactionCallback<NodeRef> deleteWithNestedCallback = new RetryingTransactionCallback<NodeRef>()
+        {
+            @Override
+            public NodeRef execute() throws Throwable
+            {
+                // Notify the threads to kick off
+                for (int i = 0; i < runnables.length; i++)
+                {
+                    // Notify the threads to stop waiting
+                    synchronized(runnables[i])
+                    {
+                        runnables[i].notify();
+                    }
+                    // Short wait to give thread a chance to run
+                    synchronized(this) { try { wait(10L); } catch (Throwable e) {} };
+                }
+                // Delete the parent node
+                nodeService.deleteNode(nodeRefs[0]);
+                return null;
+            }
+        };
+        txnService.getRetryingTransactionHelper().doInTransaction(deleteWithNestedCallback);
+        
+        // Wait for the threads to finish
+        for (Thread t : threads)
+        {
+            t.join();
+        }
+        
+        logger.info("All threads should have finished");
+        
+        // Now need to identify the problem nodes
+        final List<Long> childNodeIds = getChildNodesWithDeletedParentNode(params, idsToSkip);
+        
+        if (childNodeIds.isEmpty())
+        {
+            // nothing more to test
+            return;
+        }
+        
+        logger.debug("Found child nodes with deleted parent node (after): " + childNodeIds);
+        
+        // workaround recovery: force collection of any orphan nodes (ALF-12358 + ALF-13066)
+        for (NodeRef nodeRef : nodesAtRisk)
+        {
+            if (nodeService.exists(nodeRef))
+            {
+                nodeService.getPath(nodeRef); // ignore return
+            }
+        }
+        
+        // check again ...
+        ids = getChildNodesWithDeletedParentNode(params, idsToSkip);
+        assertTrue("The following child nodes have deleted parent node: " + ids, ids.isEmpty());
+        
+        // check lost_found ...
+        List<NodeRef> lostAndFoundNodeRefs = getLostAndFoundNodes();
+        assertFalse(lostAndFoundNodeRefs.isEmpty());
+        
+        List<Long> lostAndFoundNodeIds = new ArrayList<Long>(lostAndFoundNodeRefs.size());
+        for (NodeRef nodeRef : lostAndFoundNodeRefs)
+        {
+            lostAndFoundNodeIds.add((Long)nodeService.getProperty(nodeRef, ContentModel.PROP_NODE_DBID));
+        }
+        
+        for (Long childNodeId : childNodeIds)
+        {
+            assertTrue("Not found: "+childNodeId, lostAndFoundNodeIds.contains(childNodeId));
+        }
+    }
+    
+    /**
+     * Pending repeatable test - force issue ALF-ALF-13066 (non-root node with no parent)
+     */
+    public void testForceNonRootNodeWithNoParentNode() throws Throwable
+    {
+        final NodeEntity params = new NodeEntity();
+        params.setId(0L);
+        params.setDeleted(true);
+        
+        List<Long> ids = getChildNodesWithNoParentNode(params, 0);
+        logger.debug("Found child nodes with deleted parent node (before): " + ids);
+        
+        final int idsToSkip = ids.size();
+        
+        final NodeRef[] nodeRefs = new NodeRef[10];
+        final NodeRef workspaceRootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        buildNodeHierarchy(workspaceRootNodeRef, nodeRefs);
+        
+        int cnt = 5;
+        List<NodeRef> childNodeRefs = new ArrayList<NodeRef>(cnt);
+        
+        final NodeDAO nodeDAO = (NodeDAO)ctx.getBean("nodeDAO");
+        
+        for (int i = 0; i < cnt; i++)
+        {
+            // create some pseudo- thumnails
+            String randomName = getName() + "-" + System.nanoTime();
+            QName randomQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, randomName);
+            Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+            props.put(ContentModel.PROP_NAME, randomName);
+            
+            // Choose a random parent node from the hierarchy
+            int random = new Random().nextInt(10);
+            NodeRef parentNodeRef = nodeRefs[random];
+            
+            NodeRef childNodeRef = nodeService.createNode(
+                    parentNodeRef,
+                    ContentModel.ASSOC_CONTAINS,
+                    randomQName,
+                    ContentModel.TYPE_THUMBNAIL,
+                    props).getChildRef();
+            
+            childNodeRefs.add(childNodeRef);
+            
+            // forcefully remove the primary parent assoc
+            final Long childNodeId = (Long)nodeService.getProperty(childNodeRef, ContentModel.PROP_NODE_DBID);
+            txnService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+            {
+                @Override
+                public Void execute() throws Throwable
+                {
+                    Pair<Long, ChildAssociationRef> assocPair = nodeDAO.getPrimaryParentAssoc(childNodeId);
+                    nodeDAO.deleteChildAssoc(assocPair.getFirst());
+                    return null;
+                }
+            });
+        }
+        
+        // Now need to identify the problem nodes
+        final List<Long> childNodeIds = getChildNodesWithNoParentNode(params, idsToSkip);
+        assertFalse(childNodeIds.isEmpty());
+        logger.debug("Found child nodes with deleted parent node (after): " + childNodeIds);
+        
+        // workaround recovery: force collection of any orphan nodes (ALF-12358 + ALF-13066)
+        for (NodeRef nodeRef : childNodeRefs)
+        {
+            if (nodeService.exists(nodeRef))
+            {
+                nodeService.getPath(nodeRef); // ignore return
+            }
+        }
+        
+        // check again ...
+        ids = getChildNodesWithNoParentNode(params, idsToSkip);
+        assertTrue("The following child nodes have no parent node: " + ids, ids.isEmpty());
+        
+        // check lost_found ...
+        List<NodeRef> lostAndFoundNodeRefs = getLostAndFoundNodes();
+        assertFalse(lostAndFoundNodeRefs.isEmpty());
+        
+        List<Long> lostAndFoundNodeIds = new ArrayList<Long>(lostAndFoundNodeRefs.size());
+        for (NodeRef nodeRef : lostAndFoundNodeRefs)
+        {
+            lostAndFoundNodeIds.add((Long)nodeService.getProperty(nodeRef, ContentModel.PROP_NODE_DBID));
+        }
+        
+        for (Long childNodeId : childNodeIds)
+        {
+            assertTrue("Not found: "+childNodeId, lostAndFoundNodeIds.contains(childNodeId));
+        }
+    }
+    
+    private List<Long> getChildNodesWithDeletedParentNode(NodeEntity params, int idsToSkip)
+    {
+        return cannedQueryDAO.executeQuery(
+                "alfresco.query.test",
+                "select_NodeServiceTest_testConcurrentLinkToDeletedNode_GetChildNodesWithDeletedParentNodeCannedQuery",
+                params,
+                idsToSkip,
+                Integer.MAX_VALUE);
+    }
+    
+    private List<Long> getChildNodesWithNoParentNode(NodeEntity params, int idsToSkip)
+    {
+        return cannedQueryDAO.executeQuery(
+                "alfresco.query.test",
+                "select_NodeServiceTest_testForceNonRootNodeWithNoParentNode_GetChildNodesWithNoParentNodeCannedQuery",
+                params,
+                idsToSkip,
+                Integer.MAX_VALUE);
+    }
+    
+    private List<NodeRef> getLostAndFoundNodes()
+    {
+        Set<QName> childNodeTypeQNames = new HashSet<QName>(1);
+        childNodeTypeQNames.add(ContentModel.TYPE_LOST_AND_FOUND);
+        
+        List<ChildAssociationRef> childAssocRefs = nodeService.getChildAssocs(nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE), childNodeTypeQNames);
+        
+        List<NodeRef> lostNodeRefs = null;
+        
+        if (childAssocRefs.size() > 0)
+        {
+            List<ChildAssociationRef> lostNodeChildAssocRefs = nodeService.getChildAssocs(childAssocRefs.get(0).getChildRef());
+            lostNodeRefs = new ArrayList<NodeRef>(lostNodeChildAssocRefs.size());
+            for(ChildAssociationRef lostNodeChildAssocRef : lostNodeChildAssocRefs)
+            {
+                lostNodeRefs.add(lostNodeChildAssocRef.getChildRef());
+            }
+        }
+        else
+        {
+            lostNodeRefs = Collections.emptyList();
+        }
+        
+        return lostNodeRefs;
     }
 }

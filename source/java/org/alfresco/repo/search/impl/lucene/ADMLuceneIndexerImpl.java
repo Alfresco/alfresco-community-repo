@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -1237,9 +1237,9 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                 // Content is always tokenised
 
                 ContentData contentData = DefaultTypeConverter.INSTANCE.convert(ContentData.class, serializableValue);
-                if (!index || contentData.getMimetype() == null)
+                if (!index || contentData == null || contentData.getMimetype() == null)
                 {
-                    // no mimetype or property not indexed
+                    // no content, mimetype or property not indexed
                     continue;
                 }
                 // store mimetype in index - even if content does not index it is useful

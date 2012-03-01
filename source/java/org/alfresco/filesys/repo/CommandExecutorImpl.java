@@ -15,6 +15,7 @@ import org.alfresco.filesys.repo.rules.commands.CopyContentCommand;
 import org.alfresco.filesys.repo.rules.commands.CreateFileCommand;
 import org.alfresco.filesys.repo.rules.commands.DeleteFileCommand;
 import org.alfresco.filesys.repo.rules.commands.DoNothingCommand;
+import org.alfresco.filesys.repo.rules.commands.MoveFileCommand;
 import org.alfresco.filesys.repo.rules.commands.OpenFileCommand;
 import org.alfresco.filesys.repo.rules.commands.ReduceQuotaCommand;
 import org.alfresco.filesys.repo.rules.commands.RemoveNoContentFileOnError;
@@ -246,6 +247,12 @@ public class CommandExecutorImpl implements CommandExecutor
             {
                 logger.debug("rename command");
                 RenameFileCommand rename = (RenameFileCommand)command;
+                diskInterface.renameFile(sess, tree, rename.getFromPath(), rename.getToPath());    
+            }
+            else if(command instanceof MoveFileCommand)
+            {
+                logger.debug("move command");
+                MoveFileCommand rename = (MoveFileCommand)command;
                 diskInterface.renameFile(sess, tree, rename.getFromPath(), rename.getToPath());    
             }
             else if(command instanceof CopyContentCommand)

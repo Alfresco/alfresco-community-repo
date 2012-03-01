@@ -19,6 +19,7 @@
 package org.alfresco.repo.node.getchildren;
 
 import java.util.List;
+import java.util.Set;
 
 import org.alfresco.repo.domain.node.NodeEntity;
 import org.alfresco.repo.domain.node.NodePropertyEntity;
@@ -46,6 +47,7 @@ public class FilterSortNodeEntity
     private Long prop2qnameId;
     private Long prop3qnameId;
     private List<Long> childNodeTypeQNameIds;
+    private Set<Long> assocTypeQNameIds;
     private String pattern;
     private Long namePropertyQNameId;
     private boolean auditableProps;
@@ -104,6 +106,16 @@ public class FilterSortNodeEntity
 			// replace the wildcard character '*' with the one used in database queries i.e. '%'
 			this.pattern = pattern.replace('*', '%');
 		}
+	}
+
+	public void setAssocTypeQNameIds(Set<Long> assocTypeQNameIds)
+	{
+		this.assocTypeQNameIds = assocTypeQNameIds;
+	}
+	
+	public Set<Long> getAssocTypeQNameIds()
+	{
+		return assocTypeQNameIds;
 	}
 
 	public Long getNamePropertyQNameId()

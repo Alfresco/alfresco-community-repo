@@ -9,6 +9,12 @@
                 <value>alfresco/model/siteModel.xml</value>
             </list>
         </property>
+        <property name="labels">
+           <list>
+              <!-- i18n strings for Site Service Model-->
+              <value>alfresco/messages/site-model</value>
+           </list>
+        </property>
     </bean>
        
     <!-- Bootstrap the permission model -->

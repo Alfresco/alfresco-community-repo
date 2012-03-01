@@ -71,7 +71,7 @@ public class ScenarioSimpleNonBufferedInstance implements ScenarioInstance
         else if(operation instanceof MoveFileOperation)
         {
             MoveFileOperation m = (MoveFileOperation)operation;
-            return new MoveFileCommand(m.getFrom(), m.getTo());
+            return new MoveFileCommand(m.getFrom(), m.getTo(), m.getRootNodeRef(), m.getFromPath(), m.getToPath());
         }
         else if(operation instanceof OpenFileOperation)
         {

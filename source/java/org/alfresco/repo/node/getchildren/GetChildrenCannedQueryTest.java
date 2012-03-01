@@ -40,6 +40,8 @@ import org.alfresco.query.CannedQueryFactory;
 import org.alfresco.query.CannedQueryResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.dictionary.DictionaryBootstrap;
+import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
 import org.alfresco.repo.domain.locale.LocaleDAO;
 import org.alfresco.repo.domain.node.NodeDAO;
@@ -94,6 +96,8 @@ public class GetChildrenCannedQueryTest extends TestCase
     private MutableAuthenticationService authenticationService;
     private PermissionService permissionService;
     private RatingService ratingService;
+    private TenantService tenantService;
+    private DictionaryDAO dictionaryDAO;
     
     private RatingScheme fiveStarRatingScheme;
     private RatingScheme likesRatingScheme;
@@ -113,6 +117,8 @@ public class GetChildrenCannedQueryTest extends TestCase
     private Set<NodeRef> permHits = new HashSet<NodeRef>(100);
     private Set<NodeRef> permMisses = new HashSet<NodeRef>(100);
     
+    private NodeRef testFolder;
+    
     @SuppressWarnings({ "rawtypes" })
     private NamedObjectRegistry<CannedQueryFactory> cannedQueryRegistry;
     
@@ -130,6 +136,9 @@ public class GetChildrenCannedQueryTest extends TestCase
         authenticationService = (MutableAuthenticationService)ctx.getBean("AuthenticationService");
         permissionService = (PermissionService)ctx.getBean("PermissionService");
         ratingService = (RatingService)ctx.getBean("RatingService");
+
+        dictionaryDAO = (DictionaryDAO) ctx.getBean("dictionaryDAO");
+        tenantService = (TenantService) ctx.getBean("tenantService");
         
         cannedQueryRegistry = new NamedObjectRegistry<CannedQueryFactory>();
         cannedQueryRegistry.setStorageType(CannedQueryFactory.class);
@@ -160,6 +169,17 @@ public class GetChildrenCannedQueryTest extends TestCase
         {
             AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
             
+            // Load test model
+            DictionaryBootstrap bootstrap = new DictionaryBootstrap();
+            List<String> bootstrapModels = new ArrayList<String>();
+            bootstrapModels.add("org/alfresco/repo/node/getchildren/testModel.xml");
+            List<String> labels = new ArrayList<String>();
+            bootstrap.setModels(bootstrapModels);
+            bootstrap.setLabels(labels);
+            bootstrap.setDictionaryDAO(dictionaryDAO);
+            bootstrap.setTenantService(tenantService);
+            bootstrap.bootstrap();
+
             createUser(TEST_USER_PREFIX, TEST_USER, TEST_USER);
             
             createUser(TEST_USER_PREFIX+"aaaa", TEST_USER_PREFIX+"bbbb", TEST_USER_PREFIX+"cccc");
@@ -221,7 +241,12 @@ public class GetChildrenCannedQueryTest extends TestCase
                 assertTrue(permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.ALLOWED);
             }
         }
-        
+
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        testFolder = createFolder(repositoryHelper.getCompanyHome(), "testFolder1", QName.createQName("http://www.alfresco.org/test/getchildrentest/1.0", "folder"));
+        createContent(testFolder, "textContent1", ContentModel.TYPE_CONTENT);
+        createContent(testFolder, QName.createQName("http://www.alfresco.org/test/getchildrentest/1.0", "contains1"), "textContent2", ContentModel.TYPE_CONTENT);
+
         AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
     }
     
@@ -689,6 +714,34 @@ public class GetChildrenCannedQueryTest extends TestCase
         assertEquals("", 0, totalCnt);
     }
     
+    public void testRestrictByAssocType()
+    {
+        Set<QName> assocTypeQNames = new HashSet<QName>(3);
+        Set<QName> childTypeQNames = new HashSet<QName>(3);
+        
+        assocTypeQNames.clear();
+        assocTypeQNames.add(ContentModel.ASSOC_CONTAINS);
+        childTypeQNames.clear();
+        childTypeQNames.add(ContentModel.TYPE_CONTENT);
+        List<NodeRef> children = filterByAssocTypeAndCheck(testFolder, assocTypeQNames, childTypeQNames);
+        assertEquals(1, children.size());
+        
+        assocTypeQNames.clear();
+        assocTypeQNames.add(QName.createQName("http://www.alfresco.org/test/getchildrentest/1.0", "contains1"));
+        childTypeQNames.clear();
+        childTypeQNames.add(ContentModel.TYPE_CONTENT);
+        children = filterByAssocTypeAndCheck(testFolder, assocTypeQNames, childTypeQNames);
+        assertEquals(1, children.size());
+        
+        assocTypeQNames.clear();
+        assocTypeQNames.add(QName.createQName("http://www.alfresco.org/test/getchildrentest/1.0", "contains1"));
+        assocTypeQNames.add(ContentModel.ASSOC_CONTAINS);
+        childTypeQNames.clear();
+        childTypeQNames.add(ContentModel.TYPE_CONTENT);
+        children = filterByAssocTypeAndCheck(testFolder, assocTypeQNames, childTypeQNames);
+        assertEquals(2, children.size());
+    }
+
     // test helper method - optional filtering/sorting
     private PagingResults<NodeRef> list(NodeRef parentNodeRef, final int skipCount, final int maxItems, final int requestTotalCountMax, String pattern, List<Pair<QName, Boolean>> sortProps)
     {
@@ -697,7 +750,7 @@ public class GetChildrenCannedQueryTest extends TestCase
         
         // get canned query
         GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject("getChildrenCannedQueryFactory");
-        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(parentNodeRef, pattern, null, null, sortProps, pagingRequest);
+        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(parentNodeRef, pattern, null, null, null, sortProps, pagingRequest);
         
         // execute canned query
         CannedQueryResults<NodeRef> results = cq.execute();
@@ -746,6 +799,15 @@ public class GetChildrenCannedQueryTest extends TestCase
             QName childNodeTypeQName = nodeService.getType(childNodeRef);
             assertTrue(antiChildTypeQNames.contains(childNodeTypeQName));
         }
+    }
+    
+    private List<NodeRef> filterByAssocTypeAndCheck(NodeRef parentNodeRef, Set<QName> assocTypeQNames, Set<QName> childTypeQNames)
+    {
+        PagingResults<NodeRef> results = list(parentNodeRef, -1, -1, 0, assocTypeQNames, childTypeQNames, null, null);
+        assertTrue(results.getPage().size() > 0);
+        
+        List<NodeRef> childNodeRefs = results.getPage();
+        return childNodeRefs;
     }
     
     private void filterByPropAndCheck(NodeRef parentNodeRef, QName filterPropQName, String filterVal, FilterTypeString filterType, int expectedCount)
@@ -955,7 +1017,31 @@ public class GetChildrenCannedQueryTest extends TestCase
         
         // get canned query
         GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject("getChildrenCannedQueryFactory");
-        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(parentNodeRef, null, childTypeQNames, filterProps, sortProps, pagingRequest);
+        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(parentNodeRef, null, null, childTypeQNames, filterProps, sortProps, pagingRequest);
+        
+        // execute canned query
+        CannedQueryResults<NodeRef> results = cq.execute();
+        
+        List<NodeRef> nodeRefs = results.getPages().get(0);
+        
+        Integer totalCount = null;
+        if (requestTotalCountMax > 0)
+        {
+            totalCount = results.getTotalResultCount().getFirst();
+        }
+        
+        return new PagingNodeRefResultsImpl(nodeRefs, results.hasMoreItems(), totalCount, false);
+    }
+    
+    // test helper method - optional filtering/sorting
+    private PagingResults<NodeRef> list(NodeRef parentNodeRef, final int skipCount, final int maxItems, final int requestTotalCountMax, Set<QName> assocTypeQNames, Set<QName> childTypeQNames, List<FilterProp> filterProps, List<Pair<QName, Boolean>> sortProps)
+    {
+        PagingRequest pagingRequest = new PagingRequest(skipCount, maxItems, null);
+        pagingRequest.setRequestTotalCountMax(requestTotalCountMax);
+        
+        // get canned query
+        GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject("getChildrenCannedQueryFactory");
+        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(parentNodeRef, null, assocTypeQNames, childTypeQNames, filterProps, sortProps, pagingRequest);
         
         // execute canned query
         CannedQueryResults<NodeRef> results = cq.execute();
@@ -1009,7 +1095,7 @@ public class GetChildrenCannedQueryTest extends TestCase
         }
     }
     
-    private void createFolder(NodeRef parentNodeRef, String folderName, QName folderType) throws IOException
+    private NodeRef createFolder(NodeRef parentNodeRef, String folderName, QName folderType) throws IOException
     {
         Map<QName,Serializable> properties = new HashMap<QName,Serializable>();
         properties.put(ContentModel.PROP_NAME, folderName);
@@ -1025,6 +1111,7 @@ public class GetChildrenCannedQueryTest extends TestCase
                                          QName.createQName(folderName),
                                          folderType,
                                          properties).getChildRef();
+        return nodeRef;
     }
     
     private NodeRef createContent(NodeRef parentNodeRef, String fileName, QName contentType) throws IOException
@@ -1046,6 +1133,32 @@ public class GetChildrenCannedQueryTest extends TestCase
                                          contentType,
                                          properties).getChildRef();
         
+        ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+        writer.setMimetype(mimetypeService.guessMimetype(fileName));
+        writer.putContent("my text content");
+
+        return nodeRef;
+    }
+    
+    private NodeRef createContent(NodeRef parentNodeRef, QName childAssocType, String fileName, QName contentType) throws IOException
+    {
+        Map<QName,Serializable> properties = new HashMap<QName,Serializable>();
+        properties.put(ContentModel.PROP_NAME, fileName);
+        properties.put(ContentModel.PROP_TITLE, fileName+" my title");
+        properties.put(ContentModel.PROP_DESCRIPTION, fileName+" my description");
+        
+        NodeRef nodeRef = nodeService.getChildByName(parentNodeRef, childAssocType, fileName);
+        if (nodeRef != null)
+        {
+            nodeService.deleteNode(nodeRef);
+        }
+        
+        nodeRef = nodeService.createNode(parentNodeRef,
+        		childAssocType,
+        		QName.createQName(fileName),
+        		contentType,
+        		properties).getChildRef();
+
         ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
         writer.setMimetype(mimetypeService.guessMimetype(fileName));
         writer.putContent("my text content");

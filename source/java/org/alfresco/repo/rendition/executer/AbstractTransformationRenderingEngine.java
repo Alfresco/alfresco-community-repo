@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -86,6 +86,7 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
     protected void render(RenderingContext context)
     {
         ContentReader contentReader = context.makeContentReader();
+        // There will have been an exception if there is no content data so contentReader is not null.
         String sourceUrl = contentReader.getContentUrl();
         String sourceMimeType = contentReader.getMimetype();
         String targetMimeType = getTargetMimeType(context);

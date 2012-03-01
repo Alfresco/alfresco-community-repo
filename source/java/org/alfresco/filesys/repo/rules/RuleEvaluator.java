@@ -34,8 +34,12 @@ public interface RuleEvaluator
     public EvaluatorContext createContext();
     
     /**
-     * Evaluate the scenarios against the current operation
-     * @param Command the command to fulfill the operation
+     * Evaluate the scenarios contained within the context against the current operation
+     * @param context - the context to evaluate the operation
+     * @param operation - the operation to be evaluated.
+     * @return Command the command to fulfil the operation
      */
-    public Command evaluate(EvaluatorContext context, Operation operation);   
+    public Command evaluate(EvaluatorContext context, Operation operation);  
+      
+    
 }

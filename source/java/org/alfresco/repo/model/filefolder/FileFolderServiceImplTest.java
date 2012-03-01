@@ -38,6 +38,7 @@ import org.alfresco.model.ForumModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.dictionary.DictionaryBootstrap;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.M2Type;
@@ -46,6 +47,7 @@ import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -100,11 +102,13 @@ public class FileFolderServiceImplTest extends TestCase
     private NodeService nodeService;
     private FileFolderService fileFolderService;
     private PermissionService permissionService;
+    private TenantService tenantService;
     private MutableAuthenticationService authenticationService;
     private DictionaryDAO dictionaryDAO;
     private UserTransaction txn;
     private NodeRef rootNodeRef;
     private NodeRef workingRootNodeRef;
+    private NodeRef workingRootNodeRef1;
 
     @Override
     public void setUp() throws Exception
@@ -116,6 +120,7 @@ public class FileFolderServiceImplTest extends TestCase
         permissionService = serviceRegistry.getPermissionService();
         authenticationService = (MutableAuthenticationService) ctx.getBean("AuthenticationService");
         dictionaryDAO = (DictionaryDAO) ctx.getBean("dictionaryDAO");
+        tenantService = (TenantService) ctx.getBean("tenantService");
         
         // start the transaction
         txn = transactionService.getUserTransaction();
@@ -149,6 +154,33 @@ public class FileFolderServiceImplTest extends TestCase
         }
         Reader reader = new InputStreamReader(is);
         importerService.importView(reader, importLocation, null, null);
+
+        // Load test model
+        DictionaryBootstrap bootstrap = new DictionaryBootstrap();
+        List<String> bootstrapModels = new ArrayList<String>();
+        bootstrapModels.add("org/alfresco/repo/model/filefolder/testModel.xml");
+        List<String> labels = new ArrayList<String>();
+        bootstrap.setModels(bootstrapModels);
+        bootstrap.setLabels(labels);
+        bootstrap.setDictionaryDAO(dictionaryDAO);
+        bootstrap.setTenantService(tenantService);
+        bootstrap.bootstrap();
+        
+        workingRootNodeRef1 = nodeService.createNode(
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName(NamespaceService.ALFRESCO_URI, "working root1"),
+                QName.createQName("http://www.alfresco.org/test/filefoldertest/1.0", "folder")).getChildRef();
+        nodeService.createNode(
+        		workingRootNodeRef1,
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName(NamespaceService.ALFRESCO_URI, "node1"),
+                ContentModel.TYPE_CONTENT).getChildRef();
+        nodeService.createNode(
+        		workingRootNodeRef1,
+                QName.createQName("http://www.alfresco.org/test/filefoldertest/1.0", "contains1"),
+                QName.createQName(NamespaceService.ALFRESCO_URI, "node2"),
+                ContentModel.TYPE_CONTENT).getChildRef();
     }
 
     public void tearDown() throws Exception
@@ -1326,5 +1358,15 @@ public class FileFolderServiceImplTest extends TestCase
         { NAME_L0_FILE_A, NAME_L0_FILE_B };
         checkFileList(files, 2, 0, expectedNames);
 
+    }
+    
+    public void testALF12758()
+    {
+    	// test that the FileFolderService returns only cm:contains children
+        PagingRequest pagingRequest = new PagingRequest(0, Integer.MAX_VALUE);
+        PagingResults<FileInfo> pagingResults = fileFolderService.list(workingRootNodeRef1, true, true, null, null, null, pagingRequest);
+        assertNotNull(pagingResults);
+        assertNotNull(pagingResults.getPage());
+        assertEquals(1, pagingResults.getPage().size());
     }
 }

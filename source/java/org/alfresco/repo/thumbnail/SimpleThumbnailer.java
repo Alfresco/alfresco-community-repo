@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -156,48 +156,51 @@ public class SimpleThumbnailer extends TransactionListenerAdapter implements
             }
             Serializable value = this.nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
             ContentData contentData = DefaultTypeConverter.INSTANCE.convert(ContentData.class, value);
-            List<ThumbnailDefinition> thumbnailDefinitions = this.thumbnailService.getThumbnailRegistry()
-                    .getThumbnailDefinitions(contentData.getMimetype(), contentData.getSize());
-            for (final ThumbnailDefinition thumbnailDefinition : thumbnailDefinitions)
+            if (contentData != null)
             {
-                final NodeRef existingThumbnail = this.thumbnailService.getThumbnailByName(nodeRef,
-                        ContentModel.PROP_CONTENT, thumbnailDefinition.getName());
-                try
+                List<ThumbnailDefinition> thumbnailDefinitions = this.thumbnailService.getThumbnailRegistry()
+                    .getThumbnailDefinitions(contentData.getMimetype(), contentData.getSize());
+                for (final ThumbnailDefinition thumbnailDefinition : thumbnailDefinitions)
                 {
-                    // Generate each thumbnail in its own transaction, so that we can recover if one of them goes wrong
-                    this.transactionService.getRetryingTransactionHelper().doInTransaction(
-                            new RetryingTransactionCallback<Object>()
-                            {
-
-                                public Object execute() throws Throwable
+                    final NodeRef existingThumbnail = this.thumbnailService.getThumbnailByName(nodeRef,
+                            ContentModel.PROP_CONTENT, thumbnailDefinition.getName());
+                    try
+                    {
+                        // Generate each thumbnail in its own transaction, so that we can recover if one of them goes wrong
+                        this.transactionService.getRetryingTransactionHelper().doInTransaction(
+                                new RetryingTransactionCallback<Object>()
                                 {
-                                    if (existingThumbnail == null)
+
+                                    public Object execute() throws Throwable
                                     {
-                                        if (SimpleThumbnailer.logger.isDebugEnabled())
+                                        if (existingThumbnail == null)
                                         {
-                                            SimpleThumbnailer.logger.debug("Creating thumbnail \""
-                                                    + thumbnailDefinition.getName() + "\" for node " + nodeRef.getId());
+                                            if (SimpleThumbnailer.logger.isDebugEnabled())
+                                            {
+                                                SimpleThumbnailer.logger.debug("Creating thumbnail \""
+                                                        + thumbnailDefinition.getName() + "\" for node " + nodeRef.getId());
+                                            }
+                                            SimpleThumbnailer.this.thumbnailService.createThumbnail(nodeRef,
+                                                    ContentModel.PROP_CONTENT, thumbnailDefinition.getMimetype(),
+                                                    thumbnailDefinition.getTransformationOptions(), thumbnailDefinition
+                                                            .getName());
                                         }
-                                        SimpleThumbnailer.this.thumbnailService.createThumbnail(nodeRef,
-                                                ContentModel.PROP_CONTENT, thumbnailDefinition.getMimetype(),
-                                                thumbnailDefinition.getTransformationOptions(), thumbnailDefinition
-                                                        .getName());
+                                        else
+                                        {
+                                            SimpleThumbnailer.logger.debug("Updating thumbnail \""
+                                                    + thumbnailDefinition.getName() + "\" for node " + nodeRef.getId());
+                                            SimpleThumbnailer.this.thumbnailService.updateThumbnail(existingThumbnail,
+                                                    thumbnailDefinition.getTransformationOptions());
+                                        }
+                                        return null;
                                     }
-                                    else
-                                    {
-                                        SimpleThumbnailer.logger.debug("Updating thumbnail \""
-                                                + thumbnailDefinition.getName() + "\" for node " + nodeRef.getId());
-                                        SimpleThumbnailer.this.thumbnailService.updateThumbnail(existingThumbnail,
-                                                thumbnailDefinition.getTransformationOptions());
-                                    }
-                                    return null;
-                                }
-                            }, false, true);
-                }
-                catch (Exception e)
-                {
-                    SimpleThumbnailer.logger.warn("Failed to generate thumbnail \"" + thumbnailDefinition.getName()
-                            + "\" for node " + nodeRef.getId(), e);
+                                }, false, true);
+                    }
+                    catch (Exception e)
+                    {
+                        SimpleThumbnailer.logger.warn("Failed to generate thumbnail \"" + thumbnailDefinition.getName()
+                                + "\" for node " + nodeRef.getId(), e);
+                    }
                 }
             }
         }

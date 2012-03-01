@@ -1489,7 +1489,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 // Check for delete permission
                 if ( permissionService.hasPermission(nodeRef, PermissionService.DELETE) == AccessStatus.DENIED)
                 {
-                    throw new AccessDeniedException("No delete access to :" + name);
+                    throw new PermissionDeniedException("No delete access to :" + name);
                 }
 
                 // Check if the node is locked

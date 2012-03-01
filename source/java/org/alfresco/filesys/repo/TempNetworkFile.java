@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 
+import org.alfresco.jlan.server.filesys.FileAttribute;
 import org.alfresco.jlan.server.filesys.cache.FileState;
 import org.alfresco.jlan.server.filesys.cache.NetworkFileStateInterface;
 import org.alfresco.jlan.smb.server.disk.JavaNetworkFile;
@@ -27,6 +28,7 @@ public class TempNetworkFile extends JavaNetworkFile implements NetworkFileState
     {
         super(file, netPath);
         setFullName(netPath);
+        setAttributes(FileAttribute.NTNormal);
     }
     
     /**
@@ -39,6 +41,7 @@ public class TempNetworkFile extends JavaNetworkFile implements NetworkFileState
     {
         super(file, netPath);
         setFullName(netPath);
+        setAttributes(FileAttribute.NTNormal);
     }
     
     /**

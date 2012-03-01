@@ -96,11 +96,24 @@
       <type name="sys:store_root">
          <title>Store Root</title>
          <parent>sys:container</parent>
+         <associations>
+            <child-association name="sys:lost_found">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>sys:lost_found</class>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </target>
+            </child-association>
+         </associations>
          <mandatory-aspects>
             <aspect>sys:aspect_root</aspect>
          </mandatory-aspects>
       </type>
-
+      
       <type name="sys:reference">
          <title>Reference</title>
          <parent>sys:base</parent>
@@ -110,6 +123,11 @@
                <mandatory enforced="true">true</mandatory>
             </property>
          </properties>
+      </type>
+      
+      <type name="sys:lost_found">
+         <title>Lost+Found</title>
+         <parent>sys:container</parent>
       </type>
       
    </types>

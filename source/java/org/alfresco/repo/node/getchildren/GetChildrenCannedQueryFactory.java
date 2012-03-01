@@ -117,6 +117,7 @@ public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<No
      *
      * @param parentRef          parent node ref
      * @param pattern			 the pattern to use to filter children (wildcard character is '*')
+     * @param assocTypeQNames	 qnames of assocs to include (may be null)
      * @param childTypeQNames    type qnames of children nodes (pre-filter)
      * @param filterProps        filter properties
      * @param sortProps          sort property pairs (QName and Boolean - true if ascending)
@@ -124,7 +125,7 @@ public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<No
      * 
      * @return                   an implementation that will execute the query
      */
-    public CannedQuery<NodeRef> getCannedQuery(NodeRef parentRef, String pattern, Set<QName> childTypeQNames, List<FilterProp> filterProps, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
+    public CannedQuery<NodeRef> getCannedQuery(NodeRef parentRef, String pattern, Set<QName> assocTypeQNames, Set<QName> childTypeQNames, List<FilterProp> filterProps, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
     {
         ParameterCheck.mandatory("parentRef", parentRef);
         ParameterCheck.mandatory("pagingRequest", pagingRequest);
@@ -132,7 +133,7 @@ public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<No
         int requestTotalCountMax = pagingRequest.getRequestTotalCountMax();
         
         // specific query params - context (parent) and inclusive filters (child types, property values)
-        GetChildrenCannedQueryParams paramBean = new GetChildrenCannedQueryParams(tenantService.getName(parentRef), childTypeQNames, filterProps, pattern);
+        GetChildrenCannedQueryParams paramBean = new GetChildrenCannedQueryParams(tenantService.getName(parentRef), assocTypeQNames, childTypeQNames, filterProps, pattern);
 
         // page details
         CannedQueryPageDetails cqpd = new CannedQueryPageDetails(pagingRequest.getSkipCount(), pagingRequest.getMaxItems(), CannedQueryPageDetails.DEFAULT_PAGE_NUMBER, CannedQueryPageDetails.DEFAULT_PAGE_COUNT);
@@ -161,14 +162,16 @@ public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<No
      * Retrieve an unsorted instance of a {@link CannedQuery} based on parameters including request for a total count (up to a given max)
      *
      * @param parentRef          parent node ref
+     * @param pattern			 the pattern to use to filter children (wildcard character is '*')
+     * @param assocTypeQNames	 qnames of assocs to include (may be null)
      * @param childTypeQNames    type qnames of children nodes
      * @param pagingRequest      skipCount, maxItems - optionally queryExecutionId and requestTotalCountMax
      * 
      * @return                   an implementation that will execute the query
      */
-    public CannedQuery<NodeRef> getCannedQuery(NodeRef parentRef, String pattern,Set<QName> childTypeQNames, PagingRequest pagingRequest)
+    public CannedQuery<NodeRef> getCannedQuery(NodeRef parentRef, String pattern, Set<QName> assocTypeQNames, Set<QName> childTypeQNames, PagingRequest pagingRequest)
     {
-        return getCannedQuery(parentRef, pattern, childTypeQNames, null, null, pagingRequest);
+        return getCannedQuery(parentRef, pattern, assocTypeQNames, childTypeQNames, null, null, pagingRequest);
     }
     
     @Override

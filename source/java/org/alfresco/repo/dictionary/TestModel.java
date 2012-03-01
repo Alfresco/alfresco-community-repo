@@ -36,13 +36,23 @@ import org.alfresco.repo.tenant.TenantService;
  */
 public class TestModel
 {
-
+    /**
+     * Test model
+     * 
+     * Java command line client
+     * <br />
+     * Syntax:
+     * <br />
+     * TestModel [-h] [model filename]*
+     * <p>
+     * Returns 0 for success.
+     */
     public static void main(String[] args)
     {
         if (args != null && args.length > 0 && args[0].equals("-h"))
         {
             System.out.println("TestModel [model filename]*");
-            System.exit(0);
+            System.exit(1);
         }
         
         System.out.println("Testing dictionary model definitions...");
@@ -91,6 +101,9 @@ public class TestModel
             bootstrap.setDictionaryDAO(dictionaryDAO);
             bootstrap.bootstrap();
             System.out.println("Models are valid.");
+            
+            System.exit(0); // Success
+            
         }
         catch(Exception e)
         {
@@ -101,6 +114,7 @@ public class TestModel
                 System.out.println(t.getMessage());
                 t = t.getCause();
             }
+            System.exit(2); // Not Success
         }
     }
     

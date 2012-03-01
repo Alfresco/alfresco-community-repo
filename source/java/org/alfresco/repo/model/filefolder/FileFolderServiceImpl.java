@@ -486,9 +486,9 @@ public class FileFolderServiceImpl implements FileFolderService
         
         // get canned query
         GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_FILEFOLDER_LIST);
-        
-        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(contextNodeRef, pattern, searchTypeQNames, null, sortProps, pagingRequest);
-        
+
+        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(contextNodeRef, pattern, Collections.singleton(ContentModel.ASSOC_CONTAINS), searchTypeQNames, null, sortProps, pagingRequest);
+
         // execute canned query
         CannedQueryResults<NodeRef> results = cq.execute();
         

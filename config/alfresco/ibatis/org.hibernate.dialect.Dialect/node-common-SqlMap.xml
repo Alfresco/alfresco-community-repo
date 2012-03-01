@@ -1069,6 +1069,12 @@
             <if test="pattern != null">
             and prop4.string_value like #{pattern} <include refid="alfresco.util.escape"/>
             </if>
+            <if test="assocTypeQNameIds != null">
+            and assoc.type_qname_id in 
+                <foreach item="item" index="index" collection="assocTypeQNameIds" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
         <if test="prop1qnameId == null and auditableProps == false">
             <include refid="alfresco.node.select_ChildAssoc_OrderBy"/>
         </if>
@@ -1094,6 +1100,12 @@
             <if test="childNodeTypeQNameIds != null">
             and childNode.type_qname_id in 
                 <foreach item="item" index="index" collection="childNodeTypeQNameIds" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="assocTypeQNameIds != null">
+            and assoc.type_qname_id in 
+                <foreach item="item" index="index" collection="assocTypeQNameIds" open="(" separator="," close=")">
                     #{item}
                 </foreach>
             </if>

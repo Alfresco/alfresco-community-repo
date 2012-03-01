@@ -27,6 +27,8 @@ import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.content.transform.TransformerDebug;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.tenant.Tenant;
+import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
 import org.alfresco.service.cmr.rendition.RenditionService;
@@ -62,6 +64,8 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
     
     /** Rendition service */
     private RenditionService renditionService;
+    
+    private TenantAdminService tenantAdminService;
     
     /** Map of thumbnail definition */
     private Map<String, ThumbnailDefinition> thumbnailDefinitions = new HashMap<String, ThumbnailDefinition>();
@@ -113,6 +117,11 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
     {
         this.renditionService = renditionService;
     }
+    
+    public void setTenantAdminService(TenantAdminService tenantAdminService)
+    {
+        this.tenantAdminService = tenantAdminService;
+    }
 
     /**
      * This method is used to inject the thumbnail definitions.
@@ -132,50 +141,28 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
         }
     }
     
-    /**
-     * Those thumbnail definitions that are injected by Spring are converted
-     * to rendition definitions and saved.
-     */
-    private void initThumbnailDefinitions()
+    // Otherwise we should go ahead and persist the thumbnail definitions.
+    // This is done during system startup. It needs to be done as the system user (see callers) to ensure the thumbnail definitions get saved
+    // and also needs to be done within a transaction in order to support concurrent startup. See ALF-6271 for details.
+    public void initThumbnailDefinitions()
     {
-    	// If the database is in read-only mode, then do not persist the thumbnail definitions.
-    	if (transactionService.isReadOnly())
-    	{
-    		if (logger.isDebugEnabled())
-    		{
-    			logger.debug("TransactionService is in read-only mode. Therefore no thumbnail definitions have been initialised.");
-    		}
-    		return;
-    	}
-        
-        // Otherwise we should go ahead and persist the thumbnail definitions.
-        // This is done during system startup. It needs to be done as the system user to ensure the thumbnail definitions get saved
-        // and also needs to be done within a transaction in order to support concurrent startup. See ALF-6271 for details.
         RetryingTransactionHelper transactionHelper = transactionService.getRetryingTransactionHelper();
         transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
         {
             @Override
             public Void execute() throws Throwable
             {
-                AuthenticationUtil.runAs(new RunAsWork<Void>() {
-                    public Void doWork() throws Exception
-                    {
-                        for (String thumbnailDefName : thumbnailDefinitions.keySet())
-                        {
-                            final ThumbnailDefinition thumbnailDefinition = thumbnailDefinitions.get(thumbnailDefName);
-                            
-                            // Built-in thumbnailDefinitions do not provide any non-standard values
-                            // for the ThumbnailParentAssociationDetails object. Hence the null
-                            RenditionDefinition renditionDef = thumbnailRenditionConvertor.convert(thumbnailDefinition, null);
-                            
-                            // Thumbnail definitions are saved into the repository as actions
-                            renditionService.saveRenditionDefinition(renditionDef);
-                        }
-                        
-                        return null;
-                    }
-                }, AuthenticationUtil.getSystemUserName());
-                
+                for (String thumbnailDefName : thumbnailDefinitions.keySet())
+                {
+                    final ThumbnailDefinition thumbnailDefinition = thumbnailDefinitions.get(thumbnailDefName);
+                    
+                    // Built-in thumbnailDefinitions do not provide any non-standard values
+                    // for the ThumbnailParentAssociationDetails object. Hence the null
+                    RenditionDefinition renditionDef = thumbnailRenditionConvertor.convert(thumbnailDefinition, null);
+                    
+                    // Thumbnail definitions are saved into the repository as actions
+                    renditionService.saveRenditionDefinition(renditionDef);
+                }
                 return null;
             }
         });
@@ -366,7 +353,47 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
         @Override
         protected void onBootstrap(ApplicationEvent event)
         {
-            initThumbnailDefinitions();
+            long start = System.currentTimeMillis();
+            
+            // If the database is in read-only mode, then do not persist the thumbnail definitions.
+            if (transactionService.isReadOnly())
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("TransactionService is in read-only mode. Therefore no thumbnail definitions have been initialised.");
+                }
+                return;
+            }
+            
+            AuthenticationUtil.runAs(new RunAsWork<Object>()
+            {
+                public Object doWork() throws Exception
+                {
+                    initThumbnailDefinitions();
+                    return null;
+                }
+            }, AuthenticationUtil.getSystemUserName());
+            
+            if (tenantAdminService.isEnabled())
+            {
+                List<Tenant> tenants = tenantAdminService.getAllTenants();
+                for (Tenant tenant : tenants)
+                {
+                    AuthenticationUtil.runAs(new RunAsWork<Object>()
+                    {
+                        public Object doWork() throws Exception
+                        {
+                            initThumbnailDefinitions();
+                            return null;
+                        }
+                    }, tenantAdminService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenant.getTenantDomain()));
+                }
+            }
+            
+            if (logger.isInfoEnabled())
+            {
+                logger.info("Init'ed thumbnail defs in "+(System.currentTimeMillis()-start)+" ms");
+            }
         }
     
         /* (non-Javadoc)

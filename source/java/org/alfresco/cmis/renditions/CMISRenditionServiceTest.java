@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -199,6 +199,7 @@ public class CMISRenditionServiceTest extends BaseCMISTest
         contentWriter.setLocale(Locale.ENGLISH);
         contentWriter.putContent(documentContent);
         ContentReader contentReader = fileFolderService.getReader(textDocument);
+        // contentReader will not be null as an exception will have been thrown if there was a problem
 
         NodeRef document = fileFolderService.create(rootNodeRef, documentName, ContentModel.TYPE_CONTENT).getNodeRef();
         contentWriter = fileFolderService.getWriter(document);

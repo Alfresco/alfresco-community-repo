@@ -151,6 +151,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
         
         // Get filter details
         Set<QName> childNodeTypeQNames = paramBean.getChildTypeQNames();
+        Set<QName> assocTypeQNames = paramBean.getAssocTypeQNames();
         final List<FilterProp> filterProps = paramBean.getFilterProps();
         String pattern = paramBean.getPattern();
         
@@ -158,7 +159,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
         CannedQuerySortDetails sortDetails = parameters.getSortDetails();
         @SuppressWarnings({ "unchecked", "rawtypes" })
         final List<Pair<QName, SortOrder>> sortPairs = (List)sortDetails.getSortPairs();
-        
+
         // Set sort / filter params
         // Note - need to keep the sort properties in their requested order
         List<QName> sortFilterProps = new ArrayList<QName>(filterProps.size() + sortPairs.size());
@@ -199,6 +200,15 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
             }
         }
         
+        if(assocTypeQNames != null)
+        {
+        	Set<Long> assocTypeQNameIds = qnameDAO.convertQNamesToIds(assocTypeQNames, false);
+            if (assocTypeQNameIds.size() > 0)
+            {
+            	params.setAssocTypeQNameIds(assocTypeQNameIds);
+            }
+        }
+
         if (pattern != null)
         {
         	// TODO, check that we should be tied to the content model in this way. Perhaps a configurable property

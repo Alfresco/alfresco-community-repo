@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -593,6 +593,10 @@ public abstract class BaseContentNode implements TemplateContent
                 // get the content reader
                 ContentService contentService = services.getContentService();
                 ContentReader reader = contentService.getReader(getNodeRef(), property);
+                if (reader == null)
+                {
+                    return ""; // Caller of this method returns "" if there is an IOException
+                }
                 
                 // get the writer and set it up for text convert
                 ContentWriter writer = contentService.getTempWriter();

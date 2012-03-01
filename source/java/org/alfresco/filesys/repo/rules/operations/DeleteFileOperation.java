@@ -28,6 +28,12 @@ public class DeleteFileOperation implements Operation
     private NodeRef rootNodeRef;
     private String path;
     
+    /**
+     * Delete File Operation
+     * @param name of file
+     * @param rootNodeRef root node ref
+     * @param path path + name of file to delete
+     */
     public DeleteFileOperation(String name, NodeRef rootNodeRef, String path)
     {
         this.name = name;

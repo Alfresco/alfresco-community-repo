@@ -966,11 +966,28 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
     private void setFlag(NodeRef nodeRef, Flag flag, boolean value)
     {
         checkForFlaggableAspect(nodeRef);
-        AccessStatus status = permissionService.hasPermission(nodeRef, PermissionService.WRITE_PROPERTIES);
+        
+        String permission = (flag == Flag.DELETED ? PermissionService.DELETE_NODE : PermissionService.WRITE_PROPERTIES);
+        
+        AccessStatus status = permissionService.hasPermission(nodeRef, permission);
         if (status == AccessStatus.DENIED)
         {
-            logger.debug("[setFlag] Access denied to add FLAG to " + nodeRef);
-            //TODO should we throw an exception here?
+            if(flag == Flag.DELETED)
+            {
+                logger.debug("[setFlag] Access denied to set DELETED FLAG:" + nodeRef);
+                throw new AccessDeniedException("No permission to set DELETED flag");
+            }
+            if(flag == Flag.SEEN)
+            {
+                logger.debug("[setFlag] Access denied to set SEEN FLAG:" + nodeRef);
+                //TODO - should we throw an exception here?
+                //throw new AccessDeniedException("No permission to set DELETED flag");
+            }
+            else
+            {
+                logger.debug("[setFlag] Access denied to set flag:" + nodeRef);
+                throw new AccessDeniedException("No permission to set flag:" + flag.toString());
+            }
         }
         else
         {

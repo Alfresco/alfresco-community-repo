@@ -27,8 +27,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import javax.crypto.SealedObject;
 
@@ -45,6 +47,7 @@ import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
+import org.alfresco.util.ValueProtectingMap;
 import org.alfresco.util.VersionNumber;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -67,6 +70,31 @@ public class NodePropertyValue implements Cloneable, Serializable
     
     private static Log logger = LogFactory.getLog(NodePropertyValue.class);
     private static Log loggerOracle = LogFactory.getLog(NodePropertyValue.class.getName() + ".oracle");
+    
+    /**
+     * Immutable classes in addition to {@link ValueProtectingMap#DEFAULT_IMMUTABLE_CLASSES}
+     * <li>ContentData</li>
+     * <li>ContentDataId</li>
+     * <li>NodeRef</li>
+     * <li>ChildAssociationRef</li>
+     * <li>AssociationRef</li>
+     * <li>QName</li>
+     * <li>VersionNumber</li>
+     * <li>Period</li>
+     */
+    public static final Set<Class<?>> IMMUTABLE_CLASSES;
+    static
+    {
+        IMMUTABLE_CLASSES = new HashSet<Class<?>>(13);
+        IMMUTABLE_CLASSES.add(ContentData.class);
+        IMMUTABLE_CLASSES.add(ContentDataId.class);
+        IMMUTABLE_CLASSES.add(NodeRef.class);
+        IMMUTABLE_CLASSES.add(ChildAssociationRef.class);
+        IMMUTABLE_CLASSES.add(AssociationRef.class);
+        IMMUTABLE_CLASSES.add(QName.class);
+        IMMUTABLE_CLASSES.add(VersionNumber.class);
+        IMMUTABLE_CLASSES.add(Period.class);
+    }
 
     /** potential value types */
     private static enum ValueType

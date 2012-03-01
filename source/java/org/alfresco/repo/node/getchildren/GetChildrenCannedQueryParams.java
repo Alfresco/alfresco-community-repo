@@ -37,15 +37,18 @@ public class GetChildrenCannedQueryParams
     
     private Set<QName> childTypeQNames = Collections.emptySet();
     private List<FilterProp> filterProps = Collections.emptyList();
+    private Set<QName> assocTypeQNames = null;
     private String pattern = null;
     
     public GetChildrenCannedQueryParams(
             NodeRef parentRef,
+            Set<QName> assocTypeQNames,
             Set<QName> childTypeQNames,
             List<FilterProp> filterProps,
             String pattern)
     {
         this.parentRef = parentRef;
+        this.assocTypeQNames = assocTypeQNames;
 
         if (childTypeQNames != null) { this.childTypeQNames = childTypeQNames; }
         if (filterProps != null) { this.filterProps = filterProps; }
@@ -65,7 +68,12 @@ public class GetChildrenCannedQueryParams
         return childTypeQNames;
     }
     
-    public List<FilterProp>  getFilterProps()
+    public Set<QName> getAssocTypeQNames()
+    {
+		return assocTypeQNames;
+	}
+
+	public List<FilterProp>  getFilterProps()
     {
         return filterProps;
     }

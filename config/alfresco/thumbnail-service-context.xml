@@ -58,6 +58,7 @@
         <property name="contentService" ref="ContentService"/>
         <property name="renditionService" ref="renditionService" />
         <property name="transactionService" ref="TransactionService" />
+        <property name="tenantAdminService" ref="tenantAdminService" />
         <property name="thumbnailDefinitions">
             <list>
                <!-- Small image thumbnail options -->

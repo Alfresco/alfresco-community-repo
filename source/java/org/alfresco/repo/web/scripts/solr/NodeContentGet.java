@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -151,12 +151,7 @@ public class NodeContentGet extends StreamContent
             res.setStatus(HttpStatus.SC_NO_CONTENT);
             return;            
         }
-
-        // Perform transformation catering for mimetype AND encoding
-        ContentWriter writer = contentService.getTempWriter();
-        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        writer.setEncoding("UTF-8");                            // Expect transformers to produce UTF-8
-
+        
         ContentTransformer transformer = contentService.getTransformer(reader.getMimetype(), MimetypeMap.MIMETYPE_TEXT_PLAIN);
         if(transformer == null)
         {
@@ -164,7 +159,12 @@ public class NodeContentGet extends StreamContent
             res.setStatus(HttpStatus.SC_NO_CONTENT);
             return;
         }
-
+        
+        // Perform transformation catering for mimetype AND encoding
+        ContentWriter writer = contentService.getTempWriter();
+        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        writer.setEncoding("UTF-8");                            // Expect transformers to produce UTF-8
+        
         try
         {
         	long start = System.currentTimeMillis();

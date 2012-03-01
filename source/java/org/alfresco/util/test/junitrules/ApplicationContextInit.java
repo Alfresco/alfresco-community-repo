@@ -30,8 +30,21 @@ import org.springframework.context.ApplicationContext;
 
 /**
  * This JUnit rule can be used to bring up a {@link ApplicationContext spring application context}.
- * 
- * TODO Sample usage.
+ * <p/>
+ * Example usage:
+ * <pre>
+ * public class YourTestClass
+ * {
+ *     // Parameterless construction brings up the default Alfresco spring configuration.
+ *     &#64;ClassRule public static final ApplicationContextInit APP_CONTEXT_RULE = new ApplicationContextInit();
+ *     private static NodeService NODE_SERVICE;
+ *     
+ *     &#64;BeforeClass public static void initSpringServices() throws Exception
+ *     {
+ *         NODE_SERVICE = (NodeService) APP_CONTEXT_RULE.getApplicationContext().getBean("nodeService");
+ *     }
+ * }
+ * </pre>
  * 
  * @author Neil Mc Erlean
  * @since Odin

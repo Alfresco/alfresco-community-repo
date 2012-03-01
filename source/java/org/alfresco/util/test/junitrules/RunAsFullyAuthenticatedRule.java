@@ -28,6 +28,8 @@ import java.lang.annotation.Target;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 
+import junit.framework.Test;
+
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
@@ -38,8 +40,30 @@ import org.junit.runners.model.Statement;
 
 /**
  * This JUnit rule can be used to make test methods run as a particular user.
- * 
- * TODO Example usage.
+ * A username can be provided on construction to the rule and then all <code>@Test</code> methods will be
+ * run as that user.
+ * <p/>
+ * Furthermore, if an individual test method is annotated like this <code>@RunAsUser(userName="John")</code> than that
+ * method (and only that method) will be run as "John".
+ * <p/>
+ * Example usage:
+ * <pre>
+ * public class YourTestClass
+ * {
+ *     &#64;ClassRule public static final ApplicationContextInit APP_CONTEXT_RULE = new ApplicationContextInit();
+ *     &#64;Rule public RunAsFullyAuthenticatedRule runAsGuidPerson = new RunAsFullyAuthenticatedRule("NeilM");
+ *     
+ *     &#64;Test public void doSomething() throws Exception
+ *     {
+ *         // This will run as NeilM
+ *     }
+ *     
+ *     &#64;Test &#64;RunAsUser(userName="DaveC") public void doSomething() throws Exception
+ *     {
+ *         // This will run as DaveC
+ *     }
+ * }
+ * </pre>
  * 
  * @author Neil Mc Erlean
  * @since Odin

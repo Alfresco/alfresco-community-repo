@@ -33,6 +33,24 @@ import org.springframework.context.ApplicationContext;
 
 /**
  * This JUnit rule can be used to setup and teardown a set of Alfresco users for test purposes.
+ * <p/>
+ * Example usage:
+ * <pre>
+ * public class YourTestClass
+ * {
+ *     // Normally we would initialise the spring application context in another rule.
+ *     &#64;ClassRule public static final ApplicationContextInit APP_CONTEXT_RULE = new ApplicationContextInit();
+ *     
+ *     // This rule will give us 8 GUID-named users.
+ *     &#64;Rule public final AlfrescoPeople testPeople = new AlfrescoPeople(APP_CONTEXT_RULE, 8);
+ *     
+ *     &#64;Test public void aTestMethod()
+ *     {
+ *         Set&#60;String&#62; userNames = testPeople.getUsernames();
+ *         // etc
+ *     }
+ * }
+ * </pre>
  * 
  * @author Neil Mc Erlean
  * @since Odin

@@ -374,7 +374,7 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
     }
     
     @Override
-    protected Map<String, List<ConfigSection>> getSectionsByArea()
+    public Map<String, List<ConfigSection>> getSectionsByArea()
     {
         return getConfigData().getSectionsByArea();
     }
@@ -392,7 +392,7 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
     }
     
     @Override
-    protected List<ConfigSection> getSections()
+    public List<ConfigSection> getSections()
     {
         return getConfigData().getSections();
     }

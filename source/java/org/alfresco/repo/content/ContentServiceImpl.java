@@ -91,7 +91,6 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     private RetryingTransactionHelper transactionHelper;
     private ApplicationContext applicationContext;
     protected TransformerDebug transformerDebug;
-    private MimetypeService mimetypeService;
 
 
     /** a registry of all available content transformers */
@@ -188,15 +187,6 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     public void setTransformerDebug(TransformerDebug transformerDebug)
     {
         this.transformerDebug = transformerDebug;
-    }
-
-    /**
-     * Helper setter of the mimetypeService. 
-     * @param mimetypeService
-     */
-    public void setMimetypeService(MimetypeService mimetypeService)
-    {
-        this.mimetypeService = mimetypeService;
     }
 
     /**

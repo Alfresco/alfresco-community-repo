@@ -1769,10 +1769,17 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 
         CMISNodeInfo info = getOrCreateNodeInfo(objectId.getValue(), "Object");
 
-        // check for current version
-        if (!info.isVariant(CMISObjectVariant.CURRENT_VERSION))
+        // Check for current version
+        if (info.isVariant(CMISObjectVariant.CURRENT_VERSION))
         {
-            throw new CmisInvalidArgumentException("Only documents can be checked out!");
+            // Good
+        }
+        else if (info.isVariant(CMISObjectVariant.VERSION))
+        {
+            throw new CmisInvalidArgumentException("Can't check out an old version of a document");
+        }
+        else {   
+            throw new CmisInvalidArgumentException("Only documents can be checked out! Object was a " + info.getObjectVariant().toString());
         }
 
         // get object

@@ -49,7 +49,9 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.test.junitrules.AlfrescoPerson;
 import org.alfresco.util.test.junitrules.ApplicationContextInit;
+import org.alfresco.util.test.junitrules.RunAsFullyAuthenticatedRule;
 import org.alfresco.util.test.junitrules.TemporaryNodes;
+import org.alfresco.util.test.junitrules.RunAsFullyAuthenticatedRule.RunAsUser;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -81,6 +83,10 @@ public class RatingServiceIntegrationTest
     
     // A rule to manage test nodes use in each test method
     @Rule public TemporaryNodes testNodes = new TemporaryNodes(APP_CONTEXT_INIT);
+    
+    // A rule to allow individual test methods all to be run as "UserOne".
+    // Some test methods need to switch user during execution which they are free to do.
+    @Rule public RunAsFullyAuthenticatedRule runAsRule = new RunAsFullyAuthenticatedRule(TEST_USER1);
     
     // Various services
     private static NodeService                 NODE_SERVICE;
@@ -155,8 +161,6 @@ public class RatingServiceIntegrationTest
      */
     @Test public void applyIllegalRatings() throws Exception
     {
-        AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER1.getUsername());
-        
         // See rating-services-context.xml for definitions of these rating schemes.
         float[] illegalRatings = new float[]{0.0f, 2.0f};
         for (float illegalRating : illegalRatings)
@@ -271,7 +275,6 @@ public class RatingServiceIntegrationTest
         {
             public Void execute() throws Throwable
             {
-                AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER1.getUsername());
                 RATING_SERVICE.applyRating(testDoc_Admin, 1.0f, FIVE_STAR_SCHEME_NAME);
                 
                 // A new score in the same rating scheme by the same user should replace the previous score.
@@ -300,8 +303,6 @@ public class RatingServiceIntegrationTest
      */
     @Test public void oneUserRatesInTwoSchemes() throws Exception
     {
-        AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER1.getUsername());
-        
         TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
         {
             public Void execute() throws Throwable
@@ -391,20 +392,19 @@ public class RatingServiceIntegrationTest
     
     @Test public void usersCantRateTheirOwnContent() throws Exception
     {
-        AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER2.getUsername());
         
         TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
         {
             public Void execute() throws Throwable
             {
                 // In the likes rating scheme, users can rate their own content.
-                RATING_SERVICE.applyRating(testDoc_UserTwo, 1, LIKES_SCHEME_NAME);
+                RATING_SERVICE.applyRating(testDoc_UserOne, 1, LIKES_SCHEME_NAME);
                 
                 // But fiveStar rating scheme disallows rating your own content.
                 boolean expectedExceptionThrown = false;
                 try
                 {
-                    RATING_SERVICE.applyRating(testDoc_UserTwo, 4, FIVE_STAR_SCHEME_NAME);
+                    RATING_SERVICE.applyRating(testDoc_UserOne, 4, FIVE_STAR_SCHEME_NAME);
                 } catch (RatingServiceException expected)
                 {
                     expectedExceptionThrown = true;
@@ -416,7 +416,7 @@ public class RatingServiceIntegrationTest
         });
     }
     
-    @Test public void javascriptAPI() throws Exception
+    @Test @RunAsUser(userName="UserTwo") public void javascriptAPI() throws Exception
     {
         TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
         {

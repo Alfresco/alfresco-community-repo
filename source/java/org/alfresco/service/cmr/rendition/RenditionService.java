@@ -22,12 +22,10 @@ package org.alfresco.service.cmr.rendition;
 import java.util.List;
 
 import org.alfresco.repo.rendition.RenditionDefinitionPersister;
-import org.alfresco.service.PublicService;
+import org.alfresco.service.NotAuditable;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.Auditable;
-import org.alfresco.service.NotAuditable;
 
 /**
  * The Rendition service.

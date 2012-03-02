@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,6 +19,7 @@
 package org.alfresco.repo.content.transform;
 
 import java.util.Map;
+import java.util.Properties;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -28,6 +29,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Provides basic services for {@link org.alfresco.repo.content.transform.ContentTransformer}
@@ -44,15 +46,16 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
     private static final Log logger = LogFactory.getLog(AbstractContentTransformer2.class);
     
     private ContentTransformerRegistry registry;
-    private double averageTime = 0.0;
+    private Properties properties;
+    private double averageTime;
     private long count = 0L;
     
     /**
-     * All transformers start with an average transformation time of 0.0ms.
+     * All transformers start with an average transformation time of 0.0 ms,
+     * unless there is an Alfresco global property {@code <beanName>.initialTime}.
      */
     protected AbstractContentTransformer2()
     {
-        averageTime = 0.0;
     }
 
     /**
@@ -64,6 +67,64 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
     {
         this.registry = registry;
     }    
+
+    /**
+     * The Alfresco global properties.
+     */
+    public void setProperties(Properties properties)
+    {
+        this.properties = properties;
+    }
+    
+    /**
+     * Sets the averageTime and count (if global properties were used to set the averageTime).
+     * Both default to 0. The property names use the transformer bean name with a ".time"
+     * or ".count" suffix. Spring bean configuration is not being used as we don't wish to
+     * break existing transformers that know nothing about these properties. 
+     */
+    private void setAverageTimeFromAlfrescoGlobalProperties()
+    {
+        String beanName = getBeanName();
+        averageTime = Long.valueOf(getPositiveLongProperty(beanName+".time", 0L));
+        if (averageTime > 0.0)
+        {
+            // This normally is a large number so that it does not change much if used.
+            count = Long.valueOf(getPositiveLongProperty(beanName+".count", 10000));
+        }
+    }
+    
+    /**
+     * Returns a positive long value from an optional Alfresco global property.
+     * Invalid values are ignored but a log message is issued.
+     * @param name of the property
+     * @param defaultValue if the property does not exist or is negative
+     * @return the value
+     */
+    private long getPositiveLongProperty(String name, long defaultValue)
+    {
+        long value = defaultValue;
+        if (properties != null)
+        {
+            String property = properties.getProperty(name);
+            if (property != null)
+            {
+                try
+                {
+                    value = Long.valueOf(property);
+                    if (value < 0)
+                    {
+                        value = defaultValue;
+                        throw new NumberFormatException();
+                    }
+                }
+                catch (NumberFormatException e)
+                {
+                    logger.warn("Alfresco global property "+name+" is must be a positive Java long value. Using "+defaultValue);
+                }
+            }
+        }
+        return value;
+    }
 
     @Override
     public String toString()
@@ -78,6 +139,8 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
     /**
      * Registers this instance with the {@link #setRegistry(ContentTransformerRegistry) registry}
      * if it is present.
+     * 
+     * THIS IS A CUSTOME SPRING INIT METHOD
      */
     public void register()
     {
@@ -88,6 +151,8 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
             return;
         }
 
+        setAverageTimeFromAlfrescoGlobalProperties();
+        
         // register this instance for the fallback case
         registry.addTransformer(this);
     }
@@ -159,7 +224,8 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
         {
             if (transformerDebug.isEnabled())
             {
-                transformerDebug.pushTransform(this, reader.getContentUrl(), reader.getMimetype(), writer.getMimetype(), reader.getSize());
+                transformerDebug.pushTransform(this, reader.getContentUrl(), reader.getMimetype(),
+                        writer.getMimetype(), reader.getSize(), options);
             }
             
             // Check the transformability

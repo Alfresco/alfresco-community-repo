@@ -37,8 +37,10 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.FileTypeImageSize;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.webdav.WebDavService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -592,7 +594,8 @@ public abstract class BaseContentNode implements TemplateContent
             {
                 // get the content reader
                 ContentService contentService = services.getContentService();
-                ContentReader reader = contentService.getReader(getNodeRef(), property);
+                NodeRef nodeRef = getNodeRef();
+                ContentReader reader = contentService.getReader(nodeRef, property);
                 if (reader == null)
                 {
                     return ""; // Caller of this method returns "" if there is an IOException
@@ -603,10 +606,13 @@ public abstract class BaseContentNode implements TemplateContent
                 writer.setMimetype("text/plain"); 
                 writer.setEncoding(reader.getEncoding());
                 
+                TransformationOptions options = new TransformationOptions();
+                options.setSourceNodeRef(nodeRef);
+
                 // try and transform the content
-                if (contentService.isTransformable(reader, writer))
+                if (contentService.isTransformable(reader, writer, options))
                 {
-                    contentService.transform(reader, writer);
+                    contentService.transform(reader, writer, options);
                     
                     ContentReader resultReader = writer.getReader();
                     if (resultReader != null && reader.exists())

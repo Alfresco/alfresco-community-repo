@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -63,10 +63,18 @@ public class TransformationOptions
     private TransformationOptionLimits limits = new TransformationOptionLimits();
 
     /**
-     * Default construtor
+     * Default constructor
      */
     public TransformationOptions()
     {
+    }
+    
+    /**
+     * Deep clone constructor
+     */
+    public TransformationOptions(TransformationOptions options)
+    {
+        this(options.toMap());
     }
     
     /**

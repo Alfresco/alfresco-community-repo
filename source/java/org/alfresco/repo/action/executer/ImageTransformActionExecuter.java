@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -78,6 +78,7 @@ public class ImageTransformActionExecuter extends TransformActionExecuter
         // create some options for the transform
         ImageTransformationOptions imageOptions = new ImageTransformationOptions();
         imageOptions.setCommandOptions(convertCommand);
+        imageOptions.setSourceNodeRef(sourceNodeRef);
 
         // check if the transformer is going to work, i.e. is available
         if (!this.imageMagickContentTransformer.isTransformable(contentReader.getMimetype(), contentReader.getSize(), contentWriter

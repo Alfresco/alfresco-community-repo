@@ -18,7 +18,6 @@
  */
 package org.alfresco.repo.content.transform;
 
-import java.text.NumberFormat;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashSet;
@@ -27,7 +26,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.util.EqualsHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -108,6 +112,7 @@ public class TransformerDebug
         private final String fromUrl;
         private final String sourceMimetype;
         private final String targetMimetype;
+        private final TransformationOptions options;
         private final boolean origDebugOutput;
         private final long start;
 
@@ -117,12 +122,14 @@ public class TransformerDebug
 // See debug(String, Throwable) as to why this is commented out
 //      private Throwable lastThrowable;
 
-        private Frame(Frame parent, String fromUrl, String sourceMimetype, String targetMimetype, Call pushCall, boolean origDebugOutput)
+        private Frame(Frame parent, String fromUrl, String sourceMimetype, String targetMimetype,
+                TransformationOptions options, Call pushCall, boolean origDebugOutput)
         {
             this.id = parent == null ? uniqueId.getAndIncrement() : ++parent.childId;
             this.fromUrl = fromUrl;
             this.sourceMimetype = sourceMimetype;
             this.targetMimetype = targetMimetype;
+            this.options = options;
             this.callType = pushCall;
             this.origDebugOutput = origDebugOutput;
             start = System.currentTimeMillis();
@@ -171,35 +178,53 @@ public class TransformerDebug
         }
     }
     
+    private final NodeService nodeService;
     private final MimetypeService mimetypeService;
     
     /**
      * Constructor
      */
-    public TransformerDebug(MimetypeService mimetypeService)
+    public TransformerDebug(NodeService nodeService, MimetypeService mimetypeService)
     {
+        this.nodeService = nodeService;
         this.mimetypeService = mimetypeService;
     }
 
     /**
      * Called prior to working out what transformers are available.
      */
-    public void pushAvailable(String fromUrl, String sourceMimetype, String targetMimetype)
+    public void pushAvailable(String fromUrl, String sourceMimetype, String targetMimetype,
+            TransformationOptions options)
     {
         if (isEnabled())
         {
-            push(null, fromUrl, sourceMimetype, targetMimetype, -1, Call.AVAILABLE);
+            push(null, fromUrl, sourceMimetype, targetMimetype, -1, options, Call.AVAILABLE);
         }
     }
     
     /**
      * Called prior to performing a transform.
      */
-    public void pushTransform(ContentTransformer transformer, String fromUrl, String sourceMimetype, String targetMimetype, long sourceSize)
+    public void pushTransform(ContentTransformer transformer, String fromUrl, String sourceMimetype,
+            String targetMimetype, long sourceSize, TransformationOptions options)
     {
         if (isEnabled())
         {
-            push(getName(transformer), fromUrl, sourceMimetype, targetMimetype, sourceSize, Call.TRANSFORM);
+            push(getName(transformer), fromUrl, sourceMimetype, targetMimetype, sourceSize,
+                    options, Call.TRANSFORM);
+        }
+    }
+    
+    /**
+     * Adds a new level to the stack to get a new request number or nesting number.
+     * Called prior to working out what transformers are active
+     * and prior to listing the supported mimetypes for an active transformer.
+     */
+    public void pushMisc()
+    {
+        if (isEnabled())
+        {
+            push(null, null, null, null, -1, null, Call.AVAILABLE);
         }
     }
     
@@ -214,7 +239,8 @@ public class TransformerDebug
         }
     }
     
-    private void push(String name, String fromUrl, String sourceMimetype, String targetMimetype, long sourceSize, Call callType)
+    private void push(String name, String fromUrl, String sourceMimetype, String targetMimetype,
+            long sourceSize, TransformationOptions options, Call callType)
     {
         Deque<Frame> ourStack = ThreadInfo.getStack();
         Frame frame = ourStack.peek();
@@ -227,7 +253,7 @@ public class TransformerDebug
         {
             // Create a new frame. Logging level is set to trace if the file size is 0
             boolean origDebugOutput = ThreadInfo.setDebugOutput(ThreadInfo.getDebugOutput() && sourceSize != 0);
-            frame = new Frame(frame, fromUrl, sourceMimetype, targetMimetype, callType, origDebugOutput);
+            frame = new Frame(frame, fromUrl, sourceMimetype, targetMimetype, options, callType, origDebugOutput);
             ourStack.push(frame);
             
             if (callType == Call.TRANSFORM)
@@ -310,6 +336,24 @@ public class TransformerDebug
         }
     }
 
+    public void inactiveTransformer(ContentTransformer transformer)
+    {
+        log(getName(transformer)+' '+ms(transformer.getTransformationTime())+" INACTIVE");
+    }
+
+    public void activeTransformer(int mimetypePairCount, ContentTransformer transformer, String sourceMimetype,
+            String targetMimetype, long maxSourceSizeKBytes, boolean explicit, boolean firstMimetypePair)
+    {
+        if (firstMimetypePair)
+        {
+            log(getName(transformer)+' '+ms(transformer.getTransformationTime()));
+        }
+        String i = Integer.toString(mimetypePairCount);
+        log(spaces(5-i.length())+mimetypePairCount+") "+getMimetypeExt(sourceMimetype)+getMimetypeExt(targetMimetype)+
+                ' '+fileSize((maxSourceSizeKBytes > 0) ? maxSourceSizeKBytes*1024 : maxSourceSizeKBytes)+
+                (explicit ? " EXPLICIT" : ""));
+    }
+    
     private int getLongestTransformerNameLength(List<ContentTransformer> transformers,
             Frame frame)
     {
@@ -320,7 +364,7 @@ public class TransformerDebug
             if (longestNameLength < length)
                 longestNameLength = length;
         }
-        if (frame.unavailableTransformers != null)
+        if (frame != null && frame.unavailableTransformers != null)
         {
             for (UnavailableTransformer unavailable: frame.unavailableTransformers)
             {
@@ -337,13 +381,14 @@ public class TransformerDebug
         // Log the source URL, but there is no point if the parent has logged it
         if (frame.fromUrl != null && (firstLevel || frame.id != 1))
         {
-            log(frame.fromUrl, firstLevel);
+            log(frame.fromUrl, false);
         }
-        
-        log(getMimetypeExt(frame.sourceMimetype)+getMimetypeExt(frame.targetMimetype) +
-                ((sourceSize >= 0) ? fileSize(sourceSize)+' ' : "") + message);
-
         log(frame.sourceMimetype+' '+frame.targetMimetype, false);
+        
+        String fileName = getFileName(frame.options, firstLevel, sourceSize);
+        log(getMimetypeExt(frame.sourceMimetype)+getMimetypeExt(frame.targetMimetype) +
+                ((fileName != null) ? fileName+' ' : "")+
+                ((sourceSize >= 0) ? fileSize(sourceSize)+' ' : "") + message);
     }
 
     /**
@@ -354,7 +399,7 @@ public class TransformerDebug
     {
         if (isEnabled())
         {
-            pop(Call.AVAILABLE);
+            pop(Call.AVAILABLE, false);
         }
     }
     
@@ -365,10 +410,22 @@ public class TransformerDebug
     {
         if (isEnabled())
         {
-            pop(Call.TRANSFORM);
+            pop(Call.TRANSFORM, false);
         }
     }
 
+    /**
+     * Removes a frame from the stack. Called prior to working out what transformers are active
+     * and prior to listing the supported mimetypes for an active transformer.
+     */
+    public void popMisc()
+    {
+        if (isEnabled())
+        {
+            pop(Call.AVAILABLE, ThreadInfo.getStack().size() > 1);
+        }
+    }
+    
     /**
      * Called after returning from a nested isTransformable.
      */
@@ -380,7 +437,7 @@ public class TransformerDebug
         }
     }
 
-    private void pop(Call callType)
+    private void pop(Call callType, boolean suppressFinish)
     {
         Deque<Frame> ourStack = ThreadInfo.getStack();
         if (!ourStack.isEmpty())
@@ -389,7 +446,7 @@ public class TransformerDebug
             if ((frame.callType == callType) ||
                 (frame.callType == Call.AVAILABLE_AND_TRANSFORM && callType == Call.AVAILABLE))
             {
-                if (ourStack.size() == 1 || logger.isTraceEnabled())
+                if (!suppressFinish && (ourStack.size() == 1 || logger.isTraceEnabled()))
                 {
                     boolean topFrame = ourStack.size() == 1;
                     log("Finished in " +
@@ -575,6 +632,36 @@ public class TransformerDebug
                ? "<<Runtime>>"
                : "<<Proxy>>"
              : "");
+    }
+    
+
+    public String getFileName(TransformationOptions options, boolean firstLevel, long sourceSize)
+    {
+        String fileName = null;
+        if (options != null)
+        {
+            try
+            {
+                NodeRef sourceNodeRef = options.getSourceNodeRef();
+                fileName = (String)nodeService.getProperty(sourceNodeRef, ContentModel.PROP_NAME);
+            }
+            catch (RuntimeException e)
+            {
+                ; // ignore (normally InvalidNodeRefException) but we should ignore other RuntimeExceptions too
+            }
+        }
+        if (fileName == null)
+        {
+            if (!firstLevel)
+            {
+                fileName = "<<TemporaryFile>>";
+            }
+            else if (sourceSize < 0)
+            {
+                // fileName = "<<AnyFile>>"; commented out as it does not add to debug readability
+            }
+        }
+        return fileName;
     }
 
     private String getMimetypeExt(String mimetype)

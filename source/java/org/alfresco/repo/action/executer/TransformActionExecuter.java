@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -172,7 +172,9 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
             throw new RuleServiceException(CONTENT_READER_NOT_FOUND_MESSAGE);
         }
 
-        if (null == contentService.getTransformer(contentReader.getContentUrl(), contentReader.getMimetype(), contentReader.getSize(), mimeType, new TransformationOptions()))
+        TransformationOptions options = new TransformationOptions();
+        options.setSourceNodeRef(actionedUponNodeRef);
+        if (null == contentService.getTransformer(contentReader.getContentUrl(), contentReader.getMimetype(), contentReader.getSize(), mimeType, options))
         {
             throw new RuleServiceException(String.format(TRANSFORMER_NOT_EXISTS_MESSAGE_PATTERN, contentReader.getMimetype(), mimeType));
         }

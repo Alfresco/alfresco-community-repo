@@ -115,6 +115,9 @@
       <property name="transformerDebug">
          <ref bean="transformerDebug"></ref>
       </property>
+      <property name="mimetypeService">
+         <ref bean="mimetypeService"></ref>
+      </property>
    </bean>
    
    <bean id="contentService" parent="baseContentService">
@@ -263,6 +266,9 @@
    <!-- Transformation Debug -->
    <bean id="transformerDebug" class="org.alfresco.repo.content.transform.TransformerDebug">
       <constructor-arg>
+         <ref bean="nodeService"/>
+      </constructor-arg>
+      <constructor-arg>
          <ref bean="mimetypeService"/>
       </constructor-arg>
    </bean>
@@ -287,6 +293,9 @@
       <property name="readLimitKBytes"><value>${content.transformer.default.readLimitKBytes}</value></property>
       <property name="pageLimit"><value>${content.transformer.default.pageLimit}</value></property>
       <property name="maxPages"><value>${content.transformer.default.maxPages}</value></property>
+      <property name="properties">
+         <ref bean="global-properties" />
+      </property>
    </bean>
    
    <!-- These transformers are not used alone but only as part of a failover sequence -->

@@ -45,6 +45,7 @@
       <property name="serviceRegistry" ref="ServiceRegistry" />
       <property name="dictionaryService" ref="dictionaryService" />
       <property name="renditionDefinitionPersister" ref="renditionDefinitionPersister" />
+      <property name="renditionPreventionRegistry" ref="renditionPreventionRegistry" />
    </bean>
 
     <!-- From Alfresco 3.4 onwards, this bean is deprecated and should not be used. -->
@@ -77,8 +78,28 @@
          </list>
       </property>
    </bean>
-
-
+   
+   
+   <!-- It is possible to prevent all renditioning of a node by applying a marker aspect. -->
+   <!-- This registry keeps a list of what aspects (and what types) should be considered when preventing renditions. -->
+   <bean id="renditionPreventionRegistry" class="org.alfresco.repo.rendition.RenditionPreventionRegistry">
+      <property name="namespaceService" ref="namespaceService"/>
+   </bean>
+   
+   <!-- This abstract bean ensures that any child beans are registered centrally. -->
+   <bean id="baseRenditionPreventionClass"
+         abstract="true"
+         class="org.alfresco.repo.rendition.RenditionPreventionRegistry$SelfRegisteringClassName"
+         init-method="register">
+       <property name="registry" ref="renditionPreventionRegistry"/>
+   </bean>
+   
+   <!-- By default there is only one such content class: a marker aspect -->
+   <bean id="preventRenditions" parent="baseRenditionPreventionClass">
+       <constructor-arg value="rn:preventRenditions"/>
+   </bean>
+   
+   
    <!-- Rendering Action executor beans -->
 
    <bean id="baseRenderingAction" abstract="true" parent="action-executer"

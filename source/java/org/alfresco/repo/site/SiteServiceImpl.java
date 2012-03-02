@@ -772,7 +772,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
             // get the sites that match the specified names
             StringBuilder query = new StringBuilder(128);
             query.append("+PARENT:\"").append(siteRoot.toString()).append('"');
-            
+
             final boolean filterIsPresent = filter != null && filter.length() > 0;
             // The filter string is only used in the Lucene query if it restricts results.
             // A search for name/title/description = "*" does not need to be put into the Lucene query.
@@ -919,7 +919,8 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         // Only search for "st:site" nodes.
         final Set<QName> searchTypeQNames = new HashSet<QName>(1);
         searchTypeQNames.add(SiteModel.TYPE_SITE);
-        
+//        searchTypeQNames.addAll(dictionaryService.getSubTypes(SiteModel.TYPE_SITE, true));
+
         // get canned query
         final String cQBeanName = "siteGetChildrenCannedQueryFactory";
         GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject(cQBeanName);

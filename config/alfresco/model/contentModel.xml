@@ -1332,7 +1332,11 @@
                </target>
             </child-association>
          </associations>
-      </aspect>      
+      </aspect>
+      
+      <aspect name="rn:preventRenditions">
+         <title>Marker aspect to prevent the creation of renditions for a node.</title>
+      </aspect>
       
       <aspect name="cm:failedThumbnailSource">
          <title>Failed Thumbnail Source</title>

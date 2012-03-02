@@ -34,6 +34,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.magick.ImageResizeOptions;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
+import org.alfresco.repo.rendition.MockedTestServiceRegistry;
 import org.alfresco.repo.rendition.RenditionServiceImpl;
 import org.alfresco.repo.rendition.executer.AbstractRenderingEngine;
 import org.alfresco.repo.rendition.executer.ImageRenderingEngine;
@@ -84,6 +85,7 @@ public class ThumbnailServiceImplParameterTest
         };
 
         renditionService.setActionService(mockActionService);
+        renditionService.setServiceRegistry(new MockedTestServiceRegistry());
 
         ThumbnailServiceImpl thumbs = new ThumbnailServiceImpl()
         {

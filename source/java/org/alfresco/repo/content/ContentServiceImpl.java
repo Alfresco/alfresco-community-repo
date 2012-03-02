@@ -33,7 +33,6 @@ import org.alfresco.repo.content.ContentServicePolicies.OnContentReadPolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy;
 import org.alfresco.repo.content.cleanup.EagerContentStoreCleaner;
 import org.alfresco.repo.content.filestore.FileContentStore;
-import org.alfresco.repo.content.transform.AbstractContentTransformerLimits;
 import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.content.transform.ContentTransformerRegistry;
 import org.alfresco.repo.content.transform.TransformerDebug;
@@ -41,7 +40,6 @@ import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.thumbnail.ThumbnailDefinition;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -93,6 +91,8 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     private RetryingTransactionHelper transactionHelper;
     private ApplicationContext applicationContext;
     protected TransformerDebug transformerDebug;
+    private MimetypeService mimetypeService;
+
 
     /** a registry of all available content transformers */
     private ContentTransformerRegistry transformerRegistry;
@@ -188,6 +188,15 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     public void setTransformerDebug(TransformerDebug transformerDebug)
     {
         this.transformerDebug = transformerDebug;
+    }
+
+    /**
+     * Helper setter of the mimetypeService. 
+     * @param mimetypeService
+     */
+    public void setMimetypeService(MimetypeService mimetypeService)
+    {
+        this.mimetypeService = mimetypeService;
     }
 
     /**
@@ -539,7 +548,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     public void transform(ContentReader reader, ContentWriter writer)
     {
         // Call transform with no options
-        TransformationOptions options = null;
+        TransformationOptions options = new TransformationOptions();
         this.transform(reader, writer, options);
     }
     
@@ -577,11 +586,11 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             throw new AlfrescoRuntimeException("The content writer mimetype must be set: " + writer);
         }
 
+        long sourceSize = reader.getSize();
         try
         {
             // look for a transformer
-            transformerDebug.pushAvailable(reader.getContentUrl(), sourceMimetype, targetMimetype);
-            long sourceSize = reader.getSize();
+            transformerDebug.pushAvailable(reader.getContentUrl(), sourceMimetype, targetMimetype, options);
             List<ContentTransformer> transformers = getActiveTransformers(sourceMimetype, sourceSize, targetMimetype, options);
             transformerDebug.availableTransformers(transformers, sourceSize, "ContentService.transform(...)");
             
@@ -597,7 +606,11 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         }
         finally
         {
-            transformerDebug.popAvailable();
+            if (transformerDebug.isEnabled())
+            {
+                transformerDebug.popAvailable();
+                debugActiveTransformers(sourceMimetype, targetMimetype, sourceSize, options);
+            }
         }
     }
 
@@ -623,7 +636,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         try
         {
             // look for a transformer
-            transformerDebug.pushAvailable(sourceUrl, sourceMimetype, targetMimetype);
+            transformerDebug.pushAvailable(sourceUrl, sourceMimetype, targetMimetype, options);
             List<ContentTransformer> transformers = getActiveTransformers(sourceMimetype, sourceSize, targetMimetype, options);
             transformerDebug.availableTransformers(transformers, sourceSize, "ContentService.getTransformer(...)");
             return (transformers.isEmpty()) ? null : transformers.get(0);
@@ -631,6 +644,74 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         finally
         {
             transformerDebug.popAvailable();
+        }
+    }
+
+    /**
+     * Checks if the file just uploaded into Share is a special "debugTransformers.txt" file and
+     * if it is creates TransformerDebug that lists all the supported mimetype transformation for
+     * each transformer.
+     */
+    private void debugActiveTransformers(String sourceMimetype, String targetMimetype,
+            long sourceSize, TransformationOptions transformOptions)
+    {
+        // check the file name, but do faster tests first
+        if (sourceSize == 18 &&
+            MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(sourceMimetype) &&
+            MimetypeMap.MIMETYPE_IMAGE_PNG.equals(targetMimetype) &&
+            "debugTransformers.txt".equals(transformerDebug.getFileName(transformOptions, true, 0)))
+        {
+            debugActiveTransformers();
+        }
+    }
+    
+    /**
+     * Creates TransformerDebug that lists all the supported mimetype transformation for each transformer.
+     */
+    private void debugActiveTransformers()
+    {
+        try
+        {
+            transformerDebug.pushMisc();
+            transformerDebug.debug("Active and inactive transformers (list not reduced by 'explicit' settings)");
+            TransformationOptions options = new TransformationOptions();
+            for (ContentTransformer transformer: transformerRegistry.getTransformers())
+            {
+                try
+                {
+                    transformerDebug.pushMisc();
+                    int mimetypePairCount = 0;
+                    boolean first = true;
+                    for (String sourceMimetype : mimetypeService.getMimetypes())
+                    {
+                        for (String targetMimetype : mimetypeService.getMimetypes())
+                        {
+                            if (transformer.isTransformable(sourceMimetype, -1, targetMimetype, options))
+                            {
+                                long maxSourceSizeKBytes = transformer.getMaxSourceSizeKBytes(
+                                        sourceMimetype, targetMimetype, options);
+                                boolean explicit = transformer.isExplicitTransformation(sourceMimetype,
+                                        targetMimetype, options);
+                                transformerDebug.activeTransformer(++mimetypePairCount, transformer,
+                                        sourceMimetype, targetMimetype, maxSourceSizeKBytes, explicit, first);
+                                first = false;
+                            }
+                        }
+                    }
+                    if (first)
+                    {
+                        transformerDebug.inactiveTransformer(transformer);
+                    }
+                }
+                finally
+                {
+                    transformerDebug.popMisc();
+                }
+            }
+        }
+        finally
+        {
+            transformerDebug.popMisc();
         }
     }
     
@@ -642,8 +723,8 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         try
         {
             long maxSourceSize = 0;
-            transformerDebug.pushAvailable(null, sourceMimetype, targetMimetype);
-            List<ContentTransformer> transformers = getActiveTransformers(sourceMimetype, 0, targetMimetype, options);
+            transformerDebug.pushAvailable(null, sourceMimetype, targetMimetype, options);
+            List<ContentTransformer> transformers = getActiveTransformers(sourceMimetype, -1, targetMimetype, options);
             for (ContentTransformer transformer: transformers)
             {
                 long maxSourceSizeKBytes = transformer.getMaxSourceSizeKBytes(sourceMimetype, targetMimetype, options);

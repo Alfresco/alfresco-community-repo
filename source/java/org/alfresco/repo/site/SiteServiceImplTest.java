@@ -106,6 +106,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
     private NodeArchiveService nodeArchiveService;
     private PermissionService permissionService;
     private SiteService siteService;
+
     /**
      * There are some tests which need access to the unproxied SiteServiceImpl
      */
@@ -142,7 +143,6 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         this.siteServiceImpl = (SiteServiceImpl) applicationContext.getBean("siteService"); // Small 's'
         this.sysAdminParams = (SysAdminParams)this.applicationContext.getBean("sysAdminParams");
 
-        
         // Create the test users
         createUser(USER_ONE, "UserOne");
         createUser(USER_TWO, "UserTwo");
@@ -2070,7 +2070,43 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
        assertNotNull("sites list was null.", sites);
        assertEquals(preexistingSitesCount+1, sites.size());
     }
+    
+    private SiteInfo createSite(String siteShortName, String componentId, SiteVisibility visibility)
+    {
+    	// Create a public site
+    	SiteInfo siteInfo = this.siteService.createSite(TEST_SITE_PRESET, 
+    			siteShortName, 
+    			TEST_TITLE, 
+    			TEST_DESCRIPTION, 
+    			visibility);
+        NodeRef siteContainer = this.siteService.createContainer(siteShortName, componentId, ContentModel.TYPE_FOLDER, null);
+        return siteInfo;
+    }
 
+    public void testRenameSite()
+    {
+    	// test that changing the name of a site generates an appropriate exception
+
+    	try
+    	{
+    		String siteName = GUID.generate();
+
+    		SiteInfo siteInfo = createSite(siteName, "doclib", SiteVisibility.PUBLIC);
+    		NodeRef childRef = siteInfo.getNodeRef();
+
+			Map<QName, Serializable> props = new HashMap<QName, Serializable>(); 
+			props.put(ContentModel.PROP_NAME, siteName + "Renamed"); 
+	
+			nodeService.addProperties(childRef, props);
+
+			fail("Should have caught rename");
+    	}
+    	catch(SiteServiceException e)
+    	{
+    		assertTrue(e.getMessage().contains("can not be renamed"));
+    	}
+    }
+    
     private void validatePermissionsOnRelocatedNode(SiteInfo fromSite,
             SiteInfo toSite, NodeRef relocatedNode, Map<String, String> expectedPermissions)
     {

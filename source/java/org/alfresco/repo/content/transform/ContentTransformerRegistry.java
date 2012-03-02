@@ -70,6 +70,11 @@ public class ContentTransformerRegistry
         }
     }
     
+    public List<ContentTransformer> getTransformers()
+    {
+        return Collections.unmodifiableList(transformers);
+    }
+    
     /**
      * @deprecated use overloaded version with sourceSize parameter.
      */

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -1181,12 +1181,20 @@ public class NodeServiceTest extends TestCase
         logger.debug("Found child nodes with deleted parent node (after): " + childNodeIds);
         
         // workaround recovery: force collection of any orphan nodes (ALF-12358 + ALF-13066)
-        for (NodeRef nodeRef : nodesAtRisk)
+        for (final NodeRef nodeRef : nodesAtRisk)
         {
-            if (nodeService.exists(nodeRef))
+            txnService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
             {
-                nodeService.getPath(nodeRef); // ignore return
-            }
+                @Override
+                public Void execute() throws Throwable
+                {
+                    if (nodeService.exists(nodeRef))
+                    {
+                        nodeService.getPath(nodeRef); // ignore return
+                    }
+                    return null;
+                }
+            });
         }
         
         // check again ...
@@ -1273,12 +1281,20 @@ public class NodeServiceTest extends TestCase
         logger.debug("Found child nodes with deleted parent node (after): " + childNodeIds);
         
         // workaround recovery: force collection of any orphan nodes (ALF-12358 + ALF-13066)
-        for (NodeRef nodeRef : childNodeRefs)
+        for (final NodeRef nodeRef : childNodeRefs)
         {
-            if (nodeService.exists(nodeRef))
+            txnService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
             {
-                nodeService.getPath(nodeRef); // ignore return
-            }
+                @Override
+                public Void execute() throws Throwable
+                {
+                    if (nodeService.exists(nodeRef))
+                    {
+                        nodeService.getPath(nodeRef); // ignore return
+                    }
+                    return null;
+                }
+            });
         }
         
         // check again ...

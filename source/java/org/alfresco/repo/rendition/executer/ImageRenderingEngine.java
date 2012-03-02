@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -256,6 +256,8 @@ public class ImageRenderingEngine extends AbstractTransformationRenderingEngine
     @Override
     protected TransformationOptions getTransformOptionsImpl(TransformationOptions options, RenderingContext context)
     {
+        options.setSourceNodeRef(context.getSourceNode());
+        options.setTargetNodeRef(context.getDestinationNode());
         ImageTransformationOptions imageTransformationOptions = (ImageTransformationOptions)options;
         
         String commandOptions = context.getCheckedParam(PARAM_COMMAND_OPTIONS, String.class);

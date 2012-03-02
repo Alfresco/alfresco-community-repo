@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.rendition.CompositeRenditionDefinition;
 import org.alfresco.service.cmr.rendition.RenderCallback;
 import org.alfresco.service.cmr.rendition.RenderingEngineDefinition;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
+import org.alfresco.service.cmr.rendition.RenditionPreventedException;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.rendition.RenditionServiceException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -68,12 +69,25 @@ public class RenditionServiceImpl implements RenditionService, RenditionDefiniti
     private RenditionDefinitionPersisterImpl renditionDefinitionPersister;
     
     /**
+     * @since 4.0.1
+     */
+    private RenditionPreventionRegistry renditionPreventionRegistry;
+    
+    /**
      * Injects the RenditionDefinitionPersister bean.
      * @param renditionDefinitionPersister
      */
     public void setRenditionDefinitionPersister(RenditionDefinitionPersisterImpl renditionDefinitionPersister)
     {
         this.renditionDefinitionPersister = renditionDefinitionPersister;
+    }
+    
+    /**
+     * @since 4.0.1
+     */
+    public void setRenditionPreventionRegistry(RenditionPreventionRegistry registry)
+    {
+        this.renditionPreventionRegistry = registry;
     }
     
     /**
@@ -180,6 +194,8 @@ public class RenditionServiceImpl implements RenditionService, RenditionDefiniti
      */
     public ChildAssociationRef render(NodeRef sourceNode, RenditionDefinition definition)
     {
+        checkSourceNodeForPreventionClass(sourceNode);
+        
         ChildAssociationRef result = executeRenditionAction(sourceNode, definition, false);
         
         if (log.isDebugEnabled())
@@ -193,6 +209,8 @@ public class RenditionServiceImpl implements RenditionService, RenditionDefiniti
     public void render(NodeRef sourceNode, RenditionDefinition definition,
             RenderCallback callback)
     {
+        checkSourceNodeForPreventionClass(sourceNode);
+        
         // The asynchronous render can't return a ChildAssociationRef as it is created
         // asynchronously after this method returns.
         definition.setCallback(callback);
@@ -208,6 +226,8 @@ public class RenditionServiceImpl implements RenditionService, RenditionDefiniti
      */
     public ChildAssociationRef render(NodeRef sourceNode, final QName renditionDefinitionQName)
     {
+        checkSourceNodeForPreventionClass(sourceNode);
+        
         RenditionDefinition rendDefn = AuthenticationUtil.runAs(
             new AuthenticationUtil.RunAsWork<RenditionDefinition>()
             {
@@ -231,6 +251,8 @@ public class RenditionServiceImpl implements RenditionService, RenditionDefiniti
      */
     public void render(NodeRef sourceNode, final QName renditionDefinitionQName, RenderCallback callback)
     {
+        checkSourceNodeForPreventionClass(sourceNode);
+        
         RenditionDefinition rendDefn = AuthenticationUtil.runAs(
                 new AuthenticationUtil.RunAsWork<RenditionDefinition>()
                 {
@@ -247,8 +269,41 @@ public class RenditionServiceImpl implements RenditionService, RenditionDefiniti
         
         this.render(sourceNode, rendDefn, callback);
     }
-
-
+    
+    /**
+     * This method checks whether the specified source node is of a content class which has been registered for rendition prevention.
+     * 
+     * @param sourceNode the node to check.
+     * @throws RenditionPreventedException if the source node is configured for rendition prevention.
+     * @since 4.0.1
+     * @see RenditionPreventionRegistry
+     */
+    private void checkSourceNodeForPreventionClass(NodeRef sourceNode)
+    {
+        // A node's content class is its type and all its aspects.
+        // We'll not check the source node for null and leave that to the rendering action.
+        if (sourceNode != null && nodeService.exists(sourceNode))
+        {
+            Set<QName> nodeContentClasses = nodeService.getAspects(sourceNode);
+            nodeContentClasses.add(nodeService.getType(sourceNode));
+            
+            for (QName contentClass : nodeContentClasses)
+            {
+                if (renditionPreventionRegistry.isContentClassRegistered(contentClass))
+                {
+                    StringBuilder msg = new StringBuilder();
+                    msg.append("Node ").append(sourceNode)
+                    .append(" cannot be renditioned as it is of class ").append(contentClass);
+                    if (log.isDebugEnabled())
+                    {
+                        log.debug(msg.toString());
+                    }
+                    throw new RenditionPreventedException(msg.toString());
+                }
+            }
+        }
+    }
+    
     /**
      * This method delegates the execution of the specified RenditionDefinition
      * to the {@link ActionService action service}.

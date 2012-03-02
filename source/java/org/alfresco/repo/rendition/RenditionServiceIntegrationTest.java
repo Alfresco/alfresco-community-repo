@@ -923,6 +923,48 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         });
     }
     
+    /**
+     * Tests that source nodes with a suitable marker aspect on them are not renditioned.
+     * 
+     * @since 4.0.1
+     */
+    public void testSuitablyMarkedNodesDoNotGetRenditioned() throws Exception
+    {
+        setComplete();
+        endTransaction();
+
+        this.renditionNode = transactionHelper
+            .doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
+            {
+                public NodeRef execute() throws Throwable
+                {
+                    // Initially the node that provides the content
+                    // should not have the rn:renditioned aspect on it.
+                    assertFalse("Source node has unexpected renditioned aspect.", nodeService.hasAspect(
+                                nodeWithImageContent, RenditionModel.ASPECT_RENDITIONED));
+                    
+                    //Add the marker aspect to prevent rendition
+                    nodeService.addAspect(nodeWithImageContent, RenditionModel.ASPECT_PREVENT_RENDITIONS, null);
+
+                    RenditionDefinition action = makeReformatAction(null, MimetypeMap.MIMETYPE_TEXT_PLAIN);
+                    action.setParameterValue(AbstractRenderingEngine.PARAM_MIME_TYPE, MimetypeMap.MIMETYPE_IMAGE_JPEG);
+
+                    ChildAssociationRef renditionAssoc = null;
+                    boolean expectedExceptionThrown = false;
+                    try
+                    {
+                        renditionAssoc = renditionService.render(nodeWithImageContent, action);
+                    } catch (RenditionServiceException expected)
+                    {
+                        expectedExceptionThrown = true;
+                    }
+                    assertTrue("Expected exception was not thrown.", expectedExceptionThrown);
+                    
+                    return renditionAssoc == null ? null : renditionAssoc.getChildRef();
+                }
+            });
+    }
+    
     public void testSuccessfulAsynchronousRendition() throws Exception
     {
         // There are two relevant threads here: the JUnit test thread and the background

@@ -77,6 +77,7 @@ import org.alfresco.jlan.server.filesys.cache.hazelcast.ClusterConfigSection;
 import org.alfresco.jlan.server.filesys.cache.hazelcast.HazelCastClusterFileStateCache;
 import org.alfresco.jlan.server.thread.ThreadRequestPool;
 import org.alfresco.jlan.smb.server.CIFSConfigSection;
+import org.alfresco.jlan.smb.server.VirtualCircuitList;
 import org.alfresco.jlan.util.IPAddress;
 import org.alfresco.jlan.util.MemorySize;
 import org.alfresco.jlan.util.Platform;
@@ -334,12 +335,21 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
             }
 
             // Check for a server comment
+            
             String comment = cifsConfigBean.getServerComment();
             if (comment != null && comment.length() > 0)
             {
                 cifsConfig.setComment(comment);
             }
 
+            // Set the maximum virtual circuits per session
+            
+            if ( cifsConfigBean.getMaximumVirtualCircuits() < VirtualCircuitList.MinCircuits ||
+            		cifsConfigBean.getMaximumVirtualCircuits() > VirtualCircuitList.MaxCircuits)
+            	throw new AlfrescoRuntimeException("Invalid virtual circuits value, valid range is " + VirtualCircuitList.MinCircuits + " - " + VirtualCircuitList.MaxCircuits);
+            else
+            	cifsConfig.setMaximumVirtualCircuits( cifsConfigBean.getMaximumVirtualCircuits());
+            
             // Check for a bind address
 
             // Check if the network adapter name has been specified

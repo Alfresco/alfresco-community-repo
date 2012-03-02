@@ -155,7 +155,7 @@ public class CreateThumbnailActionExecuter extends ActionExecuterAbstractBase
             {
                 ContentData content = (ContentData)contentProp;
                 String mimetype = content.getMimetype();
-                if (!registry.isThumbnailDefinitionAvailable(content.getContentUrl(), mimetype, content.getSize(), details))
+                if (!registry.isThumbnailDefinitionAvailable(content.getContentUrl(), mimetype, content.getSize(), actionedUponNodeRef, details))
                 {
                     logger.debug("Unable to create thumbnail '" + details.getName() + "' for " +
                             mimetype + " as no transformer is currently available");

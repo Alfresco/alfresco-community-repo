@@ -35,6 +35,7 @@ import org.alfresco.repo.thumbnail.ThumbnailDefinition;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 
 /**
  * @author Stas Sokolovsky
@@ -207,9 +208,12 @@ public class CMISRenditionServiceTest extends BaseCMISTest
         contentWriter.setMimetype(mimetype);
         contentWriter.setLocale(Locale.ENGLISH);
 
-        if (contentService.isTransformable(contentReader, contentWriter))
+        TransformationOptions options = new TransformationOptions();
+        options.setSourceNodeRef(textDocument);
+
+        if (contentService.isTransformable(contentReader, contentWriter, options))
         {
-            contentService.transform(contentReader, contentWriter);
+            contentService.transform(contentReader, contentWriter, options);
         }
 
         fileFolderService.delete(textDocument);

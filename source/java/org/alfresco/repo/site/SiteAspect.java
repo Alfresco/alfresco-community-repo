@@ -18,8 +18,13 @@
  */
 package org.alfresco.repo.site;
 
+import java.io.Serializable;
+import java.util.Map;
+
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy;
+import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
 import org.alfresco.repo.policy.Behaviour;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -28,6 +33,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.EqualsHelper;
 
 /**
  * Site aspect behaviour bean.
@@ -37,7 +43,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Nick Burch
  */
-public class SiteAspect implements NodeServicePolicies.OnMoveNodePolicy
+public class SiteAspect implements NodeServicePolicies.OnMoveNodePolicy, NodeServicePolicies.OnUpdatePropertiesPolicy
 {
    /** Services */
    private DictionaryService dictionaryService;
@@ -79,14 +85,43 @@ public class SiteAspect implements NodeServicePolicies.OnMoveNodePolicy
     */
    public void init()
    {
-       this.policyComponent.bindClassBehaviour(
-               OnMoveNodePolicy.QNAME, 
+       this.policyComponent.bindClassBehaviour(OnMoveNodePolicy.QNAME, 
                SiteModel.TYPE_SITE, 
                new JavaBehaviour(this, "onMoveNode", Behaviour.NotificationFrequency.EVERY_EVENT));
        
        this.policyComponent.bindClassBehaviour(OnMoveNodePolicy.QNAME,
                SiteModel.ASPECT_SITE_CONTAINER,
                new JavaBehaviour(this, "onMoveNode", Behaviour.NotificationFrequency.EVERY_EVENT));
+       
+       this.policyComponent.bindClassBehaviour(OnUpdatePropertiesPolicy.QNAME, 
+               SiteModel.TYPE_SITE, 
+               new JavaBehaviour(this, "onUpdateProperties", Behaviour.NotificationFrequency.EVERY_EVENT));
+       
+       this.policyComponent.bindClassBehaviour(OnUpdatePropertiesPolicy.QNAME,
+               SiteModel.ASPECT_SITE_CONTAINER,
+               new JavaBehaviour(this, "onUpdateProperties", Behaviour.NotificationFrequency.EVERY_EVENT));
+   }
+
+   public void onUpdateProperties(NodeRef nodeRef,
+           Map<QName, Serializable> before,
+           Map<QName, Serializable> after)
+   {
+	   String beforeName = (String)before.get(ContentModel.PROP_NAME);
+	   String afterName = (String)after.get(ContentModel.PROP_NAME);
+
+	   if(beforeName != null && !beforeName.equals(afterName))
+	   {
+		   // Deny renames
+		   QName type = nodeService.getType(nodeRef);
+		   if (dictionaryService.isSubClass(type, SiteModel.TYPE_SITE))
+		   {
+			   throw new SiteServiceException("Sites can not be renamed.");
+		   }
+		   else
+		   {
+			   throw new SiteServiceException("Site containers can not be renamed.");
+		   }
+	   }
    }
 
    /**

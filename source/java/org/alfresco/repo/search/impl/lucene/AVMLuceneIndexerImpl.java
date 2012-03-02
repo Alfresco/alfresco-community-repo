@@ -1140,9 +1140,11 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                             try
                             {
                                 // get the transformer
-                                transformerDebug.pushAvailable(reader.getContentUrl(), reader.getMimetype(), MimetypeMap.MIMETYPE_TEXT_PLAIN);
+                            TransformationOptions options = new TransformationOptions();
+                            options.setSourceNodeRef(banana); // TODO check it is OK to use this noderef
+                            transformerDebug.pushAvailable(reader.getContentUrl(), reader.getMimetype(), MimetypeMap.MIMETYPE_TEXT_PLAIN, options);
                                 long sourceSize = reader.getSize();
-                                List<ContentTransformer> transformers = contentService.getActiveTransformers(reader.getMimetype(), sourceSize, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions());
+                            List<ContentTransformer> transformers = contentService.getActiveTransformers(reader.getMimetype(), sourceSize, MimetypeMap.MIMETYPE_TEXT_PLAIN, options);
                                 transformerDebug.availableTransformers(transformers, sourceSize, "AVMLuceneIndexer");
 
                                 if (transformers.isEmpty())
@@ -1177,7 +1179,7 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                                     writer.setEncoding("UTF-8");
                                     try
                                     {
-                                        transformer.transform(reader, writer);
+                                    transformer.transform(reader, writer, options);
                                         // point the reader to the new-written content
                                         reader = writer.getReader();
                                         // Check that the reader is a view onto something concrete

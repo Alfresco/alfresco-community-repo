@@ -76,6 +76,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.security.AccessPermission;
@@ -2425,6 +2426,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
     {
         ParameterCheck.mandatoryString("Mimetype", mimetype);
         ParameterCheck.mandatory("Destination Node", destination);
+        final NodeRef sourceNodeRef = nodeRef;
         
         // the delegate definition for transforming a document
         Transformer transformer = new Transformer()
@@ -2433,9 +2435,12 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
                     ContentWriter writer)
             {
                 ScriptNode transformedNode = null;
-                if (contentService.isTransformable(reader, writer))
+                TransformationOptions options = new TransformationOptions();
+                options.setSourceNodeRef(sourceNodeRef);
+
+                if (contentService.isTransformable(reader, writer, options))
                 {
-                    contentService.transform(reader, writer);
+                    contentService.transform(reader, writer, options);
                     transformedNode = newInstance(nodeRef, services, scope);
                 }
                 return transformedNode;
@@ -2550,6 +2555,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
     private ScriptNode transformImage(String mimetype, final String options, NodeRef destination)
     {
         ParameterCheck.mandatoryString("Mimetype", mimetype);
+        final NodeRef sourceNodeRef = nodeRef;
         
         // the delegate definition for transforming an image
         Transformer transformer = new Transformer()
@@ -2558,6 +2564,8 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
                     ContentWriter writer)
             {
                 ImageTransformationOptions imageOptions = new ImageTransformationOptions();
+                imageOptions.setSourceNodeRef(sourceNodeRef);
+
                 if (options != null)
                 {
                     imageOptions.setCommandOptions(options);
@@ -2738,7 +2746,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
             logger.info("Unable to create thumbnail '" + details.getName() + "' as there is no content");
             return null;
         }
-        if (!registry.isThumbnailDefinitionAvailable(contentData.getContentUrl(), nodeMimeType, getSize(), details))
+        if (!registry.isThumbnailDefinitionAvailable(contentData.getContentUrl(), nodeMimeType, getSize(), nodeRef, details))
         {
             logger.info("Unable to create thumbnail '" + details.getName() + "' for " +
                     nodeMimeType + " as no transformer is currently available");

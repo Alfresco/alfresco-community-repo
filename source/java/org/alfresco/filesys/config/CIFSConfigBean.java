@@ -19,6 +19,7 @@
 package org.alfresco.filesys.config;
 
 import org.alfresco.jlan.server.auth.ICifsAuthenticator;
+import org.alfresco.jlan.smb.server.VirtualCircuitList;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -89,6 +90,10 @@ public class CIFSConfigBean
     /** The session timeout. */
     private Integer sessionTimeout;
 
+    // Maximum virtual circuits per session
+    
+    private int m_maxVC = VirtualCircuitList.DefMaxCircuits;
+    
     /**
      * Checks if is server enabled.
      * 
@@ -352,6 +357,15 @@ public class CIFSConfigBean
     }
 
     /**
+     * Return the maxmimum virtual circuits per session
+     * 
+     * @return int
+     */
+    public int getMaximumVirtualCircuits() {
+    	return m_maxVC;
+    }
+    
+    /**
      * Sets the tcpip smb.
      * 
      * @param tcpipSMB
@@ -509,4 +523,12 @@ public class CIFSConfigBean
         this.sessionTimeout = sessionTimeout;
     }
 
+    /**
+     * Set the maximum virtual circuits per session
+     * 
+     * @param maxVC int
+     */
+    public void setMaximumVirtualCircuits( int maxVC) {
+    	m_maxVC = maxVC;
+    }
 }

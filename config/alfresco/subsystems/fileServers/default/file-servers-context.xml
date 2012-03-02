@@ -185,6 +185,13 @@
          <value>${cifs.sessionTimeout}</value>
       </property>
 
+	  <!-- Maximum virtual circuits per session -->
+	  <!-- Defaults to 16, valid range is 4 - 2000 -->
+	  <!-- This value should only be increased when using Terminal Server clients -->
+	  <property name="maximumVirtualCircuits">
+		 <value>${cifs.maximumVirtualCircuitsPerSession}</value>  
+	  </property>
+	   
       <!-- Enable WINS if used for NetBIOS name lookups -->
       <property name="WINSConfig">
          <bean class="org.alfresco.filesys.config.WINSConfigBean">

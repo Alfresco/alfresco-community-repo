@@ -33,6 +33,8 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.thumbnail.ThumbnailException;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
@@ -254,10 +256,16 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
      * @param sourceUrl The URL of the source (optional)
      * @param sourceMimetype The source mimetype
      * @param sourceSize the size (in bytes) of the source. Use -1 if unknown.
+     * @param sourceNodeRef which is set in a copy of the thumbnailDefinition transformation options,
+     *        so that it may be used by transformers and debug.
      * @param thumbnailDefinition The {@link ThumbnailDefinition} to check for
      */
-    public boolean isThumbnailDefinitionAvailable(String sourceUrl, String sourceMimetype, long sourceSize, ThumbnailDefinition thumbnailDefinition)
+    public boolean isThumbnailDefinitionAvailable(String sourceUrl, String sourceMimetype, long sourceSize, NodeRef sourceNodeRef, ThumbnailDefinition thumbnailDefinition)
     {
+        // Copy the thumbnail's TransformationOptions and set the sourceNodeRef, for use by transformers and debug. 
+        TransformationOptions options = new TransformationOptions(thumbnailDefinition.getTransformationOptions());
+        options.setSourceNodeRef(sourceNodeRef);
+
         // Log the following getTransform() as trace so we can see the wood for the trees
         boolean orig = TransformerDebug.setDebugOutput(false);
         try
@@ -266,7 +274,7 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
                     sourceUrl, 
                     sourceMimetype,
                     sourceSize, 
-                    thumbnailDefinition.getMimetype(), thumbnailDefinition.getTransformationOptions()
+                    thumbnailDefinition.getMimetype(), options
               ) != null;
         }
         finally

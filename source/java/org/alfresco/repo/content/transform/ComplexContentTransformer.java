@@ -33,6 +33,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TransformationOptionLimits;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -314,37 +315,55 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
             ContentWriter writer,
             TransformationOptions options) throws Exception
     {
-        ContentReader currentReader = reader;
-        
-        Iterator<ContentTransformer> transformerIterator = transformers.iterator();
-        Iterator<String> intermediateMimetypeIterator = intermediateMimetypes.iterator();
-        while (transformerIterator.hasNext())
+        NodeRef origSourceNodeRef = options.getSourceNodeRef();
+        try
         {
-            ContentTransformer transformer = transformerIterator.next();
-            // determine the target mimetype.  This is the final target if we are on the last transformation
-            ContentWriter currentWriter = null;
-            if (!transformerIterator.hasNext())
+            ContentReader currentReader = reader;
+        
+            Iterator<ContentTransformer> transformerIterator = transformers.iterator();
+            Iterator<String> intermediateMimetypeIterator = intermediateMimetypes.iterator();
+            boolean first = true;
+            while (transformerIterator.hasNext())
             {
-                currentWriter = writer;
+                ContentTransformer transformer = transformerIterator.next();
+                // determine the target mimetype.  This is the final target if we are on the last transformation
+                ContentWriter currentWriter = null;
+                if (!transformerIterator.hasNext())
+                {
+                    currentWriter = writer;
+                }
+                else
+                {
+                    String nextMimetype = intermediateMimetypeIterator.next();
+                    // make a temp file writer with the correct extension
+                    String sourceExt = getMimetypeService().getExtension(currentReader.getMimetype());
+                    String targetExt = getMimetypeService().getExtension(nextMimetype);
+                    File tempFile = TempFileProvider.createTempFile(
+                            "ComplextTransformer_intermediate_" + sourceExt + "_",
+                            "." + targetExt);
+                    currentWriter = new FileContentWriter(tempFile);
+                    currentWriter.setMimetype(nextMimetype);
+                
+                    // Must clear the sourceNodeRef to avoid transformers thinking the temporary file
+                    // is the original node. Not done for the first transformer as the name will be
+                    // correct.
+                    if (!first)
+                    {
+                        options.setSourceNodeRef(null);
+                    }
+                    first = false;
+                }
+                // transform
+                transformer.transform(currentReader, currentWriter, options);
+                // move the source on
+                currentReader = currentWriter.getReader();
             }
-            else
-            {
-                String nextMimetype = intermediateMimetypeIterator.next();
-                // make a temp file writer with the correct extension
-                String sourceExt = getMimetypeService().getExtension(currentReader.getMimetype());
-                String targetExt = getMimetypeService().getExtension(nextMimetype);
-                File tempFile = TempFileProvider.createTempFile(
-                        "ComplextTransformer_intermediate_" + sourceExt + "_",
-                        "." + targetExt);
-                currentWriter = new FileContentWriter(tempFile);
-                currentWriter.setMimetype(nextMimetype);
-            }
-            // transform
-            transformer.transform(currentReader, currentWriter, options);
-            // move the source on
-            currentReader = currentWriter.getReader();
+            // done
         }
-        // done
+        finally
+        {
+            options.setSourceNodeRef(origSourceNodeRef);
+        }
     }  
     
     public List<String> getIntermediateMimetypes()

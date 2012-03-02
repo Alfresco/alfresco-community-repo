@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -42,6 +42,7 @@ import org.alfresco.repo.webservice.types.Reference;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.namespace.QName;
 import org.apache.axis.AxisFault;
 import org.apache.axis.Message;
@@ -394,8 +395,11 @@ public class ContentWebService extends AbstractWebService implements
 					contentWriter.setEncoding(destinationFormat.getEncoding());
 					contentWriter.setMimetype(destinationFormat.getMimetype());
 					
+				        TransformationOptions options = new TransformationOptions();
+				        options.setSourceNodeRef(sourceNodeRef);
+
 					// Transform the content
-					ContentWebService.this.contentService.transform(contentReader, contentWriter);
+					ContentWebService.this.contentService.transform(contentReader, contentWriter, options);
 					
 					// Return the content object to the user
 					return createContent(destinationNodeRef, destinationProperty);

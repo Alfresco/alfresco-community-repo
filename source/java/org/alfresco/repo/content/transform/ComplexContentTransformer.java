@@ -322,7 +322,6 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
         
             Iterator<ContentTransformer> transformerIterator = transformers.iterator();
             Iterator<String> intermediateMimetypeIterator = intermediateMimetypes.iterator();
-            boolean first = true;
             while (transformerIterator.hasNext())
             {
                 ContentTransformer transformer = transformerIterator.next();
@@ -343,18 +342,19 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
                             "." + targetExt);
                     currentWriter = new FileContentWriter(tempFile);
                     currentWriter.setMimetype(nextMimetype);
-                
-                    // Must clear the sourceNodeRef to avoid transformers thinking the temporary file
-                    // is the original node. Not done for the first transformer as the name will be
-                    // correct.
-                    if (!first)
-                    {
-                        options.setSourceNodeRef(null);
-                    }
-                    first = false;
                 }
+                
                 // transform
                 transformer.transform(currentReader, currentWriter, options);
+
+                // Must clear the sourceNodeRef after the first transformation to avoid later 
+                // transformers thinking the intermediate file is the original node. However as
+                // we put the original sourceNodeRef back at the end of this try block (so that we are
+                // not changing any data), we must setting the value to null just after the
+                // transformation. Really only needs to be done after the first transformation
+                // but doing it every time is simpler and faster.
+                options.setSourceNodeRef(null);
+                
                 // move the source on
                 currentReader = currentWriter.getReader();
             }

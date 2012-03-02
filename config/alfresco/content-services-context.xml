@@ -115,9 +115,6 @@
       <property name="transformerDebug">
          <ref bean="transformerDebug"></ref>
       </property>
-      <property name="mimetypeService">
-         <ref bean="mimetypeService"></ref>
-      </property>
    </bean>
    
    <bean id="contentService" parent="baseContentService">

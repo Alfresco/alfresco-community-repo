@@ -155,8 +155,20 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
                     } else if (isDocument())
                     {
                         objecVariant = CMISObjectVariant.CURRENT_VERSION;
-                        objectId = currentNodeId + CMISConnector.ID_SEPERATOR + CMISConnector.UNVERSIONED_VERSION_LABEL;
-                        versionLabel = CMISConnector.UNVERSIONED_VERSION_LABEL;
+                        
+                        // Is it un-versioned, or currently versioned?
+                        Version currentVersion = connector.getVersionService().getCurrentVersion(nodeRef);
+                        if (currentVersion != null)
+                        {
+                            versionLabel = currentVersion.getVersionLabel();
+                            versionHistory = connector.getVersionService().getVersionHistory(nodeRef);
+                        }
+                        else
+                        {
+                            versionLabel = CMISConnector.UNVERSIONED_VERSION_LABEL;
+                        }
+                        
+                        objectId = currentNodeId + CMISConnector.ID_SEPERATOR + versionLabel;
                         currentObjectId = objectId;
                         hasPWC = (connector.getLockService().getLockType(nodeRef) == LockType.READ_ONLY_LOCK);
                     } else
